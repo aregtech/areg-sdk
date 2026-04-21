@@ -74,7 +74,7 @@ public:
      *          zero. The operations are atomic. The value can be used to display data rate, for example.
      **/
     [[nodiscard]]
-    inline uint64_t extract_data_receive() const noexcept;
+    inline uint64_t extract_data_received() const noexcept;
 
     /**
      * \brief   Returns accumulative count of received messages and resets the existing value to zero.
@@ -91,6 +91,9 @@ public:
      **/
     inline void set_data_rate_enabled(bool enable) noexcept;
 
+    /**
+     * \brief   Returns true if data and message rating is enabled.
+     **/
     [[nodiscard]]
     inline bool is_data_rate_enabled() const noexcept;
 
@@ -174,10 +177,10 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// ServerConnection inline methods.
+// ServerReceiveThread inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline uint64_t ServerReceiveThread::extract_data_receive() const noexcept
+inline uint64_t ServerReceiveThread::extract_data_received() const noexcept
 {
     return mBytesReceive.exchange(0, std::memory_order_relaxed);
 }
@@ -206,13 +209,8 @@ inline void ServerReceiveThread::accumulate_received(uint64_t bytes, uint32_t ms
 {
     if (mSaveDataReceive)
     {
-#if 1
         mBytesReceive.fetch_add(bytes, std::memory_order_relaxed);
         mMsgsReceive.fetch_add(msgs, std::memory_order_relaxed);
-#else
-        mBytesReceive += bytes;
-        mMsgsReceive += msgs;
-#endif
     }
 }
 

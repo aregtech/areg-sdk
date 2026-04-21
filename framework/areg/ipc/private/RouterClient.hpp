@@ -221,6 +221,16 @@ protected:
      **/
     void ready_for_events( bool is_ready ) final;
 
+/************************************************************************/
+// ServiceEventConsumer interface overrides
+/************************************************************************/
+    /**
+     * \brief   Called to process and dispatch a received communication message.
+     *
+     * \param   msgReceived     The received communication message.
+     **/
+    void on_message_received(const RemoteMessage& msgReceived) final;
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations and attributes
 //////////////////////////////////////////////////////////////////////////
@@ -232,6 +242,14 @@ private:
     [[nodiscard]]
     inline RouterClient & self() noexcept;
 
+    /**
+     * \brief   Call to send the executable message to process. It triggers event with command ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg
+     *
+     * \param   msg     The message to forward.
+     * \return  Returns true if succeeded to send the command.
+     **/
+    inline void send_executable_message(const RemoteMessage & msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -240,6 +258,13 @@ private:
      * \brief   The instance of service register consumer.
      **/
     RegistrationConsumer &     mRegisterConsumer;
+
+    /**
+     * \brief   Cached size of the last serialized response message in bytes.
+     *          Used to pre-reserve the RemoteMessage buffer before serialization,
+     *          avoiding repeated SharedBuffer reallocation on the hot path.
+     **/
+    uint32_t    mLastResponseMsgSize;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -256,6 +281,15 @@ private:
 inline RouterClient & RouterClient::self() noexcept
 {
     return (*this);
+}
+
+inline void RouterClient::send_executable_message(const RemoteMessage& msg, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/)
+{
+    ServiceClientEvent::send_event(
+        ServiceEventData(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msg),
+        mEventConsumer,
+        static_cast<DispatcherThread&>(self()),
+        eventPrio);
 }
 
 } // namespace areg

@@ -241,13 +241,8 @@ inline void ServerSendThread::accumulate_sent(uint64_t bytes, uint32_t msgs) noe
 {
     if (mSaveDataSend)
     {
-#if 1
         mBytesSend.fetch_add(bytes, std::memory_order_relaxed);
         mMsgsSend.fetch_add(msgs, std::memory_order_relaxed);
-#else
-        mBytesSend += bytes;
-        mMsgsSend += msgs;
-#endif
     }
 }
 

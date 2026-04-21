@@ -167,20 +167,25 @@ void MultitargetRouter::run_console_io()
         {
             areg::ext::DataRateHelper& helper = data_rate_helper();
             helper.set_verbose(true);
+            uint64_t sizeSent{ 0u }, sizeRecv{ 0u };
+            uint32_t msgSent{ 0u }, msgRecv{ 0u };
+
             while (rate_running.load(std::memory_order_relaxed))
             {
                 std::this_thread::sleep_for(std::chrono::seconds(1));
                 if (!rate_running.load(std::memory_order_relaxed))
                     break;
 
-                areg::ext::DataRateHelper::DataRate sent = helper.query_bytes_sent_with_literals();
-                areg::ext::DataRateHelper::DataRate recv = helper.query_bytes_received_with_literals();
-                const uint32_t msgs_sent = helper.query_msgs_sent();
-                const uint32_t msgs_recv = helper.query_msgs_received();
+                helper.query_data_sent(sizeSent, msgSent);
+                helper.query_data_received(sizeRecv, msgRecv);
+
+                areg::ext::DataRateHelper::DataRate sent = areg::ext::DataRateHelper::convert_data_rate_literals(sizeSent);
+                areg::ext::DataRateHelper::DataRate recv = areg::ext::DataRateHelper::convert_data_rate_literals(sizeRecv);
+
                 console.output_msg(areg::ext::COORD_SEND_RATE, areg::ext::FORMAT_SEND_DATA.data(), static_cast<double>(sent.first), sent.second.c_str());
                 console.output_msg(areg::ext::COORD_RECV_RATE, areg::ext::FORMAT_RECV_DATA.data(), static_cast<double>(recv.first), recv.second.c_str());
-                console.output_msg(areg::ext::COORD_SEND_MSGS, areg::ext::FORMAT_SEND_MSGS.data(), msgs_sent);
-                console.output_msg(areg::ext::COORD_RECV_MSGS, areg::ext::FORMAT_RECV_MSGS.data(), msgs_recv);
+                console.output_msg(areg::ext::COORD_SEND_MSGS, areg::ext::FORMAT_SEND_MSGS.data(), msgSent);
+                console.output_msg(areg::ext::COORD_RECV_MSGS, areg::ext::FORMAT_RECV_MSGS.data(), msgRecv);
                 console.refresh_screen();
             }
         });

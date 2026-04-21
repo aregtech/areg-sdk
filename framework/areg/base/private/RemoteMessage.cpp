@@ -138,10 +138,36 @@ void RemoteMessage::buffer_completion_fix() const
 
 uint8_t * RemoteMessage::init_message(const areg::MessageHeader & rmHeader, uint32_t reserve /*= 0*/ )
 {
+    uint32_t sizeUsed   = std::max(rmHeader.rbhBufHeader.biUsed, reserve != 0 ? reserve : 1u);
+
+    // Fast path: reuse existing buffer if we are the sole owner and capacity is sufficient.
+    // SharedBuffer is not thread-safe, so use_count()==1 guarantees no aliasing.
+    if ((mByteBuffer.use_count() == 1) && is_valid())
+    {
+        areg::RawMessage * msg = reinterpret_cast<areg::RawMessage *>(mByteBuffer.get());
+        if (msg->rbHeader.rbhBufHeader.biLength >= sizeUsed)
+        {
+            msg      = areg::construct_elem<areg::RawMessage>( msg
+                                                             , msg->rbHeader.rbhBufHeader.biLength
+                                                             , msg->rbHeader.rbhBufHeader.biOffset
+                                                             , areg::BufferType::Remote
+                                                             , rmHeader.rbhBufHeader.biUsed
+                                                             , rmHeader.rbhTarget
+                                                             , rmHeader.rbhChecksum
+                                                             , rmHeader.rbhSource
+                                                             , rmHeader.rbhMessageId
+                                                             , rmHeader.rbhResult
+                                                             , rmHeader.rbhSequenceNr);
+            mReadPos    = 0u;
+            mBaseOffset = 0u;
+            mViewSize   = 0u;
+            return buffer();
+        }
+    }
+
+    // Slow path: allocate a new buffer.
     invalidate();
 
-    reserve = std::max(reserve, 1u);
-    uint32_t sizeUsed   = std::max(rmHeader.rbhBufHeader.biUsed, reserve);
     uint32_t hdrSize    = header_size();
     uint32_t msgSize    = hdrSize + sizeUsed;
     uint32_t sizeBuffer = areg::align_size(msgSize, mBlockSize);
@@ -149,20 +175,17 @@ uint8_t * RemoteMessage::init_message(const areg::MessageHeader & rmHeader, uint
     uint8_t * result    = DEBUG_NEW uint8_t[sizeBuffer];
     if ( result != nullptr )
     {
-        areg::mem_zero(result, sizeof(areg::RawMessage));
-        areg::RawMessage * msg      = areg::construct_elems<areg::RawMessage>(result, 1);
-        areg::MessageHeader & dst   = msg->rbHeader;
-        dst.rbhBufHeader.biLength   = sizeData;
-        dst.rbhBufHeader.biOffset   = data_offset();
-        dst.rbhBufHeader.biBufType  = areg::BufferType::Remote;
-        dst.rbhBufHeader.biUsed     = rmHeader.rbhBufHeader.biUsed;
-        dst.rbhTarget               = rmHeader.rbhTarget;
-        dst.rbhChecksum             = rmHeader.rbhChecksum;
-        dst.rbhSource               = rmHeader.rbhSource;
-        dst.rbhMessageId            = rmHeader.rbhMessageId;
-        dst.rbhResult               = rmHeader.rbhResult;
-        dst.rbhSequenceNr           = rmHeader.rbhSequenceNr;
-        msg->rbData[0]              = static_cast<areg::BufferData>(0);
+        areg::RawMessage * msg      = areg::construct_elem<areg::RawMessage>( result
+                                                                             , sizeData
+                                                                             , data_offset()
+                                                                             , areg::BufferType::Remote
+                                                                             , rmHeader.rbhBufHeader.biUsed
+                                                                             , rmHeader.rbhTarget
+                                                                             , rmHeader.rbhChecksum
+                                                                             , rmHeader.rbhSource
+                                                                             , rmHeader.rbhMessageId
+                                                                             , rmHeader.rbhResult
+                                                                             , rmHeader.rbhSequenceNr);
 
         mByteBuffer = std::shared_ptr<areg::RawBuffer>(reinterpret_cast<areg::RawBuffer *>(msg), ByteBufferDeleter());
     }

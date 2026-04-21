@@ -28,7 +28,8 @@ ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientCo
 
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
-    , mBytesSend        ( 0 )
+    , mBytesSend        ( 0u )
+    , mMsgsSend         ( 0u )
     , mSaveDataSend     ( false )
 {
 }
@@ -48,35 +49,29 @@ void ClientSendThread::ready_for_events( bool is_ready )
     }
 }
 
-bool ClientSendThread::_do_send( const RemoteMessage & msg )
-{
-    ASSERT( msg.is_valid() );
-    const int32_t sentBytes = mConnection.send_message(msg);
-    if ( sentBytes > 0 )
-    {
-        if ( mSaveDataSend )
-            mBytesSend += static_cast<uint32_t>(sentBytes);
-
-        return true;
-    }
-
-    mRemoteService.failed_send_message( msg, mConnection.socket( ) );
-    return false;
-}
-
 void ClientSendThread::process_event( const SendMessageEventData & data )
 {
     if ( data.is_forward_message() )
     {
-        if ( !_do_send( data.remote_message() ) )
-            return;
-
-        // Drain additional queued messages without returning to the dispatcher overhead.
-        // Bounded by DRAIN_LIMIT so that a shutdown command is never delayed more than
-        // DRAIN_LIMIT sends.
-        constexpr int32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
+        // Include the triggering message as element [0] of the batch, then drain more from
+        // the queue. This removes the extra solo send syscall that previously preceded the
+        // drain loop, halving the number of send syscalls at full load.
+        //
+        // evtPtrs[0] is nullptr: the triggering event is owned by the dispatch chain —
+        // never call destroy() on it.  Drained events (indices 1..N) are owned by us.
+        constexpr uint32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
         const ExitEvent & exitEvent = ExitEvent::exit_event();
-        for ( int32_t count = 0; count < DRAIN_LIMIT; ++count )
+
+        const RemoteMessage*    msgPtrs[DRAIN_LIMIT + 1];
+        SendMessageEvent*       evtPtrs[DRAIN_LIMIT + 1];
+        uint32_t batchCount{ 0 };
+
+        msgPtrs[batchCount] = &data.remote_message();
+        evtPtrs[batchCount] = nullptr;
+        ++batchCount;
+
+        // --- Phase 1: drain additional queued messages ---
+        for ( uint32_t count = 0; count < DRAIN_LIMIT; ++count )
         {
             Event * evt = pick_event();
             if ( evt == nullptr )
@@ -85,6 +80,9 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
             // ExitEvent is a singleton — compare by pointer, never call destroy() on it.
             if ( static_cast<const Event *>( evt ) == static_cast<const Event *>( &exitEvent ) )
             {
+                for ( uint32_t i = 1; i < batchCount; ++i )
+                    evtPtrs[i]->destroy();
+
                 mConnection.close_socket();
                 trigger_exit();
                 return;
@@ -93,7 +91,6 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
             SendMessageEvent * sendEvt = AREG_RUNTIME_CAST( evt, SendMessageEvent );
             if ( sendEvt == nullptr )
             {
-                // Unexpected event type — destroy it and keep draining.
                 evt->destroy();
                 continue;
             }
@@ -102,15 +99,35 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
             if ( evtData.is_exit_message() )
             {
                 sendEvt->destroy();
+                for ( uint32_t i = 1; i < batchCount; ++i )
+                    evtPtrs[i]->destroy();
+
                 mConnection.close_socket();
                 trigger_exit();
                 return;
             }
 
-            const bool ok = _do_send(evtData.remote_message());
-            sendEvt->destroy();
-            if ( !ok )
-                return;
+            msgPtrs[batchCount] = &evtData.remote_message();
+            evtPtrs[batchCount] = sendEvt;
+            ++batchCount;
+        }
+
+        // --- Phase 2: send the collected batch ---
+        const int32_t sentBytes = batchCount == 1u 
+                                    ? mConnection.send_message(*msgPtrs[0])
+                                    : mConnection.send_messages_batch(msgPtrs, batchCount);
+
+        // delete drained events
+        for (uint32_t i = 1; i < batchCount; ++i)
+            evtPtrs[i]->destroy();
+
+        if (sentBytes > 0)
+        {
+            accumulate_sent(sentBytes, batchCount);
+        }
+        else
+        {
+            mRemoteService.failed_send_message(*msgPtrs[0], mConnection.socket());
         }
     }
     else if ( data.is_exit_message() )

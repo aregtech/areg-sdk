@@ -95,29 +95,9 @@ public:
     [[nodiscard]]
     bool is_verbose() const noexcept;
 
-    /**
-     * \brief   Return the size in bytes of data sent since last query. If verbose flag is false, returns zero.
-     **/
-    [[nodiscard]]
-    uint64_t query_bytes_sent() const noexcept;
+    void query_data_sent(uint64_t& sizeSent, uint32_t& msgSent) noexcept;
 
-    /**
-     * \brief   Return the size in bytes of data received since last query. If verbose flag is false, returns zero.
-     **/
-    [[nodiscard]]
-    uint64_t query_bytes_received() const noexcept;
-
-    /**
-     * \brief   Return the count of messages sent since last query. If verbose flag is false, returns zero.
-     **/
-    [[nodiscard]]
-    uint32_t query_msgs_sent() const noexcept;
-
-    /**
-     * \brief   Return the count of messages received since last query. If verbose flag is false, returns zero.
-     **/
-    [[nodiscard]]
-    uint32_t query_msgs_received() const noexcept;
+    void query_data_received(uint64_t& sizeRecv, uint32_t& msgRecv) noexcept;
 
     /**
      * \brief   Converts byte size to a formatted DataRate with appropriate units.
@@ -127,20 +107,6 @@ public:
      **/
     [[nodiscard]]
     static DataRate convert_data_rate_literals(uint64_t sizeBytes);
-
-    /**
-     * \brief   Return the size of data sent since last query with literal. If verbose flag is
-     *          false, returns zero.
-     **/
-    [[nodiscard]]
-    inline DataRate query_bytes_sent_with_literals() const;
-
-    /**
-     * \brief   Return the size of data received since last query with literal. If verbose flag is
-     *          false, returns zero.
-     **/
-    [[nodiscard]]
-    inline DataRate query_bytes_received_with_literals() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
@@ -155,20 +121,6 @@ private:
     DataRateHelper() = delete;
     AREG_NOCOPY_NOMOVE(DataRateHelper);
 };
-
-//////////////////////////////////////////////////////////////////////////
-// DataRateHelper class inline methods.
-//////////////////////////////////////////////////////////////////////////
-
-inline DataRateHelper::DataRate DataRateHelper::query_bytes_sent_with_literals() const
-{
-    return DataRateHelper::convert_data_rate_literals(query_bytes_sent());
-}
-
-inline DataRateHelper::DataRate DataRateHelper::query_bytes_received_with_literals() const
-{
-    return DataRateHelper::convert_data_rate_literals(query_bytes_received());
-}
 
 } // namespace areg::ext
 

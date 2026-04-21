@@ -146,32 +146,21 @@ int32_t SocketConnectionBase::receive_message(RemoteMessage & message, const Soc
 {
     areg::MessageHeader msgHeader{};
     int32_t result = socket.receive(reinterpret_cast<uint8_t *>(&msgHeader), sizeof(areg::MessageHeader));
-    if ( result == sizeof(areg::MessageHeader) )
+    if (result != sizeof(areg::MessageHeader))
+        return 0;
+
+    uint8_t * buffer = message.init_message( msgHeader );
+    if ((msgHeader.rbhBufHeader.biUsed != 0) && (buffer != nullptr))
     {
-        uint8_t * buffer = message.init_message( msgHeader );
-        if ((msgHeader.rbhBufHeader.biUsed > 0) && (buffer != nullptr))
-        {
-            ASSERT(msgHeader.rbhBufHeader.biLength >= msgHeader.rbhBufHeader.biUsed);
+        ASSERT(msgHeader.rbhBufHeader.biLength >= msgHeader.rbhBufHeader.biUsed);
 
-            // receive aligned length of data.
-            const int32_t rest = socket.receive(buffer, static_cast<int32_t>(msgHeader.rbhBufHeader.biUsed));
-            result += rest > 0 ? rest : 0;
-        }
-
-        message.move_to_begin();
-        if ( !message.is_checksum_valid() )
-        {
-            result = 0;
-            message.invalidate();
-        }
+        // receive aligned length of data.
+        const int32_t rest = socket.receive(buffer, static_cast<int32_t>(msgHeader.rbhBufHeader.biUsed));
+        result = rest > 0 ? (result + rest) : 0;
     }
-    else if (result > 0)
-    {
-        result = 0;
-    }
-    
 
-    return result;
+    message.move_to_begin();
+    return (message.is_checksum_valid() ? result : 0);
 }
 
 } // namespace areg

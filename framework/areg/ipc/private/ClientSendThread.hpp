@@ -57,29 +57,44 @@ public:
     ClientSendThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix );
     virtual ~ClientSendThread() = default;
 
-/************************************************************************/
-// Actions and attributes.
-/************************************************************************/
+    /************************************************************************/
+    // Actions and attributes.
+    /************************************************************************/
 public:
     /**
-     * \brief   Returns accumulated sent data size and resets counter atomically. Useful for
-     *          displaying data rate.
+     * \brief   Returns accumulative value of sent data size and resets the existing value to zero.
+     *          The operations are atomic. The value can be used to display data rate, for example.
      **/
     [[nodiscard]]
     inline uint64_t extract_data_send() const noexcept;
 
     /**
-     * \brief   Enables or disables sent data calculation and resets existing calculated data.
+     * \brief   Returns accumulative count of sent messages and resets the existing value to zero.
+     *          The operations are atomic.
+     **/
+    [[nodiscard]]
+    inline uint32_t extract_msgs_sent() const noexcept;
+
+    /**
+     * \brief   Call to enable or disable the received data calculation. It also resets the existing
+     *          calculated data.
      *
-     * \param   enable      Flag indicating whether data calculation should be enabled.
+     * \param   enable      Flag, indicating whether data calculation is enabled or not.
      **/
     inline void set_data_rate_enabled(bool enable) noexcept;
 
-    /**
-     * \brief   Returns whether data calculation is enabled.
-     **/
     [[nodiscard]]
     inline bool is_data_rate_enabled() const noexcept;
+
+    /**
+     * \brief   Accumulates bytes and message counts from a per-client send thread into the
+     *          global counters queried by DataRateHelper. Called by PoolSendThread when
+     *          mSaveDataSend is enabled. Thread-safe: uses atomic add.
+     *
+     * \param   bytes   Number of bytes sent.
+     * \param   msgs    Number of messages sent.
+     **/
+    inline void accumulate_sent(uint64_t bytes, uint32_t msgs) noexcept;
 
 protected:
 /************************************************************************/
@@ -117,14 +132,6 @@ private:
      **/
     void process_event( const SendMessageEventData & data ) final;
 
-    /**
-     * \brief   Sends a single remote message and updates byte counter.
-     *          Returns true on success, false if the socket reported an error.
-     *
-     * \param   msg     Remote message to send.
-     **/
-    bool _do_send( const RemoteMessage & msg );
-
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
@@ -132,19 +139,21 @@ private:
     /**
      * \brief   The instance of remote service handler to dispatch messages.
      **/
-    RemoteMessageHandler&     mRemoteService;
+    RemoteMessageHandler&           mRemoteService;
     /**
      * \brief   The instance of connection to send messages from remote routing service.
      **/
-    ClientConnection &          mConnection;
-
+    ClientConnection &              mConnection;
     /**
      * \brief   Accumulative value of sent data size.
      **/
     mutable std::atomic_uint64_t    mBytesSend;
-
     /**
-     * \brief   Flag, indicating whether data calculation is enabled or disabled. By default, it is disabled.
+     * \brief   Accumulative count of sent messages.
+     **/
+    mutable std::atomic_uint32_t    mMsgsSend;
+    /**
+     * \brief   Flag, indicating whether should calculate send data size or not. By default it does not compute.
      **/
     bool                            mSaveDataSend;
 
@@ -156,16 +165,26 @@ private:
     AREG_NOCOPY_NOMOVE( ClientSendThread );
 };
 
+//////////////////////////////////////////////////////////////////////////
+// ClientSendThread class inline methods
+//////////////////////////////////////////////////////////////////////////
+
 inline uint64_t ClientSendThread::extract_data_send() const noexcept
 {
-    return static_cast<uint64_t>(mBytesSend.exchange( 0 ));
+    return mBytesSend.exchange(0u, std::memory_order_relaxed);
+}
+
+inline uint32_t ClientSendThread::extract_msgs_sent() const noexcept
+{
+    return mMsgsSend.exchange(0u, std::memory_order_relaxed);
 }
 
 inline void ClientSendThread::set_data_rate_enabled(bool enable) noexcept
 {
     if (mSaveDataSend != enable)
     {
-        mBytesSend.store(0u);
+        mBytesSend.store(0u, std::memory_order_relaxed);
+        mMsgsSend.store(0u, std::memory_order_relaxed);
         mSaveDataSend = enable;
     }
 }
@@ -173,6 +192,15 @@ inline void ClientSendThread::set_data_rate_enabled(bool enable) noexcept
 inline bool ClientSendThread::is_data_rate_enabled() const noexcept
 {
     return mSaveDataSend;
+}
+
+inline void ClientSendThread::accumulate_sent(uint64_t bytes, uint32_t msgs) noexcept
+{
+    if (mSaveDataSend)
+    {
+        mBytesSend.fetch_add(bytes, std::memory_order_relaxed);
+        mMsgsSend.fetch_add(msgs, std::memory_order_relaxed);
+    }
 }
 
 } // namespace areg

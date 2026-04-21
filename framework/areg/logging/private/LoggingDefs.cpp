@@ -40,23 +40,16 @@ namespace {
     inline const areg::RawMessage& _get_empty_message() noexcept
     {
         static constexpr areg::RawMessage _messageUpdateScpes
-        {
-            {
-                {   /*rbhBufHeader*/
-                      sizeof(uint8_t)                     // biLength
-                    , sizeof(areg::MessageHeader)    // biOffset
-                    , areg::BufferType::Remote       // biBufType
-                    , 0                                         // biUsed
-                }
-                , areg::COOKIE_LOGGER                      // rbhTarget
-                , areg::INVALID_VALUE                       // rbhChecksum
-                , areg::INVALID_VALUE                       // rbhSource
-                , static_cast<uint32_t>(areg::FuncIdRange::EmptyFunctionId)   // rbhMessageId
-                , areg::MESSAGE_SUCCESS                     // rbhResult
-                , areg::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
-            }
-            , { static_cast<char>(0) }
-        };
+            ( sizeof(uint8_t)                                                           // biLength
+            , sizeof(areg::MessageHeader)                                               // biOffset
+            , areg::BufferType::Remote                                                  // biBufType
+            , 0u                                                                        // biUsed
+            , areg::COOKIE_LOGGER                                                       // rbhTarget
+            , areg::INVALID_VALUE                                                       // rbhChecksum
+            , static_cast<ITEM_ID>(areg::INVALID_VALUE)                                 // rbhSource
+            , static_cast<uint32_t>(areg::FuncIdRange::EmptyFunctionId)                 // rbhMessageId
+            , areg::MESSAGE_SUCCESS                                                     // rbhResult
+            , areg::SEQUENCE_NUMBER_NOTIFY);                                            // rbhSequenceNr
 
         return _messageUpdateScpes;
     }
@@ -70,23 +63,16 @@ namespace {
     inline const areg::RawMessage & _get_message() noexcept
     {
         static constexpr areg::RawMessage _messageServiceLog
-        {
-            {
-                {   /*rbhBufHeader*/
-                      sizeof(uint8_t)                     // biLength
-                    , sizeof(areg::MessageHeader)    // biOffset
-                    , areg::BufferType::Remote       // biBufType
-                    , 0                                         // biUsed
-                }
-                , areg::COOKIE_LOGGER                      // rbhTarget
-                , areg::INVALID_VALUE                       // rbhChecksum
-                , areg::INVALID_VALUE                       // rbhSource
-                , static_cast<uint32_t>(areg::FuncIdRange::ServiceLogMessage)   // rbhMessageId
-                , areg::MESSAGE_SUCCESS                     // rbhResult
-                , areg::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
-            }
-            , { static_cast<char>(0) }
-        };
+            ( sizeof(uint8_t)                                                           // biLength
+            , sizeof(areg::MessageHeader)                                               // biOffset
+            , areg::BufferType::Remote                                                  // biBufType
+            , 0u                                                                        // biUsed
+            , areg::COOKIE_LOGGER                                                       // rbhTarget
+            , areg::INVALID_VALUE                                                       // rbhChecksum
+            , static_cast<ITEM_ID>(areg::INVALID_VALUE)                                 // rbhSource
+            , static_cast<uint32_t>(areg::FuncIdRange::ServiceLogMessage)               // rbhMessageId
+            , areg::MESSAGE_SUCCESS                                                     // rbhResult
+            , areg::SEQUENCE_NUMBER_NOTIFY);                                            // rbhSequenceNr
 
         return _messageServiceLog;
     }

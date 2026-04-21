@@ -183,7 +183,7 @@ public:
     friend inline String operator + (const char* lhs, const String& rhs);
     friend inline String operator + (const char lhs, const String& rhs);
     friend inline String operator + (const String & lhs, const wchar_t * rhs);
-    friend inline  String operator + (const wchar_t * lhs, const String & rhs);
+    friend inline String operator + (const wchar_t * lhs, const String & rhs);
 
 /************************************************************************/
 // Friend global operators to stream String

@@ -28,7 +28,8 @@ ClientReceiveThread::ClientReceiveThread(RemoteMessageHandler& remoteService, Cl
     : DispatcherThread  (namePrefix + areg::CLIENT_RECEIVE_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_SIZE_MAXIMUM)
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
-    , mBytesReceive     ( 0 )
+    , mBytesReceive     ( 0u )
+    , mMsgsReceive      ( 0u )
     , mSaveDataReceive  ( false )
 {
 }
@@ -52,14 +53,14 @@ bool ClientReceiveThread::run_dispatcher()
     // that, at high message rates, becomes the dominant bottleneck.  Checking
     // every DRAIN_LIMIT messages instead of every message reduces that overhead
     // by ~DRAIN_LIMIT× while preserving correct exit/event detection.
-    constexpr int32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
-    int32_t drainCount{ 0 };
+    constexpr uint32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
+    uint32_t drainCount{ 0u };
 
     do
     {
         // Only run the full exit / internal-event check at the start of each
         // batch.  Within a batch, skip straight to receive_message().
-        if (drainCount == 0)
+        if (drainCount == 0u)
         {
             whichEvent = multiLock.lock(areg::DO_NOT_WAIT, false);
         }
@@ -77,20 +78,14 @@ bool ClientReceiveThread::run_dispatcher()
                 // msgReceived.invalidate();
                 mRemoteService.failed_receive_message( mConnection.socket() );
                 whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
-                drainCount = 0;
+                drainCount = 0u;
             }
             else
             {
-                if (mSaveDataReceive)
-                {
-                    mBytesReceive += static_cast<uint32_t>(sizeReceive);
-                }
-
+                accumulate_received(static_cast<uint64_t>(sizeReceive), 1);
                 mRemoteService.process_received_message( msgReceived, mConnection.socket( ) );
                 drainCount = (drainCount + 1) % DRAIN_LIMIT;
             }
-
-            // msgReceived.invalidate();
         }
         else
         {

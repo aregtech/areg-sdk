@@ -153,6 +153,7 @@ bool ServerReceiveThread::run_dispatcher()
         constexpr int32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
 
         RemoteMessage msgReceived;
+        areg::SocketAddress addrDrain;
         uint32_t retryCount = 0;
         do
         {
@@ -186,23 +187,27 @@ bool ServerReceiveThread::run_dispatcher()
                 {
                     retryCount = 0;
                     _process_connection_event(hSocket, addrAccepted, msgReceived);
-                    msgReceived.invalidate();
+                    // msgReceived.invalidate();
 
                     // Drain additional ready sockets without re-entering the blocking wait().
                     // Under burst load, multiple clients may be readable simultaneously.
                     // One non-blocking poll per extra socket avoids a full epoll/kqueue/WSAPoll
                     // syscall roundtrip per message, significantly improving throughput.
+                    // addrDrain is reset by server_accept() at the top of every call — safe to reuse.
+#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
                     int32_t drainCount{ 0 };
+#endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
                     for (int32_t drain = 0; drain < DRAIN_LIMIT; ++drain)
                     {
-                        areg::SocketAddress addrDrain;
                         const SOCKETHANDLE hDrain = mConnection.wait_connection_nowait(addrDrain);
                         if ( (hDrain == areg::InvalidSocketHandle) || (hDrain == areg::FailedSocketHandle) )
                         {
                             break;
                         }
 
+#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
                         ++drainCount;
+#endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
                         _process_connection_event(hDrain, addrDrain, msgReceived);
                         // msgReceived.invalidate();
                     }

@@ -18,6 +18,7 @@
 #include "areg/component/Event.hpp"
 #include "areg/component/EventConsumer.hpp"
 #include "areg/component/ExitEvent.hpp"
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -211,8 +212,8 @@ bool EventDispatcherBase::run_dispatcher()
             continue;
         }
 
-        // Tight drain loop: process all available events without re-entering
-        // the kernel wait between consecutive events.
+        // Tight drain loop: process all available events before returning to the
+        // kernel wait. pop_event() manages mEventQueue signal state via signal_event().
         for (;;)
         {
             Event* eventElem = pick_event();
@@ -225,38 +226,9 @@ bool EventDispatcherBase::run_dispatcher()
 
             if (eventElem == nullptr)
             {
-                // Queue appears empty. Reset the manual-reset event so we
-                // sleep on the next multiLock.lock() iteration.
-                mEventQueue.reset();
-
-                // Double-check: a producer may have pushed between our last
-                // pop and the reset above. Re-try once.
-                eventElem = pick_event();
-
-                if ( static_cast<const Event*>(eventElem) == static_cast<const Event*>(&exitEvent) )
-                {
-                    whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
-                    break;
-                }
-
-                if (eventElem != nullptr)
-                {
-                    // New event appeared after reset -- re-set the event
-                    // and fall through to process it.
-                    mEventQueue.set_signaled();
-                }
-                else
-                {
-                    // Truly empty (or an in-flight Vyukov node will signal
-                    // when the push completes). If exit was signaled, quit.
-                    if (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit))
-                    {
-                        break;
-                    }
-
-                    // Go back to the outer loop and sleep.
-                    break;
-                }
+                // pop_event() already called signal_event() to reset mEventQueue.
+                // Break out and block on multiLock.lock() until the next push.
+                break;
             }
 
             // Process the event.

@@ -58,11 +58,11 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
             if ( stub != nullptr )
             {
                 stream.move_to_begin();
+                Channel chTarget(stub->address().channel());
+                Channel chSource(comChannel.source(), chTarget.source(), stream.source());
                 RemoteRequestEvent * eventRequest = stub->create_remote_request(stream);
                 if ( eventRequest != nullptr )
                 {
-                    Channel chTarget( stub->address().channel() );
-                    Channel chSource( comChannel.source(), chTarget.source(), stream.source() );
                     eventRequest->set_target_channel(chTarget);
                     eventRequest->set_source_channel(chSource);
 
@@ -93,11 +93,11 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
             if ( stub != nullptr )
             {
                 stream.move_to_begin();
+                Channel chTarget(stub->address().channel());
+                Channel chSource(comChannel.source(), chTarget.source(), stream.source());
                 RemoteNotifyRequestEvent * eventNotify = stub->create_notify_request(stream);
                 if ( eventNotify != nullptr )
                 {
-                    Channel chTarget( stub->address().channel() );
-                    Channel chSource( comChannel.source(), chTarget.source(), stream.source() );
                     eventNotify->set_target_channel(chTarget);
                     eventNotify->set_source_channel(chSource);
 
@@ -129,10 +129,10 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
             {
                 // Heavy deserialization runs outside the global proxy lock.
                 stream.move_to_begin();
+                Channel chTarget(proxy->proxy_address().channel());
                 RemoteResponseEvent * eventResponse = proxy->create_remote_response(stream);
                 if ( eventResponse != nullptr )
                 {
-                    Channel chTarget( proxy->proxy_address().channel() );
                     eventResponse->set_target_channel(chTarget);
 
                     // Pre-resolve the target thread to avoid per-message Thread::find_by_name() lock in deliver_event().

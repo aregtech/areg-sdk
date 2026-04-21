@@ -102,15 +102,18 @@ inline void SystemServiceConsole::_output_data_rate()
     Console& console = Console::instance();
     if ( (mDataRateHelper != nullptr) && mDataRateHelper->is_verbose())
     {
-        DataRateHelper::DataRate rateSend{ mDataRateHelper->query_bytes_sent_with_literals() };
-        DataRateHelper::DataRate rateRecv{ mDataRateHelper->query_bytes_received_with_literals() };
-        const uint32_t msgsSent = mDataRateHelper->query_msgs_sent();
-        const uint32_t msgsRecv = mDataRateHelper->query_msgs_received();
+        uint64_t sizeSent{ 0u }, sizeRecv{ 0u };
+        uint32_t msgSent{ 0u }, msgRecv{ 0u };
+        mDataRateHelper->query_data_sent(sizeSent, msgSent);
+        mDataRateHelper->query_data_received(sizeRecv, msgRecv);
+
+        DataRateHelper::DataRate rateSend{ DataRateHelper::convert_data_rate_literals(sizeSent) };
+        DataRateHelper::DataRate rateRecv{ DataRateHelper::convert_data_rate_literals(sizeRecv) };
 
         console.output_msg( areg::ext::COORD_SEND_RATE, areg::ext::FORMAT_SEND_DATA.data( ), static_cast<double>(rateSend.first), rateSend.second.c_str( ) );
         console.output_msg( areg::ext::COORD_RECV_RATE, areg::ext::FORMAT_RECV_DATA.data( ), static_cast<double>(rateRecv.first), rateRecv.second.c_str( ) );
-        console.output_msg( areg::ext::COORD_SEND_MSGS, areg::ext::FORMAT_SEND_MSGS.data( ), msgsSent );
-        console.output_msg( areg::ext::COORD_RECV_MSGS, areg::ext::FORMAT_RECV_MSGS.data( ), msgsRecv );
+        console.output_msg( areg::ext::COORD_SEND_MSGS, areg::ext::FORMAT_SEND_MSGS.data( ), msgSent );
+        console.output_msg( areg::ext::COORD_RECV_MSGS, areg::ext::FORMAT_RECV_MSGS.data( ), msgRecv );
         // console.refresh_screen( );
     }
 }

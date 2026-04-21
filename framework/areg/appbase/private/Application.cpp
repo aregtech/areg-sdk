@@ -320,9 +320,19 @@ bool Application::is_servicing_ready()
     return (theApp.mAppState == areg::AppState::Ready);
 }
 
-void Application::query_communication_data( uint64_t & sizeSend, uint64_t & sizeReceive )
+void Application::query_data_sent(uint64_t& sizeSent, uint32_t& msgSent) noexcept
 {
-    ServiceManager::query_communication_data( sizeSend, sizeReceive );
+    ServiceManager::query_data_sent(sizeSent, msgSent);
+}
+
+void Application::query_data_received(uint64_t& sizeRecv, uint32_t& msgRecv) noexcept
+{
+    ServiceManager::query_data_received(sizeRecv, msgRecv);
+}
+
+void Application::enable_data_rate(bool enable) noexcept
+{
+    ServiceManager::enable_data_rate(enable);
 }
 
 const String & Application::application_name()

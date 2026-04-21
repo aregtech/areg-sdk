@@ -208,23 +208,9 @@ public:
      **/
     inline DataRateHelper& data_rate_helper() const noexcept;
 
-    /**
-     * \brief   Each time querying the bytes sent via network connection returns the value after
-     *          last query.
-     **/
-    [[nodiscard]]
-    inline uint64_t query_bytes_sent() const noexcept;
+    inline void query_data_sent(uint64_t& sizeSent, uint32_t& msgSent) noexcept;
 
-    /**
-     * \brief   Each time querying the bytes received via network connection returns the value after
-     *          last query.
-     **/
-    [[nodiscard]]
-    inline uint64_t query_bytes_received() const noexcept;
-
-    inline uint32_t query_msg_sent() const noexcept;
-
-    inline uint32_t query_msg_received() const noexcept;
+    inline void query_data_received(uint64_t& sizeRecv, uint32_t& msgRecv) noexcept;
 
     /**
      * \brief   Enable or disable the data rate calculation. Also propagates the flag to
@@ -659,7 +645,6 @@ protected:
     ReconnectTimerConsumer          mTimerConsumer;     //!< The timer consumer object.
     areg::MapInstances              mInstanceMap;       //!< The map of connected instance.
     SyncEvent                       mEventSendStop;     //!< The event set when cannot send and receive data anymore.
-//    mutable NolockSyncObject        mLock;              //!< The synchronization object to be accessed from different threads.
     mutable ResourceLock            mLock;              //!< The synchronization object to be accessed from different threads.
 
     // One-time-set dispatch functions — eliminate hot-path branching between shared and pool modes.
@@ -762,46 +747,16 @@ inline DataRateHelper& ServiceCommunicationBase::data_rate_helper() const noexce
     return const_cast<DataRateHelper &>(mDataRateHelper);
 }
 
-inline uint64_t ServiceCommunicationBase::query_bytes_sent() const noexcept
+inline void ServiceCommunicationBase::query_data_sent(uint64_t& sizeSent, uint32_t& msgSent) noexcept
 {
-    return mThreadSend.extract_data_send();
+    sizeSent = mThreadSend.extract_data_send();
+    msgSent  = mThreadSend.extract_msgs_sent();
 }
 
-inline uint64_t ServiceCommunicationBase::query_bytes_received() const noexcept
+inline void ServiceCommunicationBase::query_data_received(uint64_t& sizeRecv, uint32_t& msgRecv) noexcept
 {
-    return mThreadReceive.extract_data_receive();
-}
-
-inline uint32_t ServiceCommunicationBase::query_msg_sent() const noexcept
-{
-#if 0
-    uint32_t result{ mThreadSend.extract_msgs_sent()};
-    for (const auto& elem : mClientPairs)
-    {
-        if (!elem)
-            continue;
-    }
-
-    return result;
-#else
-    return mThreadSend.extract_msgs_sent();
-#endif
-}
-
-inline uint32_t ServiceCommunicationBase::query_msg_received() const noexcept
-{
-#if 0
-    uint32_t result{ mThreadReceive.extract_msgs_received() };
-    for (const auto& elem : mClientPairs)
-    {
-        if (!elem)
-            continue;
-    }
-
-    return result;
-#else
-    return mThreadReceive.extract_msgs_received();
-#endif
+    sizeRecv = mThreadReceive.extract_data_received();
+    msgRecv  = mThreadReceive.extract_msgs_received();
 }
 
 inline bool ServiceCommunicationBase::is_data_rate_enabled() const noexcept

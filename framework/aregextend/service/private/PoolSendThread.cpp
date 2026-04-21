@@ -89,7 +89,11 @@ bool PoolSendThread::_do_send( const areg::RemoteMessage & msg )
                     , sentBytes);
 
     areg::SocketAccepted clientSocket{ mOwner.client_by_cookie(target) };
-    mRemoteService.failed_send_message(msg, clientSocket);
+    if (!mConnection.is_interrupted())
+    {
+        mRemoteService.failed_send_message(msg, clientSocket);
+    }
+
     return false;
 }
 
@@ -219,8 +223,11 @@ void PoolSendThread::process_event( const SendMessageEventData & data )
             else
             {
                 DEBUG_LOG_WARN("Failed to send message to target [ %u ]", static_cast<uint32_t>(batch[i].msg->target()));
-                areg::SocketAccepted client{ mOwner.client_by_cookie(batch[i].msg->target()) };
-                mRemoteService.failed_send_message(*batch[i].msg, client);
+                if (!mConnection.is_interrupted())
+                {
+                    areg::SocketAccepted client{ mOwner.client_by_cookie(batch[i].msg->target()) };
+                    mRemoteService.failed_send_message(*batch[i].msg, client);
+                }
             }
         }
         else
@@ -240,8 +247,11 @@ void PoolSendThread::process_event( const SendMessageEventData & data )
                 DEBUG_LOG_WARN("Failed batch-send of %d messages to target [ %u ]"
                     , groupSize
                     , static_cast<uint32_t>(batch[i].msg->target()));
-                areg::SocketAccepted client{ mOwner.client_by_cookie(batch[i].msg->target()) };
-                mRemoteService.failed_send_message(*batch[i].msg, client);
+                if (!mConnection.is_interrupted())
+                {
+                    areg::SocketAccepted client{ mOwner.client_by_cookie(batch[i].msg->target()) };
+                    mRemoteService.failed_send_message(*batch[i].msg, client);
+                }
             }
         }
 

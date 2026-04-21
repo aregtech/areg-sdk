@@ -64,10 +64,11 @@ ServerConnectionBase::ServerConnectionBase(const areg::SocketAddress & serverAdd
 
 bool ServerConnectionBase::create_socket(const String & hostName, uint16_t portNr)
 {
-    Lock lock(mLock);
+    std::unique_lock<std::shared_mutex> lock(mLock);
     if (mServerSocket.create(hostName, portNr))
     {
         mMultiplexer.register_socket(mServerSocket.handle(), true);
+        mIsInterrupted.store(false, std::memory_order_release);
         return true;
     }
 
@@ -76,10 +77,11 @@ bool ServerConnectionBase::create_socket(const String & hostName, uint16_t portN
 
 bool ServerConnectionBase::create_socket()
 {
-    Lock lock(mLock);
+    std::unique_lock<std::shared_mutex> lock(mLock);
     if (mServerSocket.create())
     {
         mMultiplexer.register_socket(mServerSocket.handle(), true);
+        mIsInterrupted.store(false, std::memory_order_release);
         return true;
     }
 
@@ -88,7 +90,7 @@ bool ServerConnectionBase::create_socket()
 
 void ServerConnectionBase::close_socket()
 {
-    Lock lock(mLock);
+    std::unique_lock<std::shared_mutex> lock(mLock);
 
     // Reset the multiplexer first so that epoll_wait() / select() in the
     // receive thread unblocks immediately (signals the internal wakeup fd).
@@ -113,13 +115,17 @@ void ServerConnectionBase::close_socket()
 
 void ServerConnectionBase::interrupt_connections() noexcept
 {
-    Lock lock(mLock);
-    for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position();
-          mAcceptedConnections.is_valid_position(pos);
-          pos = mAcceptedConnections.next_position(pos) )
     {
-        areg::socket_interrupt(mAcceptedConnections.value_at(pos).handle());
+        std::shared_lock<std::shared_mutex> lock(mLock);
+        for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position();
+              mAcceptedConnections.is_valid_position(pos);
+              pos = mAcceptedConnections.next_position(pos) )
+        {
+            areg::socket_interrupt(mAcceptedConnections.value_at(pos).handle());
+        }
     }
+
+    mIsInterrupted.store(true, std::memory_order_release);
 }
 
 bool ServerConnectionBase::server_listen(int32_t maxQueueSize /*= areg::MAXIMUM_LISTEN_QUEUE_SIZE */)
@@ -140,7 +146,7 @@ SOCKETHANDLE ServerConnectionBase::wait_connection_nowait(areg::SocketAddress & 
 bool ServerConnectionBase::accept_connection(SocketAccepted & clientConnection)
 {
     LOG_SCOPE(areg_ipc_ServerConnectionBase, accept_connection);
-    Lock lock(mLock);
+    std::unique_lock<std::shared_mutex> lock(mLock);
     bool result = false;
 
     if ( mServerSocket.is_valid() && clientConnection.is_valid( ) )
@@ -205,7 +211,7 @@ bool ServerConnectionBase::accept_connection(SocketAccepted & clientConnection)
 
 void ServerConnectionBase::close_connection(SocketAccepted & clientConnection)
 {
-    Lock lock( mLock );
+    std::unique_lock<std::shared_mutex> lock( mLock );
 
     SOCKETHANDLE hSocket{ clientConnection.handle() };
     MapSocketToCookie::MAPPOS pos{ mSocketToCookie.find(hSocket) };
@@ -222,7 +228,7 @@ void ServerConnectionBase::close_connection(SocketAccepted & clientConnection)
 void ServerConnectionBase::close_connection( const ITEM_ID & cookie )
 {
     LOG_SCOPE(areg_ipc_ServerConnectionBase, close_connection_cookie);
-    Lock lock(mLock);
+    std::unique_lock<std::shared_mutex> lock(mLock);
 
     MapCookieToSocket::MAPPOS posCookie = mCookieToSocket.find( cookie );
     if (mCookieToSocket.is_valid_position(posCookie))

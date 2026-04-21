@@ -369,7 +369,8 @@ inline uint8_t* SimpleBitmap::line(uint32_t line) const
 inline uint8_t* SimpleBitmap::pixels(uint32_t xCoord, uint32_t yCoord) const
 {
     uint8_t* result = nullptr;
-    if ((mBitmap != nullptr) && (xCoord != 0) && (yCoord != 0))
+    // if ((mBitmap != nullptr) && (xCoord != 0) && (yCoord != 0))
+    if (mBitmap != nullptr)
     {
         uint32_t offset = yCoord * _rowSize(static_cast<uint32_t>(mBitmap->bmpInfo.bmiWidth));
         uint32_t col    = xCoord * (mBitmap->bmpInfo.bmiBitCount / 8);

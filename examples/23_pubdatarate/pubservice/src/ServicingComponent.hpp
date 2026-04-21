@@ -285,8 +285,13 @@ private:
 private:
     //!< Bitmap object to generate data.
     SimpleBitmap            mBitmap;
-    //!< List of generated image blocks.
-    std::vector<ImageBlock> mBlockList;
+    /**
+     * Pre-built flat send queue of size `blocks × channels`. Entry at index `i * channels + ch`
+     * holds a full copy of image block `i` with `channelId = ch` pre-stamped. Only
+     * `frameSeqId` is updated per frame in the hot loop (via `set_frame_id`), eliminating
+     * the inner channel loop and all redundant block fetches.
+     **/
+    std::vector<ImageBlock> mSendList;
     //! The timer to trigger to output data
     areg::Timer             mTimer;
     //! The thread to input from console.

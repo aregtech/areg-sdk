@@ -151,12 +151,6 @@ void MpscEventQueue::push_event(Event& eventElem, Event** removedEvent)
 
     mFastCount.fetch_add(1u, std::memory_order_relaxed);
     _mpsc_push(node);
-
-    // Always signal the consumer.  mEventQueue is manual-reset, so calling
-    // set_signaled() when it is already set is a cheap no-op.  Trying to
-    // skip the signal (e.g. "signal only on empty->non-empty") creates
-    // subtle races with the Vyukov in-flight window where a node is pushed
-    // but prev->next is not yet visible to the consumer.
     mListener.signal_event(1u);
 }
 
@@ -174,7 +168,11 @@ Event* MpscEventQueue::pop_event() noexcept
         {
             Event* result = mPrioQueue.front();
             mPrioQueue.pop_front();
+            uint32_t prio_remaining = static_cast<uint32_t>(mPrioQueue.size());
             mPrioLock.unlock();
+
+            uint32_t fast_count = mFastCount.load(std::memory_order_acquire);
+            mListener.signal_event(prio_remaining + fast_count);
             return result;
         }
 
@@ -183,14 +181,51 @@ Event* MpscEventQueue::pop_event() noexcept
 
     // Fast lane.
     Node* node = _mpsc_pop();
+    if (node != nullptr)
+    {
+        Event* result = node->event;
+        _free_node(node);
+        mFastCount.fetch_sub(1u, std::memory_order_relaxed);
+        // mEventQueue is already armed from the push; no re-signal needed here.
+        // The signal resets on the next call when _mpsc_pop() returns nullptr.
+        return result;
+    }
+
+    // Fast lane appears empty (or a producer is mid-push — Vyukov in-flight edge case).
+    // Check priority lane count before signaling.
+    uint32_t prio_count = 0u;
+    {
+        mPrioLock.lock();
+        prio_count = static_cast<uint32_t>(mPrioQueue.size());
+        mPrioLock.unlock();
+    }
+
+    // Reset the signal (or keep it set if priority items remain).
+    // This must happen BEFORE the double-check so that a concurrent producer's
+    // signal_event(1) always fires AFTER our reset, never silently before it.
+    mListener.signal_event(prio_count);
+
+    // Double-check: a producer may have completed a push between our _mpsc_pop()
+    // above and the signal_event() call. Re-try once to catch that case.
+    node = _mpsc_pop();
     if (node == nullptr)
     {
+        // Truly empty (or still in-flight; the producer re-arms on push completion).
         return nullptr;
     }
 
+    // A producer completed between our null check and the reset — re-arm and return.
     Event* result = node->event;
     _free_node(node);
-    mFastCount.fetch_sub(1u, std::memory_order_relaxed);
+    const uint32_t old_fast = mFastCount.fetch_sub(1u, std::memory_order_relaxed);
+    const uint32_t fast_remaining = (old_fast > 0u) ? (old_fast - 1u) : 0u;
+    {
+        mPrioLock.lock();
+        prio_count = static_cast<uint32_t>(mPrioQueue.size());
+        mPrioLock.unlock();
+    }
+
+    mListener.signal_event(fast_remaining + prio_count);
     return result;
 }
 

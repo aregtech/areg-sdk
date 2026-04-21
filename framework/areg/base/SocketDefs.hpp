@@ -335,6 +335,8 @@ constexpr uint32_t      THREAD_BATCH_LIMIT      { THREAD_DRAIN_LIMIT };
 //!< 0 = unlimited: the queue grows without bound and never drops messages.
 //!< A non-zero cap protects against OOM under sustained TCP back-pressure
 //!< (e.g. WSL2 vCPU throttling) at the cost of silently dropping the newest messages.
+//!< 1024 provides ~30 ms of pipeline depth at 32K msg/s per send thread while
+//!< preventing unbounded RAM growth when the receiver is slower than the sender.
 constexpr uint32_t      SEND_THREAD_QUEUE_LIMIT { 0u };
 
 /**

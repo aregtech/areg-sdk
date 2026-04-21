@@ -12,11 +12,11 @@
  * \file        areg/component/private/MpscEventQueue.hpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Areg Platform, lock-free MPSC event queue.
+ * \brief       Areg Platform, lock-free MPSC (Multi-Producer, Single-Consumer) event queue.
  *
  * Replaces ExternalEventQueue's mutex+deque with a two-lane design:
  *
- *   Fast lane  - Dmitry Vyukov MPSC linked-list (lock-free).
+ *   Fast lane  - Dmitry Vyukov MPSC (Multi-Producer, Single-Consumer) linked-list (lock-free).
  *                Push: one atomic exchange on mTail  (any producer thread).
  *                Pop:  wait-free read of mHead->next (consumer thread only).
  *                Used for Normal-priority events (the overwhelming majority).
@@ -184,11 +184,6 @@ public:
 
     /**
      * \brief   Dequeues the next event. Priority lane is always drained first.
-     *
-     * Calls signal_event(0) only when both lanes are empty AND the returned
-     * event is not ExitPrio. The ExitEvent must not trigger a queue-empty
-     * reset because the dispatcher loop needs mEventQueue to remain set
-     * until it can compare the returned pointer and recognise the exit.
      *
      * \return  Next event pointer, or nullptr when both lanes are empty.
      **/

@@ -60,6 +60,7 @@ RouterClient::RouterClient(ConnectionConsumer& connectionConsumer, RegistrationC
     , RemoteEventConsumer   ( )
 
     , mRegisterConsumer     (registerConsumer)
+    , mLastResponseMsgSize  (areg::BLOCK_SIZE * 64u)
 {
 }
 
@@ -401,15 +402,10 @@ void RouterClient::process_received_message( RemoteMessage & msgReceived, Socket
     {
         if ( areg::is_executable_id(static_cast<uint32_t>(msgId)) )
         {
-            StreamableEvent * eventRemote = RemoteEventFactory::event_from_stream(msgReceived, mChannel);
-            if ( eventRemote != nullptr )
-            {
-                eventRemote->deliver_event();
-            }
-            else
-            {
-                failed_process_message(msgReceived);
-            }
+            // Off-load deserialization to the RouterClient dispatcher thread so that
+            // ClientReceiveThread is a pure I/O pump (recv → queue-post) and
+            // deserialization runs concurrently on a second core.
+            send_executable_message(msgReceived);
         }
         else
         {
@@ -420,6 +416,19 @@ void RouterClient::process_received_message( RemoteMessage & msgReceived, Socket
     }
 }
 
+void RouterClient::on_message_received(const RemoteMessage& msgReceived)
+{
+    ASSERT(areg::is_executable_id(static_cast<uint32_t>(msgReceived.message_id())));
+    StreamableEvent* eventRemote = RemoteEventFactory::event_from_stream(msgReceived, mChannel);
+    if (eventRemote != nullptr)
+    {
+        eventRemote->deliver_event();
+    }
+    else
+    {
+        failed_process_message(msgReceived);
+    }
+}
 
 void RouterClient::process_request_event( RemoteRequestEvent & reqEvent)
 {
@@ -436,7 +445,7 @@ void RouterClient::process_request_event( RemoteRequestEvent & reqEvent)
                       , data.source()
                       , data.target());
 
-            send_message(data);
+            send_message(std::move(data));
         }
         else
         {
@@ -464,7 +473,7 @@ void RouterClient::process_notify_request( RemoteNotifyRequestEvent & reqNotifyE
                       , data.source()
                       , data.target());
 
-            send_message(data);
+            send_message(std::move(data));
         }
         else
         {
@@ -484,16 +493,22 @@ void RouterClient::process_response_event(RemoteResponseEvent & respEvent)
 
     if ( respEvent.is_remote() )
     {
+#if 0
+        RemoteMessage data(mLastResponseMsgSize, areg::BLOCK_SIZE);
+#else
         RemoteMessage data;
+#endif
         if ( RemoteEventFactory::stream_from_event( data, respEvent, mChannel) )
         {
+            mLastResponseMsgSize = data.size_used();
+
             LOG_DBG("Forwarding [ %s ] message [ %u ] from source [ %llu ] to target [ %llu ]"
                       , respEvent.class_string()
                       , data.message_id()
                       , data.source()
                       , data.target());
 
-            send_message(data);
+            send_message(std::move(data));
         }
         else
         {
@@ -510,6 +525,70 @@ bool RouterClient::post_event(Event & eventElem)
 {
     if ( eventElem.is_remote() )
     {
+        // Hot-path optimization: serialize remote send events (response, request, notify)
+        // inline on the calling thread instead of routing through RouterClient's own
+        // dispatcher queue. This eliminates one full dispatcher wake/sleep kernel cycle
+        // per message — at high message rates each cycle costs ~1.5 µs on Windows, so
+        // the RouterClient hop alone accounts for ~120 ms/sec overhead at 80K msg/s.
+        //
+        // Thread safety:
+        //   is_connection_started(): reads socket cookie (64-bit value stable during
+        //   normal operation) — no lock required.
+        //   stream_from_event(): reads event + mChannel (read-only after handshake),
+        //   writes to a new per-call RemoteMessage. Fully re-entrant.
+        //   send_message(): posts to ClientSendThread's MPSC queue — lock-free and
+        //   thread-safe from any calling thread.
+        //   eventElem.destroy(): safe — the caller transfers ownership on post_event().
+        //
+        // If the connection drops between is_connection_started() and send_message(),
+        // ClientSendThread's send fails and failed_send_message() triggers reconnect as
+        // in the normal path. Fall through to the queue for non-forwarding event types
+        // and for events that arrive before the connection is fully established.
+        if ( is_connection_started() )
+        {
+            RemoteResponseEvent * respEvent = AREG_RUNTIME_CAST( &eventElem, RemoteResponseEvent );
+            if ( respEvent != nullptr )
+            {
+                if ( respEvent->is_remote() )
+                {
+                    RemoteMessage data;
+                    if ( RemoteEventFactory::stream_from_event( data, *respEvent, mChannel ) )
+                        send_message( std::move(data) );
+                }
+
+                eventElem.destroy();
+                return true;
+            }
+
+            RemoteRequestEvent * reqEvent = AREG_RUNTIME_CAST( &eventElem, RemoteRequestEvent );
+            if ( reqEvent != nullptr )
+            {
+                if ( reqEvent->is_remote() )
+                {
+                    RemoteMessage data;
+                    if ( RemoteEventFactory::stream_from_event( data, *reqEvent, mChannel ) )
+                        send_message( std::move(data) );
+                }
+
+                eventElem.destroy();
+                return true;
+            }
+
+            RemoteNotifyRequestEvent * notifyEvent = AREG_RUNTIME_CAST( &eventElem, RemoteNotifyRequestEvent );
+            if ( notifyEvent != nullptr )
+            {
+                if ( notifyEvent->is_remote() )
+                {
+                    RemoteMessage data;
+                    if ( RemoteEventFactory::stream_from_event( data, *notifyEvent, mChannel ) )
+                        send_message( std::move(data) );
+                }
+
+                eventElem.destroy();
+                return true;
+            }
+        }
+
         eventElem.set_event_consumer( static_cast<RemoteEventConsumer *>(this) );
     }
 

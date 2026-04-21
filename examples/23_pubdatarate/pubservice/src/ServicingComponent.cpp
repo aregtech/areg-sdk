@@ -56,7 +56,7 @@ ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg:
     , areg::ThreadConsumer  ( )
 
     , mBitmap           ( )
-    , mBlockList        ( )
+    , mSendList         ( )
     , mTimer            ( static_cast<areg::TimerConsumer &>(mTimerConsumer) , TIMER_NAME )
     , mInputThread      ( static_cast<areg::ThreadConsumer &>(self()), THREAD_WAITINPUT )
     , mImageThread      ( static_cast<areg::ThreadConsumer &>(self()), THREAD_GENERATE )
@@ -85,39 +85,40 @@ void ServicingComponent::startup_service_interface( areg::Component & holder )
 {
     LOG_SCOPE( examples_23_pubservice_ServicingComponent, startup_service_interface );
 
-    uint64_t sizeSend{ 0 }, sizeReceive{ 0 };
-    mQuitThread    = false;
+    mQuitThread = false;
     mOptionChanged = false;
     // Start with the service in stopped state; image thread waits on mPauseEvent.
     mPauseEvent.reset();
 
-    areg::Application::query_communication_data( sizeSend, sizeReceive );
+    uint64_t sizeSent{ 0u }, sizeRecv{ 0u };
+    uint32_t msgSent{ 0u }, msgRecv{ 0u };
+
+    areg::Application::enable_data_rate(true);
+    areg::Application::query_data_sent(sizeSent, msgSent);
+    areg::Application::query_data_received(sizeRecv, msgRecv);
     uint64_t sizeItem = mItemRate != 0 ? mDataRate / mItemRate : 0;
 
     areg::DataLiteral dataRate = areg::conv_data_size(mDataRate);
-    areg::DataLiteral sendRate = areg::conv_data_size( sizeSend );
-    areg::DataLiteral rcvRate  = areg::conv_data_size( sizeReceive );
     areg::DataLiteral itemRate = areg::conv_data_size( sizeItem );
+    areg::DataLiteral sendRate = areg::conv_data_size(sizeSent);
+    areg::DataLiteral rcvRate  = areg::conv_data_size(sizeRecv);
 
     // Compute theoretical (ideal) data rate for the initial display.
     uint64_t ns_per_block_0     = mOptions.nsPerBlock();
     uint64_t bytes_per_block_0  = mOptions.bytesPerBlock();
-    double   ideal_bps_0        = (ns_per_block_0 > 0)
-                                  ? (static_cast<double>(areg::DURATION_1_SEC) / static_cast<double>(ns_per_block_0))
-                                  : 0.0;
-    uint64_t ideal_bytes_sec_0  = static_cast<uint64_t>(ideal_bps_0 * static_cast<double>(bytes_per_block_0)
-                                                         * static_cast<double>(mOptions.mChannels));
+    double   ideal_bps_0        = (ns_per_block_0 > 0) ? (static_cast<double>(areg::DURATION_1_SEC) / static_cast<double>(ns_per_block_0)) : 0.0;
+    uint64_t ideal_bytes_sec_0  = static_cast<uint64_t>(ideal_bps_0 * static_cast<double>(bytes_per_block_0) * static_cast<double>(mOptions.mChannels));
     uint32_t total_blocks_sec_0 = static_cast<uint32_t>(ideal_bps_0 * static_cast<double>(mOptions.mChannels));
     areg::DataLiteral idealRate0 = areg::conv_data_size(ideal_bytes_sec_0);
 
     areg::ext::Console& console = areg::ext::Console::instance();
     console.output_txt(COORD_TITLE,     MSG_APP_TITLE);
     console.output_txt(COORD_SEP1,      MSG_SEPARATOR);
-    console.output_msg(COORD_COMM_RATE, MSG_COMM_RATE.data(),  sendRate.first, sendRate.second.data(), rcvRate.first, rcvRate.second.data());
-    console.output_msg(COORD_DATA_RATE, MSG_DATA_RATE.data(),  dataRate.first, dataRate.second.data());
-    console.output_msg(COORD_ITEM_RATE, MSG_ITEM_RATE.data(),  mItemRate, itemRate.first, itemRate.second.data());
-    console.output_msg(COORD_STATS,     MSG_STATS.data(),      mDidSleep, mIgnoreSleep);
-    console.output_msg(COORD_IDEAL_RATE,MSG_IDEAL_RATE.data(), idealRate0.first, idealRate0.second.data(), total_blocks_sec_0);
+    console.output_msg(COORD_COMM_RATE, MSG_COMM_RATE.data(), sendRate.first, sendRate.second.data(), rcvRate.first, rcvRate.second.data());
+    console.output_msg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data());
+    console.output_msg(COORD_ITEM_RATE, MSG_ITEM_RATE.data(), msgSent, itemRate.first, itemRate.second.data());
+    console.output_msg(COORD_STATS,     MSG_STATS.data(),     mDidSleep, mIgnoreSleep);
+    console.output_msg(COORD_IDEAL_RATE,MSG_IDEAL_RATE.data(),idealRate0.first, idealRate0.second.data(), total_blocks_sec_0);
     console.output_txt(COORD_SEP2,      MSG_SEP2);
     _printInfo();
 
@@ -126,6 +127,16 @@ void ServicingComponent::startup_service_interface( areg::Component & holder )
     mImageThread.start(areg::WAIT_INFINITE);
 
     console.enable_console_input(true);
+
+    // If command-line args were parsed (e.g. `-s -t=0 -l=1 -c=10`), fire the initial
+    // event now so the benchmark starts without waiting for user input.
+    if ((util::g_startup_options.mFlags != static_cast<uint32_t>(util::OptionFlag::CmdNothing)) &&
+        (util::g_startup_options.hasError() == false))
+    {
+        EventOption::send_event( util::g_startup_options
+                               , static_cast<IEOptionConsumer&>(mOptionConsumer)
+                               , component_thread() );
+    }
 
     LargeDataProviderBase::startup_service_interface(holder);
 }
@@ -163,14 +174,17 @@ void ServicingComponent::on_timer_expired()
     uint32_t didSleep    = mDidSleep;
     uint32_t ignoreSleep = mIgnoreSleep;
 
-    uint64_t sizeSend{ 0 }, sizeReceive{ 0 };
-    areg::Application::query_communication_data( sizeSend, sizeReceive );
+    uint64_t sizeSent{ 0u }, sizeRecv{ 0u };
+    uint32_t msgSent{ 0u }, msgRecv{ 0u };
+
+    areg::Application::query_data_sent(sizeSent, msgSent);
+    areg::Application::query_data_received(sizeRecv, msgRecv);
     uint64_t sizeItem = rateItem != 0 ? mDataRate / rateItem : 0;
 
     areg::DataLiteral dataRate = areg::conv_data_size( mDataRate );
-    areg::DataLiteral sendRate = areg::conv_data_size( sizeSend );
-    areg::DataLiteral rcvRate  = areg::conv_data_size( sizeReceive );
-    areg::DataLiteral itemRate = areg::conv_data_size( sizeItem );
+    areg::DataLiteral itemRate = areg::conv_data_size(sizeItem);
+    areg::DataLiteral sendRate = areg::conv_data_size(sizeSent);
+    areg::DataLiteral rcvRate  = areg::conv_data_size(sizeRecv);
 
     mItemRate    = 0;
     mDataRate    = 0;
@@ -182,11 +196,8 @@ void ServicingComponent::on_timer_expired()
     // This is what the client should be receiving and is independent of OS timing jitter.
     uint64_t ns_per_block     = mOptions.nsPerBlock();
     uint64_t bytes_per_block  = mOptions.bytesPerBlock();
-    double   ideal_blocks_sec = (ns_per_block > 0)
-                                ? (static_cast<double>(areg::DURATION_1_SEC) / static_cast<double>(ns_per_block))
-                                : 0.0;
-    uint64_t ideal_bytes_sec  = static_cast<uint64_t>(ideal_blocks_sec * static_cast<double>(bytes_per_block)
-                                                        * static_cast<double>(mOptions.mChannels));
+    double   ideal_blocks_sec = (ns_per_block > 0) ? (static_cast<double>(areg::DURATION_1_SEC) / static_cast<double>(ns_per_block)) : 0.0;
+    uint64_t ideal_bytes_sec  = static_cast<uint64_t>(ideal_blocks_sec * static_cast<double>(bytes_per_block) * static_cast<double>(mOptions.mChannels));
     areg::DataLiteral idealRate = areg::conv_data_size(ideal_bytes_sec);
 
     const uint32_t total_blocks_sec = static_cast<uint32_t>(ideal_blocks_sec * static_cast<double>(mOptions.mChannels));
@@ -194,11 +205,18 @@ void ServicingComponent::on_timer_expired()
     areg::ext::Console& console = areg::ext::Console::instance();
     console.save_cursor_position();
 
-    console.output_msg( COORD_COMM_RATE,  MSG_COMM_RATE.data(),  sendRate.first, sendRate.second.data(), rcvRate.first, rcvRate.second.data() );
-    console.output_msg( COORD_DATA_RATE,  MSG_DATA_RATE.data(),  dataRate.first, dataRate.second.data() );
-    console.output_msg( COORD_ITEM_RATE,  MSG_ITEM_RATE.data(),  rateItem, itemRate.first, itemRate.second.data() );
-    console.output_msg( COORD_STATS,      MSG_STATS.data(),      didSleep, ignoreSleep );
-    console.output_msg( COORD_IDEAL_RATE, MSG_IDEAL_RATE.data(), idealRate.first, idealRate.second.data(), total_blocks_sec );
+    console.output_msg( COORD_COMM_RATE,  MSG_COMM_RATE.data(), sendRate.first, sendRate.second.data(), rcvRate.first, rcvRate.second.data() );
+    console.output_msg( COORD_DATA_RATE,  MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data() );
+    console.output_msg( COORD_ITEM_RATE,  MSG_ITEM_RATE.data(), msgSent, itemRate.first, itemRate.second.data() );
+    console.output_msg( COORD_STATS,      MSG_STATS.data(),     didSleep, ignoreSleep );
+    if (ns_per_block == 0)
+    {
+        console.output_txt( COORD_IDEAL_RATE, " Theoretical rate .....: IPC-limited (pixel time = 0)." );
+    }
+    else
+    {
+        console.output_msg( COORD_IDEAL_RATE, MSG_IDEAL_RATE.data(), idealRate.first, idealRate.second.data(), total_blocks_sec );
+    }
 
     console.restore_cursor_position();
     console.refresh_screen();
@@ -273,12 +291,12 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
 
         // update() preserves the CmdStart/CmdStop flag when no start/stop is in 'data'.
         // NOTE: Do NOT call _initBlockList() here. The image thread reads mOptions and
-        // mBlockList without holding mLock between mPauseEvent.lock() and the inner loop.
-        // Rebuilding mBlockList here (after mOptions is already updated) creates a race
+        // mSendList without holding mLock between mPauseEvent.lock() and the inner loop.
+        // Rebuilding mSendList here (after mOptions is already updated) creates a race
         // where the image thread can read the new blocksCount() from mOptions but find
-        // mBlockList still sized for the old options (or vice-versa).
+        // mSendList still sized for the old options (or vice-versa).
         // Instead, _initBlockList() is called inside _runImageThread() under mLock after
-        // the thread wakes, ensuring mBlockList is always consistent with mOptions.
+        // the thread wakes, ensuring mSendList is always consistent with mOptions.
         mLock.lock(areg::WAIT_INFINITE);
         mOptions.update(data);
         mLock.unlock();
@@ -287,7 +305,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
 
         // Tell the image thread to reload its parameters.  It will exit the inner
         // frame loop, fall through to mPauseEvent.lock(), and re-read mOptions and
-        // rebuild mBlockList atomically.
+        // rebuild mSendList atomically.
         mOptionChanged = true;
 
         if (was_running)
@@ -365,7 +383,7 @@ void ServicingComponent::_runImageThread()
 
     // Threshold below which per-block waits are unreliable on most OSes.
     // Below this value we use frame-level timing instead.
-    static constexpr int64_t MIN_BLOCK_WAIT_NS{ 1'000'000LL };  // 1 ms
+    static constexpr int64_t MIN_BLOCK_WAIT_NS{ 250'000LL };  // 1 ms
 
     areg::Wait wait;
 
@@ -378,63 +396,70 @@ void ServicingComponent::_runImageThread()
             break;
         }
 
-        mOptionChanged = false;
+        mOptionChanged.store(false, std::memory_order_relaxed);
 
-        // Rebuild mBlockList under the same lock used by onOptionEvent so that mBlockList
-        // and the local 'blocks' snapshot are always consistent with the current mOptions.
+        // Rebuild the flat send list under mLock so it is always consistent with mOptions.
         mLock.lock(areg::WAIT_INFINITE);
         _initBlockList();
-        const int64_t  ns_per_block = static_cast<int64_t>(mOptions.nsPerBlock());
-        const int64_t  ns_per_frame = ns_per_block * static_cast<int64_t>(mOptions.blocksCount());
-        const uint32_t blocks       = mOptions.blocksCount();
+        const int64_t  ns_per_block  = static_cast<int64_t>(mOptions.nsPerBlock());
+        const uint32_t blocks        = mOptions.blocksCount();
+        const uint32_t channels      = mOptions.mChannels;
         mLock.unlock();
+
+        // Total entries in the pre-built send list (blocks × channels).
+        const uint32_t total_sends   = blocks * channels;
+        // Pre-computed per-frame totals: constant across all frames for the current config.
+        const uint32_t block_size    = total_sends > 0u ? mSendList[0].getSize() : 0u;
+        const uint32_t frame_bytes   = block_size * total_sends;
+        const int64_t  ns_per_frame  = ns_per_block * static_cast<int64_t>(blocks);
         uint32_t seqNr = 0;
 
         // Choose timing strategy based on the block period:
-        //   - Per-block timing: each block is sent and we wait for its individual deadline.
-        //     Reliable when nsPerBlock >= 1ms (waitable timer territory).
-        //   - Frame-level timing: all blocks are sent as fast as possible; we wait only at
-        //     the end of each full frame. Use this when nsPerBlock < 1ms so that per-block
-        //     spin-wait overhead does not eat into the send budget.
+        //   - Per-block timing: each block position's channels are sent, then we wait for
+        //     its individual deadline. Reliable when nsPerBlock >= 1ms.
+        //   - Frame-level timing: all entries sent as fast as possible; single wait at the
+        //     end of the frame. Used when nsPerBlock < 1ms to avoid spin-wait overhead.
         const bool use_frame_timing = (ns_per_block < MIN_BLOCK_WAIT_NS);
 
         // Run frames until options change or service stops.
-        while ((mQuitThread == false) && (mOptionChanged == false) && mOptions.hasStart())
+        while ((mQuitThread.load(std::memory_order_relaxed) == false) &&
+               (mOptionChanged.load(std::memory_order_relaxed) == false) &&
+               mOptions.hasStart())
         {
-            std::chrono::steady_clock::time_point frame_start = std::chrono::steady_clock::now();
-            std::chrono::steady_clock::time_point frame_deadline =
+            const std::chrono::steady_clock::time_point frame_start    = std::chrono::steady_clock::now();
+            const std::chrono::steady_clock::time_point frame_deadline =
                 frame_start + std::chrono::nanoseconds(ns_per_frame);
-
-            uint32_t frame_data_bytes{ 0 }, frame_block_count{ 0 };
-
-            for (uint32_t i = 0; !mOptionChanged && (i < blocks); ++i)
-            {
-                uint32_t data_bytes{ 0 }, block_count{ 0 };
-                for (uint32_t ch = 0; !mOptionChanged && (ch < mOptions.mChannels); ++ch)
-                {
-                    ImageBlock& block = mBlockList.at(i);
-                    block.setIds(ch, seqNr);
-                    block_count += 1;
-                    data_bytes  += block.getSize();
-                    LargeDataProviderBase::broadcast_image_block_acquired(block);
-                }
-
-                frame_data_bytes  += data_bytes;
-                frame_block_count += block_count;
-
-                if (use_frame_timing == false)
-                {
-                    // Per-block absolute deadline: keeps individual block period accurate.
-                    std::chrono::steady_clock::time_point block_deadline =
-                        frame_start + std::chrono::nanoseconds(static_cast<int64_t>(i + 1) * ns_per_block);
-                    _updateData(data_bytes, block_count, wait.wait_until(block_deadline));
-                }
-            }
 
             if (use_frame_timing)
             {
-                // One wait per frame: far more accurate than many tiny spin-waits.
-                _updateData(frame_data_bytes, frame_block_count, wait.wait_until(frame_deadline));
+                // Hot path: send all entries as fast as possible, then wait once per frame.
+                // Single flat loop — no inner channel loop, no bounds check, one write per entry.
+                for (uint32_t j = 0; (mOptionChanged.load(std::memory_order_relaxed) == false) && (j < total_sends); ++j)
+                {
+                    mSendList[j].set_frame_id(seqNr);
+                    LargeDataProviderBase::broadcast_image_block_acquired(mSendList[j]);
+                }
+
+                _updateData(frame_bytes, total_sends, wait.wait_until(frame_deadline));
+            }
+            else
+            {
+                // Per-block timing: broadcast all channels for block i, then wait for its deadline.
+                const uint32_t block_bytes = block_size * channels;
+
+                for (uint32_t i = 0; (mOptionChanged.load(std::memory_order_relaxed) == false) && (i < blocks); ++i)
+                {
+                    const uint32_t base = i * channels;
+                    for (uint32_t k = base; k < base + channels; ++k)
+                    {
+                        mSendList[k].set_frame_id(seqNr);
+                        LargeDataProviderBase::broadcast_image_block_acquired(mSendList[k]);
+                    }
+
+                    const std::chrono::steady_clock::time_point block_deadline =
+                        frame_start + std::chrono::nanoseconds(static_cast<int64_t>(i + 1) * ns_per_block);
+                    _updateData(block_bytes, channels, wait.wait_until(block_deadline));
+                }
             }
 
             seqNr = (seqNr + 1) % (mOptions.mHeight != 0 ? mOptions.mHeight : 1u);
@@ -499,16 +524,37 @@ void ServicingComponent::_printInfo() const
     console.output_msg ({ 1, row++ }, "        Width ...........: %7u pix."       , mOptions.mWidth);
     console.output_msg ({ 1, row++ }, "        Height ..........: %7u pix."       , mOptions.mHeight);
     console.output_msg ({ 1, row++ }, "        Lines per Block .: %7u lns."       , mOptions.mLines);
-    console.output_msg ({ 1, row++ }, "        Pixel Time ......: %7u ns."        , mOptions.mPixelTime);
+    if (mOptions.mPixelTime == 0)
+    {
+        console.output_txt ({ 1, row++ }, "        Pixel Time ......:       0 ns (full speed).");
+    }
+    else
+    {
+        console.output_msg ({ 1, row++ }, "        Pixel Time ......: %7u ns."    , mOptions.mPixelTime);
+    }
+
     console.output_msg ({ 1, row++ }, "        Channels ........: %7u ch."        , mOptions.mChannels);
-    console.output_msg ({ 1, row++ }, "        Time per Block ..: %7.2f %s."      , static_cast<double>(time_rate.first),    time_rate.second.data());
-    console.output_msg ({ 1, row++ }, "        Block Size ......: %7.2f %s."      , static_cast<double>(block_size.first),   block_size.second.data());
-    console.output_msg ({ 1, row++ }, "        Block Rate ......: %7u blocks/sec/ch.", static_cast<uint32_t>(block_rate));
-    console.output_msg ({ 1, row++ }, "        Theoretical rate.: %7.2f %s / sec (per channel)"
-                    , static_cast<double>(per_ch_rate.first), per_ch_rate.second.data());
-    console.output_msg ({ 1, row++ }, "        Total Block Rate : %7u blocks/sec" , total_blocks_sec);
-    console.output_msg ({ 1, row++ }, "        Total rate ......: %7.2f %s / sec (all channels)"
-                    , static_cast<double>(total_rate.first), total_rate.second.data());
+    if (ns_per_block == 0)
+    {
+        console.output_txt ({ 1, row++ }, "        Time per Block ..:    Full Speed (IPC-limited).");
+        console.output_msg ({ 1, row++ }, "        Block Size ......: %7.2f %s."  , static_cast<double>(block_size.first), block_size.second.data());
+        console.output_txt ({ 1, row++ }, "        Block Rate ......:    IPC-limited (see client stats).");
+        console.output_txt ({ 1, row++ }, "        Theoretical rate.:    N/A (pixel time = 0, rate is IPC-bound).");
+        console.output_txt ({ 1, row++ }, "        Total Block Rate :    N/A");
+        console.output_txt ({ 1, row++ }, "        Total rate ......:    N/A (IPC-limited).");
+    }
+    else
+    {
+        console.output_msg ({ 1, row++ }, "        Time per Block ..: %7.2f %s."  , static_cast<double>(time_rate.first),    time_rate.second.data());
+        console.output_msg ({ 1, row++ }, "        Block Size ......: %7.2f %s."  , static_cast<double>(block_size.first),   block_size.second.data());
+        console.output_msg ({ 1, row++ }, "        Block Rate ......: %7u blocks/sec/ch.", static_cast<uint32_t>(block_rate));
+        console.output_msg ({ 1, row++ }, "        Theoretical rate.: %7.2f %s / sec (per channel)"
+                        , static_cast<double>(per_ch_rate.first), per_ch_rate.second.data());
+        console.output_msg ({ 1, row++ }, "        Total Block Rate : %7u blocks/sec" , total_blocks_sec);
+        console.output_msg ({ 1, row++ }, "        Total rate ......: %7.2f %s / sec (all channels)"
+                        , static_cast<double>(total_rate.first), total_rate.second.data());
+    }
+
     console.output_msg ({ 1, row++ }, "        Connected client : %7d clients."   , mClients);
     console.output_txt ({ 1, row   }, " ---------------------------------------" );
 
@@ -530,7 +576,7 @@ void ServicingComponent::_printHelp() const
     console.output_txt ({ 1, row++ }, "-w=<value> or --width=<value> ....: Image width. Range [32 .. 32768]" );
     console.output_txt ({ 1, row++ }, "-h=<value> or --height=<value> ...: Image height. Range [32 .. 32768]" );
     console.output_txt ({ 1, row++ }, "-l=<value> or --lines=<value> ....: Lines per block, not larger than height." );
-    console.output_txt ({ 1, row++ }, "-t=<value> or --time=<value> .....: Pixel dwell time in nanoseconds." );
+    console.output_txt ({ 1, row++ }, "-t=<value> or --time=<value> .....: Pixel dwell time in nanoseconds. Range [0 .. 100000], 0 = full speed." );
     console.output_txt ({ 1, row++ }, "-c=<value> or --channels=<value> .: Data source channels. Range [1 .. 64]." );
     console.output_txt ({ 1, row++ }, "-i         or --info .............: Print current option values." );
     console.output_txt ({ 1, row++ }, "-h         or --help .............: Print this help." );
@@ -546,13 +592,25 @@ void ServicingComponent::_printHelp() const
 void ServicingComponent::_initBlockList()
 {
     mBitmap.create_bitmap(mOptions.mWidth, mOptions.mHeight);
-    mBlockList.clear();
-    uint32_t blocks = mOptions.blocksCount();
-    mBlockList.resize(blocks);
+
+    const uint32_t blocks   = mOptions.blocksCount();
+    const uint32_t channels = mOptions.mChannels;
+
+    // Pre-build a flat send queue of size blocks × channels.
+    // Entry [i * channels + ch] is a complete copy of image block i with channelId = ch
+    // already stamped. The hot loop only needs to update frameSeqId via set_frame_id(),
+    // removing the inner channel iteration and all per-channel block re-fetches.
+    mSendList.clear();
+    mSendList.resize(blocks * channels);
 
     for (uint32_t i = 0; i < blocks; ++i)
     {
-        mBlockList[i] = mBitmap.block(i * mOptions.mLines, mOptions.mLines);
+        for (uint32_t ch = 0; ch < channels; ++ch)
+        {
+            ImageBlock& entry = mSendList[i * channels + ch];
+            entry = mBitmap.block(i * mOptions.mLines, mOptions.mLines);
+            entry.setIds(ch, 0u);   // pre-stamp channelId; frameSeqId is set per-frame
+        }
     }
 }
 

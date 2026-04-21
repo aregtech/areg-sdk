@@ -140,7 +140,7 @@ protected:                                                                      
     /**                                                                                                                     **/ \
     /** Protected destructor.                                                                                               **/ \
     /**                                                                                                                     **/ \
-    ~AregImpl_##ConsumerClass() = default;                                                                                      \
+    virtual ~AregImpl_##ConsumerClass() = default;                                                                              \
     /**                                                                                                                     **/ \
     /** Overrides.                                                                                                          **/ \
     /**                                                                                                                     **/ \

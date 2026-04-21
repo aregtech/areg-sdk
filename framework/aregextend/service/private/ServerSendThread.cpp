@@ -100,7 +100,11 @@ bool ServerSendThread::_do_send( const RemoteMessage & msg )
                        , sentBytes);
 
         SocketAccepted client{ mConnection.client_by_handle(hSocket) };
-        mRemoteService.failed_send_message(msg, client);
+        if (!mConnection.is_interrupted())
+        {
+            mRemoteService.failed_send_message(msg, client);
+        }
+
         return false;
     }
 }
@@ -235,8 +239,11 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
             else
             {
                 DEBUG_LOG_WARN("Failed to send message to target [ %u ]", static_cast<uint32_t>(message.target()));
-                SocketAccepted client{ mConnection.client_by_handle(hSocket) };
-                mRemoteService.failed_send_message(message, client);
+                if (!mConnection.is_interrupted())
+                {
+                    SocketAccepted client{ mConnection.client_by_handle(hSocket) };
+                    mRemoteService.failed_send_message(message, client);
+                }
             }
         }
         else
@@ -254,8 +261,11 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
             else
             {
                 DEBUG_LOG_WARN("Failed batch-send of %d messages to target [ %u ]", groupSize, static_cast<uint32_t>(mBatch[i].msg->target()));
-                SocketAccepted client{ mConnection.client_by_handle(hSocket) };
-                mRemoteService.failed_send_message(*mBatch[i].msg, client);
+                if (!mConnection.is_interrupted())
+                {
+                    SocketAccepted client{ mConnection.client_by_handle(hSocket) };
+                    mRemoteService.failed_send_message(*mBatch[i].msg, client);
+                }
             }
         }
 

@@ -271,6 +271,13 @@ void ServiceClientConnectionBase::on_service_stop()
     // waiting for the OS TCP timeout.
     mClientConnection.close_socket( );
 
+    // Signal the send thread to exit. After close_socket() above, any
+    // blocking send() returns immediately with an error and the thread
+    // re-enters its WAIT_INFINITE event loop. Without this trigger_exit()
+    // the send thread would block forever and wait_completion() would
+    // deadlock (sporadic at high message rates where TCP send buffers fill).
+    mThreadSend.trigger_exit( );
+
     mThreadSend.wait_completion( areg::WAIT_INFINITE );
     mThreadSend.shutdown( areg::DO_NOT_WAIT );
     mThreadReceive.shutdown( areg::WAIT_INFINITE );

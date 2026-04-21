@@ -11,8 +11,10 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/logging/areg_log.h"
+#include "areg/base/String.hpp"
 
 #include "pubservice/src/ServicingComponent.hpp"
+#include "pubservice/src/UtilityDefs.hpp"
 
 #ifdef _MSC_VER
     #pragma comment(lib, "areg")
@@ -53,9 +55,28 @@ DEF_LOG_SCOPE(example_23_pubservice_main, main);
  * \brief   The main method enables logging, service manager and timer.
  *          it loads and unloads the services, releases application.
  **/
-int main()
+int main(int argc, char* argv[])
 {
     printf("Testing large data servicing, run as a ultra-small Server...\n");
+
+    // Parse command-line arguments so the benchmark can start unattended.
+    // Example: 23_pubservice -t=0 -l=1 -c=10 -s
+    if (argc > 1)
+    {
+        areg::String cmd;
+        for (int i = 1; i < argc; ++i)
+        {
+            if (i > 1)
+            {
+                cmd += " ";
+            }
+
+            cmd += argv[i];
+        }
+
+        cmd.make_lower();
+        util::g_startup_options.parseCommand(cmd);
+    }
 
     // force to start logging with default settings
     LOGGING_CONFIGURE_AND_START( nullptr, false );

@@ -201,6 +201,20 @@ namespace areg {
      **/
     struct BufferHeader
     {
+        constexpr BufferHeader() = default;
+        constexpr BufferHeader(const BufferHeader& src) = default;
+        constexpr BufferHeader(uint32_t length, uint32_t offset, BufferType bufType, uint32_t used)
+            : biLength{length}, biOffset{offset}, biBufType{bufType}, biUsed{used}
+        {
+        }
+
+        constexpr BufferHeader(uint32_t length, uint32_t offset, BufferType bufType)
+            : biLength{ length }, biOffset{ offset }, biBufType{ bufType }, biUsed{ 0u }
+        {
+        }
+
+        constexpr BufferHeader& operator = (const BufferHeader& src) = default;
+
         /**
          * \brief   The length in bytes of totally allocated buffer.
          **/
@@ -231,6 +245,20 @@ namespace areg {
      **/
     struct MessageHeader
     {
+        constexpr MessageHeader(uint32_t length, uint32_t offset, BufferType bufType, uint32_t used, ITEM_ID target, uint32_t checksum, ITEM_ID source, uint32_t  msgId, uint32_t result, SequenceNumber seq)
+            : rbhBufHeader{length, offset, bufType, used}, rbhTarget{target}, rbhChecksum{checksum}, rbhSource{source}, rbhMessageId{msgId}, rbhResult{result}, rbhSequenceNr{seq}
+        {
+        }
+
+        constexpr MessageHeader(uint32_t length, uint32_t offset, BufferType bufType, ITEM_ID target, ITEM_ID source, uint32_t  msgId)
+            : rbhBufHeader{ length, offset, bufType}, rbhTarget{ target }, rbhChecksum{ areg::INVALID_VALUE }, rbhSource{ source }, rbhMessageId{ msgId }, rbhResult{ 0u }, rbhSequenceNr{ 0u }
+        {
+        }
+
+        constexpr MessageHeader() = default;
+        constexpr MessageHeader(const MessageHeader& src) = default;
+        constexpr MessageHeader& operator = (const MessageHeader& src) = default;
+
         /**
          * \brief   The common buffer header information
          **/
@@ -298,6 +326,20 @@ namespace areg {
      **/
     struct RawMessage
     {
+        constexpr RawMessage() = default;
+        constexpr RawMessage(const RawMessage& src) = default;
+        constexpr RawMessage(uint32_t length, uint32_t offset, BufferType bufType, uint32_t used, ITEM_ID target, uint32_t checksum, ITEM_ID source, uint32_t  msgId, uint32_t result, SequenceNumber seq)
+            : rbHeader{ length, offset, bufType, used, target, checksum, source, msgId, result, seq }, rbData{0}
+        {
+        }
+
+        constexpr RawMessage(uint32_t length, uint32_t offset, BufferType bufType, ITEM_ID target, ITEM_ID source, uint32_t  msgId)
+            : rbHeader{ length, offset, bufType, target, source, msgId}, rbData{ 0 }
+        {
+        }
+
+        constexpr RawMessage& operator = (const RawMessage& src) = default;
+
         /**
          * \brief   Byte Buffer information
          **/
@@ -354,6 +396,22 @@ namespace areg {
     template <typename ELEM_TYPE, typename ARGUMENT_TYPE>
     [[nodiscard]]
     inline ELEM_TYPE * construct_with_arg(void *begin, uint32_t elemCount, ARGUMENT_TYPE arg);
+
+    /**
+     * \brief   Constructs a single element of type T at the given memory location,
+     *          forwarding the provided arguments to T's constructor.
+     *          Use this overload to initialize the object immediately with values
+     *          or via the copy / move constructor.
+     *
+     * \tparam  T       The type to construct.
+     * \tparam  Args    Constructor argument types.
+     * \param   ptr     Pointer to raw memory where the object is constructed.
+     * \param   args    Arguments forwarded to T's constructor.
+     * \return  Pointer to the constructed T object.
+     **/
+    template<typename T, typename... Args>
+    [[nodiscard]]
+    inline T* construct_elem(void* ptr, Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)));
 
     /**
      * \brief   Destroys previously constructed elements in heap by calling the destructor for each.
@@ -725,6 +783,12 @@ inline ELEM_TYPE * construct_with_arg(void *begin, uint32_t elemCount, ARGUMENT_
     }
 
     return reinterpret_cast<ELEM_TYPE *>(begin);
+}
+
+template<typename T, typename... Args>
+inline T* construct_elem(void* ptr, Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
+{
+    return ::new(ptr) T(std::forward<Args>(args)...);
 }
 
 template <typename ELEM_TYPE>

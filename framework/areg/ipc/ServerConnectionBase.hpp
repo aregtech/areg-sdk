@@ -28,6 +28,10 @@
 #include "areg/base/SocketServer.hpp"
 #include "areg/component/ServiceDefs.hpp"
 
+#include <atomic>
+#include <mutex>
+#include <shared_mutex>
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -204,6 +208,15 @@ public:
 
     [[nodiscard]]
     inline SocketAccepted source_client(const RemoteMessage& message) const;
+
+    /**
+     * \brief   Returns true if interrupt_connections() has been called and the shutdown
+     *          drain is in progress.  Use in send threads to suppress failed_send_message()
+     *          callbacks after interrupt_connections() since every send will fail with
+     *          EPIPE / WSAECONNRESET once sockets have been interrupted.
+     **/
+    [[nodiscard]]
+    inline bool is_interrupted() const noexcept;
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -388,10 +401,29 @@ protected:
      **/
     uint32_t                mSockRecvBuf;
 
+#if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
     /**
-     * \brief   Synchronization object for data sharing
+     * \brief   Synchronization object for data sharing.
+     *          Uses std::shared_mutex so that concurrent read-only lookups (in the send hot
+     *          path) hold a shared lock, while structural modifications (accept, close, etc.)
+     *          hold an exclusive lock.  This eliminates the serialization bottleneck that the
+     *          previous exclusive SpinLock imposed on multi-client fan-out scenarios.
      **/
-    mutable ResourceLock    mLock;
+    mutable std::shared_mutex   mLock;
+
+    /**
+     * \brief   Set to true by interrupt_connections() and reset to false by create_socket().
+     *          Checked in the send threads to suppress failed_send_message() callbacks
+     *          while the shutdown drain is in progress, avoiding O(queue_depth) spurious
+     *          failure events after sockets have been interrupted.
+     **/
+    std::atomic<bool>           mIsInterrupted{ false };
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif  // _MSC_VER
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
@@ -405,43 +437,43 @@ private:
 
 inline bool ServerConnectionBase::set_address(const String & hostName, uint16_t portNr)
 {
-    Lock lock(mLock);
+    std::unique_lock<std::shared_mutex> lock(mLock);
     return mServerSocket.set_address(hostName, portNr, true);
 }
 
 inline void ServerConnectionBase::set_address( const areg::SocketAddress & newAddress )
 {
-    Lock lock(mLock);
+    std::unique_lock<std::shared_mutex> lock(mLock);
     mServerSocket.set_address(newAddress);
 }
 
 inline const areg::SocketAddress & ServerConnectionBase::address() const noexcept
 {
-    Lock lock(mLock);
+    std::shared_lock<std::shared_mutex> lock(mLock);
     return mServerSocket.address();
 }
 
 inline bool ServerConnectionBase::is_valid() const noexcept
 {
-    Lock lock(mLock);
+    std::shared_lock<std::shared_mutex> lock(mLock);
     return mServerSocket.is_valid();
 }
 
 inline SOCKETHANDLE ServerConnectionBase::socket_handle() const noexcept
 {
-    Lock lock(mLock);
+    std::shared_lock<std::shared_mutex> lock(mLock);
     return mServerSocket.handle();
 }
 
 inline bool ServerConnectionBase::is_connection_accepted( SOCKETHANDLE connection ) const
 {
-    Lock lock(mLock);
+    std::shared_lock<std::shared_mutex> lock(mLock);
     return mAcceptedConnections.contains(connection);
 }
 
 inline bool ServerConnectionBase::is_connection_accepted(SOCKETHANDLE connection, SocketAccepted& accepted) const
 {
-    Lock lock(mLock);
+    std::shared_lock<std::shared_mutex> lock(mLock);
     return mAcceptedConnections.find(connection, accepted);
 }
 
@@ -452,7 +484,7 @@ inline ITEM_ID ServerConnectionBase::cookie(const SocketAccepted & clientSocket)
 
 inline ITEM_ID ServerConnectionBase::cookie(SOCKETHANDLE socketHandle) const
 {
-    Lock lock( mLock );
+    std::shared_lock<std::shared_mutex> lock( mLock );
 
     MapSocketToCookie::MAPPOS pos = mSocketToCookie.find( socketHandle );
     return (mSocketToCookie.is_valid_position(pos) ? mSocketToCookie.value_at(pos) : areg::COOKIE_UNKNOWN );
@@ -460,27 +492,27 @@ inline ITEM_ID ServerConnectionBase::cookie(SOCKETHANDLE socketHandle) const
 
 inline SocketAccepted ServerConnectionBase::client_by_cookie(const ITEM_ID & clientCookie) const
 {
-    Lock lock( mLock );
+    std::shared_lock<std::shared_mutex> lock( mLock );
     MapCookieToSocket::MAPPOS pos = mCookieToSocket.find(clientCookie);
     return (mCookieToSocket.is_valid_position(pos) ? client_by_handle_nolock( mCookieToSocket.value_at(pos) ) : SocketAccepted());
 }
 
 inline SOCKETHANDLE ServerConnectionBase::client_handle_by_cookie( const ITEM_ID & clientCookie ) const noexcept
 {
-    Lock lock( mLock );
+    std::shared_lock<std::shared_mutex> lock( mLock );
     MapCookieToSocket::MAPPOS pos = mCookieToSocket.find(clientCookie);
     return (mCookieToSocket.is_valid_position(pos) ? mCookieToSocket.value_at(pos) : areg::InvalidSocketHandle);
 }
 
 inline bool ServerConnectionBase::cookie_exist(const ITEM_ID& clientCookie) const noexcept
 {
-    Lock lock(mLock);
+    std::shared_lock<std::shared_mutex> lock(mLock);
     return mCookieToSocket.contains(clientCookie);
 }
 
 inline SocketAccepted ServerConnectionBase::client_by_handle(SOCKETHANDLE clientSocket) const
 {
-    Lock lock( mLock );
+    std::shared_lock<std::shared_mutex> lock( mLock );
     return client_by_handle_nolock(clientSocket);
 }
 
@@ -492,7 +524,7 @@ inline SocketAccepted ServerConnectionBase::client_by_handle_nolock(SOCKETHANDLE
 
 inline bool ServerConnectionBase::handle_exist(SOCKETHANDLE clientSocket) const noexcept
 {
-    Lock lock(mLock);
+    std::shared_lock<std::shared_mutex> lock(mLock);
     return mAcceptedConnections.contains(clientSocket);
 }
 
@@ -524,6 +556,7 @@ inline bool ServerConnectionBase::disable_receive( const SocketAccepted & client
 
 inline void ServerConnectionBase::disable_send()
 {
+    std::unique_lock<std::shared_mutex> lock(mLock);
     for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position( ); mAcceptedConnections.is_valid_position( pos ); pos = mAcceptedConnections.next_position( pos ) )
     {
         mAcceptedConnections.value_at( pos ).disable_send( );
@@ -532,10 +565,16 @@ inline void ServerConnectionBase::disable_send()
 
 inline void ServerConnectionBase::disable_receive()
 {
+    std::unique_lock<std::shared_mutex> lock(mLock);
     for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position( ); mAcceptedConnections.is_valid_position( pos ); pos = mAcceptedConnections.next_position( pos ) )
     {
         mAcceptedConnections.value_at( pos ).disable_receive( );
     }
+}
+
+inline bool ServerConnectionBase::is_interrupted() const noexcept
+{
+    return mIsInterrupted.load(std::memory_order_acquire);
 }
 
 } // namespace areg

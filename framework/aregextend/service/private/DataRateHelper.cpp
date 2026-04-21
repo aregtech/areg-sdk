@@ -42,24 +42,14 @@ bool DataRateHelper::is_verbose() const noexcept
     return mServer.is_data_rate_enabled();
 }
 
-uint64_t DataRateHelper::query_bytes_sent() const noexcept
+void DataRateHelper::query_data_sent(uint64_t& sizeSent, uint32_t& msgSent) noexcept
 {
-    return mServer.query_bytes_sent();
+    mServer.query_data_sent(sizeSent, msgSent);
 }
 
-uint64_t DataRateHelper::query_bytes_received() const noexcept
+void DataRateHelper::query_data_received(uint64_t& sizeRecv, uint32_t& msgRecv) noexcept
 {
-    return mServer.query_bytes_received();
-}
-
-uint32_t DataRateHelper::query_msgs_sent() const noexcept
-{
-    return mServer.query_msg_sent();
-}
-
-uint32_t DataRateHelper::query_msgs_received() const noexcept
-{
-    return mServer.query_msg_received();
+    mServer.query_data_received(sizeRecv, msgRecv);
 }
 
 DataRateHelper::DataRate DataRateHelper::convert_data_rate_literals(uint64_t sizeBytes)

@@ -148,6 +148,19 @@ public:
     inline int32_t send_message( const RemoteMessage & in_message ) const;
 
     /**
+     * \brief   Sends a batch of messages via scatter-gather (writev / WSASend) in a single syscall.
+     *          Reduces per-message syscall overhead when multiple messages are ready to send.
+     *          Capped at THREAD_BATCH_LIMIT entries per call.
+     *
+     * \param   messages    Array of pointers to messages to send. Entries may be nullptr (skipped).
+     * \param   count       Number of entries in the array.
+     * \return  Returns total bytes sent on success, or 0 / negative on failure.
+     *
+     * \note    Threading: call only from the send thread that owns this connection.
+     **/
+    inline int32_t send_messages_batch( const RemoteMessage* const* messages, uint32_t count ) const;
+
+    /**
      * \brief   Receives message data via socket connection. Validates checksum after receiving.
      *          Returns bytes received, zero if invalid checksum, or negative on failure.
      *
@@ -268,6 +281,11 @@ inline Socket & ClientConnection::socket()
 inline int32_t ClientConnection::send_message(const RemoteMessage & in_message) const
 {
     return SocketConnectionBase::send_message(in_message, mClientSocket);
+}
+
+inline int32_t ClientConnection::send_messages_batch(const RemoteMessage* const* messages, uint32_t count) const
+{
+    return SocketConnectionBase::send_messages_batch(messages, count, mClientSocket);
 }
 
 inline int32_t ClientConnection::receive_message(RemoteMessage & out_message) const

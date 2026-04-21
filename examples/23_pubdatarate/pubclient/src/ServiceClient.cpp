@@ -37,6 +37,7 @@ void ServiceClient::startup_component(areg::ComponentThread& /* comThread */)
     LOG_SCOPE( examples_23_clientdatarate_ServiceClient, startup_component );
     LOG_DBG("The component [ %s ] has been started", role_name().as_string());
 
+    areg::Application::enable_data_rate(true);
     areg::DataLiteral dataRate = areg::conv_data_size(mDataSize);
     areg::ext::Console& console = areg::ext::Console::instance();
     console.clear_current_line();
@@ -101,11 +102,15 @@ bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg
 void ServiceClient::process_timer(areg::Timer& /* timer */)
 {
     LOG_SCOPE( examples_23_clientdatarate_ServiceClient, process_timer );
+    uint64_t sizeRecv{ 0u };
+    uint32_t msgRecv{ 0u };
+    areg::Application::query_data_received(sizeRecv, msgRecv);
+
     areg::ext::Console& console = areg::ext::Console::instance();
-    areg::DataLiteral dataRate = areg::conv_data_size( mDataSize );
+    areg::DataLiteral dataRate = areg::conv_data_size( sizeRecv );
     LOG_DBG("The timeout expired, output data rate: [ %f %s]", static_cast<double>(dataRate.first), dataRate.second.data());
     console.save_cursor_position();
-    console.output_msg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), mBlockCount);
+    console.output_msg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), msgRecv);
     console.restore_cursor_position();
     console.refresh_screen();
 

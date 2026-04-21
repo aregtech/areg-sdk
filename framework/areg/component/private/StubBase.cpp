@@ -368,6 +368,33 @@ void StubBase::send_notify_once( const ProxyAddress & target, uint32_t msgId, co
 void StubBase::send_response_event( uint32_t respId, const EventDataStream & data )
 {
     StubBase::StubListenerList listeners;
+#if 0
+    if (find_listeners(respId, listeners) <= 0)
+        return;
+
+    for (StubListenerList::LISTPOS pos = listeners.first_position(); listeners.is_valid_position(pos); pos = listeners.next_position(pos))
+    {
+        const StubBase::Listener& listener = listeners[pos];
+        ResponseEvent* eventElem = create_response(listener.mProxy, respId, areg::ResultType::RequestOK, data);
+        if (eventElem == nullptr)
+            continue;
+
+        if (static_cast<int32_t>(listener.mSequenceNr) >= 0)
+        {
+            eventElem->set_sequence_number(listener.mSequenceNr);
+            if (listener.mSequenceNr != 0)
+                mListListener.remove_entry(listener);
+        }
+        else
+        {
+            eventElem->set_sequence_number(static_cast<SequenceNumber>(-1 * static_cast<SignedSequence>(listener.mSequenceNr)));
+            StubBase::Listener removed(respId, 0, listener.mProxy);
+            mListListener.remove_entry(removed);
+        }
+
+        send_service_response(*eventElem);
+    }
+#else
     if (find_listeners(respId, listeners) > 0)
     {
         ResponseEvent* eventElem = create_response(listeners.first_entry().mProxy, respId, areg::ResultType::RequestOK, data);
@@ -377,6 +404,7 @@ void StubBase::send_response_event( uint32_t respId, const EventDataStream & dat
             eventElem->destroy();
         }
     }
+#endif
 }
 
 void StubBase::send_busy_response( const Listener & whichListener )
