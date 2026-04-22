@@ -309,7 +309,7 @@ public:
      *
      * \param[out] names       On output, contains the names of all priorities.
      **/
-    void priority_names(std::vector<String>& names);
+    void log_priority_names(std::vector<String>& names);
 
     /**
      * \brief   Queries the log database and returns information of all connected instances.

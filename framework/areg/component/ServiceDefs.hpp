@@ -30,9 +30,15 @@
 
 #include <limits>
 
+
 /************************************************************************
- * predefined macro
+ * Dependencies
  ************************************************************************/
+
+namespace areg {
+    class RemoteMessage;
+    class Channel;
+}
 
 /**
  * \brief       areg namespace contains defined and fixed constants,
@@ -999,6 +1005,26 @@ struct ConnectedInstance
     std::string             ciInstance  { "" }; //!< The name of the application
     std::string             ciLocation  { "" }; //!< The optional file location
 };
+
+/**
+ * \brief   Sends a pre-serialized RemoteMessage directly to the IPC send thread,
+ *          bypassing all event dispatch and serialization overhead.
+ *          The caller is responsible for ensuring the message was built while the
+ *          connection was valid and the target cookie is still active.
+ *
+ * \param   msg     The pre-built message to send.
+ * \return  Returns true if the message was accepted by the send thread.
+ **/
+AREG_API bool send_raw_message(const areg::RemoteMessage& msg) noexcept;
+
+/**
+ * \brief   Returns the active IPC connection channel used to route messages
+ *          to the message router.  Valid only after the connection handshake
+ *          completes; check is_manager_started() before using.
+ *
+ * \return  Const reference to the current Channel object.
+ **/
+AREG_API const areg::Channel& connection_channel() noexcept;
 
 /**
  * \brief   The map of key-value connected instances, where the key is an instance ID and the value is connected instance information.

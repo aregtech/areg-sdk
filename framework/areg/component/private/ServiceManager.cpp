@@ -94,6 +94,16 @@ void ServiceManager::enable_data_rate(bool enable) noexcept
     ServiceManager::instance().mServiceClient.enable_data_rate(enable);
 }
 
+bool ServiceManager::send_raw_message(const RemoteMessage& msg) noexcept
+{
+    return ServiceManager::instance().mServiceClient.send_raw_message(msg);
+}
+
+const Channel& ServiceManager::connection_channel() noexcept
+{
+    return ServiceManager::instance().mServiceClient.connection_channel();
+}
+
 void ServiceManager::request_register_provider( const StubAddress & whichServer )
 {
     LOG_SCOPE( areg_component_private_ServiceManager, request_register_provider);

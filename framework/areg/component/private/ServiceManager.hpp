@@ -38,6 +38,8 @@ class StubAddress;
 class ProxyAddress;
 class ServiceRequestEvent;
 class ServiceResponseEvent;
+class RemoteMessage;
+class Channel;
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceManager class declaration
@@ -138,6 +140,26 @@ public:
      * \brief   Enables or disables data and message rate verbosity.
      **/
     static void enable_data_rate(bool enable) noexcept;
+
+    /**
+     * \brief   Sends a pre-serialized RemoteMessage directly to the IPC send thread,
+     *          bypassing all event dispatch and serialization overhead.
+     *          The caller is responsible for ensuring the message was built while the
+     *          connection was valid and the target cookie is still active.
+     *
+     * \param   msg     The pre-built message to send.
+     * \return  Returns true if the message was accepted by the send thread.
+     **/
+    static bool send_raw_message(const RemoteMessage& msg) noexcept;
+
+    /**
+     * \brief   Returns the active IPC connection channel used to route messages
+     *          to the message router.  Valid only after the connection handshake
+     *          completes; check is_manager_started() before using.
+     *
+     * \return  Const reference to the current Channel object.
+     **/
+    static const Channel& connection_channel() noexcept;
 
 private:
 //////////////////////////////////////////////////////////////////////////

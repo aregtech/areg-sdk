@@ -17,8 +17,10 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/TimerConsumer.hpp"
 #include "areg/component/EventTemplate.hpp"
+#include "areg/component/ProxyAddress.hpp"
 #include "examples/23_pubdatarate/services/LargeDataProviderBase.hpp"
 
+#include "areg/base/RemoteMessage.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/component/Timer.hpp"
@@ -292,6 +294,19 @@ private:
      * the inner channel loop and all redundant block fetches.
      **/
     std::vector<ImageBlock> mSendList;
+    /**
+     * Pre-serialized wire messages, one per `mSendList` slot.
+     * Built once per options change; the hot loop patches `frameSeqId` in-place
+     * and sends directly, bypassing all serialization overhead.
+     * Only valid when `mPrebuiltValid == true`.
+     **/
+    std::vector<areg::RemoteMessage>    mPrebuiltMessages;
+    //!< Byte offset of `frameSeqId` within the wire `RemoteMessage` buffer.
+    uint32_t                mFrameIdOffset;
+    //!< True when `mPrebuiltMessages` is fully built and safe to use in the hot loop.
+    bool                    mPrebuiltValid;
+    //!< Proxy address of the sole connected client. Valid only when `mClients == 1`.
+    areg::ProxyAddress      mConnectedProxy;
     //! The timer to trigger to output data
     areg::Timer             mTimer;
     //! The thread to input from console.
@@ -351,6 +366,18 @@ private:
 
     //!< Generates and initializes the image blocks.
     void _initBlockList();
+
+    /**
+     * \brief   Builds the pre-serialized wire-message pool from the current `mSendList`.
+     *          Performs a sentinel scan to locate `frameSeqId` in the wire buffer, then
+     *          serializes every `mSendList` entry into `mPrebuiltMessages`.
+     *          Called from the image thread after every `_initBlockList()`.
+     *          Sets `mPrebuiltValid = true` on success; no-op (pool left invalid) on any error.
+     **/
+    void _buildPrebuiltMessages();
+
+    //!< Clears the pre-built message pool and resets `mPrebuiltValid` to false.
+    void _clearPrebuiltMessages() noexcept;
 
     /**
      * \brief   Updates the statistics  to output on console. Called each time when

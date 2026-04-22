@@ -166,13 +166,15 @@ bool ServerConnectionBase::accept_connection(SocketAccepted & clientConnection)
                 return false;
             }
 
-            // Apply configured socket buffer sizes.
-            // Skipped on Windows: setsockopt(SO_RCVBUF) disables TCP Receive Window
-            // Autotuning (Vista+), which dynamically tunes better than any fixed value
-            // for loopback and LAN connections.  Linux/macOS need explicit sizing to
-            // overcome the conservative kernel defaults.
-#if !defined(_WIN32)
+            // SO_SNDBUF: applied on all platforms.  Setting SO_SNDBUF on Windows does NOT
+            // disable TCP Send Window autotuning — only SO_RCVBUF has that side-effect.
             areg::set_send_size(hSocket, mSockSendBuf);
+
+            // SO_RCVBUF: skipped on Windows because setsockopt(SO_RCVBUF) disables TCP
+            // Receive Window Autotuning (Vista+), which dynamically tunes better than any
+            // fixed value for loopback and LAN connections.  Linux/macOS need explicit
+            // sizing to overcome the conservative kernel defaults.
+#if !defined(_WIN32)
             areg::set_recv_size(hSocket, mSockRecvBuf);
 #endif  // !defined(_WIN32)
 

@@ -20,12 +20,12 @@
 #include "areg/component/ResponseEvents.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/Thread.hpp"
+#include "areg/component/Channel.hpp"
 #include "areg/component/DispatcherThread.hpp"
+#include "areg/component/ProxyBase.hpp"
+#include "areg/component/StubBase.hpp"
 #include "areg/component/private/ProxyConnectEvent.hpp"
 #include "areg/component/private/StubConnectEvent.hpp"
-#include "areg/component/StubBase.hpp"
-#include "areg/component/ProxyBase.hpp"
-#include "areg/component/Channel.hpp"
 
 #include "areg/logging/areg_log.h"
 namespace areg {

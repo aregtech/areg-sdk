@@ -357,13 +357,13 @@ public:
      * \brief   Call to get the list of log priorities.
      * \param   names       On output, the vector contains names of log priorities.
      **/
-    void priority_names(std::vector<areg::String>& names);
+    void log_priority_names(std::vector<areg::String>& names);
 
     /**
      * \brief   Call to get the list of log priorities.
      **/
     [[nodiscard]]
-    std::vector<areg::String> priority_names();
+    std::vector<areg::String> log_priority_names();
 
     /**
      * \brief   Call to query and get information of connected instances from log database. This

@@ -13,10 +13,14 @@
 #include "pubservice/src/ServicingComponent.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentThread.hpp"
+#include "areg/component/EventDataStream.hpp"
+#include "areg/component/RemoteEventFactory.hpp"
+#include "areg/component/ResponseEvents.hpp"
 #include "areg/logging/areg_log.h"
 #include "aregextend/console/Console.hpp"
 
 #include <chrono>
+#include <cstring>
 
 DEF_LOG_SCOPE(examples_23_pubservice_ServicingComponent, startup_service_interface);
 DEF_LOG_SCOPE(examples_23_pubservice_ServicingComponent, shutdown_service_intrface);
@@ -57,6 +61,10 @@ ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg:
 
     , mBitmap           ( )
     , mSendList         ( )
+    , mPrebuiltMessages ( )
+    , mFrameIdOffset    ( areg::INVALID_SIZE )
+    , mPrebuiltValid    ( false )
+    , mConnectedProxy   ( )
     , mTimer            ( static_cast<areg::TimerConsumer &>(mTimerConsumer) , TIMER_NAME )
     , mInputThread      ( static_cast<areg::ThreadConsumer &>(self()), THREAD_WAITINPUT )
     , mImageThread      ( static_cast<areg::ThreadConsumer &>(self()), THREAD_GENERATE )
@@ -150,6 +158,7 @@ void ServicingComponent::shutdown_service_interface(areg::Component& holder) noe
     mTimer.stop_timer();
     mPauseEvent.set_signaled();
 
+    _clearPrebuiltMessages();
     mBitmap.release();
     mInputThread.shutdown(areg::WAIT_INFINITE);
     mImageThread.shutdown(areg::WAIT_INFINITE);
@@ -160,7 +169,29 @@ void ServicingComponent::shutdown_service_interface(areg::Component& holder) noe
 bool ServicingComponent::consumer_connected(const areg::ProxyAddress& client, areg::ServiceConnectionState connectionStatus )
 {
     bool result = LargeDataProviderBase::consumer_connected(client, connectionStatus );
-    mClients += (areg::is_service_connected( connectionStatus ) ? 1 : -1);
+
+    {
+        areg::Lock lock(mLock);
+        if (areg::is_service_connected(connectionStatus))
+        {
+            ++mClients;
+            if (mClients == 1)
+            {
+                mConnectedProxy = client;
+            }
+        }
+        else
+        {
+            --mClients;
+            if (mClients == 0)
+            {
+                mConnectedProxy = areg::ProxyAddress();
+            }
+        }
+    }
+
+    // Force image thread to rebuild send list and pre-built pool for the new client set.
+    mOptionChanged.store(true, std::memory_order_relaxed);
     _printInfo();
 
     return result;
@@ -411,6 +442,7 @@ void ServicingComponent::_runImageThread()
         // Rebuild the flat send list under mLock so it is always consistent with mOptions.
         mLock.lock(areg::WAIT_INFINITE);
         _initBlockList();
+        _buildPrebuiltMessages();
         const int64_t  ns_per_block = static_cast<int64_t>(mOptions.nsPerBlock());
         const uint32_t blocks       = mOptions.blocksCount();
         const uint32_t channels     = mOptions.mChannels;
@@ -449,7 +481,23 @@ void ServicingComponent::_runImageThread()
                     {
                         ImageBlock& entry = mSendList[i * channels + k];
                         entry.set_frame_id(seqNr);
-                        LargeDataProviderBase::broadcast_image_block_acquired(entry);
+                        if (mPrebuiltValid)
+                        {
+                            areg::RemoteMessage& prebuilt = mPrebuiltMessages[i * channels + k];
+                            if (!prebuilt.is_shared())
+                            {
+                                std::memcpy(prebuilt.buffer() + mFrameIdOffset, &seqNr, sizeof(seqNr));
+                                areg::send_raw_message(prebuilt);
+                            }
+                            else
+                            {
+                                LargeDataProviderBase::broadcast_image_block_acquired(entry);
+                            }
+                        }
+                        else
+                        {
+                            LargeDataProviderBase::broadcast_image_block_acquired(entry);
+                        }
                     }
 
                     ++rowsSent;
@@ -466,7 +514,23 @@ void ServicingComponent::_runImageThread()
                     {
                         ImageBlock& entry = mSendList[i * channels + k];
                         entry.set_frame_id(seqNr);
-                        LargeDataProviderBase::broadcast_image_block_acquired(entry);
+                        if (mPrebuiltValid)
+                        {
+                            areg::RemoteMessage& prebuilt = mPrebuiltMessages[i * channels + k];
+                            if (!prebuilt.is_shared())
+                            {
+                                std::memcpy(prebuilt.buffer() + mFrameIdOffset, &seqNr, sizeof(seqNr));
+                                areg::send_raw_message(prebuilt);
+                            }
+                            else
+                            {
+                                LargeDataProviderBase::broadcast_image_block_acquired(entry);
+                            }
+                        }
+                        else
+                        {
+                            LargeDataProviderBase::broadcast_image_block_acquired(entry);
+                        }
                     }
 
                     ++rowsSent;
@@ -500,7 +564,23 @@ void ServicingComponent::_runImageThread()
                     {
                         ImageBlock& entry = mSendList[i * channels + k];
                         entry.set_frame_id(seqNr);
-                        LargeDataProviderBase::broadcast_image_block_acquired(entry);
+                        if (mPrebuiltValid)
+                        {
+                            areg::RemoteMessage& prebuilt = mPrebuiltMessages[i * channels + k];
+                            if (!prebuilt.is_shared())
+                            {
+                                std::memcpy(prebuilt.buffer() + mFrameIdOffset, &seqNr, sizeof(seqNr));
+                                areg::send_raw_message(prebuilt);
+                            }
+                            else
+                            {
+                                LargeDataProviderBase::broadcast_image_block_acquired(entry);
+                            }
+                        }
+                        else
+                        {
+                            LargeDataProviderBase::broadcast_image_block_acquired(entry);
+                        }
                     }
 
                     ++rowsSent;
@@ -683,6 +763,114 @@ void ServicingComponent::_initBlockList()
             entry.set_ids(ch, 0u);   // pre-stamp channelId; frameSeqId is set per-frame
         }
     }
+}
+
+void ServicingComponent::_clearPrebuiltMessages() noexcept
+{
+    mPrebuiltMessages.clear();
+    mFrameIdOffset  = areg::INVALID_SIZE;
+    mPrebuiltValid  = false;
+}
+
+void ServicingComponent::_buildPrebuiltMessages()
+{
+    _clearPrebuiltMessages();
+
+    if (mSendList.empty() || !mConnectedProxy.is_valid())
+    {
+        return;
+    }
+
+    const areg::Channel& channel = areg::connection_channel();
+    if (!channel.is_valid())
+    {
+        return;
+    }
+
+    // Skip pool if total size would exceed 256 MB — avoids OOM on large configs.
+    constexpr uint64_t MAX_POOL_BYTES{ 256u * 1024u * 1024u };
+    const uint64_t entry_size{ static_cast<uint64_t>(mSendList[0].size()) };
+    if (entry_size * static_cast<uint64_t>(mSendList.size()) > MAX_POOL_BYTES)
+    {
+        return;
+    }
+
+    constexpr uint32_t SENTINEL_A{ 0x12345678u };
+    constexpr uint32_t SENTINEL_B{ 0x87654321u };
+    constexpr uint32_t msgId_val{ static_cast<uint32_t>(LargeData::MessageIDs::MsgId_broadcast_image_block_acquired) };
+
+    // Helper: serialize one ImageBlock entry to a wire RemoteMessage.
+    auto build_wire = [&](const ImageBlock& blk) -> areg::RemoteMessage
+    {
+        areg::EventDataStream args(areg::EventDataStream::EventDataKind::External);
+        areg::OutStream& s{ args.stream_for_write() };
+        s << blk;
+        areg::ResponseEvent* evt = create_response(mConnectedProxy, msgId_val, areg::ResultType::RequestOK, args);
+        areg::RemoteMessage wire;
+        if (evt != nullptr)
+        {
+            areg::RemoteEventFactory::stream_from_event(wire, *evt, channel);
+            evt->destroy();
+        }
+        return wire;
+    };
+
+    // Use two probe blocks with distinct sentinel frameSeqId values to locate the field
+    // offset within the serialized wire buffer. The offset is stable for a fixed proxy
+    // address and channel, so it is computed once at pool build time.
+    ImageBlock probeA = mBitmap.block(0u, mOptions.mLines);
+    probeA.set_ids(0u, SENTINEL_A);
+    ImageBlock probeB = mBitmap.block(0u, mOptions.mLines);
+    probeB.set_ids(0u, SENTINEL_B);
+
+    const areg::RemoteMessage wireA{ build_wire(probeA) };
+    const areg::RemoteMessage wireB{ build_wire(probeB) };
+    if (!wireA.is_valid() || !wireB.is_valid())
+    {
+        return;
+    }
+
+    const uint32_t buf_size{ wireA.size_used() };
+    if (buf_size != wireB.size_used())
+    {
+        return;
+    }
+
+    const uint8_t* bufA{ wireA.buffer() };
+    const uint8_t* bufB{ wireB.buffer() };
+    uint32_t frame_id_offset{ areg::INVALID_SIZE };
+    for (uint32_t off = 0u; off + static_cast<uint32_t>(sizeof(uint32_t)) <= buf_size; off += static_cast<uint32_t>(sizeof(uint32_t)))
+    {
+        uint32_t valA{ 0u }, valB{ 0u };
+        std::memcpy(&valA, bufA + off, sizeof(uint32_t));
+        std::memcpy(&valB, bufB + off, sizeof(uint32_t));
+        if (valA == SENTINEL_A && valB == SENTINEL_B)
+        {
+            frame_id_offset = off;
+            break;
+        }
+    }
+
+    if (frame_id_offset == areg::INVALID_SIZE)
+    {
+        return;
+    }
+
+    // Serialize every send-list entry into a pre-built wire message.
+    const uint32_t count{ static_cast<uint32_t>(mSendList.size()) };
+    mPrebuiltMessages.resize(count);
+    for (uint32_t idx = 0u; idx < count; ++idx)
+    {
+        mPrebuiltMessages[idx] = build_wire(mSendList[idx]);
+        if (!mPrebuiltMessages[idx].is_valid())
+        {
+            _clearPrebuiltMessages();
+            return;
+        }
+    }
+
+    mFrameIdOffset = frame_id_offset;
+    mPrebuiltValid = true;
 }
 
 void ServicingComponent::_clearOptInfo() const

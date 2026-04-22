@@ -31,6 +31,9 @@ ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientCo
     , mBytesSend        ( 0u )
     , mMsgsSend         ( 0u )
     , mSaveDataSend     ( false )
+#if defined(__linux__)
+    , mZerocopyIdNext   ( 0u )
+#endif  // defined(__linux__)
 {
 }
 
@@ -39,6 +42,9 @@ void ClientSendThread::ready_for_events( bool is_ready )
     if ( is_ready )
     {
         SendMessageEvent::add_listener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
+#if defined(__linux__)
+        mZerocopyIdNext = 0u;
+#endif  // defined(__linux__)
         DispatcherThread::ready_for_events( true );
     }
     else
@@ -113,9 +119,33 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
         }
 
         // --- Phase 2: send the collected batch ---
+#if defined(__linux__)
+        const bool zerocopy_on{ mConnection.is_zerocopy_enabled() };
+        if (zerocopy_on)
+            areg::socket_set_zerocopy_active(true);
+#endif  // defined(__linux__)
+
         const int32_t sentBytes = batchCount == 1u 
                                     ? mConnection.send_message(*msgPtrs[0])
                                     : mConnection.send_messages_batch(msgPtrs, batchCount);
+
+#if defined(__linux__)
+        // Drain ERRQUEUE BEFORE destroying send events.
+        // The kernel DMA-s directly from the SharedBuffer while the event is alive
+        // (ref >= 2). Destroying events before the drain would drop the ref to 1,
+        // allowing the hot-loop to patch the buffer while the NIC is still reading it.
+        if (zerocopy_on)
+        {
+            areg::socket_set_zerocopy_active(false);
+            const uint32_t sends_made{ areg::socket_take_zerocopy_count() };
+            if (sends_made > 0u)
+            {
+                const uint32_t hi_id{ mZerocopyIdNext + sends_made - 1u };
+                mZerocopyIdNext += sends_made;
+                areg::socket_drain_zerocopy(mConnection.socket().handle(), hi_id);
+            }
+        }
+#endif  // defined(__linux__)
 
         // delete drained events
         for (uint32_t i = 1; i < batchCount; ++i)

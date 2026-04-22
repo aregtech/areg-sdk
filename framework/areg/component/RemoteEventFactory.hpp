@@ -66,7 +66,6 @@ public:
      * \return  Returns true if successfully recognized remote object and serialized to stream.
      *          Otherwise returns false.
      **/
-    [[nodiscard]]
     static bool stream_from_event( RemoteMessage & stream, const StreamableEvent & eventStreamable, const Channel & comChannel );
 
     /**

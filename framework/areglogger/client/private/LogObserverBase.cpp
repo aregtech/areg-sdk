@@ -231,9 +231,9 @@ void LogObserverBase::log_threads(std::vector<ITEM_ID>& ids)
     LoggerClient::instance().log_threads(ids);
 }
 
-void LogObserverBase::priority_names(std::vector<String>& names)
+void LogObserverBase::log_priority_names(std::vector<String>& names)
 {
-    LoggerClient::instance().priority_names(names);
+    LoggerClient::instance().log_priority_names(names);
 }
 
 void LogObserverBase::log_instance_infos(std::vector< areg::ConnectedInstance>& infos)

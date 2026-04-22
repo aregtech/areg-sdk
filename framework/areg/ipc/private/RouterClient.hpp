@@ -63,6 +63,32 @@ public:
     ~RouterClient() override = default;
 
 //////////////////////////////////////////////////////////////////////////
+// Raw-message fast-path helpers
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Sends a pre-serialized RemoteMessage directly to the send thread,
+     *          bypassing all event creation and serialization overhead.
+     *          Use only with messages built via RemoteEventFactory::stream_from_event()
+     *          while the connection was established and the target cookie is still valid.
+     *
+     * \param   msg     The pre-built message to send.
+     * \return  Returns true if the message was accepted by the send thread.
+     **/
+    inline bool send_raw_message(const RemoteMessage& msg);
+
+    /**
+     * \brief   Returns the active IPC connection channel.
+     *          The channel carries the router cookie stamped in every outgoing
+     *          RemoteMessage.  Valid only after the connection handshake completes
+     *          (i.e. when is_connection_started() returns true).
+     *
+     * \return  Const reference to the active Channel object.
+     **/
+    inline const areg::Channel& connection_channel() const noexcept;
+
+//////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
 protected:
@@ -292,6 +318,16 @@ inline void RouterClient::send_executable_message(const RemoteMessage& msg, areg
 inline void RouterClient::send_executable_message(RemoteMessage&& msg, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/)
 {
     ServiceClientEvent::send_event(ServiceEventData(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, std::move(msg)), mEventConsumer, static_cast<DispatcherThread&>(self()), eventPrio);
+}
+
+inline bool RouterClient::send_raw_message(const RemoteMessage& msg)
+{
+    return send_message(msg);
+}
+
+inline const areg::Channel& RouterClient::connection_channel() const noexcept
+{
+    return mChannel;
 }
 
 } // namespace areg

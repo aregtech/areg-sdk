@@ -299,12 +299,12 @@ router::*::port::tcpip      = 8181			                # Router TCP port number (d
 #   Not applied on Windows — OS autotuning is used there instead.
 #   On Linux, the kernel doubles the configured value internally.
 # ---------------------------------------------------------------------------
-net::mtrouter::tcpip::sndbuf  = 4096                          # Router SO_SNDBUF (4096 KB = 4 MB). Increase for 3MB+ frames.
-net::mtrouter::tcpip::rcvbuf  = 4096                          # Router SO_RCVBUF (4096 KB = 4 MB).
-net::logcollector::tcpip::sndbuf  = 2048                          # Logger SO_SNDBUF (2048 KB = 2 MB — log traffic is bursty but small).
-net::logcollector::tcpip::rcvbuf  = 2048                          # Logger SO_RCVBUF (2048 KB = 2 MB).
-# net::*::tcpip::sndbuf     = 4096                          # Default SO_SNDBUF for all services (uncomment to set a global default).
-# net::*::tcpip::rcvbuf     = 4096                          # Default SO_RCVBUF for all services (uncomment to set a global default).
+net::mtrouter::tcpip::sndbuf        = 16384                 # Router SO_SNDBUF (4096 KB = 4 MB). Increase for 3MB+ frames.
+net::mtrouter::tcpip::rcvbuf        = 16384                 # Router SO_RCVBUF (4096 KB = 4 MB).
+net::logcollector::tcpip::sndbuf    = 2048                  # Logger SO_SNDBUF (2048 KB = 2 MB — log traffic is bursty but small).
+net::logcollector::tcpip::rcvbuf    = 2048                  # Logger SO_RCVBUF (2048 KB = 2 MB).
+net::*::tcpip::sndbuf               = 16384                 # Default SO_SNDBUF for all services (uncomment to set a global default).
+net::*::tcpip::rcvbuf               = 16384                 # Default SO_RCVBUF for all services (uncomment to set a global default).
 
 # ---------------------------------------------------------------------------
 # Remote Logger Settings

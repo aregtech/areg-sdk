@@ -157,6 +157,15 @@ private:
      **/
     bool                            mSaveDataSend;
 
+#if defined(__linux__)
+    /**
+     * \brief   Per-socket zerocopy sequence counter.  Counts successful
+     *          ::send(MSG_ZEROCOPY) calls since the last socket creation.
+     *          Used to calculate the hi_id passed to socket_drain_zerocopy().
+     **/
+    uint32_t                        mZerocopyIdNext;
+#endif  // defined(__linux__)
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////

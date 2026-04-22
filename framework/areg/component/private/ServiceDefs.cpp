@@ -15,6 +15,7 @@
  ************************************************************************/
 
 #include "areg/component/ServiceDefs.hpp"
+#include "areg/component/private/ServiceManager.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // class areg::StateArray implementation
@@ -185,4 +186,14 @@ AREG_API_IMPL const areg::InterfaceData & areg::empty_interface() noexcept
     };
 
     return _InterfaceData;
+}
+
+AREG_API_IMPL bool areg::send_raw_message(const areg::RemoteMessage& msg) noexcept
+{
+    return ServiceManager::send_raw_message(msg);
+}
+
+AREG_API_IMPL const areg::Channel& areg::connection_channel() noexcept
+{
+    return ServiceManager::connection_channel();
 }

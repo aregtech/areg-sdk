@@ -196,6 +196,13 @@ public:
      **/
     inline bool disable_receive();
 
+    /**
+     * \brief   Returns true if MSG_ZEROCOPY was enabled on this socket
+     *          (Linux 4.14+ only).  Always false on other platforms.
+     **/
+    [[nodiscard]]
+    inline bool is_zerocopy_enabled() const noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
@@ -221,6 +228,12 @@ private:
      *          Initialized to SOCKET_RECV_BUFFER_SIZE; override via set_socket_buffers().
      **/
     uint32_t        mSockRecvBuf;
+
+    /**
+     * \brief   True when SO_ZEROCOPY was successfully set on the client socket
+     *          (Linux 4.14+).  Always false on other platforms.
+     **/
+    bool            mZerocopyEnabled;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -297,6 +310,11 @@ inline void ClientConnection::set_socket_buffers(uint32_t sendBuf, uint32_t recv
 {
     mSockSendBuf = (sendBuf > 0) ? sendBuf : mSockSendBuf;
     mSockRecvBuf = (recvBuf > 0) ? recvBuf : mSockRecvBuf;
+}
+
+inline bool ClientConnection::is_zerocopy_enabled() const noexcept
+{
+    return mZerocopyEnabled;
 }
 
 } // namespace areg
