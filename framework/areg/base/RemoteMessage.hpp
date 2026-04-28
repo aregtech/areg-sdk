@@ -42,6 +42,12 @@ class AREG_API RemoteMessage final : public SharedBuffer
     friend class Socket;
 
 //////////////////////////////////////////////////////////////////////////
+// Internal types and constants
+//////////////////////////////////////////////////////////////////////////
+    static constexpr ITEM_ID        _INVALID_COOKIE     { static_cast<ITEM_ID>(areg::Cookie::Invalid) };
+    static constexpr SequenceNumber _INVALID_SEQUENCE   { areg::SEQUENCE_NUMBER_ANY };
+
+//////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
@@ -357,7 +363,7 @@ inline uint32_t RemoteMessage::checksum() const noexcept
 inline const ITEM_ID & RemoteMessage::source() const noexcept
 {
     const areg::RawMessage* msg{ remote_message() };
-    return (msg != nullptr ? msg->rbHeader.rbhSource : areg::SOURCE_UNKNOWN);
+    return (msg != nullptr ? msg->rbHeader.rbhSource : RemoteMessage::_INVALID_COOKIE);
 }
 
 inline void RemoteMessage::set_source(const ITEM_ID & idSource ) noexcept
@@ -372,7 +378,7 @@ inline void RemoteMessage::set_source(const ITEM_ID & idSource ) noexcept
 inline const ITEM_ID & RemoteMessage::target() const noexcept
 {
     const areg::RawMessage* msg{ remote_message() };
-    return (msg != nullptr ? msg->rbHeader.rbhTarget : areg::TARGET_UNKNOWN);
+    return (msg != nullptr ? msg->rbHeader.rbhTarget : RemoteMessage::_INVALID_COOKIE);
 }
 
 inline void RemoteMessage::set_target(const ITEM_ID & idTarget ) noexcept
@@ -398,7 +404,6 @@ inline void RemoteMessage::set_message_id( uint32_t newMessageId ) noexcept
         msg->rbHeader.rbhMessageId = newMessageId;
     }
 }
-
 inline uint32_t RemoteMessage::result() const noexcept
 {
     const areg::RawMessage* msg{ remote_message() };
@@ -417,7 +422,7 @@ inline void RemoteMessage::set_result( uint32_t newResult ) noexcept
 inline const SequenceNumber & RemoteMessage::sequence() const noexcept
 {
     const areg::RawMessage* msg{ remote_message() };
-    return (msg != nullptr ? msg->rbHeader.rbhSequenceNr : areg::SEQUENCE_NUMBER_ANY);
+    return (msg != nullptr ? msg->rbHeader.rbhSequenceNr : RemoteMessage::_INVALID_SEQUENCE);
 }
 
 inline void RemoteMessage::set_sequence(const SequenceNumber & newSequenceNr ) noexcept
