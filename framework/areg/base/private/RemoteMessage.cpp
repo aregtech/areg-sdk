@@ -28,6 +28,9 @@
 
 namespace areg {
 
+const ITEM_ID        RemoteMessage::_INVALID_COOKIE     { static_cast<ITEM_ID>(areg::Cookie::Invalid) };
+const SequenceNumber RemoteMessage::_INVALID_SEQUENCE   { areg::SEQUENCE_NUMBER_ANY };
+
 uint32_t RemoteMessage::_checksum_calculate(const areg::RawMessage& remoteMessage) noexcept
 {
 #if 0

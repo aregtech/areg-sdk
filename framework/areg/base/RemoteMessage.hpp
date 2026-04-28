@@ -44,8 +44,8 @@ class AREG_API RemoteMessage final : public SharedBuffer
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
 //////////////////////////////////////////////////////////////////////////
-    static constexpr ITEM_ID        _INVALID_COOKIE     { static_cast<ITEM_ID>(areg::Cookie::Invalid) };
-    static constexpr SequenceNumber _INVALID_SEQUENCE   { areg::SEQUENCE_NUMBER_ANY };
+    static const ITEM_ID        _INVALID_COOKIE;
+    static const SequenceNumber _INVALID_SEQUENCE;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
