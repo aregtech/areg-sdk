@@ -128,9 +128,7 @@ ThreadLocalStorage* Thread::_thread_local_storage( Thread* ownThread )
     }
     else
     {
-        // called when thread exists
-        // the local storage elements should be removed and
-        // the object should be deleted.
+        // Called when thread exits.
         ASSERT(ownThread == nullptr );
         ASSERT(_localStorage != nullptr );
         _localStorage->clear();

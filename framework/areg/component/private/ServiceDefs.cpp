@@ -115,7 +115,6 @@ void areg::ParameterArray::construct( const uint32_t * params, uint32_t count ) 
     // reserve space for one "no param" element
     size += static_cast<uint32_t>( sizeof(areg::StateArray) );
 
-    // here we start having parameter list.
     uint32_t skipBegin  = size;
     // space for parameters
     size += count_param_space(params, count);
@@ -124,33 +123,23 @@ void areg::ParameterArray::construct( const uint32_t * params, uint32_t count ) 
     if (buffer == nullptr)
         return;
     
-    // set element count
     mElemCount = static_cast<int32_t>(count);
-    // array of pointers to Param objects start from beginning
     mParamList  = reinterpret_cast<areg::StateArray **>(buffer);
 
-    // here is reserved "no param" element
     areg::StateArray* noParam = reinterpret_cast<areg::StateArray  *>(buffer + skipList);
 
-    // here start actual params
     uint8_t* paramElem  = buffer + skipBegin;
 
-    // initialize "no param" element
     new (noParam) areg::StateArray(0);
 
-    // start initializing
     for ( int i = 0; i < mElemCount; ++ i )
     {
-        // initially "no param" element
         areg::StateArray *param = noParam;
         if (params[i] != 0)
         {
-            // if parameter count is not zero
             param = reinterpret_cast<areg::StateArray *>(paramElem);
-            // initialize by calling private construct, implemented for this case.
             new (param) areg::StateArray(paramElem + sizeof(areg::StateArray), static_cast<int32_t>(params[i]));
 
-            // go to next elem
             uint32_t next = static_cast<uint32_t>(sizeof(areg::StateArray) + params[i] * sizeof(areg::DataState));
             paramElem += next;
         }

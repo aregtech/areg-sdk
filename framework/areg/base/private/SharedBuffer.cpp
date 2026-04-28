@@ -315,7 +315,6 @@ uint32_t SharedBuffer::read(SharedBuffer& buf) const noexcept
     if ((read_data(reinterpret_cast<uint8_t*>(&length), sizeof(uint32_t)) != sizeof(uint32_t)) || (length == 0u))
         return 0u;
 
-    // Verify the claimed payload fits in the remaining source data (view-aware).
     const areg::RawBuffer* const raw = mByteBuffer.get();
     const uint32_t srcEnd = (mViewEnd > 0u ? mViewEnd : (raw != nullptr ? raw->bufHeader.biUsed : 0u));
     if (mPosition + length > srcEnd)
@@ -325,8 +324,7 @@ uint32_t SharedBuffer::read(SharedBuffer& buf) const noexcept
         return 0u;
     }
 
-    // Zero-copy: share the underlying allocation, expose [mPosition, mPosition+length)
-    // as a view.  O(1): one shared_ptr copy + 3 field assignments, no alloc, no memcpy.
+    // Zero-copy: share underlying allocation, expose [mPosition, mPosition+length).
     buf.mByteBuffer = mByteBuffer;
     buf.mViewStart  = mPosition;
     buf.mViewEnd    = mPosition + length;

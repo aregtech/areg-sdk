@@ -56,7 +56,7 @@ void ClientSendThread::_drain_available() noexcept
     while (mZerocopyRingCount > 0u)
     {
         ZerocopyEntry& tail = mZerocopyRing[mZerocopyRingTail];
-        // Wrap-safe: (int32_t)(confirmed - hi_id) >= 0  ⟺  hi_id was confirmed.
+        // Wrap-safe: (int32_t)(confirmed - hi_id) >= 0 iff hi_id <= confirmed.
         if (static_cast<int32_t>(mZerocopyConfirmed - tail.hi_id) < 0)
             break;
 
@@ -73,7 +73,6 @@ void ClientSendThread::_drain_oldest_blocking() noexcept
     // Block until the kernel confirms the oldest slot's hi_id.
     areg::socket_drain_zerocopy(mConnection.socket().handle(), tail.hi_id);
 
-    // Update the global watermark conservatively.
     if (static_cast<int32_t>(tail.hi_id - mZerocopyConfirmed) > 0)
         mZerocopyConfirmed = tail.hi_id;
 

@@ -246,7 +246,6 @@ bool File::_os_reserve(uint32_t newSize) noexcept
 {
     ASSERT(mFileHandle != _os_invalid_handle());
     // Move the pointer to the target size then mark it as the new end-of-file.
-    // SetEndOfFile leaves the pointer at newSize; reserve() will restore it.
     DWORD moved = ::SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(newSize), nullptr, FILE_BEGIN);
     return ((moved == INVALID_SET_FILE_POINTER) && static_cast<bool>(::SetEndOfFile(static_cast<HANDLE>(mFileHandle))));
 }

@@ -163,7 +163,6 @@ namespace {
 
 namespace areg {
 
-// the static empty string
 const String & String::empty_string()
 {
     static const String _emptyString{ "" };

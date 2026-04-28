@@ -240,7 +240,6 @@ void PoolSendThread::process_event( const SendMessageEventData & data )
             }
         }
 
-        // Destroy all events in this group regardless of send outcome.
         for (uint32_t k{ i }; k < j; ++k)
             mBatch[k].sendEvt->destroy();
 

@@ -33,6 +33,15 @@
 #include <errno.h>
 #include <vector>
 
+namespace {
+// Drain all buffered bytes from the wakeup pipe so it does not re-fire.
+inline void drain_pipe(int fd) noexcept
+{
+    char buf[64];
+    while (::read(fd, buf, sizeof(buf)) > 0) {}
+}
+} // namespace
+
 //////////////////////////////////////////////////////////////////////////
 // Generic POSIX: constructor, destructor, and wait()
 // using poll() + anonymous pipe (Cygwin, FreeBSD, etc.)
@@ -71,7 +80,6 @@ areg::SocketMultiplexer::SocketMultiplexer(uint32_t maxConnections /*= areg::DEF
     if (::pipe(pipeFds) != 0)
         return;
 
-    // Set both ends non-blocking and close-on-exec.
     for (int fd : pipeFds)
     {
         int flags = ::fcntl(fd, F_GETFL, 0);
@@ -117,13 +125,10 @@ bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search)
     if (search && is_registered(hSocket))
         return false;
 
-    // Transition out of reset state.  Drain any pending wakeup write left by
-    // the previous reset() that was not consumed by wait() (wait() may have
-    // returned early via mIsReset without draining the pipe).
+    // Transition out of reset state.  Drain any pending wakeup write.
     if (mIsReset.exchange(false, std::memory_order_acq_rel) && (mWakeupReadFd != areg::InvalidSocketHandle))
     {
-        char buf[64];
-        while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
+        drain_pipe(static_cast<int>(mWakeupReadFd));
     }
 
     mSockets.push_back(hSocket);
@@ -183,9 +188,9 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         mBatchCount = mBatchIdx = 0;
         if (mWakeupReadFd != areg::InvalidSocketHandle)
         {
-            char buf[64];
-            while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
+            drain_pipe(static_cast<int>(mWakeupReadFd));
         }
+
         return areg::FailedSocketHandle;
     }
 
@@ -195,8 +200,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         const SOCKETHANDLE fd = mBatchFds[mBatchIdx++];
         if (fd == mWakeupReadFd)
         {
-            char buf[64];
-            while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
+            drain_pipe(static_cast<int>(mWakeupReadFd));
             mBatchCount = mBatchIdx = 0;
             // Hard reset --> FailedSocketHandle; soft wakeup() --> InvalidSocketHandle.
             return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
@@ -236,18 +240,15 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
     else if (nReady == 0)
         return areg::InvalidSocketHandle;   // timeout
 
-    // Check wakeup pipe — drain so it does not fire again on the next call.
     if ((wakeupSlots > 0) && (fds[socketCount].revents & POLLIN))
     {
-        char buf[64];
-        while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
+        drain_pipe(static_cast<int>(mWakeupReadFd));
         mBatchCount = mBatchIdx = 0;
         // Hard reset --> FailedSocketHandle; soft wakeup() --> InvalidSocketHandle.
         return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
     }
 
     // Collect ALL ready sockets into the batch cache; return the first immediately.
-    // Store revents alongside the fd so the drain loop can detect error-only sockets.
     mBatchCount = 0;
     SOCKETHANDLE first{ areg::InvalidSocketHandle };
     uint32_t     firstEv{ 0u };

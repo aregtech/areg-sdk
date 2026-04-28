@@ -30,7 +30,7 @@
 
 namespace areg::ext {
 
-DEF_LOG_SCOPE(areg_aregextend_service_PoolReceiveThread, run_dispatcher);
+DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_PoolReceiveThread, run_dispatcher);
 
 PoolReceiveThread::PoolReceiveThread( areg::RemoteMessageHandler & remoteService
                                     , ServerConnection & connection
@@ -113,8 +113,8 @@ void PoolReceiveThread::_process_pending_sockets()
 
 bool PoolReceiveThread::run_dispatcher()
 {
-    LOG_SCOPE(areg_aregextend_service_PoolReceiveThread, run_dispatcher);
-    LOG_DBG("Pool receive thread [ %s ] starting", name().as_string());
+    DEBUG_LOG_SCOPE(areg_aregextend_service_PoolReceiveThread, run_dispatcher);
+    DEBUG_LOG_DBG("Pool receive thread [ %s ] starting", name().as_string());
 
     ready_for_events(true);
 
@@ -151,7 +151,6 @@ bool PoolReceiveThread::run_dispatcher()
         else if ( hReady == areg::InvalidSocketHandle )
         {
             // Soft wakeup: wakeup() was called to signal pending socket changes.
-            // Loop back to _process_pending_sockets() at the top.
             continue;
         }
         else
@@ -177,9 +176,9 @@ bool PoolReceiveThread::run_dispatcher()
                 // Receive failed: remove socket from the multiplexer.  The
                 // connection_lost() callback (via failed_receive_message) will
                 // close the connection and send the disconnect notification.
-                LOG_WARN("Pool receive thread [ %s ]: receive failed on socket [ %u ], notifying connection_lost"
-                            , name().as_string()
-                            , static_cast<uint32_t>(hReady));
+                DEBUG_LOG_WARN("Pool receive thread [ %s ]: receive failed on socket [ %u ], notifying connection_lost"
+                                , name().as_string()
+                                , static_cast<uint32_t>(hReady));
 
                 mMux.unregister_socket(hReady);
                 mRemoteService.failed_receive_message(clientSocket);
@@ -214,7 +213,7 @@ bool PoolReceiveThread::run_dispatcher()
                 }
                 else
                 {
-                    LOG_WARN("Pool receive thread [ %s ]: receive failed on drain socket [ %u ], notifying connection_lost", name().as_string(), static_cast<uint32_t>(hDrain));
+                    DEBUG_LOG_WARN("Pool receive thread [ %s ]: receive failed on drain socket [ %u ], notifying connection_lost", name().as_string(), static_cast<uint32_t>(hDrain));
                     mMux.unregister_socket(hDrain);
                     mRemoteService.failed_receive_message(drainSocket);
                 }
@@ -226,7 +225,7 @@ bool PoolReceiveThread::run_dispatcher()
     ready_for_events(false);
     remove_all_events();
 
-    LOG_DBG("Pool receive thread [ %s ] stopped", name().as_string());
+    DEBUG_LOG_DBG("Pool receive thread [ %s ] stopped", name().as_string());
 
     return (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
 }

@@ -211,9 +211,7 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
     case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterConnection:
     case ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection:
         {
-            // Create service provider and service consumer list
-            // to be able to unregister entries, because they are removing
-            // elements from the existing list and it may invalidate position object.
+            // Snapshot to copies; removing from live lists would invalidate iterators.
             ArrayList<StubAddress> stubList;
             ArrayList<ProxyAddress> proxyList;
             for ( ServerList::MAPPOS posMap = mServerList.first_position( ); mServerList.is_valid_position( posMap ); posMap = mServerList.next_position( posMap ) )

@@ -23,6 +23,15 @@
 #include <sys/eventfd.h>
 #include <errno.h>
 
+namespace {
+// A single read() resets the accumulated counter to zero (no EFD_SEMAPHORE).
+inline void drain_eventfd(int fd) noexcept
+{
+    uint64_t dummy{ 0u };
+    [[maybe_unused]] ssize_t ignored = ::read(fd, &dummy, sizeof(uint64_t));
+}
+} // namespace
+
 // -----------------------------------------------------------------------
 // WAKEUP DESIGN:
 //   mWakeupReadFd == mWakeupWriteFd — both reference the same eventfd.
@@ -113,11 +122,9 @@ bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search)
         return false;
 
     // Transition out of reset state. Drain here to start new cycle clean.
-    // The read() call is non-blocking; EAGAIN is fine.
     if (mIsReset.exchange(false, std::memory_order_acq_rel) && (mWakeupReadFd != areg::InvalidSocketHandle))
     {
-        uint64_t dummy{ 0u };
-        [[maybe_unused]] ssize_t drain = ::read(static_cast<int>(mWakeupReadFd), &dummy, sizeof(uint64_t));
+        drain_eventfd(static_cast<int>(mWakeupReadFd));
     }
 
     mSockets.push_back(hSocket);
@@ -183,9 +190,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         mBatchCount = mBatchIdx = 0;
         if (mWakeupReadFd != areg::InvalidSocketHandle)
         {
-            // Drain the wakeup eventfd
-            uint64_t dummy{ 0u };
-            [[maybe_unused]] ssize_t drain = ::read(static_cast<int>(mWakeupReadFd), &dummy, sizeof(uint64_t));
+            drain_eventfd(static_cast<int>(mWakeupReadFd));
         }
 
         return areg::FailedSocketHandle;
@@ -203,8 +208,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
 
         if (fd == mWakeupReadFd)
         {
-            uint64_t counter{ 0u };
-            [[maybe_unused]] ssize_t drained = ::read(static_cast<int>(mWakeupReadFd), &counter, sizeof(uint64_t));
+            drain_eventfd(static_cast<int>(mWakeupReadFd));
             mBatchCount = mBatchIdx = 0;
             // Hard reset --> FailedSocketHandle; soft wakeup() --> InvalidSocketHandle.
             return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
@@ -241,8 +245,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
     const uint32_t     firstEv  = events[0].events;
     if (first == mWakeupReadFd)
     {
-        uint64_t counter{ 0u };
-        [[maybe_unused]] ssize_t drained = ::read(static_cast<int>(mWakeupReadFd), &counter, sizeof(uint64_t));
+        drain_eventfd(static_cast<int>(mWakeupReadFd));
         mBatchCount = mBatchIdx = 0;
         // Hard reset --> FailedSocketHandle; soft wakeup() --> InvalidSocketHandle.
         return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;

@@ -162,7 +162,6 @@ Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
 
     if ((waitForStopMs != DO_NOT_WAIT) && (mWaitForExit.lock(waitForStopMs) == false))
     {
-        // here we assume that it was requested to wait for thread exit, but it is still running
         // force to terminate thread and close handles due to waiting timeout expire
         AREG_OUTPUT_DBG("The thread [ %s ] should be terminated", mThreadAddress.name().as_string());
         result = Thread::ThreadCompletion::Terminated;

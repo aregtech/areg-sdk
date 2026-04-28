@@ -469,7 +469,6 @@ void ServiceCommunicationBase::stop_connection()
     // the socket interrupts are silently ignored instead of re-enqueueing disconnect work.
     mShuttingDown.store(true, std::memory_order_release);
 
-    // Signal the global receive thread to exit.
     mThreadReceive.trigger_exit();
 
     // Snapshot and clear the pool list so the threads can be stopped outside the lock.
@@ -521,7 +520,6 @@ void ServiceCommunicationBase::stop_connection()
     mThreadSend.shutdown( areg::WAIT_INFINITE );
     mThreadReceive.shutdown( areg::WAIT_INFINITE );
 
-    // Wait for all pool send and receive threads to finish.
     for ( auto & pair : pairsToStop )
     {
         if ( pair )
@@ -786,7 +784,6 @@ void ServiceCommunicationBase::process_received_message(RemoteMessage & msgRecei
             mServerConnection.close_connection( cookie );
         }
 
-        // Dispatch system messages at high priority.
         send_communication_message( ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgReceived, areg::EventPriority::HighPrio );
     }
     else if ( (source == areg::SOURCE_UNKNOWN) && (msgId == areg::FuncIdRange::SystemServiceConnect) )

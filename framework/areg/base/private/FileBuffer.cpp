@@ -80,7 +80,7 @@ bool FileBuffer::open()
             // Owner: may allocate or reset the buffer.
             if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreateNew)) != 0)
             {
-                // CreateNew: reset the buffer (used size = 0) and then allocate.
+                // CreateNew: reset the buffer and then allocate.
                 mSharedBuffer.invalidate();
                 mSharedBuffer.reserve(mSharedBuffer.block_size(), false);
             }
@@ -127,7 +127,6 @@ void FileBuffer::close()
     mIsOpened = false;
     if (is_force_delete())
     {
-        // Owner-only deletion: remove() checks ownership and fails gracefully if shared.
         remove();
     }
     else

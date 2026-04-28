@@ -50,7 +50,6 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
         // If the address is invalid, this socket was previously accepted but has
         // since been deregistered (e.g. by the service thread processing a disconnect
         // message).  Do NOT re-accept it, that would restart the loop indefinitely.
-        // Simply close our fd reference and return.
         if ( !addrAccepted.is_valid() )
         {
             DEBUG_LOG_WARN("Socket [ %u ] is no longer registered, it was deregistered while still in the event queue. Ignoring.", hSocket);

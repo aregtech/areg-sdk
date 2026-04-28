@@ -167,7 +167,6 @@ void CriticalSection::_os_create_critical_section()
 
 void CriticalSection::_os_release_critical_section()
 {
-    // do not unlock, it will automatically unlock in CriticalSectionPosix::freeResource()
 }
 
 bool CriticalSection::_os_lock()

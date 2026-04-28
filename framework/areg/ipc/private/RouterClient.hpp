@@ -274,8 +274,8 @@ private:
      * \param   msg     The message to forward.
      * \return  Returns true if succeeded to send the command.
      **/
-    inline void send_executable_message(const RemoteMessage & msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
-    inline void send_executable_message(RemoteMessage&& msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio);
+    inline void forward_executable_message(const RemoteMessage & msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
+    inline void forward_executable_message(RemoteMessage&& msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -303,12 +303,12 @@ inline RouterClient & RouterClient::self() noexcept
     return (*this);
 }
 
-inline void RouterClient::send_executable_message(const RemoteMessage& msg, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/)
+inline void RouterClient::forward_executable_message(const RemoteMessage& msg, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/)
 {
     ServiceClientEvent::send_event(ServiceEventData(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msg), mEventConsumer, static_cast<DispatcherThread&>(self()), eventPrio);
 }
 
-inline void RouterClient::send_executable_message(RemoteMessage&& msg, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/)
+inline void RouterClient::forward_executable_message(RemoteMessage&& msg, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/)
 {
     ServiceClientEvent::send_event(ServiceEventData(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, std::move(msg)), mEventConsumer, static_cast<DispatcherThread&>(self()), eventPrio);
 }

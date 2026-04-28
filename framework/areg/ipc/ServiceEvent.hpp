@@ -76,6 +76,8 @@ public:
      **/
     inline ServiceEventData(ServiceEventData::ServiceCommand cmdService, const RemoteMessage& msgService);
 
+    inline ServiceEventData(ServiceEventData::ServiceCommand cmdService, RemoteMessage&& msgService) noexcept;
+
     ServiceEventData( const ServiceEventData & source ) = default;
 
     ServiceEventData( ServiceEventData && source ) noexcept = default;
@@ -148,6 +150,12 @@ inline ServiceEventData::ServiceEventData( ServiceEventData::ServiceCommand cmdS
 inline ServiceEventData::ServiceEventData(ServiceEventData::ServiceCommand cmdService, const RemoteMessage& msgService)
     : mServiceCommand   ( cmdService )
     , mMessageData      ( msgService )
+{
+}
+
+inline ServiceEventData::ServiceEventData(ServiceEventData::ServiceCommand cmdService, RemoteMessage&& msgService) noexcept
+    : mServiceCommand   ( cmdService )
+    , mMessageData      ( std::move(msgService) )
 {
 }
 

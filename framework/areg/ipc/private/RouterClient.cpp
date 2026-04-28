@@ -402,16 +402,16 @@ void RouterClient::process_received_message( RemoteMessage & msgReceived, Socket
         if ( areg::is_executable_id(static_cast<uint32_t>(msgId)) )
         {
             // Deserialize and deliver inline on ClientReceiveThread.
-            // Previously this was off-loaded via send_executable_message() to the
+            // Previously this was off-loaded via forward_executable_message() to the
             // RouterClient DispatcherThread, but that added an unbounded intermediate
             // queue.  At high small-message rates the queue grew faster than it could
             // drain, causing OOM on the consumer side.  Inline processing re-establishes
             // natural TCP back-pressure: when ClientReceiveThread is busy deserializing,
             // the kernel receive buffer fills and the sender throttles automatically.
-#if 1
+#if 0
             on_message_received(msgReceived);
 #else
-            send_executable_message(msgReceived);
+            forward_executable_message(std::move(msgReceived));
 #endif
         }
         else

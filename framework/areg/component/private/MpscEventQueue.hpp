@@ -13,9 +13,8 @@
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, lock-free MPSC (Multi-Producer, Single-Consumer) event queue.
- *
- * Replaces ExternalEventQueue's mutex+deque with a two-lane design:
- *
+ *              Based on Dmitry Vyukov's MPSC queue algorithm.
+ * 
  *   Fast lane  - Dmitry Vyukov MPSC (Multi-Producer, Single-Consumer) linked-list (lock-free).
  *                Push: one atomic exchange on mTail  (any producer thread).
  *                Pop:  wait-free read of mHead->next (consumer thread only).
@@ -218,26 +217,20 @@ private:
      * \brief   Publishes \a node onto the MPSC fast lane (Vyukov algorithm).
      *          One atomic exchange - safe from multiple producer threads.
      **/
-    void _mpsc_push(Node* node) noexcept;
+    inline void _mpsc_push(Node* node) noexcept;
 
     /**
      * \brief   Removes one node from the MPSC fast lane.
      *          Consumer thread only. Returns nullptr when the lane is empty.
      *          Caller must call _free_node() on the returned node.
      **/
-    Node* _mpsc_pop() noexcept;
+    inline Node* _mpsc_pop() noexcept;
 
     /**
      * \brief   Drains the entire fast lane into \a out.
      *          Safe only when no producers are active (control path).
      **/
     void _mpsc_drain_to(std::deque<Event*>& out) noexcept;
-
-    /**
-     * \brief   Computes the effective capacity limit.
-     *          0 -> unlimited (UINT32_MAX cap); any other value -> max(32, requested).
-     **/
-    static uint32_t _calc_capacity(uint32_t requested) noexcept;
 
     /**
      * \brief   Returns a Node from the pool, or allocates a new one if the pool is empty.
@@ -248,6 +241,14 @@ private:
      * \brief   Returns a Node to the pool. If the pool is already at capacity, deletes the node.
      **/
     void _free_node(Node* node) noexcept;
+
+    inline uint32_t _prio_count() noexcept;
+
+    /**
+     * \brief   Computes the effective capacity limit.
+     *          0 -> unlimited (UINT32_MAX cap); any other value -> max(32, requested).
+     **/
+    static uint32_t _calc_capacity(uint32_t requested) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

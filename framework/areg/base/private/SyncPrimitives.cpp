@@ -249,7 +249,6 @@ bool SpinLock::unlock()
         return false;
     }
 
-    // Decrement recursion counter; release the lock when it reaches zero.
     if (mCount.fetch_sub(1u, std::memory_order_relaxed) == 1u)
     {
         mOwner.store(0, std::memory_order_release);

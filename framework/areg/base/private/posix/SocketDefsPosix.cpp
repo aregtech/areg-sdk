@@ -166,9 +166,7 @@ int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLen
     ASSERT(hSocket != areg::InvalidSocketHandle);
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
 
-    // MSG_WAITALL asks the kernel to accumulate the full requested chunk before
-    // returning, eliminating repeated userspace loop iterations for large payloads
-    // (e.g. ~3 MB messages need only one recv() call instead of many).
+    // MSG_WAITALL asks the kernel to accumulate the full requested chunk before returning
     // The socket has SO_RCVTIMEO set so the kernel may still return a short read
     // if the timeout fires before all bytes arrive; the outer while-loop retries
     // in that case.  EINTR is also handled by the retry path below.
@@ -210,8 +208,6 @@ bool _os_connect_socket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen
     ASSERT(addr != nullptr);
 
     // Save current socket flags and switch to non-blocking mode.
-    // This allows the connect to return EINPROGRESS immediately if the
-    // server is not reachable, instead of blocking for the full OS TCP timeout.
     const int savedFlags = ::fcntl(hSocket, F_GETFL, 0);
     if (savedFlags == -1)
         return false;

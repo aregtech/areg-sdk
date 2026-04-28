@@ -946,10 +946,9 @@ AREG_API_IMPL bool areg::disable_receive(SOCKETHANDLE hSocket) noexcept
 
 AREG_API_IMPL void areg::socket_interrupt(SOCKETHANDLE hSocket) noexcept
 {
-    // shutdown(SHUT_RDWR) is POSIX-defined to interrupt a blocked send() or
-    // recv() on the same descriptor from another thread without closing the fd.
-    // The fd remains open so that the blocked thread can read the error code
-    // and exit cleanly before socket_close() is called from the owning thread.
+    // shutdown(SHUT_RDWR) is POSIX-defined to interrupt blocked send()/recv()
+    // from another thread without closing the fd. The fd remains open for the
+    // blocked thread to read the error code and exit cleanly.
     if (areg::is_valid_socket(hSocket))
     {
 #ifdef _WIN32

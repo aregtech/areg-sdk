@@ -231,7 +231,6 @@ bool EventDispatcherBase::run_dispatcher()
                 break;
             }
 
-            // Process the event.
             if ( prepare_dispatch_event(eventElem) )
             {
                 dispatch_event(*eventElem);

@@ -191,26 +191,16 @@ Event* MpscEventQueue::pop_event() noexcept
         return result;
     }
 
-    // Fast lane appears empty (or a producer is mid-push — Vyukov in-flight edge case).
-    // Check priority lane count before signaling.
-    uint32_t prio_count = 0u;
-    {
-        mPrioLock.lock();
-        prio_count = static_cast<uint32_t>(mPrioQueue.size());
-        mPrioLock.unlock();
-    }
-
     // Reset the signal (or keep it set if priority items remain).
     // This must happen BEFORE the double-check so that a concurrent producer's
     // signal_event(1) always fires AFTER our reset, never silently before it.
-    mListener.signal_event(prio_count);
+    mListener.signal_event(_prio_count());
 
     // Double-check: a producer may have completed a push between our _mpsc_pop()
     // above and the signal_event() call. Re-try once to catch that case.
     node = _mpsc_pop();
     if (node == nullptr)
     {
-        // Truly empty (or still in-flight; the producer re-arms on push completion).
         return nullptr;
     }
 
@@ -219,23 +209,14 @@ Event* MpscEventQueue::pop_event() noexcept
     _free_node(node);
     const uint32_t old_fast = mFastCount.fetch_sub(1u, std::memory_order_relaxed);
     const uint32_t fast_remaining = (old_fast > 0u) ? (old_fast - 1u) : 0u;
-    {
-        mPrioLock.lock();
-        prio_count = static_cast<uint32_t>(mPrioQueue.size());
-        mPrioLock.unlock();
-    }
 
-    mListener.signal_event(fast_remaining + prio_count);
+    mListener.signal_event(fast_remaining + _prio_count());
     return result;
 }
 
-//////////////////////////////////////////////////////////////////////////
-// MpscEventQueue - remove operations (control path; no concurrent pushes)
-//////////////////////////////////////////////////////////////////////////
-
 void MpscEventQueue::remove_events() noexcept
 {
-    {
+    do {
         Lock lock(mPrioLock);
         auto it = mPrioQueue.begin();
         while (it != mPrioQueue.end())
@@ -251,7 +232,7 @@ void MpscEventQueue::remove_events() noexcept
                 it = mPrioQueue.erase(it);
             }
         }
-    }
+    } while (false);
 
     std::deque<Event*> drained;
     _mpsc_drain_to(drained);
@@ -261,19 +242,12 @@ void MpscEventQueue::remove_events() noexcept
     }
 
     mFastCount.store(0u, std::memory_order_relaxed);
-
-    uint32_t remaining{ 0u };
-    {
-        Lock lock(mPrioLock);
-        remaining = static_cast<uint32_t>(mPrioQueue.size());
-    }
-
-    mListener.signal_event(remaining);
+    mListener.signal_event(_prio_count());
 }
 
 void MpscEventQueue::remove_events(const RuntimeClassID& eventClassId) noexcept
 {
-    {
+    do {
         Lock lock(mPrioLock);
         auto it = mPrioQueue.begin();
         while (it != mPrioQueue.end())
@@ -290,7 +264,7 @@ void MpscEventQueue::remove_events(const RuntimeClassID& eventClassId) noexcept
                 ++it;
             }
         }
-    }
+    } while (false);
 
     std::deque<Event*> drained;
     _mpsc_drain_to(drained);
@@ -313,19 +287,12 @@ void MpscEventQueue::remove_events(const RuntimeClassID& eventClassId) noexcept
     }
 
     mFastCount.store(kept, std::memory_order_relaxed);
-
-    uint32_t prio_count{ 0u };
-    {
-        Lock lock(mPrioLock);
-        prio_count = static_cast<uint32_t>(mPrioQueue.size());
-    }
-
-    mListener.signal_event(kept + prio_count);
+    mListener.signal_event(kept + _prio_count());
 }
 
 void MpscEventQueue::remove_all_events() noexcept
 {
-    {
+    do {
         Lock lock(mPrioLock);
         for (Event* evt : mPrioQueue)
         {
@@ -333,7 +300,7 @@ void MpscEventQueue::remove_all_events() noexcept
         }
 
         mPrioQueue.clear();
-    }
+    } while (false);
 
     std::deque<Event*> drained;
     _mpsc_drain_to(drained);
@@ -350,13 +317,13 @@ void MpscEventQueue::remove_all_events() noexcept
 // MpscEventQueue - Vyukov MPSC algorithm
 //////////////////////////////////////////////////////////////////////////
 
-void MpscEventQueue::_mpsc_push(Node* node) noexcept
+inline void MpscEventQueue::_mpsc_push(Node* node) noexcept
 {
     Node* prev = mTail.exchange(node, std::memory_order_acq_rel);
     prev->next.store(node, std::memory_order_release);
 }
 
-MpscEventQueue::Node* MpscEventQueue::_mpsc_pop() noexcept
+inline MpscEventQueue::Node* MpscEventQueue::_mpsc_pop() noexcept
 {
     Node* head = mHead;
     Node* next = head->next.load(std::memory_order_acquire);
@@ -395,10 +362,6 @@ void MpscEventQueue::_mpsc_drain_to(std::deque<Event*>& out) noexcept
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
-// MpscEventQueue - node allocation
-//////////////////////////////////////////////////////////////////////////
-
 MpscEventQueue::Node* MpscEventQueue::_alloc_node() noexcept
 {
     {
@@ -408,7 +371,6 @@ MpscEventQueue::Node* MpscEventQueue::_alloc_node() noexcept
             Node* node{ mNodePoolHead };
             mNodePoolHead = node->next.load(std::memory_order_relaxed);
             --mNodePoolSize;
-            // Reset the node to a clean state before returning to the caller.
             node->next.store(nullptr, std::memory_order_relaxed);
             node->event = nullptr;
             return node;
@@ -437,9 +399,11 @@ void MpscEventQueue::_free_node(Node* node) noexcept
     delete node;
 }
 
-//////////////////////////////////////////////////////////////////////////
-// MpscEventQueue - capacity helper
-//////////////////////////////////////////////////////////////////////////
+inline uint32_t MpscEventQueue::_prio_count() noexcept
+{
+    Lock lock(mPrioLock);
+    return static_cast<uint32_t>(mPrioQueue.size());
+}
 
 uint32_t MpscEventQueue::_calc_capacity(uint32_t requested) noexcept
 {
