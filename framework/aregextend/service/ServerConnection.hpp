@@ -92,6 +92,9 @@ public:
      **/
     inline const ITEM_ID & channel_id() const;
 
+    using SocketConnectionBase::set_zerocopy_wanted;
+    using SocketConnectionBase::is_zerocopy_enabled;
+
     /**
      * \brief   Call to reject connection. When rejected, the socket connection will be closed and
      *          no more data will be accepted from connection.

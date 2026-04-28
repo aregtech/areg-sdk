@@ -32,7 +32,12 @@ ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientCo
     , mMsgsSend         ( 0u )
     , mSaveDataSend     ( false )
 #if defined(__linux__)
+    , mZerocopyRing     ( )
+    , mZerocopyRingHead ( 0u )
+    , mZerocopyRingTail ( 0u )
+    , mZerocopyRingCount( 0u )
     , mZerocopyIdNext   ( 0u )
+    , mZerocopyConfirmed( UINT32_MAX )
 #endif  // defined(__linux__)
 {
 }
@@ -43,7 +48,11 @@ void ClientSendThread::ready_for_events( bool is_ready )
     {
         SendMessageEvent::add_listener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
 #if defined(__linux__)
-        mZerocopyIdNext = 0u;
+        mZerocopyRingHead  = 0u;
+        mZerocopyRingTail  = 0u;
+        mZerocopyRingCount = 0u;
+        mZerocopyIdNext    = 0u;
+        mZerocopyConfirmed = UINT32_MAX;
 #endif  // defined(__linux__)
         DispatcherThread::ready_for_events( true );
     }
@@ -51,6 +60,12 @@ void ClientSendThread::ready_for_events( bool is_ready )
     {
         DispatcherThread::ready_for_events( false );
         SendMessageEvent::remove_listener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
+#if defined(__linux__)
+        // Flush ring BEFORE closing socket: once the socket is closed the kernel
+        // will not deliver further ERRQUEUE completions, so blocking drains would
+        // stall forever.  Force-release all slots immediately.
+        _flush_ring();
+#endif  // defined(__linux__)
         mConnection.close_socket( );
     }
 }
@@ -119,35 +134,86 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
         }
 
         // --- Phase 2: send the collected batch ---
-#if defined(__linux__)
-        const bool zerocopy_on{ mConnection.is_zerocopy_enabled() };
-        if (zerocopy_on)
-            areg::socket_set_zerocopy_active(true);
-#endif  // defined(__linux__)
-
-        const int32_t sentBytes = batchCount == 1u 
-                                    ? mConnection.send_message(*msgPtrs[0])
-                                    : mConnection.send_messages_batch(msgPtrs, batchCount);
 
 #if defined(__linux__)
-        // Drain ERRQUEUE BEFORE destroying send events.
-        // The kernel DMA-s directly from the SharedBuffer while the event is alive
-        // (ref >= 2). Destroying events before the drain would drop the ref to 1,
-        // allowing the hot-loop to patch the buffer while the NIC is still reading it.
-        if (zerocopy_on)
+        if (mConnection.is_zerocopy_enabled())
         {
-            areg::socket_set_zerocopy_active(false);
-            const uint32_t sends_made{ areg::socket_take_zerocopy_count() };
-            if (sends_made > 0u)
+            // Non-blocking drain of ERRQUEUE: updates mZerocopyConfirmed and
+            // releases any ring slots that have been confirmed by the kernel.
+            // Skip if ring is empty — avoids a syscall on every batch.
+            if (mZerocopyRingCount > 0u)
+                _drain_available();
+
+            // If the ring is full, block until the oldest slot is confirmed
+            // so we can reuse its slot.  This happens at most ZEROCOPY_RING_SIZE
+            // times per THREAD_DRAIN_LIMIT messages, so amortised overhead is low.
+            while (mZerocopyRingCount == ZEROCOPY_RING_SIZE)
+                _drain_oldest_blocking();
+
+            // Reset per-batch zerocopy counter before sending.
+            areg::socket_take_zerocopy_count();
+
+            int32_t sent_bytes{ 0 };
+            for (uint32_t i = 0u; i < batchCount; ++i)
             {
-                const uint32_t hi_id{ mZerocopyIdNext + sends_made - 1u };
-                mZerocopyIdNext += sends_made;
-                areg::socket_drain_zerocopy(mConnection.socket().handle(), hi_id);
+                const int32_t bytes = mConnection.send_message_zerocopy(*msgPtrs[i]);
+                if (bytes > 0)
+                    sent_bytes += bytes;
+                else if (bytes < 0)
+                {
+                    // Hard send error: flush ring and report failure.
+                    _flush_ring();
+                    for (uint32_t k = 1u; k < batchCount; ++k)
+                        evtPtrs[k]->destroy();
+
+                    mRemoteService.failed_send_message(*msgPtrs[0], mConnection.socket());
+                    return;
+                }
+                // bytes == 0 means message not valid — skip silently
             }
+
+            const uint32_t sends_made = areg::socket_take_zerocopy_count();
+
+            if (sends_made == 0u)
+            {
+                // All sends fell back to regular copy (ENOBUFS or no MSG_ZEROCOPY support).
+                // No ERRQUEUE notifications will arrive — safe to destroy events now.
+                for (uint32_t i = 1u; i < batchCount; ++i)
+                    evtPtrs[i]->destroy();
+
+                accumulate_sent(static_cast<uint64_t>(sent_bytes), batchCount);
+            }
+            else
+            {
+                // At least one MSG_ZEROCOPY send succeeded.  The kernel is DMA-ing
+                // directly from the SharedBuffer pages.  We must keep the buffers alive
+                // until the ERRQUEUE confirms their hi_id.  Store in the ring slot.
+                const uint32_t hi_id = mZerocopyIdNext + sends_made - 1u;
+                mZerocopyIdNext += sends_made;
+
+                ZerocopyEntry& slot = mZerocopyRing[mZerocopyRingHead];
+                slot.hi_id       = hi_id;
+                slot.trigger_msg = data.remote_message();   // copy --> ref +1
+                slot.event_count = batchCount - 1u;
+                for (uint32_t i = 1u; i < batchCount; ++i)
+                    slot.events[i - 1u] = evtPtrs[i];      // ownership transferred
+
+                mZerocopyRingHead = (mZerocopyRingHead + 1u) % ZEROCOPY_RING_SIZE;
+                ++mZerocopyRingCount;
+
+                // Do NOT destroy drained events here — ownership moved to ring slot.
+                accumulate_sent(static_cast<uint64_t>(sent_bytes), batchCount);
+            }
+
+            return;
         }
 #endif  // defined(__linux__)
 
-        // delete drained events
+        // Non-zerocopy path: original batch send.
+        const int32_t sentBytes = batchCount == 1u
+                                    ? mConnection.send_message(*msgPtrs[0])
+                                    : mConnection.send_messages_batch(msgPtrs, batchCount);
+
         for (uint32_t i = 1; i < batchCount; ++i)
             evtPtrs[i]->destroy();
 

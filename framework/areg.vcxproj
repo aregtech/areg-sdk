@@ -44,6 +44,7 @@
     <ClCompile Include="areg\appbase\private\Application.cpp" />
     <ClCompile Include="areg\appbase\private\AppDefs.cpp" />
     <ClCompile Include="areg\base\private\linux\ProcessLinux.cpp" />
+    <ClCompile Include="areg\base\private\linux\SocketDefsLinux.cpp" />
     <ClCompile Include="areg\base\private\linux\SocketMultiplexerLinux.cpp" />
     <ClCompile Include="areg\base\private\macos\ProcessMacOS.cpp" />
     <ClCompile Include="areg\base\private\macos\SocketMultiplexerMacOS.cpp" />
@@ -124,6 +125,7 @@
     <ClCompile Include="areg\component\private\macos\WatchdogManagerMacOS.cpp" />
     <ClCompile Include="areg\component\private\MpscEventQueue.cpp" />
     <ClCompile Include="areg\ipc\private\ConnectionConsumer.cpp" />
+    <ClCompile Include="areg\ipc\private\linux\ClientSendThreadLinux.cpp" />
     <ClCompile Include="areg\ipc\private\RegistrationProvider.cpp" />
     <ClCompile Include="areg\component\private\ServiceManagerEventProcessor.cpp" />
     <ClCompile Include="areg\component\private\SortedEventStack.cpp" />
@@ -443,6 +445,7 @@
     <Text Include="areg\component\private\posix\CMakeLists.txt" />
     <Text Include="areg\component\private\win32\CMakeLists.txt" />
     <Text Include="areg\ipc\private\CMakeLists.txt" />
+    <Text Include="areg\ipc\private\linux\CMakeLists.txt" />
     <Text Include="areg\persist\private\CMakeLists.txt" />
     <Text Include="areg\logging\private\CMakeLists.txt" />
     <Text Include="CMakeLists.txt" />

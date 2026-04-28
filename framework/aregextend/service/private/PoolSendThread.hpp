@@ -23,6 +23,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
+#include "areg/base/SocketDefs.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/ipc/SendMessageEvent.hpp"
 
@@ -56,6 +57,12 @@ namespace areg::ext {
 class PoolSendThread final  : public    DispatcherThread
                             , public    SendMessageEventConsumer
 {
+//////////////////////////////////////////////////////////////////////////
+// Internal types and constants
+//////////////////////////////////////////////////////////////////////////
+private:
+    using BatchEntries = std::array<areg::PendingSend, areg::THREAD_DRAIN_LIMIT>;
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -163,10 +170,11 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    ClientConnectionPair&               mOwner;         //!< Reference to the owning connection pair for socket lookup.
-    areg::RemoteMessageHandler &        mRemoteService; //!< Failure callbacks.
-    ServerConnection &                  mConnection;    //!< Server connection (socket lookup + send API).
-    ServerSendThread &                  mGlobalStats;   //!< Global counters accumulated here.
+    ClientConnectionPair&       mOwner;         //!< Reference to the owning connection pair for socket lookup.
+    areg::RemoteMessageHandler& mRemoteService; //!< Failure callbacks.
+    ServerConnection &          mConnection;    //!< Server connection (socket lookup + send API).
+    ServerSendThread &          mGlobalStats;   //!< Global counters accumulated here.
+    BatchEntries                mBatch;         //!< Batching list
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

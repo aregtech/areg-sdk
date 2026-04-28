@@ -210,6 +210,18 @@ class ServicingComponent final  : public    areg::Component
 
     using ImageBlock = LargeData::ImageBlock;
 
+    /**
+     * \brief   Per-proxy pre-serialized message pool.
+     *          Each connected consumer gets its own pool because the wire message header
+     *          embeds the target proxy address, making the byte layout proxy-specific.
+     **/
+    struct ProxyPool
+    {
+        areg::ProxyAddress               proxy;
+        std::vector<areg::RemoteMessage> messages;           //!< One wire message per mSendList entry
+        uint32_t                         frame_id_offset { areg::INVALID_SIZE }; //!< Byte offset of frameSeqId in wire buffer
+    };
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
@@ -295,18 +307,24 @@ private:
      **/
     std::vector<ImageBlock> mSendList;
     /**
-     * Pre-serialized wire messages, one per `mSendList` slot.
-     * Built once per options change; the hot loop patches `frameSeqId` in-place
-     * and sends directly, bypassing all serialization overhead.
-     * Only valid when `mPrebuiltValid == true`.
+     * Per-consumer pre-serialized wire message pools. Each entry covers one connected proxy;
+     * each pool contains one wire message per mSendList slot. The hot loop patches only the
+     * 4-byte frameSeqId field in-place and sends directly — zero serialization overhead.
+     * Owned exclusively by the image thread; rebuilt whenever mOptionChanged is true.
+     * Only valid when mPrebuiltValid == true.
      **/
-    std::vector<areg::RemoteMessage>    mPrebuiltMessages;
-    //!< Byte offset of `frameSeqId` within the wire `RemoteMessage` buffer.
-    uint32_t                mFrameIdOffset;
-    //!< True when `mPrebuiltMessages` is fully built and safe to use in the hot loop.
-    bool                    mPrebuiltValid;
-    //!< Proxy address of the sole connected client. Valid only when `mClients == 1`.
-    areg::ProxyAddress      mConnectedProxy;
+    std::vector<ProxyPool>              mProxyPools;
+    /**
+     * Snapshot of connected proxy addresses used to rebuild mProxyPools.
+     * Protected by mLock: written by component thread, snapshot by image thread.
+     **/
+    std::vector<areg::ProxyAddress>     mActiveProxies;
+    /**
+     * True when mProxyPools is fully built and safe to use in the hot loop.
+     * Written by both image thread and component thread (set false on topology change).
+     * Atomic so the component thread can invalidate it without a lock.
+     **/
+    std::atomic_bool                mPrebuiltValid;
     //! The timer to trigger to output data
     areg::Timer             mTimer;
     //! The thread to input from console.
@@ -369,12 +387,14 @@ private:
 
     /**
      * \brief   Builds the pre-serialized wire-message pool from the current `mSendList`.
-     *          Performs a sentinel scan to locate `frameSeqId` in the wire buffer, then
-     *          serializes every `mSendList` entry into `mPrebuiltMessages`.
+     *          Creates one ProxyPool per entry in `proxies`, performing a sentinel scan
+     *          per proxy to locate `frameSeqId` in the wire buffer.
      *          Called from the image thread after every `_initBlockList()`.
-     *          Sets `mPrebuiltValid = true` on success; no-op (pool left invalid) on any error.
+     *          Sets `mPrebuiltValid = true` on success; clears all pools on any error.
+     *
+     * \param   proxies     Snapshot of active proxy addresses at rebuild time.
      **/
-    void _buildPrebuiltMessages();
+    void _buildPrebuiltMessages(const std::vector<areg::ProxyAddress>& proxies);
 
     //!< Clears the pre-built message pool and resets `mPrebuiltValid` to false.
     void _clearPrebuiltMessages() noexcept;

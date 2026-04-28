@@ -144,17 +144,6 @@ namespace areg {
      **/
     constexpr uint32_t      BLOCK_SIZE      { sizeof( uint64_t ) * 8 };
     /**
-     * \brief   areg::INVALID_SIZE
-     *          Constant. Defines invalid buffer size.
-     **/
-    constexpr uint32_t      INVALID_SIZE    { ~0u };
-
-    /**
-     * \brief   areg::INVALID_VALUE
-     *          Constant. Defines invalid value for remote buffer.
-     **/
-    constexpr uint32_t      INVALID_VALUE   { ~0u };
-    /**
      * \brief   areg::MESSAGE_SUCCESS
      *          Constants. Defines the message result success.
      **/
@@ -226,7 +215,7 @@ namespace areg {
         /**
          * \brief   The type of buffer. For RPC communication this should be external type.
          **/
-        BufferType  biBufType   { BufferType::Unknown };
+        BufferType  biBufType   { areg::BufferType::Unknown };
         /**
          * \brief   The length in bytes of used space in buffer.
          *          Cannot be more than biLength value.
@@ -251,7 +240,24 @@ namespace areg {
         }
 
         constexpr MessageHeader(uint32_t length, uint32_t offset, BufferType bufType, ITEM_ID target, ITEM_ID source, uint32_t  msgId)
-            : rbhBufHeader{ length, offset, bufType}, rbhTarget{ target }, rbhChecksum{ areg::INVALID_VALUE }, rbhSource{ source }, rbhMessageId{ msgId }, rbhResult{ 0u }, rbhSequenceNr{ 0u }
+            : rbhBufHeader{ length, offset, bufType}, rbhTarget{ target }, rbhChecksum{ areg::CHECKSUM_INVALID}, rbhSource{ source }, rbhMessageId{ msgId }, rbhResult{ 0u }, rbhSequenceNr{ 0u }
+        {
+        }
+
+        constexpr MessageHeader( const BufferHeader & bufHdr
+                               , ITEM_ID              target
+                               , uint32_t             checksum
+                               , ITEM_ID              source
+                               , uint32_t             msgId
+                               , uint32_t             result
+                               , SequenceNumber       seq) noexcept
+            : rbhBufHeader  { bufHdr }
+            , rbhTarget     { target }
+            , rbhChecksum   { checksum }
+            , rbhSource     { source }
+            , rbhMessageId  { msgId }
+            , rbhResult     { result }
+            , rbhSequenceNr { seq }
         {
         }
 
@@ -272,7 +278,7 @@ namespace areg {
          * \brief   Data checksum value for validation check-up.
          *          Should be ignored if value is areg::IGNORE_CHECKSUM
          **/
-        uint32_t        rbhChecksum{ INVALID_VALUE };
+        uint32_t        rbhChecksum{ areg::CHECKSUM_INVALID };
         /**
          * \brief   An ID of source object, sending message.
          *          In remote messaging, this is Cookie of source
@@ -348,7 +354,7 @@ namespace areg {
          * \brief   Byte Buffer Data followed after structure.
          *          This is referring to the first element in the data buffer.
          **/
-        BufferData              rbData[4]{ 0 };
+        BufferData      rbData[4]{ 0 };
     };
 
     /**
@@ -675,7 +681,7 @@ inline void mem_move( void * memDst, const void * memSrc, uint32_t count ) noexc
 
 inline uint32_t mem_copy( void * memDst, uint32_t dstSpace, const void * memSrc, uint32_t count ) noexcept
 {
-    uint32_t result = 0;
+    uint32_t result = 0u;
     if (memDst != memSrc)
     {
         if ((memDst != nullptr) && (memSrc != nullptr) && (count > 0) && (dstSpace > 0))

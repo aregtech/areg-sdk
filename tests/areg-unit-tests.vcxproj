@@ -47,6 +47,8 @@
     <ClCompile Include="units\GUnitTest.cpp" />
     <ClCompile Include="units\FileTest.cpp" />
     <ClCompile Include="units\LogScopesTest.cpp" />
+    <ClCompile Include="units\RemoteMessageTest.cpp" />
+    <ClCompile Include="units\SharedBufferTest.cpp" />
     <ClCompile Include="units\StringDefsTest.cpp" />
     <ClCompile Include="units\OptionParserTest.cpp" />
     <ClCompile Include="units\StringDefsTest2.cpp" />

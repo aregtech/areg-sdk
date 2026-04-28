@@ -24,6 +24,12 @@
 
 namespace areg {
 
+SocketConnectionBase::SocketConnectionBase() noexcept
+    : mZerocopyWanted   ( false )
+    , mZerocopyEnabled  ( false )
+{
+}
+
 int32_t SocketConnectionBase::send_message(const RemoteMessage & message, const Socket & socket) const
 {
     int32_t result{ -1 };
@@ -91,16 +97,16 @@ int32_t SocketConnectionBase::send_message(const RemoteMessage & message, SOCKET
     if ( message.is_valid() && (hSocket != areg::InvalidSocketHandle) )
     {
         message.buffer_completion_fix();
-        const areg::MessageHeader & header = reinterpret_cast<const areg::MessageHeader &>( *message.byte_buffer() );
-        if (header.rbhBufHeader.biUsed != 0)
+        const areg::MessageHeader * header = reinterpret_cast<const areg::MessageHeader *>( message.byte_buffer() );
+        if (header->rbhBufHeader.biUsed != 0)
         {
-            ASSERT(header.rbhBufHeader.biLength >= header.rbhBufHeader.biUsed);
-            const int32_t totalLen = static_cast<int32_t>(sizeof(areg::MessageHeader) + header.rbhBufHeader.biUsed);
-            result = areg::send_data(hSocket, reinterpret_cast<const uint8_t *>(&header), totalLen);
+            ASSERT(header->rbhBufHeader.biLength >= header->rbhBufHeader.biUsed);
+            const int32_t totalLen = static_cast<int32_t>(sizeof(areg::MessageHeader) + header->rbhBufHeader.biUsed);
+            result = areg::send_data(hSocket, reinterpret_cast<const uint8_t *>(header), totalLen);
         }
         else
         {
-            result = areg::send_data(hSocket, reinterpret_cast<const uint8_t *>(&header), sizeof(areg::MessageHeader));
+            result = areg::send_data(hSocket, reinterpret_cast<const uint8_t *>(header), sizeof(areg::MessageHeader));
         }
     }
 
@@ -149,18 +155,36 @@ int32_t SocketConnectionBase::receive_message(RemoteMessage & message, const Soc
     if (result != sizeof(areg::MessageHeader))
         return 0;
 
-    uint8_t * buffer = message.init_message( msgHeader );
+    uint8_t * buffer = message.init_message( msgHeader);
     if ((msgHeader.rbhBufHeader.biUsed != 0) && (buffer != nullptr))
     {
         ASSERT(msgHeader.rbhBufHeader.biLength >= msgHeader.rbhBufHeader.biUsed);
 
         // receive aligned length of data.
         const int32_t rest = socket.receive(buffer, static_cast<int32_t>(msgHeader.rbhBufHeader.biUsed));
+        message.set_size_used(msgHeader.rbhBufHeader.biUsed);
         result = rest > 0 ? (result + rest) : 0;
     }
 
     message.move_to_begin();
     return (message.is_checksum_valid() ? result : 0);
 }
+
+#if defined(__linux__)
+
+int32_t SocketConnectionBase::send_message_zerocopy(const RemoteMessage & message, SOCKETHANDLE hSocket) const
+{
+    if (!message.is_valid() || (hSocket == areg::InvalidSocketHandle))
+        return 0;
+
+    message.buffer_completion_fix();
+    const areg::MessageHeader & header = reinterpret_cast<const areg::MessageHeader &>(*message.byte_buffer());
+    const int32_t total_len = header.rbhBufHeader.biUsed != 0u
+        ? static_cast<int32_t>(sizeof(areg::MessageHeader) + header.rbhBufHeader.biUsed)
+        : static_cast<int32_t>(sizeof(areg::MessageHeader));
+    return areg::socket_send_zerocopy(hSocket, reinterpret_cast<const uint8_t *>(&header), total_len);
+}
+
+#endif  // defined(__linux__)
 
 } // namespace areg

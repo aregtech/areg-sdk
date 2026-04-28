@@ -24,6 +24,13 @@
 #include "aregextend/console/Console.hpp"
 #include "aregextend/console/OptionParser.hpp"
 
+/************************************************************************
+ * Dependencies.
+ ************************************************************************/
+namespace areg {
+    class RemoteMessage;
+}
+
 /**
  * \brief   The system service common data.
  **/
@@ -90,6 +97,7 @@ namespace areg::ext {
         , Pausing       //!< Service is in pausing state.
         , Paused        //!< Service is paused.
     };
+
 
     /**
      * \brief   Returns the human readable string of areg::ext::ServicePhase value.

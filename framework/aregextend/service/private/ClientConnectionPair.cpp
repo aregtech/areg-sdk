@@ -16,15 +16,14 @@
 
 namespace areg::ext {
 
-ClientConnectionPair::ClientConnectionPair( areg::ext::ConnectionHandler & connectHandler
-                                          , areg::RemoteMessageHandler & remoteService
+ClientConnectionPair::ClientConnectionPair( areg::RemoteMessageHandler & remoteService
                                           , ServerConnection & connection
                                           , ServerSendThread & globalSend
                                           , ServerReceiveThread & globalRecv
                                           , std::string_view sendName
                                           , std::string_view recvName )
     : mSendThread   ( self(), remoteService, connection, globalSend, sendName )
-    , mReceiveThread( self(), connectHandler, remoteService, connection, globalRecv, recvName )
+    , mReceiveThread( remoteService, connection, globalRecv, recvName )
     , mConnections  ( )
     , mLock         ( )
 {

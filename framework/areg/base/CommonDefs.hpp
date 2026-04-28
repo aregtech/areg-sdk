@@ -483,6 +483,77 @@ namespace areg {
         , FirstRemote   = 256   //!< First valid cookie of any other remote service
     };
 
+    /**
+     * \brief   Sequence number predefining notification message ID
+     **/
+    constexpr SequenceNumber    SEQUENCE_NUMBER_NOTIFY  { std::numeric_limits<SequenceNumber>::min() }; /*0x00000000*/
+    /**
+     * \brief   Any sequence number, used in messages. "Any sequence number" used to find any listener object with same message ID.
+     **/
+    constexpr SequenceNumber    SEQUENCE_NUMBER_ANY     { std::numeric_limits<SequenceNumber>::max() }; /*0xFFFFFFFF*/
+
+    /**
+     * \brief   areg::INVALID_VALUE
+     *          Constant. Defines invalid value for remote buffer.
+     **/
+    constexpr uint32_t  INVALID_VALUE               { ~0u };
+
+    /**
+     * \brief   areg::INVALID_SIZE
+     *          Constant. Defines invalid buffer size.
+     **/
+    constexpr uint32_t  INVALID_SIZE                { areg::INVALID_VALUE };
+
+    /**
+     * \brief   The invalid message ID
+     **/
+    constexpr uint32_t  INVALID_MESSAGE_ID          { areg::INVALID_VALUE };    /*0xFFFFFFFF*/
+
+    /**
+     * \brief   Unknown cookie
+     **/
+    constexpr ITEM_ID   COOKIE_UNKNOWN              { static_cast<ITEM_ID>(areg::Cookie::Invalid) };
+    /**
+     * \brief   The indication of local service.
+     **/
+    constexpr ITEM_ID   COOKIE_LOCAL                { static_cast<ITEM_ID>(areg::Cookie::Local) };
+    /**
+     * \brief   Indicates message router cookie
+     **/
+    constexpr ITEM_ID   COOKIE_ROUTER               { static_cast<ITEM_ID>(areg::Cookie::Router) };
+    /**
+     * \brief   Indicates log collector cookie
+     **/
+    constexpr ITEM_ID   COOKIE_LOGGER               { static_cast<ITEM_ID>(areg::Cookie::Logger) };
+    /**
+     * \brief   Indicates any valid cookie
+     **/
+    constexpr ITEM_ID   COOKIE_ANY                  { static_cast<ITEM_ID>(areg::Cookie::Any) };
+    /**
+     * \brief   The unknown target ID
+     **/
+    constexpr ITEM_ID   TARGET_UNKNOWN              { static_cast<ITEM_ID>(areg::Cookie::Invalid) };
+    /**
+     * \brief   The local target ID
+     **/
+    constexpr ITEM_ID   TARGET_LOCAL                { static_cast<ITEM_ID>(areg::Cookie::Local) };
+    /**
+     * \brief   The undefined (all) target ID
+     **/
+    constexpr ITEM_ID   TARGET_ALL                  { static_cast<ITEM_ID>(areg::COOKIE_ANY) };
+    /**
+     * \brief   The unknown source ID
+     **/
+    constexpr ITEM_ID   SOURCE_UNKNOWN              { static_cast<ITEM_ID>(areg::Cookie::Invalid) };
+    /**
+     * \brief   The unknown source ID.
+     **/
+    constexpr ITEM_ID   SOURCE_LOCAL                { static_cast<ITEM_ID>(areg::Cookie::Local) };
+    /**
+     * \brief   The ID of first valid remote cookie.
+     **/
+    constexpr ITEM_ID   COOKIE_REMOTE_SERVICE       { static_cast<ITEM_ID>(areg::Cookie::FirstRemote) };
+
 } // namespace areg
 
 #endif  // AREG_BASE_COMMONDEFS_HPP

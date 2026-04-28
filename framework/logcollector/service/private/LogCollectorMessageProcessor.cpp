@@ -33,14 +33,14 @@ void LogCollectorMessageProcessor::query_connected_instances(const areg::RemoteM
     const ITEM_ID& target{ msgReceived.target() };
     if ((source >= areg::COOKIE_REMOTE_SERVICE) && (target == areg::COOKIE_LOGGER))
     {
-        const areg::MapInstances& instances = mLoggerService.observers();
-        auto srcPos = instances.find(source);
-        if (instances.is_valid_position(srcPos))
+        const areg::MapInstances& observers = mLoggerService.observers();
+        auto srcPos = observers.find(source);
+        if (observers.is_valid_position(srcPos))
         {
-            const areg::ConnectedInstance& instance = instances.value_at(srcPos);
+            const areg::ConnectedInstance& instance = observers.value_at(srcPos);
             if (is_log_observer(instance.ciSource))
             {
-                notify_connected_instances(mLoggerService.observers(), source);
+                notify_connected_instances(mLoggerService.instances(), source);
             }
         }
     }

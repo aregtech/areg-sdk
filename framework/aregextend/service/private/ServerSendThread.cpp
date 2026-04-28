@@ -127,17 +127,16 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
     if (mExternalEvents.is_empty())
         return;
 
-    // Batch drain: collect up to DRAIN_LIMIT additional events and send each
-    // individually.  Draining in bulk reduces the number of times the dispatcher
-    // re-enters the kernel wait path, which is the dominant overhead under burst load.
-    constexpr int32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
+    // Batch drain: collect up to areg::THREAD_DRAIN_LIMIT additional events and send each individually.
+    // Draining in bulk reduces the number of times the dispatcher re-enters the kernel wait path,
+    // which is the dominant overhead under burst load.
     const ExitEvent & exitEvent = ExitEvent::exit_event();
 
-    int32_t batchCount{ 0 };
+    uint32_t batchCount{ 0 };
     bool    exitRequested{ false };
 
     // --- Phase 1: drain events and resolve sockets ---
-    for ( int32_t count = 0; count < DRAIN_LIMIT; ++count )
+    for ( uint32_t count = 0; count < areg::THREAD_DRAIN_LIMIT; ++count )
     {
         Event * evt = pick_event();
         if ( evt == nullptr )
@@ -176,7 +175,7 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
             continue;
         }
 
-        mBatch[batchCount++] = { hSocket, &msg, sendEvt };
+        mBatch[batchCount++] = { hSocket, sendEvt };
     }
 
     if (exitRequested)
@@ -184,7 +183,7 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
         mConnection.close_all_connections();
         mConnection.close_socket();
         trigger_exit();
-        for (int32_t i =0 ; i < batchCount; ++i)
+        for (uint32_t i =0 ; i < batchCount; ++i)
         {
             if (mBatch[i].sendEvt != nullptr)
                 mBatch[i].sendEvt->destroy();
@@ -201,18 +200,18 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
     //   then memmove shifts the run in one SIMD-optimized call instead of n scalar copies.
     //   For n=32 worst case: max shift = 31 × 24 = 744 bytes; AVX-256 handles that in ~3
     //   iterations vs ~93 scalar register-move ops in a plain shift loop.
-    for ( int32_t i{ 1 }; i < batchCount; ++i )
+    for ( uint32_t i{ 1 }; i < batchCount; ++i )
     {
-        if ( mBatch[i].hSocket >= mBatch[i - 1].hSocket )
+        if ( mBatch[i].socket >= mBatch[i - 1].socket )
             continue;   // already in order — fast path (1:1 / same-socket groups)
 
         const PendingSend key{ mBatch[i] };
         // Binary search for the correct insertion index in [0, i).
-        int32_t lo{ 0 }, hi{ i };
+        uint32_t lo{ 0 }, hi{ i };
         while ( lo < hi )
         {
-            const int32_t mid{ lo + ((hi - lo) >> 1) };
-            (mBatch[mid].hSocket <= key.hSocket) ? lo = mid + 1 : hi = mid;
+            const uint32_t mid{ lo + ((hi - lo) >> 1) };
+            (mBatch[mid].socket <= key.socket) ? lo = mid + 1 : hi = mid;
         }
         // Shift [lo .. i-1] one position right, then place key at lo.
         memmove( &mBatch[lo + 1], &mBatch[lo], static_cast<size_t>(i - lo) * sizeof(PendingSend) );
@@ -220,17 +219,17 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
     }
 
     // --- Phase 3: send each same-socket group with one syscall ---
-    for ( int32_t i{ 0 }; i < batchCount; )
+    for ( uint32_t i{ 0 }; i < batchCount; )
     {
-        const SOCKETHANDLE hSocket{ mBatch[i].hSocket };
-        int32_t j{ i + 1 };
-        while ( (j < batchCount) && (mBatch[j].hSocket == hSocket) )
+        const SOCKETHANDLE hSocket{ mBatch[i].socket };
+        uint32_t j{ i + 1 };
+        while ( (j < batchCount) && (mBatch[j].socket == hSocket) )
             ++j;
 
-        const int32_t groupSize{ j - i };
+        const uint32_t groupSize{ j - i };
         if ( groupSize == 1 )
         {
-            const RemoteMessage& message{ *mBatch[i].msg };
+            const RemoteMessage& message{ mBatch[i].sendEvt->data().remote_message() };
             const int32_t sent{ mConnection.send_message(message, hSocket) };
             if ( sent > 0 )
             {
@@ -249,37 +248,37 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
         else
         {
             // Multiple messages for the same socket: scatter/gather send.
-            const RemoteMessage* msgPtrs[DRAIN_LIMIT];
-            for ( int32_t k{ 0 }; k < groupSize; ++k )
-                msgPtrs[k] = mBatch[i + k].msg;
+            const RemoteMessage* msgPtrs[areg::THREAD_DRAIN_LIMIT];
+            for ( uint32_t k{ 0 }; k < groupSize; ++k )
+                msgPtrs[k] = &(mBatch[i + k].sendEvt->data().remote_message());
 
-            const int32_t sent{ mConnection.send_messages_batch(msgPtrs, static_cast<uint32_t>(groupSize), hSocket) };
+            const int32_t sent{ mConnection.send_messages_batch(msgPtrs, groupSize, hSocket) };
             if ( sent > 0 )
             {
-                accumulate_sent(static_cast<uint32_t>(sent), static_cast<uint32_t>(groupSize));
+                accumulate_sent(static_cast<uint32_t>(sent), groupSize);
             }
             else
             {
-                DEBUG_LOG_WARN("Failed batch-send of %d messages to target [ %u ]", groupSize, static_cast<uint32_t>(mBatch[i].msg->target()));
+                DEBUG_LOG_WARN("Failed batch-send of %u messages to target [ %u ]", groupSize, static_cast<uint32_t>(mBatch[i].sendEvt->data().message_target()));
                 if (!mConnection.is_interrupted())
                 {
                     SocketAccepted client{ mConnection.client_by_handle(hSocket) };
-                    mRemoteService.failed_send_message(*mBatch[i].msg, client);
+                    mRemoteService.failed_send_message(mBatch[i].sendEvt->data().remote_message(), client);
                 }
             }
         }
 
         // Destroy all events in this group regardless of send outcome.
-        for ( int32_t k{ i }; k < j; ++k )
+        for ( uint32_t k{ i }; k < j; ++k )
             mBatch[k].sendEvt->destroy();
 
         i = j;
     }
 
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-    if (batchCount >= DRAIN_LIMIT)
+    if (batchCount >= areg::THREAD_DRAIN_LIMIT)
     {
-        DEBUG_LOG_WARN("Send drain loop exhausted DRAIN_LIMIT (%d) � outbound queue is building up", DRAIN_LIMIT);
+        DEBUG_LOG_WARN("Send drain loop exhausted THREAD_DRAIN_LIMIT (%d) � outbound queue is building up", areg::THREAD_DRAIN_LIMIT);
     }
 #endif   // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
 }

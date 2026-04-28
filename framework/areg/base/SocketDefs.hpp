@@ -280,24 +280,38 @@ constexpr uint32_t      PACKET_MAX_SIZE         { 65536u };
 //!< Sentinel indicating an invalid or uninitialized packet size.
 constexpr uint32_t      PACKET_INVALID_SIZE     { 0u };
 
-//!< Compile-time default for SO_SNDBUF applied to every new socket on Linux/macOS.
-//!< 4 MB (Linux kernel doubles to ~8 MB) keeps ~2-3 large frames in-flight —
-//!< enough pipeline overlap without letting a fast publisher flood the areg queue.
-//!< Not applied on Windows (OS autotuning is used there).
+//!< Compile-time default for SO_SNDBUF applied to every new socket.
+//!< 16 MB (Linux kernel doubles to ~32 MB) gives ~10–15 large frames in-flight,
+//!< which prevents TCP send stalls on a high-throughput image pipeline (800+ blocks/sec).
+//!< Applied on all platforms including Windows (SO_SNDBUF does NOT disable autotuning;
+//!< only SO_RCVBUF does that on Windows Vista+).
 //!< Override at runtime via net::SERVICE::TRANSPORT::sndbuf in areg.init (value in KB).
-constexpr uint32_t      SOCKET_SEND_BUFFER_SIZE {  4u * 1024u * 1024u };
+constexpr uint32_t      SOCKET_SEND_BUFFER_SIZE { 4u * 1024u * 1024u };
 
 //!< Compile-time default for SO_RCVBUF applied to every new socket on Linux/macOS.
 //!< Matches the send side.  Override via net::SERVICE::TRANSPORT::rcvbuf in areg.init (value in KB).
-constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE {  4u * 1024u * 1024u };
+//!< Not applied on Windows: setsockopt(SO_RCVBUF) disables TCP Receive Window Autotuning
+//!< (Vista+), which is more effective than any fixed value for loopback/LAN.
+constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE { 4u * 1024u * 1024u };
 
 //!< Maximum milliseconds a single send() call may block waiting for TCP send-window space.
-//!< When the peer's receive window is zero (e.g. OOM pressure before an imminent crash),
-//!< a blocking send() can hang for 60+ seconds.  This timeout caps that wait so the send
-//!< thread detects the dead peer within SOCKET_SEND_TIMEOUT_MS and tears down the connection
-//!< through the normal failed_send_message path instead of stalling indefinitely.
-//!< 5 seconds is generous for loopback and LAN; adjust upward only for very slow WAN links.
-constexpr uint32_t      SOCKET_SEND_TIMEOUT_MS  { 5000u };
+//!< When the peer's receive window is zero (e.g. OOM pressure or a slow/stalled receiver),
+//!< a blocking send() can hang for tens of seconds.  This timeout caps that wait so the send
+//!< thread detects the dead/slow peer within SOCKET_SEND_TIMEOUT_MS and tears down the
+//!< connection through the normal failed_send_message path.
+//!<
+//!< Choosing the right value is a trade-off:
+//!<   - Too large: high-rate pipelines (e.g. 380 fps × 3 MB) accumulate
+//!<     timeout_ms × rate × msg_size bytes in the ServerSendThread queue before the
+//!<     connection is closed.  At 5000 ms × 380 fps × 3 MB ≈ 5.7 GB — OOM.
+//!<   - Too small: transient OS scheduling jitter (GC, CPU starvation) may cause
+//!<     spurious disconnects on otherwise healthy LANs.
+//!<
+//!< 500 ms is a safe default for loopback and LAN:
+//!<   - Limits worst-case queue growth to ~570 MB at 1.14 GB/s inflow (380 fps × 3 MB).
+//!<   - Tolerates typical OS scheduling pauses (< 100 ms) without false disconnects.
+//!< Increase for very slow WAN links or when large receiver-side processing spikes are expected.
+constexpr uint32_t      SOCKET_SEND_TIMEOUT_MS  { 2500u };
 
 //!< Floor applied to any caller-supplied max — prevents degenerate limits.
 constexpr uint32_t      MIN_CONNECTIONS         { 32u };
@@ -338,6 +352,18 @@ constexpr uint32_t      THREAD_BATCH_LIMIT      { THREAD_DRAIN_LIMIT };
 //!< 1024 provides ~30 ms of pipeline depth at 32K msg/s per send thread while
 //!< preventing unbounded RAM growth when the receiver is slower than the sender.
 constexpr uint32_t      SEND_THREAD_QUEUE_LIMIT { 0u };
+
+//!< Default send/drain batch size; configurable via net::*::tcpip::batch in areg.init.
+//!< Must equal THREAD_DRAIN_LIMIT to cover exactly one drain pass per OS wake-up.
+constexpr uint32_t      DEFAULT_BATCH_SIZE          { BATCH_SIZE };
+
+//!< Default MSG_ZEROCOPY ring-slot count; configurable via net::*::tcpip::ring in areg.init.
+//!< 16 slots × ~312 bytes = ~5 KB static storage (128 slots was ~39 KB).
+constexpr uint32_t      DEFAULT_ZEROCOPY_RING_SIZE  { 16u };
+
+//!< Default thread-pool pair count; configurable via net::*::tcpip::pairs in areg.init.
+//!< 0 = no pool (shared send/receive threads only).
+constexpr uint32_t      DEFAULT_POOL_PAIRS          { 0u };
 
 /**
  * \brief   Maximum number of pending connections the OS will queue on a
@@ -677,6 +703,74 @@ AREG_API String extract_ip_address(const struct sockaddr_in& sockAddr);
  **/
 [[nodiscard]]
 AREG_API uint16_t extract_port_number(const struct sockaddr_in& sockAddr) noexcept;
+
+#if defined(__linux__)
+
+/**
+ * \brief   Enables MSG_ZEROCOPY on \a fd by setting the SO_ZEROCOPY socket
+ *          option.  Returns true on success; false if the kernel does not
+ *          support zerocopy (requires Linux 4.14+).
+ *
+ *          Must be called immediately after socket creation, before any send.
+ **/
+AREG_API bool socket_enable_zerocopy(SOCKETHANDLE fd) noexcept;
+
+/**
+ * \brief   Returns and resets the per-thread count of successful
+ *          MSG_ZEROCOPY send calls made since the last reset.
+ *
+ * \note    Call from the send thread only (thread-local state).
+ **/
+AREG_API uint32_t socket_take_zerocopy_count() noexcept;
+
+/**
+ * \brief   Sends \a len bytes from \a buf over \a fd using MSG_ZEROCOPY.
+ *          If the kernel reports ENOBUFS (zerocopy buffers exhausted), the
+ *          remainder is sent with a regular copy without incrementing the
+ *          zerocopy counter.
+ *
+ * \param   fd      Socket handle to send on (must have SO_ZEROCOPY set).
+ * \param   buf     Pointer to data to send.
+ * \param   len     Number of bytes to send.
+ * \return  Total bytes sent on success; -1 on hard error.
+ *
+ * \note    Threading: call only from the thread that owns \a fd.
+ *          The caller must keep \a buf alive until socket_drain_zerocopy()
+ *          or socket_drain_zerocopy_nb() confirms the send ID.
+ **/
+AREG_API int32_t socket_send_zerocopy(SOCKETHANDLE fd, const uint8_t* buf, int32_t len) noexcept;
+
+/**
+ * \brief   Non-blocking ERRQUEUE drain.  Updates \a max_confirmed with the
+ *          highest zerocopy sequence ID confirmed by the kernel so far,
+ *          using a wrap-safe comparison.  Returns immediately if no
+ *          notifications are pending.
+ *
+ * \param   fd              Socket handle to drain.
+ * \param   max_confirmed   In/out: current highest confirmed ID.
+ *                          Initialized to UINT32_MAX before any sends.
+ *
+ * \note    Threading: call only from the thread that owns \a fd.
+ *          Linux 4.14+ only.
+ **/
+AREG_API void socket_drain_zerocopy_nb(SOCKETHANDLE fd, uint32_t& max_confirmed) noexcept;
+
+/**
+ * \brief   Drains the ERRQUEUE of \a fd until the kernel confirms that all
+ *          MSG_ZEROCOPY sends with IDs up to and including \a hi_id have
+ *          completed DMA.  Blocks until confirmation arrives or a 5-second
+ *          safety timeout expires.
+ *
+ * \param   fd      The socket handle that transmitted the zerocopy messages.
+ * \param   hi_id   Highest zerocopy sequence ID (inclusive) to wait for.
+ *
+ * \note    Must be called BEFORE the send events are destroyed, so that the
+ *          SharedBuffer ref-count stays >= 2 while the NIC is DMA-ing.
+ *          Linux 4.14+ only.
+ **/
+AREG_API void socket_drain_zerocopy(SOCKETHANDLE fd, uint32_t hi_id) noexcept;
+
+#endif  // defined(__linux__)
 
 } // namespace areg
 

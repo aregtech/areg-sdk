@@ -60,7 +60,6 @@ RouterClient::RouterClient(ConnectionConsumer& connectionConsumer, RegistrationC
     , RemoteEventConsumer   ( )
 
     , mRegisterConsumer     (registerConsumer)
-    , mLastResponseMsgSize  (areg::BLOCK_SIZE * 64u)
 {
 }
 
@@ -402,10 +401,18 @@ void RouterClient::process_received_message( RemoteMessage & msgReceived, Socket
     {
         if ( areg::is_executable_id(static_cast<uint32_t>(msgId)) )
         {
-            // Off-load deserialization to the RouterClient dispatcher thread so that
-            // ClientReceiveThread is a pure I/O pump (recv → queue-post) and
-            // deserialization runs concurrently on a second core.
+            // Deserialize and deliver inline on ClientReceiveThread.
+            // Previously this was off-loaded via send_executable_message() to the
+            // RouterClient DispatcherThread, but that added an unbounded intermediate
+            // queue.  At high small-message rates the queue grew faster than it could
+            // drain, causing OOM on the consumer side.  Inline processing re-establishes
+            // natural TCP back-pressure: when ClientReceiveThread is busy deserializing,
+            // the kernel receive buffer fills and the sender throttles automatically.
+#if 1
+            on_message_received(msgReceived);
+#else
             send_executable_message(msgReceived);
+#endif
         }
         else
         {

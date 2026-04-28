@@ -70,19 +70,16 @@ public:
     /**
      * \brief   Creates a pool receive thread.
      *
-     * \param   connectHandler  Connection handler (disconnect callback on recv failure).
      * \param   remoteService   Remote message handler (process / failure callbacks).
      * \param   connection      Server connection object (owns the socket map).
      * \param   globalStats     The global receive thread whose atomic counters accumulate
      *                          the bytes/messages contributed by this thread.
      * \param   threadName      Unique name for this dispatcher thread.
      **/
-    PoolReceiveThread( ClientConnectionPair & owner
-                       , areg::ext::ConnectionHandler & connectHandler
-                       , areg::RemoteMessageHandler & remoteService
-                       , ServerConnection & connection
-                       , ServerReceiveThread & globalStats
-                       , std::string_view threadName );
+    PoolReceiveThread( areg::RemoteMessageHandler & remoteService
+                     , ServerConnection & connection
+                     , ServerReceiveThread & globalStats
+                     , std::string_view threadName );
 
     virtual ~PoolReceiveThread() = default;
 
@@ -144,8 +141,6 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    ClientConnectionPair&               mOwner;             //!< Reference to the owning connection pair for socket lookup.
-    areg::ext::ConnectionHandler &      mConnectHandler;    //!< Disconnect callback.
     areg::RemoteMessageHandler &        mRemoteService;     //!< Message processing callbacks.
     ServerConnection &                  mConnection;        //!< Server connection (for receive API).
     ServerReceiveThread &               mGlobalStats;       //!< Global counters accumulated here.

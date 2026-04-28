@@ -68,7 +68,7 @@ int32_t _os_send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t d
     // MSG_NOSIGNAL suppresses SIGPIPE when the peer has closed the connection;
     // send() returns -1 with errno == EPIPE instead.  On macOS, SO_NOSIGPIPE
     // socket option achieves the same effect (set in socket_set_no_delay()).
-#ifdef MSG_NOSIGNAL
+#if defined(MSG_NOSIGNAL)
     constexpr int sendFlags = MSG_NOSIGNAL;
 #else
     constexpr int sendFlags = 0;
@@ -116,11 +116,10 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
         iov[i].iov_len  = static_cast<size_t>(buffers[i].size);
     }
 
-    int32_t total{ 0 };
-
     // iovBase/iovRemaining track the current position within the iovec array when
     // writev() performs a partial write (rare on blocking sockets with SO_SNDTIMEO,
     // but handled correctly to preserve message framing integrity).
+    int32_t total{ 0 };
     uint32_t iovBase{ 0u };
     uint32_t iovRemaining{ iovCount };
 

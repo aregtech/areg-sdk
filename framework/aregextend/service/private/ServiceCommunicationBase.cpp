@@ -87,6 +87,11 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
     , mAcceptFn         ( )
     , mLostFn           ( )
 {
+    update_dispatch_mode();
+}
+
+void ServiceCommunicationBase::update_dispatch_mode()
+{
     if (mNumPairs == 0)
     {
         mSendFn     = [this](const RemoteMessage & d, areg::EventPriority p) { return do_send_shared(d, p); };
@@ -135,6 +140,14 @@ bool ServiceCommunicationBase::setup_connection_data(areg::RemoteServiceKind ser
                 uint16_t port{ config.connection_port() };
                 result = mServerConnection.set_address(address, port);
                 mServerConnection.set_socket_buffers(config.socket_send_buffer(), config.socket_recv_buffer());
+                mServerConnection.set_zerocopy_wanted(config.zerocopy_enabled());
+
+                const uint32_t configPairs{ config.pool_pairs() };
+                if (configPairs != mNumPairs)
+                {
+                    mNumPairs = configPairs;
+                    update_dispatch_mode();
+                }
             }
         }
     }
@@ -363,8 +376,7 @@ bool ServiceCommunicationBase::start_connection()
                 recvName.format("AregPoolRecv_%u", i);
 
                 auto pair = std::make_unique<ClientConnectionPair>(
-                                  static_cast<ConnectionHandler&>(self())
-                                , static_cast<RemoteMessageHandler&>(self())
+                                  static_cast<RemoteMessageHandler&>(self())
                                 , mServerConnection
                                 , mThreadSend
                                 , mThreadReceive
@@ -467,7 +479,7 @@ void ServiceCommunicationBase::stop_connection()
         pairsToStop = std::move(mClientPairs);
     }
 
-    // Signal all pool receive threads to stop (resets each multiplexer → unblocks wait()).
+    // Signal all pool receive threads to stop (resets each multiplexer --> unblocks wait()).
     // Signal all pool send threads to exit before interrupting connections so they can
     // finish draining any already-queued events.
     for ( auto & pair : pairsToStop )

@@ -26,7 +26,6 @@ ClientConnection::ClientConnection()
     , mCookie       ( areg::COOKIE_UNKNOWN )
     , mSockSendBuf  ( areg::SOCKET_SEND_BUFFER_SIZE )
     , mSockRecvBuf  ( areg::SOCKET_RECV_BUFFER_SIZE )
-    , mZerocopyEnabled ( false )
 {
 }
 
@@ -36,7 +35,6 @@ ClientConnection::ClientConnection(const String & hostName, uint16_t portNr)
     , mCookie       ( areg::COOKIE_UNKNOWN )
     , mSockSendBuf  ( areg::SOCKET_SEND_BUFFER_SIZE )
     , mSockRecvBuf  ( areg::SOCKET_RECV_BUFFER_SIZE )
-    , mZerocopyEnabled ( false )
 {
 }
 
@@ -46,7 +44,6 @@ ClientConnection::ClientConnection(const areg::SocketAddress & remoteAddress)
     , mCookie       ( areg::COOKIE_UNKNOWN )
     , mSockSendBuf  ( areg::SOCKET_SEND_BUFFER_SIZE )
     , mSockRecvBuf  ( areg::SOCKET_RECV_BUFFER_SIZE )
-    , mZerocopyEnabled ( false )
 {
 }
 
@@ -74,7 +71,7 @@ bool ClientConnection::create_socket(const String & hostName, uint16_t portNr)
         areg::set_send_timeout(mClientSocket.handle(), areg::SOCKET_SEND_TIMEOUT_MS);
 
 #if defined(__linux__)
-        mZerocopyEnabled = areg::socket_enable_zerocopy(mClientSocket.handle());
+        mZerocopyEnabled = mZerocopyWanted && areg::socket_enable_zerocopy(mClientSocket.handle());
 #endif  // defined(__linux__)
     }
 
@@ -96,7 +93,7 @@ bool ClientConnection::create_socket()
         areg::set_send_timeout(mClientSocket.handle(), areg::SOCKET_SEND_TIMEOUT_MS);
 
 #if defined(__linux__)
-        mZerocopyEnabled = areg::socket_enable_zerocopy(mClientSocket.handle());
+        mZerocopyEnabled = mZerocopyWanted && areg::socket_enable_zerocopy(mClientSocket.handle());
 #endif  // defined(__linux__)
     }
 
@@ -111,5 +108,14 @@ void ClientConnection::close_socket()
 #endif  // defined(__linux__)
     mClientSocket.close();
 }
+
+#if defined(__linux__)
+
+int32_t ClientConnection::send_message_zerocopy(const RemoteMessage& in_message) const
+{
+    return SocketConnectionBase::send_message_zerocopy(in_message, mClientSocket.handle());
+}
+
+#endif  // defined(__linux__)
 
 } // namespace areg

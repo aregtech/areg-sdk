@@ -32,16 +32,12 @@ namespace areg::ext {
 
 DEF_LOG_SCOPE(areg_aregextend_service_PoolReceiveThread, run_dispatcher);
 
-PoolReceiveThread::PoolReceiveThread( ClientConnectionPair & owner
-                                        , areg::ext::ConnectionHandler & connectHandler
-                                        , areg::RemoteMessageHandler & remoteService
-                                        , ServerConnection & connection
-                                        , ServerReceiveThread & globalStats
-                                        , std::string_view threadName )
-    : DispatcherThread      ( String(threadName), areg::SYSTEM_THREAD_STACK_NORMAL, areg::QUEUE_SIZE_MAXIMUM )
+PoolReceiveThread::PoolReceiveThread( areg::RemoteMessageHandler & remoteService
+                                    , ServerConnection & connection
+                                    , ServerReceiveThread & globalStats
+                                    , std::string_view threadName )
+    : DispatcherThread  ( String(threadName), areg::SYSTEM_THREAD_STACK_NORMAL, areg::QUEUE_SIZE_MAXIMUM )
 
-    , mOwner            (owner)
-    , mConnectHandler   ( connectHandler )
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
     , mGlobalStats      ( globalStats )
@@ -138,12 +134,8 @@ bool PoolReceiveThread::run_dispatcher()
         whichEvent = multiLock.lock(areg::DO_NOT_WAIT, false);
         if ( whichEvent != MultiLock::LOCK_INDEX_TIMEOUT )
         {
-            Event * eventElem = ( whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) )
-                                    ? pick_event()
-                                    : nullptr;
-            whichEvent = is_exit_event(eventElem)
-                            ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit)
-                            : whichEvent;
+            Event * eventElem = ( whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ) ? pick_event() : nullptr;
+            whichEvent = is_exit_event(eventElem) ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) : whichEvent;
             continue;
         }
 
@@ -217,7 +209,6 @@ bool PoolReceiveThread::run_dispatcher()
                 if ( drainReceived > 0 )
                 {
                     mGlobalStats.accumulate_received(static_cast<uint64_t>(drainReceived), 1u);
-
                     mRemoteService.process_received_message(msgReceived, drainSocket);
                     // msgReceived.invalidate();
                 }

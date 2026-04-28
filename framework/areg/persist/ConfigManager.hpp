@@ -836,7 +836,7 @@ public:
     /**
      * \brief   Returns the configured SO_SNDBUF size (bytes) for the network socket.
      *          Reads key net::MODULE::TRANSPORT::sndbuf (value in KB, returned as bytes).
-     *          Lookup order: module-specific entry → wildcard "*" entry → compile-time default.
+     *          Lookup order: module-specific entry --> wildcard "*" entry --> compile-time default.
      *
      * \param   module          The process/application name (e.g. "mtrouter", "logcollector").
      *                          Pass empty string to use the current process name.
@@ -859,7 +859,7 @@ public:
     /**
      * \brief   Returns the configured SO_RCVBUF size (bytes) for the network socket.
      *          Reads key net::MODULE::TRANSPORT::rcvbuf (value in KB, returned as bytes).
-     *          Lookup order: module-specific entry → wildcard "*" entry → compile-time default.
+     *          Lookup order: module-specific entry --> wildcard "*" entry --> compile-time default.
      *
      * \param   module          The process/application name (e.g. "mtrouter", "logcollector").
      *                          Pass empty string to use the current process name.
@@ -878,6 +878,30 @@ public:
      * \return  Returns the configured SO_RCVBUF size in bytes, or the compile-time default if not set.
      **/
     uint32_t network_rcvbuf(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept;
+
+    /**
+     * \brief   Returns the configured send/drain batch size (net::MODULE::TRANSPORT::batch).
+     *          Falls back to DEFAULT_BATCH_SIZE when the key is absent.
+     **/
+    uint32_t network_batch(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
+
+    /**
+     * \brief   Returns true if MSG_ZEROCOPY is requested (net::MODULE::TRANSPORT::zerocopy, Linux only).
+     *          Falls back to false when the key is absent.
+     **/
+    bool network_zerocopy(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
+
+    /**
+     * \brief   Returns the configured zerocopy ring-slot count (net::MODULE::TRANSPORT::ring).
+     *          Falls back to DEFAULT_ZEROCOPY_RING_SIZE when the key is absent.
+     **/
+    uint32_t network_ring(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
+
+    /**
+     * \brief   Returns the configured thread-pool pair count (net::MODULE::TRANSPORT::pairs).
+     *          Falls back to DEFAULT_POOL_PAIRS (0) when the key is absent.
+     **/
+    uint32_t network_pool_pairs(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
 
     /**
      * \brief   Returns the default buffer block size for growing buffers.

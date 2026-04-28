@@ -19,6 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
+#include "areg/base/SocketDefs.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/ipc/SendMessageEvent.hpp"
 
@@ -159,11 +160,80 @@ private:
 
 #if defined(__linux__)
     /**
-     * \brief   Per-socket zerocopy sequence counter.  Counts successful
-     *          ::send(MSG_ZEROCOPY) calls since the last socket creation.
-     *          Used to calculate the hi_id passed to socket_drain_zerocopy().
+     * \brief   One slot in the zerocopy ring buffer.
+     *
+     *          A slot is occupied while the kernel (or NIC) still holds a reference to the
+     *          underlying SharedBuffer via MSG_ZEROCOPY DMA.  The slot keeps the buffers
+     *          alive by holding copies of the RemoteMessage objects that were sent in the
+     *          same batch.
+     *
+     *          Layout:
+     *            trigger_msg  — copy of the triggering event's message (evtPtrs[0]).
+     *            events[0..event_count-1] — drained events (evtPtrs[1..N-1]), owned by us.
+     *            hi_id        — highest zerocopy sequence ID assigned to this batch.
+     *
+     *          The slot is released when socket_drain_zerocopy_nb() or
+     *          socket_drain_zerocopy() confirms hi_id.
      **/
-    uint32_t                        mZerocopyIdNext;
+    struct ZerocopyEntry
+    {
+        uint32_t          hi_id         { 0u };
+        uint32_t          event_count   { 0u };
+        RemoteMessage     trigger_msg;
+        SendMessageEvent* events[areg::THREAD_DRAIN_LIMIT] {};
+    };
+
+    static constexpr uint32_t ZEROCOPY_RING_SIZE { areg::DEFAULT_ZEROCOPY_RING_SIZE };
+
+    /**
+     * \brief   Circular ring of in-flight zerocopy batch slots.
+     *          Head is the next slot to write; tail is the oldest in-flight slot.
+     **/
+    ZerocopyEntry   mZerocopyRing[ZEROCOPY_RING_SIZE];
+    uint32_t        mZerocopyRingHead    { 0u };
+    uint32_t        mZerocopyRingTail    { 0u };
+    uint32_t        mZerocopyRingCount   { 0u };
+
+    /**
+     * \brief   Next zerocopy sequence ID to assign.  Advances by sends_made per batch.
+     **/
+    uint32_t        mZerocopyIdNext      { 0u };
+
+    /**
+     * \brief   Highest confirmed zerocopy sequence ID (global watermark).
+     *          Initialized to UINT32_MAX so nothing appears confirmed before any real
+     *          ERRQUEUE notification arrives.
+     **/
+    uint32_t        mZerocopyConfirmed   { UINT32_MAX };
+
+    /**
+     * \brief   Non-blocking ERRQUEUE drain.  Updates mZerocopyConfirmed and releases
+     *          any ring slots whose hi_id is now <= mZerocopyConfirmed.
+     **/
+    void _drain_available() noexcept;
+
+    /**
+     * \brief   Blocking drain of the oldest ring slot (ring-full recovery path).
+     *          Blocks until the kernel confirms the oldest slot's hi_id, then releases it.
+     **/
+    void _drain_oldest_blocking() noexcept;
+
+    /**
+     * \brief   Releases a single ring slot: destroys owned drained events, clears
+     *          trigger_msg (drops ref), advances tail.
+     *
+     * \param   slot    Ring slot to release.  Must be ring[mZerocopyRingTail].
+     **/
+    void _release_ring_slot(ZerocopyEntry& slot) noexcept;
+
+    /**
+     * \brief   Force-releases all occupied ring slots without draining.
+     *          Called during shutdown BEFORE close_socket().
+     *          The kernel will not complete DMA after socket close, so buffers
+     *          become safe to release immediately.
+     **/
+    void _flush_ring() noexcept;
+
 #endif  // defined(__linux__)
 
 //////////////////////////////////////////////////////////////////////////

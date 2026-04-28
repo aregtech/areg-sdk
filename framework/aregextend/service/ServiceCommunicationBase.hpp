@@ -613,6 +613,13 @@ private:
      **/
     void do_client_lost_pool(ITEM_ID cookie);
 
+    /**
+     * \brief   Assigns mSendFn / mSendMoveFn / mAcceptFn / mLostFn based on mNumPairs.
+     *          Called from the constructor and from setup_connection_data() when the
+     *          config overrides the constructor's pair count.
+     **/
+    void update_dispatch_mode();
+
 //////////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////////
@@ -620,7 +627,7 @@ protected:
     const ConnectionPolicy          mConnectBehavior;   //!< The default connection behavior.
     const areg::RemoteServiceKind   mService;           //!< The remote service type.
     const uint32_t                  mConnectTypes;      //!< The bitwise flags of remote service connections.
-    const uint32_t                  mNumPairs;          //!< Pool size: 0 = legacy shared-thread mode; N > 0 = pool mode.
+    uint32_t                        mNumPairs;          //!< Pool size: 0 = legacy shared-thread mode; N > 0 = pool mode. Updated by setup_connection_data().
     ServerConnection                mServerConnection;  //!< The instance of server connection object.
     Timer                           mTimerConnect;      //!< The timer object to trigger in case if failed to create server socket.
     ServerSendThread                mThreadSend;        //!< The thread to send messages to clients
@@ -647,8 +654,8 @@ protected:
     SyncEvent                       mEventSendStop;     //!< The event set when cannot send and receive data anymore.
     mutable ResourceLock            mLock;              //!< The synchronization object to be accessed from different threads.
 
-    // One-time-set dispatch functions — eliminate hot-path branching between shared and pool modes.
-    // Assigned once in the constructor body based on mNumPairs; never reassigned afterwards.
+    // Dispatch functions assigned by update_dispatch_mode() based on mNumPairs.
+    // Initially set in the constructor; may be re-assigned by setup_connection_data() if config overrides mNumPairs.
     using SendCopyFn = std::function<bool(const RemoteMessage &, areg::EventPriority)>;
     using SendMoveFn = std::function<bool(RemoteMessage &&,       areg::EventPriority)>;
     using AcceptFn   = std::function<bool(areg::SocketAccepted &)>;

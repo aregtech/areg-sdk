@@ -19,6 +19,7 @@
 #include "areg/logging/areg_log.h"
 #include "aregextend/console/Console.hpp"
 
+#include <algorithm>
 #include <chrono>
 #include <cstring>
 
@@ -61,10 +62,9 @@ ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg:
 
     , mBitmap           ( )
     , mSendList         ( )
-    , mPrebuiltMessages ( )
-    , mFrameIdOffset    ( areg::INVALID_SIZE )
+    , mProxyPools       ( )
+    , mActiveProxies    ( )
     , mPrebuiltValid    ( false )
-    , mConnectedProxy   ( )
     , mTimer            ( static_cast<areg::TimerConsumer &>(mTimerConsumer) , TIMER_NAME )
     , mInputThread      ( static_cast<areg::ThreadConsumer &>(self()), THREAD_WAITINPUT )
     , mImageThread      ( static_cast<areg::ThreadConsumer &>(self()), THREAD_GENERATE )
@@ -93,9 +93,8 @@ void ServicingComponent::startup_service_interface( areg::Component & holder )
 {
     LOG_SCOPE( examples_23_pubservice_ServicingComponent, startup_service_interface );
 
-    mQuitThread = false;
-    mOptionChanged = false;
-    // Start with the service in stopped state; image thread waits on mPauseEvent.
+    mQuitThread     = false;
+    mOptionChanged  = false;
     mPauseEvent.reset();
 
     uint64_t sizeSent{ 0u }, sizeRecv{ 0u };
@@ -111,13 +110,12 @@ void ServicingComponent::startup_service_interface( areg::Component & holder )
     areg::DataLiteral sendRate = areg::conv_data_size(sizeSent);
     areg::DataLiteral rcvRate  = areg::conv_data_size(sizeRecv);
 
-    // Compute theoretical (ideal) data rate for the initial display.
     uint64_t ns_per_block_0     = mOptions.nsPerBlock();
     uint64_t bytes_per_block_0  = mOptions.bytesPerBlock();
     double   ideal_bps_0        = (ns_per_block_0 > 0) ? (static_cast<double>(areg::DURATION_1_SEC) / static_cast<double>(ns_per_block_0)) : 0.0;
     uint64_t ideal_bytes_sec_0  = static_cast<uint64_t>(ideal_bps_0 * static_cast<double>(bytes_per_block_0) * static_cast<double>(mOptions.mChannels));
     uint32_t total_blocks_sec_0 = static_cast<uint32_t>(ideal_bps_0 * static_cast<double>(mOptions.mChannels));
-    areg::DataLiteral idealRate0 = areg::conv_data_size(ideal_bytes_sec_0);
+    areg::DataLiteral idealRate0= areg::conv_data_size(ideal_bytes_sec_0);
 
     areg::ext::Console& console = areg::ext::Console::instance();
     console.output_txt(COORD_TITLE,     MSG_APP_TITLE);
@@ -175,22 +173,19 @@ bool ServicingComponent::consumer_connected(const areg::ProxyAddress& client, ar
         if (areg::is_service_connected(connectionStatus))
         {
             ++mClients;
-            if (mClients == 1)
-            {
-                mConnectedProxy = client;
-            }
+            mActiveProxies.push_back(client);
         }
         else
         {
             --mClients;
-            if (mClients == 0)
-            {
-                mConnectedProxy = areg::ProxyAddress();
-            }
+            auto it = std::find(mActiveProxies.begin(), mActiveProxies.end(), client);
+            if (it != mActiveProxies.end())
+                mActiveProxies.erase(it);
         }
     }
 
-    // Force image thread to rebuild send list and pre-built pool for the new client set.
+    // Immediately invalidate the pool and rebuild the pool
+    mPrebuiltValid.store(false, std::memory_order_relaxed);
     mOptionChanged.store(true, std::memory_order_relaxed);
     _printInfo();
 
@@ -224,8 +219,7 @@ void ServicingComponent::on_timer_expired()
     mMissedBlocks = 0;
     mLock.unlock();
 
-    // Compute the theoretical data rate from the current image parameters.
-    // This is what the client should be receiving and is independent of OS timing jitter.
+    // Compute the theoretical data rate from the current image parameters -- what the client should be receiving.
     uint64_t ns_per_block     = mOptions.nsPerBlock();
     uint64_t bytes_per_block  = mOptions.bytesPerBlock();
     double   ideal_blocks_sec = (ns_per_block > 0) ? (static_cast<double>(areg::DURATION_1_SEC) / static_cast<double>(ns_per_block)) : 0.0;
@@ -316,28 +310,17 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
     }
     else
     {
-        // Parameter-only change (width / height / lines / pixel-time / channels).
         LOG_INFO("Requested to change generating data parameter(s)");
 
         const bool was_running = mOptions.hasStart();
 
-        // update() preserves the CmdStart/CmdStop flag when no start/stop is in 'data'.
-        // NOTE: Do NOT call _initBlockList() here. The image thread reads mOptions and
-        // mSendList without holding mLock between mPauseEvent.lock() and the inner loop.
-        // Rebuilding mSendList here (after mOptions is already updated) creates a race
-        // where the image thread can read the new blocksCount() from mOptions but find
-        // mSendList still sized for the old options (or vice-versa).
-        // Instead, _initBlockList() is called inside _runImageThread() under mLock after
-        // the thread wakes, ensuring mSendList is always consistent with mOptions.
         mLock.lock(areg::WAIT_INFINITE);
         mOptions.update(data);
         mLock.unlock();
 
         _printInfo();
 
-        // Tell the image thread to reload its parameters.  It will exit the inner
-        // frame loop, fall through to mPauseEvent.lock(), and re-read mOptions and
-        // rebuild mSendList atomically.
+        // Reload params in image thread. 
         mOptionChanged = true;
 
         if (was_running)
@@ -384,18 +367,12 @@ void ServicingComponent::_runInputThread()
         LOG_SCOPE( examples_23_pubservice_ServicingComponent, run_input_thread );
         LOG_DBG("Waiting to enter option command ...");
 
-        // Output the prompt at the designated row then block on a full-line read.
-        // wait_for_input() uses gets_s / fgets which consume the entire line including
-        // the newline, so no stale input remains in stdin between iterations.
         console.output_txt(COORD_OPTIONS, MSG_INPUT_OPTION);
-        console.set_cursor_cur_position({ static_cast<int16_t>(COORD_OPTIONS.posX + static_cast<int16_t>(MSG_INPUT_OPTION.size()))
-                                        , COORD_OPTIONS.posY });
+        console.set_cursor_cur_position({ static_cast<int16_t>(COORD_OPTIONS.posX + static_cast<int16_t>(MSG_INPUT_OPTION.size())), COORD_OPTIONS.posY });
         console.refresh_screen();
         areg::String cmd = console.wait_for_input(nullptr);
 
-        // Erase any characters the user typed that remain visible in the console
-        // buffer on the prompt row (gets_s writes them there directly).  Also clear
-        // the error row so a previous error message does not linger.
+        // Erase any characters the user typed that remain visible in the console buffer on the prompt row
         console.clear_line(COORD_OPTIONS);
         console.clear_line(COORD_ERROR_INFO);
 
@@ -414,16 +391,18 @@ void ServicingComponent::_runImageThread()
     LOG_SCOPE( examples_23_pubservice_ServicingComponent, run_image_thread );
 
     // Per-block period below which individual per-block sleeps are unreliable.
-    // When ns_per_block < this threshold, use a single wait at the end of the frame instead.
     static constexpr int64_t MIN_BLOCK_WAIT_NS{ 500'000LL };   // 0.5 ms
 
     // De-facto minimum OS sleep granularity. Sleeping less than this is pointless: the OS
     // will over-sleep and we end up further behind than if we had not slept at all.
     // Windows default timer resolution: ~15.6 ms. Linux / macOS: ~1–4 ms.
+
 #if defined(_WIN32)
-    static constexpr int64_t MIN_OS_SLEEP_NS{ 15'000'000LL };  // 15 ms on Windows
+    static constexpr int64_t MIN_OS_SLEEP_NS{ 15'000'000LL };  // 15 ms
+#elif defined(__APPLE__)
+    static constexpr int64_t MIN_OS_SLEEP_NS{  2'000'000LL };  //  2 ms
 #else
-    static constexpr int64_t MIN_OS_SLEEP_NS{  4'000'000LL };  // 4 ms on Linux / macOS
+    static constexpr int64_t MIN_OS_SLEEP_NS{    500'000LL };  //  0.5 ms (was 4 ms)
 #endif
 
     areg::Wait wait;
@@ -439,14 +418,16 @@ void ServicingComponent::_runImageThread()
 
         mOptionChanged.store(false, std::memory_order_relaxed);
 
-        // Rebuild the flat send list under mLock so it is always consistent with mOptions.
         mLock.lock(areg::WAIT_INFINITE);
         _initBlockList();
-        _buildPrebuiltMessages();
+        std::vector<areg::ProxyAddress> proxies = mActiveProxies;   // snapshot
         const int64_t  ns_per_block = static_cast<int64_t>(mOptions.nsPerBlock());
         const uint32_t blocks       = mOptions.blocksCount();
         const uint32_t channels     = mOptions.mChannels;
         mLock.unlock();
+
+        // Build per-proxy wire-message pools outside the lock (image thread owns pools).
+        _buildPrebuiltMessages(proxies);
 
         const uint32_t total_sends  = blocks * channels;
         const uint32_t block_size   = total_sends > 0u ? mSendList[0].size() : 0u;
@@ -455,17 +436,22 @@ void ServicingComponent::_runImageThread()
         const int64_t  ns_per_frame = ns_per_block * static_cast<int64_t>(blocks);
         uint32_t seqNr = 0;
 
-        // Frame-level timing is used when ns_per_block is too small for reliable per-block
-        // sleeps. In that mode all block rows are sent as fast as possible and we issue a
-        // single sleep at the end of the frame.
+        // Frame-level timing is used when ns_per_block is too small for reliable per-block sleeps.
         const bool use_frame_timing = (ns_per_block > 0) && (ns_per_block < MIN_BLOCK_WAIT_NS);
+
+        // Cumulative absolute deadline for the frame-timing path. Advances by ns_per_frame
+        // each iteration so it acts as a virtual clock ticking at the theoretical frame rate.
+        // When the gap (cum_deadline - now) reaches MIN_OS_SLEEP_NS, one sleep covers all
+        // accumulated debt, keeping the long-run average rate equal to the theoretical rate
+        // on every platform — including Windows where MIN_OS_SLEEP_NS = 15 ms far exceeds
+        // a single 1.64 ms frame period.
+        std::chrono::steady_clock::time_point cum_deadline = std::chrono::steady_clock::now();
 
         while ((mQuitThread.load(std::memory_order_relaxed) == false) &&
                (mOptionChanged.load(std::memory_order_relaxed) == false) &&
                mOptions.hasStart())
         {
-            const std::chrono::steady_clock::time_point frame_start    = std::chrono::steady_clock::now();
-            const std::chrono::steady_clock::time_point frame_deadline = frame_start + std::chrono::nanoseconds(ns_per_frame);
+            const std::chrono::steady_clock::time_point frame_start = std::chrono::steady_clock::now();
 
             uint32_t rowsSent     = 0u;  // block rows actually broadcast this frame
             uint32_t sentBlocks   = 0u;  // rows sent within their target period (on-time)
@@ -474,24 +460,32 @@ void ServicingComponent::_runImageThread()
             if (ns_per_block == 0)
             {
                 // Full-speed mode: no timing constraints, send every block as fast as possible.
-                // All broadcasts count as on-time; there is no target rate to miss.
                 for (uint32_t i = 0; (mOptionChanged.load(std::memory_order_relaxed) == false) && (i < blocks); ++i)
                 {
                     for (uint32_t k = 0; k < channels; ++k)
                     {
                         ImageBlock& entry = mSendList[i * channels + k];
                         entry.set_frame_id(seqNr);
-                        if (mPrebuiltValid)
+                        bool use_pool = mPrebuiltValid.load(std::memory_order_relaxed);
+                        if (use_pool)
                         {
-                            areg::RemoteMessage& prebuilt = mPrebuiltMessages[i * channels + k];
-                            if (!prebuilt.is_shared())
+                            for (const ProxyPool& pool : mProxyPools)
                             {
-                                std::memcpy(prebuilt.buffer() + mFrameIdOffset, &seqNr, sizeof(seqNr));
-                                areg::send_raw_message(prebuilt);
+                                if (pool.messages[i * channels + k].is_shared())
+                                {
+                                    use_pool = false;
+                                    break;
+                                }
                             }
-                            else
+                        }
+
+                        if (use_pool)
+                        {
+                            for (ProxyPool& pool : mProxyPools)
                             {
-                                LargeDataProviderBase::broadcast_image_block_acquired(entry);
+                                areg::RemoteMessage& prebuilt = pool.messages[i * channels + k];
+                                std::memcpy(prebuilt.buffer() + pool.frame_id_offset, &seqNr, sizeof(seqNr));
+                                areg::send_raw_message(prebuilt);
                             }
                         }
                         else
@@ -514,17 +508,26 @@ void ServicingComponent::_runImageThread()
                     {
                         ImageBlock& entry = mSendList[i * channels + k];
                         entry.set_frame_id(seqNr);
-                        if (mPrebuiltValid)
+                        bool use_pool = mPrebuiltValid.load(std::memory_order_relaxed);
+                        if (use_pool)
                         {
-                            areg::RemoteMessage& prebuilt = mPrebuiltMessages[i * channels + k];
-                            if (!prebuilt.is_shared())
+                            for (const ProxyPool& pool : mProxyPools)
                             {
-                                std::memcpy(prebuilt.buffer() + mFrameIdOffset, &seqNr, sizeof(seqNr));
-                                areg::send_raw_message(prebuilt);
+                                if (pool.messages[i * channels + k].is_shared())
+                                {
+                                    use_pool = false;
+                                    break;
+                                }
                             }
-                            else
+                        }
+
+                        if (use_pool)
+                        {
+                            for (ProxyPool& pool : mProxyPools)
                             {
-                                LargeDataProviderBase::broadcast_image_block_acquired(entry);
+                                areg::RemoteMessage& prebuilt = pool.messages[i * channels + k];
+                                std::memcpy(prebuilt.buffer() + pool.frame_id_offset, &seqNr, sizeof(seqNr));
+                                areg::send_raw_message(prebuilt);
                             }
                         }
                         else
@@ -536,22 +539,29 @@ void ServicingComponent::_runImageThread()
                     ++rowsSent;
                 }
 
-                const int64_t remaining = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                    frame_deadline - std::chrono::steady_clock::now()).count();
+                // Advance the virtual clock by one theoretical frame period, then measure
+                // how far ahead of real time we are.  Because individual frame periods are
+                // often shorter than MIN_OS_SLEEP_NS, sleeping per-frame is unreliable.
+                cum_deadline += std::chrono::nanoseconds(ns_per_frame);
+                const auto     now_tp       = std::chrono::steady_clock::now();
+                const int64_t  cum_remaining= std::chrono::duration_cast<std::chrono::nanoseconds>(cum_deadline - now_tp).count();
 
-                if (remaining > 0)
+                if (cum_remaining > 0)
                 {
-                    // Entire frame completed within the target window — all rows are on-time.
+                    // All rows in this frame are within the cumulative target window.
                     sentBlocks = rowsSent;
-                    if (remaining >= MIN_OS_SLEEP_NS)
+                    if (cum_remaining >= MIN_OS_SLEEP_NS)
                     {
-                        wait.wait_until(frame_deadline);
+                        // Accumulated debt is large enough for the OS to honour reliably.
+                        wait.wait_until(cum_deadline);
                     }
                 }
                 else
                 {
-                    // Frame took longer than the target period — all rows are late.
+                    // Cumulative deadline overrun — rows are late.
+                    // Reset to now so we do not carry debt from a stalled frame forward.
                     missedBlocks = rowsSent;
+                    cum_deadline = now_tp;
                 }
             }
             else
@@ -564,17 +574,26 @@ void ServicingComponent::_runImageThread()
                     {
                         ImageBlock& entry = mSendList[i * channels + k];
                         entry.set_frame_id(seqNr);
-                        if (mPrebuiltValid)
+                        bool use_pool = mPrebuiltValid.load(std::memory_order_relaxed);
+                        if (use_pool)
                         {
-                            areg::RemoteMessage& prebuilt = mPrebuiltMessages[i * channels + k];
-                            if (!prebuilt.is_shared())
+                            for (const ProxyPool& pool : mProxyPools)
                             {
-                                std::memcpy(prebuilt.buffer() + mFrameIdOffset, &seqNr, sizeof(seqNr));
-                                areg::send_raw_message(prebuilt);
+                                if (pool.messages[i * channels + k].is_shared())
+                                {
+                                    use_pool = false;
+                                    break;
+                                }
                             }
-                            else
+                        }
+
+                        if (use_pool)
+                        {
+                            for (ProxyPool& pool : mProxyPools)
                             {
-                                LargeDataProviderBase::broadcast_image_block_acquired(entry);
+                                areg::RemoteMessage& prebuilt = pool.messages[i * channels + k];
+                                std::memcpy(prebuilt.buffer() + pool.frame_id_offset, &seqNr, sizeof(seqNr));
+                                areg::send_raw_message(prebuilt);
                             }
                         }
                         else
@@ -767,16 +786,18 @@ void ServicingComponent::_initBlockList()
 
 void ServicingComponent::_clearPrebuiltMessages() noexcept
 {
-    mPrebuiltMessages.clear();
-    mFrameIdOffset  = areg::INVALID_SIZE;
-    mPrebuiltValid  = false;
+    for (ProxyPool& pool : mProxyPools)
+        pool.messages.clear();
+
+    mProxyPools.clear();
+    mPrebuiltValid.store(false, std::memory_order_relaxed);
 }
 
-void ServicingComponent::_buildPrebuiltMessages()
+void ServicingComponent::_buildPrebuiltMessages(const std::vector<areg::ProxyAddress>& proxies)
 {
     _clearPrebuiltMessages();
 
-    if (mSendList.empty() || !mConnectedProxy.is_valid())
+    if (mSendList.empty() || proxies.empty())
     {
         return;
     }
@@ -787,10 +808,11 @@ void ServicingComponent::_buildPrebuiltMessages()
         return;
     }
 
-    // Skip pool if total size would exceed 256 MB — avoids OOM on large configs.
-    constexpr uint64_t MAX_POOL_BYTES{ 256u * 1024u * 1024u };
+    // Skip pool if total memory across all proxies would exceed 10 GB.
+    constexpr uint64_t MAX_POOL_BYTES{ 10ull * 1024ull * 1024ull * 1024ull };
     const uint64_t entry_size{ static_cast<uint64_t>(mSendList[0].size()) };
-    if (entry_size * static_cast<uint64_t>(mSendList.size()) > MAX_POOL_BYTES)
+    const uint64_t total_bytes{ entry_size * static_cast<uint64_t>(mSendList.size()) * static_cast<uint64_t>(proxies.size()) };
+    if (total_bytes > MAX_POOL_BYTES)
     {
         return;
     }
@@ -799,78 +821,95 @@ void ServicingComponent::_buildPrebuiltMessages()
     constexpr uint32_t SENTINEL_B{ 0x87654321u };
     constexpr uint32_t msgId_val{ static_cast<uint32_t>(LargeData::MessageIDs::MsgId_broadcast_image_block_acquired) };
 
-    // Helper: serialize one ImageBlock entry to a wire RemoteMessage.
-    auto build_wire = [&](const ImageBlock& blk) -> areg::RemoteMessage
+    mProxyPools.reserve(proxies.size());
+
+    for (const areg::ProxyAddress& proxy : proxies)
     {
-        areg::EventDataStream args(areg::EventDataStream::EventDataKind::External);
-        areg::OutStream& s{ args.stream_for_write() };
-        s << blk;
-        areg::ResponseEvent* evt = create_response(mConnectedProxy, msgId_val, areg::ResultType::RequestOK, args);
-        areg::RemoteMessage wire;
-        if (evt != nullptr)
+        ProxyPool pool;
+        pool.proxy = proxy;
+
+        // Helper: serialize one ImageBlock entry into a wire RemoteMessage for this proxy.
+        auto build_wire = [&](const ImageBlock& blk) -> areg::RemoteMessage
         {
-            areg::RemoteEventFactory::stream_from_event(wire, *evt, channel);
-            evt->destroy();
-        }
-        return wire;
-    };
+            areg::EventDataStream args(areg::EventDataStream::EventDataKind::External);
+            areg::OutStream& s{ args.stream_for_write() };
+            s << blk;
+            areg::ResponseEvent* evt = create_response(proxy, msgId_val, areg::ResultType::RequestOK, args);
+            areg::RemoteMessage wire;
+            if (evt != nullptr)
+            {
+                areg::RemoteEventFactory::stream_from_event(wire, *evt, channel);
+                evt->destroy();
+            }
+            return wire;
+        };
 
-    // Use two probe blocks with distinct sentinel frameSeqId values to locate the field
-    // offset within the serialized wire buffer. The offset is stable for a fixed proxy
-    // address and channel, so it is computed once at pool build time.
-    ImageBlock probeA = mBitmap.block(0u, mOptions.mLines);
-    probeA.set_ids(0u, SENTINEL_A);
-    ImageBlock probeB = mBitmap.block(0u, mOptions.mLines);
-    probeB.set_ids(0u, SENTINEL_B);
+        // Sentinel scan: locate the byte offset of frameSeqId in the wire buffer.
+        // Each proxy gets its own offset because the header embeds the proxy address.
+        ImageBlock probeA = mBitmap.block(0u, mOptions.mLines);
+        probeA.set_ids(0u, SENTINEL_A);
+        ImageBlock probeB = mBitmap.block(0u, mOptions.mLines);
+        probeB.set_ids(0u, SENTINEL_B);
 
-    const areg::RemoteMessage wireA{ build_wire(probeA) };
-    const areg::RemoteMessage wireB{ build_wire(probeB) };
-    if (!wireA.is_valid() || !wireB.is_valid())
-    {
-        return;
-    }
-
-    const uint32_t buf_size{ wireA.size_used() };
-    if (buf_size != wireB.size_used())
-    {
-        return;
-    }
-
-    const uint8_t* bufA{ wireA.buffer() };
-    const uint8_t* bufB{ wireB.buffer() };
-    uint32_t frame_id_offset{ areg::INVALID_SIZE };
-    for (uint32_t off = 0u; off + static_cast<uint32_t>(sizeof(uint32_t)) <= buf_size; off += static_cast<uint32_t>(sizeof(uint32_t)))
-    {
-        uint32_t valA{ 0u }, valB{ 0u };
-        std::memcpy(&valA, bufA + off, sizeof(uint32_t));
-        std::memcpy(&valB, bufB + off, sizeof(uint32_t));
-        if (valA == SENTINEL_A && valB == SENTINEL_B)
-        {
-            frame_id_offset = off;
-            break;
-        }
-    }
-
-    if (frame_id_offset == areg::INVALID_SIZE)
-    {
-        return;
-    }
-
-    // Serialize every send-list entry into a pre-built wire message.
-    const uint32_t count{ static_cast<uint32_t>(mSendList.size()) };
-    mPrebuiltMessages.resize(count);
-    for (uint32_t idx = 0u; idx < count; ++idx)
-    {
-        mPrebuiltMessages[idx] = build_wire(mSendList[idx]);
-        if (!mPrebuiltMessages[idx].is_valid())
+        const areg::RemoteMessage wireA{ build_wire(probeA) };
+        const areg::RemoteMessage wireB{ build_wire(probeB) };
+        if (!wireA.is_valid() || !wireB.is_valid())
         {
             _clearPrebuiltMessages();
             return;
         }
+
+        const uint32_t buf_size{ wireA.size_used() };
+        if (buf_size != wireB.size_used())
+        {
+            _clearPrebuiltMessages();
+            return;
+        }
+
+        const uint8_t* bufA{ wireA.buffer() };
+        const uint8_t* bufB{ wireB.buffer() };
+        uint32_t frame_id_offset{ areg::INVALID_SIZE };
+        for (uint32_t off = 0u; off + static_cast<uint32_t>(sizeof(uint32_t)) <= buf_size; off += static_cast<uint32_t>(sizeof(uint32_t)))
+        {
+            uint32_t valA{ 0u }, valB{ 0u };
+            std::memcpy(&valA, bufA + off, sizeof(uint32_t));
+            std::memcpy(&valB, bufB + off, sizeof(uint32_t));
+            if (valA == SENTINEL_A && valB == SENTINEL_B)
+            {
+                frame_id_offset = off;
+                break;
+            }
+        }
+
+        if (frame_id_offset == areg::INVALID_SIZE)
+        {
+            _clearPrebuiltMessages();
+            return;
+        }
+
+        pool.frame_id_offset = frame_id_offset;
+
+        // Serialize every send-list entry into a pre-built wire message for this proxy.
+        // Set CHECKSUM_IGNORE so buffer_completion_fix() is a no-op on every hot-loop
+        // send: the full-buffer checksum scan is eliminated.  Receivers accept
+        // CHECKSUM_IGNORE messages (is_checksum_ignore() returns true).
+        const uint32_t count{ static_cast<uint32_t>(mSendList.size()) };
+        pool.messages.resize(count);
+        for (uint32_t idx = 0u; idx < count; ++idx)
+        {
+            pool.messages[idx] = build_wire(mSendList[idx]);
+            if (!pool.messages[idx].is_valid())
+            {
+                _clearPrebuiltMessages();
+                return;
+            }
+            reinterpret_cast<areg::MessageHeader*>(pool.messages[idx].buffer())->rbhChecksum = areg::CHECKSUM_IGNORE;
+        }
+
+        mProxyPools.push_back(std::move(pool));
     }
 
-    mFrameIdOffset = frame_id_offset;
-    mPrebuiltValid = true;
+    mPrebuiltValid.store(true, std::memory_order_relaxed);
 }
 
 void ServicingComponent::_clearOptInfo() const

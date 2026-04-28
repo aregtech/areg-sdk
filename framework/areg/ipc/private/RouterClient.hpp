@@ -286,13 +286,6 @@ private:
      **/
     RegistrationConsumer &     mRegisterConsumer;
 
-    /**
-     * \brief   Cached size of the last serialized response message in bytes.
-     *          Used to pre-reserve the RemoteMessage buffer before serialization,
-     *          avoiding repeated SharedBuffer reallocation on the hot path.
-     **/
-    uint32_t    mLastResponseMsgSize;
-
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////

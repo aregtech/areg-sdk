@@ -130,19 +130,16 @@ bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search)
     if (search && is_registered(hSocket))
         return false;
 
-    // Level-triggered (no EV_CLEAR): kevent() keeps firing as long as data
-    // remains in the socket receive buffer.  Read one message per kevent() wakeup.
-    // It guarantees that a second message in the same TCP burst is delivered.
+    // kevent() keeps firing as long as data remains in the socket receive buffer.
+    // Read one message per kevent() wakeup. It guarantees that a second message in the same TCP burst is delivered.
     struct kevent kev;
     EV_SET(&kev, static_cast<uintptr_t>(static_cast<int>(hSocket)), EVFILT_READ, EV_ADD, 0, 0, nullptr);
     if (::kevent(static_cast<int>(mKqueueFd), &kev, 1, nullptr, 0, nullptr) != 0)
         return false;
 
-    // Transition out of reset state.  Drain any pending wakeup write left by the
-    // previous reset() that was not consumed by wait() (e.g. wait() saw mIsReset=true
-    // and returned early before the pipe write arrived, or before we got to drain it).
     if (mIsReset.exchange(false, std::memory_order_acq_rel) && (mWakeupReadFd != areg::InvalidSocketHandle))
     {
+        // Drain any pending wakeup
         char buf[64];
         while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
     }
@@ -166,9 +163,6 @@ bool areg::SocketMultiplexer::unregister_socket(SOCKETHANDLE hSocket) noexcept
 
             *it = mSockets.back();
             mSockets.pop_back();
-
-            // Discard the batch cache: it may contain hSocket or a socket that
-            // was ready alongside hSocket.  The next wait() will fetch a fresh batch.
             mBatchCount = mBatchIdx = 0;
             return true;
         }
@@ -205,8 +199,6 @@ void areg::SocketMultiplexer::reset() noexcept
 void areg::SocketMultiplexer::wakeup() noexcept
 {
     // Soft interrupt: write one byte to the pipe WITHOUT setting mIsReset.
-    // wait() will drain the pipe and return InvalidSocketHandle, letting
-    // the receive thread re-check pending socket registrations and re-enter wait().
     if (mWakeupWriteFd != areg::InvalidSocketHandle)
     {
         const uint8_t one{ 1u };
@@ -224,6 +216,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
             char buf[64];
             while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
         }
+
         return areg::FailedSocketHandle;
     }
 
@@ -231,19 +224,8 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         return areg::FailedSocketHandle;
 
     // Serve cached results before issuing another kevent() syscall.
-    while (mBatchIdx < mBatchCount)
+    if (mBatchIdx < mBatchCount)
     {
-        if (mIsReset.load(std::memory_order_acquire))
-        {
-            mBatchCount = mBatchIdx = 0;
-            if (mWakeupReadFd != areg::InvalidSocketHandle)
-            {
-                char buf[64];
-                while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
-            }
-            return areg::FailedSocketHandle;
-        }
-
         const SOCKETHANDLE fd   = mBatchFds[mBatchIdx];
         const uint32_t evFlags  = mBatchEvents[mBatchIdx];
         ++mBatchIdx;
@@ -253,7 +235,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
             char buf[64];
             while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
             mBatchCount = mBatchIdx = 0;
-            // Hard reset → FailedSocketHandle; soft wakeup() → InvalidSocketHandle.
+            // Hard reset --> FailedSocketHandle; soft wakeup() --> InvalidSocketHandle.
             return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
         }
 
@@ -285,12 +267,11 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
 
     if (n < 0)
         return (errno == EINTR) ? areg::InvalidSocketHandle : areg::FailedSocketHandle;
-
-    if (n == 0)
+    else if (n == 0)
         return areg::InvalidSocketHandle;   // timeout
 
     // Store events[1..n-1] in the batch cache — both the fd AND the event flags.
-    mBatchCount = 0;
+    mBatchCount = mBatchIdx = 0;
     for (int i = 1; i < n; ++i)
     {
         if ((events[i].flags & EV_ERROR) == 0)
@@ -300,7 +281,6 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
             ++mBatchCount;
         }
     }
-    mBatchIdx = 0;
 
     if ((events[0].flags & EV_ERROR) != 0)
         return areg::FailedSocketHandle;
@@ -312,7 +292,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         char buf[64];
         while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
         mBatchCount = mBatchIdx = 0;
-        // Hard reset → FailedSocketHandle; soft wakeup() → InvalidSocketHandle.
+        // Hard reset --> FailedSocketHandle; soft wakeup() --> InvalidSocketHandle.
         return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
     }
 

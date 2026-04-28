@@ -204,7 +204,12 @@ namespace areg {
         , NetSocketSndbuf      = 29    //!< The SO_SNDBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::sndbuf).
         , NetSocketRcvbuf      = 30    //!< The SO_RCVBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::rcvbuf).
 
-        , AnyKey               = 31    //!< Indicates any key type.
+        , NetSocketBatch       = 32    //!< Send batch/drain size (format: net::SERVICE::TRANSPORT::batch).
+        , NetSocketZerocopy    = 33    //!< MSG_ZEROCOPY enable flag (format: net::SERVICE::TRANSPORT::zerocopy).
+        , NetSocketRing        = 34    //!< Zerocopy ring-slot count (format: net::SERVICE::TRANSPORT::ring).
+        , NetPoolPairs         = 35    //!< Thread-pool pair count (format: net::SERVICE::TRANSPORT::pairs).
+
+        , AnyKey               = 36    //!< Indicates any key type.
     };
 
     /**
@@ -251,7 +256,12 @@ namespace areg {
             , {"net"    , "*"   , "*"       , "sndbuf"          }   //! 29  , The SO_SNDBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::sndbuf).
             , {"net"    , "*"   , "*"       , "rcvbuf"          }   //! 30  , The SO_RCVBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::rcvbuf).
 
-            , {"*"      , "*"   , "*"       , "*"               }   //! 31  , Indicates any key type.
+            , {"*"      , "*"   , "*"       , "*"               }   //! 31  , Indicates any key type (AnyKey sentinel — keep at index 31 for compatibility).
+
+            , {"net"    , "*"   , "*"       , "batch"           }   //! 32  , Batch/drain size per dispatcher wake-up.
+            , {"net"    , "*"   , "*"       , "zerocopy"        }   //! 33  , MSG_ZEROCOPY enable flag (Linux only, default false).
+            , {"net"    , "*"   , "*"       , "ring"            }   //! 34  , Zerocopy ring-slot count (default DEFAULT_ZEROCOPY_RING_SIZE).
+            , {"net"    , "*"   , "*"       , "pairs"           }   //! 35  , Thread-pool pair count (0 = disabled).
         };
 
 
@@ -407,6 +417,26 @@ inline constexpr const areg::ConfigKey& net_socket_sndbuf() noexcept
 inline constexpr const areg::ConfigKey& net_socket_rcvbuf() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::NetSocketRcvbuf)];
+}
+
+inline constexpr const areg::ConfigKey& net_socket_batch() noexcept
+{
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::NetSocketBatch)];
+}
+
+inline constexpr const areg::ConfigKey& net_socket_zerocopy() noexcept
+{
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::NetSocketZerocopy)];
+}
+
+inline constexpr const areg::ConfigKey& net_socket_ring() noexcept
+{
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::NetSocketRing)];
+}
+
+inline constexpr const areg::ConfigKey& net_pool_pairs() noexcept
+{
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::NetPoolPairs)];
 }
 
 } // namespace areg

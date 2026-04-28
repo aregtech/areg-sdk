@@ -45,6 +45,10 @@ namespace areg::ext {
  **/
 class ClientConnectionPair
 {
+//////////////////////////////////////////////////////////////////////////
+// Internal types and constants
+//////////////////////////////////////////////////////////////////////////
+private:
     /**
      * \brief   The container of socket handles where the keys are cookie values.
      **/
@@ -58,7 +62,6 @@ public:
      * \brief   Creates the send and receive threads for a pool slot.
      *          The threads are NOT started; call start() after construction.
      *
-     * \param   connectHandler  Connection handler passed to receive thread.
      * \param   remoteService   Remote message handler passed to both threads.
      * \param   connection      Server connection passed to both threads.
      * \param   globalSend      Global send thread for DataRateHelper stats.
@@ -66,8 +69,7 @@ public:
      * \param   sendName        Thread name for the PoolSendThread.
      * \param   recvName        Thread name for the PoolReceiveThread.
      **/
-    ClientConnectionPair( areg::ext::ConnectionHandler & connectHandler
-                        , areg::RemoteMessageHandler & remoteService
+    ClientConnectionPair( areg::RemoteMessageHandler & remoteService
                         , ServerConnection & connection
                         , ServerSendThread & globalSend
                         , ServerReceiveThread & globalRecv

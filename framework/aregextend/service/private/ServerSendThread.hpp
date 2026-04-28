@@ -52,22 +52,8 @@ class ServerSendThread final    : public    DispatcherThread
 // Internal types and constants
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   One slot in the batch-drain work list.
-     *          Holds the resolved socket handle, a non-owning pointer into the event's data,
-     *          and the owning event pointer that must be destroyed after the send.
-     *          Using SOCKETHANDLE (integer/pointer) instead of SocketAccepted keeps the struct
-     *          trivially copyable (~24 bytes vs ~80+ bytes), enabling direct sort via std::sort
-     *          or insertion sort without the indirect index-array workaround.
-     **/
-    struct PendingSend
-    {
-        SOCKETHANDLE         hSocket{ areg::InvalidSocketHandle };
-        const RemoteMessage* msg    { nullptr };
-        SendMessageEvent*    sendEvt{ nullptr };
-    };
 
-    using BatchEntries = std::array<PendingSend, areg::THREAD_BATCH_LIMIT>;
+    using BatchEntries = std::array<areg::PendingSend, areg::THREAD_BATCH_LIMIT>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

@@ -190,26 +190,15 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
     }
 
     // Serve cached results from the previous poll() batch before issuing another syscall.
-    while (mBatchIdx < mBatchCount)
+    if (mBatchIdx < mBatchCount)
     {
-        if (mIsReset.load(std::memory_order_acquire))
-        {
-            mBatchCount = mBatchIdx = 0;
-            if (mWakeupReadFd != areg::InvalidSocketHandle)
-            {
-                char buf[64];
-                while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
-            }
-            return areg::FailedSocketHandle;
-        }
-
         const SOCKETHANDLE fd = mBatchFds[mBatchIdx++];
         if (fd == mWakeupReadFd)
         {
             char buf[64];
             while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
             mBatchCount = mBatchIdx = 0;
-            // Hard reset → FailedSocketHandle; soft wakeup() → InvalidSocketHandle.
+            // Hard reset --> FailedSocketHandle; soft wakeup() --> InvalidSocketHandle.
             return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
         }
 
@@ -244,8 +233,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
     const int nReady = ::poll(fds, static_cast<nfds_t>(total), timeoutMs);
     if (nReady < 0)
         return (errno == EINTR) ? areg::InvalidSocketHandle : areg::FailedSocketHandle;
-
-    if (nReady == 0)
+    else if (nReady == 0)
         return areg::InvalidSocketHandle;   // timeout
 
     // Check wakeup pipe — drain so it does not fire again on the next call.
@@ -254,7 +242,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         char buf[64];
         while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
         mBatchCount = mBatchIdx = 0;
-        // Hard reset → FailedSocketHandle; soft wakeup() → InvalidSocketHandle.
+        // Hard reset --> FailedSocketHandle; soft wakeup() --> InvalidSocketHandle.
         return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
     }
 

@@ -261,30 +261,20 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
             char buf[64];
             while (::recv(static_cast<SOCKET>(mWakeupReadFd), buf, static_cast<int>(sizeof(buf)), 0) > 0) {}
         }
+
         return areg::FailedSocketHandle;
     }
 
     // Serve cached results from the previous WSAPoll batch before issuing another syscall.
-    while (mBatchIdx < mBatchCount)
+    if (mBatchIdx < mBatchCount)
     {
-        if (mIsReset.load(std::memory_order_acquire))
-        {
-            mBatchCount = mBatchIdx = 0;
-            if (mWakeupReadFd != areg::InvalidSocketHandle)
-            {
-                char buf[64];
-                while (::recv(static_cast<SOCKET>(mWakeupReadFd), buf, static_cast<int>(sizeof(buf)), 0) > 0) {}
-            }
-            return areg::FailedSocketHandle;
-        }
-
         const SOCKETHANDLE fd = mBatchFds[mBatchIdx++];
         if (fd == mWakeupReadFd)
         {
             char buf[64];
             while (::recv(static_cast<SOCKET>(mWakeupReadFd), buf, static_cast<int>(sizeof(buf)), 0) > 0) {}
             mBatchCount = mBatchIdx = 0;
-            // Hard reset → FailedSocketHandle; soft wakeup() → InvalidSocketHandle.
+            // Hard reset --> FailedSocketHandle; soft wakeup() --> InvalidSocketHandle.
             return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
         }
 
@@ -334,13 +324,13 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         char buf[64];
         while (::recv(static_cast<SOCKET>(mWakeupReadFd), buf, static_cast<int>(sizeof(buf)), 0) > 0) {}
         mBatchCount = mBatchIdx = 0;
-        // Hard reset → FailedSocketHandle; soft wakeup() → InvalidSocketHandle.
+        // Hard reset --> FailedSocketHandle; soft wakeup() --> InvalidSocketHandle.
         return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
     }
 
     // Collect ALL ready sockets from this WSAPoll result into the batch cache.
     // Store revents alongside the fd so the drain loop can detect error-only sockets.
-    mBatchCount = 0;
+    mBatchCount = mBatchIdx = 0;
     SOCKETHANDLE first{ areg::InvalidSocketHandle };
     for (INT i = 0; i < socketCount; ++i)
     {
@@ -360,7 +350,6 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         }
     }
 
-    mBatchIdx = 0;
     return first;
 }
 
