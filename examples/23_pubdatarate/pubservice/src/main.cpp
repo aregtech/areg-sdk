@@ -50,7 +50,7 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(example_23_pubservice_main, main);
+DEF_LOG_SCOPE(examples_23_pubservice_main, main);
 /**
  * \brief   The main method enables logging, service manager and timer.
  *          it loads and unloads the services, releases application.
@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
 
     do
     {
-        LOG_SCOPE( example_23_pubservice_main, main );
+        LOG_SCOPE( examples_23_pubservice_main, main );
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components

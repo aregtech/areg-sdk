@@ -14,8 +14,8 @@
 #include "areg/logging/areg_log.h"
 #include "subscribermulti/src/PubSubDefs.hpp"
 
-DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber, service_connected);
-DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber, on_service_provider_state_update);
+DEF_LOG_SCOPE(examples_27_pubsubmulti_subscribermulti_Subscriber, service_connected);
+DEF_LOG_SCOPE(examples_27_pubsubmulti_subscribermulti_Subscriber, on_service_provider_state_update);
 
 Subscriber::Subscriber( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : areg::Component         (entry, owner)
@@ -27,7 +27,7 @@ Subscriber::Subscriber( const areg::ComponentEntry & entry, areg::ComponentThrea
 
 bool Subscriber::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
-    LOG_SCOPE( example_27_pubsubmulti_subscribermulti_Subscriber, service_connected );
+    LOG_SCOPE( examples_27_pubsubmulti_subscribermulti_Subscriber, service_connected );
     PubSubConsumerBase::service_connected( status, proxy );
 
     LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::as_string(status));
@@ -61,7 +61,7 @@ bool Subscriber::service_connected( areg::ServiceConnectionState status, areg::P
 
 void Subscriber::on_service_provider_state_update(PubSub::RunState ServiceProviderState, areg::DataState state)
 {
-    LOG_SCOPE( example_27_pubsubmulti_subscribermulti_Subscriber, on_service_provider_state_update );
+    LOG_SCOPE( examples_27_pubsubmulti_subscribermulti_Subscriber, on_service_provider_state_update );
 
     ++ mStateEventCount;
     areg::String publisherState = state == areg::DataState::DataIsOK ? PubSub::as_string(ServiceProviderState) : pubsub::StrInvalid.data();

@@ -249,7 +249,7 @@ bool LogCollectorMessageProcessor::is_log_observer(areg::MessageSource msgSource
 
 inline void LogCollectorMessageProcessor::_forward_message_to_log_sources(const areg::RemoteMessage& msgReceived) const
 {
-    const auto& instances = mLoggerService.observers();
+    const auto& instances = mLoggerService.instances();
     if (instances.is_empty())
         return;
 
@@ -286,7 +286,7 @@ inline void LogCollectorMessageProcessor::_forward_message_to_observers(const ar
 
     ITEM_ID source{ msgReceived.source() };
     ITEM_ID target{ msgReceived.target() != areg::COOKIE_LOGGER ? msgReceived.target() : areg::TARGET_ALL };
-    const areg::MapInstances& instances = mLoggerService.observers();
+    const areg::MapInstances& instances = mLoggerService.instances();
 
     auto srcPos = instances.find(source);
     auto dstPos = instances.find(target);

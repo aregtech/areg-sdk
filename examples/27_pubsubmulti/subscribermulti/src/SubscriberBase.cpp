@@ -14,9 +14,9 @@
 #include "areg/logging/areg_log.h"
 #include "subscribermulti/src/PubSubDefs.hpp"
 
-DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase, on_string_on_change_update);
-DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase, on_integer_always_update);
-DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase, on_service_provider_state_update);
+DEF_LOG_SCOPE(examples_27_pubsubmulti_subscribermulti_SubscriberBase, on_string_on_change_update);
+DEF_LOG_SCOPE(examples_27_pubsubmulti_subscribermulti_SubscriberBase, on_integer_always_update);
+DEF_LOG_SCOPE(examples_27_pubsubmulti_subscribermulti_SubscriberBase, on_service_provider_state_update);
 
 
 SubscriberBase::SubscriberBase(const areg::DependencyEntry & entry, areg::Component & owner, areg::Coord coordInt, areg::Coord coordStr)
@@ -33,7 +33,7 @@ SubscriberBase::SubscriberBase(const areg::DependencyEntry & entry, areg::Compon
 
 void SubscriberBase::on_string_on_change_update(const areg::String & StringOnChange, areg::DataState state)
 {
-    LOG_SCOPE( example_27_pubsubmulti_subscribermulti_SubscriberBase, on_string_on_change_update );
+    LOG_SCOPE( examples_27_pubsubmulti_subscribermulti_SubscriberBase, on_string_on_change_update );
     ++ mStrEventCount;
 
     areg::ext::Console & console = areg::ext::Console::instance();
@@ -69,7 +69,7 @@ void SubscriberBase::on_string_on_change_update(const areg::String & StringOnCha
 
 void SubscriberBase::on_integer_always_update(uint32_t IntegerAlways, areg::DataState state)
 {
-    LOG_SCOPE( example_27_pubsubmulti_subscribermulti_SubscriberBase, on_integer_always_update );
+    LOG_SCOPE( examples_27_pubsubmulti_subscribermulti_SubscriberBase, on_integer_always_update );
     ++ mIntEventCount;
 
     areg::ext::Console & console = areg::ext::Console::instance();
