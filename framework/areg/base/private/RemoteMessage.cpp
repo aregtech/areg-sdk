@@ -86,6 +86,26 @@ RemoteMessage::RemoteMessage(const uint8_t * buffer, uint32_t size, uint32_t blo
     write_data(buffer, size);
 }
 
+RemoteMessage::RemoteMessage(const areg::MessageHeader& rmHeader, uint32_t reserve, uint32_t blockSize)
+    : SharedBuffer  ( blockSize) 
+{
+    uint32_t sizeUsed{ std::max(rmHeader.rbhBufHeader.biUsed, reserve != 0 ? reserve : 1u) };
+    sizeUsed = areg::align_size(sizeUsed, block_size());
+
+    uint32_t sizeBuffer = sizeUsed + sizeof(areg::MessageHeader);
+    uint8_t* result = DEBUG_NEW uint8_t[sizeBuffer];
+    if (result != nullptr)
+    {
+        areg::RawMessage* msg = reinterpret_cast<areg::RawMessage *>(result);
+        areg::MessageHeader& hdr{ msg->rbHeader };
+        areg::mem_copy(&hdr, sizeof(areg::MessageHeader), &rmHeader, sizeof(areg::MessageHeader));
+        hdr.rbhBufHeader.biLength = sizeUsed;
+        hdr.rbhBufHeader.biOffset = sizeof(areg::MessageHeader);
+        hdr.rbhBufHeader.biUsed = 0u;
+        mByteBuffer = std::shared_ptr<areg::RawBuffer>(reinterpret_cast<areg::RawBuffer*>(msg), ByteBufferDeleter());
+    }
+}
+
 uint32_t RemoteMessage::init_buffer(uint8_t *newBuffer, uint32_t bufLength, bool makeCopy) const noexcept
 {
     if (newBuffer == nullptr)
@@ -171,7 +191,7 @@ uint8_t * RemoteMessage::init_message(const areg::MessageHeader & rmHeader, uint
     if (result == nullptr)
         return nullptr;
 
-    msg = areg::construct_elems<areg::RawMessage>(result, 1);
+    msg = reinterpret_cast<areg::RawMessage*>(result);
     areg::MessageHeader& hdr{ msg->rbHeader };
     areg::mem_copy(&hdr, sizeof(areg::MessageHeader), &rmHeader, sizeof(areg::MessageHeader));
     hdr.rbhBufHeader.biLength   = sizeUsed;

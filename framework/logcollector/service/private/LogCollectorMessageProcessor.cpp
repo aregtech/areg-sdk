@@ -158,7 +158,7 @@ void LogCollectorMessageProcessor::save_log_source_configuration(const areg::Rem
     msgReceived >> target;
     if ((target == areg::TARGET_ALL) || (target == areg::COOKIE_LOGGER))
     {
-        const areg::MapInstances& instances{ mLoggerService.observers() };
+        const areg::MapInstances& instances{ mLoggerService.instances() };
         for (const auto& entry : instances.data())
         {
             if (is_log_source(entry.second.ciSource))

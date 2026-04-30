@@ -110,23 +110,32 @@ public:
     inline void set_action( LoggingEventData::LogAction action ) noexcept;
 
     /**
-     * \brief   Returns a mutable reference to the log entry for in-place filling.
+     * \brief   Returns a pointer to the LogEntry embedded in the message buffer.
+     *          Valid only for LogMessage events — returns nullptr if the message is not allocated.
      **/
     [[nodiscard]]
-    inline areg::LogEntry & entry() noexcept;
+    inline const areg::LogEntry* log_entry() const noexcept;
 
     /**
-     * \brief   Returns the log entry stored in the event data.
+     * \brief   Returns a mutable reference to the pre-built remote message.
+     *          Valid (is_valid() == true) only for LogMessage events.
      **/
     [[nodiscard]]
-    inline const areg::LogEntry & entry() const noexcept;
+    inline areg::RemoteMessage & message() noexcept;
+
+    /**
+     * \brief   Returns the pre-built remote message for forwarding to NetTcpLogger.
+     *          Valid (is_valid() == true) only for LogMessage events.
+     **/
+    [[nodiscard]]
+    inline const areg::RemoteMessage & message() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
     LoggingEventData::LogAction     mAction;    //!< The action to perform.
-    areg::LogEntry                  mEntry;     //!< The log entry data.
+    areg::RemoteMessage             mMessage;   //!< Pre-built log message; invalid (null buffer) for non-LogMessage events.
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -153,14 +162,19 @@ inline void LoggingEventData::set_action( LoggingEventData::LogAction action ) n
     mAction = action;
 }
 
-inline areg::LogEntry & LoggingEventData::entry() noexcept
+inline const areg::LogEntry* LoggingEventData::log_entry() const noexcept
 {
-    return mEntry;
+    return mMessage.is_valid() ? reinterpret_cast<const areg::LogEntry*>(mMessage.buffer()) : nullptr;
 }
 
-inline const areg::LogEntry & LoggingEventData::entry() const noexcept
+inline areg::RemoteMessage & LoggingEventData::message() noexcept
 {
-    return mEntry;
+    return mMessage;
+}
+
+inline const areg::RemoteMessage & LoggingEventData::message() const noexcept
+{
+    return mMessage;
 }
 
 inline constexpr const char * LoggingEventData::as_string( LoggingEventData::LogAction action ) noexcept

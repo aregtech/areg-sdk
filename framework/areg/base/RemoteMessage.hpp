@@ -87,6 +87,8 @@ public:
      **/
     RemoteMessage(const uint8_t * buffer, uint32_t size, uint32_t blockSize = areg::BLOCK_SIZE);
 
+    RemoteMessage(const areg::MessageHeader& rmHeader, uint32_t reserve, uint32_t blockSize = areg::BLOCK_SIZE);
+
     /**
      * \brief   Does not make hard copy of data from given source; refers to the
      *          same shared byte buffer object and increases reference counter by one.

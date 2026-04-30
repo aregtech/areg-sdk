@@ -122,6 +122,24 @@ public:
     void log_message( const areg::LogEntry & logMessage) final;
 
     /**
+     * \brief   Forwards a pre-built remote message to the log collector without re-constructing it.
+     *          Used when the RemoteMessage was pre-built on the calling thread to avoid
+     *          allocating and copying on the LogManager thread.
+     *
+     * \param   msg     Pre-built remote message; must have is_valid() == true.
+     **/
+    void forward_message( const areg::RemoteMessage & msg );
+
+    /**
+     * \brief   Forwards a pre-built remote message to the log collector without re-constructing it.
+     *          Used when the RemoteMessage was pre-built on the calling thread to avoid
+     *          allocating and copying on the LogManager thread.
+     *
+     * \param   msg     Pre-built remote message; must have is_valid() == true.
+     **/
+    void forward_message(areg::RemoteMessage&& msg);
+
+    /**
      * \brief   Returns true if logger is initialized (opened).
      **/
     [[nodiscard]]
@@ -213,7 +231,7 @@ private:
     //!< The instance of scope controller
     ScopeController &   mScopeController;
     //!< The flag, indicating whether the TPC/IP network logging is enabled or not.
-    bool                mIsEnabled;
+    std::atomic<bool>   mIsEnabled;
     //!< The ring stack to queue log messages if the connection setup did not complete yet.
     PendingQueue        mRingStack;
 
