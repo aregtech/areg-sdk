@@ -156,3 +156,6 @@ const util::OptionValues& util::OptionValues::normalizeOptions(const util::Optio
 
     return (*this);
 }
+
+//! Global startup options parsed from argv. Default: no command.
+util::OptionValues util::g_startup_options;

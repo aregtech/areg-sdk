@@ -141,6 +141,34 @@ public:
     uint32_t socket_recv_buffer() const noexcept;
 
     /**
+     * \brief   Returns the configured send/drain batch size for this connection.
+     *          Falls back to DEFAULT_BATCH_SIZE when the key is absent from areg.init.
+     **/
+    [[nodiscard]]
+    uint32_t batch_size() const noexcept;
+
+    /**
+     * \brief   Returns true if MSG_ZEROCOPY is requested (Linux only).
+     *          Falls back to false when the key is absent from areg.init.
+     **/
+    [[nodiscard]]
+    bool zerocopy_enabled() const noexcept;
+
+    /**
+     * \brief   Returns the configured zerocopy ring-slot count.
+     *          Falls back to DEFAULT_ZEROCOPY_RING_SIZE when the key is absent from areg.init.
+     **/
+    [[nodiscard]]
+    uint32_t zerocopy_ring_size() const noexcept;
+
+    /**
+     * \brief   Returns the configured thread-pool pair count.
+     *          Falls back to DEFAULT_POOL_PAIRS (0 = no pool) when the key is absent from areg.init.
+     **/
+    [[nodiscard]]
+    uint32_t pool_pairs() const noexcept;
+
+    /**
      * \brief   Extracts IP address bytes from connection address.
      *
      * \param[out] field0      First byte of IP address.

@@ -20,6 +20,7 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/base/CommonDefs.hpp"
+#include "areg/base/SocketDefs.hpp"
 
 #include <string_view>
 
@@ -76,12 +77,6 @@ namespace areg {
      *          Default connect retry timer timeout value in milliseconds
      **/
     constexpr uint32_t      DEFAULT_RETRY_CONNECT_TIMEOUT       { TIMEOUT_500_MS };  // 500 ms
-
-    /**
-     * \brief   areg::SEND_THREAD_QUEUE_LIMIT
-     *          Maximum number of events queued in the server/client send thread.
-     **/
-    constexpr uint32_t      SEND_THREAD_QUEUE_LIMIT             { 256u };
 
 } // namespace areg
 #endif  // AREG_IPC_PRIVATE_CONNECTIONDEFS_HPP

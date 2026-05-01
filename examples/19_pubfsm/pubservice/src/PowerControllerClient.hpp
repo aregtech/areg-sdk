@@ -55,31 +55,32 @@ public:
     /**
      * \brief   Default constructor
      **/
-    inline PowerControllerEventData();
+    inline PowerControllerEventData() noexcept;
     /**
      * \brief   Set the initial value of event data.
      **/
-    inline PowerControllerEventData( PowerControllerEventData::Action action );
+    inline PowerControllerEventData( PowerControllerEventData::Action action ) noexcept;
     /**
      * \brief   Copy the data from given source
      **/
-    inline PowerControllerEventData( const PowerControllerEventData & src );
+    inline PowerControllerEventData( const PowerControllerEventData & src ) noexcept;
     /**
      * \brief   Move the data from given source
      **/
-    inline PowerControllerEventData( PowerControllerEventData && src );
+    inline PowerControllerEventData( PowerControllerEventData && src ) noexcept;
     /**
      * \brief   Copy the data from given source
      **/
-    inline void operator = ( const PowerControllerEventData & src );
+    inline void operator = ( const PowerControllerEventData & src ) noexcept;
     /**
      * \brief   Move the data from given source
      **/
-    inline void operator = ( PowerControllerEventData && src );
+    inline void operator = ( PowerControllerEventData && src ) noexcept;
     /**
      * \brief   Returns the event data value.
      **/
-    inline PowerControllerEventData::Action getAction() const;
+    [[nodiscard]]
+    inline PowerControllerEventData::Action getAction() const noexcept;
 
 private:
     PowerControllerEventData::Action     mAction;  //!< The power controller event data value.
@@ -100,8 +101,8 @@ AREG_DECLARE_EVENT(PowerControllerEventData, PowerControllerEvent, IEPowerContro
  *          lights start automatically to run.
  **/
 class PowerControllerClient final : public    PowerManagerConsumerBase
-                            , protected areg::ThreadConsumer
-                            , protected IEPowerControllerEventConsumer
+                                  , protected areg::ThreadConsumer
+                                  , protected IEPowerControllerEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants
@@ -234,27 +235,37 @@ inline PowerControllerClient & PowerControllerClient::self()
     return (*this);
 }
 
-inline PowerControllerEventData::PowerControllerEventData()
+inline PowerControllerEventData::PowerControllerEventData() noexcept
     : mAction   (PowerControllerEventData::Action::None)
 {
 }
 
-inline PowerControllerEventData::PowerControllerEventData(PowerControllerEventData::Action action)
+inline PowerControllerEventData::PowerControllerEventData(PowerControllerEventData::Action action) noexcept
     : mAction   ( action )
 {
 }
 
-inline PowerControllerEventData::PowerControllerEventData(const PowerControllerEventData & src)
+inline PowerControllerEventData::PowerControllerEventData(const PowerControllerEventData & src) noexcept
     : mAction   ( src.mAction )
 {
 }
 
-inline void PowerControllerEventData::operator = (const PowerControllerEventData & src)
+inline PowerControllerEventData::PowerControllerEventData(PowerControllerEventData&& src) noexcept
+    : mAction(src.mAction)
+{
+}
+
+inline void PowerControllerEventData::operator = (const PowerControllerEventData & src) noexcept
 {
     mAction = src.mAction;
 }
 
-inline PowerControllerEventData::Action PowerControllerEventData::getAction() const
+inline void PowerControllerEventData::operator = (PowerControllerEventData && src) noexcept
+{
+    mAction = src.mAction;
+}
+
+inline PowerControllerEventData::Action PowerControllerEventData::getAction() const noexcept
 {
     return mAction;
 }

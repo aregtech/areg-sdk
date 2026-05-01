@@ -52,6 +52,9 @@
     <ClCompile Include="aregextend\service\private\DataRateHelper.cpp" />
     <ClCompile Include="aregextend\service\private\SystemServiceDefs.cpp" />
     <ClCompile Include="aregextend\service\private\posix\ServiceApplicationBasePosix.cpp" />
+    <ClCompile Include="aregextend\service\private\ClientConnectionPair.cpp" />
+    <ClCompile Include="aregextend\service\private\PoolReceiveThread.cpp" />
+    <ClCompile Include="aregextend\service\private\PoolSendThread.cpp" />
     <ClCompile Include="aregextend\service\private\ServiceApplicationBase.cpp" />
     <ClCompile Include="aregextend\service\private\SystemServiceBase.cpp" />
     <ClCompile Include="aregextend\service\private\ConnectionHandler.cpp" />
@@ -81,6 +84,9 @@
     <ClInclude Include="aregextend\service\SystemServiceBase.hpp" />
     <ClInclude Include="aregextend\service\ConnectionHandler.hpp" />
     <ClInclude Include="aregextend\service\ServerConnection.hpp" />
+    <ClInclude Include="aregextend\service\private\ClientConnectionPair.hpp" />
+    <ClInclude Include="aregextend\service\private\PoolReceiveThread.hpp" />
+    <ClInclude Include="aregextend\service\private\PoolSendThread.hpp" />
     <ClInclude Include="aregextend\service\private\ServerReceiveThread.hpp" />
     <ClInclude Include="aregextend\service\private\ServerSendThread.hpp" />
     <ClInclude Include="aregextend\service\ServiceCommunicationBase.hpp" />

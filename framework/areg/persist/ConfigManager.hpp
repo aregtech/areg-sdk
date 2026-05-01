@@ -834,41 +834,74 @@ public:
     void set_db_property(const String & whichPosition, const String & newValue, bool is_temporary = false);
 
     /**
-     * \brief   Returns the configured SO_SNDBUF size (bytes) for the remote service connection.
-     *          Used to override the compile-time default on every accepted/connected socket.
+     * \brief   Returns the configured SO_SNDBUF size (bytes) for the network socket.
+     *          Reads key net::MODULE::TRANSPORT::sndbuf (value in KB, returned as bytes).
+     *          Lookup order: module-specific entry --> wildcard "*" entry --> compile-time default.
      *
-     * \param   service         The string value of the remote service (e.g. "router", "logger").
-     * \param   connectType     The string value of the connection type (e.g. "tcpip").
-     * \return  Returns the configured send-buffer size, or the compile-time default if not set.
+     * \param   module          The process/application name (e.g. "mtrouter", "logcollector").
+     *                          Pass empty string to use the current process name.
+     * \param   connectType     The transport type name (e.g. "tcpip").
+     *                          Pass empty string to match any transport.
+     * \return  Returns the configured SO_SNDBUF size in bytes, or the compile-time default if not set.
      **/
-    uint32_t remote_service_sndbuf(const String& service, const String& connectType) const noexcept;
+    uint32_t network_sndbuf(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
 
     /**
-     * \brief   Returns the configured SO_SNDBUF size (bytes) for the remote service connection.
+     * \brief   Returns the configured SO_SNDBUF size (bytes) for the specified remote service kind and connection type.
+     *          Uses the service type string as the module name for the lookup.
      *
-     * \param   serviceType     The remote service type.
+     * \param   serviceType     The remote service kind.
      * \param   connectType     The connection type.
-     * \return  Returns the configured send-buffer size, or the compile-time default if not set.
+     * \return  Returns the configured SO_SNDBUF size in bytes, or the compile-time default if not set.
      **/
-    uint32_t remote_service_sndbuf(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept;
+    uint32_t network_sndbuf(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept;
 
     /**
-     * \brief   Returns the configured SO_RCVBUF size (bytes) for the remote service connection.
+     * \brief   Returns the configured SO_RCVBUF size (bytes) for the network socket.
+     *          Reads key net::MODULE::TRANSPORT::rcvbuf (value in KB, returned as bytes).
+     *          Lookup order: module-specific entry --> wildcard "*" entry --> compile-time default.
      *
-     * \param   service         The string value of the remote service (e.g. "router", "logger").
-     * \param   connectType     The string value of the connection type (e.g. "tcpip").
-     * \return  Returns the configured receive-buffer size, or the compile-time default if not set.
+     * \param   module          The process/application name (e.g. "mtrouter", "logcollector").
+     *                          Pass empty string to use the current process name.
+     * \param   connectType     The transport type name (e.g. "tcpip").
+     *                          Pass empty string to match any transport.
+     * \return  Returns the configured SO_RCVBUF size in bytes, or the compile-time default if not set.
      **/
-    uint32_t remote_service_rcvbuf(const String& service, const String& connectType) const noexcept;
+    uint32_t network_rcvbuf(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
 
     /**
-     * \brief   Returns the configured SO_RCVBUF size (bytes) for the remote service connection.
+     * \brief   Returns the configured SO_RCVBUF size (bytes) for the specified remote service kind and connection type.
+     *          Uses the service type string as the module name for the lookup.
      *
-     * \param   serviceType     The remote service type.
+     * \param   serviceType     The remote service kind.
      * \param   connectType     The connection type.
-     * \return  Returns the configured receive-buffer size, or the compile-time default if not set.
+     * \return  Returns the configured SO_RCVBUF size in bytes, or the compile-time default if not set.
      **/
-    uint32_t remote_service_rcvbuf(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept;
+    uint32_t network_rcvbuf(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept;
+
+    /**
+     * \brief   Returns the configured send/drain batch size (net::MODULE::TRANSPORT::batch).
+     *          Falls back to DEFAULT_BATCH_SIZE when the key is absent.
+     **/
+    uint32_t network_batch(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
+
+    /**
+     * \brief   Returns true if MSG_ZEROCOPY is requested (net::MODULE::TRANSPORT::zerocopy, Linux only).
+     *          Falls back to false when the key is absent.
+     **/
+    bool network_zerocopy(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
+
+    /**
+     * \brief   Returns the configured zerocopy ring-slot count (net::MODULE::TRANSPORT::ring).
+     *          Falls back to DEFAULT_ZEROCOPY_RING_SIZE when the key is absent.
+     **/
+    uint32_t network_ring(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
+
+    /**
+     * \brief   Returns the configured thread-pool pair count (net::MODULE::TRANSPORT::pairs).
+     *          Falls back to DEFAULT_POOL_PAIRS (0) when the key is absent.
+     **/
+    uint32_t network_pool_pairs(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
 
     /**
      * \brief   Returns the default buffer block size for growing buffers.

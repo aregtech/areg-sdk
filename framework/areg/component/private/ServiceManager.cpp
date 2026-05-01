@@ -79,19 +79,35 @@ bool ServiceManager::is_manager_started()
     return ServiceManager::instance().is_ready();
 }
 
-void ServiceManager::query_communication_data( uint64_t & sizeSend, uint64_t & sizeReceive )
+void ServiceManager::query_data_sent(uint64_t& sizeSent, uint32_t& msgSent) noexcept
 {
-    ServiceManager & serviceManager = ServiceManager::instance( );
-    sizeSend    = serviceManager.mServiceClient.query_bytes_sent( );
-    sizeReceive = serviceManager.mServiceClient.query_bytes_received( );
+    ServiceManager::instance().mServiceClient.query_data_sent(sizeSent, msgSent);
+}
+
+void ServiceManager::query_data_received(uint64_t& sizeRecv, uint32_t& msgRecv) noexcept
+{
+    ServiceManager::instance().mServiceClient.query_data_received(sizeRecv, msgRecv);
+}
+
+void ServiceManager::enable_data_rate(bool enable) noexcept
+{
+    ServiceManager::instance().mServiceClient.enable_data_rate(enable);
+}
+
+bool ServiceManager::send_raw_message(const RemoteMessage& msg) noexcept
+{
+    return ServiceManager::instance().mServiceClient.send_raw_message(msg);
+}
+
+const Channel& ServiceManager::connection_channel() noexcept
+{
+    return ServiceManager::instance().mServiceClient.connection_channel();
 }
 
 void ServiceManager::request_register_provider( const StubAddress & whichServer )
 {
     LOG_SCOPE( areg_component_private_ServiceManager, request_register_provider);
-    LOG_DBG("Request to register server [ %s ] of interface [ %s ]"
-                    , whichServer.role_name().as_string()
-                    , whichServer.service_name().as_string());
+    LOG_DBG("Request to register server [ %s ] of interface [ %s ]", whichServer.role_name().as_string(), whichServer.service_name().as_string());
 
     ASSERT(whichServer.is_valid());
 
@@ -104,10 +120,7 @@ void ServiceManager::request_register_provider( const StubAddress & whichServer 
 void ServiceManager::request_unregister_provider( const StubAddress & whichServer, const areg::DisconnectReason reason )
 {
     LOG_SCOPE( areg_component_private_ServiceManager, request_unregister_provider);
-
-    LOG_DBG( "Request to unregister server [ %s ] of interface [ %s ]"
-                    , whichServer.role_name( ).as_string( )
-                    , whichServer.service_name( ).as_string( ) );
+    LOG_DBG( "Request to unregister server [ %s ] of interface [ %s ]", whichServer.role_name( ).as_string( ), whichServer.service_name( ).as_string( ) );
     
     ASSERT(whichServer.is_valid());
     
@@ -121,9 +134,7 @@ void ServiceManager::request_register_consumer( const ProxyAddress & whichClient
 {
     LOG_SCOPE( areg_component_private_ServiceManager, request_register_consumer);
 
-    LOG_DBG( "Request to register proxy [ %s ] of interface [ %s ]"
-                    , whichClient.role_name( ).as_string( )
-                    , whichClient.service_name( ).as_string( ) );
+    LOG_DBG( "Request to register proxy [ %s ] of interface [ %s ]", whichClient.role_name( ).as_string( ), whichClient.service_name( ).as_string( ) );
     
     ASSERT(whichClient.is_valid());
     
@@ -136,9 +147,7 @@ void ServiceManager::request_register_consumer( const ProxyAddress & whichClient
 void ServiceManager::request_unregister_consumer( const ProxyAddress & whichClient, const areg::DisconnectReason reason )
 {
     LOG_SCOPE( areg_component_private_ServiceManager, request_unregister_consumer);
-    LOG_DBG( "Request to unregister proxy [ %s ] of interface [ %s ]"
-                    , whichClient.role_name( ).as_string( )
-                    , whichClient.service_name( ).as_string( ) );
+    LOG_DBG( "Request to unregister proxy [ %s ] of interface [ %s ]", whichClient.role_name( ).as_string( ), whichClient.service_name( ).as_string( ) );
     
     ASSERT(whichClient.is_valid());
     

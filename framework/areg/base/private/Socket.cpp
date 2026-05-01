@@ -50,6 +50,17 @@ Socket::Socket(const SOCKETHANDLE hSocket, const areg::SocketAddress & sockAddre
     mRecvSize = recv_packet_size();
 }
 
+Socket::Socket(const SOCKETHANDLE hSocket, areg::SocketAddress&& sockAddress) noexcept
+    : mSocket   ( std::move(hSocket) )   // SharedPrimitive move: transfers ownership
+    , mAddress  ( std::move(sockAddress) )
+    , mSendSize ( areg::PACKET_DEFAULT_SIZE )
+    , mRecvSize ( areg::PACKET_DEFAULT_SIZE )
+{
+    static_cast<void>(areg::socket_initialize( ));
+    mSendSize = send_packet_size();
+    mRecvSize = recv_packet_size();
+}
+
 Socket::Socket( const Socket & source )
     : mSocket   ( source.mSocket )      // SharedPrimitive copy: increments ref count
     , mAddress  ( source.mAddress )

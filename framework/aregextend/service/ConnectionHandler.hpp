@@ -87,6 +87,19 @@ public:
      **/
     virtual void disconnect_services() = 0;
 
+    /**
+     * \brief   Called after a new client socket has been physically accepted and registered with
+     *          the server connection. Returning true signals that a dedicated per-client thread
+     *          pair has taken ownership of the socket; ServerReceiveThread will NOT call
+     *          receive_message() for this socket. Returning false (default) falls back to the
+     *          legacy shared-thread receive path.
+     *
+     * \param   clientSocket    The newly accepted client socket (cookie already assigned).
+     * \return  Returns true if a dedicated per-client thread pair was created and started for
+     *          this socket. Returns false for the default shared-thread behavior.
+     **/
+    virtual bool on_client_accepted( SocketAccepted & /* clientSocket */ ) { return false; }
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////

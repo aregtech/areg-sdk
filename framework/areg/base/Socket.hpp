@@ -83,7 +83,8 @@ protected:
      * \param   hSocket         Socket descriptor to set
      * \param   sockAddress     Socket address to set
      **/
-    Socket( const SOCKETHANDLE hSocket, const areg::SocketAddress & sockAddress );
+    Socket(const SOCKETHANDLE hSocket, const areg::SocketAddress & sockAddress);
+    Socket(const SOCKETHANDLE hSocket, areg::SocketAddress && sockAddress) noexcept;
 
     Socket( const Socket & source );
 

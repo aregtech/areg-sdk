@@ -71,6 +71,10 @@ bool WatchdogManager::start_timer(Watchdog& watchdog)
         result = TimerManagerEvent::send_event( TimerManagerEventData(&watchdog)
                                              , static_cast<TimerManagerEventConsumer&>(watchdogManager)
                                              , static_cast<DispatcherThread&>(watchdogManager));
+        if (!result)
+        {
+            watchdogManager._unregister_watchdog(watchdog);
+        }
     }
 
     return result;
@@ -143,7 +147,13 @@ void WatchdogManager::process_event(const TimerManagerEventData & data)
     ASSERT(watchdog != nullptr);
     if (mWatchdogResource.exist(watchdog->id()))
     {
-        WatchdogManager::_os_timer_start(*watchdog);
+        if (!WatchdogManager::_os_timer_start(*watchdog))
+        {
+            _unregister_watchdog(*watchdog);
+
+            Lock lock(watchdog->mLock);
+            watchdog->mActive = false;
+        }
     }
 }
 
@@ -151,19 +161,23 @@ void WatchdogManager::_process_expired_timer(Watchdog* watchdog, Watchdog::WATCH
 {
     LOG_SCOPE( areg_component_private_WatchdogManager, _process_expired_timer);
 
+    const ComponentThread* componentThread{ nullptr };
+
     mWatchdogResource.lock();
 
     Watchdog::SEQUENCE_ID sequence  = Watchdog::make_sequence_id(watchdog_id);
     if ((watchdog != nullptr) && (watchdog->sequence() == sequence))
     {
-        LOG_WARN("The watchdog [ %s ] has expired, terminating component thread [ %s ]"
-                        , watchdog->name().as_string()
-                        , watchdog->component_thread().name().as_string());
-
-        ServiceManager::request_recreate_thread(watchdog->component_thread());
+        LOG_WARN("The watchdog [ %s ] has expired, terminating component thread [ %s ]", watchdog->name().as_string(), watchdog->component_thread().name().as_string());
+        componentThread = &watchdog->component_thread();
     }
 
     mWatchdogResource.unlock();
+
+    if (componentThread != nullptr)
+    {
+        ServiceManager::request_recreate_thread(*componentThread);
+    }
 }
 
 void WatchdogManager::ready_for_events(bool is_ready)

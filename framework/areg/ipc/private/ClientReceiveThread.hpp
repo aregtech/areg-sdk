@@ -57,29 +57,47 @@ public:
 
     virtual ~ClientReceiveThread() = default;
 
-/************************************************************************/
-// Actions and attributes.
-/************************************************************************/
+    /************************************************************************/
+    // Actions and attributes.
+    /************************************************************************/
 public:
     /**
-     * \brief   Returns accumulated received data size and resets counter atomically. Useful for
-     *          displaying data rate.
+     * \brief   Returns accumulative value of received data size and resets the existing value to
+     *          zero. The operations are atomic. The value can be used to display data rate, for example.
      **/
     [[nodiscard]]
-    inline uint64_t extract_data_receive() const noexcept;
+    inline uint64_t extract_data_received() const noexcept;
 
     /**
-     * \brief   Enables or disables received data calculation and resets existing calculated data.
+     * \brief   Returns accumulative count of received messages and resets the existing value to zero.
+     *          The operations are atomic.
+     **/
+    [[nodiscard]]
+    inline uint32_t extract_msgs_received() const noexcept;
+
+    /**
+     * \brief   Call to enable or disable the received data calculation. It also resets the existing
+     *          calculated data.
      *
-     * \param   enable      Flag indicating whether data calculation should be enabled.
+     * \param   enable      Flag, indicating whether data calculation is enabled or not.
      **/
     inline void set_data_rate_enabled(bool enable) noexcept;
 
     /**
-     * \brief   Returns whether data calculation is enabled.
+     * \brief   Returns true if data and message rating is enabled.
      **/
     [[nodiscard]]
     inline bool is_data_rate_enabled() const noexcept;
+
+    /**
+     * \brief   Accumulates bytes and message counts from a per-client receive thread into the
+     *          global counters queried by DataRateHelper. Called by PoolReceiveThread when
+     *          mSaveDataReceive is enabled. Thread-safe: uses atomic add.
+     *
+     * \param   bytes   Number of bytes received.
+     * \param   msgs    Number of messages received.
+     **/
+    inline void accumulate_received(uint64_t bytes, uint32_t msgs) noexcept;
 
 protected:
 /************************************************************************/
@@ -107,10 +125,16 @@ private:
     ClientConnection &          mConnection;
 
     /**
-     * \brief   Accumulative value of received data size.
-     */
+     * \brief   Flag, indicating whether data calculation is enabled or disabled. By default, it is disabled.
+     **/
+     /**
+      * \brief   Accumulative value of received data size.
+      */
     mutable std::atomic_uint64_t    mBytesReceive;
-
+    /**
+     * \brief   Accumulative count of received messages.
+     **/
+    mutable std::atomic_uint32_t    mMsgsReceive;
     /**
      * \brief   Flag, indicating whether data calculation is enabled or disabled. By default, it is disabled.
      **/
@@ -124,16 +148,26 @@ private:
     AREG_NOCOPY_NOMOVE( ClientReceiveThread );
 };
 
-inline uint64_t ClientReceiveThread::extract_data_receive() const noexcept
+//////////////////////////////////////////////////////////////////////////
+// ClientReceiveThread inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline uint64_t ClientReceiveThread::extract_data_received() const noexcept
 {
-    return static_cast<uint64_t>(mBytesReceive.exchange(0));
+    return mBytesReceive.exchange(0, std::memory_order_relaxed);
+}
+
+inline uint32_t ClientReceiveThread::extract_msgs_received() const noexcept
+{
+    return mMsgsReceive.exchange(0, std::memory_order_relaxed);
 }
 
 inline void ClientReceiveThread::set_data_rate_enabled(bool enable) noexcept
 {
     if (mSaveDataReceive != enable)
     {
-        mBytesReceive.store(0u);
+        mBytesReceive.store(0u, std::memory_order_relaxed);
+        mMsgsReceive.store(0u, std::memory_order_relaxed);
         mSaveDataReceive = enable;
     }
 }
@@ -141,6 +175,15 @@ inline void ClientReceiveThread::set_data_rate_enabled(bool enable) noexcept
 inline bool ClientReceiveThread::is_data_rate_enabled() const noexcept
 {
     return mSaveDataReceive;
+}
+
+inline void ClientReceiveThread::accumulate_received(uint64_t bytes, uint32_t msgs) noexcept
+{
+    if (mSaveDataReceive)
+    {
+        mBytesReceive.fetch_add(bytes, std::memory_order_relaxed);
+        mMsgsReceive.fetch_add(msgs, std::memory_order_relaxed);
+    }
 }
 
 } // namespace areg

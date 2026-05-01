@@ -65,7 +65,7 @@ public:
         {
             if (t.start_timer(timeout, static_cast<areg::DispatcherThread&>(*this), count))
             {
-                LOG_DBG("Timer [ %s ] started, timeout [%u]", t.name().as_string(), t.timeout());
+                LOG_DBG("Timer [ %s ] started, timeout [%u], total numbers to be fired [ %u ]", t.name().as_string(), t.timeout(), count);
 
             }
             else

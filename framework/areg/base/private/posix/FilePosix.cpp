@@ -70,8 +70,8 @@ namespace {
         bool operator == (FILEHANDLE fh) const noexcept { return fd == static_cast<int>(reinterpret_cast<intptr_t>(fh)); }
         bool operator != (FILEHANDLE fh) const noexcept { return fd != static_cast<int>(reinterpret_cast<intptr_t>(fh)); }
 
-        constexpr operator int() const noexcept { return fd; }
-        operator FILEHANDLE() const noexcept { return reinterpret_cast<FILEHANDLE>(fd); }
+        explicit constexpr operator int32_t() const noexcept { return fd; }
+        explicit operator FILEHANDLE() const noexcept { return reinterpret_cast<FILEHANDLE>(fd); }
     };
 
 
@@ -125,7 +125,7 @@ void File::_os_close_file() noexcept
         PosixFile fd{ mFileHandle };
         if (fd != POSIX_INVALID_FD)
         {
-            ::close( fd );
+            ::close( static_cast<int32_t>(fd) );
         }
 
         if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitDelete)) != 0)
@@ -241,7 +241,7 @@ bool File::_os_open_file() noexcept
     }
 
 #ifdef DEBUG
-    if (file = POSIX_INVALID_FD)
+    if (POSIX_INVALID_FD == static_cast<int>(file.fd))
     {
         AREG_OUTPUT_ERR("Failed to open file [ %s ], errno = [ %p ]", mFileName.as_string(), static_cast<id_type>(errno));
     }

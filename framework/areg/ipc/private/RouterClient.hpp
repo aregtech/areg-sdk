@@ -63,6 +63,32 @@ public:
     ~RouterClient() override = default;
 
 //////////////////////////////////////////////////////////////////////////
+// Raw-message fast-path helpers
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Sends a pre-serialized RemoteMessage directly to the send thread,
+     *          bypassing all event creation and serialization overhead.
+     *          Use only with messages built via RemoteEventFactory::stream_from_event()
+     *          while the connection was established and the target cookie is still valid.
+     *
+     * \param   msg     The pre-built message to send.
+     * \return  Returns true if the message was accepted by the send thread.
+     **/
+    inline bool send_raw_message(const RemoteMessage& msg);
+
+    /**
+     * \brief   Returns the active IPC connection channel.
+     *          The channel carries the router cookie stamped in every outgoing
+     *          RemoteMessage.  Valid only after the connection handshake completes
+     *          (i.e. when is_connection_started() returns true).
+     *
+     * \return  Const reference to the active Channel object.
+     **/
+    inline const areg::Channel& connection_channel() const noexcept;
+
+//////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
 protected:
@@ -221,6 +247,16 @@ protected:
      **/
     void ready_for_events( bool is_ready ) final;
 
+/************************************************************************/
+// ServiceEventConsumer interface overrides
+/************************************************************************/
+    /**
+     * \brief   Called to process and dispatch a received communication message.
+     *
+     * \param   msgReceived     The received communication message.
+     **/
+    void on_message_received(const RemoteMessage& msgReceived) final;
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations and attributes
 //////////////////////////////////////////////////////////////////////////
@@ -231,6 +267,15 @@ private:
      **/
     [[nodiscard]]
     inline RouterClient & self() noexcept;
+
+    /**
+     * \brief   Call to send the executable message to process. It triggers event with command ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg
+     *
+     * \param   msg     The message to forward.
+     * \return  Returns true if succeeded to send the command.
+     **/
+    inline void forward_executable_message(const RemoteMessage & msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
+    inline void forward_executable_message(RemoteMessage&& msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -256,6 +301,26 @@ private:
 inline RouterClient & RouterClient::self() noexcept
 {
     return (*this);
+}
+
+inline void RouterClient::forward_executable_message(const RemoteMessage& msg, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/)
+{
+    ServiceClientEvent::send_event(ServiceEventData(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msg), mEventConsumer, static_cast<DispatcherThread&>(self()), eventPrio);
+}
+
+inline void RouterClient::forward_executable_message(RemoteMessage&& msg, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/)
+{
+    ServiceClientEvent::send_event(ServiceEventData(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, std::move(msg)), mEventConsumer, static_cast<DispatcherThread&>(self()), eventPrio);
+}
+
+inline bool RouterClient::send_raw_message(const RemoteMessage& msg)
+{
+    return send_message(msg);
+}
+
+inline const areg::Channel& RouterClient::connection_channel() const noexcept
+{
+    return mChannel;
 }
 
 } // namespace areg

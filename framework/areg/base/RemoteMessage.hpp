@@ -42,6 +42,12 @@ class AREG_API RemoteMessage final : public SharedBuffer
     friend class Socket;
 
 //////////////////////////////////////////////////////////////////////////
+// Internal types and constants
+//////////////////////////////////////////////////////////////////////////
+    static const ITEM_ID        _INVALID_COOKIE;
+    static const SequenceNumber _INVALID_SEQUENCE;
+
+//////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
@@ -51,7 +57,16 @@ public:
      * \param   blockSize       The size of minimum block size to increase on resize. It is aligned
      *                          to areg::BLOCK_SIZE (minimum size)
      **/
-    explicit RemoteMessage(uint32_t blockSize = areg::BLOCK_SIZE);
+    RemoteMessage(uint32_t blockSize = areg::BLOCK_SIZE);
+
+    /**
+     * \brief   Initializes the object with default values and specified or default block size.
+     * 
+     * \param   init        Create RemoteMessage initialized
+     * \param   blockSize   The size of minimum block size to increase on resize. It is aligned
+     *                      to areg::BLOCK_SIZE (minimum size)
+     **/
+    explicit RemoteMessage(bool init, uint32_t blockSize = areg::BLOCK_SIZE);
 
     /**
      * \brief   Reserves space for byte buffer object.
@@ -71,6 +86,8 @@ public:
      *                          to areg::BLOCK_SIZE (minimum size).
      **/
     RemoteMessage(const uint8_t * buffer, uint32_t size, uint32_t blockSize = areg::BLOCK_SIZE);
+
+    RemoteMessage(const areg::MessageHeader& rmHeader, uint32_t reserve, uint32_t blockSize = areg::BLOCK_SIZE);
 
     /**
      * \brief   Does not make hard copy of data from given source; refers to the
@@ -290,14 +307,14 @@ private:
      * \brief   Returns const reference to raw message structure.
      **/
     [[nodiscard]]
-    inline const areg::RawMessage & _remote_message() const noexcept;
+    inline const areg::RawMessage & _raw_message() const noexcept;
     /**
      * \brief   Returns mutable reference to raw message structure. Allows modification of the
      *          returned value.
      * \note    Overload. Const variant returns const reference.
      **/
     [[nodiscard]]
-    inline areg::RawMessage & _remote_message() noexcept;
+    inline areg::RawMessage & _raw_message() noexcept;
 
     /**
      * \brief   Calculates and returns the checksum value of given remote message.
@@ -322,12 +339,13 @@ inline areg::MessageHeader & RemoteMessage::_header()
     return reinterpret_cast<areg::MessageHeader &>(*(mByteBuffer.get()));
 }
 
-inline const areg::RawMessage & RemoteMessage::_remote_message() const noexcept
+inline const areg::RawMessage & RemoteMessage::_raw_message() const noexcept
 {
-    return reinterpret_cast<const areg::RawMessage &>(*byte_buffer());
+    ASSERT(mByteBuffer.get() != nullptr);
+    return reinterpret_cast<const areg::RawMessage&>(*mByteBuffer.get());
 }
 
-inline areg::RawMessage & RemoteMessage::_remote_message() noexcept
+inline areg::RawMessage & RemoteMessage::_raw_message() noexcept
 {
     ASSERT( mByteBuffer.get( ) != nullptr );
     return reinterpret_cast<areg::RawMessage &>(*mByteBuffer.get());
@@ -335,82 +353,93 @@ inline areg::RawMessage & RemoteMessage::_remote_message() noexcept
 
 inline const areg::RawMessage * RemoteMessage::remote_message() const noexcept
 {
-    return reinterpret_cast<const areg::RawMessage *>(byte_buffer());
+    return reinterpret_cast<const areg::RawMessage *>(mByteBuffer.get());
 }
 
 inline uint32_t RemoteMessage::checksum() const noexcept
 {
-    return _header().rbhChecksum;
+    const areg::RawMessage* msg{ remote_message() };
+    return (msg != nullptr ? msg->rbHeader.rbhChecksum : areg::CHECKSUM_INVALID);
 }
 
 inline const ITEM_ID & RemoteMessage::source() const noexcept
 {
-    return _header().rbhSource;
+    const areg::RawMessage* msg{ remote_message() };
+    return (msg != nullptr ? msg->rbHeader.rbhSource : RemoteMessage::_INVALID_COOKIE);
 }
 
 inline void RemoteMessage::set_source(const ITEM_ID & idSource ) noexcept
 {
-    if (is_valid())
+    areg::RawMessage* msg{ reinterpret_cast<areg::RawMessage*>(byte_buffer()) };
+    if (msg != nullptr)
     {
-        _header().rbhSource = idSource;
+        msg->rbHeader.rbhSource = idSource;
     }
 }
 
 inline const ITEM_ID & RemoteMessage::target() const noexcept
 {
-    return _header().rbhTarget;
+    const areg::RawMessage* msg{ remote_message() };
+    return (msg != nullptr ? msg->rbHeader.rbhTarget : RemoteMessage::_INVALID_COOKIE);
 }
 
 inline void RemoteMessage::set_target(const ITEM_ID & idTarget ) noexcept
 {
-    if (is_valid())
+    areg::RawMessage* msg{ reinterpret_cast<areg::RawMessage*>(byte_buffer()) };
+    if (msg != nullptr)
     {
-        _header().rbhTarget = idTarget;
+        msg->rbHeader.rbhTarget = idTarget;
     }
 }
 
 inline uint32_t RemoteMessage::message_id() const noexcept
 {
-    return _header().rbhMessageId;
+    const areg::RawMessage* msg{ remote_message() };
+    return (msg != nullptr ? msg->rbHeader.rbhMessageId : areg::INVALID_MESSAGE_ID);
 }
 
 inline void RemoteMessage::set_message_id( uint32_t newMessageId ) noexcept
 {
-    if (is_valid())
+    areg::RawMessage* msg{ reinterpret_cast<areg::RawMessage*>(byte_buffer()) };
+    if (msg != nullptr)
     {
-        _header().rbhMessageId = newMessageId;
+        msg->rbHeader.rbhMessageId = newMessageId;
     }
 }
-
 inline uint32_t RemoteMessage::result() const noexcept
 {
-    return _header().rbhResult;
+    const areg::RawMessage* msg{ remote_message() };
+    return (msg != nullptr ? msg->rbHeader.rbhResult : areg::INVALID_VALUE);
 }
 
 inline void RemoteMessage::set_result( uint32_t newResult ) noexcept
 {
-    if (is_valid())
+    areg::RawMessage* msg{ reinterpret_cast<areg::RawMessage*>(byte_buffer()) };
+    if (msg != nullptr)
     {
-        _header().rbhResult = newResult;
+        msg->rbHeader.rbhResult = newResult;
     }
 }
 
 inline const SequenceNumber & RemoteMessage::sequence() const noexcept
 {
-    return _header().rbhSequenceNr;
+    const areg::RawMessage* msg{ remote_message() };
+    return (msg != nullptr ? msg->rbHeader.rbhSequenceNr : RemoteMessage::_INVALID_SEQUENCE);
 }
 
 inline void RemoteMessage::set_sequence(const SequenceNumber & newSequenceNr ) noexcept
 {
-    if ( is_valid() )
+    areg::RawMessage* msg{ reinterpret_cast<areg::RawMessage*>(byte_buffer()) };
+    if (msg != nullptr)
     {
-        _header().rbhSequenceNr = newSequenceNr;
+        msg->rbHeader.rbhSequenceNr = newSequenceNr;
     }
 }
 
 inline bool RemoteMessage::is_checksum_valid() const noexcept
 {
-    return (is_valid() && (is_checksum_ignore() || (checksum() == RemoteMessage::_checksum_calculate(_remote_message()))));
+    const areg::RawMessage* msg{ remote_message() };
+    return (msg != nullptr) && (msg->rbHeader.rbhChecksum != areg::CHECKSUM_INVALID);
 }
 
 inline bool RemoteMessage::is_checksum_ignore() const noexcept
@@ -434,9 +463,18 @@ inline uint32_t RemoteMessage::header_size() const noexcept
 
 inline const InStream & operator >> (const InStream & stream, RemoteMessage & input)
 {
-    if ( static_cast<const InStream *>(&stream) != static_cast<const InStream *>(&input) )
+    if ( static_cast<const InStream *>(&stream) == static_cast<const InStream *>(&input) )
+        return stream;
+
+    areg::MessageHeader msgHdr{};
+    if (stream.read(reinterpret_cast<uint8_t *>(&msgHdr), sizeof(areg::MessageHeader)) != sizeof(areg::MessageHeader))
+        return stream;
+
+    uint8_t* dst = input.init_message(msgHdr);
+    if (dst != nullptr)
     {
-        stream.read(input);
+        uint32_t read = stream.read(dst, msgHdr.rbhBufHeader.biUsed);
+        input.set_size_used(read);
         input.move_to_begin();
     }
 
@@ -445,11 +483,22 @@ inline const InStream & operator >> (const InStream & stream, RemoteMessage & in
 
 inline OutStream & operator << (OutStream & stream, const RemoteMessage & output)
 {
-    if ( (static_cast<const OutStream *>(&stream)) != (static_cast<const OutStream *>(&output)) )
+    if ( (static_cast<const OutStream *>(&stream)) == (static_cast<const OutStream *>(&output)) )
+        return stream;
+
+
+    const areg::RawMessage* msg = reinterpret_cast<const areg::RawMessage*>(output.mByteBuffer.get());
+    if (msg != nullptr)
     {
-        stream.write( output );
+        stream.write(reinterpret_cast<const uint8_t*>(&msg->rbHeader), sizeof(areg::MessageHeader));
+        stream.write(msg->rbData, msg->rbHeader.rbhBufHeader.biUsed);
     }
-    
+    else
+    {
+        areg::MessageHeader hdr{};
+        stream.write(reinterpret_cast<const uint8_t*>(&hdr), sizeof(areg::MessageHeader));
+    }
+
     return stream;
 }
 

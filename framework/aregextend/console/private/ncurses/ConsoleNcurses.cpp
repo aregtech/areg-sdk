@@ -24,12 +24,6 @@
 
 #include <ncurses.h>
 
-namespace
-{
-    areg::ext::Console::Coord   _cursorPos  { -1, -1 };
-    bool                        _isSaved    { false };
-} // namespace
-
 namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
@@ -56,6 +50,9 @@ void Console::_os_release()
 {
     if (mIsReady)
     {
+        // Ensure cursor is visible before tearing down ncurses.
+        curs_set(1);
+
     	if (mContext != 0)
     	{
             delwin(reinterpret_cast<WINDOW *>(mContext));
@@ -65,6 +62,14 @@ void Console::_os_release()
         refresh();
         mContext = 0;
         mIsReady = false;
+
+        // After endwin()/refresh(), ncurses hands the terminal back to the shell
+        // in raw mode at whatever row ncurses left the cursor.  Move two rows below
+        // the highest row ever written to, so the shell prompt appears there rather
+        // than at the very bottom of the terminal window.
+        const int finalRow = static_cast<int>(mMaxUsedRow + 2);
+        printf("\x1B[%d;1H\n", finalRow);
+        ::fflush(stdout);
     }
 }
 
@@ -75,8 +80,17 @@ void Console::_os_output_text(Console::Coord pos, const String& text) const
     if (mContext != 0)
     {
         ASSERT(mIsReady);
-        mvwaddstr(reinterpret_cast<WINDOW *>(mContext), pos.posY, pos.posX, text.as_string());
-        wclrtoeol(reinterpret_cast<WINDOW *>(mContext));
+        WINDOW* win = reinterpret_cast<WINDOW*>(mContext);
+        mvwaddstr(win, pos.posY, pos.posX, text.as_string());
+        wclrtoeol(win);
+        // Restore cursor to the input-prompt position so that the terminal
+        // cursor stays at the user-input line.  Changes become visible at the
+        // next wrefresh (called by refresh_screen or _os_set_cursor_cur_position).
+        wmove(win, mSavedPos.posY, mSavedPos.posX);
+        if (static_cast<int32_t>(pos.posY) > mMaxUsedRow)
+        {
+            mMaxUsedRow = static_cast<int32_t>(pos.posY);
+        }
     }
 }
 
@@ -87,8 +101,14 @@ void Console::_os_output_text(Console::Coord pos, std::string_view text) const
     if (mContext != 0)
     {
         ASSERT(mIsReady);
-        mvwaddstr(reinterpret_cast<WINDOW*>(mContext), pos.posY, pos.posX, text.data());
-        wclrtoeol(reinterpret_cast<WINDOW *>(mContext));
+        WINDOW* win = reinterpret_cast<WINDOW*>(mContext);
+        mvwaddstr(win, pos.posY, pos.posX, text.data());
+        wclrtoeol(win);
+        wmove(win, mSavedPos.posY, mSavedPos.posX);
+        if (static_cast<int32_t>(pos.posY) > mMaxUsedRow)
+        {
+            mMaxUsedRow = static_cast<int32_t>(pos.posY);
+        }
     }
 }
 
@@ -135,6 +155,8 @@ void Console::_os_set_cursor_cur_position(Console::Coord pos) const
 {
     Lock lock(mLock);
 
+    // Track in software so _os_output_text can restore here without a query.
+    mSavedPos = pos;
     if (mContext != 0)
     {
         wmove(reinterpret_cast<WINDOW*>(mContext), pos.posY, pos.posX);
@@ -173,6 +195,23 @@ void Console::_os_clear_line() const
     }
 }
 
+void Console::_os_clear_line_at_position(Console::Coord pos) const
+{
+    Lock lock(mLock);
+
+    if (mContext != 0)
+    {
+        WINDOW* win = reinterpret_cast<WINDOW*>(mContext);
+        // Move to the target row, clear to end of line, then return the
+        // ncurses cursor to the input-prompt anchor so the user sees the
+        // cursor at the right position after each background update.
+        wmove(win, static_cast<int>(pos.posY), static_cast<int>(pos.posX));
+        wclrtoeol(win);
+        wmove(win, static_cast<int>(mSavedPos.posY), static_cast<int>(mSavedPos.posX));
+        wrefresh(win);
+    }
+}
+
 void Console::_os_clear_screen() const
 {
     Lock lock(mLock);
@@ -191,23 +230,30 @@ bool Console::_os_read_input_list(const char* format, va_list varList) const
 void Console::_os_save_cursor_position() const
 {
     Lock lock(mLock);
-    _cursorPos = _os_get_cursor_position();
-    _isSaved = true;
+    if (mContext != 0)
+    {
+        // Capture the ACTUAL cursor position from ncurses.  While the user types
+        // on the input line, the cursor advances past the prompt start stored in
+        // mSavedPos.  Reading here ensures restore returns to the typing position.
+        WINDOW* win = reinterpret_cast<WINDOW*>(mContext);
+        int curY{ 0 }, curX{ 0 };
+        getyx(win, curY, curX);
+        mSavedPos = { static_cast<int16_t>(curX), static_cast<int16_t>(curY) };
+
+        // Hide the cursor to prevent visible jumping during batch updates.
+        curs_set(0);
+    }
 }
 
 void Console::_os_restore_cursor_position() const
 {
     Lock lock(mLock);
 
-    if (_isSaved)
+    if (mContext != 0)
     {
-        if (mContext != 0)
-        {
-            wmove(reinterpret_cast<WINDOW*>(mContext), _cursorPos.posY, _cursorPos.posX);
-            wrefresh(reinterpret_cast<WINDOW*>(mContext));
-        }
-
-        _isSaved = false;
+        // Move to the software-tracked input position and show the cursor.
+        wmove(reinterpret_cast<WINDOW*>(mContext), mSavedPos.posY, mSavedPos.posX);
+        curs_set(1);
     }
 }
 

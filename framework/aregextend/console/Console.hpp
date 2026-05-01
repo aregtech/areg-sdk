@@ -360,6 +360,18 @@ private:
     void _os_clear_line() const;
 
     /**
+     * \brief   Clears the specified row from column pos.posX to the right edge WITHOUT
+     *          physically moving the OS cursor.  Implementations must NOT call
+     *          SetConsoleCursorPosition() (Win32) or emit a CUP sequence (ANSI) that
+     *          moves the visible cursor, because the input thread may be running
+     *          gets_s() / fgets() concurrently and Windows echoes typed characters at
+     *          the current OS cursor position.
+     *
+     * \param   pos     The console coordinate (column, row) of the line to clear.
+     **/
+    void _os_clear_line_at_position(Console::Coord pos) const;
+
+    /**
      * \brief   Clears console screen.
      **/
     void _os_clear_screen() const;
@@ -420,13 +432,22 @@ private:
      **/
     ptr_type        mContext;
     /**
+     * \brief   Saved cursor position, used by save_cursor_position / restore_cursor_position.
+     **/
+    mutable Coord           mSavedPos;
+    /**
+     * \brief   The highest posY (row) used in any positioned write. Used by _os_release()
+     *          to position the terminal cursor below the last output row on exit.
+     **/
+    mutable int32_t         mMaxUsedRow { 0 };
+    /**
      * \brief   An object used to block the user input procedure to use in multithreading environment.
      **/
     mutable SyncEvent       mEnable;
     /**
      * \brief   The synchronization object used in multithreading environment.
      **/
-    mutable ResourceLock    mLock;
+    mutable Mutex           mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -535,10 +556,11 @@ inline void Console::clear_current_line() const
 
 inline void Console::clear_line(Console::Coord pos) const
 {
-    save_cursor_position();
-    set_cursor_cur_position(pos);
-    clear_current_line();
-    restore_cursor_position();
+    // Delegate to the backend-specific implementation that clears the row at
+    // 'pos' WITHOUT moving the OS cursor.  This prevents the input echo race
+    // on Win32 (SetConsoleCursorPosition during gets_s) and the ANSI
+    // interleaving race (three separate writes between lock acquisitions).
+    _os_clear_line_at_position(pos);
 }
 
 inline void Console::clear_screen() const

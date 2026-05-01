@@ -1,5 +1,5 @@
-#ifndef AREG_BASE_SYNCOBJECTS_HPP
-#define AREG_BASE_SYNCOBJECTS_HPP
+#ifndef AREG_BASE_SYNCPRIMITIVES_HPP
+#define AREG_BASE_SYNCPRIMITIVES_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
  * Areg SDK is dual-licensed under Free open source (Apache version 2.0
@@ -35,6 +35,7 @@
 
 #include <atomic>
 #include <chrono>
+
 namespace areg {
 
 /**
@@ -62,7 +63,6 @@ namespace areg {
         class Semaphore;
         class CriticalSection;
         class SpinLock;
-        class ResourceLock;
         class NolockSyncObject;
     class SyncEvent;
     class SyncTimer;
@@ -434,7 +434,7 @@ public:
     inline bool try_lock() final;
 
 //////////////////////////////////////////////////////////////////////////
-// Attributes
+//// Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
@@ -601,8 +601,18 @@ private:
 // class SpinLock declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Recursive spin-lock for fast synchronization. The thread spins in a loop waiting for
- *          lock availability. Use for short critical sections only.
+ * \brief   Recursive spin-lock for fast synchronization.
+ *
+ *          Uses an atomic owner-thread ID and a recursion counter to support
+ *          same-thread re-entry without deadlocking. No OS primitives are
+ *          required -- implemented entirely with C++17 standard atomics and
+ *          portable CPU-pause hints.
+ *
+ *          Use only for short critical sections. Spinning wastes CPU cycles
+ *          while waiting; prefer CriticalSection or Mutex for longer holds.
+ *
+ *          Compatible with all platforms: Windows (x86/x86-64), Linux, macOS,
+ *          Cygwin, MinGW, ARM (32-bit and 64-bit). Works with MSVC, GCC, Clang.
  **/
 class AREG_API SpinLock final   : public Lockable
 {
@@ -619,43 +629,55 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Acquires spin-lock ownership, waiting indefinitely if the lock is held by another
-     *          thread.
+     * \brief   Acquires spin-lock ownership. If called again from the same
+     *          thread, increments the recursion counter and returns immediately.
+     *          Spins until the lock is available when called from another thread.
      *
      * \return  Always returns true.
      **/
     inline bool lock();
 
     /**
-     * \brief   Acquires spin-lock ownership (timeout parameter ignored). Waits indefinitely.
+     * \brief   Acquires spin-lock ownership (timeout parameter is ignored).
+     *          Identical to lock().
+     *
      * \return  Always returns true.
      **/
     bool lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ ) final;
 
     /**
-     * \brief   Releases spin-lock ownership.
+     * \brief   Releases one recursion level of the spin-lock.
+     *          The underlying lock is released only when the recursion counter
+     *          reaches zero.
      *
-     * \return  Always returns true.
+     * \return  Returns true if the calling thread owns the lock; false otherwise.
      **/
-    inline bool unlock() final;
+    bool unlock() final;
 
     /**
-     * \brief   Attempts to acquire spin-lock ownership without blocking.
+     * \brief   Attempts to acquire the spin-lock without spinning.
+     *          If called from the owning thread, increments the recursion counter
+     *          and returns true immediately.
+     *          If the lock is held by another thread, returns false immediately.
      *
-     * \return  Returns true if the current thread acquired or already owns the spin-lock; false if
-     *          another thread owns it.
+     * \return  Returns true if acquired or already owned; false if busy.
      **/
-    inline bool try_lock() final;
+    bool try_lock() final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
+
+
 #if defined(_MSC_VER)
     #pragma warning(push)
     #pragma warning(disable: 4251)
-#endif
-    std::atomic_bool    mLock;  //! An atomic object to use for locking
+#endif  // _MSC_VER
+
+    std::atomic<id_type>    mOwner;     //!< Thread ID of the current owner; 0 = unlocked.
+    std::atomic<uint32_t>   mCount;     //!< Recursion depth; 0 when unlocked.
+
 #if defined(_MSC_VER)
     #pragma warning(pop)
 #endif  // _MSC_VER
@@ -674,84 +696,7 @@ private:
  * \brief   OS-specific recursive synchronization lock for resource access. Supports recursive
  *          locking within the same thread context to avoid deadlocks.
  **/
-class AREG_API ResourceLock  final : public    Lockable
-{
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Initializes resource lock. Optionally acquires ownership immediately.
-     *
-     * \param   initLock    If true, immediately acquires the lock.
-     **/
-    explicit ResourceLock( bool initLock = false );
-
-    virtual ~ResourceLock();
-
-//////////////////////////////////////////////////////////////////////////
-// Override operations, SyncObject interface
-//////////////////////////////////////////////////////////////////////////
-public:
-
-    /**
-     * \brief   Acquires the resource lock. Timeout parameter is ignored. Supports recursive locking
-     *          within the same thread.
-     *
-     * \return  Always returns true.
-     **/
-    inline bool lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ ) final;
-
-    /**
-     * \brief   Releases the resource lock.
-     *
-     * \return  Always returns true.
-     **/
-    inline bool unlock() final;
-
-    /**
-     * \brief   Attempts to acquire the lock without blocking.
-     *
-     * \return  Returns true if acquired or owned by current thread; false if owned by another
-     *          thread.
-     **/
-    inline bool try_lock() final;
-
-private:
-
-    /**
-     * \brief   OS-specific creation. Optionally acquires ownership.
-     **/
-    void _os_create_resource_lock( bool initLock );
-
-    /**
-     * \brief   OS-specific cleanup and release of resource lock.
-     **/
-    void _os_release_resource_lock();
-
-    /**
-     * \brief   OS-specific implementation to acquire the resource. Returns true if locked; false if
-     *          timeout expired.
-     **/
-    bool _os_lock( uint32_t timeout );
-
-    /**
-     * \brief   OS-specific implementation to release the resource.
-     **/
-    bool _os_unlock();
-
-    /**
-     * \brief   OS-specific implementation to attempt locking without blocking. Returns true if
-     *          locked; false if busy.
-     **/
-    bool _os_try_lock();
-
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE( ResourceLock );
-};
+using ResourceLock = SpinLock;
 
 //////////////////////////////////////////////////////////////////////////
 // NolockSyncObject class declaration
@@ -1485,43 +1430,12 @@ inline bool CriticalSection::lock()
 // SpinLock class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline bool SpinLock::unlock()
-{
-    mLock.store( false, std::memory_order_release );
-    return true;
-}
-
-inline bool SpinLock::try_lock()
-{
-    return ((mLock.load( std::memory_order_relaxed ) == false) && (mLock.exchange( true, std::memory_order_acquire ) == false));
-}
-
 inline bool SpinLock::lock()
 {
-    return lock( areg::WAIT_INFINITE );
+    return lock(areg::WAIT_INFINITE);
 }
 
-//////////////////////////////////////////////////////////////////////////
-// ResourceLock class inline functions
-//////////////////////////////////////////////////////////////////////////
 
-inline bool ResourceLock::lock( uint32_t timeout /*= areg::WAIT_INFINITE */ )
-{
-    ASSERT( mSyncObject != nullptr );
-    return _os_lock( timeout );
-}
-
-inline bool ResourceLock::unlock()
-{
-    ASSERT( mSyncObject != nullptr );
-    return _os_unlock( );
-}
-
-inline bool ResourceLock::try_lock()
-{
-    ASSERT( mSyncObject != nullptr );
-    return _os_try_lock( );
-}
 
 //////////////////////////////////////////////////////////////////////////
 // NolockSyncObject class inline functions
@@ -1656,4 +1570,4 @@ inline Wait::WaitResolution Wait::wait_until(const Wait::SteadyTime& future) con
 }
 
 } // namespace areg
-#endif  // AREG_BASE_SYNCOBJECTS_HPP
+#endif  // AREG_BASE_SYNCPRIMITIVES_HPP

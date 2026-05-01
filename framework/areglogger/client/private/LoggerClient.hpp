@@ -335,7 +335,7 @@ public:
      *
      * \param[out] names       On output, contains the names of all priorities.
      **/
-    inline void priority_names(std::vector<String>& names);
+    inline void log_priority_names(std::vector<String>& names);
 
     /**
      * \brief   Retrieves information about all registered instances from the log database.
@@ -619,9 +619,9 @@ inline void LoggerClient::log_threads(std::vector<ITEM_ID>& ids)
     mLogDatabase.log_threads(ids);
 }
 
-inline void LoggerClient::priority_names(std::vector<String>& names)
+inline void LoggerClient::log_priority_names(std::vector<String>& names)
 {
-    mLogDatabase.priority_names(names);
+    mLogDatabase.log_priority_names(names);
 }
 
 inline void LoggerClient::log_instance_infos(std::vector< areg::ConnectedInstance>& infos)

@@ -147,22 +147,22 @@ protected:
     /**
      * \brief   Event source Proxy address
      **/
-    ProxyAddress              mProxySource;
+    ProxyAddress        mProxySource;
 
     /**
      * \brief   Request message ID to trigger service call.
      **/
-    uint32_t                mMessageId;
+    uint32_t            mMessageId;
 
     /**
      * \brief   Request type. Normally, either notification or request call.
      **/
-    areg::RequestType    mRequestType;
+    areg::RequestType   mRequestType;
 
     /**
      * \brief   Sequence number.
      **/
-    SequenceNumber              mSequenceNr;
+    SequenceNumber      mSequenceNr;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls

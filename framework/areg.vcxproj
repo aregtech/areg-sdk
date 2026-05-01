@@ -44,6 +44,7 @@
     <ClCompile Include="areg\appbase\private\Application.cpp" />
     <ClCompile Include="areg\appbase\private\AppDefs.cpp" />
     <ClCompile Include="areg\base\private\linux\ProcessLinux.cpp" />
+    <ClCompile Include="areg\base\private\linux\SocketDefsLinux.cpp" />
     <ClCompile Include="areg\base\private\linux\SocketMultiplexerLinux.cpp" />
     <ClCompile Include="areg\base\private\macos\ProcessMacOS.cpp" />
     <ClCompile Include="areg\base\private\macos\SocketMultiplexerMacOS.cpp" />
@@ -113,7 +114,7 @@
     <ClCompile Include="areg\base\private\DebugDefs.cpp" />
     <ClCompile Include="areg\base\private\MemoryDefs.cpp" />
     <ClCompile Include="areg\base\private\UtilityDefs.cpp" />
-    <ClCompile Include="areg\base\SocketMultiplexer.cpp" />
+    <ClCompile Include="areg\base\private\SocketMultiplexer.cpp" />
     <ClCompile Include="areg\component\private\EventStack.cpp" />
     <ClCompile Include="areg\component\private\linux\TimerManagerBaseLinux.cpp" />
     <ClCompile Include="areg\component\private\linux\TimerManagerLinux.cpp" />
@@ -122,7 +123,9 @@
     <ClCompile Include="areg\component\private\macos\TimerManagerMacOS.cpp" />
     <ClCompile Include="areg\component\private\macos\TimerPosixMacOS.cpp" />
     <ClCompile Include="areg\component\private\macos\WatchdogManagerMacOS.cpp" />
+    <ClCompile Include="areg\component\private\MpscEventQueue.cpp" />
     <ClCompile Include="areg\ipc\private\ConnectionConsumer.cpp" />
+    <ClCompile Include="areg\ipc\private\linux\ClientSendThreadLinux.cpp" />
     <ClCompile Include="areg\ipc\private\RegistrationProvider.cpp" />
     <ClCompile Include="areg\component\private\ServiceManagerEventProcessor.cpp" />
     <ClCompile Include="areg\component\private\SortedEventStack.cpp" />
@@ -264,6 +267,7 @@
     <ClInclude Include="areg\base\WideString.hpp" />
     <ClInclude Include="areg\component\EventDefs.hpp" />
     <ClInclude Include="areg\component\private\EventStack.hpp" />
+    <ClInclude Include="areg\component\private\MpscEventQueue.hpp" />
     <ClInclude Include="areg\ipc\ConnectionConsumer.hpp" />
     <ClInclude Include="areg\ipc\RegistrationProvider.hpp" />
     <ClInclude Include="areg\component\private\ClientInfo.hpp" />
@@ -441,6 +445,7 @@
     <Text Include="areg\component\private\posix\CMakeLists.txt" />
     <Text Include="areg\component\private\win32\CMakeLists.txt" />
     <Text Include="areg\ipc\private\CMakeLists.txt" />
+    <Text Include="areg\ipc\private\linux\CMakeLists.txt" />
     <Text Include="areg\persist\private\CMakeLists.txt" />
     <Text Include="areg\logging\private\CMakeLists.txt" />
     <Text Include="CMakeLists.txt" />

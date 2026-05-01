@@ -163,7 +163,6 @@ namespace {
 
 namespace areg {
 
-// the static empty string
 const WideString & WideString::empty_string()
 {
     static const WideString _emptyString{ L"" };

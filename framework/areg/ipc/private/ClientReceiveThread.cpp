@@ -28,7 +28,8 @@ ClientReceiveThread::ClientReceiveThread(RemoteMessageHandler& remoteService, Cl
     : DispatcherThread  (namePrefix + areg::CLIENT_RECEIVE_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_SIZE_MAXIMUM)
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
-    , mBytesReceive     ( 0 )
+    , mBytesReceive     ( 0u )
+    , mMsgsReceive      ( 0u )
     , mSaveDataReceive  ( false )
 {
 }
@@ -45,35 +46,52 @@ bool ClientReceiveThread::run_dispatcher()
     RemoteMessage msgReceived;
     int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
 
+    // Amortize the cost of multiLock.lock(DO_NOT_WAIT) — which involves
+    // pthread_cond_timedwait(timeout=0) and global-map locking — across a
+    // batch of consecutive receive calls.  On Linux/WSL2 each invocation of
+    // multiLock.lock(DO_NOT_WAIT) carries kernel-level synchronization overhead
+    // that, at high message rates, becomes the dominant bottleneck.  Checking
+    // every DRAIN_LIMIT messages instead of every message reduces that overhead
+    // by ~DRAIN_LIMIT× while preserving correct exit/event detection.
+    constexpr uint32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
+    uint32_t drainCount{ 0u };
+
     do
     {
-        whichEvent = multiLock.lock(areg::DO_NOT_WAIT, false);
+        // Only run the full exit / internal-event check at the start of each
+        // batch.  Within a batch, skip straight to receive_message().
+        if (drainCount == 0u)
+        {
+            whichEvent = multiLock.lock(areg::DO_NOT_WAIT, false);
+        }
+        else
+        {
+            whichEvent = MultiLock::LOCK_INDEX_TIMEOUT;
+        }
+
         if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
         {
             whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue); // escape quit
             int32_t sizeReceive = mConnection.receive_message( msgReceived );
             if ( sizeReceive <= 0 )
             {
-                msgReceived.invalidate();
+                // msgReceived.invalidate();
                 mRemoteService.failed_receive_message( mConnection.socket() );
                 whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
+                drainCount = 0u;
             }
             else
             {
-                if (mSaveDataReceive)
-                {
-                    mBytesReceive += static_cast<uint32_t>(sizeReceive);
-                }
-
+                accumulate_received(static_cast<uint64_t>(sizeReceive), 1);
                 mRemoteService.process_received_message( msgReceived, mConnection.socket( ) );
+                drainCount = (drainCount + 1) % DRAIN_LIMIT;
             }
-
-            msgReceived.invalidate();
         }
         else
         {
             Event * eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pick_event() : nullptr;
             whichEvent = is_exit_event(eventElem) ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) : whichEvent;
+            drainCount = 0;
         }
 
     } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue));

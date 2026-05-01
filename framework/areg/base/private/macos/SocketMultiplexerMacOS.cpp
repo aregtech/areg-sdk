@@ -27,6 +27,15 @@
 #include <fcntl.h>
 #include <errno.h>
 
+namespace {
+// Drain all buffered bytes from the wakeup pipe so it does not re-fire.
+inline void drain_pipe(int fd) noexcept
+{
+    char buf[64];
+    while (::read(fd, buf, sizeof(buf)) > 0) {}
+}
+} // namespace
+
 //////////////////////////////////////////////////////////////////////////
 // macOS: constructor, destructor, and wait() using kqueue + anonymous pipe
 //////////////////////////////////////////////////////////////////////////
@@ -40,18 +49,17 @@
 //   pipe on match, and returns FailedSocketHandle.
 // -----------------------------------------------------------------------
 
-areg::SocketMultiplexer::SocketMultiplexer(int32_t maxConnections) noexcept
-    : mSockets       { }
-    , mMaxCount      { (maxConnections < MIN_CONNECTIONS) ? MIN_CONNECTIONS
-                     : (maxConnections > MAX_CONNECTIONS) ? MAX_CONNECTIONS
-                     : maxConnections }
-    , mIsReset       { false }
-    , mBatchFds      { }
-    , mBatchCount    { 0 }
-    , mBatchIdx      { 0 }
-    , mKqueueFd      { areg::InvalidSocketHandle }
-    , mWakeupReadFd  { areg::InvalidSocketHandle }
-    , mWakeupWriteFd { areg::InvalidSocketHandle }
+areg::SocketMultiplexer::SocketMultiplexer(uint32_t maxConnections /*= areg::DEFAULT_CONNECTIONS*/) noexcept
+    : mSockets      { }
+    , mMaxCount     { (maxConnections < MIN_CONNECTIONS) ? MIN_CONNECTIONS : (maxConnections > MAX_CONNECTIONS) ? MAX_CONNECTIONS : maxConnections }
+    , mIsReset      { false }
+    , mKqueueFd     { areg::InvalidSocketHandle }
+    , mWakeupReadFd { areg::InvalidSocketHandle }
+    , mWakeupWriteFd{ areg::InvalidSocketHandle }
+    , mBatchCount   { 0 }
+    , mBatchIdx     { 0 }
+    , mBatchFds     { }
+    , mBatchEvents  { }
 {
     mSockets.reserve(DEFAULT_CONNECTIONS);
 
@@ -66,7 +74,6 @@ areg::SocketMultiplexer::SocketMultiplexer(int32_t maxConnections) noexcept
         return;
     }
 
-    // Set both pipe ends non-blocking and close-on-exec.
     for (int fd : pipeFds)
     {
         int flags = ::fcntl(fd, F_GETFL, 0);
@@ -123,7 +130,7 @@ bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search)
          || (mKqueueFd == areg::InvalidSocketHandle)
          || (hSocket == mWakeupWriteFd)
          || (hSocket == mWakeupReadFd)
-         || (static_cast<int32_t>(mSockets.size()) >= mMaxCount) )
+         || (static_cast<uint32_t>(mSockets.size()) >= mMaxCount) )
     {
         return false;
     }
@@ -131,21 +138,16 @@ bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search)
     if (search && is_registered(hSocket))
         return false;
 
-    // Level-triggered (no EV_CLEAR): kevent() keeps firing as long as data
-    // remains in the socket receive buffer.  Read one message per kevent() wakeup.
-    // It guarantees that a second message in the same TCP burst is delivered.
+    // kevent() keeps firing as long as data remains in the socket receive buffer.
+    // Read one message per kevent() wakeup. It guarantees that a second message in the same TCP burst is delivered.
     struct kevent kev;
     EV_SET(&kev, static_cast<uintptr_t>(static_cast<int>(hSocket)), EVFILT_READ, EV_ADD, 0, 0, nullptr);
     if (::kevent(static_cast<int>(mKqueueFd), &kev, 1, nullptr, 0, nullptr) != 0)
         return false;
 
-    // Transition out of reset state.  Drain any pending wakeup write left by the
-    // previous reset() that was not consumed by wait() (e.g. wait() saw mIsReset=true
-    // and returned early before the pipe write arrived, or before we got to drain it).
     if (mIsReset.exchange(false, std::memory_order_acq_rel) && (mWakeupReadFd != areg::InvalidSocketHandle))
     {
-        char buf[64];
-        while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
+        drain_pipe(static_cast<int>(mWakeupReadFd));
     }
 
     mSockets.push_back(hSocket);
@@ -167,10 +169,7 @@ bool areg::SocketMultiplexer::unregister_socket(SOCKETHANDLE hSocket) noexcept
 
             *it = mSockets.back();
             mSockets.pop_back();
-
-            // Discard the batch cache: it may contain hSocket or a socket that
-            // was ready alongside hSocket.  The next wait() will fetch a fresh batch.
-            mBatchCount = mBatchIdx = 0;
+            mBatchCount = mBatchIdx = 0u;
             return true;
         }
     }
@@ -191,8 +190,7 @@ void areg::SocketMultiplexer::reset() noexcept
     }
 
     mSockets.clear();
-    mBatchCount = 0;
-    mBatchIdx   = 0;
+    mBatchCount = mBatchIdx = 0u;
     mIsReset.store(true, std::memory_order_release);
 
     // Wake up any thread blocked in kevent() by writing one byte to the pipe.
@@ -203,16 +201,26 @@ void areg::SocketMultiplexer::reset() noexcept
     }
 }
 
+void areg::SocketMultiplexer::wakeup() noexcept
+{
+    // Soft interrupt: write one byte to the pipe WITHOUT setting mIsReset.
+    if (mWakeupWriteFd != areg::InvalidSocketHandle)
+    {
+        const uint8_t one{ 1u };
+        static_cast<void>(::write(static_cast<int>(mWakeupWriteFd), &one, sizeof(uint8_t)));
+    }
+}
+
 SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
 {
     if (mIsReset.load(std::memory_order_acquire))
     {
-        mBatchCount = mBatchIdx = 0;
+        mBatchCount = mBatchIdx = 0u;
         if (mWakeupReadFd != areg::InvalidSocketHandle)
         {
-            char buf[64];
-            while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
+            drain_pipe(static_cast<int>(mWakeupReadFd));
         }
+
         return areg::FailedSocketHandle;
     }
 
@@ -220,29 +228,18 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         return areg::FailedSocketHandle;
 
     // Serve cached results before issuing another kevent() syscall.
-    while (mBatchIdx < mBatchCount)
+    if (mBatchIdx < mBatchCount)
     {
-        if (mIsReset.load(std::memory_order_acquire))
-        {
-            mBatchCount = mBatchIdx = 0;
-            if (mWakeupReadFd != areg::InvalidSocketHandle)
-            {
-                char buf[64];
-                while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
-            }
-            return areg::FailedSocketHandle;
-        }
-
         const SOCKETHANDLE fd   = mBatchFds[mBatchIdx];
         const uint32_t evFlags  = mBatchEvents[mBatchIdx];
         ++mBatchIdx;
 
         if (fd == mWakeupReadFd)
         {
-            char buf[64];
-            while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
-            mBatchCount = mBatchIdx = 0;
-            return areg::FailedSocketHandle;
+            drain_pipe(static_cast<int>(mWakeupReadFd));
+            mBatchCount = mBatchIdx = 0u;
+            // Hard reset --> FailedSocketHandle; soft wakeup() --> InvalidSocketHandle.
+            return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
         }
 
         // If kqueue reports EV_EOF (peer disconnected) with no data available,
@@ -273,12 +270,10 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
 
     if (n < 0)
         return (errno == EINTR) ? areg::InvalidSocketHandle : areg::FailedSocketHandle;
-
-    if (n == 0)
+    else if (n == 0)
         return areg::InvalidSocketHandle;   // timeout
 
-    // Store events[1..n-1] in the batch cache — both the fd AND the event flags.
-    mBatchCount = 0;
+    mBatchCount = mBatchIdx = 0u;
     for (int i = 1; i < n; ++i)
     {
         if ((events[i].flags & EV_ERROR) == 0)
@@ -288,7 +283,6 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
             ++mBatchCount;
         }
     }
-    mBatchIdx = 0;
 
     if ((events[0].flags & EV_ERROR) != 0)
         return areg::FailedSocketHandle;
@@ -297,10 +291,10 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
     const uint32_t     firstEv  = events[0].flags;
     if (first == mWakeupReadFd)
     {
-        char buf[64];
-        while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
-        mBatchCount = mBatchIdx = 0;
-        return areg::FailedSocketHandle;
+        drain_pipe(static_cast<int>(mWakeupReadFd));
+        mBatchCount = mBatchIdx = 0u;
+        // Hard reset --> FailedSocketHandle; soft wakeup() --> InvalidSocketHandle.
+        return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
     }
 
     // Same EV_EOF handling for the first event.

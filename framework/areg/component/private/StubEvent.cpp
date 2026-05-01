@@ -74,7 +74,10 @@ void StubEvent::deliver_event()
 
     if ( mTargetThread != nullptr )
     {
-        StreamableEvent::deliver_event();
+        if (!mTargetThread->event_dispatcher().post_event(*this))
+        {
+            destroy();
+        }
     }
     else
     {

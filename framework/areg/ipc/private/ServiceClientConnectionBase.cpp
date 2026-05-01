@@ -144,11 +144,7 @@ bool ServiceClientConnectionBase::setup_connection_data(areg::RemoteServiceKind 
         return false;
 
     const bool result = mClientConnection.set_address(config.connection_address(), config.connection_port());
-    if (result)
-    {
-        mClientConnection.set_socket_buffers(config.socket_send_buffer(), config.socket_recv_buffer());
-    }
-
+    mClientConnection.set_socket_buffers(config.socket_send_buffer(), config.socket_recv_buffer());
     return result;
 }
 
@@ -172,6 +168,7 @@ bool ServiceClientConnectionBase::connect_service_host()
     if (!config.is_configured() || !config.connection_enable_flag())
         return false;
 
+    mClientConnection.set_socket_buffers(config.socket_send_buffer(), config.socket_recv_buffer());
     send_command(ServiceEventData::ServiceCommand::CMD_StartService);
     return true;
 }
@@ -273,6 +270,13 @@ void ServiceClientConnectionBase::on_service_stop()
     // send() in the send thread, allowing both to exit promptly rather than
     // waiting for the OS TCP timeout.
     mClientConnection.close_socket( );
+
+    // Signal the send thread to exit. After close_socket() above, any
+    // blocking send() returns immediately with an error and the thread
+    // re-enters its WAIT_INFINITE event loop. Without this trigger_exit()
+    // the send thread would block forever and wait_completion() would
+    // deadlock (sporadic at high message rates where TCP send buffers fill).
+    mThreadSend.trigger_exit( );
 
     mThreadSend.wait_completion( areg::WAIT_INFINITE );
     mThreadSend.shutdown( areg::DO_NOT_WAIT );

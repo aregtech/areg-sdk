@@ -29,6 +29,8 @@
 #include "areg/component/Timer.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/String.hpp"
+
+#include <utility>
 namespace areg {
 
 /************************************************************************
@@ -115,17 +117,24 @@ public:
     [[nodiscard]]
     inline const ITEM_ID & connection_cookie() const noexcept;
 
-    /**
-     * \brief   Returns the number of bytes sent since the last query and resets the counter.
-     **/
-    [[nodiscard]]
-    inline uint64_t query_bytes_sent() noexcept;
 
     /**
-     * \brief   Returns the number of bytes received since the last query and resets the counter.
+     * \brief   Queries the amount of sent data in bytes and sent messages since the last call, and resets counters.
+     *
+     * \param[out] sizeSend     On output, contains the size of data in bytes sent since the last call.
+     * \param[out] msgSent      On output, contains the size of messages sent since the last call.
+     * \note    Accumulate calls to measure total data. Call each second to measure data rate.
      **/
-    [[nodiscard]]
-    inline uint64_t query_bytes_received() noexcept;
+    inline void query_data_sent(uint64_t& sizeSent, uint32_t& msgSent) noexcept;
+
+    /**
+     * \brief   Queries the amount of received data in bytes and received messages since the last call, and resets counters.
+     *
+     * \param[out] sizeSend     On output, contains the size of data in bytes received since the last call.
+     * \param[out] msgSent      On output, contains the size of messages received since the last call.
+     * \note    Accumulate calls to measure total data. Call each second to measure data rate.
+     **/
+    inline void query_data_received(uint64_t& sizeRecv, uint32_t& msgRecv) noexcept;
 
     /**
      * \brief   Enable or disable the data rate calculation.
@@ -353,12 +362,22 @@ protected:
     inline void send_command(ServiceEventData::ServiceCommand cmd, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
     /**
-     * \brief   Queues a message for sending with optional priority.
+     * \brief   Queues a message for sending with optional priority (copy).
      *
      * \param   data            The data of the message.
      * \param   eventPrio       The priority of the message to set.
      **/
     inline bool send_message(const RemoteMessage & data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
+
+    /**
+     * \brief   Queues a message for sending with optional priority (move).
+     *          Transfers payload ownership to the send queue without copying the message buffer.
+     *          Use when the caller has no further use for the message, e.g. after stream_from_event().
+     *
+     * \param   data            Remote message to move into the send queue.
+     * \param   eventPrio       The priority of the message to set.
+     **/
+    inline bool send_message(RemoteMessage && data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio ) noexcept;
 
     /**
      * \brief   Starts client socket connection.
@@ -410,56 +429,56 @@ protected:
     /**
      * \brief   The ID of the target to send messages.
      **/
-    const ITEM_ID                           mTarget;
+    const ITEM_ID                   mTarget;
     
     /**
      * \brief   The remote target service to communicate.
      **/
-    const areg::RemoteServiceKind  mService;
+    const areg::RemoteServiceKind   mService;
 
     /**
      * \brief   The bitwise set of connection types supported by remote service.
      **/
-    const uint32_t                      mConnectTypes;
+    const uint32_t                  mConnectTypes;
 
     /**
      * \brief   The type of messaging source application.
      **/
-    const areg::MessageSource         mMessageSource;
+    const areg::MessageSource       mMessageSource;
 
     /**
      * \brief   Client connection object
      **/
-    ClientConnection                        mClientConnection;
+    areg::ClientConnection          mClientConnection;
     /**
      * \brief   Instance of remote servicing consumer to handle message.
      **/
-    ConnectionConsumer &                    mConnectionConsumer;
+    areg::ConnectionConsumer &      mConnectionConsumer;
 
     /**
      * \brief   The thread that makes message dispatching.
      **/
-    DispatcherThread &                      mMessageDispatcher;
+    areg::DispatcherThread &        mMessageDispatcher;
 
     /**
      * \brief   The connection channel.
      **/
-    Channel                                 mChannel;
+    areg::Channel                   mChannel;
 
     /**
      * \brief   The current connection state.
      **/
-    ConnectionPhase                        mConnectionState;
+    ConnectionPhase                 mConnectionState;
 
     /**
      * \brief   The Client Service event consumer
      **/
-    ServiceClientConsumer                   mEventConsumer;
+    areg::ServiceClientConsumer     mEventConsumer;
 
     /**
      * \brief   Data access synchronization object
      **/
-    mutable ResourceLock                    mLock;
+    mutable areg::ResourceLock      mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
@@ -473,15 +492,15 @@ private:
     /**
      * \brief   Connection retry timer object.
      **/
-    Timer                                   mTimerConnect;
+    areg::Timer                     mTimerConnect;
     /**
      * \brief   Message receiver thread
      **/
-    ClientReceiveThread                     mThreadReceive;
+    areg::ClientReceiveThread       mThreadReceive;
     /**
      * \brief   Message sender thread
      **/
-    ClientSendThread                        mThreadSend;
+    areg::ClientSendThread          mThreadSend;
 
 #if defined(_MSC_VER)
     #pragma warning(pop)
@@ -509,14 +528,16 @@ inline const ITEM_ID & ServiceClientConnectionBase::connection_cookie() const no
     return mClientConnection.cookie();
 }
 
-inline uint64_t ServiceClientConnectionBase::query_bytes_sent() noexcept
+inline void ServiceClientConnectionBase::query_data_sent(uint64_t& sizeSent, uint32_t& msgSent) noexcept
 {
-    return mThreadSend.extract_data_send();
+    sizeSent = mThreadSend.extract_data_send();
+    msgSent  = mThreadSend.extract_msgs_sent();
 }
 
-inline uint64_t ServiceClientConnectionBase::query_bytes_received() noexcept
+inline void ServiceClientConnectionBase::query_data_received(uint64_t& sizeRecv, uint32_t& msgRecv) noexcept
 {
-    return mThreadReceive.extract_data_receive();
+    sizeRecv = mThreadReceive.extract_data_received();
+    msgRecv  = mThreadReceive.extract_msgs_received();
 }
 
 inline void ServiceClientConnectionBase::enable_data_rate(bool enable)
@@ -609,6 +630,14 @@ inline void ServiceClientConnectionBase::send_command( ServiceEventData::Service
 inline bool ServiceClientConnectionBase::send_message(const RemoteMessage & data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
     return SendMessageEvent::send_event( SendMessageEventData(data)
+                                      , static_cast<SendMessageEventConsumer &>(mThreadSend)
+                                      , static_cast<DispatcherThread &>(mThreadSend)
+                                      , eventPrio);
+}
+
+inline bool ServiceClientConnectionBase::send_message(RemoteMessage && data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ ) noexcept
+{
+    return SendMessageEvent::send_event( SendMessageEventData(std::move(data))
                                       , static_cast<SendMessageEventConsumer &>(mThreadSend)
                                       , static_cast<DispatcherThread &>(mThreadSend)
                                       , eventPrio);

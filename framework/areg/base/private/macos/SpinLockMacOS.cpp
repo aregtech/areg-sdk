@@ -23,78 +23,68 @@ SpinLockPosix::SpinLockPosix()
     : mSpinLock  ( )
     , mInternLock( )
     , mSpinOwner ( 0 )
-    , mLockCount ( 0 )
+    , mLockCount ( 0u )
     , mIsValid   ( false )
 {
     mSpinLock   = OS_UNFAIR_LOCK_INIT;
-    mInternLock = OS_UNFAIR_LOCK_INIT;
+    mInternLock = OS_UNFAIR_LOCK_INIT;  // kept for ABI layout; not used on hot path.
     mIsValid    = true;
 }
 
 bool SpinLockPosix::try_lock() noexcept
 {
-    bool result = false;
+    if ( !mIsValid.load( std::memory_order_relaxed ) )
+        return false;
 
-    if (mIsValid.load())
+    const pthread_t self = ::pthread_self();
+
+    // Recursive fast path.
+    if ( mSpinOwner.load( std::memory_order_relaxed ) == self )
     {
-        _lock_intern();
-
-        pthread_t curThread = ::pthread_self();
-        if (mSpinOwner != curThread)
-        {
-            _unlock_intern();
-
-            if (::os_unfair_lock_trylock(&mSpinLock))
-            {
-                _lock_intern();
-                mSpinOwner = curThread;
-                mLockCount = 1;
-                result     = true;
-                _unlock_intern();
-            }
-        }
-        else
-        {
-            mLockCount++;
-            result = true;
-            _unlock_intern();
-        }
+        mLockCount.fetch_add( 1u, std::memory_order_relaxed );
+        return true;
     }
 
-    return result;
+    if ( !::os_unfair_lock_trylock( &mSpinLock ) )
+        return false;
+
+    mSpinOwner.store( self, std::memory_order_relaxed );
+    mLockCount.store( 1u,   std::memory_order_relaxed );
+    return true;
 }
 
 void SpinLockPosix::free_resources() noexcept
 {
-    if (mIsValid.load())
+    if ( mIsValid.load() )
     {
-        mIsValid    = false;
+        mIsValid.store( false, std::memory_order_release );
         mSpinLock   = OS_UNFAIR_LOCK_INIT;
         mInternLock = OS_UNFAIR_LOCK_INIT;
-        mSpinOwner  = 0;
-        mLockCount  = 0;
+        mSpinOwner.store( 0,  std::memory_order_relaxed );
+        mLockCount.store( 0u, std::memory_order_relaxed );
     }
 }
 
 bool SpinLockPosix::_lock_spin() noexcept
 {
-    ::os_unfair_lock_lock(&mSpinLock);
+    ::os_unfair_lock_lock( &mSpinLock );
     return true;
 }
 
 void SpinLockPosix::_unlock_spin() noexcept
 {
-    ::os_unfair_lock_unlock(&mSpinLock);
+    ::os_unfair_lock_unlock( &mSpinLock );
 }
 
 void SpinLockPosix::_lock_intern() noexcept
 {
-    ::os_unfair_lock_lock(&mInternLock);
+    // mInternLock is no longer used on the hot path.
+    // Ownership is tracked via the atomic mSpinOwner.
 }
 
 void SpinLockPosix::_unlock_intern() noexcept
 {
-    ::os_unfair_lock_unlock(&mInternLock);
+    // See _lock_intern().
 }
 
 } // namespace areg::os

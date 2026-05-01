@@ -15,6 +15,7 @@
 #include "areg/base/SocketDefs.hpp"
 
 #include "areg/base/MemoryDefs.hpp"
+#include "areg/base/SocketMultiplexer.hpp"
 #include "areg/logging/areg_log.h"
 
 #ifdef   _WIN32
@@ -68,6 +69,13 @@ namespace areg::os {
     int32_t _os_send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength);
 
     /**
+     * \brief   OS specific scatter/gather send. All checkups and validations should
+     *          be done before calling the method.
+     * \return  Returns total bytes sent; negative on error.
+     */
+    int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count);
+
+    /**
      * \brief   OS specific receive data implementation. All checkups and validations should
      *          be done before calling the method.
      * \return  Returns number of bytes received via network.
@@ -99,6 +107,23 @@ namespace areg::os {
      * \return  Returns true if the connection was established within the timeout.
      **/
     bool _os_connect_socket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen, uint32_t timeoutMs);
+
+#if defined(__linux__)
+    /** \brief   Linux-only: enables MSG_ZEROCOPY on the socket (SO_ZEROCOPY option). **/
+    bool _os_enable_zerocopy(SOCKETHANDLE fd) noexcept;
+
+    /** \brief   Linux-only: returns and resets the thread-local zerocopy send count. **/
+    uint32_t _os_take_zerocopy_count() noexcept;
+
+    /** \brief   Linux-only: sends buf with MSG_ZEROCOPY; returns bytes sent or -1 on error. **/
+    int32_t _os_send_zerocopy(SOCKETHANDLE fd, const uint8_t* buf, int32_t len) noexcept;
+
+    /** \brief   Linux-only: non-blocking ERRQUEUE drain; updates max_confirmed. **/
+    void _os_drain_zerocopy_nb(SOCKETHANDLE fd, uint32_t& max_confirmed) noexcept;
+
+    /** \brief   Linux-only: drains ERRQUEUE until all sends up to hi_id are confirmed. **/
+    void _os_drain_zerocopy(SOCKETHANDLE fd, uint32_t hi_id) noexcept;
+#endif  // defined(__linux__)
 
 } // namespace areg::os
 
@@ -870,6 +895,17 @@ AREG_API_IMPL int32_t areg::send_data(SOCKETHANDLE hSocket, const uint8_t* dataB
     return result;
 }
 
+AREG_API_IMPL int32_t areg::send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count) noexcept
+{
+    if (!areg::is_valid_socket(hSocket))
+        return -1;
+
+    if ((buffers == nullptr) || (count == 0u))
+        return 0;
+
+    return areg::os::_os_send_data_v(hSocket, buffers, count);
+}
+
 AREG_API_IMPL int32_t areg::receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength) noexcept
 {
     int32_t result = -1;
@@ -910,10 +946,9 @@ AREG_API_IMPL bool areg::disable_receive(SOCKETHANDLE hSocket) noexcept
 
 AREG_API_IMPL void areg::socket_interrupt(SOCKETHANDLE hSocket) noexcept
 {
-    // shutdown(SHUT_RDWR) is POSIX-defined to interrupt a blocked send() or
-    // recv() on the same descriptor from another thread without closing the fd.
-    // The fd remains open so that the blocked thread can read the error code
-    // and exit cleanly before socket_close() is called from the owning thread.
+    // shutdown(SHUT_RDWR) is POSIX-defined to interrupt blocked send()/recv()
+    // from another thread without closing the fd. The fd remains open for the
+    // blocked thread to read the error code and exit cleanly.
     if (areg::is_valid_socket(hSocket))
     {
 #ifdef _WIN32
@@ -1073,3 +1108,37 @@ AREG_API_IMPL uint16_t areg::extract_port_number(const sockaddr_in& addrHost) no
 {
     return ntohs(addrHost.sin_port);
 }
+
+#if defined(__linux__)
+
+AREG_API_IMPL bool areg::socket_enable_zerocopy(SOCKETHANDLE fd) noexcept
+{
+    return areg::is_valid_socket(fd) && areg::os::_os_enable_zerocopy(fd);
+}
+
+AREG_API_IMPL uint32_t areg::socket_take_zerocopy_count() noexcept
+{
+    return areg::os::_os_take_zerocopy_count();
+}
+
+AREG_API_IMPL int32_t areg::socket_send_zerocopy(SOCKETHANDLE fd, const uint8_t* buf, int32_t len) noexcept
+{
+    if (!areg::is_valid_socket(fd) || (buf == nullptr) || (len <= 0))
+        return -1;
+
+    return areg::os::_os_send_zerocopy(fd, buf, len);
+}
+
+AREG_API_IMPL void areg::socket_drain_zerocopy_nb(SOCKETHANDLE fd, uint32_t& max_confirmed) noexcept
+{
+    if (areg::is_valid_socket(fd))
+        areg::os::_os_drain_zerocopy_nb(fd, max_confirmed);
+}
+
+AREG_API_IMPL void areg::socket_drain_zerocopy(SOCKETHANDLE fd, uint32_t hi_id) noexcept
+{
+    if (areg::is_valid_socket(fd))
+        areg::os::_os_drain_zerocopy(fd, hi_id);
+}
+
+#endif  // defined(__linux__)

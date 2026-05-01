@@ -19,6 +19,8 @@
 #include "areg/base/File.hpp"
 #include "areg/base/Process.hpp"
 
+#include <utility>
+
 #include "areg/logging/LogDatabaseEngine.hpp"
 #include "areg/logging/LogScope.hpp"
 #include "areg/logging/private/LogMessage.hpp"
@@ -42,25 +44,38 @@ LogManager & LogManager::instance()
 
 void LogManager::log_message(const areg::LogEntry& logData )
 {
+    constexpr uint32_t logSize{ static_cast<uint32_t>(sizeof(areg::LogEntry)) };
+    RemoteMessage msg(logSize, areg::BLOCK_SIZE);
+    areg::LogEntry* dst = reinterpret_cast<areg::LogEntry*>(msg.buffer());
+    if (dst == nullptr)
+        return;
+
+    areg::mem_copy(dst, logSize, &logData, logSize);
     LogManager& mgr = LogManager::instance();
     LoggingEvent* ev = LoggingEvent::make_event();
     ev->data().set_action(LoggingEventData::LogAction::LogMessage);
-    ev->data().entry() = logData;
+    ev->data().message() = std::move(msg);
     LoggingEvent::send_event(ev, static_cast<LoggingEventConsumer&>(mgr), static_cast<DispatcherThread&>(mgr));
 }
 
-void LogManager::log_message(const SharedBuffer& logData)
+void LogManager::log_message(areg::RemoteMessage&& msg)
 {
-    const areg::LogEntry* entry = reinterpret_cast<const areg::LogEntry*>(logData.buffer());
-    ASSERT(entry != nullptr);
-    LogManager::log_message(*entry);
+    LogManager& mgr = LogManager::instance();
+    LoggingEvent* ev = LoggingEvent::make_event();
+    ev->data().set_action(LoggingEventData::LogAction::LogMessage);
+    ev->data().message() = std::move(msg);
+
+    LoggingEvent::send_event(ev, static_cast<LoggingEventConsumer&>(mgr), static_cast<DispatcherThread&>(mgr));
 }
 
 void LogManager::log_message(const RemoteMessage& logData)
 {
-    const areg::LogEntry* entry = reinterpret_cast<const areg::LogEntry*>(logData.buffer());
-    ASSERT(entry != nullptr);
-    LogManager::log_message(*entry);
+    LogManager& mgr = LogManager::instance();
+    LoggingEvent* ev = LoggingEvent::make_event();
+    ev->data().set_action(LoggingEventData::LogAction::LogMessage);
+    ev->data().message() = logData;
+
+    LoggingEvent::send_event(ev, static_cast<LoggingEventConsumer&>(mgr), static_cast<DispatcherThread&>(mgr));
 }
 
 bool LogManager::read_log_config( const char* configFile /*= nullptr*/ )
@@ -267,9 +282,6 @@ bool LogManager::start_logging_thread()
 
 void LogManager::stop_logging_thread(bool waitComplete)
 {
-    // Use ExitPrio so StopLogs is inserted at the front of the queue and is not
-    // blocked behind pending CMD_StartService or CMD_ServiceLost events that may
-    // still be queued (e.g. from a reconnect cycle that was in progress).
     send_log_event( LoggingEventData(LoggingEventData::LogAction::StopLogs), areg::EventPriority::ExitPrio );
     mIsStarted = false;
 
@@ -359,12 +371,25 @@ void LogManager::stop_logs()
     trigger_exit( );
 }
 
-void LogManager::write_log_message( const areg::LogEntry & logMessage)
+void LogManager::write_log_message( const LoggingEventData & data )
 {
-    mLoggerFile.log_message(logMessage);
-    mLoggerDebug.log_message(logMessage);
-    mLoggerTcp.log_message(logMessage);
-    mLoggerDatabase.log_message(logMessage);
+    RemoteMessage& msg = const_cast<LoggingEventData &>(data).message();
+    const areg::LogEntry* logEntry = data.log_entry();
+    ASSERT(logEntry != nullptr);
+
+    if (is_remote_logging_enabled())
+    {
+        areg::finalize_log_message(msg, areg::LogDataType::Remote, LogManager::connection_cookie());
+    }
+    else
+    {
+        areg::finalize_log_message(msg, areg::LogDataType::Local, areg::COOKIE_LOCAL);
+    }
+
+    mLoggerFile.log_message(*logEntry);
+    mLoggerDebug.log_message(*logEntry);
+    mLoggerTcp.forward_message(std::move(msg));
+    mLoggerDatabase.log_message(*logEntry);
 
     if ( !has_more_events() )
     {

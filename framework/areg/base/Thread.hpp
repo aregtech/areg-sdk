@@ -351,13 +351,13 @@ public:
      * \brief   Returns the name of the current thread. Returns empty string if not registered.
      **/
     [[nodiscard]]
-    inline static const String & current_thread_name() noexcept;
+    inline static String current_thread_name() noexcept;
 
     /**
      * \brief   Returns the address of the current thread. Returns invalid address if not registered.
      **/
     [[nodiscard]]
-    inline static const ThreadAddress & current_thread_address() noexcept;
+    inline static ThreadAddress current_thread_address() noexcept;
 
     /**
      * \brief   Returns the thread consumer of the current thread from thread-local storage.
@@ -389,7 +389,7 @@ public:
      * \param   threadId    The ID of the thread.
      **/
     [[nodiscard]]
-    static const String & thread_name( id_type threadId ) noexcept;
+    static String thread_name( id_type threadId ) noexcept;
 
     /**
      * \brief   Returns the address of thread by specified ID. Returns invalid address if not
@@ -398,7 +398,7 @@ public:
      * \param   threadId    The ID of the thread.
      **/
     [[nodiscard]]
-    static const ThreadAddress & thread_address( id_type threadId ) noexcept;
+    static ThreadAddress thread_address( id_type threadId ) noexcept;
 
     /**
      * \brief   Returns the stack size of the current thread in bytes.
@@ -761,13 +761,11 @@ inline id_type Thread::id() const noexcept
 
 inline const String& Thread::name() const noexcept
 {
-    Lock lock(mSyncObject);
     return mThreadAddress.name();
 }
 
 inline const ThreadAddress & Thread::address() const noexcept
 {
-    Lock lock(mSyncObject);
     return mThreadAddress;
 }
 
@@ -809,12 +807,12 @@ inline Thread * Thread::current_thread() noexcept
     return Thread::find_by_id(Thread::_os_thread_id());
 }
 
-inline const String & Thread::current_thread_name() noexcept
+inline String Thread::current_thread_name() noexcept
 {
     return Thread::thread_name( Thread::_os_thread_id() );
 }
 
-inline const ThreadAddress & Thread::current_thread_address() noexcept
+inline ThreadAddress Thread::current_thread_address() noexcept
 {
     return Thread::thread_address( Thread::_os_thread_id() );
 }

@@ -136,12 +136,7 @@ protected:
     /**
      * \brief   Runs console with extended features that support output at any screen position.
      **/
-    void run_console_input_extended() final;
-
-    /**
-     * \brief   Runs console with simple (non-extended) features.
-     **/
-    void run_console_input_simple() final;
+    void run_console_io() final;
 
     /**
      * \brief   Runs the application as a background process without console input or output.

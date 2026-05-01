@@ -24,6 +24,7 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/base/private/SocketAccepted.cpp
 	areg/base/private/SocketClient.cpp
 	areg/base/private/SocketDefs.cpp
+	areg/base/private/SocketMultiplexer.cpp
 	areg/base/private/SocketServer.cpp
 	areg/base/private/String.cpp
 	areg/base/private/StringDefs.cpp

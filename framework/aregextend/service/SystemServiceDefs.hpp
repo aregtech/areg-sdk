@@ -24,6 +24,13 @@
 #include "aregextend/console/Console.hpp"
 #include "aregextend/console/OptionParser.hpp"
 
+/************************************************************************
+ * Dependencies.
+ ************************************************************************/
+namespace areg {
+    class RemoteMessage;
+}
+
 /**
  * \brief   The system service common data.
  **/
@@ -91,6 +98,7 @@ namespace areg::ext {
         , Paused        //!< Service is paused.
     };
 
+
     /**
      * \brief   Returns the human readable string of areg::ext::ServicePhase value.
      **/
@@ -103,6 +111,16 @@ namespace areg::ext {
     constexpr ServiceOption     DEFAULT_OPTION  { ServiceOption::CMD_Console };
 
     /**
+     * \brief   Default number of pool thread pairs created by ServiceCommunicationBase
+     *          when pool mode is enabled.  Each pair has one dedicated send thread and
+     *          one dedicated receive thread.  Clients are routed to pairs via
+     *          \c cookie % DEFAULT_COMMUNICATION_PAIR_COUNT.
+     *          Pass \c 0 to \c ServiceCommunicationBase to keep the legacy shared-thread
+     *          path (used by logcollector which handles low volumes of data).
+     **/
+    inline constexpr uint32_t   DEFAULT_COMMUNICATION_PAIR_COUNT { 0u };
+
+    /**
      * \brief   The default option to run the Log Collector in verbose mode to output send and receive data rate.
      */
     constexpr bool              DEFAULT_VERBOSE { true };
@@ -110,11 +128,19 @@ namespace areg::ext {
     /**
      * \brief   Output send data rate message format.
      **/
-    constexpr std::string_view  FORMAT_SEND_DATA{ "Send data with the rate: % 7.02f %s" };
+    constexpr std::string_view  FORMAT_SEND_DATA{ " Send data rate ...: %9.2f %s" };
     /**
      * \brief   Output receive data rate message format.
      **/
-    constexpr std::string_view  FORMAT_RECV_DATA{ "Recv data with the rate: % 7.02f %s" };
+    constexpr std::string_view  FORMAT_RECV_DATA{ " Recv data rate ...: %9.2f %s" };
+    /**
+     * \brief   Output send message rate format.
+     **/
+    constexpr std::string_view  FORMAT_SEND_MSGS{ " Send messages ....: %9u msgs/sec" };
+    /**
+     * \brief   Output receive message rate format.
+     **/
+    constexpr std::string_view  FORMAT_RECV_MSGS{ " Recv messages ....: %9u msgs/sec" };
     /**
      * \brief   Error command output message format.
      **/
@@ -136,36 +162,44 @@ namespace areg::ext {
     /**
      * \brief   Coordinate to display the application title.
      **/
-    constexpr Console::Coord    COORD_TITLE         { 0, 1 };
+    constexpr Console::Coord    COORD_TITLE         { 1, 1 };
     /**
      * \brief   Coordinate to display the underscore.
      **/
-    constexpr Console::Coord    COORD_SUBTITLE      { 0, 2 };
+    constexpr Console::Coord    COORD_SUBTITLE      { 1, 2 };
 
     /**
      * \brief   Coordinate to start to display send data rate message.
      **/
-    constexpr Console::Coord    COORD_SEND_RATE     { 0, 3 };
+    constexpr Console::Coord    COORD_SEND_RATE     { 1, 3 };
     /**
      * \brief   Coordinate to start to display receive data rate message.
      **/
-    constexpr Console::Coord    COORD_RECV_RATE     { 0, 4 };
+    constexpr Console::Coord    COORD_RECV_RATE     { 1, 4 };
+    /**
+     * \brief   Coordinate to start to display send message rate.
+     **/
+    constexpr Console::Coord    COORD_SEND_MSGS     { 1, 5 };
+    /**
+     * \brief   Coordinate to start to display receive message rate.
+     **/
+    constexpr Console::Coord    COORD_RECV_MSGS     { 1, 6 };
     /**
      * \brief   Coordinate to display the status message.
      **/
-    constexpr Console::Coord    COORD_STATUS_MSG    { 0, 5 };
+    constexpr Console::Coord    COORD_STATUS_MSG    { 1, 7 };
     /**
      * \brief   Coordinate to start to display user input message.
      **/
-    constexpr Console::Coord    COORD_USER_INPUT    { 0, 6 };
+    constexpr Console::Coord    COORD_USER_INPUT    { 1, 8 };
     /**
      * \brief   Coordinate to start to display error message.
      **/
-    constexpr Console::Coord    COORD_ERROR_MSG     { 0, 7 };
+    constexpr Console::Coord    COORD_ERROR_MSG     { 1, 9 };
     /**
      * \brief   Coordinate to start to display information message.
      **/
-    constexpr Console::Coord    COORD_INFO_MSG      { 0, 8 };
+    constexpr Console::Coord    COORD_INFO_MSG      { 1, 10 };
 
     /**
      * \brief   Converts the argument list from 'char' or 'wchar_t' type to the 'char'. The memory

@@ -3,6 +3,7 @@
  * \brief   Implementation of the service component.
  **/
 #include "common/src/ServiceComponent.hpp"
+#include "areg/appbase/Application.hpp"
 
 #include <iostream>
 
@@ -19,4 +20,5 @@ void ServiceComponent::request_hello_service(const areg::String & client)
 
     // reply to unblock the request
     response_hello_service(true);
+    areg::Application::signal_quit();
 }

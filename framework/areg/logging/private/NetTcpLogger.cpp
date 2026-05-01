@@ -88,7 +88,7 @@ void NetTcpLogger::log_message(const areg::LogEntry& logMessage)
 {
     if (!mIsEnabled)
         return;
-    
+
     if (mChannel.is_valid() && is_connect_state())
     {
         send_message(areg::create_log_message(logMessage, areg::LogDataType::Remote, mChannel.cookie()), areg::EventPriority::NormalPrio);
@@ -96,6 +96,36 @@ void NetTcpLogger::log_message(const areg::LogEntry& logMessage)
     else if (mRingStack.capacity() != 0)
     {
         mRingStack.push(areg::create_log_message(logMessage, areg::LogDataType::Remote, mChannel.cookie()));
+    }
+}
+
+void NetTcpLogger::forward_message(const areg::RemoteMessage& msg)
+{
+    if (!mIsEnabled)
+        return;
+
+    if (mChannel.is_valid() && is_connect_state())
+    {
+        send_message(msg, areg::EventPriority::NormalPrio);
+    }
+    else if (mRingStack.capacity() != 0)
+    {
+        mRingStack.push(msg);
+    }
+}
+
+void NetTcpLogger::forward_message(areg::RemoteMessage&& msg)
+{
+    if (!mIsEnabled)
+        return;
+
+    if (mChannel.is_valid() && is_connect_state())
+    {
+        send_message(std::move(msg), areg::EventPriority::NormalPrio);
+    }
+    else if (mRingStack.capacity() != 0)
+    {
+        mRingStack.push(msg);
     }
 }
 

@@ -22,6 +22,11 @@ SocketAccepted::SocketAccepted( const SOCKETHANDLE hSocket, const areg::SocketAd
 {
 }
 
+SocketAccepted::SocketAccepted(const SOCKETHANDLE hSocket, areg::SocketAddress&& sockAddress) noexcept
+    : Socket(hSocket, std::move(sockAddress))
+{
+}
+
 bool SocketAccepted::create(const String& /*hostName*/, uint16_t /*portNr*/)
 {
     return true;

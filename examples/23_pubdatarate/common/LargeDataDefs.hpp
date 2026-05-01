@@ -131,17 +131,25 @@ namespace LargeData
         /**
          * \brief   Return the total size of the image block.
          */
-        inline uint32_t getSize() const;
+        inline uint32_t size() const;
 
         /**
          * \brief   Returns true if the image block is empty.
          */
-        inline bool isEmpty() const;
+        inline bool is_empty() const;
 
         /**
          * \brief   Sets the channel ID and the frame ID of the image block.
          */
-        inline void setIds(uint32_t channelId, uint32_t frameId);
+        inline void set_ids(uint32_t channelId, uint32_t frameId);
+
+        /**
+         * \brief   Updates only the frame sequence ID. Use in the hot send loop when
+         *          the channel ID was pre-stamped at initialisation time.
+         *
+         * \param   frameId     The frame sequence number to stamp on this block.
+         */
+        inline void set_frame_id(uint32_t frameId);
 
         /**
          * \brief   The streaming operators to serialize image block into the streaming buffer.
@@ -170,7 +178,7 @@ namespace LargeData
 
     inline areg::OutStream& operator << (areg::OutStream& stream, const LargeData::ImageBlock& output)
     {
-        uint32_t size{ output.getSize() };
+        uint32_t size{ output.size() };
         if (size != 0)
         {
             uint8_t* data = reinterpret_cast<uint8_t*>(output.mBlock);
@@ -286,21 +294,29 @@ inline void LargeData::ImageBlock::release()
     }
 }
 
-inline uint32_t LargeData::ImageBlock::getSize() const
+inline uint32_t LargeData::ImageBlock::size() const
 {
     return (mBlock != nullptr ? mBlock->blockSize : 0);
 }
 
-inline bool LargeData::ImageBlock::isEmpty() const
+inline bool LargeData::ImageBlock::is_empty() const
 {
-    return (mBlock != nullptr) && (mBlock->blockSize != 0);
+    return (mBlock == nullptr) || (mBlock->blockSize == 0);
 }
 
-inline void LargeData::ImageBlock::setIds(uint32_t channelId, uint32_t frameId)
+inline void LargeData::ImageBlock::set_ids(uint32_t channelId, uint32_t frameId)
 {
     if (mBlock != nullptr)
     {
         mBlock->channelId = channelId;
+        mBlock->frameSeqId = frameId;
+    }
+}
+
+inline void LargeData::ImageBlock::set_frame_id(uint32_t frameId)
+{
+    if (mBlock != nullptr)
+    {
         mBlock->frameSeqId = frameId;
     }
 }

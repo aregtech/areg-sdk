@@ -40,23 +40,16 @@ namespace {
     inline const areg::RawMessage& _get_empty_message() noexcept
     {
         static constexpr areg::RawMessage _messageUpdateScpes
-        {
-            {
-                {   /*rbhBufHeader*/
-                      sizeof(uint8_t)                     // biLength
-                    , sizeof(areg::MessageHeader)    // biOffset
-                    , areg::BufferType::Remote       // biBufType
-                    , 0                                         // biUsed
-                }
-                , areg::COOKIE_LOGGER                      // rbhTarget
-                , areg::INVALID_VALUE                       // rbhChecksum
-                , areg::INVALID_VALUE                       // rbhSource
-                , static_cast<uint32_t>(areg::FuncIdRange::EmptyFunctionId)   // rbhMessageId
-                , areg::MESSAGE_SUCCESS                     // rbhResult
-                , areg::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
-            }
-            , { static_cast<char>(0) }
-        };
+            ( sizeof(uint8_t)                                                           // biLength
+            , sizeof(areg::MessageHeader)                                               // biOffset
+            , areg::BufferType::Remote                                                  // biBufType
+            , 0u                                                                        // biUsed
+            , areg::COOKIE_LOGGER                                                       // rbhTarget
+            , areg::INVALID_VALUE                                                       // rbhChecksum
+            , static_cast<ITEM_ID>(areg::INVALID_VALUE)                                 // rbhSource
+            , static_cast<uint32_t>(areg::FuncIdRange::EmptyFunctionId)                 // rbhMessageId
+            , areg::MESSAGE_SUCCESS                                                     // rbhResult
+            , areg::SEQUENCE_NUMBER_NOTIFY);                                            // rbhSequenceNr
 
         return _messageUpdateScpes;
     }
@@ -70,23 +63,16 @@ namespace {
     inline const areg::RawMessage & _get_message() noexcept
     {
         static constexpr areg::RawMessage _messageServiceLog
-        {
-            {
-                {   /*rbhBufHeader*/
-                      sizeof(uint8_t)                     // biLength
-                    , sizeof(areg::MessageHeader)    // biOffset
-                    , areg::BufferType::Remote       // biBufType
-                    , 0                                         // biUsed
-                }
-                , areg::COOKIE_LOGGER                      // rbhTarget
-                , areg::INVALID_VALUE                       // rbhChecksum
-                , areg::INVALID_VALUE                       // rbhSource
-                , static_cast<uint32_t>(areg::FuncIdRange::ServiceLogMessage)   // rbhMessageId
-                , areg::MESSAGE_SUCCESS                     // rbhResult
-                , areg::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
-            }
-            , { static_cast<char>(0) }
-        };
+            ( sizeof(uint8_t)                                                           // biLength
+            , sizeof(areg::MessageHeader)                                               // biOffset
+            , areg::BufferType::Remote                                                  // biBufType
+            , 0u                                                                        // biUsed
+            , areg::COOKIE_LOGGER                                                       // rbhTarget
+            , areg::INVALID_VALUE                                                       // rbhChecksum
+            , static_cast<ITEM_ID>(areg::INVALID_VALUE)                                 // rbhSource
+            , static_cast<uint32_t>(areg::FuncIdRange::ServiceLogMessage)               // rbhMessageId
+            , areg::MESSAGE_SUCCESS                                                     // rbhResult
+            , areg::SEQUENCE_NUMBER_NOTIFY);                                            // rbhSequenceNr
 
         return _messageServiceLog;
     }
@@ -272,6 +258,81 @@ AREG_API_IMPL uint32_t areg::scope_priority( const char * scopeName )
     return LogManager::scope_priority( scopeName );
 }
 
+AREG_API_IMPL areg::RemoteMessage areg::make_log_message( areg::LogMessageType msgType
+                                                        , uint32_t scopeId
+                                                        , uint32_t sessionId
+                                                        , TIME64 scopeStamp
+                                                        , areg::LogPriority msgPrio
+                                                        , const char* message
+                                                        , uint32_t msgLen)
+{
+    RemoteMessage msg(_get_message().rbHeader, sizeof(areg::LogEntry));
+    areg::LogEntry* log = reinterpret_cast<areg::LogEntry*>(msg.buffer());
+    if (log != nullptr)
+    {
+        const TIME64 now    = DateTime::now();
+
+        log->logDataType    = areg::LogDataType::Local;
+        log->logMsgType     = msgType;
+        log->logMessagePrio = msgPrio;
+        log->logSource      = areg::COOKIE_LOCAL;
+        log->logTarget      = areg::COOKIE_LOGGER;
+        log->logCookie      = areg::COOKIE_LOCAL;
+        log->logThreadId    = Thread::current_thread_id();
+        log->logTimestamp   = now;
+        log->logReceived    = DateTime::INVALID_TIME;
+        log->logDuration    = scopeStamp != 0u ? static_cast<uint32_t>(now - scopeStamp) : 0u;
+        log->logScopeId     = scopeId;
+        log->logSessionId   = sessionId;
+        log->logThreadLen   = 0u;
+        log->logModuleLen   = 0u;
+        log->logModuleId    = 0u;
+
+        uint32_t len = areg::mem_copy(log->logMessage, areg::LOG_MSG_SIZE - 1u, message, msgLen);
+        log->logMessage[len] = String::EmptyChar;
+        log->logMessageLen   = len;
+
+        msg.set_size_used(sizeof(areg::LogEntry));
+        msg.move_to_end();
+    }
+
+    return msg;
+}
+
+AREG_API_IMPL void areg::finalize_log_message(areg::RemoteMessage& msg, areg::LogDataType dataType, const ITEM_ID& srcCookie)
+{
+    if (!msg.is_valid())
+        return;
+
+    areg::LogEntry* log = reinterpret_cast<areg::LogEntry*>(msg.buffer());
+    log->logDataType = dataType;
+
+    if (areg::LogDataType::Local == dataType)
+    {
+        msg.set_source(areg::COOKIE_LOCAL);
+        log->logCookie    = areg::COOKIE_LOCAL;
+        log->logModuleId  = 0u;
+        log->logModuleLen = 0u;
+        log->logThreadLen = 0u;
+        log->logModule[0] = String::EmptyChar;
+        log->logThread[0] = String::EmptyChar;
+    }
+    else
+    {
+        const String& moduleName{ Process::instance().app_name() };
+        const String threadName{ Thread::thread_name(log->logThreadId) };
+
+        msg.set_source(srcCookie);
+        log->logCookie    = srcCookie;
+        log->logModuleId  = Process::instance().id();
+        log->logModuleLen = areg::mem_copy(log->logModule, areg::LOG_NAME_SIZE - 1u, moduleName.as_string(), static_cast<uint32_t>(moduleName.length()));
+        log->logThreadLen = areg::mem_copy(log->logThread, areg::LOG_NAME_SIZE - 1u, threadName.as_string(), static_cast<uint32_t>(threadName.length()));
+
+        log->logModule[log->logModuleLen] = String::EmptyChar;
+        log->logThread[log->logThreadLen] = String::EmptyChar;
+    }
+}
+
 AREG_API_IMPL areg::RemoteMessage areg::create_log_message(const areg::LogEntry& logMessage, areg::LogDataType dataType, const ITEM_ID& srcCookie)
 {
     RemoteMessage msgLog;
@@ -359,7 +420,7 @@ AREG_API_IMPL areg::RemoteMessage areg::message_update_scopes(const ITEM_ID& sou
 
 AREG_API_IMPL void areg::log_any_message(const areg::LogEntry& logMessage)
 {
-    LogManager::log_message(SharedBuffer(reinterpret_cast<const uint8_t *>(&logMessage), sizeof(areg::LogEntry)));
+    LogManager::log_message(logMessage);
 }
 
 AREG_API_IMPL areg::RemoteMessage areg::message_update_scope(const ITEM_ID& source, const ITEM_ID& target, const String& scopeName, uint32_t scopeId, uint32_t scopePrio)
@@ -553,6 +614,15 @@ AREG_API_IMPL uint32_t areg::set_scope_priority( const char * /*scopeName*/, uin
 AREG_API_IMPL uint32_t areg::scope_priority( const char * /*scopeName*/ )
 {
     return static_cast<uint32_t>(areg::LogPriority::PrioInvalid);
+}
+
+AREG_API_IMPL areg::RemoteMessage areg::make_log_message(areg::LogMessageType, uint32_t, uint32_t, TIME64, areg::LogPriority, const char*, uint32_t)
+{
+    return areg::RemoteMessage{};
+}
+
+AREG_API_IMPL void areg::finalize_log_message(areg::RemoteMessage&, areg::LogDataType, const ITEM_ID&)
+{
 }
 
 AREG_API_IMPL areg::RemoteMessage areg::create_log_message(const areg::LogEntry & /*logMessage*/, areg::LogDataType /*dataType*/, const ITEM_ID & /*srcCookie*/)

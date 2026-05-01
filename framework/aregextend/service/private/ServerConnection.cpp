@@ -17,6 +17,8 @@
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/base/RemoteMessage.hpp"
 
+#include <shared_mutex>
+
 namespace areg::ext {
 
 ServerConnection::ServerConnection(const ITEM_ID & channelId )
@@ -50,7 +52,7 @@ void ServerConnection::reject_connection(SocketAccepted & clientConnection)
 
 void ServerConnection::close_all_connections()
 {
-    Lock lock( mLock );
+    std::unique_lock<std::shared_mutex> lock( mLock );
     RemoteMessage msgByeClient;
     if ( msgByeClient.init_message(areg::notify_client_connection().rbHeader ) != nullptr )
     {
@@ -60,7 +62,10 @@ void ServerConnection::close_all_connections()
         for (MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position(); mAcceptedConnections.is_valid_position(pos); pos = mAcceptedConnections.next_position(pos))
         {
             SocketAccepted clientConnection = mAcceptedConnections.value_at(pos);
-            const ITEM_ID& target{ cookie(clientConnection) };
+            // Read cookie directly to avoid re-acquiring mLock (std::shared_mutex is not recursive).
+            const SOCKETHANDLE hSocket{ clientConnection.handle() };
+            MapSocketToCookie::MAPPOS posC{ mSocketToCookie.find(hSocket) };
+            const ITEM_ID target{ mSocketToCookie.is_valid_position(posC) ? mSocketToCookie.value_at(posC) : areg::COOKIE_UNKNOWN };
             if (target >= areg::COOKIE_REMOTE_SERVICE)
             {
                 RemoteMessage msgDisconnect{ msgByeClient.clone() };

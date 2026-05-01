@@ -228,13 +228,10 @@ void ObserverMessageProcessor::notify_log_message(const RemoteMessage& msgReceiv
         const areg::LogEntry* msgRemote = reinterpret_cast<const areg::LogEntry*>(msgReceived.buffer());
         ASSERT(msgRemote != nullptr);
         const_cast<areg::LogEntry*>(msgRemote)->logReceived = static_cast<TIME64>(now);
-        if (mLoggerClient.mLogDatabase.log_message(*msgRemote) == false)
+        if (mLoggerClient.mLogDatabase.log_message(*msgRemote))
         {
-            // If log message is not stored, it is not processed
-            break;
+            mLoggerClient.mLogDatabase.commit(true);
         }
-
-        mLoggerClient.mLogDatabase.commit(true);
 
         if (LogObserverBase::_theLogObserver != nullptr)
         {

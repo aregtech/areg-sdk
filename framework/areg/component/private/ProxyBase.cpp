@@ -458,7 +458,10 @@ void ProxyBase::send_notification_event( uint32_t msgId, areg::ResultType resTyp
         eventElem->set_event_consumer(static_cast<EventConsumer *>(caller));
     }
 
-    static_cast<Event *>(eventElem)->deliver_event();
+    if (!mDispatcherThread.event_dispatcher().post_event(*eventElem))
+    {
+        eventElem->destroy();
+    }
 }
 
 #ifdef  DEBUG
@@ -518,8 +521,12 @@ void ProxyBase::send_service_event( ProxyBase::ServiceAvailableEvent * eventInst
     {
         eventInstance->add_listener( self(), mDispatcherThread);
         eventInstance->set_event_consumer(this);
-        eventInstance->register_for_thread(&mDispatcherThread);
-        eventInstance->deliver_event( );
+        if (eventInstance->register_for_thread(&mDispatcherThread) && mDispatcherThread.event_dispatcher().post_event(*eventInstance))
+        {
+            return;
+        }
+
+        eventInstance->destroy();
     }
 }
 

@@ -55,27 +55,48 @@ bool TimerManagerBase::run_dispatcher()
     do
     {
         whichEvent = multiLock.lock(areg::WAIT_INFINITE, false, true);
-        Event* eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pick_event() : nullptr;
-        if (static_cast<const Event*>(eventElem) != static_cast<const Event*>(&exitEvent))
+
+        // Accept both Queue (only mEventQueue fired) and LOCK_INDEX_COMPLETION
+        // (mEventExit + mEventQueue fired simultaneously on shutdown).
+        const bool hasQueue = (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue))
+                           || (whichEvent == MultiLock::LOCK_INDEX_COMPLETION);
+        if (!hasQueue)
         {
-            if (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue))
+            break;
+        }
+
+        // Tight drain loop — process all queued timer events without
+        // re-entering the kernel wait between consecutive events.
+        // pop_event() manages mEventQueue signal state via signal_event().
+        for (;;)
+        {
+            Event* eventElem = pick_event();
+
+            if (static_cast<const Event*>(eventElem) == static_cast<const Event*>(&exitEvent))
             {
-                if (prepare_dispatch_event(eventElem))
-                {
-                    dispatch_event(*eventElem);
-                }
-
-                post_dispatch_event(eventElem);
-
-                ASSERT(static_cast<EventQueue&>(mInternalEvents).is_empty());
+                whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
+                break;
             }
-        }
-        else
-        {
-            whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
+
+            if (eventElem == nullptr)
+            {
+                // pop_event() already called signal_event() to reset mEventQueue.
+                // Break out and block on multiLock.lock().
+                whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue);
+                break;
+            }
+
+            if (prepare_dispatch_event(eventElem))
+            {
+                dispatch_event(*eventElem);
+            }
+
+            post_dispatch_event(eventElem);
+
+            ASSERT(static_cast<EventQueue&>(mInternalEvents).is_empty());
         }
 
-    } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue) || (whichEvent == MultiLock::LOCK_INDEX_COMPLETION));
+    } while (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue));
 
     ready_for_events(false);
     remove_all_events();

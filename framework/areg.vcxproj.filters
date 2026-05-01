@@ -558,7 +558,7 @@
     <ClCompile Include="areg\base\private\posix\SocketMultiplexerPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\SocketMultiplexer.cpp">
+    <ClCompile Include="areg\base\private\SocketMultiplexer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\macos\TimerManagerMacOS.cpp">
@@ -598,6 +598,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\macos\WaitableTimerMacOS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\MpscEventQueue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\base\private\linux\SocketDefsLinux.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\ipc\private\linux\ClientSendThreadLinux.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1157,6 +1166,9 @@
     <ClInclude Include="areg\base\SharedPrimitive.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="areg\component\private\MpscEventQueue.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="areg\resources\areg.rc">
@@ -1215,5 +1227,6 @@
     <Text Include="areg\component\private\macos\CMakeLists.txt" />
     <Text Include="areg\base\private\linux\CMakeLists.txt" />
     <Text Include="areg\base\private\macos\CMakeLists.txt" />
+    <Text Include="areg\ipc\private\linux\CMakeLists.txt" />
   </ItemGroup>
 </Project>

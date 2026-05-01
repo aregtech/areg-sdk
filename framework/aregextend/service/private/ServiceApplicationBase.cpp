@@ -87,7 +87,6 @@ int32_t ServiceApplicationBase::service_main(areg::ext::ServiceOption optStartup
 
 bool ServiceApplicationBase::service_initialize(areg::ext::ServiceOption /*option*/, const char* /*value*/, const char * fileConfig)
 {
-    // Start only tracing and timer manager.
     if (areg::is_empty(fileConfig))
     {
         if (mFileConfig.is_empty())

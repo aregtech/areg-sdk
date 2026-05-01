@@ -27,7 +27,7 @@
 /**
  * \brief   Console service that outputs router statistics.
  **/
-class RouterConsoleService final    : public    areg::ext::SystemServiceConsole
+class RouterConsoleService final : public areg::ext::SystemServiceConsole
 {
 public:
     //!< The console service role name

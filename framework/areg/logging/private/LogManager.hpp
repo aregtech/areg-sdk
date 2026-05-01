@@ -86,11 +86,13 @@ public:
     static void log_message( const areg::LogEntry & logData );
 
     /**
-     * \brief   Triggers an event to log a message contained in a shared buffer.
+     * \brief   Triggers a log event from a pre-built message. This is the primary hot path.
+     *          If remote logging is enabled, calls finalize_log_message() on the calling thread
+     *          before queuing, avoiding any work on the LogManager thread.
      *
-     * \param   logData     The message in the shared buffer to log.
+     * \param   msg     A pre-built message from make_log_message(); moved into the event.
      **/
-    static void log_message(const SharedBuffer& logData);
+    static void log_message( areg::RemoteMessage && msg );
 
     /**
      * \brief   Triggers an event to log a remote message.
@@ -388,11 +390,13 @@ private:
     void stop_logs();
 
     /**
-     * \brief   Writes a log message to all registered loggers.
+     * \brief   Dispatches a log message to all registered loggers.
+     *          Uses the pre-built remote message in data for TCP if available (is_valid()),
+     *          otherwise falls back to constructing it on the LogManager thread.
      *
-     * \param   logMessage     The message to log.
+     * \param   data    The logging event data containing the log entry and optional pre-built remote message.
      **/
-    void write_log_message( const areg::LogEntry & logMessage);
+    void write_log_message( const LoggingEventData & data );
 
     /**
      * \brief   Sends a logging event with the specified priority.

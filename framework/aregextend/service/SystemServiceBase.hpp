@@ -349,15 +349,9 @@ protected:
     virtual Console::CallBack option_check_callback() const = 0;
 
     /**
-     * \brief   Triggered if need to run console with extended features. In extended feature, the
-     *          console can output message at any position on the screen.
+     * \brief   Triggered if need to run console outputs and inputs.
      **/
-    virtual void run_console_input_extended() = 0;
-
-    /**
-     * \brief   Triggered if need to run console with simple (not extended) features.
-     **/
-    virtual void run_console_input_simple() = 0;
+    virtual void run_console_io() = 0;
 
     /**
      * \brief   Run application as a background process without input or output on console.

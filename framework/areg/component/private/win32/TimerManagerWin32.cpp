@@ -49,8 +49,8 @@ struct Win32TimerHandle
  *  without an extra map.
  ************************************************************************/
 VOID CALLBACK _tp_timer_callback( PTP_CALLBACK_INSTANCE /*instance*/,
-                                   PVOID                  pv,
-                                   PTP_TIMER              /*timer*/ ) noexcept
+                                  PVOID                  pv,
+                                  PTP_TIMER              /*timer*/ ) noexcept
 {
     FILETIME ft;
     ::GetSystemTimeAsFileTime(&ft);
@@ -94,7 +94,6 @@ bool TimerManager::_os_timer_start( Timer & timer )
     Win32TimerHandle * h = static_cast<Win32TimerHandle *>(timer.handle());
     ASSERT(h != nullptr);
 
-    // Create the thread-pool timer on first use.
     // Context = the TIMERHANDLE (Win32TimerHandle*) — used for lookup in the callback.
     if (h->timerPool == nullptr)
     {

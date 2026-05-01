@@ -168,7 +168,7 @@ inline SyncObject::SyncKind SyncObject::type() const noexcept
 
 inline bool SyncObject::is_valid() const noexcept
 {
-    return (mSyncObjectType == SyncObject::SyncKind::SoNolock) || (mSyncObject != nullptr);
+    return (mSyncObjectType == SyncObject::SyncKind::SoNolock) || (mSyncObjectType == SyncObject::SyncKind::SoSpinlock) || (mSyncObject != nullptr);
 }
 
 } // namespace areg

@@ -358,16 +358,27 @@ public:
     static bool is_servicing_ready();
 
     /**
-     * \brief   Queries the amount of sent and received data in bytes since the last call, and
-     *          resets counters.
+     * \brief   Queries the amount of sent data in bytes and sent messages since the last call, and resets counters.
      *
-     * \param[out] sizeSend        On output, contains the size of data in bytes sent since the last
-     *                             call.
-     * \param[out] sizeReceive     On output, contains the size of data in bytes received since the
-     *                             last call.
+     * \param[out] sizeSend     On output, contains the size of data in bytes sent since the last call.
+     * \param[out] msgSent      On output, contains the size of messages sent since the last call.
      * \note    Accumulate calls to measure total data. Call each second to measure data rate.
      **/
-    static void query_communication_data( uint64_t & sizeSend, uint64_t & sizeReceive );
+    static void query_data_sent(uint64_t& sizeSent, uint32_t& msgSent) noexcept;
+
+    /**
+     * \brief   Queries the amount of received data in bytes and received messages since the last call, and resets counters.
+     *
+     * \param[out] sizeSend     On output, contains the size of data in bytes received since the last call.
+     * \param[out] msgSent      On output, contains the size of messages received since the last call.
+     * \note    Accumulate calls to measure total data. Call each second to measure data rate.
+     **/
+    static void query_data_received(uint64_t& sizeRecv, uint32_t& msgRecv) noexcept;
+
+    /**
+     * \brief   Enables or disables data and message rate verbosity.
+     **/
+    static void enable_data_rate(bool enable) noexcept;
 
     /**
      * \brief   Returns the name of the executable process.

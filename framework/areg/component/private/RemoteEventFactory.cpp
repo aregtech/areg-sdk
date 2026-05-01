@@ -19,11 +19,13 @@
 #include "areg/component/RequestEvents.hpp"
 #include "areg/component/ResponseEvents.hpp"
 #include "areg/base/Process.hpp"
+#include "areg/base/Thread.hpp"
+#include "areg/component/Channel.hpp"
+#include "areg/component/DispatcherThread.hpp"
+#include "areg/component/ProxyBase.hpp"
+#include "areg/component/StubBase.hpp"
 #include "areg/component/private/ProxyConnectEvent.hpp"
 #include "areg/component/private/StubConnectEvent.hpp"
-#include "areg/component/StubBase.hpp"
-#include "areg/component/ProxyBase.hpp"
-#include "areg/component/Channel.hpp"
 
 #include "areg/logging/areg_log.h"
 namespace areg {
@@ -56,13 +58,18 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
             if ( stub != nullptr )
             {
                 stream.move_to_begin();
+                Channel chTarget(stub->address().channel());
+                Channel chSource(comChannel.source(), chTarget.source(), stream.source());
                 RemoteRequestEvent * eventRequest = stub->create_remote_request(stream);
                 if ( eventRequest != nullptr )
                 {
-                    Channel chTarget( stub->address().channel() );
-                    Channel chSource( comChannel.source(), chTarget.source(), stream.source() );
                     eventRequest->set_target_channel(chTarget);
                     eventRequest->set_source_channel(chSource);
+
+                    // Pre-resolve the target thread to avoid per-message Thread::find_by_name() lock in deliver_event().
+                    Thread * thread = Thread::find_by_name(addrStub.thread());
+                    ASSERT((thread == nullptr) || (AREG_RUNTIME_CAST(thread, DispatcherThread) != nullptr));
+                    eventRequest->register_for_thread(static_cast<DispatcherThread *>(thread));
 
                     LOG_DBG("Created areg::EventType::EventRemoteServiceRequest for target stub [ %s ] from source proxy [ %s ]."
                                 , StubAddress::to_path(eventRequest->target_stub()).as_string()
@@ -87,13 +94,18 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
             if ( stub != nullptr )
             {
                 stream.move_to_begin();
+                Channel chTarget(stub->address().channel());
+                Channel chSource(comChannel.source(), chTarget.source(), stream.source());
                 RemoteNotifyRequestEvent * eventNotify = stub->create_notify_request(stream);
                 if ( eventNotify != nullptr )
                 {
-                    Channel chTarget( stub->address().channel() );
-                    Channel chSource( comChannel.source(), chTarget.source(), stream.source() );
                     eventNotify->set_target_channel(chTarget);
                     eventNotify->set_source_channel(chSource);
+
+                    // Pre-resolve the target thread to avoid per-message Thread::find_by_name() lock in deliver_event().
+                    Thread * thread = Thread::find_by_name(addrStub.thread());
+                    ASSERT((thread == nullptr) || (AREG_RUNTIME_CAST(thread, DispatcherThread) != nullptr));
+                    eventNotify->register_for_thread(static_cast<DispatcherThread *>(thread));
 
                     LOG_DBG("Created areg::EventType::EventRemoteNotifyRequest for target stub [ %s ] from source proxy [ %s ]."
                                 , StubAddress::to_path(eventNotify->target_stub()).as_string()
@@ -107,20 +119,28 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
 
     case areg::EventType::EventRemoteServiceResponse:
         {
-            ProxyBase::lock_resource();
             ProxyAddress addrProxy;
             stream >> addrProxy;
             if ( comChannel.cookie() == addrProxy.cookie() )
                 addrProxy.set_cookie( areg::COOKIE_LOCAL );
+
+            // find_proxy() locks/unlocks internally and returns shared_ptr,
+            // keeping the proxy alive without holding the global lock.
             std::shared_ptr<ProxyBase> proxy = ProxyBase::find_proxy(addrProxy);
             if ( proxy != nullptr )
             {
+                // Heavy deserialization runs outside the global proxy lock.
                 stream.move_to_begin();
+                Channel chTarget(proxy->proxy_address().channel());
                 RemoteResponseEvent * eventResponse = proxy->create_remote_response(stream);
                 if ( eventResponse != nullptr )
                 {
-                    Channel chTarget( proxy->proxy_address().channel() );
                     eventResponse->set_target_channel(chTarget);
+
+                    // Pre-resolve the target thread to avoid per-message Thread::find_by_name() lock in deliver_event().
+                    Thread * thread = Thread::find_by_name(addrProxy.thread());
+                    ASSERT((thread == nullptr) || (AREG_RUNTIME_CAST(thread, DispatcherThread) != nullptr));
+                    eventResponse->register_for_thread(static_cast<DispatcherThread *>(thread));
 
                     LOG_DBG("Created areg::EventType::EventRemoteServiceResponse for target proxy [ %s ]."
                                 , ProxyAddress::to_path(eventResponse->target_proxy()).as_string());
@@ -128,8 +148,6 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
 
                 result = static_cast<StreamableEvent *>(eventResponse);
             }
-
-            ProxyBase::unlock_resource();
         }
         break;
 
@@ -177,7 +195,7 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
 bool RemoteEventFactory::stream_from_event( RemoteMessage & stream, const StreamableEvent & eventStreamable, const Channel & comChannel )
 {
     bool result = false;
-    stream.invalidate();
+    // stream.invalidate();
 
     switch ( eventStreamable.event_type() )
     {

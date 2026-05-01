@@ -1185,35 +1185,35 @@ void RingStackBase<VALUE>::_copy_stack(const RingStackBase<VALUE>& source)
 template <typename VALUE>
 ConcurrentRingStack<VALUE>::ConcurrentRingStack(uint32_t initCapacity /*= 0*/, areg::OverlapPolicy onOverlap /*= areg::OverlapPolicy::Stop*/ )
     : RingStackBase<VALUE>    ( mLock, initCapacity, onOverlap )
-    , mLock ( false )
+    , mLock ( )
 {
 }
 
 template <typename VALUE>
 ConcurrentRingStack<VALUE>::ConcurrentRingStack( const ConcurrentRingStack<VALUE> & source )
     : RingStackBase<VALUE>    ( mLock, static_cast<const RingStackBase<VALUE> &>(source) )
-    , mLock ( false )
+    , mLock ( )
 {
 }
 
 template <typename VALUE>
 ConcurrentRingStack<VALUE>::ConcurrentRingStack( const RingStackBase<VALUE> & source )
     : RingStackBase<VALUE>    ( mLock, source )
-    , mLock ( false )
+    , mLock ( )
 {
 }
 
 template <typename VALUE>
 ConcurrentRingStack<VALUE>::ConcurrentRingStack( RingStackBase<VALUE> && source ) noexcept
     : RingStackBase<VALUE>    ( mLock, std::move(source) )
-    , mLock ( false )
+    , mLock ( )
 {
 }
 
 template <typename VALUE>
 ConcurrentRingStack<VALUE>::ConcurrentRingStack(ConcurrentRingStack<VALUE> && source ) noexcept
     : RingStackBase<VALUE>    ( mLock, std::move(static_cast<RingStackBase<VALUE> &&>(source)) )
-    , mLock ( false )
+    , mLock ( )
 {
 }
 

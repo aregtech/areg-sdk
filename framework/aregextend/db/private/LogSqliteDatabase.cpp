@@ -875,7 +875,7 @@ void LogSqliteDatabase::log_threads(std::vector<ITEM_ID>& ids)
     ASSERT(stmt.row_pos() == static_cast<uint32_t>(ids.size()));
 }
 
-std::vector<String> LogSqliteDatabase::priority_names()
+std::vector<String> LogSqliteDatabase::log_priority_names()
 {
     std::vector<String> result{
         { 
@@ -891,9 +891,9 @@ std::vector<String> LogSqliteDatabase::priority_names()
     return result;
 }
 
-void LogSqliteDatabase::priority_names(std::vector<String>& names)
+void LogSqliteDatabase::log_priority_names(std::vector<String>& names)
 {
-    names = priority_names();
+    names = log_priority_names();
 }
 
 std::vector<areg::ConnectedInstance> LogSqliteDatabase::log_instance_infos()

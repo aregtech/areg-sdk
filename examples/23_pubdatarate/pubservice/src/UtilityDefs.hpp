@@ -93,8 +93,8 @@ namespace util {
           {"-w=", "--width=",   OptionFlag::CmdWidth,         32,     32'768} //! Width in pixels
         , {"-h=", "--height",   OptionFlag::CmdHeight,        32,     32'768} //! Height in pixels
         , {"-l=", "--lines=",   OptionFlag::CmdLinesPerBlock,  1,          0} //! Lines per block, maximum is equal to height
-        , {"-t=", "--time=" ,   OptionFlag::CmdPixelTime,      1,    100'000} //! Pixel time in nanoseconds
-        , {"-c=", "--channels=",OptionFlag::CmdChannels,       1,         64} //! Number of channels
+        , {"-t=", "--time=" ,   OptionFlag::CmdPixelTime,      0,    100'000} //! Pixel time in nanoseconds, 0 = full speed
+        , {"-c=", "--channels=",OptionFlag::CmdChannels,       1,         96} //! Number of channels
         , {"-i" , "--info",     OptionFlag::CmdInformation,    0,          0} //! Display information
         , {"-h" , "--help",     OptionFlag::CmdHelp,           0,          0} //! Display help
         , {"-s" , "--start",    OptionFlag::CmdStart,          0,          0} //! Start large data service
@@ -261,7 +261,15 @@ namespace util {
 
     };
 
-} // namespace Util
+    /**
+     * \brief   Initial options parsed from command-line arguments in main().
+     *          When non-empty (mFlags != CmdNothing and no error), ServicingComponent
+     *          fires a startup event so the benchmark can run unattended.
+     *          Example: `23_pubservice -t=0 -l=1 -c=10 -s` starts immediately at full speed.
+     **/
+    extern OptionValues g_startup_options;
+
+} // namespace util
 
 //////////////////////////////////////////////////////////////////////////
 // Util namespace inline methods.
@@ -360,13 +368,16 @@ inline uint64_t util::OptionValues::nsPerBlock(uint32_t startRowIndex, uint32_t 
 inline areg::String util::OptionValues::state() const
 {
     if (hasStart())
-        return areg::String("STARTED");
+        return areg::String(mPixelTime == 0 ? "STARTED (full speed)" : "STARTED");
     else
         return areg::String("STOPPED");
 }
 
 inline void util::OptionValues::update(const OptionValues& newOption)
 {
+    // Preserve the current running state (CmdStart / CmdStop) so that parameter-only
+    // changes (e.g. "-c=5") do not accidentally clear the "service is running" flag.
+    const uint32_t prevRunState = mFlags & (  static_cast<uint32_t>(OptionFlag::CmdStart) | static_cast<uint32_t>(OptionFlag::CmdStop));
     mFlags = static_cast<uint32_t>(OptionFlag::CmdNothing);
 
     if ((newOption.mFlags & static_cast<uint32_t>(OptionFlag::CmdWidth)) != 0)
@@ -404,18 +415,21 @@ inline void util::OptionValues::update(const OptionValues& newOption)
         mFlags &= ~static_cast<uint32_t>(OptionFlag::CmdStop);
         mFlags |= static_cast<uint32_t>(OptionFlag::CmdStart);
     }
-
-    if ((newOption.mFlags & static_cast<uint32_t>(OptionFlag::CmdStop)) != 0)
+    else if ((newOption.mFlags & static_cast<uint32_t>(OptionFlag::CmdStop)) != 0)
     {
         mFlags &= ~static_cast<uint32_t>(OptionFlag::CmdStart);
         mFlags |= static_cast<uint32_t>(OptionFlag::CmdStop);
     }
-
-    if ((newOption.mFlags & static_cast<uint32_t>(OptionFlag::CmdQuit)) != 0)
+    else if ((newOption.mFlags & static_cast<uint32_t>(OptionFlag::CmdQuit)) != 0)
     {
         mFlags &= ~static_cast<uint32_t>(OptionFlag::CmdStart);
         mFlags &= ~static_cast<uint32_t>(OptionFlag::CmdStop);
         mFlags |= static_cast<uint32_t>(OptionFlag::CmdQuit);
+    }
+    else
+    {
+        // No explicit start / stop / quit in this command: keep the previous running state.
+        mFlags |= prevRunState;
     }
 }
 

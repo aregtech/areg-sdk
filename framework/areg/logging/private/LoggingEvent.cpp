@@ -26,40 +26,39 @@ namespace areg {
 
 LoggingEventData::LoggingEventData() noexcept
     : mAction   ( LoggingEventData::LogAction::Undefined )
-    , mEntry    ( )
+    , mMessage  ( )
 {
 }
 
 LoggingEventData::LoggingEventData( LoggingEventData::LogAction action ) noexcept
     : mAction   ( action )
-    , mEntry    ( )
+    , mMessage  ( )
 {
 }
 
 LoggingEventData::LoggingEventData( const LoggingEventData & src ) noexcept
     : mAction   ( src.mAction )
-    , mEntry    ( src.mEntry )
+    , mMessage  ( src.mMessage )
 {
 }
 
 LoggingEventData::LoggingEventData( LoggingEventData && src ) noexcept
     : mAction   ( src.mAction )
-    , mEntry    ( std::move(src.mEntry) )
+    , mMessage  ( std::move(src.mMessage) )
 {
 }
 
 LoggingEventData & LoggingEventData::operator = (const LoggingEventData & src) noexcept
 {
-    mAction = src.mAction;
-    mEntry = src.mEntry;
-
+    mAction     = src.mAction;
+    mMessage    = src.mMessage;
     return (*this);
 }
 
 LoggingEventData & LoggingEventData::operator = ( LoggingEventData && src ) noexcept
 {
-    mAction = src.mAction;
-    mEntry = src.mEntry;
+    mAction     = src.mAction;
+    mMessage    = std::move(src.mMessage);
     return (*this);
 }
 

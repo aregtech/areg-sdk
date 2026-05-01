@@ -337,8 +337,7 @@ inline uint32_t LogScope::session() const noexcept
 #if AREG_LOGGING
 
 template<uint32_t N>
-inline areg::LogScope::LogScope( const char (&scopeName)[N]
-                                , areg::LogPriority priority ) noexcept
+inline areg::LogScope::LogScope( const char (&scopeName)[N], areg::LogPriority priority ) noexcept
     : mScopeId      ( areg::make_id(scopeName) )
     , mScopePrio    ( static_cast<uint32_t>(priority) )
     , mScopeName    ( scopeName, N - 1u )
@@ -351,9 +350,8 @@ inline areg::LogScope::LogScope( const char (&scopeName)[N]
 #else   // AREG_LOGGING
 
 template<uint32_t N>
-inline areg::LogScope::LogScope( const char (&)[N]
-                                , areg::LogPriority ) noexcept
-    : mScopeId      ( 0u )
+inline areg::LogScope::LogScope( const char (&)[N], areg::LogPriority ) noexcept
+    : mScopeId      ( areg::CHECKSUM_IGNORE )
     , mScopePrio    ( static_cast<uint32_t>(areg::LogPriority::PrioInvalid) )
     , mScopeName    ( )
     , mSessionId    ( 0u )
@@ -377,7 +375,7 @@ namespace std {
         [[nodiscard]]
         inline uint32_t operator()(const areg::LogScope& key) const noexcept
         {
-            return static_cast<uint32_t>(key);
+            return key.id();
         }
     };
 } // namespace std

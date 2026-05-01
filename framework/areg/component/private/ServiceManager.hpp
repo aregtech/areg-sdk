@@ -38,6 +38,8 @@ class StubAddress;
 class ProxyAddress;
 class ServiceRequestEvent;
 class ServiceResponseEvent;
+class RemoteMessage;
+class Channel;
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceManager class declaration
@@ -117,14 +119,47 @@ public:
     static bool is_manager_started();
 
     /**
-     * \brief   Queries and resets send and receive data counters since the last call.
+     * \brief   Queries the amount of sent data in bytes and sent messages since the last call, and resets counters.
      *
-     * \param[out] sizeSend        On output contains the size of data in bytes sent since the last
-     *                             call.
-     * \param[out] sizeReceive     On output contains the size of data in bytes received since the
-     *                             last call.
+     * \param[out] sizeSend     On output, contains the size of data in bytes sent since the last call.
+     * \param[out] msgSent      On output, contains the size of messages sent since the last call.
+     * \note    Accumulate calls to measure total data. Call each second to measure data rate.
      **/
-    static void query_communication_data( uint64_t & sizeSend, uint64_t & sizeReceive );
+    static void query_data_sent(uint64_t& sizeSent, uint32_t& msgSent) noexcept;
+
+    /**
+     * \brief   Queries the amount of received data in bytes and received messages since the last call, and resets counters.
+     *
+     * \param[out] sizeSend     On output, contains the size of data in bytes received since the last call.
+     * \param[out] msgSent      On output, contains the size of messages received since the last call.
+     * \note    Accumulate calls to measure total data. Call each second to measure data rate.
+     **/
+    static void query_data_received(uint64_t& sizeRecv, uint32_t& msgRecv) noexcept;
+
+    /**
+     * \brief   Enables or disables data and message rate verbosity.
+     **/
+    static void enable_data_rate(bool enable) noexcept;
+
+    /**
+     * \brief   Sends a pre-serialized RemoteMessage directly to the IPC send thread,
+     *          bypassing all event dispatch and serialization overhead.
+     *          The caller is responsible for ensuring the message was built while the
+     *          connection was valid and the target cookie is still active.
+     *
+     * \param   msg     The pre-built message to send.
+     * \return  Returns true if the message was accepted by the send thread.
+     **/
+    static bool send_raw_message(const RemoteMessage& msg) noexcept;
+
+    /**
+     * \brief   Returns the active IPC connection channel used to route messages
+     *          to the message router.  Valid only after the connection handshake
+     *          completes; check is_manager_started() before using.
+     *
+     * \return  Const reference to the current Channel object.
+     **/
+    static const Channel& connection_channel() noexcept;
 
 private:
 //////////////////////////////////////////////////////////////////////////

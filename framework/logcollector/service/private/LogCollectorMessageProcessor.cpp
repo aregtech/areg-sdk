@@ -33,14 +33,14 @@ void LogCollectorMessageProcessor::query_connected_instances(const areg::RemoteM
     const ITEM_ID& target{ msgReceived.target() };
     if ((source >= areg::COOKIE_REMOTE_SERVICE) && (target == areg::COOKIE_LOGGER))
     {
-        const areg::MapInstances& instances = mLoggerService.observers();
-        auto srcPos = instances.find(source);
-        if (instances.is_valid_position(srcPos))
+        const areg::MapInstances& observers = mLoggerService.observers();
+        auto srcPos = observers.find(source);
+        if (observers.is_valid_position(srcPos))
         {
-            const areg::ConnectedInstance& instance = instances.value_at(srcPos);
+            const areg::ConnectedInstance& instance = observers.value_at(srcPos);
             if (is_log_observer(instance.ciSource))
             {
-                notify_connected_instances(mLoggerService.observers(), source);
+                notify_connected_instances(mLoggerService.instances(), source);
             }
         }
     }
@@ -158,7 +158,7 @@ void LogCollectorMessageProcessor::save_log_source_configuration(const areg::Rem
     msgReceived >> target;
     if ((target == areg::TARGET_ALL) || (target == areg::COOKIE_LOGGER))
     {
-        const areg::MapInstances& instances{ mLoggerService.observers() };
+        const areg::MapInstances& instances{ mLoggerService.instances() };
         for (const auto& entry : instances.data())
         {
             if (is_log_source(entry.second.ciSource))
@@ -249,7 +249,7 @@ bool LogCollectorMessageProcessor::is_log_observer(areg::MessageSource msgSource
 
 inline void LogCollectorMessageProcessor::_forward_message_to_log_sources(const areg::RemoteMessage& msgReceived) const
 {
-    const auto& instances = mLoggerService.observers();
+    const auto& instances = mLoggerService.instances();
     if (instances.is_empty())
         return;
 
@@ -286,7 +286,7 @@ inline void LogCollectorMessageProcessor::_forward_message_to_observers(const ar
 
     ITEM_ID source{ msgReceived.source() };
     ITEM_ID target{ msgReceived.target() != areg::COOKIE_LOGGER ? msgReceived.target() : areg::TARGET_ALL };
-    const areg::MapInstances& instances = mLoggerService.observers();
+    const areg::MapInstances& instances = mLoggerService.instances();
 
     auto srcPos = instances.find(source);
     auto dstPos = instances.find(target);

@@ -189,10 +189,13 @@ bool StubAddress::deliver_service_event( ServiceRequestEvent & serviceEvent ) co
     const ITEM_ID & target{ mChannel.source() };
     Thread* thread = target != areg::TARGET_UNKNOWN ? Thread::find_by_id(static_cast<id_type>(target)) : nullptr;
     DispatcherThread* dispatcher = thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr;
-    if (dispatcher != nullptr)
+    if ((dispatcher != nullptr) && serviceEvent.register_for_thread(dispatcher))
     {
-        result = serviceEvent.register_for_thread(dispatcher);
-        serviceEvent.deliver_event();
+        result = dispatcher->event_dispatcher().post_event(serviceEvent);
+        if (!result)
+        {
+            serviceEvent.destroy();
+        }
     }
     else
     {

@@ -30,9 +30,15 @@
 
 #include <limits>
 
+
 /************************************************************************
- * predefined macro
+ * Dependencies
  ************************************************************************/
+
+namespace areg {
+    class RemoteMessage;
+    class Channel;
+}
 
 /**
  * \brief       areg namespace contains defined and fixed constants,
@@ -310,60 +316,6 @@ enum class InstanceBitness  : uint16_t
 inline constexpr const char* as_string(areg::InstanceBitness bitness) noexcept;
 
 /**
- * \brief   Sequence number predefining notification message ID
- **/
-constexpr SequenceNumber    SEQUENCE_NUMBER_NOTIFY  { std::numeric_limits<SequenceNumber>::min() }; /*0x00000000*/
-/**
- * \brief   Any sequence number, used in messages. "Any sequence number" used to find any listener object with same message ID.
- **/
-constexpr SequenceNumber    SEQUENCE_NUMBER_ANY     { std::numeric_limits<SequenceNumber>::max() }; /*0xFFFFFFFF*/
-
-/**
- * \brief   Unknown cookie
- **/
-constexpr ITEM_ID   COOKIE_UNKNOWN              { static_cast<ITEM_ID>(areg::Cookie::Invalid) };
-/**
- * \brief   The indication of local service.
- **/
-constexpr ITEM_ID   COOKIE_LOCAL                { static_cast<ITEM_ID>(areg::Cookie::Local) };
-/**
- * \brief   Indicates message router cookie
- **/
-constexpr ITEM_ID   COOKIE_ROUTER               { static_cast<ITEM_ID>(areg::Cookie::Router) };
-/**
- * \brief   Indicates log collector cookie
- **/
-constexpr ITEM_ID   COOKIE_LOGGER               { static_cast<ITEM_ID>(areg::Cookie::Logger) };
-/**
- * \brief   Indicates any valid cookie
- **/
-constexpr ITEM_ID   COOKIE_ANY                  { static_cast<ITEM_ID>(areg::Cookie::Any) };
-/**
- * \brief   The unknown target ID
- **/
-constexpr ITEM_ID   TARGET_UNKNOWN              { static_cast<ITEM_ID>(areg::Cookie::Invalid) };
-/**
- * \brief   The local target ID
- **/
-constexpr ITEM_ID   TARGET_LOCAL                { static_cast<ITEM_ID>(areg::Cookie::Local) };
-/**
- * \brief   The undefined (all) target ID
- **/
-constexpr ITEM_ID   TARGET_ALL                  { static_cast<ITEM_ID>(areg::COOKIE_ANY) };
-/**
- * \brief   The unknown source ID
- **/
-constexpr ITEM_ID   SOURCE_UNKNOWN              { static_cast<ITEM_ID>(areg::Cookie::Invalid) };
-/**
- * \brief   The unknown source ID.
- **/
-constexpr ITEM_ID   SOURCE_LOCAL                { static_cast<ITEM_ID>(areg::Cookie::Local) };
-/**
- * \brief   The ID of first valid remote cookie.
- **/
-constexpr ITEM_ID   COOKIE_REMOTE_SERVICE       { static_cast<ITEM_ID>(areg::Cookie::FirstRemote) };
-
-/**
  * \brief   Specifies the service call type
  **/
 enum class ServiceCallType : uint16_t
@@ -425,11 +377,6 @@ constexpr uint32_t  SERVICE_ID_LAST     { SERVICE_ID_FIRST + FUNC_RANGE };
  * \brief   Constant no response. Used to indicate that the request has no response.
  **/
 constexpr uint32_t  RESPONSE_ID_NONE    { static_cast<uint32_t>(ServiceCallType::NoFunction) };
-
-/**
- * \brief   The invalid message ID
- **/
-constexpr uint32_t  INVALID_MESSAGE_ID  { static_cast<uint32_t>(~0) };    /*0xFFFFFFFF*/
 
 /**
  * \brief   Predefined range of function calls
@@ -999,6 +946,26 @@ struct ConnectedInstance
     std::string             ciInstance  { "" }; //!< The name of the application
     std::string             ciLocation  { "" }; //!< The optional file location
 };
+
+/**
+ * \brief   Sends a pre-serialized RemoteMessage directly to the IPC send thread,
+ *          bypassing all event dispatch and serialization overhead.
+ *          The caller is responsible for ensuring the message was built while the
+ *          connection was valid and the target cookie is still active.
+ *
+ * \param   msg     The pre-built message to send.
+ * \return  Returns true if the message was accepted by the send thread.
+ **/
+AREG_API bool send_raw_message(const areg::RemoteMessage& msg) noexcept;
+
+/**
+ * \brief   Returns the active IPC connection channel used to route messages
+ *          to the message router.  Valid only after the connection handshake
+ *          completes; check is_manager_started() before using.
+ *
+ * \return  Const reference to the current Channel object.
+ **/
+AREG_API const areg::Channel& connection_channel() noexcept;
 
 /**
  * \brief   The map of key-value connected instances, where the key is an instance ID and the value is connected instance information.

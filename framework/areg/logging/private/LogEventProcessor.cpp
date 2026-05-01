@@ -91,7 +91,7 @@ inline void LogEventProcessor::_logging_save_scopes()
 
 inline void LogEventProcessor::_logging_log_message( const LoggingEventData & data )
 {
-    mLogManager.write_log_message( data.entry() );
+    mLogManager.write_log_message( data );
 }
 
 inline void LogEventProcessor::_change_scope_priority( const SharedBuffer & stream, uint32_t scopeCount )

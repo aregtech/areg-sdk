@@ -15,12 +15,13 @@
 
 #include "areg/logging/ScopeMessage.hpp"
 
+#include "areg/base/DateTime.hpp"
 #include "areg/logging/LogScope.hpp"
-#include "areg/logging/private/LogMessage.hpp"
 #include "areg/logging/private/LoggingEvent.hpp"
 #include "areg/logging/private/LogManager.hpp"
 
 #include <stdarg.h>
+#include <utility>
 
 namespace areg {
 
@@ -33,8 +34,14 @@ ScopeMessage::ScopeMessage( const LogScope & logScope )
 {
     if ( is_scope_enabled() )
     {
-        LogMessage msg{ areg::LogMessageType::ScopeEnter, logScope.priority(), mSessionId, 0u, areg::LogPriority::PrioScope, mScope.name().data(), static_cast<uint32_t>(mScope.name().size()) };
-        LogManager::log_message(msg);
+        RemoteMessage msg = areg::make_log_message( areg::LogMessageType::ScopeEnter
+                                                  , logScope.mScopeId
+                                                  , mSessionId
+                                                  , 0u
+                                                  , areg::LogPriority::PrioScope
+                                                  , mScope.name().data()
+                                                  , static_cast<uint32_t>(mScope.name().size()));
+        LogManager::log_message(std::move(msg));
     }
 }
 
@@ -42,8 +49,14 @@ ScopeMessage::~ScopeMessage()
 {
     if ( is_scope_enabled() )
     {
-        LogMessage msg{ areg::LogMessageType::ScopeExit, mScope.priority(), mSessionId, mTimestamp, areg::LogPriority::PrioScope, mScope.name().data(), static_cast<uint32_t>(mScope.name().size()) };
-        LogManager::log_message(msg);
+        RemoteMessage msg = areg::make_log_message( areg::LogMessageType::ScopeExit
+                                                  , mScope.mScopeId
+                                                  , mSessionId
+                                                  , mTimestamp
+                                                  , areg::LogPriority::PrioScope
+                                                  , mScope.name().data()
+                                                  , static_cast<uint32_t>(mScope.name().size()));
+        LogManager::log_message(std::move(msg));
     }
 }
 
@@ -123,9 +136,13 @@ void ScopeMessage::log( areg::LogPriority logPrio, const char * format, ... )
 
 inline void ScopeMessage::_send_log( uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const char * format, va_list args )
 {
-    LogMessage logData(areg::LogMessageType::MessageText, scopeId, sessionId, scopeStamp, msgPrio, nullptr, 0);
-    logData.logMessageLen = static_cast<uint32_t>(String::format_string_list( logData.logMessage, areg::LOG_MSG_SIZE, format, args ));
-    LogManager::log_message( logData );
+    RemoteMessage msg = areg::make_log_message(areg::LogMessageType::MessageText, scopeId, sessionId, scopeStamp, msgPrio, nullptr, 0u);
+    if (!msg.is_valid())
+        return;
+
+    areg::LogEntry* log = reinterpret_cast<areg::LogEntry*>(msg.buffer());
+    log->logMessageLen = static_cast<uint32_t>(String::format_string_list(log->logMessage, areg::LOG_MSG_SIZE, format, args));
+    LogManager::log_message(std::move(msg));
 }
 
 #else   // AREG_LOGGING

@@ -46,6 +46,8 @@ public:
      **/
     explicit SocketAccepted( const SOCKETHANDLE hSocket, const areg::SocketAddress & sockAddress );
 
+    explicit SocketAccepted(const SOCKETHANDLE hSocket, areg::SocketAddress && sockAddress) noexcept;
+
     SocketAccepted( const SocketAccepted & source ) = default;
 
     SocketAccepted( SocketAccepted && source ) noexcept = default;

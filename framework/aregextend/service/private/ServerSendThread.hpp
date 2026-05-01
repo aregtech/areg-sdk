@@ -21,7 +21,9 @@
 #include "areg/base/areg_global.h"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/ipc/SendMessageEvent.hpp"
+#include "areg/ipc/private/ConnectionDefs.hpp"
 
+#include <array>
 #include <atomic>
 
 /************************************************************************
@@ -46,6 +48,13 @@ namespace areg::ext {
 class ServerSendThread final    : public    DispatcherThread
                                 , public    SendMessageEventConsumer
 {
+//////////////////////////////////////////////////////////////////////////
+// Internal types and constants
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    using BatchEntries = std::array<areg::PendingSend, areg::THREAD_BATCH_LIMIT>;
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -72,6 +81,13 @@ public:
     inline uint64_t extract_data_send() const noexcept;
 
     /**
+     * \brief   Returns accumulative count of sent messages and resets the existing value to zero.
+     *          The operations are atomic.
+     **/
+    [[nodiscard]]
+    inline uint32_t extract_msgs_sent() const noexcept;
+
+    /**
      * \brief   Call to enable or disable the received data calculation. It also resets the existing
      *          calculated data.
      *
@@ -81,6 +97,16 @@ public:
 
     [[nodiscard]]
     inline bool is_data_rate_enabled() const noexcept;
+
+    /**
+     * \brief   Accumulates bytes and message counts from a per-client send thread into the
+     *          global counters queried by DataRateHelper. Called by PoolSendThread when
+     *          mSaveDataSend is enabled. Thread-safe: uses atomic add.
+     *
+     * \param   bytes   Number of bytes sent.
+     * \param   msgs    Number of messages sent.
+     **/
+    inline void accumulate_sent(uint64_t bytes, uint32_t msgs) noexcept;
 
 protected:
 /************************************************************************/
@@ -138,19 +164,27 @@ private:
     /**
      * \brief   The instance of remote servicing interface object
      **/
-    RemoteMessageHandler&       mRemoteService;
+    RemoteMessageHandler&           mRemoteService;
     /**
      * \brief   The instance of server connection object
      **/
-    ServerConnection &          mConnection;
+    ServerConnection &              mConnection;
+    /**
+     * \brief   Pre-allocated batch work list reused across every drain cycle.
+     **/
+    BatchEntries                    mBatch;
     /**
      * \brief   Accumulative value of sent data size.
      **/
     mutable std::atomic_uint64_t    mBytesSend;
     /**
+     * \brief   Accumulative count of sent messages.
+     **/
+    mutable std::atomic_uint32_t    mMsgsSend;
+    /**
      * \brief   Flag, indicating whether should calculate send data size or not. By default it does not compute.
      **/
-    bool                        mSaveDataSend;
+    bool                            mSaveDataSend;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -166,14 +200,20 @@ private:
 
 inline uint64_t ServerSendThread::extract_data_send() const noexcept
 {
-    return static_cast<uint64_t>(mBytesSend.exchange(0));
+    return mBytesSend.exchange(0u, std::memory_order_relaxed);
+}
+
+inline uint32_t ServerSendThread::extract_msgs_sent() const noexcept
+{
+    return mMsgsSend.exchange(0u, std::memory_order_relaxed);
 }
 
 inline void ServerSendThread::set_data_rate_enabled(bool enable) noexcept
 {
     if (mSaveDataSend != enable)
     {
-        mBytesSend.store(0u);
+        mBytesSend.store(0u, std::memory_order_relaxed);
+        mMsgsSend.store(0u, std::memory_order_relaxed);
         mSaveDataSend = enable;
     }
 }
@@ -181,6 +221,15 @@ inline void ServerSendThread::set_data_rate_enabled(bool enable) noexcept
 inline bool ServerSendThread::is_data_rate_enabled() const noexcept
 {
     return mSaveDataSend;
+}
+
+inline void ServerSendThread::accumulate_sent(uint64_t bytes, uint32_t msgs) noexcept
+{
+    if (mSaveDataSend)
+    {
+        mBytesSend.fetch_add(bytes, std::memory_order_relaxed);
+        mMsgsSend.fetch_add(msgs, std::memory_order_relaxed);
+    }
 }
 
 } // namespace areg::ext

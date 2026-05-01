@@ -8,7 +8,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        aregextend/console/private/win32/Console.cpp
+ * \file        aregextend/console/private/win32/ConsoleWin32.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, Basic OS specific console implementation.
@@ -33,22 +33,40 @@
 #include <stdio.h>
 
 namespace {
-    //!< Clear the screen.
-    constexpr std::string_view  CMD_CLEAR_SCREEN    { "\x1B[2J" };
-    //!< Scroll cursor back.
-    constexpr std::string_view  CMD_SCROLL_BACK     { "\x1B[3J" };
-    //!< Clear line.
-    constexpr std::string_view  CMD_CLEAR_LINE      { "\x1B[2K" };
-    //!< Reset.
-    constexpr std::string_view  CMD_RESET           { "\x1B[0m" };
-    //!< The command to save cursor position in memory
-    constexpr std::string_view  CMD_SAVE_CURSOR     { "\x1B[s" };
-    //!< The command to restore previously saved cursor position
-    constexpr std::string_view  CMD_RESTORE_CURSOR  { "\x1B[u" };
-    //!< The command to move cursor one line up from current position
-    constexpr std::string_view  CMD_ONE_LINE_UP     { "\x1B[1F" };
-    //!< The command to move cursor one line down from current position
-    constexpr std::string_view  CMD_ONE_LINE_DOWN   { "\x1B[1E" };
+
+    /**
+     * \brief   Writes text at the given position WITHOUT moving the visible
+     *          cursor.  First clears the line from posX to the right edge,
+     *          then writes the text.  The cursor stays wherever it was (e.g.
+     *          at the input prompt), so gets_s / fgets are not disturbed.
+     *          Newline and carriage-return characters are replaced with spaces
+     *          because WriteConsoleOutputCharacterA renders them as glyphs (?).
+     **/
+    void _write_at(HANDLE hOut, SHORT posX, SHORT posY, const char* data, DWORD len)
+    {
+        CONSOLE_SCREEN_BUFFER_INFO info{};
+        GetConsoleScreenBufferInfo(hOut, &info);
+
+        const SHORT width = info.dwSize.X;
+        const COORD writePos{ posX, posY };
+
+        // Clear the line from posX to the right edge.
+        DWORD filled{ 0 };
+        FillConsoleOutputCharacterA(hOut, ' ', static_cast<DWORD>(width - posX), writePos, &filled);
+        FillConsoleOutputAttribute(hOut, info.wAttributes, static_cast<DWORD>(width - posX), writePos, &filled);
+
+        // Strip trailing \r and \n: WriteConsoleOutputCharacterA renders them
+        // as visible glyphs (?) instead of control characters.
+        while ((len > 0) && ((data[len - 1] == '\n') || (data[len - 1] == '\r')))
+        {
+            --len;
+        }
+
+        // Write the text at the position (cursor does not move).
+        DWORD written{ 0 };
+        WriteConsoleOutputCharacterA(hOut, data, len, writePos, &written);
+    }
+
 } // namespace
 
 namespace areg::ext {
@@ -66,20 +84,23 @@ bool Console::_os_setup()
         if ((hStdOut != nullptr) && (GetConsoleMode(hStdOut, &mode) == TRUE))
         {
             mContext = static_cast<ptr_type>(mode);
-            mode |= ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+            mode |= ENABLE_PROCESSED_OUTPUT;
             SetConsoleMode(hStdOut, mode);
-            DWORD written = 0;
-            if (WriteConsoleA(hStdOut, CMD_CLEAR_SCREEN.data(), static_cast<DWORD>(CMD_CLEAR_SCREEN.length()), &written, nullptr) == TRUE)
+
+            // Clear the screen using Win32 API (no VT sequences needed).
+            CONSOLE_SCREEN_BUFFER_INFO info{};
+            if (GetConsoleScreenBufferInfo(hStdOut, &info))
             {
-                written = 0;
-                WriteConsoleA(hStdOut, CMD_RESET.data(), static_cast<DWORD>(CMD_RESET.length()), &written, nullptr);
-                written = 0;
-                WriteConsoleA(hStdOut, CMD_SCROLL_BACK.data(), static_cast<DWORD>(CMD_SCROLL_BACK.length()), &written, nullptr);
+                DWORD cells = static_cast<DWORD>(info.dwSize.X) * static_cast<DWORD>(info.dwSize.Y);
+                DWORD filled{ 0 };
+                COORD origin{ 0, 0 };
+                FillConsoleOutputCharacterA(hStdOut, ' ', cells, origin, &filled);
+                FillConsoleOutputAttribute(hStdOut, info.wAttributes, cells, origin, &filled);
+                SetConsoleCursorPosition(hStdOut, origin);
                 mIsReady = true;
             }
             else
             {
-                // restore previous mode.
                 mode = static_cast<DWORD>(mContext);
                 SetConsoleMode(hStdOut, mode);
                 mContext = 0;
@@ -94,39 +115,64 @@ void Console::_os_release()
 {
     if (mIsReady)
     {
-        // restore previous mode.
         HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-        DWORD written = 0;
-        WriteConsoleA(hStdOut, CMD_CLEAR_SCREEN.data(), static_cast<DWORD>(CMD_CLEAR_SCREEN.length()), &written, nullptr);
-        written = 0;
-        WriteConsoleA(hStdOut, CMD_RESET.data(), static_cast<DWORD>(CMD_RESET.length()), &written, nullptr);
+
+        // Ensure the cursor is visible before exiting.
+        CONSOLE_CURSOR_INFO ci{};
+        if ((hStdOut != nullptr) && GetConsoleCursorInfo(hStdOut, &ci))
+        {
+            ci.bVisible = TRUE;
+            SetConsoleCursorInfo(hStdOut, &ci);
+        }
+
+        // Move the visible cursor just below the last output row so the shell
+        // prompt appears there rather than at the very bottom after exit.
+        CONSOLE_SCREEN_BUFFER_INFO info{};
+        if ((hStdOut != nullptr) && GetConsoleScreenBufferInfo(hStdOut, &info))
+        {
+            const SHORT finalRow = static_cast<SHORT>(mMaxUsedRow + 1);
+            COORD pos{ 0, (finalRow < info.dwSize.Y) ? finalRow : static_cast<SHORT>(info.dwSize.Y - 1) };
+            SetConsoleCursorPosition(hStdOut, pos);
+            DWORD written{ 0 };
+            WriteConsoleA(hStdOut, "\n", 1, &written, nullptr);
+        }
+
         DWORD mode = static_cast<DWORD>(mContext);
         SetConsoleMode(hStdOut, mode);
-        mContext = 0;
-        mIsReady = false;
+        mContext  = 0;
+        mIsReady  = false;
     }
 }
 
 void Console::_os_output_text(Console::Coord pos, const String& text) const
 {
     Lock lock(mLock);
-
-    DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleCursorPosition(hStdOut, COORD{static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY)});
-    WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, nullptr);
-    WriteConsoleA(hStdOut, text.as_string(), static_cast<DWORD>(text.length()), &written, nullptr);
+    DWORD len = static_cast<DWORD>(text.length());
+    _write_at(hStdOut, static_cast<SHORT>(pos.posX), static_cast<SHORT>(pos.posY),
+              text.as_string(), len);
+    // _write_at uses WriteConsoleOutputCharacterA which does NOT move the visible
+    // cursor — the cursor stays wherever gets_s/fgets left it (input prompt).
+    // Do NOT call SetConsoleCursorPosition here: doing so would jump the cursor
+    // to mSavedPos.posX/posY on EVERY background update and cause visible flicker.
+    if (static_cast<int32_t>(pos.posY) > mMaxUsedRow)
+    {
+        mMaxUsedRow = static_cast<int32_t>(pos.posY);
+    }
 }
 
 void Console::_os_output_text(Console::Coord pos, std::string_view text) const
 {
     Lock lock(mLock);
-
-    DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleCursorPosition(hStdOut, COORD{ static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) });
-    WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, nullptr);
-    WriteConsoleA(hStdOut, text.data(), static_cast<DWORD>(text.length()), &written, nullptr);
+    DWORD len = static_cast<DWORD>(text.length());
+    _write_at(hStdOut, static_cast<SHORT>(pos.posX), static_cast<SHORT>(pos.posY),
+              text.data(), len);
+    // Same as the String overload above — do NOT restore cursor here.
+    if (static_cast<int32_t>(pos.posY) > mMaxUsedRow)
+    {
+        mMaxUsedRow = static_cast<int32_t>(pos.posY);
+    }
 }
 
 void Console::_os_output_text(const String& text) const
@@ -165,6 +211,9 @@ void Console::_os_set_cursor_cur_position(Console::Coord pos) const
 {
     Lock lock(mLock);
 
+    // Track in software so _os_output_text can restore here without a DSR query,
+    // and so _os_restore_cursor_position returns to the correct position.
+    mSavedPos = { static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) };
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleCursorPosition(hStdOut, COORD{ static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) });
 }
@@ -184,30 +233,61 @@ bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 
 void Console::_os_refresh_screen() const
 {
-    Lock lock(mLock);
-
-    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    FlushConsoleInputBuffer(hStdOut);
+    // WriteConsoleOutputCharacterA output is immediately visible.
+    // No additional flush is needed for the output buffer.
 }
 
 void Console::_os_clear_line() const
 {
     Lock lock(mLock);
-
-    DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, nullptr);
+    CONSOLE_SCREEN_BUFFER_INFO info{};
+    if (GetConsoleScreenBufferInfo(hStdOut, &info))
+    {
+        // Clear from cursor position to the end of the line (matching the ANSI and
+        // ncurses backends and the documented behavior in Console.hpp).
+        DWORD filled{ 0 };
+        const COORD curPos = info.dwCursorPosition;
+        const DWORD clearLen = static_cast<DWORD>(info.dwSize.X - curPos.X);
+        FillConsoleOutputCharacterA(hStdOut, ' ', clearLen, curPos, &filled);
+        FillConsoleOutputAttribute(hStdOut, info.wAttributes, clearLen, curPos, &filled);
+    }
+}
+
+void Console::_os_clear_line_at_position(Console::Coord pos) const
+{
+    Lock lock(mLock);
+    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO info{};
+    if (GetConsoleScreenBufferInfo(hStdOut, &info))
+    {
+        // Clear the row at 'pos' without touching the OS cursor.
+        // FillConsoleOutputCharacterA writes at the given COORD directly.
+        // Calling SetConsoleCursorPosition() is deliberately avoided: the input
+        // thread may be running gets_s() concurrently and Windows echoes typed
+        // characters at whatever the OS cursor position is.  Moving it to a
+        // data row causes the "cursor jump" symptom when the user types.
+        const COORD writePos{ static_cast<SHORT>(pos.posX), static_cast<SHORT>(pos.posY) };
+        const DWORD clearLen = static_cast<DWORD>(info.dwSize.X - pos.posX);
+        DWORD filled{ 0 };
+        FillConsoleOutputCharacterA(hStdOut, ' ', clearLen, writePos, &filled);
+        FillConsoleOutputAttribute(hStdOut, info.wAttributes, clearLen, writePos, &filled);
+    }
 }
 
 void Console::_os_clear_screen() const
 {
     Lock lock(mLock);
-
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    if (hStdOut != nullptr)
+    CONSOLE_SCREEN_BUFFER_INFO info{};
+    if ((hStdOut != nullptr) && GetConsoleScreenBufferInfo(hStdOut, &info))
     {
-        DWORD written = 0;
-        WriteConsoleA(hStdOut, CMD_CLEAR_SCREEN.data(), static_cast<DWORD>(CMD_CLEAR_SCREEN.length()), &written, nullptr);
+        DWORD cells = static_cast<DWORD>(info.dwSize.X) * static_cast<DWORD>(info.dwSize.Y);
+        DWORD filled{ 0 };
+        COORD origin{ 0, 0 };
+        FillConsoleOutputCharacterA(hStdOut, ' ', cells, origin, &filled);
+        FillConsoleOutputAttribute(hStdOut, info.wAttributes, cells, origin, &filled);
+        SetConsoleCursorPosition(hStdOut, origin);
     }
 }
 
@@ -218,34 +298,42 @@ bool Console::_os_read_input_list(const char* format, va_list varList) const
 
 void Console::_os_save_cursor_position() const
 {
-    Lock lock(mLock);
-    DWORD written = 0;
-    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    WriteConsoleA(hStdOut, CMD_SAVE_CURSOR.data(), static_cast<DWORD>(CMD_SAVE_CURSOR.length()), &written, nullptr);
+    // mSavedPos is the software-tracked input-prompt anchor maintained by
+    // _os_set_cursor_cur_position().  Do NOT read the OS cursor here — background
+    // _os_output_text calls restore it to mSavedPos after every write, so the
+    // OS cursor is already there.  Overwriting mSavedPos with the OS value would
+    // corrupt the anchor.  This matches the ANSI backend behavior.
 }
 
 void Console::_os_restore_cursor_position() const
 {
     Lock lock(mLock);
-    DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    WriteConsoleA(hStdOut, CMD_RESTORE_CURSOR.data(), static_cast<DWORD>(CMD_RESTORE_CURSOR.length()), &written, nullptr);
+    SetConsoleCursorPosition(hStdOut, COORD{ static_cast<SHORT>(mSavedPos.posX), static_cast<SHORT>(mSavedPos.posY) });
 }
 
 void Console::_os_move_cursor_one_line_up() const
 {
     Lock lock(mLock);
-    DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    WriteConsoleA(hStdOut, CMD_ONE_LINE_UP.data(), static_cast<DWORD>(CMD_ONE_LINE_UP.length()), &written, nullptr);
+    CONSOLE_SCREEN_BUFFER_INFO info{};
+    if (GetConsoleScreenBufferInfo(hStdOut, &info) && info.dwCursorPosition.Y > 0)
+    {
+        COORD pos{ 0, static_cast<SHORT>(info.dwCursorPosition.Y - 1) };
+        SetConsoleCursorPosition(hStdOut, pos);
+    }
 }
 
 void Console::_os_move_cursor_one_line_down() const
 {
     Lock lock(mLock);
-    DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    WriteConsoleA(hStdOut, CMD_ONE_LINE_DOWN.data(), static_cast<DWORD>(CMD_ONE_LINE_DOWN.length()), &written, nullptr);
+    CONSOLE_SCREEN_BUFFER_INFO info{};
+    if (GetConsoleScreenBufferInfo(hStdOut, &info))
+    {
+        COORD pos{ 0, static_cast<SHORT>(info.dwCursorPosition.Y + 1) };
+        SetConsoleCursorPosition(hStdOut, pos);
+    }
 }
 
 } // namespace areg::ext

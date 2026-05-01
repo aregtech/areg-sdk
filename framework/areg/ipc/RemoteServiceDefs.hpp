@@ -329,120 +329,85 @@ AREG_IMPLEMENT_STREAMABLE(areg::RemoteConnectionState);
 
 inline const areg::RawMessage& areg::message_hello_server() noexcept
 {
-    static constexpr areg::RawMessage _messageHelloServer
-    {
-        {
-            {   /*rbhBufHeader*/
-                  sizeof(uint8_t)               // biLength
-                , sizeof(areg::MessageHeader)   // biOffset
-                , areg::BufferType::Remote      // biBufType
-                , 0                             // biUsed
-            }
-            , areg::COOKIE_ROUTER               // rbhTarget
-            , areg::INVALID_VALUE               // rbhChecksum
-            , areg::INVALID_VALUE               // rbhSource
-            , static_cast<uint32_t>(areg::FuncIdRange::SystemServiceConnect) // rbhMessageId
-            , areg::MESSAGE_SUCCESS             // rbhResult
-            , areg::SEQUENCE_NUMBER_NOTIFY      // rbhSequenceNr
-        }
-        , {static_cast<char>(0)}                // rbData
-    };
+    static constexpr const areg::RawMessage _messageHelloServer
+        ( sizeof(uint8_t)                                                           // biLength
+        , sizeof(areg::MessageHeader)                                               // biOffset
+        , areg::BufferType::Remote                                                  // biBufType
+        , 0u                                                                        // biUsed
+        , areg::COOKIE_ROUTER                                                       // rbhTarget
+        , areg::INVALID_VALUE                                                       // rbhChecksum
+        , static_cast<ITEM_ID>(areg::INVALID_VALUE)                                 // rbhSource
+        , static_cast<uint32_t>(areg::FuncIdRange::SystemServiceConnect)            // rbhMessageId
+        , areg::MESSAGE_SUCCESS                                                     // rbhResult
+        , areg::SEQUENCE_NUMBER_NOTIFY);                                            // rbhSequenceNr
 
     return _messageHelloServer;
 }
 
 inline const areg::RawMessage& areg::message_bye_server() noexcept
 {
-    static constexpr areg::RawMessage _messageByeServer
-    {
-        {
-            {   /*rbhBufHeader*/
-                  sizeof(uint8_t)               // biLength
-                , sizeof(areg::MessageHeader)   // biOffset
-                , areg::BufferType::Remote      // biBufType
-                , 0                             // biUsed
-            }
-            , areg::COOKIE_ROUTER               // rbhTarget
-            , areg::INVALID_VALUE               // rbhChecksum
-            , areg::INVALID_VALUE               // rbhSource
-            , static_cast<uint32_t>(areg::FuncIdRange::SystemServiceDisconnect) // rbhMessageId
-            , areg::MESSAGE_SUCCESS             // rbhResult
-            , areg::SEQUENCE_NUMBER_ANY         // rbhSequenceNr
-        }
-        , {static_cast<char>(0)}
-    };
+    static constexpr const areg::RawMessage _messageByeServer
+        ( sizeof(uint8_t)                                                           // biLength
+        , sizeof(areg::MessageHeader)                                               // biOffset
+        , areg::BufferType::Remote                                                  // biBufType
+        , 0u                                                                        // biUsed
+        , areg::COOKIE_ROUTER                                                       // rbhTarget
+        , areg::INVALID_VALUE                                                       // rbhChecksum
+        , static_cast<ITEM_ID>(areg::INVALID_VALUE)                                 // rbhSource
+        , static_cast<uint32_t>(areg::FuncIdRange::SystemServiceDisconnect)         // rbhMessageId
+        , areg::MESSAGE_SUCCESS                                                     // rbhResult
+        , areg::SEQUENCE_NUMBER_ANY);                                               // rbhSequenceNr
 
     return _messageByeServer;
 }
 
 inline const areg::RawMessage& areg::notify_client_connection() noexcept
 {
-    static constexpr areg::RawMessage _messageAcceptClient
-    {
-        {
-            {   /*rbhBufHeader*/
-                  sizeof(uint8_t)               // biLength
-                , sizeof(areg::MessageHeader)   // biOffset
-                , areg::BufferType::Remote      // biBufType
-                , 0                             // biUsed
-            }
-            , areg::INVALID_VALUE               // rbhTarget
-            , areg::INVALID_VALUE               // rbhChecksum
-            , areg::COOKIE_ROUTER               // rbhSource
-            , static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyConnection)   // rbhMessageId
-            , areg::MESSAGE_SUCCESS             // rbhResult
-            , areg::SEQUENCE_NUMBER_NOTIFY      // rbhSequenceNr
-        }
-        , {static_cast<char>(0)}
-    };
+    static constexpr const areg::RawMessage _messageAcceptClient
+        ( sizeof(uint8_t)                                                           // biLength
+        , sizeof(areg::MessageHeader)                                               // biOffset
+        , areg::BufferType::Remote                                                  // biBufType
+        , 0u                                                                        // biUsed
+        , static_cast<ITEM_ID>(areg::INVALID_VALUE)                                 // rbhTarget
+        , areg::INVALID_VALUE                                                       // rbhChecksum
+        , areg::COOKIE_ROUTER                                                       // rbhSource
+        , static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyConnection)   // rbhMessageId
+        , areg::MESSAGE_SUCCESS                                                     // rbhResult
+        , areg::SEQUENCE_NUMBER_NOTIFY);                                            // rbhSequenceNr
 
     return _messageAcceptClient;
 }
 
 inline const areg::RawMessage& areg::message_register_service() noexcept
 {
-    static constexpr areg::RawMessage _messageRegisterService
-    {
-        {
-            {   /*rbhBufHeader*/
-                  sizeof(uint8_t)               // biLength
-                , sizeof(areg::MessageHeader)   // biOffset
-                , areg::BufferType::Remote      // biBufType
-                , 0                             // biUsed
-            }
-            , areg::COOKIE_ROUTER               // rbhTarget
-            , areg::INVALID_VALUE               // rbhChecksum
-            , areg::INVALID_VALUE               // rbhSource
-            , static_cast<uint32_t>(areg::FuncIdRange::SystemServiceRequestRegister) // rbhMessageId
-            , areg::MESSAGE_SUCCESS             // rbhResult
-            , areg::SEQUENCE_NUMBER_NOTIFY      // rbhSequenceNr
-        }
-        , {static_cast<char>(0)}
-    };
+    static constexpr const areg::RawMessage _messageRegisterService
+        ( sizeof(uint8_t)                                                           // biLength
+        , sizeof(areg::MessageHeader)                                               // biOffset
+        , areg::BufferType::Remote                                                  // biBufType
+        , 0u                                                                        // biUsed
+        , areg::COOKIE_ROUTER                                                       // rbhTarget
+        , areg::INVALID_VALUE                                                       // rbhChecksum
+        , static_cast<ITEM_ID>(areg::INVALID_VALUE)                                 // rbhSource
+        , static_cast<uint32_t>(areg::FuncIdRange::SystemServiceRequestRegister)    // rbhMessageId
+        , areg::MESSAGE_SUCCESS                                                     // rbhResult
+        , areg::SEQUENCE_NUMBER_NOTIFY);                                            // rbhSequenceNr
 
     return _messageRegisterService;
 }
 
 inline const areg::RawMessage& areg::message_query_instances() noexcept
 {
-    static constexpr areg::RawMessage _messageQueryService
-    {
-        {
-            {   /*rbhBufHeader*/
-                  sizeof(uint8_t)               // biLength
-                , sizeof(areg::MessageHeader)   // biOffset
-                , areg::BufferType::Remote      // biBufType
-                , 0                             // biUsed
-            }
-            , areg::INVALID_VALUE               // rbhTarget
-            , areg::INVALID_VALUE               // rbhChecksum
-            , areg::INVALID_VALUE               // rbhSource
-            , static_cast<uint32_t>(areg::FuncIdRange::SystemServiceQueryInstances)    // rbhMessageId
-            , areg::MESSAGE_SUCCESS             // rbhResult
-            , areg::SEQUENCE_NUMBER_NOTIFY      // rbhSequenceNr
-        }
-        , {static_cast<char>(0)}
-    };
+    static constexpr const areg::RawMessage _messageQueryService
+        ( sizeof(uint8_t)                                                           // biLength
+        , sizeof(areg::MessageHeader)                                               // biOffset
+        , areg::BufferType::Remote                                                  // biBufType
+        , 0u                                                                        // biUsed
+        , static_cast<ITEM_ID>(areg::INVALID_VALUE)                                 // rbhTarget
+        , areg::INVALID_VALUE                                                       // rbhChecksum
+        , static_cast<ITEM_ID>(areg::INVALID_VALUE)                                 // rbhSource
+        , static_cast<uint32_t>(areg::FuncIdRange::SystemServiceQueryInstances)     // rbhMessageId
+        , areg::MESSAGE_SUCCESS                                                     // rbhResult
+        , areg::SEQUENCE_NUMBER_NOTIFY);                                            // rbhSequenceNr
 
     return _messageQueryService;
 }
@@ -450,48 +415,34 @@ inline const areg::RawMessage& areg::message_query_instances() noexcept
 
 inline const areg::RawMessage& areg::message_notify_instances() noexcept
 {
-    static constexpr areg::RawMessage _messageQueryService
-    {
-        {
-            {   /*rbhBufHeader*/
-                  sizeof(uint8_t)               // biLength
-                , sizeof(areg::MessageHeader)   // biOffset
-                , areg::BufferType::Remote      // biBufType
-                , 0                             // biUsed
-            }
-            , areg::COOKIE_ROUTER               // rbhTarget
-            , areg::INVALID_VALUE               // rbhChecksum
-            , areg::INVALID_VALUE               // rbhSource
-            , static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyInstances)    // rbhMessageId
-            , areg::MESSAGE_SUCCESS             // rbhResult
-            , areg::SEQUENCE_NUMBER_NOTIFY      // rbhSequenceNr
-        }
-        , {static_cast<char>(0)}
-    };
+    static constexpr const areg::RawMessage _messageQueryService
+        ( sizeof(uint8_t)                                                           // biLength
+        , sizeof(areg::MessageHeader)                                               // biOffset
+        , areg::BufferType::Remote                                                  // biBufType
+        , 0u                                                                        // biUsed
+        , areg::COOKIE_ROUTER                                                       // rbhTarget
+        , areg::INVALID_VALUE                                                       // rbhChecksum
+        , static_cast<ITEM_ID>(areg::INVALID_VALUE)                                 // rbhSource
+        , static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyInstances)    // rbhMessageId
+        , areg::MESSAGE_SUCCESS                                                     // rbhResult
+        , areg::SEQUENCE_NUMBER_NOTIFY);                                            // rbhSequenceNr
 
     return _messageQueryService;
 }
 
 inline const areg::RawMessage& areg::message_register_notify() noexcept
 {
-    static constexpr areg::RawMessage _messageRegisterNotify
-    {
-        {
-            {   /*rbhBufHeader*/
-                  sizeof(uint8_t)               // biLength
-                , sizeof(areg::MessageHeader)   // biOffset
-                , areg::BufferType::Remote      // biBufType
-                , 0                             // biUsed
-            }
-            , areg::INVALID_VALUE               // rbhTarget
-            , areg::INVALID_VALUE               // rbhChecksum
-            , areg::COOKIE_ROUTER               // rbhSource
-            , static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyRegister) // rbhMessageId
-            , areg::MESSAGE_SUCCESS             // rbhResult
-            , areg::SEQUENCE_NUMBER_NOTIFY      // rbhSequenceNr
-        }
-        , {static_cast<char>(0)}
-    };
+    static constexpr const areg::RawMessage _messageRegisterNotify
+        ( sizeof(uint8_t)                                                           // biLength
+        , sizeof(areg::MessageHeader)                                               // biOffset
+        , areg::BufferType::Remote                                                  // biBufType
+        , 0u                                                                        // biUsed
+        , static_cast<ITEM_ID>(areg::INVALID_VALUE)                                 // rbhTarget
+        , areg::INVALID_VALUE                                                       // rbhChecksum
+        , areg::COOKIE_ROUTER                                                       // rbhSource
+        , static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyRegister)     // rbhMessageId
+        , areg::MESSAGE_SUCCESS                                                     // rbhResult
+        , areg::SEQUENCE_NUMBER_NOTIFY);                                            // rbhSequenceNr
 
     return _messageRegisterNotify;
 }

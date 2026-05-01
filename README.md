@@ -103,18 +103,18 @@ Integrated distributed logging with visual analysis. Per-method execution timing
 
 ### Areg SDK vs. Alternatives
 
-| Feature               | Areg SDK                        | gRPC / DDS / ZeroMQ                                                                                                                                                                                                                                      |
-| --------------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Setup Complexity**  | ✅ Automated, zero boilerplate   | ⚠️ Manual configuration, [verbose setup](https://www.innoq.com/en/blog/2024/06/grpc/#whataresomechallengesofworkingwithgrpc)                                                                                                                              |
-| **Threading**         | ✅ Automated threading           | ⚠️ Manual threading and synchronization                                                                                                                                                                                                                   |
-| **Code Generation**   | ✅ Full ORPC automation          | ⚠️ [Stubs only](https://grpc.io/docs/what-is-grpc/introduction/#overview), manual dispatch                                                                                                                                                                |
+| Feature               | Areg SDK                         | gRPC / DDS / ZeroMQ                                                                                                                                                                                                                                         |
+| --------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Setup Complexity**  | ✅ Automated, zero boilerplate   | ⚠️ Manual configuration, [verbose setup](https://www.innoq.com/en/blog/2024/06/grpc/#whataresomechallengesofworkingwithgrpc)                                                                                                                               |
+| **Threading**         | ✅ Automated threading           | ⚠️ Manual threading and synchronization                                                                                                                                                                                                                    |
+| **Code Generation**   | ✅ Full ORPC automation          | ⚠️ [Stubs only](https://grpc.io/docs/what-is-grpc/introduction/#overview), manual dispatch                                                                                                                                                                 |
 | **Service Discovery** | ✅ Built-in mesh management      | ✅ DDS: [native](https://opendds.readthedocs.io/en/latest-release/devguide/introduction_to_dds.html#discovery-matching-and-association), ⚠️ gRPC/ZeroMQ: [external](https://stackoverflow.com/questions/59398556/grpc-equivalent-of-wcf-service-discovery) |
 | **Fault Recovery**    | ✅ Watchdog auto-restart         | ✅ DDS: [QoS policies](https://opendds.readthedocs.io/en/latest-release/devguide/quality_of_service.html), ⚠️ gRPC/ZeroMQ: [manual](https://grpc.io/docs/guides/retry/)                                                                                    |
 | **Request-Reply**     | ✅ Native Object RPC             | ✅ gRPC: [RPC calls](https://grpc.io/docs/what-is-grpc/core-concepts/#overview), ⚠️ DDS/ZeroMQ: [topic/pattern](https://zguide.zeromq.org/docs/chapter3/)                                                                                                  |
 | **Pub/Sub**           | ✅ Native Attributes             | ✅ DDS: [topics](https://opendds.readthedocs.io/en/latest-release/devguide/built_in_topics.html), ⚠️ gRPC/ZeroMQ: add-ons                                                                                                                                  |
-| **API Consistency**   | ✅ Identical for threads and IPC | ⚠️ Different APIs for local vs. remote                                                                                                                                                                                                                    |
-| **Logging System**    | ✅ Distributed logs + viewer     | ⚠️ [Vendor-specific](https://community.rti.com/static/documentation/connext-dds/current/doc/manuals/addon_products/observability/telemetry_data/logs.html) or external tools                                                                              |
-| **Developer Speed**   | ✅ Faster via automation         | ⚠️ Slower, more boilerplate                                                                                                                                                                                                                               |
+| **API Consistency**   | ✅ Identical for threads and IPC | ⚠️ Different APIs for local vs. remote                                                                                                                                                                                                                     |
+| **Logging System**    | ✅ Distributed logs + viewer     | ⚠️ [Vendor-specific](https://community.rti.com/static/documentation/connext-dds/current/doc/manuals/addon_products/observability/telemetry_data/logs.html) or external tools                                                                               |
+| **Developer Speed**   | ✅ Faster via automation         | ⚠️ Slower, more boilerplate                                                                                                                                                                                                                                |
 
 🔹 **Key Differentiators:**
 - **Complete automation** - Not just transport, but threading, dispatch, and lifecycle
@@ -123,13 +123,21 @@ Integrated distributed logging with visual analysis. Per-method execution timing
 - **Integrated stack** - Framework + Router + Tools + Logging in one cohesive SDK
 
 > [!NOTE]
-> The framework's IPC transport is built for production workloads, not toy demos.
-> A benchmark streaming continuous bitmap data between processes on a mobile-class
-> CPU machine sustains **~1.5 GB/s on Windows** and **~2.5 GB/s under Linux** -
-> with full service discovery, type-safe messaging, and automatic reconnection active.  
-> See [`23_pubdatarate`](examples/23_pubdatarate/) for the setup and methodology:   
-> On Linux at ~2.6 GB/s the consumer pipeline saturates and memory grows unbounded. 
-> This example is a practical tool for finding the throughput ceiling of your own hardware.
+> **Benchmark — IPC throughput between processes on mobile-class CPUs:**
+> 
+> | Platform     | CPU Type         | ~3 MB data   | ~3 KB msg/s | ~0.5 KB msg/s |
+> |--------------|------------------|--------------|-------------|---------------|
+> | Windows 11   | i7-13700H (DDR4) | 1.7–2.1 GB/s | 120–135K    | 150–160K      |
+> | WSL2 Ubuntu  | i7-13700H (DDR4) | 3.8–4.0 GB/s | 170–190K    | 200–220K      |
+> | macOS native | M4 Pro (LPDDR5)  | ~7.0 GB/s    | 240–290K    | TBD           |
+> 
+> **Configuration:** 1:1 (single provider → single consumer) via `mtrouter` on TCP `localhost` socket - no shared memory or kernel bypass.
+>
+> **Full stack included:** Service discovery, type-safe serialization, automatic reconnection, threading dispatch, message framing - this is **application throughput**, not raw transport.
+>
+> **Real-world applicability:** Software pipeline layer for scientific imaging (laser microscopy, X-ray, electron microscopy) and industrial machine vision - covering 99% of use cases on standard laptops.
+>
+> 📊 Measure your own hardware: Run [`23_pubdatarate`](examples/23_pubdatarate/) — see the [example README](examples/23_pubdatarate/ReadMe.md) for benchmark recipes and platform results.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -203,10 +211,12 @@ See [CMake Configuration Guide](./docs/wiki/02d-cmake-config.md) for detailed se
 
 ### Quick Build
 
+```bash
 git clone https://github.com/aregtech/areg-sdk.git
 cd areg-sdk
 cmake -B build
 cmake --build build -j20
+```
 
 > [!TIP]
 > These commands work in Linux or macOS Terminal, Windows CMD, or PowerShell.
@@ -218,6 +228,7 @@ cmake --build build -j20
 The [`01_minimalrpc`](./examples/01_minimalrpc/) example demonstrates automated multithreading:
 
 **Example location after build:**
+```bash
 # Linux:
 ./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/01_minimalrpc
 
@@ -226,6 +237,7 @@ The [`01_minimalrpc`](./examples/01_minimalrpc/) example demonstrates automated 
 
 # Windows (adjust for compiler):
 .\product\build\msvc-cl\windows-64-amd64-release-shared\bin\01_minimalrpc.exe
+```
 
 **What happens:**
 - Service **Consumer** and **Provider** run in separate threads
@@ -233,13 +245,16 @@ The [`01_minimalrpc`](./examples/01_minimalrpc/) example demonstrates automated 
 - Communication is fully automated with zero manual wiring
 
 **Message flow:**
+```
 🟢 main() → 🏗 load model → 🔗 auto-connect → 📤 Consumer request → 🖨 Provider prints → ✅ exit
+```
 
 ---
 
 ### Understanding the Code
 
 **1. Service Provider (responds to requests):**
+```cpp
 class ServiceProvider final : public Component, protected HelloServiceProviderBase {
 public:
   ServiceProvider(const areg::ComponentEntry& entry, ComponentThread& owner)
@@ -250,8 +265,10 @@ public:
     Application::signal_quit();
   }
 };
+```
 
 **2. Service Consumer (initiates requests):**
+```cpp
 class ServiceConsumer final : public Component, protected HelloServiceConsumerBase {
 public:
   ServiceConsumer(const areg::ComponentEntry& entry, ComponentThread& owner)
@@ -265,8 +282,10 @@ public:
     return true;
   }
 };
+```
 
 **3. Model (defines threads and dependencies):**
+```cpp
 BEGIN_MODEL("ServiceModel")
   BEGIN_REGISTER_THREAD("Thread1")
     BEGIN_REGISTER_COMPONENT("ServiceProvider", ServiceProvider)
@@ -280,8 +299,10 @@ BEGIN_MODEL("ServiceModel")
     END_REGISTER_COMPONENT("ServiceClient")
   END_REGISTER_THREAD("Thread2")
 END_MODEL("ServiceModel")
+```
 
 **4. Main function (loads model and runs):**
+```cpp
 int main() {
   Application::setup();
   Application::load_model("ServiceModel");
@@ -289,6 +310,7 @@ int main() {
   Application::release();
   return 0;
 }
+```
 
 📄 **Full source:** [examples/01_minimalrpc/src/main.cpp](./examples/01_minimalrpc/src/main.cpp)
 
@@ -301,7 +323,7 @@ Follow this progression to master Areg SDK:
 1. **[01_minimalrpc](examples/01_minimalrpc/)** - Start here: minimal RPC between components
 2. **[02_minimalipc](examples/02_minimalipc/)** - IPC across processes (**requires `mtrouter`**)
 3. **[03_helloservice](examples/03_helloservice/)** - Location transparency: same code, different deployment
-4. **[23_pubdatarate](examples/23_pubdatarate/)** - High-throughput benchmark (1-2.5 GB/sec on `localhost`)
+4. **[23_pubdatarate](examples/23_pubdatarate/)** - High-throughput benchmark (up to 4 GB/s on `localhost`, platform-dependent)
 5. **[More Examples](examples/README.md)** - Advanced patterns and features
 6. **[Areg and Edge AI](https://github.com/aregtech/areg-edgeai)** - Real-world AI integration
 
@@ -320,7 +342,7 @@ Use the project setup script to bootstrap a new Areg-based application:
 ```
 
 **On Windows:**
-```powershell
+```bash
 .\areg-sdk\tools\setup-project.bat
 ```
 
@@ -331,9 +353,11 @@ The script will:
 - Create "Hello Service" example as starting point
 
 After generation, build with:
+```bash
 cd <your_project>
 cmake -B build
 cmake --build build -j20
+```
 
 For multiprocess projects, ensure `mtrouter` is running to enable Service Consumer-Provider communication.
 
@@ -356,14 +380,14 @@ For multiprocess projects, ensure `mtrouter` is running to enable Service Consum
 
 ### Modules Overview
 
-| Module                                                                      | Purpose                                                                              | When Required      |
-| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------ |
-| **[Areg Library](./docs/HelloService.md)**<br/>(`areg`)                     | Core framework automating Object RPC, threading,<br/>IPC routing, and fault recovery | ✅ Always           |
-| **[Code Generator](./docs/wiki/03a-code-generator.md)**<br/>(`codegen.jar`) | Generates service stubs from interface definitions,<br/>eliminating boilerplate      | ✅ Build-time       |
+| Module                                                                      | Purpose                                                                              | When Required        |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | -------------------- |
+| **[Areg Library](./docs/HelloService.md)**<br/>(`areg`)                     | Core framework automating Object RPC, threading,<br/>IPC routing, and fault recovery | ✅ Always            |
+| **[Code Generator](./docs/wiki/03a-code-generator.md)**<br/>(`codegen.jar`) | Generates service stubs from interface definitions,<br/>eliminating boilerplate      | ✅ Build-time        |
 | **[Multitarget Router](./docs/wiki/05a-mtrouter.md)**<br/>(`mtrouter`)      | Central message router for inter-process and<br/>network communication               | ⚠️ IPC/Network only |
-| **[Log Collector](./docs/wiki/04d-logcollector.md)**<br/>(`logcollector`)   | Aggregates distributed logs for monitoring<br/>and debugging                         | ❌ Optional         |
-| **[Lusan GUI](https://github.com/aregtech/areg-sdk-tools)**<br/>(`lusan`)   | Visual service designer and log analysis tool                                        | ❌ Optional         |
-| **[Examples](./examples/README.md)**                                        | Sample projects demonstrating SDK features                                           | ❌ Optional         |
+| **[Log Collector](./docs/wiki/04d-logcollector.md)**<br/>(`logcollector`)   | Aggregates distributed logs for monitoring<br/>and debugging                         | ❌ Optional          |
+| **[Lusan GUI](https://github.com/aregtech/areg-sdk-tools)**<br/>(`lusan`)   | Visual service designer and log analysis tool                                        | ❌ Optional          |
+| **[Examples](./examples/README.md)**                                        | Sample projects demonstrating SDK features                                           | ❌ Optional          |
 
 ---
 
@@ -378,7 +402,7 @@ Areg's **Object RPC (ORPC)** model treats services as **stateful objects** rathe
 - **Publish-Subscribe** - Automatic attribute updates across all subscribers
 - **Event Broadcasting** - Asynchronous notifications to interested parties
 
-This architecture supports **multithreading**, **multiprocessing**, and **multi-device** systems with consistent low-latency characteristics.
+This architecture supports **multithreading**, **multiprocessing**, and **multi-device** systems with a consistent programming model across all deployment modes.
 
 ---
 

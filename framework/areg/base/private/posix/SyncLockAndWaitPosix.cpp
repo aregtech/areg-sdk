@@ -207,10 +207,6 @@ int32_t SyncLockAndWaitPosix::event_signaled( WaitablePosix & syncWaitable ) noe
                 lockAndWait->mFiredEntry.store(fired, std::memory_order_release);
 
                 // Notify the waiter while the global lock is still held.
-                // This guarantees the SyncLockAndWaitPosix object is alive:
-                // the waiter's destructor calls remove_resource_object()
-                // under the same global lock, so the object cannot be
-                // destroyed while we hold the lock here.
                 lockAndWait->_notify_event();
             }
 #ifdef  DEBUG

@@ -42,6 +42,7 @@ DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, failed_send_messa
 DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, failed_receive_message);
 
 DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, connection_failure);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, do_accept_client_pool);
 
 DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, process_received_message);
 
@@ -54,7 +55,8 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
                                                 , uint32_t connectTypes
                                                 , uint32_t stackSizeKb
                                                 , const String & dispatcher
-                                                , ServiceCommunicationBase::ConnectionPolicy behavior /*= ServiceCommunicationBase::ConnectionPolicy::Accept*/ )
+                                                , ServiceCommunicationBase::ConnectionPolicy behavior /*= ServiceCommunicationBase::ConnectionPolicy::Accept*/
+                                                , uint32_t numPairs /*= 0u*/ )
     : RemoteMessageHandler  ( )
     , ConnectionConsumer    ( )
     , ConnectionProvider    ( )
@@ -65,11 +67,14 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
     , mConnectBehavior  ( behavior )
     , mService          ( service )
     , mConnectTypes     ( connectTypes )
+    , mNumPairs         ( numPairs )
     , mServerConnection ( serviceId )
     , mTimerConnect     ( static_cast<TimerConsumer &>(mTimerConsumer), areg::SERVER_CONNECT_TIMER_NAME.data( ) )
     , mThreadSend       ( static_cast<RemoteMessageHandler&>(self()), mServerConnection )
     , mThreadReceive    ( static_cast<ConnectionHandler&>(self()), static_cast<RemoteMessageHandler&>(self()), mServerConnection )
-    , mDataRateHelper   ( mThreadSend, mThreadReceive, areg::ext::DEFAULT_VERBOSE )
+    , mClientPairs      ( )
+    , mShuttingDown     ( false )
+    , mDataRateHelper   ( self() , areg::ext::DEFAULT_VERBOSE)
     , mWhiteList        ( )
     , mBlackList        ( )
     , mEventConsumer    ( self() )
@@ -77,7 +82,30 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
     , mInstanceMap      (  )
     , mEventSendStop    ( false, false )
     , mLock             ( )
+    , mSendFn           ( )
+    , mSendMoveFn       ( )
+    , mAcceptFn         ( )
+    , mLostFn           ( )
 {
+    update_dispatch_mode();
+}
+
+void ServiceCommunicationBase::update_dispatch_mode()
+{
+    if (mNumPairs == 0)
+    {
+        mSendFn     = [this](const RemoteMessage & d, areg::EventPriority p) { return do_send_shared(d, p); };
+        mSendMoveFn = [this](RemoteMessage && d,       areg::EventPriority p) { return do_send_shared(std::move(d), p); };
+        mAcceptFn   = [this](areg::SocketAccepted & s)                        { return do_accept_client_shared(s); };
+        mLostFn     = [this](ITEM_ID c)                                       { do_client_lost_shared(c); };
+    }
+    else
+    {
+        mSendFn     = [this](const RemoteMessage & d, areg::EventPriority p) { return do_send_pool(d, p); };
+        mSendMoveFn = [this](RemoteMessage && d,       areg::EventPriority p) { return do_send_pool(std::move(d), p); };
+        mAcceptFn   = [this](areg::SocketAccepted & s)                        { return do_accept_client_pool(s); };
+        mLostFn     = [this](ITEM_ID c)                                       { do_client_lost_pool(c); };
+    }
 }
 
 void ServiceCommunicationBase::add_instance(const ITEM_ID & cookie, const areg::ConnectedInstance & instance)
@@ -112,6 +140,14 @@ bool ServiceCommunicationBase::setup_connection_data(areg::RemoteServiceKind ser
                 uint16_t port{ config.connection_port() };
                 result = mServerConnection.set_address(address, port);
                 mServerConnection.set_socket_buffers(config.socket_send_buffer(), config.socket_recv_buffer());
+                mServerConnection.set_zerocopy_wanted(config.zerocopy_enabled());
+
+                const uint32_t configPairs{ config.pool_pairs() };
+                if (configPairs != mNumPairs)
+                {
+                    mNumPairs = configPairs;
+                    update_dispatch_mode();
+                }
             }
         }
     }
@@ -220,6 +256,15 @@ bool ServiceCommunicationBase::can_accept_connection(const SocketAccepted & clie
 void ServiceCommunicationBase::connection_lost( SocketAccepted & clientSocket )
 {
     LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, connection_lost );
+
+    // Suppress spurious callbacks during deliberate shutdown (stop_connection() closes
+    // all sockets which wakes blocked recv threads, causing them to call this method).
+    if ( mShuttingDown.load(std::memory_order_relaxed) )
+    {
+        LOG_DBG("Ignoring connection_lost during shutdown for socket [ %u ]", static_cast<uint32_t>(clientSocket.handle()));
+        return;
+    }
+
     const ITEM_ID & cookie { mServerConnection.cookie(clientSocket) };
     const ITEM_ID & channel{ mServerConnection.channel_id() };
 
@@ -229,12 +274,15 @@ void ServiceCommunicationBase::connection_lost( SocketAccepted & clientSocket )
                 , clientSocket.address().host_address().as_string()
                 , clientSocket.address().host_port());
 
+    // In pool mode, remove the client from the pool pair's local map and multiplexer
+    // so it stops being monitored.  In shared mode this is a no-op.
     if ( cookie != areg::COOKIE_UNKNOWN )
     {
+        mLostFn(cookie);
         remove_instance(cookie);
         RemoteMessage msgDisconnect = areg::create_disconnect_request(cookie, channel);
         // Use HighPrio so crash-detected disconnects are processed with the same urgency
-        // as graceful disconnects (which process_received_message also dispatches at HighPrio).
+        // as graceful disconnects.
         send_communication_message(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgDisconnect, areg::EventPriority::HighPrio);
     }
 
@@ -259,14 +307,12 @@ void ServiceCommunicationBase::disconnect_services()
 
 void ServiceCommunicationBase::on_reconnect_timer()
 {
-    Lock lock( mLock );
     start_connection( );
 }
 
 void ServiceCommunicationBase::on_service_start()
 {
     LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, on_service_start );
-    Lock lock( mLock );
     mEventSendStop.reset();
     start_connection();
 }
@@ -274,13 +320,7 @@ void ServiceCommunicationBase::on_service_start()
 void ServiceCommunicationBase::on_service_stop()
 {
     LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, on_service_stop);
-
-    do
-    {
-        Lock lock(mLock);
-        stop_connection();
-    } while (false);
-
+    stop_connection();
     mEventSendStop.set_signaled();
 }
 
@@ -320,6 +360,58 @@ bool ServiceCommunicationBase::start_connection()
     if ( mServerConnection.create_socket() )
     {
         LOG_DBG("Created socket [ %d ], going to create send-receive threads", static_cast<uint32_t>(mServerConnection.socket_handle()));
+
+        // Pool mode: pre-start dedicated thread pairs before the global send/receive threads.
+        if ( mNumPairs > 0 )
+        {
+            ASSERT(mClientPairs.empty());
+            mClientPairs.reserve(mNumPairs);
+            bool poolOk = true;
+
+            for ( uint32_t i = 0; i < mNumPairs; ++i )
+            {
+                areg::String sendName;
+                areg::String recvName;
+                sendName.format("AregPoolSend_%u", i);
+                recvName.format("AregPoolRecv_%u", i);
+
+                auto pair = std::make_unique<ClientConnectionPair>(
+                                  static_cast<RemoteMessageHandler&>(self())
+                                , mServerConnection
+                                , mThreadSend
+                                , mThreadReceive
+                                , sendName.as_string()
+                                , recvName.as_string() );
+
+                if ( !pair->start() )
+                {
+                    LOG_ERR("Failed to start pool pair [ %u ], aborting pool creation", i);
+                    poolOk = false;
+                    break;
+                }
+
+                mClientPairs.push_back( std::move(pair) );
+            }
+
+            if ( !poolOk )
+            {
+                // Stop any pairs that started successfully, clear the list, and bail.
+                for ( auto & p : mClientPairs )
+                {
+                    if ( p ) p->stop();
+                }
+
+                mClientPairs.clear();
+                mServerConnection.close_socket();
+
+                LOG_WARN("Remote servicing failed (pool creation), trigger timer with [ %u ] ms timeout to retry", areg::DEFAULT_RETRY_CONNECT_TIMEOUT);
+                mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<DispatcherThread &>(self()), 1);
+                return false;
+            }
+
+            LOG_DBG("Started [ %u ] pool thread pairs successfully", mNumPairs);
+        }
+
         if ( start_send_thread( ) && start_receive_thread( ) )
         {
             result = true;
@@ -328,6 +420,14 @@ bool ServiceCommunicationBase::start_connection()
         else
         {
             LOG_ERR( "Failed to create send-receive threads, cannot communicate. Stop remote service" );
+
+            // Stop any pool pairs that were already started.
+            for ( auto & p : mClientPairs )
+            {
+                if ( p ) p->stop();
+            }
+
+            mClientPairs.clear();
             mServerConnection.close_socket( );
         }
     }
@@ -359,51 +459,204 @@ bool ServiceCommunicationBase::restart_connection()
 void ServiceCommunicationBase::stop_connection()
 {
     LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, stop_connection );
-    LOG_WARN("Stopping remote servicing connection: connected instances [ %u ], send-thread running [ %s ], recv-thread running [ %s ]"
+    LOG_WARN("Stopping remote servicing connection: connected instances [ %u ], send-thread running [ %s ], recv-thread running [ %s ], pool pairs [ %u ]"
                 , mInstanceMap.size()
                 , mThreadSend.is_running() ? "YES" : "NO"
-                , mThreadReceive.is_running() ? "YES" : "NO");
+                , mThreadReceive.is_running() ? "YES" : "NO"
+                , static_cast<uint32_t>(mClientPairs.size()));
 
-    // Signal the receive thread to exit.  It will remain blocked in
-    // epoll_wait() / select() until close_socket() resets the multiplexer.
+    // Set the flag BEFORE closing sockets so connection_lost() callbacks triggered by
+    // the socket interrupts are silently ignored instead of re-enqueueing disconnect work.
+    mShuttingDown.store(true, std::memory_order_release);
+
     mThreadReceive.trigger_exit();
 
-    // Queue graceful disconnect notifications while the sockets and the
-    // cookie -> socket map are still intact.  disconnect_services() and
-    // disconnect_service() only enqueue work for mThreadSend; the actual
-    // ::send() happens there.  close_socket() clears mCookieToSocket, so
-    // calling it first would silently drop every notification.
+    // Snapshot and clear the pool list so the threads can be stopped outside the lock.
+    ClientPairList pairsToStop;
+    {
+        Lock lock(mLock);
+        pairsToStop = std::move(mClientPairs);
+    }
+
+    // Signal all pool receive threads to stop (resets each multiplexer --> unblocks wait()).
+    // Signal all pool send threads to exit before interrupting connections so they can
+    // finish draining any already-queued events.
+    for ( auto & pair : pairsToStop )
+    {
+        if ( pair )
+        {
+            pair->stop_threads();
+        }
+    }
+
+    // Interrupt every accepted socket BEFORE stopping the per-slot send threads.
+    // Under high data rate a send thread may be blocked permanently inside ::send()
+    // (the remote TCP receive buffer is full and the kernel call never returns).
+    // trigger_exit() posts the EXIT event but the thread never reaches it while blocked.
+    // ::shutdown(SD_BOTH) on every accepted socket causes the blocked ::send() to return
+    // with an error.  _do_send() detects the error and the send thread processes the
+    // EXIT event and exits cleanly.
+    mServerConnection.interrupt_connections();
+
+    // Queue graceful disconnect notifications while sockets are still alive.
     disconnect_services();
     disconnect_service( areg::EventPriority::HighPrio);
 
-    // Give the send thread a bounded window to deliver all queued disconnect
-    // notifications.  Tiny control messages fit in any live client's TCP send
-    // buffer almost instantly.  If the wait times out an unresponsive client
-    // (e.g. its TCP receive buffer is full) is holding up the send thread.
-    // In that case interrupt every accepted socket to unblock ::send(), letting
-    // the send thread fail-fast, reach the EXIT event, and terminate cleanly.
-    // Notifications to unresponsive clients are then abandoned; the TCP
-    // FIN / RST from close_socket() below will signal the disconnect to them.
+    // Give the global send thread a bounded window to deliver queued disconnect notifications.
+    // If it times out, an unresponsive client is holding up the send thread — interrupt again.
     constexpr uint32_t DISCONNECT_DRAIN_TIMEOUT_MS{ 5000u };
     if ( !mThreadSend.wait_completion( DISCONNECT_DRAIN_TIMEOUT_MS ) )
     {
-        LOG_WARN("Send thread did not finish within %u ms — interrupting connections to unblock", DISCONNECT_DRAIN_TIMEOUT_MS);
+        LOG_WARN("Send thread did not finish within %u ms -- interrupting connections to unblock", DISCONNECT_DRAIN_TIMEOUT_MS);
         mServerConnection.interrupt_connections();
     }
 
     mThreadSend.wait_completion( areg::WAIT_INFINITE );
 
-    // Resets the multiplexer (unblocks receive thread), interrupts remaining
+    // Reset the multiplexer (unblocks global receive thread), interrupts remaining
     // sockets, clears all maps, and closes the server socket.
     mServerConnection.close_socket();
 
     mThreadSend.shutdown( areg::WAIT_INFINITE );
     mThreadReceive.shutdown( areg::WAIT_INFINITE );
+
+    for ( auto & pair : pairsToStop )
+    {
+        if ( pair )
+        {
+            pair->shutdown_threads( areg::WAIT_INFINITE );
+        }
+    }
+
+    mShuttingDown.store(false, std::memory_order_release);
+}
+
+bool ServiceCommunicationBase::on_client_accepted( SocketAccepted & clientSocket )
+{
+    return mAcceptFn(clientSocket);
+}
+
+bool ServiceCommunicationBase::do_accept_client_shared( SocketAccepted & /*clientSocket*/ )
+{
+    // Shared mode: socket stays on the global mThreadReceive — nothing to do.
+    return false;
+}
+
+bool ServiceCommunicationBase::do_accept_client_pool( SocketAccepted & clientSocket )
+{
+    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, do_accept_client_pool);
+
+    if ( mShuttingDown.load(std::memory_order_acquire) )
+    {
+        LOG_WARN("do_accept_client_pool during shutdown for socket [ %u ], rejecting", static_cast<uint32_t>(clientSocket.handle()));
+        return false;
+    }
+
+    const ITEM_ID cookie{ mServerConnection.cookie(clientSocket) };
+    if ( cookie == areg::COOKIE_UNKNOWN )
+    {
+        LOG_WARN("do_accept_client_pool: no cookie assigned to socket [ %u ], falling back to shared path", static_cast<uint32_t>(clientSocket.handle()));
+        return false;
+    }
+
+    if ( mClientPairs.empty() )
+    {
+        LOG_WARN("do_accept_client_pool: pool is empty (stopped?), falling back to shared path");
+        return false;
+    }
+
+    // Unregister from the global ServerReceiveThread multiplexer — the pool receive
+    // thread will own this socket from here on.
+    mServerConnection.unregister_from_multiplexer(clientSocket.handle());
+
+    const uint32_t idx = static_cast<uint32_t>(cookie) % mNumPairs;
+    mClientPairs[idx]->add_socket(clientSocket, cookie);
+
+    LOG_DBG("Pool mode: routed socket [ %u ] (cookie [ %u ]) to pool pair [ %u ]"
+                , static_cast<uint32_t>(clientSocket.handle())
+                , static_cast<uint32_t>(cookie)
+                , idx);
+
+    return true;
+}
+
+void ServiceCommunicationBase::do_client_lost_shared( ITEM_ID /*cookie*/ )
+{
+    // Shared mode: socket remains on mThreadReceive; no extra cleanup needed.
+}
+
+void ServiceCommunicationBase::do_client_lost_pool( ITEM_ID cookie )
+{
+    if ( mClientPairs.empty() )
+        return;
+
+    const uint32_t idx = static_cast<uint32_t>(cookie) % mNumPairs;
+    mClientPairs[idx]->remove_socket(cookie);
+}
+
+bool ServiceCommunicationBase::do_send_shared( const RemoteMessage & data, areg::EventPriority prio )
+{
+    return SendMessageEvent::send_event( SendMessageEventData( data )
+                                       , static_cast<SendMessageEventConsumer &>(mThreadSend)
+                                       , static_cast<DispatcherThread &>(mThreadSend)
+                                       , prio );
+}
+
+bool ServiceCommunicationBase::do_send_shared( RemoteMessage && data, areg::EventPriority prio )
+{
+    SendMessageEvent * evt = SendMessageEvent::make_event(prio);
+    if ( evt == nullptr )
+        return false;
+
+    evt->data() = SendMessageEventData(std::move(data));
+    return SendMessageEvent::send_event(evt
+                                       , static_cast<SendMessageEventConsumer &>(mThreadSend)
+                                       , static_cast<DispatcherThread &>(mThreadSend)
+                                       , prio);
+}
+
+bool ServiceCommunicationBase::do_send_pool( const RemoteMessage & data, areg::EventPriority prio )
+{
+    if ( mClientPairs.empty() )
+        return do_send_shared(data, prio);
+
+    const uint32_t idx = static_cast<uint32_t>(data.target()) % mNumPairs;
+    PoolSendThread & sendThread = mClientPairs[idx]->send_thread();
+    return SendMessageEvent::send_event( SendMessageEventData( data )
+                                       , static_cast<SendMessageEventConsumer &>(sendThread)
+                                       , static_cast<DispatcherThread &>(sendThread)
+                                       , prio );
+}
+
+bool ServiceCommunicationBase::do_send_pool( RemoteMessage && data, areg::EventPriority prio )
+{
+    if ( mClientPairs.empty() )
+        return do_send_shared(std::move(data), prio);
+
+    const uint32_t idx = static_cast<uint32_t>(data.target()) % mNumPairs;
+    PoolSendThread & sendThread = mClientPairs[idx]->send_thread();
+
+    SendMessageEvent * evt = SendMessageEvent::make_event(prio);
+    if ( evt == nullptr )
+        return false;
+
+    evt->data() = SendMessageEventData(std::move(data));
+    return SendMessageEvent::send_event(evt
+                                       , static_cast<SendMessageEventConsumer &>(sendThread)
+                                       , static_cast<DispatcherThread &>(sendThread)
+                                       , prio);
+}
+
+
+void ServiceCommunicationBase::enable_data_rate(bool enable) noexcept
+{
+    mThreadReceive.set_data_rate_enabled(enable);
+    mThreadSend.set_data_rate_enabled(enable);
 }
 
 bool ServiceCommunicationBase::start_send_thread()
 {
-    return mThreadSend.start( areg::WAIT_INFINITE ) && 
+    return mThreadSend.start( areg::WAIT_INFINITE ) &&
            mThreadSend.wait_start( areg::WAIT_INFINITE );
 }
 
@@ -411,6 +664,16 @@ bool ServiceCommunicationBase::start_receive_thread()
 {
     return mThreadReceive.start( areg::WAIT_INFINITE ) &&
            mThreadReceive.wait_start( areg::WAIT_INFINITE );
+}
+
+bool ServiceCommunicationBase::send_message( const RemoteMessage & data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
+{
+    return mSendFn(data, eventPrio);
+}
+
+bool ServiceCommunicationBase::send_message( RemoteMessage && data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
+{
+    return mSendMoveFn(std::move(data), eventPrio);
 }
 
 #ifdef DEBUG
@@ -423,9 +686,7 @@ void ServiceCommunicationBase::failed_send_message(const RemoteMessage& /*msgFai
 
 #ifdef DEBUG
 
-    const ITEM_ID & cookie = msgFailed.target( );
-    SocketAccepted client = mServerConnection.client_by_cookie( cookie );
-    ASSERT( (client.is_valid() == false) || (whichTarget.handle( ) == client.handle( )) );
+    ASSERT( !whichTarget.is_valid() || (whichTarget.handle( ) == mServerConnection.target_client(msgFailed).handle()) );
 
 #endif // DEBUG
 
@@ -473,35 +734,31 @@ void ServiceCommunicationBase::process_received_message(RemoteMessage & msgRecei
     {
         if ( target != areg::TARGET_UNKNOWN )
         {
-            if ( mServerConnection.client_by_cookie(target).is_valid() )
-            {
+            // Skip the redundant client_by_cookie() validity pre-check here.
+            // The send thread's _do_send() resolves the socket and silently drops
+            // the message if the target has since disconnected.  Doing an extra
+            // exclusive-SpinLock lookup on mLock from the receive thread's hot
+            // path costs ~200–400 ns per forwarded message and doubles the lock
+            // contention on mLock without providing any correctness guarantee
+            // (the target can disconnect between this check and the actual send).
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-                // Milestone log every 100k forwarded messages: a rapidly rising counter
-                // (e.g. doubling per minute) indicates a reprocessing loop or runaway forwarding.
-                static uint32_t s_fwdCount{ 0u };
-                static uint32_t s_fwdBytes{ 0u };
-                ++s_fwdCount;
-                s_fwdBytes += msgReceived.size_used();
-                if ((s_fwdCount % 100000u) == 0u)
-                {
-                    DEBUG_LOG_INFO("Fast-path forward milestone: [ %u ] messages, [ %u ] bytes total (last msg: id=%u src=%u tgt=%u)"
-                                , s_fwdCount
-                                , s_fwdBytes
-                                , static_cast<uint32_t>(msgId)
-                                , static_cast<uint32_t>(source)
-                                , static_cast<uint32_t>(target));
-                }
+            // Milestone log every 100k forwarded messages.
+            static uint32_t s_fwdCount{ 0u };
+            static uint32_t s_fwdBytes{ 0u };
+            ++s_fwdCount;
+            s_fwdBytes += msgReceived.size_used();
+            if ((s_fwdCount % 100000u) == 0u)
+            {
+                DEBUG_LOG_INFO("Fast-path forward milestone: [ %u ] messages, [ %u ] bytes total (last msg: id=%u src=%u tgt=%u)"
+                            , s_fwdCount
+                            , s_fwdBytes
+                            , static_cast<uint32_t>(msgId)
+                            , static_cast<uint32_t>(source)
+                            , static_cast<uint32_t>(target));
+            }
 #endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
 
-                send_message(std::move(msgReceived));
-            }
-            else
-            {
-                DEBUG_LOG_WARN("Dropping message [ %u ] from source [ %u ] — target [ %u ] is no longer connected"
-                                , static_cast<uint32_t>(msgId)
-                                , static_cast<uint32_t>(source)
-                                , static_cast<uint32_t>(target));
-            }
+            send_message(std::move(msgReceived));
         }
 
         return;
@@ -527,8 +784,6 @@ void ServiceCommunicationBase::process_received_message(RemoteMessage & msgRecei
             mServerConnection.close_connection( cookie );
         }
 
-        // Dispatch system messages (registration, disconnect, etc.) at high priority
-        // so they are not queued behind pending data messages and are processed immediately.
         send_communication_message( ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgReceived, areg::EventPriority::HighPrio );
     }
     else if ( (source == areg::SOURCE_UNKNOWN) && (msgId == areg::FuncIdRange::SystemServiceConnect) )

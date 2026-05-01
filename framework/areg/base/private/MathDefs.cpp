@@ -21,6 +21,4 @@
 // in MathDefs.hpp and evaluated at compile time when called with constant
 // expressions.  No runtime implementations remain in this translation unit.
 //
-// The CRC32 lookup table is generated at compile time in TableDefs.hpp
-// (areg::CRC32_TABLE) and stored as a single inline constexpr
-// std::array<uint32_t, 256> shared across all translation units.
+// Compile time generated CRC32 lookup table is inline constexpr in TableDefs.hpp.

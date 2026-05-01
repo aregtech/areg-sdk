@@ -96,27 +96,27 @@ bool LogObserverBase::is_stated() const noexcept
     return log_observer_is_started();
 }
 
-const areg::SocketAddress& LogObserverBase::logger_address() const
+const areg::SocketAddress& LogObserverBase::logger_address() const noexcept
 {
     return LoggerClient::instance().address();
 }
 
-const std::string& LogObserverBase::logger_ip_address() const
+const std::string& LogObserverBase::logger_ip_address() const noexcept
 {
     return LoggerClient::instance().address().host_address().data();
 }
 
-const std::string& LogObserverBase::logger_host_name() const
+const std::string& LogObserverBase::logger_host_name() const noexcept
 {
     return LoggerClient::instance().address().host_name().data();
 }
 
-uint16_t LogObserverBase::logger_port() const
+uint16_t LogObserverBase::logger_port() const noexcept
 {
     return LoggerClient::instance().address().host_port();
 }
 
-bool LogObserverBase::config_logger_enabled() const
+bool LogObserverBase::config_logger_enabled() const noexcept
 {
     return log_observer_config_logger_enabled();
 }
@@ -231,9 +231,9 @@ void LogObserverBase::log_threads(std::vector<ITEM_ID>& ids)
     LoggerClient::instance().log_threads(ids);
 }
 
-void LogObserverBase::priority_names(std::vector<String>& names)
+void LogObserverBase::log_priority_names(std::vector<String>& names)
 {
-    LoggerClient::instance().priority_names(names);
+    LoggerClient::instance().log_priority_names(names);
 }
 
 void LogObserverBase::log_instance_infos(std::vector< areg::ConnectedInstance>& infos)

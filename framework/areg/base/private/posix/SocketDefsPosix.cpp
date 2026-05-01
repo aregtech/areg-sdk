@@ -23,11 +23,13 @@
 #include "areg/base/areg_macros.h"
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/logging/areg_log.h"
+#include "areg/ipc/private/ConnectionDefs.hpp"
 
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <sys/ioctl.h>
+#include <sys/uio.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <errno.h>
@@ -66,7 +68,7 @@ int32_t _os_send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t d
     // MSG_NOSIGNAL suppresses SIGPIPE when the peer has closed the connection;
     // send() returns -1 with errno == EPIPE instead.  On macOS, SO_NOSIGPIPE
     // socket option achieves the same effect (set in socket_set_no_delay()).
-#ifdef MSG_NOSIGNAL
+#if defined(MSG_NOSIGNAL)
     constexpr int sendFlags = MSG_NOSIGNAL;
 #else
     constexpr int sendFlags = 0;
@@ -96,16 +98,89 @@ int32_t _os_send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t d
     return total;
 }
 
+int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count)
+{
+    ASSERT(hSocket != areg::InvalidSocketHandle);
+    ASSERT((buffers != nullptr) && (count > 0u));
+
+    // Build iovec array on the stack. Batch sizes are bounded by THREAD_BATCH_LIMIT
+    // (128 entries), so 128 * sizeof(iovec) = 128 * 16 = 2 KB on the stack.
+    constexpr uint32_t MAX_IOV{ areg::THREAD_BATCH_LIMIT };
+    const uint32_t iovCount{ (count < MAX_IOV) ? count : MAX_IOV };
+
+    struct iovec iov[MAX_IOV];
+    for (uint32_t i{ 0u }; i < iovCount; ++i)
+    {
+        // iov_base is void* in POSIX -- cast away const; writev does not modify buffers.
+        iov[i].iov_base = const_cast<uint8_t*>(buffers[i].data);
+        iov[i].iov_len  = static_cast<size_t>(buffers[i].size);
+    }
+
+    // iovBase/iovRemaining track the current position within the iovec array when
+    // writev() performs a partial write (rare on blocking sockets with SO_SNDTIMEO,
+    // but handled correctly to preserve message framing integrity).
+    int32_t total{ 0 };
+    uint32_t iovBase{ 0u };
+    uint32_t iovRemaining{ iovCount };
+
+    while (iovRemaining > 0u)
+    {
+        const ssize_t written = ::writev(static_cast<int>(hSocket),
+                                         iov + iovBase,
+                                         static_cast<int>(iovRemaining));
+        if (written > 0)
+        {
+            total += static_cast<int32_t>(written);
+
+            // Advance past fully-consumed iovecs.
+            size_t advance{ static_cast<size_t>(written) };
+            while ((iovBase < iovCount) && (advance >= iov[iovBase].iov_len))
+            {
+                advance -= iov[iovBase].iov_len;
+                ++iovBase;
+                --iovRemaining;
+            }
+
+            if ((iovRemaining > 0u) && (advance > 0u))
+            {
+                // Partial consume of the current iovec: slide the pointer.
+                iov[iovBase].iov_base  = static_cast<uint8_t*>(iov[iovBase].iov_base) + advance;
+                iov[iovBase].iov_len  -= advance;
+            }
+        }
+        else if (errno == EINTR)
+        {
+            continue;   // interrupted by signal; retry without advancing
+        }
+        else
+        {
+            return -1;  // EAGAIN (SO_SNDTIMEO expired), EPIPE, or connection error
+        }
+    }
+
+    return total;
+}
+
 int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
 {
     ASSERT(hSocket != areg::InvalidSocketHandle);
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
 
+    // MSG_WAITALL asks the kernel to accumulate the full requested chunk before returning
+    // The socket has SO_RCVTIMEO set so the kernel may still return a short read
+    // if the timeout fires before all bytes arrive; the outer while-loop retries
+    // in that case.  EINTR is also handled by the retry path below.
+#ifdef MSG_WAITALL
+    constexpr int recvFlags = MSG_WAITALL;
+#else
+    constexpr int recvFlags = 0;
+#endif
+
     int32_t total{ 0 };
 
     while (total < dataLength)
     {
-        int32_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), dataLength - total, 0);
+        int32_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), dataLength - total, recvFlags);
         if (received > 0)
         {
             total += received;
@@ -133,8 +208,6 @@ bool _os_connect_socket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen
     ASSERT(addr != nullptr);
 
     // Save current socket flags and switch to non-blocking mode.
-    // This allows the connect to return EINPROGRESS immediately if the
-    // server is not reachable, instead of blocking for the full OS TCP timeout.
     const int savedFlags = ::fcntl(hSocket, F_GETFL, 0);
     if (savedFlags == -1)
         return false;
@@ -152,7 +225,7 @@ bool _os_connect_socket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen
 
     if (errno != EINPROGRESS)
     {
-        // Hard failure (e.g. ECONNREFUSED on loopback) — no need to wait
+        // Hard failure (e.g. ECONNREFUSED on loopback) -- no need to wait
         return false;
     }
 

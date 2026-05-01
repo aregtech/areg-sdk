@@ -44,7 +44,9 @@
  *   Construction creates a temporary listener on 127.0.0.1:0, connects
  *   to it, accepts one connection, then closes the listener.  The result
  *   is a connected socket pair where mWakeupWriteFd can signal
- *   mWakeupReadFd purely via loopback TCP.
+ *   mWakeupReadFd purely via loopback TCP.  The pair is created eagerly
+ *   in the constructor so that wait() blocks correctly even before any
+ *   real sockets are registered.
  *
  *   This mirrors the macOS pipe approach: the same members (mWakeupReadFd,
  *   mWakeupWriteFd) and the same wait() / reset() logic apply on both
@@ -118,9 +120,6 @@ static bool _create_wakeup_pair(SOCKETHANDLE& readEnd, SOCKETHANDLE& writeEnd) n
         return false;
     }
 
-    // Set both ends non-blocking so the recv() drain loop in wait() exits
-    // immediately when the buffer is empty (instead of blocking on the
-    // second call after reading the single wakeup byte).
     u_long mode{ 1 };
     ::ioctlsocket(acceptSock,  static_cast<long>(FIONBIO), &mode);
     ::ioctlsocket(connectSock, static_cast<long>(FIONBIO), &mode);
@@ -130,19 +129,29 @@ static bool _create_wakeup_pair(SOCKETHANDLE& readEnd, SOCKETHANDLE& writeEnd) n
     return true;
 }
 
+// Drain all buffered bytes from the wakeup socket so it does not re-fire.
+inline void drain_wakeup(SOCKET fd) noexcept
+{
+    char buf[64];
+    while (::recv(fd, buf, static_cast<int>(sizeof(buf)), 0) > 0) {}
+}
+
 } // namespace
 
-areg::SocketMultiplexer::SocketMultiplexer(int32_t maxConnections) noexcept
-    : mSockets       { }
-    , mMaxCount      { (maxConnections < MIN_CONNECTIONS) ? MIN_CONNECTIONS : (maxConnections > MAX_CONNECTIONS) ? MAX_CONNECTIONS : maxConnections }
-    , mIsReset       { false }
-    , mBatchFds      { }
-    , mBatchCount    { 0 }
-    , mBatchIdx      { 0 }
-    , mWakeupReadFd  { areg::InvalidSocketHandle }
-    , mWakeupWriteFd { areg::InvalidSocketHandle }
+areg::SocketMultiplexer::SocketMultiplexer(uint32_t maxConnections) noexcept
+    : mSockets      { }
+    , mMaxCount     { (maxConnections < areg::MIN_CONNECTIONS) ? areg::MIN_CONNECTIONS : (maxConnections > areg::MAX_CONNECTIONS) ? areg::MAX_CONNECTIONS : maxConnections }
+    , mIsReset      { false }
+    , mWakeupReadFd { areg::InvalidSocketHandle }
+    , mWakeupWriteFd{ areg::InvalidSocketHandle }
+    , mBatchCount   { 0 }
+    , mBatchIdx     { 0 }
+    , mBatchFds     { }
+    , mBatchEvents  { }
 {
-    mSockets.reserve(DEFAULT_CONNECTIONS);
+    mSockets.reserve(areg::DEFAULT_CONNECTIONS);
+    // Create the wakeup pair before any real sockets are registered.
+    _create_wakeup_pair(mWakeupReadFd, mWakeupWriteFd);
 }
 
 areg::SocketMultiplexer::~SocketMultiplexer() noexcept
@@ -165,14 +174,6 @@ areg::SocketMultiplexer::~SocketMultiplexer() noexcept
 
 bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search) noexcept
 {
-    // Lazy-create the wakeup pair the first time a socket is registered.
-    // By this point WSAStartup is guaranteed to have been called by the
-    // caller (socket_initialize() precedes any socket creation).
-    if (mWakeupReadFd == areg::InvalidSocketHandle)
-    {
-        _create_wakeup_pair(mWakeupReadFd, mWakeupWriteFd);
-    }
-
     if (    (hSocket == areg::InvalidSocketHandle)
          || (hSocket == mWakeupReadFd)
          || (hSocket == mWakeupWriteFd)
@@ -187,13 +188,9 @@ bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search)
         return false;
     }
 
-    // Transition out of reset state.  Drain any pending wakeup byte left by the
-    // previous reset() that was not consumed by wait() (wait() may have seen
-    // mIsReset=true and returned early, leaving the loopback socket readable).
     if (mIsReset.exchange(false, std::memory_order_acq_rel) && (mWakeupReadFd != areg::InvalidSocketHandle))
     {
-        char buf[64];
-        while (::recv(static_cast<SOCKET>(mWakeupReadFd), buf, static_cast<int>(sizeof(buf)), 0) > 0) {}
+        drain_wakeup(static_cast<SOCKET>(mWakeupReadFd));
     }
 
     mSockets.push_back(hSocket);
@@ -208,10 +205,7 @@ bool areg::SocketMultiplexer::unregister_socket(SOCKETHANDLE hSocket) noexcept
         {
             *it = mSockets.back();
             mSockets.pop_back();
-
-            // Discard the batch cache: it may contain hSocket or a socket that
-            // was ready alongside hSocket.  The next wait() will fetch a fresh batch.
-            mBatchCount = mBatchIdx = 0;
+            mBatchCount = mBatchIdx = 0u;
             return true;
         }
     }
@@ -222,16 +216,18 @@ bool areg::SocketMultiplexer::unregister_socket(SOCKETHANDLE hSocket) noexcept
 void areg::SocketMultiplexer::reset() noexcept
 {
     mSockets.clear();
-    mBatchCount = 0;
-    mBatchIdx   = 0;
-
-    // Mark reset before signaling so that any thread that re-enters wait()
-    // after the wakeup is drained returns FailedSocketHandle immediately.
+    mBatchCount = mBatchIdx = 0u;
     mIsReset.store(true, std::memory_order_release);
+    if (mWakeupWriteFd != areg::InvalidSocketHandle)
+    {
+        const char one{ 1 };
+        (void)::send(static_cast<SOCKET>(mWakeupWriteFd), &one, 1, 0);
+    }
+}
 
-    // Send one byte to the write end of the loopback pair to make the
-    // read end readable.  This immediately unblocks any WSAPoll() in
-    // progress on mWakeupReadFd in another thread.
+void areg::SocketMultiplexer::wakeup() noexcept
+{
+    // Soft interrupt.
     if (mWakeupWriteFd != areg::InvalidSocketHandle)
     {
         const char one{ 1 };
@@ -243,54 +239,40 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
 {
     if (mIsReset.load(std::memory_order_acquire))
     {
-        mBatchCount = mBatchIdx = 0;
+        mBatchCount = mBatchIdx = 0u;
         if (mWakeupReadFd != areg::InvalidSocketHandle)
         {
-            char buf[64];
-            while (::recv(static_cast<SOCKET>(mWakeupReadFd), buf, static_cast<int>(sizeof(buf)), 0) > 0) {}
+            drain_wakeup(static_cast<SOCKET>(mWakeupReadFd));
         }
+
         return areg::FailedSocketHandle;
     }
 
     // Serve cached results from the previous WSAPoll batch before issuing another syscall.
-    while (mBatchIdx < mBatchCount)
+    if (mBatchIdx < mBatchCount)
     {
-        if (mIsReset.load(std::memory_order_acquire))
-        {
-            mBatchCount = mBatchIdx = 0;
-            if (mWakeupReadFd != areg::InvalidSocketHandle)
-            {
-                char buf[64];
-                while (::recv(static_cast<SOCKET>(mWakeupReadFd), buf, static_cast<int>(sizeof(buf)), 0) > 0) {}
-            }
-            return areg::FailedSocketHandle;
-        }
-
         const SOCKETHANDLE fd = mBatchFds[mBatchIdx++];
         if (fd == mWakeupReadFd)
         {
-            char buf[64];
-            while (::recv(static_cast<SOCKET>(mWakeupReadFd), buf, static_cast<int>(sizeof(buf)), 0) > 0) {}
-            mBatchCount = mBatchIdx = 0;
-            return areg::FailedSocketHandle;
+            drain_wakeup(static_cast<SOCKET>(mWakeupReadFd));
+            mBatchCount = mBatchIdx = 0u;
+            // Hard reset --> FailedSocketHandle; soft wakeup() --> InvalidSocketHandle.
+            return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
         }
 
         return fd;
     }
 
-    // Always include the wakeup socket (if valid) so reset() can interrupt
-    // WSAPoll from the shutdown thread regardless of how many real sockets
-    // are currently registered.
+    // Always include the wakeup socket if valid to interrupt WSAPoll.
     const int32_t wakeupSlots = (mWakeupReadFd != areg::InvalidSocketHandle) ? 1 : 0;
     const auto    total       = static_cast<INT>(mSockets.size()) + wakeupSlots;
 
     if (total == 0)
         return areg::FailedSocketHandle;
 
-    // Stack-allocated fast path for the common case (small socket count).
-    WSAPOLLFD     stackFds[DEFAULT_CONNECTIONS];
+    WSAPOLLFD     stackFds[areg::DEFAULT_CONNECTIONS];
     std::vector<WSAPOLLFD> heapFds;
-    WSAPOLLFD* const fds = (total <= DEFAULT_CONNECTIONS) ? stackFds : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
+    WSAPOLLFD* const fds = (total <= areg::DEFAULT_CONNECTIONS) ? stackFds : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
 
     const auto socketCount = static_cast<INT>(mSockets.size());
     for (INT i = 0; i < socketCount; ++i)
@@ -314,19 +296,17 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         return nReady == 0 ? areg::InvalidSocketHandle : areg::FailedSocketHandle;
     }
 
-    // Check wakeup socket first — reset() was called from the shutdown thread.
     // Drain received bytes so the socket does not fire again on the next call.
     if ((wakeupSlots > 0) && (fds[socketCount].revents & (POLLRDNORM | POLLHUP | POLLERR)))
     {
-        char buf[64];
-        while (::recv(static_cast<SOCKET>(mWakeupReadFd), buf, static_cast<int>(sizeof(buf)), 0) > 0) {}
-        mBatchCount = mBatchIdx = 0;
-        return areg::FailedSocketHandle;
+        drain_wakeup(static_cast<SOCKET>(mWakeupReadFd));
+        mBatchCount = mBatchIdx = 0u;
+        // Hard reset --> FailedSocketHandle; soft wakeup() --> InvalidSocketHandle.
+        return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
     }
 
     // Collect ALL ready sockets from this WSAPoll result into the batch cache.
-    // Store revents alongside the fd so the drain loop can detect error-only sockets.
-    mBatchCount = 0;
+    mBatchCount = mBatchIdx = 0u;
     SOCKETHANDLE first{ areg::InvalidSocketHandle };
     for (INT i = 0; i < socketCount; ++i)
     {
@@ -337,7 +317,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
             {
                 first = mSockets[static_cast<std::size_t>(i)];
             }
-            else if (mBatchCount < BATCH_SIZE)
+            else if (mBatchCount < areg::BATCH_SIZE)
             {
                 mBatchFds[mBatchCount]    = mSockets[static_cast<std::size_t>(i)];
                 mBatchEvents[mBatchCount] = static_cast<uint32_t>(rev);
@@ -346,7 +326,6 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         }
     }
 
-    mBatchIdx = 0;
     return first;
 }
 
@@ -364,9 +343,9 @@ SOCKETHANDLE areg::SocketMultiplexer::wait( SOCKETHANDLE            serverSocket
 
     const INT total = static_cast<INT>(count + 1);
 
-    WSAPOLLFD     stackFds[DEFAULT_CONNECTIONS];
+    WSAPOLLFD     stackFds[areg::DEFAULT_CONNECTIONS];
     std::vector<WSAPOLLFD> heapFds;
-    WSAPOLLFD* const fds = (total <= DEFAULT_CONNECTIONS) ? stackFds : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
+    WSAPOLLFD* const fds = (total <= areg::DEFAULT_CONNECTIONS) ? stackFds : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
 
     fds[0].fd      = serverSocket;
     fds[0].events  = POLLRDNORM;

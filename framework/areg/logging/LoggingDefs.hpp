@@ -500,6 +500,35 @@ namespace areg {
     AREG_API RemoteMessage create_log_message(const LogEntry& logMessage, LogDataType dataType, const ITEM_ID & srcCookie);
 
     /**
+     * \brief   Creates a log message directly in a network-ready buffer without an intermediate copy.
+     *          All LogEntry fields, including module and thread names, are written on the calling
+     *          thread. Call `finalize_log_message()` before forwarding via TCP.
+     *
+     * \param   msgType         The log message type.
+     * \param   scopeId         The ID of the scope generating the message.
+     * \param   sessionId       The session ID to differentiate messages in the same scope.
+     * \param   scopeStamp      The scope timestamp for duration calculation; 0 if not applicable.
+     * \param   msgPrio         The message priority.
+     * \param   message         The message text; may be nullptr for deferred formatting.
+     * \param   msgLen          The length of the message string; 0 if message is nullptr.
+     * \return  A RemoteMessage with the LogEntry written directly into its buffer.
+     *          Returns an invalid message (is_valid() == false) on allocation failure.
+     **/
+    [[nodiscard]]
+    AREG_API RemoteMessage make_log_message(LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, LogPriority msgPrio, const char* message, uint32_t msgLen);
+
+    /**
+     * \brief   Patches TCP-specific fields in a pre-built log message before network transmission.
+     *          Updates logDataType, logCookie, and the RemoteMessage source header field.
+     *          Clears logThread when dataType is Local.
+     *
+     * \param   msg         The pre-built message to finalize; no-op if invalid.
+     * \param   dataType    The log data type to set (Local or Remote).
+     * \param   srcCookie   The source cookie to embed in the message.
+     **/
+    AREG_API void finalize_log_message(RemoteMessage& msg, LogDataType dataType, const ITEM_ID& srcCookie);
+
+    /**
      * \brief   Logs a remote message contained in the buffer.
      *
      * \param   message     The buffer containing the information to log.
