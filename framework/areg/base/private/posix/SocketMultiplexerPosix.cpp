@@ -33,6 +33,14 @@
 #include <errno.h>
 #include <vector>
 
+//////////////////////////////////////////////////////////////////////////
+// Generic POSIX: constructor, destructor, and wait()
+// using poll() + anonymous pipe (Cygwin, FreeBSD, etc.)
+// Excludes Linux (epoll) and macOS (kqueue) — see their respective files.
+//////////////////////////////////////////////////////////////////////////
+
+#if !defined(__linux__) && !defined(__APPLE__)
+
 namespace {
 // Drain all buffered bytes from the wakeup pipe so it does not re-fire.
 inline void drain_pipe(int fd) noexcept
@@ -41,14 +49,6 @@ inline void drain_pipe(int fd) noexcept
     while (::read(fd, buf, sizeof(buf)) > 0) {}
 }
 } // namespace
-
-//////////////////////////////////////////////////////////////////////////
-// Generic POSIX: constructor, destructor, and wait()
-// using poll() + anonymous pipe (Cygwin, FreeBSD, etc.)
-// Excludes Linux (epoll) and macOS (kqueue) — see their respective files.
-//////////////////////////////////////////////////////////////////////////
-
-#if !defined(__linux__) && !defined(__APPLE__)
 
 // -----------------------------------------------------------------------
 // WAKEUP DESIGN:
