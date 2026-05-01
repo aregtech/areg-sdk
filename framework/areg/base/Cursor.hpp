@@ -51,14 +51,13 @@ public:
     };
 
     /**
-     * \brief   Indicator of invalid position of cursor
+     * \brief   Indicator values for invalid and start cursor positions.
      **/
-    static constexpr uint32_t INVALID_CURSOR_POSITION   { std::numeric_limits<uint32_t>::max() };
-
-    /**
-     * \brief   Indicator of cursor start position
-     **/
-    static constexpr uint32_t START_CURSOR_POSITION     { 0u };
+    enum : uint32_t
+    {
+          INVALID_CURSOR_POSITION   = std::numeric_limits<uint32_t>::max()
+        , START_CURSOR_POSITION     = 0u
+    };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

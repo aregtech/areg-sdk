@@ -12,204 +12,42 @@ without a dedicated networking library underneath.
 
 The result on a single machine with a **mobile-class CPU**:
 
-<style>
-* { box-sizing: border-box; }
-.wrap { padding: 1rem 0; font-size: 12px; color: var(--color-text-primary); }
-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-col.c1 { width: 20%; }
-col.c2 { width: 14%; }
-col.c3 { width: 12%; }
-col.c4 { width: 10%; }
-col.c5 { width: 13%; }
-col.c6 { width: 13%; }
-col.c7 { width: 18%; }
-th { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); text-align: left; padding: 5px 7px; border-bottom: 0.5px solid var(--color-border-secondary); white-space: nowrap; }
-td { padding: 6px 7px; vertical-align: middle; border-bottom: 0.5px solid var(--color-border-tertiary); line-height: 1.4; }
-tr:hover td { background: var(--color-background-secondary); }
-.section td { background: var(--color-background-tertiary); font-size: 10px; font-weight: 500; color: var(--color-text-secondary); padding: 3px 7px; letter-spacing: 0.04em; text-transform: uppercase; border-bottom: 0.5px solid var(--color-border-secondary); }
-.num { font-weight: 500; }
-.muted { color: var(--color-text-secondary); font-size: 11px; }
-.badge { display: inline-block; font-size: 10px; padding: 1px 5px; border-radius: 3px; font-weight: 500; white-space: nowrap; }
-.b-m  { background: #EAF3DE; color: #3B6D11; }
-.b-e  { background: #FAEEDA; color: #854F0B; }
-.b-tbd { background: #E6F1FB; color: #185FA5; }
-@media (prefers-color-scheme: dark) {
-  .b-m  { background: #173404; color: #C0DD97; }
-  .b-e  { background: #412402; color: #FAC775; }
-  .b-tbd { background: #042C53; color: #B5D4F4; }
-}
-</style>
-<div class="wrap">
-<table>
-<colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"><col class="c6"><col class="c7"></colgroup>
-<thead>
-<tr>
-  <th>Platform</th>
-  <th>CPU</th>
-  <th>RAM</th>
-  <th>Payload</th>
-  <th>Throughput / Rate</th>
-  <th>Unit</th>
-  <th>Status</th>
-</tr>
-</thead>
-<tbody>
+### Data rate (large payload ~3 MB)
 
-<tr class="section"><td colspan="7">— data rate (large payload ~3 MB) —</td></tr>
+| Platform            | CPU               | RAM       | Payload | Data Rate | Unit | Status    |
+| ------------------- | ----------------- | --------- | ------- | --------- | ---- | --------- |
+| Windows 11          | Intel i7-13700H   | DDR4      | ~3 MB   | 1.7 – 2.1 | GB/s | measured  |
+| WSL2 (on Win11)     | Intel i7-13700H   | DDR4      | ~3 MB   | 3.8 – 4.0 | GB/s | measured  |
+| Linux VM (on macOS) | Apple M4 Pro      | LPDDR5    | ~3 MB   | 6.6 - 6.8 | GB/s | measured  |
+| macOS native        | Apple M4 Pro      | LPDDR5    | ~3 MB   | 6.8 - 7.0 | GB/s | measured  |
+| Linux bare-metal    | x86-64 non-mobile | DDR4/DDR5 | ~3 MB   | 6.0 – 7.5 | GB/s | estimated |
 
-<tr>
-  <td>Windows 11</td>
-  <td class="muted">Intel i7-13700H</td>
-  <td class="muted">DDR4</td>
-  <td>~3 MB</td>
-  <td class="num">1.7 – 2.1</td>
-  <td>GB/s</td>
-  <td><span class="badge b-m">measured</span></td>
-</tr>
-<tr>
-  <td>WSL2 <span class="muted">(on Win11)</span></td>
-  <td class="muted">Intel i7-13700H</td>
-  <td class="muted">DDR4</td>
-  <td>~3 MB</td>
-  <td class="num">3.8 – 4.0</td>
-  <td>GB/s</td>
-  <td><span class="badge b-m">measured</span></td>
-</tr>
-<tr>
-  <td>Linux VM <span class="muted">(on macOS)</span></td>
-  <td class="muted">Apple M4 Pro</td>
-  <td class="muted">LPDDR5</td>
-  <td>~3 MB</td>
-  <td class="num">~6.8</td>
-  <td>GB/s</td>
-  <td><span class="badge b-m">measured</span></td>
-</tr>
-<tr>
-  <td>macOS native</td>
-  <td class="muted">Apple M4 Pro</td>
-  <td class="muted">LPDDR5</td>
-  <td>~3 MB</td>
-  <td class="num">~7.0</td>
-  <td>GB/s</td>
-  <td><span class="badge b-m">measured</span></td>
-</tr>
-<tr>
-  <td>Linux bare-metal</td>
-  <td class="muted">x86-64 desktop/server</td>
-  <td class="muted">DDR4/DDR5</td>
-  <td>~3 MB</td>
-  <td class="num">6.0 – 7.5</td>
-  <td>GB/s</td>
-  <td><span class="badge b-e">estimated</span></td>
-</tr>
+### Message rate (small payload ~3 KB)
 
-<tr class="section"><td colspan="7">— message rate (small payload ~3 KB) —</td></tr>
+| Platform            | CPU               | RAM       | Payload | Message Rate | Unit  | Status    |
+| ------------------- | ----------------- | --------- | ------- | ------------ | ----- | --------- |
+| Windows 11          | Intel i7-13700H   | DDR4      | ~3 KB   | 120 – 135K   | msg/s | measured  |
+| WSL2 (on Win11)     | Intel i7-13700H   | DDR4      | ~3 KB   | 170 – 190K   | msg/s | measured  |
+| Linux VM (on macOS) | Apple M4 Pro      | LPDDR5    | ~3 KB   | 180 – 200K   | msg/s | measured  |
+| macOS native        | Apple M4 Pro      | LPDDR5    | ~3 KB   | 240 – 290K   | msg/s | measured  |
+| Linux bare-metal    | x86-64 non-mobile | DDR4/DDR5 | ~3 KB   | 300 – 340K   | msg/s | estimated |
 
-<tr>
-  <td>Windows 11</td>
-  <td class="muted">Intel i7-13700H</td>
-  <td class="muted">DDR4</td>
-  <td>~3 KB</td>
-  <td class="num">120 – 135K</td>
-  <td>msg/s</td>
-  <td><span class="badge b-m">measured</span></td>
-</tr>
-<tr>
-  <td>WSL2 <span class="muted">(on Win11)</span></td>
-  <td class="muted">Intel i7-13700H</td>
-  <td class="muted">DDR4</td>
-  <td>~3 KB</td>
-  <td class="num">170 – 190K</td>
-  <td>msg/s</td>
-  <td><span class="badge b-m">measured</span></td>
-</tr>
-<tr>
-  <td>Linux VM <span class="muted">(on macOS)</span></td>
-  <td class="muted">Apple M4 Pro</td>
-  <td class="muted">LPDDR5</td>
-  <td>~3 KB</td>
-  <td class="num">180 – 200K</td>
-  <td>msg/s</td>
-  <td><span class="badge b-m">measured</span></td>
-</tr>
-<tr>
-  <td>macOS native</td>
-  <td class="muted">Apple M4 Pro</td>
-  <td class="muted">LPDDR5</td>
-  <td>~3 KB</td>
-  <td class="num">240 – 290K</td>
-  <td>msg/s</td>
-  <td><span class="badge b-m">measured</span></td>
-</tr>
-<tr>
-  <td>Linux bare-metal</td>
-  <td class="muted">x86-64 desktop/server</td>
-  <td class="muted">DDR4/DDR5</td>
-  <td>~3 KB</td>
-  <td class="num">300 – 340K</td>
-  <td>msg/s</td>
-  <td><span class="badge b-e">estimated</span></td>
-</tr>
+### Message rate (very small payload ~0.5 KB)
 
-<tr class="section"><td colspan="7">— message rate (very small payload ~0.5 KB) —</td></tr>
+| Platform            | CPU               | RAM       | Payload | Message Rate | Unit  | Status    |
+| ------------------- | ----------------- | --------- | ------- | ------------ | ----- | --------- |
+| Windows 11          | Intel i7-13700H   | DDR4      | ~0.5 KB | 150 – 160K   | msg/s | measured  |
+| WSL2 (on Win11)     | Intel i7-13700H   | DDR4      | ~0.5 KB | 210 – 220K   | msg/s | measured  |
+| Linux VM (on macOS) | Apple M4 Pro      | LPDDR5    | ~0.5 KB | —            | msg/s | needed    |
+| macOS native        | Apple M4 Pro      | LPDDR5    | ~0.5 KB | —            | msg/s | needed    |
+| Linux bare-metal    | x86-64 non-mobile | DDR4/DDR5 | ~0.5 KB | —            | msg/s | needed    |
 
-<tr>
-  <td>Windows 11</td>
-  <td class="muted">Intel i7-13700H</td>
-  <td class="muted">DDR4</td>
-  <td>~0.5 KB</td>
-  <td class="num">150 – 160K</td>
-  <td>msg/s</td>
-  <td><span class="badge b-m">measured</span></td>
-</tr>
-<tr>
-  <td>WSL2 <span class="muted">(on Win11)</span></td>
-  <td class="muted">Intel i7-13700H</td>
-  <td class="muted">DDR4</td>
-  <td>~0.5 KB</td>
-  <td class="num">210 – 220K</td>
-  <td>msg/s</td>
-  <td><span class="badge b-m">measured</span></td>
-</tr>
-<tr>
-  <td>Linux VM <span class="muted">(on macOS)</span></td>
-  <td class="muted">Apple M4 Pro</td>
-  <td class="muted">LPDDR5</td>
-  <td>~0.5 KB</td>
-  <td class="num">—</td>
-  <td class="muted">not yet run</td>
-  <td><span class="badge b-tbd">needed</span></td>
-</tr>
-<tr>
-  <td>macOS native</td>
-  <td class="muted">Apple M4 Pro</td>
-  <td class="muted">LPDDR5</td>
-  <td>~0.5 KB</td>
-  <td class="num">—</td>
-  <td class="muted">not yet run</td>
-  <td><span class="badge b-tbd">needed</span></td>
-</tr>
-<tr>
-  <td>Linux bare-metal</td>
-  <td class="muted">x86-64 desktop/server</td>
-  <td class="muted">DDR4/DDR5</td>
-  <td>~0.5 KB</td>
-  <td class="num">—</td>
-  <td class="muted">community target</td>
-  <td><span class="badge b-tbd">needed</span></td>
-</tr>
-
-</tbody>
-</table>
-<p style="font-size:11px;color:var(--color-text-tertiary);margin-top:10px;line-height:1.5;">
-TCP localhost, 1:1 connection (single provider → single consumer) via <code>mtrouter</code>.
+TCP localhost, 1:1 connection (single provider -> single consumer) via `mtrouter`.
 macOS and Linux VM results use Apple M4 Pro unified LPDDR5 memory.
 Windows and WSL2 results use Intel i7-13700H with DDR4.
 Bare-metal Linux values are estimated from WSL2 measurements.
-All tests: Areg SDK with full service dispatch, built-in threading, automatic framing.
+All tests use Areg SDK with full service dispatch, built-in threading, and automatic framing.
 Reported ranges reflect the most frequently observed values; peak readings may be higher.
-</p>
-</div>
 
 These numbers come from a full-stack, service-oriented pipeline — location-transparent
 service discovery, type-safe IPC, automatic reconnection — none of which is stripped

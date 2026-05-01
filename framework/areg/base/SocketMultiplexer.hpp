@@ -232,8 +232,8 @@ private:
     //!< Batch result cache — filled by the OS poll call, drained one handle per wait() call.
     //!< Avoids N syscalls for N simultaneously-ready sockets (e.g., 50+ clients under burst).
     //!< Only accessed from the single receive thread that calls wait(), so no synchronization needed.
-    mutable int32_t             mBatchCount;    //!< Number of valid entries in mBatchFds[].
-    mutable int32_t             mBatchIdx;      //!< Index of the next entry to serve from mBatchFds[].
+    mutable uint32_t            mBatchCount;    //!< Number of valid entries in mBatchFds[].
+    mutable uint32_t            mBatchIdx;      //!< Index of the next entry to serve from mBatchFds[].
     mutable SOCKETHANDLE        mBatchFds[areg::BATCH_SIZE];      //!< Cached ready socket handles.
     mutable uint32_t            mBatchEvents[areg::BATCH_SIZE];   //!< Cached OS event flags (epoll events / kqueue flags / poll revents).
 

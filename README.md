@@ -124,13 +124,13 @@ Integrated distributed logging with visual analysis. Per-method execution timing
 
 > [!NOTE]
 > **Benchmark — IPC throughput between processes on mobile-class CPUs:**
->
-> | Platform     | CPU Type               | Data Rate (~3 MB) | Message Rate (~3 KB) | Message Rate (~0.5 KB) | 
-> |--------------|------------------------|-------------------|----------------------|------------------------|
-> | Windows 11   | Intel i7-13700H (DDR4) |      1.7–2.1 GB/s |       120-135K msg/s |         150–160K msg/s | 
-> | WSL2 Ubuntu  | Intel i7-13700H (DDR4) |      3.8–4.0 GB/s |       170-190K msg/s |         200–220K msg/s |
-> | macOS native | Apple M4 Pro (LPDDR5)  |         ~7.0 GB/s |       240–290K msg/s |                    TBD |
->
+> 
+> | Platform     | CPU Type         | ~3 MB data   | ~3 KB msg/s | ~0.5 KB msg/s |
+> |--------------|------------------|--------------|-------------|---------------|
+> | Windows 11   | i7-13700H (DDR4) | 1.7–2.1 GB/s | 120–135K    | 150–160K      |
+> | WSL2 Ubuntu  | i7-13700H (DDR4) | 3.8–4.0 GB/s | 170–190K    | 200–220K      |
+> | macOS native | M4 Pro (LPDDR5)  | ~7.0 GB/s    | 240–290K    | TBD           |
+> 
 > **Configuration:** 1:1 (single provider → single consumer) via `mtrouter` on TCP `localhost` socket - no shared memory or kernel bypass.
 >
 > **Full stack included:** Service discovery, type-safe serialization, automatic reconnection, threading dispatch, message framing - this is **application throughput**, not raw transport.

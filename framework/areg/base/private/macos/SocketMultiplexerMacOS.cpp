@@ -50,9 +50,9 @@ inline void drain_pipe(int fd) noexcept
 // -----------------------------------------------------------------------
 
 areg::SocketMultiplexer::SocketMultiplexer(uint32_t maxConnections /*= areg::DEFAULT_CONNECTIONS*/) noexcept
-    : mSockets       { }
-    , mMaxCount      { (maxConnections < MIN_CONNECTIONS) ? MIN_CONNECTIONS : (maxConnections > MAX_CONNECTIONS) ? MAX_CONNECTIONS : maxConnections }
-    , mIsReset       { false }
+    : mSockets      { }
+    , mMaxCount     { (maxConnections < MIN_CONNECTIONS) ? MIN_CONNECTIONS : (maxConnections > MAX_CONNECTIONS) ? MAX_CONNECTIONS : maxConnections }
+    , mIsReset      { false }
     , mKqueueFd     { areg::InvalidSocketHandle }
     , mWakeupReadFd { areg::InvalidSocketHandle }
     , mWakeupWriteFd{ areg::InvalidSocketHandle }
@@ -130,7 +130,7 @@ bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search)
          || (mKqueueFd == areg::InvalidSocketHandle)
          || (hSocket == mWakeupWriteFd)
          || (hSocket == mWakeupReadFd)
-         || (static_cast<int32_t>(mSockets.size()) >= mMaxCount) )
+         || (static_cast<uint32_t>(mSockets.size()) >= mMaxCount) )
     {
         return false;
     }
@@ -169,7 +169,7 @@ bool areg::SocketMultiplexer::unregister_socket(SOCKETHANDLE hSocket) noexcept
 
             *it = mSockets.back();
             mSockets.pop_back();
-            mBatchCount = mBatchIdx = 0;
+            mBatchCount = mBatchIdx = 0u;
             return true;
         }
     }
@@ -190,8 +190,7 @@ void areg::SocketMultiplexer::reset() noexcept
     }
 
     mSockets.clear();
-    mBatchCount = 0;
-    mBatchIdx   = 0;
+    mBatchCount = mBatchIdx = 0u;
     mIsReset.store(true, std::memory_order_release);
 
     // Wake up any thread blocked in kevent() by writing one byte to the pipe.
@@ -216,7 +215,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
 {
     if (mIsReset.load(std::memory_order_acquire))
     {
-        mBatchCount = mBatchIdx = 0;
+        mBatchCount = mBatchIdx = 0u;
         if (mWakeupReadFd != areg::InvalidSocketHandle)
         {
             drain_pipe(static_cast<int>(mWakeupReadFd));
@@ -238,7 +237,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         if (fd == mWakeupReadFd)
         {
             drain_pipe(static_cast<int>(mWakeupReadFd));
-            mBatchCount = mBatchIdx = 0;
+            mBatchCount = mBatchIdx = 0u;
             // Hard reset --> FailedSocketHandle; soft wakeup() --> InvalidSocketHandle.
             return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
         }
@@ -274,7 +273,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
     else if (n == 0)
         return areg::InvalidSocketHandle;   // timeout
 
-    mBatchCount = mBatchIdx = 0;
+    mBatchCount = mBatchIdx = 0u;
     for (int i = 1; i < n; ++i)
     {
         if ((events[i].flags & EV_ERROR) == 0)
@@ -293,7 +292,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
     if (first == mWakeupReadFd)
     {
         drain_pipe(static_cast<int>(mWakeupReadFd));
-        mBatchCount = mBatchIdx = 0;
+        mBatchCount = mBatchIdx = 0u;
         // Hard reset --> FailedSocketHandle; soft wakeup() --> InvalidSocketHandle.
         return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
     }

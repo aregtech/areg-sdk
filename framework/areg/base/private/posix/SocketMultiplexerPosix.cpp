@@ -117,7 +117,7 @@ bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search)
     if (    !areg::is_valid_socket(hSocket)
          || (hSocket == mWakeupWriteFd)
          || (hSocket == mWakeupReadFd)
-         || (static_cast<int32_t>(mSockets.size()) >= mMaxCount) )
+         || (static_cast<uint32_t>(mSockets.size()) >= mMaxCount) )
     {
         return false;
     }
@@ -209,18 +209,18 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         return fd;
     }
 
-    const int32_t wakeupSlots = (mWakeupReadFd != areg::InvalidSocketHandle) ? 1 : 0;
-    const auto    total       = static_cast<int32_t>(mSockets.size()) + wakeupSlots;
+    const uint32_t wakeupSlots = (mWakeupReadFd != areg::InvalidSocketHandle) ? 1 : 0;
+    const uint32_t total       = static_cast<uint32_t>(mSockets.size()) + wakeupSlots;
 
-    if (total == 0)
+    if (total == 0u)
         return areg::FailedSocketHandle;
 
-    struct pollfd        stackFds[areg::DEFAULT_CONNECTIONS];
+    struct pollfd  stackFds[areg::DEFAULT_CONNECTIONS];
     std::vector<struct pollfd> heapFds;
     struct pollfd* const fds = (total <= areg::DEFAULT_CONNECTIONS) ? stackFds : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
 
-    const auto socketCount = static_cast<int32_t>(mSockets.size());
-    for (int32_t i = 0; i < socketCount; ++i)
+    const uint32 socketCount = static_cast<uint32_t>(mSockets.size());
+    for (uint32_t i = 0; i < socketCount; ++i)
     {
         fds[i].fd      = static_cast<int>(mSockets[static_cast<std::size_t>(i)]);
         fds[i].events  = POLLIN;
@@ -249,10 +249,9 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
     }
 
     // Collect ALL ready sockets into the batch cache; return the first immediately.
-    mBatchCount = 0;
+    mBatchCount = 0u;
     SOCKETHANDLE first{ areg::InvalidSocketHandle };
-    uint32_t     firstEv{ 0u };
-    for (int32_t i = 0; i < socketCount; ++i)
+    for (uint32_t i = 0; i < socketCount; ++i)
     {
         const short rev = fds[i].revents;
         if (rev & (POLLIN | POLLERR | POLLHUP))
@@ -260,7 +259,6 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
             if (first == areg::InvalidSocketHandle)
             {
                 first   = mSockets[static_cast<std::size_t>(i)];
-                firstEv = static_cast<uint32_t>(rev);
             }
             else if (mBatchCount < areg::BATCH_SIZE)
             {
@@ -271,8 +269,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         }
     }
 
-    mBatchIdx = 0;
-    (void)firstEv;  // Event flags stored for cached entries; first is returned directly.
+    mBatchIdx = 0u;
     return first;
 }
 
@@ -290,17 +287,17 @@ SOCKETHANDLE areg::SocketMultiplexer::wait( SOCKETHANDLE            serverSocket
     if (serverSocket == areg::InvalidSocketHandle)
         return areg::FailedSocketHandle;
 
-    const int32_t total = count + 1;
+    const uint32_t total = static_cast<uint32_t>(count) + 1u;
 
     struct pollfd        stackFds[areg::DEFAULT_CONNECTIONS];
     std::vector<struct pollfd> heapFds;
-    struct pollfd* const fds = (total <= static_cast<int32_t>(areg::DEFAULT_CONNECTIONS)) ? stackFds : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
+    struct pollfd* const fds = (total <= areg::DEFAULT_CONNECTIONS) ? stackFds : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
 
     fds[0].fd      = static_cast<int>(serverSocket);
     fds[0].events  = POLLIN;
     fds[0].revents = 0;
 
-    for (int32_t i = 0; i < count; ++i)
+    for (uint32_t i = 0; i < count; ++i)
     {
         fds[static_cast<std::size_t>(i + 1)].fd      = static_cast<int>(clientSockets[i]);
         fds[static_cast<std::size_t>(i + 1)].events  = POLLIN;
@@ -314,7 +311,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait( SOCKETHANDLE            serverSocket
     if (fds[0].revents & POLLIN)
         return serverSocket;    // new connection pending
 
-    for (int32_t i = 0; i < count; ++i)
+    for (uint32_t i = 0; i < count; ++i)
     {
         const short rev = fds[static_cast<std::size_t>(i + 1)].revents;
         if (rev & (POLLIN | POLLERR | POLLHUP))
