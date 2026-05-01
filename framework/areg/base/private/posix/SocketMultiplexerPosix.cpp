@@ -219,7 +219,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
     std::vector<struct pollfd> heapFds;
     struct pollfd* const fds = (total <= areg::DEFAULT_CONNECTIONS) ? stackFds : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
 
-    const uint32 socketCount = static_cast<uint32_t>(mSockets.size());
+    const uint32_t socketCount = static_cast<uint32_t>(mSockets.size());
     for (uint32_t i = 0; i < socketCount; ++i)
     {
         fds[i].fd      = static_cast<int>(mSockets[static_cast<std::size_t>(i)]);
@@ -297,7 +297,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait( SOCKETHANDLE            serverSocket
     fds[0].events  = POLLIN;
     fds[0].revents = 0;
 
-    for (uint32_t i = 0; i < count; ++i)
+    for (int32_t i = 0; i < count; ++i)
     {
         fds[static_cast<std::size_t>(i + 1)].fd      = static_cast<int>(clientSockets[i]);
         fds[static_cast<std::size_t>(i + 1)].events  = POLLIN;
@@ -311,7 +311,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait( SOCKETHANDLE            serverSocket
     if (fds[0].revents & POLLIN)
         return serverSocket;    // new connection pending
 
-    for (uint32_t i = 0; i < count; ++i)
+    for (int32_t i = 0; i < count; ++i)
     {
         const short rev = fds[static_cast<std::size_t>(i + 1)].revents;
         if (rev & (POLLIN | POLLERR | POLLHUP))
