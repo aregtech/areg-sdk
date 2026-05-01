@@ -34,7 +34,13 @@ ScopeMessage::ScopeMessage( const LogScope & logScope )
 {
     if ( is_scope_enabled() )
     {
-        RemoteMessage msg = areg::make_log_message(areg::LogMessageType::ScopeEnter, logScope.priority(), mSessionId, 0u, areg::LogPriority::PrioScope, mScope.name().data(), static_cast<uint32_t>(mScope.name().size()));
+        RemoteMessage msg = areg::make_log_message( areg::LogMessageType::ScopeEnter
+                                                  , logScope.mScopeId
+                                                  , mSessionId
+                                                  , 0u
+                                                  , areg::LogPriority::PrioScope
+                                                  , mScope.name().data()
+                                                  , static_cast<uint32_t>(mScope.name().size()));
         LogManager::log_message(std::move(msg));
     }
 }
@@ -43,7 +49,13 @@ ScopeMessage::~ScopeMessage()
 {
     if ( is_scope_enabled() )
     {
-        RemoteMessage msg = areg::make_log_message(areg::LogMessageType::ScopeExit, mScope.priority(), mSessionId, mTimestamp, areg::LogPriority::PrioScope, mScope.name().data(), static_cast<uint32_t>(mScope.name().size()));
+        RemoteMessage msg = areg::make_log_message( areg::LogMessageType::ScopeExit
+                                                  , mScope.mScopeId
+                                                  , mSessionId
+                                                  , mTimestamp
+                                                  , areg::LogPriority::PrioScope
+                                                  , mScope.name().data()
+                                                  , static_cast<uint32_t>(mScope.name().size()));
         LogManager::log_message(std::move(msg));
     }
 }

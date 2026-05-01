@@ -316,7 +316,7 @@ void ModuleNameLayout::log_message( const areg::LogEntry & msgLog, OutStream & s
             static const String& _module{ Process::instance().app_name() };
             stream.write(reinterpret_cast<const uint8_t*>(_module.as_string()), static_cast<uint32_t>(_module.length()));
         }
-        else if ((msgLog.logCookie != areg::COOKIE_UNKNOWN) && (msgLog.logModuleLen != 0))
+        else if (msgLog.logModuleLen != 0)
         {
             stream.write(reinterpret_cast<const uint8_t*>(msgLog.logModule), msgLog.logModuleLen);
         }
@@ -354,7 +354,7 @@ void ThreadNameLayout::log_message( const areg::LogEntry & msgLog, OutStream & s
 
     if (msgLog.logDataType == areg::LogDataType::Local)
     {
-        const String& thread{ Thread::thread_name(static_cast<id_type>(msgLog.logThreadId)) };
+        const String thread{ Thread::thread_name(static_cast<id_type>(msgLog.logThreadId)) };
         name = thread.as_string();
         len  = static_cast<uint32_t>(thread.length());
     }

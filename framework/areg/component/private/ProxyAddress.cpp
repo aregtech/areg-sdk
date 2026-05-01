@@ -203,11 +203,14 @@ bool ProxyAddress::_deliver_event(Event & serviceEvent, const ITEM_ID & idTarget
     bool result{ false };
     Thread* thread = idTarget != areg::TARGET_UNKNOWN ? Thread::find_by_id(static_cast<id_type>(idTarget)) : nullptr;
     DispatcherThread* dispatcher = thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr;
-    if (dispatcher != nullptr)
+    if ((dispatcher != nullptr) && serviceEvent.register_for_thread(dispatcher))
     {
         LOG_DBG("Delivering event [ %s ] to dispatcher [ %s ]", serviceEvent.class_string(), dispatcher->address().to_string().as_string());
-        result = serviceEvent.register_for_thread(dispatcher);
-        serviceEvent.deliver_event();
+        result = dispatcher->event_dispatcher().post_event(serviceEvent);
+        if (!result)
+        {
+            serviceEvent.destroy();
+        }
     }
     else
     {

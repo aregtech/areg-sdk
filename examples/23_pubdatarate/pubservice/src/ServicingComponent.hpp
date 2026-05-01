@@ -93,42 +93,6 @@ class ServicingComponent final  : public    areg::Component
     };
 
 //////////////////////////////////////////////////////////////////////////
-// ServicingComponent::ServicingTimerConsumer class declaration
-//////////////////////////////////////////////////////////////////////////
-    //!< The timer consumer object
-    class ServicingTimerConsumer : public    areg::TimerConsumer
-    {
-    public:
-        ServicingTimerConsumer( ServicingComponent & service )
-            : areg::TimerConsumer ( )
-            , mService      ( service )
-            {
-            }
-
-        virtual ~ServicingTimerConsumer() = default;
-
-    private:
-    /************************************************************************/
-    // TimerConsumer interface overrides.
-    /************************************************************************/
-
-        /**
-         * \brief   Triggered when Timer is expired. 
-         * \param   timer   The timer object that is expired.
-         **/
-        void process_timer( areg::Timer & timer ) final;
-
-    private:
-        ServicingComponent &    mService;   //!< The service, which handles the options
-
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-        ServicingTimerConsumer() = delete;
-        AREG_NOCOPY_NOMOVE(ServicingTimerConsumer);
-    };
-
-//////////////////////////////////////////////////////////////////////////
 // Internal constants and static members
 //////////////////////////////////////////////////////////////////////////
 
@@ -288,11 +252,6 @@ private:
      **/
     void onOptionEvent( const OptionData& data );
 
-    /**
-     * \brief   Triggered when Timer is expired. 
-     **/
-    void on_timer_expired();
-
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -325,8 +284,6 @@ private:
      * Atomic so the component thread can invalidate it without a lock.
      **/
     std::atomic_bool                mPrebuiltValid;
-    //! The timer to trigger to output data
-    areg::Timer             mTimer;
     //! The thread to input from console.
     areg::Thread            mInputThread;
     //! The thread to generate image data.
@@ -352,8 +309,6 @@ private:
     uint32_t                mMissedBlocks;
     //!< The object to receive option data change event
     OptionConsumer          mOptionConsumer;
-    //!< The object to receive timer expired event
-    ServicingTimerConsumer  mTimerConsumer;
     //!< The synchronization item.
     areg::CriticalSection   mLock;
 

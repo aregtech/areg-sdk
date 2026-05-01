@@ -130,10 +130,12 @@ ThreadLocalStorage* Thread::_thread_local_storage( Thread* ownThread )
     {
         // Called when thread exits.
         ASSERT(ownThread == nullptr );
-        ASSERT(_localStorage != nullptr );
-        _localStorage->clear();
-        delete _localStorage;
-        _localStorage = nullptr;
+        if (_localStorage != nullptr)
+        {
+            _localStorage->clear();
+            delete _localStorage;
+            _localStorage = nullptr;
+        }
     }
 
     return _localStorage;
@@ -252,16 +254,28 @@ void Thread::on_post_exit()
 {
 }
 
-const String & Thread::thread_name( id_type threadId ) noexcept
+String Thread::thread_name( id_type threadId ) noexcept
 {
-    Thread* threadObj = Thread::find_by_id( threadId);
-    return (threadObj != nullptr ? threadObj->name() : String::empty_string());
+    Thread::MapThreadIDResource & threadMap = Thread::_map_thread_id();
+    threadMap.lock();
+
+    Thread * thread = threadMap.find_resource_object(threadId);
+    String name(thread != nullptr ? thread->mThreadAddress.name() : areg::String::empty_string());
+    threadMap.unlock();
+    return name;
 }
 
-const ThreadAddress & Thread::thread_address( id_type threadId ) noexcept
+ThreadAddress Thread::thread_address(id_type threadId) noexcept
 {
-    Thread* threadObj = Thread::find_by_id( threadId);
-    return (threadObj != nullptr ? threadObj->address() : ThreadAddress::invalid_thread_address());
+    ThreadAddress result;
+    Thread::MapThreadIDResource& threadMap = Thread::_map_thread_id();
+    threadMap.lock();
+
+    Thread* thread = threadMap.find_resource_object(threadId);
+    if (thread != nullptr)
+        result = thread->mThreadAddress;
+    threadMap.unlock();
+    return result;
 }
 
 size_t Thread::current_stack_size() noexcept
@@ -342,21 +356,6 @@ void Thread::_unregister_thread()
         Thread::_map_threadh_handle().unregister_resource_object(mThreadHandle);
         Thread::_map_thread_name().unregister_resource_object(mThreadAddress.name());
         Thread::_map_thread_id().unregister_resource_object(mThreadId);
-
-        if (Thread::_map_threadh_handle().is_empty())
-        {
-            Thread::_map_threadh_handle().remove_all_resources();
-        }
-
-        if (Thread::_map_thread_name().is_empty())
-        {
-            Thread::_map_thread_name().remove_all_resources();
-        }
-
-        if (Thread::_map_thread_id().is_empty())
-        {
-            Thread::_map_thread_id().remove_all_resources();
-        }
     }
     else
     {
@@ -366,7 +365,14 @@ void Thread::_unregister_thread()
 
 bool Thread::startup_phase() const noexcept
 {
-    return (Thread::current_thread_storage().item(STORAGE_STARTUP_PHASE).valUInt.mElement != 0u);
+    Thread* current = Thread::current_thread();
+    if (current != this)
+    {
+        return false;
+    }
+
+    ThreadLocalStorage* localStorage = Thread::_thread_local_storage(reinterpret_cast<Thread *>(Thread::CURRENT_THREAD));
+    return (localStorage != nullptr ? localStorage->item(STORAGE_STARTUP_PHASE).valUInt.mElement != 0u : false);
 }
 
 void Thread::set_startup_phase(bool isStartup) noexcept

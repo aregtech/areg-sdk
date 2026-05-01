@@ -82,6 +82,11 @@ bool TimerManager::start_timer(Timer &timer, const DispatcherThread & whichThrea
             result = TimerManagerEvent::send_event( TimerManagerEventData(&timer)
                                                  , static_cast<TimerManagerEventConsumer &>(timerManager)
                                                  , static_cast<DispatcherThread &>(timerManager) );
+            if (!result)
+            {
+                LOG_ERR("Failed to post start event for timer [ %s ]", timer.name().as_string());
+                timerManager._unregister_timer(timer);
+            }
         }
         else
         {
@@ -191,7 +196,16 @@ void TimerManager::process_event( const TimerManagerEventData & data )
     if ( mTimerResource.exist(timer->handle( )) )
     {
         LOG_DBG( "Starting timer [ %s ] with timeout [ %u ] ms.", timer->name( ).as_string( ), timer->timeout( ) );
-        TimerManager::_os_timer_start( *timer );
+        if (TimerManager::_os_timer_start(*timer) == false)
+        {
+            LOG_ERR("Failed to start OS timer [ %s ]", timer->name().as_string());
+            _unregister_timer(*timer);
+
+            Lock lock(timer->mLock);
+            timer->mStarted        = false;
+            timer->mActive         = false;
+            timer->mDispatchThread = nullptr;
+        }
     }
 #ifdef DEBUG
     else
@@ -216,7 +230,7 @@ void TimerManager::_process_expired_timer(Timer * timer, TIMERHANDLE handle, uin
             ASSERT(timer->handle() == handle);
             if (!timer->timer_is_expired(hiBytes, loBytes, reinterpret_cast<ptr_type>(handle)))
             {
-                LOG_WARN("Timer [ %s ] failed to deliver event to target thread. Going to unregister", timer->name().as_string());
+                LOG_INFO("Timer [ %s ] should be stopped and unregistered, it should not be active anymore", timer->name().as_string());
                 mTimerResource.unregister_resource_object(handle);
                 timer->mStarted = false;
                 shouldStop = true;
@@ -225,9 +239,7 @@ void TimerManager::_process_expired_timer(Timer * timer, TIMERHANDLE handle, uin
             {
                 Thread::switch_thread();
                 ASSERT(timer->mActive);
-                LOG_DBG("Send timer [ %s ] event to target [ %llu ], continuing timer"
-                        , timer->name().as_string()
-                        , static_cast<uint64_t>(timer->mDispatchThread->id()));
+                LOG_DBG("Send timer [ %s ] event to target [ %llu ], continuing timer", timer->name().as_string(), static_cast<uint64_t>(timer->mDispatchThread->id()));
             }
         }
         else

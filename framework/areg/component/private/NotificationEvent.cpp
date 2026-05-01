@@ -96,8 +96,16 @@ void NotificationEvent::send_event( const NotificationEventData& data, Notificat
     if (eventElem != nullptr)
     {
         if (caller != nullptr)
+        {
             eventElem->set_event_consumer(static_cast<EventConsumer *>(caller));
-        static_cast<Event *>(eventElem)->deliver_event();
+        }
+
+        if ((eventElem->mTargetThread != nullptr) && eventElem->mTargetThread->event_dispatcher().post_event(*eventElem))
+        {
+            return;
+        }
+
+        eventElem->destroy();
     }
 }
 

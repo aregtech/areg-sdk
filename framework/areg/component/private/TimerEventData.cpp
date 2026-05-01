@@ -85,9 +85,15 @@ bool TimerEvent::send_event(Timer & timer, DispatcherThread & dispatchThread, ar
     TimerEvent* timerEvent = DEBUG_NEW TimerEvent(timer, dispatchThread, prio);
     if (timerEvent == nullptr)
         return false;
-    
-    static_cast<Event *>(timerEvent)->deliver_event();
-    return true;
+
+    Event & event = static_cast<Event &>(*timerEvent);
+    const bool result = dispatchThread.event_dispatcher().post_event(event);
+    if (!result)
+    {
+        event.destroy();
+    }
+
+    return result;
 }
 
 } // namespace areg

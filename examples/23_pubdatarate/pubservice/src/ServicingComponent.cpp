@@ -40,24 +40,12 @@ void ServicingComponent::OptionConsumer::process_event(const OptionData& data)
 }
 
 //////////////////////////////////////////////////////////////////////////
-// ServicingComponent::ServicingTimerConsumer class implementation
-//////////////////////////////////////////////////////////////////////////
-
-void ServicingComponent::ServicingTimerConsumer::process_timer( areg::Timer & timer )
-{
-    if (&timer == &mService.mTimer)
-    {
-        mService.on_timer_expired();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 // ServicingComponent class implementation
 //////////////////////////////////////////////////////////////////////////
 
 ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
-    : areg::Component         ( entry, owner )
-    , LargeDataProviderBase     ( static_cast<areg::Component &>(self()) )
+    : areg::Component       ( entry, owner )
+    , LargeDataProviderBase ( static_cast<areg::Component &>(self()) )
     , areg::ThreadConsumer  ( )
 
     , mBitmap           ( )
@@ -65,7 +53,6 @@ ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg:
     , mProxyPools       ( )
     , mActiveProxies    ( )
     , mPrebuiltValid    ( false )
-    , mTimer            ( static_cast<areg::TimerConsumer &>(mTimerConsumer) , TIMER_NAME )
     , mInputThread      ( static_cast<areg::ThreadConsumer &>(self()), THREAD_WAITINPUT )
     , mImageThread      ( static_cast<areg::ThreadConsumer &>(self()), THREAD_GENERATE )
     , mOptions          ( )
@@ -78,7 +65,6 @@ ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg:
     , mSentBlocks       ( 0 )
     , mMissedBlocks     ( 0 )
     , mOptionConsumer   ( self() )
-    , mTimerConsumer    ( self() )
     , mLock             ( )
 {
     mOptions.mWidth     = util::IMAGE_WIDTH;
@@ -153,7 +139,6 @@ void ServicingComponent::shutdown_service_interface(areg::Component& holder) noe
 
     mQuitThread = true;
     mOptionChanged = true;
-    mTimer.stop_timer();
     mPauseEvent.set_signaled();
 
     _clearPrebuiltMessages();
@@ -192,62 +177,6 @@ bool ServicingComponent::consumer_connected(const areg::ProxyAddress& client, ar
     return result;
 }
 
-void ServicingComponent::on_timer_expired()
-{
-    mLock.lock(areg::WAIT_INFINITE);
-
-    uint64_t sizeSent{ 0u }, sizeRecv{ 0u };
-    uint32_t msgSent{ 0u }, msgRecv{ 0u };
-
-    areg::Application::query_data_sent(sizeSent, msgSent);
-    areg::Application::query_data_received(sizeRecv, msgRecv);
-
-    uint32_t rateItem    = mItemRate;
-    uint32_t sentBlocks  = mSentBlocks;
-    uint32_t missedBlocks= mMissedBlocks;
-    uint64_t sizeItem = rateItem != 0 ? mDataRate / rateItem : 0;
-
-    areg::DataLiteral dataRate = areg::conv_data_size( mDataRate );
-    areg::DataLiteral itemRate = areg::conv_data_size(sizeItem);
-    areg::DataLiteral sendRate = areg::conv_data_size(sizeSent);
-    areg::DataLiteral rcvRate  = areg::conv_data_size(sizeRecv);
-
-
-    mItemRate     = 0;
-    mDataRate     = 0;
-    mSentBlocks   = 0;
-    mMissedBlocks = 0;
-    mLock.unlock();
-
-    // Compute the theoretical data rate from the current image parameters -- what the client should be receiving.
-    uint64_t ns_per_block     = mOptions.nsPerBlock();
-    uint64_t bytes_per_block  = mOptions.bytesPerBlock();
-    double   ideal_blocks_sec = (ns_per_block > 0) ? (static_cast<double>(areg::DURATION_1_SEC) / static_cast<double>(ns_per_block)) : 0.0;
-    uint64_t ideal_bytes_sec  = static_cast<uint64_t>(ideal_blocks_sec * static_cast<double>(bytes_per_block) * static_cast<double>(mOptions.mChannels));
-    areg::DataLiteral idealRate = areg::conv_data_size(ideal_bytes_sec);
-
-    const uint32_t total_blocks_sec = static_cast<uint32_t>(ideal_blocks_sec * static_cast<double>(mOptions.mChannels));
-
-    areg::ext::Console& console = areg::ext::Console::instance();
-    console.save_cursor_position();
-
-    console.output_msg( COORD_COMM_RATE,  MSG_COMM_RATE.data(), sendRate.first, sendRate.second.data(), rcvRate.first, rcvRate.second.data() );
-    console.output_msg( COORD_DATA_RATE,  MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), rateItem );
-    console.output_msg( COORD_ITEM_RATE,  MSG_ITEM_RATE.data(), msgSent, itemRate.first, itemRate.second.data() );
-    console.output_msg( COORD_STATS,      MSG_STATS.data(),     sentBlocks, missedBlocks );
-    if (ns_per_block == 0)
-    {
-        console.output_txt( COORD_IDEAL_RATE, " Theoretical rate .....: IPC-limited (pixel time = 0)." );
-    }
-    else
-    {
-        console.output_msg( COORD_IDEAL_RATE, MSG_IDEAL_RATE.data(), idealRate.first, idealRate.second.data(), total_blocks_sec );
-    }
-
-    console.restore_cursor_position();
-    console.refresh_screen();
-}
-
 void ServicingComponent::onOptionEvent(const OptionData& data)
 {
     LOG_SCOPE( examples_23_pubservice_ServicingComponent, on_option_event );
@@ -268,7 +197,6 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
         mQuitThread    = true;
         mOptionChanged = true;
         mOptions.update(data);
-        mTimer.stop_timer();
         // Unblock the image thread so it can exit its wait.
         mPauseEvent.set_signaled();
 
@@ -282,7 +210,6 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
         mQuitThread    = false;
         mOptionChanged = true;
         mOptions.update(data);
-        mTimer.start_timer(LargeData::TIMER_TIMEOUT, component_thread(), areg::Timer::CONTINUOUSLY);
         // Signal the image thread to wake up and start sending.
         mPauseEvent.set_signaled();
         _printInfo();
@@ -293,7 +220,6 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
 
         mOptionChanged = true;
         mOptions.update(data);
-        mTimer.stop_timer();
         // Pause the image thread: it will exit the inner loop and block on mPauseEvent again.
         mPauseEvent.reset();
         _printInfo();

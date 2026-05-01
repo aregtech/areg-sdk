@@ -258,7 +258,13 @@ AREG_API_IMPL uint32_t areg::scope_priority( const char * scopeName )
     return LogManager::scope_priority( scopeName );
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::make_log_message(areg::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const char* message, uint32_t msgLen)
+AREG_API_IMPL areg::RemoteMessage areg::make_log_message( areg::LogMessageType msgType
+                                                        , uint32_t scopeId
+                                                        , uint32_t sessionId
+                                                        , TIME64 scopeStamp
+                                                        , areg::LogPriority msgPrio
+                                                        , const char* message
+                                                        , uint32_t msgLen)
 {
     RemoteMessage msg(_get_message().rbHeader, sizeof(areg::LogEntry));
     areg::LogEntry* log = reinterpret_cast<areg::LogEntry*>(msg.buffer());
@@ -314,7 +320,7 @@ AREG_API_IMPL void areg::finalize_log_message(areg::RemoteMessage& msg, areg::Lo
     else
     {
         const String& moduleName{ Process::instance().app_name() };
-        const String& threadName{ Thread::thread_name(log->logThreadId) };
+        const String threadName{ Thread::thread_name(log->logThreadId) };
 
         msg.set_source(srcCookie);
         log->logCookie    = srcCookie;
