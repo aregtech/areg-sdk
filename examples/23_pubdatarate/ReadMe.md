@@ -14,13 +14,13 @@ The result on a single machine with a **mobile-class CPU**:
 
 ### Data rate (large payload ~3 MB)
 
-| Platform            | CPU               | RAM       | Payload | Data Rate | Unit | Status    |
-| ------------------- | ----------------- | --------- | ------- | --------- | ---- | --------- |
-| Windows 11          | Intel i7-13700H   | DDR4      | ~3 MB   | 1.7 – 2.1 | GB/s | measured  |
-| WSL2 (on Win11)     | Intel i7-13700H   | DDR4      | ~3 MB   | 3.8 – 4.0 | GB/s | measured  |
-| Linux VM (on macOS) | Apple M4 Pro      | LPDDR5    | ~3 MB   | 6.6 - 6.8 | GB/s | measured  |
-| macOS native        | Apple M4 Pro      | LPDDR5    | ~3 MB   | 6.8 - 7.0 | GB/s | measured  |
-| Linux bare-metal    | x86-64 non-mobile | DDR4/DDR5 | ~3 MB   | 6.0 – 7.5 | GB/s | estimated |
+| Platform            | CPU               | RAM       | Payload | Data Rate    |  Unit | Status    |
+| ------------------- | ----------------- | --------- | ------- | ------------ | ----- | --------- |
+| Windows 11          | Intel i7-13700H   | DDR4      | ~3 MB   |  1.7 – 2.1   |  GB/s | measured  |
+| WSL2 (on Win11)     | Intel i7-13700H   | DDR4      | ~3 MB   |  3.8 – 4.0   |  GB/s | measured  |
+| Linux VM (on macOS) | Apple M4 Pro      | LPDDR5    | ~3 MB   |  6.6 - 6.8   |  GB/s | measured  |
+| macOS native        | Apple M4 Pro      | LPDDR5    | ~3 MB   |  6.8 - 7.0   |  GB/s | measured  |
+| Linux bare-metal    | x86-64 non-mobile | DDR4/DDR5 | ~3 MB   |  6.0 – 7.5   |  GB/s | estimated |
 
 ### Message rate (small payload ~3 KB)
 

@@ -245,7 +245,7 @@ void PageNetworkSetup::OnUpdateEditNickname()
     areg::String nickName(mNickName.GetString());
     if (mNickName.GetLength() != nickName.make_alphanumeric().length())
     {
-        mNickName = nickName.buffer();
+        mNickName = nickName.as_string();
         UpdateData(FALSE);
         mCtrlNickName.SetSel(mNickName.GetLength(), mNickName.GetLength(), FALSE);
     }

@@ -80,18 +80,19 @@
  * \param   stackSizeKb     The stack size of the thread in kilobytes. 1 KB = 1024 Bytes.
  *                          The value 0 (areg::DEFAULT_STACK_SIZE) ignores to change the stack size,
  *                          and uses system default stack size.
+ * \param   queueSize       The queue size of the thread. 0 means unlimited.
  **/
-#define BEGIN_REGISTER_THREAD_EX2(thread_name, timeout, stackSizeKb)                                        \
+#define BEGIN_REGISTER_THREAD_EX2(thread_name, timeout, stackSizeKb, queueSize)                             \
         {                                                                                                   \
             /*  Begin registering component thread                                  */                      \
-            areg::ComponentThreadEntry  thrEntry((thread_name), (timeout), (stackSizeKb));
+            areg::ComponentThreadEntry  thrEntry((thread_name), (timeout), (stackSizeKb), queueSize);
 
 /**
  * \brief   Register component thread with the watchdog timeout and system default thread stack size.
  *          The watchdog timeout is set if `timeout` is not 0.
  **/
 #define BEGIN_REGISTER_THREAD_EX(thread_name, timeout)                                                      \
-            BEGIN_REGISTER_THREAD_EX2((thread_name), (timeout), areg::DEFAULT_STACK_SIZE);
+            BEGIN_REGISTER_THREAD_EX2((thread_name), (timeout), areg::DEFAULT_STACK_SIZE, 0);
 
 /**
  * \brief   Register component thread with no watchdog and system default stack size.

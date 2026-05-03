@@ -545,7 +545,7 @@ uint32_t FileBase::write(const SharedBuffer& buffer)
     if ( is_opened() && can_write() )
     {
         const uint8_t * data  = buffer.buffer();
-        uint32_t sizeUsed       = buffer.size_used();
+        uint32_t sizeUsed     = buffer.size_used();
 
         if (write_int(static_cast<int32_t>(sizeUsed)) && (write(data, sizeUsed) == sizeUsed))
         {

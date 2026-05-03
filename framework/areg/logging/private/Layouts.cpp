@@ -129,7 +129,7 @@ void ModuleIdLayout::log_message( const areg::LogEntry & msgLog, OutStream & str
     {
         if (msgLog.logModuleId == _moduleId)
         {
-            stream.write(reinterpret_cast<const uint8_t*>(_moduleName.buffer()), static_cast<uint32_t>(_moduleName.length()));
+            stream.write(reinterpret_cast<const uint8_t*>(_moduleName.as_string()), static_cast<uint32_t>(_moduleName.length()));
         }
         else
         {

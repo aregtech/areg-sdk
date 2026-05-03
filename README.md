@@ -125,11 +125,11 @@ Integrated distributed logging with visual analysis. Per-method execution timing
 > [!NOTE]
 > **Benchmark — IPC throughput between processes on mobile-class CPUs:**
 > 
-> | Platform     | CPU Type         | ~3 MB data   | ~3 KB msg/s | ~0.5 KB msg/s |
-> |--------------|------------------|--------------|-------------|---------------|
-> | Windows 11   | i7-13700H (DDR4) | 1.7–2.1 GB/s | 120–135K    | 150–160K      |
-> | WSL2 Ubuntu  | i7-13700H (DDR4) | 3.8–4.0 GB/s | 170–190K    | 200–220K      |
-> | macOS native | M4 Pro (LPDDR5)  | ~7.0 GB/s    | 240–290K    | TBD           |
+> | Platform     | CPU Type         | ~3MB data rate | ~3KB msg rate  | ~0.5KB msg rate |
+> |--------------|------------------|----------------|----------------|-----------------|
+> | Windows 11   | i7-13700H (DDR4) | 1.7–2.1 GB/s   | 120–135K msg/s | 150–160K msg/s  |
+> | WSL2 Ubuntu  | i7-13700H (DDR4) | 3.8–4.0 GB/s   | 170–190K msg/s | 200–220K msg/s  |
+> | macOS native | M4 Pro (LPDDR5)  | 6.8–7.0 GB/s   | 240–290K msg/s | TBD             |
 > 
 > **Configuration:** 1:1 (single provider → single consumer) via `mtrouter` on TCP `localhost` socket - no shared memory or kernel bypass.
 >
@@ -137,7 +137,7 @@ Integrated distributed logging with visual analysis. Per-method execution timing
 >
 > **Real-world applicability:** Software pipeline layer for scientific imaging (laser microscopy, X-ray, electron microscopy) and industrial machine vision - covering 99% of use cases on standard laptops.
 >
-> 📊 Measure your own hardware: Run [`23_pubdatarate`](examples/23_pubdatarate/) — see the [example README](examples/23_pubdatarate/ReadMe.md) for benchmark recipes and platform results.
+> 📊 Measure own hardware: run [`23_pubdatarate`](examples/23_pubdatarate/), see the [README](examples/23_pubdatarate/ReadMe.md) for benchmark recipes and platform results.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -233,7 +233,7 @@ The [`01_minimalrpc`](./examples/01_minimalrpc/) example demonstrates automated 
 ./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/01_minimalrpc
 
 # macOS:
-./product/build/llvm-clang++/macos-64-arm64-release-shared/bin/01_minimalrpc
+./product/build/llvm-clang/darwin-64-arm64-release-shared/bin/01_minimalrpc
 
 # Windows (adjust for compiler):
 .\product\build\msvc-cl\windows-64-amd64-release-shared\bin\01_minimalrpc.exe

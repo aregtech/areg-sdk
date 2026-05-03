@@ -27,11 +27,11 @@ namespace areg {
 // EventDispatcher class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 EventDispatcher::EventDispatcher( const String & name, uint32_t maxQeueue )
-    : EventDispatcherBase   ( name, maxQeueue )
-    , ThreadConsumer      (  )
-    , EventRouter         (  )
+    : EventDispatcherBase( name, maxQeueue )
+    , ThreadConsumer     (  )
+    , EventRouter        (  )
 
-    , mDispatcherThread     ( nullptr )
+    , mDispatcherThread  ( nullptr )
 {
 }
 

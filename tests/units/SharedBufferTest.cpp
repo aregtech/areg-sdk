@@ -416,7 +416,7 @@ TEST(SharedBufferTest, cursor_append_after_move_to_end)
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   Copy constructor shares the underlying block; cursors are independent.
+ * \brief   Copy constructor shares the underlying block and rewinds to the beginning of the visible slice.
  **/
 TEST(SharedBufferTest, copy_constructor_shares)
 {
@@ -428,12 +428,12 @@ TEST(SharedBufferTest, copy_constructor_shares)
     EXPECT_TRUE(original.is_shared());
     EXPECT_TRUE(copy.is_shared());
     EXPECT_EQ(original, copy);
-    EXPECT_EQ(copy.position(), 0u);                 // copy cursor reset to 0
+    EXPECT_EQ(copy.position(), 0u);
     EXPECT_EQ(original.position(), orig_cursor);    // original cursor unchanged
 }
 
 /**
- * \brief   Copy assignment shares the block; target cursor is reset to 0.
+ * \brief   Copy assignment shares the block and rewinds to the beginning of the visible slice.
  **/
 TEST(SharedBufferTest, copy_assignment_shares)
 {
@@ -475,6 +475,101 @@ TEST(SharedBufferTest, move_assignment_transfers)
     dst = std::move(src);
     EXPECT_EQ(dst.size_used(), sizeof(uint32_t));
     EXPECT_FALSE(src.is_valid());
+}
+
+TEST(SharedBufferTest, view_copy_preserves_slice_and_rewinds)
+{
+    areg::SharedBuffer inner;
+    inner << VAL_A << VAL_B;
+
+    areg::SharedBuffer outer;
+    outer << VAL_C << inner;
+
+    outer.reset();
+    uint32_t prefix {};
+    outer >> prefix;
+    EXPECT_EQ(prefix, VAL_C);
+
+    areg::SharedBuffer view;
+    outer >> view;
+    EXPECT_EQ(view.size_used(), inner.size_used());
+    const uint32_t view_begin = view.position();
+
+    uint32_t first {};
+    view >> first;
+    EXPECT_EQ(first, VAL_A);
+
+    areg::SharedBuffer copy(view);
+    EXPECT_EQ(copy.position(), view_begin);
+
+    uint32_t copied_first {}, second {};
+    copy >> copied_first >> second;
+    EXPECT_EQ(copied_first, VAL_A);
+    EXPECT_EQ(second, VAL_B);
+}
+
+TEST(SharedBufferTest, view_move_preserves_slice_and_rewinds)
+{
+    areg::SharedBuffer inner;
+    inner << VAL_A << VAL_B;
+
+    areg::SharedBuffer outer;
+    outer << VAL_C << inner;
+
+    outer.reset();
+    uint32_t prefix {};
+    outer >> prefix;
+    EXPECT_EQ(prefix, VAL_C);
+
+    areg::SharedBuffer view;
+    outer >> view;
+    const uint32_t view_begin = view.position();
+    uint32_t first {};
+    view >> first;
+
+    areg::SharedBuffer moved(std::move(view));
+    EXPECT_EQ(moved.position(), view_begin);
+    EXPECT_FALSE(view.is_valid());
+
+    uint32_t moved_first {}, moved_second {};
+    moved >> moved_first >> moved_second;
+    EXPECT_EQ(moved_first, VAL_A);
+    EXPECT_EQ(moved_second, VAL_B);
+}
+
+TEST(SharedBufferTest, write_to_view_is_blocked)
+{
+    areg::SharedBuffer inner;
+    inner << VAL_A << VAL_B;
+
+    areg::SharedBuffer outer;
+    outer << VAL_C << inner;
+
+    outer.reset();
+    uint32_t prefix {};
+    outer >> prefix;
+    EXPECT_EQ(prefix, VAL_C);
+
+    areg::SharedBuffer view;
+    outer >> view;
+
+    // Views are read-only per spec §7 Option A. Write returns 0 and the view is unchanged.
+    EXPECT_TRUE(view.is_view());
+    const uint32_t used_before = view.size_used();
+    view.move_to_begin();
+    const uint32_t written = view.write(reinterpret_cast<const uint8_t*>(&VAL_C), sizeof(VAL_C));
+    EXPECT_EQ(written, 0u);
+    EXPECT_EQ(view.size_used(), used_before);
+
+    // detach() yields a writable owner copy of the view's content.
+    areg::SharedBuffer owner = view.detach();
+    EXPECT_TRUE(owner.is_owner());
+    EXPECT_FALSE(owner.is_view());
+    owner.move_to_begin();
+    uint32_t da {}, db {};
+    owner >> da >> db;
+    EXPECT_EQ(da, VAL_A);
+    EXPECT_EQ(db, VAL_B);
 }
 
 /**

@@ -254,7 +254,7 @@ inline void PageConnections::addConnection( const ConnectionManager::ConnectionR
         LOG_DBG( "Adding new connection of nickName [ %s ] and cookie [ %u ]", connection.nickName.as_string( ), connection.cookie );
         int32_t pos = mCtrlConnections.GetItemCount( );
         CString nickName( connection.nickName.as_string() );
-        CString timeConnect( areg::DateTime( connection.connectTime ).format_time( ).buffer( ) );
+        CString timeConnect( areg::DateTime( connection.connectTime ).format_time( ).as_string( ) );
         uint32_t cookie = connection.cookie;
 
         LVITEM lv;

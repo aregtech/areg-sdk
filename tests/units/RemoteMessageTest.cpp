@@ -296,7 +296,7 @@ TEST(RemoteMessageTest, clone_data_independence)
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   Copy constructor shares the block; is_shared() is true on both.
+ * \brief   Copy constructor shares the block and rewinds to the payload start.
  **/
 TEST(RemoteMessageTest, copy_shares_block)
 {
@@ -308,7 +308,7 @@ TEST(RemoteMessageTest, copy_shares_block)
     EXPECT_TRUE(msg.is_shared());
     EXPECT_TRUE(copy.is_shared());
     EXPECT_EQ(copy.source(), ITEM_ID{ 55u });
-    EXPECT_EQ(copy.position(), 0u);   // cursor reset to 0 on copy
+    EXPECT_EQ(copy.position(), 0u);
 }
 
 /**
@@ -324,6 +324,7 @@ TEST(RemoteMessageTest, move_transfers_ownership)
     areg::RemoteMessage moved(std::move(msg));
     EXPECT_EQ(moved.size_used(), size_before);
     EXPECT_EQ(moved.source(), ITEM_ID{ 66u });
+    EXPECT_EQ(moved.position(), 0u);
     EXPECT_FALSE(msg.is_valid());
 }
 

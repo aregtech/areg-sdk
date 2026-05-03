@@ -53,7 +53,7 @@ Component* Component::load_component(const areg::ComponentEntry &entry, Componen
     for (uint32_t i = 0; i < wThreads.mListWorkers.size(); ++ i)
     {
         const areg::WorkerThreadEntry& wtEntry = wThreads.mListWorkers[i];
-        WorkerThreadConsumer* consumer = static_cast<Component *>(component)->worker_thread_consumer(wtEntry.mConsumerName.as_string(), wtEntry.mThreadName.buffer());
+        WorkerThreadConsumer* consumer = static_cast<Component *>(component)->worker_thread_consumer(wtEntry.mConsumerName.as_string(), wtEntry.mThreadName.as_string());
         if (consumer == nullptr)
             continue;
         

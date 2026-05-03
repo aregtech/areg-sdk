@@ -90,7 +90,7 @@ namespace {
             {
                 areg::String name;
                 name.format(fmt, dirEntry->d_name);
-                FILE* file = fopen(name.buffer(), "r");
+                FILE* file = fopen(name.as_string(), "r");
                 if (file != nullptr)
                 {
                     if (fgets(buffer, areg::File::MAXIMUM_PATH + 1, file) != nullptr)

@@ -31,13 +31,13 @@ namespace areg {
 EventDispatcherBase::EventDispatcherBase(const String & name, uint32_t maxQeueue)
     : QueueListener  ( )
 
-    , mDispatcherName   ( name )
-    , mExternalEvents    ( static_cast<QueueListener &>(self()), maxQeueue)
-    , mInternalEvents   ( maxQeueue )
-    , mHasStarted       ( false )
-    , mConsumerMap      ( )
-    , mEventExit        ( false, false )
-    , mEventQueue       ( true, false )
+    , mDispatcherName( name )
+    , mExternalEvents( static_cast<QueueListener &>(self()), maxQeueue)
+    , mInternalEvents( maxQeueue )
+    , mHasStarted    ( false )
+    , mConsumerMap   ( )
+    , mEventExit     ( false, false )
+    , mEventQueue    ( true, false )
 {
 }
 

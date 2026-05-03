@@ -112,8 +112,8 @@ void DirectConnectionService::request_connectoin_setup( const DirectConnection::
         if ( exists(initiator) == false )
         {
             LOG_DBG("[ %s ] at time-stamps [ %s ] initiated chat with [ %d ] clients. Setting up chat."
-                            , initiator.nickName.buffer()
-                            , areg::DateTime(initiator.sessionId).format_time().buffer()
+                            , initiator.nickName.as_string()
+                            , areg::DateTime(initiator.sessionId).format_time().as_string()
                             , listParticipants.size() );
 
             uint64_t sessionID = getSession(listParticipants);
@@ -131,7 +131,7 @@ void DirectConnectionService::request_connectoin_setup( const DirectConnection::
             }
             else
             {
-                LOG_DBG("[ %s ] with cookie [ %u ] could not find session ID. Ignoring direct connection setup.", mNickName.buffer(), mCookie);
+                LOG_DBG("[ %s ] with cookie [ %u ] could not find session ID. Ignoring direct connection setup.", mNickName.as_string(), mCookie);
                 response_connectoin_setup( false, participant, initiator, DirectConnection::ListParticipants() );
             }
         }
@@ -166,8 +166,8 @@ void DirectConnectionService::request_add_participant( const DirectConnection::s
         if ( exists(initiator) == true )
         {
             LOG_DBG("[ %s ] at time-stamps [ %s ] is adding chat participants of [ %d ] clients."
-                            , initiator.nickName.buffer()
-                            , areg::DateTime(initiator.sessionId).format_time().buffer()
+                            , initiator.nickName.as_string()
+                            , areg::DateTime(initiator.sessionId).format_time().as_string()
                             , listParticipants.size() );
 
             DirectConnection::MapParticipants & mapParticipants = initiated_connections( );
@@ -182,8 +182,8 @@ void DirectConnectionService::request_add_participant( const DirectConnection::s
         else
         {
             LOG_WARN("[ %s ] at time-stamps [ %s ] has no participants. Ignoring request to add participants."
-                            , initiator.nickName.buffer()
-                            , areg::DateTime(initiator.sessionId).format_time().buffer() );
+                            , initiator.nickName.as_string()
+                            , areg::DateTime(initiator.sessionId).format_time().as_string() );
             response_add_participant(false, DirectConnection::ListParticipants());
         }
     }
@@ -203,8 +203,8 @@ void DirectConnectionService::request_remove_participant( const DirectConnection
         if ( exists(initiator) == true )
         {
             LOG_DBG("[ %s ] at time-stamps [ %s ] is removing chat participants of [ %d ] clients."
-                            , initiator.nickName.buffer()
-                            , areg::DateTime(initiator.sessionId).format_time().buffer()
+                            , initiator.nickName.as_string()
+                            , areg::DateTime(initiator.sessionId).format_time().as_string()
                             , listParticipants.size() );
 
             DirectConnection::MapParticipants & mapParticpants = initiated_connections( );
@@ -238,14 +238,14 @@ void DirectConnectionService::request_remove_participant( const DirectConnection
         else
         {
             LOG_WARN("[ %s ] at time-stamps [ %s ] has no participants. Ignoring request to remove participants."
-                            , initiator.nickName.buffer()
-                            , areg::DateTime(initiator.sessionId).format_time().buffer() );
+                            , initiator.nickName.as_string()
+                            , areg::DateTime(initiator.sessionId).format_time().as_string() );
             response_remove_participant(false, DirectConnection::ListParticipants());
         }
     }
     else
     {
-        LOG_WARN("Invalid participant with name [ %s ], cookie [ %u ] and session ID [ %llu ]", initiator.nickName.buffer(), initiator.cookie, initiator.sessionId);
+        LOG_WARN("Invalid participant with name [ %s ], cookie [ %u ] and session ID [ %llu ]", initiator.nickName.as_string(), initiator.cookie, initiator.sessionId);
         response_remove_participant( false, DirectConnection::ListParticipants( ) );
     }
 }

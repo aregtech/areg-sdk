@@ -34,6 +34,9 @@
 
 namespace {
 
+    thread_local areg::ext::Console::Coord _savedCursorPos{ 0, 0 };
+    thread_local bool _hasSavedCursorPos{ false };
+
     /**
      * \brief   Writes text at the given position WITHOUT moving the visible
      *          cursor.  First clears the line from posX to the right edge,
@@ -213,8 +216,8 @@ void Console::_os_set_cursor_cur_position(Console::Coord pos) const
 
     // Track in software so _os_output_text can restore here without a DSR query,
     // and so _os_restore_cursor_position returns to the correct position.
-    mSavedPos = { static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) };
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    mSavedPos = { static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) };
     SetConsoleCursorPosition(hStdOut, COORD{ static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) });
 }
 
@@ -298,18 +301,39 @@ bool Console::_os_read_input_list(const char* format, va_list varList) const
 
 void Console::_os_save_cursor_position() const
 {
-    // mSavedPos is the software-tracked input-prompt anchor maintained by
-    // _os_set_cursor_cur_position().  Do NOT read the OS cursor here — background
-    // _os_output_text calls restore it to mSavedPos after every write, so the
-    // OS cursor is already there.  Overwriting mSavedPos with the OS value would
-    // corrupt the anchor.  This matches the ANSI backend behavior.
+    Lock lock(mLock);
+    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    CONSOLE_SCREEN_BUFFER_INFO info{};
+    if ((hStdOut != nullptr) && (GetConsoleScreenBufferInfo(hStdOut, &info) == TRUE))
+    {
+        _savedCursorPos   = { info.dwCursorPosition.X, info.dwCursorPosition.Y };
+        _hasSavedCursorPos = true;
+    }
+    else
+    {
+        _savedCursorPos   = mSavedPos;
+        _hasSavedCursorPos = true;
+    }
 }
 
 void Console::_os_restore_cursor_position() const
 {
     Lock lock(mLock);
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleCursorPosition(hStdOut, COORD{ static_cast<SHORT>(mSavedPos.posX), static_cast<SHORT>(mSavedPos.posY) });
+    const Console::Coord target = _hasSavedCursorPos ? _savedCursorPos : mSavedPos;
+
+    CONSOLE_SCREEN_BUFFER_INFO info{};
+    SHORT targetX{ static_cast<SHORT>(target.posX) };
+    SHORT targetY{ static_cast<SHORT>(target.posY) };
+    if ((hStdOut != nullptr) && (GetConsoleScreenBufferInfo(hStdOut, &info) == TRUE))
+    {
+        targetX = static_cast<SHORT>(targetX < 0 ? 0 : (targetX >= info.dwSize.X ? info.dwSize.X - 1 : targetX));
+        targetY = static_cast<SHORT>(targetY < 0 ? 0 : (targetY >= info.dwSize.Y ? info.dwSize.Y - 1 : targetY));
+    }
+
+    SetConsoleCursorPosition(hStdOut, COORD{ targetX, targetY });
+    _hasSavedCursorPos = false;
 }
 
 void Console::_os_move_cursor_one_line_up() const
