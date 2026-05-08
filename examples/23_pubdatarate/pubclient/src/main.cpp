@@ -27,8 +27,9 @@
 
 #endif // _MSC_VER
 
-constexpr char const _modelName[]= { "DataRate" };  //!< The name of model
-const areg::String     _serviceClient  = areg::generate_name("ServiceClient"); //!< Generated name of service client component
+constexpr char const _modelName[]   = { "DataRate" };  //!< The name of model
+const areg::String   _serviceClient = areg::generate_name("ServiceConsumer"); //!< Generated name of service client component
+constexpr uint32_t     CLIENT_EVENT_QUEUE_SIZE { 1024u };
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -40,7 +41,7 @@ const areg::String     _serviceClient  = areg::generate_name("ServiceClient"); /
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestServiceThread" )
+    BEGIN_REGISTER_THREAD_EX2( "TestServiceConsumerThread", areg::WATCHDOG_IGNORE, areg::DEFAULT_STACK_SIZE, CLIENT_EVENT_QUEUE_SIZE )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _serviceClient, ServiceClient )
             // register service dependency
@@ -48,7 +49,7 @@ BEGIN_MODEL(_modelName)
         // end of component description
         END_REGISTER_COMPONENT( _serviceClient )
     // end of thread description
-    END_REGISTER_THREAD( "TestServiceThread" )
+    END_REGISTER_THREAD( "TestServiceConsumerThread" )
 
 // end of model description
 END_MODEL(_modelName)

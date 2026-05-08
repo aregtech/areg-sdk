@@ -222,17 +222,15 @@ uint32_t FileBuffer::position() const noexcept
 
 uint32_t FileBuffer::normalize_mode( uint32_t mode ) const noexcept
 {
-    if (mSharedBuffer.is_shared())
+    if (mSharedBuffer.is_shared() || mSharedBuffer.is_view())
     {
-        // Non-owner (shared view): enforce read-only; the buffer must already exist.
+        // Non-owner (shared or view): enforce read-only; the buffer must already exist.
         mode &= ~static_cast<uint32_t>(FileBase::OpenFlag::BitWrite);
         mode |=  static_cast<uint32_t>(FileBase::OpenFlag::BitExist);
     }
     else
     {
         // Owner: apply default creation policy when none is specified.
-        // Memory buffers have no persistent backing store. Default to OpenAlways:
-        // allocate on first open, preserve existing data on subsequent opens.
         if (((mode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreateNew)) == 0) &&
             ((mode & static_cast<uint32_t>(FileBase::OpenFlag::BitExist)) == 0))
         {

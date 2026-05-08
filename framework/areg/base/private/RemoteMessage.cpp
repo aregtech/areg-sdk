@@ -142,17 +142,15 @@ uint32_t RemoteMessage::init_buffer(uint8_t *newBuffer, uint32_t bufLength, bool
 
 void RemoteMessage::buffer_completion_fix() const
 {
-    if (!is_valid())
+    const areg::MessageHeader* hdr = header();
+    if (hdr == nullptr)
         return;
-
-    const areg::RawMessage & msg = _raw_message();
-    const areg::MessageHeader & header = msg.rbHeader;
 
     // skip redundant writes when already fixed.
-    if (header.rbhChecksum != areg::CHECKSUM_INVALID)
+    if (hdr->rbhChecksum != areg::CHECKSUM_INVALID)
         return;
 
-    const_cast<areg::MessageHeader&>(header).rbhChecksum = RemoteMessage::_checksum_calculate(msg);
+    const_cast<areg::MessageHeader *>(hdr)->rbhChecksum = RemoteMessage::_checksum_calculate(reinterpret_cast<const areg::RawMessage &>(*hdr));
 }
 
 uint8_t * RemoteMessage::init_message(const areg::MessageHeader & rmHeader, uint32_t reserve /*= 0*/ )
@@ -178,8 +176,10 @@ uint8_t * RemoteMessage::init_message(const areg::MessageHeader & rmHeader, uint
             msg->rbHeader.rbhBufHeader.biOffset = biOffset;
             msg->rbHeader.rbhBufHeader.biUsed   = std::min(rmHeader.rbhBufHeader.biUsed, biLength);
 
-            mPosition = 0u;
-            return buffer();
+            mPosition  = 0u;
+            mViewStart = 0u;
+            mViewEnd   = 0u;
+            return msg->rbData;
         }
     }
 

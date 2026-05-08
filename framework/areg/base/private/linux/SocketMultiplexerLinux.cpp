@@ -209,7 +209,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         {
             drain_eventfd(static_cast<int>(mWakeupReadFd));
             mBatchCount = mBatchIdx = 0u;
-            // Hard reset --> FailedSocketHandle; soft wakeup() --> InvalidSocketHandle.
+            // Hard reset -> FailedSocketHandle; soft wakeup() -> InvalidSocketHandle.
             return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
         }
 

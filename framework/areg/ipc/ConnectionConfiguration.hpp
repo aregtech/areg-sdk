@@ -169,6 +169,14 @@ public:
     uint32_t pool_pairs() const noexcept;
 
     /**
+     * \brief   Returns the configured SO_SNDTIMEO value in milliseconds for this service connection.
+     *          Falls back to the compile-time default (SOCKET_SEND_TIMEOUT_MS) when the
+     *          key is absent or zero in areg.init.
+     **/
+    [[nodiscard]]
+    uint32_t socket_send_timeout() const noexcept;
+
+    /**
      * \brief   Extracts IP address bytes from connection address.
      *
      * \param[out] field0      First byte of IP address.

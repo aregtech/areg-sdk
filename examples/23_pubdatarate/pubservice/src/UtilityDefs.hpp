@@ -13,6 +13,7 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
+#include "common/LargeDataDefs.hpp"
 
 #include <string_view>
 
@@ -90,16 +91,16 @@ namespace util {
     //! List of supported commands and options.
     constexpr OptionSpec  OptionSpecs[]
     {
-          {"-w=", "--width=",   OptionFlag::CmdWidth,         32,     32'768} //! Width in pixels
-        , {"-h=", "--height",   OptionFlag::CmdHeight,        32,     32'768} //! Height in pixels
-        , {"-l=", "--lines=",   OptionFlag::CmdLinesPerBlock,  1,          0} //! Lines per block, maximum is equal to height
-        , {"-t=", "--time=" ,   OptionFlag::CmdPixelTime,      0,    100'000} //! Pixel time in nanoseconds, 0 = full speed
-        , {"-c=", "--channels=",OptionFlag::CmdChannels,       1,         96} //! Number of channels
-        , {"-i" , "--info",     OptionFlag::CmdInformation,    0,          0} //! Display information
-        , {"-h" , "--help",     OptionFlag::CmdHelp,           0,          0} //! Display help
-        , {"-s" , "--start",    OptionFlag::CmdStart,          0,          0} //! Start large data service
-        , {"-p" , "--stop",     OptionFlag::CmdStop,           0,          0} //! Stop large data service
-        , {"-q" , "--quit",     OptionFlag::CmdQuit,           0,          0} //! Quit application
+          {"-w=", "--width=",   OptionFlag::CmdWidth,         32,                  32'768} //! Width in pixels
+        , {"-h=", "--height",   OptionFlag::CmdHeight,        32,                  32'768} //! Height in pixels
+        , {"-l=", "--lines=",   OptionFlag::CmdLinesPerBlock,  1,                       0} //! Lines per block, maximum is equal to height
+        , {"-t=", "--time=" ,   OptionFlag::CmdPixelTime,      0,                 100'000} //! Pixel time in nanoseconds, 0 = full speed
+        , {"-c=", "--channels=",OptionFlag::CmdChannels,       1, LargeData::MAX_CHANNELS} //! Number of channels
+        , {"-i" , "--info",     OptionFlag::CmdInformation,    0,                       0} //! Display information
+        , {"-h" , "--help",     OptionFlag::CmdHelp,           0,                       0} //! Display help
+        , {"-s" , "--start",    OptionFlag::CmdStart,          0,                       0} //! Start large data service
+        , {"-p" , "--stop",     OptionFlag::CmdStop,           0,                       0} //! Stop large data service
+        , {"-q" , "--quit",     OptionFlag::CmdQuit,           0,                       0} //! Quit application
     };
 
     //!< Default bits per pixel.
@@ -115,7 +116,8 @@ namespace util {
     //!< Default pixel dwell time in nanoseconds.
     static constexpr uint32_t DWELL_TIME        { 25 };
     //!< Default image source channels in count.
-    static constexpr uint32_t CHANNELS_SOURCE   { 10 };
+    static constexpr uint32_t CHANNELS_SOURCE   { 12 };
+    static constexpr uint64_t TIME_IN_DEPTH     {100'000'000u};
 
     //! The option data class
     struct OptionValues

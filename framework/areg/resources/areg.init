@@ -309,6 +309,7 @@ net::*::tcpip::batch                = 32                    # Send/drain batch s
 net::*::tcpip::zerocopy             = false                 # MSG_ZEROCOPY send (Linux 4.14+ only). Set false on WSL2 — no actual zero-copy benefit there.
 net::*::tcpip::ring                 = 16                    # Zerocopy ring-slot count. Each slot is ~312 bytes; 16 = ~5 KB. Ignored when zerocopy = false.
 net::*::tcpip::pairs                = 0                     # Pool thread-pair count. 0 = disabled (shared send/recv threads). >0 = dedicated pool pairs per N clients.
+net::*::tcpip::timeout              = 2500                  # SO_SNDTIMEO in ms. Raise (e.g. 30000) when debugging on Windows to prevent breakpoint-pause disconnects.
 
 # ---------------------------------------------------------------------------
 # Remote Logger Settings

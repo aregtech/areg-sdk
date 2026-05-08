@@ -34,7 +34,7 @@ constexpr char const _modelName[]  { "ServiceModel" };   //!< The name of model
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestServiceThread" )
+    BEGIN_REGISTER_THREAD( "TestServiceProviderThread" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT(LargeData::ServiceRoleName, ServicingComponent)
             // register HelloWorld service implementation.
@@ -42,7 +42,7 @@ BEGIN_MODEL(_modelName)
         // end of component description
         END_REGISTER_COMPONENT(LargeData::ServiceRoleName)
     // end of thread description
-    END_REGISTER_THREAD( "TestServiceThread" )
+    END_REGISTER_THREAD( "TestServiceProviderThread" )
 
 // end of model description
 END_MODEL(_modelName)

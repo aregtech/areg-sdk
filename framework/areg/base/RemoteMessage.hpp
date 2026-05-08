@@ -254,6 +254,18 @@ public:
     [[nodiscard]]
     RemoteMessage clone(const ITEM_ID & source = 0, const ITEM_ID & target = 0) const;
 
+    /**
+     * \brief   Returns the header of the buffer object.
+     **/
+    [[nodiscard]]
+    inline areg::MessageHeader* header() noexcept;
+
+    /**
+     * \brief   Returns the header of the buffer object.
+     **/
+    [[nodiscard]]
+    inline const areg::MessageHeader* header() const noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
@@ -455,6 +467,16 @@ inline uint32_t RemoteMessage::data_offset() const noexcept
 inline uint32_t RemoteMessage::header_size() const noexcept
 {
     return sizeof(areg::RawMessage);
+}
+
+inline areg::MessageHeader* RemoteMessage::header() noexcept
+{
+    return (is_valid() ? &(reinterpret_cast<areg::RawMessage *>(mByteBuffer.get())->rbHeader) : nullptr);
+}
+
+inline const areg::MessageHeader* RemoteMessage::header() const noexcept
+{
+    return (is_valid() ? &(reinterpret_cast<const areg::RawMessage*>(mByteBuffer.get())->rbHeader) : nullptr);
 }
 
 /************************************************************************/

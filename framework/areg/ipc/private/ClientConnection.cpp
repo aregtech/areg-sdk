@@ -22,28 +22,31 @@ namespace areg {
 
 ClientConnection::ClientConnection()
     : SocketConnectionBase    ( )
-    , mClientSocket ( )
-    , mCookie       ( areg::COOKIE_UNKNOWN )
-    , mSockSendBuf  ( areg::SOCKET_SEND_BUFFER_SIZE )
-    , mSockRecvBuf  ( areg::SOCKET_RECV_BUFFER_SIZE )
+    , mClientSocket         ( )
+    , mCookie               ( areg::COOKIE_UNKNOWN )
+    , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )
+    , mSockRecvBuf          ( areg::SOCKET_RECV_BUFFER_SIZE )
+    , mSockSendTimeoutMs    ( areg::SOCKET_SEND_TIMEOUT_MS )
 {
 }
 
 ClientConnection::ClientConnection(const String & hostName, uint16_t portNr)
     : SocketConnectionBase    ( )
-    , mClientSocket ( hostName, portNr )
-    , mCookie       ( areg::COOKIE_UNKNOWN )
-    , mSockSendBuf  ( areg::SOCKET_SEND_BUFFER_SIZE )
-    , mSockRecvBuf  ( areg::SOCKET_RECV_BUFFER_SIZE )
+    , mClientSocket         ( hostName, portNr )
+    , mCookie               ( areg::COOKIE_UNKNOWN )
+    , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )
+    , mSockRecvBuf          ( areg::SOCKET_RECV_BUFFER_SIZE )
+    , mSockSendTimeoutMs    ( areg::SOCKET_SEND_TIMEOUT_MS )
 {
 }
 
 ClientConnection::ClientConnection(const areg::SocketAddress & remoteAddress)
     : SocketConnectionBase    ( )
-    , mClientSocket ( remoteAddress )
-    , mCookie       ( areg::COOKIE_UNKNOWN )
-    , mSockSendBuf  ( areg::SOCKET_SEND_BUFFER_SIZE )
-    , mSockRecvBuf  ( areg::SOCKET_RECV_BUFFER_SIZE )
+    , mClientSocket         ( remoteAddress )
+    , mCookie               ( areg::COOKIE_UNKNOWN )
+    , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )
+    , mSockRecvBuf          ( areg::SOCKET_RECV_BUFFER_SIZE )
+    , mSockSendTimeoutMs    ( areg::SOCKET_SEND_TIMEOUT_MS )
 {
 }
 
@@ -53,23 +56,10 @@ bool ClientConnection::create_socket(const String & hostName, uint16_t portNr)
     set_cookie( mClientSocket.create(hostName, portNr) ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
     if (mClientSocket.is_valid())
     {
-        // SO_SNDBUF: applied on all platforms.  Setting SO_SNDBUF on Windows does NOT
-        // disable TCP Send Window autotuning — only SO_RCVBUF has that side-effect.
-        // A large send buffer (default 16 MB) keeps many large frames in-flight and
-        // prevents TCP stalls on high-throughput image pipelines.
+        areg::socket_set_no_delay(mClientSocket.handle());
         areg::set_send_size(mClientSocket.handle(), mSockSendBuf);
-
-        // SO_RCVBUF: skip on Windows.  setsockopt(SO_RCVBUF) disables TCP Receive
-        // Window Autotuning (Vista+), which is more effective than any fixed value
-        // for loopback and LAN.
-#if !defined(_WIN32)
         areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
-#endif  // !defined(_WIN32)
-
-        // SO_SNDTIMEO ensures blocking send() returns after the timeout instead
-        // of blocking indefinitely when the peer is unresponsive.
-        areg::set_send_timeout(mClientSocket.handle(), areg::SOCKET_SEND_TIMEOUT_MS);
-
+        areg::set_send_timeout(mClientSocket.handle(), mSockSendTimeoutMs);
 #if defined(__linux__)
         mZerocopyEnabled = mZerocopyWanted && areg::socket_enable_zerocopy(mClientSocket.handle());
 #endif  // defined(__linux__)
@@ -83,14 +73,10 @@ bool ClientConnection::create_socket()
     set_cookie( mClientSocket.create() ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
     if (mClientSocket.is_valid())
     {
-        // SO_SNDBUF: applied on all platforms (see comment in create_socket(host, port) above).
+        areg::socket_set_no_delay(mClientSocket.handle());
         areg::set_send_size(mClientSocket.handle(), mSockSendBuf);
-
-#if !defined(_WIN32)
         areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
-#endif  // !defined(_WIN32)
-
-        areg::set_send_timeout(mClientSocket.handle(), areg::SOCKET_SEND_TIMEOUT_MS);
+        areg::set_send_timeout(mClientSocket.handle(), mSockSendTimeoutMs);
 
 #if defined(__linux__)
         mZerocopyEnabled = mZerocopyWanted && areg::socket_enable_zerocopy(mClientSocket.handle());

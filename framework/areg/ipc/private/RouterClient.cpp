@@ -401,13 +401,6 @@ void RouterClient::process_received_message( RemoteMessage & msgReceived, Socket
     {
         if ( areg::is_executable_id(static_cast<uint32_t>(msgId)) )
         {
-            // Deserialize and deliver inline on ClientReceiveThread.
-            // Previously this was off-loaded via forward_executable_message() to the
-            // RouterClient DispatcherThread, but that added an unbounded intermediate
-            // queue.  At high small-message rates the queue grew faster than it could
-            // drain, causing OOM on the consumer side.  Inline processing re-establishes
-            // natural TCP back-pressure: when ClientReceiveThread is busy deserializing,
-            // the kernel receive buffer fills and the sender throttles automatically.
 #if 0
             on_message_received(msgReceived);
 #else
@@ -526,25 +519,6 @@ bool RouterClient::post_event(Event & eventElem)
 {
     if ( eventElem.is_remote() )
     {
-        // Hot-path optimization: serialize remote send events (response, request, notify)
-        // inline on the calling thread instead of routing through RouterClient's own
-        // dispatcher queue. This eliminates one full dispatcher wake/sleep kernel cycle
-        // per message — at high message rates each cycle costs ~1.5 µs on Windows, so
-        // the RouterClient hop alone accounts for ~120 ms/sec overhead at 80K msg/s.
-        //
-        // Thread safety:
-        //   is_connection_started(): reads socket cookie (64-bit value stable during
-        //   normal operation) — no lock required.
-        //   stream_from_event(): reads event + mChannel (read-only after handshake),
-        //   writes to a new per-call RemoteMessage. Fully re-entrant.
-        //   send_message(): posts to ClientSendThread's MPSC queue — lock-free and
-        //   thread-safe from any calling thread.
-        //   eventElem.destroy(): safe — the caller transfers ownership on post_event().
-        //
-        // If the connection drops between is_connection_started() and send_message(),
-        // ClientSendThread's send fails and failed_send_message() triggers reconnect as
-        // in the normal path. Fall through to the queue for non-forwarding event types
-        // and for events that arrive before the connection is fully established.
         if ( is_connection_started() )
         {
             ASSERT(AREG_RUNTIME_CAST(&eventElem, StreamableEvent) != nullptr);

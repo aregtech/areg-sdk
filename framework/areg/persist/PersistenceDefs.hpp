@@ -208,8 +208,9 @@ namespace areg {
         , NetSocketZerocopy    = 33    //!< MSG_ZEROCOPY enable flag (format: net::SERVICE::TRANSPORT::zerocopy).
         , NetSocketRing        = 34    //!< Zerocopy ring-slot count (format: net::SERVICE::TRANSPORT::ring).
         , NetPoolPairs         = 35    //!< Thread-pool pair count (format: net::SERVICE::TRANSPORT::pairs).
+        , NetSocketTimeout     = 36    //!< SO_SNDTIMEO in ms (format: net::SERVICE::TRANSPORT::timeout).
 
-        , AnyKey               = 36    //!< Indicates any key type.
+        , AnyKey               = 37    //!< Indicates any key type.
     };
 
     /**
@@ -262,6 +263,7 @@ namespace areg {
             , {"net"    , "*"   , "*"       , "zerocopy"        }   //! 33  , MSG_ZEROCOPY enable flag (Linux only, default false).
             , {"net"    , "*"   , "*"       , "ring"            }   //! 34  , Zerocopy ring-slot count (default DEFAULT_ZEROCOPY_RING_SIZE).
             , {"net"    , "*"   , "*"       , "pairs"           }   //! 35  , Thread-pool pair count (0 = disabled).
+            , {"net"    , "*"   , "*"       , "timeout"         }   //! 36  , SO_SNDTIMEO in milliseconds (0 = use compile-time default SOCKET_SEND_TIMEOUT_MS).
         };
 
 
@@ -437,6 +439,11 @@ inline constexpr const areg::ConfigKey& net_socket_ring() noexcept
 inline constexpr const areg::ConfigKey& net_pool_pairs() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::NetPoolPairs)];
+}
+
+inline constexpr const areg::ConfigKey& net_socket_timeout() noexcept
+{
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::NetSocketTimeout)];
 }
 
 } // namespace areg

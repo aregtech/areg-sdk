@@ -904,6 +904,20 @@ public:
     uint32_t network_pool_pairs(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
 
     /**
+     * \brief   Returns the configured SO_SNDTIMEO value in milliseconds
+     *          (net::MODULE::TRANSPORT::timeout).
+     *          Lookup order: module-specific entry --> wildcard "*" entry --> compile-time default.
+     *          Falls back to SOCKET_SEND_TIMEOUT_MS when the key is absent or zero.
+     *
+     * \param   module          The process/application name (e.g. "mtrouter").
+     *                          Pass empty string to use the current process name.
+     * \param   connectType     The transport type name (e.g. "tcpip").
+     *                          Pass empty string to match any transport.
+     * \return  Returns the configured send timeout in milliseconds.
+     **/
+    uint32_t network_timeout(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
+
+    /**
      * \brief   Returns the default buffer block size for growing buffers.
      *
      * \param   whichModule     The module name or '*' for generic settings.

@@ -14,12 +14,13 @@
 #include "areg/base/areg_global.h"
 #include "areg/base/CommonDefs.hpp"
 #include "areg/base/IOStream.hpp"
+#include "areg/base/SharedBuffer.hpp"
 #include "areg/base/MathDefs.hpp"
 
+#include <cstring>
 #include <memory>
 #include <string_view>
 #include <utility>
-#include <string.h>
 
 /**
  * \brief   The namespace to define large data project specific structures and constants.
@@ -27,10 +28,13 @@
 namespace LargeData
 {
     //!< The role name of the service
-    constexpr std::string_view  ServiceRoleName { "LargeDataService" };
+    constexpr std::string_view  ServiceRoleName { "LargeDataServiceProvider" };
 
     //!< 1 second timeout used to output data rate.
     constexpr uint32_t           TIMER_TIMEOUT  { 1'000u };
+
+    //!< The maximum number of channels to have to recieve generated image blocks.
+    constexpr uint32_t          MAX_CHANNELS    { 256u };
 
     //!< The RGB structure of 1 pixel data.
     struct RBG
@@ -44,7 +48,7 @@ namespace LargeData
     struct ImageData
     {
         //!< Specifies the (x, y) starting position coordinate of an image data
-        areg::Coord   imgStartPos { 0, 0 };
+        areg::Coord     imgStartPos { 0, 0 };
         //!< Specifies  the width of an image data.
         uint32_t        imgWidth    { 0 };
         //!< Specifies the height of an image data.
@@ -69,8 +73,14 @@ namespace LargeData
         //!< Specifies the total height of the image frame.
         uint32_t    frameHeight { 0 };
         //!< The image data structure followed by array of pixels.
-        ImageData  imageData;
+        ImageData   imageData;
     };
+
+    [[nodiscard]]
+    inline RawImageBlock* raw_image_block(areg::SharedBuffer& buffer) noexcept;
+
+    [[nodiscard]]
+    inline const RawImageBlock* raw_image_block(const areg::SharedBuffer& buffer) noexcept;
 
     //!< The image block class, which is a wrapper of image block structure.
     class ImageBlock
@@ -80,6 +90,7 @@ namespace LargeData
 //////////////////////////////////////////////////////////////////////////
     public:
         inline ImageBlock();
+        inline ImageBlock(RawImageBlock * rawBlock);
         inline ImageBlock(ImageBlock&& src) noexcept;
         inline ~ImageBlock();
 
@@ -127,6 +138,8 @@ namespace LargeData
          * \brief   Releases the image block.
          */
         inline void release();
+
+        inline RawImageBlock* give_block(void);
 
         /**
          * \brief   Return the total size of the image block.
@@ -186,7 +199,9 @@ namespace LargeData
         }
         else
         {
-            stream << size;
+            RawImageBlock block{};
+            uint8_t* data = reinterpret_cast<uint8_t*>(&block);
+            stream.write(data, sizeof(RawImageBlock));
         }
 
         return stream;
@@ -196,6 +211,7 @@ namespace LargeData
     {
         uint32_t size{ 0 };
         stream >> size;
+        size = size < sizeof(LargeData::RawImageBlock) ? sizeof(LargeData::RawImageBlock) : size;
         uint8_t* data = size != 0 ? DEBUG_NEW uint8_t[size] : nullptr;
 
         if (data != nullptr)
@@ -226,6 +242,11 @@ inline LargeData::ImageBlock::ImageBlock()
 {
 }
 
+inline LargeData::ImageBlock::ImageBlock(RawImageBlock* rawBlock)
+    : mBlock(rawBlock)
+{
+}
+
 inline LargeData::ImageBlock::ImageBlock(LargeData::ImageBlock&& src) noexcept
     : mBlock    (std::move(src.mBlock))
 {
@@ -252,6 +273,7 @@ inline LargeData::ImageBlock& LargeData::ImageBlock::operator = (LargeData::Imag
 inline LargeData::RawImageBlock* LargeData::ImageBlock::initialize(uint32_t blockSize)
 {
     release();
+    blockSize = blockSize < sizeof(LargeData::RawImageBlock) ? sizeof(LargeData::RawImageBlock) : blockSize;
     uint8_t* data = blockSize != 0 ? DEBUG_NEW uint8_t[blockSize] : nullptr;
     if (data != nullptr)
     {
@@ -294,6 +316,13 @@ inline void LargeData::ImageBlock::release()
     }
 }
 
+inline LargeData::RawImageBlock* LargeData::ImageBlock::give_block(void)
+{
+    LargeData::RawImageBlock* result{ mBlock };
+    mBlock = nullptr;
+    return result;
+}
+
 inline uint32_t LargeData::ImageBlock::size() const
 {
     return (mBlock != nullptr ? mBlock->blockSize : 0);
@@ -319,4 +348,20 @@ inline void LargeData::ImageBlock::set_frame_id(uint32_t frameId)
     {
         mBlock->frameSeqId = frameId;
     }
+}
+
+inline LargeData::RawImageBlock* LargeData::raw_image_block(areg::SharedBuffer& buffer) noexcept
+{
+    return const_cast<LargeData::RawImageBlock*>(LargeData::raw_image_block(static_cast<const areg::SharedBuffer&>(buffer)));
+}
+
+inline const LargeData::RawImageBlock* LargeData::raw_image_block(const areg::SharedBuffer& buffer) noexcept
+{
+    const LargeData::RawImageBlock* block = reinterpret_cast<const LargeData::RawImageBlock*>(buffer.buffer());
+    if ((block == nullptr) || (block->blockSize < sizeof(LargeData::RawImageBlock)))
+    {
+        return nullptr;
+    }
+
+    return block;
 }

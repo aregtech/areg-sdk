@@ -330,15 +330,25 @@ public:
     inline bool disable_receive( const SocketAccepted & clientConnection );
 
     /**
-     * \brief   Configures the SO_SNDBUF and SO_RCVBUF sizes applied to every socket accepted by
-     *          this server (overrides the compile-time default set by socket_configure()).
+     * \brief   Configures the socket-buffer sizes applied to every socket accepted by
+     *          this server (overrides the platform defaults set by socket_configure()).
      *          Call before the first accept_connection() to take effect.
-     *          Values of zero leave the compile-time defaults unchanged.
+     *          Values of zero leave the platform defaults unchanged.
+     *          Windows applies only SO_SNDBUF and preserves OS receive-window autotuning.
      *
      * \param   sendBuf     Desired SO_SNDBUF size in bytes (0 = keep default).
      * \param   recvBuf     Desired SO_RCVBUF size in bytes (0 = keep default).
      **/
     inline void set_socket_buffers(uint32_t sendBuf, uint32_t recvBuf) noexcept;
+
+    /**
+     * \brief   Configures the SO_SNDTIMEO value applied to every accepted client socket.
+     *          Call before the first accept_connection() to take effect.
+     *          A value of zero leaves the compile-time default (SOCKET_SEND_TIMEOUT_MS).
+     *
+     * \param   timeoutMs   Desired SO_SNDTIMEO in milliseconds (0 = keep default).
+     **/
+    inline void set_send_timeout(uint32_t timeoutMs) noexcept;
 
     /**
      * \brief   Sets all sockets to read-only mode, disabling message sending.
@@ -359,9 +369,8 @@ protected:
      **/
     SocketServer        mServerSocket;
     /**
-     * \brief   Persistent socket readiness monitor.  The server socket is registered in
+     * \brief   Persistent socket readiness monitor. The server socket is registered in
      *          create_socket() and each accepted client is registered in accept_connection().
-     *          On Linux, backed by epoll for O(1) readiness; poll() on other platforms.
      **/
     SocketMultiplexer   mMultiplexer;
     /**
@@ -391,15 +400,18 @@ protected:
 
     /**
      * \brief   SO_SNDBUF size applied to every accepted client socket.
-     *          Initialized to SOCKET_SEND_BUFFER_SIZE; override via set_socket_buffers().
      **/
     uint32_t                mSockSendBuf;
 
     /**
-     * \brief   SO_RCVBUF size applied to every accepted client socket.
-     *          Initialized to SOCKET_RECV_BUFFER_SIZE; override via set_socket_buffers().
+     * \brief   Requested SO_RCVBUF size for every accepted client socket.
      **/
     uint32_t                mSockRecvBuf;
+
+    /**
+     * \brief   SO_SNDTIMEO value in ms applied to every accepted client socket.
+     **/
+    uint32_t                mSockSendTimeoutMs;
 
 #if defined(_MSC_VER)
     #pragma warning(push)
@@ -407,18 +419,11 @@ protected:
 #endif  // _MSC_VER
     /**
      * \brief   Synchronization object for data sharing.
-     *          Uses std::shared_mutex so that concurrent read-only lookups (in the send hot
-     *          path) hold a shared lock, while structural modifications (accept, close, etc.)
-     *          hold an exclusive lock.  This eliminates the serialization bottleneck that the
-     *          previous exclusive SpinLock imposed on multi-client fan-out scenarios.
      **/
     mutable std::shared_mutex   mLock;
 
     /**
      * \brief   Set to true by interrupt_connections() and reset to false by create_socket().
-     *          Checked in the send threads to suppress failed_send_message() callbacks
-     *          while the shutdown drain is in progress, avoiding O(queue_depth) spurious
-     *          failure events after sockets have been interrupted.
      **/
     std::atomic<bool>           mIsInterrupted{ false };
 #if defined(_MSC_VER)
@@ -542,6 +547,11 @@ inline void ServerConnectionBase::set_socket_buffers(uint32_t sendBuf, uint32_t 
 {
     mSockSendBuf = (sendBuf > 0) ? sendBuf : mSockSendBuf;
     mSockRecvBuf = (recvBuf > 0) ? recvBuf : mSockRecvBuf;
+}
+
+inline void ServerConnectionBase::set_send_timeout(uint32_t timeoutMs) noexcept
+{
+    mSockSendTimeoutMs = (timeoutMs > 0) ? timeoutMs : mSockSendTimeoutMs;
 }
 
 inline bool ServerConnectionBase::disable_send( const SocketAccepted & clientConnection )

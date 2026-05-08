@@ -44,10 +44,9 @@ RequestEvent::RequestEvent( const EventDataStream & args
                           , const ProxyAddress & fromSource
                           , const StubAddress& toTarget
                           , uint32_t reqId
-                          , areg::EventType eventType
-                          , const String & name /*= String::empty_string()*/ )
+                          , areg::EventType eventType)
     : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, eventType)
-    , mData(reqId, args, name)
+    , mData(reqId, args)
 {
 }
 
@@ -91,9 +90,8 @@ LocalRequestEvent::LocalRequestEvent( const ProxyAddress & fromSource, const Stu
 LocalRequestEvent::LocalRequestEvent( const EventDataStream & args
                                     , const ProxyAddress & fromSource
                                     , const StubAddress & toTarget
-                                    , uint32_t reqId
-                                    , const String & name /*= String::empty_string()*/ )
-    : RequestEvent(args, fromSource, toTarget, reqId, areg::EventType::EventLocalServiceRequest, name)
+                                    , uint32_t reqId)
+    : RequestEvent(args, fromSource, toTarget, reqId, areg::EventType::EventLocalServiceRequest)
 {
 }
 
@@ -122,9 +120,8 @@ RemoteRequestEvent::RemoteRequestEvent( const ProxyAddress & fromSource, const S
 RemoteRequestEvent::RemoteRequestEvent( const EventDataStream & args
                                       , const ProxyAddress & fromSource
                                       , const StubAddress & toTarget
-                                      , uint32_t reqId
-                                      , const String & name /*= String::empty_string()*/ )
-    : RequestEvent(args, fromSource, toTarget, reqId, areg::EventType::EventRemoteServiceRequest, name)
+                                      , uint32_t reqId)
+    : RequestEvent(args, fromSource, toTarget, reqId, areg::EventType::EventRemoteServiceRequest)
 {
 }
 

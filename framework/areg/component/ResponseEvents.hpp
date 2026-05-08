@@ -86,15 +86,13 @@ protected:
      * \param   respId          Response or update ID.
      * \param   eventType       Event type.
      * \param   seqNr           Sequence number for ordering.
-     * \param   name            Optional data stream name.
      **/
     ResponseEvent( const EventDataStream & args
                  , const ProxyAddress & proxyTarget
                  , areg::ResultType result
                  , uint32_t respId
                  , areg::EventType eventType
-                 , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
-                 , const String & name = String::empty_string() );
+                 , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY);
 
     /**
      * \brief   Clones an existing response but changes the target proxy address.
@@ -233,14 +231,12 @@ protected:
      *                          event, as well as to specify message validation flag.
      * \param   respId          The ID of response. Can also be update ID.
      * \param   seqNr           The call sequence number.
-     * \param   name            Optional. name for event data. Can be nullptr.
      **/
     LocalResponseEvent( const EventDataStream & args
                       , const ProxyAddress & proxyTarget
                       , areg::ResultType result
                       , uint32_t respId
-                      , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
-                      , const String & name = String::empty_string() );
+                      , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY);
 
     /**
      * \brief   Clones existing information, except target Proxy address to send same message to
@@ -314,14 +310,12 @@ protected:
      *                          event, as well as to specify message validation flag.
      * \param   respId          The ID of response. Can also be update ID.
      * \param   seqNr           The call sequence number.
-     * \param   name            Optional. name for event data. Can be nullptr.
      **/
     RemoteResponseEvent( const EventDataStream & args
                        , const ProxyAddress & proxyTarget
                        , areg::ResultType result
                        , uint32_t respId
-                       , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
-                       , const String & name = String::empty_string() );
+                       , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY);
 
     /**
      * \brief   Clones existing information, except target Proxy address to send same message to

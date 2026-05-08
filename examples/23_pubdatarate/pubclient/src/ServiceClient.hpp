@@ -21,7 +21,8 @@
 #include "aregextend/console/Console.hpp"
 
 #include "common/LargeDataDefs.hpp"
-#include "common/SimpleBitmap.hpp"
+
+#include <array>
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
@@ -29,11 +30,12 @@
 /**
  * \brief   Service client, connects to the large data service to receive
  *          generated image data. It outputs the statistics of received
- *          data and item blocks.
+ *          data, item blocks, and frame completeness without rebuilding
+ *          the full image payload in the hot path.
  **/
 class ServiceClient final : public    areg::Component
-                    , protected LargeDataConsumerBase
-                    , protected areg::TimerConsumer
+                          , protected LargeDataConsumerBase
+                          , protected areg::TimerConsumer
 {
 private:
 
@@ -41,28 +43,51 @@ private:
     static constexpr areg::ext::Console::Coord     COORD_TITLE      { 1, 2 };
 
     //!< Coordinates to output a long separator line below the title
-    static constexpr areg::ext::Console::Coord     COORD_SEP        { 1, 3 };
+    static constexpr areg::ext::Console::Coord     COORD_SEP1       { 1, 3 };
     //!< Coordinates to output data rate information of large data client.
     static constexpr areg::ext::Console::Coord     COORD_DATA_RATE  { 1, 5 };
+    //!< Coordinates to output data rate information of large data client.
+    static constexpr areg::ext::Console::Coord     COORD_DATA_STAT  { 1, 7 };
+    static constexpr areg::ext::Console::Coord     COORD_SEP2       { 1, 8 };
 
     //!< Cursor resting position: one row below the last output line (no user input needed).
-    static constexpr areg::ext::Console::Coord     COORD_CURSOR     { 1, 6 };
-
-    //!< File name to save bitmap image.
-    static constexpr std::string_view   FILE_NAME       { ".\\SimpleImage.bmp" };
+    static constexpr areg::ext::Console::Coord     COORD_CURSOR     { 1, 9 };
 
     //!< Timer name.
     static constexpr std::string_view   TIMER_NAME      { "DataRateTimer" };
 
-    //!< Message to output as application title / headline.
-    static constexpr std::string_view   MSG_APP_TITLE   { "Application to test data rate, service client part..." };
-
-    //!< Message to output data rate.
-    static constexpr std::string_view   MSG_DATA_RATE   { "Receiving data with rate [ % 7.2f ] %s and [ %u ] blocks per second." };
-
+    //!< Message to output as application title / headline
+    static constexpr std::string_view   MSG_APP_TITLE       { " Application to test data rate, Service Consumer part..." };
     //!< Long separator drawn below the title
-    static constexpr std::string_view   MSG_SEPARATOR   { " --------------------------------------------------------------------------------------------" };
+    static constexpr std::string_view   MSG_SEPARATOR       { " --------------------------------------------------------------------------------------------" };
+    //!< The message to output network communication rate.
+    static constexpr std::string_view   MSG_NET_RATE_SENT   { " Network receive rate ..: data      [ %8.2f ] %s / sec, message [ %u ] blocks/sec." };
+    //!< The message to output on-time / late delivery statistics
+    static constexpr std::string_view   MSG_STATS_RATE      { " Stats on data receive .: OK frames [ %u ], MISS frames [ %u ]." };
 
+    enum FrameState : int32_t
+    {
+          Unknown       = -1
+        , Initial       =  0
+        , Pending       =  1
+        , Missing       =  2
+        , Complete      =  3
+    };
+
+    /**
+     * \brief   Per-channel frame tracking state. Fixed-size: zero heap allocation in
+     *          the hot path. Uses only block metadata — no pixel data accessed.
+     **/
+    struct FrameStats
+    {
+        int32_t     channelId   { -1 };
+        FrameState  state       { Unknown };
+        int32_t     height      { -1 };
+        int32_t     line        { -1 };
+        uint32_t    seqNr       { 0u };
+    };
+
+    using Stats = std::vector<FrameStats>;
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
@@ -89,7 +114,7 @@ protected:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   imageBlock  Acquired image block.
      **/
-    void broadcast_image_block_acquired( const LargeData::ImageBlock & imageBlock ) final;
+    void broadcast_image_block_acquired( const areg::SharedBuffer & imageBlock ) final;
 
     /**
      * \brief   Server broadcast.
@@ -98,6 +123,19 @@ protected:
      *          This call will be automatically triggered, on every appropriate request call
      **/
     void broadcast_service_stopping() final;
+
+    /**
+     * \brief   Service provider broadcast.
+     *          Triggered when image settings are changed
+     *          Override this method to handle the Broadcast call from the service provider.
+     *          This call is automatically triggered on every appropriate broadcast event.
+     * \param   width       width of image
+     * \param   height      hight of image
+     * \param   pixelTime   The pixel time in nanoseconds. Value 0 means non-stop streaming.
+     * \param   linesBlock  lines in block, maximum should be equal to `height`, minimum is 1
+     * \param   channels    number of channels
+     **/
+    void broadcast_image_settings( uint32_t width, uint32_t height, uint32_t pixelTime, uint32_t linesBlock, uint32_t channels ) final;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -131,17 +169,10 @@ protected:
 // member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    //!< Bitmap object to construct received image data.
-    SimpleBitmap    mBitmap;
-
-    //!< Received data size.
-    uint32_t        mDataSize;
-
-    //!< Received image blocks
-    uint32_t        mBlockCount;
-
-    //!< Timer to output message.
-    areg::Timer           mTimer;
+    areg::Timer mTimer;             //!< Timer to output message.
+    uint32_t    mCompleteFrames;    //!< Complete frame counters.
+    uint32_t    mIncompleteFrames;  //!< Incomplete frame counters.
+    Stats       mFrameStats;        //!< Per-channel frame tracking.
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods

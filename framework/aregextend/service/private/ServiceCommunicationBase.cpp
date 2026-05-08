@@ -94,14 +94,14 @@ void ServiceCommunicationBase::update_dispatch_mode()
 {
     if (mNumPairs == 0)
     {
-        mSendFn     = [this](const RemoteMessage & d, areg::EventPriority p) { return do_send_shared(d, p); };
+        mSendFn     = [this](const RemoteMessage & d, areg::EventPriority p)  { return do_send_shared(d, p); };
         mSendMoveFn = [this](RemoteMessage && d,       areg::EventPriority p) { return do_send_shared(std::move(d), p); };
         mAcceptFn   = [this](areg::SocketAccepted & s)                        { return do_accept_client_shared(s); };
         mLostFn     = [this](ITEM_ID c)                                       { do_client_lost_shared(c); };
     }
     else
     {
-        mSendFn     = [this](const RemoteMessage & d, areg::EventPriority p) { return do_send_pool(d, p); };
+        mSendFn     = [this](const RemoteMessage & d, areg::EventPriority p)  { return do_send_pool(d, p); };
         mSendMoveFn = [this](RemoteMessage && d,       areg::EventPriority p) { return do_send_pool(std::move(d), p); };
         mAcceptFn   = [this](areg::SocketAccepted & s)                        { return do_accept_client_pool(s); };
         mLostFn     = [this](ITEM_ID c)                                       { do_client_lost_pool(c); };
@@ -128,28 +128,28 @@ void ServiceCommunicationBase::remove_all_instances()
 
 bool ServiceCommunicationBase::setup_connection_data(areg::RemoteServiceKind service, uint32_t connectTypes)
 {
-    bool result{ false };
-    if ((mService == service) && ((mConnectTypes & connectTypes) != 0))
-    {
-        if ((mConnectTypes & static_cast<uint32_t>(areg::ConnectionType::Tcpip)) != 0)
-        {
-            ConnectionConfiguration config(mService, areg::ConnectionType::Tcpip);
-            if (config.is_configured() && config.connection_enable_flag())
-            {
-                String address{ config.connection_address() };
-                uint16_t port{ config.connection_port() };
-                result = mServerConnection.set_address(address, port);
-                mServerConnection.set_socket_buffers(config.socket_send_buffer(), config.socket_recv_buffer());
-                mServerConnection.set_zerocopy_wanted(config.zerocopy_enabled());
+    if ((mService != service) || ((mConnectTypes & connectTypes) == 0))
+        return false;
+    
+    if ((mConnectTypes & static_cast<uint32_t>(areg::ConnectionType::Tcpip)) == 0)
+        return false;
+    
+    ConnectionConfiguration config(mService, areg::ConnectionType::Tcpip);
+    if (!config.is_configured() || !config.connection_enable_flag())
+        return false;
+    
+    String address{ config.connection_address() };
+    uint16_t port{ config.connection_port() };
+    bool result = mServerConnection.set_address(address, port);
+    mServerConnection.set_socket_buffers(config.socket_send_buffer(), config.socket_recv_buffer());
+    mServerConnection.set_send_timeout(config.socket_send_timeout());
+    mServerConnection.set_zerocopy_wanted(config.zerocopy_enabled());
 
-                const uint32_t configPairs{ config.pool_pairs() };
-                if (configPairs != mNumPairs)
-                {
-                    mNumPairs = configPairs;
-                    update_dispatch_mode();
-                }
-            }
-        }
+    const uint32_t configPairs{ config.pool_pairs() };
+    if (configPairs != mNumPairs)
+    {
+        mNumPairs = configPairs;
+        update_dispatch_mode();
     }
 
     return result;

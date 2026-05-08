@@ -219,7 +219,7 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
 
         if (sentBytes > 0)
         {
-            accumulate_sent(sentBytes, batchCount);
+            accumulate_sent(static_cast<uint64_t>(sentBytes), batchCount);
         }
         else
         {

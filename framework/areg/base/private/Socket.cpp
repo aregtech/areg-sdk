@@ -24,12 +24,6 @@ namespace areg {
 // Socket class implementation
 //////////////////////////////////////////////////////////////////////////
 
-void Socket::_close_handle(SOCKETHANDLE h) noexcept
-{
-    if (areg::is_valid_socket(h))
-        areg::socket_close(h);
-}
-
 Socket::Socket()
     : mSocket   ( )
     , mAddress  ( )
@@ -51,7 +45,7 @@ Socket::Socket(const SOCKETHANDLE hSocket, const areg::SocketAddress & sockAddre
 }
 
 Socket::Socket(const SOCKETHANDLE hSocket, areg::SocketAddress&& sockAddress) noexcept
-    : mSocket   ( std::move(hSocket) )   // SharedPrimitive move: transfers ownership
+    : mSocket   ( hSocket )   // SharedPrimitive move: transfers ownership
     , mAddress  ( std::move(sockAddress) )
     , mSendSize ( areg::PACKET_DEFAULT_SIZE )
     , mRecvSize ( areg::PACKET_DEFAULT_SIZE )

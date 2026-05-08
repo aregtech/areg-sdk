@@ -93,14 +93,12 @@ protected:
      * \param   toTarget        Target stub address.
      * \param   reqId           Request ID.
      * \param   eventType       Event type (local or remote request).
-     * \param   name            Optional data stream name.
      **/
     RequestEvent( const EventDataStream & args
                 , const ProxyAddress & fromSource
                 , const StubAddress & toTarget
                 , uint32_t reqId
-                , areg::EventType eventType
-                , const String & name = String::empty_string());
+                , areg::EventType eventType);
 
     /**
      * \brief   Initializes the event from a stream.
@@ -217,13 +215,11 @@ protected:
      * \param   fromSource      The address of the source proxy.
      * \param   toTarget        The address of the target stub.
      * \param   reqId           The ID of the request.
-     * \param   name            Optional name for the event data; may be null or empty.
      **/
     LocalRequestEvent( const EventDataStream & args
                      , const ProxyAddress & fromSource
                      , const StubAddress & toTarget
-                     , uint32_t reqId
-                     , const String & name = String::empty_string());
+                     , uint32_t reqId);
 
     /**
      * \brief   Initializes the event by deserializing data from the given input stream.
@@ -282,13 +278,11 @@ protected:
      * \param   fromSource      The address of Proxy source.
      * \param   toTarget        The address of Stub target.
      * \param   reqId           The ID of request.
-     * \param   name            Optional. name for event data. Can be nullptr.
      **/
     RemoteRequestEvent( const EventDataStream & args
                       , const ProxyAddress & fromSource
                       , const StubAddress & toTarget
-                      , uint32_t reqId
-                      , const String & name = String::empty_string());
+                      , uint32_t reqId);
 
 
     /**

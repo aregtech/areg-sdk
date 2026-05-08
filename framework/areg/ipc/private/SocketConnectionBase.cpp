@@ -33,22 +33,13 @@ SocketConnectionBase::SocketConnectionBase() noexcept
 int32_t SocketConnectionBase::send_message(const RemoteMessage & message, const Socket & socket) const
 {
     int32_t result{ -1 };
-    if ( message.is_valid() )
+    const areg::MessageHeader* header = message.header();
+    if ( header != nullptr )
     {
         message.buffer_completion_fix();
-        const areg::MessageHeader & header = reinterpret_cast<const areg::MessageHeader &>( *message.byte_buffer() );
-        if (header.rbhBufHeader.biUsed != 0)
-        {
-            ASSERT(header.rbhBufHeader.biLength >= header.rbhBufHeader.biUsed);
-            // Header and payload are contiguous in the RawMessage allocation.
-            // Send both in one syscall to eliminate the extra round-trip latency.
-            const int32_t totalLen = static_cast<int32_t>(sizeof(areg::MessageHeader) + header.rbhBufHeader.biUsed);
-            result = socket.send(reinterpret_cast<const uint8_t *>(&header), totalLen);
-        }
-        else
-        {
-            result = socket.send(reinterpret_cast<const uint8_t *>(&header), sizeof(areg::MessageHeader));
-        }
+        ASSERT(header->rbhBufHeader.biLength >= header->rbhBufHeader.biUsed);
+        const int32_t totalLen = static_cast<int32_t>(sizeof(areg::MessageHeader) + header->rbhBufHeader.biUsed);
+        result = socket.send(reinterpret_cast<const uint8_t *>(header), totalLen);
     }
 
     return result;
@@ -66,26 +57,16 @@ int32_t SocketConnectionBase::send_messages_batch(const RemoteMessage* const* me
     areg::IoBuffer iovs[MAX_BATCH];
     uint32_t validCount{ 0u };
 
-    for (uint32_t i{ 0u }; i < batchCount; ++i)
+    for (uint32_t i = 0u; i < batchCount; ++i)
     {
         const RemoteMessage* msg{ messages[i] };
-        if ((msg == nullptr) || !msg->is_valid())
+        const areg::MessageHeader* hdr = msg != nullptr ? msg->header() : nullptr;
+        if (hdr == nullptr)
             continue;
 
         msg->buffer_completion_fix();
-        const areg::MessageHeader& hdr = reinterpret_cast<const areg::MessageHeader&>( *msg->byte_buffer() );
-        if (hdr.rbhBufHeader.biUsed == 0u)
-        {
-            // Header-only message.
-            iovs[validCount++] = { reinterpret_cast<const uint8_t*>(&hdr)
-                                 , static_cast<uint32_t>(sizeof(areg::MessageHeader)) };
-        }
-        else
-        {
-            ASSERT(hdr.rbhBufHeader.biLength >= hdr.rbhBufHeader.biUsed);
-            iovs[validCount++] = { reinterpret_cast<const uint8_t*>(&hdr)
-                                 , static_cast<uint32_t>(sizeof(areg::MessageHeader)) + hdr.rbhBufHeader.biUsed };
-        }
+        ASSERT(hdr->rbhBufHeader.biLength >= hdr->rbhBufHeader.biUsed);
+        iovs[validCount++] = { reinterpret_cast<const uint8_t*>(hdr), static_cast<uint32_t>(sizeof(areg::MessageHeader)) + hdr->rbhBufHeader.biUsed };
     }
 
     return (validCount != 0u ? areg::send_data_v(socket.handle(), iovs, validCount) : 0u);
@@ -94,20 +75,13 @@ int32_t SocketConnectionBase::send_messages_batch(const RemoteMessage* const* me
 int32_t SocketConnectionBase::send_message(const RemoteMessage & message, SOCKETHANDLE hSocket) const
 {
     int32_t result{ -1 };
-    if ( message.is_valid() && (hSocket != areg::InvalidSocketHandle) )
+    const areg::MessageHeader* header = message.header();
+    if ((header != nullptr) && areg::is_valid_socket(hSocket))
     {
         message.buffer_completion_fix();
-        const areg::MessageHeader * header = reinterpret_cast<const areg::MessageHeader *>( message.byte_buffer() );
-        if (header->rbhBufHeader.biUsed != 0)
-        {
-            ASSERT(header->rbhBufHeader.biLength >= header->rbhBufHeader.biUsed);
-            const int32_t totalLen = static_cast<int32_t>(sizeof(areg::MessageHeader) + header->rbhBufHeader.biUsed);
-            result = areg::send_data(hSocket, reinterpret_cast<const uint8_t *>(header), totalLen);
-        }
-        else
-        {
-            result = areg::send_data(hSocket, reinterpret_cast<const uint8_t *>(header), sizeof(areg::MessageHeader));
-        }
+        ASSERT(header->rbhBufHeader.biLength >= header->rbhBufHeader.biUsed);
+        const int32_t totalLen = static_cast<int32_t>(sizeof(areg::MessageHeader) + header->rbhBufHeader.biUsed);
+        result = areg::send_data(hSocket, reinterpret_cast<const uint8_t *>(header), totalLen);
     }
 
     return result;
@@ -115,7 +89,7 @@ int32_t SocketConnectionBase::send_message(const RemoteMessage & message, SOCKET
 
 int32_t SocketConnectionBase::send_messages_batch(const RemoteMessage* const* messages, uint32_t count, SOCKETHANDLE hSocket) const
 {
-    if ((messages == nullptr) || (count == 0u) || (hSocket == areg::InvalidSocketHandle))
+    if ((messages == nullptr) || (count == 0u) || !areg::is_valid_socket(hSocket))
         return 0;
 
     constexpr uint32_t MAX_BATCH{ areg::THREAD_BATCH_LIMIT };
@@ -127,22 +101,13 @@ int32_t SocketConnectionBase::send_messages_batch(const RemoteMessage* const* me
     for (uint32_t i{ 0u }; i < batchCount; ++i)
     {
         const RemoteMessage* msg{ messages[i] };
-        if ((msg == nullptr) || !msg->is_valid())
+        const areg::MessageHeader* hdr = msg != nullptr ? msg->header() : nullptr;
+        if (hdr == nullptr)
             continue;
 
         msg->buffer_completion_fix();
-        const areg::MessageHeader& hdr = reinterpret_cast<const areg::MessageHeader&>( *msg->byte_buffer() );
-        if (hdr.rbhBufHeader.biUsed == 0u)
-        {
-            iovs[validCount++] = { reinterpret_cast<const uint8_t*>(&hdr)
-                                 , static_cast<uint32_t>(sizeof(areg::MessageHeader)) };
-        }
-        else
-        {
-            ASSERT(hdr.rbhBufHeader.biLength >= hdr.rbhBufHeader.biUsed);
-            iovs[validCount++] = { reinterpret_cast<const uint8_t*>(&hdr)
-                                 , static_cast<uint32_t>(sizeof(areg::MessageHeader)) + hdr.rbhBufHeader.biUsed };
-        }
+        ASSERT(hdr->rbhBufHeader.biLength >= hdr->rbhBufHeader.biUsed);
+        iovs[validCount++] = { reinterpret_cast<const uint8_t*>(hdr), static_cast<uint32_t>(sizeof(areg::MessageHeader)) + hdr->rbhBufHeader.biUsed };
     }
 
     return (validCount != 0u ? areg::send_data_v(hSocket, iovs, validCount) : 0u);
@@ -174,15 +139,14 @@ int32_t SocketConnectionBase::receive_message(RemoteMessage & message, const Soc
 
 int32_t SocketConnectionBase::send_message_zerocopy(const RemoteMessage & message, SOCKETHANDLE hSocket) const
 {
-    if (!message.is_valid() || (hSocket == areg::InvalidSocketHandle))
+    const areg::MessageHeader* header = message.header();
+    if ((header == nullptr) || !areg::is_valid_socket(hSocket))
         return 0;
 
     message.buffer_completion_fix();
-    const areg::MessageHeader & header = reinterpret_cast<const areg::MessageHeader &>(*message.byte_buffer());
-    const int32_t total_len = header.rbhBufHeader.biUsed != 0u
-        ? static_cast<int32_t>(sizeof(areg::MessageHeader) + header.rbhBufHeader.biUsed)
-        : static_cast<int32_t>(sizeof(areg::MessageHeader));
-    return areg::socket_send_zerocopy(hSocket, reinterpret_cast<const uint8_t *>(&header), total_len);
+    ASSERT(header->rbhBufHeader.biLength >= header->rbhBufHeader.biUsed);
+    const int32_t total_len = static_cast<int32_t>(sizeof(areg::MessageHeader) + header->rbhBufHeader.biUsed);
+    return areg::socket_send_zerocopy(hSocket, reinterpret_cast<const uint8_t *>(header), total_len);
 }
 
 #endif  // defined(__linux__)

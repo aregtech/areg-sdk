@@ -78,13 +78,10 @@ void SpinLockPosix::_unlock_spin() noexcept
 
 void SpinLockPosix::_lock_intern() noexcept
 {
-    // mInternLock is no longer used on the hot path.
-    // Ownership is tracked via the atomic mSpinOwner.
 }
 
 void SpinLockPosix::_unlock_intern() noexcept
 {
-    // See _lock_intern().
 }
 
 } // namespace areg::os

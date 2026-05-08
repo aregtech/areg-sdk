@@ -152,12 +152,15 @@ public:
 
     /**
      * \brief   Share-constructs from src: the two objects reference the same
-     *          heap block.  The read cursor of the new object is reset to 0.
+     *          heap block. The visible slice is preserved and the read cursor
+     *          of the new object is reset to the beginning of that slice.
      **/
     SharedBuffer(const SharedBuffer& src) noexcept;
 
     /**
-     * \brief   Move-constructs from src.  src is left invalid.
+     * \brief   Move-constructs from src. The visible slice is preserved and
+     *          the read cursor of the new object is reset to the beginning
+     *          of that slice. The `src` is left invalid.
      **/
     SharedBuffer(SharedBuffer&& src) noexcept;
 
@@ -256,11 +259,14 @@ public:
 public:
 
     /**
-     * \brief   Ensures capacity for at least \a size bytes beyond the current
-     *          write position, optionally preserving existing content.
+     * \brief   Ensures capacity for at least \a size bytes, optionally preserving
+     *          existing content.
      *
      * \param   size    Total bytes required (not an increment).
-     * \param   copy    If true, existing written bytes are copied into the new block.
+     * \param   copy    If true, existing written bytes are copied into the new block
+     *                  and mPosition is left after them (at biUsed).
+     *                  If false, mPosition and biUsed are both reset to 0 — any
+     *                  in-progress write position is silently discarded.
      * \return  Available writable bytes after the operation; 0 on failure.
      **/
     uint32_t reserve(uint32_t size, bool copy);
@@ -349,6 +355,22 @@ public:
     inline bool is_shared() const noexcept;
 
     /**
+     * \brief   Returns true when this instance owns the full backing allocation
+     *          (i.e. is not a zero-copy view).  Equivalent to mViewEnd == 0.
+     *          Only owner buffers can grow, resize, or write freely.
+     **/
+    [[nodiscard]]
+    inline bool is_owner() const noexcept;
+
+    /**
+     * \brief   Returns true when this instance is a zero-copy view window into
+     *          another buffer's allocation (created by operator>>(SharedBuffer&)).
+     *          View buffers are read-only; call detach() to obtain a writable copy.
+     **/
+    [[nodiscard]]
+    inline bool is_view() const noexcept;
+
+    /**
      * \brief   Returns true when the read cursor is at (or before) the beginning.
      **/
     [[nodiscard]]
@@ -370,6 +392,16 @@ public:
      **/
     [[nodiscard]]
     SharedBuffer clone() const;
+
+    /**
+     * \brief   Returns a fully independent owner copy of this buffer's data.
+     *          For view buffers, copies [mViewStart, mViewEnd) into a fresh allocation
+     *          and returns it as an owner buffer with cursor at 0.
+     *          For owner buffers, equivalent to clone().
+     *          Use this to obtain a writable buffer from a read-only view.
+     **/
+    [[nodiscard]]
+    SharedBuffer detach() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Zero-copy and direct-write fast-path methods
@@ -542,6 +574,18 @@ protected:
     [[nodiscard]]
     inline uint8_t* end_of_buffer() noexcept;
 
+    /**
+     * \brief   Returns the header of the buffer object.
+     **/
+    [[nodiscard]]
+    inline areg::BufferHeader* header() noexcept;
+
+    /**
+     * \brief   Returns the header of the buffer object.
+     **/
+    [[nodiscard]]
+    inline const areg::BufferHeader* header() const noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -610,7 +654,7 @@ inline bool SharedBuffer::operator != (const SharedBuffer& other) const noexcept
 
 inline uint32_t SharedBuffer::position() const noexcept
 {
-    return is_valid() ? mPosition : areg::Cursor::INVALID_CURSOR_POSITION;
+    return is_valid() ? (mPosition - mViewStart) : areg::Cursor::INVALID_CURSOR_POSITION;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -646,9 +690,20 @@ inline uint32_t SharedBuffer::read(uint8_t* buf, uint32_t size) const noexcept
     return read_data(buf, size);
 }
 
-void SharedBuffer::reset() const noexcept
+inline void SharedBuffer::reset() const noexcept
 {
-    mPosition = mViewStart;
+    if (mViewEnd != 0u)
+    {
+        mPosition   = 0u;
+        mViewStart  = 0u;
+        mViewEnd    = 0u;
+        mByteBuffer.reset();
+    }
+    else
+    {
+        mPosition   = 0u;
+        mByteBuffer->bufHeader.biUsed = 0u;
+    }
 }
 
 inline void SharedBuffer::invalidate() noexcept
@@ -664,6 +719,16 @@ inline bool SharedBuffer::is_shared() const noexcept
     return is_valid() && (mByteBuffer.use_count() > 1);
 }
 
+inline bool SharedBuffer::is_owner() const noexcept
+{
+    return (mViewEnd == 0u);
+}
+
+inline bool SharedBuffer::is_view() const noexcept
+{
+    return (mViewEnd != 0u);
+}
+
 inline bool SharedBuffer::is_empty() const noexcept
 {
     return !is_valid() || (mByteBuffer->bufHeader.biUsed == 0);
@@ -677,12 +742,14 @@ inline uint32_t SharedBuffer::size_used() const noexcept
 
 inline const uint8_t* SharedBuffer::buffer() const
 {
-    return areg::buffer_data_read(mByteBuffer.get());
+    const areg::RawBuffer* const raw = mByteBuffer.get();
+    return (raw != nullptr ? areg::buffer_data_read(raw) + mViewStart : nullptr);
 }
 
 inline uint8_t* SharedBuffer::buffer()
 {
-    return areg::buffer_data_write(mByteBuffer.get());
+    areg::RawBuffer* const raw = mByteBuffer.get();
+    return (raw != nullptr ? areg::buffer_data_write(raw) + mViewStart : nullptr);
 }
 
 inline bool SharedBuffer::is_valid() const noexcept
@@ -702,24 +769,40 @@ inline areg::BufferType SharedBuffer::type() const noexcept
 
 inline void SharedBuffer::set_size_used(uint32_t newSize)
 {
-    if (is_valid() && newSize <= size_available())
+    if (!is_valid() || (newSize > size_available()))
+        return;
+
+    if (mViewEnd != 0u)
     {
-        mByteBuffer->bufHeader.biUsed = newSize;
-        if (mPosition >= newSize)
-        {
-            mPosition = newSize == 0 ? 0 : newSize - 1;
-        }
+        ASSERT(false);
+        return;
+    }
+
+    mByteBuffer->bufHeader.biUsed = newSize;
+    if (mPosition > newSize)
+    {
+        mPosition = newSize;
     }
 }
 
 inline const uint8_t* SharedBuffer::end_of_buffer() const noexcept
 {
-    return (is_valid() ? areg::buffer_data_read(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);
+    return (is_valid() ? buffer() + size_used() : nullptr);
 }
 
 inline uint8_t* SharedBuffer::end_of_buffer() noexcept
 {
-    return (is_valid() ? areg::buffer_data_write(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);
+    return (is_valid() ? buffer() + size_used() : nullptr);
+}
+
+inline areg::BufferHeader* SharedBuffer::header() noexcept
+{
+    return (is_valid() ? &(mByteBuffer.get()->bufHeader) : nullptr);
+}
+
+inline const areg::BufferHeader* SharedBuffer::header() const noexcept
+{
+    return (is_valid() ? &(mByteBuffer.get()->bufHeader) : nullptr);
 }
 
 inline bool SharedBuffer::is_begin() const noexcept
@@ -729,7 +812,9 @@ inline bool SharedBuffer::is_begin() const noexcept
 
 inline bool SharedBuffer::is_end() const noexcept
 {
-    if (!is_valid()) return true;
+    if (!is_valid())
+        return true;
+
     const uint32_t limit = (mViewEnd > 0u ? mViewEnd : mByteBuffer->bufHeader.biUsed);
     return (mPosition >= limit);
 }
@@ -775,7 +860,9 @@ inline uint32_t SharedBuffer::size_readable() const noexcept
 
 inline uint32_t SharedBuffer::size_writable() const noexcept
 {
-    return (is_valid() ? mByteBuffer->bufHeader.biLength - mByteBuffer->bufHeader.biUsed : 0u);
+    if (!is_valid() || is_view())
+        return 0u;
+    return mByteBuffer->bufHeader.biLength - mByteBuffer->bufHeader.biUsed;
 }
 
 /************************************************************************/
@@ -798,7 +885,6 @@ inline OutStream& operator << (OutStream& stream, const SharedBuffer& output)
     if (static_cast<const OutStream*>(&stream) != static_cast<const OutStream*>(&output))
     {
         stream.write(output);
-        output.move_to_begin();
     }
 
     return stream;
@@ -828,10 +914,11 @@ inline const T* SharedBuffer::read_array(uint32_t count) noexcept
         return nullptr;
 
     const uint32_t sz{ static_cast<uint32_t>(sizeof(T)) * count };
-    if (mPosition + sz > raw->bufHeader.biUsed)
+    const uint32_t limit = (mViewEnd != 0u ? mViewEnd : raw->bufHeader.biUsed);
+    if (mPosition + sz > limit)
         return nullptr;
 
-    const T* result = reinterpret_cast<const T*>(buffer() + mPosition);
+    const T* result = reinterpret_cast<const T*>(buffer_to_read());
     mPosition += sz;
     return result;
 }

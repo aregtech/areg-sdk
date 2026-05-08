@@ -52,23 +52,13 @@ class RemoteMessage;
  **/
 class AREG_API Socket
 {
-//////////////////////////////////////////////////////////////////////////
-// Internal types
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Releases the OS socket handle. Called by SharedPrimitive when the
-     *          last copy of this socket is destroyed.
-     **/
-    static void _close_handle(SOCKETHANDLE h) noexcept;
-
 protected:
     /**
      * \brief   Reference-counted SOCKETHANDLE. Stores the handle directly in the
      *          object; allocates only an atomic int32_t on the heap as the shared
      *          reference counter.
      **/
-    using SocketHandle = SharedPrimitive<SOCKETHANDLE, areg::InvalidSocketHandle, _close_handle>;
+    using SocketHandle = SharedPrimitive<SOCKETHANDLE, areg::InvalidSocketHandle, areg::socket_close>;
 
 //////////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor. Protected
@@ -269,7 +259,7 @@ protected:
 
     /**
      * \brief   Sets the socket receive packet size, constrained within areg::PACKET_MIN_SIZE
-     *          and areg::PACKET_MAX_SIZE.
+     *          and areg::PACKET_MAX_SIZE. The method does nothing under Windows.
      *
      * \param   recvSize    The size of packet in bytes to set for receiving. The function
      *                      normalizes size to valid range.

@@ -56,18 +56,16 @@ public:
      *
      * \param   msgId       Message ID.
      * \param   dataType    Data type determined by the message ID.
-     * \param   name        Optional name for the data stream.
      **/
-    EventData(uint32_t msgId, EventDataStream::EventDataKind dataType, const String & name = String::empty_string());
+    EventData(uint32_t msgId, EventDataStream::EventDataKind dataType);
 
     /**
      * \brief   Initializes event data with a message ID and serialized parameters.
      *
      * \param   msgId       Message ID.
      * \param   args        Stream containing serialized parameters.
-     * \param   name        Optional name for the data stream.
      **/
-    EventData(uint32_t msgId, const EventDataStream & args, const String & name = String::empty_string());
+    EventData(uint32_t msgId, const EventDataStream & args);
 
     /**
      * \brief   Initializes event data from a stream.

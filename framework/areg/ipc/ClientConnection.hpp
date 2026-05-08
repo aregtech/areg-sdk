@@ -62,6 +62,9 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 
+    using SocketConnectionBase::set_zerocopy_wanted;
+    using SocketConnectionBase::is_zerocopy_enabled;
+
     /**
      * \brief   Returns the connection cookie identifier set by server.
      **/
@@ -149,8 +152,6 @@ public:
 
     /**
      * \brief   Sends a batch of messages via scatter-gather (writev / WSASend) in a single syscall.
-     *          Reduces per-message syscall overhead when multiple messages are ready to send.
-     *          Capped at THREAD_BATCH_LIMIT entries per call.
      *
      * \param   messages    Array of pointers to messages to send. Entries may be nullptr (skipped).
      * \param   count       Number of entries in the array.
@@ -174,16 +175,22 @@ public:
     inline int32_t receive_message( RemoteMessage & out_message ) const;
 
     /**
-     * \brief   Configures the SO_SNDBUF and SO_RCVBUF sizes applied when create_socket() succeeds.
-     *          Call before create_socket().  Values of zero leave the compile-time defaults.
+     * \brief   Configures the socket-buffer sizes applied when create_socket() succeeds.
+     *          Call before create_socket().  Values of zero leave the platform defaults.
+     *          Windows applies only SO_SNDBUF and preserves OS receive-window autotuning.
      *
      * \param   sendBuf     Desired SO_SNDBUF size in bytes (0 = keep default).
      * \param   recvBuf     Desired SO_RCVBUF size in bytes (0 = keep default).
      **/
     inline void set_socket_buffers(uint32_t sendBuf, uint32_t recvBuf) noexcept;
 
-    using SocketConnectionBase::set_zerocopy_wanted;
-    using SocketConnectionBase::is_zerocopy_enabled;
+    /**
+     * \brief   Configures the SO_SNDTIMEO value applied when create_socket() succeeds.
+     *          Call before create_socket().  A value of zero leaves the compile-time default.
+     *
+     * \param   timeoutMs   Desired SO_SNDTIMEO in milliseconds (0 = keep default).
+     **/
+    inline void set_send_timeout(uint32_t timeoutMs) noexcept;
 
     /**
      * \brief   Sets socket to read-only mode, disabling message sending.
@@ -230,15 +237,18 @@ private:
 
     /**
      * \brief   SO_SNDBUF size applied after create_socket() succeeds.
-     *          Initialized to SOCKET_SEND_BUFFER_SIZE; override via set_socket_buffers().
      **/
     uint32_t        mSockSendBuf;
 
     /**
-     * \brief   SO_RCVBUF size applied after create_socket() succeeds.
-     *          Initialized to SOCKET_RECV_BUFFER_SIZE; override via set_socket_buffers().
+     * \brief   Requested SO_RCVBUF size for create_socket().
      **/
     uint32_t        mSockRecvBuf;
+
+    /**
+     * \brief   SO_SNDTIMEO value in ms applied after create_socket() succeeds.
+     **/
+    uint32_t        mSockSendTimeoutMs;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -315,6 +325,11 @@ inline void ClientConnection::set_socket_buffers(uint32_t sendBuf, uint32_t recv
 {
     mSockSendBuf = (sendBuf > 0) ? sendBuf : mSockSendBuf;
     mSockRecvBuf = (recvBuf > 0) ? recvBuf : mSockRecvBuf;
+}
+
+inline void ClientConnection::set_send_timeout(uint32_t timeoutMs) noexcept
+{
+    mSockSendTimeoutMs = (timeoutMs > 0) ? timeoutMs : mSockSendTimeoutMs;
 }
 
 } // namespace areg

@@ -31,6 +31,7 @@
 #include <sys/ioctl.h>
 #include <sys/uio.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <netdb.h>
 #include <errno.h>
 #include <arpa/inet.h>
@@ -42,6 +43,41 @@ namespace areg::os {
 bool _os_init_socket()
 {
     return true;
+}
+
+void _os_configure_socket(SOCKETHANDLE hSocket) noexcept
+{
+    ASSERT(hSocket != areg::InvalidSocketHandle);
+    areg::set_send_size(hSocket, areg::SOCKET_SEND_BUFFER_SIZE);
+    areg::set_recv_size(hSocket, areg::SOCKET_RECV_BUFFER_SIZE);
+}
+
+void _os_configure_connected_socket(SOCKETHANDLE hSocket) noexcept
+{
+    ASSERT(hSocket != areg::InvalidSocketHandle);
+
+#if defined(__linux__)
+    // Emit aggressive keepalive probes so dead peers are detected quickly.
+    // TCP_USER_TIMEOUT is intentionally not set: it aborts connections whenever
+    // the send buffer stays full for the timeout duration.
+    constexpr int32_t keepAlive{ 1 };
+    constexpr int32_t keepIdle{ 5 };
+    constexpr int32_t keepInterval{ 1 };
+    constexpr int32_t keepCount{ 3 };
+    ::setsockopt(hSocket, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char *>(&keepAlive), sizeof(keepAlive));
+    ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPIDLE, reinterpret_cast<const char *>(&keepIdle), sizeof(keepIdle));
+    ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPINTVL, reinterpret_cast<const char *>(&keepInterval), sizeof(keepInterval));
+    ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPCNT, reinterpret_cast<const char *>(&keepCount), sizeof(keepCount));
+#elif defined(__APPLE__)
+    // Darwin exposes per-socket idle time only. Interval and probe count stay at
+    // the system defaults. SO_NOSIGPIPE suppresses SIGPIPE on broken peers.
+    constexpr int32_t keepAlive{ 1 };
+    constexpr int32_t keepIdle{ 5 };
+    constexpr int32_t noSigPipe{ 1 };
+    ::setsockopt(hSocket, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char *>(&keepAlive), sizeof(keepAlive));
+    ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPALIVE, reinterpret_cast<const char *>(&keepIdle), sizeof(keepIdle));
+    ::setsockopt(hSocket, SOL_SOCKET, SO_NOSIGPIPE, reinterpret_cast<const char *>(&noSigPipe), sizeof(noSigPipe));
+#endif  // __linux__ / __APPLE__
 }
 
 void _os_release_socket()

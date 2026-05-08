@@ -73,20 +73,9 @@ public:
     /**
      * \brief   Sets event data type and optional name.
      *
-     * \param   evetDataType    The type of event data. Either for internal or for external
-     *                          communication
-     * \param   name            The name for streaming object. Can be ignored.
+     * \param   evetDataType    The type of event data. Either for internal or for external communication.
      **/
-    explicit EventDataStream( EventDataStream::EventDataKind evetDataType, const String & name = String::empty_string() );
-
-    /**
-     * \brief   Creates read only event data streaming object containing read only data of shared
-     *          buffer.
-     *
-     * \param   buffer      The shared buffer to pass to streaming object.
-     * \param   name        The name of streaming object.
-     **/
-    EventDataStream(const EventDataStream & buffer, const String & name);
+    explicit EventDataStream( EventDataStream::EventDataKind evetDataType );
 
     /**
      * \brief   Initializes object data from streaming object.
@@ -278,11 +267,6 @@ protected:
     EventDataStream::EventDataKind mEventDataType;
 
     /**
-     * \brief   The name of Event Data object.
-     **/
-    String                      mBufferName;
-
-    /**
      * \brief   The Shared Buffer where the data is written / streamed.
      **/
     mutable SharedBuffer        mDataBuffer;
@@ -332,7 +316,6 @@ inline OutStream & EventDataStream::stream_for_write() noexcept
 inline const InStream & operator >> ( const InStream & stream, EventDataStream & input )
 {
     stream >> input.mEventDataType;
-    stream >> input.mBufferName;
     stream >> input.mDataBuffer;
     return stream;
 }
@@ -341,7 +324,6 @@ inline OutStream & operator << ( OutStream & stream, const EventDataStream & out
 {
     ASSERT(output.mEventDataType != EventDataStream::EventDataKind::Internal);
     stream << EventDataStream::EventDataKind::External;
-    stream << output.mBufferName;
     stream << output.mDataBuffer;
     return stream;
 }

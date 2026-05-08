@@ -108,6 +108,16 @@ namespace areg::os {
      **/
     bool _os_connect_socket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen, uint32_t timeoutMs);
 
+    /**
+     * \brief   Applies platform-specific default socket-buffer policy after socket creation.
+     */
+    void _os_configure_socket(SOCKETHANDLE hSocket) noexcept;
+
+    /**
+     * \brief   Applies platform-specific options that require a connected TCP socket.
+     */
+    void _os_configure_connected_socket(SOCKETHANDLE hSocket) noexcept;
+
 #if defined(__linux__)
     /** \brief   Linux-only: enables MSG_ZEROCOPY on the socket (SO_ZEROCOPY option). **/
     bool _os_enable_zerocopy(SOCKETHANDLE fd) noexcept;
@@ -422,8 +432,7 @@ AREG_API_IMPL uint32_t areg::max_send_size( SOCKETHANDLE hSocket ) noexcept
 AREG_API_IMPL void areg::socket_configure(SOCKETHANDLE hSocket) noexcept
 {
     ASSERT(is_valid_socket(hSocket));
-    areg::set_send_size(hSocket, areg::SOCKET_SEND_BUFFER_SIZE);
-    areg::set_recv_size(hSocket, areg::SOCKET_RECV_BUFFER_SIZE);
+    areg::os::_os_configure_socket(hSocket);
 }
 
 AREG_API_IMPL void areg::socket_set_no_delay(SOCKETHANDLE hSocket) noexcept
@@ -433,38 +442,7 @@ AREG_API_IMPL void areg::socket_set_no_delay(SOCKETHANDLE hSocket) noexcept
     // Only meaningful on connected sockets — do NOT call on listening sockets.
     constexpr int32_t noDelay{ 1 };
     ::setsockopt(hSocket, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char *>(&noDelay), sizeof(noDelay));
-
-#if defined(__linux__)
-    // SO_KEEPALIVE: emit TCP keepalive probes on idle connections.
-    // Probes start after TCP_KEEPIDLE seconds of silence, repeat every
-    // TCP_KEEPINTVL seconds, abort after TCP_KEEPCNT consecutive failures.
-    // Note: TCP_USER_TIMEOUT is intentionally NOT set, because it aborts connections
-    // whenever the send buffer stays full for the timeout duration.
-    constexpr int32_t keepAlive{ 1 };
-    constexpr int32_t keepIdle{ 5 };       // seconds before first probe
-    constexpr int32_t keepInterval{ 1 };   // seconds between probes
-    constexpr int32_t keepCount{ 3 };      // probes before abort
-    ::setsockopt(hSocket, SOL_SOCKET,   SO_KEEPALIVE,  reinterpret_cast<const char *>(&keepAlive),    sizeof(keepAlive));
-    ::setsockopt(hSocket, IPPROTO_TCP,  TCP_KEEPIDLE,  reinterpret_cast<const char *>(&keepIdle),     sizeof(keepIdle));
-    ::setsockopt(hSocket, IPPROTO_TCP,  TCP_KEEPINTVL, reinterpret_cast<const char *>(&keepInterval), sizeof(keepInterval));
-    ::setsockopt(hSocket, IPPROTO_TCP,  TCP_KEEPCNT,   reinterpret_cast<const char *>(&keepCount),    sizeof(keepCount));
-
-#elif defined(__APPLE__)
-    // macOS: SO_KEEPALIVE enables keepalive; TCP_KEEPALIVE sets the idle time
-    // (equivalent of TCP_KEEPIDLE on Linux).  Per-socket interval and count
-    // are not exposed on Darwin without private API — they use the system
-    // defaults (tcp_keepintvl=75 s, tcp_keepcnt=8), so the worst-case dead-
-    // peer detection is about 5 + 75*8 = 605 s.
-    constexpr int32_t keepAlive{ 1 };
-    constexpr int32_t keepIdle{ 5 };       // seconds before first probe
-    ::setsockopt(hSocket, SOL_SOCKET,  SO_KEEPALIVE, reinterpret_cast<const char *>(&keepAlive), sizeof(keepAlive));
-    ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPALIVE, reinterpret_cast<const char *>(&keepIdle),  sizeof(keepIdle));
-
-    // SO_NOSIGPIPE suppresses SIGPIPE on send() to a broken connection.
-    // On Linux, MSG_NOSIGNAL flag on send() achieves the same effect.
-    constexpr int32_t noSigPipe{ 1 };
-    ::setsockopt(hSocket, SOL_SOCKET, SO_NOSIGPIPE, reinterpret_cast<const char *>(&noSigPipe), sizeof(noSigPipe));
-#endif  // __linux__ / __APPLE__
+    areg::os::_os_configure_connected_socket(hSocket);
 }
 
 AREG_API_IMPL uint32_t areg::set_send_size(SOCKETHANDLE hSocket, uint32_t sendSize) noexcept
@@ -576,11 +554,7 @@ AREG_API_IMPL SOCKETHANDLE areg::client_connect(const SocketAddress & peerAddr)
         if ( result != areg::InvalidSocketHandle )
         {
             areg::socket_configure(result);
-            areg::socket_set_no_delay(result);
 
-            // Use non-blocking connect with a bounded timeout to prevent blocking
-            // the calling thread for the full OS-level TCP connection timeout
-            // (which can be 75+ seconds on macOS and Linux when the host is unreachable).
             constexpr uint32_t SOCKET_CONNECT_TIMEOUT_MS { 5'000u };
             if (!areg::os::_os_connect_socket(result, &remoteAddr, sizeof(sockaddr_in), SOCKET_CONNECT_TIMEOUT_MS))
             {
@@ -592,15 +566,17 @@ AREG_API_IMPL SOCKETHANDLE areg::client_connect(const SocketAddress & peerAddr)
                 areg::socket_close(result);
                 result = areg::InvalidSocketHandle;
             }
-#ifdef DEBUG
             else
             {
+                areg::socket_set_no_delay(result);
+
+#ifdef DEBUG
                 LOG_DBG("Client socket [ %u ] succeeded to connect to remote host [ %s ] and port number [ %u ]"
                             , static_cast<uint32_t>(result)
                             , static_cast<const char *>(peerAddr.host_address())
                             , static_cast<uint32_t>(peerAddr.host_port()));
-            }
 #endif  // DEBUG
+            }
         }
         else
         {
@@ -636,6 +612,7 @@ AREG_API_IMPL SOCKETHANDLE areg::server_connect(const areg::String& hostName, ui
         result = areg::server_connect(sockAddress);
         if ((result != areg::InvalidSocketHandle) && (socketAddr != nullptr))
         {
+            areg::socket_set_no_delay(result);
             *socketAddr = sockAddress;
         }
     }
@@ -735,7 +712,6 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(areg::SocketMultiplexer & multipl
 
         if (result != areg::InvalidSocketHandle)
         {
-            areg::socket_configure(result);
             areg::socket_set_no_delay(result);
             if (socketAddr != nullptr)
             {
@@ -747,22 +723,15 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(areg::SocketMultiplexer & multipl
     }
     else if (readable != areg::InvalidSocketHandle && readable != areg::FailedSocketHandle)
     {
-        // Existing client has data (or connection closed).
         DEBUG_LOG_DBG("Server selected event of existing client socket [ %u ] connection", static_cast<uint32_t>(readable));
         return readable;
     }
     else if (readable == areg::InvalidSocketHandle)
     {
-        // Timeout or EINTR: nothing was ready within the specified window.
-        // This is normal for the non-blocking drain poll (timeout=0) and for
-        // epoll_wait/kqueue interrupted by a signal.  Not an error — return
-        // so the caller can decide whether to retry or break out of its loop.
         return areg::InvalidSocketHandle;
     }
     else
     {
-        // FailedSocketHandle: the multiplexer wakeup fired (reset() was called)
-        // or an unrecoverable epoll/kqueue error occurred.
         DEBUG_LOG_ERR("Failed to wait for connection. The server socket [ %u ] might be closed and not valid anymore", static_cast<uint32_t>(serverSocket));
         return areg::FailedSocketHandle;
     }
@@ -803,7 +772,6 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const 
 
             if (result != areg::InvalidSocketHandle)
             {
-                areg::socket_configure(result);
                 areg::socket_set_no_delay(result);
                 if (socketAddr != nullptr)
                 {
@@ -946,9 +914,6 @@ AREG_API_IMPL bool areg::disable_receive(SOCKETHANDLE hSocket) noexcept
 
 AREG_API_IMPL void areg::socket_interrupt(SOCKETHANDLE hSocket) noexcept
 {
-    // shutdown(SHUT_RDWR) is POSIX-defined to interrupt blocked send()/recv()
-    // from another thread without closing the fd. The fd remains open for the
-    // blocked thread to read the error code and exit cleanly.
     if (areg::is_valid_socket(hSocket))
     {
 #ifdef _WIN32

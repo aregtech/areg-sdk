@@ -222,13 +222,13 @@ public:
      * \param   rowIndex    The Y-coordinate of the row index of the image.
      * \param   lines       The number of lines in the image block.
      */
-    inline LargeData::ImageBlock block(uint32_t rowIndex, uint32_t lines) const;
+    inline uint32_t block(LargeData::ImageBlock & result, uint32_t rowIndex, uint32_t lines) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
 //////////////////////////////////////////////////////////////////////////
 private:
-    Bitmap *       mBitmap;    //!< The bitmap
+    Bitmap *        mBitmap;    //!< The bitmap
     std::string     mFileName;  //!< The name of file, valid only if open bitmap or save.
     uint32_t        mFrameId;   //!< The ID of the frame.
     int32_t         mChannelId; //!< Image data source channel.
@@ -248,18 +248,23 @@ private:
     inline void _allocate_bitmap(uint32_t width, uint32_t height);
 
     /**
+     * \brief   Release bitmap to free a space.
+     */
+    inline void _release();
+
+    /**
      * \brief   Allocates a space for specified image width and height, and fills
      *          Bitmap data with gray RGB values.
      *
      * \param   width   The width of the image to allocate.
      * \param   height  The height of the image to allocate.
      */
-    inline void _createGrayBitmap(uint32_t width, uint32_t height);
+    inline void create_gray_bitmap(uint32_t width, uint32_t height);
 
     /**
      * \brief   Returns the begin of bitmap RBG pixel data.
      */
-    inline uint8_t* _getData() const;
+    inline uint8_t* data() const;
 
     /**
      * \brief   Returns the size in bytes of space to allocate to create a bitmap image
@@ -268,19 +273,14 @@ private:
      * \param   width   The width of the bitmap image in pixels.
      * \param   height  The height of the bitmap image in pixels.
      */
-    inline uint32_t _dataSize(uint32_t width, uint32_t height) const;
+    inline uint32_t data_size(uint32_t width, uint32_t height) const;
 
     /**
      * \brief   Return the size of pixels for a single line. The size is aligned to 32-bit value.
      * 
      * \param   width   The width of a row.
      */
-    inline uint32_t _rowSize(uint32_t width) const;
-
-    /**
-     * \brief   Release bitmap to free a space.
-     */
-    inline void _release();
+    inline uint32_t raw_size(uint32_t width) const;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -292,7 +292,7 @@ inline SimpleBitmap::SimpleBitmap()
     , mFrameId  ( 0xFFFFFFFFu )
     , mChannelId( -1 )
 {
-    _createGrayBitmap(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    create_gray_bitmap(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 }
 
 inline SimpleBitmap::SimpleBitmap(uint32_t width, uint32_t height)
@@ -301,7 +301,7 @@ inline SimpleBitmap::SimpleBitmap(uint32_t width, uint32_t height)
     , mFrameId  ( 0xFFFFFFFFu )
     , mChannelId( -1 )
 {
-    _createGrayBitmap(width, height);
+    create_gray_bitmap(width, height);
 }
 
 inline SimpleBitmap::~SimpleBitmap()
@@ -317,7 +317,7 @@ inline bool SimpleBitmap::is_valid() const
 inline bool SimpleBitmap::create_bitmap(uint32_t width, uint32_t height)
 {
     _release();
-    _createGrayBitmap(width, height);
+    create_gray_bitmap(width, height);
     return (mBitmap != nullptr);
 }
 
@@ -351,7 +351,7 @@ inline uint32_t SimpleBitmap::height() const
 
 inline uint32_t SimpleBitmap::row_bytes() const
 {
-    return mBitmap != nullptr ? _rowSize(static_cast<uint32_t>(mBitmap->bmpInfo.bmiWidth)) : 0u;
+    return mBitmap != nullptr ? raw_size(static_cast<uint32_t>(mBitmap->bmpInfo.bmiWidth)) : 0u;
 }
 
 inline uint8_t* SimpleBitmap::line(uint32_t line) const
@@ -359,8 +359,8 @@ inline uint8_t* SimpleBitmap::line(uint32_t line) const
     uint8_t* result = nullptr;
     if (mBitmap != nullptr)
     {
-        uint32_t offset = static_cast<uint32_t>(line) * _rowSize(static_cast<uint32_t>(mBitmap->bmpInfo.bmiWidth));
-        result = _getData() + offset;
+        uint32_t offset = static_cast<uint32_t>(line) * raw_size(static_cast<uint32_t>(mBitmap->bmpInfo.bmiWidth));
+        result = data() + offset;
     }
 
     return result;
@@ -372,9 +372,9 @@ inline uint8_t* SimpleBitmap::pixels(uint32_t xCoord, uint32_t yCoord) const
     // if ((mBitmap != nullptr) && (xCoord != 0) && (yCoord != 0))
     if (mBitmap != nullptr)
     {
-        uint32_t offset = yCoord * _rowSize(static_cast<uint32_t>(mBitmap->bmpInfo.bmiWidth));
+        uint32_t offset = yCoord * raw_size(static_cast<uint32_t>(mBitmap->bmpInfo.bmiWidth));
         uint32_t col    = xCoord * (mBitmap->bmpInfo.bmiBitCount / 8);
-        result = _getData() + offset + col;
+        result = data() + offset + col;
     }
 
     return result;
@@ -449,18 +449,16 @@ inline bool SimpleBitmap::set_block( const LargeData::ImageBlock & block )
     return true;
 }
 
-inline LargeData::ImageBlock SimpleBitmap::block(uint32_t rowIndex, uint32_t lines) const
+inline uint32_t SimpleBitmap::block(LargeData::ImageBlock& result, uint32_t rowIndex, uint32_t lines) const
 {
-    LargeData::ImageBlock result;
-
     if ((mBitmap == nullptr) || (mBitmap->bmpInfo.bmiSize == 0))
-        return result;
+        return 0u;
 
     uint32_t pix_width = width();
     uint32_t pix_height = height();
     uint32_t remain = pix_height - rowIndex;
     lines = std::min(lines, remain);
-    uint32_t sizePixels = _dataSize(pix_width, lines);
+    uint32_t sizePixels = data_size(pix_width, lines);
     uint32_t sizeBlock = sizePixels + sizeof(LargeData::RawImageBlock);
     LargeData::RawImageBlock* block = result.initialize(sizeBlock);
 
@@ -475,12 +473,12 @@ inline LargeData::ImageBlock SimpleBitmap::block(uint32_t rowIndex, uint32_t lin
     block->imageData.imgWidth = pix_width;
 
     areg::copy_elems<uint8_t>(reinterpret_cast<uint8_t*>(block->imageData.imgRGB), pixels(0, rowIndex), sizePixels);
-    return result;
+    return sizeBlock;
 }
 
 inline void SimpleBitmap::_allocate_bitmap(uint32_t width, uint32_t height)
 {
-    uint32_t dataSize = _dataSize(width, height);
+    uint32_t dataSize = data_size(width, height);
     uint32_t fileSize = dataSize + sizeof(Bitmap);
     uint8_t* buffer = DEBUG_NEW uint8_t[fileSize];
     if (buffer != nullptr)
@@ -493,13 +491,13 @@ inline void SimpleBitmap::_allocate_bitmap(uint32_t width, uint32_t height)
     }
 }
 
-inline void SimpleBitmap::_createGrayBitmap(uint32_t width, uint32_t height)
+inline void SimpleBitmap::create_gray_bitmap(uint32_t width, uint32_t height)
 {
     _allocate_bitmap(width, height);
     if (mBitmap != nullptr)
     {
         uint8_t grey = 0;
-        uint32_t row = _rowSize(width);
+        uint32_t row = raw_size(width);
         uint8_t* pix = reinterpret_cast<uint8_t*>(&mBitmap->bmpBits[0]);
         for (uint32_t i = 0; i < height; ++i)
         {
@@ -510,20 +508,20 @@ inline void SimpleBitmap::_createGrayBitmap(uint32_t width, uint32_t height)
     }
 }
 
-inline uint8_t* SimpleBitmap::_getData() const
+inline uint8_t* SimpleBitmap::data() const
 {
     return (mBitmap != nullptr ? reinterpret_cast<uint8_t *>(&mBitmap->bmpBits[0]) : nullptr);
 }
 
-inline uint32_t SimpleBitmap::_rowSize(uint32_t width) const
+inline uint32_t SimpleBitmap::raw_size(uint32_t width) const
 {
     // return ((((width * 24) + 31) & ~31) >> 3);
     return ((((width * BIT_COUNT) + 31) / 32) * 4);
 }
 
-inline uint32_t SimpleBitmap::_dataSize(uint32_t width, uint32_t height) const
+inline uint32_t SimpleBitmap::data_size(uint32_t width, uint32_t height) const
 {
-    return (_rowSize(width) * height);
+    return (raw_size(width) * height);
 }
 
 inline void SimpleBitmap::_release()

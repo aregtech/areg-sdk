@@ -107,6 +107,11 @@ uint32_t ConnectionConfiguration::pool_pairs() const noexcept
     return Application::config_manager().network_pool_pairs(areg::EmptyStringA, mConnectType);
 }
 
+uint32_t ConnectionConfiguration::socket_send_timeout() const noexcept
+{
+    return Application::config_manager().network_timeout(areg::EmptyStringA, mConnectType);
+}
+
 bool ConnectionConfiguration::connection_ip_address( uint8_t & field0
                                                    , uint8_t & field1
                                                    , uint8_t & field2

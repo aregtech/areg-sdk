@@ -5,25 +5,37 @@
 This service will demonstrate the TCP/IP data rate by sending 
 image data to connected clients.</Description>
     </Overview>
-    <DataTypeList>
-        <DataType ID="42" Name="ImageBlock" Type="Imported">
-            <Location>common/LargeDataDefs.hpp</Location>
-            <Namespace>LargeData</Namespace>
-            <ImportedObject>ImageBlock</ImportedObject>
-            <Description/>
-        </DataType>
-    </DataTypeList>
     <MethodList>
         <Method ID="40" Name="image_block_acquired" MethodType="Broadcast">
             <Description>Called to notify all connected clients that new image data is available.</Description>
             <ParamList>
-                <Parameter ID="51" Name="imageBlock" DataType="ImageBlock">
+                <Parameter ID="51" Name="imageBlock" DataType="BinaryBuffer">
                     <Description>Acquired image block.</Description>
                 </Parameter>
             </ParamList>
         </Method>
         <Method ID="41" Name="service_stopping" MethodType="Broadcast">
             <Description>Called to notify all clients that service is shutting down.</Description>
+        </Method>
+        <Method ID="52" Name="image_settings" MethodType="Broadcast">
+            <Description>Triggered when image settings are changed</Description>
+            <ParamList>
+                <Parameter ID="53" Name="width" DataType="uint32">
+                    <Description>width of image</Description>
+                </Parameter>
+                <Parameter ID="54" Name="height" DataType="uint32">
+                    <Description>hight of image</Description>
+                </Parameter>
+                <Parameter ID="55" Name="pixelTime" DataType="uint32">
+                    <Description>The pixel time in nanoseconds. Value 0 means non-stop streaming.</Description>
+                </Parameter>
+                <Parameter ID="56" Name="linesBlock" DataType="uint32">
+                    <Description>lines in block, maximum should be equal to `height`, minimum is 1</Description>
+                </Parameter>
+                <Parameter ID="57" Name="channels" DataType="uint32">
+                    <Description>number of channels</Description>
+                </Parameter>
+            </ParamList>
         </Method>
     </MethodList>
 </ServiceInterface>

@@ -286,13 +286,16 @@ constexpr uint32_t      PACKET_INVALID_SIZE     { 0u };
 //!< Applied on all platforms including Windows (SO_SNDBUF does NOT disable autotuning;
 //!< only SO_RCVBUF does that on Windows Vista+).
 //!< Override at runtime via net::SERVICE::TRANSPORT::sndbuf in areg.init (value in KB).
-constexpr uint32_t      SOCKET_SEND_BUFFER_SIZE { 4u * 1024u * 1024u };
+constexpr uint32_t      SOCKET_SEND_BUFFER_SIZE { 16u * 1024u * 1024u };
 
-//!< Compile-time default for SO_RCVBUF applied to every new socket on Linux/macOS.
-//!< Matches the send side.  Override via net::SERVICE::TRANSPORT::rcvbuf in areg.init (value in KB).
-//!< Not applied on Windows: setsockopt(SO_RCVBUF) disables TCP Receive Window Autotuning
-//!< (Vista+), which is more effective than any fixed value for loopback/LAN.
-constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE { 4u * 1024u * 1024u };
+//!< Compile-time default for SO_RCVBUF applied on Linux and macOS.
+//!< Override at runtime via net::SERVICE::TRANSPORT::rcvbuf in areg.init (value in KB).
+//!<
+//!< Windows: SO_RCVBUF is intentionally NOT set (see SocketDefsWin32.cpp).
+//!< Calling setsockopt(SO_RCVBUF) on a connected or accepted socket disables
+//!< SIO_LOOPBACK_FAST_PATH, which is the primary loopback optimization on Windows
+//!< and delivers 2+ GB/s throughput.  Losing it drops loopback to ~300 MB/s.
+constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE { 16u * 1024u * 1024u };
 
 //!< Maximum milliseconds a single send() call may block waiting for TCP send-window space.
 //!< When the peer's receive window is zero (e.g. OOM pressure or a slow/stalled receiver),
@@ -418,9 +421,14 @@ AREG_API SOCKETHANDLE socket_create() noexcept;
 AREG_API void socket_close(SOCKETHANDLE hSocket) noexcept;
 
 /**
- * \brief   Applies recommended socket options to \a hSocket immediately
- *          after creation or acceptance.  Sets SO_SNDBUF to
- *          SOCKET_SEND_BUFFER_SIZE and SO_RCVBUF to SOCKET_RECV_BUFFER_SIZE.
+ * \brief   Applies the default socket-buffer policy to \a hSocket immediately
+ *          after creation or acceptance.
+ *
+ *          Sets SO_SNDBUF to SOCKET_SEND_BUFFER_SIZE on all platforms.
+ *          Linux and macOS also set SO_RCVBUF to SOCKET_RECV_BUFFER_SIZE.
+ *          Windows intentionally leaves SO_RCVBUF unchanged: setting it on a connected
+ *          or accepted socket disables SIO_LOOPBACK_FAST_PATH and drops loopback
+ *          throughput from 2+ GB/s to ~300 MB/s.
  *
  * \param   hSocket     Valid socket descriptor to configure.
  **/
@@ -428,6 +436,7 @@ AREG_API void socket_configure(SOCKETHANDLE hSocket) noexcept;
 
 /**
  * \brief   Disables the Nagle algorithm (TCP_NODELAY) on a connected socket.
+ *          Also applies platform-specific keepalive and broken-pipe handling.
  *          Call this only on client or accepted sockets, never on listening sockets.
  *
  * \param   hSocket     Valid connected socket descriptor.

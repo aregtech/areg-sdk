@@ -93,6 +93,42 @@ class ServicingComponent final  : public    areg::Component
     };
 
 //////////////////////////////////////////////////////////////////////////
+// ServicingComponent::ServicingTimerConsumer class declaration
+//////////////////////////////////////////////////////////////////////////
+    //!< The timer consumer object
+    class ServicingTimerConsumer : public    areg::TimerConsumer
+    {
+    public:
+        ServicingTimerConsumer( ServicingComponent & service )
+            : areg::TimerConsumer ( )
+            , mService      ( service )
+            {
+            }
+
+        virtual ~ServicingTimerConsumer() = default;
+
+    private:
+    /************************************************************************/
+    // TimerConsumer interface overrides.
+    /************************************************************************/
+
+        /**
+         * \brief   Triggered when Timer is expired. 
+         * \param   timer   The timer object that is expired.
+         **/
+        void process_timer( areg::Timer & timer ) final;
+
+    private:
+        ServicingComponent &    mService;   //!< The service, which handles the options
+
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+        ServicingTimerConsumer() = delete;
+        AREG_NOCOPY_NOMOVE(ServicingTimerConsumer);
+    };
+
+//////////////////////////////////////////////////////////////////////////
 // Internal constants and static members
 //////////////////////////////////////////////////////////////////////////
 
@@ -130,50 +166,52 @@ class ServicingComponent final  : public    areg::Component
     static constexpr areg::ext::Console::Coord     COORD_OPT_INFO  { 1, 17 };
 
     //!< Number of rows reserved for the info / help output block.
-    //!< Must be >= max(lines printed by _printInfo, lines printed by _printHelp).
     static constexpr int16_t  OPT_INFO_LINES   { 18 };
 
     //!< Message to output as application title / headline
-    static constexpr std::string_view   MSG_APP_TITLE   { " Application to test data rate, service part..." };
+    static constexpr std::string_view   MSG_APP_TITLE       { " Application to test data rate, Service Provider part..." };
 
     //!< Long separator drawn below the title
-    static constexpr std::string_view   MSG_SEPARATOR   { " --------------------------------------------------------------------------------------------" };
+    static constexpr std::string_view   MSG_SEPARATOR       { " --------------------------------------------------------------------------------------------" };
 
     //!< The message to output network communication rate.
-    static constexpr std::string_view   MSG_COMM_RATE   { " Network communication : sent [ %8.2f ] %s / sec, receive [ %8.2f ] %s / sec." };
+    static constexpr std::string_view   MSG_NET_RATE_SENT   { " Network sent rate ..: data   [ %8.2f ] %s / sec, [ %u ] blocks/sec." };
 
     //!< The message to output broadcast data rate information (actual bytes broadcast per second).
-    static constexpr std::string_view   MSG_DATA_RATE   { " Broadcast rate .......: sent [ %8.2f ] %s / sec, [ %u ] blocks/sec." };
-
-    //!< The message to output item rate information (block count and size only; stats on COORD_STATS)
-    static constexpr std::string_view   MSG_ITEM_RATE   { " Block rate ...........: sent [ %8u ] block / sec, each [ %6.2f ] %s." };
-
-    //!< The message to output on-time / late delivery statistics
-    static constexpr std::string_view   MSG_STATS       { " Stats on data ........: ontime [ %u ], late [ %u ]." };
+    static constexpr std::string_view   MSG_QUEUE_RATE_SENT { " Broadcast rate .....: sent   [ %8.2f ] %s / sec, [ %u ] blocks/sec." };
 
     //!< The message to output the theoretical (ideal) data rate based on image parameters.
-    static constexpr std::string_view   MSG_IDEAL_RATE  { " Theoretical rate .....: ideal  [ %8.2f ] %s / sec, [ %8u ] blocks/sec." };
+    static constexpr std::string_view   MSG_IDEAL_RATE_SENT { " Theoretical rate ...: ideal  [ %8.2f ] %s / sec, [ %8u ] blocks/sec." };
+    //!< The message to output on-time / late delivery statistics
+    static constexpr std::string_view   MSG_STATS_RATE      { " Stats on data ......: ontime [ %u ] msg, delayed [ %u ] msg." };
 
     //!< Short separator drawn below the rate block
-    static constexpr std::string_view   MSG_SEP2        { " ---------------------------------------" };
+    static constexpr std::string_view   MSG_SEP2            { " ---------------------------------------" };
 
     //!< The message to output as application option input
-    static constexpr std::string_view   MSG_INPUT_OPTION{ " Input options. Or type \'-q\' to quit application, or type \'-h\' to read help: " };
+    static constexpr std::string_view   MSG_INPUT_OPTION    { " Input options. Or type \'-q\' to quit application, or type \'-h\' to read help: " };
 
     //!< The message to output as an error.
-    static constexpr std::string_view   MSG_INVALID_CMD { " Invalid command or value, type \'-h\' or \'--help\' for commands." };
+    static constexpr std::string_view   MSG_INVALID_CMD     { " Invalid command or value, type \'-h\' or \'--help\' for commands." };
 
     //!< The option command input thread.
-    static constexpr std::string_view   THREAD_WAITINPUT{ "ConsoleInputThread" };
+    static constexpr std::string_view   THREAD_WAITINPUT    { "ConsoleInputThread" };
 
     //!< The data generating thread.
-    static constexpr std::string_view   THREAD_GENERATE { "GenerateImageThread" };
+    static constexpr std::string_view   THREAD_GENERATE     { "GenerateImageThread" };
 
     //!< Timer name.
-    static constexpr std::string_view   TIMER_NAME      { "DataRateTimer" };
+    static constexpr std::string_view   TIMER_NAME          { "DataRateTimer" };
 
-    using ImageBlock = LargeData::ImageBlock;
+    struct Remote
+    {
+        areg::RemoteMessage message{};
+        uint32_t            offset{0u};
+    };
 
+    using ImageBlock    = LargeData::ImageBlock;
+    using RawImageBlock = LargeData::RawImageBlock;
+    using MessageList   = std::vector <Remote>;
     /**
      * \brief   Per-proxy pre-serialized message pool.
      *          Each connected consumer gets its own pool because the wire message header
@@ -181,10 +219,40 @@ class ServicingComponent final  : public    areg::Component
      **/
     struct ProxyPool
     {
-        areg::ProxyAddress               proxy;
-        std::vector<areg::RemoteMessage> messages;           //!< One wire message per mSendList entry
-        uint32_t                         frame_id_offset { areg::INVALID_SIZE }; //!< Byte offset of frameSeqId in wire buffer
+        uint32_t    proxyId {}; //!< The digital id of the proxy, unit withing system
+        MessageList messages{}; //!< The list of pre-build messages.
+        uint32_t    frameId{};  //!< The sequence id of actual frame
+        uint32_t    depth{};    //!< The depth of messages, i.e. `depth * block_duration` == 100ms
+        uint32_t    channels{}; //!< Number of channels. The length of `messages` is `channels * blocks_per_frame * depths`
+        uint32_t    loop{};     //!< The current loop in dept
     };
+
+    using PrebuildMessages = std::vector<ProxyPool>;
+
+    struct DataRate
+    {
+        DataRate() = default;
+        DataRate(const DataRate&) = default;
+
+        //!< Data Rate in bytes
+        uint64_t    sentData    { 0u };
+        //!< Image blocks rate, number blocks.
+        uint32_t    sentBlocks  { 0u };
+        //!< Number of blocks sent on time (within their target period).
+        uint32_t    ontimeBlocks{ 0u };
+        //!< Number of blocks sent late (past their target deadline).
+        uint32_t    lateBlocks  { 0u };
+    };
+
+    //!< Use a coarse sleep chunk and a busy loop for the final gap. This keeps the long-run
+    //!< rate locked to the absolute block schedule while avoiding sub-millisecond sleeps.
+#if defined(_WIN32)
+    static constexpr int64_t COARSE_SLEEP_NS{ 15'000'000LL };   // 15 ms
+#elif defined(__APPLE__)
+    static constexpr int64_t COARSE_SLEEP_NS{ 2'000'000LL };    //  2 ms
+#else
+    static constexpr int64_t COARSE_SLEEP_NS{ 500'000LL };      //  0.5 ms (was 4 ms)
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -250,7 +318,12 @@ private:
     /**
      * \brief   Triggered when option event is fired.
      **/
-    void onOptionEvent( const OptionData& data );
+    void on_option_event( const OptionData& data );
+
+    /**
+     * \brief   Triggered when Timer is expired. 
+     **/
+    void on_timer_expired();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -258,35 +331,19 @@ private:
 private:
     //!< Bitmap object to generate data.
     SimpleBitmap            mBitmap;
-    /**
-     * Pre-built flat send queue of size `blocks × channels`. Entry at index `i * channels + ch`
-     * holds a full copy of image block `i` with `channelId = ch` pre-stamped. Only
-     * `frameSeqId` is updated per frame in the hot loop (via `set_frame_id`), eliminating
-     * the inner channel loop and all redundant block fetches.
-     **/
+    //!< Pre-built flat send queue of size `blocks × channels`.
     std::vector<ImageBlock> mSendList;
-    /**
-     * Per-consumer pre-serialized wire message pools. Each entry covers one connected proxy;
-     * each pool contains one wire message per mSendList slot. The hot loop patches only the
-     * 4-byte frameSeqId field in-place and sends directly — zero serialization overhead.
-     * Owned exclusively by the image thread; rebuilt whenever mOptionChanged is true.
-     * Only valid when mPrebuiltValid == true.
-     **/
-    std::vector<ProxyPool>              mProxyPools;
-    /**
-     * Snapshot of connected proxy addresses used to rebuild mProxyPools.
-     * Protected by mLock: written by component thread, snapshot by image thread.
-     **/
+    //!< Snapshot of connected proxy addresses used to rebuild mPrebuiltMessages.
     std::vector<areg::ProxyAddress>     mActiveProxies;
-    /**
-     * True when mProxyPools is fully built and safe to use in the hot loop.
-     * Written by both image thread and component thread (set false on topology change).
-     * Atomic so the component thread can invalidate it without a lock.
-     **/
-    std::atomic_bool                mPrebuiltValid;
-    //! The thread to input from console.
+    //!< Prebuilt messages
+    PrebuildMessages        mPrebuiltMessages;
+    //!< Data rates
+    DataRate                mDataRate;
+    //!< The timer to trigger to output data
+    areg::Timer             mTimer;
+    //!< The thread to input from console.
     areg::Thread            mInputThread;
-    //! The thread to generate image data.
+    //!< The thread to generate image data.
     areg::Thread            mImageThread;
     //! The actual options.
     util::OptionValues      mOptions;
@@ -294,21 +351,14 @@ private:
     std::atomic_bool        mQuitThread;
     //! The atomic object to notify that options changed.
     std::atomic_bool        mOptionChanged;
-    //! The event to pause generate image.
-    //! The data generating thread should be paused when non-signaled and should run when signaled.
+    //! The event to pause generate image. The data generating thread should be paused when non-signaled and should run when signaled.
     areg::SyncEvent         mPauseEvent;
     //!< Number of connected clients.
     int32_t                 mClients;
-    //!< Data Rate in bytes
-    uint64_t                mDataRate;
-    //!< Image blocks rate, number blocks.
-    uint32_t                mItemRate;
-    //!< Number of blocks sent on time (within their target period).
-    uint32_t                mSentBlocks;
-    //!< Number of blocks sent late (past their target deadline).
-    uint32_t                mMissedBlocks;
     //!< The object to receive option data change event
     OptionConsumer          mOptionConsumer;
+    //!< The object to receive timer expired event
+    ServicingTimerConsumer  mTimerConsumer;
     //!< The synchronization item.
     areg::CriticalSection   mLock;
 
@@ -320,39 +370,22 @@ private:
     inline ServicingComponent & self();
 
     //!< Called for the thread that waits for user option input command.
-    void _runInputThread();
+    void _run_input_thread();
 
     //!< Called for the thread that generates image data and sends to the clients.
-    void _runImageThread();
-
-    //!< Calculates and returns time in nanoseconds required to generate one image block.
-    uint64_t _getBlockImageTime() const;
+    void _run_image_thread();
 
     //!< Outputs the options information.
-    void _printInfo() const;
+    void _print_info() const;
 
     //!< Outputs the application help.
-    void _printHelp() const;
+    void _print_help() const;
 
     //!< Clears the info/help output region before re-printing it.
-    void _clearOptInfo() const;
+    void _clear_opt_info() const;
 
     //!< Generates and initializes the image blocks.
-    void _initBlockList();
-
-    /**
-     * \brief   Builds the pre-serialized wire-message pool from the current `mSendList`.
-     *          Creates one ProxyPool per entry in `proxies`, performing a sentinel scan
-     *          per proxy to locate `frameSeqId` in the wire buffer.
-     *          Called from the image thread after every `_initBlockList()`.
-     *          Sets `mPrebuiltValid = true` on success; clears all pools on any error.
-     *
-     * \param   proxies     Snapshot of active proxy addresses at rebuild time.
-     **/
-    void _buildPrebuiltMessages(const std::vector<areg::ProxyAddress>& proxies);
-
-    //!< Clears the pre-built message pool and resets `mPrebuiltValid` to false.
-    void _clearPrebuiltMessages() noexcept;
+    void _init_block_list();
 
     /**
      * \brief   Updates the statistics  to output on console. Called each time when
@@ -364,7 +397,24 @@ private:
      *                      data or ignored. It is used to compute blocks that were put in 
      *                      sleep or ignored.
      */
-    void _updateData(uint64_t genData, uint32_t genBlocks, uint32_t sentBlocks, uint32_t missedBlocks);
+    void _update_data(uint64_t sendData, uint32_t sentBlocks, uint32_t ontimeBlocks, uint32_t lateBlocks);
+
+    [[nodiscard]]
+    inline bool _is_running() const noexcept;
+
+    inline void _broadcast_block(areg::SharedBuffer& entry);
+
+    inline bool _can_loop() const noexcept;
+
+    /**
+     * \brief   Builds the pre-serialized wire-message pool directly from the current
+     *          image blocks in `mSendList`.
+     **/
+    uint32_t _build_prebuilt_messages();
+
+    inline uint64_t time_passed(const std::chrono::steady_clock::time_point& time_begin) const;
+
+    inline void print_rates(areg::ext::Console& console);
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -379,4 +429,24 @@ private:
 inline ServicingComponent & ServicingComponent::self()
 {
     return (*this);
+}
+
+inline bool ServicingComponent::_is_running() const noexcept
+{
+    return (!mQuitThread.load(std::memory_order_relaxed) && !mOptionChanged.load(std::memory_order_relaxed) && mOptions.hasStart());
+}
+
+inline bool ServicingComponent::_can_loop() const noexcept
+{
+    return (!mQuitThread.load(std::memory_order_relaxed) && !mOptionChanged.load(std::memory_order_relaxed));
+}
+
+inline void ServicingComponent::_broadcast_block(areg::SharedBuffer& entry)
+{
+    broadcast_image_block_acquired(entry);
+}
+
+inline uint64_t ServicingComponent::time_passed(const std::chrono::steady_clock::time_point& time_begin) const
+{
+    return (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - time_begin).count());
 }

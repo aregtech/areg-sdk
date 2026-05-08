@@ -27,8 +27,10 @@
     #define WIN32_LEAN_AND_MEAN
 #endif  // WIN32_LEAN_AND_MEAN
 #include <WinSock2.h>
+#include <Mstcpip.h>
 #include <WS2tcpip.h>
 
+#include <algorithm>
 #include <atomic>
 #include <vector>
 
@@ -36,20 +38,13 @@
 // Local static members
 //////////////////////////////////////////////////////////////////////////
 
-namespace {
-    /**
-     * \brief   Global socket initialize / release counter.
-     *          Initialize socket in process if counter is changing from 0 to 1.
-     *          Release socket in frees resources in process when counter reaches 0.
-     **/
-    std::atomic_uint _instanceCount( 0u );
-
-} // namespace
-
 //////////////////////////////////////////////////////////////////////////
 // OS specific socket namespace functions implementation
 //////////////////////////////////////////////////////////////////////////
 namespace areg::os {
+    //!< Global socket initialize / release counter.
+    std::atomic_uint _instanceCount(0u);
+
 
 bool _os_init_socket()
 {
@@ -66,6 +61,35 @@ bool _os_init_socket()
     }
 
     return result;
+}
+
+void _os_configure_socket(SOCKETHANDLE hSocket) noexcept
+{
+    ASSERT(hSocket != areg::InvalidSocketHandle);
+    areg::set_send_size(hSocket, areg::SOCKET_SEND_BUFFER_SIZE);
+    areg::set_recv_size(hSocket, areg::SOCKET_RECV_BUFFER_SIZE);
+}
+
+void _os_configure_connected_socket(SOCKETHANDLE hSocket) noexcept
+{
+    ASSERT(hSocket != areg::InvalidSocketHandle);
+
+    constexpr int32_t keepAlive{ 1 };
+    ::setsockopt(hSocket, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char *>(&keepAlive), sizeof(keepAlive));
+
+    tcp_keepalive keepAliveValues{ };
+    keepAliveValues.onoff             = 1u;
+    keepAliveValues.keepalivetime     = 5'000u;
+    keepAliveValues.keepaliveinterval = 1'000u;
+
+    DWORD bytesReturned{ 0u };
+    ::WSAIoctl(hSocket, SIO_KEEPALIVE_VALS, &keepAliveValues, static_cast<DWORD>(sizeof(keepAliveValues)), nullptr, 0u, &bytesReturned, nullptr, nullptr);
+
+#ifdef SIO_TCP_SET_ACK_FREQUENCY
+    DWORD ackFreq{ 2u };   // ACK every segment
+    DWORD outBytes{ 0u };
+    ::WSAIoctl(hSocket, SIO_TCP_SET_ACK_FREQUENCY, &ackFreq, static_cast<DWORD>(sizeof(ackFreq)), nullptr, 0u, &outBytes, nullptr, nullptr);
+#endif  // SIO_TCP_SET_ACK_FREQUENCY
 }
 
 void _os_release_socket()
@@ -90,9 +114,7 @@ int32_t _os_send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t d
     // The socket has SO_SNDTIMEO set (see ServerConnectionBase::accept_connection),
     // so blocking send() returns WSAETIMEDOUT after the kernel-level timeout.
     // No application-level deadline, GetTickCount64, or WSAPoll is needed.
-
     int32_t total{ 0 };
-
     while (total < dataLength)
     {
         const int32_t written = ::send(hSocket, reinterpret_cast<const char*>(dataBuffer + total), dataLength - total, 0);
@@ -114,21 +136,10 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
     ASSERT(hSocket != areg::InvalidSocketHandle);
     ASSERT((buffers != nullptr) && (count > 0u));
 
+    // Fast path: single buffer.
     if (count == 1u)
     {
         return _os_send_data(hSocket, buffers[0u].data, static_cast<int32_t>(buffers[0u].size));
-    }
-
-    // Calculate total payload size.
-    uint32_t totalSize{ 0u };
-    for (uint32_t i{ 0u }; i < count; ++i)
-    {
-        totalSize += buffers[i].size;
-    }
-
-    if (totalSize == 0u)
-    {
-        return 0;
     }
 
     // On Windows, WSASend(WSABUF[n]) on a blocking non-overlapped socket iterates
@@ -138,38 +149,47 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
     // but the caller pays the full Phase-1+Phase-2 overhead of building a 128-entry
     // batch. The net result on Windows is a throughput regression.
     //
-    // Fix: coalesce all buffers into one contiguous block in a thread-local staging
-    // buffer and issue a single ::send() via _os_send_data(), which already contains
-    // a correct partial-send retry loop. This reduces kernel-side transitions to one
-    // per batch regardless of count and lets the TCP stack process one large contiguous
-    // payload efficiently.
+    // Fix: coalesce only tiny-message batches into one contiguous block in a thread-local
+    // staging buffer and issue a single ::send() via _os_send_data(), which already
+    // contains a correct partial-send retry loop.  For medium / large messages, the
+    // extra full-batch memcpy becomes more expensive than the syscall savings, so
+    // fall back to direct per-buffer sends.
     //
     // The thread-local buffer grows lazily to the maximum batch size this thread ever
     // uses and is then reused at zero allocation cost per call.
     //
-    // For very large total payloads (> MAX_COALESCE) fall back to individual per-buffer
-    // sends via _os_send_data() to avoid an excessively large staging allocation.
-    constexpr uint32_t MAX_COALESCE{ 512u * 1024u };   // 512 KB
+    // Coalesce only when both the total batch and each entry stay tiny.
+    constexpr uint32_t MAX_COALESCE_TOTAL  { 64u * 1024u };
+    constexpr uint32_t MAX_COALESCE_ENTRY  { 1024u };
 
-    if (totalSize <= MAX_COALESCE)
+    uint32_t maxBufferSize{ 0u };
+    uint32_t totalSize{ 0u };
+    for (uint32_t i = 0u; i < count; ++i)
     {
-        static thread_local std::vector<uint8_t> _tlSendBuf;
-        if (_tlSendBuf.size() < static_cast<std::size_t>(totalSize))
-        {
-            _tlSendBuf.resize(static_cast<std::size_t>(totalSize));
-        }
+        totalSize += buffers[i].size;
+        maxBufferSize = buffers[i].size > maxBufferSize ? buffers[i].size : maxBufferSize;
+    }
+
+    if (totalSize == 0u)
+    {
+        return 0;
+    }
+
+    if ((totalSize <= MAX_COALESCE_TOTAL) && (maxBufferSize <= MAX_COALESCE_ENTRY))
+    {
+        static thread_local uint8_t _tlSendBuf[MAX_COALESCE_TOTAL];
 
         uint32_t offset{ 0u };
         for (uint32_t i{ 0u }; i < count; ++i)
         {
-            ::memcpy(_tlSendBuf.data() + offset, buffers[i].data, buffers[i].size);
+            ::memcpy(_tlSendBuf + offset, buffers[i].data, buffers[i].size);
             offset += buffers[i].size;
         }
 
-        return _os_send_data(hSocket, _tlSendBuf.data(), static_cast<int32_t>(totalSize));
+        return _os_send_data(hSocket, _tlSendBuf, static_cast<int32_t>(totalSize));
     }
 
-    // Fallback for payloads > MAX_COALESCE: send each buffer individually.
+    // Fallback for non-tiny batches: send each buffer individually.
     // _os_send_data() handles partial sends via its internal retry loop.
     int32_t total{ 0 };
     for (uint32_t i{ 0u }; i < count; ++i)
@@ -191,36 +211,103 @@ int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLen
     ASSERT(hSocket != areg::InvalidSocketHandle);
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
 
-    // MSG_WAITALL (available since Vista for TCP) asks Winsock to fill the entire
-    // requested buffer before returning, eliminating repeated userspace recv() calls
-    // for large payloads.  On a SO_RCVTIMEO-bound socket a timeout still causes an
-    // early return; the outer while-loop retries in that case.
-#ifdef MSG_WAITALL
-    constexpr int recvFlags = MSG_WAITALL;
-#else
-    constexpr int recvFlags = 0;
-#endif
-
-    int32_t total{ 0 };
-
-    while (total < dataLength)
+    // Per-thread read-ahead buffer. One greedy recv() (no MSG_WAITALL) fills it
+    // with all bytes currently in the kernel socket buffer — under burst load this
+    // captures many complete messages at once. Header and payload reads then drain
+    // from the cache without kernel transitions. Buffer is invalidated on socket
+    // switch; for single-connection threads (ClientReceiveThread) the hit rate is
+    // near-100%, cutting recv() kernel calls from 2×N to ~N/msgs_per_fill.
+    struct RecvAhead
     {
-        int32_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), dataLength - total, recvFlags);
-        if (received > 0)
-        {
-            total += received;
-        }
-        else if (received == 0)
-        {
-            break;  // peer closed the connection gracefully
-        }
-        else
-        {
-            return -1;  // connection error
-        }
+        SOCKETHANDLE sock{ areg::InvalidSocketHandle };
+        uint32_t     head{ 0u };
+        uint32_t     avail{ 0u };
+        uint8_t      buf[131072u];
+    };
+    static thread_local RecvAhead _ra;
+
+    if (_ra.sock != hSocket)
+    {
+        _ra.sock  = hSocket;
+        _ra.head  = 0u;
+        _ra.avail = 0u;
     }
 
-    return total;
+    const uint32_t needed = static_cast<uint32_t>(dataLength);
+    uint32_t       total  = 0u;
+
+    // Phase 1: serve from cache — zero kernel cost.
+    if (_ra.avail > 0u)
+    {
+        const uint32_t take = (_ra.avail < needed) ? _ra.avail : needed;
+        ::memcpy(dataBuffer, _ra.buf + _ra.head, take);
+        _ra.head  += take;
+        _ra.avail -= take;
+        total     += take;
+
+        if (total == needed)
+            return static_cast<int32_t>(total);
+    }
+
+    // Phase 2: large request (> 64 KB) — bypass cache to avoid staging a multi-MB
+    // payload through the 64 KB buffer. MSG_WAITALL delivers the exact byte count.
+    if ((needed - total) > static_cast<uint32_t>(sizeof(_ra.buf)))
+    {
+        while (total < needed)
+        {
+            const int32_t r = ::recv(hSocket
+                                    , reinterpret_cast<char*>(dataBuffer + total)
+                                    , static_cast<int>(needed - total)
+                                    , MSG_WAITALL);
+            if (r <= 0)
+                return (total > 0u) ? static_cast<int32_t>(total) : -1;
+
+            total += static_cast<uint32_t>(r);
+        }
+
+        return static_cast<int32_t>(total);
+    }
+
+    // Phase 3: greedy cache refill. recv() without MSG_WAITALL on a blocking socket
+    // blocks until at least 1 byte arrives, then returns all bytes currently queued
+    // in the kernel buffer (up to 64 KB). Multiple back-to-back messages in the OS
+    // receive buffer are captured in a single kernel transition.
+    _ra.head  = 0u;
+    _ra.avail = 0u;
+    {
+        const int32_t filled = ::recv(hSocket
+                                     , reinterpret_cast<char*>(_ra.buf)
+                                     , static_cast<int>(sizeof(_ra.buf))
+                                     , 0);
+        if (filled <= 0)
+            return (total > 0u) ? static_cast<int32_t>(total) : -1;
+
+        _ra.avail = static_cast<uint32_t>(filled);
+    }
+
+    {
+        const uint32_t take = (_ra.avail < (needed - total)) ? _ra.avail : (needed - total);
+        ::memcpy(dataBuffer + total, _ra.buf + _ra.head, take);
+        _ra.head  += take;
+        _ra.avail -= take;
+        total     += take;
+    }
+
+    // Phase 4: greedy recv returned fewer bytes than needed (rare: kernel buffer had
+    // only a partial message). Complete with MSG_WAITALL.
+    while (total < needed)
+    {
+        const int32_t r = ::recv(hSocket
+                                , reinterpret_cast<char*>(dataBuffer + total)
+                                , static_cast<int>(needed - total)
+                                , MSG_WAITALL);
+        if (r <= 0)
+            return (total > 0u) ? static_cast<int32_t>(total) : -1;
+
+        total += static_cast<uint32_t>(r);
+    }
+
+    return static_cast<int32_t>(total);
 }
 
 bool _os_connect_socket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen, uint32_t timeoutMs)
@@ -228,8 +315,6 @@ bool _os_connect_socket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen
     ASSERT(hSocket != areg::InvalidSocketHandle);
     ASSERT(addr != nullptr);
 
-    // Switch to non-blocking mode so connect() returns WSAEWOULDBLOCK immediately
-    // instead of blocking for the full OS TCP connection timeout.
     u_long mode{ 1u };
     if (::ioctlsocket(hSocket, static_cast<long>(FIONBIO), &mode) != RETURNED_OK)
         return false;

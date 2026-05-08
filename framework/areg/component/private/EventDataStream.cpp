@@ -34,39 +34,26 @@ namespace areg {
 
 const EventDataStream& EventDataStream::empty_data() noexcept
 {
-    static const EventDataStream _data(EventDataStream::EventDataKind::Empty, String("EmptyData"));
+    static const EventDataStream _data(EventDataStream::EventDataKind::Empty);
     return _data;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-EventDataStream::EventDataStream( EventDataStream::EventDataKind evetDataType, const String & name /*= String::empty_string()*/ )
+EventDataStream::EventDataStream( EventDataStream::EventDataKind evetDataType )
     : IOStream      ( )
 
     , mEventDataType(evetDataType)
-    , mBufferName   (name.is_empty() == false ? name : DefaultStreamName)
     , mDataBuffer   ( )
     , mSharedList   ( )
 {
-}
-
-EventDataStream::EventDataStream( const EventDataStream & buffer, const String & name )
-    : IOStream    ( )
-
-    , mEventDataType(buffer.mEventDataType)
-    , mBufferName   (name.is_empty() == false ? name : DefaultStreamName)
-    , mDataBuffer   (buffer.mDataBuffer)
-    , mSharedList   (buffer.mSharedList)
-{
-    mDataBuffer.move_to_begin();
 }
 
 EventDataStream::EventDataStream( const EventDataStream & src )
     : IOStream    ( )
 
     , mEventDataType(src.mEventDataType)
-    , mBufferName   (src.mBufferName)
     , mDataBuffer   (src.mDataBuffer)
     , mSharedList   (src.mSharedList)
 {
@@ -76,7 +63,6 @@ EventDataStream::EventDataStream( EventDataStream && src ) noexcept
     : IOStream    ( )
 
     , mEventDataType( src.mEventDataType )
-    , mBufferName   ( std::move(src.mBufferName) )
     , mDataBuffer   ( std::move(src.mDataBuffer) )
     , mSharedList   ( std::move(src.mSharedList) )
 {
@@ -86,11 +72,10 @@ EventDataStream::EventDataStream(const InStream & stream)
     : IOStream    ( )
 
     , mEventDataType( EventDataStream::EventDataKind::External)
-    , mBufferName   ( DefaultStreamName)
     , mDataBuffer   ( )
     , mSharedList   ( )
 {
-    stream >> mEventDataType >> mBufferName >> mDataBuffer;
+    stream >> mEventDataType >> mDataBuffer;
 }
 
 EventDataStream::~EventDataStream()

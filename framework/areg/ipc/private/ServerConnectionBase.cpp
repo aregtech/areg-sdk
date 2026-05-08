@@ -32,6 +32,7 @@ ServerConnectionBase::ServerConnectionBase()
     , mSocketToCookie       ( )
     , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )
     , mSockRecvBuf          ( areg::SOCKET_RECV_BUFFER_SIZE )
+    , mSockSendTimeoutMs    ( areg::SOCKET_SEND_TIMEOUT_MS )
     , mLock                 ( )
 {
 }
@@ -45,6 +46,7 @@ ServerConnectionBase::ServerConnectionBase(const String & hostName, uint16_t por
     , mSocketToCookie       ( )
     , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )
     , mSockRecvBuf          ( areg::SOCKET_RECV_BUFFER_SIZE )
+    , mSockSendTimeoutMs    ( areg::SOCKET_SEND_TIMEOUT_MS )
     , mLock                 ( )
 {
 }
@@ -58,6 +60,7 @@ ServerConnectionBase::ServerConnectionBase(const areg::SocketAddress & serverAdd
     , mSocketToCookie       ( )
     , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )
     , mSockRecvBuf          ( areg::SOCKET_RECV_BUFFER_SIZE )
+    , mSockSendTimeoutMs    ( areg::SOCKET_SEND_TIMEOUT_MS )
     , mLock                 ( )
 {
 }
@@ -91,13 +94,8 @@ bool ServerConnectionBase::create_socket()
 void ServerConnectionBase::close_socket()
 {
     std::unique_lock<std::shared_mutex> lock(mLock);
-
-    // Reset the multiplexer first so that epoll_wait() / select() in the
-    // receive thread unblocks immediately (signals the internal wakeup fd).
     mMultiplexer.reset();
 
-    // Interrupt every accepted client socket so that any thread currently
-    // blocked in send() or recv() on that fd returns with an error.
     for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position();
           mAcceptedConnections.is_valid_position(pos);
           pos = mAcceptedConnections.next_position(pos) )
@@ -166,24 +164,9 @@ bool ServerConnectionBase::accept_connection(SocketAccepted & clientConnection)
                 return false;
             }
 
-            // SO_SNDBUF: applied on all platforms.  Setting SO_SNDBUF on Windows does NOT
-            // disable TCP Send Window autotuning — only SO_RCVBUF has that side-effect.
             areg::set_send_size(hSocket, mSockSendBuf);
-
-            // SO_RCVBUF: skipped on Windows because setsockopt(SO_RCVBUF) disables TCP
-            // Receive Window Autotuning (Vista+), which dynamically tunes better than any
-            // fixed value for loopback and LAN connections.  Linux/macOS need explicit
-            // sizing to overcome the conservative kernel defaults.
-#if !defined(_WIN32)
             areg::set_recv_size(hSocket, mSockRecvBuf);
-#endif  // !defined(_WIN32)
-
-            // SO_SNDTIMEO: kernel-level send timeout.  If _os_send_data's
-            // application-level deadline is somehow bypassed (e.g. send()
-            // blocks despite MSG_DONTWAIT), this ensures the kernel returns
-            // EAGAIN after SOCKET_SEND_TIMEOUT_MS.  Harmless on non-blocking
-            // sockets — the flag has no effect when send() returns immediately.
-            areg::set_send_timeout(hSocket, areg::SOCKET_SEND_TIMEOUT_MS);
+            areg::set_send_timeout(hSocket, mSockSendTimeoutMs);
 
             ITEM_ID cookie{ mCookieGenerator ++ };
             ASSERT(cookie >= areg::COOKIE_REMOTE_SERVICE);

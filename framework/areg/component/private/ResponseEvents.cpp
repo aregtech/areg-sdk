@@ -44,10 +44,9 @@ ResponseEvent::ResponseEvent( const EventDataStream & args
                             , areg::ResultType result
                             , uint32_t respId
                             , areg::EventType eventType
-                            , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/
-                            , const String & name /*= String::empty_string()*/ )
+                            , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
     : ServiceResponseEvent(proxyTarget, result, respId, eventType, seqNr)
-    , mData (respId, args, name)
+    , mData (respId, args)
 {
 }
 
@@ -101,9 +100,8 @@ LocalResponseEvent::LocalResponseEvent( const EventDataStream & args
                                       , const ProxyAddress & proxyTarget
                                       , areg::ResultType result
                                       , uint32_t respId
-                                      , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/
-                                      , const String & name /*= String::empty_string()*/ )
-    : ResponseEvent(args, proxyTarget, result, respId, areg::EventType::EventLocalServiceResponse, seqNr, name)
+                                      , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
+    : ResponseEvent(args, proxyTarget, result, respId, areg::EventType::EventLocalServiceResponse, seqNr)
 {
 }
 
@@ -142,9 +140,8 @@ RemoteResponseEvent::RemoteResponseEvent( const EventDataStream & args
                                         , const ProxyAddress & proxyTarget
                                         , areg::ResultType result
                                         , uint32_t respId
-                                        , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/
-                                        , const String & name /*= String::empty_string()*/ )
-    : ResponseEvent(args, proxyTarget, result, respId, areg::EventType::EventRemoteServiceResponse, seqNr, name)
+                                        , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
+    : ResponseEvent(args, proxyTarget, result, respId, areg::EventType::EventRemoteServiceResponse, seqNr)
 {
     ASSERT(data().data_stream().is_external_stream());
 }

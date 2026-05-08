@@ -27,15 +27,15 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 // EventData class Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-EventData::EventData( uint32_t msgId, EventDataStream::EventDataKind dataType, const String & name /*= String::empty_string()*/ )
+EventData::EventData( uint32_t msgId, EventDataStream::EventDataKind dataType)
     : mDataType (areg::message_data_type(msgId))
-    , mData     (dataType, name)
+    , mData     (dataType)
 {
 }
 
-EventData::EventData( uint32_t msgId, const EventDataStream & args, const String & name /*= String::empty_string()*/ )
+EventData::EventData( uint32_t msgId, const EventDataStream & args)
     : mDataType (areg::message_data_type(msgId))
-    , mData     (args, name)
+    , mData     (args)
 {
 }
 

@@ -145,6 +145,7 @@ bool ServiceClientConnectionBase::setup_connection_data(areg::RemoteServiceKind 
 
     const bool result = mClientConnection.set_address(config.connection_address(), config.connection_port());
     mClientConnection.set_socket_buffers(config.socket_send_buffer(), config.socket_recv_buffer());
+    mClientConnection.set_send_timeout(config.socket_send_timeout());
     return result;
 }
 
@@ -169,6 +170,7 @@ bool ServiceClientConnectionBase::connect_service_host()
         return false;
 
     mClientConnection.set_socket_buffers(config.socket_send_buffer(), config.socket_recv_buffer());
+    mClientConnection.set_send_timeout(config.socket_send_timeout());
     send_command(ServiceEventData::ServiceCommand::CMD_StartService);
     return true;
 }

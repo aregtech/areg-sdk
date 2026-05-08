@@ -20,21 +20,21 @@
 //! Logging type identifiers
 AREG_API_IMPL const std::vector<areg::Identifier>     areg::LogTypeIdentifiers =
 {
-      {static_cast<uint32_t>(areg::LogTarget::Undefined)   , areg::DefaultLogTypes[0].ltIdName        }
-    , {static_cast<uint32_t>(areg::LogTarget::Remote)      , areg::DefaultLogTypes[1].ltIdName        }
-    , {static_cast<uint32_t>(areg::LogTarget::File)        , areg::DefaultLogTypes[2].ltIdName        }
-    , {static_cast<uint32_t>(areg::LogTarget::Debug)       , areg::DefaultLogTypes[3].ltIdName        }
-    , {static_cast<uint32_t>(areg::LogTarget::Database)    , areg::DefaultLogTypes[4].ltIdName        }
+      {static_cast<uint32_t>(areg::LogTarget::Undefined)   , areg::DefaultLogTypes[0].ltIdName              }
+    , {static_cast<uint32_t>(areg::LogTarget::Remote)      , areg::DefaultLogTypes[1].ltIdName              }
+    , {static_cast<uint32_t>(areg::LogTarget::File)        , areg::DefaultLogTypes[2].ltIdName              }
+    , {static_cast<uint32_t>(areg::LogTarget::Debug)       , areg::DefaultLogTypes[3].ltIdName              }
+    , {static_cast<uint32_t>(areg::LogTarget::Database)    , areg::DefaultLogTypes[4].ltIdName              }
 };
 
 //! Connection type identifiers
 AREG_API_IMPL const std::vector<areg::Identifier>   areg::ConnectionIdentifiers
 {
-      { static_cast<uint32_t>(areg::ConnectionType::Undefined)  , areg::DefaultConnections[0].ltIdName     }
-    , { static_cast<uint32_t>(areg::ConnectionType::Tcpip)      , areg::DefaultConnections[1].ltIdName     }
-    , { static_cast<uint32_t>(areg::ConnectionType::Udp)        , areg::DefaultConnections[2].ltIdName     }
-    , { static_cast<uint32_t>(areg::ConnectionType::Web)        , areg::DefaultConnections[3].ltIdName     }
-    , { static_cast<uint32_t>(areg::ConnectionType::SharedMemory),areg::DefaultConnections[4].ltIdName     }
+      { static_cast<uint32_t>(areg::ConnectionType::Undefined)  , areg::DefaultConnections[0].ltIdName      }
+    , { static_cast<uint32_t>(areg::ConnectionType::Tcpip)      , areg::DefaultConnections[1].ltIdName      }
+    , { static_cast<uint32_t>(areg::ConnectionType::Udp)        , areg::DefaultConnections[2].ltIdName      }
+    , { static_cast<uint32_t>(areg::ConnectionType::Web)        , areg::DefaultConnections[3].ltIdName      }
+    , { static_cast<uint32_t>(areg::ConnectionType::SharedMemory),areg::DefaultConnections[4].ltIdName      }
 };
 
 //! Remote service identifiers
@@ -48,14 +48,14 @@ AREG_API_IMPL const std::vector<areg::Identifier>   areg::RemoteServiceIdentifie
 //! Log priority identifiers
 AREG_API_IMPL const std::vector<areg::Identifier>   areg::LogScopePriorityIndentifiers
 {
-      { static_cast<uint32_t>(areg::LogPriority::PrioInvalid)  , areg::PRIO_NO_PRIO                             }
-    , { static_cast<uint32_t>(areg::LogPriority::PrioNotset)   , areg::PRIO_NOTSET_STR                          }
-    , { static_cast<uint32_t>(areg::LogPriority::PrioScope)    , areg::PRIO_SCOPE_STR                           }
-    , { static_cast<uint32_t>(areg::LogPriority::PrioFatal)    , areg::PRIO_FATAL_STR                           }
-    , { static_cast<uint32_t>(areg::LogPriority::PrioError)    , areg::PRIO_ERROR_STR                           }
-    , { static_cast<uint32_t>(areg::LogPriority::PrioWarning)  , areg::PRIO_WARNING_STR                         }
-    , { static_cast<uint32_t>(areg::LogPriority::PrioInfo)     , areg::PRIO_INFO_STR                            }
-    , { static_cast<uint32_t>(areg::LogPriority::PrioDebug)    , areg::PRIO_DEBUG_STR                           }
+      { static_cast<uint32_t>(areg::LogPriority::PrioInvalid)  , areg::PRIO_NO_PRIO                         }
+    , { static_cast<uint32_t>(areg::LogPriority::PrioNotset)   , areg::PRIO_NOTSET_STR                      }
+    , { static_cast<uint32_t>(areg::LogPriority::PrioScope)    , areg::PRIO_SCOPE_STR                       }
+    , { static_cast<uint32_t>(areg::LogPriority::PrioFatal)    , areg::PRIO_FATAL_STR                       }
+    , { static_cast<uint32_t>(areg::LogPriority::PrioError)    , areg::PRIO_ERROR_STR                       }
+    , { static_cast<uint32_t>(areg::LogPriority::PrioWarning)  , areg::PRIO_WARNING_STR                     }
+    , { static_cast<uint32_t>(areg::LogPriority::PrioInfo)     , areg::PRIO_INFO_STR                        }
+    , { static_cast<uint32_t>(areg::LogPriority::PrioDebug)    , areg::PRIO_DEBUG_STR                       }
 };
 
  //! Areg TCP/IP Multitarget Router Service name
