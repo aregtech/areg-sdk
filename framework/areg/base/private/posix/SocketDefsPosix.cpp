@@ -68,6 +68,14 @@ void _os_configure_connected_socket(SOCKETHANDLE hSocket) noexcept
     ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPIDLE, reinterpret_cast<const char *>(&keepIdle), sizeof(keepIdle));
     ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPINTVL, reinterpret_cast<const char *>(&keepInterval), sizeof(keepInterval));
     ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPCNT, reinterpret_cast<const char *>(&keepCount), sizeof(keepCount));
+
+    // TCP_QUICKACK: suppress the 200 ms delayed-ACK for the initial message burst.
+    // The kernel resets this flag after each receive, but setting it at connection time
+    // ensures low-rate periods and connection startup are ACKed promptly rather than
+    // stalling the sender for up to 200 ms. At high message rates (>1K msg/s) the
+    // delayed-ACK timer never fires regardless, so there is no cost in that regime.
+    constexpr int32_t quickAck{ 1 };
+    ::setsockopt(hSocket, IPPROTO_TCP, TCP_QUICKACK, reinterpret_cast<const char *>(&quickAck), sizeof(quickAck));
 #elif defined(__APPLE__)
     // Darwin exposes per-socket idle time only. Interval and probe count stay at
     // the system defaults. SO_NOSIGPIPE suppresses SIGPIPE on broken peers.

@@ -462,14 +462,10 @@ AREG_API_IMPL uint32_t areg::set_send_size(SOCKETHANDLE hSocket, uint32_t sendSi
     int rc = ::setsockopt(hSocket, SOL_SOCKET, SO_SNDBUF, reinterpret_cast<const char*>(&sendSize), len);
 
 #if defined(__linux__)
-    // On Linux, SO_SNDBUF is capped at net.core.wmem_max (~208 KB by default).
-    // SO_SNDBUFFORCE bypasses that cap when the process has CAP_NET_ADMIN.
-    // It fails silently on unprivileged processes — no harm in trying.
-    // Not available on macOS or Cygwin.
-    if (rc != areg::RETURNED_OK)
-    {
-        rc = ::setsockopt(hSocket, SOL_SOCKET, SO_SNDBUFFORCE, reinterpret_cast<const char*>(&sendSize), len);
-    }
+    // SO_SNDBUF returns success even when silently clamped to 2×wmem_max — never use its
+    // return code to guard SNDBUFFORCE. Always attempt FORCE unconditionally to bypass the
+    // cap; it fails silently without CAP_NET_ADMIN. Not available on macOS or Cygwin.
+    ::setsockopt(hSocket, SOL_SOCKET, SO_SNDBUFFORCE, reinterpret_cast<const char*>(&sendSize), len);
 #endif  // __linux__
 
     return (rc == areg::RETURNED_OK ? sendSize : areg::PACKET_MIN_SIZE);
@@ -499,11 +495,10 @@ AREG_API_IMPL uint32_t areg::set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSi
     int rc = ::setsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<const char*>(&recvSize), len);
 
 #if defined(__linux__)
-    // Same cap bypass as set_send_size() — Linux only, not available on macOS or Cygwin.
-    if (rc != areg::RETURNED_OK)
-    {
-        rc = ::setsockopt(hSocket, SOL_SOCKET, SO_RCVBUFFORCE, reinterpret_cast<const char*>(&recvSize), len);
-    }
+    // SO_RCVBUF returns success even when silently clamped to 2×rmem_max — never use its
+    // return code to guard RCVBUFFORCE. Always attempt FORCE unconditionally to bypass the
+    // cap; it fails silently without CAP_NET_ADMIN. Not available on macOS or Cygwin.
+    ::setsockopt(hSocket, SOL_SOCKET, SO_RCVBUFFORCE, reinterpret_cast<const char*>(&recvSize), len);
 #endif  // __linux__
 
     return (rc == areg::RETURNED_OK ? recvSize : areg::PACKET_MIN_SIZE);
