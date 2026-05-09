@@ -1,5 +1,5 @@
-#ifndef AREG_BASE_SYNCPRIMITIVES_HPP
-#define AREG_BASE_SYNCPRIMITIVES_HPP
+#ifndef AREG_BASE_SYNCLOCK_HPP
+#define AREG_BASE_SYNCLOCK_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
  * Areg SDK is dual-licensed under Free open source (Apache version 2.0
@@ -23,7 +23,6 @@
  *              ResourceLock        - An OS specific resource lock object.
  *              NolockSyncObject    - No Locking synchronization object (makes no locking).
  *              SyncTimer           - Timer synchronization object.
- *              Wait                - High resolution timer.
  *              Lock                - Single synchronization auto locking object.
  *              MultiLock           - Multiple synchronization auto locking object.
  *
@@ -32,49 +31,16 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
+#include "areg/base/lockable.h"
+#include <chrono>
 
-#include "areg/base/SyncEvent.hpp"
-#include "areg/base/SyncTimer.hpp"
-#include "areg/base/lockable/Mutex.hpp"
-#include "areg/base/lockable/Semaphore.hpp"
-#include "areg/base/lockable/CriticalSection.hpp"
-#include "areg/base/lockable/SpinLock.hpp"
-#include "areg/base/lockable/ScopeLock.hpp"
-#include "areg/base/lockable/NolockSyncObject.hpp"
-
-/**
- * \brief   This file contains synchronization objects used to synchronize data access
- *          in multi-threading environment. All Synchronization objects are instances of 
- *          SyncObject interface. The instance of Lockable can be 
- *          used in auto-locking objects to synchronize data access.
- *
- *          A special NolockSyncObject is defined to support synchronization functionalities, 
- *          but the object does not block any thread and must not be used in multi-locking operations. 
- *          The purpose of this class to support unified SyncObject interface and use in containers
- *          that do not require synchronization operations.
- *
- *          Lock and MultiLock classes are supporting auto-locking
- *          functionalities. The locking is called during initialization
- *          of object and automatically released when object is destroyed.
- **/
-
+namespace areg {
 /************************************************************************
- * List of declared classes and hierarchy
+ * List of declared classes
  ************************************************************************/
-/* class SyncObject;                */
-/*     class Lockable;              */
-/*         class Mutex;             */
-/*         class Semaphore;         */
-/*         class CriticalSection;   */
-/*         class SpinLock;          */
-/*         class NolockSyncObject;  */
-/*     class SyncEvent;             */
-/*     class SyncTimer;             */
-/*     class Wait;                  */
-
-/* class Lock;                      */
-/* class MultiLock;                 */
-/* class Wait;                      */
+class Lock;
+class MultiLock;
+class Wait;
 
 
-#endif  // AREG_BASE_SYNCPRIMITIVES_HPP
+
