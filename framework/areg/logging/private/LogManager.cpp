@@ -205,7 +205,7 @@ void LogManager::force_enable_logging()
 // LogManager class constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 LogManager::LogManager()
-    : DispatcherThread      ( LogManager::LOGGING_THREAD_NAME.data(), areg::SYSTEM_THREAD_STACK_NORMAL, areg::QUEUE_SIZE_MAXIMUM )
+    : DispatcherThread      ( LogManager::LOGGING_THREAD_NAME.data(), areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_SIZE_MAXIMUM )
     , LoggingEventConsumer  ( )
 
     , mScopeController  ( )

@@ -30,7 +30,7 @@ DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_ServerSendThread, process_event);
 DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_ServerSendThread, _do_send);
 
 ServerSendThread::ServerSendThread(RemoteMessageHandler& remoteService, ServerConnection & connection)
-    : DispatcherThread        ( areg::SERVER_SEND_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_NORMAL, areg::SEND_THREAD_QUEUE_LIMIT )
+    : DispatcherThread        ( areg::SERVER_SEND_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_BIG, areg::SEND_THREAD_QUEUE_LIMIT )
     , SendMessageEventConsumer( )
 
     , mRemoteService    ( remoteService )

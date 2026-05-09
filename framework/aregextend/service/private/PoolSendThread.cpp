@@ -35,7 +35,7 @@ PoolSendThread::PoolSendThread( ClientConnectionPair & owner
                                   , ServerConnection & connection
                                   , ServerSendThread & globalStats
                                   , std::string_view threadName )
-    : DispatcherThread          ( String(threadName), areg::SYSTEM_THREAD_STACK_NORMAL, areg::SEND_THREAD_QUEUE_LIMIT )
+    : DispatcherThread          ( String(threadName), areg::SYSTEM_THREAD_STACK_BIG, areg::SEND_THREAD_QUEUE_LIMIT )
     , SendMessageEventConsumer  ( )
 
     , mOwner            (owner)

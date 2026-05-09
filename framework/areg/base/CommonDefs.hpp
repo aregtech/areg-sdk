@@ -262,7 +262,7 @@ namespace areg {
     /**
      * \brief   The big stack size for a system thread.
      **/
-    constexpr uint32_t   SYSTEM_THREAD_STACK_BIG    { SYSTEM_THREAD_STACK_NORMAL * 2u };
+    constexpr uint32_t   SYSTEM_THREAD_STACK_BIG    { SYSTEM_THREAD_STACK_NORMAL * 4u };
 
     /**
      * \brief   Maximum queue size value used when declaring a component thread.
