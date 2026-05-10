@@ -22,10 +22,6 @@
 #include "areg/appbase/AppDefs.hpp"
 
 #include "areg/base/String.hpp"
-#include "areg/base/Containers.hpp"
-#include "areg/base/MemoryDefs.hpp"
-#include "areg/base/SyncPrimitives.hpp"
-#include "areg/component/Model.hpp"
 #include "areg/persist/ConfigManager.hpp"
 
 /************************************************************************
@@ -33,6 +29,7 @@
  ************************************************************************/
 namespace areg {
     class ConfigListener;
+    class Model;
 } // namespace areg
 
 namespace areg {
@@ -427,8 +424,7 @@ public:
     static bool save_configuration(const char * fileName = nullptr, ConfigListener * listener = nullptr);
 
     /**
-     * \brief   Loads default configuration from areg::DefaultReadonlyProperties and
-     *          areg::DefaultLogScopesConfig. Discards previous configuration.
+     * \brief   Loads default configuration. Discards previous configuration.
      *
      * \param   listener    Optional listener notified when default configuration is set. No
      *                      notifications if nullptr.

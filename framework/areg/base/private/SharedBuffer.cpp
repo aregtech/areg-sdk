@@ -15,11 +15,12 @@
  ************************************************************************/
 #include "areg/base/SharedBuffer.hpp"
 
-#include "areg/appbase/Application.hpp"
 #include "areg/base/MathDefs.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/StringDefs.hpp"
 #include "areg/base/WideString.hpp"
+
+#include "areg/appbase/Application.hpp"
 
 #include <algorithm>
 #include <atomic>

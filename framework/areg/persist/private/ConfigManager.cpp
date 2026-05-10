@@ -890,7 +890,7 @@ String ConfigManager::remote_service_address(const String& service, const String
     constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::ServiceAddress };
     constexpr const areg::ConfigKey& key{ areg::service_address() };
     const PropertyValue* prop = property_value(service, key.property, connectType, confKey);
-    return (prop != nullptr ? prop->as_string() : areg::DEFAULT_SERVICE_HOST);
+    return (prop != nullptr ? prop->as_string() : areg::LocalHost);
 }
 
 String ConfigManager::remote_service_address(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept
@@ -1194,6 +1194,34 @@ uint32_t ConfigManager::network_timeout(const String& module, const String& conn
 
     // Step 3: compile-time default
     return areg::SOCKET_SEND_TIMEOUT_MS;
+}
+
+uint32_t ConfigManager::network_cache(const String& module, const String& connectType) const noexcept
+{
+    Lock lock(mLock);
+
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::NetThreadCache };
+    constexpr const areg::ConfigKey&  key{ areg::net_thread_cache() };
+    const String& transport{ connectType.is_empty() ? String(areg::SYNTAX_ALL_MODULES) : connectType };
+
+    // Step 1: module-specific entry
+    const String& mod{ module.is_empty() ? mModule : module };
+    if (!mod.is_empty())
+    {
+        const Property* prop = _get_property(mWritableProperties, key.section, mod, transport, key.position, confKey, true);
+        if ((prop != nullptr) && (prop->value().as_integer() > 0))
+            return static_cast<uint32_t>(prop->value().as_integer());
+    }
+
+    // Step 2: wildcard "*" entry
+    {
+        const Property* prop = _get_property(mReadonlyProperties, key.section, String(areg::SYNTAX_ALL_MODULES), transport, key.position, confKey, false);
+        if ((prop != nullptr) && (prop->value().as_integer() > 0))
+            return static_cast<uint32_t>(prop->value().as_integer());
+    }
+
+    // Step 3: compile-time default
+    return areg::DEFAULT_THREAD_CACHE_KB;
 }
 
 } // namespace areg

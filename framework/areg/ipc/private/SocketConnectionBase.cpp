@@ -56,6 +56,7 @@ int32_t SocketConnectionBase::send_messages_batch(const RemoteMessage* const* me
 
     areg::IoBuffer iovs[MAX_BATCH];
     uint32_t validCount{ 0u };
+    uint32_t totalSize { 0u };
 
     for (uint32_t i = 0u; i < batchCount; ++i)
     {
@@ -66,10 +67,12 @@ int32_t SocketConnectionBase::send_messages_batch(const RemoteMessage* const* me
 
         msg->buffer_completion_fix();
         ASSERT(hdr->rbhBufHeader.biLength >= hdr->rbhBufHeader.biUsed);
-        iovs[validCount++] = { reinterpret_cast<const uint8_t*>(hdr), static_cast<uint32_t>(sizeof(areg::MessageHeader)) + hdr->rbhBufHeader.biUsed };
+        iovs[validCount] = { reinterpret_cast<const uint8_t*>(hdr), static_cast<uint32_t>(sizeof(areg::MessageHeader)) + hdr->rbhBufHeader.biUsed };
+        totalSize       += static_cast<uint32_t>(iovs[validCount].size);
+        ++validCount;
     }
 
-    return (validCount != 0u ? areg::send_data_v(socket.handle(), iovs, validCount) : 0u);
+    return (validCount != 0u ? areg::send_data_v(socket.handle(), iovs, validCount, totalSize) : 0u);
 }
 
 int32_t SocketConnectionBase::send_message(const RemoteMessage & message, SOCKETHANDLE hSocket) const

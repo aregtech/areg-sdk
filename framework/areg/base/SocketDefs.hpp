@@ -26,6 +26,7 @@
 #include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
 
+#include <memory>
 #include <string_view>
 
 /************************************************************************
@@ -265,6 +266,18 @@ constexpr std::string_view LocalAddress         { "127.0.0.1" };
 //!< Separator character between IPv4 octets.
 constexpr char          IP_SEPARATOR            { '.' };
 
+//!< Default IP-Address of routing service.
+constexpr std::string_view  DEFAULT_ROUTER_HOST { LocalAddress };
+
+//!< Default connection port number of routing service.
+constexpr uint16_t          DEFAULT_ROUTER_PORT { 8181 };
+
+//!< Default IP-Address of routing service.
+constexpr std::string_view  DEFAULT_LOGGER_HOST { areg::LocalAddress };
+
+//!< Default connection port number of routing service.
+constexpr uint16_t          DEFAULT_LOGGER_PORT { 8282 };
+
 //!< Buffer size required to hold any IPv4 address string (e.g. "255.255.255.255\0").
 constexpr uint32_t      IP_ADDRESS_SIZE         { 16u };
 
@@ -286,7 +299,7 @@ constexpr uint32_t      PACKET_INVALID_SIZE     { 0u };
 //!< Applied on all platforms including Windows (SO_SNDBUF does NOT disable autotuning;
 //!< only SO_RCVBUF does that on Windows Vista+).
 //!< Override at runtime via net::SERVICE::TRANSPORT::sndbuf in areg.init (value in KB).
-constexpr uint32_t      SOCKET_SEND_BUFFER_SIZE { 16u * 1024u * 1024u };
+constexpr uint32_t      SOCKET_SEND_BUFFER_SIZE { 16u * areg::ONE_MEGABYTE };
 
 //!< Compile-time default for SO_RCVBUF applied on Linux and macOS.
 //!< Override at runtime via net::SERVICE::TRANSPORT::rcvbuf in areg.init (value in KB).
@@ -295,7 +308,7 @@ constexpr uint32_t      SOCKET_SEND_BUFFER_SIZE { 16u * 1024u * 1024u };
 //!< Calling setsockopt(SO_RCVBUF) on a connected or accepted socket disables
 //!< SIO_LOOPBACK_FAST_PATH, which is the primary loopback optimization on Windows
 //!< and delivers 2+ GB/s throughput.  Losing it drops loopback to ~300 MB/s.
-constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE { 16u * 1024u * 1024u };
+constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE { 16u * areg::ONE_MEGABYTE };
 
 //!< Maximum milliseconds a single send() call may block waiting for TCP send-window space.
 //!< When the peer's receive window is zero (e.g. OOM pressure or a slow/stalled receiver),
@@ -332,7 +345,7 @@ constexpr uint32_t      DEFAULT_CONNECTIONS     { 128u };
 //!< Number of socket events fetched from the OS in a single epoll_wait / kevent / WSAPoll
 //!< syscall.  Raising this reduces per-client syscall overhead under burst load.
 //!< Optimal when BATCH_SIZE == THREAD_DRAIN_LIMIT: one OS call covers exactly one drain pass.
-constexpr uint32_t      BATCH_SIZE              { 32u };
+constexpr uint32_t      BATCH_SIZE              { 64u };
 
 //!< Number of additional sockets (receive) or events (send) drained per dispatcher wake-up
 //!< before returning to the blocking wait.  One drain pass processes exactly one OS-level
@@ -374,6 +387,42 @@ constexpr uint32_t      DEFAULT_POOL_PAIRS          { 0u };
  **/
 extern AREG_API const int32_t MAXIMUM_LISTEN_QUEUE_SIZE /*= SOMAXCONN*/;
 
+AREG_API uint32_t   thread_cache_size() noexcept;
+
+constexpr const uint32_t    DEFAULT_THREAD_CACHE_KB{ 256 };
+
+//!< Phase-3 greedy-fill skip threshold (bytes).  A recv() request smaller than
+//!< this value skips the 256 KB greedy fill and uses MSG_WAITALL directly.
+//!< Prevents the cache from filling with large-message body bytes during
+//!< header reads, which would add a 256 KB memcpy overhead per large message.
+//!< Must be larger than sizeof(MessageHeader) and smaller than any useful
+//!< message body that benefits from greedy batching (default: 256 bytes).
+constexpr const uint32_t    RECV_GREEDY_THRESHOLD{ 256u };
+
+struct ThreadCache
+{
+    static constexpr uint32_t THREAD_CACHE_SIZE{ areg::DEFAULT_THREAD_CACHE_KB * areg::ONE_KILOBYTE };
+
+    SOCKETHANDLE socket{ areg::InvalidSocketHandle };   //!< Socket whose data occupies [head, head+unread)
+    uint32_t     head   { 0u };                         //!< Read cursor: index of next byte to serve to caller
+    uint32_t     unread { 0u };                         //!< Unread cached bytes: valid bytes at [head, head+unread)
+    uint32_t     space  { 0u };                         //!< total space in buffer
+    std::unique_ptr<uint8_t[]> buffer{ nullptr };       //!< initialize by need
+
+    inline uint8_t* cache() noexcept
+    {
+        if (buffer == nullptr)
+        {
+            space = areg::thread_cache_size();
+            head  = 0u;
+            unread= 0u;
+            buffer.reset(new (std::nothrow) uint8_t[space]);
+        }
+
+        return buffer.get();
+    }
+};
+
 //////////////////////////////////////////////////////////////////////////
 // areg namespace free functions
 //////////////////////////////////////////////////////////////////////////
@@ -391,6 +440,12 @@ extern AREG_API const int32_t MAXIMUM_LISTEN_QUEUE_SIZE /*= SOMAXCONN*/;
  **/
 [[nodiscard]]
 inline bool is_valid_socket(SOCKETHANDLE hSocket) noexcept;
+
+/**
+ * \brief   Returns the thread cache object
+ **/
+[[nodiscard]]
+AREG_API ThreadCache& thread_local_cache() noexcept;
 
 /**
  * \brief   Initializes the socket subsystem for the current process.
@@ -582,7 +637,7 @@ AREG_API int32_t send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, uint
 struct IoBuffer
 {
     const uint8_t*  data;   //!< Pointer to the start of the data region.
-    uint32_t        size;   //!< Number of bytes to send from this region.
+    std::size_t     size;   //!< Number of bytes to send from this region.
 };
 
 /**
@@ -597,7 +652,7 @@ struct IoBuffer
  * \return  Total bytes sent on success; negative on error; 0 on invalid socket
  *          or empty list.
  **/
-AREG_API int32_t send_data_v(SOCKETHANDLE hSocket, const IoBuffer* buffers, uint32_t count) noexcept;
+AREG_API int32_t send_data_v(SOCKETHANDLE hSocket, const IoBuffer* buffers, uint32_t count, uint32_t totalSize = 0) noexcept;
 
 /**
  * \brief   Receives up to \a dataLength bytes from \a hSocket into \a dataBuffer.
@@ -611,6 +666,22 @@ AREG_API int32_t send_data_v(SOCKETHANDLE hSocket, const IoBuffer* buffers, uint
  *          negative on error or empty buffer.
  **/
 AREG_API int32_t receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength) noexcept;
+
+/**
+ * \brief   Returns the number of bytes of received data that are cached in
+ *          the calling thread's read-ahead buffer for \a hSocket.
+ *
+ *          A non-zero return means additional complete messages are available
+ *          in the application cache and will NOT trigger an epoll/select
+ *          wakeup (the kernel socket buffer is empty).  Callers that use a
+ *          multiplexer-based receive loop (ServerReceiveThread, PoolReceiveThread)
+ *          must drain this cache before blocking on the multiplexer again, or
+ *          those messages will never be processed.
+ *
+ * \param   hSocket     Socket whose cache is queried.
+ * \return  Bytes available in the thread-local cache for this socket (>= 0).
+ **/
+AREG_API uint32_t recv_data_available(SOCKETHANDLE hSocket) noexcept;
 
 /**
  * \brief   Sets SO_SNDTIMEO on \a hSocket so that a blocking send() cannot

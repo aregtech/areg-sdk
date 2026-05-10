@@ -24,8 +24,6 @@
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/MathDefs.hpp"
 #include "areg/base/StringDefs.hpp"
-#include "areg/component/ServiceDefs.hpp"
-#include "areg/persist/PersistenceDefs.hpp"
 
 #include <string_view>
 
@@ -61,6 +59,52 @@ namespace areg {
      * \brief   Alias of the map position.
      **/
     using SCOPEPOS      = ScopeList::MAPPOS;
+
+    /**
+     * \brief   areg::LOG_SCOPES_GROUP
+     *          Symbol, indicating scope group or all scopes.
+     *          For example, the scope "scope.*" means all scope.
+     *          And the scope "scope.areg_*" means all scopes of that start with "areg_"
+     **/
+    constexpr std::string_view  LOG_SCOPES_GROUP{ "*" };
+
+    constexpr char              LOG_SYNTAX_GROUP{ '*' };
+
+    /**
+     * \brief  areg::LOG_SCOPES_SELF
+     *         Scope name of Areg framework internal logs.
+     **/
+    constexpr std::string_view  LOG_SCOPES_SELF{ "areg_*" };
+
+    /**
+     * \brief  areg::DEFAULT_LOG_FILE
+     *         The default file name to log.
+     **/
+    constexpr std::string_view  DEFAULT_LOG_FILE{ "./logs/logs_%time%.log" };
+
+    /**
+     * \brief  areg::DEFAULT_LOG_QUEUE_SIZE
+     *         The default size to queue logs in the stack, used for remote logging.
+     **/
+    constexpr uint32_t          DEFAULT_LOG_QUEUE_SIZE{ 100 };
+
+    /**
+     * \brief  areg::DEFAULT_LOG_FILE
+     *         The default layout to display enter scope on console in the plain text file
+     **/
+    constexpr std::string_view  DEFAULT_LAYOUT_SCOPE_ENTER{ "%d: [ %t %x.%z: Enter --> ] %n" };
+
+    /**
+     * \brief  areg::DEFAULT_LOG_FILE
+     *         The default layout to display exit scope on console in the plain text file
+     **/
+    constexpr std::string_view  DEFAULT_LAYOUT_SCOPE_EXIT{ "%d: [ %t %x.%z: Exit  <-- ] %n" };
+
+    /**
+     * \brief  areg::DEFAULT_LOG_FILE
+     *         The default layout to display the log message on console in the plain text file
+     **/
+    constexpr std::string_view  DEFAULT_LAYOUT_LOG_MESSAGE{ "%d: [ %t %p >>> ] %m %n" };
 
     /**
      * \brief   Structure to keep scope information, composed of scope name, scope ID, and scope
@@ -712,7 +756,7 @@ inline constexpr uint32_t areg::make_id(const char* scopeName) noexcept
 inline constexpr uint32_t areg::make_scope_id_ex(const char* scopeName) noexcept
 {
 #if AREG_LOGGING
-    return  (areg::string_ends_with<char>(scopeName, areg::SYNTAX_LOG_GROUP, true) ? areg::CHECKSUM_IGNORE : areg::make_id(scopeName));
+    return  (areg::string_ends_with<char>(scopeName, areg::LOG_SYNTAX_GROUP, true) ? areg::CHECKSUM_IGNORE : areg::make_id(scopeName));
 #else
     return 0;
 #endif // AREG_LOGGING

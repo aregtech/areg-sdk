@@ -22,7 +22,6 @@
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/component/ServiceDefs.hpp"
-#include "areg/persist/PersistenceDefs.hpp"
 
 #include <string_view>
 

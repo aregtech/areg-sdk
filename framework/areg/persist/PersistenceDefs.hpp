@@ -70,12 +70,10 @@ namespace areg {
      **/
     constexpr char              SYNTAX_ANY_VALUE            { '*' };
 
-    constexpr char              SYNTAX_LOG_GROUP{ '*' };
-
     /**
      * \brief   The scope name path separator between tree nodes.
      **/
-    constexpr char              SYNTAX_SCOPE_SEPARATOR{ '_' };
+    constexpr char              SYNTAX_SCOPE_SEPARATOR      { '_' };
 
     /**
      * \brief   The separator between the scope path (node chain) and the method (leaf) name.
@@ -203,12 +201,12 @@ namespace areg {
 
         , NetSocketSndbuf      = 29    //!< The SO_SNDBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::sndbuf).
         , NetSocketRcvbuf      = 30    //!< The SO_RCVBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::rcvbuf).
-
-        , NetSocketBatch       = 32    //!< Send batch/drain size (format: net::SERVICE::TRANSPORT::batch).
-        , NetSocketZerocopy    = 33    //!< MSG_ZEROCOPY enable flag (format: net::SERVICE::TRANSPORT::zerocopy).
-        , NetSocketRing        = 34    //!< Zerocopy ring-slot count (format: net::SERVICE::TRANSPORT::ring).
-        , NetPoolPairs         = 35    //!< Thread-pool pair count (format: net::SERVICE::TRANSPORT::pairs).
-        , NetSocketTimeout     = 36    //!< SO_SNDTIMEO in ms (format: net::SERVICE::TRANSPORT::timeout).
+        , NetSocketBatch       = 31    //!< Send batch/drain size (format: net::SERVICE::TRANSPORT::batch).
+        , NetSocketZerocopy    = 32    //!< MSG_ZEROCOPY enable flag (format: net::SERVICE::TRANSPORT::zerocopy).
+        , NetSocketRing        = 33    //!< Zerocopy ring-slot count (format: net::SERVICE::TRANSPORT::ring).
+        , NetPoolPairs         = 34    //!< Thread-pool pair count (format: net::SERVICE::TRANSPORT::pairs).
+        , NetSocketTimeout     = 35    //!< SO_SNDTIMEO in ms (format: net::SERVICE::TRANSPORT::timeout).
+        , NetThreadCache       = 36    //!< The size of thread cache for networking in kilobytes (format: net::SERVICE::TRANSPORT::cache).
 
         , AnyKey               = 37    //!< Indicates any key type.
     };
@@ -256,16 +254,16 @@ namespace areg {
 
             , {"net"    , "*"   , "*"       , "sndbuf"          }   //! 29  , The SO_SNDBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::sndbuf).
             , {"net"    , "*"   , "*"       , "rcvbuf"          }   //! 30  , The SO_RCVBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::rcvbuf).
+            , {"net"    , "*"   , "*"       , "batch"           }   //! 31  , Batch/drain size per dispatcher wake-up.
+            , {"net"    , "*"   , "*"       , "zerocopy"        }   //! 32  , MSG_ZEROCOPY enable flag (Linux only, default false).
+            , {"net"    , "*"   , "*"       , "ring"            }   //! 33  , Zerocopy ring-slot count (default DEFAULT_ZEROCOPY_RING_SIZE).
+            , {"net"    , "*"   , "*"       , "pairs"           }   //! 34  , Thread-pool pair count (0 = disabled).
+            , {"net"    , "*"   , "*"       , "timeout"         }   //! 35  , SO_SNDTIMEO in milliseconds (0 = use compile-time default SOCKET_SEND_TIMEOUT_MS).
+            , {"net"    , "*"   , "*"       , "cache"           }   //! 36  , The thread cache size in network communication (0 = default THREAD_CACHE_SIZE (128KB)).
 
-            , {"*"      , "*"   , "*"       , "*"               }   //! 31  , Indicates any key type (AnyKey sentinel — keep at index 31 for compatibility).
+            , {"*"      , "*"   , "*"       , "*"               }   //! 37  , Indicates any key type (AnyKey sentinel — keep at index 31 for compatibility).
 
-            , {"net"    , "*"   , "*"       , "batch"           }   //! 32  , Batch/drain size per dispatcher wake-up.
-            , {"net"    , "*"   , "*"       , "zerocopy"        }   //! 33  , MSG_ZEROCOPY enable flag (Linux only, default false).
-            , {"net"    , "*"   , "*"       , "ring"            }   //! 34  , Zerocopy ring-slot count (default DEFAULT_ZEROCOPY_RING_SIZE).
-            , {"net"    , "*"   , "*"       , "pairs"           }   //! 35  , Thread-pool pair count (0 = disabled).
-            , {"net"    , "*"   , "*"       , "timeout"         }   //! 36  , SO_SNDTIMEO in milliseconds (0 = use compile-time default SOCKET_SEND_TIMEOUT_MS).
-        };
-
+    };
 
 //////////////////////////////////////////////////////////////////////////
 // areg namespace inline methods
@@ -444,6 +442,11 @@ inline constexpr const areg::ConfigKey& net_pool_pairs() noexcept
 inline constexpr const areg::ConfigKey& net_socket_timeout() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::NetSocketTimeout)];
+}
+
+inline constexpr const areg::ConfigKey& net_thread_cache() noexcept
+{
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::NetThreadCache)];
 }
 
 } // namespace areg

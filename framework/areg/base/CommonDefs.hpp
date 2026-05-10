@@ -399,7 +399,7 @@ namespace areg {
      * \brief   areg::ONE_KILOBYTE
      *          Size of one Kilobyte.
      **/
-    constexpr uint32_t  ONE_KILOBYTE                { 1'000 * ONE_BYTE };
+    constexpr uint32_t  ONE_KILOBYTE                { 1'024 * ONE_BYTE };
 
     /**
      * \brief   areg::STR_ONE_KILOBYTE
@@ -411,7 +411,7 @@ namespace areg {
      * \brief   areg::ONE_MEGABYTE
      *          Size of one Megabyte.
      **/
-    constexpr uint32_t  ONE_MEGABYTE                { 1'000 * ONE_KILOBYTE };
+    constexpr uint32_t  ONE_MEGABYTE                { ONE_KILOBYTE * ONE_KILOBYTE };
 
     /**
      * \brief   areg::STR_ONE_MEGABYTE
@@ -423,7 +423,7 @@ namespace areg {
      * \brief   areg::ONE_GIGABYTE
      *          Size of one Gigabyte.
      **/
-    constexpr uint32_t  ONE_GIGABYTE                { 1'000 * ONE_MEGABYTE };
+    constexpr uint32_t  ONE_GIGABYTE                { ONE_KILOBYTE * ONE_MEGABYTE };
 
     /**
      * \brief   areg::STR_ONE_GIGABYTE

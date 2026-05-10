@@ -14,3 +14,7 @@
  ************************************************************************/
 
 #include "areg/persist/PersistenceDefs.hpp"
+
+#include "areg/base/SocketDefs.hpp"
+#include "areg/logging/LoggingDefs.hpp"
+

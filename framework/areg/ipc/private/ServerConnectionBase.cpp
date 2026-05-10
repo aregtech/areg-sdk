@@ -150,7 +150,7 @@ bool ServerConnectionBase::accept_connection(SocketAccepted & clientConnection)
     if ( mServerSocket.is_valid() && clientConnection.is_valid( ) )
     {
         const SOCKETHANDLE hSocket = clientConnection.handle();
-        ASSERT(hSocket != areg::InvalidSocketHandle);
+        ASSERT(areg::is_valid_socket(hSocket));
         ASSERT(mMultiplexer.is_registered(hSocket) == false);
 
         if ( !result && !mAcceptedConnections.contains(hSocket) )

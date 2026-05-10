@@ -16,6 +16,8 @@
 
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/SocketMultiplexer.hpp"
+#include "areg/appbase/Application.hpp"
+
 #include "areg/logging/areg_log.h"
 
 #ifdef   _WIN32
@@ -73,7 +75,7 @@ namespace areg::os {
      *          be done before calling the method.
      * \return  Returns total bytes sent; negative on error.
      */
-    int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count);
+    int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t totalSize);
 
     /**
      * \brief   OS specific receive data implementation. All checkups and validations should
@@ -109,13 +111,8 @@ namespace areg::os {
     bool _os_connect_socket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen, uint32_t timeoutMs);
 
     /**
-     * \brief   Applies platform-specific default socket-buffer policy after socket creation.
-     */
-    void _os_configure_socket(SOCKETHANDLE hSocket) noexcept;
-
-    /**
      * \brief   Applies platform-specific options that require a connected TCP socket.
-     */
+     **/
     void _os_configure_connected_socket(SOCKETHANDLE hSocket) noexcept;
 
 #if defined(__linux__)
@@ -415,6 +412,13 @@ bool areg::UserData::is_valid() const noexcept
 //////////////////////////////////////////////////////////////////////////
 DEF_LOG_SCOPE(areg_base_areg, client_connect);
 DEF_LOG_SCOPE(areg_base_areg, server_connect);
+DEF_LOG_SCOPE(areg_base_areg, set_recv_size);
+
+AREG_API_IMPL uint32_t areg::thread_cache_size() noexcept
+{
+    return Application::config_manager().network_cache() * areg::ONE_KILOBYTE;;
+}
+
 
 AREG_API_IMPL SOCKETHANDLE areg::socket_create() noexcept
 {
@@ -431,8 +435,9 @@ AREG_API_IMPL uint32_t areg::max_send_size( SOCKETHANDLE hSocket ) noexcept
 
 AREG_API_IMPL void areg::socket_configure(SOCKETHANDLE hSocket) noexcept
 {
-    ASSERT(is_valid_socket(hSocket));
-    areg::os::_os_configure_socket(hSocket);
+    ASSERT(areg::is_valid_socket(hSocket));
+    areg::set_send_size(hSocket, areg::SOCKET_SEND_BUFFER_SIZE);
+    areg::set_recv_size(hSocket, areg::SOCKET_RECV_BUFFER_SIZE);
 }
 
 AREG_API_IMPL void areg::socket_set_no_delay(SOCKETHANDLE hSocket) noexcept
@@ -499,6 +504,31 @@ AREG_API_IMPL uint32_t areg::set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSi
     // return code to guard RCVBUFFORCE. Always attempt FORCE unconditionally to bypass the
     // cap; it fails silently without CAP_NET_ADMIN. Not available on macOS or Cygwin.
     ::setsockopt(hSocket, SOL_SOCKET, SO_RCVBUFFORCE, reinterpret_cast<const char*>(&recvSize), len);
+
+    // Warn once if the kernel capped SO_RCVBUF well below what we requested.
+    // The kernel reports double the effective window (internal accounting), so divide by 2.
+    // Threshold: warn when effective < 25% of requested (severe cap, likely WSL2 default).
+    {
+        static bool _rcvBufWarned{ false };
+        if (!_rcvBufWarned)
+        {
+            unsigned long actual{ 0u };
+            socklen_t actualLen{ static_cast<socklen_t>(sizeof(actual)) };
+            if (::getsockopt(hSocket, SOL_SOCKET, SO_RCVBUF,
+                             reinterpret_cast<char*>(&actual), &actualLen) == RETURNED_OK)
+            {
+                const uint32_t effective = static_cast<uint32_t>(actual / 2u);
+                if (effective < (recvSize / 4u))
+                {
+                    _rcvBufWarned = true;
+                    LOG_SCOPE(areg_base_areg, set_recv_size);
+                    LOG_WARN("SO_RCVBUF capped at %u KB (requested %u KB). "
+                             "Raise via: sudo sysctl -w net.core.rmem_max=%u",
+                             effective / 1024u, recvSize / 1024u, recvSize);
+                }
+            }
+        }
+    }
 #endif  // __linux__
 
     return (rc == areg::RETURNED_OK ? recvSize : areg::PACKET_MIN_SIZE);
@@ -858,7 +888,7 @@ AREG_API_IMPL int32_t areg::send_data(SOCKETHANDLE hSocket, const uint8_t* dataB
     return result;
 }
 
-AREG_API_IMPL int32_t areg::send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count) noexcept
+AREG_API_IMPL int32_t areg::send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t totalSize) noexcept
 {
     if (!areg::is_valid_socket(hSocket))
         return -1;
@@ -866,7 +896,7 @@ AREG_API_IMPL int32_t areg::send_data_v(SOCKETHANDLE hSocket, const areg::IoBuff
     if ((buffers == nullptr) || (count == 0u))
         return 0;
 
-    return areg::os::_os_send_data_v(hSocket, buffers, count);
+    return areg::os::_os_send_data_v(hSocket, buffers, count, totalSize);
 }
 
 AREG_API_IMPL int32_t areg::receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength) noexcept
@@ -883,6 +913,21 @@ AREG_API_IMPL int32_t areg::receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuff
     }
 
     return result;
+}
+
+AREG_API_IMPL uint32_t areg::recv_data_available(SOCKETHANDLE hSocket) noexcept
+{
+    const areg::ThreadCache& tc = areg::thread_local_cache();
+    if ((tc.socket != hSocket) || (tc.unread == 0u))
+        return 0u;
+
+    if (tc.unread < static_cast<uint32_t>(sizeof(areg::MessageHeader)))
+        return 0u;
+
+    const areg::MessageHeader* hdr{ reinterpret_cast<const areg::MessageHeader*>(tc.buffer.get() + tc.head) };
+    ASSERT(hdr != nullptr);
+    const uint32_t msg_total = static_cast<uint32_t>(sizeof(areg::MessageHeader)) + hdr->rbhBufHeader.biUsed;
+    return (tc.unread >= msg_total) ? tc.unread : 0u;
 }
 
 AREG_API_IMPL bool areg::disable_send(SOCKETHANDLE hSocket) noexcept
@@ -1067,6 +1112,12 @@ AREG_API_IMPL areg::String areg::extract_ip_address(const sockaddr_in& addrHost)
 AREG_API_IMPL uint16_t areg::extract_port_number(const sockaddr_in& addrHost) noexcept
 {
     return ntohs(addrHost.sin_port);
+}
+
+AREG_API_IMPL areg::ThreadCache& areg::thread_local_cache() noexcept
+{
+    static thread_local areg::ThreadCache   _cache;
+    return _cache;
 }
 
 #if defined(__linux__)

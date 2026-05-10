@@ -20,10 +20,6 @@
 #include "areg/base/areg_global.h"
 
 #include "areg/base/Identifier.hpp"
-#include "areg/persist/PersistenceDefs.hpp"
-#include "areg/ipc/RemoteServiceDefs.hpp"
-#include "areg/logging/LoggingDefs.hpp"
-
 #include <string_view>
 #include <vector>
 
@@ -94,40 +90,10 @@ namespace areg {
     constexpr std::string_view  DEFAULT_ROUTER_SERVICE_NAME { "mtrouter" };
 
     /**
-     * \brief   areg::DEFAULT_ROUTER_HOST
-     *          Default IP-Address of routing service.
-     **/
-    constexpr std::string_view  DEFAULT_ROUTER_HOST         { areg::LocalAddress };
-
-    /**
-     * \brief   areg::DEFAULT_ROUTER_PORT
-     *          Default connection port number of routing service.
-     **/
-    constexpr uint16_t          DEFAULT_ROUTER_PORT         { 8181 };
-
-    /**
      * \brief   areg::DEFAULT_LOGGER_SERVICE_NAME
      *          The default name of Log Collector.
      **/
     constexpr std::string_view  DEFAULT_LOGGER_SERVICE_NAME { "logcollector" };
-
-    /**
-     * \brief   areg::DEFAULT_LOGGER_HOST
-     *          Default IP-Address of routing service.
-     **/
-    constexpr std::string_view  DEFAULT_LOGGER_HOST         { areg::LocalAddress };
-
-    /**
-     * \brief   areg::DEFAULT_LOGGER_PORT
-     *          Default connection port number of routing service.
-     **/
-    constexpr uint16_t          DEFAULT_LOGGER_PORT         { 8282 };
-
-    /**
-     * \brief   areg::DEFAULT_SERVICE_HOST
-     *          Default IP-Address of any remote service.
-     **/
-    constexpr std::string_view  DEFAULT_SERVICE_HOST        { areg::LocalAddress };
 
     /**
      * \brief   areg::DEFAULT_SERVICE_ENABLED
@@ -143,178 +109,28 @@ namespace areg {
     constexpr bool              DEFAULT_LOG_ENABLED         { false };
 
     /**
-     * \brief   areg::LOG_SCOPES_GROUP
-     *          Symbol, indicating scope group or all scopes.
-     *          For example, the scope "scope.*" means all scope.
-     *          And the scope "scope.areg_*" means all scopes of that start with "areg_"
-     **/
-    constexpr std::string_view  LOG_SCOPES_GROUP            { "*" };
-
-     /**
-      * \brief  areg::LOG_SCOPES_SELF
-      *         Scope name of Areg framework internal logs.
-      **/
-    constexpr std::string_view  LOG_SCOPES_SELF             { "areg_*" };
-
-     /**
-      * \brief  areg::DEFAULT_LOG_FILE
-      *         The default file name to log.
-      **/
-    constexpr std::string_view  DEFAULT_LOG_FILE            { "./logs/logs_%time%.log" };
-
-    /**
-     * \brief  areg::DEFAULT_LOG_QUEUE_SIZE
-     *         The default size to queue logs in the stack, used for remote logging.
-     **/
-    constexpr uint32_t          DEFAULT_LOG_QUEUE_SIZE      { 100 };
-
-     /**
-      * \brief  areg::DEFAULT_LOG_FILE
-      *         The default layout to display enter scope on console in the plain text file
-      **/
-    constexpr std::string_view  DEFAULT_LAYOUT_SCOPE_ENTER  { "%d: [ %t %x.%z: Enter --> ] %n" };
-
-    /**
-     * \brief  areg::DEFAULT_LOG_FILE
-     *         The default layout to display exit scope on console in the plain text file
-     **/
-    constexpr std::string_view  DEFAULT_LAYOUT_SCOPE_EXIT   { "%d: [ %t %x.%z: Exit  <-- ] %n" };
-
-     /**
-      * \brief  areg::DEFAULT_LOG_FILE
-      *         The default layout to display the log message on console in the plain text file
-      **/
-    constexpr std::string_view  DEFAULT_LAYOUT_LOG_MESSAGE  { "%d: [ %t %p >>> ] %m %n" };
-
-    /**
-     * \brief   The structure to keep service enable or disable information.
-     **/
-    struct LogTypeEntry
-    {
-        uint32_t            ltId;
-        std::string_view    ltIdName;
-        bool                ltEnabled;
-    };
-
-    /**
-     * \brief   areg::DefaultLogTypes
-     *          The list of logging types with the enabled / disabled flags.
-     *          The disabled logging modules are not implemented yet.
-     **/
-    constexpr LogTypeEntry DefaultLogTypes []
-        {
-              { static_cast<uint32_t>(areg::LogTarget::Undefined)  , {"unknown"}, false }
-            , { static_cast<uint32_t>(areg::LogTarget::Remote)     , {"remote" }, false }
-            , { static_cast<uint32_t>(areg::LogTarget::File)       , {"file"   }, true  }
-            , { static_cast<uint32_t>(areg::LogTarget::Debug)      , {"debug"  }, false }
-            , { static_cast<uint32_t>(areg::LogTarget::Database)   , {"db"     }, false}
-        };
-
-    /**
-     * \brief   areg::DefaultConnections
-     *          The list of connection types with the enabled / disabled flags.
-     *          The disabled connection modules are not implemented yet.
-     **/
-    constexpr LogTypeEntry DefaultConnections[]
-        {
-              { static_cast<uint32_t>(areg::ConnectionType::Undefined)   , {"unknown"}, false }
-            , { static_cast<uint32_t>(areg::ConnectionType::Tcpip)       , {"tcpip"  }, true  }
-            , { static_cast<uint32_t>(areg::ConnectionType::Udp)         , {"udp"    }, false }
-            , { static_cast<uint32_t>(areg::ConnectionType::Web)         , {"web"    }, false }
-            , { static_cast<uint32_t>(areg::ConnectionType::SharedMemory), {"sm"     }, false }
-        };
-
-    /**
-     * \brief   areg::DefaultRemotetServices
-     *          The list of connection types with the enabled / disabled flags.
-     **/
-    constexpr LogTypeEntry DefaultRemotetServices[]
-        {
-              { static_cast<uint32_t>(areg::RemoteServiceKind::Unknown) , {"unknown"}, false }
-            , { static_cast<uint32_t>(areg::RemoteServiceKind::Router)  , {"router" }, true  }
-#ifdef DEBUG
-            , { static_cast<uint32_t>(areg::RemoteServiceKind::Logger)  , {"logger" }, true  }
-#else   // DEBUG
-            , { static_cast<uint32_t>(areg::RemoteServiceKind::Logger)  , {"logger" }, false }
-#endif  // DEBUG
-        };
-
-    /**
-     * \brief   areg::DefaultReadonlyProperties
-     *          The list of read-only global properties that cannot be changed,
-     *          but can be changed for certain modules and saved in writable configuration.
-     **/
-    constexpr areg::ConfigProperty  DefaultReadonlyProperties[]
-        {
-              { {"config"   , "*"   , "version" , ""        }, areg::CONFIG_VERSION    }   //!< The configuration version.
-
-            , { {"log"      , "*"   , "version" , ""        }, areg::LOG_VERSION             }   //!< The logging version.
-            , { {"log"      , "*"   , "target"  , ""        }, "remote | file | debug | db"     }   //!< The logging types.
-            , { {"log"      , "*"   , "enable"  , ""        }, "true"                           }   //!< The logging enabled / disabled status.
-            , { {"log"      , "*"   , "enable"  , "remote"  }, "true"                           }   //!< The logging in remote log collector enabled / disabled flag.
-            , { {"log"      , "*"   , "enable"  , "file"    }, "true"                           }   //!< The logging in file enabled / disabled flag.
-            , { {"log"      , "*"   , "enable"  , "output"  }, "false"                          }   //!< The logging in output console enabled / disabled flag.
-            , { {"log"      , "*"   , "enable"  , "db"      }, "false"                          }   //!< The logging in database enabled / disabled flag.
-            , { {"log"      , "*"   , "file"    , "location"}, DEFAULT_LOG_FILE                 }   //!< The log file location and file name mask.
-            , { {"log"      , "*"   , "file"    , "append"  }, "false"                          }   //!< The flag to append logs into the file.
-            , { {"log"      , "*"   , "remote"  , "queue"   }, "100"                            }   //!< The queue size of remote logging.
-            , { {"log"      , "*"   , "remote"  , "service" }, "logger"                         }   //!< The service name of the remote logging.
-            , { {"log"      , "*"   , "layout"  , "enter"   }, DEFAULT_LAYOUT_SCOPE_EXIT        }   //!< The layout of enter scope message.
-            , { {"log"      , "*"   , "layout"  , "message" }, DEFAULT_LAYOUT_LOG_MESSAGE       }   //!< The layout of log message.
-            , { {"log"      , "*"   , "layout"  , "exit"    }, DEFAULT_LAYOUT_SCOPE_EXIT        }   //!< The layout of exit scope message.
-
-            , { {"service"  , "*"   , "list"    , ""        }, "router | logger"                }   //!< The list of supported remote services.
-
-            , { {"router"   , "*"   , "service" , ""        }, "mtrouter"                       }   //!< The process name of the 'router' service.
-            , { {"router"   , "*"   , "connect" , ""        }, "tcpip"                          }   //!< The list of connection type of the 'router' service.
-            , { {"router"   , "*"   , "enable"  , "tcpip"   }, "true"                           }   //!< The TCP/IP connection enable / disable flag of the 'router' service.
-            , { {"router"   , "*"   , "address" , "tcpip"   }, DEFAULT_ROUTER_HOST              }   //!< The TCP/IP connection address of the 'router' service.
-            , { {"router"   , "*"   , "port"    , "tcpip"   }, "8181"                           }   //!< The TCP/IP connection port number of the 'router' service.
-
-            , { {"logger"   , "*"   , "service" , ""        }, "logcollector"                   }   //!< The process name of the 'logger' service.
-            , { {"logger"   , "*"   , "connect" , ""        }, "tcpip"                          }   //!< The list of connection type of the 'logger' service.
-            , { {"logger"   , "*"   , "enable"  , "tcpip"   }, "true"                           }   //!< The TCP/IP connection enable / disable flag of the 'logger' service
-            , { {"logger"   , "*"   , "address" , "tcpip"   }, DEFAULT_ROUTER_HOST              }   //!< The TCP/IP connection address of the 'logger' service.
-            , { {"logger"   , "*"   , "port"    , "tcpip"   }, "8282"                           }   //!< The TCP/IP connection port number of the 'logger' service.
-
-            , { {"log"      , "*"   , "scope"   , "*"       }, "NOTSET"                         }   //!< The default log scopes to enable / disable.
-        };
-
-
-    /**
-     * \brief   areg::DefaultLogScopesConfig
-     *          The list of default scopes and priorities set in writable properties
-     *          in case if configuration file cannot be loaded.
-     **/
-    constexpr areg::ConfigProperty DefaultLogScopesConfig[]
-        {
-              { {"log", "mtrouter"      , "scope"   , "*"       }, "NOTSET"                     }   //!< The 'mtrouter' service scopes to enable / disable.
-            , { {"log", "logcollector"  , "scope"   , "*"       }, "NOTSET"                     }   //!< The 'logcollector' service scopes to enable / disable.
-        };
-
-    /**
      * \brief   areg::LogTypeIdentifiers
      *          The list of logging type identifiers to convert to string or areg::LogTarget types
      **/
-    extern AREG_API const std::vector<Identifier> LogTypeIdentifiers;
+    extern AREG_API const std::vector<areg::Identifier> LogTypeIdentifiers;
 
     /**
      * \brief   areg::ConnectionIdentifiers
      *          The list of connection type identifiers to convert to string or areg::ConnectionType types
      **/
-    extern AREG_API const std::vector<Identifier> ConnectionIdentifiers;
+    extern AREG_API const std::vector<areg::Identifier> ConnectionIdentifiers;
 
     /**
      * \brief   areg::RemoteServiceIdentifiers
      *          The list of remote servicing type identifiers to convert to string or areg::RemoteServiceKind types
      **/
-    extern AREG_API const std::vector<Identifier> RemoteServiceIdentifiers;
+    extern AREG_API const std::vector<areg::Identifier> RemoteServiceIdentifiers;
 
     /**
      * \brief   areg::LogScopePriorityIndentifiers
      *          The list of logging priority type identifiers to convert to string or areg::LogPriority types
      **/
-    extern AREG_API const std::vector<Identifier> LogScopePriorityIndentifiers;
+    extern AREG_API const std::vector<areg::Identifier> LogScopePriorityIndentifiers;
 
     /**
      * \brief   areg::AppState

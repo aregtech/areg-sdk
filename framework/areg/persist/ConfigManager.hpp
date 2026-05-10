@@ -21,14 +21,16 @@
 #include "areg/base/areg_global.h"
 
 #include "areg/base/String.hpp"
-#include "areg/base/SyncPrimitives.hpp"
+#include "areg/base/Identifier.hpp"
 #include "areg/base/Version.hpp"
-#include "areg/persist/PersistenceDefs.hpp"
-#include "areg/persist/Property.hpp"
 #include "areg/logging/LoggingDefs.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 
+#include "areg/persist/PersistenceDefs.hpp"
+#include "areg/persist/Property.hpp"
+
 #include <vector>
+
 namespace areg {
 
 /************************************************************************
@@ -437,7 +439,7 @@ public:
      * \brief   Returns the version of the configuration.
      **/
     [[nodiscard]]
-    Version config_version() const noexcept;
+    areg::Version config_version() const noexcept;
 
 /************************************************************************
  * Log properties.
@@ -447,7 +449,7 @@ public:
      * \brief   Returns the version of the logging configuration.
      **/
     [[nodiscard]]
-    Version log_version() const noexcept;
+    areg::Version log_version() const noexcept;
 
     /**
      * \brief   Returns the list of available log targets.
@@ -916,6 +918,17 @@ public:
      * \return  Returns the configured send timeout in milliseconds.
      **/
     uint32_t network_timeout(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
+
+    /**
+     * \brief   Returns the configured per thread (send/receive) cache size in kilobytes for network communication
+     *          (net::MODULE::TRANSPORT::cache).
+     * \param   module          The process/application name (e.g. "mtrouter").
+     *                          Pass empty string to use the current process name.
+     * \param   connectType     The transport type name (e.g. "tcpip").
+     *                          Pass empty string to match any transport.
+     * \return  Returns the configured send timeout in milliseconds.
+     **/
+    uint32_t network_cache(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
 
     /**
      * \brief   Returns the default buffer block size for growing buffers.

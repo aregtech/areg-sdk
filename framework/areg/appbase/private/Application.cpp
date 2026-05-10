@@ -17,8 +17,6 @@
 #include "areg/appbase/Application.hpp"
 
 #include "areg/base/File.hpp"
-#include "areg/base/SocketDefs.hpp"
-#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/Process.hpp"
 
 #include "areg/component/ComponentLoader.hpp"
@@ -27,11 +25,58 @@
 #include "areg/component/private/TimerManager.hpp"
 #include "areg/component/private/WatchdogManager.hpp"
 
-#include "areg/logging/LoggingDefs.hpp"
 #include "areg/logging/private/LogManager.hpp"
 
 #include <vector>
+#include <utility>
+
 namespace areg {
+
+areg::ConfigProperty  _defaultReadonlyProperties[]
+{
+      { {"config"   , "*"   , "version" , ""        }, areg::CONFIG_VERSION    }   //!< The configuration version.
+
+    , { {"log"      , "*"   , "version" , ""        }, areg::LOG_VERSION             }   //!< The logging version.
+    , { {"log"      , "*"   , "target"  , ""        }, "remote | file | debug | db"     }   //!< The logging types.
+    , { {"log"      , "*"   , "enable"  , ""        }, "true"                           }   //!< The logging enabled / disabled status.
+    , { {"log"      , "*"   , "enable"  , "remote"  }, "true"                           }   //!< The logging in remote log collector enabled / disabled flag.
+    , { {"log"      , "*"   , "enable"  , "file"    }, "true"                           }   //!< The logging in file enabled / disabled flag.
+    , { {"log"      , "*"   , "enable"  , "output"  }, "false"                          }   //!< The logging in output console enabled / disabled flag.
+    , { {"log"      , "*"   , "enable"  , "db"      }, "false"                          }   //!< The logging in database enabled / disabled flag.
+    , { {"log"      , "*"   , "file"    , "location"}, areg::DEFAULT_LOG_FILE           }   //!< The log file location and file name mask.
+    , { {"log"      , "*"   , "file"    , "append"  }, "false"                          }   //!< The flag to append logs into the file.
+    , { {"log"      , "*"   , "remote"  , "queue"   }, "100"                            }   //!< The queue size of remote logging.
+    , { {"log"      , "*"   , "remote"  , "service" }, "logger"                         }   //!< The service name of the remote logging.
+    , { {"log"      , "*"   , "layout"  , "enter"   }, areg::DEFAULT_LAYOUT_SCOPE_EXIT  }   //!< The layout of enter scope message.
+    , { {"log"      , "*"   , "layout"  , "message" }, areg::DEFAULT_LAYOUT_LOG_MESSAGE }   //!< The layout of log message.
+    , { {"log"      , "*"   , "layout"  , "exit"    }, areg::DEFAULT_LAYOUT_SCOPE_EXIT  }   //!< The layout of exit scope message.
+
+    , { {"service"  , "*"   , "list"    , ""        }, "router | logger"                }   //!< The list of supported remote services.
+
+    , { {"router"   , "*"   , "service" , ""        }, "mtrouter"                       }   //!< The process name of the 'router' service.
+    , { {"router"   , "*"   , "connect" , ""        }, "tcpip"                          }   //!< The list of connection type of the 'router' service.
+    , { {"router"   , "*"   , "enable"  , "tcpip"   }, "true"                           }   //!< The TCP/IP connection enable / disable flag of the 'router' service.
+    , { {"router"   , "*"   , "address" , "tcpip"   }, areg::DEFAULT_ROUTER_HOST        }   //!< The TCP/IP connection address of the 'router' service.
+    , { {"router"   , "*"   , "port"    , "tcpip"   }, "8181"                           }   //!< The TCP/IP connection port number of the 'router' service.
+
+    , { {"logger"   , "*"   , "service" , ""        }, "logcollector"                   }   //!< The process name of the 'logger' service.
+    , { {"logger"   , "*"   , "connect" , ""        }, "tcpip"                          }   //!< The list of connection type of the 'logger' service.
+    , { {"logger"   , "*"   , "enable"  , "tcpip"   }, "true"                           }   //!< The TCP/IP connection enable / disable flag of the 'logger' service
+    , { {"logger"   , "*"   , "address" , "tcpip"   }, areg::DEFAULT_ROUTER_HOST        }   //!< The TCP/IP connection address of the 'logger' service.
+    , { {"logger"   , "*"   , "port"    , "tcpip"   }, "8282"                           }   //!< The TCP/IP connection port number of the 'logger' service.
+
+    , { {"log"      , "*"   , "scope"   , "*"       }, "NOTSET"                         }   //!< The default log scopes to enable / disable.
+};
+
+/**
+ * \brief   The list of default scopes and priorities set in writable properties
+ *          in case if configuration file cannot be loaded.
+ **/
+constexpr areg::ConfigProperty _defaultLogScopesConfig[]
+{
+      { {"log", "mtrouter"      , "scope"   , "*"       }, "NOTSET"     }   //!< The 'mtrouter' service scopes to enable / disable.
+    , { {"log", "logcollector"  , "scope"   , "*"       }, "NOTSET"     }   //!< The 'logcollector' service scopes to enable / disable.
+};
 
 //////////////////////////////////////////////////////////////////////////
 // Constants and types
@@ -374,15 +419,15 @@ void Application::setup_default_configuration(ConfigListener * listener /*= null
     Application& theApp = Application::instance();
     const String& module = Process::instance().app_name();
 
-    const uint32_t countReadonly{ std::size(areg::DefaultReadonlyProperties) };
+    const uint32_t countReadonly{ std::size(_defaultReadonlyProperties) };
     areg::ListProperties defReadonly(countReadonly);
-    for (const auto & entry : areg::DefaultReadonlyProperties)
+    for (const auto & entry : _defaultReadonlyProperties)
     {
         defReadonly.add(Property(entry.configKey.section, entry.configKey.module, entry.configKey.property, entry.configKey.position, entry.configValue, String::EmptyString));
     }
 
     areg::ListProperties defWritable;
-    for (const auto& entry : areg::DefaultLogScopesConfig)
+    for (const auto& entry : _defaultLogScopesConfig)
     {
         if (module == entry.configKey.module)
         {

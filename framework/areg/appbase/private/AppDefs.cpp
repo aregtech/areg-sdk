@@ -16,46 +16,103 @@
  * Include files.
  ************************************************************************/
 #include "areg/appbase/AppDefs.hpp"
+#include "areg/persist/PersistenceDefs.hpp"
+#include "areg/ipc/RemoteServiceDefs.hpp"
+#include "areg/logging/LoggingDefs.hpp"
+
+namespace
+{
+//!< The structure to keep service enable or disable information.
+struct LogTypeEntry
+{
+    uint32_t            ltId;
+    std::string_view    ltIdName;
+    bool                ltEnabled;
+};
+
+
+/**
+ * \brief   The list of logging types with the enabled / disabled flags.
+ *          The disabled logging modules are not implemented yet.
+ **/
+constexpr LogTypeEntry _defaultLogTypes[]
+{
+      { static_cast<uint32_t>(areg::LogTarget::Undefined)  , {"unknown"}, false }
+    , { static_cast<uint32_t>(areg::LogTarget::Remote)     , {"remote" }, false }
+    , { static_cast<uint32_t>(areg::LogTarget::File)       , {"file"   }, true  }
+    , { static_cast<uint32_t>(areg::LogTarget::Debug)      , {"debug"  }, false }
+    , { static_cast<uint32_t>(areg::LogTarget::Database)   , {"db"     }, false}
+};
+
+/**
+ * \brief   The list of connection types with the enabled / disabled flags.
+ *          The disabled connection modules are not implemented yet.
+ **/
+constexpr LogTypeEntry _defaultConnections[]
+{
+      { static_cast<uint32_t>(areg::ConnectionType::Undefined)   , {"unknown"}, false }
+    , { static_cast<uint32_t>(areg::ConnectionType::Tcpip)       , {"tcpip"  }, true  }
+    , { static_cast<uint32_t>(areg::ConnectionType::Udp)         , {"udp"    }, false }
+    , { static_cast<uint32_t>(areg::ConnectionType::Web)         , {"web"    }, false }
+    , { static_cast<uint32_t>(areg::ConnectionType::SharedMemory), {"sm"     }, false }
+};
+
+/**
+ * \brief   _defaultRemotetServices
+ *          The list of connection types with the enabled / disabled flags.
+ **/
+constexpr LogTypeEntry _defaultRemotetServices[]
+{
+      { static_cast<uint32_t>(areg::RemoteServiceKind::Unknown) , {"unknown"}, false }
+    , { static_cast<uint32_t>(areg::RemoteServiceKind::Router)  , {"router" }, true  }
+#ifdef DEBUG
+    , { static_cast<uint32_t>(areg::RemoteServiceKind::Logger)  , {"logger" }, true  }
+#else   // DEBUG
+    , { static_cast<uint32_t>(areg::RemoteServiceKind::Logger)  , {"logger" }, false }
+#endif  // DEBUG
+};
+
+}
 
 //! Logging type identifiers
 AREG_API_IMPL const std::vector<areg::Identifier>     areg::LogTypeIdentifiers =
 {
-      {static_cast<uint32_t>(areg::LogTarget::Undefined)   , areg::DefaultLogTypes[0].ltIdName              }
-    , {static_cast<uint32_t>(areg::LogTarget::Remote)      , areg::DefaultLogTypes[1].ltIdName              }
-    , {static_cast<uint32_t>(areg::LogTarget::File)        , areg::DefaultLogTypes[2].ltIdName              }
-    , {static_cast<uint32_t>(areg::LogTarget::Debug)       , areg::DefaultLogTypes[3].ltIdName              }
-    , {static_cast<uint32_t>(areg::LogTarget::Database)    , areg::DefaultLogTypes[4].ltIdName              }
+      {static_cast<uint32_t>(areg::LogTarget::Undefined)   , _defaultLogTypes[0].ltIdName              }
+    , {static_cast<uint32_t>(areg::LogTarget::Remote)      , _defaultLogTypes[1].ltIdName              }
+    , {static_cast<uint32_t>(areg::LogTarget::File)        , _defaultLogTypes[2].ltIdName              }
+    , {static_cast<uint32_t>(areg::LogTarget::Debug)       , _defaultLogTypes[3].ltIdName              }
+    , {static_cast<uint32_t>(areg::LogTarget::Database)    , _defaultLogTypes[4].ltIdName              }
 };
 
 //! Connection type identifiers
 AREG_API_IMPL const std::vector<areg::Identifier>   areg::ConnectionIdentifiers
 {
-      { static_cast<uint32_t>(areg::ConnectionType::Undefined)  , areg::DefaultConnections[0].ltIdName      }
-    , { static_cast<uint32_t>(areg::ConnectionType::Tcpip)      , areg::DefaultConnections[1].ltIdName      }
-    , { static_cast<uint32_t>(areg::ConnectionType::Udp)        , areg::DefaultConnections[2].ltIdName      }
-    , { static_cast<uint32_t>(areg::ConnectionType::Web)        , areg::DefaultConnections[3].ltIdName      }
-    , { static_cast<uint32_t>(areg::ConnectionType::SharedMemory),areg::DefaultConnections[4].ltIdName      }
+      { static_cast<uint32_t>(areg::ConnectionType::Undefined)  , _defaultConnections[0].ltIdName      }
+    , { static_cast<uint32_t>(areg::ConnectionType::Tcpip)      , _defaultConnections[1].ltIdName      }
+    , { static_cast<uint32_t>(areg::ConnectionType::Udp)        , _defaultConnections[2].ltIdName      }
+    , { static_cast<uint32_t>(areg::ConnectionType::Web)        , _defaultConnections[3].ltIdName      }
+    , { static_cast<uint32_t>(areg::ConnectionType::SharedMemory),_defaultConnections[4].ltIdName      }
 };
 
 //! Remote service identifiers
 AREG_API_IMPL const std::vector<areg::Identifier>   areg::RemoteServiceIdentifiers
 {
-      { static_cast<uint32_t>(areg::RemoteServiceKind::Unknown)  , areg::DefaultRemotetServices[0].ltIdName }
-    , { static_cast<uint32_t>(areg::RemoteServiceKind::Router)   , areg::DefaultRemotetServices[1].ltIdName }
-    , { static_cast<uint32_t>(areg::RemoteServiceKind::Logger)   , areg::DefaultRemotetServices[2].ltIdName }
+      { static_cast<uint32_t>(areg::RemoteServiceKind::Unknown)  , _defaultRemotetServices[0].ltIdName }
+    , { static_cast<uint32_t>(areg::RemoteServiceKind::Router)   , _defaultRemotetServices[1].ltIdName }
+    , { static_cast<uint32_t>(areg::RemoteServiceKind::Logger)   , _defaultRemotetServices[2].ltIdName }
 };
 
 //! Log priority identifiers
 AREG_API_IMPL const std::vector<areg::Identifier>   areg::LogScopePriorityIndentifiers
 {
-      { static_cast<uint32_t>(areg::LogPriority::PrioInvalid)  , areg::PRIO_NO_PRIO                         }
-    , { static_cast<uint32_t>(areg::LogPriority::PrioNotset)   , areg::PRIO_NOTSET_STR                      }
-    , { static_cast<uint32_t>(areg::LogPriority::PrioScope)    , areg::PRIO_SCOPE_STR                       }
-    , { static_cast<uint32_t>(areg::LogPriority::PrioFatal)    , areg::PRIO_FATAL_STR                       }
-    , { static_cast<uint32_t>(areg::LogPriority::PrioError)    , areg::PRIO_ERROR_STR                       }
-    , { static_cast<uint32_t>(areg::LogPriority::PrioWarning)  , areg::PRIO_WARNING_STR                     }
-    , { static_cast<uint32_t>(areg::LogPriority::PrioInfo)     , areg::PRIO_INFO_STR                        }
-    , { static_cast<uint32_t>(areg::LogPriority::PrioDebug)    , areg::PRIO_DEBUG_STR                       }
+      { static_cast<uint32_t>(areg::LogPriority::PrioInvalid)  , areg::PRIO_NO_PRIO                     }
+    , { static_cast<uint32_t>(areg::LogPriority::PrioNotset)   , areg::PRIO_NOTSET_STR                  }
+    , { static_cast<uint32_t>(areg::LogPriority::PrioScope)    , areg::PRIO_SCOPE_STR                   }
+    , { static_cast<uint32_t>(areg::LogPriority::PrioFatal)    , areg::PRIO_FATAL_STR                   }
+    , { static_cast<uint32_t>(areg::LogPriority::PrioError)    , areg::PRIO_ERROR_STR                   }
+    , { static_cast<uint32_t>(areg::LogPriority::PrioWarning)  , areg::PRIO_WARNING_STR                 }
+    , { static_cast<uint32_t>(areg::LogPriority::PrioInfo)     , areg::PRIO_INFO_STR                    }
+    , { static_cast<uint32_t>(areg::LogPriority::PrioDebug)    , areg::PRIO_DEBUG_STR                   }
 };
 
  //! Areg TCP/IP Multitarget Router Service name

@@ -308,7 +308,7 @@ uint32_t ScopeNode::group_recursive()
 
 String ScopeNode::make_config_string( const String & parent ) const
 {
-    return parent + mNodeName + areg::SYNTAX_SCOPE_SEPARATOR + areg::SYNTAX_LOG_GROUP;
+    return parent + mNodeName + areg::SYNTAX_SCOPE_SEPARATOR + areg::LOG_SYNTAX_GROUP;
 }
 
 uint32_t ScopeNode::remove_priority_nodes( uint32_t prioRemove ) noexcept
@@ -416,7 +416,7 @@ uint32_t ScopeRoot::update_config_node( ConfigManager & config, const String & /
 
 String ScopeRoot::make_config_string(const String& parent) const
 {
-    return (parent + areg::SYNTAX_LOG_GROUP);
+    return (parent + areg::LOG_SYNTAX_GROUP);
 }
 
 } // namespace areg

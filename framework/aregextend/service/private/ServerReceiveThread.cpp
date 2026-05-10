@@ -16,6 +16,7 @@
 
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/SocketAccepted.hpp"
+#include "areg/base/SocketDefs.hpp"
 #include "areg/component/ExitEvent.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
@@ -120,6 +121,27 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
                     , msgReceived.size_used());
 
         mRemoteService.process_received_message(msgReceived, clientSocket);
+
+        // Drain any bytes that _os_recv_data read-ahead pulled into the thread-local
+        // cache. Those bytes are invisible to epoll/select (not in the kernel buffer),
+        // so if we do not consume them here the multiplexer will never fire for them
+        // and the messages will be silently dropped.
+        while (areg::recv_data_available(clientSocket.handle()) != 0u)
+        {
+            const int32_t more = mConnection.receive_message(msgReceived, clientSocket);
+            if (more <= 0)
+            {
+                DEBUG_LOG_WARN("Failed to receive cached message from client socket [ %s : %d ], socket [ %u ]"
+                                , addSocket.host_address().as_string()
+                                , addSocket.host_port()
+                                , clientSocket.handle());
+                mRemoteService.failed_receive_message(clientSocket);
+                return;
+            }
+
+            accumulate_received(static_cast<uint32_t>(more), 1u);
+            mRemoteService.process_received_message(msgReceived, clientSocket);
+        }
     }
     else
     {
