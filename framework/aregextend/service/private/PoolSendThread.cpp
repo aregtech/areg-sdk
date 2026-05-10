@@ -220,21 +220,34 @@ void PoolSendThread::process_event( const SendMessageEventData & data )
         else
         {
             // Multiple messages for the same socket: scatter/gather send.
-            const RemoteMessage* msgPtrs[areg::THREAD_DRAIN_LIMIT];
-            for (uint32_t k{ 0 }; k < groupSize; ++k)
-                msgPtrs[k] = &(mBatch[i + k].sendEvt->data().remote_message());
+            areg::IoBuffer ioBuffer[areg::THREAD_DRAIN_LIMIT];
+            uint32_t bufCount{ 0u };
+            uint32_t totalSize{ 0u };
 
-            const int32_t sent = mConnection.send_messages_batch(msgPtrs, static_cast<uint32_t>(groupSize), hSocket);
+            for (uint32_t k{ 0 }; k < groupSize; ++k)
+            {
+                const RemoteMessage& msg = mBatch[i + k].sendEvt->data().remote_message();
+                const areg::MessageHeader* hdr = msg.header();
+                if (hdr != nullptr)
+                {
+                    msg.buffer_completion_fix();
+                    uint32_t bufSize = sizeof(areg::MessageHeader) + hdr->rbhBufHeader.biUsed;
+                    ioBuffer[bufCount++] = { reinterpret_cast<const uint8_t*>(hdr), bufSize };
+                    totalSize += bufSize;
+                }
+            }
+
+            const int32_t sent = mConnection.send_messages_batch(ioBuffer, bufCount, hSocket, totalSize);
             if (sent > 0)
             {
-                mGlobalStats.accumulate_sent(static_cast<uint64_t>(sent), static_cast<uint32_t>(groupSize));
+                mGlobalStats.accumulate_sent(static_cast<uint32_t>(sent), groupSize);
             }
             else
             {
-                DEBUG_LOG_WARN("Failed batch-send of %d messages to target [ %u ]", groupSize, static_cast<uint32_t>(mBatch[i].sendEvt->data().message_target()));
+                DEBUG_LOG_WARN("Failed batch-send of %u messages to target [ %u ]", groupSize, static_cast<uint32_t>(mBatch[i].sendEvt->data().message_target()));
                 if (!mConnection.is_interrupted())
                 {
-                    areg::SocketAccepted client{ mOwner.client_by_cookie(mBatch[i].sendEvt->data().message_target()) };
+                    SocketAccepted client{ mConnection.client_by_handle(hSocket) };
                     mRemoteService.failed_send_message(mBatch[i].sendEvt->data().remote_message(), client);
                 }
             }

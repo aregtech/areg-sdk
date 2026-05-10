@@ -1096,54 +1096,6 @@ uint32_t ConfigManager::network_batch(const String& module, const String& connec
     return areg::DEFAULT_BATCH_SIZE;
 }
 
-bool ConfigManager::network_zerocopy(const String& module, const String& connectType) const noexcept
-{
-    Lock lock(mLock);
-    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::NetSocketZerocopy };
-    constexpr const areg::ConfigKey& key{ areg::net_socket_zerocopy() };
-    const String& transport{ connectType.is_empty() ? String(areg::SYNTAX_ALL_MODULES) : connectType };
-
-    const String& mod{ module.is_empty() ? mModule : module };
-    if (!mod.is_empty())
-    {
-        const Property* prop = _get_property(mWritableProperties, key.section, mod, transport, key.position, confKey, true);
-        if (prop != nullptr)
-            return prop->value().as_boolean();
-    }
-
-    {
-        const Property* prop = _get_property(mReadonlyProperties, key.section, String(areg::SYNTAX_ALL_MODULES), transport, key.position, confKey, false);
-        if (prop != nullptr)
-            return prop->value().as_boolean();
-    }
-
-    return false;
-}
-
-uint32_t ConfigManager::network_ring(const String& module, const String& connectType) const noexcept
-{
-    Lock lock(mLock);
-    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::NetSocketRing };
-    constexpr const areg::ConfigKey& key{ areg::net_socket_ring() };
-    const String& transport{ connectType.is_empty() ? String(areg::SYNTAX_ALL_MODULES) : connectType };
-
-    const String& mod{ module.is_empty() ? mModule : module };
-    if (!mod.is_empty())
-    {
-        const Property* prop = _get_property(mWritableProperties, key.section, mod, transport, key.position, confKey, true);
-        if (prop != nullptr)
-            return static_cast<uint32_t>(prop->value().as_integer());
-    }
-
-    {
-        const Property* prop = _get_property(mReadonlyProperties, key.section, String(areg::SYNTAX_ALL_MODULES), transport, key.position, confKey, false);
-        if (prop != nullptr)
-            return static_cast<uint32_t>(prop->value().as_integer());
-    }
-
-    return areg::DEFAULT_ZEROCOPY_RING_SIZE;
-}
-
 uint32_t ConfigManager::network_pool_pairs(const String& module, const String& connectType) const noexcept
 {
     Lock lock(mLock);

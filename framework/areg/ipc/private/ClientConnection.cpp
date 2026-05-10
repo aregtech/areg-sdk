@@ -60,9 +60,6 @@ bool ClientConnection::create_socket(const String & hostName, uint16_t portNr)
         areg::set_send_size(mClientSocket.handle(), mSockSendBuf);
         areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
         areg::set_send_timeout(mClientSocket.handle(), mSockSendTimeoutMs);
-#if defined(__linux__)
-        mZerocopyEnabled = mZerocopyWanted && areg::socket_enable_zerocopy(mClientSocket.handle());
-#endif  // defined(__linux__)
     }
 
     return mClientSocket.is_valid();
@@ -77,10 +74,6 @@ bool ClientConnection::create_socket()
         areg::set_send_size(mClientSocket.handle(), mSockSendBuf);
         areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
         areg::set_send_timeout(mClientSocket.handle(), mSockSendTimeoutMs);
-
-#if defined(__linux__)
-        mZerocopyEnabled = mZerocopyWanted && areg::socket_enable_zerocopy(mClientSocket.handle());
-#endif  // defined(__linux__)
     }
 
     return mClientSocket.is_valid();
@@ -89,19 +82,7 @@ bool ClientConnection::create_socket()
 void ClientConnection::close_socket()
 {
     set_cookie(areg::COOKIE_UNKNOWN);
-#if defined(__linux__)
-    mZerocopyEnabled = false;
-#endif  // defined(__linux__)
     mClientSocket.close();
 }
-
-#if defined(__linux__)
-
-int32_t ClientConnection::send_message_zerocopy(const RemoteMessage& in_message) const
-{
-    return SocketConnectionBase::send_message_zerocopy(in_message, mClientSocket.handle());
-}
-
-#endif  // defined(__linux__)
 
 } // namespace areg

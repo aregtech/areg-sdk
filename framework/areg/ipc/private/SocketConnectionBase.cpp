@@ -25,54 +25,7 @@
 namespace areg {
 
 SocketConnectionBase::SocketConnectionBase() noexcept
-    : mZerocopyWanted   ( false )
-    , mZerocopyEnabled  ( false )
 {
-}
-
-int32_t SocketConnectionBase::send_message(const RemoteMessage & message, const Socket & socket) const
-{
-    int32_t result{ -1 };
-    const areg::MessageHeader* header = message.header();
-    if ( header != nullptr )
-    {
-        message.buffer_completion_fix();
-        ASSERT(header->rbhBufHeader.biLength >= header->rbhBufHeader.biUsed);
-        const int32_t totalLen = static_cast<int32_t>(sizeof(areg::MessageHeader) + header->rbhBufHeader.biUsed);
-        result = socket.send(reinterpret_cast<const uint8_t *>(header), totalLen);
-    }
-
-    return result;
-}
-
-int32_t SocketConnectionBase::send_messages_batch(const RemoteMessage* const* messages, uint32_t count, const Socket& socket) const
-{
-    if ((messages == nullptr) || (count == 0u) || !socket.is_valid())
-        return 0;
-
-    // Build IoBuffer array on the stack; capped at the same bound as THREAD_BATCH_LIMIT.
-    constexpr uint32_t MAX_BATCH{ areg::THREAD_BATCH_LIMIT };
-    const uint32_t batchCount{ (count < MAX_BATCH) ? count : MAX_BATCH };
-
-    areg::IoBuffer iovs[MAX_BATCH];
-    uint32_t validCount{ 0u };
-    uint32_t totalSize { 0u };
-
-    for (uint32_t i = 0u; i < batchCount; ++i)
-    {
-        const RemoteMessage* msg{ messages[i] };
-        const areg::MessageHeader* hdr = msg != nullptr ? msg->header() : nullptr;
-        if (hdr == nullptr)
-            continue;
-
-        msg->buffer_completion_fix();
-        ASSERT(hdr->rbhBufHeader.biLength >= hdr->rbhBufHeader.biUsed);
-        iovs[validCount] = { reinterpret_cast<const uint8_t*>(hdr), static_cast<uint32_t>(sizeof(areg::MessageHeader)) + hdr->rbhBufHeader.biUsed };
-        totalSize       += static_cast<uint32_t>(iovs[validCount].size);
-        ++validCount;
-    }
-
-    return (validCount != 0u ? areg::send_data_v(socket.handle(), iovs, validCount, totalSize) : 0u);
 }
 
 int32_t SocketConnectionBase::send_message(const RemoteMessage & message, SOCKETHANDLE hSocket) const
@@ -95,13 +48,13 @@ int32_t SocketConnectionBase::send_messages_batch(const RemoteMessage* const* me
     if ((messages == nullptr) || (count == 0u) || !areg::is_valid_socket(hSocket))
         return 0;
 
-    constexpr uint32_t MAX_BATCH{ areg::THREAD_BATCH_LIMIT };
-    const uint32_t batchCount{ (count < MAX_BATCH) ? count : MAX_BATCH };
+    // Build IoBuffer array on the stack; capped at the same bound as THREAD_BATCH_LIMIT.
+    const uint32_t batchCount{ (count < areg::THREAD_BATCH_LIMIT) ? count : areg::THREAD_BATCH_LIMIT };
+    areg::IoBuffer ioBuffer[areg::THREAD_BATCH_LIMIT];
+    uint32_t bufCount { 0u };
+    uint32_t totalSize{ 0u };
 
-    areg::IoBuffer iovs[MAX_BATCH];
-    uint32_t validCount{ 0u };
-
-    for (uint32_t i{ 0u }; i < batchCount; ++i)
+    for (uint32_t i = 0u; i < batchCount; ++i)
     {
         const RemoteMessage* msg{ messages[i] };
         const areg::MessageHeader* hdr = msg != nullptr ? msg->header() : nullptr;
@@ -110,10 +63,18 @@ int32_t SocketConnectionBase::send_messages_batch(const RemoteMessage* const* me
 
         msg->buffer_completion_fix();
         ASSERT(hdr->rbhBufHeader.biLength >= hdr->rbhBufHeader.biUsed);
-        iovs[validCount++] = { reinterpret_cast<const uint8_t*>(hdr), static_cast<uint32_t>(sizeof(areg::MessageHeader)) + hdr->rbhBufHeader.biUsed };
+        uint32_t bufSize = static_cast<uint32_t>(sizeof(areg::MessageHeader)) + hdr->rbhBufHeader.biUsed;
+        ioBuffer[bufCount++] = { reinterpret_cast<const uint8_t*>(hdr), bufSize };
+        totalSize += bufSize;
     }
 
-    return (validCount != 0u ? areg::send_data_v(hSocket, iovs, validCount) : 0u);
+    int32_t result = send_messages_batch(ioBuffer, bufCount, hSocket, totalSize);
+    if (count > areg::THREAD_BATCH_LIMIT)
+    {
+        result += send_messages_batch(messages + batchCount, count - batchCount, hSocket);
+    }
+
+    return result;
 }
 
 int32_t SocketConnectionBase::receive_message(RemoteMessage & message, const Socket & socket) const
@@ -137,21 +98,5 @@ int32_t SocketConnectionBase::receive_message(RemoteMessage & message, const Soc
     message.move_to_begin();
     return (message.is_checksum_valid() ? result : 0);
 }
-
-#if defined(__linux__)
-
-int32_t SocketConnectionBase::send_message_zerocopy(const RemoteMessage & message, SOCKETHANDLE hSocket) const
-{
-    const areg::MessageHeader* header = message.header();
-    if ((header == nullptr) || !areg::is_valid_socket(hSocket))
-        return 0;
-
-    message.buffer_completion_fix();
-    ASSERT(header->rbhBufHeader.biLength >= header->rbhBufHeader.biUsed);
-    const int32_t total_len = static_cast<int32_t>(sizeof(areg::MessageHeader) + header->rbhBufHeader.biUsed);
-    return areg::socket_send_zerocopy(hSocket, reinterpret_cast<const uint8_t *>(header), total_len);
-}
-
-#endif  // defined(__linux__)
 
 } // namespace areg

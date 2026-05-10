@@ -248,11 +248,24 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
         else
         {
             // Multiple messages for the same socket: scatter/gather send.
-            const RemoteMessage* msgPtrs[areg::THREAD_DRAIN_LIMIT];
-            for ( uint32_t k{ 0 }; k < groupSize; ++k )
-                msgPtrs[k] = &(mBatch[i + k].sendEvt->data().remote_message());
+            areg::IoBuffer ioBuffer[areg::THREAD_DRAIN_LIMIT];
+            uint32_t bufCount   { 0u };
+            uint32_t totalSize  { 0u };
 
-            const int32_t sent{ mConnection.send_messages_batch(msgPtrs, groupSize, hSocket) };
+            for (uint32_t k{ 0 }; k < groupSize; ++k)
+            {
+                const RemoteMessage& msg        = mBatch[i + k].sendEvt->data().remote_message();
+                const areg::MessageHeader* hdr  = msg.header();
+                if (hdr != nullptr)
+                {
+                    msg.buffer_completion_fix();
+                    uint32_t bufSize = sizeof(areg::MessageHeader) + hdr->rbhBufHeader.biUsed;
+                    ioBuffer[bufCount++] = { reinterpret_cast<const uint8_t*>(hdr), bufSize };
+                    totalSize += bufSize;
+                }
+            }
+
+            const int32_t sent = mConnection.send_messages_batch(ioBuffer, bufCount, hSocket, totalSize);
             if ( sent > 0 )
             {
                 accumulate_sent(static_cast<uint32_t>(sent), groupSize);

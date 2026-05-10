@@ -143,7 +143,6 @@ bool ServiceCommunicationBase::setup_connection_data(areg::RemoteServiceKind ser
     bool result = mServerConnection.set_address(address, port);
     mServerConnection.set_socket_buffers(config.socket_send_buffer(), config.socket_recv_buffer());
     mServerConnection.set_send_timeout(config.socket_send_timeout());
-    mServerConnection.set_zerocopy_wanted(config.zerocopy_enabled());
 
     const uint32_t configPairs{ config.pool_pairs() };
     if (configPairs != mNumPairs)

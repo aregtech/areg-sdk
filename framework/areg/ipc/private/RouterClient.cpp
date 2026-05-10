@@ -292,8 +292,7 @@ void RouterClient::process_received_message( RemoteMessage & msgReceived, Socket
     }
 
     areg::FuncIdRange msgId{ static_cast<areg::FuncIdRange>(msgReceived.message_id()) };
-    areg::MessageResult result{ static_cast<areg::MessageResult>(msgReceived.result()) };
-    DEBUG_LOG_DBG("Processing received valid message [ %u ], result [ %s ]", msgId, areg::as_string(result));
+    DEBUG_LOG_DBG("Processing received valid message [ %u ]", msgId);
 
     switch ( msgId )
     {
@@ -304,6 +303,7 @@ void RouterClient::process_received_message( RemoteMessage & msgReceived, Socket
     case areg::FuncIdRange::SystemServiceNotifyRegister:
     {
         ASSERT( mClientConnection.cookie() == msgReceived.target() );
+        areg::MessageResult result{ static_cast<areg::MessageResult>(msgReceived.result()) };
         areg::RegistrationAction reqType;
         msgReceived >> reqType;
         DEBUG_LOG_DBG("Remote routing service registration notification of type [ %s ]", areg::as_string(reqType));

@@ -18,5 +18,3 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/ipc/private/ServiceEventConsumer.cpp
 	areg/ipc/private/SocketConnectionBase.cpp
 )
-
-include("${AREG_FRAMEWORK}/areg/ipc/private/linux/CMakeLists.txt")

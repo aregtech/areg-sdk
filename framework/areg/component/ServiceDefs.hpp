@@ -327,6 +327,9 @@ enum class ServiceCallType : uint16_t
     , ServiceRegisteration  = static_cast<uint16_t>(MessageDataType::ServiceData  ) //!< Call of service registration
 };
 
+constexpr uint32_t  EXECUTABLE_MESSAGE{ static_cast<uint32_t>(areg::ServiceCallType::RequestFunction)  |
+                                        static_cast<uint32_t>(areg::ServiceCallType::ResponseFunction) |
+                                        static_cast<uint32_t>(areg::ServiceCallType::AttributeUpdate) };
 /**
  * \brief   Predefined range of function message IDs
  **/
@@ -1133,10 +1136,7 @@ inline constexpr bool areg::is_connect_id( uint32_t msgId ) noexcept
 
 inline constexpr bool areg::is_executable_id(uint32_t msgId) noexcept
 {
-    return ( (msgId  & static_cast<uint32_t>(areg::ServiceCallType::RequestFunction) ) != 0 ||
-             (msgId  & static_cast<uint32_t>(areg::ServiceCallType::ResponseFunction)) != 0 ||
-             (msgId  & static_cast<uint32_t>(areg::ServiceCallType::AttributeUpdate) ) != 0 ||
-             (msgId == static_cast<uint32_t>(areg::ServiceCallType::NoFunction)      ) );
+    return ( (msgId  & areg::EXECUTABLE_MESSAGE) != 0) || (msgId == static_cast<uint32_t>(areg::ServiceCallType::NoFunction) );
 }
 
 

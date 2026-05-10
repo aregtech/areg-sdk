@@ -373,13 +373,11 @@ constexpr uint32_t      SEND_THREAD_QUEUE_LIMIT { 0u };
 //!< Must equal THREAD_DRAIN_LIMIT to cover exactly one drain pass per OS wake-up.
 constexpr uint32_t      DEFAULT_BATCH_SIZE          { BATCH_SIZE };
 
-//!< Default MSG_ZEROCOPY ring-slot count; configurable via net::*::tcpip::ring in areg.init.
-//!< 16 slots × ~312 bytes = ~5 KB static storage (128 slots was ~39 KB).
-constexpr uint32_t      DEFAULT_ZEROCOPY_RING_SIZE  { 16u };
-
 //!< Default thread-pool pair count; configurable via net::*::tcpip::pairs in areg.init.
 //!< 0 = no pool (shared send/receive threads only).
 constexpr uint32_t      DEFAULT_POOL_PAIRS          { 0u };
+
+constexpr const uint32_t    DEFAULT_THREAD_CACHE_KB{ 256 };
 
 /**
  * \brief   Maximum number of pending connections the OS will queue on a
@@ -388,8 +386,6 @@ constexpr uint32_t      DEFAULT_POOL_PAIRS          { 0u };
 extern AREG_API const int32_t MAXIMUM_LISTEN_QUEUE_SIZE /*= SOMAXCONN*/;
 
 AREG_API uint32_t   thread_cache_size() noexcept;
-
-constexpr const uint32_t    DEFAULT_THREAD_CACHE_KB{ 256 };
 
 //!< Phase-3 greedy-fill skip threshold (bytes).  A recv() request smaller than
 //!< this value skips the 256 KB greedy fill and uses MSG_WAITALL directly.
@@ -783,74 +779,6 @@ AREG_API String extract_ip_address(const struct sockaddr_in& sockAddr);
  **/
 [[nodiscard]]
 AREG_API uint16_t extract_port_number(const struct sockaddr_in& sockAddr) noexcept;
-
-#if defined(__linux__)
-
-/**
- * \brief   Enables MSG_ZEROCOPY on \a fd by setting the SO_ZEROCOPY socket
- *          option.  Returns true on success; false if the kernel does not
- *          support zerocopy (requires Linux 4.14+).
- *
- *          Must be called immediately after socket creation, before any send.
- **/
-AREG_API bool socket_enable_zerocopy(SOCKETHANDLE fd) noexcept;
-
-/**
- * \brief   Returns and resets the per-thread count of successful
- *          MSG_ZEROCOPY send calls made since the last reset.
- *
- * \note    Call from the send thread only (thread-local state).
- **/
-AREG_API uint32_t socket_take_zerocopy_count() noexcept;
-
-/**
- * \brief   Sends \a len bytes from \a buf over \a fd using MSG_ZEROCOPY.
- *          If the kernel reports ENOBUFS (zerocopy buffers exhausted), the
- *          remainder is sent with a regular copy without incrementing the
- *          zerocopy counter.
- *
- * \param   fd      Socket handle to send on (must have SO_ZEROCOPY set).
- * \param   buf     Pointer to data to send.
- * \param   len     Number of bytes to send.
- * \return  Total bytes sent on success; -1 on hard error.
- *
- * \note    Threading: call only from the thread that owns \a fd.
- *          The caller must keep \a buf alive until socket_drain_zerocopy()
- *          or socket_drain_zerocopy_nb() confirms the send ID.
- **/
-AREG_API int32_t socket_send_zerocopy(SOCKETHANDLE fd, const uint8_t* buf, int32_t len) noexcept;
-
-/**
- * \brief   Non-blocking ERRQUEUE drain.  Updates \a max_confirmed with the
- *          highest zerocopy sequence ID confirmed by the kernel so far,
- *          using a wrap-safe comparison.  Returns immediately if no
- *          notifications are pending.
- *
- * \param   fd              Socket handle to drain.
- * \param   max_confirmed   In/out: current highest confirmed ID.
- *                          Initialized to UINT32_MAX before any sends.
- *
- * \note    Threading: call only from the thread that owns \a fd.
- *          Linux 4.14+ only.
- **/
-AREG_API void socket_drain_zerocopy_nb(SOCKETHANDLE fd, uint32_t& max_confirmed) noexcept;
-
-/**
- * \brief   Drains the ERRQUEUE of \a fd until the kernel confirms that all
- *          MSG_ZEROCOPY sends with IDs up to and including \a hi_id have
- *          completed DMA.  Blocks until confirmation arrives or a 5-second
- *          safety timeout expires.
- *
- * \param   fd      The socket handle that transmitted the zerocopy messages.
- * \param   hi_id   Highest zerocopy sequence ID (inclusive) to wait for.
- *
- * \note    Must be called BEFORE the send events are destroyed, so that the
- *          SharedBuffer ref-count stays >= 2 while the NIC is DMA-ing.
- *          Linux 4.14+ only.
- **/
-AREG_API void socket_drain_zerocopy(SOCKETHANDLE fd, uint32_t hi_id) noexcept;
-
-#endif  // defined(__linux__)
 
 } // namespace areg
 

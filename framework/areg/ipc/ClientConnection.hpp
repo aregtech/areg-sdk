@@ -62,9 +62,6 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    using SocketConnectionBase::set_zerocopy_wanted;
-    using SocketConnectionBase::is_zerocopy_enabled;
-
     /**
      * \brief   Returns the connection cookie identifier set by server.
      **/
@@ -162,6 +159,17 @@ public:
     inline int32_t send_messages_batch( const RemoteMessage* const* messages, uint32_t count ) const;
 
     /**
+     * \brief   Sends a batch of messages via scatter-gather (writev / WSASend) in a single syscall.
+     *
+     * \param   messages    Array of pointers to messages to send. Entries may be nullptr (skipped).
+     * \param   count       Number of entries in the array.
+     * \return  Returns total bytes sent on success, or 0 / negative on failure.
+     *
+     * \note    Threading: call only from the send thread that owns this connection.
+     **/
+    inline int32_t send_messages_batch(const areg::IoBuffer* ioBuffer, uint32_t count, uint32_t totalSize = 0) const;
+
+    /**
      * \brief   Receives message data via socket connection. Validates checksum after receiving.
      *          Returns bytes received, zero if invalid checksum, or negative on failure.
      *
@@ -205,21 +213,6 @@ public:
      * \return  Returns true if operation succeeds.
      **/
     inline bool disable_receive();
-
-#if defined(__linux__)
-    /**
-     * \brief   Sends a pre-built RemoteMessage using MSG_ZEROCOPY.
-     *          The caller must keep the message buffer alive until
-     *          the corresponding zerocopy sequence IDs are confirmed
-     *          via socket_drain_zerocopy_nb() / socket_drain_zerocopy().
-     *
-     * \param   in_message      Pre-built message; must be valid.
-     * \return  Total bytes sent on success; -1 on hard error.
-     *
-     * \note    Threading: call only from the send thread that owns this connection.
-     **/
-    int32_t send_message_zerocopy(const RemoteMessage& in_message) const;
-#endif  // defined(__linux__)
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -314,6 +307,11 @@ inline int32_t ClientConnection::send_message(const RemoteMessage & in_message) 
 inline int32_t ClientConnection::send_messages_batch(const RemoteMessage* const* messages, uint32_t count) const
 {
     return SocketConnectionBase::send_messages_batch(messages, count, mClientSocket);
+}
+
+inline int32_t ClientConnection::send_messages_batch(const areg::IoBuffer* ioBuffer, uint32_t count, uint32_t totalSize) const
+{
+    return SocketConnectionBase::send_messages_batch(ioBuffer, count, mClientSocket, totalSize);
 }
 
 inline int32_t ClientConnection::receive_message(RemoteMessage & out_message) const

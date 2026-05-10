@@ -92,9 +92,6 @@ public:
      **/
     inline const ITEM_ID & channel_id() const;
 
-    using SocketConnectionBase::set_zerocopy_wanted;
-    using SocketConnectionBase::is_zerocopy_enabled;
-
     /**
      * \brief   Call to reject connection. When rejected, the socket connection will be closed and
      *          no more data will be accepted from connection.
@@ -162,6 +159,10 @@ public:
      **/
     inline int32_t send_messages_batch( const RemoteMessage* const* messages, uint32_t count, SOCKETHANDLE hSocket ) const;
 
+    inline int32_t send_messages_batch(const areg::IoBuffer* messages, uint32_t count, const SocketAccepted& clientSocket, uint32_t totalSize = 0) const;
+
+    inline int32_t send_messages_batch(const areg::IoBuffer* messages, uint32_t count, SOCKETHANDLE hSocket, uint32_t totalSize = 0) const;
+
     /**
      * \brief   If socket is valid, receives data using existing socket connection and returns
      *          length in bytes of data in Remote Buffer. And returns negative number if either
@@ -220,12 +221,12 @@ inline const ITEM_ID & ServerConnection::channel_id() const
 
 inline int32_t ServerConnection::send_message(const RemoteMessage & in_message, const SocketAccepted & clientSocket) const
 {
-    return SocketConnectionBase::send_message(in_message, clientSocket);
+    return SocketConnectionBase::send_message(in_message, clientSocket.handle());
 }
 
 inline int32_t ServerConnection::send_messages_batch(const RemoteMessage* const* messages, uint32_t count, const SocketAccepted & clientSocket) const
 {
-    return SocketConnectionBase::send_messages_batch(messages, count, clientSocket);
+    return SocketConnectionBase::send_messages_batch(messages, count, clientSocket.handle());
 }
 
 inline int32_t ServerConnection::send_message(const RemoteMessage & in_message, SOCKETHANDLE hSocket) const
@@ -236,6 +237,16 @@ inline int32_t ServerConnection::send_message(const RemoteMessage & in_message, 
 inline int32_t ServerConnection::send_messages_batch(const RemoteMessage* const* messages, uint32_t count, SOCKETHANDLE hSocket) const
 {
     return SocketConnectionBase::send_messages_batch(messages, count, hSocket);
+}
+
+inline int32_t ServerConnection::send_messages_batch(const areg::IoBuffer* messages, uint32_t count, const SocketAccepted& clientSocket, uint32_t totalSize /*= 0*/) const
+{
+    return SocketConnectionBase::send_messages_batch(messages, count, clientSocket.handle(), totalSize);
+}
+
+inline int32_t ServerConnection::send_messages_batch(const areg::IoBuffer* messages, uint32_t count, SOCKETHANDLE hSocket, uint32_t totalSize /*= 0*/) const
+{
+    return SocketConnectionBase::send_messages_batch(messages, count, hSocket, totalSize);
 }
 
 inline int32_t ServerConnection::receive_message(RemoteMessage & out_message, const SocketAccepted & clientSocket) const

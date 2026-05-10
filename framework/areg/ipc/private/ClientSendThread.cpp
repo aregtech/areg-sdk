@@ -31,14 +31,6 @@ ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientCo
     , mBytesSend        ( 0u )
     , mMsgsSend         ( 0u )
     , mSaveDataSend     ( false )
-#if defined(__linux__)
-    , mZerocopyRing     ( )
-    , mZerocopyRingHead ( 0u )
-    , mZerocopyRingTail ( 0u )
-    , mZerocopyRingCount( 0u )
-    , mZerocopyIdNext   ( 0u )
-    , mZerocopyConfirmed( UINT32_MAX )
-#endif  // defined(__linux__)
 {
 }
 
@@ -47,25 +39,12 @@ void ClientSendThread::ready_for_events( bool is_ready )
     if ( is_ready )
     {
         SendMessageEvent::add_listener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
-#if defined(__linux__)
-        mZerocopyRingHead  = 0u;
-        mZerocopyRingTail  = 0u;
-        mZerocopyRingCount = 0u;
-        mZerocopyIdNext    = 0u;
-        mZerocopyConfirmed = UINT32_MAX;
-#endif  // defined(__linux__)
         DispatcherThread::ready_for_events( true );
     }
     else
     {
         DispatcherThread::ready_for_events( false );
         SendMessageEvent::remove_listener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
-#if defined(__linux__)
-        // Flush ring BEFORE closing socket: once the socket is closed the kernel
-        // will not deliver further ERRQUEUE completions, so blocking drains would
-        // stall forever.  Force-release all slots immediately.
-        _flush_ring();
-#endif  // defined(__linux__)
         mConnection.close_socket( );
     }
 }
@@ -83,16 +62,25 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
         constexpr uint32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
         const ExitEvent & exitEvent = ExitEvent::exit_event();
 
-        const RemoteMessage*    msgPtrs[DRAIN_LIMIT + 1];
-        SendMessageEvent*       evtPtrs[DRAIN_LIMIT + 1];
-        uint32_t batchCount{ 0 };
+        SendMessageEvent* evtPtrs[DRAIN_LIMIT];
+        areg::IoBuffer    ioBuffer[DRAIN_LIMIT];
+        uint32_t batchCount { 0u };
+        uint32_t totalSize  { 0u };
+        uint32_t bufCount   { 0u };
 
-        msgPtrs[batchCount] = &data.remote_message();
-        evtPtrs[batchCount] = nullptr;
-        ++batchCount;
+        evtPtrs[batchCount++] = nullptr;
+        const RemoteMessage& msg1 = data.remote_message();
+        const areg::MessageHeader* hdr = msg1.header();
+        if (hdr != nullptr)
+        {
+            msg1.buffer_completion_fix();
+            const uint32_t bufSize = sizeof(areg::MessageHeader) + hdr->rbhBufHeader.biUsed;
+            ioBuffer[bufCount ++]  = { reinterpret_cast<const uint8_t*>(hdr), bufSize };
+            totalSize += bufSize;
+        }
 
         // --- Phase 1: drain additional queued messages ---
-        for ( uint32_t count = 0; count < DRAIN_LIMIT; ++count )
+        for (uint32_t count{ batchCount }; count < DRAIN_LIMIT; ++count)
         {
             Event * evt = pick_event();
             if ( evt == nullptr )
@@ -109,13 +97,8 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
                 return;
             }
 
-            SendMessageEvent * sendEvt = AREG_RUNTIME_CAST( evt, SendMessageEvent );
-            if ( sendEvt == nullptr )
-            {
-                evt->destroy();
-                continue;
-            }
-
+            ASSERT(AREG_RUNTIME_CAST(evt, SendMessageEvent) != nullptr);
+            SendMessageEvent* sendEvt = static_cast<SendMessageEvent *>(evt);
             const SendMessageEventData & evtData = sendEvt->data();
             if ( evtData.is_exit_message() )
             {
@@ -128,102 +111,31 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
                 return;
             }
 
-            msgPtrs[batchCount] = &evtData.remote_message();
-            evtPtrs[batchCount] = sendEvt;
-            ++batchCount;
+            evtPtrs[batchCount++] = sendEvt;
+            const RemoteMessage& msg = evtData.remote_message();
+            hdr = msg.header();
+            if (hdr != nullptr)
+            {
+                msg.buffer_completion_fix();
+                const uint32_t bufSize = sizeof(areg::MessageHeader) + hdr->rbhBufHeader.biUsed;
+                ioBuffer[bufCount++] = { reinterpret_cast<const uint8_t*>(hdr), bufSize };
+                totalSize += bufSize;
+            }
         }
 
         // --- Phase 2: send the collected batch ---
 
-#if defined(__linux__)
-        if (mConnection.is_zerocopy_enabled())
-        {
-            // Non-blocking drain of ERRQUEUE: updates mZerocopyConfirmed and
-            // releases any ring slots that have been confirmed by the kernel.
-            // Skip if ring is empty — avoids a syscall on every batch.
-            if (mZerocopyRingCount > 0u)
-                _drain_available();
-
-            // If the ring is full, block until the oldest slot is confirmed
-            // so we can reuse its slot.  This happens at most ZEROCOPY_RING_SIZE
-            // times per THREAD_DRAIN_LIMIT messages, so amortised overhead is low.
-            while (mZerocopyRingCount == ZEROCOPY_RING_SIZE)
-                _drain_oldest_blocking();
-
-            // Reset per-batch zerocopy counter before sending.
-            areg::socket_take_zerocopy_count();
-
-            int32_t sent_bytes{ 0 };
-            for (uint32_t i = 0u; i < batchCount; ++i)
-            {
-                const int32_t bytes = mConnection.send_message_zerocopy(*msgPtrs[i]);
-                if (bytes > 0)
-                    sent_bytes += bytes;
-                else if (bytes < 0)
-                {
-                    // Hard send error: flush ring and report failure.
-                    _flush_ring();
-                    for (uint32_t k = 1u; k < batchCount; ++k)
-                        evtPtrs[k]->destroy();
-
-                    mRemoteService.failed_send_message(*msgPtrs[0], mConnection.socket());
-                    return;
-                }
-                // bytes == 0 means message not valid — skip silently
-            }
-
-            const uint32_t sends_made = areg::socket_take_zerocopy_count();
-
-            if (sends_made == 0u)
-            {
-                // All sends fell back to regular copy (ENOBUFS or no MSG_ZEROCOPY support).
-                // No ERRQUEUE notifications will arrive — safe to destroy events now.
-                for (uint32_t i = 1u; i < batchCount; ++i)
-                    evtPtrs[i]->destroy();
-
-                accumulate_sent(static_cast<uint64_t>(sent_bytes), batchCount);
-            }
-            else
-            {
-                // At least one MSG_ZEROCOPY send succeeded.  The kernel is DMA-ing
-                // directly from the SharedBuffer pages.  We must keep the buffers alive
-                // until the ERRQUEUE confirms their hi_id.  Store in the ring slot.
-                const uint32_t hi_id = mZerocopyIdNext + sends_made - 1u;
-                mZerocopyIdNext += sends_made;
-
-                ZerocopyEntry& slot = mZerocopyRing[mZerocopyRingHead];
-                slot.hi_id       = hi_id;
-                slot.trigger_msg = data.remote_message();   // copy --> ref +1
-                slot.event_count = batchCount - 1u;
-                for (uint32_t i = 1u; i < batchCount; ++i)
-                    slot.events[i - 1u] = evtPtrs[i];      // ownership transferred
-
-                mZerocopyRingHead = (mZerocopyRingHead + 1u) % ZEROCOPY_RING_SIZE;
-                ++mZerocopyRingCount;
-
-                // Do NOT destroy drained events here — ownership moved to ring slot.
-                accumulate_sent(static_cast<uint64_t>(sent_bytes), batchCount);
-            }
-
-            return;
-        }
-#endif  // defined(__linux__)
-
-        // Non-zerocopy path: original batch send.
-        const int32_t sentBytes = batchCount == 1u
-                                    ? mConnection.send_message(*msgPtrs[0])
-                                    : mConnection.send_messages_batch(msgPtrs, batchCount);
-
+        const int32_t sentBytes = mConnection.send_messages_batch(ioBuffer, bufCount, totalSize);
         for (uint32_t i = 1; i < batchCount; ++i)
             evtPtrs[i]->destroy();
 
         if (sentBytes > 0)
         {
-            accumulate_sent(static_cast<uint64_t>(sentBytes), batchCount);
+            accumulate_sent(static_cast<uint64_t>(sentBytes), bufCount);
         }
         else
         {
-            mRemoteService.failed_send_message(*msgPtrs[0], mConnection.socket());
+            mRemoteService.failed_send_message(msg1, mConnection.socket());
         }
     }
     else if ( data.is_exit_message() )

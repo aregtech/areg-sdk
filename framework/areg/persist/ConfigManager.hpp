@@ -888,18 +888,6 @@ public:
     uint32_t network_batch(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
 
     /**
-     * \brief   Returns true if MSG_ZEROCOPY is requested (net::MODULE::TRANSPORT::zerocopy, Linux only).
-     *          Falls back to false when the key is absent.
-     **/
-    bool network_zerocopy(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
-
-    /**
-     * \brief   Returns the configured zerocopy ring-slot count (net::MODULE::TRANSPORT::ring).
-     *          Falls back to DEFAULT_ZEROCOPY_RING_SIZE when the key is absent.
-     **/
-    uint32_t network_ring(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
-
-    /**
      * \brief   Returns the configured thread-pool pair count (net::MODULE::TRANSPORT::pairs).
      *          Falls back to DEFAULT_POOL_PAIRS (0) when the key is absent.
      **/

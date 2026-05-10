@@ -202,13 +202,11 @@ namespace areg {
         , NetSocketSndbuf      = 29    //!< The SO_SNDBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::sndbuf).
         , NetSocketRcvbuf      = 30    //!< The SO_RCVBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::rcvbuf).
         , NetSocketBatch       = 31    //!< Send batch/drain size (format: net::SERVICE::TRANSPORT::batch).
-        , NetSocketZerocopy    = 32    //!< MSG_ZEROCOPY enable flag (format: net::SERVICE::TRANSPORT::zerocopy).
-        , NetSocketRing        = 33    //!< Zerocopy ring-slot count (format: net::SERVICE::TRANSPORT::ring).
-        , NetPoolPairs         = 34    //!< Thread-pool pair count (format: net::SERVICE::TRANSPORT::pairs).
-        , NetSocketTimeout     = 35    //!< SO_SNDTIMEO in ms (format: net::SERVICE::TRANSPORT::timeout).
-        , NetThreadCache       = 36    //!< The size of thread cache for networking in kilobytes (format: net::SERVICE::TRANSPORT::cache).
+        , NetPoolPairs         = 32    //!< Thread-pool pair count (format: net::SERVICE::TRANSPORT::pairs).
+        , NetSocketTimeout     = 33    //!< SO_SNDTIMEO in ms (format: net::SERVICE::TRANSPORT::timeout).
+        , NetThreadCache       = 34    //!< The size of thread cache for networking in kilobytes (format: net::SERVICE::TRANSPORT::cache).
 
-        , AnyKey               = 37    //!< Indicates any key type.
+        , AnyKey               = 35    //!< Indicates any key type.
     };
 
     /**
@@ -255,13 +253,11 @@ namespace areg {
             , {"net"    , "*"   , "*"       , "sndbuf"          }   //! 29  , The SO_SNDBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::sndbuf).
             , {"net"    , "*"   , "*"       , "rcvbuf"          }   //! 30  , The SO_RCVBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::rcvbuf).
             , {"net"    , "*"   , "*"       , "batch"           }   //! 31  , Batch/drain size per dispatcher wake-up.
-            , {"net"    , "*"   , "*"       , "zerocopy"        }   //! 32  , MSG_ZEROCOPY enable flag (Linux only, default false).
-            , {"net"    , "*"   , "*"       , "ring"            }   //! 33  , Zerocopy ring-slot count (default DEFAULT_ZEROCOPY_RING_SIZE).
-            , {"net"    , "*"   , "*"       , "pairs"           }   //! 34  , Thread-pool pair count (0 = disabled).
-            , {"net"    , "*"   , "*"       , "timeout"         }   //! 35  , SO_SNDTIMEO in milliseconds (0 = use compile-time default SOCKET_SEND_TIMEOUT_MS).
-            , {"net"    , "*"   , "*"       , "cache"           }   //! 36  , The thread cache size in network communication (0 = default THREAD_CACHE_SIZE (128KB)).
+            , {"net"    , "*"   , "*"       , "pairs"           }   //! 32  , Thread-pool pair count (0 = disabled).
+            , {"net"    , "*"   , "*"       , "timeout"         }   //! 33  , SO_SNDTIMEO in milliseconds (0 = use compile-time default SOCKET_SEND_TIMEOUT_MS).
+            , {"net"    , "*"   , "*"       , "cache"           }   //! 34  , The thread cache size in network communication (0 = default THREAD_CACHE_SIZE (128KB)).
 
-            , {"*"      , "*"   , "*"       , "*"               }   //! 37  , Indicates any key type (AnyKey sentinel — keep at index 31 for compatibility).
+            , {"*"      , "*"   , "*"       , "*"               }   //! 35  , Indicates any key type (AnyKey sentinel — keep at index 31 for compatibility).
 
     };
 
@@ -422,16 +418,6 @@ inline constexpr const areg::ConfigKey& net_socket_rcvbuf() noexcept
 inline constexpr const areg::ConfigKey& net_socket_batch() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::NetSocketBatch)];
-}
-
-inline constexpr const areg::ConfigKey& net_socket_zerocopy() noexcept
-{
-    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::NetSocketZerocopy)];
-}
-
-inline constexpr const areg::ConfigKey& net_socket_ring() noexcept
-{
-    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::NetSocketRing)];
 }
 
 inline constexpr const areg::ConfigKey& net_pool_pairs() noexcept

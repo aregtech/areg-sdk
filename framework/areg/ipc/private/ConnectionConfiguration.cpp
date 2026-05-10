@@ -92,16 +92,6 @@ uint32_t ConnectionConfiguration::batch_size() const noexcept
     return Application::config_manager().network_batch(areg::EmptyStringA, mConnectType);
 }
 
-bool ConnectionConfiguration::zerocopy_enabled() const noexcept
-{
-    return Application::config_manager().network_zerocopy(areg::EmptyStringA, mConnectType);
-}
-
-uint32_t ConnectionConfiguration::zerocopy_ring_size() const noexcept
-{
-    return Application::config_manager().network_ring(areg::EmptyStringA, mConnectType);
-}
-
 uint32_t ConnectionConfiguration::pool_pairs() const noexcept
 {
     return Application::config_manager().network_pool_pairs(areg::EmptyStringA, mConnectType);
