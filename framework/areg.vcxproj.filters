@@ -603,6 +603,9 @@
     <ClCompile Include="areg\component\private\MpscEventQueue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="areg\ipc\private\DataRateStats.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="areg\system\windows\areg_windows.h">
@@ -1161,6 +1164,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\private\MpscEventQueue.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\ipc\DataRateStats.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

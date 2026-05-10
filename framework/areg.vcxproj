@@ -124,6 +124,7 @@
     <ClCompile Include="areg\component\private\macos\WatchdogManagerMacOS.cpp" />
     <ClCompile Include="areg\component\private\MpscEventQueue.cpp" />
     <ClCompile Include="areg\ipc\private\ConnectionConsumer.cpp" />
+    <ClCompile Include="areg\ipc\private\DataRateStats.cpp" />
     <ClCompile Include="areg\ipc\private\RegistrationProvider.cpp" />
     <ClCompile Include="areg\component\private\ServiceManagerEventProcessor.cpp" />
     <ClCompile Include="areg\component\private\SortedEventStack.cpp" />
@@ -267,6 +268,7 @@
     <ClInclude Include="areg\component\private\EventStack.hpp" />
     <ClInclude Include="areg\component\private\MpscEventQueue.hpp" />
     <ClInclude Include="areg\ipc\ConnectionConsumer.hpp" />
+    <ClInclude Include="areg\ipc\DataRateStats.hpp" />
     <ClInclude Include="areg\ipc\RegistrationProvider.hpp" />
     <ClInclude Include="areg\component\private\ClientInfo.hpp" />
     <ClInclude Include="areg\component\private\ClientList.hpp" />

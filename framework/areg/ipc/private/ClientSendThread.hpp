@@ -22,8 +22,7 @@
 #include "areg/base/SocketDefs.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/ipc/SendMessageEvent.hpp"
-
-#include <atomic>
+#include "areg/ipc/DataRateStats.hpp"
 
 /************************************************************************
  * Dependencies
@@ -146,17 +145,9 @@ private:
      **/
     ClientConnection &              mConnection;
     /**
-     * \brief   Accumulative value of sent data size.
+     * \brief   Atomic stats (bytes + messages sent + enabled flag).
      **/
-    mutable std::atomic_uint64_t    mBytesSend;
-    /**
-     * \brief   Accumulative count of sent messages.
-     **/
-    mutable std::atomic_uint32_t    mMsgsSend;
-    /**
-     * \brief   Flag, indicating whether should calculate send data size or not. By default it does not compute.
-     **/
-    bool                            mSaveDataSend;
+    DataRateStats                   mSendStats;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -172,36 +163,27 @@ private:
 
 inline uint64_t ClientSendThread::extract_data_send() const noexcept
 {
-    return mBytesSend.exchange(0u, std::memory_order_relaxed);
+    return mSendStats.extract_bytes();
 }
 
 inline uint32_t ClientSendThread::extract_msgs_sent() const noexcept
 {
-    return mMsgsSend.exchange(0u, std::memory_order_relaxed);
+    return mSendStats.extract_msgs();
 }
 
 inline void ClientSendThread::set_data_rate_enabled(bool enable) noexcept
 {
-    if (mSaveDataSend != enable)
-    {
-        mBytesSend.store(0u, std::memory_order_relaxed);
-        mMsgsSend.store(0u, std::memory_order_relaxed);
-        mSaveDataSend = enable;
-    }
+    mSendStats.set_enabled(enable);
 }
 
 inline bool ClientSendThread::is_data_rate_enabled() const noexcept
 {
-    return mSaveDataSend;
+    return mSendStats.is_enabled();
 }
 
 inline void ClientSendThread::accumulate_sent(uint64_t bytes, uint32_t msgs) noexcept
 {
-    if (mSaveDataSend)
-    {
-        mBytesSend.fetch_add(bytes, std::memory_order_relaxed);
-        mMsgsSend.fetch_add(msgs, std::memory_order_relaxed);
-    }
+    mSendStats.accumulate(bytes, msgs);
 }
 
 } // namespace areg

@@ -78,6 +78,7 @@
     <ClInclude Include="aregextend\db\SqliteRow.hpp" />
     <ClInclude Include="aregextend\db\SqliteStatement.hpp" />
     <ClInclude Include="aregextend\service\DataRateHelper.hpp" />
+    <ClInclude Include="aregextend\service\private\ServiceThreadHelper.hpp" />
     <ClInclude Include="aregextend\service\SystemServiceDefs.hpp" />
     <ClInclude Include="aregextend\console\SystemServiceConsole.hpp" />
     <ClInclude Include="aregextend\service\ServiceApplicationBase.hpp" />

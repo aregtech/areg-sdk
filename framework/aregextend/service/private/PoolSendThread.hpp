@@ -27,7 +27,6 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/ipc/SendMessageEvent.hpp"
 
-#include <atomic>
 #include <string_view>
 
 /************************************************************************
@@ -83,38 +82,6 @@ public:
                     , std::string_view threadName );
 
     virtual ~PoolSendThread() = default;
-
-//////////////////////////////////////////////////////////////////////////
-// Attributes and operations
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Returns and resets the accumulated sent byte count.
-     **/
-    [[nodiscard]]
-    inline uint64_t bytes_sent() const noexcept;
-
-    /**
-     * \brief   Returns and resets the accumulated sent message count.
-     **/
-    [[nodiscard]]
-    inline uint32_t messages_sent() const noexcept;
-
-    /**
-     * \brief   Enables or disables per-thread data rate tracking.
-     *          Resetting counters ensures stale data does not contaminate later queries.
-     *
-     * \param   enable  True to enable tracking; false to disable.
-     **/
-    inline void set_data_rate_enabled(bool enable) noexcept;
-
-    /**
-     * \brief   Returns whether per-thread data rate tracking is enabled.
-     **/
-    [[nodiscard]]
-    inline bool is_data_rate_enabled() const noexcept;
-
-    inline void data_stat(uint64_t& byteSent, uint32_t& msgSent) const noexcept;
 
 protected:
 /************************************************************************/

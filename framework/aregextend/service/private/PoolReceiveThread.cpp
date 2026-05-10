@@ -28,6 +28,7 @@
 #include "aregextend/service/ServerConnection.hpp"
 #include "aregextend/service/private/ServerReceiveThread.hpp"
 #include "aregextend/service/private/ClientConnectionPair.hpp"
+#include "aregextend/service/private/ServiceThreadHelper.hpp"
 
 namespace areg::ext {
 
@@ -170,23 +171,13 @@ bool PoolReceiveThread::run_dispatcher()
             {
                 mGlobalStats.accumulate_received(static_cast<uint64_t>(received), 1u);
                 mRemoteService.process_received_message(msgReceived, clientSocket);
-                // msgReceived.invalidate();
 
-                // Drain bytes cached by _os_recv_data read-ahead. They are not in the
-                // kernel buffer, so the multiplexer would never fire for them otherwise.
-                while ( areg::recv_data_available(clientSocket.handle()) != 0u )
+                // Drain bytes cached by _os_recv_data read-ahead.
+                if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, msgReceived, clientSocket,
+                        [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_received(bytes, msgs); }))
                 {
-                    const int32_t cached = mConnection.receive_message(msgReceived, clientSocket);
-                    if ( cached <= 0 )
-                    {
-                        DEBUG_LOG_WARN("Pool receive thread [ %s ]: receive failed draining cache for socket [ %u ]", name().as_string(), static_cast<uint32_t>(hReady));
-                        mMux.unregister_socket(hReady);
-                        mRemoteService.failed_receive_message(clientSocket);
-                        break;
-                    }
-
-                    mGlobalStats.accumulate_received(static_cast<uint64_t>(cached), 1u);
-                    mRemoteService.process_received_message(msgReceived, clientSocket);
+                    mMux.unregister_socket(hReady);
+                    mRemoteService.failed_receive_message(clientSocket);
                 }
             }
             else
@@ -227,22 +218,13 @@ bool PoolReceiveThread::run_dispatcher()
                 {
                     mGlobalStats.accumulate_received(static_cast<uint64_t>(drainReceived), 1u);
                     mRemoteService.process_received_message(msgReceived, drainSocket);
-                    // msgReceived.invalidate();
 
                     // Drain read-ahead cache for this socket too.
-                    while ( areg::recv_data_available(drainSocket.handle()) != 0u )
+                    if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, msgReceived, drainSocket,
+                            [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_received(bytes, msgs); }))
                     {
-                        const int32_t cached = mConnection.receive_message(msgReceived, drainSocket);
-                        if ( cached <= 0 )
-                        {
-                            DEBUG_LOG_WARN("Pool receive thread [ %s ]: receive failed draining cache for drain socket [ %u ]", name().as_string(), static_cast<uint32_t>(hDrain));
-                            mMux.unregister_socket(hDrain);
-                            mRemoteService.failed_receive_message(drainSocket);
-                            break;
-                        }
-
-                        mGlobalStats.accumulate_received(static_cast<uint64_t>(cached), 1u);
-                        mRemoteService.process_received_message(msgReceived, drainSocket);
+                        mMux.unregister_socket(hDrain);
+                        mRemoteService.failed_receive_message(drainSocket);
                     }
                 }
                 else

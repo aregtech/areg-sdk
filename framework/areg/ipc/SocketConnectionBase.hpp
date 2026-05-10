@@ -95,15 +95,34 @@ protected:
      **/
     int32_t send_messages_batch( const RemoteMessage* const* messages, uint32_t count, SOCKETHANDLE hSocket ) const;
 
+    /**
+     * \brief   Sends multiple messages to the same socket handle in a single syscall.
+     *
+     * \param   ioBuffer    Array of pointers to the buffers to send.
+     * \param   count       Number of entries in the array.
+     * \param   socket      Target socket; must be valid.
+     * \param   totalSize   The total size of data in the `ioBuffer` to send. If 0, it is calculated.
+     * \return  Total bytes sent on success; negative if the syscall fails.
+     **/
     inline int32_t send_messages_batch(const areg::IoBuffer* const ioBuffer, uint32_t count, const Socket& socket, uint32_t totalSize = 0) const;
 
+    /**
+     * \brief   Sends multiple messages to the same socket handle in a single syscall.
+     *          Semantically equivalent to send_messages_batch(ioBuffer, count, Socket(hSocket), totalSize).
+     *
+     * \param   ioBuffer    Array of pointers to the buffers to send.
+     * \param   count       Number of entries in the array.
+     * \param   hSocket     Raw OS socket handle; must be valid.
+     * \param   totalSize   The total size of data in the `ioBuffer` to send. If 0, it is calculated.
+     * \return  Total bytes sent on success; negative if the syscall fails.
+     **/
     inline int32_t send_messages_batch(const areg::IoBuffer* const ioBuffer, uint32_t count, SOCKETHANDLE hSocket, uint32_t totalSize = 0) const;
 
     /**
      * \brief   Receives message data via socket and validates checksum. Blocking operation.
      *
      * \param[out]  message     Buffer to receive data; checksum validated after receiving.
-     * \param       socket      A socket for communication (client or server-side accepted socket).
+     * \param       socket      A socket for communication (client or server-side accepted socket). Must be valid.
      * \return  Returns bytes received on success; zero if checksum invalid or buffer empty; negative on socket error.
      **/
     int32_t receive_message( RemoteMessage & message, const Socket & socket ) const;

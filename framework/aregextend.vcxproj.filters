@@ -163,6 +163,9 @@
     <ClInclude Include="aregextend\service\ConnectionHandler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="aregextend\service\private\ServiceThreadHelper.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="aregextend\Readme.md">

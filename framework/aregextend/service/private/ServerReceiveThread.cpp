@@ -24,6 +24,7 @@
 
 #include "aregextend/service/ConnectionHandler.hpp"
 #include "aregextend/service/ServerConnection.hpp"
+#include "aregextend/service/private/ServiceThreadHelper.hpp"
 
 namespace areg::ext {
 
@@ -35,9 +36,7 @@ ServerReceiveThread::ServerReceiveThread( ConnectionHandler & connectHandler, Re
     , mConnectHandler   ( connectHandler )
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
-    , mBytesReceive     ( 0u )
-    , mMsgsReceive      ( 0u )
-    , mSaveDataReceive  ( false )
+    , mRecvStats        ( )
 {
 }
 
@@ -110,7 +109,7 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
 
     if (sizeReceived > 0)
     {
-        accumulate_received(static_cast<uint32_t>(sizeReceived), 1u);
+        accumulate_received(static_cast<uint64_t>(sizeReceived), 1u);
 
         DEBUG_LOG_DBG("Received [ %d ] bytes of message [ %u ] from source [ %u ], client [ %s : %d ], message size [ %u ]"
                     , sizeReceived
@@ -126,21 +125,10 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
         // cache. Those bytes are invisible to epoll/select (not in the kernel buffer),
         // so if we do not consume them here the multiplexer will never fire for them
         // and the messages will be silently dropped.
-        while (areg::recv_data_available(clientSocket.handle()) != 0u)
+        if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, msgReceived, clientSocket,
+                [this](uint64_t bytes, uint32_t msgs) { accumulate_received(bytes, msgs); }))
         {
-            const int32_t more = mConnection.receive_message(msgReceived, clientSocket);
-            if (more <= 0)
-            {
-                DEBUG_LOG_WARN("Failed to receive cached message from client socket [ %s : %d ], socket [ %u ]"
-                                , addSocket.host_address().as_string()
-                                , addSocket.host_port()
-                                , clientSocket.handle());
-                mRemoteService.failed_receive_message(clientSocket);
-                return;
-            }
-
-            accumulate_received(static_cast<uint32_t>(more), 1u);
-            mRemoteService.process_received_message(msgReceived, clientSocket);
+            mRemoteService.failed_receive_message(clientSocket);
         }
     }
     else

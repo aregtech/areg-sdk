@@ -20,9 +20,9 @@
 #include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/logging/areg_log.h"
 #include "aregextend/service/ServerConnection.hpp"
+#include "aregextend/service/private/ServiceThreadHelper.hpp"
 
 #include <array>
-#include <cstring>
 
 namespace areg::ext {
 
@@ -36,9 +36,7 @@ ServerSendThread::ServerSendThread(RemoteMessageHandler& remoteService, ServerCo
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
     , mBatch            ( )
-    , mBytesSend        ( 0u )
-    , mMsgsSend         ( 0u )
-    , mSaveDataSend     ( false )
+    , mSendStats        ( )
 {
 }
 
@@ -192,100 +190,10 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
         return;
     }
 
-    // --- Phase 2: binary insertion sort by socket handle to enable grouping ---
-    // PendingSend is trivially copyable (SOCKETHANDLE + 2 pointers = 24 bytes on 64-bit).
-    // Fast path (1:1 / same-socket fan-out): the >= guard fires every iteration — O(n)
-    //   comparisons, zero memmove calls.
-    // Slow path (m:n / mixed targets): binary search finds the insertion point in O(log n),
-    //   then memmove shifts the run in one SIMD-optimized call instead of n scalar copies.
-    //   For n=32 worst case: max shift = 31 × 24 = 744 bytes; AVX-256 handles that in ~3
-    //   iterations vs ~93 scalar register-move ops in a plain shift loop.
-    for ( uint32_t i{ 1 }; i < batchCount; ++i )
-    {
-        if ( mBatch[i].socket >= mBatch[i - 1].socket )
-            continue;   // already in order — fast path (1:1 / same-socket groups)
-
-        const PendingSend key{ mBatch[i] };
-        // Binary search for the correct insertion index in [0, i).
-        uint32_t lo{ 0 }, hi{ i };
-        while ( lo < hi )
-        {
-            const uint32_t mid{ lo + ((hi - lo) >> 1) };
-            (mBatch[mid].socket <= key.socket) ? lo = mid + 1 : hi = mid;
-        }
-        // Shift [lo .. i-1] one position right, then place key at lo.
-        memmove( &mBatch[lo + 1], &mBatch[lo], static_cast<size_t>(i - lo) * sizeof(PendingSend) );
-        mBatch[lo] = key;
-    }
-
-    // --- Phase 3: send each same-socket group with one syscall ---
-    for ( uint32_t i{ 0 }; i < batchCount; )
-    {
-        const SOCKETHANDLE hSocket{ mBatch[i].socket };
-        uint32_t j{ i + 1 };
-        while ( (j < batchCount) && (mBatch[j].socket == hSocket) )
-            ++j;
-
-        const uint32_t groupSize{ j - i };
-        if ( groupSize == 1 )
-        {
-            const RemoteMessage& message{ mBatch[i].sendEvt->data().remote_message() };
-            const int32_t sent{ mConnection.send_message(message, hSocket) };
-            if ( sent > 0 )
-            {
-                accumulate_sent(static_cast<uint32_t>(sent), 1u);
-            }
-            else
-            {
-                DEBUG_LOG_WARN("Failed to send message to target [ %u ]", static_cast<uint32_t>(message.target()));
-                if (!mConnection.is_interrupted())
-                {
-                    SocketAccepted client{ mConnection.client_by_handle(hSocket) };
-                    mRemoteService.failed_send_message(message, client);
-                }
-            }
-        }
-        else
-        {
-            // Multiple messages for the same socket: scatter/gather send.
-            areg::IoBuffer ioBuffer[areg::THREAD_DRAIN_LIMIT];
-            uint32_t bufCount   { 0u };
-            uint32_t totalSize  { 0u };
-
-            for (uint32_t k{ 0 }; k < groupSize; ++k)
-            {
-                const RemoteMessage& msg        = mBatch[i + k].sendEvt->data().remote_message();
-                const areg::MessageHeader* hdr  = msg.header();
-                if (hdr != nullptr)
-                {
-                    msg.buffer_completion_fix();
-                    uint32_t bufSize = sizeof(areg::MessageHeader) + hdr->rbhBufHeader.biUsed;
-                    ioBuffer[bufCount++] = { reinterpret_cast<const uint8_t*>(hdr), bufSize };
-                    totalSize += bufSize;
-                }
-            }
-
-            const int32_t sent = mConnection.send_messages_batch(ioBuffer, bufCount, hSocket, totalSize);
-            if ( sent > 0 )
-            {
-                accumulate_sent(static_cast<uint32_t>(sent), groupSize);
-            }
-            else
-            {
-                DEBUG_LOG_WARN("Failed batch-send of %u messages to target [ %u ]", groupSize, static_cast<uint32_t>(mBatch[i].sendEvt->data().message_target()));
-                if (!mConnection.is_interrupted())
-                {
-                    SocketAccepted client{ mConnection.client_by_handle(hSocket) };
-                    mRemoteService.failed_send_message(mBatch[i].sendEvt->data().remote_message(), client);
-                }
-            }
-        }
-
-        for ( uint32_t k{ i }; k < j; ++k )
-            mBatch[k].sendEvt->destroy();
-
-        i = j;
-    }
+    // --- Phase 2+3: sort by socket and send each same-socket group ---
+    areg::ext::sort_pending_sends(mBatch.data(), batchCount);
+    areg::ext::send_pending_groups(mBatch.data(), batchCount, mConnection, mRemoteService,
+        [this](uint64_t bytes, uint32_t msgs) { accumulate_sent(bytes, msgs); });
 
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
     if (batchCount >= areg::THREAD_DRAIN_LIMIT)

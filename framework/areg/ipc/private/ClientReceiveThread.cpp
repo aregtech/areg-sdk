@@ -28,9 +28,7 @@ ClientReceiveThread::ClientReceiveThread(RemoteMessageHandler& remoteService, Cl
     : DispatcherThread  (namePrefix + areg::CLIENT_RECEIVE_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_SIZE_MAXIMUM)
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
-    , mBytesReceive     ( 0u )
-    , mMsgsReceive      ( 0u )
-    , mSaveDataReceive  ( false )
+    , mRecvStats        ( )
 {
 }
 

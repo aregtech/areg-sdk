@@ -28,9 +28,7 @@ ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientCo
 
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
-    , mBytesSend        ( 0u )
-    , mMsgsSend         ( 0u )
-    , mSaveDataSend     ( false )
+    , mSendStats        ( )
 {
 }
 

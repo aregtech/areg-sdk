@@ -20,8 +20,7 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/component/DispatcherThread.hpp"
-
-#include <atomic>
+#include "areg/ipc/DataRateStats.hpp"
 
 /************************************************************************
  * Dependencies
@@ -125,20 +124,9 @@ private:
     ClientConnection &          mConnection;
 
     /**
-     * \brief   Flag, indicating whether data calculation is enabled or disabled. By default, it is disabled.
+     * \brief   Atomic stats (bytes + messages received + enabled flag).
      **/
-     /**
-      * \brief   Accumulative value of received data size.
-      */
-    mutable std::atomic_uint64_t    mBytesReceive;
-    /**
-     * \brief   Accumulative count of received messages.
-     **/
-    mutable std::atomic_uint32_t    mMsgsReceive;
-    /**
-     * \brief   Flag, indicating whether data calculation is enabled or disabled. By default, it is disabled.
-     **/
-    bool                            mSaveDataReceive;
+    DataRateStats                   mRecvStats;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -154,36 +142,27 @@ private:
 
 inline uint64_t ClientReceiveThread::extract_data_received() const noexcept
 {
-    return mBytesReceive.exchange(0, std::memory_order_relaxed);
+    return mRecvStats.extract_bytes();
 }
 
 inline uint32_t ClientReceiveThread::extract_msgs_received() const noexcept
 {
-    return mMsgsReceive.exchange(0, std::memory_order_relaxed);
+    return mRecvStats.extract_msgs();
 }
 
 inline void ClientReceiveThread::set_data_rate_enabled(bool enable) noexcept
 {
-    if (mSaveDataReceive != enable)
-    {
-        mBytesReceive.store(0u, std::memory_order_relaxed);
-        mMsgsReceive.store(0u, std::memory_order_relaxed);
-        mSaveDataReceive = enable;
-    }
+    mRecvStats.set_enabled(enable);
 }
 
 inline bool ClientReceiveThread::is_data_rate_enabled() const noexcept
 {
-    return mSaveDataReceive;
+    return mRecvStats.is_enabled();
 }
 
 inline void ClientReceiveThread::accumulate_received(uint64_t bytes, uint32_t msgs) noexcept
 {
-    if (mSaveDataReceive)
-    {
-        mBytesReceive.fetch_add(bytes, std::memory_order_relaxed);
-        mMsgsReceive.fetch_add(msgs, std::memory_order_relaxed);
-    }
+    mRecvStats.accumulate(bytes, msgs);
 }
 
 } // namespace areg
