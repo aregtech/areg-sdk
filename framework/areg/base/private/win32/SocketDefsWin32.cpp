@@ -129,15 +129,13 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
 
     // Single buffer — no coalescing needed.
     if (count == 1u)
-    {
         return _os_send_data(hSocket, buffers[0u].data, static_cast<int32_t>(buffers[0u].size));
-    }
 
     // Coalesce all buffers into one contiguous block and send in a single syscall.
-    // Use the thread-local staging buffer if the combined payload fits; otherwise
+    // Use the thread-local TX staging buffer if the combined payload fits; otherwise
     // chunk through the staging buffer and flush once per chunk.
 
-    areg::ThreadCache& tc = areg::thread_local_cache();
+    areg::ThreadCache& tc = areg::thread_tx_cache();
     uint8_t* const staging    = tc.cache();
     const uint32_t stagingCap = (staging != nullptr) ? tc.space : 0u;
 
@@ -237,17 +235,10 @@ static int32_t _recv_exact(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t da
 //   Phase 3: MSG_WAITALL completion for the rare partial-fill or oversized-request case.
 static int32_t _recv_cached(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
 {
-    areg::ThreadCache& tc = areg::thread_local_cache();
+    areg::ThreadCache& tc = areg::thread_rx_cache(hSocket);
     uint8_t* const cache = tc.cache();
     if ((cache == nullptr) || (tc.space == 0u))
         return _recv_exact(hSocket, dataBuffer, dataLength);
-
-    if (tc.socket != hSocket)
-    {
-        tc.socket = hSocket;
-        tc.head   = 0u;
-        tc.unread = 0u;
-    }
 
     const uint32_t needed = static_cast<uint32_t>(dataLength);
     uint32_t total = 0u;

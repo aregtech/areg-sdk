@@ -42,6 +42,7 @@
 #endif
 
 #include <regex>
+#include <unordered_map>
 
 namespace areg::os {
 
@@ -904,8 +905,8 @@ AREG_API_IMPL uint32_t areg::recv_data_available(SOCKETHANDLE hSocket) noexcept
     if (areg::receive_mode() == areg::ReceiveMode::Exact)
         return 0u;
 
-    const areg::ThreadCache& tc = areg::thread_local_cache();
-    if ((tc.socket != hSocket) || (tc.unread == 0u))
+    const areg::ThreadCache& tc = areg::thread_rx_cache(hSocket);
+    if (tc.unread == 0u)
         return 0u;
 
     if (tc.unread < static_cast<uint32_t>(sizeof(areg::MessageHeader)))
@@ -1105,6 +1106,20 @@ AREG_API_IMPL areg::ThreadCache& areg::thread_local_cache() noexcept
 {
     static thread_local areg::ThreadCache   _cache;
     return _cache;
+}
+
+AREG_API_IMPL areg::ThreadCache& areg::thread_tx_cache() noexcept
+{
+    static thread_local areg::ThreadCache   _tx_cache;
+    return _tx_cache;
+}
+
+AREG_API_IMPL areg::ThreadCache& areg::thread_rx_cache(SOCKETHANDLE hSocket) noexcept
+{
+    static thread_local std::unordered_map<SOCKETHANDLE, areg::ThreadCache> _rx_caches;
+    areg::ThreadCache& tc = _rx_caches[hSocket];
+    tc.socket = hSocket;
+    return tc;
 }
 
 namespace

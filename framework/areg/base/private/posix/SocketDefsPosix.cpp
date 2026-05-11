@@ -143,60 +143,73 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
     ASSERT(areg::is_valid_socket(hSocket));
     ASSERT((buffers != nullptr) && (count > 0u));
 
+    // Single buffer — bypass iovec setup entirely.
+    if (count == 1u)
+        return _os_send_data(hSocket, buffers[0u].data, static_cast<int32_t>(buffers[0u].size));
+
     // Build iovec array on the stack. Batch sizes are bounded by THREAD_BATCH_LIMIT
     // (128 entries), so 128 * sizeof(iovec) = 128 * 16 = 2 KB on the stack.
-    constexpr uint32_t MAX_IOV{ areg::THREAD_BATCH_LIMIT };
-    const uint32_t iovCount{ (count < MAX_IOV) ? count : MAX_IOV };
-
     // Verify layout compatibility at compile time, then copy into a mutable local array.
     // The copy is required because the partial-write retry path must slide iov_base and
     // shrink iov_len in-place — impossible through a const pointer to the caller's buffer.
+    constexpr uint32_t MAX_IOV{ areg::THREAD_BATCH_LIMIT };
     static_assert(sizeof(areg::IoBuffer) == sizeof(struct iovec),         "IoBuffer/iovec size mismatch");
     static_assert(offsetof(areg::IoBuffer, data) == offsetof(struct iovec, iov_base), "IoBuffer/iovec data offset mismatch");
     static_assert(offsetof(areg::IoBuffer, size) == offsetof(struct iovec, iov_len),  "IoBuffer/iovec size offset mismatch");
     static_assert(sizeof(areg::IoBuffer::size) == sizeof(size_t),         "IoBuffer::size / iov_len width mismatch");
-    struct iovec iov[MAX_IOV];
-    ::memcpy(iov, buffers, iovCount * sizeof(struct iovec));
 
-    // iovBase/iovRemaining track the current position within the iovec array when
-    // writev() performs a partial write (rare on blocking sockets with SO_SNDTIMEO,
-    // but handled correctly to preserve message framing integrity).
+    // Iterate over chunks of MAX_IOV to handle batches of any size.
+    // In practice count <= THREAD_BATCH_LIMIT == MAX_IOV, so this loop runs once.
     int32_t total{ 0 };
-    uint32_t iovBase{ 0u };
-    uint32_t iovRemaining{ iovCount };
+    uint32_t chunkOffset{ 0u };
 
-    while (iovRemaining > 0u)
+    while (chunkOffset < count)
     {
-        const ssize_t written = ::writev(static_cast<int>(hSocket), iov + iovBase, static_cast<int>(iovRemaining));
+        const uint32_t iovCount = ((count - chunkOffset) < MAX_IOV) ? (count - chunkOffset) : MAX_IOV;
+        struct iovec iov[MAX_IOV];
+        ::memcpy(iov, buffers + chunkOffset, iovCount * sizeof(struct iovec));
 
-        if (written > 0)
+        // iovBase/iovRemaining track the current position within the iovec array when
+        // writev() performs a partial write (rare on blocking sockets with SO_SNDTIMEO,
+        // but handled correctly to preserve message framing integrity).
+        uint32_t iovBase{ 0u };
+        uint32_t iovRemaining{ iovCount };
+
+        while (iovRemaining > 0u)
         {
-            total += static_cast<int32_t>(written);
+            const ssize_t written = ::writev(static_cast<int>(hSocket), iov + iovBase, static_cast<int>(iovRemaining));
 
-            // Advance past fully-consumed iovecs.
-            size_t advance{ static_cast<size_t>(written) };
-            while ((iovBase < iovCount) && (advance >= iov[iovBase].iov_len))
+            if (written > 0)
             {
-                advance -= iov[iovBase].iov_len;
-                ++iovBase;
-                --iovRemaining;
-            }
+                total += static_cast<int32_t>(written);
 
-            if ((iovRemaining > 0u) && (advance > 0u))
+                // Advance past fully-consumed iovecs.
+                size_t advance{ static_cast<size_t>(written) };
+                while ((iovBase < iovCount) && (advance >= iov[iovBase].iov_len))
+                {
+                    advance -= iov[iovBase].iov_len;
+                    ++iovBase;
+                    --iovRemaining;
+                }
+
+                if ((iovRemaining > 0u) && (advance > 0u))
+                {
+                    // Partial consume of the current iovec: slide the pointer.
+                    iov[iovBase].iov_base  = static_cast<uint8_t*>(iov[iovBase].iov_base) + advance;
+                    iov[iovBase].iov_len  -= advance;
+                }
+            }
+            else if (errno == EINTR)
             {
-                // Partial consume of the current iovec: slide the pointer.
-                iov[iovBase].iov_base  = static_cast<uint8_t*>(iov[iovBase].iov_base) + advance;
-                iov[iovBase].iov_len  -= advance;
+                continue;   // interrupted by signal; retry without advancing
+            }
+            else
+            {
+                return -1;  // EAGAIN (SO_SNDTIMEO expired), EPIPE, or connection error
             }
         }
-        else if (errno == EINTR)
-        {
-            continue;   // interrupted by signal; retry without advancing
-        }
-        else
-        {
-            return -1;  // EAGAIN (SO_SNDTIMEO expired), EPIPE, or connection error
-        }
+
+        chunkOffset += iovCount;
     }
 
     return total;
@@ -246,17 +259,10 @@ static int32_t _recv_cached(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t d
     constexpr int recvExact = 0;
 #endif
 
-    areg::ThreadCache& tc = thread_local_cache();
+    areg::ThreadCache& tc = areg::thread_rx_cache(hSocket);
     uint8_t* const cache = tc.cache();
     if ((cache == nullptr) || (tc.space == 0u))
         return _recv_exact(hSocket, dataBuffer, dataLength);
-
-    if (tc.socket != hSocket)
-    {
-        tc.socket = hSocket;
-        tc.head   = 0u;
-        tc.unread = 0u;
-    }
 
     const uint32_t needed = static_cast<uint32_t>(dataLength);
     uint32_t total = 0u;

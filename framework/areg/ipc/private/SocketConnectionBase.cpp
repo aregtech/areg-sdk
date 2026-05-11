@@ -84,6 +84,9 @@ int32_t SocketConnectionBase::receive_message(RemoteMessage & message, const Soc
     if (result != sizeof(areg::MessageHeader))
         return 0;
 
+    if (msgHeader.rbhBufHeader.biUsed > areg::MAX_MESSAGE_DATA_SIZE)
+        return 0;
+
     uint8_t * buffer = message.init_message( msgHeader);
     if ((msgHeader.rbhBufHeader.biUsed != 0) && (buffer != nullptr))
     {

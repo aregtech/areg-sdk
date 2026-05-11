@@ -392,6 +392,12 @@ constexpr uint32_t      DEFAULT_POOL_PAIRS          { 0u };
 //!< This constant is the compile-time default returned when no config entry is present.
 constexpr const uint32_t    DEFAULT_THREAD_CACHE_KB{ 512 };
 
+//!< Maximum biUsed value accepted in any received MessageHeader.
+//!< Requests larger than this are treated as protocol violations and rejected without
+//!< allocation.  Prevents unbounded heap growth from corrupt or malicious packets.
+//!< 64 MB covers the largest legitimate areg-sdk message payload; raise if needed.
+constexpr uint32_t          MAX_MESSAGE_DATA_SIZE   { 64u * areg::ONE_MEGABYTE };
+
 /**
  * \brief   Maximum number of pending connections the OS will queue on a
  *          listening server socket (SOMAXCONN).  Initialized at runtime.
@@ -455,7 +461,30 @@ enum class ReceiveMode : uint8_t
 inline bool is_valid_socket(SOCKETHANDLE hSocket) noexcept;
 
 /**
- * \brief   Returns the thread cache object
+ * \brief   Returns the thread-local TX staging cache for the calling thread.
+ *          Socket-independent: within a single thread only one socket sends at a time.
+ *          Used exclusively by the Windows coalesced-send path (_os_send_data_v).
+ *          Controller threads that send single messages bypass the staging buffer
+ *          entirely (count == 1 fast-path in _os_send_data_v).
+ **/
+[[nodiscard]]
+AREG_API ThreadCache& thread_tx_cache() noexcept;
+
+/**
+ * \brief   Returns the thread-local RX cache for \a hSocket.
+ *          One ThreadCache per (thread, socket) pair held in a thread-local map.
+ *          The cache buffer is lazily allocated on first use via ThreadCache::cache().
+ *          Threads that operate in ReceiveMode::Exact never allocate the buffer.
+ *
+ * \param   hSocket     Socket whose receive cache is requested.
+ **/
+[[nodiscard]]
+AREG_API ThreadCache& thread_rx_cache(SOCKETHANDLE hSocket) noexcept;
+
+/**
+ * \brief   Returns the thread cache object.
+ * \deprecated  Use thread_rx_cache(hSocket) for RX paths.
+ *              Retained for backward compatibility with callers not yet migrated.
  **/
 [[nodiscard]]
 AREG_API ThreadCache& thread_local_cache() noexcept;
