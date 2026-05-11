@@ -303,11 +303,6 @@ constexpr uint32_t      SOCKET_SEND_BUFFER_SIZE { 16u * areg::ONE_MEGABYTE };
 
 //!< Compile-time default for SO_RCVBUF applied on Linux and macOS.
 //!< Override at runtime via net::SERVICE::TRANSPORT::rcvbuf in areg.init (value in KB).
-//!<
-//!< Windows: SO_RCVBUF is intentionally NOT set (see SocketDefsWin32.cpp).
-//!< Calling setsockopt(SO_RCVBUF) on a connected or accepted socket disables
-//!< SIO_LOOPBACK_FAST_PATH, which is the primary loopback optimization on Windows
-//!< and delivers 2+ GB/s throughput.  Losing it drops loopback to ~300 MB/s.
 constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE { 16u * areg::ONE_MEGABYTE };
 
 //!< Maximum milliseconds a single send() call may block waiting for TCP send-window space.
@@ -354,11 +349,10 @@ constexpr uint32_t      BATCH_SIZE              { 128u };
 //!< proportional throughput gain; lower values under-utilise the OS batch.
 constexpr uint32_t      THREAD_DRAIN_LIMIT      { BATCH_SIZE };
 
-//!< Size of the iovec / WSABUF stack array used for scatter-gather send (writev / WSASend)
-//!< and the mBatch[] array in ServerSendThread.
-//!< Invariant: THREAD_BATCH_LIMIT >= THREAD_DRAIN_LIMIT (batch array must never overflow
-//!< a full drain pass).  Set equal to THREAD_DRAIN_LIMIT: one drain pass fills exactly
-//!< one batch, so no entries are wasted.  128 × sizeof(iovec) = 2 KB on the stack — L1-friendly.
+//!< Size of the IoBuffer / iovec stack array used for scatter-gather send (writev / WSASend).
+//!< Equals THREAD_DRAIN_LIMIT: slot 0 holds the triggering message (owned by the dispatch
+//!< chain), slots 1..THREAD_DRAIN_LIMIT-1 hold at most THREAD_DRAIN_LIMIT-1 drained events.
+//!< Total batch is exactly THREAD_DRAIN_LIMIT entries.  128 × sizeof(iovec) = 2 KB — L1-friendly.
 constexpr uint32_t      THREAD_BATCH_LIMIT      { THREAD_DRAIN_LIMIT };
 
 //!< Maximum number of events queued in any send thread (ServerSendThread, PoolSendThread, areg::ClientSendThread).

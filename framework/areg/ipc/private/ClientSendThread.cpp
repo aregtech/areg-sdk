@@ -123,6 +123,7 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
         // --- Phase 2: send the collected batch ---
 
         const int32_t sentBytes = mConnection.send_messages_batch(ioBuffer, bufCount, totalSize);
+
         for (uint32_t i = 1; i < batchCount; ++i)
             evtPtrs[i]->destroy();
 

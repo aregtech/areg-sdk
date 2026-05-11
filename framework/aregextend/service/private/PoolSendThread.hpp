@@ -122,17 +122,6 @@ private:
      **/
     void process_event( const SendMessageEventData & data ) final;
 
-    /**
-     * \brief   Resolves the target socket via client_by_cookie(), sends a single
-     *          message, and updates byte/message counters on success.
-     *          Calls failed_send_message() on the remote service on failure.
-     *
-     * \param   msg     Remote message to send.
-     * \return  Returns true on success or if the target is no longer connected.
-     *          Returns false on a send error that should abort the drain loop.
-     **/
-    bool _do_send( const areg::RemoteMessage & msg );
-
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////

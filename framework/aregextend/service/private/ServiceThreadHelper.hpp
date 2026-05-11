@@ -80,6 +80,11 @@ inline void sort_pending_sends(areg::PendingSend * batch, uint32_t count) noexce
  *          scatter/gather syscall. On failure, failed_send_message() is
  *          called unless the connection is already interrupted.
  *
+ *          On Windows, groups whose combined payload exceeds 3 × thread_cache_size()
+ *          are sent buffer-by-buffer to avoid excessive staging memcpy through the
+ *          thread-local coalescing buffer.  On POSIX, writev() is zero-copy for any
+ *          payload size and the bypass is skipped.
+ *
  *          All SendMessageEvent entries in \a batch are destroyed before
  *          the function returns.
  *
@@ -126,7 +131,7 @@ inline void send_pending_groups( areg::PendingSend * batch
             uint32_t bufCount  { 0u };
             uint32_t totalSize { 0u };
 
-            for (uint32_t k{ 0 }; k < groupSize; ++k)
+            for (uint32_t k{ 0u }; k < groupSize; ++k)
             {
                 const areg::RemoteMessage & msg = batch[i + k].sendEvt->data().remote_message();
                 const areg::MessageHeader * hdr = msg.header();
@@ -155,6 +160,139 @@ inline void send_pending_groups( areg::PendingSend * batch
             batch[k].sendEvt->destroy();
 
         i = j;
+    }
+}
+
+/**
+ * \brief   Phase 3 of the send batch pipeline with an unowned triggering message.
+ *
+ *          Extends send_pending_groups() to incorporate the dispatch-chain trigger
+ *          message (\a trigMsg) that is NOT wrapped in a SendMessageEvent:
+ *          - If \a trigSocket appears as a group key in \a batch, \a trigMsg is
+ *            prepended to that group's IoBuffer so all messages share one syscall.
+ *          - If \a trigSocket never appears in \a batch, \a trigMsg is sent
+ *            individually after all batch groups.
+ *          - If \a trigSocket is invalid (target disconnected), \a trigMsg is
+ *            discarded silently.
+ *
+ *          All SendMessageEvent entries in \a batch are destroyed before
+ *          the function returns.  \a trigMsg is never destroyed (dispatch chain owns it).
+ *
+ * \param   batch       Pre-sorted batch (sorted ascending by socket handle).
+ *                      Must contain at most THREAD_DRAIN_LIMIT - 1 entries so that
+ *                      the trigger (slot 0) + batch fits within THREAD_DRAIN_LIMIT slots.
+ * \param   count       Number of valid entries in \a batch.
+ * \param   trigSocket  Resolved socket for the triggering message; may be invalid.
+ * \param   trigMsg     The triggering RemoteMessage owned by the dispatch chain.
+ * \param   conn        Server connection (send + client-lookup API).
+ * \param   handler     Remote message handler (failure callback).
+ * \param   accum       Callable(uint64_t bytes, uint32_t msgs) after each successful send.
+ **/
+template<typename AccumFn>
+inline void send_pending_groups_with_trigger( areg::PendingSend * batch
+                                            , uint32_t count
+                                            , SOCKETHANDLE trigSocket
+                                            , const areg::RemoteMessage & trigMsg
+                                            , ServerConnection & conn
+                                            , areg::RemoteMessageHandler & handler
+                                            , AccumFn && accum )
+{
+    bool trigSent{ false };
+
+    for (uint32_t i{ 0 }; i < count; )
+    {
+        const SOCKETHANDLE hSocket{ batch[i].socket };
+        uint32_t j{ i + 1 };
+        while ((j < count) && (batch[j].socket == hSocket))
+            ++j;
+
+        const uint32_t groupSize{ j - i };
+        const bool hasTrigger{ hSocket == trigSocket };
+        if (hasTrigger)
+            trigSent = true;
+
+        // Single batch entry with no trigger: one send_message() call.
+        if ((groupSize == 1u) && !hasTrigger)
+        {
+            const areg::RemoteMessage & message{ batch[i].sendEvt->data().remote_message() };
+            const int32_t sent{ conn.send_message(message, hSocket) };
+            if (sent > 0)
+            {
+                accum(static_cast<uint64_t>(sent), 1u);
+            }
+            else if (!conn.is_interrupted())
+            {
+                areg::SocketAccepted client{ conn.client_by_handle(hSocket) };
+                handler.failed_send_message(message, client);
+            }
+        }
+        else
+        {
+            // Multi-message group (or single batch entry + trigger): build IoBuffer.
+            // Slot 0 holds the triggering message; slots 1..THREAD_DRAIN_LIMIT-1 hold
+            // the batch entries.  Caller must ensure count ≤ THREAD_DRAIN_LIMIT - 1.
+            areg::IoBuffer ioBuffer[areg::THREAD_DRAIN_LIMIT];
+            uint32_t bufCount  { 0u };
+            uint32_t totalSize { 0u };
+
+            // Prepend the triggering message to this group if it shares the same socket.
+            if (hasTrigger)
+            {
+                const areg::MessageHeader * hdr = trigMsg.header();
+                if (hdr != nullptr)
+                {
+                    trigMsg.buffer_completion_fix();
+                    const uint32_t bufSize = sizeof(areg::MessageHeader) + hdr->rbhBufHeader.biUsed;
+                    ioBuffer[bufCount++] = { reinterpret_cast<const uint8_t *>(hdr), bufSize };
+                    totalSize += bufSize;
+                }
+            }
+
+            for (uint32_t k{ 0u }; k < groupSize; ++k)
+            {
+                const areg::RemoteMessage & msg = batch[i + k].sendEvt->data().remote_message();
+                const areg::MessageHeader * hdr = msg.header();
+                if (hdr != nullptr)
+                {
+                    msg.buffer_completion_fix();
+                    const uint32_t bufSize = sizeof(areg::MessageHeader) + hdr->rbhBufHeader.biUsed;
+                    ioBuffer[bufCount++] = { reinterpret_cast<const uint8_t *>(hdr), bufSize };
+                    totalSize += bufSize;
+                }
+            }
+
+            const int32_t sent = conn.send_messages_batch(ioBuffer, bufCount, hSocket, totalSize);
+            if (sent > 0)
+            {
+                accum(static_cast<uint64_t>(sent), groupSize + (hasTrigger ? 1u : 0u));
+            }
+            else if (!conn.is_interrupted())
+            {
+                areg::SocketAccepted client{ conn.client_by_handle(hSocket) };
+                const areg::RemoteMessage & failMsg{ hasTrigger ? trigMsg : batch[i].sendEvt->data().remote_message() };
+                handler.failed_send_message(failMsg, client);
+            }
+        }
+
+        for (uint32_t k{ i }; k < j; ++k)
+            batch[k].sendEvt->destroy();
+
+        i = j;
+    }
+
+    // Triggering message was not covered by any batch group: send it individually.
+    if (!trigSent && areg::is_valid_socket(trigSocket))
+    {
+        const int32_t sent = conn.send_message(trigMsg, trigSocket);
+        if (sent > 0)
+        {
+            accum(static_cast<uint64_t>(sent), 1u);
+        }
+        else if (!conn.is_interrupted())
+        {
+            areg::SocketAccepted client{ conn.client_by_handle(trigSocket) };
+            handler.failed_send_message(trigMsg, client);
+        }
     }
 }
 

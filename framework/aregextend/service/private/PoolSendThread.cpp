@@ -27,7 +27,6 @@
 namespace areg::ext {
 
 DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_PoolSendThread, process_event);
-DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_PoolSendThread, _do_send);
 
 PoolSendThread::PoolSendThread( ClientConnectionPair & owner
                                   , areg::RemoteMessageHandler & remoteService
@@ -59,43 +58,6 @@ void PoolSendThread::ready_for_events( bool is_ready )
     }
 }
 
-bool PoolSendThread::_do_send( const areg::RemoteMessage & msg )
-{
-    DEBUG_LOG_SCOPE(areg_aregextend_service_PoolSendThread, _do_send);
-    ASSERT( msg.is_valid() );
-
-    const ITEM_ID target{ msg.target() };
-    const SOCKETHANDLE hSocket{ mOwner.socket_by_cookie(target) };
-    if ( hSocket == areg::InvalidSocketHandle )
-    {
-        // Target is no longer connected — silently drop the message.
-        DEBUG_LOG_DBG("Pool send thread: target cookie [ %u ] not found, dropping message [ %u ]"
-                        , static_cast<uint32_t>(target)
-                        , static_cast<uint32_t>(msg.message_id()));
-        return true;
-    }
-
-    const int32_t sentBytes = mConnection.send_message(msg, hSocket);
-    if ( sentBytes > 0 )
-    {
-        mGlobalStats.accumulate_sent(static_cast<uint64_t>(sentBytes), 1u);
-        return true;
-    }
-
-    DEBUG_LOG_WARN("Pool send thread: failed to send message [ %u ] to target [ %u ], socket [ %u ], result [ %d ]"
-                    , static_cast<uint32_t>(msg.message_id())
-                    , static_cast<uint32_t>(target)
-                    , static_cast<uint32_t>(hSocket)
-                    , sentBytes);
-
-    areg::SocketAccepted clientSocket{ mOwner.client_by_cookie(target) };
-    if (!mConnection.is_interrupted())
-    {
-        mRemoteService.failed_send_message(msg, clientSocket);
-    }
-
-    return false;
-}
 
 void PoolSendThread::process_event( const SendMessageEventData & data )
 {
@@ -109,19 +71,19 @@ void PoolSendThread::process_event( const SendMessageEventData & data )
     }
 
     ASSERT(data.is_forward_message());
-    if ( !_do_send( data.remote_message() ) )
-        return;
+    const RemoteMessage& trigMsg{ data.remote_message() };
+    const SOCKETHANDLE trigSocket{ mOwner.socket_by_cookie(trigMsg.target()) };
 
-    // Batch drain: collect up to areg::THREAD_DRAIN_LIMIT additional events and send each individually.
-    // Draining in bulk reduces the number of times the dispatcher re-enters the kernel wait path,
-    // which is the dominant overhead under burst load.
+    // Batch drain: collect up to THREAD_DRAIN_LIMIT - 1 additional events.
+    // Slot 0 of the IoBuffer is reserved for the triggering message; draining
+    // THREAD_DRAIN_LIMIT - 1 events keeps the combined batch at THREAD_DRAIN_LIMIT.
     const ExitEvent& exitEvent = ExitEvent::exit_event();
 
-    uint32_t batchCount{ 0 };
-    bool    exitRequested{ false };
+    uint32_t batchCount{ 0u };
+    bool exitRequested{ false };
 
     // --- Phase 1: drain events and resolve socket handles ---
-    for (uint32_t count = 0; count < areg::THREAD_DRAIN_LIMIT; ++count)
+    for (uint32_t count = 0; count < areg::THREAD_DRAIN_LIMIT - 1u; ++count)
     {
         Event* evt = pick_event();
         if (evt == nullptr)
@@ -155,7 +117,9 @@ void PoolSendThread::process_event( const SendMessageEventData & data )
         const SOCKETHANDLE hSocket{ mOwner.socket_by_cookie(msg.target()) };
         if (hSocket == areg::InvalidSocketHandle)
         {
-            DEBUG_LOG_WARN("Discarding queued message (ID = [ %u ]) for disconnected target [ %u ]", static_cast<uint32_t>(msg.message_id()), static_cast<uint32_t>(msg.target()));
+            DEBUG_LOG_WARN("Discarding queued message (ID = [ %u ]) for disconnected target [ %u ]"
+                            , static_cast<uint32_t>(msg.message_id())
+                            , static_cast<uint32_t>(msg.target()));
             sendEvt->destroy();
             continue;
         }
@@ -163,15 +127,15 @@ void PoolSendThread::process_event( const SendMessageEventData & data )
         mBatch[batchCount++] = { hSocket, sendEvt };
     }
 
-    // --- Phase 2+3: sort by socket and send each same-socket group ---
+    // --- Phase 2+3: sort by socket and send each same-socket group, including trigger ---
     areg::ext::sort_pending_sends(mBatch.data(), batchCount);
-    areg::ext::send_pending_groups(mBatch.data(), batchCount, mConnection, mRemoteService,
+    areg::ext::send_pending_groups_with_trigger(mBatch.data(), batchCount, trigSocket, trigMsg, mConnection, mRemoteService,
         [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_sent(bytes, msgs); });
 
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-    if (batchCount >= areg::THREAD_DRAIN_LIMIT)
+    if (batchCount >= areg::THREAD_DRAIN_LIMIT - 1u)
     {
-        DEBUG_LOG_WARN("Send drain loop exhausted THREAD_DRAIN_LIMIT (%d) — outbound queue is building up", areg::THREAD_DRAIN_LIMIT);
+        DEBUG_LOG_WARN("Send drain loop exhausted THREAD_DRAIN_LIMIT - 1 (%d) -- outbound queue is building up", areg::THREAD_DRAIN_LIMIT - 1u);
     }
 #endif   // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
 

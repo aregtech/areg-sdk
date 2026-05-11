@@ -30,9 +30,7 @@
 #include <Mstcpip.h>
 #include <WS2tcpip.h>
 
-#include <algorithm>
 #include <atomic>
-#include <vector>
 
 //////////////////////////////////////////////////////////////////////////
 // Local static members
@@ -124,119 +122,89 @@ int32_t _os_send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t d
     return total;
 }
 
-// Coalesce all buffers into one contiguous block and send in a single syscall.
-static int32_t _send_coalesced(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t totalSize)
-{
-    areg::ThreadCache& tc = areg::thread_local_cache();
-    uint8_t* const cache = tc.cache();
-    ASSERT((cache != nullptr) && (totalSize <= tc.space));
-
-    uint32_t offset{ 0u };
-    for (uint32_t i{ 0u }; i < count; ++i)
-    {
-        ::memcpy(cache + offset, buffers[i].data, buffers[i].size);
-        offset += static_cast<uint32_t>(buffers[i].size);
-    }
-
-    return _os_send_data(hSocket, cache, static_cast<int32_t>(totalSize));
-}
-
 int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t totalSize)
 {
     ASSERT(areg::is_valid_socket(hSocket));
     ASSERT((buffers != nullptr) && (count > 0u));
 
-    // Fast path: single buffer — no staging overhead.
+    // Single buffer — no coalescing needed.
     if (count == 1u)
     {
         return _os_send_data(hSocket, buffers[0u].data, static_cast<int32_t>(buffers[0u].size));
     }
 
-    // On Windows, WSASend(WSABUF[n]) on a blocking non-overlapped socket iterates
-    // each buffer entry sequentially inside the kernel — it does NOT perform true
-    // scatter/gather like POSIX writev(). Per-buffer kernel transitions are
-    // equivalent in cost to N individual ::send() calls, eliminating any batching gain.
-    //
-    // Fix: coalesce all buffers into the thread-local staging buffer and flush
-    // in one or more ::send() calls, each of exactly tc.space bytes (or the final
-    // remainder). The number of send() syscalls is ceil(totalSize / tc.space),
-    // not N — e.g. 128 × 3 KB = 384 KB with 512 KB staging → 1 send(),
-    // 128 × 5 KB = 640 KB with 512 KB staging → 2 send() calls.
+    // Coalesce all buffers into one contiguous block and send in a single syscall.
+    // Use the thread-local staging buffer if the combined payload fits; otherwise
+    // chunk through the staging buffer and flush once per chunk.
 
-    if (totalSize == 0u)
-    {
-        for (uint32_t i = 0u; i < count; ++i)
-            totalSize += static_cast<uint32_t>(buffers[i].size);
-
-        ASSERT(totalSize != 0u);
-    }
-
-    // tc.cache() initialises tc.space on first call; must be called before comparing.
     areg::ThreadCache& tc = areg::thread_local_cache();
-    uint8_t* const cache = tc.cache();
+    uint8_t* const staging    = tc.cache();
+    const uint32_t stagingCap = (staging != nullptr) ? tc.space : 0u;
 
-    // Entire batch fits in one chunk — single send() syscall, no partial-flush loop.
-    if (totalSize <= tc.space)
-        return _send_coalesced(hSocket, buffers, count, totalSize);
-
-    // Batch exceeds staging buffer: coalesce into tc.space-byte chunks and flush each.
-    // This is structurally correct for any batch size — memory usage is bounded by tc.space.
-    if ((cache == nullptr) || (tc.space == 0u))
+    if ((staging != nullptr) && (totalSize <= stagingCap))
     {
-        // No staging buffer (zero-cache config): send each buffer individually.
-        int32_t total{ 0 };
+        // Fast path: entire batch fits in staging — one memcpy sweep, one send().
+        uint32_t offset{ 0u };
         for (uint32_t i{ 0u }; i < count; ++i)
         {
-            const int32_t sent = _os_send_data(hSocket, buffers[i].data, static_cast<int32_t>(buffers[i].size));
-            if (sent < 0)
-                return (total > 0) ? total : -1;
-
-            total += sent;
+            ::memcpy(staging + offset, buffers[i].data, buffers[i].size);
+            offset += static_cast<uint32_t>(buffers[i].size);
         }
 
-        return total;
+        return _os_send_data(hSocket, staging, static_cast<int32_t>(totalSize));
     }
 
-    int32_t totalSent{ 0 };
-    uint32_t chunkFill{ 0u };   // bytes currently staged in the cache
-
-    for (uint32_t i{ 0u }; i < count; ++i)
+    if (staging != nullptr)
     {
-        const uint8_t* src = buffers[i].data;
-        uint32_t remaining = static_cast<uint32_t>(buffers[i].size);
+        // Slow path: batch exceeds staging — fill the staging buffer as much as possible,
+        // flush with one send(), then repeat.  Keeps syscall count low for large batches.
+        int32_t  totalSent   { 0 };
+        uint32_t stagingUsed { 0u };
+        uint32_t bufOffset   { 0u };   // byte offset within buffers[i]
 
-        while (remaining > 0u)
+        for (uint32_t i{ 0u }; i < count; )
         {
-            const uint32_t room = tc.space - chunkFill;
-            const uint32_t copy = (remaining < room) ? remaining : room;
-            ::memcpy(cache + chunkFill, src, copy);
-            src       += copy;
-            chunkFill += copy;
-            remaining -= copy;
+            const uint32_t bufRemain     = static_cast<uint32_t>(buffers[i].size) - bufOffset;
+            const uint32_t stagingRemain = stagingCap - stagingUsed;
+            const uint32_t take          = (bufRemain < stagingRemain) ? bufRemain : stagingRemain;
 
-            if (chunkFill == tc.space)
+            ::memcpy(staging + stagingUsed, buffers[i].data + bufOffset, take);
+            stagingUsed += take;
+            bufOffset   += take;
+
+            if (bufOffset >= static_cast<uint32_t>(buffers[i].size))
             {
-                const int32_t sent = _os_send_data(hSocket, cache, static_cast<int32_t>(tc.space));
+                bufOffset = 0u;
+                ++i;
+            }
+
+            // Flush when staging is full or all buffers are consumed.
+            if ((stagingUsed == stagingCap) || (i == count))
+            {
+                const int32_t sent = _os_send_data(hSocket, staging, static_cast<int32_t>(stagingUsed));
                 if (sent < 0)
                     return (totalSent > 0) ? totalSent : -1;
 
-                totalSent += sent;
-                chunkFill  = 0u;
+                totalSent   += sent;
+                stagingUsed  = 0u;
             }
         }
+
+        return totalSent;
     }
 
-    // Flush any partial final chunk.
-    if (chunkFill > 0u)
+    // Fallback: no staging buffer — send each buffer individually.
+    int32_t total{ 0 };
+    for (uint32_t i{ 0u }; i < count; ++i)
     {
-        const int32_t sent = _os_send_data(hSocket, cache, static_cast<int32_t>(chunkFill));
+        const int32_t sent = _os_send_data(hSocket, buffers[i].data, static_cast<int32_t>(buffers[i].size));
         if (sent < 0)
-            return (totalSent > 0) ? totalSent : -1;
+            return (total > 0) ? total : -1;
 
-        totalSent += sent;
+        total += sent;
     }
 
-    return totalSent;
+    return total;
 }
 
 // Blocking exact read — MSG_WAITALL loop, no speculative buffering, no cache access.
