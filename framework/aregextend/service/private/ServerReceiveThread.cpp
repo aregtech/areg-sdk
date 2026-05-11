@@ -148,6 +148,10 @@ bool ServerReceiveThread::run_dispatcher()
     DEBUG_LOG_SCOPE( areg_aregextend_service_ServerReceiveThread, run_dispatcher );
     DEBUG_LOG_DBG("Starting dispatcher [ %s ]", name().as_string());
 
+    // This thread can serve multiple sockets, so enforce exact mode to avoid
+    // cross-socket cache carry-over.
+    areg::set_receive_mode(areg::ReceiveMode::Exact);
+
     ready_for_events(true);
     int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
     if ( mConnection.server_listen( areg::MAXIMUM_LISTEN_QUEUE_SIZE) )

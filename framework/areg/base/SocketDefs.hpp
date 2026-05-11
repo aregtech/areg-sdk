@@ -276,19 +276,19 @@ constexpr uint16_t          DEFAULT_ROUTER_PORT { 8181 };
 constexpr std::string_view  DEFAULT_LOGGER_HOST { areg::LocalAddress };
 
 //!< Default connection port number of routing service.
-constexpr uint16_t          DEFAULT_LOGGER_PORT { 8282 };
+constexpr uint16_t      DEFAULT_LOGGER_PORT     { 8282 };
 
 //!< Buffer size required to hold any IPv4 address string (e.g. "255.255.255.255\0").
 constexpr uint32_t      IP_ADDRESS_SIZE         { 16u };
 
-//!< Minimum payload size in bytes for a single send or receive operation.
-constexpr uint32_t      PACKET_MIN_SIZE         { 512u };
-
-//!< Default payload size in bytes for a single send or receive operation.
-constexpr uint32_t      PACKET_DEFAULT_SIZE     { 1500u };
-
 //!< Maximum payload size in bytes for a single send or receive operation.
 constexpr uint32_t      PACKET_MAX_SIZE         { 65536u };
+
+//!< Minimum payload size in bytes for a single send or receive operation.
+constexpr uint32_t      PACKET_MIN_SIZE         { PACKET_MAX_SIZE };
+
+//!< Default payload size in bytes for a single send or receive operation.
+constexpr uint32_t      PACKET_DEFAULT_SIZE     { PACKET_MAX_SIZE };
 
 //!< Sentinel indicating an invalid or uninitialized packet size.
 constexpr uint32_t      PACKET_INVALID_SIZE     { 0u };
@@ -345,7 +345,7 @@ constexpr uint32_t      DEFAULT_CONNECTIONS     { 128u };
 //!< Number of socket events fetched from the OS in a single epoll_wait / kevent / WSAPoll
 //!< syscall.  Raising this reduces per-client syscall overhead under burst load.
 //!< Optimal when BATCH_SIZE == THREAD_DRAIN_LIMIT: one OS call covers exactly one drain pass.
-constexpr uint32_t      BATCH_SIZE              { 64u };
+constexpr uint32_t      BATCH_SIZE              { 128u };
 
 //!< Number of additional sockets (receive) or events (send) drained per dispatcher wake-up
 //!< before returning to the blocking wait.  One drain pass processes exactly one OS-level
@@ -377,7 +377,26 @@ constexpr uint32_t      DEFAULT_BATCH_SIZE          { BATCH_SIZE };
 //!< 0 = no pool (shared send/receive threads only).
 constexpr uint32_t      DEFAULT_POOL_PAIRS          { 0u };
 
-constexpr const uint32_t    DEFAULT_THREAD_CACHE_KB{ 256 };
+//!< Default thread-local staging/receive-cache size in KB.
+//!< Used by the Windows coalesced-send path and by the client-side receive path.
+//!<
+//!< Windows send coalescing (SocketDefsWin32.cpp: _os_send_data_v):
+//!<   All batch buffers are coalesced into this staging buffer in chunks of
+//!<   DEFAULT_THREAD_CACHE_KB bytes, then flushed with a single ::send() per chunk.
+//!<   The number of send() syscalls equals ceil(totalBatchSize / cacheBytes):
+//!<     128 × 3 KB = 384 KB batch, 512 KB cache → 1 send()
+//!<     128 × 5 KB = 640 KB batch, 512 KB cache → 2 send() calls
+//!<   A larger value reduces syscall count at the cost of more memory per send thread.
+//!<
+//!< Client receive read-ahead (Cached mode):
+//!<   Each Phase-2 greedy recv() captures up to DEFAULT_THREAD_CACHE_KB of data in one
+//!<   syscall, then serves subsequent header and body reads from the in-memory cache.
+//!<   Larger values reduce recv() syscall frequency proportionally.
+//!<   At 3 KB messages: 512 KB / 3 KB ≈ 170 messages served per single recv() call.
+//!<
+//!< Configurable at runtime via net::*::tcpip::cache in areg.init (value in KB).
+//!< This constant is the compile-time default returned when no config entry is present.
+constexpr const uint32_t    DEFAULT_THREAD_CACHE_KB{ 512 };
 
 /**
  * \brief   Maximum number of pending connections the OS will queue on a
@@ -386,14 +405,6 @@ constexpr const uint32_t    DEFAULT_THREAD_CACHE_KB{ 256 };
 extern AREG_API const int32_t MAXIMUM_LISTEN_QUEUE_SIZE /*= SOMAXCONN*/;
 
 AREG_API uint32_t   thread_cache_size() noexcept;
-
-//!< Phase-3 greedy-fill skip threshold (bytes).  A recv() request smaller than
-//!< this value skips the 256 KB greedy fill and uses MSG_WAITALL directly.
-//!< Prevents the cache from filling with large-message body bytes during
-//!< header reads, which would add a 256 KB memcpy overhead per large message.
-//!< Must be larger than sizeof(MessageHeader) and smaller than any useful
-//!< message body that benefits from greedy batching (default: 256 bytes).
-constexpr const uint32_t    RECV_GREEDY_THRESHOLD{ 256u };
 
 struct ThreadCache
 {
@@ -419,6 +430,18 @@ struct ThreadCache
     }
 };
 
+/**
+ * \brief   Selects the receive strategy for the current thread.
+ *          Exact mode never speculatively reads beyond the caller request.
+ *          Cached mode enables thread-local read-ahead for single-socket
+ *          receive loops to reduce recv() syscall frequency.
+ **/
+enum class ReceiveMode : uint8_t
+{
+      Exact     = 0
+    , Cached    = 1
+};
+
 //////////////////////////////////////////////////////////////////////////
 // areg namespace free functions
 //////////////////////////////////////////////////////////////////////////
@@ -442,6 +465,17 @@ inline bool is_valid_socket(SOCKETHANDLE hSocket) noexcept;
  **/
 [[nodiscard]]
 AREG_API ThreadCache& thread_local_cache() noexcept;
+
+/**
+ * \brief   Sets receive strategy of the calling thread.
+ **/
+AREG_API void set_receive_mode(ReceiveMode mode) noexcept;
+
+/**
+ * \brief   Returns receive strategy of the calling thread.
+ **/
+[[nodiscard]]
+AREG_API ReceiveMode receive_mode() noexcept;
 
 /**
  * \brief   Initializes the socket subsystem for the current process.
@@ -673,6 +707,7 @@ AREG_API int32_t receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_
  *          multiplexer-based receive loop (ServerReceiveThread, PoolReceiveThread)
  *          must drain this cache before blocking on the multiplexer again, or
  *          those messages will never be processed.
+ *          In Exact receive mode this function always returns zero.
  *
  * \param   hSocket     Socket whose cache is queried.
  * \return  Bytes available in the thread-local cache for this socket (>= 0).

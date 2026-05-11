@@ -56,10 +56,10 @@ bool ClientConnection::create_socket(const String & hostName, uint16_t portNr)
     set_cookie( mClientSocket.create(hostName, portNr) ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
     if (mClientSocket.is_valid())
     {
-        areg::socket_set_no_delay(mClientSocket.handle());
         areg::set_send_size(mClientSocket.handle(), mSockSendBuf);
         areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
         areg::set_send_timeout(mClientSocket.handle(), mSockSendTimeoutMs);
+        areg::socket_set_no_delay(mClientSocket.handle());
     }
 
     return mClientSocket.is_valid();
@@ -70,10 +70,10 @@ bool ClientConnection::create_socket()
     set_cookie( mClientSocket.create() ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
     if (mClientSocket.is_valid())
     {
-        areg::socket_set_no_delay(mClientSocket.handle());
         areg::set_send_size(mClientSocket.handle(), mSockSendBuf);
         areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
         areg::set_send_timeout(mClientSocket.handle(), mSockSendTimeoutMs);
+        areg::socket_set_no_delay(mClientSocket.handle());
     }
 
     return mClientSocket.is_valid();

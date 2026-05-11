@@ -40,18 +40,9 @@
 
 namespace areg::os {
 
-// Per-thread read-ahead cache. Populated by _os_recv_data whenever a recv()
-// returns more bytes than the caller requested (i.e. the TCP layer delivered
-// more than one protocol chunk in a single kernel wake-up). The excess bytes
-// are kept here so that _os_recv_data can satisfy the next call without a
-// blocking syscall, reducing recv() invocations from 2�N to ~1 per burst.
-//
-// Invariant: avail > 0 only while this thread is inside _os_recv_data or
-// immediately after it returns, before the caller has had a chance to invoke
-// recv_data_available() and drain the cache. Any thread that is about to
-// block on a multiplexer (epoll/select) MUST drain the cache for each socket
-// first via recv_data_available() / _os_recv_data() to avoid starving the
-// multiplexer (the kernel buffer is empty once data is in the cache).
+// Per-thread receive cache used by Cached receive mode.
+// Exact receive mode never speculatively reads beyond the caller request.
+// On socket switch the cache is always invalidated.
 bool _os_init_socket()
 {
     return true;
@@ -211,18 +202,55 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
     return total;
 }
 
-int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
+// Blocking exact read — MSG_WAITALL loop (or plain recv where MSG_WAITALL is absent),
+// no speculative buffering, no cache access.
+static int32_t _recv_exact(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
 {
-    ASSERT(areg::is_valid_socket(hSocket));
-    ASSERT((dataBuffer != nullptr) && (dataLength > 0));
+#ifdef MSG_WAITALL
+    constexpr int recvExact = MSG_WAITALL;
+#else
+    constexpr int recvExact = 0;
+#endif
 
-    const uint32_t needed = static_cast<uint32_t>(dataLength);
-    uint32_t total = 0u;
+    int32_t total{ 0 };
+    while (total < dataLength)
+    {
+        ssize_t received{ 0 };
+        do
+        {
+            received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), static_cast<size_t>(dataLength - total), recvExact);
+        } while ((received < 0) && (errno == EINTR));
+
+        if (received > 0)
+        {
+            total += static_cast<int32_t>(received);
+        }
+        else
+        {
+            return -1;  // 0 = peer closed, <0 = error
+        }
+    }
+
+    return total;
+}
+
+// Greedy cached read — 3-phase speculative buffering.
+//   Phase 1: serve from thread-local cache (zero syscall on cache hit).
+//   Phase 2: one greedy recv() fills the cache; serve needed bytes, keep surplus.
+//   Phase 3: MSG_WAITALL completion for the rare partial-fill or oversized-request case.
+static int32_t _recv_cached(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
+{
+#ifdef MSG_WAITALL
+    constexpr int recvExact = MSG_WAITALL;
+#else
+    constexpr int recvExact = 0;
+#endif
+
     areg::ThreadCache& tc = thread_local_cache();
-    uint8_t* cache = tc.cache();
+    uint8_t* const cache = tc.cache();
+    if ((cache == nullptr) || (tc.space == 0u))
+        return _recv_exact(hSocket, dataBuffer, dataLength);
 
-    // Socket-switch guard: if the thread is now serving a different socket,
-    // discard any cached bytes from the previous socket before proceeding.
     if (tc.socket != hSocket)
     {
         tc.socket = hSocket;
@@ -230,60 +258,27 @@ int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLen
         tc.unread = 0u;
     }
 
-    // Phase 1: serve from cache -- zero kernel cost.
-    if (tc.unread != 0u)
+    const uint32_t needed = static_cast<uint32_t>(dataLength);
+    uint32_t total = 0u;
+
+    // Phase 1: serve from cache — zero kernel cost.
+    if (tc.unread > 0u)
     {
-        const uint32_t take = (tc.unread >= needed) ? needed : tc.unread;
+        const uint32_t take = (tc.unread < needed) ? tc.unread : needed;
         ::memcpy(dataBuffer, cache + tc.head, take);
         tc.head   += take;
         tc.unread -= take;
         total     += take;
-
         if (total == needed)
-            return static_cast<int32_t>(total);
-
-        // Partial cache hit -- advance the output pointer for the remaining phases.
-        dataBuffer += take;
+            return static_cast<int32_t>(needed);
     }
 
-    // Phase 2: large request (> tc.space bytes) -- bypass cache to avoid staging a
-    // multi-MB body through the small cache buffer. MSG_WAITALL delivers exact bytes.
-    if ((needed - total) > tc.space)
+    // Phase 2: greedy fill — one blocking recv captures all bytes in the kernel buffer.
+    if ((needed - total) <= tc.space)
     {
-        while (total < needed)
-        {
-            const int32_t receive = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer), static_cast<int>(needed - total), MSG_WAITALL);
-            if (receive > 0)
-            {
-                total      += static_cast<uint32_t>(receive);
-                dataBuffer += static_cast<uint32_t>(receive);
-            }
-            else if (receive == 0)
-            {
-                break;  // peer closed gracefully
-            }
-            else if (errno == EINTR)
-            {
-                continue;  // signal interrupted -- retry
-            }
-            else
-            {
-                return (total > 0u) ? static_cast<int32_t>(total) : -1;
-            }
-        }
+        tc.head   = 0u;
+        tc.unread = 0u;
 
-        return (total > 0u) ? static_cast<int32_t>(total) : -1;
-    }
-
-    // Phase 3: greedy blocking cache refill.
-    // One blocking recv() captures all bytes the kernel has buffered for this socket
-    // (up to tc.space bytes). Under burst load this includes both the remaining needed
-    // bytes AND surplus from the next message, turning two-recv-per-message into
-    // approximately one recv per burst. Using flags=0 (blocking) instead of
-    // MSG_DONTWAIT eliminates the two-syscall worst case (EAGAIN + Phase 4 fallback).
-    tc.head   = 0u;
-    tc.unread = 0u;
-    {
         ssize_t filled{ 0 };
         do
         {
@@ -291,76 +286,48 @@ int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLen
         } while ((filled < 0) && (errno == EINTR));
 
         if (filled <= 0)
-            return (total > 0u) ? static_cast<int32_t>(total) : -1;
+            return -1;
 
         tc.unread = static_cast<uint32_t>(filled);
-    }
-
-    // Serve the remaining needed bytes from the cache (Phase 3 filled it).
-    {
-        const uint32_t remaining = needed - total;
-        const uint32_t take = (tc.unread >= remaining) ? remaining : tc.unread;
-        ::memcpy(dataBuffer, cache + tc.head, take);
-        tc.head   += take;
+        const uint32_t take = (tc.unread < (needed - total)) ? tc.unread : (needed - total);
+        ::memcpy(dataBuffer + total, cache, take);
+        tc.head   = take;
         tc.unread -= take;
         total     += take;
-        dataBuffer += take;
-
-        if (total == needed)
-            return static_cast<int32_t>(total);
     }
 
-    // Phase 4: Phase 3 returned fewer bytes than needed (partial kernel fill, rare).
-    // Block with MSG_WAITALL for the remaining bytes. Cumulative total ensures
-    // the caller always sees the correct byte count even when Phases 1+3 contributed.
-#ifdef MSG_WAITALL
-    constexpr int recvExact = MSG_WAITALL;
-#else
-    constexpr int recvExact = 0;
-#endif
+    // Phase 3: complete any remainder — rare (partial greedy fill or oversized request).
     while (total < needed)
     {
-        const int32_t receive = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer), static_cast<int>(needed - total), recvExact);
-        if (receive > 0)
+        ssize_t received{ 0 };
+        do
         {
-            total      += static_cast<uint32_t>(receive);
-            dataBuffer += static_cast<uint32_t>(receive);
-        }
-        else if (receive == 0)
+            received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), static_cast<size_t>(needed - total), recvExact);
+        } while ((received < 0) && (errno == EINTR));
+
+        if (received > 0)
         {
-            break;  // peer closed the connection gracefully
-        }
-        else if (errno == EINTR)
-        {
-            continue;
+            total += static_cast<uint32_t>(received);
         }
         else
         {
+            tc.head   = 0u;
+            tc.unread = 0u;
             return -1;
         }
     }
 
-    if (total != static_cast<uint32_t>(dataLength))
-        return total;   // short read (peer closed mid-message)
+    return static_cast<int32_t>(needed);
+}
 
-    // Post-fill: grab any surplus bytes the kernel already has buffered for this socket.
-    // Store them in tc so the next _os_recv_data call is served from cache (zero syscall).
-    // MSG_DONTWAIT ensures this never blocks; EINTR is not retried because the caller's
-    // data is already complete and any retry belongs in the next call.
-    {
-        const ssize_t extra = ::recv(hSocket, reinterpret_cast<char*>(cache), tc.space, MSG_DONTWAIT);
-        if (extra > 0)
-        {
-            tc.socket = hSocket;
-            tc.head   = 0u;
-            tc.unread = static_cast<uint32_t>(extra);
-        }
-        // extra == 0: peer closed (will be caught on the next call)
-        // extra < 0 with EAGAIN/EWOULDBLOCK: nothing extra in kernel -- expected
-        // extra < 0 with other errors: suppress here; next call returns -1 naturally
-    }
+int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
+{
+    ASSERT(areg::is_valid_socket(hSocket));
+    ASSERT((dataBuffer != nullptr) && (dataLength > 0));
 
-    return total;
+    return (areg::receive_mode() == areg::ReceiveMode::Exact)
+         ? _recv_exact(hSocket, dataBuffer, dataLength)
+         : _recv_cached(hSocket, dataBuffer, dataLength);
 }
 
 bool _os_connect_socket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen, uint32_t timeoutMs)

@@ -15,6 +15,7 @@
 #include "areg/ipc/private/ClientReceiveThread.hpp"
 
 #include "areg/base/RemoteMessage.hpp"
+#include "areg/base/SocketDefs.hpp"
 #include "areg/ipc/ClientConnection.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
@@ -36,7 +37,11 @@ bool ClientReceiveThread::run_dispatcher()
 {
     LOG_SCOPE( areg_ipc_private_ClientReceiveThread, run_dispatcher );
     LOG_DBG("Starting client service dispatcher thread [ %s ]", name().as_string());
-    
+
+    // Client receive thread serves one socket, so cached mode is safe and
+    // minimizes recv() syscall count for small/medium messages.
+    areg::set_receive_mode(areg::ReceiveMode::Cached);
+
     ready_for_events( true );
 
     SyncObject* syncObjects[2] {&mEventExit, &mEventQueue};

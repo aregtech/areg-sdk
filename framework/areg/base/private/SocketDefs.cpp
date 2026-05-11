@@ -469,7 +469,6 @@ AREG_API_IMPL uint32_t areg::max_receive_size( SOCKETHANDLE hSocket ) noexcept
 AREG_API_IMPL uint32_t areg::set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSize) noexcept
 {
     ASSERT(is_valid_socket(hSocket));
-
     if (recvSize == 0)
     {
         recvSize = areg::PACKET_DEFAULT_SIZE;
@@ -720,6 +719,7 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(areg::SocketMultiplexer & multipl
 
         if (result != areg::InvalidSocketHandle)
         {
+            areg::socket_configure(result);
             areg::socket_set_no_delay(result);
             if (socketAddr != nullptr)
             {
@@ -780,6 +780,7 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const 
 
             if (result != areg::InvalidSocketHandle)
             {
+                areg::socket_configure(result);
                 areg::socket_set_no_delay(result);
                 if (socketAddr != nullptr)
                 {
@@ -900,6 +901,9 @@ AREG_API_IMPL int32_t areg::receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuff
 
 AREG_API_IMPL uint32_t areg::recv_data_available(SOCKETHANDLE hSocket) noexcept
 {
+    if (areg::receive_mode() == areg::ReceiveMode::Exact)
+        return 0u;
+
     const areg::ThreadCache& tc = areg::thread_local_cache();
     if ((tc.socket != hSocket) || (tc.unread == 0u))
         return 0u;
@@ -1101,4 +1105,23 @@ AREG_API_IMPL areg::ThreadCache& areg::thread_local_cache() noexcept
 {
     static thread_local areg::ThreadCache   _cache;
     return _cache;
+}
+
+namespace
+{
+    inline areg::ReceiveMode & _thread_receive_mode(void) noexcept
+    {
+        static thread_local areg::ReceiveMode _mode{ areg::ReceiveMode::Exact };
+        return _mode;
+    }
+}
+
+AREG_API_IMPL void areg::set_receive_mode(ReceiveMode mode) noexcept
+{
+    _thread_receive_mode() = mode;
+}
+
+AREG_API_IMPL areg::ReceiveMode areg::receive_mode() noexcept
+{
+    return _thread_receive_mode();
 }

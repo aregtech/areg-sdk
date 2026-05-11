@@ -57,11 +57,10 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
         //
         // evtPtrs[0] is nullptr: the triggering event is owned by the dispatch chain —
         // never call destroy() on it.  Drained events (indices 1..N) are owned by us.
-        constexpr uint32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
         const ExitEvent & exitEvent = ExitEvent::exit_event();
 
-        SendMessageEvent* evtPtrs[DRAIN_LIMIT];
-        areg::IoBuffer    ioBuffer[DRAIN_LIMIT];
+        SendMessageEvent* evtPtrs[areg::THREAD_DRAIN_LIMIT];
+        areg::IoBuffer    ioBuffer[areg::THREAD_DRAIN_LIMIT];
         uint32_t batchCount { 0u };
         uint32_t totalSize  { 0u };
         uint32_t bufCount   { 0u };
@@ -78,7 +77,7 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
         }
 
         // --- Phase 1: drain additional queued messages ---
-        for (uint32_t count{ batchCount }; count < DRAIN_LIMIT; ++count)
+        for (uint32_t count{ batchCount }; count < areg::THREAD_DRAIN_LIMIT; ++count)
         {
             Event * evt = pick_event();
             if ( evt == nullptr )

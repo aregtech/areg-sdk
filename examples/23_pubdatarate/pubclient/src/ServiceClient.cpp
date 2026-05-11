@@ -78,7 +78,7 @@ void ServiceClient::broadcast_image_block_acquired(const areg::SharedBuffer& ima
         return;
     }
 
-    const LargeData::RawImageBlock* block = reinterpret_cast<const LargeData::RawImageBlock*>(raw + sizeof(uint32_t));
+    const LargeData::RawImageBlock* block = reinterpret_cast<const LargeData::RawImageBlock*>(raw);
     if (block->channelId >= static_cast<uint32_t>(mFrameStats.size()))
     {
         LOG_ERR("Invalid channel ID [ %u ], it cannot be bigger than [ %u ]", block->channelId, static_cast<uint32_t>(mFrameStats.size() - 1));

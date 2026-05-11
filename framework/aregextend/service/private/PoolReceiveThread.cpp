@@ -118,6 +118,10 @@ bool PoolReceiveThread::run_dispatcher()
     DEBUG_LOG_SCOPE(areg_aregextend_service_PoolReceiveThread, run_dispatcher);
     DEBUG_LOG_DBG("Pool receive thread [ %s ] starting", name().as_string());
 
+    // Pool receive thread serves multiple sockets, so exact mode is required
+    // to keep per-socket transport boundaries deterministic.
+    areg::set_receive_mode(areg::ReceiveMode::Exact);
+
     ready_for_events(true);
 
     int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) };

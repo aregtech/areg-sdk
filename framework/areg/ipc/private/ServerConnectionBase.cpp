@@ -167,6 +167,10 @@ bool ServerConnectionBase::accept_connection(SocketAccepted & clientConnection)
             areg::set_send_size(hSocket, mSockSendBuf);
             areg::set_recv_size(hSocket, mSockRecvBuf);
             areg::set_send_timeout(hSocket, mSockSendTimeoutMs);
+            // Apply TCP_NODELAY, TCP_QUICKACK (Linux), keepalive, and ACK-frequency tuning.
+            // Must be called AFTER all setsockopt() calls so platform-specific I/O options
+            // such as SIO_TCP_SET_ACK_FREQUENCY on Windows take effect on a fully configured socket.
+            areg::socket_set_no_delay(hSocket);
 
             ITEM_ID cookie{ mCookieGenerator ++ };
             ASSERT(cookie >= areg::COOKIE_REMOTE_SERVICE);
