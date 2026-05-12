@@ -1,0 +1,97 @@
+BasedOnStyle: LLVM
+
+# general
+BreakBeforeBraces: Allman
+ColumnLimit: 140
+IndentWidth: 4
+PointerAlignment: Middle
+Standard: c++17
+UseTab: Never
+
+# include sort and group
+SortIncludes: CaseInsensitive
+SortUsingDeclarations: Lexicographic
+
+# other
+AccessModifierOffset: -4
+AlignAfterOpenBracket: Align
+AlignArrayOfStructures: Left
+AlignConsecutiveAssignments: AcrossEmptyLines
+AlignConsecutiveBitFields: AcrossComments
+AlignConsecutiveDeclarations: Consecutive
+AlignOperands: true
+AllowAllArgumentsOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortEnumsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: false
+
+BinPackParameters: false
+BreakAfterOpenBracketIf : true
+BreakBeforeBinaryOperators: true
+BreakBeforeTernaryOperators: true
+BreakBinaryOperations: RespectPrecedence
+BreakTemplateDeclarations: Yes
+
+EmptyLineAfterAccessModifier: Never
+
+IncludeBlocks: Regroup
+IndentAccessModifiers: false
+IndentCaseLabels: false
+IndentPPDirectives: BeforeHash
+
+PPIndentWidth: 4
+
+NamespaceIndentation: Inner
+
+SpaceAfterTemplateKeyword: true
+SpacesBeforeTrailingComments: 6
+SpacesInAngles: Always
+SpacesInParentheses: true
+
+# Unsuported format patterns:
+# Some patterns are hardly possible to add with the current clang-format functionality.
+# If the strict format must be preserved, you may put the comments to preserve the original formatting:
+# // clang-format off
+# ** clang-format ignores this **
+# // clang-format on
+# 
+# -- Alingment of bracket-initializers
+# struct A
+# {
+#     int a     { 0 };  
+#     int abc   { 0 }; 
+# } 
+#
+# -- Comma-first enum declaration (see pending issue https://github.com/llvm/llvm-project/issues/152032)
+#
+# enum A 
+# {
+#       A     = 0
+#     , B     = 1
+# }; 
+#
+# -- Alignment of inter-scope variables
+# 
+# union A
+# {
+#     struct B
+#     {
+#         int a;  // comment
+#         int b;  // comment
+#     } u;
+#
+#     int     c;  // comment
+# };
+#
+# -- Indentation inside of outer namespace
+# namespace A {
+#     class B;
+# }
+#
+# -- Zero-indent comments within scope
+# struct A 
+# {
+# // Comment
+#     int a;
+# }
