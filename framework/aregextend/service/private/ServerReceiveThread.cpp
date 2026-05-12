@@ -148,9 +148,9 @@ bool ServerReceiveThread::run_dispatcher()
     DEBUG_LOG_SCOPE( areg_aregextend_service_ServerReceiveThread, run_dispatcher );
     DEBUG_LOG_DBG("Starting dispatcher [ %s ]", name().as_string());
 
-    // This thread can serve multiple sockets, so enforce exact mode to avoid
-    // cross-socket cache carry-over.
-    areg::set_receive_mode(areg::ReceiveMode::Exact);
+    // Per-socket RX cache is now safe for multi-socket threads: thread_rx_cache(hSocket)
+    // provides an isolated ThreadCache per socket handle, preventing cross-socket carry-over.
+    areg::set_receive_mode(areg::ReceiveMode::Cached);
 
     ready_for_events(true);
     int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };

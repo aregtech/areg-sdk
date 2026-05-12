@@ -1102,15 +1102,9 @@ AREG_API_IMPL uint16_t areg::extract_port_number(const sockaddr_in& addrHost) no
     return ntohs(addrHost.sin_port);
 }
 
-AREG_API_IMPL areg::ThreadCache& areg::thread_local_cache() noexcept
-{
-    static thread_local areg::ThreadCache   _cache;
-    return _cache;
-}
-
 AREG_API_IMPL areg::ThreadCache& areg::thread_tx_cache() noexcept
 {
-    static thread_local areg::ThreadCache   _tx_cache;
+    static thread_local areg::ThreadCache _tx_cache;
     return _tx_cache;
 }
 

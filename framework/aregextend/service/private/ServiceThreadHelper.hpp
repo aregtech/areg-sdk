@@ -77,13 +77,9 @@ inline void sort_pending_sends(areg::PendingSend * batch, uint32_t count) noexce
  *
  *          Single-message groups use send_message(); multi-message groups
  *          build an IoBuffer array and use send_messages_batch() for one
- *          scatter/gather syscall. On failure, failed_send_message() is
- *          called unless the connection is already interrupted.
- *
- *          On Windows, groups whose combined payload exceeds 3 × thread_cache_size()
- *          are sent buffer-by-buffer to avoid excessive staging memcpy through the
- *          thread-local coalescing buffer.  On POSIX, writev() is zero-copy for any
- *          payload size and the bypass is skipped.
+ *          scatter/gather syscall (WSASend on Windows, writev on POSIX).
+ *          On failure, failed_send_message() is called unless the connection
+ *          is already interrupted.
  *
  *          All SendMessageEvent entries in \a batch are destroyed before
  *          the function returns.

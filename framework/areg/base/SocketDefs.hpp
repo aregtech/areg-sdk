@@ -340,7 +340,7 @@ constexpr uint32_t      DEFAULT_CONNECTIONS     { 128u };
 //!< Number of socket events fetched from the OS in a single epoll_wait / kevent / WSAPoll
 //!< syscall.  Raising this reduces per-client syscall overhead under burst load.
 //!< Optimal when BATCH_SIZE == THREAD_DRAIN_LIMIT: one OS call covers exactly one drain pass.
-constexpr uint32_t      BATCH_SIZE              { 128u };
+constexpr uint32_t      BATCH_SIZE              { 64u };
 
 //!< Number of additional sockets (receive) or events (send) drained per dispatcher wake-up
 //!< before returning to the blocking wait.  One drain pass processes exactly one OS-level
@@ -371,16 +371,8 @@ constexpr uint32_t      DEFAULT_BATCH_SIZE          { BATCH_SIZE };
 //!< 0 = no pool (shared send/receive threads only).
 constexpr uint32_t      DEFAULT_POOL_PAIRS          { 0u };
 
-//!< Default thread-local staging/receive-cache size in KB.
-//!< Used by the Windows coalesced-send path and by the client-side receive path.
-//!<
-//!< Windows send coalescing (SocketDefsWin32.cpp: _os_send_data_v):
-//!<   All batch buffers are coalesced into this staging buffer in chunks of
-//!<   DEFAULT_THREAD_CACHE_KB bytes, then flushed with a single ::send() per chunk.
-//!<   The number of send() syscalls equals ceil(totalBatchSize / cacheBytes):
-//!<     128 × 3 KB = 384 KB batch, 512 KB cache → 1 send()
-//!<     128 × 5 KB = 640 KB batch, 512 KB cache → 2 send() calls
-//!<   A larger value reduces syscall count at the cost of more memory per send thread.
+//!< Default thread-local receive-cache size in KB.
+//!< Used by the client-side receive path (Cached mode, ClientReceiveThread).
 //!<
 //!< Client receive read-ahead (Cached mode):
 //!<   Each Phase-2 greedy recv() captures up to DEFAULT_THREAD_CACHE_KB of data in one
@@ -480,14 +472,6 @@ AREG_API ThreadCache& thread_tx_cache() noexcept;
  **/
 [[nodiscard]]
 AREG_API ThreadCache& thread_rx_cache(SOCKETHANDLE hSocket) noexcept;
-
-/**
- * \brief   Returns the thread cache object.
- * \deprecated  Use thread_rx_cache(hSocket) for RX paths.
- *              Retained for backward compatibility with callers not yet migrated.
- **/
-[[nodiscard]]
-AREG_API ThreadCache& thread_local_cache() noexcept;
 
 /**
  * \brief   Sets receive strategy of the calling thread.

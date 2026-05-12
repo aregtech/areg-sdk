@@ -48,6 +48,7 @@ void PoolSendThread::ready_for_events( bool is_ready )
 {
     if ( is_ready )
     {
+        areg::set_receive_mode(areg::ReceiveMode::Cached);
         SendMessageEvent::add_listener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
         DispatcherThread::ready_for_events( true );
     }

@@ -118,9 +118,9 @@ bool PoolReceiveThread::run_dispatcher()
     DEBUG_LOG_SCOPE(areg_aregextend_service_PoolReceiveThread, run_dispatcher);
     DEBUG_LOG_DBG("Pool receive thread [ %s ] starting", name().as_string());
 
-    // Pool receive thread serves multiple sockets, so exact mode is required
-    // to keep per-socket transport boundaries deterministic.
-    areg::set_receive_mode(areg::ReceiveMode::Exact);
+    // Per-socket RX cache is safe for multi-socket threads: thread_rx_cache(hSocket)
+    // gives each socket handle its own isolated ThreadCache.
+    areg::set_receive_mode(areg::ReceiveMode::Cached);
 
     ready_for_events(true);
 

@@ -102,130 +102,77 @@ int32_t _os_send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t d
     ASSERT(areg::is_valid_socket(hSocket));
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
 
-    // The socket has SO_SNDTIMEO set (see ServerConnectionBase::accept_connection),
-    // so blocking send() returns WSAETIMEDOUT after the kernel-level timeout.
-    // No application-level deadline, GetTickCount64, or WSAPoll is needed.
-    int32_t total{ 0 };
-    while (total < dataLength)
+    int32_t total = 0;
+    do
     {
-        const int32_t written = ::send(hSocket, reinterpret_cast<const char*>(dataBuffer + total), dataLength - total, 0);
-        if (written > 0)
-        {
-            total += written;
-        }
-        else
-        {
-            return -1;  // SO_SNDTIMEO expired, connection error, or peer closed
-        }
-    }
+        const int32_t written = ::send(hSocket, reinterpret_cast<const char*>(dataBuffer + total), (dataLength - total), 0);
+        if (written <= 0)
+            return -1;
+
+        total += written;
+    } while (total < dataLength);
 
     return total;
 }
 
 int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t totalSize)
 {
-    ASSERT(areg::is_valid_socket(hSocket));
-    ASSERT((buffers != nullptr) && (count > 0u));
-
-    // Single buffer — no coalescing needed.
+    // Single buffer — bypass setup entirely.
     if (count == 1u)
-        return _os_send_data(hSocket, buffers[0u].data, static_cast<int32_t>(buffers[0u].size));
+        return _os_send_data(hSocket, buffers->data, static_cast<int32_t>(buffers->size));
 
-    // Coalesce all buffers into one contiguous block and send in a single syscall.
-    // Use the thread-local TX staging buffer if the combined payload fits; otherwise
-    // chunk through the staging buffer and flush once per chunk.
+    ASSERT(count <= areg::THREAD_BATCH_LIMIT);
 
+    // Fast path: coalesce the entire batch into the thread-local staging buffer and
+    // issue a single contiguous ::send().  On Windows loopback (no NIC DMA) the kernel
+    // copies data linearly from a contiguous buffer — cache-friendly and SIMD-friendly.
+    // Scatter-gather (WSASend with many WSABUFs) forces N separate small kernel copies
+    // from discontiguous memory, which is slower on loopback at high message rates.
     areg::ThreadCache& tc = areg::thread_tx_cache();
-    uint8_t* const staging    = tc.cache();
-    const uint32_t stagingCap = (staging != nullptr) ? tc.space : 0u;
-
-    if ((staging != nullptr) && (totalSize <= stagingCap))
+    uint8_t* const staging = tc.cache();
+    if ((staging != nullptr) && (totalSize <= tc.space))
     {
-        // Fast path: entire batch fits in staging — one memcpy sweep, one send().
-        uint32_t offset{ 0u };
-        for (uint32_t i{ 0u }; i < count; ++i)
+        uint8_t* dst = staging;
+        for (uint32_t i = 0; i < count; ++i)
         {
-            ::memcpy(staging + offset, buffers[i].data, buffers[i].size);
-            offset += static_cast<uint32_t>(buffers[i].size);
+            ::memcpy(dst, buffers[i].data, buffers[i].size);
+            dst += buffers[i].size;
         }
-
         return _os_send_data(hSocket, staging, static_cast<int32_t>(totalSize));
     }
 
-    if (staging != nullptr)
+    // Slow path: batch exceeds the staging buffer (uncommon — typical 128 × 3 KB = 384 KB
+    // fits in the 512 KB staging) or staging is unavailable.  WSASend scatter-gather avoids
+    // per-buffer syscalls and scales better for very large payloads.
+    WSABUF wsabuf[areg::THREAD_BATCH_LIMIT];
+    for (uint32_t i = 0; i < count; ++i)
     {
-        // Slow path: batch exceeds staging — fill the staging buffer as much as possible,
-        // flush with one send(), then repeat.  Keeps syscall count low for large batches.
-        int32_t  totalSent   { 0 };
-        uint32_t stagingUsed { 0u };
-        uint32_t bufOffset   { 0u };   // byte offset within buffers[i]
-
-        for (uint32_t i{ 0u }; i < count; )
-        {
-            const uint32_t bufRemain     = static_cast<uint32_t>(buffers[i].size) - bufOffset;
-            const uint32_t stagingRemain = stagingCap - stagingUsed;
-            const uint32_t take          = (bufRemain < stagingRemain) ? bufRemain : stagingRemain;
-
-            ::memcpy(staging + stagingUsed, buffers[i].data + bufOffset, take);
-            stagingUsed += take;
-            bufOffset   += take;
-
-            if (bufOffset >= static_cast<uint32_t>(buffers[i].size))
-            {
-                bufOffset = 0u;
-                ++i;
-            }
-
-            // Flush when staging is full or all buffers are consumed.
-            if ((stagingUsed == stagingCap) || (i == count))
-            {
-                const int32_t sent = _os_send_data(hSocket, staging, static_cast<int32_t>(stagingUsed));
-                if (sent < 0)
-                    return (totalSent > 0) ? totalSent : -1;
-
-                totalSent   += sent;
-                stagingUsed  = 0u;
-            }
-        }
-
-        return totalSent;
+        wsabuf[i].buf = reinterpret_cast<CHAR*>(const_cast<uint8_t*>(buffers[i].data));
+        wsabuf[i].len = static_cast<ULONG>(buffers[i].size);
     }
 
-    // Fallback: no staging buffer — send each buffer individually.
-    int32_t total{ 0 };
-    for (uint32_t i{ 0u }; i < count; ++i)
+    DWORD bytesSent{ 0u };
+    int result;
+    do
     {
-        const int32_t sent = _os_send_data(hSocket, buffers[i].data, static_cast<int32_t>(buffers[i].size));
-        if (sent < 0)
-            return (total > 0) ? total : -1;
+        result = ::WSASend(hSocket, wsabuf, static_cast<DWORD>(count), &bytesSent, 0, nullptr, nullptr);
+    } while ((result == SOCKET_ERROR) && (::WSAGetLastError() == WSAEINTR));
 
-        total += sent;
-    }
-
-    return total;
+    return (result == 0 ? static_cast<int32_t>(bytesSent) : -1);
 }
 
-// Blocking exact read — MSG_WAITALL loop, no speculative buffering, no cache access.
+// Blocking exact read — MSG_WAITALL, no speculative buffering, no cache access.
 static int32_t _recv_exact(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
 {
-    int32_t total{ 0 };
-    while (total < dataLength)
+    int32_t total = 0;
+    do
     {
         const int32_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), dataLength - total, MSG_WAITALL);
         if (received > 0)
-        {
             total += received;
-        }
-        else if ((received == SOCKET_ERROR) && (::WSAGetLastError() == WSAEINTR))
-        {
-            continue;
-        }
-        else
-        {
+        else if (received == 0 || ::WSAGetLastError() != WSAEINTR)
             return -1;
-        }
-    }
-
+    } while (total < dataLength);
     return total;
 }
 
@@ -261,12 +208,11 @@ static int32_t _recv_cached(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t d
         tc.head   = 0u;
         tc.unread = 0u;
 
-        int32_t filled{ 0 };
+        int32_t filled;
         do
         {
             filled = ::recv(hSocket, reinterpret_cast<char*>(cache), static_cast<int>(tc.space), 0);
-        } while ((filled == SOCKET_ERROR) && (::WSAGetLastError() == WSAEINTR));
-
+        } while ((filled < 0) && (::WSAGetLastError() == WSAEINTR));
         if (filled <= 0)
             return -1;
 
@@ -283,14 +229,8 @@ static int32_t _recv_cached(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t d
     {
         const int32_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), static_cast<int>(needed - total), MSG_WAITALL);
         if (received > 0)
-        {
             total += static_cast<uint32_t>(received);
-        }
-        else if ((received == SOCKET_ERROR) && (::WSAGetLastError() == WSAEINTR))
-        {
-            continue;
-        }
-        else
+        else if (received == 0 || ::WSAGetLastError() != WSAEINTR)
         {
             tc.head   = 0u;
             tc.unread = 0u;
