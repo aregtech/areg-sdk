@@ -204,7 +204,7 @@ Event* MpscEventQueue::pop_event() noexcept
         return nullptr;
     }
 
-    // A producer completed between our null check and the reset — re-arm and return.
+    // A producer completed between our null check and the reset -- re-arm and return.
     Event* result = node->event;
     _free_node(node);
     const uint32_t old_fast = mFastCount.fetch_sub(1u, std::memory_order_relaxed);

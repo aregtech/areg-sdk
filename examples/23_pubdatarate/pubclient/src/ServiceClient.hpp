@@ -76,7 +76,7 @@ private:
 
     /**
      * \brief   Per-channel frame tracking state. Fixed-size: zero heap allocation in
-     *          the hot path. Uses only block metadata — no pixel data accessed.
+     *          the hot path. Uses only block metadata -- no pixel data accessed.
      **/
     struct FrameStats
     {

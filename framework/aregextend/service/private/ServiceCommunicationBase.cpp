@@ -502,7 +502,7 @@ void ServiceCommunicationBase::stop_connection()
     disconnect_service( areg::EventPriority::HighPrio);
 
     // Give the global send thread a bounded window to deliver queued disconnect notifications.
-    // If it times out, an unresponsive client is holding up the send thread — interrupt again.
+    // If it times out, an unresponsive client is holding up the send thread -- interrupt again.
     constexpr uint32_t DISCONNECT_DRAIN_TIMEOUT_MS{ 5000u };
     if ( !mThreadSend.wait_completion( DISCONNECT_DRAIN_TIMEOUT_MS ) )
     {
@@ -537,7 +537,7 @@ bool ServiceCommunicationBase::on_client_accepted( SocketAccepted & clientSocket
 
 bool ServiceCommunicationBase::do_accept_client_shared( SocketAccepted & /*clientSocket*/ )
 {
-    // Shared mode: socket stays on the global mThreadReceive — nothing to do.
+    // Shared mode: socket stays on the global mThreadReceive -- nothing to do.
     return false;
 }
 
@@ -564,7 +564,7 @@ bool ServiceCommunicationBase::do_accept_client_pool( SocketAccepted & clientSoc
         return false;
     }
 
-    // Unregister from the global ServerReceiveThread multiplexer — the pool receive
+    // Unregister from the global ServerReceiveThread multiplexer -- the pool receive
     // thread will own this socket from here on.
     mServerConnection.unregister_from_multiplexer(clientSocket.handle());
 

@@ -13,7 +13,7 @@
  * \brief       Areg Platform, POSIX Waitable Timer implementation.
  *              Uses POSIX timer_create() + SIGEV_THREAD for all non-Apple POSIX
  *              platforms (Linux, Cygwin, FreeBSD, etc.).
- *              macOS uses GCD dispatch_source — see macos/WaitableTimerMacOS.cpp.
+ *              macOS uses GCD dispatch_source -- see macos/WaitableTimerMacOS.cpp.
  *
  ************************************************************************/
 

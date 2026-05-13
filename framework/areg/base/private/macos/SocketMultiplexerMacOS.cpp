@@ -12,8 +12,8 @@
  * \author      Artak Avetyan
  * \brief       Areg Platform, SocketMultiplexer macOS implementation.
  *              Uses kqueue (O(1)) + anonymous pipe for wakeup.
- *              Linux uses epoll + eventfd — see linux/SocketMultiplexerLinux.cpp.
- *              Other POSIX uses poll + pipe  — see posix/SocketMultiplexerPosix.cpp.
+ *              Linux uses epoll + eventfd -- see linux/SocketMultiplexerLinux.cpp.
+ *              Other POSIX uses poll + pipe  -- see posix/SocketMultiplexerPosix.cpp.
  *
  ************************************************************************/
 #ifdef __APPLE__
@@ -42,9 +42,9 @@ inline void drain_pipe(int fd) noexcept
 
 // -----------------------------------------------------------------------
 // WAKEUP DESIGN:
-//   mKqueueFd      = kqueue instance fd — monitors sockets + pipe read end.
-//   mWakeupReadFd  = pipe read end  — added to kqueue as EVFILT_READ.
-//   mWakeupWriteFd = pipe write end — one byte written by reset().
+//   mKqueueFd      = kqueue instance fd -- monitors sockets + pipe read end.
+//   mWakeupReadFd  = pipe read end  -- added to kqueue as EVFILT_READ.
+//   mWakeupWriteFd = pipe write end -- one byte written by reset().
 //   wait() checks result.ident against mWakeupReadFd first, drains the
 //   pipe on match, and returns FailedSocketHandle.
 // -----------------------------------------------------------------------
@@ -254,7 +254,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         return fd;
     }
 
-    // Fetch a new batch — up to BATCH_SIZE events in one kevent() syscall.
+    // Fetch a new batch -- up to BATCH_SIZE events in one kevent() syscall.
     struct kevent events[BATCH_SIZE];
     struct timespec ts;
     const struct timespec * pTs = nullptr;

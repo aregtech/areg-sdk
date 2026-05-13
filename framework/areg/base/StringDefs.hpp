@@ -997,7 +997,7 @@ namespace areg::str {
         if constexpr (CaseSensitive && (std::is_same_v<CharType, char> || std::is_same_v<CharType, wchar_t>))
         {
             // string_view::find(string_view) is constexpr in C++17 and SIMD-optimized at runtime
-            // via char_traits — equivalent to strstr/wcsstr without losing constexpr eligibility.
+            // via char_traits -- equivalent to strstr/wcsstr without losing constexpr eligibility.
             using SV = std::basic_string_view<CharType>;
             const SV sv{ str };
             const SV phrase_sv{ strPhrase };
@@ -1047,7 +1047,7 @@ namespace areg::str {
         if constexpr (CaseSensitive && (std::is_same_v<CharType, char> || std::is_same_v<CharType, wchar_t>))
         {
             // string_view::compare() is constexpr in C++17 and SIMD-optimized at runtime
-            // via char_traits — equivalent to strncmp/wcsncmp without losing constexpr eligibility.
+            // via char_traits -- equivalent to strncmp/wcsncmp without losing constexpr eligibility.
             using SV = std::basic_string_view<CharType>;
             const SV phrase_sv{ phrase };
             const SV str_sv{ strString };
@@ -1080,7 +1080,7 @@ namespace areg::str {
                 const char* found = static_cast<const char*>(std::memchr(p, static_cast<int>(ch1), std::strlen(p)));
                 if (found == nullptr)
                 {
-                    // No more matches — copy tail.
+                    // No more matches -- copy tail.
                     const std::size_t tail = static_cast<std::size_t>(std::strlen(p));
                     if (tail > 0)
                         std::memmove(out, p, tail);
@@ -1324,7 +1324,7 @@ namespace areg::str {
         if constexpr (CaseSensitive && (std::is_same_v<CharType, char> || std::is_same_v<CharType, wchar_t>))
         {
             // string_view::find(char) is constexpr in C++17 and SIMD-optimized at runtime
-            // via char_traits::find() — equivalent to strchr/wcschr without losing constexpr eligibility.
+            // via char_traits::find() -- equivalent to strchr/wcschr without losing constexpr eligibility.
             using SV = std::basic_string_view<CharType>;
             const SV sv{ str };
             const auto pos = sv.find(ch);
@@ -1547,7 +1547,7 @@ inline bool areg::is_buffer_fit( const char * format, va_list argptr ) noexcept
     char buf[ size ]{ 0 };
     va_list argcopy;
     va_copy( argcopy, argptr );
-    // format is intentionally a runtime parameter — suppress -Wformat-nonliteral
+    // format is intentionally a runtime parameter -- suppress -Wformat-nonliteral
 #if defined(__clang__)
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wformat-nonliteral"
@@ -1573,7 +1573,7 @@ inline bool areg::is_buffer_fit( const wchar_t * format, va_list argptr ) noexce
     wchar_t buf[ size ]{ 0 };
     va_list argcopy;
     va_copy( argcopy, argptr );
-    // format is intentionally a runtime parameter — suppress -Wformat-nonliteral
+    // format is intentionally a runtime parameter -- suppress -Wformat-nonliteral
 #if defined(__clang__)
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wformat-nonliteral"
@@ -2074,7 +2074,7 @@ inline constexpr bool areg::is_one_of(CharType ch, const CharType* chSequence) n
 }
 
 // Constexpr specializations: string_view::find() is constexpr in C++17 and delegates to
-// char_traits::find() which is SIMD-optimized at runtime — best of both worlds.
+// char_traits::find() which is SIMD-optimized at runtime -- best of both worlds.
 template<>
 inline constexpr bool areg::is_one_of<char>(char ch, const char* chSequence) noexcept
 {
@@ -2296,7 +2296,7 @@ inline constexpr areg::CharCount areg::string_length(const CharType* theString) 
         return 0;
 
     // std::char_traits<T>::length() is constexpr since C++17 (P0254R2) for char and wchar_t,
-    // and delegates to the same SIMD-optimized strlen/wcslen at runtime — no overhead.
+    // and delegates to the same SIMD-optimized strlen/wcslen at runtime -- no overhead.
     if constexpr (std::is_same_v<CharType, char> || std::is_same_v<CharType, wchar_t>)
     {
         return static_cast<areg::CharCount>(std::char_traits<CharType>::length(theString));
@@ -2518,7 +2518,7 @@ inline constexpr bool areg::not_less(const CharType* str, const uint32_t minCoun
 }
 
 // Constexpr specializations: char_traits::find() is constexpr in C++17 and delegates to
-// memchr/wmemchr (SIMD-optimized) at runtime. Searches for null in first minCount positions —
+// memchr/wmemchr (SIMD-optimized) at runtime. Searches for null in first minCount positions --
 // if found, the string is shorter than minCount; if not found, it has at least minCount chars.
 template<>
 inline constexpr bool areg::not_less<char>(const char* str, const uint32_t minCount) noexcept
@@ -2567,7 +2567,7 @@ inline constexpr bool areg::not_more(const CharType* str, const uint32_t maxCoun
 
 // Constexpr specializations: char_traits::find() is constexpr in C++17, SIMD at runtime.
 // Checks maxCount+1 positions so a string of exactly maxCount chars (null at index maxCount)
-// correctly returns true — fixes the off-by-one present in naive < maxCount loop.
+// correctly returns true -- fixes the off-by-one present in naive < maxCount loop.
 template<>
 inline constexpr bool areg::not_more<char>(const char* str, const uint32_t maxCount) noexcept
 {

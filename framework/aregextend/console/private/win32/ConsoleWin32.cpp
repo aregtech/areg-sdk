@@ -155,7 +155,7 @@ void Console::_os_output_text(Console::Coord pos, const String& text) const
     _write_at(hStdOut, static_cast<SHORT>(pos.posX), static_cast<SHORT>(pos.posY),
               text.as_string(), len);
     // _write_at uses WriteConsoleOutputCharacterA which does NOT move the visible
-    // cursor — the cursor stays wherever gets_s/fgets left it (input prompt).
+    // cursor -- the cursor stays wherever gets_s/fgets left it (input prompt).
     // Do NOT call SetConsoleCursorPosition here: doing so would jump the cursor
     // to mSavedPos.posX/posY on EVERY background update and cause visible flicker.
     if (static_cast<int32_t>(pos.posY) > mMaxUsedRow)
@@ -171,7 +171,7 @@ void Console::_os_output_text(Console::Coord pos, std::string_view text) const
     DWORD len = static_cast<DWORD>(text.length());
     _write_at(hStdOut, static_cast<SHORT>(pos.posX), static_cast<SHORT>(pos.posY),
               text.data(), len);
-    // Same as the String overload above — do NOT restore cursor here.
+    // Same as the String overload above -- do NOT restore cursor here.
     if (static_cast<int32_t>(pos.posY) > mMaxUsedRow)
     {
         mMaxUsedRow = static_cast<int32_t>(pos.posY);

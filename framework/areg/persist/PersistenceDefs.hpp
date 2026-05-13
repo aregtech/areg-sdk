@@ -78,7 +78,7 @@ namespace areg {
     /**
      * \brief   The separator between the scope path (node chain) and the method (leaf) name.
      *          Introduced to support snake_case method names unambiguously: a dot in the scope
-     *          string signals that everything after it is the leaf name verbatim — the leaf name
+     *          string signals that everything after it is the leaf name verbatim -- the leaf name
      *          may itself contain underscores without being split into further nodes.
      *
      *          Example: "module_ClassName.some_method" -> path nodes "module", "ClassName";
@@ -257,7 +257,7 @@ namespace areg {
             , {"net"    , "*"   , "*"       , "timeout"         }   //! 33  , SO_SNDTIMEO in milliseconds (0 = use compile-time default SOCKET_SEND_TIMEOUT_MS).
             , {"net"    , "*"   , "*"       , "cache"           }   //! 34  , The thread cache size in network communication (0 = default THREAD_CACHE_SIZE (128KB)).
 
-            , {"*"      , "*"   , "*"       , "*"               }   //! 35  , Indicates any key type (AnyKey sentinel — keep at index 31 for compatibility).
+            , {"*"      , "*"   , "*"       , "*"               }   //! 35  , Indicates any key type (AnyKey sentinel -- keep at index 31 for compatibility).
 
     };
 

@@ -199,13 +199,13 @@ public:
     /**
      * \brief   Returns true if both user name and password are identical.
      **/
-    // BUG FIX: was missing 'const' — comparison must not mutate the object.
+    // BUG FIX: was missing 'const' -- comparison must not mutate the object.
     [[nodiscard]] bool operator == (const UserData& other) const noexcept;
 
     /**
      * \brief   Returns true if user name or password differs.
      **/
-    // BUG FIX: was missing 'const' — comparison must not mutate the object.
+    // BUG FIX: was missing 'const' -- comparison must not mutate the object.
     [[nodiscard]] bool operator != (const UserData& other) const noexcept;
 
     /**
@@ -285,7 +285,7 @@ constexpr uint32_t      IP_ADDRESS_SIZE         { 16u };
 constexpr uint32_t      PACKET_MAX_SIZE         { 65536u };
 
 //!< Minimum payload size in bytes for a single send or receive operation.
-constexpr uint32_t      PACKET_MIN_SIZE         { PACKET_MAX_SIZE };
+constexpr uint32_t      PACKET_MIN_SIZE         { 4096u };
 
 //!< Default payload size in bytes for a single send or receive operation.
 constexpr uint32_t      PACKET_DEFAULT_SIZE     { PACKET_MAX_SIZE };
@@ -299,11 +299,11 @@ constexpr uint32_t      PACKET_INVALID_SIZE     { 0u };
 //!< Applied on all platforms including Windows (SO_SNDBUF does NOT disable autotuning;
 //!< only SO_RCVBUF does that on Windows Vista+).
 //!< Override at runtime via net::SERVICE::TRANSPORT::sndbuf in areg.init (value in KB).
-constexpr uint32_t      SOCKET_SEND_BUFFER_SIZE { 16u * areg::ONE_MEGABYTE };
+constexpr uint32_t      SOCKET_SEND_BUFFER_SIZE { 4u * areg::ONE_MEGABYTE };
 
 //!< Compile-time default for SO_RCVBUF applied on Linux and macOS.
 //!< Override at runtime via net::SERVICE::TRANSPORT::rcvbuf in areg.init (value in KB).
-constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE { 16u * areg::ONE_MEGABYTE };
+constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE { 4u * areg::ONE_MEGABYTE };
 
 //!< Maximum milliseconds a single send() call may block waiting for TCP send-window space.
 //!< When the peer's receive window is zero (e.g. OOM pressure or a slow/stalled receiver),
@@ -314,7 +314,7 @@ constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE { 16u * areg::ONE_MEGABYTE };
 //!< Choosing the right value is a trade-off:
 //!<   - Too large: high-rate pipelines (e.g. 380 fps × 3 MB) accumulate
 //!<     timeout_ms × rate × msg_size bytes in the ServerSendThread queue before the
-//!<     connection is closed.  At 5000 ms × 380 fps × 3 MB ≈ 5.7 GB — OOM.
+//!<     connection is closed.  At 5000 ms × 380 fps × 3 MB ≈ 5.7 GB -- OOM.
 //!<   - Too small: transient OS scheduling jitter (GC, CPU starvation) may cause
 //!<     spurious disconnects on otherwise healthy LANs.
 //!<
@@ -324,10 +324,10 @@ constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE { 16u * areg::ONE_MEGABYTE };
 //!< Increase for very slow WAN links or when large receiver-side processing spikes are expected.
 constexpr uint32_t      SOCKET_SEND_TIMEOUT_MS  { 2500u };
 
-//!< Floor applied to any caller-supplied max — prevents degenerate limits.
+//!< Floor applied to any caller-supplied max -- prevents degenerate limits.
 constexpr uint32_t      MIN_CONNECTIONS         { 32u };
 
-//!< Ceiling applied to any caller-supplied max — mtrouter is not a web server.
+//!< Ceiling applied to any caller-supplied max -- mtrouter is not a web server.
 constexpr uint32_t      MAX_CONNECTIONS         { 10000u };
 
 //!< Default socket capacity: initial mSockets.reserve() size and the stack-allocation
@@ -352,7 +352,7 @@ constexpr uint32_t      THREAD_DRAIN_LIMIT      { BATCH_SIZE };
 //!< Size of the IoBuffer / iovec stack array used for scatter-gather send (writev / WSASend).
 //!< Equals THREAD_DRAIN_LIMIT: slot 0 holds the triggering message (owned by the dispatch
 //!< chain), slots 1..THREAD_DRAIN_LIMIT-1 hold at most THREAD_DRAIN_LIMIT-1 drained events.
-//!< Total batch is exactly THREAD_DRAIN_LIMIT entries.  128 × sizeof(iovec) = 2 KB — L1-friendly.
+//!< Total batch is exactly THREAD_DRAIN_LIMIT entries.  128 × sizeof(iovec) = 2 KB -- L1-friendly.
 constexpr uint32_t      THREAD_BATCH_LIMIT      { THREAD_DRAIN_LIMIT };
 
 //!< Maximum number of events queued in any send thread (ServerSendThread, PoolSendThread, areg::ClientSendThread).
@@ -382,7 +382,7 @@ constexpr uint32_t      DEFAULT_POOL_PAIRS          { 0u };
 //!<
 //!< Configurable at runtime via net::*::tcpip::cache in areg.init (value in KB).
 //!< This constant is the compile-time default returned when no config entry is present.
-constexpr const uint32_t    DEFAULT_THREAD_CACHE_KB{ 512 };
+constexpr const uint32_t    DEFAULT_THREAD_CACHE_KB{ 256 };
 
 //!< Maximum biUsed value accepted in any received MessageHeader.
 //!< Requests larger than this are treated as protocol violations and rejected without
@@ -430,8 +430,23 @@ struct ThreadCache
  **/
 enum class ReceiveMode : uint8_t
 {
-      Exact     = 0
-    , Cached    = 1
+      NoCache       = 0
+    , MonoCache     = 1
+    , MultiCache    = 2
+};
+
+//////////////////////////////////////////////////////////////////////////
+// areg::IoBuffer -- scatter/gather I/O descriptor
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Describes one contiguous region in a scatter/gather write list.
+ *          Used by send_data_v() to combine multiple buffers into a single
+ *          socket syscall (writev on POSIX, WSASend on Windows).
+ **/
+struct IoBuffer
+{
+    const uint8_t* data;   //!< Pointer to the start of the data region.
+    std::size_t     size;   //!< Number of bytes to send from this region.
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -472,6 +487,8 @@ AREG_API ThreadCache& thread_tx_cache() noexcept;
  **/
 [[nodiscard]]
 AREG_API ThreadCache& thread_rx_cache(SOCKETHANDLE hSocket) noexcept;
+
+AREG_API void thread_rx_cache_release(SOCKETHANDLE hSocket) noexcept;
 
 /**
  * \brief   Sets receive strategy of the calling thread.
@@ -607,7 +624,7 @@ AREG_API SOCKETHANDLE server_accept(SocketMultiplexer& multiplexer, SOCKETHANDLE
 
 /**
  * \brief   Accepts one pending client connection on \a serverSocket.
- *          Legacy stateless overload — builds a temporary poll list from
+ *          Legacy stateless overload -- builds a temporary poll list from
  *          \a masterList.  Prefer the SocketMultiplexer overload for
  *          persistent server accept loops.
  *
@@ -663,20 +680,6 @@ AREG_API uint32_t set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSize) noexcep
  **/
 AREG_API int32_t send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, uint32_t dataLength) noexcept;
 
-//////////////////////////////////////////////////////////////////////////
-// areg::IoBuffer -- scatter/gather I/O descriptor
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Describes one contiguous region in a scatter/gather write list.
- *          Used by send_data_v() to combine multiple buffers into a single
- *          socket syscall (writev on POSIX, WSASend on Windows).
- **/
-struct IoBuffer
-{
-    const uint8_t*  data;   //!< Pointer to the start of the data region.
-    std::size_t     size;   //!< Number of bytes to send from this region.
-};
-
 /**
  * \brief   Scatter/gather send: sends \a count buffers through \a hSocket
  *          in a single syscall (writev on POSIX, WSASend on Windows).
@@ -703,6 +706,19 @@ AREG_API int32_t send_data_v(SOCKETHANDLE hSocket, const IoBuffer* buffers, uint
  *          negative on error or empty buffer.
  **/
 AREG_API int32_t receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength) noexcept;
+
+/**
+ * \brief   Receives exactly \a dataLength bytes from \a hSocket, reading at most
+ *          DEFAULT_THREAD_CACHE_KB * ONE_KILOBYTE bytes per recv() call.
+ *          Use for large message bodies to keep per-call latency bounded.
+ *          Does not interact with the thread-local receive cache.
+ *
+ * \param   hSocket         Valid connected socket descriptor.
+ * \param   dataBuffer      Buffer to fill with received bytes.
+ * \param   dataLength      Exact number of bytes to receive.
+ * \return  Bytes received (> 0); negative on error or if the peer closed the connection.
+ **/
+AREG_API int32_t receive_data_window(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength) noexcept;
 
 /**
  * \brief   Returns the number of bytes of received data that are cached in
@@ -825,7 +841,7 @@ AREG_API uint16_t extract_port_number(const struct sockaddr_in& sockAddr) noexce
 } // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
-// areg::SocketAddress — inline implementations
+// areg::SocketAddress -- inline implementations
 //////////////////////////////////////////////////////////////////////////
 
 inline const areg::String& areg::SocketAddress::host_address() const noexcept
@@ -856,7 +872,7 @@ inline bool areg::SocketAddress::is_valid() const noexcept
 }
 
 //////////////////////////////////////////////////////////////////////////
-// areg free function — inline implementations
+// areg free function -- inline implementations
 //////////////////////////////////////////////////////////////////////////
 
 inline bool areg::is_valid_socket(SOCKETHANDLE hSocket) noexcept

@@ -36,7 +36,7 @@ void ClientSendThread::ready_for_events( bool is_ready )
 {
     if ( is_ready )
     {
-        areg::set_receive_mode(areg::ReceiveMode::Cached);
+        areg::set_receive_mode(areg::ReceiveMode::MonoCache);
         SendMessageEvent::add_listener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
         DispatcherThread::ready_for_events( true );
     }
@@ -56,7 +56,7 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
         // the queue. This removes the extra solo send syscall that previously preceded the
         // drain loop, halving the number of send syscalls at full load.
         //
-        // evtPtrs[0] is nullptr: the triggering event is owned by the dispatch chain —
+        // evtPtrs[0] is nullptr: the triggering event is owned by the dispatch chain --
         // never call destroy() on it.  Drained events (indices 1..N) are owned by us.
         const ExitEvent & exitEvent = ExitEvent::exit_event();
 
@@ -84,7 +84,7 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
             if ( evt == nullptr )
                 break;
 
-            // ExitEvent is a singleton — compare by pointer, never call destroy() on it.
+            // ExitEvent is a singleton -- compare by pointer, never call destroy() on it.
             if ( static_cast<const Event *>( evt ) == static_cast<const Event *>( &exitEvent ) )
             {
                 for ( uint32_t i = 1; i < batchCount; ++i )

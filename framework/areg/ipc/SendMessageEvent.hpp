@@ -139,14 +139,15 @@ private:
 AREG_DECLARE_EVENT(SendMessageEventData, SendMessageEvent, SendMessageEventConsumer)
 
 /**
- * \brief   Pending send entry : holds everything needed for deferred group-send.
+ * \brief   Pending send entry: holds everything needed for deferred group-send.
+ *          sendEvt is nullptr for the triggering message (owned by the dispatch
+ *          chain -- never call destroy() on it). msg is always valid.
  **/
 struct PendingSend
 {
-    //!< Resolved socket handle for this message.
-    SOCKETHANDLE        socket;
-    //!< Owning event; destroyed after send.
-    SendMessageEvent*   sendEvt;
+    SOCKETHANDLE            socket;     //!< Resolved socket handle for this message.
+    const RemoteMessage*    msg;        //!< Message to send; always valid.
+    SendMessageEvent*       sendEvt;    //!< Owning event; nullptr for trigger (don't destroy).
 };
 
 //////////////////////////////////////////////////////////////////////////

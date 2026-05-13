@@ -249,7 +249,7 @@ void ServerConnectionBase::close_connection( const ITEM_ID & cookie )
     }
     else
     {
-        LOG_WARN("close_connection called for unknown cookie [ %u ] — already closed or never registered"
+        LOG_WARN("close_connection called for unknown cookie [ %u ] -- already closed or never registered"
                     , static_cast<uint32_t>(cookie));
     }
 }

@@ -39,7 +39,7 @@
 #include <string>
 
 /************************************************************************
- * utf8_char_def — ground-truth based (non-circular) tests
+ * utf8_char_def -- ground-truth based (non-circular) tests
  ************************************************************************/
 
 /**
@@ -47,7 +47,7 @@
  *
  *          Previous tests verified consistency of utf8_char_def with the
  *          is_* predicates, but those predicates all call utf8_char_def
- *          themselves — a circular check that catches nothing.
+ *          themselves -- a circular check that catches nothing.
  *
  *          These tests use known ground truth: specific characters that
  *          every correct Latin-1 table must classify identically.
@@ -55,7 +55,7 @@
  **/
 TEST(StringDefsTest3, utf8_char_def_ground_truth)
 {
-    // 'A' must be a letter and uppercase — not a number, not whitespace
+    // 'A' must be a letter and uppercase -- not a number, not whitespace
     EXPECT_TRUE (areg::is_letter<char>('A'));
     EXPECT_TRUE (areg::is_upper<char>('A'));
     EXPECT_FALSE(areg::is_lower<char>('A'));
@@ -150,7 +150,7 @@ TEST(StringDefsTest3, is_lower_is_upper_sweep)
         EXPECT_FALSE(areg::is_upper<char>(c)) << "Digit '" << c << "' should not be upper";
     }
 
-    // Space, tab, null — none of these are letters
+    // Space, tab, null -- none of these are letters
     EXPECT_FALSE(areg::is_lower<char>(' '));
     EXPECT_FALSE(areg::is_upper<char>(' '));
     EXPECT_FALSE(areg::is_lower<char>('\0'));
@@ -199,7 +199,7 @@ TEST(StringDefsTest3, is_alphanumeric)
 }
 
 /************************************************************************
- * is_readable — distinct from is_printable
+ * is_readable -- distinct from is_printable
  ************************************************************************/
 
 /**
@@ -239,7 +239,7 @@ TEST(StringDefsTest3, is_readable_vs_printable)
 }
 
 /************************************************************************
- * make_lower / make_upper — string pointer overloads
+ * make_lower / make_upper -- string pointer overloads
  ************************************************************************/
 
 /**
@@ -251,14 +251,14 @@ TEST(StringDefsTest3, is_readable_vs_printable)
  **/
 TEST(StringDefsTest3, make_lower_upper_string_inplace)
 {
-    // make_lower — full ASCII uppercase string
+    // make_lower -- full ASCII uppercase string
     {
         char buf[] = "HELLO WORLD";
         areg::make_lower<char>(buf);
         EXPECT_STREQ(buf, "hello world");
     }
 
-    // make_upper — full ASCII lowercase string
+    // make_upper -- full ASCII lowercase string
     {
         char buf[] = "hello world";
         areg::make_upper<char>(buf);
@@ -277,14 +277,14 @@ TEST(StringDefsTest3, make_lower_upper_string_inplace)
         EXPECT_STREQ(buf, "ABC123XYZ");
     }
 
-    // Empty string — must not crash, must return the pointer
+    // Empty string -- must not crash, must return the pointer
     {
         char buf[] = "";
         const char* result = areg::make_lower<char>(buf);
         EXPECT_EQ(result, buf);
     }
 
-    // nullptr — must not crash, must return nullptr
+    // nullptr -- must not crash, must return nullptr
     {
         const char* result = areg::make_lower<char>(static_cast<char*>(nullptr));
         EXPECT_EQ(result, nullptr);
@@ -299,11 +299,11 @@ TEST(StringDefsTest3, make_lower_upper_string_inplace)
 }
 
 /************************************************************************
- * copy_string — bounded variant (with dstSpace)
+ * copy_string -- bounded variant (with dstSpace)
  ************************************************************************/
 
 /**
- * \brief   Test copy_string(dst, dstSpace, src, count) — the bounded-copy overload.
+ * \brief   Test copy_string(dst, dstSpace, src, count) -- the bounded-copy overload.
  *
  *          This is a completely different function from copy_string_fast.
  *          Key contracts:
@@ -316,7 +316,7 @@ TEST(StringDefsTest3, make_lower_upper_string_inplace)
  **/
 TEST(StringDefsTest3, copy_string_bounded)
 {
-    // Full copy — destination large enough
+    // Full copy -- destination large enough
     {
         char dst[32]{};
         areg::CharCount n = areg::copy_string<char, char>(dst, 32, "Hello");
@@ -325,7 +325,7 @@ TEST(StringDefsTest3, copy_string_bounded)
         EXPECT_EQ(dst[5], '\0');   // must null-terminate
     }
 
-    // Truncation — dstSpace smaller than source.
+    // Truncation -- dstSpace smaller than source.
     // The same-type copy path copies min(dstSpace, srcLen) chars and places null
     // at strDst[result], which equals strDst[dstSpace] when fully filled.
     // Use a buffer one element larger than dstSpace to safely hold the null.
@@ -346,7 +346,7 @@ TEST(StringDefsTest3, copy_string_bounded)
         EXPECT_EQ(std::strncmp(dst, "Hel", 3), 0);
     }
 
-    // dstSpace == 1 — copies 1 character and places null at dst[1].
+    // dstSpace == 1 -- copies 1 character and places null at dst[1].
     // Use a 2-element buffer to safely hold the null at index 1.
     {
         char dst[4] = "XXX";
@@ -356,13 +356,13 @@ TEST(StringDefsTest3, copy_string_bounded)
         EXPECT_EQ(dst[1], '\0');
     }
 
-    // Null destination — must return 0 without crash
+    // Null destination -- must return 0 without crash
     {
         areg::CharCount n = areg::copy_string<char, char>(nullptr, 32, "Hello");
         EXPECT_EQ(n, static_cast<areg::CharCount>(0));
     }
 
-    // Null source — copies 0 characters, null-terminates
+    // Null source -- copies 0 characters, null-terminates
     {
         char dst[8] = "XXXXXXX";
         areg::CharCount n = areg::copy_string<char, char>(dst, 8, nullptr);
@@ -392,7 +392,7 @@ TEST(StringDefsTest3, copy_string_bounded)
  ************************************************************************/
 
 /**
- * \brief   Test compare_fast — fast bytewise comparison.
+ * \brief   Test compare_fast -- fast bytewise comparison.
  *
  *          compare_fast has four distinct code paths:
  *            1. count == COUNT_ALL   -> delegates to compare_strings
@@ -400,25 +400,25 @@ TEST(StringDefsTest3, copy_string_bounded)
  *            3. Both non-null with explicit count -> mem_compare
  *            4. One pointer null -> Smaller/Bigger without dereferencing
  *          Only path 2 is a unique shortcut that compare_strings does not
- *          take — a bug there (e.g., dereferencing before the pointer check)
+ *          take -- a bug there (e.g., dereferencing before the pointer check)
  *          would be caught by test cases 2 and 4.
  **/
 TEST(StringDefsTest3, compare_fast)
 {
-    // Path 1: COUNT_ALL — delegates to compare_strings
+    // Path 1: COUNT_ALL -- delegates to compare_strings
     EXPECT_EQ(areg::compare_fast<char>("abc", "abc", areg::COUNT_ALL), areg::Ordering::Equal);
     EXPECT_EQ(areg::compare_fast<char>("abc", "abd", areg::COUNT_ALL), areg::Ordering::Smaller);
     EXPECT_EQ(areg::compare_fast<char>("abd", "abc", areg::COUNT_ALL), areg::Ordering::Bigger);
 
-    // Path 2: same pointer — must return Equal without reading memory
+    // Path 2: same pointer -- must return Equal without reading memory
     const char* same = "hello";
     EXPECT_EQ(areg::compare_fast<char>(same, same, 5), areg::Ordering::Equal);
 
-    // Path 3: explicit count — bytewise compare via mem_compare
+    // Path 3: explicit count -- bytewise compare via mem_compare
     EXPECT_EQ(areg::compare_fast<char>("abcX", "abcY", 3), areg::Ordering::Equal);   // first 3 equal
     EXPECT_NE(areg::compare_fast<char>("abcX", "abcY", 4), areg::Ordering::Equal);   // 4th differs
 
-    // Path 4: one null — must not crash, must return Smaller/Bigger
+    // Path 4: one null -- must not crash, must return Smaller/Bigger
     EXPECT_EQ(areg::compare_fast<char>(nullptr, "x", 1),   areg::Ordering::Smaller);
     EXPECT_EQ(areg::compare_fast<char>("x",    nullptr, 1), areg::Ordering::Bigger);
     EXPECT_EQ(areg::compare_fast<char>(nullptr, nullptr, areg::COUNT_ALL), areg::Ordering::Equal);
@@ -448,7 +448,7 @@ TEST(StringDefsTest3, compare_fast)
  **/
 TEST(StringDefsTest3, trim_copy_variants)
 {
-    // trim_left copy — leading spaces stripped into dst
+    // trim_left copy -- leading spaces stripped into dst
     {
         char dst[32]{};
         const char* src = "   Hello   ";
@@ -457,28 +457,28 @@ TEST(StringDefsTest3, trim_copy_variants)
         EXPECT_EQ(areg::compare(src, "   Hello   "), areg::Ordering::Equal); // source unchanged
     }
 
-    // trim_right copy — trailing spaces stripped into dst
+    // trim_right copy -- trailing spaces stripped into dst
     {
         char dst[32]{};
         areg::trim_right<char, char>(dst, 32, "   Hello   ");
         EXPECT_EQ(areg::compare(dst, "   Hello"), areg::Ordering::Equal);
     }
 
-    // trim_all copy — both sides stripped
+    // trim_all copy -- both sides stripped
     {
         char dst[32]{};
         areg::trim_all<char, char>(dst, 32, "   Hello   ");
         EXPECT_EQ(areg::compare(dst, "Hello"), areg::Ordering::Equal);
     }
 
-    // trim_all copy — all-whitespace source -> empty string
+    // trim_all copy -- all-whitespace source -> empty string
     {
         char dst[32] = "UNCHANGED";
         areg::trim_all<char, char>(dst, 32, "     ");
         EXPECT_EQ(dst[0], '\0');
     }
 
-    // trim_left copy — dst too small: truncation, but must still null-terminate
+    // trim_left copy -- dst too small: truncation, but must still null-terminate
     {
         char dst[4]{};
         areg::trim_left<char, char>(dst, 4, "  LongString");
@@ -487,13 +487,13 @@ TEST(StringDefsTest3, trim_copy_variants)
         EXPECT_EQ(std::strncmp(dst, "Lon", 3), 0);
     }
 
-    // trim_all copy — null dst: must not crash
+    // trim_all copy -- null dst: must not crash
     {
         areg::trim_all<char, char>(nullptr, 32, "  text  ");
-        // no assertion — just must not crash
+        // no assertion -- just must not crash
     }
 
-    // trim_right copy — null source -> empty dst
+    // trim_right copy -- null source -> empty dst
     {
         char dst[8] = "XXXXXXX";
         areg::trim_right<char, char>(dst, 8, nullptr);
@@ -509,7 +509,7 @@ TEST(StringDefsTest3, trim_copy_variants)
 }
 
 /************************************************************************
- * trim in-place with explicit strLen — the '!all' branch
+ * trim in-place with explicit strLen -- the '!all' branch
  ************************************************************************/
 
 /**
@@ -532,7 +532,7 @@ TEST(StringDefsTest3, trim_inplace_explicit_strlen)
         char buf[] = "  ABC|tail";
         // strLen=5 -> operate on "  ABC"; tail is "|tail"
         areg::trim_left<char>(buf, 5);
-        // Expected: "ABC|tail" — leading spaces stripped, tail preserved
+        // Expected: "ABC|tail" -- leading spaces stripped, tail preserved
         EXPECT_EQ(areg::compare(buf, "ABC|tail"), areg::Ordering::Equal) << buf;
     }
 
@@ -561,7 +561,7 @@ TEST(StringDefsTest3, trim_inplace_explicit_strlen)
 }
 
 /************************************************************************
- * find_first / find_last — 'next' output parameter
+ * find_first / find_last -- 'next' output parameter
  ************************************************************************/
 
 /**
@@ -607,7 +607,7 @@ TEST(StringDefsTest3, find_first_next_param)
         const char* next3 = nullptr;
         areg::CharPos pos2 = areg::find_first<char>('X', src, offset2, true, &next3);
         EXPECT_EQ(pos2, 5);    // third 'X' at index 5
-        EXPECT_EQ(next3, nullptr);  // 'X' is last char — nothing after it
+        EXPECT_EQ(next3, nullptr);  // 'X' is last char -- nothing after it
     }
 
     // Phrase find: next must point after the phrase
@@ -661,7 +661,7 @@ TEST(StringDefsTest3, find_last_next_param)
 }
 
 /************************************************************************
- * line() — DOS vs UNIX EOL, 'next' output parameter
+ * line() -- DOS vs UNIX EOL, 'next' output parameter
  ************************************************************************/
 
 /**
@@ -712,7 +712,7 @@ TEST(StringDefsTest3, line_dos_unix_eol_and_next)
         char* next = reinterpret_cast<char*>(0x1);
         const char* l = areg::line<char>(buf, areg::COUNT_ALL, &next);
         EXPECT_EQ(l, buf);
-        // next is not set when is_empty — no requirement to touch it
+        // next is not set when is_empty -- no requirement to touch it
         (void)next;
     }
 
@@ -735,7 +735,7 @@ TEST(StringDefsTest3, line_dos_unix_eol_and_next)
 }
 
 /************************************************************************
- * printable() — 'next' output parameter
+ * printable() -- 'next' output parameter
  ************************************************************************/
 
 /**
@@ -758,7 +758,7 @@ TEST(StringDefsTest3, printable_next_param)
         EXPECT_STREQ(next, "World");   // character after the non-printable '\1'
     }
 
-    // All printable — no non-printable found; next must be null
+    // All printable -- no non-printable found; next must be null
     {
         char buf[] = "AllPrintable";
         char* next = reinterpret_cast<char*>(0x1);
@@ -767,7 +767,7 @@ TEST(StringDefsTest3, printable_next_param)
         EXPECT_EQ(next, nullptr);
     }
 
-    // Non-printable at first position — returns empty string, next points after
+    // Non-printable at first position -- returns empty string, next points after
     {
         char buf[] = "\2ABC";
         char* next = nullptr;
@@ -780,7 +780,7 @@ TEST(StringDefsTest3, printable_next_param)
 }
 
 /************************************************************************
- * make_string — radix out of range and buffer truncation
+ * make_string -- radix out of range and buffer truncation
  ************************************************************************/
 
 /**
@@ -830,7 +830,7 @@ TEST(StringDefsTest3, make_string_edge_cases)
 }
 
 /************************************************************************
- * make_integer — '+' sign prefix and whitespace handling
+ * make_integer -- '+' sign prefix and whitespace handling
  ************************************************************************/
 
 /**
@@ -887,7 +887,7 @@ TEST(StringDefsTest3, make_integer_sign_and_whitespace)
     // Overflow-like large number: uint32_t accumulator wraps; at least must not crash
     {
         int32_t v = areg::make_integer<char>("9999999999", nullptr);
-        (void)v;  // implementation-defined wrap — just verify no crash
+        (void)v;  // implementation-defined wrap -- just verify no crash
     }
 
     // wchar_t with '+' sign
@@ -899,7 +899,7 @@ TEST(StringDefsTest3, make_integer_sign_and_whitespace)
 }
 
 /************************************************************************
- * remove_char — return value contracts
+ * remove_char -- return value contracts
  ************************************************************************/
 
 /**
@@ -927,7 +927,7 @@ TEST(StringDefsTest3, remove_char_return_value)
     {
         char buf[] = "aXbXcX";
         char* ret = areg::remove_char<char>('X', buf, false, true);
-        // buf becomes "abXcX" — only first 'X' removed
+        // buf becomes "abXcX" -- only first 'X' removed
         EXPECT_STREQ(buf, "abXcX");
         // 'X' was at index 1; after removal the char at index 1 is 'b';
         // ret must point to index 1 (position where 'b' now lives)
@@ -960,7 +960,7 @@ TEST(StringDefsTest3, remove_char_return_value)
 }
 
 /**
- * \brief   Test required_char_count<wchar_t> — the wchar_t overload.
+ * \brief   Test required_char_count<wchar_t> -- the wchar_t overload.
  *
  *          The wchar_t overload has a completely different implementation from
  *          the char overload: it calls is_buffer_fit in a cascaded chain

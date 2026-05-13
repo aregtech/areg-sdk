@@ -1690,7 +1690,7 @@ areg::Ordering StringBase<CharType>::compare( const CharType* what
     {
         if (caseSensitive)
         {
-            // mData.compare() delegates to memcmp/wmemcmp — SIMD-optimized.
+            // mData.compare() delegates to memcmp/wmemcmp -- SIMD-optimized.
             const int cmp = mData.compare( static_cast<std::size_t>(startAt)
                                          , static_cast<std::size_t>(count)
                                          , what

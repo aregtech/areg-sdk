@@ -14,7 +14,7 @@
  *              _os_initilize: uses getpid() + readlink("/proc/self/exe") for
  *              all non-Apple POSIX platforms (Linux, Cygwin, etc.).
  *              _os_env_variable: uses getenv(), common to all POSIX platforms.
- *              macOS uses _NSGetExecutablePath — see macos/ProcessMacOS.cpp.
+ *              macOS uses _NSGetExecutablePath -- see macos/ProcessMacOS.cpp.
  *              ProcessLinux.cpp is reserved for future Linux-specific optimizations.
  *
  ************************************************************************/
@@ -62,7 +62,7 @@ void Process::_os_initilize()
 #endif  // !__APPLE__
 
 //////////////////////////////////////////////////////////////////////////
-// Common POSIX: _os_env_variable — shared by all POSIX platforms
+// Common POSIX: _os_env_variable -- shared by all POSIX platforms
 //////////////////////////////////////////////////////////////////////////
 
 namespace areg {

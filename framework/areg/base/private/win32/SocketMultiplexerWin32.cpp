@@ -32,14 +32,14 @@
 #include <vector>
 
 //////////////////////////////////////////////////////////////////////////
-// areg::SocketMultiplexer — Windows (WSAPoll + loopback socket pair)
+// areg::SocketMultiplexer -- Windows (WSAPoll + loopback socket pair)
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * WAKEUP DESIGN — loopback TCP socket pair:
+ * WAKEUP DESIGN -- loopback TCP socket pair:
  *
- *  mWakeupReadFd  = accepted side  — added to the WSAPoll descriptor list.
- *   mWakeupWriteFd = connected side — send() writes one byte in reset().
+ *  mWakeupReadFd  = accepted side  -- added to the WSAPoll descriptor list.
+ *   mWakeupWriteFd = connected side -- send() writes one byte in reset().
  *
  *   Construction creates a temporary listener on 127.0.0.1:0, connects
  *   to it, accepts one connection, then closes the listener.  The result
@@ -330,7 +330,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
 }
 
 //////////////////////////////////////////////////////////////////////////
-// Legacy stateless wait() — Windows
+// Legacy stateless wait() -- Windows
 //////////////////////////////////////////////////////////////////////////
 
 SOCKETHANDLE areg::SocketMultiplexer::wait( SOCKETHANDLE            serverSocket

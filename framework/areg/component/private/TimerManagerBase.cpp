@@ -65,7 +65,7 @@ bool TimerManagerBase::run_dispatcher()
             break;
         }
 
-        // Tight drain loop — process all queued timer events without
+        // Tight drain loop -- process all queued timer events without
         // re-entering the kernel wait between consecutive events.
         // pop_event() manages mEventQueue signal state via signal_event().
         for (;;)

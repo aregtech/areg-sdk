@@ -425,7 +425,7 @@ TEST(RemoteMessageTest, check_cursor_position)
 }
 
 //////////////////////////////////////////////////////////////////////////
-// 8. Simulated TCP receive — init_message + memcpy, no real socket
+// 8. Simulated TCP receive -- init_message + memcpy, no real socket
 //////////////////////////////////////////////////////////////////////////
 
 namespace {
@@ -520,7 +520,7 @@ TEST(SimTcpReceive, reinit_larger_triggers_slow_path)
     msg << _after;
     const areg::RawMessage* ptr_after = msg.remote_message();
 
-    // Slow path: buffer was reallocated — pointer must differ
+    // Slow path: buffer was reallocated -- pointer must differ
     EXPECT_NE(ptr_before, ptr_after);
 
     // New capacity must accommodate the large payload
@@ -563,7 +563,7 @@ TEST(SimTcpReceive, reinit_smaller_uses_fast_path)
 
     const areg::RawMessage* ptr_after = msg.remote_message();
 
-    // Fast path: same allocation reused — pointer must be identical
+    // Fast path: same allocation reused -- pointer must be identical
     EXPECT_EQ(ptr_before, ptr_after);
 
     // Capacity unchanged
@@ -589,7 +589,7 @@ TEST(SimTcpReceive, shared_buffer_reinit_larger_triggers_slow_path)
     ASSERT_NE(dst, nullptr);
     msg.set_size_used(kFirst);
 
-    // Create a shared copy — use_count becomes 2
+    // Create a shared copy -- use_count becomes 2
     areg::RemoteMessage copy(msg);
     ASSERT_TRUE(msg.is_shared());
     ASSERT_TRUE(copy.is_shared());
@@ -641,7 +641,7 @@ TEST(SimTcpReceive, shared_buffer_reinit_smaller_still_triggers_slow_path)
 
     const uint32_t capacity = msg.size_available();
 
-    // Second payload is SMALLER than capacity — would be fast path if unshared
+    // Second payload is SMALLER than capacity -- would be fast path if unshared
     const uint32_t kSecond = kFirst / 4u;
     ASSERT_LT(kSecond, capacity);
 
@@ -728,7 +728,7 @@ TEST(SimTcpReceive, complex_receive_share_rereceive)
     areg::RemoteMessage snap(msg);
     ASSERT_TRUE(snap.is_shared());
 
-    // Second receive on msg — payload > capacity forces slow path
+    // Second receive on msg -- payload > capacity forces slow path
     const uint32_t kPayload2 = msg.size_available() + 1u;
     dst = msg.init_message(make_recv_header(kPayload2, 3u, 4u, 22u), kPayload2);
     ASSERT_NE(dst, nullptr);

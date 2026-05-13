@@ -1284,15 +1284,15 @@ TEST(StringDefsTest1, string_line_length_wide)
 
     const WideString params[]
     {
-          {L"12345"              , 5}   // plain string — whole length
+          {L"12345"              , 5}   // plain string -- whole length
         , {L"12345\n67890\n"    , 5}   // stops at first '\n'
         , {L"12345\r67890\r"    , 5}   // stops at first '\r'
         , {L"12345\r\n67890"    , 5}   // stops at '\r' (DOS EOL)
-        , {nullptr              , 0}   // null pointer — length 0
-        , {L""                  , 0}   // empty string — length 0
-        , {L"\n12345\n67890\n"  , 0}   // starts with '\n' — line length 0
-        , {L"\r12345\r67890\r"  , 0}   // starts with '\r' — line length 0
-        , {L"\t12345\n67890\n"  , 6}   // '\t' is not EOL — counts tab + 5 chars
+        , {nullptr              , 0}   // null pointer -- length 0
+        , {L""                  , 0}   // empty string -- length 0
+        , {L"\n12345\n67890\n"  , 0}   // starts with '\n' -- line length 0
+        , {L"\r12345\r67890\r"  , 0}   // starts with '\r' -- line length 0
+        , {L"\t12345\n67890\n"  , 6}   // '\t' is not EOL -- counts tab + 5 chars
     };
 
     for (const auto& entry : params)

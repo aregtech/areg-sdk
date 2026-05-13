@@ -13,7 +13,7 @@
  * \brief       Areg Platform, POSIX spin-lock implementation.
  *              Uses POSIX pthread_spinlock_t for all non-Apple POSIX platforms
  *              (Linux, Cygwin, FreeBSD, etc.).
- *              macOS uses os_unfair_lock — see macos/SpinLockMacOS.cpp.
+ *              macOS uses os_unfair_lock -- see macos/SpinLockMacOS.cpp.
  *
  ************************************************************************/
 
@@ -26,7 +26,7 @@
 #include "areg/base/CommonDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// Non-Apple POSIX — uses pthread_spinlock_t
+// Non-Apple POSIX -- uses pthread_spinlock_t
 //////////////////////////////////////////////////////////////////////////
 
 #ifndef __APPLE__
@@ -40,7 +40,7 @@ SpinLockPosix::SpinLockPosix()
     , mLockCount ( 0u )
     , mIsValid   ( false )
 {
-    // mInternLock is no longer used for guarding owner/count — owner
+    // mInternLock is no longer used for guarding owner/count -- owner
     // acquisition is done with a single CAS on mSpinOwner (atomic).
     // mInternLock is kept for ABI compatibility (same struct layout).
     mIsValid = ( areg::RETURNED_OK == ::pthread_spin_init( &mSpinLock, PTHREAD_PROCESS_PRIVATE ) );
@@ -58,7 +58,7 @@ bool SpinLockPosix::try_lock() noexcept
 
     const pthread_t self = ::pthread_self();
 
-    // Recursive fast path — same thread already owns the lock.
+    // Recursive fast path -- same thread already owns the lock.
     if ( mSpinOwner.load( std::memory_order_relaxed ) == self )
     {
         mLockCount.fetch_add( 1u, std::memory_order_relaxed );
@@ -69,7 +69,7 @@ bool SpinLockPosix::try_lock() noexcept
     if ( areg::RETURNED_OK != ::pthread_spin_trylock( &mSpinLock ) )
         return false;
 
-    // We hold the POSIX lock — record ownership.
+    // We hold the POSIX lock -- record ownership.
     mSpinOwner.store( self, std::memory_order_relaxed );
     mLockCount.store( 1u,   std::memory_order_relaxed );
     return true;
@@ -114,7 +114,7 @@ void SpinLockPosix::_unlock_intern() noexcept
 #endif  // !__APPLE__
 
 //////////////////////////////////////////////////////////////////////////
-// Common POSIX — lock() and unlock() — shared by all POSIX platforms
+// Common POSIX -- lock() and unlock() -- shared by all POSIX platforms
 // (non-Apple uses pthread_spinlock_t; Apple uses os_unfair_lock via
 // macOS/SpinLockMacOS.cpp which overrides _lock_spin/_unlock_spin).
 //////////////////////////////////////////////////////////////////////////
@@ -133,14 +133,14 @@ bool SpinLockPosix::lock() noexcept
 
     const pthread_t self = ::pthread_self();
 
-    // Recursive fast path — no spinning needed.
+    // Recursive fast path -- no spinning needed.
     if ( mSpinOwner.load( std::memory_order_relaxed ) == self )
     {
         mLockCount.fetch_add( 1u, std::memory_order_relaxed );
         return true;
     }
 
-    // Blocking acquire — spin until the POSIX spinlock is available.
+    // Blocking acquire -- spin until the POSIX spinlock is available.
     if ( !_lock_spin() )
         return false;
 
@@ -161,7 +161,7 @@ bool SpinLockPosix::unlock() noexcept
     ASSERT( mLockCount.load() != 0u );
     if ( mLockCount.fetch_sub( 1u, std::memory_order_relaxed ) == 1u )
     {
-        // Last recursion level — clear ownership then release the lock.
+        // Last recursion level -- clear ownership then release the lock.
         mSpinOwner.store( 0, std::memory_order_relaxed );
         _unlock_spin();
     }

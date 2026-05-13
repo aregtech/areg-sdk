@@ -13,8 +13,8 @@
  * \brief       Areg Platform, SocketMultiplexer generic POSIX implementation.
  *              Uses poll() + anonymous pipe for non-Linux, non-Apple POSIX platforms
  *              (Cygwin, FreeBSD, etc.).
- *              Linux uses epoll + eventfd  — see linux/SocketMultiplexerLinux.cpp.
- *              macOS uses kqueue + pipe    — see macos/SocketMultiplexerMacOS.cpp.
+ *              Linux uses epoll + eventfd  -- see linux/SocketMultiplexerLinux.cpp.
+ *              macOS uses kqueue + pipe    -- see macos/SocketMultiplexerMacOS.cpp.
  *
  ************************************************************************/
 
@@ -36,7 +36,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Generic POSIX: constructor, destructor, and wait()
 // using poll() + anonymous pipe (Cygwin, FreeBSD, etc.)
-// Excludes Linux (epoll) and macOS (kqueue) — see their respective files.
+// Excludes Linux (epoll) and macOS (kqueue) -- see their respective files.
 //////////////////////////////////////////////////////////////////////////
 
 #if !defined(__linux__) && !defined(__APPLE__)
@@ -52,8 +52,8 @@ inline void drain_pipe(int fd) noexcept
 
 // -----------------------------------------------------------------------
 // WAKEUP DESIGN:
-//   mWakeupReadFd  = pipe read end  — polled alongside real sockets.
-//   mWakeupWriteFd = pipe write end — one byte written by reset().
+//   mWakeupReadFd  = pipe read end  -- polled alongside real sockets.
+//   mWakeupWriteFd = pipe write end -- one byte written by reset().
 //   wait() checks the wakeup entry last, drains the pipe on fire,
 //   and returns FailedSocketHandle.
 // -----------------------------------------------------------------------
@@ -276,7 +276,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
 #endif  // !defined(__linux__) && !defined(__APPLE__)
 
 //////////////////////////////////////////////////////////////////////////
-// Common POSIX: legacy stateless wait() — available on all POSIX platforms
+// Common POSIX: legacy stateless wait() -- available on all POSIX platforms
 //////////////////////////////////////////////////////////////////////////
 
 SOCKETHANDLE areg::SocketMultiplexer::wait( SOCKETHANDLE            serverSocket

@@ -168,15 +168,35 @@ public:
 
     /**
      * \brief   Returns the raw socket handle matching the specified cookie, or
-     *          areg::InvalidSocketHandle if not found. Cheaper than client_by_cookie()
-     *          because it avoids constructing a SocketAccepted (no ref-count, no address copy).
-     *          Use in hot-path send loops where only the handle is needed for the actual syscall.
+     *          areg::InvalidSocketHandle if not found.
      *
      * \param   clientCookie    The client cookie. Should be valid cookie.
      * \return  Returns valid SOCKETHANDLE if cookie matches; otherwise areg::InvalidSocketHandle.
      **/
     [[nodiscard]]
-    inline SOCKETHANDLE client_handle_by_cookie( const ITEM_ID & clientCookie ) const noexcept;
+    inline SOCKETHANDLE handle_by_cookie( const ITEM_ID & clientCookie ) const noexcept;
+
+    /**
+     * \brief   Returns the raw socket handle matching the specified cookie, or
+     *          areg::InvalidSocketHandle if not found without locking resource.
+     *
+     * \param   clientCookie    The client cookie. Should be valid cookie.
+     * \return  Returns valid SOCKETHANDLE if cookie matches; otherwise areg::InvalidSocketHandle.
+     **/
+    [[nodiscard]]
+    inline SOCKETHANDLE handle_by_cookie_nolock(const ITEM_ID& clientCookie) const noexcept;
+
+    /**
+     * \brief   Resolves \a count cookie values to socket handles in a single shared-lock window.
+     *          Invalid (disconnected) cookies are written as areg::InvalidSocketHandle.
+     *
+     * \param   cookies     Array of \a count cookie values to look up.
+     * \param   handles     Output array; must hold at least \a count elements.
+     * \param   count       Number of entries to resolve.
+     **/
+    inline void batch_handles_by_cookies( const ITEM_ID * cookies
+                                        , SOCKETHANDLE  * handles
+                                        , uint32_t        count ) const noexcept;
 
     [[nodiscard]]
     inline bool cookie_exist(const ITEM_ID& clientCookie) const noexcept;
@@ -191,7 +211,6 @@ public:
     [[nodiscard]]
     inline SocketAccepted client_by_handle( SOCKETHANDLE clientSocket ) const;
 
-private:
     /**
      * \brief   Same as client_by_handle() but called with mLock already held by the caller.
      *          Avoids a recursive lock acquisition in client_by_cookie().
@@ -269,7 +288,7 @@ public:
     /**
      * \brief   Non-blocking variant of wait_connection. Returns immediately if no socket is ready.
      *          Use in a burst-drain loop after a blocking wait_connection() call returns a ready
-     *          socket — processes all already-queued events before re-entering the blocking wait,
+     *          socket -- processes all already-queued events before re-entering the blocking wait,
      *          reducing the number of epoll/kqueue/WSAPoll syscalls under high load.
      *
      * \param[in,out] out_addrNewAccepted    On output, receives the address of a newly accepted
@@ -359,6 +378,10 @@ public:
      * \brief   Sets all sockets to write-only mode, disabling message receiving.
      **/
     inline void disable_receive();
+
+    inline void lock_resource() noexcept;
+
+    inline void unlock_resource() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -502,11 +525,29 @@ inline SocketAccepted ServerConnectionBase::client_by_cookie(const ITEM_ID & cli
     return (mCookieToSocket.is_valid_position(pos) ? client_by_handle_nolock( mCookieToSocket.value_at(pos) ) : SocketAccepted());
 }
 
-inline SOCKETHANDLE ServerConnectionBase::client_handle_by_cookie( const ITEM_ID & clientCookie ) const noexcept
+inline SOCKETHANDLE ServerConnectionBase::handle_by_cookie( const ITEM_ID & clientCookie ) const noexcept
 {
     std::shared_lock<std::shared_mutex> lock( mLock );
     MapCookieToSocket::MAPPOS pos = mCookieToSocket.find(clientCookie);
     return (mCookieToSocket.is_valid_position(pos) ? mCookieToSocket.value_at(pos) : areg::InvalidSocketHandle);
+}
+
+inline SOCKETHANDLE ServerConnectionBase::handle_by_cookie_nolock(const ITEM_ID& clientCookie) const noexcept
+{
+    MapCookieToSocket::MAPPOS pos = mCookieToSocket.find(clientCookie);
+    return (mCookieToSocket.is_valid_position(pos) ? mCookieToSocket.value_at(pos) : areg::InvalidSocketHandle);
+}
+
+inline void ServerConnectionBase::batch_handles_by_cookies( const ITEM_ID  * cookies
+                                                           , SOCKETHANDLE   * handles
+                                                           , uint32_t         count ) const noexcept
+{
+    std::shared_lock<std::shared_mutex> lock( mLock );
+    for (uint32_t i = 0u; i < count; ++i)
+    {
+        MapCookieToSocket::MAPPOS pos = mCookieToSocket.find(cookies[i]);
+        handles[i] = mCookieToSocket.is_valid_position(pos) ? mCookieToSocket.value_at(pos) : areg::InvalidSocketHandle;
+    }
 }
 
 inline bool ServerConnectionBase::cookie_exist(const ITEM_ID& clientCookie) const noexcept
@@ -585,6 +626,16 @@ inline void ServerConnectionBase::disable_receive()
 inline bool ServerConnectionBase::is_interrupted() const noexcept
 {
     return mIsInterrupted.load(std::memory_order_acquire);
+}
+
+inline void ServerConnectionBase::lock_resource() noexcept
+{
+    mLock.lock_shared();
+}
+
+inline void ServerConnectionBase::unlock_resource() noexcept
+{
+    mLock.unlock_shared();
 }
 
 } // namespace areg

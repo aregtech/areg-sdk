@@ -33,7 +33,7 @@
 
 //////////////////////////////////////////////////////////////////////////
 // Generic POSIX private helpers: _create_timer, _start_timer, _stop_timer,
-// _destroy_timer — using POSIX timer_create + SIGEV_THREAD.
+// _destroy_timer -- using POSIX timer_create + SIGEV_THREAD.
 // Covers Cygwin, FreeBSD, and any other non-Linux non-Apple POSIX platform.
 //////////////////////////////////////////////////////////////////////////
 
@@ -164,7 +164,7 @@ bool TimerPosix::create_timer(FuncPosixTimerRoutine funcTimer) noexcept
     return ((mTimerQueue != nullptr) && (mTimerCallback != nullptr)) ||
            ((funcTimer != nullptr) && _create_timer(funcTimer));
 #elif defined(__linux__)
-    // funcTimer is unused on Linux — timerfd is polled via epoll, no callback needed.
+    // funcTimer is unused on Linux -- timerfd is polled via epoll, no callback needed.
     return (mTimerFd >= 0) || _create_timer(funcTimer);
 #else   // Generic POSIX
     return (mTimerId != static_cast<timer_t>(0)) ||

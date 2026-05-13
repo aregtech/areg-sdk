@@ -585,7 +585,7 @@ TEST(SharedBufferTest, clone_independent)
     EXPECT_FALSE(original.is_shared());
     EXPECT_FALSE(cloned.is_shared());
 
-    // Overwrite first uint32_t in original — clone must be unaffected
+    // Overwrite first uint32_t in original -- clone must be unaffected
     original.set_position(0, areg::Cursor::SeekOrigin::Begin);
     original << VAL_C;
 

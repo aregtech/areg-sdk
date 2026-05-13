@@ -39,14 +39,14 @@ namespace areg {
  *          calls without rebuilding a descriptor list on each call.
  *
  *          Platform-specific wait backend:
- *          - Linux        : \c epoll_wait() — O(1) regardless of socket count.
- *          - macOS        : \c kevent() (kqueue) — O(1) like epoll.
+ *          - Linux        : \c epoll_wait() -- O(1) regardless of socket count.
+ *          - macOS        : \c kevent() (kqueue) -- O(1) like epoll.
  *          - Windows      : \c WSAPoll.
  *          - other POSIX  : \c poll() (Cygwin, FreeBSD, etc.).
  *
  *          Shutdown-safe wakeup mechanism (all platforms):
  *          Calling reset() from any thread immediately unblocks a wait()
- *          call that is in progress on another thread — no timeouts needed.
+ *          call that is in progress on another thread -- no timeouts needed.
  *          The wakeup is implemented with OS-native primitives:
  *          - Linux        : \c eventfd (mWakeupReadFd == mWakeupWriteFd, same fd).
  *          - macOS        : anonymous \c pipe (monitored via kqueue).
@@ -165,7 +165,7 @@ public:
     SOCKETHANDLE wait(int32_t timeoutMs = static_cast<int32_t>(areg::WAIT_INFINITE)) const noexcept;
 
     /**
-     * \brief   Stateless wait — builds a temporary poll list from the
+     * \brief   Stateless wait -- builds a temporary poll list from the
      *          provided arguments without requiring prior registration.
      *          Provided for RTOS and embedded environments where epoll and
      *          kqueue are unavailable.
@@ -229,7 +229,7 @@ private:
     //!< On Windows      : connected side of a loopback TCP socket pair.
     SOCKETHANDLE    mWakeupWriteFd;
 
-    //!< Batch result cache — filled by the OS poll call, drained one handle per wait() call.
+    //!< Batch result cache -- filled by the OS poll call, drained one handle per wait() call.
     //!< Avoids N syscalls for N simultaneously-ready sockets (e.g., 50+ clients under burst).
     //!< Only accessed from the single receive thread that calls wait(), so no synchronization needed.
     mutable uint32_t            mBatchCount;    //!< Number of valid entries in mBatchFds[].

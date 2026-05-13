@@ -94,7 +94,7 @@ public:
      *
      * Use this to hold the lock across multiple operations that must be atomic.
      * Individual ConfigManager methods already acquire the lock internally, so there
-     * is no need to wrap a single call — only use `lockable()` when you need to hold
+     * is no need to wrap a single call -- only use `lockable()` when you need to hold
      * the lock across a sequence of calls.
      **/
     [[nodiscard]]

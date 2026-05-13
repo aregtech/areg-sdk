@@ -34,7 +34,7 @@ inline void drain_eventfd(int fd) noexcept
 
 // -----------------------------------------------------------------------
 // WAKEUP DESIGN:
-//   mWakeupReadFd == mWakeupWriteFd — both reference the same eventfd.
+//   mWakeupReadFd == mWakeupWriteFd -- both reference the same eventfd.
 //   reset() writes 1 to the eventfd  ->  epoll_wait() wakes immediately.
 //   wait()  reads the eventfd counter to drain it, returns FailedSocketHandle.
 //
@@ -113,8 +113,8 @@ bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search)
         return false;
 
     struct epoll_event ev;
-    // EPOLLIN    — data available or peer sent FIN (recv returns 0)
-    // EPOLLRDHUP — peer shut down.
+    // EPOLLIN    -- data available or peer sent FIN (recv returns 0)
+    // EPOLLRDHUP -- peer shut down.
     // EPOLLERR / EPOLLHUP - reported automatically by the kernel regardless of the mask.
     ev.events   = EPOLLIN | EPOLLRDHUP | EPOLLERR | EPOLLHUP;
     ev.data.fd  = static_cast<int>(hSocket);

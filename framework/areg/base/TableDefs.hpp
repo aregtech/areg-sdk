@@ -109,7 +109,7 @@ enum class CharCategory : uint16_t
 //!< Bit-flag aliases matching areg::CharCategory values (mirrored here to avoid circular inclusion).
 //!< Unclassified or reserved code point.
 inline constexpr uint16_t TBL_DUMMY{ static_cast<uint16_t>(areg::CharCategory::Undefined) };
-//!< Null byte — end of string marker.
+//!< Null byte -- end of string marker.
 inline constexpr uint16_t TBL_EOFS{ static_cast<uint16_t>(areg::CharCategory::EOfS) };
 //!< End-of-line character (e.g. '\n'); also acts as whitespace.
 inline constexpr uint16_t TBL_EOFL{ static_cast<uint16_t>(areg::CharCategory::EndOfLine) | static_cast<uint16_t>(areg::CharCategory::WhiteSpace) };

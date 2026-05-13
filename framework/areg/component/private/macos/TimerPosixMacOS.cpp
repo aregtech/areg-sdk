@@ -66,7 +66,7 @@ bool TimerPosix::_start_timer() noexcept
             if (mTimerSource != INVALID_DISPATCH_SOURCE)
             {
                 uint64_t interval_ns = static_cast<uint64_t>(msTimeout) * NSEC_PER_MSEC;
-                uint64_t leeway_ns   = 0;   // strict timing — no leeway
+                uint64_t leeway_ns   = 0;   // strict timing -- no leeway
 
                 dispatch_source_set_timer(mTimerSource,
                                           dispatch_time(DISPATCH_TIME_NOW, interval_ns),

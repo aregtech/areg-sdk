@@ -100,7 +100,7 @@ TEST(StringDefsTest2, utf8_index)
 }
 
 /************************************************************************
- * utf8_char_def — consistency with is_* classification functions
+ * utf8_char_def -- consistency with is_* classification functions
  ************************************************************************/
 
 /**
@@ -391,7 +391,7 @@ TEST(StringDefsTest2, make_string_radix)
  **/
 TEST(StringDefsTest2, make_string_size_query)
 {
-    // nullptr buffer — returns required length.
+    // nullptr buffer -- returns required length.
     // MSVC preprocessor treats '<CharType, IntType>' commas as macro arg separators,
     // so we capture the result in a local variable before passing to EXPECT_EQ.
     {
@@ -419,7 +419,7 @@ TEST(StringDefsTest2, make_string_size_query)
         EXPECT_EQ(n, 3);
     }
 
-    // charCount == 0 — also returns required size
+    // charCount == 0 -- also returns required size
     char dummy[64]{};
     {
         int32_t n = areg::make_string<char, int>(dummy, 0, 999, areg::Radix::Decimal);
@@ -432,7 +432,7 @@ TEST(StringDefsTest2, make_string_size_query)
  ************************************************************************/
 
 /**
- * \brief   Test revert_string with COUNT_ALL — reverses the entire string.
+ * \brief   Test revert_string with COUNT_ALL -- reverses the entire string.
  *
  *          Verifies that "hello" becomes "olleh", a single character stays
  *          unchanged, and null / empty inputs are handled safely.
@@ -1001,15 +1001,15 @@ TEST(StringDefsTest2, wchar_find_first_last)
 {
     const wchar_t* src = L"Hello World Hello";
 
-    // find_first character — case-sensitive
+    // find_first character -- case-sensitive
     EXPECT_EQ(areg::find_first<wchar_t>(L'H', src), 0);
     EXPECT_EQ(areg::find_first<wchar_t>(L'o', src), 4);
     EXPECT_EQ(areg::find_first<wchar_t>(L'z', src), areg::INVALID_POS);
 
-    // find_first character — case-insensitive: 'h' finds 'H' at position 0
+    // find_first character -- case-insensitive: 'h' finds 'H' at position 0
     EXPECT_EQ(areg::find_first<wchar_t>(L'h', src, areg::START_POS, false), 0);
 
-    // find_first phrase — case-sensitive
+    // find_first phrase -- case-sensitive
     EXPECT_EQ(areg::find_first<wchar_t>(L"Hello", src), 0);
     EXPECT_EQ(areg::find_first<wchar_t>(L"World", src), 6);
     EXPECT_EQ(areg::find_first<wchar_t>(L"xyz",   src), areg::INVALID_POS);
@@ -1023,13 +1023,13 @@ TEST(StringDefsTest2, wchar_find_first_last)
     // find_first phrase case-insensitive
     EXPECT_EQ(areg::find_first<wchar_t>(L"hello", src, areg::START_POS, false), 0);
 
-    // find_last character — case-sensitive: last 'l' in "Hello World Hello"
+    // find_last character -- case-sensitive: last 'l' in "Hello World Hello"
     EXPECT_EQ(areg::find_last<wchar_t>(L'l', src), 15);
 
-    // find_last character — case-insensitive: last 'h' or 'H'
+    // find_last character -- case-insensitive: last 'h' or 'H'
     EXPECT_EQ(areg::find_last<wchar_t>(L'h', src, areg::END_POS, false), 12);
 
-    // find_last phrase — case-sensitive: last "Hello"
+    // find_last phrase -- case-sensitive: last "Hello"
     EXPECT_EQ(areg::find_last<wchar_t>(L"Hello", src), 12);
 
     // find_last phrase not found
@@ -1084,34 +1084,34 @@ TEST(StringDefsTest2, wchar_remove_char)
  **/
 TEST(StringDefsTest2, wchar_starts_ends_with)
 {
-    // starts_with phrase — case-sensitive
+    // starts_with phrase -- case-sensitive
     EXPECT_TRUE(areg::string_starts_with<wchar_t>(L"Hello World", L"Hello"));
     EXPECT_FALSE(areg::string_starts_with<wchar_t>(L"Hello World", L"World"));
     EXPECT_FALSE(areg::string_starts_with<wchar_t>(L"Hello World", L"hello"));
 
-    // starts_with phrase — case-insensitive
+    // starts_with phrase -- case-insensitive
     EXPECT_TRUE(areg::string_starts_with<wchar_t>(L"Hello World", L"hello", false));
     EXPECT_TRUE(areg::string_starts_with<wchar_t>(L"HELLO World", L"hello", false));
 
-    // starts_with character — case-sensitive
+    // starts_with character -- case-sensitive
     EXPECT_TRUE(areg::string_starts_with<wchar_t>(L"Hello", L'H'));
     EXPECT_FALSE(areg::string_starts_with<wchar_t>(L"Hello", L'h'));
 
-    // starts_with character — case-insensitive
+    // starts_with character -- case-insensitive
     EXPECT_TRUE(areg::string_starts_with<wchar_t>(L"Hello", L'h', false));
 
-    // ends_with phrase — case-sensitive
+    // ends_with phrase -- case-sensitive
     EXPECT_TRUE(areg::string_ends_with<wchar_t>(L"Hello World", L"World"));
     EXPECT_FALSE(areg::string_ends_with<wchar_t>(L"Hello World", L"world"));
 
-    // ends_with phrase — case-insensitive
+    // ends_with phrase -- case-insensitive
     EXPECT_TRUE(areg::string_ends_with<wchar_t>(L"Hello World", L"world", false));
 
-    // ends_with character — case-sensitive
+    // ends_with character -- case-sensitive
     EXPECT_TRUE(areg::string_ends_with<wchar_t>(L"Hello", L'o'));
     EXPECT_FALSE(areg::string_ends_with<wchar_t>(L"Hello", L'O'));
 
-    // ends_with character — case-insensitive
+    // ends_with character -- case-insensitive
     EXPECT_TRUE(areg::string_ends_with<wchar_t>(L"Hello", L'O', false));
 
     // Null and empty edge cases

@@ -141,7 +141,7 @@ public:
     /**
      * \brief   Sends a message directly using a raw socket handle, bypassing SocketAccepted
      *          construction. Use in the hot-path send loop after resolving the handle via
-     *          client_handle_by_cookie().
+     *          handle_by_cookie().
      *
      * \param   in_message  The message to send.
      * \param   hSocket     Raw OS socket handle of the target client.

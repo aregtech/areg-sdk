@@ -160,8 +160,8 @@ void areg::Application::_os_release_handlers()
 
     if (theApp.mSetup)
     {
-        signal(SIGPIPE, nullptr);
-        signal(SIGSEGV, nullptr);
+        signal(SIGPIPE, SIG_DFL);
+        signal(SIGSEGV, SIG_DFL);
         theApp.mSetup = false;
     }
 }

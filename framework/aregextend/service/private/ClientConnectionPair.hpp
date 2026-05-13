@@ -40,7 +40,7 @@ namespace areg::ext {
  * OWNERSHIP NOTE: unique_ptr is used because the pool pair has a single, clear
  *          owner (ServiceCommunicationBase).  The pair is created at server start
  *          and destroyed at server stop.  Async cleanup paths (connection_lost,
- *          failed_receive_message) do not extend the pair's lifetime — they only
+ *          failed_receive_message) do not extend the pair's lifetime -- they only
  *          remove a single socket from the pair's multiplexer, not stop the pair.
  **/
 class ClientConnectionPair
@@ -139,6 +139,18 @@ public:
     [[nodiscard]]
     inline SOCKETHANDLE socket_by_cookie(const ITEM_ID& cookie) const noexcept;
 
+    /**
+     * \brief   Resolves all \a count cookies to socket handles in one lock window.
+     *          Mirrors ServerConnectionBase::batch_handles_by_cookies for the per-slot map.
+     *
+     * \param   cookies     Array of \a count cookie values to look up.
+     * \param   handles     Output array, same size as \a cookies.
+     * \param   count       Number of entries to resolve.
+     **/
+    inline void batch_sockets_by_cookies( const ITEM_ID * cookies
+                                        , SOCKETHANDLE  * handles
+                                        , uint32_t        count ) const noexcept;
+
     [[nodiscard]]
     inline SocketAccepted client_by_cookie(const ITEM_ID& cookie) const noexcept;
 
@@ -185,6 +197,18 @@ inline SOCKETHANDLE ClientConnectionPair::socket_by_cookie(const ITEM_ID& cookie
     Lock lock(mLock);
     SocketAccepted client;
     return (mConnections.find(cookie, client) ? client.handle() : areg::InvalidSocketHandle);
+}
+
+inline void ClientConnectionPair::batch_sockets_by_cookies( const ITEM_ID * cookies
+                                                           , SOCKETHANDLE  * handles
+                                                           , uint32_t        count ) const noexcept
+{
+    Lock lock(mLock);
+    for (uint32_t i = 0u; i < count; ++i)
+    {
+        SocketAccepted client;
+        handles[i] = mConnections.find(cookies[i], client) ? client.handle() : areg::InvalidSocketHandle;
+    }
 }
 
 inline SocketAccepted ClientConnectionPair::client_by_cookie(const ITEM_ID& cookie) const noexcept

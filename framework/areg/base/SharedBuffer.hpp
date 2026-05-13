@@ -265,7 +265,7 @@ public:
      * \param   size    Total bytes required (not an increment).
      * \param   copy    If true, existing written bytes are copied into the new block
      *                  and mPosition is left after them (at biUsed).
-     *                  If false, mPosition and biUsed are both reset to 0 — any
+     *                  If false, mPosition and biUsed are both reset to 0 -- any
      *                  in-progress write position is silently discarded.
      * \return  Available writable bytes after the operation; 0 on failure.
      **/
@@ -411,7 +411,7 @@ public:
 //  SharedBuffer (or a subclass) and maximum throughput is required.
 //
 //  read_ptr<T>  / read_array<T> : return a typed pointer DIRECTLY INTO
-//  the buffer memory — no copy, O(1) regardless of sizeof(T).  The caller
+//  the buffer memory -- no copy, O(1) regardless of sizeof(T).  The caller
 //  must not use the pointer after any write that causes buffer reallocation.
 //
 //  write_pod<T> / write_array<T>: append bytes without going through the
@@ -510,7 +510,7 @@ protected:
     virtual uint32_t data_offset() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
-// Hot-path helpers — protected so derived classes (e.g. RemoteMessage) can
+// Hot-path helpers -- protected so derived classes (e.g. RemoteMessage) can
 // call them directly without going through the virtual OutStream/InStream
 // dispatch.  Non-virtual; the compiler can inline all three within a TU.
 //////////////////////////////////////////////////////////////////////////

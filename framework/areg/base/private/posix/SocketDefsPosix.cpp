@@ -93,6 +93,36 @@ void _os_close_socket(SOCKETHANDLE hSocket)
     ASSERT(areg::is_valid_socket(hSocket));
     ::shutdown(hSocket, SHUT_RDWR);
     ::close(hSocket);
+
+    areg::thread_rx_cache_release(hSocket);
+}
+
+int32_t _os_send_data_window(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength)
+{
+    ASSERT(areg::is_valid_socket(hSocket));
+    ASSERT((dataBuffer != nullptr) && (dataLength > 0));
+
+#if defined(MSG_NOSIGNAL)
+    constexpr int sendFlags = MSG_NOSIGNAL;
+#else
+    constexpr int sendFlags = 0;
+#endif
+
+    constexpr int32_t WINDOW{ static_cast<int32_t>(areg::DEFAULT_THREAD_CACHE_KB * areg::ONE_KILOBYTE) };
+
+    int32_t total{ 0 };
+    do
+    {
+        const int32_t remaining = dataLength - total;
+        const int32_t chunk = remaining < WINDOW ? remaining : WINDOW;
+        const ssize_t written = ::send(hSocket, reinterpret_cast<const char*>(dataBuffer + total), static_cast<size_t>(chunk), sendFlags);
+        if (written > 0)
+            total += static_cast<int32_t>(written);
+        else if (errno != EINTR)
+            return -1;
+    } while (total < dataLength);
+
+    return total;
 }
 
 int32_t _os_send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength)
@@ -119,9 +149,10 @@ int32_t _os_send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t d
     return total;
 }
 
-int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t /*totalSize*/)
+int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t totalSize)
 {
-    // Single buffer — bypass iovec setup entirely.
+#if 0
+    // Single buffer -- bypass iovec setup entirely.
     if (count == 1u)
         return _os_send_data(hSocket, buffers->data, static_cast<int32_t>(buffers->size));
 
@@ -133,7 +164,7 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
     static_assert(offsetof(areg::IoBuffer, size) == offsetof(struct iovec, iov_len),  "IoBuffer/iovec size offset mismatch");
     static_assert(sizeof(areg::IoBuffer::size) == sizeof(size_t),                    "IoBuffer::size / iov_len width mismatch");
 
-    ssize_t written;
+    ssize_t written{0};
     do
     {
         written = ::writev(static_cast<int>(hSocket),
@@ -141,10 +172,74 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
                            static_cast<int>(count));
     } while ((written < 0) && (errno == EINTR));
 
-    return (written > 0) ? static_cast<int32_t>(written) : -1;
+    return (written == static_cast<ssize_t>(totalSize) ? static_cast<int32_t>(written) : -1);
+#else
+    // Single buffer -- bypass setup entirely.
+    if (count == 1u)
+    {
+        return _os_send_data(hSocket, buffers->data, static_cast<int32_t>(buffers->size));
+    }
+
+    ASSERT(count <= areg::THREAD_BATCH_LIMIT);
+    int32_t result = 0;
+    areg::ThreadCache& tc = areg::thread_tx_cache();
+    uint8_t* const staging = tc.cache();
+    if (((totalSize / count) >= (tc.space / 2)) || (staging == nullptr))
+    {
+#if 0
+        for (uint32_t i = 0; i < count; ++i)
+        {
+            const int32_t written = _os_send_data(hSocket, buffers[i].data, static_cast<int32_t>(buffers[i].size));
+            if (written < 0)
+                return -1;
+
+            result += written;
+        }
+#else
+        ssize_t written{ 0 };
+        do
+        {
+            written = ::writev(static_cast<int>(hSocket), reinterpret_cast<const struct iovec*>(buffers), static_cast<int>(count));
+        } while ((written < 0) && (errno == EINTR));
+
+        return (written == static_cast<ssize_t>(totalSize) ? static_cast<int32_t>(written) : -1);
+#endif
+    }
+    else
+    {
+        uint32_t copied = static_cast<int32_t>(buffers->size);
+        ::memcpy(staging, buffers->data, copied);
+        ++buffers;
+        for (uint32_t i = 1; i < count; ++i, ++buffers)
+        {
+            if ((copied + buffers->size) > tc.space)
+            {
+                const int32_t written = _os_send_data(hSocket, staging, copied);
+                if (written < 0)
+                    return -1;
+                result += written;
+                copied = 0;
+            }
+
+            ::memcpy(staging + copied, buffers->data, buffers->size);
+            copied += static_cast<int32_t>(buffers->size);
+        }
+
+        if (copied != 0)
+        {
+            const int32_t written = _os_send_data(hSocket, staging, copied);
+            if (written < 0)
+                return -1;
+
+            result += written;
+        }
+    }
+
+    return result;
+#endif
 }
 
-// Blocking exact read — MSG_WAITALL, no speculative buffering, no cache access.
+// Blocking exact read -- MSG_WAITALL, no speculative buffering, no cache access.
 static int32_t _recv_exact(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
 {
 #ifdef MSG_WAITALL
@@ -165,10 +260,24 @@ static int32_t _recv_exact(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t da
     return total;
 }
 
-// Greedy cached read — 3-phase speculative buffering.
+// Greedy cached read -- 3-phase strategy.
 //   Phase 1: serve from thread-local cache (zero syscall on cache hit).
-//   Phase 2: one greedy recv() fills the cache; serve needed bytes, keep surplus.
-//   Phase 3: MSG_WAITALL completion for the rare partial-fill or oversized-request case.
+//             Cache is always empty on exit from Phase 1 (either fully consumed or
+//             the caller's request was satisfied in full and we return early).
+//   Phase 2: large request (needed >= cache capacity) -- reads directly into the
+//             caller's buffer with MSG_WAITALL; the cache plays no role.  Avoids an
+//             extra memcpy and prevents a large recv from polluting the cache with
+//             data that belongs to the caller.
+//   Phase 3: small request (needed < cache capacity) -- fills the cache greedily:
+//             recv(flag=0) returns as soon as ANY bytes arrive in the kernel buffer
+//             (not waiting for a full cache), so no idle-period block occurs.  The
+//             loop repeats only in the rare case where the first recv delivered fewer
+//             bytes than needed; each subsequent call also returns immediately on
+//             arrival.  Once tc.unread >= needed, copy needed bytes to the caller and
+//             retain the surplus for the next Phase 1 hit.
+//   No SO_RCVTIMEO is set anywhere; each recv() blocks until data arrives, the
+//   socket is shut down / closed (recv returns 0), or TCP keepalive tears down a
+//   dead peer (~8 s worst case with the current keepalive settings).
 static int32_t _recv_cached(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
 {
 #ifdef MSG_WAITALL
@@ -182,10 +291,10 @@ static int32_t _recv_cached(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t d
     if ((cache == nullptr) || (tc.space == 0u))
         return _recv_exact(hSocket, dataBuffer, dataLength);
 
-    const uint32_t needed = static_cast<uint32_t>(dataLength);
-    uint32_t total = 0u;
+    uint32_t needed = static_cast<uint32_t>(dataLength);
+    uint32_t total  = 0u;
 
-    // Phase 1: serve from cache — zero kernel cost.
+    // Phase 1: serve from cache -- zero kernel cost.
     if (tc.unread > 0u)
     {
         const uint32_t take = (tc.unread < needed) ? tc.unread : needed;
@@ -194,38 +303,43 @@ static int32_t _recv_cached(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t d
         tc.unread -= take;
         total     += take;
         if (total == needed)
-            return static_cast<int32_t>(needed);
+            return static_cast<int32_t>(total);
+
+        needed -= take;
     }
 
-    // Phase 2: greedy fill — one blocking recv captures all bytes in the kernel buffer.
-    if ((needed - total) <= tc.space)
-    {
-        tc.head   = 0u;
-        tc.unread = 0u;
+    // tc.unread == 0: cache is empty (drained by Phase 1 or was already empty).
 
-        ssize_t filled;
-        do
+    // Phase 2: large request -- bypass cache, read directly into the caller's buffer.
+    if (needed >= static_cast<uint32_t>(tc.space))
+    {
+        while (needed > 0u)
         {
-            filled = ::recv(hSocket, reinterpret_cast<char*>(cache), static_cast<size_t>(tc.space), 0);
-        } while ((filled < 0) && (errno == EINTR));
-        if (filled <= 0)
-            return -1;
+            const ssize_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), static_cast<size_t>(needed), recvExact);
+            if (received > 0)
+            {
+                total  += static_cast<uint32_t>(received);
+                needed -= static_cast<uint32_t>(received);
+            }
+            else if (received == 0 || errno != EINTR)
+            {
+                return -1;
+            }
+        }
 
-        tc.unread = static_cast<uint32_t>(filled);
-        const uint32_t take = (tc.unread < (needed - total)) ? tc.unread : (needed - total);
-        ::memcpy(dataBuffer + total, cache, take);
-        tc.head   = take;
-        tc.unread -= take;
-        total     += take;
+        return static_cast<int32_t>(total);
     }
 
-    // Phase 3: complete any remainder — rare (partial greedy fill or oversized request).
-    while (total < needed)
+    // Phase 3: small request -- fill cache greedily, serve needed bytes, keep surplus.
+    // Reset to the start of the buffer (tc.head may be non-zero after a Phase 1 drain).
+    tc.head   = 0u;
+    tc.unread = 0u;
+    while (tc.unread < needed)
     {
-        const ssize_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), static_cast<size_t>(needed - total), recvExact);
-        if (received > 0)
-            total += static_cast<uint32_t>(received);
-        else if (received == 0 || errno != EINTR)
+        const ssize_t filled = ::recv(hSocket, reinterpret_cast<char*>(cache + tc.unread), static_cast<size_t>(tc.space - tc.unread), 0);
+        if (filled > 0)
+            tc.unread += static_cast<uint32_t>(filled);
+        else if (filled == 0 || errno != EINTR)
         {
             tc.head   = 0u;
             tc.unread = 0u;
@@ -233,7 +347,12 @@ static int32_t _recv_cached(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t d
         }
     }
 
-    return static_cast<int32_t>(needed);
+    // Cache holds >= needed bytes from cache[0]; copy needed and retain the rest.
+    ::memcpy(dataBuffer + total, cache, needed);
+    tc.head    = needed;
+    tc.unread -= needed;
+    total     += needed;
+    return static_cast<int32_t>(total);
 }
 
 int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
@@ -241,9 +360,36 @@ int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLen
     ASSERT(areg::is_valid_socket(hSocket));
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
 
-    return (areg::receive_mode() == areg::ReceiveMode::Exact)
+    return (areg::receive_mode() == areg::ReceiveMode::NoCache)
          ? _recv_exact(hSocket, dataBuffer, dataLength)
          : _recv_cached(hSocket, dataBuffer, dataLength);
+}
+
+int32_t _os_recv_data_window(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
+{
+    ASSERT(areg::is_valid_socket(hSocket));
+    ASSERT((dataBuffer != nullptr) && (dataLength > 0));
+
+#ifdef MSG_WAITALL
+    constexpr int recvExact = MSG_WAITALL;
+#else
+    constexpr int recvExact = 0;
+#endif
+
+    constexpr int32_t WINDOW{ static_cast<int32_t>(areg::DEFAULT_THREAD_CACHE_KB * areg::ONE_KILOBYTE) };
+    int32_t total{ 0 };
+    do
+    {
+        const int32_t remaining = dataLength - total;
+        const int32_t chunk = remaining < WINDOW ? remaining : WINDOW;
+        const ssize_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), static_cast<size_t>(chunk), recvExact);
+        if (received > 0)
+            total += static_cast<int32_t>(received);
+        else if (received == 0 || errno != EINTR)
+            return -1;
+    } while (total < dataLength);
+
+    return total;
 }
 
 bool _os_connect_socket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen, uint32_t timeoutMs)

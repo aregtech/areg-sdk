@@ -329,7 +329,7 @@ inline constexpr uint32_t crc32_calculate( const wchar_t * strData ) noexcept;
  *                      returned by a previous crc32_start() call.
  * \param   data        Pointer to binary data. Returns crcInit unchanged when nullptr or size <= 0.
  * \param   size        Number of bytes to process.
- * \return  Intermediate CRC value — pass to the next crc32_start() call or to crc32_finish().
+ * \return  Intermediate CRC value -- pass to the next crc32_start() call or to crc32_finish().
  **/
 [[nodiscard]]
 inline constexpr uint32_t crc32_start( uint32_t crcInit, const uint8_t * data, int32_t size ) noexcept;
@@ -341,7 +341,7 @@ inline constexpr uint32_t crc32_start( uint32_t crcInit, const uint8_t * data, i
  * \param   crcInit     Seed value: use crc32_init() on the first call, or the value
  *                      returned by a previous crc32_start() call.
  * \param   data        Null-terminated string. Returns crcInit unchanged when nullptr or empty.
- * \return  Intermediate CRC value — pass to the next crc32_start() call or to crc32_finish().
+ * \return  Intermediate CRC value -- pass to the next crc32_start() call or to crc32_finish().
  **/
 [[nodiscard]]
 inline constexpr uint32_t crc32_start( uint32_t crcInit, const char * data ) noexcept;
@@ -353,7 +353,7 @@ inline constexpr uint32_t crc32_start( uint32_t crcInit, const char * data ) noe
  * \param   crcInit     Seed value: use crc32_init() on the first call, or the value
  *                      returned by a previous crc32_start() call.
  * \param   uch         Single byte to process.
- * \return  Intermediate CRC value — pass to the next crc32_start() call or to crc32_finish().
+ * \return  Intermediate CRC value -- pass to the next crc32_start() call or to crc32_finish().
  **/
 [[nodiscard]]
 inline constexpr uint32_t crc32_start( uint32_t crcInit, uint8_t uch ) noexcept;

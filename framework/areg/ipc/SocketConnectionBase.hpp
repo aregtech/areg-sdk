@@ -141,17 +141,12 @@ inline int32_t SocketConnectionBase::send_message(const RemoteMessage& message, 
 
 inline int32_t SocketConnectionBase::send_messages_batch(const areg::IoBuffer* const ioBuffer, uint32_t count, SOCKETHANDLE hSocket, uint32_t totalSize) const
 {
-    if ((count == 0u) || (ioBuffer == nullptr) || !areg::is_valid_socket(hSocket))
-        return 0;
-    else if (count == 1)
-        return areg::send_data(hSocket, ioBuffer[0].data, static_cast<uint32_t>(ioBuffer[0].size));
-    else
-        return areg::send_data_v(hSocket, ioBuffer, count, totalSize);
+    return areg::send_data_v(hSocket, ioBuffer, count, totalSize);
 }
 
 inline int32_t SocketConnectionBase::send_messages_batch(const areg::IoBuffer* const ioBuffer, uint32_t count, const Socket& socket, uint32_t totalSize /*= 0*/) const
 {
-    return send_messages_batch(ioBuffer, count, socket.handle(), totalSize);
+    return areg::send_data_v(socket.handle(), ioBuffer, count, totalSize);
 }
 
 inline int32_t SocketConnectionBase::send_messages_batch(const RemoteMessage* const* messages, uint32_t count, const Socket& socket) const

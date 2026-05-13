@@ -111,7 +111,7 @@ public:
 
     /**
      * \brief   Returns a pointer to the LogEntry embedded in the message buffer.
-     *          Valid only for LogMessage events — returns nullptr if the message is not allocated.
+     *          Valid only for LogMessage events -- returns nullptr if the message is not allocated.
      **/
     [[nodiscard]]
     inline const areg::LogEntry* log_entry() const noexcept;

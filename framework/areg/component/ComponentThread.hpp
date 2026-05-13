@@ -224,7 +224,7 @@ protected:
     int32_t on_exit() final;
 
 /************************************************************************/
-// ComponentThread lifecycle — not virtual: ComponentThread is final
+// ComponentThread lifecycle -- not virtual: ComponentThread is final
 /************************************************************************/
 
     /**

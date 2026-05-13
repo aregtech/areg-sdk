@@ -36,7 +36,7 @@ void Process::_os_initilize()
     uint32_t bufSize = static_cast<uint32_t>(File::MAXIMUM_PATH);
     if (_NSGetExecutablePath(buffer, &bufSize) != 0)
     {
-        // Buffer too small — try again with the required size.
+        // Buffer too small -- try again with the required size.
         if (bufSize <= static_cast<uint32_t>(File::MAXIMUM_PATH))
         {
             _NSGetExecutablePath(buffer, &bufSize);

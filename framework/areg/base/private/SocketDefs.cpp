@@ -61,41 +61,56 @@ namespace areg::os {
 
     /**
      * \brief   OS specific socket close.
-     */
+     **/
     void _os_close_socket(SOCKETHANDLE hSocket);
 
     /**
      * \brief   OS specific send data implementation. All checkups and validations should
      *          be done before calling the method.
      * \return  Returns number of bytes sent via network.
-     */
+     **/
     int32_t _os_send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength);
+
+    /**
+     * \brief   Sends messages in windows so that large messages (e.g. 3 MB -> 6 x 512KB windows) never
+     *          hand a single oversized buffer to the kernel in one shot.  This matches the
+     *          size of thread-cache and keeps per-send latency predictable, requires no extra copy.
+     **/
+    int32_t _os_send_data_window(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength);
 
     /**
      * \brief   OS specific scatter/gather send. All checkups and validations should
      *          be done before calling the method.
      * \return  Returns total bytes sent; negative on error.
-     */
+     **/
     int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t totalSize);
 
     /**
      * \brief   OS specific receive data implementation. All checkups and validations should
      *          be done before calling the method.
      * \return  Returns number of bytes received via network.
-     */
+     **/
     int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength);
+
+    /**
+     * \brief   Receives exactly \a dataLength bytes from \a hSocket in windowed chunks
+     *          of at most DEFAULT_THREAD_CACHE_KB * ONE_KILOBYTE bytes per recv() call.
+     *          Loops until all bytes are received; no cache involvement.
+     * \return  Returns number of bytes received; negative on error or peer disconnect.
+     **/
+    int32_t _os_recv_data_window(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength);
 
     /**
      * \brief   OS specific implementation of socket control call.
      * \return  Returns true if operation succeeded.
-     */
+     **/
     bool _os_control(SOCKETHANDLE hSocket, int32_t cmd, unsigned long & arg);
 
     /**
      * \brief   OS specific implementation of retrieving socket option.
      *          On output the 'value' indicates the value of the option,
      *          which is valid only if function returns true.
-     */
+     **/
     bool _os_get_option(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned long & value);
 
     /**
@@ -117,6 +132,21 @@ namespace areg::os {
     void _os_configure_connected_socket(SOCKETHANDLE hSocket) noexcept;
 
 } // namespace areg::os
+
+namespace
+{
+    inline areg::ReceiveMode& _thread_receive_mode(void) noexcept
+    {
+        static thread_local areg::ReceiveMode _mode{ areg::ReceiveMode::NoCache };
+        return _mode;
+    }
+
+    inline std::unordered_map<SOCKETHANDLE, areg::ThreadCache>& _thread_local_cache()
+    {
+        static thread_local std::unordered_map<SOCKETHANDLE, areg::ThreadCache> _rx_caches;
+        return _rx_caches;
+    }
+}
 
 
 /**
@@ -428,7 +458,7 @@ AREG_API_IMPL void areg::socket_set_no_delay(SOCKETHANDLE hSocket) noexcept
 {
     ASSERT(is_valid_socket(hSocket));
     // Disable Nagle algorithm so small RPC messages are sent immediately
-    // Only meaningful on connected sockets — do NOT call on listening sockets.
+    // Only meaningful on connected sockets -- do NOT call on listening sockets.
     constexpr int32_t noDelay{ 1 };
     ::setsockopt(hSocket, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char *>(&noDelay), sizeof(noDelay));
     areg::os::_os_configure_connected_socket(hSocket);
@@ -451,7 +481,7 @@ AREG_API_IMPL uint32_t areg::set_send_size(SOCKETHANDLE hSocket, uint32_t sendSi
     int rc = ::setsockopt(hSocket, SOL_SOCKET, SO_SNDBUF, reinterpret_cast<const char*>(&sendSize), len);
 
 #if defined(__linux__)
-    // SO_SNDBUF returns success even when silently clamped to 2×wmem_max — never use its
+    // SO_SNDBUF returns success even when silently clamped to 2×wmem_max -- never use its
     // return code to guard SNDBUFFORCE. Always attempt FORCE unconditionally to bypass the
     // cap; it fails silently without CAP_NET_ADMIN. Not available on macOS or Cygwin.
     ::setsockopt(hSocket, SOL_SOCKET, SO_SNDBUFFORCE, reinterpret_cast<const char*>(&sendSize), len);
@@ -483,7 +513,7 @@ AREG_API_IMPL uint32_t areg::set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSi
     int rc = ::setsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<const char*>(&recvSize), len);
 
 #if defined(__linux__)
-    // SO_RCVBUF returns success even when silently clamped to 2×rmem_max — never use its
+    // SO_RCVBUF returns success even when silently clamped to 2×rmem_max -- never use its
     // return code to guard RCVBUFFORCE. Always attempt FORCE unconditionally to bypass the
     // cap; it fails silently without CAP_NET_ADMIN. Not available on macOS or Cygwin.
     ::setsockopt(hSocket, SOL_SOCKET, SO_RCVBUFFORCE, reinterpret_cast<const char*>(&recvSize), len);
@@ -886,23 +916,29 @@ AREG_API_IMPL int32_t areg::send_data_v(SOCKETHANDLE hSocket, const areg::IoBuff
 
 AREG_API_IMPL int32_t areg::receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength) noexcept
 {
-    int32_t result = -1;
+    if (!areg::is_valid_socket(hSocket))
+        return -1;
 
-    if (areg::is_valid_socket(hSocket))
-    {
-        result = 0;
-        if ((dataBuffer != nullptr) && (static_cast<int32_t>(dataLength) > 0))
-        {
-            result = areg::os::_os_recv_data(hSocket, dataBuffer, static_cast<int32_t>(dataLength));
-        }
-    }
+    if ((dataBuffer == nullptr) || (dataLength == 0u))
+        return 0;
 
-    return result;
+    return areg::os::_os_recv_data(hSocket, dataBuffer, static_cast<int32_t>(dataLength));
+}
+
+AREG_API_IMPL int32_t areg::receive_data_window(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength) noexcept
+{
+    if (!areg::is_valid_socket(hSocket))
+        return -1;
+
+    if ((dataBuffer == nullptr) || (dataLength == 0u))
+        return 0;
+
+    return areg::os::_os_recv_data_window(hSocket, dataBuffer, static_cast<int32_t>(dataLength));
 }
 
 AREG_API_IMPL uint32_t areg::recv_data_available(SOCKETHANDLE hSocket) noexcept
 {
-    if (areg::receive_mode() == areg::ReceiveMode::Exact)
+    if (areg::receive_mode() == areg::ReceiveMode::NoCache)
         return 0u;
 
     const areg::ThreadCache& tc = areg::thread_rx_cache(hSocket);
@@ -1110,19 +1146,27 @@ AREG_API_IMPL areg::ThreadCache& areg::thread_tx_cache() noexcept
 
 AREG_API_IMPL areg::ThreadCache& areg::thread_rx_cache(SOCKETHANDLE hSocket) noexcept
 {
-    static thread_local std::unordered_map<SOCKETHANDLE, areg::ThreadCache> _rx_caches;
-    areg::ThreadCache& tc = _rx_caches[hSocket];
-    tc.socket = hSocket;
-    return tc;
+    if (receive_mode() == ReceiveMode::MonoCache)
+    {
+        static thread_local areg::ThreadCache _rx_cache;
+        _rx_cache.socket = hSocket;
+        return _rx_cache;
+    }
+    else
+    {
+        std::unordered_map<SOCKETHANDLE, areg::ThreadCache>& map = _thread_local_cache();
+        areg::ThreadCache& tc = map[hSocket];
+        tc.socket = hSocket;
+        return tc;
+    }
 }
 
-namespace
+AREG_API_IMPL void areg::thread_rx_cache_release(SOCKETHANDLE hSocket) noexcept
 {
-    inline areg::ReceiveMode & _thread_receive_mode(void) noexcept
-    {
-        static thread_local areg::ReceiveMode _mode{ areg::ReceiveMode::Exact };
-        return _mode;
-    }
+    std::unordered_map<SOCKETHANDLE, areg::ThreadCache>& map = _thread_local_cache();
+    auto found = map.find(hSocket);
+    if (found != map.end())
+        map.erase(hSocket);
 }
 
 AREG_API_IMPL void areg::set_receive_mode(ReceiveMode mode) noexcept

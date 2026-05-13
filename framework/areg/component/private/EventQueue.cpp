@@ -21,7 +21,7 @@
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
-// EventQueue — constructor / destructor
+// EventQueue -- constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 
 EventQueue::EventQueue(QueueListener& eventListener, EventStack& eventQueue)
@@ -31,7 +31,7 @@ EventQueue::EventQueue(QueueListener& eventListener, EventStack& eventQueue)
 }
 
 //////////////////////////////////////////////////////////////////////////
-// EventQueue — base operations (no locking; called either lock-free from
+// EventQueue -- base operations (no locking; called either lock-free from
 // InternalEventQueue, or under ExternalEventQueue::mLock from its overrides)
 //////////////////////////////////////////////////////////////////////////
 
@@ -72,7 +72,7 @@ void EventQueue::remove_events(const RuntimeClassID& eventClassId) noexcept
 }
 
 //////////////////////////////////////////////////////////////////////////
-// ExternalEventQueue — constructor / destructor
+// ExternalEventQueue -- constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 
 ExternalEventQueue::ExternalEventQueue(QueueListener& eventListener, uint32_t maxQueue)
@@ -88,7 +88,7 @@ ExternalEventQueue::~ExternalEventQueue()
 }
 
 //////////////////////////////////////////////////////////////////////////
-// ExternalEventQueue — locked push / pop
+// ExternalEventQueue -- locked push / pop
 //
 // These methods hide EventQueue::push_event / pop_event. All callers in
 // EventDispatcherBase hold mExternalEvents as the concrete ExternalEventQueue
@@ -145,7 +145,7 @@ void ExternalEventQueue::remove_all_events() noexcept
 }
 
 //////////////////////////////////////////////////////////////////////////
-// InternalEventQueue — constructor / destructor
+// InternalEventQueue -- constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 
 InternalEventQueue::InternalEventQueue(uint32_t maxQueue)

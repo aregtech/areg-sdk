@@ -40,12 +40,12 @@
 // RuntimeObject.
 //
 // What this macro declares:
-//   CLASS_ID      — static constexpr RuntimeClassID: the single source of truth.
+//   CLASS_ID      -- static constexpr RuntimeClassID: the single source of truth.
 //                   Computed at compile time.  Zero runtime initialization cost.
-//   class_id()    — virtual override returning CLASS_ID.
-//   class_name()  — virtual override returning CLASS_ID.name().
-//   class_number()— virtual override returning CLASS_ID.magic() directly.
-//   is_runtime()  — five virtual overloads; magic-based paths use CLASS_ID.magic(), name-based
+//   class_id()    -- virtual override returning CLASS_ID.
+//   class_name()  -- virtual override returning CLASS_ID.name().
+//   class_number()-- virtual override returning CLASS_ID.magic() directly.
+//   is_runtime()  -- five virtual overloads; magic-based paths use CLASS_ID.magic(), name-based
 //                   paths use CLASS_ID.name(); each delegates to the base class on miss.
 //
 // \param   ClassName   The unqualified class name (not a string).
@@ -90,10 +90,10 @@ public:                                                                         
 // Place once in the .cpp file of every class that uses AREG_DECLARE_RUNTIME.
 //
 // Notes:
-//   class_id()     — returns CLASS_ID directly (no function-call indirection).
-//   class_number() — returns CLASS_ID.magic() directly; compiler folds it to a literal.
-//   is_runtime(uint32_t/RuntimeClassID) — use CLASS_ID.magic(): single integer comparison.
-//   is_runtime(char*/string_view/String) — use CLASS_ID.name(): no function call.
+//   class_id()     -- returns CLASS_ID directly (no function-call indirection).
+//   class_number() -- returns CLASS_ID.magic() directly; compiler folds it to a literal.
+//   is_runtime(uint32_t/RuntimeClassID) -- use CLASS_ID.magic(): single integer comparison.
+//   is_runtime(char*/string_view/String) -- use CLASS_ID.name(): no function call.
 //
 // \param   ClassName       The class name (not a string).
 // \param   BaseClassName   The direct base class that also uses AREG_DECLARE_RUNTIME.
@@ -210,14 +210,14 @@ protected:
     virtual ~RuntimeObject() = default;
 
 //////////////////////////////////////////////////////////////////////////
-// Attributes — own runtime identity
+// Attributes -- own runtime identity
 //////////////////////////////////////////////////////////////////////////
 public:
 
     AREG_DECLARE_RUNTIME( RuntimeObject )
 
 //////////////////////////////////////////////////////////////////////////
-// Operations — lifecycle
+// Operations -- lifecycle
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
@@ -280,7 +280,7 @@ public:
     void operator delete []( void * ptr, int32_t, const char *, int32_t );
 
 //////////////////////////////////////////////////////////////////////////
-// Operations — runtime cast helpers
+// Operations -- runtime cast helpers
 //////////////////////////////////////////////////////////////////////////
 public:
 

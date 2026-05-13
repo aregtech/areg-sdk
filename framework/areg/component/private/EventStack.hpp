@@ -56,7 +56,7 @@ class EventStack final : protected Stack<Event*>
 // Constants
 //////////////////////////////////////////////////////////////////////////
 private:
-    //!< Hard upper bound — effectively "unlimited" when assigned as mMaxQueueSize.
+    //!< Hard upper bound -- effectively "unlimited" when assigned as mMaxQueueSize.
     static constexpr uint32_t MAX_QUEUE_SIZE { std::numeric_limits<uint32_t>::max() };
     //!< Minimum enforced queue capacity when a non-zero limit is requested.
     static constexpr uint32_t MIN_QUEUE_SIZE { 32u };
@@ -77,7 +77,7 @@ public:
     ~EventStack();
 
 //////////////////////////////////////////////////////////////////////////
-// Operations — caller must hold an external lock when shared across threads
+// Operations -- caller must hold an external lock when shared across threads
 //////////////////////////////////////////////////////////////////////////
 public:
 

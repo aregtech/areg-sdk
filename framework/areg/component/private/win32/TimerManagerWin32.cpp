@@ -44,7 +44,7 @@ struct Win32TimerHandle
  *          thread when a timer fires.
  *
  *  pv is the Win32TimerHandle* that was passed as context to
- *  CreateThreadpoolTimer — identical to the TIMERHANDLE stored as the
+ *  CreateThreadpoolTimer -- identical to the TIMERHANDLE stored as the
  *  key in TimerManager::mTimerResource, so the timer lookup works
  *  without an extra map.
  ************************************************************************/
@@ -94,7 +94,7 @@ bool TimerManager::_os_timer_start( Timer & timer )
     Win32TimerHandle * h = static_cast<Win32TimerHandle *>(timer.handle());
     ASSERT(h != nullptr);
 
-    // Context = the TIMERHANDLE (Win32TimerHandle*) — used for lookup in the callback.
+    // Context = the TIMERHANDLE (Win32TimerHandle*) -- used for lookup in the callback.
     if (h->timerPool == nullptr)
     {
         h->timerPool = ::CreateThreadpoolTimer(_tp_timer_callback, timer.handle(), nullptr);

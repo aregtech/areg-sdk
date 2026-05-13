@@ -96,7 +96,7 @@ public:
  *
  *          The conversion uses the empty-range erase trick: `cont.erase(cit, cit)` erases no
  *          elements (first == last) but returns an iterator to the same position as a mutable
- *          iterator type. This is the only standard-compliant, UB-free approach in C++17 —
+ *          iterator type. This is the only standard-compliant, UB-free approach in C++17 --
  *          there is no std::const_iterator_cast.
  *
  *          Cost: In optimized builds (-O2/-O3) the empty-range erase compiles away to zero

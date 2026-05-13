@@ -40,7 +40,7 @@ bool ClientReceiveThread::run_dispatcher()
 
     // Client receive thread serves one socket, so cached mode is safe and
     // minimizes recv() syscall count for small/medium messages.
-    areg::set_receive_mode(areg::ReceiveMode::Cached);
+    areg::set_receive_mode(areg::ReceiveMode::MonoCache);
 
     ready_for_events( true );
 
@@ -49,8 +49,8 @@ bool ClientReceiveThread::run_dispatcher()
     RemoteMessage msgReceived;
     int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
 
-    // Amortize the cost of multiLock.lock(DO_NOT_WAIT) — which involves
-    // pthread_cond_timedwait(timeout=0) and global-map locking — across a
+    // Amortize the cost of multiLock.lock(DO_NOT_WAIT) -- which involves
+    // pthread_cond_timedwait(timeout=0) and global-map locking -- across a
     // batch of consecutive receive calls.  On Linux/WSL2 each invocation of
     // multiLock.lock(DO_NOT_WAIT) carries kernel-level synchronization overhead
     // that, at high message rates, becomes the dominant bottleneck.  Checking

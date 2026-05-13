@@ -471,7 +471,7 @@ public:
      * \brief   Called after a new client socket has been physically accepted.
      *          In pool mode (numPairs > 0): routes the socket to the appropriate pool pair
      *          via cookie % numPairs, unregisters from the global multiplexer, and returns true.
-     *          In legacy mode (numPairs == 0): returns false — shared send/receive path active.
+     *          In legacy mode (numPairs == 0): returns false -- shared send/receive path active.
      *
      * \param   clientSocket    The newly accepted client socket (cookie already assigned).
      * \return  Returns true if the socket was handed off to a pool pair (pool mode).
@@ -589,7 +589,7 @@ private:
 
     /**
      * \brief   New-client-accepted implementation for shared-thread path.
-     *          Always returns false — socket stays on the global mThreadReceive.
+     *          Always returns false -- socket stays on the global mThreadReceive.
      **/
     [[nodiscard]]
     bool do_accept_client_shared(areg::SocketAccepted & clientSocket);
@@ -603,7 +603,7 @@ private:
     bool do_accept_client_pool(areg::SocketAccepted & clientSocket);
 
     /**
-     * \brief   Client-lost cleanup for shared-thread path — no-op.
+     * \brief   Client-lost cleanup for shared-thread path -- no-op.
      **/
     void do_client_lost_shared(ITEM_ID cookie);
 
@@ -636,15 +636,15 @@ protected:
     // JUSTIFICATION: unique_ptr is used because ServiceCommunicationBase has exclusive ownership
     //                of each pool pair.  The pair is created once at server start and destroyed
     //                at server stop.  Async paths (connection_lost, failed_receive_message) only
-    //                remove a single socket from the pair's multiplexer — they never stop or
+    //                remove a single socket from the pair's multiplexer -- they never stop or
     //                destroy the pair itself.
-    // NOTE: mClientPairs MUST be declared before mDataRateHelper — the DataRateHelper constructor
+    // NOTE: mClientPairs MUST be declared before mDataRateHelper -- the DataRateHelper constructor
     //       calls enable_data_rate() which iterates mClientPairs.  C++ initializes members in
     //       declaration order; declaring mClientPairs first guarantees it is a valid empty vector
     //       before DataRateHelper's constructor body runs.
     using ClientPairList = std::vector<std::unique_ptr<ClientConnectionPair>>;
     ClientPairList                  mClientPairs;       //!< Pool thread pairs; size == mNumPairs when running.
-    std::atomic_bool                mShuttingDown;      //!< True during stop_connection() — suppresses spurious disconnect callbacks.
+    std::atomic_bool                mShuttingDown;      //!< True during stop_connection() -- suppresses spurious disconnect callbacks.
     DataRateHelper                  mDataRateHelper;    //!< The helper object to query information of sent and receive bytes.
     StringArray                     mWhiteList;         //!< The list of enabled fixed client hosts.
     StringArray                     mBlackList;         //!< The list of disabled fixes client hosts.

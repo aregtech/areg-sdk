@@ -100,6 +100,7 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
                 , hSocket
                 , clientSocket.address().host_address().as_string()
                 , clientSocket.address().host_port());
+
     const int32_t sizeReceived = mConnection.receive_message(msgReceived, clientSocket);
 
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
@@ -150,7 +151,7 @@ bool ServerReceiveThread::run_dispatcher()
 
     // Per-socket RX cache is now safe for multi-socket threads: thread_rx_cache(hSocket)
     // provides an isolated ThreadCache per socket handle, preventing cross-socket carry-over.
-    areg::set_receive_mode(areg::ReceiveMode::Cached);
+    areg::set_receive_mode(areg::ReceiveMode::MultiCache);
 
     ready_for_events(true);
     int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
@@ -177,7 +178,7 @@ bool ServerReceiveThread::run_dispatcher()
                 areg::SocketAddress addrAccepted;
                 SOCKETHANDLE hSocket = mConnection.wait_connection(addrAccepted);
 
-                if (mConnection.is_valid() == false)
+                if (!mConnection.is_valid())
                 {
                     DEBUG_LOG_WARN("The server socket is not valid anymore, should quit receive thread!");
                     if (areg::is_valid_socket(hSocket))
@@ -189,12 +190,13 @@ bool ServerReceiveThread::run_dispatcher()
                 }
                 else if (hSocket == areg::FailedSocketHandle)
                 {
-                    DEBUG_LOG_WARN("Failed selecting server socket, going to retry [ %d ] times before restart.", (RETRY_COUNT - retryCount - 1));
                     if (++retryCount >= RETRY_COUNT)
                     {
                         mConnectHandler.connection_failure();
                         whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
                     }
+
+                    DEBUG_LOG_WARN("Failed selecting server socket, going to retry [ %d ] times before restart.", (RETRY_COUNT - retryCount));
                 }
                 else if ( hSocket != areg::InvalidSocketHandle )
                 {
@@ -206,14 +208,14 @@ bool ServerReceiveThread::run_dispatcher()
                     // Under burst load, multiple clients may be readable simultaneously.
                     // One non-blocking poll per extra socket avoids a full epoll/kqueue/WSAPoll
                     // syscall roundtrip per message, significantly improving throughput.
-                    // addrDrain is reset by server_accept() at the top of every call — safe to reuse.
+                    // addrDrain is reset by server_accept() at the top of every call -- safe to reuse.
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
                     int32_t drainCount{ 0 };
 #endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
                     for (int32_t drain = 0; drain < DRAIN_LIMIT; ++drain)
                     {
                         const SOCKETHANDLE hDrain = mConnection.wait_connection_nowait(addrDrain);
-                        if ( (hDrain == areg::InvalidSocketHandle) || (hDrain == areg::FailedSocketHandle) )
+                        if ( !areg::is_valid_socket(hDrain) )
                         {
                             break;
                         }
@@ -228,11 +230,11 @@ bool ServerReceiveThread::run_dispatcher()
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
                     // If the drain loop saturated its limit, there are still more
                     // sockets ready.  Under normal load this should not happen
-                    // continuously — a persistent warning here means the receive
+                    // continuously -- a persistent warning here means the receive
                     // thread cannot keep up and the inbound queue is growing.
                     if (drainCount >= DRAIN_LIMIT)
                     {
-                        DEBUG_LOG_WARN("Receive drain loop exhausted DRAIN_LIMIT (%d) — inbound event queue is growing", DRAIN_LIMIT);
+                        DEBUG_LOG_WARN("Receive drain loop exhausted DRAIN_LIMIT (%d) -- inbound event queue is growing", DRAIN_LIMIT);
                     }
 #endif   // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
                 }

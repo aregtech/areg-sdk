@@ -120,7 +120,7 @@ bool PoolReceiveThread::run_dispatcher()
 
     // Per-socket RX cache is safe for multi-socket threads: thread_rx_cache(hSocket)
     // gives each socket handle its own isolated ThreadCache.
-    areg::set_receive_mode(areg::ReceiveMode::Cached);
+    areg::set_receive_mode(areg::ReceiveMode::MultiCache);
 
     ready_for_events(true);
 
@@ -129,6 +129,11 @@ bool PoolReceiveThread::run_dispatcher()
 
     SyncObject* syncObjs[2] = { &mEventExit, &mEventQueue };
     MultiLock multiLock(syncObjs, 2, false);
+
+    // Maximum additional sockets drained per blocking wait() wakeup -- mirrors
+    // ServerReceiveThread.  Limits how long the inner loop holds the receive thread
+    // before re-checking for exit events.
+    constexpr int32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
 
     do
     {
@@ -145,7 +150,7 @@ bool PoolReceiveThread::run_dispatcher()
             continue;
         }
 
-        // No pending events — block until a socket becomes readable or we are interrupted.
+        // No pending events -- block until a socket becomes readable or we are interrupted.
         whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue);
         const SOCKETHANDLE hReady = mMux.wait();
 
@@ -161,7 +166,7 @@ bool PoolReceiveThread::run_dispatcher()
         }
         else
         {
-            // A socket is readable — receive the message.
+            // A socket is readable -- receive the message.
             areg::SocketAccepted clientSocket = mConnection.client_by_handle(hReady);
             if ( !clientSocket.is_valid() )
             {
@@ -203,13 +208,18 @@ bool PoolReceiveThread::run_dispatcher()
             // it serves from the internal batch cache first (no syscall), then does one
             // non-blocking epoll_wait/kevent/WSAPoll if the cache is empty.
             // This avoids the per-message cost of _process_pending_sockets() + multiLock.lock().
-            constexpr int32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
+#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
+            int32_t drainCount{ 0 };
+#endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
             for ( int32_t drain = 0; drain < DRAIN_LIMIT; ++drain )
             {
                 const SOCKETHANDLE hDrain = mMux.wait(0);
                 if ( (hDrain == areg::InvalidSocketHandle) || (hDrain == areg::FailedSocketHandle) )
                     break;
 
+#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
+                ++drainCount;
+#endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
                 areg::SocketAccepted drainSocket = mConnection.client_by_handle(hDrain);
                 if ( !drainSocket.is_valid() )
                 {
@@ -238,6 +248,17 @@ bool PoolReceiveThread::run_dispatcher()
                     mRemoteService.failed_receive_message(drainSocket);
                 }
             }
+
+#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
+            // If the drain loop saturated its limit, there are still more
+            // sockets ready.  Under normal load this should not happen
+            // continuously -- a persistent warning here means the receive
+            // thread cannot keep up and the inbound queue is growing.
+            if (drainCount >= DRAIN_LIMIT)
+            {
+                DEBUG_LOG_WARN("Receive drain loop exhausted DRAIN_LIMIT (%d) -- inbound event queue is growing", DRAIN_LIMIT);
+            }
+#endif   // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
         }
 
     } while ( whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) );

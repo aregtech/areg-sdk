@@ -40,7 +40,7 @@ namespace areg {
 
 /**
  * \brief   Base class for event queues. Wraps a EventStack and a QueueListener and
- *          provides push/pop/remove operations. The base class performs no locking — derived
+ *          provides push/pop/remove operations. The base class performs no locking -- derived
  *          classes are responsible for thread safety.
  *
  * \note    push_event() and pop_event() are non-virtual. ExternalEventQueue hides them with
@@ -111,7 +111,7 @@ public:
     void remove_all_events() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
-// Members — protected so derived classes can implement locked variants
+// Members -- protected so derived classes can implement locked variants
 //////////////////////////////////////////////////////////////////////////
 protected:
     QueueListener&  mEventListener; //!< Listener notified on queue state changes.
@@ -181,7 +181,7 @@ public:
 
     /**
      * \brief   Thread-safe push. Acquires the internal lock, pushes the event onto the FIFO
-     *          queue, and notifies the listener — all under the same lock acquisition.
+     *          queue, and notifies the listener -- all under the same lock acquisition.
      *
      * \param   eventElem       The event to enqueue.
      * \param[out] removedEvent If an event was evicted and this is not nullptr, receives it.
@@ -259,7 +259,7 @@ public:
     virtual ~InternalEventQueue();
 
 //////////////////////////////////////////////////////////////////////////
-// QueueListener override — intentional no-op
+// QueueListener override -- intentional no-op
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
