@@ -24,6 +24,8 @@
 #include "areg/ipc/RegistrationProvider.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/ipc/ServiceClientConnectionBase.hpp"
+#include "areg/component/RemoteEventFactory.hpp"
+
 namespace areg {
 
 /************************************************************************
@@ -321,6 +323,20 @@ inline bool RouterClient::send_raw_message(const RemoteMessage& msg)
 inline const areg::Channel& RouterClient::connection_channel() const noexcept
 {
     return mChannel;
+}
+
+inline void RouterClient::on_message_received(const RemoteMessage& msgReceived)
+{
+    ASSERT(areg::is_executable_id(static_cast<uint32_t>(msgReceived.message_id())));
+    StreamableEvent* eventRemote = RemoteEventFactory::event_from_stream(msgReceived, mChannel);
+    if (eventRemote != nullptr)
+    {
+        eventRemote->deliver_event();
+    }
+    else
+    {
+        failed_process_message(msgReceived);
+    }
 }
 
 } // namespace areg

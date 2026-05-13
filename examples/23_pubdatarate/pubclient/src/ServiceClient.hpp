@@ -125,17 +125,15 @@ protected:
     void broadcast_service_stopping() final;
 
     /**
-     * \brief   Service provider broadcast.
-     *          Triggered when image settings are changed
-     *          Override this method to handle the Broadcast call from the service provider.
-     *          This call is automatically triggered on every appropriate broadcast event.
-     * \param   width       width of image
-     * \param   height      hight of image
-     * \param   pixelTime   The pixel time in nanoseconds. Value 0 means non-stop streaming.
-     * \param   linesBlock  lines in block, maximum should be equal to `height`, minimum is 1
-     * \param   channels    number of channels
+     * \brief   Triggered when the ImageGenSetting attribute is updated. Contains the
+     *          attribute value and validation flag. When notification is enabled,
+     *          override this method in the derived class.
+     *          Attribute ImageGenSetting description:
+     *          Image Generator Settings.
+     * \param   ImageGenSetting The value of the ImageGenSetting attribute.
+     * \param   state           The data validation flag.
      **/
-    void broadcast_image_settings( uint32_t width, uint32_t height, uint32_t pixelTime, uint32_t linesBlock, uint32_t channels ) final;
+    void on_image_gen_setting_update(const LargeData::ImageGenerator& ImageGenSetting, areg::DataState state) final;
 
 /************************************************************************/
 // ProxyListener Overrides

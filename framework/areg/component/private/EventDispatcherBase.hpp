@@ -129,17 +129,6 @@ public:
     virtual void exit_dispatcher() noexcept;
 
     /**
-     * \brief   Call to queue event object in the event queue of dispatcher. The passed event
-     *          parameter should be allocated in memory and should be globally accessed (for
-     *          example, via new operator).
-     *
-     * \param   eventElem       Event object to queue in event stack of dispatcher.
-     * \return  Returns true, if Event was queued. Otherwise, it was not queued and the object
-     *          should be deleted.
-     **/
-    virtual bool queue_event(Event& eventElem);
-
-    /**
      * \brief   Call to register specified event consumer for the specified event class type. One
      *          event class type can have several registered consumers and one consumer can be
      *          registered for several class types.
@@ -177,6 +166,55 @@ public:
      **/
     [[nodiscard]]
     virtual bool has_registered_consumer(const RuntimeClassID& whichClass) const;
+
+    /**
+     * \brief   Call to queue event object in the event queue of dispatcher. The passed event
+     *          parameter should be allocated in memory and should be globally accessed (for
+     *          example, via new operator).
+     *
+     * \param   eventElem       Event object to queue in event stack of dispatcher.
+     * \return  Returns true, if Event was queued. Otherwise, it was not queued and the object
+     *          should be deleted.
+     **/
+    bool queue_event(Event& eventElem);
+
+    /**
+     * \brief   Push list of events at once with one lock. The events are pushed by priorities.
+     *          On output, the `eventElems` contains the list of removed events from the queue and
+     *          returned value indicates the number of removed elements in the list.
+     *          Returns 0 if no event is removed from the queue.
+     *
+     * \param[in,out]   eventElems  On input this contains the list of events to queue. The events are queued by priority.
+     *                              On output, this contains the list of removed events from queue.
+     *                              If returned value is 0, no event was removed.
+     * \param           count       The size of array of events in the list.
+     * \return  Returns number of removed events, the return value cannot be bigger than `count`. Returns 0 if no event was removed.
+     **/
+    uint32_t queue_events(Event** listEvents, uint32_t count);
+
+    /**
+     * \brief   Pops events from the event list with one lock. On output, the `eventElems` array contains list of removed events.
+     *          The events are popped by priority. First element has the highest priority in queue to execute.
+     *          Returned value indicated the number of elements filled in array.
+     *
+     * \param[out]      eventElems  On input, the list should be empty. On output this contains the list or events picked from the queue.
+     *                              First element should be executed first.
+     * \param           count       The size of array to fill popped events.
+     * \return  Returns the number of events filled in the `eventElems` array. The returned value cannot be bigger than `count`.
+     *          Returns 0 if no event was filled.
+     **/
+    uint32_t pop_events(Event** listEvents, uint32_t count) noexcept;
+
+    /**
+     * \brief   Picks up single Event element from the external event queue.
+     **/
+    [[nodiscard]]
+    Event * pick_event() noexcept;
+
+    /**
+     * \brief   Sets exit event in the dispatcher without blocking.
+     **/
+    bool pulse_exit();
 
 /************************************************************************/
 // EventDispatcherBase operations
@@ -260,17 +298,6 @@ protected:
     virtual void shutdown_dispatcher() noexcept;
 
     /**
-     * \brief   Picks up single Event element from the external event queue.
-     **/
-    [[nodiscard]]
-    virtual Event * pick_event() noexcept;
-
-    /**
-     * \brief   Sets exit event in the dispatcher without blocking.
-     **/
-    virtual bool pulse_exit();
-
-    /**
      * \brief   Enables or disables event dispatching.
      **/
     virtual void ready_for_events( bool is_ready );
@@ -346,6 +373,16 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcherBase class inline implementation
 //////////////////////////////////////////////////////////////////////////
+
+inline uint32_t EventDispatcherBase::queue_events(Event** listEvents, uint32_t count)
+{
+    return mExternalEvents.push_events(listEvents, count);
+}
+
+inline uint32_t EventDispatcherBase::pop_events(Event** listEvents, uint32_t count) noexcept
+{
+    return mExternalEvents.pop_events(listEvents, count);
+}
 
 inline void EventDispatcherBase::signal_event(uint32_t eventCount)
 {

@@ -340,7 +340,7 @@ constexpr uint32_t      DEFAULT_CONNECTIONS     { 128u };
 //!< Number of socket events fetched from the OS in a single epoll_wait / kevent / WSAPoll
 //!< syscall.  Raising this reduces per-client syscall overhead under burst load.
 //!< Optimal when BATCH_SIZE == THREAD_DRAIN_LIMIT: one OS call covers exactly one drain pass.
-constexpr uint32_t      BATCH_SIZE              { 64u };
+constexpr uint32_t      BATCH_SIZE              { 128u };
 
 //!< Number of additional sockets (receive) or events (send) drained per dispatcher wake-up
 //!< before returning to the blocking wait.  One drain pass processes exactly one OS-level
@@ -868,7 +868,7 @@ inline void areg::SocketAddress::reset() noexcept
 
 inline bool areg::SocketAddress::is_valid() const noexcept
 {
-    return (!mIpAddr.is_empty()) & (mPortNr != areg::InvalidPort);
+    return (!mIpAddr.is_empty()) && (mPortNr != areg::InvalidPort);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -877,7 +877,7 @@ inline bool areg::SocketAddress::is_valid() const noexcept
 
 inline bool areg::is_valid_socket(SOCKETHANDLE hSocket) noexcept
 {
-    return (hSocket != areg::InvalidSocketHandle) & (hSocket != areg::FailedSocketHandle);
+    return (hSocket != areg::InvalidSocketHandle) && (hSocket != areg::FailedSocketHandle);
 }
 
 inline bool areg::is_local_address(const areg::String& address) noexcept

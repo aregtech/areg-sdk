@@ -36,7 +36,7 @@ class AREG_API SendMessageEventData
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
 //////////////////////////////////////////////////////////////////////////
-private:
+public:
     //!< The command to process when send message.
     enum class SendCommand  : uint8_t
     {
@@ -111,9 +111,9 @@ public:
     [[nodiscard]]
     inline bool is_exit_message() const noexcept;
 
-    inline void set_remote_message(const RemoteMessage& message);
+    inline void set_remote_message(const RemoteMessage& message, SendMessageEventData::SendCommand command);
 
-    inline void set_remote_message(RemoteMessage&& message) noexcept;
+    inline void set_remote_message(RemoteMessage&& message, SendMessageEventData::SendCommand command) noexcept;
 
     inline void set_command(SendMessageEventData::SendCommand command) noexcept;
 
@@ -230,14 +230,16 @@ inline bool SendMessageEventData::is_exit_message() const noexcept
     return (mCmdSendMessage == SendCommand::ExitThread);
 }
 
-inline void SendMessageEventData::set_remote_message(const RemoteMessage& message)
+inline void SendMessageEventData::set_remote_message(const RemoteMessage& message, SendMessageEventData::SendCommand command)
 {
-    mRemoteMessage = message;
+    mRemoteMessage  = message;
+    mCmdSendMessage = command;
 }
 
-inline void SendMessageEventData::set_remote_message(RemoteMessage&& message) noexcept
+inline void SendMessageEventData::set_remote_message(RemoteMessage&& message, SendMessageEventData::SendCommand command) noexcept
 {
-    mRemoteMessage = std::move(message);
+    mRemoteMessage  = std::move(message);
+    mCmdSendMessage = command;
 }
 
 inline void SendMessageEventData::set_command(SendMessageEventData::SendCommand command) noexcept

@@ -416,20 +416,6 @@ void RouterClient::process_received_message( RemoteMessage & msgReceived, Socket
     }
 }
 
-void RouterClient::on_message_received(const RemoteMessage& msgReceived)
-{
-    ASSERT(areg::is_executable_id(static_cast<uint32_t>(msgReceived.message_id())));
-    StreamableEvent* eventRemote = RemoteEventFactory::event_from_stream(msgReceived, mChannel);
-    if (eventRemote != nullptr)
-    {
-        eventRemote->deliver_event();
-    }
-    else
-    {
-        failed_process_message(msgReceived);
-    }
-}
-
 void RouterClient::process_request_event( RemoteRequestEvent & reqEvent)
 {
     LOG_SCOPE( areg_ipc_private_RouterClient, process_request_event );

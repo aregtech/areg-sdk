@@ -204,7 +204,7 @@ inline void send_pending_groups( areg::PendingSend * batch
             const int32_t sent = conn.send_messages_batch(ioBuffer, bufCount, hSocket, totalSize);
             if (sent > 0)
             {
-                accum(static_cast<uint64_t>(sent), groupSize);
+                accum(static_cast<uint64_t>(totalSize), groupSize);
             }
             else if (!conn.is_interrupted())
             {

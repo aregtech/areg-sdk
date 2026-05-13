@@ -313,6 +313,125 @@ void MpscEventQueue::remove_all_events() noexcept
     mListener.signal_event(0u);
 }
 
+uint32_t MpscEventQueue::push_events(Event** eventElems, uint32_t count)
+{
+    if ((eventElems == nullptr) || (count == 0u))
+        return 0u;
+
+    uint32_t signalCount{ 0u };
+    uint32_t removedCount{ 0u };
+
+    // Phase 1: insert all priority-lane events in ONE mPrioLock acquisition.
+    // Mirrors push_event() for each priority class but avoids per-event lock/unlock overhead.
+    Event* evt{ eventElems[0] };
+    if ((evt != nullptr) && (evt->event_priority() > areg::EventPriority::NormalPrio))
+    {
+        Lock lock(mPrioLock);
+        for (uint32_t i = 0u; i < count; ++i)
+        {
+            evt = eventElems[i];
+            if (evt == nullptr)
+                break;
+
+            const areg::EventPriority prio{ evt->event_priority() };
+            if (prio == areg::EventPriority::ExitPrio)
+            {
+                mPrioQueue.push_front(evt);
+                eventElems[i] = nullptr;    // mark consumed
+                ++signalCount;
+            }
+            else if (prio >= areg::EventPriority::HighPrio)
+            {
+                // Insert immediately after any ExitPrio entries.
+                auto it = mPrioQueue.begin();
+                while (it != mPrioQueue.end()
+                       && (*it)->event_priority() == areg::EventPriority::ExitPrio)
+                {
+                    ++it;
+                }
+
+                mPrioQueue.insert(it, evt);
+                eventElems[i] = nullptr;    // mark consumed
+                ++signalCount;
+            }
+            else
+            {
+                break; // We reach normal priority, 
+            }
+        }
+    }
+
+    // Phase 2: insert below-HighPrio events into the lock-free fast lane.
+    // Events that exceed the capacity limit are compacted into eventElems[0..removedCount).
+    for (uint32_t i = signalCount; i < count; ++i)
+    {
+        evt = eventElems[i];
+        if (evt == nullptr)
+            continue;   // consumed in phase 1 or was nullptr on input
+
+        if (mFastCount.load(std::memory_order_relaxed) >= mCapacity)
+        {
+            eventElems[removedCount++] = evt;
+        }
+        else
+        {
+            Node* node{ _alloc_node() };
+            node->event = evt;
+            node->next.store(nullptr, std::memory_order_relaxed);
+            mFastCount.fetch_add(1u, std::memory_order_relaxed);
+            _mpsc_push(node);
+            ++signalCount;
+        }
+    }
+
+    if (signalCount != 0u)
+        mListener.signal_event(signalCount);
+
+    return removedCount;
+}
+
+uint32_t MpscEventQueue::pop_events(Event** eventElems, uint32_t count)
+{
+    if ((eventElems == nullptr) || (count == 0u))
+        return 0u;
+
+    uint32_t popped{ 0u };
+    bool prio_exhausted{ false };
+
+    // Phase 1: drain the priority lane with ONE mPrioLock acquisition.
+    {
+        Lock lock(mPrioLock);
+        while (!mPrioQueue.empty() && (popped < count))
+        {
+            eventElems[popped++] = mPrioQueue.front();
+            mPrioQueue.pop_front();
+        }
+
+        prio_exhausted = mPrioQueue.empty();
+    }
+
+    // Phase 2: drain fast lane into remaining output slots (consumer thread only).
+    while (popped < count)
+    {
+        Node* node{ _mpsc_pop() };
+        if (node == nullptr)
+            break;
+
+        eventElems[popped++] = node->event;
+        _free_node(node);
+        mFastCount.fetch_sub(1u, std::memory_order_relaxed);
+    }
+
+    if (popped == 0u)
+        return 0u;
+
+    const uint32_t fast_remaining{ mFastCount.load(std::memory_order_acquire) };
+    const uint32_t prio_remaining{ prio_exhausted ? 0u : _prio_count() };
+    mListener.signal_event(fast_remaining + prio_remaining);
+
+    return popped;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // MpscEventQueue - Vyukov MPSC algorithm
 //////////////////////////////////////////////////////////////////////////

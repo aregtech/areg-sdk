@@ -194,7 +194,7 @@ bool ServicingComponent::consumer_connected(const areg::ProxyAddress& client, ar
         {
             ++mClients;
             mActiveProxies.push_back(client);
-            broadcast_image_settings(mOptions.mWidth, mOptions.mHeight, mOptions.mPixelTime, mOptions.mLines, mOptions.mChannels);
+            set_image_gen_setting({ mOptions.mWidth, mOptions.mHeight, mOptions.mLines, mOptions.mPixelTime, mOptions.mChannels });
         }
         else
         {
@@ -253,7 +253,7 @@ void ServicingComponent::on_option_event(const OptionData& data)
     {
         LOG_INFO("Requested to start generating data");
 
-        broadcast_image_settings(mOptions.mWidth, mOptions.mHeight, mOptions.mPixelTime, mOptions.mLines, mOptions.mChannels);
+        set_image_gen_setting({ mOptions.mWidth, mOptions.mHeight, mOptions.mLines, mOptions.mPixelTime, mOptions.mChannels });
         mQuitThread.store(false, std::memory_order_relaxed);
         mOptionChanged.store(true, std::memory_order_relaxed);
         mOptions.update(data);
@@ -293,7 +293,7 @@ void ServicingComponent::on_option_event(const OptionData& data)
         mLock.unlock();
 
         _print_info();
-        broadcast_image_settings(mOptions.mWidth, mOptions.mHeight, mOptions.mPixelTime, mOptions.mLines, mOptions.mChannels);
+        set_image_gen_setting({ mOptions.mWidth, mOptions.mHeight, mOptions.mLines, mOptions.mPixelTime, mOptions.mChannels });
 
         // Reload params in image thread. 
         mOptionChanged.store(true, std::memory_order_relaxed);
@@ -480,7 +480,7 @@ void ServicingComponent::_run_image_thread()
         mLock.lock(areg::WAIT_INFINITE);
 
         mOptionChanged.store(false, std::memory_order_relaxed);
-        broadcast_image_settings(mOptions.mWidth, mOptions.mHeight, mOptions.mPixelTime, mOptions.mLines, mOptions.mChannels);
+        set_image_gen_setting({ mOptions.mWidth, mOptions.mHeight, mOptions.mLines, mOptions.mPixelTime, mOptions.mChannels });
         _init_block_list();
 
         const uint64_t block_time_ns = mOptions.nsPerBlock();

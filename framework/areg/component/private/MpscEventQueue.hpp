@@ -208,6 +208,43 @@ public:
      **/
     void remove_all_events() noexcept;
 
+    /**
+     * \brief   Enqueues up to \a count events with a single priority-lane lock acquisition.
+     *          Each event is routed by its priority: ExitPrio events are placed at the front of
+     *          the priority lane; events with HighPrio or above (but not ExitPrio) are inserted
+     *          after any existing ExitPrio entries; events below HighPrio go to the lock-free
+     *          fast lane. Normal-priority events that exceed the queue capacity are NOT enqueued
+     *          and are returned to the caller via \a eventElems. The events in \a eventElems list
+     *          should be already sorted by priorities.
+     *
+     * \param[in,out]   eventElems  On input: sorted by priority array of \a count event pointers to enqueue.
+     *                              On output: \a eventElems[0..<returnValue>) contains the events
+     *                              that could not be enqueued (Normal-priority capacity overflow).
+     *                              The remainder of the array is undefined. Must not be nullptr.
+     * \param           count       Number of valid pointers in \a eventElems.
+     * \return  Number of events that were NOT enqueued due to capacity overflow.
+     *          Returns 0 if all events were enqueued successfully.
+     *          The returned value is always <= \a count.
+     **/
+    uint32_t push_events(Event** eventElems, uint32_t count);
+
+    /**
+     * \brief   Dequeues up to \a count events with a single priority-lane lock acquisition.
+     *          The priority lane (ExitPrio first, then higher-priority events) is always drained
+     *          before the lock-free fast lane. The first element in \a eventElems has the highest
+     *          priority among all dequeued events; remaining elements follow in priority order.
+     *
+     * \param[out]      eventElems  Caller-supplied array of at least \a count pointers.
+     *                              On output, \a eventElems[0..<returnValue>) contains the
+     *                              dequeued events, ordered highest-priority-first.
+     *                              Must not be nullptr.
+     * \param           count       Maximum number of events to dequeue; size of \a eventElems.
+     * \return  Number of events dequeued and written to \a eventElems.
+     *          Returns 0 if both lanes are empty.
+     *          The returned value is always <= \a count.
+     **/
+    uint32_t pop_events(Event** eventElems, uint32_t count);
+
 //////////////////////////////////////////////////////////////////////////
 // Private helpers
 //////////////////////////////////////////////////////////////////////////

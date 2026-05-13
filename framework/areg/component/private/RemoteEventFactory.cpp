@@ -29,19 +29,19 @@
 
 #include "areg/logging/areg_log.h"
 namespace areg {
-DEF_LOG_SCOPE(areg_component_RemoteEventFactory, event_from_stream);
-DEF_LOG_SCOPE(areg_component_RemoteEventFactory, stream_from_event);
-DEF_LOG_SCOPE(areg_component_RemoteEventFactory, request_failed_event);
+DEBUG_DEF_LOG_SCOPE(areg_component_RemoteEventFactory, event_from_stream);
+DEBUG_DEF_LOG_SCOPE(areg_component_RemoteEventFactory, stream_from_event);
+DEBUG_DEF_LOG_SCOPE(areg_component_RemoteEventFactory, request_failed_event);
 
 StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & stream, const Channel & comChannel )
 {
-    LOG_SCOPE( areg_component_RemoteEventFactory, event_from_stream);
+    DEBUG_LOG_SCOPE( areg_component_RemoteEventFactory, event_from_stream);
 
     StreamableEvent * result = nullptr;
     areg::EventType eventType;
     stream >> eventType;
 
-    LOG_DBG("Going to create event [ %s ] from remote message object", areg::as_string(eventType));
+    DEBUG_LOG_DBG("Going to create event [ %s ] from remote message object", areg::as_string(eventType));
 
     switch ( eventType )
     {
@@ -71,9 +71,9 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
                     ASSERT((thread == nullptr) || (AREG_RUNTIME_CAST(thread, DispatcherThread) != nullptr));
                     eventRequest->register_for_thread(static_cast<DispatcherThread *>(thread));
 
-                    LOG_DBG("Created areg::EventType::EventRemoteServiceRequest for target stub [ %s ] from source proxy [ %s ]."
-                                , StubAddress::to_path(eventRequest->target_stub()).as_string()
-                                , ProxyAddress::to_path(eventRequest->event_source()).as_string());
+                    DEBUG_LOG_DBG("Created areg::EventType::EventRemoteServiceRequest for target stub [ %s ] from source proxy [ %s ]."
+                                    , StubAddress::to_path(eventRequest->target_stub()).as_string()
+                                    , ProxyAddress::to_path(eventRequest->event_source()).as_string());
                 }
 
                 result = static_cast<StreamableEvent *>(eventRequest);
@@ -107,9 +107,9 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
                     ASSERT((thread == nullptr) || (AREG_RUNTIME_CAST(thread, DispatcherThread) != nullptr));
                     eventNotify->register_for_thread(static_cast<DispatcherThread *>(thread));
 
-                    LOG_DBG("Created areg::EventType::EventRemoteNotifyRequest for target stub [ %s ] from source proxy [ %s ]."
-                                , StubAddress::to_path(eventNotify->target_stub()).as_string()
-                                , ProxyAddress::to_path(eventNotify->event_source()).as_string());
+                    DEBUG_LOG_DBG("Created areg::EventType::EventRemoteNotifyRequest for target stub [ %s ] from source proxy [ %s ]."
+                                    , StubAddress::to_path(eventNotify->target_stub()).as_string()
+                                    , ProxyAddress::to_path(eventNotify->event_source()).as_string());
                 }
 
                 result = static_cast<StreamableEvent *>(eventNotify);
@@ -142,8 +142,8 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
                     ASSERT((thread == nullptr) || (AREG_RUNTIME_CAST(thread, DispatcherThread) != nullptr));
                     eventResponse->register_for_thread(static_cast<DispatcherThread *>(thread));
 
-                    LOG_DBG("Created areg::EventType::EventRemoteServiceResponse for target proxy [ %s ]."
-                                , ProxyAddress::to_path(eventResponse->target_proxy()).as_string());
+                    DEBUG_LOG_DBG("Created areg::EventType::EventRemoteServiceResponse for target proxy [ %s ]."
+                                    , ProxyAddress::to_path(eventResponse->target_proxy()).as_string());
                 }
 
                 result = static_cast<StreamableEvent *>(eventResponse);
@@ -183,7 +183,7 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
         break;
 
     default:
-        LOG_ERR("Unexpected event value [ %d ]", static_cast<int32_t>(eventType));
+        DEBUG_LOG_ERR("Unexpected event value [ %d ]", static_cast<int32_t>(eventType));
         ASSERT(false);  // unsupported remote streaming events
         break;
     }
@@ -298,8 +298,8 @@ bool RemoteEventFactory::stream_from_event( RemoteMessage & stream, const Stream
 
     default:
         {
-            LOG_SCOPE( areg_component_RemoteEventFactory, stream_from_event);
-            LOG_ERR( "Unexpected event value [ %d ]", static_cast<int32_t>(eventStreamable.event_type( )) );
+            DEBUG_LOG_SCOPE( areg_component_RemoteEventFactory, stream_from_event);
+            DEBUG_LOG_ERR( "Unexpected event value [ %d ]", static_cast<int32_t>(eventStreamable.event_type( )) );
             ASSERT( false );  // unsupported remote streaming events
         }
         break;
@@ -310,13 +310,13 @@ bool RemoteEventFactory::stream_from_event( RemoteMessage & stream, const Stream
 
 StreamableEvent * RemoteEventFactory::request_failed_event( const RemoteMessage & stream, const Channel & /* comChannel */ )
 {
-    LOG_SCOPE( areg_component_RemoteEventFactory, request_failed_event);
+    DEBUG_LOG_SCOPE( areg_component_RemoteEventFactory, request_failed_event);
 
     StreamableEvent * result = nullptr;
     areg::EventType eventType;
     stream >> eventType;
 
-    LOG_DBG("Creating request failed event of type [ %s ] from remote message stream", areg::as_string(eventType));
+    DEBUG_LOG_DBG("Creating request failed event of type [ %s ] from remote message stream", areg::as_string(eventType));
 
     switch ( eventType )
     {
@@ -376,7 +376,7 @@ StreamableEvent * RemoteEventFactory::request_failed_event( const RemoteMessage 
         break;
 
     default:
-        LOG_ERR("Unexpected event value [ %d ]", static_cast<int32_t>(eventType));
+        DEBUG_LOG_ERR("Unexpected event value [ %d ]", static_cast<int32_t>(eventType));
         ASSERT(false);  // unsupported remote streaming events
         break;
     }

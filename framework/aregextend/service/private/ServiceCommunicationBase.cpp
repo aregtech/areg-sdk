@@ -607,7 +607,7 @@ bool ServiceCommunicationBase::do_send_shared( RemoteMessage && data, areg::Even
     if ( evt == nullptr )
         return false;
 
-    evt->data() = SendMessageEventData(std::move(data));
+    evt->data().set_remote_message(std::move(data), SendMessageEventData::SendCommand::ForwardMessage);
     return SendMessageEvent::send_event(evt
                                        , static_cast<SendMessageEventConsumer &>(mThreadSend)
                                        , static_cast<DispatcherThread &>(mThreadSend)

@@ -184,7 +184,7 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
     int32_t result = 0;
     areg::ThreadCache& tc = areg::thread_tx_cache();
     uint8_t* const staging = tc.cache();
-    if (((totalSize / count) >= (tc.space / 2)) || (staging == nullptr))
+    if (((totalSize / count) >= (tc.space / 3)) || (staging == nullptr))
     {
 #if 0
         for (uint32_t i = 0; i < count; ++i)
@@ -207,8 +207,8 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
     }
     else
     {
-        uint32_t copied = static_cast<int32_t>(buffers->size);
-        ::memcpy(staging, buffers->data, copied);
+        ::memcpy(staging, buffers->data, buffers->size);
+        uint32_t copied = static_cast<uint32_t>(buffers->size);
         ++buffers;
         for (uint32_t i = 1; i < count; ++i, ++buffers)
         {
@@ -222,7 +222,7 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
             }
 
             ::memcpy(staging + copied, buffers->data, buffers->size);
-            copied += static_cast<int32_t>(buffers->size);
+            copied += static_cast<uint32_t>(buffers->size);
         }
 
         if (copied != 0)

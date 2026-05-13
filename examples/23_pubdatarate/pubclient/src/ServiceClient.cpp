@@ -20,8 +20,9 @@ DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient, startup_component);
 DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient, service_connected);
 DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient, process_timer);
 DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient, broadcast_service_stopping);
-DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient, broadcast_image_settings);
+DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient, on_image_gen_setting_update);
 
+#define DO_STATS    0
 
 ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component       ( entry, owner )
@@ -47,7 +48,9 @@ void ServiceClient::startup_component(areg::ComponentThread& /* comThread */)
     console.output_txt(COORD_TITLE,     MSG_APP_TITLE);
     console.output_txt(COORD_SEP1,      MSG_SEPARATOR);
     console.output_msg(COORD_DATA_RATE, MSG_NET_RATE_SENT.data(), dataRate.first, dataRate.second.data(), 0u);
-    // console.output_msg(COORD_DATA_STAT, MSG_STATS_RATE.data()   , 0u, 0u);
+#if DO_STATS
+    console.output_msg(COORD_DATA_STAT, MSG_STATS_RATE.data(), 0u, 0u);
+#endif // DO_STATS
     console.output_txt(COORD_SEP2,      MSG_SEPARATOR);
 
     console.set_cursor_cur_position(COORD_CURSOR);
@@ -56,24 +59,24 @@ void ServiceClient::startup_component(areg::ComponentThread& /* comThread */)
     mFrameStats.clear();
 }
 
-#if defined(DEBUG)
-DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient, broadcast_image_block_acquired);
+#if DO_STATS
+DEBUG_DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient, broadcast_image_block_acquired);
 void ServiceClient::broadcast_image_block_acquired(const areg::SharedBuffer& imageBlock)
 {
-    LOG_SCOPE( examples_23_clientdatarate_ServiceClient, broadcast_image_block_acquired );
+    DEBUG_LOG_SCOPE( examples_23_clientdatarate_ServiceClient, broadcast_image_block_acquired );
 
     const uint8_t* raw = imageBlock.buffer();
     const uint32_t imgSize = imageBlock.size_used();  // equals blockSize
     if (raw == nullptr || imgSize < sizeof(LargeData::RawImageBlock))
     {
-        LOG_ERR("Invalid buffer data");
+        DEBUG_LOG_ERR("Invalid buffer data");
         ++mIncompleteFrames;
         return;
     }
 
     if (mFrameStats.empty())
     {
-        LOG_ERR("The frame statistics is not initialized, cannot continue");
+        DEBUG_LOG_ERR("The frame statistics is not initialized, cannot continue");
         ++mIncompleteFrames;
         return;
     }
@@ -81,7 +84,7 @@ void ServiceClient::broadcast_image_block_acquired(const areg::SharedBuffer& ima
     const LargeData::RawImageBlock* block = reinterpret_cast<const LargeData::RawImageBlock*>(raw);
     if (block->channelId >= static_cast<uint32_t>(mFrameStats.size()))
     {
-        LOG_ERR("Invalid channel ID [ %u ], it cannot be bigger than [ %u ]", block->channelId, static_cast<uint32_t>(mFrameStats.size() - 1));
+        DEBUG_LOG_ERR("Invalid channel ID [ %u ], it cannot be bigger than [ %u ]", block->channelId, static_cast<uint32_t>(mFrameStats.size() - 1));
         ++mIncompleteFrames;
         return;
     }
@@ -91,7 +94,7 @@ void ServiceClient::broadcast_image_block_acquired(const areg::SharedBuffer& ima
     if (stat.height != static_cast<int32_t>(block->frameHeight))
     {
         ok = false;
-        LOG_ERR("Invalid image height [ %u ], expected height is [ %u ]", block->frameHeight, static_cast<uint32_t>(stat.height));
+        DEBUG_LOG_ERR("Invalid image height [ %u ], expected height is [ %u ]", block->frameHeight, static_cast<uint32_t>(stat.height));
     }
 
     switch (stat.state)
@@ -105,20 +108,20 @@ void ServiceClient::broadcast_image_block_acquired(const areg::SharedBuffer& ima
         if (stat.seqNr != block->frameSeqId)
         {
             ok = false;
-            LOG_WARN("Invalid sequence number [ %u ], expected sequence number [ %u ], probably missed image blocks", block->frameSeqId, static_cast<uint32_t>(stat.seqNr));
+            DEBUG_LOG_WARN("Invalid sequence number [ %u ], expected sequence number [ %u ], probably missed image blocks", block->frameSeqId, static_cast<uint32_t>(stat.seqNr));
             stat.seqNr = block->frameSeqId;
         }
         else if (stat.line != block->imageData.imgStartPos.posY)
         {
             ok = false;
-            LOG_WARN("Invalid line position [ %u ], expected line position [ %u ]", block->imageData.imgStartPos.posY, static_cast<uint32_t>(stat.line));
+            DEBUG_LOG_WARN("Invalid line position [ %u ], expected line position [ %u ]", block->imageData.imgStartPos.posY, static_cast<uint32_t>(stat.line));
         }
 
         stat.line = block->imageData.imgStartPos.posY + block->imageData.imgHeight;
         if (stat.line > stat.height)
         {
             ok = false;
-            LOG_WARN("Invalid line ending [ %u ], cannot be more than [ %u ]", static_cast<uint32_t>(stat.line), static_cast<uint32_t>(stat.height));
+            DEBUG_LOG_WARN("Invalid line ending [ %u ], cannot be more than [ %u ]", static_cast<uint32_t>(stat.line), static_cast<uint32_t>(stat.height));
             stat.line = stat.height;
         }
         break;
@@ -130,7 +133,7 @@ void ServiceClient::broadcast_image_block_acquired(const areg::SharedBuffer& ima
         if (stat.line > stat.height)
         {
             ok = false;
-            LOG_WARN("Invalid line ending [ %u ], cannot be more than [ %u ]", static_cast<uint32_t>(stat.line), static_cast<uint32_t>(stat.height));
+            DEBUG_LOG_WARN("Invalid line ending [ %u ], cannot be more than [ %u ]", static_cast<uint32_t>(stat.line), static_cast<uint32_t>(stat.height));
             stat.line = stat.height;
         }
         break;
@@ -165,16 +168,21 @@ void ServiceClient::broadcast_service_stopping()
     areg::Application::signal_quit();
 }
 
-void ServiceClient::broadcast_image_settings(uint32_t /*width*/, uint32_t height, uint32_t /*pixelTime*/, uint32_t /*linesBlock*/, uint32_t channels)
+void ServiceClient::on_image_gen_setting_update(const LargeData::ImageGenerator& ImageGenSetting, areg::DataState state)
 {
-    LOG_SCOPE(examples_23_clientdatarate_ServiceClient, broadcast_image_settings);
-
-    if (channels > LargeData::MAX_CHANNELS)
+    LOG_SCOPE(examples_23_clientdatarate_ServiceClient, on_image_gen_setting_update);
+    if (state != areg::DataState::DataIsOK)
     {
-        LOG_WARN("Ignoring image settings with invalid channel count [ %u ], max allowed [ %u ]", channels, LargeData::MAX_CHANNELS);
+        mFrameStats.clear();
         return;
     }
-    else if (channels == 0)
+
+    if (ImageGenSetting.channels > LargeData::MAX_CHANNELS)
+    {
+        LOG_WARN("Ignoring image settings with invalid channel count [ %u ], max allowed [ %u ]", ImageGenSetting.channels, LargeData::MAX_CHANNELS);
+        return;
+    }
+    else if (ImageGenSetting.channels == 0)
     {
         LOG_INFO("Release frame statistics");
         mFrameStats.clear();
@@ -182,10 +190,10 @@ void ServiceClient::broadcast_image_settings(uint32_t /*width*/, uint32_t height
     }
 
     mFrameStats.clear();
-    mFrameStats.resize(channels);
-    for (uint32_t i = 0; i < channels; ++i)
+    mFrameStats.resize(ImageGenSetting.channels);
+    for (uint32_t i = 0; i < ImageGenSetting.channels; ++i)
     {
-        FrameStats entry{ static_cast<int32_t>(i), Initial, static_cast<int32_t>(height), 0, 0u };
+        FrameStats entry{ static_cast<int32_t>(i), Initial, static_cast<int32_t>(ImageGenSetting.height), 0, 0u };
         mFrameStats[i] = entry;
     }
 
@@ -203,7 +211,7 @@ bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg
     bool result = LargeDataConsumerBase::service_connected(status, proxy);
 
     bool isConnected{ is_connected() };
-    notify_on_broadcast_image_settings(isConnected);
+    notify_on_image_gen_setting_update(isConnected);
     notify_on_broadcast_service_stopping(isConnected);
     notify_on_broadcast_image_block_acquired(isConnected);
 
@@ -238,8 +246,9 @@ void ServiceClient::process_timer(areg::Timer& /* timer */)
 
     console.save_cursor_position();
     console.output_msg(COORD_DATA_RATE, MSG_NET_RATE_SENT.data(), dataRate.first, dataRate.second.data(), msgRecv);
-    // console.output_msg(COORD_DATA_STAT, MSG_STATS_RATE.data()   , mCompleteFrames, mIncompleteFrames);
-
+#if DO_STATS
+    console.output_msg(COORD_DATA_STAT, MSG_STATS_RATE.data()   , mCompleteFrames, mIncompleteFrames);
+#endif  // DO_STATS
     console.restore_cursor_position();
     console.refresh_screen();
 }
