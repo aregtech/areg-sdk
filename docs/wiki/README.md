@@ -152,6 +152,9 @@ Solutions for common issues:
 **Integration:**
 - **[Integration Troubleshooting](./07c-troubleshooting-integration.md)** - SDK integration issues
 
+**Networking:**
+- **[Low-Latency TCP Network Tuning](./07d-troubleshooting-network-tunning.md)** - Guide for High-Performance Networking
+
 ---
 
 ### 📚 Examples and Demos
@@ -207,6 +210,9 @@ Hands-on learning resources:
 ### ...build for embedded systems
 → **[CMake Cross-Compilation](./01b-cmake-build.md#cross-compilation)** (ARM, etc.)  
 → **[CMake Troubleshooting](./07b-troubleshooting-cmake-linux-builds.md)** (build issues)
+
+### ...increase message and data streaming
+→ **[Low-Latency TCP Tuning](./07d-troubleshooting-network-tunning.md)** (GBytes data and 1M messages per second)  
 
 ---
 
@@ -264,6 +270,7 @@ Hands-on learning resources:
 - **[WSL Issues](./07a-troubleshooting-wsl-update.md)** - Windows/Linux integration
 - **[CMake Issues](./07b-troubleshooting-cmake-linux-builds.md)** - Build problems
 - **[Integration Issues](./07c-troubleshooting-integration.md)** - SDK integration
+- **[Low-Latency TCP Network Tuning](./07d-troubleshooting-network-tunning.md)** - Guide for High-Performance Networking
 
 ---
 
@@ -419,6 +426,10 @@ Help improve the documentation:
 2. ✅ **[Toolchain Overview](./06a-areg-sdk-tools.md)** - Complete development tools
 3. ✅ **[CI/CD Setup](./01b-cmake-build.md)** - Automated builds
 4. ✅ **[Troubleshooting](./07c-troubleshooting-integration.md)** - Common issues
+
+### For Testing
+
+1. ✅ **[Low-Latency TCP Network Tuning](./07d-troubleshooting-network-tunning.md)** - Guide for High-Performance Networking
 
 ---
 

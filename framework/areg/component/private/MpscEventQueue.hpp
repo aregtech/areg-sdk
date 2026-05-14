@@ -14,7 +14,7 @@
  * \author      Artak Avetyan
  * \brief       Areg Platform, lock-free MPSC (Multi-Producer, Single-Consumer) event queue.
  *              Based on Dmitry Vyukov's MPSC queue algorithm.
- * 
+ *
  *   Fast lane  - Dmitry Vyukov MPSC (Multi-Producer, Single-Consumer) linked-list (lock-free).
  *                Push: one atomic exchange on mTail  (any producer thread).
  *                Pop:  wait-free read of mHead->next (consumer thread only).
@@ -49,6 +49,7 @@
 #include <deque>
 #include <limits>
 #include <new>
+#include <vector>
 
 /************************************************************************
  * Dependencies
@@ -113,6 +114,35 @@ private:
         Event*              event   { nullptr };    //!< nullptr on the stub node.
     };
 
+    /**
+     * \brief   Tagged-pointer head for the lock-free LIFO node pool.
+     *          The sequence counter prevents ABA on the CAS loop.
+     *          Requires 16-byte native CAS (x86-64 cmpxchg16b / ARM64 CASP).
+     **/
+#if defined(_WIN64) || defined(__LP64__) || defined(__aarch64__)
+     // 64-bit: 128-bit DCAS (cmpxchg16b / CASP)
+    struct alignas(16) PoolTop
+    {
+        Node* head{ nullptr };
+        uintptr_t seq{ 0u };
+    };
+#else
+     // 32-bit: 64-bit CAS (cmpxchg8b on x86 / LDREXD+STREXD on ARMv6K+)
+    struct alignas(8) PoolTop
+    {
+        Node* head{ nullptr };
+        uint32_t  seq{ 0u };
+    };
+#endif
+
+    //////////////////////////////////////////////////////////////////////////
+    // NODE_POOL_PRE_ALLOC nodes are pre-populated in the constructor to
+    // avoid cold-start heap pressure during the initial message burst.
+    // NODE_POOL_MAX caps the pool depth so idle queues do not hold excessive memory.
+    //////////////////////////////////////////////////////////////////////////
+    static constexpr uint32_t   NODE_POOL_PRE_ALLOC { 128u  }; //!< Nodes pre-allocated in constructor.
+    static constexpr uint32_t   NODE_POOL_MAX       { 1024u }; //!< Maximum pool depth.
+
     //////////////////////////////////////////////////////////////////////////
     // AREG_MPSC_CACHE_LINE_SIZE
     //
@@ -168,8 +198,9 @@ public:
      * \brief   Enqueues an event.
      *
      * ExitPrio events go to the front of the priority lane (bypass capacity).
-     * HighPrio events are inserted after any ExitPrio entries.
-     * Normal-priority events use the lock-free fast lane.
+     * HighPrio and above events are inserted in priority order after any
+     * existing higher-priority entries. Normal-priority events use the
+     * lock-free fast lane.
      *
      * When the fast lane is at capacity the incoming event is dropped
      * (drop-newest policy; the producer must not pop to avoid a mHead race).
@@ -212,10 +243,10 @@ public:
      * \brief   Enqueues up to \a count events with a single priority-lane lock acquisition.
      *          Each event is routed by its priority: ExitPrio events are placed at the front of
      *          the priority lane; events with HighPrio or above (but not ExitPrio) are inserted
-     *          after any existing ExitPrio entries; events below HighPrio go to the lock-free
-     *          fast lane. Normal-priority events that exceed the queue capacity are NOT enqueued
-     *          and are returned to the caller via \a eventElems. The events in \a eventElems list
-     *          should be already sorted by priorities.
+     *          in priority order after any existing higher-priority entries; events below HighPrio
+     *          go to the lock-free fast lane. Normal-priority events that exceed the queue capacity
+     *          are NOT enqueued and are returned to the caller via \a eventElems. The events in
+     *          \a eventElems list should be already sorted by priorities.
      *
      * \param[in,out]   eventElems  On input: sorted by priority array of \a count event pointers to enqueue.
      *                              On output: \a eventElems[0..<returnValue>) contains the events
@@ -265,20 +296,32 @@ private:
 
     /**
      * \brief   Drains the entire fast lane into \a out.
+     *          Reserves space using mFastCount before draining.
      *          Safe only when no producers are active (control path).
      **/
-    void _mpsc_drain_to(std::deque<Event*>& out) noexcept;
+    void _mpsc_drain_to(std::vector<Event*>& out) noexcept;
 
     /**
-     * \brief   Returns a Node from the pool, or allocates a new one if the pool is empty.
+     * \brief   Drains the entire fast lane into \a out, ignoring any event whose
+     *          runtime class does not matches \a classId.
+     *          Reserves space using mFastCount before draining.
+     *          Safe only when no producers are active (control path).
+     **/
+    void _mpsc_drain_to(std::vector<Event*>& out, const RuntimeClassID& classId) noexcept;
+
+    /**
+     * \brief   Returns a Node from the lock-free pool, or allocates a new one if the pool is empty.
      **/
     Node* _alloc_node() noexcept;
 
     /**
-     * \brief   Returns a Node to the pool. If the pool is already at capacity, deletes the node.
+     * \brief   Returns a Node to the lock-free pool. If the pool is at capacity, deletes the node.
      **/
     void _free_node(Node* node) noexcept;
 
+    /**
+     * \brief   Returns the number of elements in priority queue.
+     **/
     inline uint32_t _prio_count() noexcept;
 
     /**
@@ -292,62 +335,34 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    //--------------------------------------------------------------------
-    // Stub / sentinel node - anchors the list when empty.
-    // Allocated once in the constructor; freed only in the destructor.
-    //--------------------------------------------------------------------
-    alignas(AREG_MPSC_CACHE_LINE_SIZE) Node*              mStub;
-
-    //--------------------------------------------------------------------
-    // Producer-written tail - own cache line to avoid false sharing with
-    // the consumer's mHead reads.
-    //--------------------------------------------------------------------
+    //!<  Producer-written tail - own cache line to avoid false sharing with the consumer's mHead reads
     alignas(AREG_MPSC_CACHE_LINE_SIZE) std::atomic<Node*> mTail;
 
-    //--------------------------------------------------------------------
-    // Consumer-written head - own cache line to avoid false sharing with
-    // producer writes to mTail.
-    //--------------------------------------------------------------------
+    //!< Consumer-written head - own cache line to avoid false sharing with producer writes to mTail
+    //!< mHead is always the current sentinel; deleted in the destructor
     alignas(AREG_MPSC_CACHE_LINE_SIZE) Node*              mHead;
 
-    //--------------------------------------------------------------------
-    // Fast-lane item count.
-    // Incremented by producers (fetch_add), decremented by the consumer.
-    //--------------------------------------------------------------------
-    std::atomic<uint32_t>   mFastCount; //!< Current fast-lane depth.
-    const uint32_t          mCapacity;  //!< Soft cap (MAX_UINT = unlimited).
+    //!< Fast-lane item count. Incremented by producers, decremented by the consumer
+    std::atomic<uint32_t>   mFastCount; //!< Current fast-lane depth
+    const uint32_t          mCapacity;  //!< Soft cap (MAX_UINT = unlimited)
 
-    //--------------------------------------------------------------------
-    // Priority lane - ExitPrio at front, HighPrio after, Normal in fast.
-    // mPrioLock is recursive and also serves as lock_queue()/unlock_queue().
-    //--------------------------------------------------------------------
-    SpinLock                mPrioLock;  //!< Recursive guard for mPrioQueue.
-    std::deque<Event*>      mPrioQueue; //!< [Exit-][High-] ordered.
+    //!< Priority lane - ExitPrio at front, then descending priority order.
+    SpinLock                mPrioLock;  //!< Recursive guard for mPrioQueue
+    std::deque<Event*>      mPrioQueue; //!< [Exit-][Critical-][High-] ordered
 
-    //--------------------------------------------------------------------
-    // Listener - receives signal_event() on push and on becoming empty.
-    //--------------------------------------------------------------------
+    //!< Queue listener to signal and reset on push and pop.
     QueueListener&          mListener;
 
-    //--------------------------------------------------------------------
-    // Node pool -- recycles Nodes to avoid per-event heap alloc/free.
-    //
-    // Nodes are linked via their  pointer while in the pool (the
-    // same field used in the MPSC queue; a node is never in both
-    // simultaneously). Both producers (_alloc_node) and the consumer
-    // (_free_node) touch the pool, so access is guarded by mNodePoolLock.
-    //
-    // NODE_POOL_PRE_ALLOC nodes are pre-populated in the constructor to
-    // avoid cold-start heap pressure during the initial message burst.
-    // NODE_POOL_MAX caps the pool depth so idle queues do not hold
-    // excessive memory.
-    //--------------------------------------------------------------------
-    static constexpr uint32_t   NODE_POOL_PRE_ALLOC { 64u  }; //!< Nodes pre-allocated in constructor.
-    static constexpr uint32_t   NODE_POOL_MAX       { 256u }; //!< Maximum pool depth.
+    //////////////////////////////////////////////////////////////////////////
+    // Lock-free LIFO via tagged-pointer CAS (PoolTop: head + ABA counter).
+    // Requires 16-byte native CAS (x86-64 cmpxchg16b / ARM64 CASP).
+    // Both producers (_alloc_node) and the consumer (_free_node) operate
+    // concurrently without a spinlock.
+    //////////////////////////////////////////////////////////////////////////
 
-    SpinLock    mNodePoolLock;                  //!< Guards mNodePoolHead / mNodePoolSize.
-    Node*       mNodePoolHead   { nullptr };    //!< Head of the pooled-node free list.
-    uint32_t    mNodePoolSize   { 0u };         //!< Current number of pooled nodes.
+    // Node pool, recycles Nodes to avoid per-event heap alloc/free.
+    alignas(16) std::atomic<PoolTop>    mPool;      //!< Lock-free LIFO pool head + ABA counter.
+    std::atomic<uint32_t>               mPoolSize;  //!< Current number of pooled nodes.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden

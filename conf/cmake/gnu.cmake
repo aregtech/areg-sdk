@@ -31,9 +31,13 @@ if (MINGW)
     endif()
 
     if(${CMAKE_BUILD_TYPE} MATCHES "Release")
-        list(APPEND AREG_COMPILER_OPTIONS -O2)
-        list(APPEND AREG_LDFLAGS   stdc++   m   pthread   advapi32   psapi   shell32   ws2_32)
-        set(AREG_LDFLAGS_STR    "-lstdc++ -lm -lpthread -ladvapi32 -lpsapi -lshell32 -lws2_32")
+        list(APPEND AREG_COMPILER_OPTIONS -O3 -ffunction-sections -fdata-sections)
+        if (NOT CMAKE_CROSSCOMPILING)
+            list(APPEND AREG_COMPILER_OPTIONS -march=native -mtune=native)
+        endif()
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+        list(APPEND AREG_LDFLAGS   -Wl,--gc-sections -Wl,-O1   stdc++   m   pthread   advapi32   psapi   shell32   ws2_32)
+        set(AREG_LDFLAGS_STR    "-Wl,--gc-sections -Wl,-O1 -lstdc++ -lm -lpthread -ladvapi32 -lpsapi -lshell32 -lws2_32")
     else()
         list(APPEND AREG_COMPILER_OPTIONS -O0 -g3)
         list(APPEND AREG_LDFLAGS   stdc++   m   pthread   advapi32   psapi   shell32   ws2_32   dbghelp)
@@ -54,7 +58,11 @@ else()
     endif()
 
     if(${CMAKE_BUILD_TYPE} MATCHES "Release")
-        list(APPEND AREG_COMPILER_OPTIONS -O2)
+        list(APPEND AREG_COMPILER_OPTIONS -O3 -ffunction-sections -fdata-sections -fvisibility=hidden "$<$<COMPILE_LANGUAGE:CXX>:-fvisibility-inlines-hidden>")
+        if (NOT CMAKE_CROSSCOMPILING)
+            list(APPEND AREG_COMPILER_OPTIONS -march=native -mtune=native)
+        endif()
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
     else()
         list(APPEND AREG_COMPILER_OPTIONS -O0 -g3)
     endif()
@@ -71,19 +79,48 @@ else()
 
     # Linker flags (-l is not necessary)
     if (AREG_PLATFORM_MACOS)
-        list(APPEND AREG_LDFLAGS stdc++ m pthread)
-        set(AREG_LDFLAGS_STR "-lstdc++ -lm -lpthread")
+        if(${CMAKE_BUILD_TYPE} MATCHES "Release")
+            list(APPEND AREG_LDFLAGS -Wl,-dead_strip stdc++ m pthread)
+            set(AREG_LDFLAGS_STR "-Wl,-dead_strip -lstdc++ -lm -lpthread")
+        else()
+            list(APPEND AREG_LDFLAGS stdc++ m pthread)
+            set(AREG_LDFLAGS_STR "-lstdc++ -lm -lpthread")
+        endif()
     else()
-        list(APPEND AREG_LDFLAGS stdc++ m pthread rt)
-        set(AREG_LDFLAGS_STR "-lstdc++ -lm -lpthread -lrt")
+        if(${CMAKE_BUILD_TYPE} MATCHES "Release")
+            list(APPEND AREG_LDFLAGS -Wl,--gc-sections -Wl,-O1 stdc++ m pthread rt)
+            set(AREG_LDFLAGS_STR "-Wl,--gc-sections -Wl,-O1 -lstdc++ -lm -lpthread -lrt")
+        else()
+            list(APPEND AREG_LDFLAGS stdc++ m pthread rt)
+            set(AREG_LDFLAGS_STR "-lstdc++ -lm -lpthread -lrt")
+        endif()
+
+        # GCC on x86-64 does not inline 16-byte (128-bit) atomics; it emits calls
+        # to __atomic_*_16 which live in libatomic.  Detect this at configure time
+        # so that cross-compilers or future toolchains that do inline them skip the
+        # extra dependency.
+        include(CheckCXXSourceCompiles)
+        check_cxx_source_compiles("
+            #include <atomic>
+            #include <cstdint>
+            struct alignas(16) Align16 { uint64_t a; uint64_t b; };
+            std::atomic<Align16> x;
+            int main() {
+                Align16 expected{0, 0}, desired{1, 1};
+                return x.compare_exchange_strong(expected, desired);
+            }
+        " AREG_HAVE_NATIVE_16BYTE_ATOMICS)
+
+        if(NOT AREG_HAVE_NATIVE_16BYTE_ATOMICS)
+            list(APPEND AREG_LDFLAGS atomic)
+            string(APPEND AREG_LDFLAGS_STR " -latomic")
+        endif()
     endif()
 endif()
 
 # disable SQLite warnings
 list(APPEND AREG_OPT_DISABLE_WARN_THIRDPARTY
-        -Wno-everything
-        -Wno-unused-function
-        -Wno-unused-but-set-variable
+        -w
 )
 
 list(APPEND AREG_OPT_DISABLE_WARN_COMMON

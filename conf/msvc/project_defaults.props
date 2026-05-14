@@ -31,17 +31,17 @@
             <MinimalRebuild>false</MinimalRebuild>
             <ConformanceMode>true</ConformanceMode>
             <BasicRuntimeChecks Condition="'$(ConfigShortName)'=='Debug'">EnableFastChecks</BasicRuntimeChecks>
-            <BasicRuntimeChecks Condition="'$(ConfigShortName)'=='Release'">Default</BasicRuntimeChecks>
             <DebugInformationFormat Condition="'$(ConfigShortName)'=='Debug'">EditAndContinue</DebugInformationFormat>
             <RuntimeLibrary Condition="'$(ConfigShortName)'=='Debug'">MultiThreadedDebugDLL</RuntimeLibrary>
-            <RuntimeLibrary Condition="'$(ConfigShortName)'=='Release'">MultiThreadedDLL</RuntimeLibrary>
             <Optimization Condition="'$(ConfigShortName)'=='Debug'">Disabled</Optimization>
-            <Optimization Condition="'$(ConfigShortName)'=='Release'">Full</Optimization>
             <SDLCheck Condition="'$(Configuration)'=='Debug'">true</SDLCheck>
 
             <!-- ************************************************************************************************************************** -->
             <!-- Release version only                                                                                                       -->
             <!-- ************************************************************************************************************************** -->
+            <BasicRuntimeChecks Condition="'$(ConfigShortName)'=='Release'">Default</BasicRuntimeChecks>
+            <RuntimeLibrary Condition="'$(ConfigShortName)'=='Release'">MultiThreadedDLL</RuntimeLibrary>
+            <Optimization Condition="'$(ConfigShortName)'=='Release'">Full</Optimization>
             <InlineFunctionExpansion Condition="'$(ConfigShortName)'=='Release'">AnySuitable</InlineFunctionExpansion>
             <ExceptionHandling Condition="'$(ConfigShortName)'=='Release'">false</ExceptionHandling>
             <DebugInformationFormat Condition="'$(ConfigShortName)'=='Release'">None</DebugInformationFormat>
@@ -56,6 +56,7 @@
             <!-- function with a local stack frame. Safe because NDEBUG asserts are stripped    -->
             <!-- and we do not handle untrusted input in the IPC hot path.                      -->
             <BufferSecurityCheck Condition="'$(ConfigShortName)'=='Release'">false</BufferSecurityCheck>
+            <SDLCheck Condition="'$(Configuration)'=='Release'">false</SDLCheck>
         </ClCompile>
         <Link>
             <LinkErrorReporting>QueueForNextLogin</LinkErrorReporting>

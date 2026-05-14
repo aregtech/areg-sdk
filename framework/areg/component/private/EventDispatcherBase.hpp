@@ -386,10 +386,10 @@ inline uint32_t EventDispatcherBase::pop_events(Event** listEvents, uint32_t cou
 
 inline void EventDispatcherBase::signal_event(uint32_t eventCount)
 {
-    if (eventCount == 0)
-        mEventQueue.reset();
-    else if (eventCount == 1)
+    if (eventCount == 1)
         mEventQueue.set_signaled();
+    else if (eventCount == 0)
+        mEventQueue.reset();
 }
 
 inline bool EventDispatcherBase::is_ready() const noexcept

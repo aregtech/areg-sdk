@@ -99,7 +99,7 @@ void _os_configure_connected_socket(SOCKETHANDLE hSocket) noexcept
         constexpr int32_t noSigPipe{ 1 };
         ::setsockopt(hSocket, SOL_SOCKET, SO_NOSIGPIPE, reinterpret_cast<const char*>(&noSigPipe), sizeof(noSigPipe));
     #endif
-#endif#endif  // __linux__ / __APPLE__ / generic POSIX
+#endif  // __linux__ / __APPLE__ / generic POSIX
 }
 
 void _os_release_socket()
