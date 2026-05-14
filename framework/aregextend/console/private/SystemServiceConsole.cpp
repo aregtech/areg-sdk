@@ -55,14 +55,7 @@ void SystemServiceConsole::startup_service_interface( Component & holder )
                                           areg::ext::COORD_USER_INPUT.posY });
         console.enable_console_input(true);
         console.refresh_screen();
-        // mTimer.start_timer(areg::TIMEOUT_1_SEC, Timer::CONTINUOUSLY);
     }
-}
-
-void SystemServiceConsole::shutdown_service_interface( Component & holder ) noexcept
-{
-    // mTimer.stop_timer( );
-    StubBase::shutdown_service_interface( holder );
 }
 
 #ifdef DEBUG

@@ -90,9 +90,8 @@ public:
     inline bool is_database_logging_enabled() const noexcept;
 
     /**
-     * \brief   Enables or disables the database logging. This flag should be set before
-     *          initializing database, where the database file and data tables are created and
-     *          initialized.
+     * \brief   Enables or disables the database logging. This flag should be set before initializing
+     *          database, where the database file and data tables are created and initialized.
      *
      * \param   enable      Flag, indicating whether the logging in the database is enabled or not.
      **/
@@ -148,6 +147,7 @@ public:
 
     /**
      * \brief   Drops specified table.
+     * 
      * \param   table   The name of the table to drop.
      **/
     bool drop_table(const char* table);
@@ -162,8 +162,7 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Returns true if SqliteDatabase engine is opened and operable. Otherwise, returns
-     *          false.
+     * \brief   Returns true if SqliteDatabase engine is opened and operable. Otherwise, returns false.
      **/
     bool is_operable() const noexcept final;
 
@@ -174,6 +173,7 @@ public:
      *                      URL, user name and password. It is up to Database engine to parse the
      *                      path and initialize the connection. If the parameter is empty, it should
      *                      take the data from the 'areg.init' configuration file.
+     * 
      * \param   readOnly    If true, the database engine should connect in read-only mode.
      * \return  Returns true if succeeded to connect. Otherwise, returns false.
      **/
@@ -212,8 +212,7 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Returns true if the database and the log tables are initialized, and ready to log
-     *          messages.
+     * \brief   Returns true if the database and the log tables are initialized, and ready to log messages.
      **/
     bool tables_initialized() const noexcept final;
 
@@ -307,6 +306,7 @@ public:
 
     /**
      * \brief   Call to query and get list of names of connected instances from log database.
+     * 
      * \param[out] names       On output, the vector contains names of connected instances.
      **/
     void log_instance_names(std::vector<areg::String>& names);
@@ -639,7 +639,9 @@ public:
 
     /**
      * \brief   Returns number of filtered log messages of specified instance ID.
-     * \param   instId      The ID of instance to filter. If `areg::TARGET_ALL` is specified, it returns number of all log messages.
+     * 
+     * \param   instId      The ID of instance to filter. If `areg::TARGET_ALL` is specified,
+     *                      it returns number of all log messages.
      **/
     [[nodiscard]]
     uint32_t count_filter_logs(ITEM_ID instId = areg::TARGET_ALL);
@@ -684,8 +686,7 @@ private:
     inline void _create_indexes() noexcept;
 
     /**
-     * \brief   Logs the initial information in the database like logging version and application
-     *          name.
+     * \brief   Logs the initial information in the database like logging version and application name.
      **/
     inline void _initialize() noexcept;
 
@@ -698,8 +699,7 @@ private:
     inline static void _copy_log_message(areg::ext::SqliteStatement& stmt, areg::SharedBuffer& buf);
 
     /**
-     * \brief   Extracts the log instance from the SqliteStatement and copies it to the
-     *          areg::ConnectedInstance.
+     * \brief   Extracts the log instance from the SqliteStatement and copies it to the areg::ConnectedInstance.
      *
      * \param   stmt    The SqliteStatement to extract the log instance.
      * \param   inst    The areg::ConnectedInstance to copy the log instance.
@@ -707,8 +707,7 @@ private:
     inline static void _copy_log_instances(areg::ext::SqliteStatement& stmt, areg::ConnectedInstance & inst);
 
     /**
-     * \brief   Extracts the log scope from the SqliteStatement and copies it to the
-     *          areg::ScopeEntry.
+     * \brief   Extracts the log scope from the SqliteStatement and copies it to the areg::ScopeEntry.
      *
      * \param   stmt        The SqliteStatement to extract the log scope.
      * \param   scope       The areg::ScopeEntry to copy the log scope.

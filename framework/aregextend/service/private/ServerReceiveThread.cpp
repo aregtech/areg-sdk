@@ -46,10 +46,6 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
     SocketAccepted clientSocket;
     if (!mConnection.is_connection_accepted(hSocket, clientSocket))
     {
-        // `addrAccepted` is only populated by server_accept() when ::accept() is called
-        // If the address is invalid, this socket was previously accepted but has
-        // since been deregistered (e.g. by the service thread processing a disconnect
-        // message).  Do NOT re-accept it, that would restart the loop indefinitely.
         if ( !addrAccepted.is_valid() )
         {
             DEBUG_LOG_WARN("Socket [ %u ] is no longer registered, it was deregistered while still in the event queue. Ignoring.", hSocket);
@@ -65,11 +61,6 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
                         , clientSocket.address().host_port());
 
             mConnection.accept_connection(clientSocket);
-
-            // Offer the accepted socket to a dedicated per-client thread pair.
-            // If on_client_accepted() returns true, the pair took ownership:
-            //   - the socket is removed from the multiplexer watch set inside the callback
-            //   - this thread must NOT call receive_message() for it
             if ( mConnectHandler.on_client_accepted(clientSocket) )
                 return;
         }
@@ -121,13 +112,8 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
                     , msgReceived.size_used());
 
         mRemoteService.process_received_message(msgReceived, clientSocket);
-
-        // Drain any bytes that _os_recv_data read-ahead pulled into the thread-local
-        // cache. Those bytes are invisible to epoll/select (not in the kernel buffer),
-        // so if we do not consume them here the multiplexer will never fire for them
-        // and the messages will be silently dropped.
-        if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, msgReceived, clientSocket,
-                [this](uint64_t bytes, uint32_t msgs) { accumulate_received(bytes, msgs); }))
+        if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, areg::THREAD_DRAIN_LIMIT - 1u, clientSocket,
+                msgReceived, [this](uint64_t bytes, uint32_t msgs) { accumulate_received(bytes, msgs); }))
         {
             mRemoteService.failed_receive_message(clientSocket);
         }
@@ -149,8 +135,6 @@ bool ServerReceiveThread::run_dispatcher()
     DEBUG_LOG_SCOPE( areg_aregextend_service_ServerReceiveThread, run_dispatcher );
     DEBUG_LOG_DBG("Starting dispatcher [ %s ]", name().as_string());
 
-    // Per-socket RX cache is now safe for multi-socket threads: thread_rx_cache(hSocket)
-    // provides an isolated ThreadCache per socket handle, preventing cross-socket carry-over.
     areg::set_receive_mode(areg::ReceiveMode::MultiCache);
 
     ready_for_events(true);
@@ -159,12 +143,6 @@ bool ServerReceiveThread::run_dispatcher()
     {
         SyncObject* syncObjects[2] = {&mEventExit, &mEventQueue};
         MultiLock multiLock(syncObjects, 2, false);
-
-        // Maximum number of additional sockets to drain per blocking wait() wakeup.
-        // Limits how long the inner loop holds the receive thread before checking
-        // for exit events, ensuring shutdown is never delayed more than DRAIN_LIMIT
-        // message-receive operations.
-        constexpr int32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
 
         RemoteMessage msgReceived;
         areg::SocketAddress addrDrain;
@@ -204,15 +182,10 @@ bool ServerReceiveThread::run_dispatcher()
                     _process_connection_event(hSocket, addrAccepted, msgReceived);
                     // msgReceived.invalidate();
 
-                    // Drain additional ready sockets without re-entering the blocking wait().
-                    // Under burst load, multiple clients may be readable simultaneously.
-                    // One non-blocking poll per extra socket avoids a full epoll/kqueue/WSAPoll
-                    // syscall roundtrip per message, significantly improving throughput.
-                    // addrDrain is reset by server_accept() at the top of every call -- safe to reuse.
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
                     int32_t drainCount{ 0 };
 #endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-                    for (int32_t drain = 0; drain < DRAIN_LIMIT; ++drain)
+                    for (uint32_t drain = 0; drain < areg::THREAD_DRAIN_LIMIT; ++drain)
                     {
                         const SOCKETHANDLE hDrain = mConnection.wait_connection_nowait(addrDrain);
                         if ( !areg::is_valid_socket(hDrain) )
@@ -228,13 +201,9 @@ bool ServerReceiveThread::run_dispatcher()
                     }
 
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-                    // If the drain loop saturated its limit, there are still more
-                    // sockets ready.  Under normal load this should not happen
-                    // continuously -- a persistent warning here means the receive
-                    // thread cannot keep up and the inbound queue is growing.
-                    if (drainCount >= DRAIN_LIMIT)
+                    if (drainCount >= areg::THREAD_DRAIN_LIMIT)
                     {
-                        DEBUG_LOG_WARN("Receive drain loop exhausted DRAIN_LIMIT (%d) -- inbound event queue is growing", DRAIN_LIMIT);
+                        DEBUG_LOG_WARN("Receive drain loop exhausted thread drain limit (%d) -- inbound event queue is growing", areg::THREAD_DRAIN_LIMIT);
                     }
 #endif   // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
                 }

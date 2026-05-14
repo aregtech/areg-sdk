@@ -256,8 +256,6 @@ void ServiceCommunicationBase::connection_lost( SocketAccepted & clientSocket )
 {
     LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, connection_lost );
 
-    // Suppress spurious callbacks during deliberate shutdown (stop_connection() closes
-    // all sockets which wakes blocked recv threads, causing them to call this method).
     if ( mShuttingDown.load(std::memory_order_relaxed) )
     {
         LOG_DBG("Ignoring connection_lost during shutdown for socket [ %u ]", static_cast<uint32_t>(clientSocket.handle()));
@@ -273,15 +271,11 @@ void ServiceCommunicationBase::connection_lost( SocketAccepted & clientSocket )
                 , clientSocket.address().host_address().as_string()
                 , clientSocket.address().host_port());
 
-    // In pool mode, remove the client from the pool pair's local map and multiplexer
-    // so it stops being monitored.  In shared mode this is a no-op.
     if ( cookie != areg::COOKIE_UNKNOWN )
     {
         mLostFn(cookie);
         remove_instance(cookie);
         RemoteMessage msgDisconnect = areg::create_disconnect_request(cookie, channel);
-        // Use HighPrio so crash-detected disconnects are processed with the same urgency
-        // as graceful disconnects.
         send_communication_message(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgDisconnect, areg::EventPriority::HighPrio);
     }
 
@@ -464,22 +458,14 @@ void ServiceCommunicationBase::stop_connection()
                 , mThreadReceive.is_running() ? "YES" : "NO"
                 , static_cast<uint32_t>(mClientPairs.size()));
 
-    // Set the flag BEFORE closing sockets so connection_lost() callbacks triggered by
-    // the socket interrupts are silently ignored instead of re-enqueueing disconnect work.
     mShuttingDown.store(true, std::memory_order_release);
-
     mThreadReceive.trigger_exit();
-
-    // Snapshot and clear the pool list so the threads can be stopped outside the lock.
     ClientPairList pairsToStop;
     {
         Lock lock(mLock);
         pairsToStop = std::move(mClientPairs);
     }
 
-    // Signal all pool receive threads to stop (resets each multiplexer --> unblocks wait()).
-    // Signal all pool send threads to exit before interrupting connections so they can
-    // finish draining any already-queued events.
     for ( auto & pair : pairsToStop )
     {
         if ( pair )
@@ -488,13 +474,6 @@ void ServiceCommunicationBase::stop_connection()
         }
     }
 
-    // Interrupt every accepted socket BEFORE stopping the per-slot send threads.
-    // Under high data rate a send thread may be blocked permanently inside ::send()
-    // (the remote TCP receive buffer is full and the kernel call never returns).
-    // trigger_exit() posts the EXIT event but the thread never reaches it while blocked.
-    // ::shutdown(SD_BOTH) on every accepted socket causes the blocked ::send() to return
-    // with an error.  _do_send() detects the error and the send thread processes the
-    // EXIT event and exits cleanly.
     mServerConnection.interrupt_connections();
 
     // Queue graceful disconnect notifications while sockets are still alive.
@@ -511,9 +490,6 @@ void ServiceCommunicationBase::stop_connection()
     }
 
     mThreadSend.wait_completion( areg::WAIT_INFINITE );
-
-    // Reset the multiplexer (unblocks global receive thread), interrupts remaining
-    // sockets, clears all maps, and closes the server socket.
     mServerConnection.close_socket();
 
     mThreadSend.shutdown( areg::WAIT_INFINITE );
@@ -564,8 +540,6 @@ bool ServiceCommunicationBase::do_accept_client_pool( SocketAccepted & clientSoc
         return false;
     }
 
-    // Unregister from the global ServerReceiveThread multiplexer -- the pool receive
-    // thread will own this socket from here on.
     mServerConnection.unregister_from_multiplexer(clientSocket.handle());
 
     const uint32_t idx = static_cast<uint32_t>(cookie) % mNumPairs;
@@ -733,13 +707,6 @@ void ServiceCommunicationBase::process_received_message(RemoteMessage & msgRecei
     {
         if ( target != areg::TARGET_UNKNOWN )
         {
-            // Skip the redundant client_by_cookie() validity pre-check here.
-            // The send thread's _do_send() resolves the socket and silently drops
-            // the message if the target has since disconnected.  Doing an extra
-            // exclusive-SpinLock lookup on mLock from the receive thread's hot
-            // path costs ~200–400 ns per forwarded message and doubles the lock
-            // contention on mLock without providing any correctness guarantee
-            // (the target can disconnect between this check and the actual send).
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
             // Milestone log every 100k forwarded messages.
             static uint32_t s_fwdCount{ 0u };

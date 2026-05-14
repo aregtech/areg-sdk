@@ -30,7 +30,7 @@ namespace areg::ext {
 // Console POSIX specific implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool Console::_os_setup()
+bool Console::_os_setup() noexcept
 {
     if (mIsReady == false)
     {
@@ -46,7 +46,7 @@ bool Console::_os_setup()
     return mIsReady;
 }
 
-void Console::_os_release()
+void Console::_os_release() noexcept
 {
     if (mIsReady)
     {
@@ -63,17 +63,13 @@ void Console::_os_release()
         mContext = 0;
         mIsReady = false;
 
-        // After endwin()/refresh(), ncurses hands the terminal back to the shell
-        // in raw mode at whatever row ncurses left the cursor.  Move two rows below
-        // the highest row ever written to, so the shell prompt appears there rather
-        // than at the very bottom of the terminal window.
         const int finalRow = static_cast<int>(mMaxUsedRow + 2);
         printf("\x1B[%d;1H\n", finalRow);
         ::fflush(stdout);
     }
 }
 
-void Console::_os_output_text(Console::Coord pos, const String& text) const
+void Console::_os_output_text(Console::Coord pos, const String& text) const noexcept
 {
     Lock lock(mLock);
 
@@ -83,9 +79,6 @@ void Console::_os_output_text(Console::Coord pos, const String& text) const
         WINDOW* win = reinterpret_cast<WINDOW*>(mContext);
         mvwaddstr(win, pos.posY, pos.posX, text.as_string());
         wclrtoeol(win);
-        // Restore cursor to the input-prompt position so that the terminal
-        // cursor stays at the user-input line.  Changes become visible at the
-        // next wrefresh (called by refresh_screen or _os_set_cursor_cur_position).
         wmove(win, mSavedPos.posY, mSavedPos.posX);
         if (static_cast<int32_t>(pos.posY) > mMaxUsedRow)
         {
@@ -94,7 +87,7 @@ void Console::_os_output_text(Console::Coord pos, const String& text) const
     }
 }
 
-void Console::_os_output_text(Console::Coord pos, std::string_view text) const
+void Console::_os_output_text(Console::Coord pos, std::string_view text) const noexcept
 {
     Lock lock(mLock);
 
@@ -112,7 +105,7 @@ void Console::_os_output_text(Console::Coord pos, std::string_view text) const
     }
 }
 
-void Console::_os_output_text(const String& text) const
+void Console::_os_output_text(const String& text) const noexcept
 {
     Lock lock(mLock);
 
@@ -123,7 +116,7 @@ void Console::_os_output_text(const String& text) const
     }
 }
 
-void Console::_os_output_text(std::string_view text) const
+void Console::_os_output_text(std::string_view text) const noexcept
 {
     Lock lock(mLock);
 
@@ -134,7 +127,7 @@ void Console::_os_output_text(std::string_view text) const
     }
 }
 
-Console::Coord Console::_os_get_cursor_position() const
+Console::Coord Console::_os_get_cursor_position() const noexcept
 {
     Lock lock(mLock);
 
@@ -151,7 +144,7 @@ Console::Coord Console::_os_get_cursor_position() const
     return pos;
 }
 
-void Console::_os_set_cursor_cur_position(Console::Coord pos) const
+void Console::_os_set_cursor_cur_position(Console::Coord pos) const noexcept
 {
     Lock lock(mLock);
 
@@ -167,9 +160,6 @@ void Console::_os_set_cursor_cur_position(Console::Coord pos) const
 bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 {
     ASSERT(buffer != nullptr);
-    // Use getnstr which operates on stdscr (the standard screen).
-    // This is a static method, so we cannot use mContext (non-static member).
-    // ncurses provides stdscr as a global after initscr() is called.
     if ((stdscr == nullptr) || (getnstr(buffer, static_cast<int32_t>(size)) != OK))
         return false;
 
@@ -177,7 +167,7 @@ bool Console::_os_wait_input_string(char* buffer, uint32_t size)
     return (areg::is_empty<char>(buffer) == false);
 }
 
-void Console::_os_refresh_screen() const
+void Console::_os_refresh_screen() const noexcept
 {
     if (mContext != 0)
     {
@@ -185,7 +175,7 @@ void Console::_os_refresh_screen() const
     }
 }
 
-void Console::_os_clear_line() const
+void Console::_os_clear_line() const noexcept
 {
     Lock lock(mLock);
 
@@ -195,16 +185,13 @@ void Console::_os_clear_line() const
     }
 }
 
-void Console::_os_clear_line_at_position(Console::Coord pos) const
+void Console::_os_clear_line_at_position(Console::Coord pos) const noexcept
 {
     Lock lock(mLock);
 
     if (mContext != 0)
     {
         WINDOW* win = reinterpret_cast<WINDOW*>(mContext);
-        // Move to the target row, clear to end of line, then return the
-        // ncurses cursor to the input-prompt anchor so the user sees the
-        // cursor at the right position after each background update.
         wmove(win, static_cast<int>(pos.posY), static_cast<int>(pos.posX));
         wclrtoeol(win);
         wmove(win, static_cast<int>(mSavedPos.posY), static_cast<int>(mSavedPos.posX));
@@ -212,7 +199,7 @@ void Console::_os_clear_line_at_position(Console::Coord pos) const
     }
 }
 
-void Console::_os_clear_screen() const
+void Console::_os_clear_screen() const noexcept
 {
     Lock lock(mLock);
 
@@ -227,14 +214,11 @@ bool Console::_os_read_input_list(const char* format, va_list varList) const
     return (mContext != 0 ? vw_scanw(reinterpret_cast<WINDOW *>(mContext), format, varList) >= 0 : false);
 }
 
-void Console::_os_save_cursor_position() const
+void Console::_os_save_cursor_position() const noexcept
 {
     Lock lock(mLock);
     if (mContext != 0)
     {
-        // Capture the ACTUAL cursor position from ncurses.  While the user types
-        // on the input line, the cursor advances past the prompt start stored in
-        // mSavedPos.  Reading here ensures restore returns to the typing position.
         WINDOW* win = reinterpret_cast<WINDOW*>(mContext);
         int curY{ 0 }, curX{ 0 };
         getyx(win, curY, curX);
@@ -245,7 +229,7 @@ void Console::_os_save_cursor_position() const
     }
 }
 
-void Console::_os_restore_cursor_position() const
+void Console::_os_restore_cursor_position() const noexcept
 {
     Lock lock(mLock);
 
@@ -257,14 +241,14 @@ void Console::_os_restore_cursor_position() const
     }
 }
 
-void Console::_os_move_cursor_one_line_up() const
+void Console::_os_move_cursor_one_line_up() const noexcept
 {
     Lock lock(mLock);
     Console::Coord pos = _os_get_cursor_position();
     mvcur(pos.posY, pos.posX, pos.posY - 1, 1);
 }
 
-void Console::_os_move_cursor_one_line_down() const
+void Console::_os_move_cursor_one_line_down() const noexcept
 {
     Lock lock(mLock);
     Console::Coord pos = _os_get_cursor_position();

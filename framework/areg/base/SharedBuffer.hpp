@@ -692,18 +692,7 @@ inline uint32_t SharedBuffer::read(uint8_t* buf, uint32_t size) const noexcept
 
 inline void SharedBuffer::reset() const noexcept
 {
-    if (mViewEnd != 0u)
-    {
-        mPosition   = 0u;
-        mViewStart  = 0u;
-        mViewEnd    = 0u;
-        mByteBuffer.reset();
-    }
-    else
-    {
-        mPosition   = 0u;
-        mByteBuffer->bufHeader.biUsed = 0u;
-    }
+    mPosition = mViewStart;
 }
 
 inline void SharedBuffer::invalidate() noexcept

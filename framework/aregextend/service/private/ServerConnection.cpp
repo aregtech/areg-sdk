@@ -62,7 +62,7 @@ void ServerConnection::close_all_connections()
         for (MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position(); mAcceptedConnections.is_valid_position(pos); pos = mAcceptedConnections.next_position(pos))
         {
             SocketAccepted clientConnection = mAcceptedConnections.value_at(pos);
-            // Read cookie directly to avoid re-acquiring mLock (std::shared_mutex is not recursive).
+            // Read handle directly to avoid re-acquiring lock.
             const SOCKETHANDLE hSocket{ clientConnection.handle() };
             MapSocketToCookie::MAPPOS posC{ mSocketToCookie.find(hSocket) };
             const ITEM_ID target{ mSocketToCookie.is_valid_position(posC) ? mSocketToCookie.value_at(posC) : areg::COOKIE_UNKNOWN };
@@ -76,12 +76,6 @@ void ServerConnection::close_all_connections()
         }
     }
 
-    // Unregister each socket from epoll and interrupt any thread blocked in
-    // recv() on it BEFORE clearing the maps.  If we clear the maps first,
-    // close_socket() will iterate an empty mAcceptedConnections and never
-    // call socket_interrupt() -- leaving the receive thread stuck in recv()
-    // until the remote peer sends RST/FIN (which may take many seconds with
-    // a large kernel TCP buffer).
     for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position();
           mAcceptedConnections.is_valid_position(pos);
           pos = mAcceptedConnections.next_position(pos) )

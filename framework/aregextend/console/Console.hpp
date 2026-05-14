@@ -72,8 +72,8 @@ public:
 // Hidden constructor / destructor.
 //////////////////////////////////////////////////////////////////////////
 private:
-    Console();
-    ~Console();
+    Console() noexcept;
+    ~Console() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.
@@ -104,8 +104,7 @@ public:
      *          cannot make input on console. Reads and converts formatted inputs from console
      *          similar to 'gets_s' or 'fgets' methods and writes the data into the given arguments.
      *          Each argument must be a pointer to a variable of a type that corresponds to a type
-     *          specifier in format. The maximum length of the strings must be specified in the
-     *          format.
+     *          specifier in format. The maximum length of the strings must be specified in the format.
      *
      * \param   format      The format of input. arguments The list of pointers to the variables.
      * \return  Upon successful completion, these functions return true. Otherwise, returns false.
@@ -139,7 +138,7 @@ public:
      * \brief   Call if there is no need anymore to make any message output. Otherwise, it is called
      *          when the Console objects is destroyed.
      **/
-    inline void uninitialize();
+    inline void uninitialize() noexcept;
 
     /**
      * \brief   Returns true if the Console is initialized and ready to run.
@@ -152,7 +151,7 @@ public:
      *          blocked by waiting for the user input. This is used to synchronize input and output
      *          procedures in the multithreading environment.
      **/
-    inline bool enable_console_input(bool enable);
+    inline bool enable_console_input(bool enable) noexcept;
 
     /**
      * \brief   Outputs the text message at the given coordinate.
@@ -160,14 +159,14 @@ public:
      * \param   pos     The X- and Y-coordinate to start to output the message text.
      * \param   text    The message text to output.
      **/
-    inline void output_str(Console::Coord pos, const String& text) const;
+    inline void output_str(Console::Coord pos, const String& text) const noexcept;
     /**
      * \brief   Outputs the text message at the given coordinate.
      *
      * \param   pos     The X- and Y-coordinate to start to output the message text.
      * \param   text    The message text to output.
      **/
-    inline void output_txt(Console::Coord pos, std::string_view text) const;
+    inline void output_txt(Console::Coord pos, std::string_view text) const noexcept;
 
     /**
      * \brief   Outputs the formatted text message with arguments at the given coordinate.
@@ -182,13 +181,14 @@ public:
      *
      * \param   text    The text to output.
      **/
-    inline void print_str(const String& text) const;
+    inline void print_str(const String& text) const noexcept;
+
     /**
      * \brief   Outputs the text message at the current cursor position.
      *
      * \param   text    The text to output.
      **/
-    inline void print_txt(std::string_view text) const;
+    inline void print_txt(std::string_view text) const noexcept;
 
     /**
      * \brief   Outputs the formatted text message with arguments at the current cursor position.
@@ -208,7 +208,7 @@ public:
      *
      * \param   pos     The X- and Y-coordinate of console to move the cursor.
      **/
-    inline void set_cursor_cur_position(Console::Coord pos) const;
+    inline void set_cursor_cur_position(Console::Coord pos) const noexcept;
 
     /**
      * \brief   Moves and place the cursor at the begin of specified line. The first line starts
@@ -216,32 +216,32 @@ public:
      *
      * \param   line    The line to move cursor. The first line starts with index 0.
      **/
-    inline void move_to_line(int16_t line) const;
+    inline void move_to_line(int16_t line) const noexcept;
 
     /**
      * \brief   Saves the cursor current position in memory.
      **/
-    inline void save_cursor_position() const;
+    inline void save_cursor_position() const noexcept;
 
     /**
      * \brief   Restores previously saved in memory cursor position.
      **/
-    inline void restore_cursor_position() const;
+    inline void restore_cursor_position() const noexcept;
 
     /**
      * \brief   Moves cursor one line up from current position.
      **/
-    inline void move_cursor_one_line_up() const;
+    inline void move_cursor_one_line_up() const noexcept;
 
     /**
      * \brief   Moves cursor one line down from current position.
      **/
-    inline void move_cursor_one_line_down() const;
+    inline void move_cursor_one_line_down() const noexcept;
 
     /**
      * \brief   Clears the line starting from the cursor current position until the end of the line.
      **/
-    inline void clear_current_line() const;
+    inline void clear_current_line() const noexcept;
 
     /**
      * \brief   Clear the specified line starting from specified posX position until the end of the
@@ -250,35 +250,35 @@ public:
      * \param   pos     The position to start clearing line. The 'posY' parameter specifies the line
      *                  index and the 'posX' parameter specifies the starting position to clear.
      **/
-    inline void clear_line(Console::Coord pos) const;
+    inline void clear_line(Console::Coord pos) const noexcept;
 
     /**
      * \brief   Clears the screen.
      **/
-    inline void clear_screen() const;
+    inline void clear_screen() const noexcept;
 
     /**
      * \brief   Return the user input command.
      **/
-    inline const String& user_input() const;
+    inline const String& user_input() const noexcept;
 
     /**
      * \brief   Call to refresh the console screen and show updates. Without this call the console
      *          behavior is unpredicted (depends on OS).
      **/
-    inline void refresh_screen() const;
+    inline void refresh_screen() const noexcept;
 
     /**
      * \brief   Locks the console to prevent other threads to output or change cursor position.
      *
      * \return  Returns true if succeeded to lock. Otherwise, returns false.
      **/
-    inline bool lock_console();
+    inline bool lock_console() noexcept;
 
     /**
      * \brief   Unlocks previously locked console.
      **/
-    inline void unlock_console();
+    inline void unlock_console() noexcept;
 
     /**
      * \brief   Reads data from the console into the provided buffer.
@@ -295,69 +295,62 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Setup the console to start to input / output the messages. OS specific
-     *          implementation.
+     * \brief   Setup the console to start to input / output the messages. OS specific implementation.
      **/
-    bool _os_setup();
+    bool _os_setup() noexcept;
     /**
-     * \brief   Release the console, so that there will be no more inputs / outputs. OS specific
-     *          implementation.
+     * \brief   Release the console, so that there will be no more inputs / outputs. OS specific implementation.
      **/
-    void _os_release();
+    void _os_release() noexcept;
 
     /**
-     * \brief   Outputs the specified message text at specified coordinate. OS specific
-     *          implementation.
+     * \brief   Outputs the specified message text at specified coordinate. OS specific implementation.
      *
      * \param   pos     The position on console to output message.
      * \param   text    The text message to output.
      **/
-    void _os_output_text(Console::Coord pos, const String& text) const;
+    void _os_output_text(Console::Coord pos, const String& text) const noexcept;
     /**
-     * \brief   Outputs the specified message text at specified coordinate. OS specific
-     *          implementation.
+     * \brief   Outputs the specified message text at specified coordinate. OS specific implementation.
      *
      * \param   pos     The position on console to output message.
      * \param   text    The text message to output.
      **/
-    void _os_output_text(Console::Coord pos, std::string_view text) const;
+    void _os_output_text(Console::Coord pos, std::string_view text) const noexcept;
     /**
-     * \brief   Outputs the specified message text at specified coordinate. OS specific
-     *          implementation.
+     * \brief   Outputs the specified message text at specified coordinate. OS specific implementation.
      *
      * \param   text    The text message to output.
      **/
-    void _os_output_text(const String& text) const;
+    void _os_output_text(const String& text) const noexcept;
     /**
-     * \brief   Outputs the specified message text at specified coordinate. OS specific
-     *          implementation.
+     * \brief   Outputs the specified message text at specified coordinate. OS specific implementation.
      *
      * \param   text    The text message to output.
      **/
-    void _os_output_text(std::string_view text) const;
+    void _os_output_text(std::string_view text) const noexcept;
 
     /**
-     * \brief   Returns the current position of the cursor on the console. OS specific
-     *          implementation.
+     * \brief   Returns the current position of the cursor on the console. OS specific implementation.
      **/
-    Console::Coord _os_get_cursor_position() const;
+    Console::Coord _os_get_cursor_position() const noexcept;
 
     /**
      * \brief   Moves the cursor at specified position on the console. OS specific implementation.
      *
      * \param   pos     The X- and Y-coordinate of console to move the cursor.
      **/
-    void _os_set_cursor_cur_position(Console::Coord pos) const;
+    void _os_set_cursor_cur_position(Console::Coord pos) const noexcept;
 
     /**
      * \brief   Refreshes the screen to display output messages. OS specific implementation.
      **/
-    void _os_refresh_screen() const;
+    void _os_refresh_screen() const noexcept;
 
     /**
      * \brief   Clears the line starting from the cursor position until the end of line.
      **/
-    void _os_clear_line() const;
+    void _os_clear_line() const noexcept;
 
     /**
      * \brief   Clears the specified row from column pos.posX to the right edge WITHOUT
@@ -369,12 +362,12 @@ private:
      *
      * \param   pos     The console coordinate (column, row) of the line to clear.
      **/
-    void _os_clear_line_at_position(Console::Coord pos) const;
+    void _os_clear_line_at_position(Console::Coord pos) const noexcept;
 
     /**
      * \brief   Clears console screen.
      **/
-    void _os_clear_screen() const;
+    void _os_clear_screen() const noexcept;
 
     /**
      * \brief   Reads and converts formatted inputs from console similar to 'vscanf' method and
@@ -389,26 +382,25 @@ private:
     /**
      * \brief   OS specific implementation to save the cursor current position in memory.
      **/
-    void _os_save_cursor_position() const;
+    void _os_save_cursor_position() const noexcept;
 
     /**
      * \brief   OS specific implementation to restore previously saved in memory cursor position.
      **/
-    void _os_restore_cursor_position() const;
+    void _os_restore_cursor_position() const noexcept;
 
     /**
      * \brief   OS specific implementation to move cursor one line up from current position.
      **/
-    void _os_move_cursor_one_line_up() const;
+    void _os_move_cursor_one_line_up() const noexcept;
 
     /**
      * \brief   OS specific implementation to move cursor one line down from current position.
      **/
-    void _os_move_cursor_one_line_down() const;
+    void _os_move_cursor_one_line_down() const noexcept;
 
     /**
-     * \brief   A blocking call to wait for user input of string on the console. OS specific
-     *          implementation.
+     * \brief   A blocking call to wait for user input of string on the console. OS specific implementation.
      *
      * \param   buffer      The buffer to fill in input, should be big enough.
      * \param   size        The size of buffer.
@@ -422,32 +414,32 @@ private:
     /**
      * \brief   The flag, indicating whether the Console is ready to operate.
      **/
-    bool            mIsReady;
+    bool                mIsReady;
     /**
      * \brief   The last input command as a string on the console.
      **/
-    String          mUsrInput;
+    String              mUsrInput;
     /**
      * \brief   The context. It is OS specific.
      **/
-    ptr_type        mContext;
+    ptr_type            mContext;
     /**
      * \brief   Saved cursor position, used by save_cursor_position / restore_cursor_position.
      **/
-    mutable Coord           mSavedPos;
+    mutable Coord       mSavedPos;
     /**
      * \brief   The highest posY (row) used in any positioned write. Used by _os_release()
      *          to position the terminal cursor below the last output row on exit.
      **/
-    mutable int32_t         mMaxUsedRow { 0 };
+    mutable int32_t     mMaxUsedRow { 0 };
     /**
      * \brief   An object used to block the user input procedure to use in multithreading environment.
      **/
-    mutable SyncEvent       mEnable;
+    mutable SyncEvent   mEnable;
     /**
      * \brief   The synchronization object used in multithreading environment.
      **/
-    mutable Mutex           mLock;
+    mutable Mutex       mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -459,7 +451,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Console class inline method implementations.
 //////////////////////////////////////////////////////////////////////////
-inline void Console::uninitialize()
+inline void Console::uninitialize() noexcept
 {
     _os_release( );
 }
@@ -469,27 +461,27 @@ inline bool Console::is_ready() const noexcept
     return mIsReady;
 }
 
-inline bool Console::enable_console_input( bool enable )
+inline bool Console::enable_console_input( bool enable ) noexcept
 {
     return enable ? (mIsReady && mEnable.set_signaled()) : (mIsReady == false) || (mEnable.reset( ));
 }
 
-inline void Console::output_str( Console::Coord pos, const String & text ) const
+inline void Console::output_str( Console::Coord pos, const String & text ) const noexcept
 {
     _os_output_text( pos, text );
 }
 
-inline void Console::output_txt( Console::Coord pos, std::string_view text ) const
+inline void Console::output_txt( Console::Coord pos, std::string_view text ) const noexcept
 {
     _os_output_text( pos, text );
 }
 
-inline void Console::print_str(const String& text) const
+inline void Console::print_str(const String& text) const noexcept
 {
     _os_output_text(text);
 }
 
-inline void Console::print_txt(std::string_view text) const
+inline void Console::print_txt(std::string_view text) const noexcept
 {
     _os_output_text(text);
 }
@@ -499,71 +491,67 @@ inline Console::Coord Console::cursor_cur_position() const noexcept
     return _os_get_cursor_position( );
 }
 
-inline void Console::set_cursor_cur_position( Console::Coord pos ) const
+inline void Console::set_cursor_cur_position( Console::Coord pos ) const noexcept
 {
     _os_set_cursor_cur_position( pos );
 }
 
-inline void Console::move_to_line(int16_t line) const
+inline void Console::move_to_line(int16_t line) const noexcept
 {
     set_cursor_cur_position(Coord{ 0, line });
 }
 
-inline void Console::save_cursor_position() const
+inline void Console::save_cursor_position() const noexcept
 {
     _os_save_cursor_position();
 }
 
-inline void Console::restore_cursor_position() const
+inline void Console::restore_cursor_position() const noexcept
 {
     _os_restore_cursor_position();
 }
 
-inline void Console::move_cursor_one_line_up() const
+inline void Console::move_cursor_one_line_up() const noexcept
 {
     _os_move_cursor_one_line_up();
 }
 
-inline void Console::move_cursor_one_line_down() const
+inline void Console::move_cursor_one_line_down() const noexcept
 {
     _os_move_cursor_one_line_down();
 }
 
-inline const String & Console::user_input() const
+inline const String & Console::user_input() const noexcept
 {
     return mUsrInput;
 }
 
-inline void Console::refresh_screen() const
+inline void Console::refresh_screen() const noexcept
 {
     _os_refresh_screen( );
 }
 
-inline bool Console::lock_console()
+inline bool Console::lock_console() noexcept
 {
     return mLock.lock(areg::WAIT_INFINITE);
 }
 
-inline void Console::unlock_console()
+inline void Console::unlock_console() noexcept
 {
     mLock.unlock( );
 }
 
-inline void Console::clear_current_line() const
+inline void Console::clear_current_line() const noexcept
 {
     _os_clear_line( );
 }
 
-inline void Console::clear_line(Console::Coord pos) const
+inline void Console::clear_line(Console::Coord pos) const noexcept
 {
-    // Delegate to the backend-specific implementation that clears the row at
-    // 'pos' WITHOUT moving the OS cursor.  This prevents the input echo race
-    // on Win32 (SetConsoleCursorPosition during gets_s) and the ANSI
-    // interleaving race (three separate writes between lock acquisitions).
     _os_clear_line_at_position(pos);
 }
 
-inline void Console::clear_screen() const
+inline void Console::clear_screen() const noexcept
 {
     _os_clear_screen();
 }

@@ -281,27 +281,41 @@
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   If !AREG_LOGGING, returns true, makes no effect
+     * \brief   No-op stubs used by the disabled-logging macros below.
+     *          Returning bool lets macros work both as discarded statements
+     *          and in boolean conditions without triggering -Wunused-value
+     *          warnings on GCC/Clang. Parameters are consumed to suppress
+     *          unused-variable warnings at call sites.
      **/
-    #define IS_LOGGING_STARTED()                            ((3-2) < 0)
+    namespace areg
+    {
+        inline constexpr bool _log_noop() noexcept { return false; }
+        inline constexpr bool _log_noop(const void*) noexcept { return false; }
+        inline constexpr bool _log_noop(const void*, bool) noexcept { return false; }
+    }   // namespace areg
 
     /**
-     * \brief   Returns true if logging is enabled
+     * \brief   If !AREG_LOGGING, returns false, makes no effect
      **/
-    #define IS_LOGGING_ENABLED()                            ((3-2) < 0)
+    #define IS_LOGGING_STARTED()                            areg::_log_noop()
 
     /**
-     * \brief   If !AREG_LOGGING, returns true, makes no effect
+     * \brief   If !AREG_LOGGING, returns false, makes no effect
      **/
-    #define LOGGING_START(configFile)                       ((3-2) < 0)
+    #define IS_LOGGING_ENABLED()                            areg::_log_noop()
+
     /**
-     * \brief   If !AREG_LOGGING, returns true, makes no effect
+     * \brief   If !AREG_LOGGING, returns false, makes no effect
      **/
-    #define LOGGING_FORCE_START()                           ((3-2) < 0)
+    #define LOGGING_START(configFile)                       areg::_log_noop(static_cast<const void*>(configFile))
     /**
-     * \brief   If !AREG_LOGGING, returns true, makes no effect
+     * \brief   If !AREG_LOGGING, returns false, makes no effect
      **/
-    #define LOGGING_CONFIGURE_AND_START(configFile, force)  ((3-2) < 0)
+    #define LOGGING_FORCE_START()                           areg::_log_noop()
+    /**
+     * \brief   If !AREG_LOGGING, returns false, makes no effect
+     **/
+    #define LOGGING_CONFIGURE_AND_START(configFile, force)  areg::_log_noop(static_cast<const void*>(configFile), static_cast<bool>(force))
     /**
      * \brief   If !AREG_LOGGING is zero, does nothing
      **/

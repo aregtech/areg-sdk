@@ -28,10 +28,6 @@
 #if AREG_LOGGING
     #define SCOPE_PRIORITY_CHANGE(path, method, prio)  areg::set_scope_priority(#path "." #method, static_cast<unsigned int>(prio))
     #define SCOPE_PRIORITY_GET(path, method)           areg::scope_priority(#path "." #method)
-#else
-    #define SCOPE_PRIORITY_CHANGE(path, method, prio)  ((3-2) > 0)
-    #define SCOPE_PRIORITY_GET(path, method)           static_cast<unsigned int>(areg::LogPriority::PrioInvalid)
-#endif
 
 namespace {
     //!< The default config file
@@ -510,3 +506,5 @@ TEST( LogScopeTest, scope_priority_groupping )
 
     LOG_TEST_RELEASE();
 }
+
+#endif

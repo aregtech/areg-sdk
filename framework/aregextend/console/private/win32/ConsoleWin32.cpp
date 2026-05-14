@@ -78,7 +78,7 @@ namespace areg::ext {
 // Console Windows OS specific implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool Console::_os_setup()
+bool Console::_os_setup() noexcept
 {
     if (mIsReady == false)
     {
@@ -114,7 +114,7 @@ bool Console::_os_setup()
     return mIsReady;
 }
 
-void Console::_os_release()
+void Console::_os_release() noexcept
 {
     if (mIsReady)
     {
@@ -128,8 +128,6 @@ void Console::_os_release()
             SetConsoleCursorInfo(hStdOut, &ci);
         }
 
-        // Move the visible cursor just below the last output row so the shell
-        // prompt appears there rather than at the very bottom after exit.
         CONSOLE_SCREEN_BUFFER_INFO info{};
         if ((hStdOut != nullptr) && GetConsoleScreenBufferInfo(hStdOut, &info))
         {
@@ -147,38 +145,34 @@ void Console::_os_release()
     }
 }
 
-void Console::_os_output_text(Console::Coord pos, const String& text) const
+void Console::_os_output_text(Console::Coord pos, const String& text) const noexcept
 {
     Lock lock(mLock);
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD len = static_cast<DWORD>(text.length());
-    _write_at(hStdOut, static_cast<SHORT>(pos.posX), static_cast<SHORT>(pos.posY),
-              text.as_string(), len);
-    // _write_at uses WriteConsoleOutputCharacterA which does NOT move the visible
-    // cursor -- the cursor stays wherever gets_s/fgets left it (input prompt).
-    // Do NOT call SetConsoleCursorPosition here: doing so would jump the cursor
-    // to mSavedPos.posX/posY on EVERY background update and cause visible flicker.
+    _write_at(hStdOut, static_cast<SHORT>(pos.posX), static_cast<SHORT>(pos.posY), text.as_string(), len);
+
     if (static_cast<int32_t>(pos.posY) > mMaxUsedRow)
     {
         mMaxUsedRow = static_cast<int32_t>(pos.posY);
     }
 }
 
-void Console::_os_output_text(Console::Coord pos, std::string_view text) const
+void Console::_os_output_text(Console::Coord pos, std::string_view text) const noexcept
 {
     Lock lock(mLock);
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD len = static_cast<DWORD>(text.length());
     _write_at(hStdOut, static_cast<SHORT>(pos.posX), static_cast<SHORT>(pos.posY),
               text.data(), len);
-    // Same as the String overload above -- do NOT restore cursor here.
+
     if (static_cast<int32_t>(pos.posY) > mMaxUsedRow)
     {
         mMaxUsedRow = static_cast<int32_t>(pos.posY);
     }
 }
 
-void Console::_os_output_text(const String& text) const
+void Console::_os_output_text(const String& text) const noexcept
 {
     Lock lock(mLock);
 
@@ -187,7 +181,7 @@ void Console::_os_output_text(const String& text) const
     WriteConsoleA(hStdOut, text.as_string(), static_cast<DWORD>(text.length()), &written, nullptr);
 }
 
-void Console::_os_output_text(std::string_view text) const
+void Console::_os_output_text(std::string_view text) const noexcept
 {
     Lock lock(mLock);
 
@@ -196,7 +190,7 @@ void Console::_os_output_text(std::string_view text) const
     WriteConsoleA(hStdOut, text.data(), static_cast<DWORD>(text.length()), &written, nullptr);
 }
 
-Console::Coord Console::_os_get_cursor_position() const
+Console::Coord Console::_os_get_cursor_position() const noexcept
 {
     Lock lock(mLock);
 
@@ -210,12 +204,10 @@ Console::Coord Console::_os_get_cursor_position() const
     return Console::Coord{ coord.X, coord.Y };
 }
 
-void Console::_os_set_cursor_cur_position(Console::Coord pos) const
+void Console::_os_set_cursor_cur_position(Console::Coord pos) const noexcept
 {
     Lock lock(mLock);
 
-    // Track in software so _os_output_text can restore here without a DSR query,
-    // and so _os_restore_cursor_position returns to the correct position.
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     mSavedPos = { static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) };
     SetConsoleCursorPosition(hStdOut, COORD{ static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) });
@@ -234,21 +226,18 @@ bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 #endif  // !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
 }
 
-void Console::_os_refresh_screen() const
+void Console::_os_refresh_screen() const noexcept
 {
-    // WriteConsoleOutputCharacterA output is immediately visible.
-    // No additional flush is needed for the output buffer.
+    // no-op
 }
 
-void Console::_os_clear_line() const
+void Console::_os_clear_line() const noexcept
 {
     Lock lock(mLock);
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     CONSOLE_SCREEN_BUFFER_INFO info{};
     if (GetConsoleScreenBufferInfo(hStdOut, &info))
     {
-        // Clear from cursor position to the end of the line (matching the ANSI and
-        // ncurses backends and the documented behavior in Console.hpp).
         DWORD filled{ 0 };
         const COORD curPos = info.dwCursorPosition;
         const DWORD clearLen = static_cast<DWORD>(info.dwSize.X - curPos.X);
@@ -257,19 +246,13 @@ void Console::_os_clear_line() const
     }
 }
 
-void Console::_os_clear_line_at_position(Console::Coord pos) const
+void Console::_os_clear_line_at_position(Console::Coord pos) const noexcept
 {
     Lock lock(mLock);
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     CONSOLE_SCREEN_BUFFER_INFO info{};
     if (GetConsoleScreenBufferInfo(hStdOut, &info))
     {
-        // Clear the row at 'pos' without touching the OS cursor.
-        // FillConsoleOutputCharacterA writes at the given COORD directly.
-        // Calling SetConsoleCursorPosition() is deliberately avoided: the input
-        // thread may be running gets_s() concurrently and Windows echoes typed
-        // characters at whatever the OS cursor position is.  Moving it to a
-        // data row causes the "cursor jump" symptom when the user types.
         const COORD writePos{ static_cast<SHORT>(pos.posX), static_cast<SHORT>(pos.posY) };
         const DWORD clearLen = static_cast<DWORD>(info.dwSize.X - pos.posX);
         DWORD filled{ 0 };
@@ -278,7 +261,7 @@ void Console::_os_clear_line_at_position(Console::Coord pos) const
     }
 }
 
-void Console::_os_clear_screen() const
+void Console::_os_clear_screen() const noexcept
 {
     Lock lock(mLock);
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -299,7 +282,7 @@ bool Console::_os_read_input_list(const char* format, va_list varList) const
     return (vscanf(format, varList) > 0);
 }
 
-void Console::_os_save_cursor_position() const
+void Console::_os_save_cursor_position() const noexcept
 {
     Lock lock(mLock);
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -317,7 +300,7 @@ void Console::_os_save_cursor_position() const
     }
 }
 
-void Console::_os_restore_cursor_position() const
+void Console::_os_restore_cursor_position() const noexcept
 {
     Lock lock(mLock);
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -336,7 +319,7 @@ void Console::_os_restore_cursor_position() const
     _hasSavedCursorPos = false;
 }
 
-void Console::_os_move_cursor_one_line_up() const
+void Console::_os_move_cursor_one_line_up() const noexcept
 {
     Lock lock(mLock);
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -348,7 +331,7 @@ void Console::_os_move_cursor_one_line_up() const
     }
 }
 
-void Console::_os_move_cursor_one_line_down() const
+void Console::_os_move_cursor_one_line_down() const noexcept
 {
     Lock lock(mLock);
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);

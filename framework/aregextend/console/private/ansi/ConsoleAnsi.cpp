@@ -94,7 +94,7 @@ namespace areg::ext {
 // Console Windows OS specific implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool Console::_os_setup()
+bool Console::_os_setup() noexcept
 {
     _enable_ascii_control_sequence();
     mIsReady = true;
@@ -103,32 +103,24 @@ bool Console::_os_setup()
     return mIsReady;
 }
 
-void Console::_os_release()
+void Console::_os_release() noexcept
 {
     if (mIsReady)
     {
         mIsReady = false;
-        // Move cursor two rows below the lowest row ever written to, so the shell
-        // prompt appears just below the application output rather than at the very
-        // bottom of the terminal.
-        const int finalRow = static_cast<int>(mMaxUsedRow + 2);
+        const int32_t finalRow = static_cast<int>(mMaxUsedRow + 2);
         printf("%s\x1B[%d;1H\n", CMD_CURSOR_SHOW.data(), finalRow);
         ::fflush(stdout);
     }
 }
 
-void Console::_os_output_text(Console::Coord pos, const String& text) const
+void Console::_os_output_text(Console::Coord pos, const String& text) const noexcept
 {
     Lock lock(mLock);
-    // Move to target row/col, clear line, write text, then return cursor to the
-    // software-tracked input position (mSavedPos).  Using a direct CUP to restore
-    // is more reliable across threads than the terminal-side DECSC/DECRC state,
-    // which can be clobbered if two threads both emit \x1B7 before either emits \x1B8.
-    // Clamp col/row to minimum 1: ANSI CUP is 1-based, 0 is out of range.
-    const int col     = (pos.posX     > 0) ? pos.posX     : 1;
-    const int row     = (pos.posY     > 0) ? pos.posY     : 1;
-    const int savecol = (mSavedPos.posX > 0) ? mSavedPos.posX : 1;
-    const int saverow = (mSavedPos.posY > 0) ? mSavedPos.posY : 1;
+    const int32_t col     = (pos.posX     > 0) ? pos.posX     : 1;
+    const int32_t row     = (pos.posY     > 0) ? pos.posY     : 1;
+    const int32_t savecol = (mSavedPos.posX > 0) ? mSavedPos.posX : 1;
+    const int32_t saverow = (mSavedPos.posY > 0) ? mSavedPos.posY : 1;
     if (static_cast<int32_t>(pos.posY) > mMaxUsedRow)
     {
         mMaxUsedRow = static_cast<int32_t>(pos.posY);
@@ -138,14 +130,14 @@ void Console::_os_output_text(Console::Coord pos, const String& text) const
     ::fflush(stdout);
 }
 
-void Console::_os_output_text(Console::Coord pos, std::string_view text) const
+void Console::_os_output_text(Console::Coord pos, std::string_view text) const noexcept
 {
     Lock lock(mLock);
     // Move to target row/col, clear line, write text, return cursor to mSavedPos.
-    const int col     = (pos.posX     > 0) ? pos.posX     : 1;
-    const int row     = (pos.posY     > 0) ? pos.posY     : 1;
-    const int savecol = (mSavedPos.posX > 0) ? mSavedPos.posX : 1;
-    const int saverow = (mSavedPos.posY > 0) ? mSavedPos.posY : 1;
+    const int32_t col     = (pos.posX     > 0) ? pos.posX     : 1;
+    const int32_t row     = (pos.posY     > 0) ? pos.posY     : 1;
+    const int32_t savecol = (mSavedPos.posX > 0) ? mSavedPos.posX : 1;
+    const int32_t saverow = (mSavedPos.posY > 0) ? mSavedPos.posY : 1;
     if (static_cast<int32_t>(pos.posY) > mMaxUsedRow)
     {
         mMaxUsedRow = static_cast<int32_t>(pos.posY);
@@ -155,21 +147,21 @@ void Console::_os_output_text(Console::Coord pos, std::string_view text) const
     ::fflush(stdout);
 }
 
-void Console::_os_output_text(const String& text) const
+void Console::_os_output_text(const String& text) const noexcept
 {
     Lock lock(mLock);
     printf("%s", text.as_string());
     ::fflush(stdout);
 }
 
-void Console::_os_output_text(std::string_view text) const
+void Console::_os_output_text(std::string_view text) const noexcept
 {
     Lock lock(mLock);
     printf("%s", text.data());
     ::fflush(stdout);
 }
 
-Console::Coord Console::_os_get_cursor_position() const
+Console::Coord Console::_os_get_cursor_position() const noexcept
 {
     Lock lock(mLock);
     constexpr int32_t _EOY{ static_cast<int32_t>(';') };
@@ -195,12 +187,10 @@ Console::Coord Console::_os_get_cursor_position() const
     return result;
 }
 
-void Console::_os_set_cursor_cur_position(Console::Coord pos) const
+void Console::_os_set_cursor_cur_position(Console::Coord pos) const noexcept
 {
-    // Clamp to minimum 1: ANSI CUP parameters are 1-based; 0 is treated as 1 by
-    // the spec but some terminals reject it, so always pass at least 1.
-    const int col = (pos.posX > 0) ? pos.posX : 1;
-    const int row = (pos.posY > 0) ? pos.posY : 1;
+    const int32_t col = (pos.posX > 0) ? pos.posX : 1;
+    const int32_t row = (pos.posY > 0) ? pos.posY : 1;
     Lock lock(mLock);
     // Track in software so _os_output_text can restore here without a DSR query.
     mSavedPos = { col, row };
@@ -214,9 +204,6 @@ bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 
     Console& console = Console::instance();
 
-    // Capture the input-row anchor and erase any leftover text from the
-    // previous input cycle.  Both operations are atomic under the output lock
-    // so a concurrent background write sees a consistent mSavedPos.
     Console::Coord startPos;
     {
         Lock lock(console.mLock);
@@ -229,22 +216,16 @@ bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 
 #if defined(_WIN32)
 
-    // Switch stdin to raw (character-at-a-time, no echo) mode so we can
-    // update mSavedPos on every keystroke.  Keep ENABLE_PROCESSED_INPUT so
-    // that Ctrl-C still delivers SIGINT.  Fall back to gets_s if the handle
-    // is not a real console (e.g. stdin redirected from a file).
     HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
     DWORD oldMode{ 0u };
     const bool rawMode{ GetConsoleMode(hIn, &oldMode) == TRUE };
     if (!rawMode)
     {
-        // stdin is not a real console (pipe/file redirect): use gets_s.
-        // Cursor-tracking is not meaningful in this case.
-    #if !defined(_MINGW)
+#if !defined(_MINGW)
         const bool ok{ ::gets_s(buffer, size) != nullptr };
-    #else
+#else
         const bool ok{ ::fgets(buffer, static_cast<int>(size), stdin) != nullptr };
-    #endif
+#endif
         areg::trim_all<char>(buffer);
         return (ok && (areg::is_empty(buffer) == false));
     }
@@ -267,8 +248,6 @@ bool Console::_os_wait_input_string(char* buffer, uint32_t size)
         }
         else if (ch == '\b')
         {
-            // Backspace: erase the last typed character on screen and in the
-            // buffer, then update mSavedPos atomically with the erase.
             if (len > 0u)
             {
                 Lock lock(console.mLock);
@@ -298,9 +277,6 @@ bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 
 #else   // POSIX
 
-    // Switch stdin to non-canonical, no-echo mode so each byte is delivered
-    // immediately and we can track the cursor position ourselves.
-    // If tcgetattr fails (stdin not a tty), fall back to fgets.
     struct termios old_tio{};
     const bool rawMode{ tcgetattr(STDIN_FILENO, &old_tio) == 0 };
     if (rawMode)
@@ -314,8 +290,6 @@ bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 
     if (!rawMode)
     {
-        // Not a real terminal (stdin is a pipe/file): use line-buffered fgets.
-        // Cursor-tracking is not meaningful in this case.
         const bool ok{ ::fgets(buffer, static_cast<int>(size), stdin) != nullptr };
         areg::trim_all<char>(buffer);
         return (ok && (areg::is_empty(buffer) == false));
@@ -350,9 +324,6 @@ bool Console::_os_wait_input_string(char* buffer, uint32_t size)
         }
         else if (ch == '\x1B')
         {
-            // Escape sequence (arrow keys, F-keys, etc.): consume silently.
-            // Peek at the next byte; if it starts a CSI sequence (\x1B[...)
-            // read until the final byte (letter or '~') to drain the sequence.
             char seq{ 0 };
             if ((read(STDIN_FILENO, &seq, 1) == 1) && (seq == '['))
             {
@@ -391,8 +362,6 @@ bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 
     buffer[len] = '\0';
 
-    // Reset the anchor back to the input-row start so the next call to
-    // wait_for_input begins at the same position.
     {
         Lock lock(console.mLock);
         console.mSavedPos = startPos;
@@ -402,38 +371,32 @@ bool Console::_os_wait_input_string(char* buffer, uint32_t size)
     return (areg::is_empty(buffer) == false);
 }
 
-void Console::_os_refresh_screen() const
+void Console::_os_refresh_screen() const noexcept
 {
     Lock lock(mLock);
     ::fflush(stdout);
 }
 
-void Console::_os_clear_line() const
+void Console::_os_clear_line() const noexcept
 {
     Lock lock(mLock);
     printf("%s", CMD_CLEAR_LINE.data());
     ::fflush(stdout);
 }
 
-void Console::_os_clear_line_at_position(Console::Coord pos) const
+void Console::_os_clear_line_at_position(Console::Coord pos) const noexcept
 {
     // Clamp to 1-based (same rule as _os_set_cursor_cur_position).
-    const int col  = (pos.posX       > 0) ? pos.posX       : 1;
-    const int row  = (pos.posY       > 0) ? pos.posY       : 1;
+    const int32_t col  = (pos.posX       > 0) ? pos.posX       : 1;
+    const int32_t row  = (pos.posY       > 0) ? pos.posY       : 1;
 
     Lock lock(mLock);
 
-    // Emit a single buffered write: move to pos, erase to EOL, restore the
-    // cursor to the input-prompt anchor (mSavedPos).  Doing everything in one
-    // fwrite/fflush prevents another thread from injecting output between the
-    // three steps of the old move+clear+restore sequence.
-    // mSavedPos is read inside the lock so we see the latest value written
-    // by _os_set_cursor_cur_position / _os_wait_input_string.
-    const int save_col = (mSavedPos.posX > 0) ? mSavedPos.posX : 1;
-    const int save_row = (mSavedPos.posY > 0) ? mSavedPos.posY : 1;
+    const int32_t save_col = (mSavedPos.posX > 0) ? mSavedPos.posX : 1;
+    const int32_t save_row = (mSavedPos.posY > 0) ? mSavedPos.posY : 1;
 
     char buf[64];
-    const int len = snprintf(buf, sizeof(buf),
+    const int32_t len = snprintf(buf, sizeof(buf),
                              "\x1B[%d;%dH\x1B[K\x1B[%d;%dH",
                              row, col, save_row, save_col);
     if (len > 0)
@@ -443,7 +406,7 @@ void Console::_os_clear_line_at_position(Console::Coord pos) const
     }
 }
 
-void Console::_os_clear_screen() const
+void Console::_os_clear_screen() const noexcept
 {
     Lock lock(mLock);
     printf("%s", CMD_CLEAR_SCREEN.data());
@@ -455,40 +418,28 @@ bool Console::_os_read_input_list(const char* format, va_list varList) const
     return (vscanf(format, varList) > 0);
 }
 
-void Console::_os_save_cursor_position() const
+void Console::_os_save_cursor_position() const noexcept
 {
-    // No-op: mSavedPos is kept current by _os_set_cursor_cur_position() at
-    // prompt-display time and advanced on every typed character by
-    // _os_wait_input_string().  It is therefore always the correct restore
-    // target.
-    //
-    // DO NOT issue a DSR (\x1B[6n) to query the terminal here.  The input
-    // thread may be blocked inside _os_wait_input_string() reading from stdin
-    // concurrently.  The terminal's response would arrive on stdin and be
-    // consumed by that read(), corrupting both the position query and the
-    // user's pending input.
+    // No-op
 }
 
-void Console::_os_restore_cursor_position() const
+void Console::_os_restore_cursor_position() const noexcept
 {
-    // Move directly to the software-tracked input-prompt position (mSavedPos) and
-    // show the cursor.  Using a direct CUP sequence avoids the DECSC/DECRC race
-    // described in _os_save_cursor_position() above.
     Lock lock(mLock);
-    const int col = (mSavedPos.posX > 0) ? mSavedPos.posX : 1;
-    const int row = (mSavedPos.posY > 0) ? mSavedPos.posY : 1;
+    const int32_t col = (mSavedPos.posX > 0) ? mSavedPos.posX : 1;
+    const int32_t row = (mSavedPos.posY > 0) ? mSavedPos.posY : 1;
     printf("\x1B[%d;%dH%s", row, col, CMD_CURSOR_SHOW.data());
     ::fflush(stdout);
 }
 
-void Console::_os_move_cursor_one_line_up() const
+void Console::_os_move_cursor_one_line_up() const noexcept
 {
     Lock lock(mLock);
     printf("\x1B[1F");
     ::fflush(stdout);
 }
 
-void Console::_os_move_cursor_one_line_down() const
+void Console::_os_move_cursor_one_line_down() const noexcept
 {
     Lock lock(mLock);
     printf("\x1B[1E");

@@ -39,18 +39,9 @@ namespace areg::ext {
  * \brief   Phase 2 of the send batch pipeline: sort \a batch in-place by
  *          socket handle using binary insertion sort.
  *
- *          PendingSend is trivially copyable (SOCKETHANDLE + 2 pointers =
- *          24 bytes on 64-bit), so memmove is the fastest possible shift.
- *
- *          Fast path (1:1 / same-socket fan-out): the >= guard fires on
- *          every iteration -- O(n) comparisons, zero memmove calls.
- *          Slow path (M:N / mixed targets): binary search in O(log n),
- *          then one SIMD-optimised memmove per displaced element.
- *
  * \param   batch   Batch array to sort.
  * \param   count   Number of valid entries in \a batch.
  **/
-#if 1
 inline void sort_pending_sends(areg::PendingSend * batch, uint32_t count) noexcept
 {
     for (uint32_t i = 1; i < count; ++i)
@@ -70,83 +61,16 @@ inline void sort_pending_sends(areg::PendingSend * batch, uint32_t count) noexce
         batch[lo] = key;
     }
 }
-#else
-inline void sort_pending_sends( areg::PendingSend* batch, uint32_t count) noexcept
-{
-    ASSERT(count < areg::THREAD_BATCH_LIMIT);
-
-    if (count <= 1)
-        return;
-
-    // SOCKET is 64-bit on Win64
-    constexpr uint32_t PASSES   { static_cast<uint32_t>(sizeof(SOCKETHANDLE)) };
-    constexpr uint32_t RADIX    { 256 };
-    constexpr uint32_t MASK     { RADIX - 1 };
-
-    areg::PendingSend temp[areg::THREAD_BATCH_LIMIT];
-    uint32_t histogram[RADIX];
-
-    areg::PendingSend* src = batch;
-    areg::PendingSend* dst = temp;
-    for (uint32_t pass = 0; pass < PASSES; ++pass)
-    {
-        memset(histogram, 0, sizeof(histogram));
-        const uint32_t shift{ pass << 3 };
-        // Build histogram
-        for (uint32_t i = 0; i < count; ++i)
-        {
-            const uint32_t bucket = static_cast<uint32_t>((src[i].socket >> shift) & MASK);
-            ++histogram[bucket];
-        }
-
-        // Prefix sum
-        uint32_t sum = 0;
-        for (uint32_t i = 0; i < RADIX; ++i)
-        {
-            const uint32_t h = histogram[i];
-            histogram[i] = sum;
-            sum += h;
-        }
-
-        // Scatter
-        for (uint32_t i = 0; i < count; ++i)
-        {
-            const uint32_t bucket =static_cast<uint32_t>((src[i].socket >> shift) & MASK);
-            dst[histogram[bucket]++] = src[i];
-        }
-
-        // Swap buffers
-        areg::PendingSend* tmp = src;
-        src = dst;
-        dst = tmp;
-    }
-
-    // Final copy if needed
-    if (src != batch)
-    {
-        ::memcpy(batch, src, sizeof(areg::PendingSend) * count);
-    }
-}
-#endif
 
 /**
  * \brief   Phase 3 of the send batch pipeline: send each same-socket group
  *          with a single syscall and accumulate stats.
  *
- *          Groups with an invalid socket handle are silently discarded.
- *          Single-message groups use send_message(); multi-message groups
- *          build an IoBuffer array and use send_messages_batch() for one
- *          scatter/gather syscall (WSASend on Windows, writev on POSIX).
- *          On failure, failed_send_message() is called unless the connection
- *          is already interrupted.
- *
  *          Entries whose sendEvt is nullptr (the triggering message, owned
  *          by the dispatch chain) are never destroyed. All other entries are
  *          destroyed before the function returns.
  *
- * \param   batch   Pre-sorted batch (sorted ascending by socket handle).
- *                  Slot 0 must be the triggering message (sendEvt == nullptr).
- *                  Slots 1..N are drained events (sendEvt != nullptr).
+ * \param   batch   Sorted ascending by socket handle batch.
  * \param   count   Number of valid entries in \a batch.
  * \param   conn    Server connection (send + client-lookup API).
  * \param   handler Remote message handler (failure callback).
@@ -160,14 +84,14 @@ inline void send_pending_groups( areg::PendingSend * batch
                                , areg::RemoteMessageHandler & handler
                                , AccumFn && accum )
 {
-    for (uint32_t i{ 0 }; i < count; )
+    for (uint32_t i = 0u; i < count; )
     {
         const SOCKETHANDLE hSocket{ batch[i].socket };
-        uint32_t j{ i + 1 };
+        uint32_t j = i + 1u;
         while ((j < count) && (batch[j].socket == hSocket))
             ++j;
 
-        const uint32_t groupSize{ j - i };
+        const uint32_t groupSize = j - i;
         if (groupSize == 1u)
         {
             const areg::RemoteMessage & message{ *batch[i].msg };
@@ -234,26 +158,30 @@ inline void send_pending_groups( areg::PendingSend * batch
  *
  * \param   conn            Server connection (receive API).
  * \param   handler         Remote message handler (process callback).
- * \param   msgReceived     Reusable message buffer; overwritten on each call.
+ * \param   maxDrain        Maximum number of cached messages to drain.
  * \param   clientSocket    Socket whose read-ahead cache to drain.
+ * \param   msgReceived     Reusable message buffer; overwritten on each call.
  * \param   accum           Callable(uint64_t bytes, uint32_t msgs) on success.
  * \return  true if all cached data was consumed; false on receive failure.
  **/
 template<typename AccumFn>
 inline bool drain_recv_cache( ServerConnection & conn
                             , areg::RemoteMessageHandler & handler
-                            , areg::RemoteMessage & msgReceived
+                            , uint32_t maxDrain
                             , areg::SocketAccepted & clientSocket
+                            , areg::RemoteMessage & msgReceived
                             , AccumFn && accum )
 {
-    while (areg::recv_data_available(clientSocket.handle()) != 0u)
+    uint32_t drain{ 0u };
+    while ((areg::recv_data_available(clientSocket.handle()) != 0u) && (drain < maxDrain))
     {
         const int32_t cached = conn.receive_message(msgReceived, clientSocket);
         if (cached <= 0)
             return false;
 
-        accum(static_cast<uint64_t>(cached), 1u);
         handler.process_received_message(msgReceived, clientSocket);
+        accum(static_cast<uint64_t>(cached), 1u);
+        ++drain;
     }
 
     return true;
