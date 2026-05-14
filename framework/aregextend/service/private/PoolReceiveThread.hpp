@@ -145,12 +145,6 @@ private:
     ServerConnection &                  mConnection;        //!< Server connection (for receive API).
     ServerReceiveThread &               mGlobalStats;       //!< Global counters accumulated here.
     areg::SocketMultiplexer             mMux;               //!< Per-slot socket readiness monitor.
-
-    // JUSTIFICATION: mPendingAdd and mPendingRemove are modified from threads other than
-    // the receive thread (e.g. the ServerReceiveThread calling add_socket() after accepting
-    // a new connection).  mPendingLock serialises all accesses to these two queues.
-    // mHasPending is a fast-path guard: the receive thread reads it without the lock to
-    // skip _process_pending_sockets() entirely when no socket changes are queued.
     mutable std::atomic<bool>           mHasPending;        //!< True when mPendingAdd or mPendingRemove is non-empty.
     mutable ResourceLock                mPendingLock;       //!< Guards the two pending queues below.
     std::vector<areg::SocketAccepted>   mPendingAdd;        //!< Sockets queued for registration.

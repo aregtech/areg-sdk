@@ -212,8 +212,8 @@ bool EventDispatcherBase::run_dispatcher()
             continue;
         }
 
-        // Tight drain loop: process all available events before returning to the
-        // kernel wait. pop_event() manages mEventQueue signal state via signal_event().
+        // Tight drain loop: process all available events before returning to the kernel wait.
+        // pop_event() manages mEventQueue signal state via signal_event().
         for (;;)
         {
             Event* eventElem = pick_event();
@@ -296,15 +296,12 @@ bool EventDispatcherBase::dispatch_event( Event& eventElem )
     }
     else
     {
-        // Lock resource, before get any information
         mConsumerMap.lock();
 
         EventConsumerList* listConsumers = mConsumerMap.find_resource_object(eventElem.class_id());
         if (listConsumers != nullptr)
             processingList = *listConsumers;
 
-        // Unlock resource as soon as possible. Otherwise we may block other threads
-        // on registering / unregistering consumer.
         mConsumerMap.unlock();
     }
 

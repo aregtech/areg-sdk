@@ -29,9 +29,9 @@ namespace areg::os {
     // Declaration of OS specific methods
     /************************************************************************/
 
-        /**
-         * \brief   Returns value as milliseconds that have elapsed since the system was started.
-         **/
+    /**
+     * \brief   Returns value as milliseconds that have elapsed since the system was started.
+     **/
     extern uint64_t _os_tick_count();
 
     /**

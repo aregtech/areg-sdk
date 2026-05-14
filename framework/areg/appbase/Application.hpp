@@ -80,6 +80,24 @@ public:
      *                              location './config/areg.init'.
      * \param   configListener      Optional listener notified before and after configuration
      *                              loading, or on failure. Null by default.
+     * 
+     * \see     release, load_model
+     * 
+     * \example     Initialize Application
+     *
+     *          // This starts all services and reads configuration from default location:
+     *          Application::setup();
+     *
+     *          // Start all services, read configuration from user home folder:
+     *          Application::setup(true, true, true, true, true, "%user%/areg.init");
+     *
+     *          // Start all services; startRouting forces Service Manager to start even if
+     *          // startServicing is false. Read config from default location:
+     *          Application::setup(true, false);
+     *
+     *          // Start no services, only configure the system from a custom config file.
+     *          // Services can be started later:
+     *          Application::setup(false, false, false, false, false, "%user%/areg.init");
      **/
     static void setup( bool startTracing   = true
                      , bool startServicing = true
@@ -91,24 +109,6 @@ public:
 
     /**
      * \brief   Stops all components, unloads models, stops services, and releases resources.
-      *
-      * \see     release, load_model
-      *
-      * \example     Initialize Application
-      *
-      *          // This starts all services and reads configuration from default location:
-      *          Application::setup();
-      *
-      *          // Start all services, read configuration from user home folder:
-      *          Application::setup(true, true, true, true, true, "%user%/areg.init");
-      *
-      *          // Start all services; startRouting forces Service Manager to start even if
-      *          // startServicing is false. Read config from default location:
-      *          Application::setup(true, false);
-      *
-      *          // Start no services, only configure the system from a custom config file.
-      *          // Services can be started later:
-      *          Application::setup(false, false, false, false, false, "%user%/areg.init");
      **/
     static void release();
 
@@ -131,14 +131,15 @@ public:
      *          Service Manager, Tracing, Routing, and Timer Manager are not stopped.
      *
      * \param   modelName       Unique name of the model to unload, or nullptr to unload all models.
-      *
-      * \example     Start and Stop all models
-      *          // Start all services, load all models, sleep 1 s, then unload and release:
-      *          Application::setup();
-      *          Application::load_model();
-      *          Thread::sleep(1000);
-      *          Application::unload_model();
-      *          Application::release();
+     *
+     * \example     Start and Stop all models
+     * 
+     *          // Start all services, load all models, sleep 1 s, then unload and release:
+     *          Application::setup();
+     *          Application::load_model();
+     *          Thread::sleep(1000);
+     *          Application::unload_model();
+     *          Application::release();
      **/
     static void unload_model( const char * modelName = nullptr );
 

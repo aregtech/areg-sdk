@@ -209,8 +209,7 @@ public:
 
     /**
      * \brief   Checks and ensures that specified position is pointing the valid entry in the sorted
-     *          map. The duration of checkup depends on the location of the position in the sorted
-     *          map.
+     *          map. The duration of checkup depends on the location of the position in the sorted map.
      *
      * \param   pos     The position to check.
      **/
@@ -249,14 +248,13 @@ public:
      * \brief   Searches for element by key. Returns true if found; outputs the value.
      *
      * \param   Key         The key to search.
-     * \param[out] Value       On output, contains value of found element
+     * \param[out] Value    On output, contains value of found element
      * \return  Returns true if there is an entry with the specified key.
      **/
     inline bool find( const KEY & Key, VALUE & Value ) const;
 
     /**
-     * \brief   Returns the position of the entry with the given key, or invalid position if not
-     *          found.
+     * \brief   Returns the position of the entry with the given key, or invalid position if not found.
      *
      * \param   Key     The key to search.
      * \return  Returns valid sorted map position if found an entry by the give key. Otherwise,
@@ -308,16 +306,16 @@ public:
      * \brief   Extracts entries from source and inserts into this map. Entries with duplicate keys
      *          are left in source.
      *
-     * \param[in,out] source      The source of the sorted map to merge. On output, contains entries
-     *                            with keys already present in this map.
+     * \param[in,out] source    The source of the sorted map to merge. On output, contains entries
+     *                          with keys already present in this map.
      **/
     inline void merge( OrderedMap<KEY, VALUE> & source );
     /**
      * \brief   Extracts entries from source and inserts into this map. Entries with duplicate keys
      *          are left in source.
      *
-     * \param[in,out] source      The source of the sorted map to merge. On output, contains entries
-     *                            with keys already present in this map.
+     * \param[in,out] source    The source of the sorted map to merge. On output, contains entries
+     *                          with keys already present in this map.
      * \note    Move overload.
      **/
     inline void merge( OrderedMap<KEY, VALUE> && source );
@@ -353,8 +351,7 @@ public:
     inline std::pair<MAPPOS, bool> add_if_unique(KEY && newKey, VALUE && newValue, bool updateExisting = false );
 
     /**
-     * \brief   Updates value of existing entry. Returns its position, or invalid position if key
-     *          not found.
+     * \brief   Updates value of existing entry. Returns its position, or invalid position if key not found.
      *
      * \param   Key         The key of an element in the sorted map to update.
      * \param   newValue    New value to set on existing entry.
@@ -371,8 +368,7 @@ public:
     inline bool remove_at(const KEY& Key ) noexcept;
 
     /**
-     * \brief   Removes entry by key. Returns true if found and removed, outputting the removed
-     *          value.
+     * \brief   Removes entry by key. Returns true if found and removed, outputting the removed value.
      *
      * \param   Key         The Key of the entry to search and remove.
      * \param[out] Value       If succeeded to remove, on output it contains the value of the
@@ -407,13 +403,10 @@ public:
     inline void remove_first() noexcept;
 
     /**
-     * \brief   Removes the first entry, outputting its key and value. Returns true if map was not
-     *          empty.
+     * \brief   Removes the first entry, outputting its key and value. Returns true if map was not empty.
      *
-     * \param[out] Key         On output it contains the key of the removed element in the sorted
-     *                         map.
-     * \param[out] Value       On output it contains the value of the removed element in the sorted
-     *                         map.
+     * \param[out] Key         On output it contains the key of the removed element in the sorted map.
+     * \param[out] Value       On output it contains the value of the removed element in the sorted map.
      * \return  Returns true if sorted map was not empty and first entry is removed. Otherwise,
      *          returns false.
      **/
@@ -425,13 +418,10 @@ public:
     inline void remove_last() noexcept;
 
     /**
-     * \brief   Removes the last entry, outputting its key and value. Returns true if map was not
-     *          empty.
+     * \brief   Removes the last entry, outputting its key and value. Returns true if map was not empty.
      *
-     * \param[out] Key         On output it contains the key of the removed element in the sorted
-     *                         map.
-     * \param[out] Value       On output it contains the value of the removed element in the sorted
-     *                         map.
+     * \param[out] Key         On output it contains the key of the removed element in the sorted map.
+     * \param[out] Value       On output it contains the value of the removed element in the sorted map.
      * \return  Returns true if sorted map was not empty and last entry is removed. Otherwise,
      *          returns false.
      **/
@@ -441,21 +431,18 @@ public:
      * \brief   Returns position of the next entry following the given position.
      *
      * \param   atPosition      The position of the entry to get next and extract values.
-     * \return  Next valid position in the sorted map or invalid position if reached end of sorted
-     *          map.
+     * \return  Next valid position in the sorted map or invalid position if reached end of sorted map.
      **/
     [[nodiscard]]
     inline MAPPOS next_position(MAPPOS atPosition) const noexcept;
 
     /**
-     * \brief   Returns position of the next entry following the given position, outputting key and
-     *          value.
+     * \brief   Returns position of the next entry following the given position, outputting key and value.
      *
-     * \param   atPosition      The position of the entry to get next and extract values.
-     * \param[out] Key             On output, this contains key of given position.
-     * \param[out] Value           On output, this contains value of given position.
-     * \return  Next valid position in the sorted map or invalid position if reached end of sorted
-     *          map.
+     * \param   atPosition  The position of the entry to get next and extract values.
+     * \param[out] Key      On output, this contains key of given position.
+     * \param[out] Value    On output, this contains value of given position.
+     * \return  Next valid position in the sorted map or invalid position if reached end of sorted map.
      **/
     [[nodiscard]]
     inline MAPPOS next_position(MAPPOS atPosition, KEY & Key, VALUE & Value ) const;
@@ -465,10 +452,9 @@ public:
      *          key-value pair.
      *
      * \param   atPosition      The position of the entry to get next and extract values.
-     * \param[out] Element         On output, this element contains pair of Key and Value specified
-     *                             by given position.
-     * \return  Next valid position in the sorted map or invalid position if reached end of sorted
-     *          map.
+     * \param[out] Element      On output, this element contains pair of Key and Value specified
+     *                          by given position.
+     * \return  Next valid position in the sorted map or invalid position if reached end of sorted map.
      **/
     [[nodiscard]]
     inline MAPPOS next_position(MAPPOS atPosition, std::pair<KEY, VALUE> & Element ) const;
@@ -476,18 +462,18 @@ public:
     /**
      * \brief   Extracts key and value at the given position.
      *
-     * \param   atPosition      The position of the element to extract key and value.
-     * \param[out] Key             On output, contains key of the element at given position.
-     * \param[out] Value           On output, contains value of the element at given position.
+     * \param   atPosition  The position of the element to extract key and value.
+     * \param[out] Key      On output, contains key of the element at given position.
+     * \param[out] Value    On output, contains value of the element at given position.
      **/
     inline void at_position(MAPPOS atPosition, KEY & Key, VALUE & Value ) const;
 
     /**
      * \brief   Extracts key-value pair at the given position.
      *
-     * \param   atPosition      The position of the element to extract key and value.
-     * \param[out] Element         On output, contains the Key and Value pair of the element at
-     *                             given position
+     * \param   atPosition  The position of the element to extract key and value.
+     * \param[out] Element  On output, contains the Key and Value pair of the element at
+     *                      given position
      **/
     inline void at_position(MAPPOS atPosition, std::pair<KEY, VALUE> & Element) const;
 
@@ -540,12 +526,12 @@ public:
      * \brief   Advances position and outputs next entry's key and value. Returns true if next entry
      *          exists.
      *
-     * \param[in,out] nextPos         On input this indicates the valid position of the entry in the
-     *                                sorted map. On output, this parameter points either next valid
-     *                                entry in the sorted map or invalid entry if no more entry is
-     *                                following.
-     * \param[out] nextKey         On output, this contains key of the next entry in sorted map.
-     * \param[out] nextValue       On output, this contain value of the next entry in sorted map.
+     * \param[in,out] nextPos   On input this indicates the valid position of the entry in the
+     *                          sorted map. On output, this parameter points either next valid
+     *                          entry in the sorted map or invalid entry if no more entry is
+     *                          following.
+     * \param[out] nextKey      On output, this contains key of the next entry in sorted map.
+     * \param[out] nextValue    On output, this contain value of the next entry in sorted map.
      * \return  Returns true, if there is a next element and the output values are valid.
      **/
     inline bool next_entry(MAPPOS & nextPos, KEY & nextKey, VALUE & nextValue ) const;
@@ -554,12 +540,10 @@ public:
      * \brief   Copies up to elemCount entries into provided pre-allocated buffers. Returns number
      *          of entries copied.
      *
-     * \param[in,out] keys            A pre-allocated buffer where the keys of the map elements will
-     *                                be copied. Must be large enough to hold at least `elemCount`
-     *                                elements.
-     * \param[in,out] values          A pre-allocated buffer where the values of the map elements
-     *                                will be copied. Must be large enough to hold at least
-     *                                `elemCount` elements.
+     * \param[in,out] keys      A pre-allocated buffer where the keys of the map elements will
+     *                          be copied. Must be large enough to hold at least `elemCount` elements.
+     * \param[in,out] values    A pre-allocated buffer where the values of the map elements will be copied.
+     *                          Must be large enough to hold at least `elemCount` elements.
      * \param   elemCount       The maximum number of elements to copy into the keys and values
      *                          buffer. If set to 0, no elements are copied.
      * \return  The number of elements successfully copied.

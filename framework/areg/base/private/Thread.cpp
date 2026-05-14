@@ -120,9 +120,6 @@ ThreadLocalStorage* Thread::_thread_local_storage( Thread* ownThread )
     else if ( ownThread != nullptr )
     {
         // called only once, when thread starts.
-        // at that moment the thread local storage object 
-        // is not initialized and instantiated yet,
-        // and it should be instantiated
         ASSERT(_localStorage == nullptr );
         _localStorage = DEBUG_NEW ThreadLocalStorage( *ownThread );
     }
@@ -228,21 +225,12 @@ Thread::ThreadCompletion Thread::terminate()
 bool Thread::wait_completion( uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE*/ )
 {
     mSyncObject.lock(areg::WAIT_INFINITE);
-
-    bool result = false;
     THREADHANDLE  handle = mThreadHandle;
-    if (handle != Thread::INVALID_THREAD_HANDLE)
-    {
-        mSyncObject.unlock();  // unlock, to let thread complete exit task.
+    mSyncObject.unlock();  // unlock, to let thread complete exit task.
 
-        result = (waitForCompleteMs == areg::DO_NOT_WAIT) || mWaitForExit.lock(waitForCompleteMs) ;
-    }
-    else
-    {
-        mSyncObject.unlock();  // unlock, to let thread complete exit task.
-        result = true;
-    }
-    return result;
+    return (handle == Thread::INVALID_THREAD_HANDLE)
+        || (waitForCompleteMs == areg::DO_NOT_WAIT)
+        || mWaitForExit.lock(waitForCompleteMs);
 }
 
 bool Thread::on_pre_run()

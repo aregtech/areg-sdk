@@ -60,7 +60,6 @@ inline int32_t _read_parsed(const FileBase& file, ClassType& outValue, Parser pa
 
         // Reposition file cursor to just after consumed portion
         file.set_position(static_cast<int32_t>(oldPos + length * sizeof(CharType)), Cursor::SeekOrigin::Begin);
-        // context == buffer + readLength means entire buffer was consumed -> continue
         if (context != (buffer + readLength))
             break;
     }
@@ -210,16 +209,12 @@ uint32_t _searchText( const FileBase&   file
             inBuf -= length;
         }
 
-        // Fill remainder of buffer from file
         const uint32_t toRead  = (winSize - inBuf) * charSize;
         const uint32_t didRead = file.read(reinterpret_cast<uint8_t*>(fileData + inBuf), toRead) / charSize;
-
         inBuf += didRead;
-
         if (inBuf < length)
             break;  // not enough data to match
 
-        // Search all candidate positions in current window
         const uint32_t scanEnd = inBuf - length;
         for (uint32_t i = 0u; i <= scanEnd; ++i)
         {
@@ -227,9 +222,7 @@ uint32_t _searchText( const FileBase&   file
                 return posSearch + i * charSize;
         }
 
-        // Advance file position tracker by one chunk (length chars)
         posSearch += length * charSize;
-
         if (didRead == 0)
             break;  // EOF
     }
@@ -247,13 +240,13 @@ uint32_t _searchText( const FileBase&   file
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 FileBase::FileBase()
-    : IOStream        ( )
-    , Cursor  ( )
+    : IOStream      ( )
+    , Cursor        ( )
 
-    , mFileName         (String::empty_string())
-    , mFileMode         (static_cast<uint32_t>(OpenMode::Invalid))
-    , mReadConvert      (static_cast<InStream &>(self()), static_cast<Cursor &>(self()) )
-    , mWriteConvert     (static_cast<OutStream &>(self()), static_cast<Cursor &>(self()) )
+    , mFileName     (String::empty_string())
+    , mFileMode     (static_cast<uint32_t>(OpenMode::Invalid))
+    , mReadConvert  (static_cast<InStream &>(self()), static_cast<Cursor &>(self()) )
+    , mWriteConvert (static_cast<OutStream &>(self()), static_cast<Cursor &>(self()) )
 {
 }
 
@@ -642,8 +635,7 @@ uint32_t FileBase::search_data( uint32_t        startPos
             scanBegin = hit + 1u;
         }
 
-        posSearch += length;  // advance window tracker
-
+        posSearch += length;
         if (didRead == 0)
             break;  // EOF
     }

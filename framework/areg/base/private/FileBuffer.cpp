@@ -42,7 +42,6 @@ FileBuffer::FileBuffer(SharedBuffer & sharedBuffer, const char* name /*= nullptr
     , mSharedBuffer (sharedBuffer)
     , mIsOpened     (false)
 {
-    // normalize_mode() detects is_shared() == true and enforces read-only.
     mFileMode = static_cast<uint32_t>(FileBase::OpenMode::Write)
               | static_cast<uint32_t>(FileBase::OpenMode::Binary);
     mFileName = name;
@@ -54,7 +53,6 @@ FileBuffer::FileBuffer(const SharedBuffer & sharedBuffer, const char* name /*= n
     , mSharedBuffer (sharedBuffer)
     , mIsOpened     ( sharedBuffer.is_valid() )
 {
-    // normalize_mode() detects is_shared() == true and enforces read-only.
     mFileMode = static_cast<uint32_t>(FileBase::OpenMode::Write)
               | static_cast<uint32_t>(FileBase::OpenMode::Binary);
     mFileName = name;

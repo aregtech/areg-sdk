@@ -172,15 +172,13 @@ SpinLock::SpinLock()
 bool SpinLock::lock(uint32_t /*timeout = areg::WAIT_INFINITE*/)
 {
     const id_type self = Thread::current_thread_id();
-
-    // Fast recursive path: already own the lock -- just bump the counter.
     if (mOwner.load(std::memory_order_relaxed) == self)
     {
         mCount.fetch_add(1u, std::memory_order_relaxed);
         return true;
     }
 
-    // Spin until we acquire: CAS(0 -> self), back-off with pause hint.
+    // Spin until we acquire.
     uint32_t spins{ 0u };
     for (;;)
     {
@@ -193,8 +191,6 @@ bool SpinLock::lock(uint32_t /*timeout = areg::WAIT_INFINITE*/)
             return true;
         }
 
-        // Spin on a read-only load to avoid cache-line bouncing, with
-        // a CPU pause hint to improve hyper-threading and reduce power.
         // After 64 pause iterations, yield to the OS scheduler to prevent
         // CPU starvation under contention (critical on Linux / POSIX).
         while (mOwner.load(std::memory_order_relaxed) != 0)
@@ -220,18 +216,15 @@ bool SpinLock::try_lock()
 {
     const id_type self = Thread::current_thread_id();
 
-    // Fast recursive path.
     if (mOwner.load(std::memory_order_relaxed) == self)
     {
         mCount.fetch_add(1u, std::memory_order_relaxed);
         return true;
     }
 
-    // Single CAS attempt -- no spinning.
+    // Single CAS attempt, no spinning.
     id_type expected{ 0 };
-    if (mOwner.compare_exchange_strong(expected, self,
-        std::memory_order_acquire,
-        std::memory_order_relaxed))
+    if (mOwner.compare_exchange_strong(expected, self, std::memory_order_acquire, std::memory_order_relaxed))
     {
         mCount.store(1u, std::memory_order_relaxed);
         return true;

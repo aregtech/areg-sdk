@@ -105,14 +105,13 @@ namespace areg {
           UnknownError          = -1    //!< Error, unknown type
         , Succeed               =  0    //!< No error
         , NoConnection          =  1    //!< Error, there is no connection
-        , ProviderUnavailable            //!< Error, service is unavailable
-        , ConsumerRejected               //!< Error, service is rejected
+        , ProviderUnavailable           //!< Error, service is unavailable
+        , ConsumerRejected              //!< Error, service is rejected
         , TargetUnavailable             //!< Error, the target object is unavailable
     };
 
     /**
-     * \brief   Converts areg::MessageResult enumeration to string representation for logging
-     *          and output.
+     * \brief   Converts areg::MessageResult enumeration to string representation for logging and output.
      *
      * \param   msgResult       MessageResult value to convert.
      **/
@@ -121,7 +120,6 @@ namespace areg {
 
     /**
      * \brief   Types of data buffer
-     *          areg::BufferType
      **/
     enum class BufferType : int32_t
     {
@@ -138,24 +136,19 @@ namespace areg {
     inline constexpr const char * as_string( areg::BufferType val ) noexcept;
 
     /**
-     * \brief   areg::BLOCK_SIZE
-     *          Constant. Defines the minimum size of Byte Buffer data
+     * \brief   Constant. Defines the minimum size of Byte Buffer data
      *          Also defines the size to align buffer allocation.
      **/
     constexpr uint32_t      BLOCK_SIZE      { sizeof( uint64_t ) * 8 };
     /**
-     * \brief   areg::MESSAGE_SUCCESS
-     *          Constants. Defines the message result success.
+     * \brief   Defines the message result success.
      **/
     constexpr uint32_t      MESSAGE_SUCCESS { static_cast<uint32_t>(areg::MessageResult::Succeed) };
 
     /**
-     * \brief   areg::InvalidElement
-     *          Predefined Invalid Element value. Used to defined invalid element.
+     * \brief   Predefined Invalid Element value. Used to defined invalid element.
      *          For example, it is used in thread local storage object (ThreadLocalStorage)
      *          in case if there is no element found in local storage by given name.
-     *
-     * \see     ThreadLocalStorage::GetStorageItem()
      **/
     constexpr  areg::Primitive  InvalidElement{{0}};
 
@@ -217,8 +210,7 @@ namespace areg {
          **/
         BufferType  biBufType   { areg::BufferType::Unknown };
         /**
-         * \brief   The length in bytes of used space in buffer.
-         *          Cannot be more than biLength value.
+         * \brief   The length in bytes of used space in buffer. Cannot be more than biLength value.
          **/
         uint32_t    biUsed      { 0 };
     };
@@ -227,8 +219,7 @@ namespace areg {
     // areg::sRemoteBuferHeader structure declaration
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   areg::MessageHeader
-     *          Structure of binary buffer for Remote data transfer.
+     * \brief   Structure of binary buffer for Remote data transfer.
      *          It is extended type of BufferHeader with additions
      *          of message ID, message sequence number, cookie and checksum.
      **/
@@ -302,8 +293,7 @@ namespace areg {
     // areg::RawBuffer structure declaration
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   areg::RawBuffer
-     *          Specify the Byte Buffer object.
+     * \brief   Specify the Byte Buffer object.
      *          Contains the size of complete object,
      *          buffer information and elements followed Byte Buffer object.
      **/
@@ -325,8 +315,7 @@ namespace areg {
     // areg::sRpcMessageBuffer structure declaration
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   areg::RawMessage
-     *          Specify the Byte Buffer object.
+     * \brief   Specify the Byte Buffer object.
      *          Contains the size of complete object,
      *          buffer information and elements followed Byte Buffer object.
      **/
@@ -376,12 +365,10 @@ namespace areg {
     inline const uint8_t * buffer_data_read( const RawBuffer * byteBuffer ) noexcept;
 
     /**
-     * \brief   Constructs elements in allocated buffer by calling the default constructor for each
-     *          element.
+     * \brief   Constructs elements in allocated buffer by calling the default constructor for each element.
      *
      * \param   begin           Pointer to heap-allocated buffer.
-     * \param   elemCount       Number of elements to construct. If zero, no elements are
-     *                          constructed.
+     * \param   elemCount       Number of elements to construct. If zero, no elements are constructed.
      * \return  Pointer to first constructed element in array.
      * \note    ELEM_TYPE must have a public default constructor.
      **/
@@ -393,8 +380,7 @@ namespace areg {
      *          for each element.
      *
      * \param   begin           Pointer to heap-allocated buffer.
-     * \param   elemCount       Number of elements to construct. If zero, no elements are
-     *                          initialized.
+     * \param   elemCount       Number of elements to construct. If zero, no elements are initialized.
      * \param   arg             Argument value to pass to constructor.
      * \return  Pointer to first constructed element in array.
      * \note    ELEM_TYPE must have a public constructor accepting ARGUMENT_TYPE.
@@ -432,11 +418,9 @@ namespace areg {
     /**
      * \brief   Copies elements from source to destination buffer using assignment operator.
      *
-     * \param[out] destination     Pre-allocated destination buffer with at least elemCount elements
-     *                             capacity.
-     * \param   source          Source buffer containing elements to copy.
-     * \param   elemCount       Number of elements to copy. Both buffers must have at least
-     *                          elemCount elements.
+     * \param[out] destination     Pre-allocated destination buffer with at least elemCount elements capacity.
+     * \param   source          The source buffer containing elements to copy.
+     * \param   elemCount       Number of elements to copy. Both buffers must have at least elemCount elements.
      * \note    If ELEM_DST and ELEM_SRC differ: ELEM_SRC must be convertible to ELEM_DST (via
      *          static_cast), and ELEM_DST must support operator=.
      **/
@@ -447,8 +431,8 @@ namespace areg {
      * \brief   Moves elements from source to destination within the same allocated memory block,
      *          handling overlapping regions.
      *
-     * \param[out] destination     Destination pointer within same memory block.
-     * \param   source          Source pointer within same memory block.
+     * \param[out] destination     The destination pointer within same memory block.
+     * \param   source          The source pointer within same memory block.
      * \param   elemCount       Number of elements to move.
      * \note    Source and destination must refer to the same allocated memory chunk. Do not use if
      *          buffers are in different memory spaces. ELEM_TYPE must support operator=.
@@ -543,7 +527,7 @@ namespace areg {
     /**
      * \brief   Copies data from source to destination, respecting destination buffer capacity.
      *
-     * \param[out] memDst      Destination buffer with minimum size dstSpace.
+     * \param[out] memDst   Destination buffer with minimum size dstSpace.
      * \param   dstSpace    Available space in destination buffer in bytes.
      * \param   memSrc      Source buffer containing data to copy.
      * \param   count       Desired number of bytes to copy.
@@ -593,7 +577,7 @@ namespace areg {
     struct BufferDeleter
     {
         /**
-         * \brief   Deallocates a buffer.
+         * \brief   De-allocates a buffer.
          **/
         void operator ( ) (void * buffer);
     };
@@ -859,7 +843,6 @@ inline bool equal_elements(const ELEM * lhs, const ELEM * rhs, uint32_t count)
 {
     return equal_elements<ELEM, ELEM>(lhs, rhs, count);
 }
-
 
 template <typename ELEM_LEFT, typename ELEM_RIGHT /*= ELEM_LEFT*/>
 inline bool equal_elements(const ELEM_LEFT* lhs, const ELEM_RIGHT* rhs, uint32_t count)

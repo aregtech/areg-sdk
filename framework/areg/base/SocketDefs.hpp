@@ -199,14 +199,14 @@ public:
     /**
      * \brief   Returns true if both user name and password are identical.
      **/
-    // BUG FIX: was missing 'const' -- comparison must not mutate the object.
-    [[nodiscard]] bool operator == (const UserData& other) const noexcept;
+    [[nodiscard]]
+    bool operator == (const UserData& other) const noexcept;
 
     /**
      * \brief   Returns true if user name or password differs.
      **/
-    // BUG FIX: was missing 'const' -- comparison must not mutate the object.
-    [[nodiscard]] bool operator != (const UserData& other) const noexcept;
+    [[nodiscard]]
+    bool operator != (const UserData& other) const noexcept;
 
     /**
      * \brief   Returns the user name.

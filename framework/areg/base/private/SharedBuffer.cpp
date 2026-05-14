@@ -506,7 +506,6 @@ uint32_t SharedBuffer::write_data(const uint8_t* buf, uint32_t size) noexcept
 
     if ((raw != nullptr) && (needed <= raw->bufHeader.biLength))
     {
-        // Fast path: buffer already has capacity at writePos.
         areg::mem_copy(areg::buffer_data_write(raw) + writePos, raw->bufHeader.biLength - writePos, buf, size);
         if (needed > raw->bufHeader.biUsed)
             raw->bufHeader.biUsed = needed;

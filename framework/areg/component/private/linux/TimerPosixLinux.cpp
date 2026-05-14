@@ -27,7 +27,6 @@ namespace areg::os {
 
 bool TimerPosix::_create_timer(FuncPosixTimerRoutine /*funcTimer*/) noexcept
 {
-    // funcTimer is unused on Linux -- timerfd is polled via epoll, no callback needed.
     mTimerFd = ::timerfd_create(CLOCK_REALTIME, TFD_NONBLOCK | TFD_CLOEXEC);
     return (mTimerFd >= 0);
 }

@@ -137,8 +137,6 @@ uint32_t EventStack::push_event(Event* newEvent, Event** removedEvent) noexcept
     else if (prio < areg::EventPriority::HighPrio)
     {
         // Normal events are FIFO (push_back / pop_front).
-        // When the queue is at capacity, evict the oldest non-exit entry
-        // (drop-head policy) so that newer data supersedes stale data.
         if (mValueList.size() >= mMaxQueueSize)
         {
             ASSERT(!mValueList.empty());
@@ -152,7 +150,6 @@ uint32_t EventStack::push_event(Event* newEvent, Event** removedEvent) noexcept
 
             if (it == mValueList.end())
             {
-                // Every entry is an Exit event (pathological case).
                 // Drop the incoming event instead of losing an Exit.
                 if (removedEvent != nullptr)
                     *removedEvent = newEvent;

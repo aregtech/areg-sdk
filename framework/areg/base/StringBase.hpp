@@ -1633,18 +1633,15 @@ inline areg::CharPos StringBase<CharType>::find_last(const CharType* phrase, are
 
     if (caseSensitive)
     {
-        // mData.rfind() is SIMD-optimized (delegates to memmem/wmemmem) and handles
-        // all CharType; no constexpr guard needed since mData is always available.
+        // mData.rfind() is SIMD-optimized
         using SizeT = typename std::basic_string<CharType>::size_type;
-        const SizeT searchPos = (startPos == areg::END_POS)
-            ? std::basic_string<CharType>::npos
-            : static_cast<SizeT>(startPos);
+        const SizeT searchPos = (startPos == areg::END_POS) ? std::basic_string<CharType>::npos : static_cast<SizeT>(startPos);
         const auto pos = mData.rfind(phrase, searchPos, static_cast<SizeT>(phraseCount));
         return (pos != std::basic_string<CharType>::npos) ? static_cast<areg::CharPos>(pos) : areg::END_POS;
     }
 
-    // Case-insensitive: backward scan using compare().
-    // maxStart: last valid phrase-start position (strLen - phraseCount).
+    // Case-insensitive: backward scan using compare()
+    // maxStart: last valid phrase-start position
     const areg::CharPos maxStart = static_cast<areg::CharPos>(strLen - phraseCount);
     const areg::CharPos searchFrom = (startPos == areg::END_POS) ? maxStart
                                    : (startPos < maxStart)       ? startPos
@@ -1690,7 +1687,7 @@ areg::Ordering StringBase<CharType>::compare( const CharType* what
     {
         if (caseSensitive)
         {
-            // mData.compare() delegates to memcmp/wmemcmp -- SIMD-optimized.
+            // SIMD-optimized
             const int cmp = mData.compare( static_cast<std::size_t>(startAt)
                                          , static_cast<std::size_t>(count)
                                          , what
@@ -2525,21 +2522,15 @@ areg::CharPos StringBase<CharType>::read_line(std::basic_string<CharType>& strRe
         return areg::END_POS;
 
     const CharType* str = begin;
+    // move until reach end of line
     while ((areg::is_new_line<CharType>(*str) == false) && (*str != EmptyChar))
-    {
-        // move until reach end of line
         ++str;
-    }
 
-    // copy the line
+    // copy the line, find next line or reach end of string
     strResult.assign(begin, static_cast<uint32_t>(str - begin));
     while (areg::is_eol<CharType>(*str) && (*str != EmptyChar))
-    {
-        // find next line or reach end of string
         ++str;
-    }
 
-    // if reached end of string, return END_POS, otherwise, return the next position in the string where new not empty line starts.
     return (*str == EmptyChar ? areg::END_POS : static_cast<areg::CharPos>(str - mData.c_str()));
 }
 
@@ -2651,7 +2642,7 @@ inline areg::CharPos StringBase<CharType>::replace_with( areg::CharPos   startPo
     int32_t diff = static_cast<int32_t>(lenReplace - count);
     areg::CharPos endPos = startPos + count;
     move_to( endPos, diff );
-    // char_traits::copy is SIMD-optimized in major STLs (equivalent to memcpy).
+    // char_traits::copy is SIMD-optimized
     std::char_traits<CharType>::copy(buffer(startPos), strReplace, static_cast<uint32_t>(lenReplace));
 
     return (endPos + diff);
@@ -2751,43 +2742,29 @@ inline areg::CharPos StringBase<CharType>::find_first_word(const std::basic_stri
                              , search);
 
         if (it == mData.end())
-        {
-            // we reached end of string, nothing found, break!
-            break;
-        }
+            break;  // end of string
 
         areg::CharPos pos = static_cast<areg::CharPos>(std::distance(mData.begin(), it));
 
-        // Take firs char
-        CharType chBegin = *(it);
-        // Take previous char or empty char
-        CharType chPrev  = it == mData.begin() ? EmptyChar : *(it - 1);
-        // One of them must be beginning of the word.
-        // Example: search "word" or " word" in sentence "This is a word";
-        bool isBegin = !is_name_char(chBegin) || !is_name_char(chPrev);
+        CharType chBegin= *(it);
+        CharType chPrev = it == mData.begin() ? EmptyChar : *(it - 1);
+        bool isBegin    = !is_name_char(chBegin) || !is_name_char(chPrev);
 
         // Take last char
         it += static_cast<int32_t>(word.length());
         CharType chEnd  = it != mData.end() ? *it : EmptyChar;
-        // Take next char if not EOS
         CharType chNext = (it != mData.end()) && ((it + 1) != mData.end()) ? *(it + 1) : EmptyChar;
-        // One of them must be end of the word.
-        // Example: search "word" or "word!" in sentence "This is a word!";
         bool isEnd      = !is_name_char(chEnd) || !is_name_char(chNext);
 
         if (isBegin && isEnd)
         {
-            // We found, break!
-            result = pos;
+            result = pos;   // found
             break;
         }
 
         ++startPos;
         if ((mData.length() - static_cast<uint32_t>(startPos)) < word.length())
-        {
-            // if the remaining length is smaller, break, because makes no sense to search
             break;
-        }
     }
 
     return result;
@@ -2796,7 +2773,6 @@ inline areg::CharPos StringBase<CharType>::find_first_word(const std::basic_stri
 template<typename CharType>
 inline bool StringBase<CharType>::is_name_char(const CharType checkChar, std::locale& loc) noexcept
 {
-    // initialize list of symbols for the valid names.
     constexpr CharType symbols[] = { '_', '\0' };
     return std::isalnum(checkChar, loc) || areg::is_one_of<CharType>(checkChar, symbols);
 }

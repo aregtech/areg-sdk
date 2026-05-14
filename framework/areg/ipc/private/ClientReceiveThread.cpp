@@ -38,8 +38,7 @@ bool ClientReceiveThread::run_dispatcher()
     LOG_SCOPE( areg_ipc_private_ClientReceiveThread, run_dispatcher );
     LOG_DBG("Starting client service dispatcher thread [ %s ]", name().as_string());
 
-    // Client receive thread serves one socket, so cached mode is safe and
-    // minimizes recv() syscall count for small/medium messages.
+    // Client receive thread serves one socket.
     areg::set_receive_mode(areg::ReceiveMode::MonoCache);
 
     ready_for_events( true );
@@ -49,28 +48,13 @@ bool ClientReceiveThread::run_dispatcher()
     RemoteMessage msgReceived;
     int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
 
-    // Amortize the cost of multiLock.lock(DO_NOT_WAIT) -- which involves
-    // pthread_cond_timedwait(timeout=0) and global-map locking -- across a
-    // batch of consecutive receive calls.  On Linux/WSL2 each invocation of
-    // multiLock.lock(DO_NOT_WAIT) carries kernel-level synchronization overhead
-    // that, at high message rates, becomes the dominant bottleneck.  Checking
-    // every DRAIN_LIMIT messages instead of every message reduces that overhead
-    // by ~DRAIN_LIMIT× while preserving correct exit/event detection.
+    // Amortize the cost of multiLock.
     constexpr uint32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
     uint32_t drainCount{ 0u };
 
     do
     {
-        // Only run the full exit / internal-event check at the start of each
-        // batch.  Within a batch, skip straight to receive_message().
-        if (drainCount == 0u)
-        {
-            whichEvent = multiLock.lock(areg::DO_NOT_WAIT, false);
-        }
-        else
-        {
-            whichEvent = MultiLock::LOCK_INDEX_TIMEOUT;
-        }
+        whichEvent = drainCount == 0u ? multiLock.lock(areg::DO_NOT_WAIT, false) : MultiLock::LOCK_INDEX_TIMEOUT;
 
         if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
         {
@@ -78,7 +62,6 @@ bool ClientReceiveThread::run_dispatcher()
             int32_t sizeReceive = mConnection.receive_message( msgReceived );
             if ( sizeReceive <= 0 )
             {
-                // msgReceived.invalidate();
                 mRemoteService.failed_receive_message( mConnection.socket() );
                 whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
                 drainCount = 0u;

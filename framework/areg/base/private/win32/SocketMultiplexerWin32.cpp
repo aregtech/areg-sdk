@@ -80,8 +80,7 @@ static bool _create_wakeup_pair(SOCKETHANDLE& readEnd, SOCKETHANDLE& writeEnd) n
     addr.sin_addr.s_addr = ::htonl(INADDR_LOOPBACK);
     addr.sin_port        = 0;   // OS picks a free port
 
-    if (::bind(listener, reinterpret_cast<const sockaddr*>(&addr), sizeof(addr)) != 0 ||
-        ::listen(listener, 1) != 0)
+    if (::bind(listener, reinterpret_cast<const sockaddr*>(&addr), sizeof(addr)) != 0 || ::listen(listener, 1) != 0)
     {
         ::closesocket(listener);
         return false;
@@ -113,7 +112,6 @@ static bool _create_wakeup_pair(SOCKETHANDLE& readEnd, SOCKETHANDLE& writeEnd) n
     // Step 4: accept side (will become mWakeupReadFd)
     const SOCKET acceptSock = ::accept(listener, nullptr, nullptr);
     ::closesocket(listener);   // listener is no longer needed
-
     if (acceptSock == INVALID_SOCKET)
     {
         ::closesocket(connectSock);
@@ -150,7 +148,6 @@ areg::SocketMultiplexer::SocketMultiplexer(uint32_t maxConnections) noexcept
     , mBatchEvents  { }
 {
     mSockets.reserve(areg::DEFAULT_CONNECTIONS);
-    // Create the wakeup pair before any real sockets are registered.
     _create_wakeup_pair(mWakeupReadFd, mWakeupWriteFd);
 }
 

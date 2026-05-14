@@ -454,7 +454,6 @@ uint32_t File::reserve(uint32_t newSize)
         return Cursor::INVALID_CURSOR_POSITION;
 
     // Restore the pointer: keep curPos when the file grew or stayed equal;
-    // clamp to the new end when the file shrank past the old position.
     uint32_t result{ Cursor::INVALID_CURSOR_POSITION };
     if (newSize == 0)
     {

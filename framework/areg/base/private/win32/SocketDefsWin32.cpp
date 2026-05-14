@@ -144,7 +144,7 @@ int32_t _os_send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t d
 
 int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t totalSize)
 {
-    // Single buffer -- bypass setup entirely.
+    // Single buffer, bypass setup entirely.
     if (count == 1u)
     {
         return _os_send_data(hSocket, buffers->data, static_cast<int32_t>(buffers->size));
@@ -248,7 +248,7 @@ static inline int32_t _recv_cached(SOCKETHANDLE hSocket, uint8_t* dataBuffer, in
     uint32_t needed = static_cast<uint32_t>(dataLength);
     uint32_t total  = 0u;
 
-    // Phase 1: serve from cache -- zero kernel cost.
+    // Phase 1: serve from cache, zero kernel cost.
     if (tc.unread > 0u)
     {
         const uint32_t take = (tc.unread < needed) ? tc.unread : needed;
@@ -263,8 +263,7 @@ static inline int32_t _recv_cached(SOCKETHANDLE hSocket, uint8_t* dataBuffer, in
     }
 
     // tc.unread == 0: cache is empty (drained by Phase 1 or was already empty).
-
-    // Phase 2: large request -- bypass cache, read directly into the caller's buffer.
+    // Phase 2: large request, bypass cache, read directly into the caller's buffer.
     if (needed >= static_cast<uint32_t>(tc.space))
     {
         while (needed > 0u)
@@ -284,7 +283,7 @@ static inline int32_t _recv_cached(SOCKETHANDLE hSocket, uint8_t* dataBuffer, in
         return static_cast<int32_t>(total);
     }
 
-    // Phase 3: small request -- fill cache greedily, serve needed bytes, keep surplus.
+    // Phase 3: small request, fill cache greedily, serve needed bytes, keep surplus.
     // Reset to the start of the buffer (tc.head may be non-zero after a Phase 1 drain).
     tc.head   = 0u;
     tc.unread = 0u;
@@ -301,7 +300,7 @@ static inline int32_t _recv_cached(SOCKETHANDLE hSocket, uint8_t* dataBuffer, in
         }
     }
 
-    // Cache holds >= needed bytes from cache[0]; copy needed and retain the rest.
+    // Cache holds >= needed bytes; copy needed and retain the rest.
     ::memcpy(dataBuffer + total, cache, needed);
     tc.head    = needed;
     tc.unread -= needed;
@@ -315,8 +314,8 @@ int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLen
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
 
     return (areg::receive_mode() == areg::ReceiveMode::NoCache)
-         ? _recv_exact(hSocket, dataBuffer, dataLength)
-         : _recv_cached(hSocket, dataBuffer, dataLength);
+             ? _recv_exact(hSocket, dataBuffer, dataLength)
+             : _recv_cached(hSocket, dataBuffer, dataLength);
 }
 
 bool _os_connect_socket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen, uint32_t timeoutMs)
@@ -339,7 +338,7 @@ bool _os_connect_socket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen
 
     if (::WSAGetLastError() != WSAEWOULDBLOCK)
     {
-        // Hard failure (e.g. WSAECONNREFUSED on loopback) -- no need to wait
+        // Hard failure, no need to wait
         return false;
     }
 
@@ -359,7 +358,6 @@ bool _os_connect_socket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen
     if (selectResult <= 0 || FD_ISSET(hSocket, &exceptSet))
         return false;   // Timeout or exceptional condition
 
-    // Confirm the connection completed without error
     int connError{ 0 };
     int errLen{ static_cast<int>(sizeof(connError)) };
     if (::getsockopt(hSocket, static_cast<int>(SOL_SOCKET), static_cast<int>(SO_ERROR), reinterpret_cast<char*>(&connError), &errLen) != RETURNED_OK || connError != 0)

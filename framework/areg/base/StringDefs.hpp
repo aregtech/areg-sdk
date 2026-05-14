@@ -978,15 +978,14 @@ inline constexpr bool not_more(const CharType* str, const uint32_t maxCount) noe
 
 namespace areg::str {
 
-    // Inline character equality with case sensitivity resolved at compile time.
-    // Non-capturing; the compiler eliminates the dead branch in each instantiation.
+    // Inline character comparison.
+
     template<bool CaseSensitive, typename CharType>
     [[nodiscard]] inline constexpr bool char_eq(CharType a, CharType b) noexcept;
-    // Inline three-way character comparison with case sensitivity resolved at compile time.
+
     template<bool CaseSensitive, typename CharLhs, typename CharRhs>
     [[nodiscard]] inline constexpr areg::Ordering char_cmp(CharLhs a, CharRhs b) noexcept;
 
-    /** --------------------------------------------------- **/
     template<bool CaseSensitive, typename CharType>
     [[nodiscard]] constexpr areg::CharPos find_first_phrase_impl(const CharType* strPhrase, const CharType* strSource, areg::CharPos startPos, const CharType** next) noexcept
     {
@@ -996,8 +995,6 @@ namespace areg::str {
 
         if constexpr (CaseSensitive && (std::is_same_v<CharType, char> || std::is_same_v<CharType, wchar_t>))
         {
-            // string_view::find(string_view) is constexpr in C++17 and SIMD-optimized at runtime
-            // via char_traits -- equivalent to strstr/wcsstr without losing constexpr eligibility.
             using SV = std::basic_string_view<CharType>;
             const SV sv{ str };
             const SV phrase_sv{ strPhrase };
@@ -1013,7 +1010,7 @@ namespace areg::str {
         }
         else
         {
-            // Generic path: case-insensitive or non-standard char types.
+            // case-insensitive or non-standard char types.
             while (!areg::is_eos(*str))
             {
                 if (char_eq<CaseSensitive, CharType>(*str, *strPhrase))
@@ -1046,8 +1043,6 @@ namespace areg::str {
     {
         if constexpr (CaseSensitive && (std::is_same_v<CharType, char> || std::is_same_v<CharType, wchar_t>))
         {
-            // string_view::compare() is constexpr in C++17 and SIMD-optimized at runtime
-            // via char_traits -- equivalent to strncmp/wcsncmp without losing constexpr eligibility.
             using SV = std::basic_string_view<CharType>;
             const SV phrase_sv{ phrase };
             const SV str_sv{ strString };
@@ -1065,14 +1060,11 @@ namespace areg::str {
         }
     }
 
-    /** --------------------------------------------------- **/
     template<bool CaseSensitive, typename CharType>
     [[nodiscard]] CharType* remove_char_impl(CharType ch1, const CharType* src, CharType* dst, bool removeAll) noexcept
     {
         if constexpr (CaseSensitive && std::is_same_v<CharType, char>)
         {
-            // Fast path: use memchr to skip to each matching character, then memmove the
-            // gap between consecutive matches in bulk.
             const char* p = src;
             char* out = dst;
             while (true)
@@ -1080,7 +1072,7 @@ namespace areg::str {
                 const char* found = static_cast<const char*>(std::memchr(p, static_cast<int>(ch1), std::strlen(p)));
                 if (found == nullptr)
                 {
-                    // No more matches -- copy tail.
+                    // No more matches, copy tail
                     const std::size_t tail = static_cast<std::size_t>(std::strlen(p));
                     if (tail > 0)
                         std::memmove(out, p, tail);
@@ -1096,9 +1088,6 @@ namespace areg::str {
 
                 if (!removeAll)
                 {
-                    // Copy the remainder verbatim so the string stays valid, then
-                    // return the position right after the removed character.
-                    // The caller uses this as the starting point for the next search.
                     const std::size_t tail = static_cast<std::size_t>(std::strlen(p));
                     char* resume = out;
                     if (tail > 0)
@@ -1136,8 +1125,6 @@ namespace areg::str {
 
                 if (!removeAll)
                 {
-                    // Copy the remainder verbatim so the string stays valid, then
-                    // return the position right after the removed character.
                     const std::size_t tail = static_cast<std::size_t>(std::wcslen(p));
                     wchar_t* resume = out;
                     if (tail > 0)
@@ -1175,7 +1162,6 @@ namespace areg::str {
         }
     }
 
-    /** --------------------------------------------------- **/
     template<bool CaseSensitive, typename CharLhs, typename CharRhs>
     [[nodiscard]] areg::Ordering compare_strings_impl(const CharLhs* left_side, const CharRhs* right_side, areg::CharPos charCount) noexcept
     {
@@ -1195,9 +1181,7 @@ namespace areg::str {
         return areg::Ordering::Equal;
     }
 
-    /** --------------------------------------------------- **/
     // Inline character equality with case sensitivity resolved at compile time.
-    // Non-capturing; the compiler eliminates the dead branch in each instantiation.
     template<bool CaseSensitive, typename CharType>
     [[nodiscard]] inline constexpr bool char_eq(CharType a, CharType b) noexcept
     {
@@ -1207,7 +1191,6 @@ namespace areg::str {
             return areg::make_lower<CharType>(a) == areg::make_lower<CharType>(b);
     }
 
-    /** --------------------------------------------------- **/
     // Inline three-way character comparison with case sensitivity resolved at compile time.
     template<bool CaseSensitive, typename CharLhs, typename CharRhs>
     [[nodiscard]] inline constexpr areg::Ordering char_cmp(CharLhs a, CharRhs b) noexcept
@@ -1225,13 +1208,11 @@ namespace areg::str {
         }
     }
 
-    /** --------------------------------------------------- **/
     template<bool CaseSensitive, typename CharType>
     [[nodiscard]] constexpr areg::CharPos find_last_char_impl(CharType ch, const CharType* strSource, areg::CharPos pos, const CharType** next) noexcept
     {
         if constexpr (CaseSensitive && (std::is_same_v<CharType, char> || std::is_same_v<CharType, wchar_t>))
         {
-            // string_view::rfind() is constexpr in C++17 and SIMD-optimized at runtime.
             using SV = std::basic_string_view<CharType>;
             const SV sv{ strSource };
             const auto found = sv.rfind(ch, static_cast<std::size_t>(pos));
@@ -1260,14 +1241,11 @@ namespace areg::str {
         }
     }
 
-    /** --------------------------------------------------- **/
     template<bool CaseSensitive, typename CharType>
     [[nodiscard]] constexpr areg::CharPos find_last_phrase_impl(const CharType* strPhrase, const CharType* strSource, areg::CharPos pos, areg::CharPos lenPhr, const CharType** next) noexcept
     {
         if constexpr (CaseSensitive && (std::is_same_v<CharType, char> || std::is_same_v<CharType, wchar_t>))
         {
-            // string_view::rfind() is constexpr in C++17 and SIMD-optimized at runtime.
-            // Search start is capped at (pos - lenPhr): the last valid phrase-start position.
             if (static_cast<areg::CharPos>(lenPhr) > pos)
                 return areg::INVALID_POS;
 
@@ -1313,7 +1291,6 @@ namespace areg::str {
         }
     }
 
-    /** --------------------------------------------------- **/
     template<bool CaseSensitive, typename CharType>
     [[nodiscard]] constexpr areg::CharPos find_first_char_impl(CharType ch, const CharType* strSource, areg::CharPos startPos, const CharType** next) noexcept
     {
@@ -1323,8 +1300,6 @@ namespace areg::str {
 
         if constexpr (CaseSensitive && (std::is_same_v<CharType, char> || std::is_same_v<CharType, wchar_t>))
         {
-            // string_view::find(char) is constexpr in C++17 and SIMD-optimized at runtime
-            // via char_traits::find() -- equivalent to strchr/wcschr without losing constexpr eligibility.
             using SV = std::basic_string_view<CharType>;
             const SV sv{ str };
             const auto pos = sv.find(ch);
@@ -1505,7 +1480,6 @@ constexpr int32_t areg::make_integer(const CharType* strNumber, const CharType**
     return static_cast<int32_t>(sign) * static_cast<int32_t>(result);
 }
 
-/** --------------------------------------------------- **/
 template<typename CharType>
 inline int32_t areg::required_char_count( const CharType * format, va_list argptr ) noexcept
 {
@@ -1547,7 +1521,7 @@ inline bool areg::is_buffer_fit( const char * format, va_list argptr ) noexcept
     char buf[ size ]{ 0 };
     va_list argcopy;
     va_copy( argcopy, argptr );
-    // format is intentionally a runtime parameter -- suppress -Wformat-nonliteral
+    // format is intentionally a runtime parameter, suppress -Wformat-nonliteral
 #if defined(__clang__)
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wformat-nonliteral"
@@ -1573,7 +1547,7 @@ inline bool areg::is_buffer_fit( const wchar_t * format, va_list argptr ) noexce
     wchar_t buf[ size ]{ 0 };
     va_list argcopy;
     va_copy( argcopy, argptr );
-    // format is intentionally a runtime parameter -- suppress -Wformat-nonliteral
+    // format is intentionally a runtime parameter, suppress -Wformat-nonliteral
 #if defined(__clang__)
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wformat-nonliteral"
@@ -1603,7 +1577,6 @@ inline bool areg::is_buffer_fit(const CharType* format, ... ) noexcept
     return result;
 }
 
-/** --------------------------------------------------- **/
 template<typename CharType>
 const CharType* areg::line( CharType*         strSource
                           , areg::CharCount  charCount /*= COUNT_ALL*/
@@ -1618,8 +1591,6 @@ const CharType* areg::line( CharType*         strSource
     const CharType* result = strSource;
 
     // Scan to the first end-of-line or non-printable character.
-    // \r and \n are end-of-line (is_eol); control characters are non-printable (!is_printable).
-    // Note: \r and \n ARE printable in the areg table, so is_eol must be checked separately.
     auto find_eol = [](CharType* s, areg::CharCount n) -> CharType*
     {
         areg::CharCount count = (n == areg::COUNT_ALL) ? areg::VALUE_MAX_INT32 : n;
@@ -2073,8 +2044,6 @@ inline constexpr bool areg::is_one_of(CharType ch, const CharType* chSequence) n
     return false;
 }
 
-// Constexpr specializations: string_view::find() is constexpr in C++17 and delegates to
-// char_traits::find() which is SIMD-optimized at runtime -- best of both worlds.
 template<>
 inline constexpr bool areg::is_one_of<char>(char ch, const char* chSequence) noexcept
 {
@@ -2295,8 +2264,6 @@ inline constexpr areg::CharCount areg::string_length(const CharType* theString) 
     if (areg::is_empty<CharType>(theString))
         return 0;
 
-    // std::char_traits<T>::length() is constexpr since C++17 (P0254R2) for char and wchar_t,
-    // and delegates to the same SIMD-optimized strlen/wcslen at runtime -- no overhead.
     if constexpr (std::is_same_v<CharType, char> || std::is_same_v<CharType, wchar_t>)
     {
         return static_cast<areg::CharCount>(std::char_traits<CharType>::length(theString));
@@ -2517,9 +2484,6 @@ inline constexpr bool areg::not_less(const CharType* str, const uint32_t minCoun
     return true;
 }
 
-// Constexpr specializations: char_traits::find() is constexpr in C++17 and delegates to
-// memchr/wmemchr (SIMD-optimized) at runtime. Searches for null in first minCount positions --
-// if found, the string is shorter than minCount; if not found, it has at least minCount chars.
 template<>
 inline constexpr bool areg::not_less<char>(const char* str, const uint32_t minCount) noexcept
 {
@@ -2544,9 +2508,6 @@ inline constexpr bool areg::not_less<wchar_t>(const wchar_t* str, const uint32_t
     return std::char_traits<wchar_t>::find(str, static_cast<std::size_t>(minCount), L'\0') == nullptr;
 }
 
-/** --------------------------------------------------- **/
-// Bug fix: original loop ran i < maxCount, missing the null at str[maxCount] for strings of
-// exactly maxCount characters. Changed to i <= maxCount to correctly handle that boundary.
 template<typename CharType>
 inline constexpr bool areg::not_more(const CharType* str, const uint32_t maxCount) noexcept
 {
@@ -2565,9 +2526,6 @@ inline constexpr bool areg::not_more(const CharType* str, const uint32_t maxCoun
     return false;
 }
 
-// Constexpr specializations: char_traits::find() is constexpr in C++17, SIMD at runtime.
-// Checks maxCount+1 positions so a string of exactly maxCount chars (null at index maxCount)
-// correctly returns true -- fixes the off-by-one present in naive < maxCount loop.
 template<>
 inline constexpr bool areg::not_more<char>(const char* str, const uint32_t maxCount) noexcept
 {

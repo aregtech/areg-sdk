@@ -52,10 +52,9 @@ inline void drain_pipe(int fd) noexcept
 
 // -----------------------------------------------------------------------
 // WAKEUP DESIGN:
-//   mWakeupReadFd  = pipe read end  -- polled alongside real sockets.
-//   mWakeupWriteFd = pipe write end -- one byte written by reset().
-//   wait() checks the wakeup entry last, drains the pipe on fire,
-//   and returns FailedSocketHandle.
+//      - mWakeupReadFd  = pipe read end  -- polled alongside real sockets.
+//      - mWakeupWriteFd = pipe write end -- one byte written by reset().
+//  wait() checks the wakeup entry last, drains the pipe on fire and returns FailedSocketHandle.
 // -----------------------------------------------------------------------
 
 areg::SocketMultiplexer::SocketMultiplexer(uint32_t maxConnections /*= areg::DEFAULT_CONNECTIONS*/) noexcept
@@ -172,8 +171,6 @@ void areg::SocketMultiplexer::reset() noexcept
 void areg::SocketMultiplexer::wakeup() noexcept
 {
     // Soft interrupt: write one byte to the pipe WITHOUT setting mIsReset.
-    // wait() will drain the pipe and return InvalidSocketHandle, letting
-    // the receive thread re-check pending socket registrations and re-enter wait().
     if (mWakeupWriteFd != areg::InvalidSocketHandle)
     {
         const uint32_t one{ 1u };
@@ -194,7 +191,6 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         return areg::FailedSocketHandle;
     }
 
-    // Serve cached results from the previous poll() batch before issuing another syscall.
     if (mBatchIdx < mBatchCount)
     {
         const SOCKETHANDLE fd = mBatchFds[mBatchIdx++];
@@ -248,7 +244,6 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
     }
 
-    // Collect ALL ready sockets into the batch cache; return the first immediately.
     mBatchCount = 0u;
     SOCKETHANDLE first{ areg::InvalidSocketHandle };
     for (uint32_t i = 0; i < socketCount; ++i)

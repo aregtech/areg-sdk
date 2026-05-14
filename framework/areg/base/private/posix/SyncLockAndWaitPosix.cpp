@@ -418,8 +418,6 @@ SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
 
 SyncLockAndWaitPosix::~SyncLockAndWaitPosix()
 {
-    // Remove from the global map under the global lock. After this returns,
-    // no new event_signaled() call will find this object in the map.
     SyncLockAndWaitPosix::_map_sync_resources().remove_resource_object(this, true);
 }
 
@@ -435,10 +433,7 @@ inline bool SyncLockAndWaitPosix::_is_empty() const noexcept
 
 inline bool SyncLockAndWaitPosix::_notify_event() noexcept
 {
-    // Acquiring mMutexPtr before pthread_cond_signal prevents the missed-
-    // signal race: the waiter holds mMutexPtr from before checking
-    // _no_event_fired() through entry into pthread_cond_wait.  Therefore
-    // the signal is always delivered AFTER the waiter is inside cond_wait.
+    // Acquiring mMutexPtr before pthread_cond_signal prevents the missed-signal race.
     if (!mSyncValid)
         return false;
 

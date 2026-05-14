@@ -206,7 +206,6 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
     OutStream &      mWriteStream;    //!< Reference of a writable streaming object
-    // Cursor & mWritePosition;  //!< Reference of cursor position object in writable stream.
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden methods

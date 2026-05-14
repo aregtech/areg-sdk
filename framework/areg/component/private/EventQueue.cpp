@@ -161,8 +161,7 @@ InternalEventQueue::~InternalEventQueue()
 
 void InternalEventQueue::signal_event(uint32_t /* eventCount */)
 {
-    // Intentional no-op. The dispatcher polls the internal queue proactively after
-    // each external event; no SyncEvent signaling is needed.
+    // Intentional no-op, no SyncEvent signaling is needed
 }
 
 } // namespace areg

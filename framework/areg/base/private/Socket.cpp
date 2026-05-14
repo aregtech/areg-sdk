@@ -45,7 +45,7 @@ Socket::Socket(const SOCKETHANDLE hSocket, const areg::SocketAddress & sockAddre
 }
 
 Socket::Socket(const SOCKETHANDLE hSocket, areg::SocketAddress&& sockAddress) noexcept
-    : mSocket   ( hSocket )   // SharedPrimitive move: transfers ownership
+    : mSocket   ( hSocket )
     , mAddress  ( std::move(sockAddress) )
     , mSendSize ( areg::PACKET_DEFAULT_SIZE )
     , mRecvSize ( areg::PACKET_DEFAULT_SIZE )
@@ -56,7 +56,7 @@ Socket::Socket(const SOCKETHANDLE hSocket, areg::SocketAddress&& sockAddress) no
 }
 
 Socket::Socket( const Socket & source )
-    : mSocket   ( source.mSocket )      // SharedPrimitive copy: increments ref count
+    : mSocket   ( source.mSocket )
     , mAddress  ( source.mAddress )
     , mSendSize ( source.mSendSize )
     , mRecvSize ( source.mRecvSize )
@@ -65,7 +65,7 @@ Socket::Socket( const Socket & source )
 }
 
 Socket::Socket( Socket && source ) noexcept
-    : mSocket   ( std::move(source.mSocket) )   // SharedPrimitive move: transfers ownership
+    : mSocket   ( std::move(source.mSocket) )
     , mAddress  ( std::move(source.mAddress) )
     , mSendSize ( source.mSendSize )
     , mRecvSize ( source.mRecvSize )
@@ -75,7 +75,6 @@ Socket::Socket( Socket && source ) noexcept
 
 Socket::~Socket()
 {
-    // mSocket: SharedPrimitive destructor releases the handle automatically
     static_cast<void>(areg::socket_release());
 }
 
@@ -83,7 +82,7 @@ Socket & Socket::operator = ( const Socket & src )
 {
     if ( this != &src )
     {
-        mSocket   = src.mSocket;    // SharedPrimitive copy assign: releases old, shares new
+        mSocket   = src.mSocket;
         mAddress  = src.mAddress;
         mSendSize = src.mSendSize;
         mRecvSize = src.mRecvSize;
@@ -96,7 +95,7 @@ Socket & Socket::operator = ( Socket && src ) noexcept
 {
     if ( this != &src )
     {
-        mSocket   = std::move(src.mSocket); // SharedPrimitive move assign: releases old, takes ownership
+        mSocket   = std::move(src.mSocket);
         mAddress  = std::move(src.mAddress);
         mSendSize = src.mSendSize;
         mRecvSize = src.mRecvSize;

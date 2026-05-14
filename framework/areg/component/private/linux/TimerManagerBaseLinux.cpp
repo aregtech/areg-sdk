@@ -81,9 +81,9 @@ bool TimerManagerBase::run_dispatcher()
         if (n < 0)
         {
             if (errno == EINTR)
-                continue;   // interrupted by signal -- retry
+                continue;   // interrupted by signal, retry
 
-            break;          // unexpected error -- treat as exit
+            break;          // unexpected error, treat as exit
         }
 
         for (int i = 0; (i < n) && !exitRequested; ++i)
@@ -122,11 +122,9 @@ bool TimerManagerBase::run_dispatcher()
             }
             else
             {
-                // A timerfd became readable -- dispatch to subclass.
                 TIMERHANDLE handle = reinterpret_cast<TIMERHANDLE>(ptr);
                 areg::os::TimerPosix* posixTimer = reinterpret_cast<areg::os::TimerPosix*>(handle);
 
-                // Read and discard the expiration count (clears the readable state).
                 uint64_t expirations { 0u };
                 [[maybe_unused]] ssize_t drained = ::read(posixTimer->timer_fd(), &expirations, sizeof(uint64_t));
 
@@ -147,7 +145,6 @@ bool TimerManagerBase::run_dispatcher()
 
 void TimerManagerBase::stop_manager_thread(bool waitComplete)
 {
-    // Signal the epoll loop to exit before calling the base implementation.
     if (mExitFd >= 0)
     {
         const uint64_t one { 1u };

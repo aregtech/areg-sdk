@@ -40,13 +40,9 @@ SpinLockPosix::SpinLockPosix()
     , mLockCount ( 0u )
     , mIsValid   ( false )
 {
-    // mInternLock is no longer used for guarding owner/count -- owner
-    // acquisition is done with a single CAS on mSpinOwner (atomic).
-    // mInternLock is kept for ABI compatibility (same struct layout).
     mIsValid = ( areg::RETURNED_OK == ::pthread_spin_init( &mSpinLock, PTHREAD_PROCESS_PRIVATE ) );
     if ( mIsValid.load() )
     {
-        // Initialise mInternLock to a valid (though unused) state.
         ::pthread_spin_init( &mInternLock, PTHREAD_PROCESS_PRIVATE );
     }
 }
@@ -58,7 +54,6 @@ bool SpinLockPosix::try_lock() noexcept
 
     const pthread_t self = ::pthread_self();
 
-    // Recursive fast path -- same thread already owns the lock.
     if ( mSpinOwner.load( std::memory_order_relaxed ) == self )
     {
         mLockCount.fetch_add( 1u, std::memory_order_relaxed );
@@ -69,7 +64,6 @@ bool SpinLockPosix::try_lock() noexcept
     if ( areg::RETURNED_OK != ::pthread_spin_trylock( &mSpinLock ) )
         return false;
 
-    // We hold the POSIX lock -- record ownership.
     mSpinOwner.store( self, std::memory_order_relaxed );
     mLockCount.store( 1u,   std::memory_order_relaxed );
     return true;
@@ -99,14 +93,10 @@ void SpinLockPosix::_unlock_spin() noexcept
 
 void SpinLockPosix::_lock_intern() noexcept
 {
-    // mInternLock is kept for binary compatibility but is no longer used on
-    // the hot path. lock() and unlock() now use atomic owner comparison
-    // directly, so this is a no-op.
 }
 
 void SpinLockPosix::_unlock_intern() noexcept
 {
-    // See _lock_intern().
 }
 
 } // namespace areg::os

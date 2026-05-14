@@ -78,7 +78,7 @@ void ServerSendThread::process_event(const SendMessageEventData& data)
     targets[batchCount] = trigMsg.target();
     mBatch[batchCount++] = { areg::InvalidSocketHandle, &trigMsg, nullptr };
 
-    // Phase 1: drain additional events -- no socket lookup, no lock
+    // Phase 1: drain additional events, no socket lookup, no lock
     Event* events[areg::THREAD_DRAIN_LIMIT - 1u];
     uint32_t evtCount = pop_events(events, areg::THREAD_DRAIN_LIMIT - 1u);
     if (evtCount != 0)
@@ -120,7 +120,7 @@ void ServerSendThread::process_event(const SendMessageEventData& data)
         }
     }
 
-    // Phase 2: resolve all cookies in ONE lock window
+    // Phase 2: resolve all cookies in 1 lock window
     SOCKETHANDLE sockets[areg::THREAD_DRAIN_LIMIT];
     mConnection.batch_handles_by_cookies(targets, sockets, batchCount);
 

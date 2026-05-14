@@ -188,7 +188,7 @@ bool File::_os_open_file() noexcept
         flag |= O_TRUNC;
     }
 
-    // Creation permissions: only used by open(2) when O_CREAT is set.
+    // Creation permissions: only used by open when O_CREAT is set.
     // Start with private owner access, then expand for sharing flags.
     if ((flag & O_CREAT) != 0)
     {
@@ -216,8 +216,9 @@ bool File::_os_open_file() noexcept
                 flag |= O_DIRECTORY;// set directory option
             }
             // else: regular file exists.
-            // BitCreateNew: O_TRUNC already set above -> truncates as expected.
-            // BitOpenAlways: no O_TRUNC -> opens existing file without truncating.
+            
+            // BitCreateNew:  O_TRUNC already set above, truncates as expected.
+            // BitOpenAlways: no O_TRUNC, opens existing file without truncating.
         }
         else
         {

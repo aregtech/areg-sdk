@@ -37,7 +37,7 @@ void WatchdogManager::_on_timerfd_expired(TIMERHANDLE handle)
         const uint32_t highValue = static_cast<uint32_t>(posixTimer->mDueTime.tv_sec);
         const uint32_t lowValue  = static_cast<uint32_t>(posixTimer->mDueTime.tv_nsec);
 
-        // Watchdog timer is one-shot: remove from epoll before stopping.
+        // Watchdog timer is one-shot, remove from epoll before stopping
         const int epollFd = WatchdogManager::instance().mEpollFd;
         const int timerFd = posixTimer->timer_fd();
         if ((epollFd >= 0) && (timerFd >= 0))
@@ -74,11 +74,10 @@ bool WatchdogManager::_os_timer_start(Watchdog& watchdog)
 
     const Watchdog::WATCHDOG_ID watchdog_id = watchdog.watchdog_id();
 
-    // Arm the timerfd (funcTimer unused on Linux).
     if (!posixTimer->start_timer(watchdog, watchdog_id, nullptr))
         return false;
 
-    // Register with the watchdog manager's epoll loop.
+    // Register with the watchdog manager's epoll loop
     const int epollFd = WatchdogManager::instance().mEpollFd;
     if (epollFd >= 0)
     {

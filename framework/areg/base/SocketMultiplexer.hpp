@@ -60,6 +60,7 @@ namespace areg {
  *          clamped regardless of the caller-supplied argument.
  *
  *          Typical usage pattern for a server accept loop:
+ * 
  *          \code
  *          // On server socket creation:
  *          mMultiplexer.register_socket( serverHandle );

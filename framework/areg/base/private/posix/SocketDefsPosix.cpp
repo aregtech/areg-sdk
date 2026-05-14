@@ -54,34 +54,52 @@ void _os_configure_connected_socket(SOCKETHANDLE hSocket) noexcept
 
 #if defined(__linux__)
     // Emit aggressive keepalive probes so dead peers are detected quickly.
-    // TCP_USER_TIMEOUT is intentionally not set: it aborts connections whenever
+    // TCP_USER_TIMEOUT is intentionally not set. It aborts connections whenever
     // the send buffer stays full for the timeout duration.
-    constexpr int32_t keepAlive{ 1 };
-    constexpr int32_t keepIdle{ 5 };
-    constexpr int32_t keepInterval{ 1 };
-    constexpr int32_t keepCount{ 3 };
-    ::setsockopt(hSocket, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char *>(&keepAlive), sizeof(keepAlive));
+    constexpr int32_t keepAlive     { 1 };
+    constexpr int32_t keepIdle      { 5 };
+    constexpr int32_t keepInterval  { 1 };
+    constexpr int32_t keepCount     { 3 };
+    ::setsockopt(hSocket, SOL_SOCKET , SO_KEEPALIVE, reinterpret_cast<const char *>(&keepAlive), sizeof(keepAlive));
     ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPIDLE, reinterpret_cast<const char *>(&keepIdle), sizeof(keepIdle));
     ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPINTVL, reinterpret_cast<const char *>(&keepInterval), sizeof(keepInterval));
     ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPCNT, reinterpret_cast<const char *>(&keepCount), sizeof(keepCount));
 
-    // TCP_QUICKACK: suppress the 200 ms delayed-ACK for the initial message burst.
-    // The kernel resets this flag after each receive, but setting it at connection time
-    // ensures low-rate periods and connection startup are ACKed promptly rather than
-    // stalling the sender for up to 200 ms. At high message rates (>1K msg/s) the
-    // delayed-ACK timer never fires regardless, so there is no cost in that regime.
-    constexpr int32_t quickAck{ 1 };
+    // TCP_QUICKACK: Suppress the 200 ms delayed-ACK for the initial message burst.
+    //               The kernel resets this flag after each receive, but setting it 
+    //               at connection time ensures low-rate periods and connection startup
+    //               are ACKed promptly rather than stalling the sender for up to 200 ms.
+    constexpr int32_t quickAck  { 1 };
     ::setsockopt(hSocket, IPPROTO_TCP, TCP_QUICKACK, reinterpret_cast<const char *>(&quickAck), sizeof(quickAck));
 #elif defined(__APPLE__)
-    // Darwin exposes per-socket idle time only. Interval and probe count stay at
-    // the system defaults. SO_NOSIGPIPE suppresses SIGPIPE on broken peers.
-    constexpr int32_t keepAlive{ 1 };
-    constexpr int32_t keepIdle{ 5 };
-    constexpr int32_t noSigPipe{ 1 };
-    ::setsockopt(hSocket, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char *>(&keepAlive), sizeof(keepAlive));
+    // Darwin exposes per-socket idle time only. Interval and probe count stay at the system defaults.
+    // SO_NOSIGPIPE suppresses SIGPIPE on broken peers.
+    constexpr int32_t keepAlive { 1 };
+    constexpr int32_t keepIdle  { 5 };
+    constexpr int32_t noSigPipe { 1 };
+    ::setsockopt(hSocket, SOL_SOCKET , SO_KEEPALIVE, reinterpret_cast<const char *>(&keepAlive), sizeof(keepAlive));
     ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPALIVE, reinterpret_cast<const char *>(&keepIdle), sizeof(keepIdle));
-    ::setsockopt(hSocket, SOL_SOCKET, SO_NOSIGPIPE, reinterpret_cast<const char *>(&noSigPipe), sizeof(noSigPipe));
-#endif  // __linux__ / __APPLE__
+    ::setsockopt(hSocket, SOL_SOCKET , SO_NOSIGPIPE, reinterpret_cast<const char *>(&noSigPipe), sizeof(noSigPipe));
+#else  // generic POSIX fallback (BSDs, QNX, etc.)
+    constexpr int32_t keepAlive{ 1 };
+    ::setsockopt(hSocket, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char*>(&keepAlive), sizeof(keepAlive));
+    #if defined(TCP_KEEPIDLE)
+        constexpr int32_t keepIdle{ 5 };
+        ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPIDLE, reinterpret_cast<const char*>(&keepIdle), sizeof(keepIdle));
+    #endif
+    #if defined(TCP_KEEPINTVL)
+        constexpr int32_t keepInterval{ 1 };
+        ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPINTVL, reinterpret_cast<const char*>(&keepInterval), sizeof(keepInterval));
+    #endif
+    #if defined(TCP_KEEPCNT)
+        constexpr int32_t keepCount{ 3 };
+        ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPCNT, reinterpret_cast<const char*>(&keepCount), sizeof(keepCount));
+    #endif
+    #if defined(SO_NOSIGPIPE)
+        constexpr int32_t noSigPipe{ 1 };
+        ::setsockopt(hSocket, SOL_SOCKET, SO_NOSIGPIPE, reinterpret_cast<const char*>(&noSigPipe), sizeof(noSigPipe));
+    #endif
+#endif#endif  // __linux__ / __APPLE__ / generic POSIX
 }
 
 void _os_release_socket()
@@ -207,6 +225,9 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
     }
     else
     {
+        // I've noticed that in case of small buffers `writev()` performs a little slower.
+        // Copying in one buffer is faster than sending a list.
+        // the condition above `(tc.space / 3)` must be tuned.
         ::memcpy(staging, buffers->data, buffers->size);
         uint32_t copied = static_cast<uint32_t>(buffers->size);
         ++buffers;

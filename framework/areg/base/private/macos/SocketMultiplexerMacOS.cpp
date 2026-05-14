@@ -254,7 +254,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         return fd;
     }
 
-    // Fetch a new batch -- up to BATCH_SIZE events in one kevent() syscall.
+    // Fetch a new batch, up to BATCH_SIZE events in one kevent() syscall.
     struct kevent events[BATCH_SIZE];
     struct timespec ts;
     const struct timespec * pTs = nullptr;

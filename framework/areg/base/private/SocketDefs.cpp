@@ -457,8 +457,8 @@ AREG_API_IMPL void areg::socket_configure(SOCKETHANDLE hSocket) noexcept
 AREG_API_IMPL void areg::socket_set_no_delay(SOCKETHANDLE hSocket) noexcept
 {
     ASSERT(is_valid_socket(hSocket));
-    // Disable Nagle algorithm so small RPC messages are sent immediately
-    // Only meaningful on connected sockets -- do NOT call on listening sockets.
+    // Disable Nagle algorithm, small RPC messages are sent immediately
+    // Only meaningful on connected sockets, do NOT call on listening sockets.
     constexpr int32_t noDelay{ 1 };
     ::setsockopt(hSocket, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char *>(&noDelay), sizeof(noDelay));
     areg::os::_os_configure_connected_socket(hSocket);
@@ -481,9 +481,6 @@ AREG_API_IMPL uint32_t areg::set_send_size(SOCKETHANDLE hSocket, uint32_t sendSi
     int rc = ::setsockopt(hSocket, SOL_SOCKET, SO_SNDBUF, reinterpret_cast<const char*>(&sendSize), len);
 
 #if defined(__linux__)
-    // SO_SNDBUF returns success even when silently clamped to 2×wmem_max -- never use its
-    // return code to guard SNDBUFFORCE. Always attempt FORCE unconditionally to bypass the
-    // cap; it fails silently without CAP_NET_ADMIN. Not available on macOS or Cygwin.
     ::setsockopt(hSocket, SOL_SOCKET, SO_SNDBUFFORCE, reinterpret_cast<const char*>(&sendSize), len);
 #endif  // __linux__
 
@@ -513,30 +510,22 @@ AREG_API_IMPL uint32_t areg::set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSi
     int rc = ::setsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<const char*>(&recvSize), len);
 
 #if defined(__linux__)
-    // SO_RCVBUF returns success even when silently clamped to 2×rmem_max -- never use its
-    // return code to guard RCVBUFFORCE. Always attempt FORCE unconditionally to bypass the
-    // cap; it fails silently without CAP_NET_ADMIN. Not available on macOS or Cygwin.
     ::setsockopt(hSocket, SOL_SOCKET, SO_RCVBUFFORCE, reinterpret_cast<const char*>(&recvSize), len);
 
-    // Warn once if the kernel capped SO_RCVBUF well below what we requested.
-    // The kernel reports double the effective window (internal accounting), so divide by 2.
-    // Threshold: warn when effective < 25% of requested (severe cap, likely WSL2 default).
     {
         static bool _rcvBufWarned{ false };
         if (!_rcvBufWarned)
         {
             unsigned long actual{ 0u };
             socklen_t actualLen{ static_cast<socklen_t>(sizeof(actual)) };
-            if (::getsockopt(hSocket, SOL_SOCKET, SO_RCVBUF,
-                             reinterpret_cast<char*>(&actual), &actualLen) == RETURNED_OK)
+            if (::getsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<char*>(&actual), &actualLen) == RETURNED_OK)
             {
                 const uint32_t effective = static_cast<uint32_t>(actual / 2u);
                 if (effective < (recvSize / 4u))
                 {
                     _rcvBufWarned = true;
                     LOG_SCOPE(areg_base_areg, set_recv_size);
-                    LOG_WARN("SO_RCVBUF capped at %u KB (requested %u KB). "
-                             "Raise via: sudo sysctl -w net.core.rmem_max=%u",
+                    LOG_WARN("SO_RCVBUF capped at %u KB (requested %u KB). Raise via: sudo sysctl -w net.core.rmem_max=%u",
                              effective / 1024u, recvSize / 1024u, recvSize);
                 }
             }
@@ -585,7 +574,6 @@ AREG_API_IMPL SOCKETHANDLE areg::client_connect(const SocketAddress & peerAddr)
     SOCKETHANDLE result   = areg::InvalidSocketHandle;
     if ( peerAddr.is_valid() )
     {
-        // struct sockaddr_in remoteAddr = {0};
         sockaddr_in remoteAddr;
         VERIFY( peerAddr.to_sockaddr(remoteAddr) );
         result = areg::socket_create();
@@ -669,7 +657,6 @@ AREG_API_IMPL SOCKETHANDLE areg::server_connect(const areg::SocketAddress & peer
     SOCKETHANDLE result   = areg::InvalidSocketHandle;
     if ( peerAddr.is_valid() )
     {
-        // struct sockaddr_in remoteAddr = {0};
         sockaddr_in serverAddr;
         VERIFY( peerAddr.to_sockaddr(serverAddr) );
         result = areg::socket_create();
@@ -877,30 +864,24 @@ AREG_API_IMPL bool areg::set_send_timeout(SOCKETHANDLE hSocket, uint32_t timeout
 
 #ifdef _WIN32
     DWORD timeout = static_cast<DWORD>(timeoutMs);
-    return ::setsockopt(static_cast<SOCKET>(hSocket), SOL_SOCKET, SO_SNDTIMEO
-                        , reinterpret_cast<const char *>(&timeout), sizeof(timeout)) == 0;
+    return ::setsockopt(static_cast<SOCKET>(hSocket), SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<const char *>(&timeout), sizeof(timeout)) == 0;
 #else
     struct timeval tv;
     tv.tv_sec  = static_cast<decltype(tv.tv_sec)>(timeoutMs / 1000u);
     tv.tv_usec = static_cast<decltype(tv.tv_usec)>((timeoutMs % 1000u) * 1000u);
-    return ::setsockopt(static_cast<int>(hSocket), SOL_SOCKET, SO_SNDTIMEO
-                        , reinterpret_cast<const char *>(&tv), sizeof(tv)) == 0;
+    return ::setsockopt(static_cast<int>(hSocket), SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<const char *>(&tv), sizeof(tv)) == 0;
 #endif
 }
 
 AREG_API_IMPL int32_t areg::send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, uint32_t dataLength) noexcept
 {
-    int32_t result = -1;
-    if (areg::is_valid_socket(hSocket))
-    {
-        result = 0;
-        if ((dataBuffer != nullptr) && (static_cast<int32_t>(dataLength) != 0))
-        {
-            result = areg::os::_os_send_data(hSocket, dataBuffer, static_cast<int32_t>(dataLength));
-        }
-    }
+    if (!areg::is_valid_socket(hSocket))
+        return -1;
 
-    return result;
+    if ((dataBuffer == nullptr) || (dataLength == 0u))
+        return 0;
+
+    return areg::os::_os_send_data(hSocket, dataBuffer, static_cast<int32_t>(dataLength));
 }
 
 AREG_API_IMPL int32_t areg::send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t totalSize) noexcept
@@ -1075,7 +1056,7 @@ AREG_API_IMPL areg::String areg::host_to_ip(const areg::String& hostName)
     String ipAddress(hostName);
 
     addrinfo hints{}, * result = nullptr;
-    hints.ai_family = AF_INET; // IPv4 only
+    hints.ai_family   = AF_INET; // IPv4 only
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
 

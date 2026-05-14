@@ -72,6 +72,18 @@ class ServiceCommunicationBase  : public    RemoteMessageHandler
 //////////////////////////////////////////////////////////////////////////
 // The internal types and constants
 //////////////////////////////////////////////////////////////////////////
+
+private:
+    // List of client send/receive pair.
+    using ClientPairList = std::vector<std::unique_ptr<ClientConnectionPair>>;
+
+    // Dispatch functions assigned by update_dispatch_mode() based on mNumPairs.
+    // Initially set in the constructor; may be re-assigned by setup_connection_data() if config overrides mNumPairs.
+    using SendCopyFn = std::function<bool(const RemoteMessage &, areg::EventPriority)>;
+    using SendMoveFn = std::function<bool(RemoteMessage &&,       areg::EventPriority)>;
+    using AcceptFn   = std::function<bool(areg::SocketAccepted &)>;
+    using LostFn     = std::function<void(ITEM_ID)>;
+
 public:
     /**
      * \brief   The default connection behavior.
@@ -633,17 +645,7 @@ protected:
     ServerSendThread                mThreadSend;        //!< The thread to send messages to clients
     ServerReceiveThread             mThreadReceive;     //!< The thread to receive messages from clients
 
-    // JUSTIFICATION: unique_ptr is used because ServiceCommunicationBase has exclusive ownership
-    //                of each pool pair.  The pair is created once at server start and destroyed
-    //                at server stop.  Async paths (connection_lost, failed_receive_message) only
-    //                remove a single socket from the pair's multiplexer -- they never stop or
-    //                destroy the pair itself.
-    // NOTE: mClientPairs MUST be declared before mDataRateHelper -- the DataRateHelper constructor
-    //       calls enable_data_rate() which iterates mClientPairs.  C++ initializes members in
-    //       declaration order; declaring mClientPairs first guarantees it is a valid empty vector
-    //       before DataRateHelper's constructor body runs.
-    using ClientPairList = std::vector<std::unique_ptr<ClientConnectionPair>>;
-    ClientPairList                  mClientPairs;       //!< Pool thread pairs; size == mNumPairs when running.
+    ClientPairList                  mClientPairs;       //!< Pool thread pairs; size == mNumPairs when running, mst be declared before mDataRateHelper.
     std::atomic_bool                mShuttingDown;      //!< True during stop_connection() -- suppresses spurious disconnect callbacks.
     DataRateHelper                  mDataRateHelper;    //!< The helper object to query information of sent and receive bytes.
     StringArray                     mWhiteList;         //!< The list of enabled fixed client hosts.
@@ -653,13 +655,6 @@ protected:
     areg::MapInstances              mInstanceMap;       //!< The map of connected instance.
     SyncEvent                       mEventSendStop;     //!< The event set when cannot send and receive data anymore.
     mutable ResourceLock            mLock;              //!< The synchronization object to be accessed from different threads.
-
-    // Dispatch functions assigned by update_dispatch_mode() based on mNumPairs.
-    // Initially set in the constructor; may be re-assigned by setup_connection_data() if config overrides mNumPairs.
-    using SendCopyFn = std::function<bool(const RemoteMessage &, areg::EventPriority)>;
-    using SendMoveFn = std::function<bool(RemoteMessage &&,       areg::EventPriority)>;
-    using AcceptFn   = std::function<bool(areg::SocketAccepted &)>;
-    using LostFn     = std::function<void(ITEM_ID)>;
 
     SendCopyFn      mSendFn;        //!< Routes const-ref send to shared or pool path; set in constructor.
     SendMoveFn      mSendMoveFn;    //!< Routes move-send to shared or pool path; set in constructor.

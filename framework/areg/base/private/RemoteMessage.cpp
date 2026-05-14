@@ -161,12 +161,8 @@ uint8_t * RemoteMessage::init_message(const areg::MessageHeader & rmHeader, uint
     areg::RawMessage* msg = reinterpret_cast<areg::RawMessage*>(mByteBuffer.get());
     if ((mByteBuffer.use_count() == 1) && (msg != nullptr))
     {
-        // Fast path: reuse existing buffer if we are the sole owner and capacity is sufficient.
         if (msg->rbHeader.rbhBufHeader.biLength >= sizeUsed)
         {
-            // Save our actual allocation metadata before overwriting the header -- the sender's
-            // biLength and biOffset reflect their allocation, not ours.  Restoring them prevents
-            // write_data from believing it has more space than was actually allocated here.
             const uint32_t biLength = msg->rbHeader.rbhBufHeader.biLength;
             const uint32_t biOffset = msg->rbHeader.rbhBufHeader.biOffset;
 

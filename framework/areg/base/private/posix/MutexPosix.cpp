@@ -86,8 +86,7 @@ inline void MutexPosix::_init_posix_mutex( bool isRecursive )
             else
             {
                 ::pthread_mutexattr_destroy( &mPosixMutexAttr );
-                mMutexAttrValid = false;
-                // mMutexValid stays false -- mutex was never created
+                mMutexAttrValid = false;    // mutex was never created
             }
         }
         else
