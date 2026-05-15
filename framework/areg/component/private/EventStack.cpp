@@ -163,7 +163,7 @@ uint32_t EventStack::push_event(Event* newEvent, Event** removedEvent) noexcept
             mValueList.erase(it);
 
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-            // Log every 1000th eviction and the very first one.
+            // Log every 1K eviction and the very first one.
             static uint32_t s_evictCount{ 0u };
             ++s_evictCount;
             if (s_evictCount == 1u || (s_evictCount % 1000u) == 0u)
@@ -189,7 +189,7 @@ uint32_t EventStack::push_event(Event* newEvent, Event** removedEvent) noexcept
         }
         else
         {
-            // Critical events are inserted after any existing Exit events but before all others.
+            // Critical events are inserted after any existing Exit events but before all others
             auto it = mValueList.cbegin();
             while (it != mValueList.cend() && (*it)->event_priority() == areg::EventPriority::ExitPrio)
             {

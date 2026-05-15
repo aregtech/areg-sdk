@@ -56,8 +56,7 @@ bool TimerManagerBase::run_dispatcher()
     {
         whichEvent = multiLock.lock(areg::WAIT_INFINITE, false, true);
 
-        // Accept both Queue (only mEventQueue fired) and LOCK_INDEX_COMPLETION
-        // (mEventExit + mEventQueue fired simultaneously on shutdown).
+        // Accept both Queue
         const bool hasQueue = (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue))
                            || (whichEvent == MultiLock::LOCK_INDEX_COMPLETION);
         if (!hasQueue)
@@ -65,9 +64,8 @@ bool TimerManagerBase::run_dispatcher()
             break;
         }
 
-        // Tight drain loop -- process all queued timer events without
+        // process all queued timer events without
         // re-entering the kernel wait between consecutive events.
-        // pop_event() manages mEventQueue signal state via signal_event().
         for (;;)
         {
             Event* eventElem = pick_event();
@@ -80,8 +78,6 @@ bool TimerManagerBase::run_dispatcher()
 
             if (eventElem == nullptr)
             {
-                // pop_event() already called signal_event() to reset mEventQueue.
-                // Break out and block on multiLock.lock().
                 whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue);
                 break;
             }

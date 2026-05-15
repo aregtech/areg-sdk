@@ -79,8 +79,6 @@ String ScopeNodeBase::extract_node_name( String & scopeName )
     areg::CharPos startPos = areg::START_POS;
     const char * str = scopeName.as_string( );
 
-    // move position forward if a node starts with '_', which should
-    // be included in the node name.
     while ( *(str + startPos) == areg::SYNTAX_SCOPE_SEPARATOR )
     {
         ++ startPos;
@@ -89,12 +87,9 @@ String ScopeNodeBase::extract_node_name( String & scopeName )
     areg::CharPos posNode = scopeName.find_first(areg::SYNTAX_SCOPE_SEPARATOR, startPos);
     areg::CharPos posLeaf = scopeName.find_first(areg::SYNTAX_SCOPE_LEAF_SEPARATOR, startPos);
 
-    if ( areg::is_position_valid(posLeaf) &&
-         ( !areg::is_position_valid(posNode) || (posLeaf < posNode) ) )
+    if ( areg::is_position_valid(posLeaf) && ( !areg::is_position_valid(posNode) || (posLeaf < posNode) ) )
     {
-        // Dot separator found before any underscore: everything after the dot is the
-        // leaf name verbatim. Leave the dot as a prefix in scopeName so that
-        // make_child_node can detect it and create a leaf without further splitting.
+        // Dot separator found before any underscore
         result.substring( 0, posLeaf );
         scopeName.substring( posLeaf );     // scopeName now starts with '.'
     }

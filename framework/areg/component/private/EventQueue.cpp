@@ -94,11 +94,6 @@ ExternalEventQueue::~ExternalEventQueue()
 // EventDispatcherBase hold mExternalEvents as the concrete ExternalEventQueue
 // type, so the non-virtual hiding resolves to these locked versions on every
 // call-site. No virtual dispatch overhead is incurred on the hot path.
-//
-// signal_event() is called inside the lock to prevent a TOCTOU race between
-// pop detecting an empty queue and a concurrent push setting the SyncEvent:
-// if signal_event(0) ran outside the lock a concurrent push could set the
-// SyncEvent and then have it immediately cleared by the racing signal_event(0).
 //////////////////////////////////////////////////////////////////////////
 
 void ExternalEventQueue::push_event(Event& eventElem, Event** removedEvent)
@@ -161,7 +156,7 @@ InternalEventQueue::~InternalEventQueue()
 
 void InternalEventQueue::signal_event(uint32_t /* eventCount */)
 {
-    // Intentional no-op, no SyncEvent signaling is needed
+    // no need
 }
 
 } // namespace areg

@@ -294,11 +294,8 @@ constexpr uint32_t      PACKET_DEFAULT_SIZE     { PACKET_MAX_SIZE };
 constexpr uint32_t      PACKET_INVALID_SIZE     { 0u };
 
 //!< Compile-time default for SO_SNDBUF applied to every new socket.
-//!< 16 MB (Linux kernel doubles to ~32 MB) gives ~10–15 large frames in-flight,
-//!< which prevents TCP send stalls on a high-throughput image pipeline (800+ blocks/sec).
-//!< Applied on all platforms including Windows (SO_SNDBUF does NOT disable autotuning;
-//!< only SO_RCVBUF does that on Windows Vista+).
-//!< Override at runtime via net::SERVICE::TRANSPORT::sndbuf in areg.init (value in KB).
+//!< Applied on all platforms including Windows.
+//!< Override at runtime via `net::SERVICE::TRANSPORT::sndbuf` in areg.init (value in KB).
 constexpr uint32_t      SOCKET_SEND_BUFFER_SIZE { 4u * areg::ONE_MEGABYTE };
 
 //!< Compile-time default for SO_RCVBUF applied on Linux and macOS.
@@ -306,22 +303,6 @@ constexpr uint32_t      SOCKET_SEND_BUFFER_SIZE { 4u * areg::ONE_MEGABYTE };
 constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE { 4u * areg::ONE_MEGABYTE };
 
 //!< Maximum milliseconds a single send() call may block waiting for TCP send-window space.
-//!< When the peer's receive window is zero (e.g. OOM pressure or a slow/stalled receiver),
-//!< a blocking send() can hang for tens of seconds.  This timeout caps that wait so the send
-//!< thread detects the dead/slow peer within SOCKET_SEND_TIMEOUT_MS and tears down the
-//!< connection through the normal failed_send_message path.
-//!<
-//!< Choosing the right value is a trade-off:
-//!<   - Too large: high-rate pipelines (e.g. 380 fps × 3 MB) accumulate
-//!<     timeout_ms × rate × msg_size bytes in the ServerSendThread queue before the
-//!<     connection is closed.  At 5000 ms × 380 fps × 3 MB ≈ 5.7 GB -- OOM.
-//!<   - Too small: transient OS scheduling jitter (GC, CPU starvation) may cause
-//!<     spurious disconnects on otherwise healthy LANs.
-//!<
-//!< 500 ms is a safe default for loopback and LAN:
-//!<   - Limits worst-case queue growth to ~570 MB at 1.14 GB/s inflow (380 fps × 3 MB).
-//!<   - Tolerates typical OS scheduling pauses (< 100 ms) without false disconnects.
-//!< Increase for very slow WAN links or when large receiver-side processing spikes are expected.
 constexpr uint32_t      SOCKET_SEND_TIMEOUT_MS  { 2500u };
 
 //!< Floor applied to any caller-supplied max -- prevents degenerate limits.
@@ -332,35 +313,25 @@ constexpr uint32_t      MAX_CONNECTIONS         { 10000u };
 
 //!< Default socket capacity: initial mSockets.reserve() size and the stack-allocation
 //!< threshold for the WSAPOLLFD / pollfd array in SocketMultiplexer::wait().
-//!< 128 covers the common mtrouter deployment (up to ~100 simultaneous service channels)
-//!< while keeping the stack frame under 4 KB (128 × WSAPOLLFD = ~1 KB).
 //!< Must be >= BATCH_SIZE.
 constexpr uint32_t      DEFAULT_CONNECTIONS     { 128u };
 
-//!< Number of socket events fetched from the OS in a single epoll_wait / kevent / WSAPoll
-//!< syscall.  Raising this reduces per-client syscall overhead under burst load.
+//!< Number of socket events fetched from the OS in a single epoll_wait / kevent / syscall.
 //!< Optimal when BATCH_SIZE == THREAD_DRAIN_LIMIT: one OS call covers exactly one drain pass.
 constexpr uint32_t      BATCH_SIZE              { 128u };
 
 //!< Number of additional sockets (receive) or events (send) drained per dispatcher wake-up
 //!< before returning to the blocking wait.  One drain pass processes exactly one OS-level
 //!< batch, so setting THREAD_DRAIN_LIMIT == BATCH_SIZE eliminates stale-batch residuals.
-//!< Tested optimal on both native Linux and WSL2: higher values increase CPU load without
-//!< proportional throughput gain; lower values under-utilise the OS batch.
 constexpr uint32_t      THREAD_DRAIN_LIMIT      { BATCH_SIZE };
 
 //!< Size of the IoBuffer / iovec stack array used for scatter-gather send (writev / WSASend).
-//!< Equals THREAD_DRAIN_LIMIT: slot 0 holds the triggering message (owned by the dispatch
-//!< chain), slots 1..THREAD_DRAIN_LIMIT-1 hold at most THREAD_DRAIN_LIMIT-1 drained events.
+//!< Equals THREAD_DRAIN_LIMIT: slot 0 holds the triggering message.
 //!< Total batch is exactly THREAD_DRAIN_LIMIT entries.  128 × sizeof(iovec) = 2 KB -- L1-friendly.
 constexpr uint32_t      THREAD_BATCH_LIMIT      { THREAD_DRAIN_LIMIT };
 
 //!< Maximum number of events queued in any send thread (ServerSendThread, PoolSendThread, areg::ClientSendThread).
 //!< 0 = unlimited: the queue grows without bound and never drops messages.
-//!< A non-zero cap protects against OOM under sustained TCP back-pressure
-//!< (e.g. WSL2 vCPU throttling) at the cost of silently dropping the newest messages.
-//!< 1024 provides ~30 ms of pipeline depth at 32K msg/s per send thread while
-//!< preventing unbounded RAM growth when the receiver is slower than the sender.
 constexpr uint32_t      SEND_THREAD_QUEUE_LIMIT { 0u };
 
 //!< Default send/drain batch size; configurable via net::*::tcpip::batch in areg.init.
@@ -372,22 +343,9 @@ constexpr uint32_t      DEFAULT_BATCH_SIZE          { BATCH_SIZE };
 constexpr uint32_t      DEFAULT_POOL_PAIRS          { 0u };
 
 //!< Default thread-local receive-cache size in KB.
-//!< Used by the client-side receive path (Cached mode, ClientReceiveThread).
-//!<
-//!< Client receive read-ahead (Cached mode):
-//!<   Each Phase-2 greedy recv() captures up to DEFAULT_THREAD_CACHE_KB of data in one
-//!<   syscall, then serves subsequent header and body reads from the in-memory cache.
-//!<   Larger values reduce recv() syscall frequency proportionally.
-//!<   At 3 KB messages: 512 KB / 3 KB ≈ 170 messages served per single recv() call.
-//!<
-//!< Configurable at runtime via net::*::tcpip::cache in areg.init (value in KB).
-//!< This constant is the compile-time default returned when no config entry is present.
 constexpr const uint32_t    DEFAULT_THREAD_CACHE_KB{ 256 };
 
 //!< Maximum biUsed value accepted in any received MessageHeader.
-//!< Requests larger than this are treated as protocol violations and rejected without
-//!< allocation.  Prevents unbounded heap growth from corrupt or malicious packets.
-//!< 64 MB covers the largest legitimate areg-sdk message payload; raise if needed.
 constexpr uint32_t          MAX_MESSAGE_DATA_SIZE   { 64u * areg::ONE_MEGABYTE };
 
 /**
@@ -453,13 +411,6 @@ struct IoBuffer
 // areg namespace free functions
 //////////////////////////////////////////////////////////////////////////
 
-// areg::SocketMultiplexer is defined in areg/base/SocketMultiplexer.hpp
-// (included above).
-
-//////////////////////////////////////////////////////////////////////////
-// areg namespace free functions
-//////////////////////////////////////////////////////////////////////////
-
 /**
  * \brief   Returns true if \a hSocket is a usable descriptor (not
  *          InvalidSocketHandle and not FailedSocketHandle).
@@ -488,6 +439,10 @@ AREG_API ThreadCache& thread_tx_cache() noexcept;
 [[nodiscard]]
 AREG_API ThreadCache& thread_rx_cache(SOCKETHANDLE hSocket) noexcept;
 
+/**
+ * \brief   Release receiving cache for specified socket.
+ * \param   hSocket     The socket, which cache must be released.
+ **/
 AREG_API void thread_rx_cache_release(SOCKETHANDLE hSocket) noexcept;
 
 /**

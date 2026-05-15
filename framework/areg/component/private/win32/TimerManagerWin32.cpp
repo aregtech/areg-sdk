@@ -84,7 +84,7 @@ void TimerManager::_os_timer_stop( TIMERHANDLE timerHandle )
     Win32TimerHandle * h = static_cast<Win32TimerHandle *>(timerHandle);
     if ( (h != nullptr) && (h->timerPool != nullptr) )
     {
-        // Disarm: passing nullptr due-time stops the timer without closing it.
+        // Disarm: passing nullptr due-time stops the timer without closing it
         ::SetThreadpoolTimer(h->timerPool, nullptr, 0, 0);
     }
 }
@@ -94,7 +94,7 @@ bool TimerManager::_os_timer_start( Timer & timer )
     Win32TimerHandle * h = static_cast<Win32TimerHandle *>(timer.handle());
     ASSERT(h != nullptr);
 
-    // Context = the TIMERHANDLE (Win32TimerHandle*) -- used for lookup in the callback.
+    // Context = the TIMERHANDLE (Win32TimerHandle*), used for lookup in the callback
     if (h->timerPool == nullptr)
     {
         h->timerPool = ::CreateThreadpoolTimer(_tp_timer_callback, timer.handle(), nullptr);
@@ -115,7 +115,7 @@ bool TimerManager::_os_timer_start( Timer & timer )
 
     const DWORD period = timer.event_count() > 1 ? static_cast<DWORD>(timer.timeout()) : 0u;
 
-    // SetThreadpoolTimer has no return value; failure is silent.
+    // SetThreadpoolTimer has no return value, failure is silent.
     // The thread-pool scheduler uses high-resolution clocks internally.
     ::SetThreadpoolTimer(h->timerPool, &dueTime, period, 0);
     return true;

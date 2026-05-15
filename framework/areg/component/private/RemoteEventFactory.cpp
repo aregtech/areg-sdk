@@ -66,7 +66,6 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
                     eventRequest->set_target_channel(chTarget);
                     eventRequest->set_source_channel(chSource);
 
-                    // Pre-resolve the target thread to avoid per-message Thread::find_by_name() lock in deliver_event().
                     Thread * thread = Thread::find_by_name(addrStub.thread());
                     ASSERT((thread == nullptr) || (AREG_RUNTIME_CAST(thread, DispatcherThread) != nullptr));
                     eventRequest->register_for_thread(static_cast<DispatcherThread *>(thread));
@@ -102,7 +101,6 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
                     eventNotify->set_target_channel(chTarget);
                     eventNotify->set_source_channel(chSource);
 
-                    // Pre-resolve the target thread to avoid per-message Thread::find_by_name() lock in deliver_event().
                     Thread * thread = Thread::find_by_name(addrStub.thread());
                     ASSERT((thread == nullptr) || (AREG_RUNTIME_CAST(thread, DispatcherThread) != nullptr));
                     eventNotify->register_for_thread(static_cast<DispatcherThread *>(thread));
@@ -124,12 +122,10 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
             if ( comChannel.cookie() == addrProxy.cookie() )
                 addrProxy.set_cookie( areg::COOKIE_LOCAL );
 
-            // find_proxy() locks/unlocks internally and returns shared_ptr,
-            // keeping the proxy alive without holding the global lock.
             std::shared_ptr<ProxyBase> proxy = ProxyBase::find_proxy(addrProxy);
             if ( proxy != nullptr )
             {
-                // Heavy deserialization runs outside the global proxy lock.
+                // AAvetyan: Heavy deserialization runs outside the global proxy lock. must optimize this
                 stream.move_to_begin();
                 Channel chTarget(proxy->proxy_address().channel());
                 RemoteResponseEvent * eventResponse = proxy->create_remote_response(stream);
@@ -137,7 +133,6 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
                 {
                     eventResponse->set_target_channel(chTarget);
 
-                    // Pre-resolve the target thread to avoid per-message Thread::find_by_name() lock in deliver_event().
                     Thread * thread = Thread::find_by_name(addrProxy.thread());
                     ASSERT((thread == nullptr) || (AREG_RUNTIME_CAST(thread, DispatcherThread) != nullptr));
                     eventResponse->register_for_thread(static_cast<DispatcherThread *>(thread));
@@ -215,11 +210,8 @@ bool RemoteEventFactory::stream_from_event( RemoteMessage & stream, const Stream
                     stream.set_sequence( stubEvent->sequence_number() );
                 }
             }
-            else
-            {
-                // ignore, invalid event
-            }
-        }
+            // else, ignore, invalid event
+    }
         break;
 
     case areg::EventType::EventRemoteNotifyRequest:
@@ -238,10 +230,7 @@ bool RemoteEventFactory::stream_from_event( RemoteMessage & stream, const Stream
                     stream.set_sequence( stubEvent->sequence_number() );
                 }
             }
-            else
-            {
-                // ignore, invalid event
-            }
+            // else, ignore, invalid event
         }
         break;
 
@@ -261,10 +250,7 @@ bool RemoteEventFactory::stream_from_event( RemoteMessage & stream, const Stream
                     stream.set_sequence( proxyEvent->sequence_number() );
                 }
             }
-            else
-            {
-                // ignore, invalid event
-            }
+            // else, ignore, invalid event
         }
         break;
 

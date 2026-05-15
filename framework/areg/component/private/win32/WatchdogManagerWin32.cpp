@@ -61,7 +61,7 @@ bool WatchdogManager::_os_timer_start( Watchdog & watchdog )
     Win32TimerHandle * h = static_cast<Win32TimerHandle *>(watchdog.handle());
     ASSERT( (h != nullptr) && (h->timerHandle != nullptr) );
 
-    // One-shot watchdog timer -- no period.
+    // One-shot watchdog timer
     const int64_t due_time = -(static_cast<int64_t>(watchdog.timeout() * areg::MILLISEC_TO_100NS));
     LARGE_INTEGER timeTrigger{};
     timeTrigger.LowPart  = static_cast<DWORD>(areg::lo_dword(static_cast<uint64_t>(due_time)));

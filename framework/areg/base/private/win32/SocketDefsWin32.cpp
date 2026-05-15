@@ -154,7 +154,9 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
     int32_t result = 0;
     areg::ThreadCache& tc = areg::thread_tx_cache();
     uint8_t* const staging = tc.cache();
-    if (((totalSize / count) >= (tc.space / 2)) || (staging == nullptr))
+    constexpr uint32_t BIG_BLOCK{ 64 * 1024 };
+    // if (((totalSize / count) >= (tc.space / 2)) || (staging == nullptr))
+    if (((totalSize / count) >= BIG_BLOCK) || (staging == nullptr))
     {
         for (uint32_t i = 0; i < count; ++i)
         {

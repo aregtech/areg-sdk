@@ -52,14 +52,10 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
 {
     if ( data.is_forward_message() )
     {
-        // Include the triggering message as element [0] of the batch, then drain more from
-        // the queue. This removes the extra solo send syscall that previously preceded the
-        // drain loop, halving the number of send syscalls at full load.
-        //
-        // evtPtrs[0] is nullptr: the triggering event is owned by the dispatch chain --
-        // never call destroy() on it.  Drained events (indices 1..N) are owned by us.
-        const ExitEvent & exitEvent = ExitEvent::exit_event();
+        const ExitEvent& exitEvent = ExitEvent::exit_event();
 
+        // evtPtrs[0] is nullptr: the triggering event is owned by the dispatch chain,
+        // never call destroy() on it.  Drained events (indices 1..N) must be destroyed
         SendMessageEvent* evtPtrs[areg::THREAD_DRAIN_LIMIT];
         areg::IoBuffer    ioBuffer[areg::THREAD_DRAIN_LIMIT];
         uint32_t batchCount { 0u };
@@ -77,18 +73,17 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
             totalSize += bufSize;
         }
 
-        // --- Phase 1: drain additional queued messages ---
+        // Phase 1: drain additional messages
         for (uint32_t count{ batchCount }; count < areg::THREAD_DRAIN_LIMIT; ++count)
         {
             Event * evt = pick_event();
             if ( evt == nullptr )
                 break;
 
-            // ExitEvent is a singleton -- compare by pointer, never call destroy() on it.
             if ( static_cast<const Event *>( evt ) == static_cast<const Event *>( &exitEvent ) )
             {
                 for ( uint32_t i = 1; i < batchCount; ++i )
-                    evtPtrs[i]->destroy();
+                    evtPtrs[i]->destroy(); //  no need to destroy ExitEvent
 
                 mConnection.close_socket();
                 trigger_exit();
@@ -121,8 +116,7 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
             }
         }
 
-        // --- Phase 2: send the collected batch ---
-
+        // Phase 2: send the collected batch
         const int32_t sentBytes = mConnection.send_messages_batch(ioBuffer, bufCount, totalSize);
 
         for (uint32_t i = 1; i < batchCount; ++i)

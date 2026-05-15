@@ -159,9 +159,7 @@ void MultitargetRouter::run_console_io()
                                       areg::ext::COORD_USER_INPUT.posY });
     console.refresh_screen();
 
-    // Background thread: update all four stat rows every second while the main
-    // thread is blocked in wait_for_input(). Coordinate-based output saves/restores
-    // the cursor (ANSI backend) so gets_s is never disrupted.
+    // Background thread: update all four stat rows every second
     std::atomic_bool rate_running{ true };
     std::thread rate_thread([&]()
         {

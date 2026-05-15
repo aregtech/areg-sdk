@@ -44,7 +44,7 @@ void TimerManager::_os_timer_stop(TIMERHANDLE timerHandle)
     if (posixTimer == nullptr)
         return;
 
-    // Remove from epoll before disarming so the loop does not see a stale event.
+    // Remove from epoll
     const int epollFd = TimerManager::instance().mEpollFd;
     const int timerFd = posixTimer->timer_fd();
     if ((epollFd >= 0) && (timerFd >= 0))
@@ -69,7 +69,7 @@ bool TimerManager::_os_timer_start(Timer& timer)
         return false;
 
     // Register the timerfd with the manager's epoll so the run_dispatcher loop
-    // fires _on_timerfd_expired(handle) when the timer expires.
+    // fires _on_timerfd_expired(handle) when the timer expires
     const int epollFd = TimerManager::instance().mEpollFd;
     if (epollFd >= 0)
     {

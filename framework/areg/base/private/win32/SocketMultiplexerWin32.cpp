@@ -153,7 +153,7 @@ areg::SocketMultiplexer::SocketMultiplexer(uint32_t maxConnections) noexcept
 
 areg::SocketMultiplexer::~SocketMultiplexer() noexcept
 {
-    // Read and write ends are different sockets on Windows; close both.
+    // Read and write ends are different sockets on Win32; close both
     if (mWakeupReadFd != areg::InvalidSocketHandle)
     {
         ::closesocket(static_cast<SOCKET>(mWakeupReadFd));
@@ -245,7 +245,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         return areg::FailedSocketHandle;
     }
 
-    // Serve cached results from the previous WSAPoll batch before issuing another syscall.
+    // Serve cached results from the previous WSAPoll batch before issuing another call
     if (mBatchIdx < mBatchCount)
     {
         const SOCKETHANDLE fd = mBatchFds[mBatchIdx++];
@@ -260,7 +260,6 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         return fd;
     }
 
-    // Always include the wakeup socket if valid to interrupt WSAPoll.
     const int32_t wakeupSlots = (mWakeupReadFd != areg::InvalidSocketHandle) ? 1 : 0;
     const auto    total       = static_cast<INT>(mSockets.size()) + wakeupSlots;
 
@@ -293,7 +292,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         return nReady == 0 ? areg::InvalidSocketHandle : areg::FailedSocketHandle;
     }
 
-    // Drain received bytes so the socket does not fire again on the next call.
+    // Drain received bytes so the socket does not fire again on the next call
     if ((wakeupSlots > 0) && (fds[socketCount].revents & (POLLRDNORM | POLLHUP | POLLERR)))
     {
         drain_wakeup(static_cast<SOCKET>(mWakeupReadFd));
@@ -302,7 +301,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
     }
 
-    // Collect ALL ready sockets from this WSAPoll result into the batch cache.
+    // Collect ALL ready sockets from this WSAPoll result into the batch cache
     mBatchCount = mBatchIdx = 0u;
     SOCKETHANDLE first{ areg::InvalidSocketHandle };
     for (INT i = 0; i < socketCount; ++i)

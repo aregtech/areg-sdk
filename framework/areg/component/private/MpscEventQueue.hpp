@@ -195,17 +195,9 @@ public:
     bool is_empty() const noexcept;
 
     /**
-     * \brief   Enqueues an event.
+     * \brief   Queues an event.
      *
-     * ExitPrio events go to the front of the priority lane (bypass capacity).
-     * HighPrio and above events are inserted in priority order after any
-     * existing higher-priority entries. Normal-priority events use the
-     * lock-free fast lane.
-     *
-     * When the fast lane is at capacity the incoming event is dropped
-     * (drop-newest policy; the producer must not pop to avoid a mHead race).
-     *
-     * \param   eventElem       Event to enqueue. Must not be nullptr.
+     * \param   eventElem       Event to queue. Must not be nullptr.
      * \param[out] removedEvent Receives the dropped event when the queue is
      *                          full and this is not nullptr; otherwise the
      *                          dropped event is destroyed immediately.
@@ -292,6 +284,7 @@ private:
      *          Consumer thread only. Returns nullptr when the lane is empty.
      *          Caller must call _free_node() on the returned node.
      **/
+    [[nodiscard]]
     inline Node* _mpsc_pop() noexcept;
 
     /**
@@ -312,6 +305,7 @@ private:
     /**
      * \brief   Returns a Node from the lock-free pool, or allocates a new one if the pool is empty.
      **/
+    [[nodiscard]]
     Node* _alloc_node() noexcept;
 
     /**
@@ -322,12 +316,14 @@ private:
     /**
      * \brief   Returns the number of elements in priority queue.
      **/
+    [[nodiscard]]
     inline uint32_t _prio_count() noexcept;
 
     /**
      * \brief   Computes the effective capacity limit.
      *          0 -> unlimited (UINT32_MAX cap); any other value -> max(32, requested).
      **/
+    [[nodiscard]]
     static uint32_t _calc_capacity(uint32_t requested) noexcept;
 
 //////////////////////////////////////////////////////////////////////////

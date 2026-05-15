@@ -354,7 +354,7 @@ bool ServiceCommunicationBase::start_connection()
     {
         LOG_DBG("Created socket [ %d ], going to create send-receive threads", static_cast<uint32_t>(mServerConnection.socket_handle()));
 
-        // Pool mode: pre-start dedicated thread pairs before the global send/receive threads.
+        // Pool mode: pre-start dedicated thread pairs before the global send/receive threads
         if ( mNumPairs > 0 )
         {
             ASSERT(mClientPairs.empty());
@@ -388,7 +388,7 @@ bool ServiceCommunicationBase::start_connection()
 
             if ( !poolOk )
             {
-                // Stop any pairs that started successfully, clear the list, and bail.
+                // Stop any pairs that started successfully, clear the list, and bail
                 for ( auto & p : mClientPairs )
                 {
                     if ( p ) p->stop();
@@ -511,7 +511,6 @@ bool ServiceCommunicationBase::on_client_accepted( SocketAccepted & clientSocket
 
 bool ServiceCommunicationBase::do_accept_client_shared( SocketAccepted & /*clientSocket*/ )
 {
-    // Shared mode: socket stays on the global mThreadReceive, nothing to do.
     return false;
 }
 
@@ -553,7 +552,6 @@ bool ServiceCommunicationBase::do_accept_client_pool( SocketAccepted & clientSoc
 
 void ServiceCommunicationBase::do_client_lost_shared( ITEM_ID /*cookie*/ )
 {
-    // Shared mode: socket remains on mThreadReceive; no extra cleanup needed.
 }
 
 void ServiceCommunicationBase::do_client_lost_pool( ITEM_ID cookie )
@@ -706,7 +704,7 @@ void ServiceCommunicationBase::process_received_message(RemoteMessage & msgRecei
         if ( target != areg::TARGET_UNKNOWN )
         {
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-            // Milestone log every 100k forwarded messages.
+            // Log every 100k forwarded messages.
             static uint32_t s_fwdCount{ 0u };
             static uint32_t s_fwdBytes{ 0u };
             ++s_fwdCount;
@@ -744,7 +742,6 @@ void ServiceCommunicationBase::process_received_message(RemoteMessage & msgRecei
         if ( msgId == areg::FuncIdRange::SystemServiceDisconnect )
         {
             remove_instance( cookie );
-            // Close the TCP connection immediately in the receive thread.
             mServerConnection.close_connection( cookie );
         }
 

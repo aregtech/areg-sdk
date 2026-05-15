@@ -178,7 +178,7 @@ bool SpinLock::lock(uint32_t /*timeout = areg::WAIT_INFINITE*/)
         return true;
     }
 
-    // Spin until we acquire.
+    // Spin until acquire.
     uint32_t spins{ 0u };
     for (;;)
     {
@@ -192,7 +192,7 @@ bool SpinLock::lock(uint32_t /*timeout = areg::WAIT_INFINITE*/)
         }
 
         // After 64 pause iterations, yield to the OS scheduler to prevent
-        // CPU starvation under contention (critical on Linux / POSIX).
+        // CPU starvation under contention (critical on Linux / POSIX)
         while (mOwner.load(std::memory_order_relaxed) != 0)
         {
 #if defined(_MSC_VER)

@@ -144,7 +144,7 @@ bool areg::SocketMultiplexer::unregister_socket(SOCKETHANDLE hSocket) noexcept
             mSockets.pop_back();
 
             // Discard the batch cache: it may contain hSocket or a socket that
-            // was ready alongside hSocket.  The next wait() will fetch a fresh batch.
+            // was ready alongside hSocket.  The next wait() will fetch a fresh batch
             mBatchCount = mBatchIdx = 0;
             return true;
         }
@@ -160,7 +160,7 @@ void areg::SocketMultiplexer::reset() noexcept
     mBatchIdx   = 0;
     mIsReset.store(true, std::memory_order_release);
 
-    // Wake up any thread blocked in poll() by writing one byte to the pipe.
+    // Wake up any thread blocked in poll()
     if (mWakeupWriteFd != areg::InvalidSocketHandle)
     {
         const uint32_t one{ 1u };
@@ -170,7 +170,7 @@ void areg::SocketMultiplexer::reset() noexcept
 
 void areg::SocketMultiplexer::wakeup() noexcept
 {
-    // Soft interrupt: write one byte to the pipe WITHOUT setting mIsReset.
+    // Soft interrupt
     if (mWakeupWriteFd != areg::InvalidSocketHandle)
     {
         const uint32_t one{ 1u };

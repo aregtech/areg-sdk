@@ -227,8 +227,7 @@ void ServiceClientConnectionBase::on_service_start()
 {
     LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, on_service_start );
 
-    // If shutdown was already requested, ignore stale start events (e.g. from a
-    // reconnect timer that fired after on_service_stop() began).
+    // If shutdown was already requested, ignore stale start
     if (connection_state() == ConnectionPhase::ConnectionStopping)
     {
         LOG_WARN("Ignoring start event: connection is already stopping.");
@@ -267,26 +266,13 @@ void ServiceClientConnectionBase::on_service_stop()
 
     disconnect_service( areg::EventPriority::NormalPrio );
 
-    // Close the socket before waiting for threads.
-    // This unblocks any pending recv() in the receive thread and any pending
-    // send() in the send thread, allowing both to exit promptly rather than
-    // waiting for the OS TCP timeout.
     mClientConnection.close_socket( );
-
-    // Signal the send thread to exit. After close_socket() above, any
-    // blocking send() returns immediately with an error and the thread
-    // re-enters its WAIT_INFINITE event loop. Without this trigger_exit()
-    // the send thread would block forever and wait_completion() would
-    // deadlock (sporadic at high message rates where TCP send buffers fill).
     mThreadSend.trigger_exit( );
 
     mThreadSend.wait_completion( areg::WAIT_INFINITE );
     mThreadSend.shutdown( areg::DO_NOT_WAIT );
     mThreadReceive.shutdown( areg::WAIT_INFINITE );
 
-    // Flush any stale service events (e.g. CMD_ServiceLost from the receive thread) that
-    // arrived after CMD_ServiceExit was dispatched. They are now obsolete and must not
-    // trigger a reconnect after the shutdown sequence completes.
     mMessageDispatcher.remove_event_type( ServiceClientEvent::CLASS_ID );
 
     mConnectionConsumer.on_service_channel_disconnected( channel );
@@ -319,8 +305,7 @@ void ServiceClientConnectionBase::on_connection_stopped()
     LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, on_connection_stopped );
     LOG_DBG("Client service is stopped. Resetting cookie");
 
-    // Capture the state before changing it; if shutdown was requested
-    // (ConnectionStopping), the reconnect timer must not fire.
+    // Capture the state before changing it
     const ConnectionPhase prevState{ connection_state() };
     set_connection_state(ConnectionPhase::ConnectionStopped);
     mTimerConnect.stop_timer( );
@@ -346,8 +331,6 @@ void ServiceClientConnectionBase::on_connection_lost()
     LOG_WARN("Client service lost connection. Resetting cookie and trying to restart, current connection state [ %s ]"
                 , ServiceClientConnectionBase::as_string(connection_state()));
 
-    // Capture the state before changing it; if shutdown was requested
-    // (ConnectionStopping), the reconnect timer must not fire.
     const ConnectionPhase prevState{ connection_state() };
     set_connection_state(ConnectionPhase::ConnectionStopped);
     Channel channel = mChannel;
@@ -435,7 +418,7 @@ bool ServiceClientConnectionBase::start_connection()
         {
             LOG_WARN("Failed to start reconnect timer, retrying connection immediately.");
             // Timer manager not running yet (startup race); post an immediate retry so the
-            // reconnect is not silently lost when init_logging() races Application::setup().
+            // reconnect is not silently lost when init_logging() races Application::setup()
             send_command(ServiceEventData::ServiceCommand::CMD_StartService);
         }
     }

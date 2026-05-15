@@ -168,8 +168,6 @@ bool ServerConnectionBase::accept_connection(SocketAccepted & clientConnection)
             areg::set_recv_size(hSocket, mSockRecvBuf);
             areg::set_send_timeout(hSocket, mSockSendTimeoutMs);
             // Apply TCP_NODELAY, TCP_QUICKACK (Linux), keepalive, and ACK-frequency tuning.
-            // Must be called AFTER all setsockopt() calls so platform-specific I/O options
-            // such as SIO_TCP_SET_ACK_FREQUENCY on Windows take effect on a fully configured socket.
             areg::socket_set_no_delay(hSocket);
 
             ITEM_ID cookie{ mCookieGenerator ++ };
@@ -249,8 +247,7 @@ void ServerConnectionBase::close_connection( const ITEM_ID & cookie )
     }
     else
     {
-        LOG_WARN("close_connection called for unknown cookie [ %u ] -- already closed or never registered"
-                    , static_cast<uint32_t>(cookie));
+        LOG_WARN("close_connection called for unknown cookie [ %u ] -- already closed or never registered", static_cast<uint32_t>(cookie));
     }
 }
 

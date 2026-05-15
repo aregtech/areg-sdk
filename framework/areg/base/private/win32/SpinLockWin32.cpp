@@ -54,7 +54,7 @@ bool SpinLockWin32::lock() noexcept
     if ( mOwnerThread != currThread )
     {
         // Test-and-set spin: attempt to acquire; if already locked, spin with a
-        // non-modifying load to avoid hammering the cache line with writes.
+        // non-modifying load to avoid hammering the cache line with writes
         while ( mSpinLock.exchange(true, std::memory_order_acquire) )
         {
             while ( mSpinLock.load(std::memory_order_relaxed) )

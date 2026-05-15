@@ -60,7 +60,7 @@ bool SpinLockPosix::try_lock() noexcept
         return true;
     }
 
-    // Non-blocking try to acquire the underlying POSIX spinlock.
+    // Non-blocking try to acquire the underlying POSIX spinlock
     if ( areg::RETURNED_OK != ::pthread_spin_trylock( &mSpinLock ) )
         return false;
 
@@ -134,7 +134,6 @@ bool SpinLockPosix::lock() noexcept
     if ( !_lock_spin() )
         return false;
 
-    // Record ownership after acquiring.
     mSpinOwner.store( self, std::memory_order_relaxed );
     mLockCount.store( 1u,   std::memory_order_relaxed );
     return true;
@@ -151,7 +150,6 @@ bool SpinLockPosix::unlock() noexcept
     ASSERT( mLockCount.load() != 0u );
     if ( mLockCount.fetch_sub( 1u, std::memory_order_relaxed ) == 1u )
     {
-        // Last recursion level -- clear ownership then release the lock.
         mSpinOwner.store( 0, std::memory_order_relaxed );
         _unlock_spin();
     }

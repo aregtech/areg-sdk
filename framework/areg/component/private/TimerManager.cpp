@@ -219,7 +219,7 @@ void TimerManager::_process_expired_timer(Timer * timer, TIMERHANDLE handle, uin
 {
     LOG_SCOPE( areg_component_private_TimerManager, _process_expired_timer );
 
-    // Determine inside the lock whether the timer needs to be unregistered.
+    // Determine inside the lock whether the timer needs to be unregistered
     bool shouldStop{ false };
 
     mTimerResource.lock();

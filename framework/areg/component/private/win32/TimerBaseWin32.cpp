@@ -45,8 +45,7 @@ TIMERHANDLE TimerBase::_os_create() noexcept
     if (h == nullptr)
         return nullptr;
 
-    // Standard (non-high-res) WaitableTimer -- supports APC, used by WatchdogManager.
-    // TimerManager uses the timerPool field (thread pool) for precision delivery instead.
+    // Standard (non-high-res) WaitableTimer
     h->timerHandle = ::CreateWaitableTimer(nullptr, FALSE, nullptr);
     if (h->timerHandle == nullptr)
     {
@@ -65,7 +64,7 @@ void TimerBase::_os_destroy( TIMERHANDLE handle ) noexcept
 
     if (h->timerPool != nullptr)
     {
-        // Disarm and drain any in-flight callback before closing.
+        // Disarm and drain any in-flight callback before closing
         ::SetThreadpoolTimer(h->timerPool, nullptr, 0, 0);
         ::WaitForThreadpoolTimerCallbacks(h->timerPool, TRUE);
         ::CloseThreadpoolTimer(h->timerPool);

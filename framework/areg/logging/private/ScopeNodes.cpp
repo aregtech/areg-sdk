@@ -170,7 +170,7 @@ std::pair<ScopeNodeBase &, bool>  ScopeNode::add_child_node( const ScopeNodeBase
 
     if ( child.is_leaf( ) )
     {
-        // Cast to ScopeLeaf so the copy constructor preserves mDotSeparator.
+        // Cast to ScopeLeaf so the copy constructor preserves mDotSeparator
         const ScopeLeaf & leafChild = static_cast<const ScopeLeaf &>(child);
         auto atPos = mChildLeafs.add_if_unique( leafChild, false );
         const ScopeNodeBase& leaf{ mChildLeafs.value_at(atPos.first) };

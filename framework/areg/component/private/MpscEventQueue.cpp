@@ -194,7 +194,7 @@ void MpscEventQueue::remove_events() noexcept
         if (evt->event_priority() == areg::EventPriority::ExitPrio)
         {
             if (exit != nullptr)
-                exit->destroy();    // no-op for ExitEvent, but required accounting
+                exit->destroy();    // no-op for ExitEvent
             exit = evt;
         }
         else

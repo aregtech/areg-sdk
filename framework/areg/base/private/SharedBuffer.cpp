@@ -335,7 +335,7 @@ uint32_t SharedBuffer::read(SharedBuffer& buf) const noexcept
     const uint32_t srcEnd = (mViewEnd > 0u ? mViewEnd : (raw != nullptr ? raw->bufHeader.biUsed : 0u));
     if (mPosition + length > srcEnd)
     {
-        // Not enough data; undo the 4-byte length read so caller can retry or detect EOF.
+        // Not enough data, undo the 4-byte length read
         mPosition-= sizeof(uint32_t);
         return 0u;
     }
@@ -387,7 +387,7 @@ uint32_t SharedBuffer::insert_at(const uint8_t* buf, uint32_t size, uint32_t atP
     if ((size == 0u) || (buf == nullptr))
         return 0u;
 
-    // Views are read-only; call detach() first to obtain a writable owner copy.
+    // Views are read-only, call detach() first to obtain a writable owner copy.
     ASSERT(is_owner());
     if (is_view())
         return 0u;

@@ -92,7 +92,7 @@ bool TimerManagerBase::run_dispatcher()
 
             if (ptr == EXIT_PTR)
             {
-                // Exit signal from stop_manager_thread().
+                // Exit signal
                 exitRequested = true;
             }
             else if (ptr == COMMAND_PTR)
