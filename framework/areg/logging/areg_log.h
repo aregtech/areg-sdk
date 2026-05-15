@@ -237,12 +237,16 @@
      **/
     #define GLOBAL_FATAL(...)                           _global_scope().log_fatal( __VA_ARGS__ )
 
-    // Set the flag to non-zero to debug and analyze network communication.
-    // Avoid using this flag if logging to the network (to logcollector),
-    // because it will generate log messages in the loop.
-    #ifndef AREG_LOG_DEBUG
-        #define     AREG_LOG_DEBUG  0
-    #endif // !AREG_LOG_DEBUG
+    // Set the flag to non-zero to debug and analyze network communication and other time critical modules.
+    #ifdef DEBUG
+        #ifndef AREG_LOG_DEBUG
+            #define     AREG_LOG_DEBUG  1
+        #endif // !AREG_LOG_DEBUG
+    #else   // NDEBUG
+        #ifndef AREG_LOG_DEBUG
+            #define     AREG_LOG_DEBUG  0
+        #endif // !AREG_LOG_DEBUG
+    #endif  // DEBUG
 
 #else   // !AREG_LOGGING
 

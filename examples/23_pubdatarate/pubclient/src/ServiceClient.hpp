@@ -48,10 +48,12 @@ private:
     static constexpr areg::ext::Console::Coord     COORD_DATA_RATE  { 1, 5 };
     //!< Coordinates to output data rate information of large data client.
     static constexpr areg::ext::Console::Coord     COORD_DATA_STAT  { 1, 7 };
-    static constexpr areg::ext::Console::Coord     COORD_SEP2       { 1, 8 };
+    //!< Coordinates to output per-second miss-type breakdown.
+    static constexpr areg::ext::Console::Coord     COORD_MISS_DETAIL{ 1, 8 };
+    static constexpr areg::ext::Console::Coord     COORD_SEP2       { 1, 9 };
 
     //!< Cursor resting position: one row below the last output line (no user input needed).
-    static constexpr areg::ext::Console::Coord     COORD_CURSOR     { 1, 9 };
+    static constexpr areg::ext::Console::Coord     COORD_CURSOR     { 1, 10 };
 
     //!< Timer name.
     static constexpr std::string_view   TIMER_NAME      { "DataRateTimer" };
@@ -62,8 +64,10 @@ private:
     static constexpr std::string_view   MSG_SEPARATOR       { " --------------------------------------------------------------------------------------------" };
     //!< The message to output network communication rate.
     static constexpr std::string_view   MSG_NET_RATE_SENT   { " Network receive rate ..: data      [ %8.2f ] %s / sec, message [ %u ] blocks/sec." };
-    //!< The message to output on-time / late delivery statistics
-    static constexpr std::string_view   MSG_STATS_RATE      { " Stats on data receive .: OK frames [ %u ], MISS frames [ %u ]." };
+    //!< The message to output on-time / late delivery statistics (cumulative totals)
+    static constexpr std::string_view   MSG_STATS_RATE      { " Stats on data receive .: OK=[ %u ] MISS=[ %u ]." };
+    //!< Per-second miss-type breakdown; values reset each timer tick.
+    static constexpr std::string_view   MSG_MISS_DETAIL     { " Miss detail  /sec .....: seqN=%-5u line=%-5u aband=%-5u init=%-5u" };
 
     enum FrameState : int32_t
     {
@@ -88,6 +92,21 @@ private:
     };
 
     using Stats = std::vector<FrameStats>;
+
+    /**
+     * \brief   Per-second miss-event breakdown. Reset on every timer tick so the
+     *          console shows a rate (events/sec) rather than a cumulative total.
+     *          All four fields together identify the dominant failure mode.
+     **/
+    struct MissStats
+    {
+        uint32_t seqMismatch  { 0u }; //!< seqNr jumps (frame skip, wrap or reorder).
+        uint32_t lineMismatch { 0u }; //!< posY mismatch within the same frame.
+        uint32_t abandoned    { 0u }; //!< Mid-frame abandoned (also counted in mIncompleteFrames).
+        uint32_t initialMid   { 0u }; //!< First block arrived mid-frame.
+
+        void clear() noexcept { seqMismatch = lineMismatch = abandoned = initialMid = 0u; }
+    };
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
@@ -167,10 +186,12 @@ protected:
 // member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    areg::Timer mTimer;             //!< Timer to output message.
-    uint32_t    mCompleteFrames;    //!< Complete frame counters.
-    uint32_t    mIncompleteFrames;  //!< Incomplete frame counters.
-    Stats       mFrameStats;        //!< Per-channel frame tracking.
+    areg::Timer mTimer;                  //!< Timer to output message.
+    uint32_t    mCompleteFrames;         //!< Cumulative complete frame count.
+    uint32_t    mIncompleteFrames;       //!< Cumulative incomplete frame count.
+    uint32_t    mLastIncompleteFrames;   //!< Value of mIncompleteFrames at the previous timer tick (used for per-second delta).
+    Stats       mFrameStats;             //!< Per-channel frame tracking.
+    MissStats   mMissStats;              //!< Per-second miss-event breakdown (reset each timer tick).
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods

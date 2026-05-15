@@ -683,7 +683,8 @@ inline String::String(uint32_t count)
 
 inline String::operator uint32_t() const
 {
-    return static_cast<uint32_t>(std::hash<std::string>{}(mData));
+    return areg::crc32_calculate(mData.c_str());
+    // return static_cast<uint32_t>(std::hash<std::string>{}(mData));
 }
 
 inline String& String::operator = (const wchar_t* src)

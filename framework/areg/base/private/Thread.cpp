@@ -328,7 +328,7 @@ void Thread::_clean_resources(bool unregister)
 bool Thread::_register_thread()
 {
     Thread::_map_threadh_handle().register_resource_object(mThreadHandle, this);
-    Thread::_map_thread_name().register_resource_object(mThreadAddress.name(), this);
+    Thread::_map_thread_name().register_resource_object(static_cast<uint32_t>(mThreadAddress), this);
     Thread::_map_thread_id().register_resource_object(mThreadId, this);
 
     _os_set_name(mThreadId, mThreadAddress.name());
@@ -342,7 +342,7 @@ void Thread::_unregister_thread()
         mThreadConsumer.on_thread_unregistering();
         
         Thread::_map_threadh_handle().unregister_resource_object(mThreadHandle);
-        Thread::_map_thread_name().unregister_resource_object(mThreadAddress.name());
+        Thread::_map_thread_name().unregister_resource_object(static_cast<uint32_t>(mThreadAddress));
         Thread::_map_thread_id().unregister_resource_object(mThreadId);
     }
     else
@@ -398,7 +398,7 @@ void Thread::dump_threads()
 
     if (mapNames.is_empty() == false)
     {
-        String threadName("");
+        uint32_t threadName{ 0u };
         Thread* threadObj{ nullptr };
         mapNames.resource_first_key(threadName);
         do

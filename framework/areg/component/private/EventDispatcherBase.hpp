@@ -48,21 +48,7 @@ namespace areg {
 
 namespace areg {
 
-//////////////////////////////////////////////////////////////////////////
-// Compile-time queue selection
-//
-//  Define AREG_MPSC_QUEUE=0 to revert to the legacy mutex-based queue.
-//  Define AREG_MPSC_QUEUE=1 (default) to use the lock-free MPSC queue.
-//////////////////////////////////////////////////////////////////////////
-#ifndef AREG_MPSC_QUEUE
-    #define AREG_MPSC_QUEUE     1
-#endif  // AREG_MPSC_QUEUE
-
-#if AREG_MPSC_QUEUE
-    using ExternalQueue = areg::MpscEventQueue;
-#else
-    using ExternalQueue = areg::ExternalEventQueue;
-#endif  // AREG_MPSC_QUEUE
+using ExternalQueue = areg::MpscEventQueue;
 
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcherBase class declaration

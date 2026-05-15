@@ -21,6 +21,7 @@
 
 #include "areg/base/TemplateBase.hpp"
 #include "areg/base/StringDefs.hpp"
+#include "areg/base/MathDefs.hpp"
 
 #include <algorithm>
 #include <iostream>

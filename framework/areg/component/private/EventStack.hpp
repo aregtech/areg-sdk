@@ -37,18 +37,9 @@ class RuntimeClassID;
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   A non-concurrent FIFO queue for Event pointers.
- *
- * All events are appended at the back (FIFO order). The only exception is
- * ExitPrio events: they are inserted at the front so the dispatcher processes
- * them immediately, ahead of any pending work.
- *
- * There is NO internal synchronization. For multi-threaded access (ExternalEventQueue),
- * the caller must hold an external lock before calling any mutating method. For
- * single-threaded use (InternalEventQueue), no lock is required.
- *
- * The queue enforces an optional maximum capacity. When the queue is full and a
- * non-Exit event is pushed, the oldest event at the back is evicted and either
- * returned to the caller or destroyed. Exit events always bypass the size limit.
+ *          All events are appended at the back (FIFO order).
+ *          There is NO internal synchronization. For multi-threaded access,
+ *          the caller must hold an external lock before calling any mutating method.
  **/
 class EventStack final : protected Stack<Event*>
 {
@@ -67,14 +58,10 @@ private:
 public:
     /**
      * \brief   Initializes the queue with an optional capacity limit.
-     *
-     * \param   maxQueue    Maximum number of events. Pass areg::IGNORE_VALUE (0) to read the
-     *                      limit from the application configuration; if the configuration also
-     *                      returns IGNORE_VALUE, the queue is unlimited.
      **/
-    explicit EventStack(uint32_t maxQueue) noexcept;
+    explicit EventStack() noexcept;
 
-    ~EventStack();
+    ~EventStack() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations -- caller must hold an external lock when shared across threads
@@ -119,11 +106,9 @@ public:
      * immediately otherwise.
      *
      * \param   newEvent        The event to push. Must not be nullptr.
-     * \param[out] removedEvent If an event was evicted and this is not nullptr, receives it.
-     *                          Caller takes ownership of the evicted event.
      * \return  Number of events in the queue after the push.
      **/
-    uint32_t push_event(Event* newEvent, Event** removedEvent) noexcept;
+    inline uint32_t push_event(Event* newEvent) noexcept;
 
     /**
      * \brief   Removes and returns the first event (FIFO order).
@@ -133,13 +118,7 @@ public:
      * \return  Number of remaining events.
      **/
     [[nodiscard]]
-    uint32_t pop_event(Event** stackEvent) noexcept;
-
-    /**
-     * \brief   Returns the configured maximum queue capacity.
-     **/
-    [[nodiscard]]
-    inline constexpr uint32_t max_size() const noexcept;
+    inline uint32_t pop_event(Event** stackEvent) noexcept;
 
     /**
      * \brief   Returns true if the queue contains no events.
@@ -152,24 +131,6 @@ public:
      **/
     [[nodiscard]]
     inline uint32_t count() const noexcept;
-
-//////////////////////////////////////////////////////////////////////////
-// Private helpers
-//////////////////////////////////////////////////////////////////////////
-private:
-
-    /**
-     * \brief   Computes the effective queue size from the requested value. Reads the application
-     *          configuration when the caller passes areg::IGNORE_VALUE. Returns MAX_QUEUE_SIZE
-     *          (unlimited) if neither the argument nor the configuration specifies a limit.
-     **/
-    static uint32_t _calc_queue_size(uint32_t requested) noexcept;
-
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-private:
-    const uint32_t mMaxQueueSize; //!< Effective capacity limit for this queue instance.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden methods
@@ -186,11 +147,6 @@ private:
 // EventStack inline implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline constexpr uint32_t EventStack::max_size() const noexcept
-{
-    return mMaxQueueSize;
-}
-
 inline bool EventStack::is_empty() const noexcept
 {
     return mValueList.empty();
@@ -198,6 +154,31 @@ inline bool EventStack::is_empty() const noexcept
 
 inline uint32_t EventStack::count() const noexcept
 {
+    return static_cast<uint32_t>(mValueList.size());
+}
+
+inline uint32_t EventStack::push_event(Event* newEvent) noexcept
+{
+    ASSERT(newEvent != nullptr);
+
+    mValueList.push_back(newEvent);
+    return static_cast<uint32_t>(mValueList.size());
+}
+
+inline uint32_t EventStack::pop_event(Event** stackEvent) noexcept
+{
+    ASSERT(stackEvent != nullptr);
+
+    if (!mValueList.empty())
+    {
+        *stackEvent = mValueList.front();
+        mValueList.pop_front();
+    }
+    else
+    {
+        *stackEvent = nullptr;
+    }
+
     return static_cast<uint32_t>(mValueList.size());
 }
 

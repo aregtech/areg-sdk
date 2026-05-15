@@ -319,6 +319,8 @@ private:
     [[nodiscard]]
     inline uint32_t _prio_count() noexcept;
 
+    inline void _delete_nodes() noexcept;
+
     /**
      * \brief   Computes the effective capacity limit.
      *          0 -> unlimited (UINT32_MAX cap); any other value -> max(32, requested).
@@ -345,6 +347,7 @@ private:
     //!< Priority lane - ExitPrio at front, then descending priority order.
     SpinLock                mPrioLock;  //!< Recursive guard for mPrioQueue
     std::deque<Event*>      mPrioQueue; //!< [Exit-][Critical-][High-] ordered
+    std::atomic_uint32_t    mPrioCount; //!< The number of elements in mPrioQueue
 
     //!< Queue listener to signal and reset on push and pop.
     QueueListener&          mListener;

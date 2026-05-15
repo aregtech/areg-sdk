@@ -117,7 +117,7 @@ namespace util {
     static constexpr uint32_t DWELL_TIME        { 25 };
     //!< Default image source channels in count.
     static constexpr uint32_t CHANNELS_SOURCE   { 12 };
-    static constexpr uint64_t TIME_IN_DEPTH     {100'000'000u};
+    static constexpr uint64_t TIME_IN_DEPTH     {200'000'000u};
 
     //! The option data class
     struct OptionValues

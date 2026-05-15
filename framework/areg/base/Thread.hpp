@@ -688,9 +688,9 @@ private:
      * \brief   Thread resource mapping by thread name. 
      *          The unique thread name can be used to access thread object.
      **/
-    using   MapThreadName           = StringMap<Thread *>;
-    using   ImplThreadNameResource  = ResourceMapImpl<String, Thread *>;
-    using   MapThreadNameResource   = ConcurrentResourceMap<String, Thread *, MapThreadName, ImplThreadNameResource>;
+    using   MapThreadName           = IntegerMap<Thread *>;
+    using   ImplThreadNameResource  = ResourceMapImpl<uint32_t, Thread *>;
+    using   MapThreadNameResource   = ConcurrentResourceMap<uint32_t, Thread *, MapThreadName, ImplThreadNameResource>;
 
 /************************************************************************/
 // Resource controlling and mapping variables
@@ -771,7 +771,7 @@ inline const ThreadAddress & Thread::address() const noexcept
 
 inline Thread* Thread::find_by_name(const String & threadName) noexcept
 {
-    return (!threadName.is_empty() ? Thread::_map_thread_name().find_resource_object(threadName) : nullptr);
+    return (!threadName.is_empty() ? Thread::_map_thread_name().find_resource_object(static_cast<uint32_t>(threadName)) : nullptr);
 }
 
 inline Thread* Thread::find_by_id( id_type threadId) noexcept

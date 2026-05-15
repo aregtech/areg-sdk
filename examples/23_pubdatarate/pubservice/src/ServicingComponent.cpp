@@ -253,12 +253,11 @@ void ServicingComponent::on_option_event(const OptionData& data)
     {
         LOG_INFO("Requested to start generating data");
 
-        set_image_gen_setting({ mOptions.mWidth, mOptions.mHeight, mOptions.mLines, mOptions.mPixelTime, mOptions.mChannels });
         mQuitThread.store(false, std::memory_order_relaxed);
-        mOptionChanged.store(true, std::memory_order_relaxed);
         mOptions.update(data);
+        mOptionChanged.store(true, std::memory_order_relaxed);
         mTimer.start_timer(LargeData::TIMER_TIMEOUT, component_thread(), areg::Timer::CONTINUOUSLY);
-        // Signal the image thread to wake up and start sending.
+        // Signal the image thread to wake up.
         mPauseEvent.set_signaled();
         _print_info();
     }
@@ -293,9 +292,9 @@ void ServicingComponent::on_option_event(const OptionData& data)
         mLock.unlock();
 
         _print_info();
-        set_image_gen_setting({ mOptions.mWidth, mOptions.mHeight, mOptions.mLines, mOptions.mPixelTime, mOptions.mChannels });
 
-        // Reload params in image thread. 
+        // Signal the image thread to reload params. It will call set_image_gen_setting()
+        // after stopping the current frame stream and rebuilding the pool.
         mOptionChanged.store(true, std::memory_order_relaxed);
 
         if (was_running)
@@ -387,10 +386,10 @@ uint32_t ServicingComponent::_build_prebuilt_messages()
     constexpr uint32_t message_id{ static_cast<uint32_t>(LargeData::MessageIDs::MsgId_broadcast_image_block_acquired) };
     const areg::String message_str(LargeData::as_string(LargeData::MessageIDs::MsgId_broadcast_image_block_acquired));
 
-    const uint32_t channels{ mOptions.mChannels };
-    const uint64_t frame_ns{ mOptions.nsPerImage() };
-    const uint32_t blocks  { mOptions.blocksCount() };
-    const uint32_t depth   { frame_ns <= (util::TIME_IN_DEPTH / 2) ? static_cast<uint32_t>((static_cast<double>(util::TIME_IN_DEPTH) / static_cast<double>(frame_ns)) + 0.5f) : 2u };
+    const uint32_t channels { mOptions.mChannels };
+    const uint64_t frame_ns { mOptions.nsPerImage() };
+    const uint32_t blocks   { mOptions.blocksCount() };
+    const uint32_t depth{ frame_ns <= (util::TIME_IN_DEPTH / 2) ? static_cast<uint32_t>((static_cast<double>(util::TIME_IN_DEPTH) / static_cast<double>(frame_ns)) + 0.5f) : 2u };
 
     const areg::Channel& channel = areg::connection_channel();
     const std::vector<areg::ProxyAddress> proxies{ mActiveProxies };
@@ -480,13 +479,12 @@ void ServicingComponent::_run_image_thread()
         mLock.lock(areg::WAIT_INFINITE);
 
         mOptionChanged.store(false, std::memory_order_relaxed);
-        set_image_gen_setting({ mOptions.mWidth, mOptions.mHeight, mOptions.mLines, mOptions.mPixelTime, mOptions.mChannels });
         _init_block_list();
 
+        uint32_t frame_id{ 0u };
         const uint64_t block_time_ns = mOptions.nsPerBlock();
         const uint32_t blocks_per_frame = mOptions.blocksCount();
         const uint32_t channel_count = mOptions.mChannels;
-        const uint32_t seq_wrap = (mOptions.mHeight != 0u ? mOptions.mHeight : 1u);
         const uint32_t depth = _build_prebuilt_messages();
 
         mLock.unlock();
@@ -498,6 +496,8 @@ void ServicingComponent::_run_image_thread()
 
             continue;
         }
+
+        set_image_gen_setting({ mOptions.mWidth, mOptions.mHeight, mOptions.mLines, mOptions.mPixelTime, mOptions.mChannels });
 
         const uint64_t blocks_per_quantum = (block_time_ns == 0u) ? 1u : std::max<uint64_t>(1u, static_cast<uint64_t>(COARSE_SLEEP_NS) / block_time_ns);
 
@@ -546,7 +546,6 @@ void ServicingComponent::_run_image_thread()
                         ASSERT(buffer != nullptr);
                         RawImageBlock* block = reinterpret_cast<RawImageBlock*>(buffer + offset + remote.offset);
                         block->frameSeqId = frame_id;
-                        block->channelId = ch;
                         statDataSent += areg::send_raw_message(message) ? message.size_used() : 0;
                     }
 
@@ -556,19 +555,16 @@ void ServicingComponent::_run_image_thread()
             };
 
         uint64_t sent_blocks_total{ 0u };
-        uint32_t frame_id{ 1u };
-
         while (_can_loop())
         {
             if (block_time_ns == 0u)
             {
                 for (uint32_t block_index{ 0u }; (block_index < blocks_per_frame) && _is_running(); ++block_index)
                 {
-                    send_block_row(frame_id, block_index);
+                    send_block_row(block_index == 0 ? ++frame_id : frame_id, block_index);
                 }
 
                 statSentOntime    += (channel_count * blocks_per_frame);
-                frame_id = (frame_id + 1u) % seq_wrap;
 
                 if (time_passed(stats_begin) >= STATS_FLUSH_NS)
                 {
@@ -610,7 +606,7 @@ void ServicingComponent::_run_image_thread()
             {
                 const uint32_t block_index = static_cast<uint32_t>(sent_blocks_total % blocks_per_frame);
 
-                send_block_row(frame_id, block_index);
+                send_block_row(block_index == 0 ? ++frame_id : frame_id, block_index);
                 ++sent_blocks_total;
 
                 const uint64_t target_ns = sent_blocks_total * block_time_ns;
@@ -623,11 +619,6 @@ void ServicingComponent::_run_image_thread()
                 else
                 {
                     statSentLate += channel_count;
-                }
-
-                if ((sent_blocks_total % blocks_per_frame) == 0u)
-                {
-                    frame_id = (frame_id + 1u) % seq_wrap;
                 }
 
                 --due_blocks;

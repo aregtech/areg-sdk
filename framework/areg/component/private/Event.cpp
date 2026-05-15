@@ -161,10 +161,15 @@ bool Event::remove_event_listener( EventConsumer& eventConsumer )
 
 void Event::dispatch_self( EventConsumer* consumer )
 {
-    consumer = consumer != nullptr ? consumer : this->mConsumer;
-    if ((consumer != nullptr) && consumer->preprocess_event(*this) )
+    if (consumer != nullptr)
     {
-        consumer->start_event_processing(*this);
+        if (consumer->preprocess_event(*this))
+            consumer->start_event_processing(*this);
+    }
+    else if (mConsumer != nullptr)
+    {
+        if (mConsumer->preprocess_event(*this))
+            mConsumer->start_event_processing(*this);
     }
 }
 

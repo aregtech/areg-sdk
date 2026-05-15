@@ -79,9 +79,8 @@ public:
      *          and an event is evicted, it is either returned via removedEvent or destroyed.
      *
      * \param   eventElem       The event to enqueue.
-     * \param[out] removedEvent If an event was evicted and this is not nullptr, receives it.
      **/
-    void push_event(Event& eventElem, Event** removedEvent);
+    inline void push_event(Event& eventElem);
 
     /**
      * \brief   Pops the first event from the queue. Notifies the listener if the queue becomes
@@ -89,12 +88,12 @@ public:
      *
      * \return  The popped event pointer, or nullptr if the queue was empty.
      **/
-    Event* pop_event() noexcept;
+    inline Event* pop_event() noexcept;
 
     /**
      * \brief   Removes all non-Exit events from the queue and notifies the listener.
      **/
-    void remove_events() noexcept;
+    inline void remove_events() noexcept;
 
     /**
      * \brief   Removes all events with the specified runtime class ID (except ExitPrio) and
@@ -102,13 +101,13 @@ public:
      *
      * \param   eventClassId    Runtime class ID of events to remove.
      **/
-    void remove_events(const RuntimeClassID& eventClassId) noexcept;
+    inline void remove_events(const RuntimeClassID& eventClassId) noexcept;
 
     /**
      * \brief   Removes every event from the queue (including Exit events) and resets the
      *          listener signal.
      **/
-    void remove_all_events() noexcept;
+    inline void remove_all_events() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Members -- protected so derived classes can implement locked variants
@@ -125,111 +124,10 @@ private:
     AREG_NOCOPY_NOMOVE(EventQueue);
 };
 
-//////////////////////////////////////////////////////////////////////////
-// ExternalEventQueue class declaration
-//////////////////////////////////////////////////////////////////////////
-
 #if defined(_MSC_VER)
     #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
-
-/**
- * \brief   Thread-safe event queue for external (cross-thread and IPC) events.
- *
- * Multiple producer threads push events concurrently; a single consumer thread (the
- * dispatcher's owner thread) pops them. All mutating operations acquire an internal
- * ResourceLock. lock_queue() / unlock_queue() expose the same lock for callers that
- * need to bundle several operations atomically (e.g., check mHasStarted, drain queue,
- * then push an ExitEvent).
- *
- * ResourceLock is recursive: nested locking from the same thread (e.g., lock_queue()
- * followed by push_event()) is safe.
- **/
-class AREG_API ExternalEventQueue : public EventQueue
-{
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Initializes the external event queue with a listener and optional capacity limit.
-     *
-     * \param   eventListener   Listener notified on push/empty transitions.
-     * \param   maxQueue        Maximum event capacity. Pass areg::IGNORE_VALUE (0) to read from
-     *                          application configuration or use an unlimited queue.
-     **/
-    ExternalEventQueue(QueueListener& eventListener, uint32_t maxQueue);
-
-    virtual ~ExternalEventQueue();
-
-//////////////////////////////////////////////////////////////////////////
-// Thread-safe operations (lock the internal ResourceLock)
-//////////////////////////////////////////////////////////////////////////
-public:
-
-    /**
-     * \brief   Acquires the internal lock. Blocks until the lock is available. Recursive:
-     *          the same thread may call lock_queue() multiple times without deadlocking.
-     **/
-    inline void lock_queue() noexcept;
-
-    /**
-     * \brief   Releases a single acquisition of the internal lock.
-     **/
-    inline void unlock_queue() noexcept;
-
-    /**
-     * \brief   Thread-safe push. Acquires the internal lock, pushes the event onto the FIFO
-     *          queue, and notifies the listener -- all under the same lock acquisition.
-     *
-     * \param   eventElem       The event to enqueue.
-     * \param[out] removedEvent If an event was evicted and this is not nullptr, receives it.
-     **/
-    void push_event(Event& eventElem, Event** removedEvent);
-
-    /**
-     * \brief   Thread-safe pop. Acquires the internal lock, removes the front event, and
-     *          notifies the listener if the queue becomes empty.
-     *
-     * \return  The popped event, or nullptr if the queue was empty.
-     **/
-    [[nodiscard]]
-    Event* pop_event() noexcept;
-
-    /**
-     * \brief   Thread-safe removal of all non-Exit events. Acquires the internal lock.
-     **/
-    void remove_events() noexcept;
-
-    /**
-     * \brief   Thread-safe removal of events matching the given class ID. Acquires the internal
-     *          lock.
-     *
-     * \param   eventClassId    Runtime class ID of events to remove.
-     **/
-    void remove_events(const RuntimeClassID& eventClassId) noexcept;
-
-    /**
-     * \brief   Thread-safe removal of every event, including Exit events. Acquires the internal
-     *          lock.
-     **/
-    void remove_all_events() noexcept;
-
-//////////////////////////////////////////////////////////////////////////
-// Members
-//////////////////////////////////////////////////////////////////////////
-private:
-    ResourceLock    mLock;  //!< Recursive lock protecting mStack from concurrent access.
-    EventStack      mStack; //!< Backing FIFO queue; lock-free on its own.
-
-//////////////////////////////////////////////////////////////////////////
-// Forbidden method calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    ExternalEventQueue() = delete;
-    AREG_NOCOPY_NOMOVE(ExternalEventQueue);
-};
 
 //////////////////////////////////////////////////////////////////////////
 // InternalEventQueue class declaration
@@ -237,9 +135,9 @@ private:
 /**
  * \brief   Single-threaded event queue for internal (intra-thread) events.
  *
- * Proxy notification events and other intra-component signals are pushed and popped
- * exclusively within the owner dispatcher thread. No locking is performed; the
- * base EventQueue methods are used directly on the lock-free EventStack.
+ *          Proxy notification events and other intra-component signals are pushed and popped
+ *          exclusively within the owner dispatcher thread. No locking is performed; the
+ *          base EventQueue methods are used directly on the lock-free EventStack.
  **/
 class AREG_API InternalEventQueue final : public    EventQueue
                                         , private   QueueListener
@@ -254,7 +152,7 @@ public:
      * \param   maxQueue    Maximum event capacity. Pass areg::IGNORE_VALUE (0) to read from
      *                      application configuration or use an unlimited queue.
      **/
-    explicit InternalEventQueue(uint32_t maxQueue);
+    explicit InternalEventQueue();
 
     virtual ~InternalEventQueue();
 
@@ -300,18 +198,39 @@ inline bool EventQueue::is_empty() const noexcept
     return mEventQueue.is_empty();
 }
 
-//////////////////////////////////////////////////////////////////////////
-// ExternalEventQueue inline implementation
-//////////////////////////////////////////////////////////////////////////
-
-inline void ExternalEventQueue::lock_queue() noexcept
+inline void EventQueue::push_event(Event& eventElem)
 {
-    mLock.lock(areg::WAIT_INFINITE);
+    mEventListener.signal_event(mEventQueue.push_event(&eventElem));
 }
 
-inline void ExternalEventQueue::unlock_queue() noexcept
+inline Event* EventQueue::pop_event() noexcept
 {
-    mLock.unlock();
+    Event* result{ nullptr };
+    const uint32_t size = mEventQueue.pop_event(&result);
+    if (size == 0)
+    {
+        mEventListener.signal_event(0);
+    }
+
+    return result;
+}
+
+inline void EventQueue::remove_all_events() noexcept
+{
+    mEventQueue.delete_all_events();
+    mEventListener.signal_event(0);
+}
+
+inline void EventQueue::remove_events() noexcept
+{
+    const uint32_t remain = mEventQueue.delete_except_exit();
+    mEventListener.signal_event(remain);
+}
+
+inline void EventQueue::remove_events(const RuntimeClassID& eventClassId) noexcept
+{
+    const uint32_t remain = mEventQueue.delete_matching(eventClassId);
+    mEventListener.signal_event(remain);
 }
 
 //////////////////////////////////////////////////////////////////////////

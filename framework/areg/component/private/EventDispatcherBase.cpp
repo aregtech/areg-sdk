@@ -33,7 +33,7 @@ EventDispatcherBase::EventDispatcherBase(const String & name, uint32_t maxQeueue
 
     , mDispatcherName( name )
     , mExternalEvents( static_cast<QueueListener &>(self()), maxQeueue)
-    , mInternalEvents( maxQeueue )
+    , mInternalEvents( )
     , mHasStarted    ( false )
     , mConsumerMap   ( )
     , mEventExit     ( false, false )
@@ -66,7 +66,6 @@ void EventDispatcherBase::stop_dispatcher() noexcept
     mExternalEvents.lock_queue( );
     if ( mHasStarted )
     {
-        remove_events( true );
         mExternalEvents.push_event( ExitEvent::exit_event( ), nullptr );
     }
 
@@ -89,20 +88,20 @@ void EventDispatcherBase::shutdown_dispatcher() noexcept
 
 bool EventDispatcherBase::queue_event( Event& eventElem )
 {
-    if (!mHasStarted)
-        return false;
-    
     areg::EventType eventType = eventElem.event_type();
-    if (areg::is_external(eventType))
+    if (mHasStarted.load(std::memory_order_relaxed))
     {
-        mExternalEvents.push_event(eventElem, nullptr);
-        return true;
-    }
+        if (areg::is_external(eventType))
+        {
+            mExternalEvents.push_event(eventElem, nullptr);
+            return true;
+        }
 
-    if (areg::is_internal(eventType))
-    {
-        mInternalEvents.push_event(eventElem, nullptr);
-        return true;
+        if (areg::is_internal(eventType))
+        {
+            mInternalEvents.push_event(eventElem);
+            return true;
+        }
     }
 
     return false;
@@ -288,32 +287,27 @@ void EventDispatcherBase::post_dispatch_event( Event* eventElem )
 
 bool EventDispatcherBase::dispatch_event( Event& eventElem )
 {
-    EventConsumerList processingList;
     EventConsumer* consumer = eventElem.event_consumer();
     if ( consumer != nullptr)
     {
-        processingList.push_first(consumer);
+        eventElem.dispatch_self(consumer);
+        return true;
     }
     else
     {
-        mConsumerMap.lock();
-
         EventConsumerList* listConsumers = mConsumerMap.find_resource_object(eventElem.class_id());
         if (listConsumers != nullptr)
-            processingList = *listConsumers;
+        {
+            for (auto entry : listConsumers->data())
+            {
+                eventElem.dispatch_self(entry);
+            }
 
-        mConsumerMap.unlock();
+            return !listConsumers->is_empty();
+        }
     }
 
-    EventConsumerList::LISTPOS pos = processingList.first_position();
-    while (processingList.is_valid_position(pos))
-    {
-        consumer = processingList.next(pos);
-        eventElem.dispatch_self(consumer);
-        consumer = nullptr;
-    }
-
-    return (processingList.is_empty() == false);
+    return false;
 }
 
 bool EventDispatcherBase::has_registered_consumer( const RuntimeClassID& whichClass ) const

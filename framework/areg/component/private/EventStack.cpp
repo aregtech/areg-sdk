@@ -30,13 +30,12 @@ namespace areg {
 // EventStack -- constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 
-EventStack::EventStack(uint32_t maxQueue) noexcept
+EventStack::EventStack() noexcept
     : Stack<Event*>   ( )
-    , mMaxQueueSize   ( EventStack::_calc_queue_size(maxQueue) )
 {
 }
 
-EventStack::~EventStack()
+EventStack::~EventStack() noexcept
 {
     for (Event* evt : mValueList)
     {
@@ -117,119 +116,6 @@ uint32_t EventStack::delete_except(const RuntimeClassID& eventClassId) noexcept
     }
 
     return static_cast<uint32_t>(mValueList.size());
-}
-
-//////////////////////////////////////////////////////////////////////////
-// EventStack -- push / pop
-//////////////////////////////////////////////////////////////////////////
-
-DEBUG_DEF_LOG_SCOPE(areg_component_EventStack, push_event);
-uint32_t EventStack::push_event(Event* newEvent, Event** removedEvent) noexcept
-{
-    ASSERT(newEvent != nullptr);
-
-    areg::EventPriority prio{ newEvent->event_priority() };
-    if (prio == areg::EventPriority::ExitPrio)
-    {
-        // Exit events always go to the front and bypass the capacity limit.
-        mValueList.push_front(newEvent);
-    }
-    else if (prio < areg::EventPriority::HighPrio)
-    {
-        // Normal events are FIFO (push_back / pop_front).
-        if (mValueList.size() >= mMaxQueueSize)
-        {
-            ASSERT(!mValueList.empty());
-
-            // Find the first non-exit event starting from the front (oldest).
-            auto it = mValueList.begin();
-            while (it != mValueList.end() && (*it)->event_priority() == areg::EventPriority::ExitPrio)
-            {
-                ++it;
-            }
-
-            if (it == mValueList.end())
-            {
-                // Drop the incoming event instead of losing an Exit.
-                if (removedEvent != nullptr)
-                    *removedEvent = newEvent;
-                else
-                    newEvent->destroy();
-
-                return static_cast<uint32_t>(mValueList.size());
-            }
-
-            Event* evicted = *it;
-            mValueList.erase(it);
-
-#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-            // Log every 1K eviction and the very first one.
-            static uint32_t s_evictCount{ 0u };
-            ++s_evictCount;
-            if (s_evictCount == 1u || (s_evictCount % 1000u) == 0u)
-            {
-                DEBUG_LOG_SCOPE(areg_component_EventStack, push_event);
-                DEBUG_LOG_WARN("Event queue eviction: dropped [ %u ] events so far (queue capacity [ %u ])", s_evictCount, mMaxQueueSize);
-            }
-#endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-
-            if (removedEvent != nullptr)
-                *removedEvent = evicted;
-            else
-                evicted->destroy();
-        }
-
-        mValueList.push_back(newEvent);
-    }
-    else
-    {
-        if (mValueList.empty())
-        {
-            mValueList.push_back(newEvent);
-        }
-        else
-        {
-            // Critical events are inserted after any existing Exit events but before all others
-            auto it = mValueList.cbegin();
-            while (it != mValueList.cend() && (*it)->event_priority() == areg::EventPriority::ExitPrio)
-            {
-                ++it;
-            }
-
-            mValueList.insert(it, newEvent);
-        }
-    }
-
-    return static_cast<uint32_t>(mValueList.size());
-}
-
-uint32_t EventStack::pop_event(Event** stackEvent) noexcept
-{
-    ASSERT(stackEvent != nullptr);
-
-    if (!mValueList.empty())
-    {
-        *stackEvent = mValueList.front();
-        mValueList.pop_front();
-    }
-    else
-    {
-        *stackEvent = nullptr;
-    }
-
-    return static_cast<uint32_t>(mValueList.size());
-}
-
-//////////////////////////////////////////////////////////////////////////
-// EventStack -- private helper
-//////////////////////////////////////////////////////////////////////////
-
-uint32_t EventStack::_calc_queue_size(uint32_t requested) noexcept
-{
-    if (requested == areg::IGNORE_VALUE)
-        requested = Application::config_manager().message_queue_size();
-
-    return (requested != areg::IGNORE_VALUE ? std::max(MIN_QUEUE_SIZE, requested) : MAX_QUEUE_SIZE);
 }
 
 } // namespace areg

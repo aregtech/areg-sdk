@@ -655,7 +655,8 @@ void ServiceCommunicationBase::failed_send_message(const RemoteMessage& /*msgFai
 
 #ifdef DEBUG
 
-    ASSERT( !whichTarget.is_valid() || (whichTarget.handle( ) == mServerConnection.target_client(msgFailed).handle()) );
+    SocketAccepted target{ mServerConnection.target_client(msgFailed) };
+    ASSERT( !whichTarget.is_valid() || !target.is_valid() || (whichTarget.handle( ) == target.handle()) );
 
 #endif // DEBUG
 
