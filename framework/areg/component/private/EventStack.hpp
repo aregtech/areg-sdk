@@ -41,7 +41,7 @@ class RuntimeClassID;
  *          There is NO internal synchronization. For multi-threaded access,
  *          the caller must hold an external lock before calling any mutating method.
  **/
-class EventStack final : protected Stack<Event*>
+class AREG_API EventStack final : protected Stack<Event*>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constants

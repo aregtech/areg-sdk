@@ -262,7 +262,7 @@ bool LogManager::start_logging_thread()
 {
     ASSERT(!is_running() && !is_ready());
     mLogStarted.reset( );
-    if ( start(areg::WAIT_INFINITE) )
+    if ( start(areg::DO_NOT_WAIT) )
     {
         if ( wait_start(areg::WAIT_INFINITE) )
         {

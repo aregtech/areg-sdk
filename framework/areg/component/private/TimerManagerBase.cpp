@@ -132,8 +132,7 @@ void TimerManagerBase::ready_for_events(bool is_ready)
 
 bool TimerManagerBase::start_manager_thread()
 {
-    ASSERT(is_ready() || (is_running() == false));
-    return (is_ready() || (start(areg::WAIT_INFINITE) && wait_start(areg::WAIT_INFINITE)));
+    return (is_ready() || (start(areg::DO_NOT_WAIT) && wait_start(areg::WAIT_INFINITE)));
 }
 
 bool TimerManagerBase::wait_completion(uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE*/)

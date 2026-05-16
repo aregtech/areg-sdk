@@ -766,10 +766,12 @@ template <typename VALUE, typename SYNC>
 inline typename StackBase<VALUE, SYNC>::STACKPOS StackBase<VALUE, SYNC>::find(const VALUE & Value, STACKPOS searchAfter ) const noexcept
 {
     Lock lock(mSyncObject);
-    auto end = mValueList.end();
-    if (searchAfter == end)
-        return Constless<std::deque<VALUE>>::iter(mValueList, end);
-    return Constless<std::deque<VALUE>>::iter(mValueList, std::find(++searchAfter, end, Value));
+    typename std::deque<VALUE>::iterator endIt{ Constless<std::deque<VALUE>>::iter(mValueList, mValueList.end()) };
+    if (searchAfter == endIt)
+        return endIt;
+
+    typename std::deque<VALUE>::iterator it{ Constless<std::deque<VALUE>>::iter(mValueList, ++searchAfter) };
+    return Constless<std::deque<VALUE>>::iter(mValueList, std::find(it, endIt, Value));
 }
 
 template <typename VALUE, typename SYNC>

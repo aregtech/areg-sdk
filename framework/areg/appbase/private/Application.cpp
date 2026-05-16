@@ -154,7 +154,8 @@ void Application::release()
     TimerManager::wait_timer_manager();
     ComponentLoader::wait_model_unload(String::EmptyString);
     ServiceManager::_wait_service_manager();
-    areg::stop_logging(false);
+    // Stop the last to collect logs.
+    areg::stop_logging(false); 
     areg::wait_logging_end();
 
     Application::_set_app_state(areg::AppState::Stopped);

@@ -123,21 +123,23 @@ Integrated distributed logging with visual analysis. Per-method execution timing
 - **Integrated stack** - Framework + Router + Tools + Logging in one cohesive SDK
 
 > [!NOTE]
-> **Benchmark — IPC throughput between processes on mobile-class CPUs:**
-> 
-> | Platform     | CPU Type         | ~3MB data rate | ~3KB msg rate  | ~0.5KB msg rate |
-> |--------------|------------------|----------------|----------------|-----------------|
-> | Windows 11   | i7-13700H (DDR4) | 1.7–2.1 GB/s   | 120–135K msg/s | 150–160K msg/s  |
-> | WSL2 Ubuntu  | i7-13700H (DDR4) | 3.8–4.0 GB/s   | 170–190K msg/s | 200–220K msg/s  |
-> | macOS native | M4 Pro (LPDDR5)  | 6.8–7.0 GB/s   | 240–290K msg/s | TBD             |
-> 
-> **Configuration:** 1:1 (single provider → single consumer) via `mtrouter` on TCP `localhost` socket - no shared memory or kernel bypass.
+> **Benchmark — IPC throughput on mobile-class CPUs, TCP `localhost`, 1:1 application communication:**
 >
-> **Full stack included:** Service discovery, type-safe serialization, automatic reconnection, threading dispatch, message framing - this is **application throughput**, not raw transport.
+> | Platform        | CPU Type         | +3MB data rate | +3KB msg rate  | +0.5KB msg rate |
+> |-----------------|------------------|----------------|----------------|-----------------|
+> | Windows 11   ¹  | i7-13700H (DDR4) | 2.4–2.6 GB/s   | 450–520K msg/s | 1.0–1.2M msg/s  |
+> | WSL2 Ubuntu  ‡  | i7-13700H (DDR4) | 5.0–5.6 GB/s   | 330–375K msg/s | 450–520K msg/s  |
+> | macOS native ³  | M4 Pro (LPDDR5)  | 6.8–7.0 GB/s   | 240–290K msg/s | TBD             |
 >
-> **Real-world applicability:** Software pipeline layer for scientific imaging (laser microscopy, X-ray, electron microscopy) and industrial machine vision - covering 99% of use cases on standard laptops.
+> ⁺ Measured at `mtrouter`. Consumer apps operate stably up to ~300–350K msg/s; above that, the RPC dispatch thread becomes the bottleneck. See [23_pubdatarate README](examples/23_pubdatarate/ReadMe.md) for details.  
+> ‡ Requires [network tuning](./docs/wiki/07d-troubleshooting-network-tunning.md); default WSL2 settings yield ~3.5 GB/s and ~500K msg/s.  
+> ※ Pre-optimization measurements — current results expected to be higher.
 >
-> 📊 Measure own hardware: run [`23_pubdatarate`](examples/23_pubdatarate/), see the [README](examples/23_pubdatarate/ReadMe.md) for benchmark recipes and platform results.
+> **Full stack:** service discovery, type-safe serialization, automatic reconnection, threading dispatch — not raw socket throughput.
+>
+> **Real-world fit:** covers the software pipeline layer of scientific imaging (laser microscopy, X-ray, electron microscopy) and industrial machine vision on a standard laptop.
+>
+> 📊 Measure your own hardware: run [`23_pubdatarate`](examples/23_pubdatarate/) — see the [README](examples/23_pubdatarate/ReadMe.md) for benchmark recipes and platform results.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 

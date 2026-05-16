@@ -280,16 +280,14 @@ void ServiceManager::ready_for_events( bool is_ready )
 
 bool ServiceManager::_start_manager_thread()
 {
-    Lock lock(mLock);
-    ASSERT(is_ready() || (is_running() == false));
-    return (is_ready() || (start(areg::WAIT_INFINITE) && wait_start(areg::WAIT_INFINITE)));
+    return (is_ready() || (start(areg::DO_NOT_WAIT) && wait_start(areg::WAIT_INFINITE)));
 }
 
 void ServiceManager::_stop_manager_thread(bool waitComplete)
 {
     ServiceManagerEvent::send_event( ServiceManagerEventData::shutdown_service_manager()
-                                  , static_cast<ServiceManagerEventConsumer &>(self())
-                                  , static_cast<DispatcherThread &>(self()));
+                                   , static_cast<ServiceManagerEventConsumer &>(self())
+                                   , static_cast<DispatcherThread &>(self()));
 
     if (waitComplete)
     {
