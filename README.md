@@ -132,10 +132,10 @@ requests, responses, broadcasts, and constants. The workflow is:
 
 ```
 MyService.siml  ──►  codegen.jar  ──►  MyServiceProviderBase.hpp
-  (design in               │             MyServiceConsumerBase.hpp
-   Lusan or XML)           │             MyServiceProxy.hpp
-                           │             Serialization code
-                           |             Event objects
+  (design in Lusan)        │           MyServiceConsumerBase.hpp
+                           │           MyServiceProxy.hpp
+                           │           Serialization code
+                           |           Event objects
 ```
 
 **CMake integration** — one line generates and links all infrastructure:
@@ -154,13 +154,12 @@ For full details, see the [Service Interface Guide](./docs/wiki/06e-lusan-servic
 
 Areg SDK's transport layer is designed for production-grade data pipelines.
 The numbers below are measured on **mobile-class consumer hardware** with the
-**full service stack active** — service discovery, type-safe serialization,
-automatic reconnection, threading dispatch. Nothing stripped.
+data serialization, event dispatching and multithreading.
 
 > [!NOTE]
-> **Benchmark — IPC throughput on mobile-class CPUs, TCP `localhost` (loopback), 1:1 application communication:**
+> **Benchmark — IPC throughput on mobile-class CPUs, TCP `localhost`, 1:1 application communication:**
 >
-> Measurements are taken at `mtrouter` — the most accurate signal at Areg SDK, with duplex communication and high-precision timers.
+> Measurements are taken at `mtrouter` with duplex communication and high-precision timers.
 >
 > | Platform        | CPU Type         | ~3 MB data   | ~3 KB msg/s    | ~0.5 KB msg/s  |
 > |-----------------|------------------|--------------|----------------|----------------|
@@ -172,11 +171,11 @@ automatic reconnection, threading dispatch. Nothing stripped.
 > ² Requires [network tuning](./docs/wiki/07d-troubleshooting-network-tunning.md); default WSL2 settings yield ~3.5 GB/s and ~500K msg/s.  
 > ³ Pre-optimization measurements — current results expected to be higher.
 >
-> **Full stack:** service discovery, serialization, automatic reconnection, threading dispatch — not raw socket throughput.
+> **Full stack:** data serialization, event dispatching, multithreading — not raw socket throughput.
 >
 > **Real-world fit:** covers the software pipeline layer of scientific imaging (laser microscopy, X-ray, electron microscopy) and industrial machine vision on a standard laptop.
 >
-> 📊 Measure your own hardware: run [`23_pubdatarate`](examples/23_pubdatarate/) — see the [README](examples/23_pubdatarate/ReadMe.md) for benchmark recipes and platform results.
+> 📊 Measure your own hardware: run [`23_pubdatarate`](examples/23_pubdatarate/) — see the [README](examples/23_pubdatarate/ReadMe.md) for benchmark recipes and results.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -264,7 +263,7 @@ runtime. Loading and unloading is always dynamic and safe.
 The companion example `02_minimalipc` runs the **same** `ServiceComponent` and
 `ClientComponent` code in **separate processes** via `mtrouter`. Change only `areg.init`
 to point `mtrouter` at a remote machine and it becomes device-to-device communication.
-These two examples together are the concrete proof of "same code — thread, process, network."
+These two examples are the concrete proof of "same code — thread, process, network."
 
 ### Start Your Own Project
 
@@ -312,7 +311,7 @@ cmake --build build -j20
 
 ### Component Model
 
-Areg SDK uses an **Object RPC (ORPC)** model. Services expose typed interfaces; Consumers
+Areg SDK uses an **Object RPC (ORPC)** model. Services expose interfaces; Consumers
 communicate through generated proxies. The framework routes all communication — whether
 the target is a thread, a process, or a remote device.
 
@@ -346,7 +345,7 @@ the target is a thread, a process, or a remote device.
 
 ### Location Transparency
 
-The same service interface operates identically at three deployment levels:
+The same service operates identically at three deployment levels:
 
 | Deployment                    | Transport             | Code change required |
 |-------------------------------|-----------------------|----------------------|
@@ -365,12 +364,11 @@ machines with only configuration and build script changes.
 
 The answer to **_"why Areg SDK and not something else"_** is different for each domain,
 but the underlying reason is always the same: Areg SDK combines **high-throughput transport**,
-**automated threading**, **location-transparent service interfaces**, and **built-in fault
+**automated threading**, **location-transparent services**, and **built-in fault
 recovery** in a single cohesive stack — with only configuration changes required when
 moving between thread, process, and network deployment.
 
-> 📖 For detailed architecture diagrams, code examples, and deployment patterns
-> for each use case, see [USECASES.md](./docs/USECASES.md).
+> 📖 For more use cases, diagrams, and patterns, see [USECASES.md](./docs/USECASES.md).
 
 ---
 
@@ -386,7 +384,7 @@ reach this throughput with full service semantics active.
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="./docs/img/interface-centric.png" alt="Interface-centric communication diagram" style="width:50%;height:50%"/></a></div>
 
 **What this means in practice:** Replace custom shared-memory hacks and platform-specific
-IPC with a typed, auto-discovered service interface. Pipeline stages can be rearranged
+IPC with a typed, auto-discovered services. Pipeline stages can be rearranged
 from threads to separate processes to separate machines with only configuration and
 build script changes.
 
