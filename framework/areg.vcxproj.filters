@@ -1185,6 +1185,7 @@
     <None Include="areg\resources\areg_post_build.bat">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\conf\toolchains\clang-linux-arm32.cmake" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt">

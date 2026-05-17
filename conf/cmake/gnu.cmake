@@ -80,11 +80,11 @@ else()
     # Linker flags (-l is not necessary)
     if (AREG_PLATFORM_MACOS)
         if(${CMAKE_BUILD_TYPE} MATCHES "Release")
-            list(APPEND AREG_LDFLAGS -Wl,-dead_strip stdc++ m pthread)
-            set(AREG_LDFLAGS_STR "-Wl,-dead_strip -lstdc++ -lm -lpthread")
+            list(APPEND AREG_LDFLAGS -Wl,-dead_strip m pthread)
+            set(AREG_LDFLAGS_STR "-Wl,-dead_strip -lm -lpthread")
         else()
-            list(APPEND AREG_LDFLAGS stdc++ m pthread)
-            set(AREG_LDFLAGS_STR "-lstdc++ -lm -lpthread")
+            list(APPEND AREG_LDFLAGS m pthread)
+            set(AREG_LDFLAGS_STR "-lm -lpthread")
         endif()
     else()
         if(${CMAKE_BUILD_TYPE} MATCHES "Release")
@@ -95,10 +95,8 @@ else()
             set(AREG_LDFLAGS_STR "-lstdc++ -lm -lpthread -lrt")
         endif()
 
-        # GCC on x86-64 does not inline 16-byte (128-bit) atomics; it emits calls
-        # to __atomic_*_16 which live in libatomic.  Detect this at configure time
-        # so that cross-compilers or future toolchains that do inline them skip the
-        # extra dependency.
+        # GCC on x86-64 does not inline 16-byte (128-bit) atomics
+        # Detect this at configure time
         include(CheckCXXSourceCompiles)
         check_cxx_source_compiles("
             #include <atomic>

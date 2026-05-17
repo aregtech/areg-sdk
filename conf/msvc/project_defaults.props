@@ -48,13 +48,10 @@
             <FunctionLevelLinking Condition="'$(ConfigShortName)'=='Release'">true</FunctionLevelLinking>
             <IntrinsicFunctions Condition="'$(ConfigShortName)'=='Release'">true</IntrinsicFunctions>
             <!-- /GL: embed LTCG bitcode; linker uses /LTCG to cross-TU inline and optimize   -->
-            <!-- across translation units — eliminates call overhead on hot IPC dispatch paths. -->
             <WholeProgramOptimization Condition="'$(ConfigShortName)'=='Release'">true</WholeProgramOptimization>
             <!-- /Ot: favor speed over size when optimizer must choose between trade-offs.       -->
             <FavorSizeOrSpeed Condition="'$(ConfigShortName)'=='Release'">Speed</FavorSizeOrSpeed>
             <!-- /GS-: disable stack-canary injection in Release; adds overhead to every        -->
-            <!-- function with a local stack frame. Safe because NDEBUG asserts are stripped    -->
-            <!-- and we do not handle untrusted input in the IPC hot path.                      -->
             <BufferSecurityCheck Condition="'$(ConfigShortName)'=='Release'">false</BufferSecurityCheck>
             <SDLCheck Condition="'$(Configuration)'=='Release'">false</SDLCheck>
         </ClCompile>
@@ -67,8 +64,6 @@
             <OptimizeReferences Condition="'$(ConfigShortName)'=='Debug'">false</OptimizeReferences>
             <OptimizeReferences Condition="'$(ConfigShortName)'=='Release'">true</OptimizeReferences>
             <!-- /LTCG: whole-program link-time code generation. Works with /GL above.          -->
-            <!-- For static libs, lib.exe ignores this flag; LTCG fires when the consuming     -->
-            <!-- executable or DLL links. For DLL and Application targets it fires here.        -->
             <LinkTimeCodeGeneration Condition="'$(ConfigShortName)'=='Release'">UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
         </Link>
         <ResourceCompile>

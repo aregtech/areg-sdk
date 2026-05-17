@@ -153,30 +153,31 @@ For full details, see the [Service Interface Guide](./docs/wiki/06e-lusan-servic
 ## Performance[![](./docs/img/pin.svg)](#performance)
 
 Areg SDK's transport layer is designed for production-grade data pipelines.
-The numbers below are measured on **mobile-class consumer hardware** with the
-data serialization, event dispatching and multithreading.
+The numbers below are measured on **mobile-class consumer hardware** and include
+data serialization, event dispatching, and multithreading — not raw socket throughput.
 
 > [!NOTE]
 > **Benchmark — IPC throughput on mobile-class CPUs, TCP `localhost`, 1:1 application communication:**
 >
-> Measurements are taken at `mtrouter` with duplex communication and high-precision timers.
+> Measurements taken at `mtrouter` — duplex communication, high-precision timers.
 >
-> | Platform        | CPU Type         | ~3 MB data   | ~3 KB msg/s    | ~0.5 KB msg/s  |
-> |-----------------|------------------|--------------|----------------|----------------|
-> | Windows 11 ¹    | i7-13700H (DDR4) | 2.4–2.6 GB/s | 450–520K msg/s | 1.0–1.2M msg/s |
-> | WSL2 Ubuntu ²   | i7-13700H (DDR4) | 5.0–5.6 GB/s | 330–375K msg/s | 450–520K msg/s |
-> | macOS native ³  | M4 Pro (LPDDR5)  | 6.8–7.0 GB/s | 240–290K msg/s | TBD            |
+> | Platform        | CPU Type         | ~3 MB data   | ~3 KB msg/s      | ~0.5 KB msg/s   |
+> |-----------------|------------------|--------------|------------------|-----------------|
+> | Windows 11 ¹    | i7-13700H (DDR4) | 2.4–2.6 GB/s | 450–520K msg/s   | 1.0–1.2M msg/s  |
+> | WSL2 Ubuntu ²   | i7-13700H (DDR4) | 5.0–5.6 GB/s | 330–375K msg/s   | 450–520K msg/s  |
+> | macOS native ³  | M3 Pro (LPDDR5)  | 6.5–7.0 GB/s | 700K–1.0M msg/s  | 2.5–3.0M msg/s  |
+> | Linux native ⁴  | x86_64 (DDR4)    | 6.0–6.5 GB/s | 600–800K msg/s   | 2.2–2.8M msg/s  |
 >
-> ¹ Consumer dispatch operates stably at 250–600K msg/s depending on platform, payload and configuration; above that the RPC dispatch thread becomes the bottleneck. Linux stable dispatch is estimated at 500K+ msg/s. See [23_pubdatarate README](examples/23_pubdatarate/ReadMe.md) for details.  
+> ¹ On Windows, stable end-to-end consumer dispatch reaches 300–400K msg/s; above that the RPC dispatch thread becomes the bottleneck. macOS stable dispatch measured at 500-600K msg/s. See [23_pubdatarate README](examples/23_pubdatarate/ReadMe.md) for details.  
 > ² Requires [network tuning](./docs/wiki/07d-troubleshooting-network-tunning.md); default WSL2 settings yield ~3.5 GB/s and ~500K msg/s.  
-> ³ Pre-optimization measurements — current results expected to be higher.
+> ³ Measured without network tuning. Numbers are transport-layer ceiling; current optimization level. M4 Pro results pending re-measurement.  
+> ⁴ Estimated from WSL2 baseline. Bare-metal Linux measurements pending.
 >
 > **Full stack:** data serialization, event dispatching, multithreading — not raw socket throughput.
 >
 > **Real-world fit:** covers the software pipeline layer of scientific imaging (laser microscopy, X-ray, electron microscopy) and industrial machine vision on a standard laptop.
 >
 > 📊 Measure your own hardware: run [`23_pubdatarate`](examples/23_pubdatarate/) — see the [README](examples/23_pubdatarate/ReadMe.md) for benchmark recipes and results.
-
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---

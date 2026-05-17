@@ -23,8 +23,7 @@ without a dedicated networking library underneath.
 |----------------------|-------------------|-----------|---------|------------|------|-----------|
 | Windows 11           | Intel i7-13700H   | DDR4      | ~3 MB   | 2.4 – 2.6  | GB/s | measured  |
 | WSL2 (on Win11) ¹    | Intel i7-13700H   | DDR4      | ~3 MB   | 5.0 – 5.6  | GB/s | measured  |
-| Linux VM (on macOS) ²| Apple M4 Pro      | LPDDR5    | ~3 MB   | 6.6 – 6.8  | GB/s | measured  |
-| macOS native ²       | Apple M4 Pro      | LPDDR5    | ~3 MB   | 6.8 – 7.0  | GB/s | measured  |
+| macOS native         | Apple M3 Pro      | LPDDR5    | ~3 MB   | 6.5 – 7.0  | GB/s | measured  |
 | Linux bare-metal     | x86-64            | DDR4/DDR5 | ~3 MB   | 6.0 – 7.5  | GB/s | estimated |
 
 ---
@@ -35,9 +34,8 @@ without a dedicated networking library underneath.
 |----------------------|-------------------|-----------|---------|--------------|-------|-----------|
 | Windows 11           | Intel i7-13700H   | DDR4      | ~3 KB   | 450 – 520K   | msg/s | measured  |
 | WSL2 (on Win11) ¹    | Intel i7-13700H   | DDR4      | ~3 KB   | 330 – 375K   | msg/s | measured  |
-| Linux VM (on macOS) ²| Apple M4 Pro      | LPDDR5    | ~3 KB   | 180 – 200K   | msg/s | measured  |
-| macOS native ²       | Apple M4 Pro      | LPDDR5    | ~3 KB   | 240 – 290K   | msg/s | measured  |
-| Linux bare-metal     | x86-64            | DDR4/DDR5 | ~3 KB   | 500 – 600K   | msg/s | estimated |
+| macOS native         | Apple M3 Pro      | LPDDR5    | ~3 KB   | 700K – 1.0M  | msg/s | measured  |
+| Linux bare-metal     | x86-64            | DDR4/DDR5 | ~3 KB   | 600 – 800K   | msg/s | estimated |
 
 ---
 
@@ -47,14 +45,11 @@ without a dedicated networking library underneath.
 |----------------------|-------------------|-----------|----------|--------------|-------|-----------|
 | Windows 11           | Intel i7-13700H   | DDR4      | ~0.5 KB  | 1.0 – 1.2M   | msg/s | measured  |
 | WSL2 (on Win11) ¹    | Intel i7-13700H   | DDR4      | ~0.5 KB  | 450 – 520K   | msg/s | measured  |
-| Linux VM (on macOS) ²| Apple M4 Pro      | LPDDR5    | ~0.5 KB  | —            | msg/s | needed    |
-| macOS native ²       | Apple M4 Pro      | LPDDR5    | ~0.5 KB  | —            | msg/s | needed    |
-| Linux bare-metal     | x86-64            | DDR4/DDR5 | ~0.5 KB  | —            | msg/s | needed    |
+| macOS native         | Apple M3 Pro      | LPDDR5    | ~0.5 KB  | 2.5 – 3.0M   | msg/s | measured  |
+| Linux bare-metal     | x86-64            | DDR4/DDR5 | ~0.5 KB  | 2.0 – 2.5M   | msg/s | estimated |
 
 ¹ Requires [network tuning](../../docs/wiki/07d-troubleshooting-network-tunning.md).
 Default WSL2 settings yield approximately 60–70% of the values shown.
-
-² Pre-optimization measurements. Current results on Apple M4 Pro are expected to be higher.
 
 **Methodology:**
 - TCP `localhost`, 1:1 connection (single provider → single consumer) via `mtrouter`.
@@ -63,9 +58,7 @@ Default WSL2 settings yield approximately 60–70% of the values shown.
 - Reported ranges reflect the most frequently observed values; occasional peak readings may exceed the upper bound.
 - Bare-metal Linux values estimated from WSL2 measurements.
 
-These numbers come from a full-stack, service-oriented pipeline — location-transparent
-service discovery, type-safe IPC, automatic reconnection — none of which is stripped
-away for the benchmark. **What you measure here is what your production system gets.**
+These numbers reflect the full framework stack — message routing, event dispatching, and multithreading — none of which is stripped away for the benchmark. **What you measure here is what your production system gets.**
 
 ---
 
@@ -102,14 +95,11 @@ away for the benchmark. **What you measure here is what your production system g
 
 ## Concepts Shown
 
-- **Real-Time Data Rate Monitoring** — Measure and display network throughput for
-  communications between provider and consumers.
-- **Service Interface Automation** — Uses the Areg SDK code generator to automate
-  **Object RPC** message creation and dispatching.
-- **Efficient Large Data Transfer** — Demonstrates sending and receiving bitmap
-  images over IPC using the full service stack.
-- **Fault-Tolerant Communication** — Ensures reliable delivery of messages even
-  under process restart or network interruption.
+- **Real-Time Data Rate Monitoring** — Measure and display throughput between provider and consumer at the network layer and application level simultaneously.
+- **Message Routing** — Demonstrates `mtrouter` relaying raw buffers between processes without re-serialization.
+- **Event Dispatching** — Shows the consumer thread model: socket pump receives buffers, dispatch thread deserializes and executes RPC calls.
+- **Multithreading Under Load** — Exposes the dispatch thread ceiling and how it separates from transport capacity under sustained high message rates.
+- **Efficient Large Data Transfer** — Sends and receives continuous multi-megabyte bitmap streams over IPC.
 
 ---
 
@@ -145,8 +135,7 @@ The `mtrouter` console shows incoming and outgoing byte rates simultaneously —
 most accurate throughput signal, because it uses a high-precision timer and sees
 both directions at the socket boundary.
 
-The Areg Framework handles service discovery automatically via `service_connected()`,
-reconnection after process restart, and thread dispatch on the consumer side.
+The Areg Framework handles reconnection after process restart and thread dispatch on the consumer side automatically.
 
 ---
 
@@ -392,7 +381,7 @@ The consumer process receives data at this rate at the socket level, but the
 **dispatch thread** — which deserializes and executes the RPC call — has a lower
 stable throughput ceiling.
 
-**Current stable dispatch ceiling: ~300–350K msg/s on mobile-class hardware.**
+**Stable dispatch ceiling: ~300–400K msg/s on Windows (i7-13700H), ~500–600K msg/s on macOS (M3 Pro).**
 
 Above this rate, the consumer's internal queue between the socket pump and the
 dispatch thread grows faster than it drains. Memory climbs steadily and the OS
@@ -437,16 +426,21 @@ separate timestamped test.
 
 ## Takeaway
 
-On a mobile-class Intel i7-13700H with DDR4, the framework is not your bottleneck:
+**Transport ceiling (measured at `mtrouter`):**
 
-- **Large blocks (~3 MB):** 2.4–2.6 GB/s on Windows, 5.0–5.6 GB/s on WSL2
-- **Small messages (~3 KB):** 450–520K msg/s on Windows, 330–375K msg/s on WSL2
-- **Very small messages (~0.5 KB):** 1.0–1.2M msg/s on Windows, 450–520K msg/s on WSL2
-- **Stable end-to-end dispatch ceiling:** ~300K msg/s on Windows (serialization- and dispatch-bound, not transport-bound)
+| Platform | ~3 MB | ~3 KB | ~0.5 KB |
+|---|---|---|---|
+| Windows 11 (i7-13700H, DDR4) | 2.4–2.6 GB/s | 450–520K msg/s | 1.0–1.2M msg/s |
+| WSL2 Ubuntu (i7-13700H, DDR4) | 5.0–5.6 GB/s | 330–375K msg/s | 450–520K msg/s |
+| macOS (M3 Pro, LPDDR5) | 6.5–7.0 GB/s | 700K–1.0M msg/s | 2.5–3.0M msg/s |
+| Linux bare-metal (x86-64, est.) | 6.0–7.5 GB/s | 600–800K msg/s | 2.0–2.5M msg/s |
 
-On Apple M4 Pro, the ceiling rises to ~7 GB/s for large blocks (pre-optimization;
-current results expected higher). Bare-metal x86-64 Linux is estimated at 6–7.5 GB/s.
+**Stable end-to-end consumer dispatch:**
 
-These are not raw socket numbers. They include full service discovery, type-safe
-serialization, automatic reconnection, threading dispatch, and message framing.
+- Windows (i7-13700H): **300–400K msg/s**
+- macOS (M3 Pro): **500–600K msg/s**
+
+Above these rates the dispatch thread becomes the bottleneck — serialization- and dispatch-bound, not transport-bound. Improvements are planned.
+
+These are not raw socket numbers. They include message routing, event dispatching, multithreading, and automatic framing.
 **This is what your production system gets.**

@@ -20,12 +20,6 @@
 // EventDataStream class implementation
 //////////////////////////////////////////////////////////////////////////
 
-namespace {
-    //! The default name of the event stream.
-    static constexpr std::string_view DefaultStreamName{ "EventDataStream" };
-
-}
-
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////

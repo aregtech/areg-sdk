@@ -40,7 +40,13 @@ if (AREG_TESTS)
 
         # For Windows: Prevent overriding the parent project's compiler/linker settings
         set(gtest_force_shared_crt ON CACHE BOOL "For Windows: Prevent overriding the parent project\'s compiler/linker settings" FORCE)
+
+        # Always build GTest as a static library.
+        set(_areg_saved_build_shared_libs ${BUILD_SHARED_LIBS})
+        set(BUILD_SHARED_LIBS OFF)
 	    FetchContent_MakeAvailable(googletest)
+        set(BUILD_SHARED_LIBS ${_areg_saved_build_shared_libs})
+        unset(_areg_saved_build_shared_libs)
 
         if (NOT "${GTEST_INCLUDE_DIRS}" STREQUAL "")
             include_directories("${GTEST_INCLUDE_DIRS}")

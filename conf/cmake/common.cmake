@@ -266,6 +266,14 @@ include_directories(BEFORE "${AREG_FRAMEWORK}" "${AREG_BUILD_DIR}" "${AREG_GENER
 # Adding library search paths
 link_directories(BEFORE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
 
+# Pass -no_warning_for_no_symbols on macOS to suppress harmless warnings.
+if (APPLE)
+    set(CMAKE_C_ARCHIVE_CREATE   "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
+    set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
+    set(CMAKE_C_ARCHIVE_FINISH   "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
+    set(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
+endif()
+
 if (NOT DEFINED CMAKE_EXECUTABLE_SUFFIX OR "${CMAKE_EXECUTABLE_SUFFIX}" STREQUAL "")
     if (AREG_PLATFORM_MACOS)
         # Only for macOS

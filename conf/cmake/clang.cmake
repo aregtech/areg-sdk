@@ -59,11 +59,11 @@ else()
     # Linker flags (-l is not necessary)
     if (AREG_PLATFORM_MACOS)
         if(${CMAKE_BUILD_TYPE} MATCHES "Release")
-            list(APPEND AREG_LDFLAGS -Wl,-dead_strip c++ m pthread)
-            set(AREG_LDFLAGS_STR  "-Wl,-dead_strip -lc++ -lm -lpthread")
+            list(APPEND AREG_LDFLAGS -Wl,-dead_strip m pthread)
+            set(AREG_LDFLAGS_STR  "-Wl,-dead_strip -lm -lpthread")
         else()
-            list(APPEND AREG_LDFLAGS c++   m   pthread)
-            set(AREG_LDFLAGS_STR  "-lc++ -lm -lpthread")
+            list(APPEND AREG_LDFLAGS m   pthread)
+            set(AREG_LDFLAGS_STR  "-lm -lpthread")
         endif()
         set(AREG_COMPILER_VERSION -stdlib=libc++)
     else()
@@ -77,9 +77,7 @@ else()
         set(AREG_COMPILER_VERSION -stdlib=libstdc++)
 
         # Clang on non-x86-64 Linux (e.g. ARMv7, RISC-V) may emit __atomic_*_16
-        # calls instead of inlining them, just like GCC does on all architectures.
-        # On x86-64 Clang emits cmpxchg16b inline, so the check passes and
-        # libatomic is not pulled in for the common case.
+        # Check passes, libatomic is not pulled in for the common case.
         include(CheckCXXSourceCompiles)
         check_cxx_source_compiles("
             #include <atomic>

@@ -152,9 +152,6 @@ macro(macro_check_module_architect path_module target_name target_proc var_compa
             cmake_path(GET _module_path EXTENSION _file_ext)
             if ("${_file_ext}" STREQUAL ".tbd")
                 # .tbd files are text-based stubs provided by Apple's SDK.
-                # These are guaranteed to be compatible with the current platform
-                # since they're just interface definitions - the actual library
-                # is provided by the system at runtime.
                 set(${var_compatible} TRUE)
                 message(STATUS "Areg: >>> File '${path_module}' is a macOS stub library (.tbd), assuming compatible")
             else()
@@ -758,7 +755,7 @@ function(setAppOptions target_name library_list)
     # Apply common compiler options, such as disabling certain warnings
     target_compile_options(${target_name} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
-    # Link the Areg library, additional specified libraries, and any extended or extra libraries.
+    # Link areg library, additional specified libraries, and any extended or extra libraries.
     # Wrapping the archive group in --start-group/--end-group forces the linker to make
     # multiple passes until all inter-archive symbol references are resolved.
     if (NOT MSVC AND NOT APPLE AND "${AREG_LIB_TYPE}" STREQUAL "static")
@@ -860,8 +857,7 @@ function(setStaticLibOptions target_name library_list)
 
     # On Cygwin with a shared areg, AREG_API expands to __attribute__((dllimport)),
     # GNU ld must encounter the areg import library during the same archive.
-    # On other platforms (Linux, macOS) areg is intentionally omitted to avoid
-    # duplicate library entries that trigger warnings on macOS.
+    # On other platforms areg is intentionally omitted.
     if (CYGWIN AND NOT "${AREG_LIB_TYPE}" STREQUAL "static")
         target_link_libraries(${target_name} PRIVATE
                               ${library_list}
