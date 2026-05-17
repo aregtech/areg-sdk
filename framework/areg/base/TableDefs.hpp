@@ -27,20 +27,24 @@
 namespace areg {
 
 /************************************************************************/
-// CRC32 IEEE 802.3 table generation
+// CRC32C (Castagnoli) table generation
 /************************************************************************/
 
 /**
- * \brief   Computes one entry of the CRC32 IEEE 802.3 lookup table for the
+ * \brief   Computes one entry of the CRC32C (Castagnoli) lookup table for the
  *          given input byte. Uses the reflected (LSB-first) polynomial
- *          representation 0xEDB88320, which is the bit-reversal of the
- *          canonical polynomial 0x04C11DB7.
+ *          representation 0x82F63B78, which is the bit-reversal of the
+ *          canonical Castagnoli polynomial 0x1EDC6F41.
  *
  *          CRC polynomial:
- *          X^32+X^26+X^23+X^22+X^16+X^12+X^11+X^10+X^8+X^7+X^5+X^4+X^2+X+1
+ *          X^32+X^28+X^27+X^26+X^25+X^23+X^22+X^20+X^19+X^18+X^14+X^13+X^11+X^10+X^9+X^8+X^6+1
+ *
+ *          CRC32C is used by iSCSI, SCTP, Btrfs, ext4, and the SSE4.2
+ *          hardware CRC32 instruction (_mm_crc32_u*). Choosing this polynomial
+ *          keeps the software and hardware paths bit-for-bit identical.
  *
  * \param   byte    Input byte value (0–255) for which to compute the entry.
- * \return  32-bit CRC32 table entry corresponding to the given byte.
+ * \return  32-bit CRC32C table entry corresponding to the given byte.
  **/
 [[nodiscard]]
 constexpr uint32_t crc32_table_entry(uint8_t byte) noexcept
@@ -49,18 +53,18 @@ constexpr uint32_t crc32_table_entry(uint8_t byte) noexcept
     for (int bit = 0; bit < 8; ++bit)
     {
         // Branchless: -(crc & 1u) is 0x00000000 when LSB=0, 0xFFFFFFFF when LSB=1.
-        // Equivalent to: if (crc & 1) crc = (crc >> 1) ^ 0xEDB88320; else crc >>= 1;
-        crc = (crc >> 1) ^ (0xEDB88320u & static_cast<uint32_t>(0u - (crc & 1u)));
+        // Equivalent to: if (crc & 1) crc = (crc >> 1) ^ 0x82F63B78; else crc >>= 1;
+        crc = (crc >> 1) ^ (0x82F63B78u & static_cast<uint32_t>(0u - (crc & 1u)));
     }
 
     return crc;
 }
 
 /**
- * \brief   Generates the full 256-entry CRC32 IEEE 802.3 lookup table at compile time.
+ * \brief   Generates the full 256-entry CRC32C (Castagnoli) lookup table at compile time.
  *          Called once by the CRC32_TABLE initializer; not intended for direct use.
  *
- * \return  std::array of 256 uint32_t entries forming the complete CRC32 lookup table.
+ * \return  std::array of 256 uint32_t entries forming the complete CRC32C lookup table.
  **/
 [[nodiscard]]
 constexpr std::array<uint32_t, 256> make_crc32_table() noexcept
@@ -75,13 +79,14 @@ constexpr std::array<uint32_t, 256> make_crc32_table() noexcept
 }
 
 /**
- * \brief   CRC32 IEEE 802.3 lookup table, fully evaluated at compile time.
+ * \brief   CRC32C (Castagnoli) lookup table, fully evaluated at compile time.
  *          256 entries × 4 bytes = 1 024 bytes in read-only data.
  *
  *          Declared inline constexpr so that exactly one copy exists in the
  *          final binary regardless of how many translation units include this
  *          header.  All crc32_calculate() and crc32_start() functions in
- *          MathDefs.hpp read from this table.
+ *          MathDefs.hpp read from this table.  Matches the polynomial used by
+ *          the SSE4.2 _mm_crc32_u* hardware instructions.
  **/
 inline constexpr std::array<uint32_t, 256> CRC32_TABLE { make_crc32_table() };
 

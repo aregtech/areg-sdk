@@ -683,28 +683,128 @@ inline constexpr uint32_t crc32_calculate( std::string_view str ) noexcept
     return crc32_finish(crc);
 }
 
-#if defined(__SSE4_2__) || defined(_MSC_VER)  // MSVC emits crc32 with /arch:SSE4.2
+#if defined(__SSE4_2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_IX86)))
     #include <nmmintrin.h>
-    inline constexpr uint32_t _crc32_hardware(const uint8_t* data, int32_t size) noexcept
+    // HW intrinsics cannot be evaluated at compile time, not `constexpr` method.
+    // Computes CRC32C (Castagnoli) — same polynomial as CRC32_TABLE, so SW and HW results are identical.
+    inline uint32_t _crc32_hardware(const uint8_t* data, int32_t size) noexcept
     {
         uint32_t crc = crc32_init();
+    #if defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
         const uint8_t* end8 = data + (size & ~7);
         for (; data < end8; data += 8)
             crc = static_cast<uint32_t>(_mm_crc32_u64(crc, *reinterpret_cast<const uint64_t*>(data)));
         for (; data < end8 + (size & 7); ++data)
             crc = _mm_crc32_u8(crc, *data);
+    #else
+        const uint8_t* end4 = data + (size & ~3);
+        for (; data < end4; data += 4)
+            crc = _mm_crc32_u32(crc, *reinterpret_cast<const uint32_t*>(data));
+        for (; data < end4 + (size & 3); ++data)
+            crc = _mm_crc32_u8(crc, *data);
+    #endif
         return crc32_finish(crc);
     }
 #endif
 
+// At compile time uses the pure-software path (`constexpr`); at runtime on SSE4.2 x86/x64 uses hardware intrinsics.
+// __builtin_is_constant_evaluated() is a C++17 extension supported by all three toolchains this SDK targets.
 inline constexpr uint32_t crc32_hardware(const uint8_t* data, int32_t size) noexcept
 {
-#if defined(__SSE4_2__) || defined(_MSC_VER)  // MSVC emits crc32 with /arch:SSE4.2
-    return _crc32_hardware(data, size);
+#if defined(__SSE4_2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_IX86)))
+    if (__builtin_is_constant_evaluated())
+        return crc32_calculate(data, size);  // compile-time: software path
+    return _crc32_hardware(data, size);      // runtime: SIMD hardware path
 #else
     return crc32_calculate(data, size);
 #endif
 }
+
+/************************************************************************/
+// Compile-time CRC32C collision detection
+/************************************************************************/
+
+/**
+ * \brief   Scans a compile-time array of names and returns the index of the
+ *          first name whose CRC32C collides with any later name in the array.
+ *          Returns N (the array size) when no collision is found.
+ *
+ * \tparam  N       Number of names in the array (deduced automatically).
+ * \param   names   Array of string_view values to check.
+ * \return  Index of the first colliding name, or N if all hashes are unique.
+ **/
+template<std::size_t N>
+[[nodiscard]] constexpr std::size_t areg_crc32_first_collision(
+    const std::string_view (&names)[N]) noexcept
+{
+    for (std::size_t i = 0u; i < N; ++i)
+    {
+        const uint32_t ci { crc32_calculate(names[i]) };
+        for (std::size_t j = i + 1u; j < N; ++j)
+        {
+            if (ci == crc32_calculate(names[j]))
+                return i;
+        }
+    }
+    return N;
+}
+
+/**
+ * \brief   Compile-time CRC32C uniqueness guard.
+ *
+ *          Instantiate with the array size N and the result of
+ *          areg_crc32_first_collision(). When CollisionAt == N there is no
+ *          collision and the type is well-formed. When CollisionAt < N the
+ *          static_assert fires; the compiler error output includes the
+ *          template arguments \<N, CollisionAt\>, so CollisionAt directly
+ *          identifies the index of the first colliding name in the array.
+ *
+ *          Use the AREG_ASSERT_UNIQUE_CRC32 macro rather than instantiating
+ *          this template directly.
+ *
+ * \tparam  N           Total number of names in the checked group.
+ * \tparam  CollisionAt Index of the first CRC32C collision, or N if none.
+ **/
+template<std::size_t N, std::size_t CollisionAt>
+struct ArRegUniqueCRC32
+{
+    static_assert(CollisionAt == N,
+                  "CRC32C collision: two names in this group share the same hash value. "
+                  "Inspect template argument 'CollisionAt' in the compiler error to identify "
+                  "the index of the first colliding name in the array.");
+};
+
+/**
+ * \def     AREG_ASSERT_UNIQUE_CRC32(names_array)
+ * \brief   Verifies at compile time that no two entries in \a names_array
+ *          produce the same CRC32C value.  Zero runtime cost.
+ *
+ *          Place this macro immediately after a \c constexpr \c string_view
+ *          array in a namespace or struct scope:
+ *
+ *          \code
+ *          namespace MyService {
+ *              constexpr std::string_view METHOD_NAMES[] = {
+ *                  "request_processData",
+ *                  "response_processData",
+ *                  "notify_statusChanged"
+ *              };
+ *              AREG_ASSERT_UNIQUE_CRC32(METHOD_NAMES);
+ *          }
+ *          \endcode
+ *
+ *          If a collision exists the build fails with a message that includes
+ *          the zero-based index of the first colliding name.
+ **/
+#ifdef DEBUG
+#define AREG_ASSERT_UNIQUE_CRC32(names_array)                   \
+    using AREG_CRC32_UNIQUE_ ## __LINE__ = ArRegUniqueCRC32<    \
+          (sizeof(names_array) / sizeof((names_array)[0]))      \
+        , areg_crc32_first_collision(names_array)               \
+    >
+#else   // NDEBUG
+    #define AREG_ASSERT_UNIQUE_CRC32(names_array)
+#endif  // DEBUG
 
 inline constexpr double round(double val) noexcept
 {
