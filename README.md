@@ -15,14 +15,10 @@
 **High-throughput, service-oriented C++ middleware**  
 **From embedded systems to high-performance distributed applications**
 
-<div align="center">
-
 [![Latest release](https://img.shields.io/github/v/release/aregtech/areg-sdk?label=Latest%20release&style=social)](https://github.com/aregtech/areg-sdk/releases/tag/v1.5.0)
 [![GitHub commits](https://img.shields.io/github/commits-since/aregtech/areg-sdk/v1.5.0.svg?style=social)](https://github.com/aregtech/areg-sdk/compare/v1.5.0...master)
 [![Stars](https://img.shields.io/github/stars/aregtech/areg-sdk?style=social)](https://github.com/aregtech/areg-sdk/stargazers)
 [![Wiki Pages](https://img.shields.io/badge/Areg%20Wiki%20Pages-Docs-brightgreen?style=social&logo=wikipedia)](./docs/wiki/README.md)
-
-</div>
 
 ---
 
@@ -90,7 +86,7 @@ boundaries, and network boundaries — using a single consistent programming mod
 
 > [!NOTE]
 > **Best for:** C++ applications requiring reliable service communication, automated threading,
-> high-throughput IPC, or location-transparent service interfaces — from embedded edge devices
+> high-throughput IPC, or location-transparent services — from embedded edge devices
 > to high-performance distributed systems.
 >
 > **Not for:** RTOS hard real-time targets (planned), web services, or non-C++ ecosystems.
@@ -172,7 +168,7 @@ automatic reconnection, threading dispatch. Nothing stripped.
 > | WSL2 Ubuntu ²   | i7-13700H (DDR4) | 5.0–5.6 GB/s | 330–375K msg/s | 450–520K msg/s |
 > | macOS native ³  | M4 Pro (LPDDR5)  | 6.8–7.0 GB/s | 240–290K msg/s | TBD            |
 >
-> ¹ Consumer dispatch operates stably at 250–600K msg/s depending on platform, payload and configuration; above that the RPC dispatch thread becomes the bottleneck. Linux stable dispatch is estimated at 500K+ msg/s. See [23_pubdatarate README](examples/23_pubdatarate/ReadMe.md) for details.
+> ¹ Consumer dispatch operates stably at 250–600K msg/s depending on platform, payload and configuration; above that the RPC dispatch thread becomes the bottleneck. Linux stable dispatch is estimated at 500K+ msg/s. See [23_pubdatarate README](examples/23_pubdatarate/ReadMe.md) for details.  
 > ² Requires [network tuning](./docs/wiki/07d-troubleshooting-network-tunning.md); default WSL2 settings yield ~3.5 GB/s and ~500K msg/s.  
 > ³ Pre-optimization measurements — current results expected to be higher.
 >
@@ -188,18 +184,18 @@ automatic reconnection, threading dispatch. Nothing stripped.
 
 ## Areg SDK vs. Alternatives[![](./docs/img/pin.svg)](#areg-sdk-vs-alternatives)
 
-| Feature                   | Areg SDK                             | gRPC / DDS / ZeroMQ                                                                                                                                                                                                                                         |
-|---------------------------|--------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Setup Complexity**      | ✅ Automated, zero boilerplate       | ⚠️ Manual configuration, [verbose setup](https://www.innoq.com/en/blog/2024/06/grpc/#whataresomechallengesofworkingwithgrpc)                                                                                                                               |
-| **Threading**             | ✅ Automated threading               | ⚠️ Manual threading and synchronization                                                                                                                                                                                                                    |
-| **Code Generation**       | ✅ Full ORPC automation              | ⚠️ [Stubs only](https://grpc.io/docs/what-is-grpc/introduction/#overview), manual dispatch                                                                                                                                                                 |
-| **Service Discovery**     | ✅ Built-in mesh management          | ✅ DDS: [native](https://opendds.readthedocs.io/en/latest-release/devguide/introduction_to_dds.html#discovery-matching-and-association), ⚠️ gRPC/ZeroMQ: [external](https://stackoverflow.com/questions/59398556/grpc-equivalent-of-wcf-service-discovery) |
-| **Fault Recovery**        | ✅ Watchdog auto-restart             | ✅ DDS: [QoS policies](https://opendds.readthedocs.io/en/latest-release/devguide/quality_of_service.html), ⚠️ gRPC/ZeroMQ: [manual](https://grpc.io/docs/guides/retry/)                                                                                    |
-| **Request-Reply**         | ✅ Native Object RPC                 | ✅ gRPC: [RPC calls](https://grpc.io/docs/what-is-grpc/core-concepts/#overview), ⚠️ DDS/ZeroMQ: [topic/pattern](https://zguide.zeromq.org/docs/chapter3/)                                                                                                  |
-| **Pub/Sub**               | ✅ Native Attributes                 | ✅ DDS: [topics](https://opendds.readthedocs.io/en/latest-release/devguide/built_in_topics.html), ⚠️ gRPC/ZeroMQ: add-ons                                                                                                                                  |
-| **Location Transparency** | ✅ Identical API for threads and IPC | ⚠️ Different APIs for local vs. remote                                                                                                                                                                                                                      |
-| **Logging System**        | ✅ Distributed logs + viewer         | ⚠️ [Vendor-specific](https://community.rti.com/static/documentation/connext-dds/current/doc/manuals/addon_products/observability/telemetry_data/logs.html) or external tools                                                                               |
-| **Developer Speed**       | ✅ Faster via full automation        | ⚠️ Slower, more boilerplate                                                                                                                                                                                                                                 |
+| Feature                   | Areg SDK                       | gRPC / DDS / ZeroMQ                                                                                                                                                                                                                                         |
+|---------------------------|--------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Setup Complexity**      | ✅ Automated, zero boilerplate | ⚠️ Manual configuration, [verbose setup](https://www.innoq.com/en/blog/2024/06/grpc/#whataresomechallengesofworkingwithgrpc)                                                                                                                               |
+| **Threading**             | ✅ Automated threading         | ⚠️ Manual threading and synchronization                                                                                                                                                                                                                    |
+| **Code Generation**       | ✅ Full ORPC automation        | ⚠️ [Stubs only](https://grpc.io/docs/what-is-grpc/introduction/#overview), manual dispatch                                                                                                                                                                 |
+| **Service Discovery**     | ✅ Built-in mesh management    | ✅ DDS: [native](https://opendds.readthedocs.io/en/latest-release/devguide/introduction_to_dds.html#discovery-matching-and-association), ⚠️ gRPC/ZeroMQ: [external](https://stackoverflow.com/questions/59398556/grpc-equivalent-of-wcf-service-discovery) |
+| **Fault Recovery**        | ✅ Watchdog auto-restart       | ✅ DDS: [QoS policies](https://opendds.readthedocs.io/en/latest-release/devguide/quality_of_service.html), ⚠️ gRPC/ZeroMQ: [manual](https://grpc.io/docs/guides/retry/)                                                                                    |
+| **Request-Reply**         | ✅ Native Object RPC           | ✅ gRPC: [RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#overview), ⚠️ DDS/ZeroMQ: [topic/pattern](https://zguide.zeromq.org/docs/chapter3/)                                                                                                  |
+| **Pub/Sub**               | ✅ Native Attributes           | ✅ DDS: [topics](https://opendds.readthedocs.io/en/latest-release/devguide/built_in_topics.html), ⚠️ gRPC/ZeroMQ: add-ons                                                                                                                                  |
+| **Location Transparency** | ✅ One API for threads and IPC | ⚠️ Different APIs for local vs. remote                                                                                                                                                                                                                      |
+| **Logging System**        | ✅ Distributed logs + viewer   | ⚠️ [Vendor-specific](https://community.rti.com/static/documentation/connext-dds/current/doc/manuals/addon_products/observability/telemetry_data/logs.html) or external tools                                                                               |
+| **Developer Speed**       | ✅ Faster via full automation  | ⚠️ Slower, more boilerplate                                                                                                                                                                                                                                 |
 
 🔹 **Key Differentiators:**
 - **Complete automation** — Not just transport, but threading, dispatch, and lifecycle
@@ -301,11 +297,11 @@ cmake --build build -j20
 
 ### Learning Path
 
-1. **[01_minimalrpc](examples/01_minimalrpc/)** — Multithreading: service provider and consumer in separate threads, one process, no `mtrouter` needed
-2. **[02_minimalipc](examples/02_minimalipc/)** — IPC: the same components from `01_minimalrpc` running in separate processes via `mtrouter`; same code proves location transparency
+1. **[01_minimalrpc](examples/01_minimalrpc/)** — Multithreading: service provider and consumer in separate threads, one process, no `mtrouter`
+2. **[02_minimalipc](examples/02_minimalipc/)** — IPC: the same components from `01_minimalrpc` running in separate processes via `mtrouter`
 3. **[03_helloservice](examples/03_helloservice/)** — Extended progression: three projects showing the same service and consumer in one thread → separate threads → separate processes
-4. **[16_pubmesh](examples/16_pubmesh/)** — Service mesh: multiple local and public services discovering each other automatically. Multiprocessing requires `mtrouter`
-5. **[23_pubdatarate](examples/23_pubdatarate/)** — Platform-dependent high-throughput benchmark: 2.2–7 GB/s and 1M+ msg/s on `localhost` (loopback)
+4. **[16_pubmesh](examples/16_pubmesh/)** — Service mesh: multiple local and public services discovering each other automatically.
+5. **[23_pubdatarate](examples/23_pubdatarate/)** — Platform-dependent high-throughput benchmark: 2.2–7 GB/s and 1M+ msg/s on `localhost`
 6. **[More Examples](examples/README.md)** — Advanced patterns and features
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
