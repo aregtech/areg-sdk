@@ -734,7 +734,7 @@ inline constexpr uint32_t crc32_hardware(const uint8_t* data, int32_t size) noex
  * \return  Index of the first colliding name, or N if all hashes are unique.
  **/
 template<std::size_t N>
-[[nodiscard]] constexpr std::size_t areg_crc32_first_collision(
+[[nodiscard]] constexpr std::size_t crc32_first_collision(
     const std::string_view (&names)[N]) noexcept
 {
     for (std::size_t i = 0u; i < N; ++i)
@@ -746,6 +746,7 @@ template<std::size_t N>
                 return i;
         }
     }
+
     return N;
 }
 
@@ -753,7 +754,7 @@ template<std::size_t N>
  * \brief   Compile-time CRC32C uniqueness guard.
  *
  *          Instantiate with the array size N and the result of
- *          areg_crc32_first_collision(). When CollisionAt == N there is no
+ *          crc32_first_collision(). When CollisionAt == N there is no
  *          collision and the type is well-formed. When CollisionAt < N the
  *          static_assert fires; the compiler error output includes the
  *          template arguments \<N, CollisionAt\>, so CollisionAt directly
@@ -785,9 +786,9 @@ struct ArRegUniqueCRC32
  *          \code
  *          namespace MyService {
  *              constexpr std::string_view METHOD_NAMES[] = {
- *                  "request_processData",
- *                  "response_processData",
- *                  "notify_statusChanged"
+ *                  "request_process_data",
+ *                  "response_process_data",
+ *                  "notify_status_changed"
  *              };
  *              AREG_ASSERT_UNIQUE_CRC32(METHOD_NAMES);
  *          }
@@ -800,7 +801,7 @@ struct ArRegUniqueCRC32
 #define AREG_ASSERT_UNIQUE_CRC32(names_array)                   \
     using AREG_CRC32_UNIQUE_ ## __LINE__ = ArRegUniqueCRC32<    \
           (sizeof(names_array) / sizeof((names_array)[0]))      \
-        , areg_crc32_first_collision(names_array)               \
+        , crc32_first_collision(names_array)                    \
     >
 #else   // NDEBUG
     #define AREG_ASSERT_UNIQUE_CRC32(names_array)
