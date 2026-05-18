@@ -18,43 +18,53 @@
  * Include files.
  ************************************************************************/
 #include "aregextend/service/DataRateHelper.hpp"
+#include "aregextend/service/ServiceCommunicationBase.hpp"
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // DataRateHelper class implementation
 //////////////////////////////////////////////////////////////////////////
 
-DataRateHelper::DataRateHelper(ServerSendThread& sendThread, ServerReceiveThread& receiveThread, bool verbose)
-    : mSendThread   (sendThread)
-    , mReceiveThread(receiveThread)
+DataRateHelper::DataRateHelper(ServiceCommunicationBase& server, bool verbose)
+    : mServer(server)
 {
-    mSendThread.setEnableCalculateData(verbose);
-    mReceiveThread.setEnableCalculateData(verbose);
+    mServer.enable_data_rate(verbose);
 }
 
-void DataRateHelper::setVerbose(bool verbose)
+void DataRateHelper::set_verbose(bool verbose) noexcept
 {
-    mSendThread.setEnableCalculateData(verbose);
-    mReceiveThread.setEnableCalculateData(verbose);
+    mServer.enable_data_rate(verbose);
 }
 
-bool DataRateHelper::isVerbose(void) const
+bool DataRateHelper::is_verbose() const noexcept
 {
-    return mSendThread.isCalculateDataEnabled() && mReceiveThread.isCalculateDataEnabled();
+    return mServer.is_data_rate_enabled();
 }
 
-DataRateHelper::DataRate DataRateHelper::convertDataRateLiterals(uint32_t sizeBytes)
+void DataRateHelper::query_data_sent(uint64_t& sizeSent, uint32_t& msgSent) noexcept
+{
+    mServer.query_data_sent(sizeSent, msgSent);
+}
+
+void DataRateHelper::query_data_received(uint64_t& sizeRecv, uint32_t& msgRecv) noexcept
+{
+    mServer.query_data_received(sizeRecv, msgRecv);
+}
+
+DataRateHelper::DataRate DataRateHelper::convert_data_rate_literals(uint64_t sizeBytes)
 {
     DataRate dataRate{ 0.0f, "" };
 
     if (sizeBytes >= ONE_MEGABYTE)
     {
-        double rate = static_cast<double>(sizeBytes) / ONE_MEGABYTE;
+        double rate = static_cast<double>(sizeBytes / static_cast<double>(ONE_MEGABYTE));
         dataRate.first = static_cast<float>(rate);
         dataRate.second = DataRateHelper::MSG_MEGABYTES;
     }
     else if (sizeBytes >= ONE_KILOBYTE)
     {
-        double rate = static_cast<double>(sizeBytes) / ONE_KILOBYTE;
+        double rate = static_cast<double>(sizeBytes / static_cast<double>(ONE_KILOBYTE));
         dataRate.first = static_cast<float>(rate);
         dataRate.second = DataRateHelper::MSG_KILOBYTES;
     }
@@ -66,3 +76,5 @@ DataRateHelper::DataRate DataRateHelper::convertDataRateLiterals(uint32_t sizeBy
 
     return dataRate;
 }
+
+} // namespace areg::ext

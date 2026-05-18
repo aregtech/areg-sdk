@@ -4,24 +4,16 @@
 // PageConnections dialog
 
 #include "register/res/resource.h"
-#include "register/NECentralApp.hpp"
-#include "common/NECommon.hpp"
-#include "areg/base/TEArrayList.hpp"
+#include "register/CentralApp.hpp"
+#include "common/ChatDefs.hpp"
+#include "areg/base/ArrayList.hpp"
 
 class PageConnections : public CPropertyPage
 {
 
     static LPCTSTR HEADER_TITILES[];
 
-    typedef enum E_Header
-    {
-          NickName  = 0
-        , Message
-        , SentAt
-        , ReceivedAt
-    } eHeader;
-
-    typedef TEArrayList<NECommon::sMessageData *>   TypingList;
+    using TypingList = areg::ArrayList<chat:: MessageData *>;
 
 DECLARE_DYNAMIC(PageConnections)
 
@@ -33,21 +25,21 @@ public:
 	virtual ~PageConnections();
 
 public:
-    void ServiceConnected( bool isConnected );
+    void Connected( bool isConnected );
 
     void OutputMessage( CString nickName, CString message, CString dateStart, CString dateEnd, LPARAM data );
 
-    void OnDefaultClicked( void );
+    void OnDefaultClicked();
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
-    virtual BOOL OnInitDialog( ) override;
+	void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
+    BOOL OnInitDialog( ) override;
 
 	DECLARE_MESSAGE_MAP()
 
 public:
     afx_msg void OnClickedButtonBroadcast();
-    afx_msg void OnKickIdle( void );
+    afx_msg void OnKickIdle();
     afx_msg void OnBtnBroadcastUpdate( CCmdUI* pCmdUI );
     afx_msg void OnEditBroadcastUpdate( CCmdUI* pCmdUI );
     afx_msg LRESULT OnCmdRegistered( WPARAM wParam, LPARAM lParam );
@@ -56,11 +48,11 @@ public:
     afx_msg LRESULT OnCmdTypeMessage( WPARAM wParam, LPARAM lParam );
 
 private:
-    void setHeaders( void );
+    void setHeaders();
 
-    // int findInTyping( LPCTSTR nickName );
+    // int32_t findInTyping( LPCTSTR nickName );
 
-    int findInTyping( unsigned int cookie );
+    int32_t findInTyping( uint32_t cookie );
 
 private:
     CListCtrl   mCtrlList;

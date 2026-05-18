@@ -1,0 +1,28 @@
+#pragma once
+
+/************************************************************************
+ * \file            services/WorkerDefs.hpp
+ * \ingroup         Patient monitoring Service
+ * \brief           Common constants and service names for Patient monitoring Service.
+ ************************************************************************/
+
+ /************************************************************************
+  * Include files
+  ************************************************************************/
+#include "areg/base/areg_global.h"
+
+/**
+ * \brief   Common data for projects.
+ **/
+namespace worker
+{
+    /**
+     * \brief   The Patient Information service name.
+     **/
+    constexpr char  ServiceNamePatientInfo[]    { "PatientInfo" };
+
+    /**
+     * \brief   The hardware manager service name.
+     **/
+    constexpr char  ServiceNameHwManager[]      { "PatientClient" };
+}

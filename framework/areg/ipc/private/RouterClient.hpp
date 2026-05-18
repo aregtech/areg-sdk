@@ -18,31 +18,33 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
-#include "areg/component/IERemoteEventConsumer.hpp"
-#include "areg/ipc/IEServiceRegisterProvider.hpp"
-#include "areg/ipc/IERemoteMessageHandler.hpp"
+#include "areg/component/RemoteEventConsumer.hpp"
+#include "areg/ipc/RegistrationProvider.hpp"
+#include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/ipc/ServiceClientConnectionBase.hpp"
+#include "areg/component/RemoteEventFactory.hpp"
+
+namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IEServiceRegisterConsumer;
+class RegistrationConsumer;
 
 //////////////////////////////////////////////////////////////////////////
 // RouterClient class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The connected client servicing object to handle connections,
- *          to read and send message, to dispatch messages and
- *          communicate with service manager.
+ * \brief   Handles router client connection management, message processing, service
+ *          provider/consumer registration, and event dispatching.
  **/
-class RouterClient  : public    ServiceClientConnectionBase
-                    , public    IEServiceRegisterProvider
-                    , protected DispatcherThread
-                    , private   IERemoteMessageHandler
-                    , private   IERemoteEventConsumer
+class RouterClient final    : public    ServiceClientConnectionBase
+                            , public    RegistrationProvider
+                            , protected DispatcherThread
+                            , private   RemoteMessageHandler
+                            , private   RemoteEventConsumer
 {
 private:
     //! The prefix to add to the send and receive message threads.
@@ -52,15 +54,41 @@ private:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes client servicing object, sets remote service consumer object.
-     * \param   connectionConsumer  The instance of remote service connection consumer object to handle service connection notifications.
-     * \param   registerConsumer    The instance of remote service registration consumer to handle service register notification.
+     * \brief   Initializes router client with connection and registration consumer handlers.
+     *
+     * \param   connectionConsumer      The instance of remote service connection consumer object to
+     *                                  handle service connection notifications.
+     * \param   registerConsumer        The instance of remote service registration consumer to
+     *                                  handle service register notification.
      **/
-    RouterClient(IEServiceConnectionConsumer& connectionConsumer, IEServiceRegisterConsumer & registerConsumer);
+    RouterClient(ConnectionConsumer& connectionConsumer, RegistrationConsumer & registerConsumer);
+    ~RouterClient() override = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Raw-message fast-path helpers
+//////////////////////////////////////////////////////////////////////////
+public:
+
     /**
-     * \brief   Destructor
+     * \brief   Sends a pre-serialized RemoteMessage directly to the send thread,
+     *          bypassing all event creation and serialization overhead.
+     *          Use only with messages built via RemoteEventFactory::stream_from_event()
+     *          while the connection was established and the target cookie is still valid.
+     *
+     * \param   msg     The pre-built message to send.
+     * \return  Returns true if the message was accepted by the send thread.
      **/
-    virtual ~RouterClient( void ) = default;
+    inline bool send_raw_message(const RemoteMessage& msg);
+
+    /**
+     * \brief   Returns the active IPC connection channel.
+     *          The channel carries the router cookie stamped in every outgoing
+     *          RemoteMessage.  Valid only after the connection handshake completes
+     *          (i.e. when is_connection_started() returns true).
+     *
+     * \return  Const reference to the active Channel object.
+     **/
+    inline const areg::Channel& connection_channel() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -72,146 +100,164 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Call to start remote service. The host name and port number should be already set.
-     * \return  Returns true if start service is triggered.
+     * \brief   Initiates connection to remote service. Host name and port must be set beforehand.
+     *
+     * \return  Returns true if connection is triggered.
      **/
-    virtual bool connectServiceHost( void ) override;
+    bool connect_service_host() final;
 
     /**
-     * \brief   Call to stop service. No more remote communication should be possible.
+     * \brief   Stops service connection and disables remote communication.
      **/
-    virtual void disconnectServiceHost( void ) override;
+    void disconnect_service_host() final;
 
     /**
-     * \brief   Triggered when need to quit the service.
+     * \brief   Called when service needs to shut down.
      **/
-    virtual void onServiceExit(void) override;
+    void on_service_exit() final;
 
     /**
-     * \brief   Returns true, if remote service connection is triggered, not connected yet and in pending state.
+     * \brief   Returns true if remote service connection is pending (triggered but not yet
+     *          connected).
      **/
-    virtual bool isServiceHostPending(void) const override;
+    bool is_host_pending() const final;
 
 /************************************************************************/
-// IERemoteMessageHandler interface overrides
-/************************************************************************/
-
-    /**
-     * \brief   Triggered, when failed to send message.
-     * \param   msgFailed   The message, which failed to send.
-     * \param   whichTarget The target socket to send message.
-     **/
-    virtual void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
-
-    /**
-     * \brief   Triggered, when failed to receive message.
-     * \param   whichSource Indicates the failed source socket to receive message.
-     **/
-    virtual void failedReceiveMessage( Socket & whichSource ) override;
-
-    /**
-     * \brief   Triggered, when failed to process message, i.e. the target for message processing was not found.
-     *          In case of request message processing, the source should receive error notification.
-     * \param   msgUnprocessed  Unprocessed message data.
-     **/
-    virtual void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
-
-    /**
-     * \brief   Triggered, when need to process received message.
-     * \param   msgReceived Received message to process.
-     * \param   whichSource The source socket, which received message.
-     **/
-    virtual void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
-
-/************************************************************************/
-// IEServiceRegisterProvider interface overrides
+// RemoteMessageHandler interface overrides
 /************************************************************************/
 
     /**
-     * \brief   Call to register the remote service provider in the system and connect with service consumers.
-     *          When service provider is registered, the service provider and all waiting service consumers
-     *          receive appropriate connection notifications.
+     * \brief   Called when message sending fails.
+     *
+     * \param   msgFailed       The message, which failed to send.
+     * \param   whichTarget     The target socket to send message.
+     **/
+    void failed_send_message( const RemoteMessage & msgFailed, Socket & whichTarget ) final;
+
+    /**
+     * \brief   Called when message receiving fails.
+     *
+     * \param   whichSource     Indicates the failed source socket to receive message.
+     **/
+    void failed_receive_message( Socket & whichSource ) final;
+
+    /**
+     * \brief   Called when message processing fails (target not found). For requests, error
+     *          notification is sent to source.
+     *
+     * \param   msgUnprocessed      Unprocessed message data.
+     **/
+    void failed_process_message( const RemoteMessage & msgUnprocessed ) final;
+
+    /**
+     * \brief   Called to process a received message from specified source socket.
+     *
+     * \param   msgReceived     Received message to process.
+     * \param   whichSource     The source socket, which received message.
+     **/
+    void process_received_message( RemoteMessage & msgReceived, Socket & whichSource ) final;
+
+/************************************************************************/
+// RegistrationProvider interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Registers a service provider (Stub) in the system. Connected consumers receive
+     *          connection notifications.
+     *
      * \param   stubService     The address of service provider to register in the system.
-     * \return  Returns true if succeeded registration.
+     * \return  Returns true if registration succeeded.
      **/
-    virtual bool registerServiceProvider( const StubAddress & stubService ) override;
+    bool register_service_provider( const StubAddress & stubService ) final;
 
     /**
-     * \brief   Call to unregister the service provider from the system and disconnect service consumers.
-     *          All connected service consumers automatically receive disconnect notifications.
+     * \brief   Unregisters a service provider (Stub) from the system. Connected consumers receive
+     *          disconnect notifications.
+     *
      * \param   stubService     The address of service provider to unregister in the system.
      * \param   reason          The reason to unregister and disconnect the service provider.
      **/
-    virtual void unregisterServiceProvider( const StubAddress & stubService, const NEService::eDisconnectReason reason ) override;
+    void unregister_service_provider( const StubAddress & stubService, const areg::DisconnectReason reason ) final;
 
     /**
-     * \brief   Call to register the remote service consumer in the system and connect to service provider.
-     *          If the service provider is already available, the service consumer and the service provider
-     *          receive a connection notification.
+     * \brief   Registers a service consumer (Proxy) in the system. If provider is available, both
+     *          receive connection notification.
+     *
      * \param   proxyService    The address of the service consumer to register in system.
-     * \return  Returns true if registration process started with success. Otherwise, it returns false.
+     * \return  Returns true if registration process started successfully.
      **/
-    virtual bool registerServiceConsumer( const ProxyAddress & proxyService ) override;
+    bool register_service_consumer( const ProxyAddress & proxyService ) final;
 
     /**
-     * \brief   Call to unregister the service consumer from the system and disconnect service provider.
-     *          Both, the service provider and the service consumer receive appropriate disconnect notification.
+     * \brief   Unregisters a service consumer (Proxy) from the system. Provider receives disconnect
+     *          notification.
+     *
      * \param   proxyService    The address of the service consumer to unregister from the system.
      * \param   reason          The reason to unregister and disconnect the service consumer.
      **/
-    virtual void unregisterServiceConsumer( const ProxyAddress & proxyService, const NEService::eDisconnectReason reason ) override;
+    void unregister_service_consumer( const ProxyAddress & proxyService, const areg::DisconnectReason reason ) final;
 
 /************************************************************************/
-// IEEventRouter interface overrides
-/************************************************************************/
-
-    /**
-     * \brief	Posts event and delivers to its target.
-     *          Since the Dispatcher Thread is a Base object for
-     *          Worker and Component threads, it does nothing
-     *          and only destroys event object without processing.
-     *          Override this method or use Worker / Component thread.
-     * \param	eventElem	Event object to post
-     * \return	In this class it always returns true.
-     **/
-    virtual bool postEvent( Event & eventElem ) override;
-
-/************************************************************************/
-// IERemoteEventConsumer interface overrides
+// EventRouter interface overrides
 /************************************************************************/
 
     /**
-     * \brief   Triggered when the Stub receives remote request event to process.
-     * \param   requestEvent        The remote request event to be processed.
+     * \brief   Posts an event for delivery to its target. Base implementation destroys event
+     *          without processing.
+     *
+     * \param   eventElem       Event object to post.
+     * \return  Always returns true in this base class.
      **/
-    virtual void processRemoteRequestEvent( RemoteRequestEvent & requestEvent ) override;
+    [[nodiscard]]
+    bool post_event( Event & eventElem ) final;
+
+/************************************************************************/
+// RemoteEventConsumer interface overrides
+/************************************************************************/
 
     /**
-     * \brief   Triggered when the Stub receives remote notification request event to process.
-     *          For example, send by Proxy and processed by Stub when need to start or stop
-     *          sending attribute update notifications.
-     * \param   requestNotifyEvent  The remote notification request event to be processed.
+     * \brief   Called when Stub receives a remote request event to process.
+     *
+     * \param   reqEvent    The remote request event to be processed.
      **/
-    virtual void processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & requestNotifyEvent ) override;
+    void process_request_event( RemoteRequestEvent & reqEvent ) final;
 
     /**
-     * \brief   Triggered when the Stub receives remote response request event to process.
-     *          For example, send by Proxy and processed by Stub when need to start or stop
-     *          to subscribe on information or response sent by Stub.
-     * \param   responseEvent   The remote response event sent on processed request.
+     * \brief   Called when Stub receives a remote notification subscription request (start/stop
+     *          attribute updates).
+     *
+     * \param   reqNotifyEvent      The remote notification request event to be processed.
      **/
-    virtual void processRemoteResponseEvent( RemoteResponseEvent & responseEvent ) override;
+    void process_notify_request( RemoteNotifyRequestEvent & reqNotifyEvent ) final;
+
+    /**
+     * \brief   Called when Stub receives a remote response subscription request.
+     *
+     * \param   respEvent       The remote response event sent on processed request.
+     **/
+    void process_response_event( RemoteResponseEvent & respEvent ) final;
 
 /************************************************************************/
 // DispatcherThread overrides
 /************************************************************************/
 
     /**
-     * \brief   Call to enable or disable event dispatching threads to receive events.
-     *          Override if need to make event dispatching preparation job.
-     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
+     * \brief   Enables or disables event dispatching thread to receive events. Override for custom
+     *          preparation.
+     *
+     * \param   is_ready     The flag to indicate whether the dispatcher is ready for events.
      **/
-    virtual void readyForEvents( bool isReady ) override;
+    void ready_for_events( bool is_ready ) final;
+
+/************************************************************************/
+// ServiceEventConsumer interface overrides
+/************************************************************************/
+    /**
+     * \brief   Called to process and dispatch a received communication message.
+     *
+     * \param   msgReceived     The received communication message.
+     **/
+    void on_message_received(const RemoteMessage& msgReceived) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations and attributes
@@ -219,9 +265,19 @@ protected:
 private:
 
     /**
-     * \brief   Returns instance of client servicing object.
+     * \brief   Returns reference to this router client object.
      **/
-    inline RouterClient & self( void );
+    [[nodiscard]]
+    inline RouterClient & self() noexcept;
+
+    /**
+     * \brief   Call to send the executable message to process. It triggers event with command ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg
+     *
+     * \param   msg     The message to forward.
+     * \return  Returns true if succeeded to send the command.
+     **/
+    inline void forward_executable_message(const RemoteMessage & msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
+    inline void forward_executable_message(RemoteMessage&& msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -230,23 +286,58 @@ private:
     /**
      * \brief   The instance of service register consumer.
      **/
-    IEServiceRegisterConsumer &     mRegisterConsumer;
+    RegistrationConsumer &     mRegisterConsumer;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    RouterClient( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( RouterClient );
+    RouterClient() = delete;
+    AREG_NOCOPY_NOMOVE( RouterClient );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // RouterClient class inline methods implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline RouterClient & RouterClient::self( void )
+inline RouterClient & RouterClient::self() noexcept
 {
     return (*this);
 }
 
+inline void RouterClient::forward_executable_message(const RemoteMessage& msg, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/)
+{
+    ServiceClientEvent::send_event(ServiceEventData(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msg), mEventConsumer, static_cast<DispatcherThread&>(self()), eventPrio);
+}
+
+inline void RouterClient::forward_executable_message(RemoteMessage&& msg, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/)
+{
+    ServiceClientEvent::send_event(ServiceEventData(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, std::move(msg)), mEventConsumer, static_cast<DispatcherThread&>(self()), eventPrio);
+}
+
+inline bool RouterClient::send_raw_message(const RemoteMessage& msg)
+{
+    return send_message(msg);
+}
+
+inline const areg::Channel& RouterClient::connection_channel() const noexcept
+{
+    return mChannel;
+}
+
+inline void RouterClient::on_message_received(const RemoteMessage& msgReceived)
+{
+    ASSERT(areg::is_executable_id(static_cast<uint32_t>(msgReceived.message_id())));
+    StreamableEvent* eventRemote = RemoteEventFactory::event_from_stream(msgReceived, mChannel);
+    if (eventRemote != nullptr)
+    {
+        eventRemote->deliver_event();
+    }
+    else
+    {
+        failed_process_message(msgReceived);
+    }
+}
+
+} // namespace areg
 #endif  // AREG_IPC_PRIVATE_ROUTERCLIENT_HPP

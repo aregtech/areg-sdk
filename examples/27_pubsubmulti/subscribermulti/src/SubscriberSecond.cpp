@@ -10,52 +10,52 @@
   ************************************************************************/
 #include "subscribermulti/src/SubscriberSecond.hpp"
 
-#include "subscribermulti/src/NECommon.hpp"
-#include "areg/logging/GELog.h"
+#include "subscribermulti/src/PubSubDefs.hpp"
+#include "areg/logging/areg_log.h"
 
-DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_serviceConnected);
-DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_onServiceProviderStateUpdate);
+DEF_LOG_SCOPE(examples_27_pubsubmulti_subscribermulti_SubscriberSecond, service_connected);
+DEF_LOG_SCOPE(examples_27_pubsubmulti_subscribermulti_SubscriberSecond, on_service_provider_state_update);
 
-SubscriberSecond::SubscriberSecond( const NERegistry::DependencyEntry & entry, Component & owner )
-    : SubscriberBase    ( entry, owner, NECommon::Coord2Integer, NECommon::Coord2String )
+SubscriberSecond::SubscriberSecond( const areg::DependencyEntry & entry, areg::Component & owner )
+    : SubscriberBase    ( entry, owner, pubsub::Coord2Integer, pubsub::Coord2String )
 {
 }
 
-bool SubscriberSecond::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
+bool SubscriberSecond::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
-    LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_serviceConnected);
-    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::getString(status));
-    if (NEService::isServiceDisconnected(status))
+    LOG_SCOPE( examples_27_pubsubmulti_subscribermulti_SubscriberSecond, service_connected );
+    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::as_string(status));
+    if (areg::is_service_disconnected(status))
     {
-        notifyOnStringOnChangeUpdate(false);
-        notifyOnIntegerAlwaysUpdate(false);
-        notifyOnServiceProviderStateUpdate(false);
+        notify_on_string_on_change_update(false);
+        notify_on_integer_always_update(false);
+        notify_on_service_provider_state_update(false);
     }
 
-    return PubSubClientBase::serviceConnected( status, proxy );
+    return PubSubConsumerBase::service_connected( status, proxy );
 }
 
-void SubscriberSecond::onServiceProviderStateUpdate(NEPubSub::eServiceState ServiceProviderState, NEService::eDataStateType state)
+void SubscriberSecond::on_service_provider_state_update(PubSub::RunState ServiceProviderState, areg::DataState state)
 {
-    LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_onServiceProviderStateUpdate);
-    if (state == NEService::eDataStateType::DataIsOK)
+    LOG_SCOPE( examples_27_pubsubmulti_subscribermulti_SubscriberSecond, on_service_provider_state_update );
+    if (state == areg::DataState::DataIsOK)
     {
-        if (isIntegerAlwaysValid() == false)
+        if (!is_integer_always_valid())
         {
             LOG_DBG("The integer to update ALWAYS is not valid, subscribe on data");
-            notifyOnIntegerAlwaysUpdate(true);
+            notify_on_integer_always_update(true);
         }
 
-        if (isStringOnChangeValid() == false)
+        if (!is_string_on_change_valid())
         {
             LOG_DBG("The string to update ON CHANGE is not valid, subscribe on data");
-            notifyOnStringOnChangeUpdate(true);
+            notify_on_string_on_change_update(true);
         }
 
-        if (ServiceProviderState == NEPubSub::eServiceState::Shutdown)
+        if (ServiceProviderState == PubSub::RunState::Shutdown)
         {
-            notifyOnStringOnChangeUpdate(false);
-            notifyOnIntegerAlwaysUpdate(false);
+            notify_on_string_on_change_update(false);
+            notify_on_integer_always_update(false);
         }
     }
 }

@@ -3,15 +3,16 @@
 
 #include <iostream>
 #include "areg/base/String.hpp"
+#include "areg/appbase/AppDefs.hpp"
 
 int main()
 {
-	String hello("Hello from Areg SDK ...");
-	std::cout << hello.getData() << std::endl;
+	areg::String hello("Hello from Areg SDK ...");
+	std::cout << hello.data() << std::endl;
 
 	hello = "\'areg.init\' location -> ";
-	hello += AREG_SHARE_INIT; // <== 'areg.init' file location
-	std::cout << hello.getData() << std::endl;
+	hello += areg::DEFAULT_CONFIG_FILE; // <== 'areg.init' file location
+	std::cout << hello.data() << std::endl;
 
 	return 0;
 }

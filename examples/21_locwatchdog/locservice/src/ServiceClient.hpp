@@ -12,9 +12,9 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/21_locwatchdog/services/HelloWatchdogClientBase.hpp"
+#include "examples/21_locwatchdog/services/HelloWatchdogConsumerBase.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
@@ -26,8 +26,8 @@
  *          terminates the thread and components and restarts again.
  *          After reaching certain amount of restarts, the application quits.
  **/
-class ServiceClient : public    Component
-                    , protected HelloWatchdogClientBase
+class ServiceClient final : public    areg::Component
+                          , protected HelloWatchdogConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -39,7 +39,7 @@ public:
      * \param   entry   The entry of registry, which describes the component.
      * \param   owner   The component owning thread.
      **/
-    ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -55,7 +55,7 @@ protected:
      * \param   ServiceState    The value of ServiceState attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onServiceStateUpdate( NEHelloWatchdog::eState ServiceState, NEService::eDataStateType state ) override;
+    void on_service_state_update( HelloWatchdog::ComponentState ServiceState, areg::DataState state ) final;
 
     /**
      * \brief   Response callback.
@@ -63,12 +63,12 @@ protected:
      *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   timeoutSleep    The timeout in milliseconds while thread was in suspended mode.
-     * \see     requestStartSleep
+     * \see     request_start_sleep
      **/
-    virtual void responseStartSleep( unsigned int timeoutSleep ) override;
+    void response_start_sleep( uint32_t timeoutSleep ) final;
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -81,13 +81,13 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ServiceClient & self( void );
+    inline ServiceClient & self();
 
 //////////////////////////////////////////////////////////////////////////
 // member variables
@@ -99,11 +99,11 @@ private:
 // forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceClient( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServiceClient );
+    ServiceClient() = delete;
+    AREG_NOCOPY_NOMOVE( ServiceClient );
 };
 
-inline ServiceClient & ServiceClient::self( void )
+inline ServiceClient & ServiceClient::self()
 {
     return (*this);
 }

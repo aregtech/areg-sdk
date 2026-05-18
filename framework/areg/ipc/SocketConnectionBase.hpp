@@ -18,20 +18,24 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
-#include "areg/base/NESocket.hpp"
+#include "areg/base/areg_global.h"
+#include "areg/base/SocketDefs.hpp"
+#include "areg/base/Socket.hpp"
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class RemoteMessage;
-class Socket;
+namespace areg {
+    class RemoteMessage;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // SocketConnectionBase class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The client and server connection base class to extend
+ * \brief   Base class for socket-based client and server connection send and receive operations.
  **/
 class AREG_API SocketConnectionBase
 {
@@ -39,63 +43,116 @@ class AREG_API SocketConnectionBase
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief   Default constructor
-     **/
-    SocketConnectionBase( void ) = default;
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~SocketConnectionBase( void ) = default;
+    SocketConnectionBase() noexcept;
+    virtual ~SocketConnectionBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   If socket is valid, sends data using existing socket connection and returns length in bytes
-     *          of data in Remote Buffer. And returns negative number if either socket is invalid,
-     *          or failed to send data to remote host. No data will be sent, if Remote Buffer is empty.
-     *          Before sending data, the method will check and validate existing checksum in buffer
-     *          structure. And if checksum is invalid, the data will not be sent to remote target.
-     *          If checksum is invalid, the returned value is zero.
-     *          Note:   The returned value of sent data (used data length) will be different of total buffer length.
-     *          Note:   If Remote Buffer is empty, nothing will be sent.
-     *          Note:   The call is blocking and method will not return until all data are not sent
-     *                  or if data sending fails.
-     *          Note:   Check and set checksum before sending data.
-     * \param   in_message      The instance of buffer to send. The checksum number of Remote Buffer object
-     *                          will be checked before sending. If checksum is invalid, the data will not be sent.
-     * \param   clientSocket    The socket object, which can be either client connection socket or accepted socket on server side
-     * \return  Returns length in bytes of data in Remote Buffer sent to remote host. 
-     *          Returns negative number if socket is not valid of failed to send.
-     *          Returns zero, if checksum in Remote Buffer was not validated or Remote Buffer object is empty.
+     * \brief   Sends message data via socket after validating checksum. Blocking operation.
+     *
+     * \param[in]   message     Buffer to send; checksum will be validated before sending.
+     * \param       socket      A socket for communication (client or server-side accepted socket).
+     * \return  Returns bytes sent on success; zero if checksum invalid or buffer empty; negative on socket error.
      **/
-    int sendMessage( const RemoteMessage & in_message, const Socket & clientSocket ) const;
+    inline int32_t send_message( const RemoteMessage & message, const Socket & socket ) const;
 
     /**
-     * \brief   If socket is valid, receives data using existing socket connection and returns length in bytes
-     *          of data in Remote Buffer. And returns negative number if either socket is invalid,
-     *          or failed to receive data from remote host. If Remote Buffer data is empty or checksum is,
-     *          not matching, it will return zero.
-     *          Note:   The returned value of received data (used data length) will be different of total buffer length.
-     *          Note:   If received Remote Buffer was empty, on output out_message in invalid.
-     *          Note:   The call is blocking and method will not return until all data are not received
-     *                  or if data receiving fails.
-     * \param   out_message     The instance of Remote Buffer to receive data. The checksum number of Remote Buffer object
-     *                          will be checked after receiving data. If checksum is invalid, the data will invalidated and dropped.
-     * \param   clientSocket    The socket object, which can be either client connection socket or accepted socket on server side
-     * \return  Returns length in bytes of data in Remote Buffer received from remote host.
-     *          Returns negative number if socket is not valid of failed to send.
-     *          Returns zero, if checksum in Remote Buffer was not validated or data in Remote Buffer object is empty.
+     * \brief   Sends multiple messages to the same socket in a single syscall using
+     *          scatter/gather I/O (writev on POSIX, WSASend on Windows). All messages
+     *          must target the same socket.
+     *
+     *          buffer_completion_fix() is called on each message before sending.
+     *          Messages that are not valid (is_valid() returns false) are skipped.
+     *
+     * \param   messages    Array of pointers to messages to send.
+     * \param   count       Number of entries in the array.
+     * \param   socket      Target socket; must be valid.
+     * \return  Total bytes sent on success; negative if the syscall fails.
      **/
-    int receiveMessage( RemoteMessage & out_message, const Socket & clientSocket ) const;
+    inline int32_t send_messages_batch( const RemoteMessage* const* messages, uint32_t count, const Socket & socket ) const;
+
+    /**
+     * \brief   Sends message data using a raw socket handle. Avoids constructing a Socket wrapper
+     *          in the hot path. Semantically equivalent to send_message(message, Socket(hSocket)).
+     *
+     * \param   message     Buffer to send; checksum will be validated before sending.
+     * \param   hSocket     Raw OS socket handle; must be valid.
+     * \return  Returns bytes sent on success; zero if checksum invalid or buffer empty; negative on error.
+     **/
+    int32_t send_message( const RemoteMessage & message, SOCKETHANDLE hSocket ) const;
+
+    /**
+     * \brief   Sends multiple messages to the same socket handle in a single syscall.
+     *          Semantically equivalent to send_messages_batch(messages, count, Socket(hSocket)).
+     *
+     * \param   messages    Array of pointers to messages to send.
+     * \param   count       Number of entries in the array.
+     * \param   hSocket     Raw OS socket handle; must be valid.
+     * \return  Total bytes sent on success; negative if the syscall fails.
+     **/
+    int32_t send_messages_batch( const RemoteMessage* const* messages, uint32_t count, SOCKETHANDLE hSocket ) const;
+
+    /**
+     * \brief   Sends multiple messages to the same socket handle in a single syscall.
+     *
+     * \param   ioBuffer    Array of pointers to the buffers to send.
+     * \param   count       Number of entries in the array.
+     * \param   socket      Target socket; must be valid.
+     * \param   totalSize   The total size of data in the `ioBuffer` to send. If 0, it is calculated.
+     * \return  Total bytes sent on success; negative if the syscall fails.
+     **/
+    inline int32_t send_messages_batch(const areg::IoBuffer* const ioBuffer, uint32_t count, const Socket& socket, uint32_t totalSize = 0) const;
+
+    /**
+     * \brief   Sends multiple messages to the same socket handle in a single syscall.
+     *          Semantically equivalent to send_messages_batch(ioBuffer, count, Socket(hSocket), totalSize).
+     *
+     * \param   ioBuffer    Array of pointers to the buffers to send.
+     * \param   count       Number of entries in the array.
+     * \param   hSocket     Raw OS socket handle; must be valid.
+     * \param   totalSize   The total size of data in the `ioBuffer` to send. If 0, it is calculated.
+     * \return  Total bytes sent on success; negative if the syscall fails.
+     **/
+    inline int32_t send_messages_batch(const areg::IoBuffer* const ioBuffer, uint32_t count, SOCKETHANDLE hSocket, uint32_t totalSize = 0) const;
+
+    /**
+     * \brief   Receives message data via socket and validates checksum. Blocking operation.
+     *
+     * \param[out]  message     Buffer to receive data; checksum validated after receiving.
+     * \param       socket      A socket for communication (client or server-side accepted socket). Must be valid.
+     * \return  Returns bytes received on success; zero if checksum invalid or buffer empty; negative on socket error.
+     **/
+    int32_t receive_message( RemoteMessage & message, const Socket & socket ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( SocketConnectionBase );
+    AREG_NOCOPY_NOMOVE( SocketConnectionBase );
 };
 
+inline int32_t SocketConnectionBase::send_message(const RemoteMessage& message, const Socket& socket) const
+{
+    return send_message(message, socket.handle());
+}
+
+inline int32_t SocketConnectionBase::send_messages_batch(const areg::IoBuffer* const ioBuffer, uint32_t count, SOCKETHANDLE hSocket, uint32_t totalSize) const
+{
+    return areg::send_data_v(hSocket, ioBuffer, count, totalSize);
+}
+
+inline int32_t SocketConnectionBase::send_messages_batch(const areg::IoBuffer* const ioBuffer, uint32_t count, const Socket& socket, uint32_t totalSize /*= 0*/) const
+{
+    return areg::send_data_v(socket.handle(), ioBuffer, count, totalSize);
+}
+
+inline int32_t SocketConnectionBase::send_messages_batch(const RemoteMessage* const* messages, uint32_t count, const Socket& socket) const
+{
+    return send_messages_batch(messages, count, socket.handle());
+}
+
+} // namespace areg
 #endif  // AREG_IPC_PRIVATE_SOCKETCONNECTIONBASEE_HPP

@@ -10,91 +10,91 @@
   ************************************************************************/
 #include "pubclient/src/TrafficLightClient.hpp"
 
-#include "common/NECommon.hpp"
-#include "areg/logging/GELog.h"
+#include "common/FsmDefs.hpp"
+#include "areg/logging/areg_log.h"
 #include "areg/appbase/Application.hpp"
 
-DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_onTrafficSouthNorthUpdate);
-DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_onTrafficEastWestUpdate);
-DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_broadcastSouthNorth);
-DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_broadcastEastWest);
-DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_serviceConnected);
+DEF_LOG_SCOPE(pubclient_src_TrafficLightClient, on_traffic_south_north_update);
+DEF_LOG_SCOPE(pubclient_src_TrafficLightClient, on_traffic_east_west_update);
+DEF_LOG_SCOPE(pubclient_src_TrafficLightClient, broadcast_south_north);
+DEF_LOG_SCOPE(pubclient_src_TrafficLightClient, broadcast_east_west);
+DEF_LOG_SCOPE(pubclient_src_TrafficLightClient, service_connected);
 
-TrafficLightClient::TrafficLightClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component                     ( entry, owner )
-    , TrafficControllerClientBase   (entry.mDependencyServices[0].mRoleName)
-    , mIsEastWest                   (std::any_cast<bool>(entry.getData()))
+TrafficLightClient::TrafficLightClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    : areg::Component                     ( entry, owner )
+    , TrafficControllerConsumerBase   (entry.mDependencyServices[0].mRoleName)
+    , mIsEastWest                   (std::any_cast<bool>(entry.data()))
 {
 }
 
-void TrafficLightClient::onTrafficSouthNorthUpdate(const NETrafficController::sTrafficLight & TrafficSouthNorth, NEService::eDataStateType state)
+void TrafficLightClient::on_traffic_south_north_update(const TrafficController::sTrafficLight & TrafficSouthNorth, areg::DataState state)
 {
-    LOG_SCOPE(pubclient_src_TrafficLightClient_onTrafficSouthNorthUpdate);
+    LOG_SCOPE( pubclient_src_TrafficLightClient, on_traffic_south_north_update );
 
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == areg::DataState::DataIsOK)
     {
-        printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", NECommon::getName(TrafficSouthNorth.lightVehicle), NECommon::getName(TrafficSouthNorth.lightPedestrian));
+        printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", fsm::name(TrafficSouthNorth.lightVehicle), fsm::name(TrafficSouthNorth.lightPedestrian));
         
-        notifyOnTrafficSouthNorthUpdate(false);
-        notifyOnBroadcastSouthNorth(true);
+        notify_on_traffic_south_north_update(false);
+        notify_on_broadcast_south_north(true);
     }
     else
     {
         printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n"
-                    , NECommon::getName(NETrafficController::eVehicleTrafficLight::VehicleLightOFF)
-                    , NECommon::getName(NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF));
+                    , fsm::name(TrafficController::VehicleTrafficLight::Off)
+                    , fsm::name(TrafficController::PedestrianTrafficLight::Off));
     }
 }
 
-void TrafficLightClient::onTrafficEastWestUpdate(const NETrafficController::sTrafficLight & TrafficEastWest, NEService::eDataStateType state)
+void TrafficLightClient::on_traffic_east_west_update(const TrafficController::sTrafficLight & TrafficEastWest, areg::DataState state)
 {
-    LOG_SCOPE(pubclient_src_TrafficLightClient_onTrafficEastWestUpdate);
+    LOG_SCOPE( pubclient_src_TrafficLightClient, on_traffic_east_west_update );
 
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == areg::DataState::DataIsOK)
     {
-        printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", NECommon::getName(TrafficEastWest.lightVehicle), NECommon::getName(TrafficEastWest.lightPedestrian));
+        printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", fsm::name(TrafficEastWest.lightVehicle), fsm::name(TrafficEastWest.lightPedestrian));
 
-        notifyOnTrafficEastWestUpdate(false);
-        notifyOnBroadcastEastWest(true);
+        notify_on_traffic_east_west_update(false);
+        notify_on_broadcast_east_west(true);
     }
     else
     {
         printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n"
-                    , NECommon::getName(NETrafficController::eVehicleTrafficLight::VehicleLightOFF)
-                    , NECommon::getName(NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF));
+                    , fsm::name(TrafficController::VehicleTrafficLight::Off)
+                    , fsm::name(TrafficController::PedestrianTrafficLight::Off));
     }
 }
 
-void TrafficLightClient::broadcastSouthNorth(NETrafficController::eVehicleTrafficLight LightVehicle, NETrafficController::ePedestrianTrafficLight LightPedestrian)
+void TrafficLightClient::broadcast_south_north(TrafficController::VehicleTrafficLight LightVehicle, TrafficController::PedestrianTrafficLight LightPedestrian)
 {
-    LOG_SCOPE(pubclient_src_TrafficLightClient_broadcastSouthNorth);
+    LOG_SCOPE( pubclient_src_TrafficLightClient, broadcast_south_north );
 
-    printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", NECommon::getName(LightVehicle), NECommon::getName(LightPedestrian));
+    printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", fsm::name(LightVehicle), fsm::name(LightPedestrian));
 }
 
-void TrafficLightClient::broadcastEastWest(NETrafficController::eVehicleTrafficLight LightVehicle, NETrafficController::ePedestrianTrafficLight LightPedestrian)
+void TrafficLightClient::broadcast_east_west(TrafficController::VehicleTrafficLight LightVehicle, TrafficController::PedestrianTrafficLight LightPedestrian)
 {
-    LOG_SCOPE(pubclient_src_TrafficLightClient_broadcastEastWest);
+    LOG_SCOPE( pubclient_src_TrafficLightClient, broadcast_east_west );
 
-    printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", NECommon::getName(LightVehicle), NECommon::getName(LightPedestrian));
+    printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", fsm::name(LightVehicle), fsm::name(LightPedestrian));
 }
 
-bool TrafficLightClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
+bool TrafficLightClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
-    LOG_SCOPE(pubclient_src_TrafficLightClient_serviceConnected);
+    LOG_SCOPE( pubclient_src_TrafficLightClient, service_connected );
 
-    bool result = TrafficControllerClientBase::serviceConnected( status, proxy );
-    if ( isConnected( ) )
+    bool result = TrafficControllerConsumerBase::service_connected( status, proxy );
+    if ( is_connected( ) )
     {
         if ( mIsEastWest )
         {
             LOG_DBG( "The traffic light controller is connected, East-West direction" );
-            notifyOnTrafficEastWestUpdate( true );
+            notify_on_traffic_east_west_update( true );
         }
         else
         {
             LOG_DBG( "The traffic light controller is connected, South-North direction" );
-            notifyOnTrafficSouthNorthUpdate( true );
+            notify_on_traffic_south_north_update( true );
         }
     }
     else
@@ -102,17 +102,17 @@ bool TrafficLightClient::serviceConnected( NEService::eServiceConnection status,
         LOG_WARN( "The traffic light controller is disconnected, set states OFF and close the application" );
 
         printf( "\tVehicle Light: %12s    |\tPedestrian Light: %s\n"
-                , NECommon::getName( NETrafficController::eVehicleTrafficLight::VehicleLightOFF )
-                , NECommon::getName( NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF ) );
+                , fsm::name( TrafficController::VehicleTrafficLight::Off )
+                , fsm::name( TrafficController::PedestrianTrafficLight::Off ) );
         printf( "\nClose the application ..." );
 
-        notifyOnTrafficEastWestUpdate( false );
-        notifyOnBroadcastEastWest( false );
-        notifyOnBroadcastSouthNorth( false );
-        notifyOnBroadcastSouthNorth( false );
+        notify_on_traffic_east_west_update( false );
+        notify_on_broadcast_east_west( false );
+        notify_on_broadcast_south_north( false );
+        notify_on_broadcast_south_north( false );
 
 
-        Application::signalAppQuit( );
+        areg::Application::signal_quit( );
     }
 
     return result;

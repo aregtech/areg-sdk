@@ -11,15 +11,15 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
-#include "examples/27_pubsubmulti/services/PubSubClientBase.hpp"
+#include "areg/base/areg_global.h"
+#include "examples/27_pubsubmulti/services/PubSubConsumerBase.hpp"
 
-#include "areg/base/NEMath.hpp"
+#include "areg/base/MathDefs.hpp"
 
 /**
  * \brief   Base class to print subscriber state information.
  **/
-class SubscriberBase    : public    PubSubClientBase
+class SubscriberBase    : public    PubSubConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -31,16 +31,16 @@ protected:
      * \param   entry   The dependency entry.
      * \param   owner   The owning component.
      **/
-    SubscriberBase(const NERegistry::DependencyEntry & entry, Component & owner, NEMath::sCoord coordInt, NEMath::sCoord coordStr);
+    SubscriberBase(const areg::DependencyEntry & entry, areg::Component & owner, areg::Coord coordInt, areg::Coord coordStr);
 
-    virtual ~SubscriberBase( void ) = default;
+    virtual ~SubscriberBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
-// PubSubClientBase Overrides
+// PubSubConsumerBase Overrides
 /************************************************************************/
     /**
      * \brief   Triggered, when StringOnChange attribute is updated. The function contains
@@ -51,7 +51,7 @@ protected:
      * \param   StringOnChange  The value of StringOnChange attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onStringOnChangeUpdate( const String & StringOnChange, NEService::eDataStateType state ) override;
+    void on_string_on_change_update( const areg::String & StringOnChange, areg::DataState state ) override;
 
     /**
      * \brief   Triggered, when IntegerAlways attribute is updated. The function contains
@@ -62,25 +62,25 @@ protected:
      * \param   IntegerAlways   The value of IntegerAlways attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onIntegerAlwaysUpdate( unsigned int IntegerAlways, NEService::eDataStateType state ) override;
+    void on_integer_always_update( uint32_t IntegerAlways, areg::DataState state ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    const NEMath::sCoord    mCoordInteger;      //!< The coordinates to print integer value change information
-    const NEMath::sCoord    mCoordString;       //!< The coordinates to print string value change information
-    uint32_t                mOldInteger;        //!< Old integer value to compare when output on console.
-    bool                    mOldState;          //!< Flag, indicating whether the old integer value is valid or not.
-    String                  mOldString;         //!< Old string value to compare when output on console.
-    unsigned int            mIntEventCount;     //!< The event count of the integer value change
-    unsigned int            mStrEventCount;     //!< The event count of the string value change
+    const areg::Coord    mCoordInteger;      //!< The coordinates to print integer value change information
+    const areg::Coord    mCoordString;       //!< The coordinates to print string value change information
+    uint32_t             mOldInteger;        //!< Old integer value to compare when output on console.
+    bool                 mOldState;          //!< Flag, indicating whether the old integer value is valid or not.
+    areg::String         mOldString;         //!< Old string value to compare when output on console.
+    uint32_t             mIntEventCount;     //!< The event count of the integer value change
+    uint32_t             mStrEventCount;     //!< The event count of the string value change
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    SubscriberBase(void);
-    DECLARE_NOCOPY_NOMOVE(SubscriberBase);
+    SubscriberBase();
+    AREG_NOCOPY_NOMOVE(SubscriberBase);
 };

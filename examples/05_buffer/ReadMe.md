@@ -13,11 +13,11 @@ This addresses common issues in multithreaded applications: avoiding race condit
 ## Concepts Shown
 - **Shared Buffer**: Create and manage buffers that transfer copies of data between threads without locking.  
 - **Multithreading**: Move primitive and object data efficiently across threads.  
-- **Thread Management with `IEThreadConsumer`**: Control thread lifecycle and coordinate buffer operations safely.
+- **Thread Management with `ThreadConsumer`**: Control thread lifecycle and coordinate buffer operations safely.
 
 ## How It Works
 - The **`SharedBuffer` class** holds copies of data for each thread and uses reference counting to prevent premature release.  
-- **Threads** are created using the `Thread` class and implement `IEThreadConsumer` to manage execution.  
+- **Threads** are created using the `Thread` class and implement `ThreadConsumer` to manage execution.  
 - **Data transfer** is serialized into the buffer by the writing thread and deserialized by reading threads, enabling predictable inter-thread communication.  
 - No locking is performed; each thread works on its own copy of the data, ensuring thread safety without synchronization overhead.
 

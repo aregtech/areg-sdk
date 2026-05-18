@@ -11,15 +11,15 @@
   * Include files.
   ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
-#include "examples/14_locmesh/services/HelloWorldStub.hpp"
+#include "areg/base/areg_global.h"
+#include "examples/14_locmesh/services/HelloWorldProviderBase.hpp"
 
 //! \brief  An implementation of a service to include in the components.
 //!         This service receives requests, send response and broadcast.
-class ServiceHelloWorld : protected HelloWorldStub
+class ServiceHelloWorld final : protected HelloWorldProviderBase
 {
     //!< The type of list of connected clients.
-    using ClientList = TEMap<String, unsigned int>;
+    using ClientList = areg::OrderedMap<areg::String, uint32_t>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -32,12 +32,12 @@ public:
      * \param   isMain      The flag indicating whether it is a main controller
      *                      that can trigger application shutdown or not.
      **/
-    ServiceHelloWorld( Component & masterComp, bool isMain );
+    ServiceHelloWorld( areg::Component & masterComp, bool isMain );
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~ServiceHelloWorld( void ) = default;
+    virtual ~ServiceHelloWorld() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // HelloWorld Interface Requests
@@ -48,9 +48,9 @@ protected:
      * \brief   Request call.
      *          Request to print hello world
      * \param   roleName    The role name of client component that requested to print hello world
-     * \see     responseHelloWorld
+     * \see     hello_world
      **/
-    virtual void requestHelloWorld( const String & roleName ) override;
+    void request_hello_world( const areg::String & roleName ) final;
 
     /**
      * \brief   Request call.
@@ -59,19 +59,19 @@ protected:
      * \param   roleName    Service client component role name
      * \note    Has no response
      **/
-    virtual void requestShutdownService( unsigned int clientID, const String & roleName ) override;
+    void request_shutdown_service( uint32_t clientID, const areg::String & roleName ) final;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
     //////////////////////////////////////////////////////////////////////////
 private:
-    const bool      mIsMain;        //!< Flag, indicating whether it is a main controller service or not.
-    ClientList      mClientList;    //!< The list of connected clients.
-    signed short    mRemainRequest; //!< The maximum number of processing requests.
+    const bool  mIsMain;        //!< Flag, indicating whether it is a main controller service or not.
+    ClientList  mClientList;    //!< The list of connected clients.
+    int16_t     mRemainRequest; //!< The maximum number of processing requests.
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
-    ServiceHelloWorld( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServiceHelloWorld );
+    ServiceHelloWorld() = delete;
+    AREG_NOCOPY_NOMOVE( ServiceHelloWorld );
 };

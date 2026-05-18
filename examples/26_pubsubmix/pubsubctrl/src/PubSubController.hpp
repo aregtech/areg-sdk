@@ -10,8 +10,8 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
-#include "areg/base/IEThreadConsumer.hpp"
+#include "areg/base/areg_global.h"
+#include "areg/base/ThreadConsumer.hpp"
 #include "areg/component/Component.hpp"
 
 #include "areg/base/Thread.hpp"
@@ -25,16 +25,16 @@
  *          thread and waits for input the command. If user inputs the command to quit,
  *          it changes the state of the service, so that all processes quit as well.
  **/
-class PubSubController  : public    Component
-                        , private   Publisher
-                        , private   IEThreadConsumer
+class PubSubController final : public    areg::Component
+                             , private   Publisher
+                             , private   areg::ThreadConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // The list of internal types and constants
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The commands of PubSub
-    enum class eCommands : int
+    enum class OptionFlag : int32_t
     {
           CMD_Undefined     //!< Undefined command, no command is entered
         , CMD_Error         //!< Error happened
@@ -46,13 +46,13 @@ private:
     };
 
     //!< The list of valid options
-    static const OptionParser::sOptionSetup ValidOptions[];
+    static const areg::ext::OptionParser::OptionSetup ValidOptions[];
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    PubSubController( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    PubSubController( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides.
@@ -69,7 +69,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    virtual void startupComponent(ComponentThread & comThread) override;
+    void startup_component(areg::ComponentThread & comThread) final;
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -77,10 +77,10 @@ protected:
      *          make cleanups in this function call.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    virtual void shutdownComponent( ComponentThread & comThread ) override;
+    void shutdown_component( areg::ComponentThread & comThread ) final;
 
 /************************************************************************/
-// IEThreadConsumer interface overrides
+// ThreadConsumer interface overrides
 /************************************************************************/
 
     /**
@@ -88,9 +88,9 @@ protected:
      *          running and fully operable. If thread needs run in loop, the loop 
      *          should be implemented here. When consumer exits this function, 
      *          the thread will complete work. To restart thread running, 
-     *          createThread() method should be called again.
+     *          start() method should be called again.
      **/
-    virtual void onThreadRuns( void ) override;
+    void on_run() final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -98,22 +98,22 @@ protected:
 private:
 
     //! Outputs message on console
-    inline void printMessage(const String & message, eCommands cmd);
+    inline void print_message(const areg::String & message, OptionFlag cmd);
 
     //! Wrapper of the this pointer
-    inline PubSubController & self(void);
+    inline PubSubController & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    Subscriber  mSubscriber;        //!< A subscriber to this publisher that runs in the same thread. Made for testing purpose.
-    Thread      mConsoleThread;     //!< The thread to run console to interact with users.
+    Subscriber   mSubscriber;       //!< A subscriber to this publisher that runs in the same thread. Made for testing purpose.
+    areg::Thread mConsoleThread;    //!< The thread to run console to interact with users.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    PubSubController(void) = delete;
-    DECLARE_NOCOPY_NOMOVE(PubSubController);
+    PubSubController() = delete;
+    AREG_NOCOPY_NOMOVE(PubSubController);
 };

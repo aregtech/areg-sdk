@@ -14,71 +14,133 @@
  ************************************************************************/
 #include "areg/ipc/private/ClientSendThread.hpp"
 
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
+#include "areg/component/ExitEvent.hpp"
+#include "areg/ipc/private/ConnectionDefs.hpp"
+#include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/ipc/ClientConnection.hpp"
-#include "areg/ipc/IERemoteMessageHandler.hpp"
-#include "areg/ipc/private/NEConnection.hpp"
 
-#include "areg/logging/GELog.h"
+namespace areg {
 
-DEF_LOG_SCOPE(areg_ipc_private_ClientSendThread_readyForEvents);
-
-ClientSendThread::ClientSendThread(IERemoteMessageHandler& remoteService, ClientConnection & connection, const String& namePrefix )
-    : DispatcherThread  ( namePrefix + NEConnection::CLIENT_SEND_MESSAGE_THREAD, NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM )
-    , IESendMessageEventConsumer( )
+ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String& namePrefix )
+    : DispatcherThread        ( namePrefix + areg::CLIENT_SEND_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_BIG, areg::SEND_THREAD_QUEUE_LIMIT )
+    , SendMessageEventConsumer( )
 
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
-    , mBytesSend        ( 0 )
-    , mSaveDataSend     ( false )
+    , mSendStats        ( )
 {
 }
 
-void ClientSendThread::readyForEvents( bool isReady )
+void ClientSendThread::ready_for_events( bool is_ready )
 {
-    LOG_SCOPE(areg_ipc_private_ClientSendThread_readyForEvents);
-
-    if ( isReady )
+    if ( is_ready )
     {
-        LOG_DBG( "Starting client service dispatcher thread [ %s ]", getName( ).getString( ) );
-        SendMessageEvent::addListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
-        DispatcherThread::readyForEvents( true );
+        areg::set_receive_mode(areg::ReceiveMode::MonoCache);
+        SendMessageEvent::add_listener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
+        DispatcherThread::ready_for_events( true );
     }
     else
     {
-        DispatcherThread::readyForEvents( false );
-        SendMessageEvent::removeListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
-        mConnection.closeSocket( );
-        LOG_DBG( "Exiting client service dispatcher thread [ %s ], stopping receiving events", getName( ).getString( ) );
+        DispatcherThread::ready_for_events( false );
+        SendMessageEvent::remove_listener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
+        mConnection.close_socket( );
     }
 }
 
-void ClientSendThread::processEvent( const SendMessageEventData & data )
+void ClientSendThread::process_event( const SendMessageEventData & data )
 {
-    if ( data.isForwardMessage() )
+    if ( data.is_forward_message() )
     {
-        const RemoteMessage & msg = data.getRemoteMessage( );
-        int sizeSend = mConnection.sendMessage( msg );
-        if ( sizeSend > 0 )
+        const ExitEvent& exitEvent = ExitEvent::exit_event();
+
+        // evtPtrs[0] is nullptr: the triggering event is owned by the dispatch chain,
+        // never call destroy() on it.  Drained events (indices 1..N) must be destroyed
+        SendMessageEvent* evtPtrs[areg::THREAD_DRAIN_LIMIT];
+        areg::IoBuffer    ioBuffer[areg::THREAD_DRAIN_LIMIT];
+        uint32_t batchCount { 0u };
+        uint32_t totalSize  { 0u };
+        uint32_t bufCount   { 0u };
+
+        evtPtrs[batchCount++] = nullptr;
+        const RemoteMessage& msg1 = data.remote_message();
+        const areg::MessageHeader* hdr = msg1.header();
+        if (hdr != nullptr)
         {
-            if (mSaveDataSend)
+            msg1.buffer_completion_fix();
+            const uint32_t bufSize = sizeof(areg::MessageHeader) + hdr->rbhBufHeader.biUsed;
+            ioBuffer[bufCount ++]  = { reinterpret_cast<const uint8_t*>(hdr), bufSize };
+            totalSize += bufSize;
+        }
+
+        // Phase 1: drain additional messages
+        for (uint32_t count{ batchCount }; count < areg::THREAD_DRAIN_LIMIT; ++count)
+        {
+            Event * evt = pick_event();
+            if ( evt == nullptr )
+                break;
+
+            if ( static_cast<const Event *>( evt ) == static_cast<const Event *>( &exitEvent ) )
             {
-                mBytesSend += static_cast<uint32_t>(sizeSend);
+                for ( uint32_t i = 1; i < batchCount; ++i )
+                    evtPtrs[i]->destroy(); //  no need to destroy ExitEvent
+
+                mConnection.close_socket();
+                trigger_exit();
+                return;
             }
+
+            ASSERT(AREG_RUNTIME_CAST(evt, SendMessageEvent) != nullptr);
+            SendMessageEvent* sendEvt = static_cast<SendMessageEvent *>(evt);
+            const SendMessageEventData & evtData = sendEvt->data();
+            if ( evtData.is_exit_message() )
+            {
+                sendEvt->destroy();
+                for ( uint32_t i = 1; i < batchCount; ++i )
+                    evtPtrs[i]->destroy();
+
+                mConnection.close_socket();
+                trigger_exit();
+                return;
+            }
+
+            evtPtrs[batchCount++] = sendEvt;
+            const RemoteMessage& msg = evtData.remote_message();
+            hdr = msg.header();
+            if (hdr != nullptr)
+            {
+                msg.buffer_completion_fix();
+                const uint32_t bufSize = sizeof(areg::MessageHeader) + hdr->rbhBufHeader.biUsed;
+                ioBuffer[bufCount++] = { reinterpret_cast<const uint8_t*>(hdr), bufSize };
+                totalSize += bufSize;
+            }
+        }
+
+        // Phase 2: send the collected batch
+        const int32_t sentBytes = mConnection.send_messages_batch(ioBuffer, bufCount, totalSize);
+
+        for (uint32_t i = 1; i < batchCount; ++i)
+            evtPtrs[i]->destroy();
+
+        if (sentBytes > 0)
+        {
+            accumulate_sent(static_cast<uint64_t>(sentBytes), bufCount);
         }
         else
         {
-            mRemoteService.failedSendMessage( msg, mConnection.getSocket( ) );
+            mRemoteService.failed_send_message(msg1, mConnection.socket());
         }
     }
-    else if (data.isExitThreadMessage() )
+    else if ( data.is_exit_message() )
     {
-        mConnection.closeSocket( );
-        triggerExit( );
+        mConnection.close_socket( );
+        trigger_exit( );
     }
 }
 
-bool ClientSendThread::postEvent(Event & eventElem)
+bool ClientSendThread::post_event(Event & eventElem)
 {
-    return (RUNTIME_CAST(&eventElem, SendMessageEvent) != nullptr) && EventDispatcher::postEvent(eventElem);
+    return (AREG_RUNTIME_CAST(&eventElem, SendMessageEvent) != nullptr) && EventDispatcher::post_event(eventElem);
 }
+
+} // namespace areg

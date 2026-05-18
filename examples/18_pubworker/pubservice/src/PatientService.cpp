@@ -12,27 +12,27 @@
 #include "pubservice/src/PatientService.hpp"
 #include "areg/component/ComponentThread.hpp"
 
-PatientService::PatientService( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-    : Component             ( entry, owner )
-    , PatientInformationStub( static_cast<Component &>(self()) )
+PatientService::PatientService( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+    : areg::Component             ( entry, owner )
+    , PatientInformationProviderBase( static_cast<areg::Component &>(self()) )
 
-    , mWorkerConsumer       ( PatientService::PatienServiceConsumerName.data(), static_cast<PatientInformationStub &>(self()) )
+    , mWorkerConsumer       ( PatientService::PatienServiceConsumerName.data(), static_cast<PatientInformationProviderBase &>(self()) )
 {
 }
 
-inline PatientService & PatientService::self( void )
+inline PatientService & PatientService::self()
 {
     return (*this);
 }
 
-IEWorkerThreadConsumer * PatientService::workerThreadConsumer(const String & consumerName, const String & workerThreadName)
+areg::WorkerThreadConsumer * PatientService::worker_thread_consumer(const areg::String & consumerName, const areg::String & workerThreadName)
 {
-    if ( mWorkerConsumer.getConsumerName() == consumerName)
+    if ( mWorkerConsumer.consumer_name() == consumerName)
     {
         return &mWorkerConsumer;
     }
     else
     {
-        return Component::workerThreadConsumer(consumerName, workerThreadName);
+        return areg::Component::worker_thread_consumer(consumerName, workerThreadName);
     }
 }

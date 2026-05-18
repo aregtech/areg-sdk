@@ -4,18 +4,18 @@
  **/
 #pragma once
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/03_helloservice/services/HelloServiceClientBase.hpp"
+#include "examples/03_helloservice/services/HelloServiceConsumerBase.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ClientComponent declaration
 //////////////////////////////////////////////////////////////////////////
-class ClientComponent   : public    Component
-                        , protected HelloServiceClientBase
+class ClientComponent final : public    areg::Component
+                            , protected HelloServiceConsumerBase
 {
 public:
-    ClientComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    ClientComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 protected:
 /************************************************************************
@@ -25,16 +25,16 @@ protected:
      * \brief   The response indicating success status to output a greeting
      * \param   success Flag, indicates the success of output.
      **/
-    virtual void responseHelloService( bool success ) override;
+    void response_hello_service( bool success ) final;
 
     /**
      * \brief   Overwrite to handle error of HelloService request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void requestHelloServiceFailed( NEService::eResultType FailureReason ) override;
+    void request_hello_service_failed( areg::ResultType FailureReason ) final;
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -47,20 +47,20 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden function calls
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The wrapper of this pointer.
-    inline ClientComponent & self( void )
+    inline ClientComponent & self()
     {   return (*this); }
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ClientComponent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ClientComponent );
+    ClientComponent() = delete;
+    AREG_NOCOPY_NOMOVE( ClientComponent );
 };

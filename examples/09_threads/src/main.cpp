@@ -8,15 +8,15 @@
 //               demo uses timers and timer events.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/Thread.hpp"
-#include "areg/base/IEThreadConsumer.hpp"
+#include "areg/base/ThreadConsumer.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/Event.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 #include "areg/component/Timer.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #ifdef  _MSC_VER
     #pragma comment(lib, "areg")
@@ -26,40 +26,42 @@
 // HelloThread
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(threads_main_HelloThread_Ctor);
-DEF_LOG_SCOPE(threads_main_HelloThread_onThreadRuns);
+DEF_LOG_SCOPE(threads_main_HelloThread, HelloThread);
+DEF_LOG_SCOPE(threads_main_HelloThread, on_run);
 
-Mutex gSync(false);
+namespace {
+    areg::Mutex gSync(false);
+}
 
-class HelloThread   : public Thread
-                    , protected IEThreadConsumer
+class HelloThread final : public areg::Thread
+                        , protected areg::ThreadConsumer
 {
 public:
     HelloThread()
-        : Thread(*this, "HelloThread")
+        : areg::Thread(*this, "HelloThread")
     {
-        LOG_SCOPE(threads_main_HelloThread_Ctor);
+        LOG_SCOPE( threads_main_HelloThread, HelloThread);
         LOG_DBG("Initialized thread [HelloThread]");
     }
 
 protected:
 /************************************************************************/
-// IEThreadConsumer interface overrides
+// ThreadConsumer interface overrides
 /************************************************************************/
 
-    void onThreadRuns() override
+    void on_run() final
     {
-        LOG_SCOPE(threads_main_HelloThread_onThreadRuns);
+        LOG_SCOPE( threads_main_HelloThread, on_run);
         LOG_INFO("!!!Hello World!!! !!!Hello Tracing!!!");
-        LOG_INFO("The thread [%s] runs, sleeping %u ms", getName().getString(), NECommon::WAIT_500_MILLISECONDS);
+        LOG_INFO("The thread [%s] runs, sleeping %u ms", name().as_string(), areg::WAIT_500_MILLISECONDS);
         do
         {
-            Lock lock(gSync);
-            std::cout << "The thread [" << getName().getString() << "] runs, sleeping " << NECommon::WAIT_500_MILLISECONDS << " ms" << std::endl;
+            areg::Lock lock(gSync);
+            std::cout << "The thread [" << name().as_string() << "] runs, sleeping " << areg::WAIT_500_MILLISECONDS << " ms" << std::endl;
 
         } while (false);
 
-        Thread::sleep(NECommon::WAIT_500_MILLISECONDS);
+        areg::Thread::sleep(areg::WAIT_500_MILLISECONDS);
     }
 };
 
@@ -68,20 +70,20 @@ protected:
 // HelloDispatcher
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(threads_main_HelloDispatcher_Ctor);
-DEF_LOG_SCOPE(threads_main_HelloDispatcher_readyForEvents);
-DEF_LOG_SCOPE(threads_main_HelloDispatcher_dispatchEvent);
+DEF_LOG_SCOPE(threads_main_HelloDispatcher, HelloDispatcher);
+DEF_LOG_SCOPE(threads_main_HelloDispatcher, ready_for_events);
+DEF_LOG_SCOPE(threads_main_HelloDispatcher, dispatch_event);
 
-class HelloDispatcher   : public DispatcherThread
-                        , private IETimerConsumer
+class HelloDispatcher final : public areg::DispatcherThread
+                            , private areg::TimerConsumer
 {
 public:
     HelloDispatcher() 
-        : DispatcherThread("HelloDispatcher", NECommon::DEFAULT_BLOCK_SIZE, NECommon::IGNORE_VALUE )
-        , IETimerConsumer()
+        : areg::DispatcherThread("HelloDispatcher", areg::DEFAULT_BLOCK_SIZE, areg::IGNORE_VALUE )
+        , areg::TimerConsumer()
         , mTimer(*this, "aTimer")
     {
-        LOG_SCOPE(threads_main_HelloDispatcher_Ctor);
+        LOG_SCOPE( threads_main_HelloDispatcher, HelloDispatcher);
         LOG_DBG("Instantiated hello dispatcher");
     }
 
@@ -89,82 +91,83 @@ protected:
 /************************************************************************/
 // DispatcherThread overrides
 /************************************************************************/
-    void readyForEvents(bool isReady) override
+    void ready_for_events(bool isReady) final
     {
-        LOG_SCOPE(threads_main_HelloDispatcher_readyForEvents);
-        DispatcherThread::readyForEvents(isReady);
+        LOG_SCOPE( threads_main_HelloDispatcher, ready_for_events );
+        areg::DispatcherThread::ready_for_events(isReady);
         if (isReady)
         {
-            Lock lock(gSync);
+            areg::Lock lock(gSync);
             LOG_DBG("Dispatcher thread is ready for event dispatching");
             std::cout << "Dispatcher thread is ready for event dispatching" << std::endl;
-            mTimer.startTimer(100);
+            mTimer.start_timer(100);
         }
         else
         {
-            mTimer.stopTimer();
+            mTimer.stop_timer();
         }
     }
 
 /************************************************************************/
-// IEEventRouter interface overrides
+// EventRouter interface overrides
 /************************************************************************/
-    bool dispatchEvent(Event & eventElem) override
+    bool dispatch_event(areg::Event & eventElem) final
     {
-        LOG_SCOPE(threads_main_HelloDispatcher_dispatchEvent);
-        LOG_DBG("Received event [%s], custom dispatching here", eventElem.getRuntimeClassName().getString());
+        LOG_SCOPE( threads_main_HelloDispatcher, dispatch_event );
+        LOG_DBG("Received event [%s], custom dispatching here", eventElem.class_string());
 
-        Lock lock(gSync);
-        std::cout << "Received event [" << eventElem.getRuntimeClassName().getString() << "], custom dispatching here" << std::endl;
-        return true; // prevent processTimer()
+        areg::Lock lock(gSync);
+        std::cout << "Received event [" << eventElem.class_string() << "], custom dispatching here" << std::endl;
+        return true; // prevent process_timer()
     }
 
-    virtual bool postEvent( Event & eventElem ) override
+    [[nodiscard]]
+    bool post_event( areg::Event & eventElem ) final
     {
-        return EventDispatcher::postEvent( eventElem );
+        return areg::EventDispatcher::post_event( eventElem );
     }
 
 /************************************************************************/
-// IETimerConsumer interface overrides.
+// TimerConsumer interface overrides.
 /************************************************************************/
-    void processTimer(Timer &) override
+    void process_timer(areg::Timer &) final
     {
-        ASSERT(false);  // this never happens, because we interrupt in dispatchEvent()
+        ASSERT(false);  // this never happens, because we interrupt in dispatch_event()
     }
 
 private:
-    Timer mTimer;
+    areg::Timer mTimer;
 };
 
 //////////////////////////////////////////////////////////////////////////
 // Demo
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(threads_main_main);
+DEF_LOG_SCOPE(threads_main, main);
 
 int main()
 {
     std::cout << "Demo: create and destroy simple + dispatcher threads..." << std::endl;
-    LOGGING_CONFIGURE_AND_START(nullptr);
+    LOGGING_CONFIGURE_AND_START(nullptr, false);
     do
     {
-        LOG_SCOPE(threads_main_main);
+        LOG_SCOPE( threads_main, main );
 
-        Application::startTimerManager();
+        areg::Application::start_timer_manager();
 
         HelloThread helloThread;
-        helloThread.createThread(NECommon::WAIT_INFINITE);
+        helloThread.start(areg::WAIT_INFINITE);
 
         HelloDispatcher helloDispatcher;
-        helloDispatcher.createThread(NECommon::WAIT_INFINITE);
+        helloDispatcher.start(areg::WAIT_INFINITE);
 
-        Thread::sleep(NECommon::WAIT_1_SECOND);
+        areg::Thread::sleep(areg::WAIT_1_SECOND);
 
-        LOG_INFO("Stopping dispatcher [%s]", helloDispatcher.getName().getString());
-        helloDispatcher.shutdownThread(NECommon::WAIT_INFINITE);
+        LOG_INFO("Stopping dispatcher [%s]", helloDispatcher.name().as_string());
+        helloDispatcher.shutdown(areg::WAIT_INFINITE);
 
-        LOG_INFO("Stopping thread [%s]", helloThread.getName().getString());
-        helloThread.shutdownThread(NECommon::WAIT_INFINITE);
+        LOG_INFO("Stopping thread [%s]", helloThread.name().as_string());
+        helloThread.shutdown(areg::WAIT_INFINITE);
     } while (false);
 
     LOGGING_STOP();

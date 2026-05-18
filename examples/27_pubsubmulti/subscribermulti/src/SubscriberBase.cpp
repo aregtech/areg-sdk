@@ -11,75 +11,75 @@
 #include "subscribermulti/src/SubscriberBase.hpp"
 
 #include "areg/appbase/Application.hpp"
-#include "areg/logging/GELog.h"
-#include "subscribermulti/src/NECommon.hpp"
+#include "areg/logging/areg_log.h"
+#include "subscribermulti/src/PubSubDefs.hpp"
 
-DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onStringOnChangeUpdate);
-DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onIntegerAlwaysUpdate);
-DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onServiceProviderStateUpdate);
+DEF_LOG_SCOPE(examples_27_pubsubmulti_subscribermulti_SubscriberBase, on_string_on_change_update);
+DEF_LOG_SCOPE(examples_27_pubsubmulti_subscribermulti_SubscriberBase, on_integer_always_update);
+DEF_LOG_SCOPE(examples_27_pubsubmulti_subscribermulti_SubscriberBase, on_service_provider_state_update);
 
 
-SubscriberBase::SubscriberBase(const NERegistry::DependencyEntry & entry, Component & owner, NEMath::sCoord coordInt, NEMath::sCoord coordStr)
-    : PubSubClientBase  ( entry, owner )
+SubscriberBase::SubscriberBase(const areg::DependencyEntry & entry, areg::Component & owner, areg::Coord coordInt, areg::Coord coordStr)
+    : PubSubConsumerBase  ( entry, owner )
     , mCoordInteger     ( coordInt )
     , mCoordString      ( coordStr )
     , mOldInteger       ( 0 )
     , mOldState         ( false )
-    , mOldString        ( NECommon::StrInvalid )
+    , mOldString        ( pubsub::StrInvalid )
     , mIntEventCount    ( 0 )
     , mStrEventCount    ( 0 )
 {
 }
 
-void SubscriberBase::onStringOnChangeUpdate(const String & StringOnChange, NEService::eDataStateType state)
+void SubscriberBase::on_string_on_change_update(const areg::String & StringOnChange, areg::DataState state)
 {
-    LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onStringOnChangeUpdate);
+    LOG_SCOPE( examples_27_pubsubmulti_subscribermulti_SubscriberBase, on_string_on_change_update );
     ++ mStrEventCount;
 
-    Console & console = Console::getInstance();
-    if (state == NEService::eDataStateType::DataIsOK)
+    areg::ext::Console & console = areg::ext::Console::instance();
+    if (state == areg::DataState::DataIsOK)
     {
-        LOG_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ], event count [ %u ]", mOldString.getString(), StringOnChange.getString(), mStrEventCount);
-        console.outputMsg(mCoordString, "%s%s => %s { changed }, event count: %u"
-                          , NECommon::TxtString.data()
-                          , mOldString.getString()
-                          , StringOnChange.getString()
+        LOG_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ], event count [ %u ]", mOldString.as_string(), StringOnChange.as_string(), mStrEventCount);
+        console.output_msg(mCoordString, "%s%s => %s { changed }, event count: %u"
+                          , pubsub::TxtString.data()
+                          , mOldString.as_string()
+                          , StringOnChange.as_string()
                           , mStrEventCount);
         mOldString = StringOnChange;
     }
     else
     {
-        LOG_INFO("The STRING (on change) have got invalidated, old value [ %s ]", mOldString.getString());
+        LOG_INFO("The STRING (on change) have got invalidated, old value [ %s ]", mOldString.as_string());
 
-        console.outputMsg( mCoordString, "%s%s => INVALID { invalid }, event count: %u"
-                         , NECommon::TxtString.data()
-                         , mOldString.getString()
+        console.output_msg( mCoordString, "%s%s => INVALID { invalid }, event count: %u"
+                         , pubsub::TxtString.data()
+                         , mOldString.as_string()
                          , mStrEventCount);
-        mOldString = NECommon::StrInvalid;
+        mOldString = pubsub::StrInvalid;
 
-        if (isServiceProviderStateValid() == false)
+        if (is_service_provider_state_valid() == false)
         {
             LOG_WARN("Provider state is invalid, unsubscribe on data { StringOnChange } update");
-            notifyOnStringOnChangeUpdate(false);
+            notify_on_string_on_change_update(false);
         }
     }
 
-    console.refreshScreen();
+    console.refresh_screen();
 }
 
-void SubscriberBase::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService::eDataStateType state)
+void SubscriberBase::on_integer_always_update(uint32_t IntegerAlways, areg::DataState state)
 {
-    LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onIntegerAlwaysUpdate);
+    LOG_SCOPE( examples_27_pubsubmulti_subscribermulti_SubscriberBase, on_integer_always_update );
     ++ mIntEventCount;
 
-    Console & console = Console::getInstance();
-    String oldInt = mOldState ? String::makeString(mOldInteger) : NECommon::StrInvalid;
-    if (state == NEService::eDataStateType::DataIsOK)
+    areg::ext::Console & console = areg::ext::Console::instance();
+    areg::String oldInt = mOldState ? areg::String::make_string(mOldInteger) : pubsub::StrInvalid;
+    if (state == areg::DataState::DataIsOK)
     {
-        LOG_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.getString(), IntegerAlways);
-        console.outputMsg( mCoordInteger, "%s%s => %u { %s }, event count: %u"
-                         , NECommon::TxtInteger.data()
-                         , oldInt.getString()
+        LOG_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.as_string(), IntegerAlways);
+        console.output_msg( mCoordInteger, "%s%s => %u { %s }, event count: %u"
+                         , pubsub::TxtInteger.data()
+                         , oldInt.as_string()
                          , IntegerAlways
                          , (mOldState == false) || (IntegerAlways != mOldInteger) ? "changed" : "UNCHANGED"
                          , mIntEventCount);
@@ -88,21 +88,21 @@ void SubscriberBase::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService
     }
     else
     {
-        LOG_DBG("The INTEGER (ALWAYS) have got invalidated, old value [ %s ]", oldInt.getString());
+        LOG_DBG("The INTEGER (ALWAYS) have got invalidated, old value [ %s ]", oldInt.as_string());
 
-        console.outputMsg( mCoordInteger, "%s%s => INVALID { invalid }, event count %u"
-                         , NECommon::TxtInteger.data()
-                         , oldInt.getString()
+        console.output_msg( mCoordInteger, "%s%s => INVALID { invalid }, event count %u"
+                         , pubsub::TxtInteger.data()
+                         , oldInt.as_string()
                          , mIntEventCount);
         mOldInteger = 0;
         mOldState = false;
 
-        if (isServiceProviderStateValid() == false)
+        if (is_service_provider_state_valid() == false)
         {
             LOG_WARN("Provider state is invalid, unsubscribe on data { IntegerAlways } update");
-            notifyOnIntegerAlwaysUpdate(false);
+            notify_on_integer_always_update(false);
         }
     }
 
-    console.refreshScreen();
+    console.refresh_screen();
 }

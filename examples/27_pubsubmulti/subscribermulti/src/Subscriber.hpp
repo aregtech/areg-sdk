@@ -11,7 +11,7 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "subscribermulti/src/SubscriberBase.hpp"
 
@@ -30,22 +30,22 @@
  *              - Always   : this means to receive update notification each
  *                           the value is set even if the value is not updated.
  **/
-class Subscriber: public    Component
-                , protected SubscriberBase
+class Subscriber final  : public    areg::Component
+                        , protected SubscriberBase
 {
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    Subscriber( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    Subscriber( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -58,10 +58,10 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 /************************************************************************/
-// PubSubClientBase Overrides
+// PubSubConsumerBase Overrides
 /************************************************************************/
     /**
      * \brief   Triggered, when ServiceProviderState attribute is updated. The function contains
@@ -72,25 +72,25 @@ protected:
      * \param   ServiceProviderState    The value of ServiceProviderState attribute.
      * \param   state                   The data validation flag.
      **/
-    virtual void onServiceProviderStateUpdate( NEPubSub::eServiceState ServiceProviderState, NEService::eDataStateType state ) override;
+    void on_service_provider_state_update( PubSub::RunState ServiceProviderState, areg::DataState state ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline Subscriber & self(void);
+    inline Subscriber & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    unsigned int        mStateEventCount;   //!< The event count of the service provider (publisher) state
-    SubscriberSecond    mSecond;            //!< Dummy subscriber. Only for testing and debugging purpose.
+    uint32_t         mStateEventCount;  //!< The event count of the service provider (publisher) state
+    SubscriberSecond mSecond;           //!< Dummy subscriber. Only for testing and debugging purpose.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    Subscriber(void);
-    DECLARE_NOCOPY_NOMOVE(Subscriber);
+    Subscriber();
+    AREG_NOCOPY_NOMOVE(Subscriber);
 };

@@ -10,30 +10,30 @@
   ************************************************************************/
 #include "common/src/PubSubMixed.hpp"
 
-#include "areg/component/NERegistry.hpp"
+#include "areg/component/Model.hpp"
 
-PubSubMixed::PubSubMixed(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component (entry, owner)
+PubSubMixed::PubSubMixed(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    : areg::Component (entry, owner)
 
-    , mPubSubMixedPublisher (static_cast<Component &>(self()))
-    , mControllerSubscriber (entry.mDependencyServices[0], static_cast<Component &>(self()), std::any_cast<int>(entry.getData()) * 2 + 0)
-    , mMixedSubscriber      (entry.mDependencyServices[1], static_cast<Component &>(self()), std::any_cast<int>(entry.getData()) * 2 + 1)
+    , mPubSubMixedPublisher (static_cast<areg::Component &>(self()))
+    , mControllerSubscriber (entry.mDependencyServices[0], static_cast<areg::Component &>(self()), std::any_cast<int32_t>(entry.data()) * 2 + 0)
+    , mMixedSubscriber      (entry.mDependencyServices[1], static_cast<areg::Component &>(self()), std::any_cast<int32_t>(entry.data()) * 2 + 1)
 {
 }
 
-void PubSubMixed::startupComponent(ComponentThread & comThread)
+void PubSubMixed::startup_component(areg::ComponentThread & comThread)
 {
-    Component::startupComponent(comThread);
+    areg::Component::startup_component(comThread);
     mPubSubMixedPublisher.start();
 }
 
-void PubSubMixed::shutdownComponent(ComponentThread & comThread)
+void PubSubMixed::shutdown_component(areg::ComponentThread & comThread)
 {
     mPubSubMixedPublisher.stop();
-    Component::shutdownComponent(comThread);
+    areg::Component::shutdown_component(comThread);
 }
 
-inline PubSubMixed & PubSubMixed::self(void)
+inline PubSubMixed & PubSubMixed::self()
 {
     return (*this);
 }

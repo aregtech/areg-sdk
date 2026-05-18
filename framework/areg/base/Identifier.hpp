@@ -10,31 +10,30 @@
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/Identifier.hpp
- * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, Object Identifier class.
- *              The Identifier is binding string and integer values to
- *              provide conversion from string to integer and from 
- *              integer to string.
- *
+ *              Binds string and integer values to provide bidirectional
+ *              conversion between string and integer representations.
  ************************************************************************/
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/areg_global.h"
+#include "areg/base/IOStream.hpp"
 #include "areg/base/String.hpp"
 
 #include <string_view>
 #include <vector>
 
+namespace areg {
+
 //////////////////////////////////////////////////////////////////////////
 // Identifier class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       The Identifier is binding string and integer values to
- *              provide conversion from string to integer and from 
- *              integer to string. It is used to pass enum values as strings.
+ * \brief   Binds string and integer values to provide bidirectional conversion between string and
+ *          integer representations, used for passing enum values as strings.
  **/
 class AREG_API Identifier
 {
@@ -42,214 +41,173 @@ class AREG_API Identifier
 // Types and constants
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Identifier::BAD_IDENTIFIER_VALUE
-     *          Bad Identifier integer value.
-     *          The values is reserved and should not be used
-     *          at least together with BAD_IDENTIFIER_NAME
-     **/
-    static constexpr unsigned int       BAD_IDENTIFIER_VALUE    { static_cast<unsigned int>(0x80000000) };
+    //!< Reserved invalid identifier integer value.
+    static constexpr uint32_t           BAD_IDENTIFIER_VALUE    { static_cast<uint32_t>(0x80000000) };
 
-    /**
-     * \brief   Identifier::BAD_IDENTIFIER_NAME
-     *          Bad Identifier name. The name is reserved and
-     *          should not be used at leas together with BAD_IDENTIFIER_VALUE
-     **/
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
+    //!< Reserved invalid identifier name.
     static constexpr std::string_view   BAD_IDENTIFIER_NAME     { "_BAD_IDENTIFIER" };
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 
-    /**
-     * \brief   Identifier::BAD_IDENTIFIER
-     *          Bad Identifier object, which integer value is BAD_IDENTIFIER_VALUE
-     *          and string value is BAD_IDENTIFIER_NAME
-     **/
-    static const Identifier             BAD_IDENTIFIER          /* = {BAD_IDENTIFIER_VALUE, BAD_IDENTIFIER_NAME} */;
+    //!< Static invalid identifier instance.
+    static const Identifier             BAD_IDENTIFIER;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Default constructor. 
-     *          By default, initial values are equal to BAD_DENTIFIER
-     *          and the identifier object is invalid
-     **/
-    Identifier( void );
+    Identifier();
+
+    Identifier(const Identifier& src);
+
+    Identifier(Identifier&& src) noexcept;
+
+    ~Identifier() = default;
 
     /**
-     * \brief   Initialization constructor. Sets integer value and name
-     * \param   idValue     The integer value of identifier
-     * \param   idName      The name of identifier associated with integer value.
+     * \brief   Initializes the identifier with an integer value and name.
+     *
+     * \param   idValue     The integer value of the identifier.
+     * \param   idName      The name associated with the integer value.
      **/
-    Identifier(unsigned int idValue, const char* idName);
-    Identifier(unsigned int idValue, const std::string_view& idName);
-    Identifier(unsigned int idValue, const String& idName);
+    Identifier(uint32_t idValue, const char * idName);
 
-    /**
-     * \brief   Copy constructor.
-     * \param   src     The source to copy data.
-     **/
-    Identifier(const Identifier & src);
+    Identifier(uint32_t idValue, std::string_view idName);
 
-    /**
-     * \brief   Move constructor.
-     * \param   src     The source to move data.
-     **/
-    Identifier( Identifier && src ) noexcept;
-
-    /**
-     * \brief   Destructor
-     **/
-    ~Identifier( void ) = default;
+    Identifier(uint32_t idValue, const String& idName);
 
 //////////////////////////////////////////////////////////////////////////
-// static methods
+// Static methods
 //////////////////////////////////////////////////////////////////////////
 public:
 
     /**
-     * \brief   Converts given integer value of the identifier into the string.
-     *          It uses lookup table to make conversion.
-     * \param   idValue     The digital value of the identifier to convert.
-     * \param   lookupList  The lookup table to search identifier to return string value.
-     * \param   defIndex    The index of the value to return in case if did not find the identifier.
-     *                      Pass NECommon::INVALID_POSITION value to ignore and return empty string
-     *                      if no identifier entry exists.
-     * \return  Returns the string value of the identifier it found.
-     *          Return the string value of the given default identifier entry index if identifier not found and default index is valid.
-     *          Returns empty string if identifier not found and the index is invalid.
+     * \brief   Converts an integer value to its corresponding string representation using a lookup
+     *          table.
+     *
+     * \param   idValue         The integer value to convert.
+     * \param   lookupList      The lookup table to search for the identifier.
+     * \param   defIndex        The index of the default string to return if the identifier is not
+     *                          found; pass areg::INVALID_POSITION to return an empty string if
+     *                          not found.
+     * \return  Returns the string representation of the identifier if found; returns the default
+     *          string if the identifier is not found and defIndex is valid; returns an empty string
+     *          if not found and defIndex is invalid.
      **/
-    inline static const String& convToString(unsigned int idValue, const std::vector<Identifier>& lookupList, unsigned int defIndex);
+    [[nodiscard]]
+    inline static const String& to_string( uint32_t idValue
+                                         , const std::vector<Identifier>& lookupList
+                                         , uint32_t defIndex ) noexcept;
 
     /**
-     * \brief   Converts given string value of the identifier into the digital value.
-     *          It uses lookup table make conversion.
-     * \param   idName      The string value of the identifier to convert.
-     * \param   lookupList  The lookup table to search identifier to return integer value.
-     * \param   defIndex    The index of the value to return in case if did not find the identifier.
-     *                      Pass NECommon::INVALID_POSITION value to ignore and return 0xFFFFFFFF
-     *                      if no identifier entry exists.
-     * \return  Returns the integer value of the identifier it found.
-     *          Return the integer value of the given default identifier entry index if identifier not found and default index is valid.
-     *          Returns 0xFFFF'FFFF if identifier not found and the index is invalid.
+     * \brief   Converts a string value to its corresponding integer representation using a lookup
+     *          table.
+     *
+     * \param   idName          The string value to convert.
+     * \param   lookupList      The lookup table to search for the identifier.
+     * \param   defIndex        The index of the default integer to return if the identifier is not
+     *                          found; pass areg::INVALID_POSITION to return 0xFFFFFFFF if not
+     *                          found.
+     * \return  Returns the integer representation of the identifier if found; returns the default
+     *          integer if the identifier is not found and defIndex is valid; returns 0xFFFFFFFF if
+     *          not found and defIndex is invalid.
      **/
-    inline static unsigned int convFromString(const String& idName, const std::vector<Identifier>& lookupList, unsigned int defIndex);
+    [[nodiscard]]
+    inline static uint32_t from_string( const String& idName
+                                      , const std::vector<Identifier>& lookupList
+                                      , uint32_t defIndex );
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Assigning operator. Copies identifier data from given source
-     **/
-    Identifier & operator = (const Identifier & src);
+    Identifier& operator = (const Identifier& src);
 
-    /**
-     * \brief   Move operator. Moves identifier data from given source
-     **/
-    Identifier & operator = ( Identifier && src ) noexcept;
+    Identifier& operator = (Identifier&& src) noexcept;
 
-    /**
-     * \brief   Returns true if 2 identifier objects are equal.
-     **/
-    inline bool operator == (const Identifier & other) const;
+    [[nodiscard]]
+    inline bool operator == (const Identifier& other) const;
 
-    /**
-     * \brief   Returns true if the name of identifier is equal.
-     **/
+    [[nodiscard]]
+    inline bool operator != (const Identifier& other) const;
+
+    [[nodiscard]]
     inline bool operator == (const char * rhs) const;
 
-    /**
-     * \brief   Returns true if the integer value of identifier is equal.
-     **/
-    inline bool operator == (unsigned int rhs) const;
+    [[nodiscard]]
+    inline bool operator == (const String& rhs) const;
 
-    /**
-     * \brief   Returns true if 2 identifier objects are not equal.
-     **/
-    inline bool operator != ( const Identifier & other ) const;
+    [[nodiscard]]
+    inline constexpr bool operator == (uint32_t rhs) const noexcept;
 
-    /**
-     * \brief   Returns true if the name of identifier is not equal.
-     **/
-    inline bool operator != ( const char * rhs ) const;
+    [[nodiscard]]
+    inline bool operator != (const char * rhs) const;
 
-    /**
-     * \brief   Returns true if the integer value of identifier is equal.
-     **/
-    inline bool operator != ( unsigned int rhs ) const;
+    [[nodiscard]]
+    inline bool operator != (const String& rhs) const;
+
+    [[nodiscard]]
+    inline constexpr bool operator != (uint32_t rhs) const noexcept;
 
 /************************************************************************
- * Friend functions. Declare to make it streamable
+ * Friend functions to make it streamable
  ************************************************************************/
 
     /**
-     * \brief   Reads identifier value from stream.
-     * \param   stream  Streaming object to read identifier value
-     * \param   input   Identifier to write values
-     * \return  Returns instance of read streaming object
+     * \brief   Reads identifier data from a stream.
+     *
+     * \param       stream  The input stream to read from.
+     * \param[out]  input   The identifier to write the values into.
+     * \return  Reference to the input stream.
      **/
-    friend inline const IEInStream & operator >> (const IEInStream & stream, Identifier & input);
+    friend inline const areg::InStream& operator >> (const areg::InStream& stream, areg::Identifier& input);
 
     /**
-     * \brief   Writes identifier value to stream.
-     * \param   stream  Streaming object to write identifier value
-     * \param   output  Identifier to read values
-     * \return  Returns instance of write streaming object
+     * \brief   Writes identifier data to a stream.
+     *
+     * \param   stream      The output stream to write to.
+     * \param   output      The identifier to read the values from.
+     * \return  Reference to the output stream.
      **/
-    friend inline IEOutStream & operator << (IEOutStream & stream, const Identifier & output);
+    friend inline areg::OutStream& operator << (areg::OutStream& stream, const areg::Identifier& output);
 
 //////////////////////////////////////////////////////////////////////////
-// Operations / Attributes
+// Attributes
 //////////////////////////////////////////////////////////////////////////
+public:
 
-    /**
-     * \brief   Returns true if Identifier is valid. 
-     *          Invalid Identifier has values of BAD_DENTIFIER.
-     **/
-    inline bool isValid( void ) const;
+    [[nodiscard]]
+    inline bool is_valid() const;
 
-    /**
-     * \brief   Reset Identifier data. Set to BAD_DENTIFIER.
-     **/
-    inline void invalidate( void );
+    inline void invalidate();
 
-    /**
-     * \brief   Returns Identifier string value
-     **/
-    inline const String & getName( void ) const;
+    [[nodiscard]]
+    inline const String& name() const noexcept;
 
-    /**
-     * \brief   Returns Identifier integer value
-     **/
-    inline unsigned int getValue( void ) const;
+    [[nodiscard]]
+    constexpr uint32_t value() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Integer value of Identifier
-     **/
-    unsigned int    mValue;
-    /**
-     * \brief   String value of Identifier
-     **/
-    String          mName;
+    uint32_t    mValue;     //!< Integer value of the identifier.
+    String      mName;      //!< String name of the identifier.
 };
 
 //////////////////////////////////////////////////////////////////////////
 // Identifier class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const String& Identifier::convToString(unsigned int idValue, const std::vector<Identifier>& lookupList, unsigned int defIndex)
+inline const String& Identifier::to_string( uint32_t idValue
+                                           , const std::vector<Identifier>& lookupList
+                                           , uint32_t defIndex ) noexcept
 {
-    ASSERT(defIndex < lookupList.size());
     for (const Identifier& entry : lookupList)
     {
         if (entry.mValue == idValue)
@@ -258,12 +216,13 @@ inline const String& Identifier::convToString(unsigned int idValue, const std::v
         }
     }
 
-    return (defIndex < static_cast<uint32_t>(lookupList.size())? lookupList[defIndex].mName : String::getEmptyString());
+    return (defIndex < static_cast<uint32_t>(lookupList.size()) ? lookupList[defIndex].mName : String::empty_string());
 }
 
-inline unsigned int Identifier::convFromString(const String& idName, const std::vector<Identifier>& lookupList, unsigned int defIndex)
+inline uint32_t Identifier::from_string( const String& idName
+                                        , const std::vector<Identifier>& lookupList
+                                        , uint32_t defIndex )
 {
-    ASSERT(defIndex < lookupList.size());
     for (const Identifier& entry : lookupList)
     {
         if (entry.mName == idName)
@@ -275,73 +234,84 @@ inline unsigned int Identifier::convFromString(const String& idName, const std::
     return (defIndex < static_cast<uint32_t>(lookupList.size()) ? lookupList[defIndex].mValue : static_cast<uint32_t>(~0));
 }
 
-inline bool Identifier::operator == ( const Identifier & other ) const
+inline bool Identifier::operator == (const Identifier& other) const
 {
     return (this == &other) || ((mValue == other.mValue) && (mName == other.mName));
 }
 
-inline bool Identifier::operator == ( const char * rhs ) const
+inline bool Identifier::operator != (const Identifier& other) const
+{
+    return !(*this == other);
+}
+
+inline bool Identifier::operator == (const char * rhs) const
 {
     return (mName == rhs);
 }
 
-inline bool Identifier::operator == ( unsigned int rhs ) const
+inline bool Identifier::operator == (const String& rhs) const
+{
+    return (mName == rhs);
+}
+
+inline constexpr bool Identifier::operator == (uint32_t rhs) const noexcept
 {
     return (mValue == rhs);
 }
 
-inline bool Identifier::operator != ( const Identifier & other ) const
-{
-    return (this != &other) && ((mValue != other.mValue) && (mName != other.mName));
-}
-
-inline bool Identifier::operator != ( const char * rhs ) const
+inline bool Identifier::operator != (const char * rhs) const
 {
     return (mName != rhs);
 }
 
-inline bool Identifier::operator != ( unsigned int rhs ) const
+inline bool Identifier::operator != (const String& rhs) const
+{
+    return (mName != rhs);
+}
+
+inline constexpr bool Identifier::operator != (uint32_t rhs) const noexcept
 {
     return (mValue != rhs);
 }
 
-inline bool Identifier::isValid( void ) const
+inline bool Identifier::is_valid() const
 {
     return (*this != BAD_IDENTIFIER);
 }
 
-inline void Identifier::invalidate( void )
+inline void Identifier::invalidate()
 {
     mValue  = BAD_IDENTIFIER.mValue;
     mName   = BAD_IDENTIFIER.mName;
 }
 
-inline const String & Identifier::getName( void ) const
+inline const String& Identifier::name() const noexcept
 {
     return mName;
 }
 
-inline unsigned int Identifier::getValue( void ) const
+constexpr uint32_t Identifier::value() const noexcept
 {
     return mValue;
 }
 
 /************************************************************************
- * Friend functions. Declare to make it streamable
- * It is streamable object and the values can be streamed between different threads
+ * Friend functions to make it streamable
  ************************************************************************/
-inline const IEInStream& operator >> (const IEInStream& stream, Identifier& input)
+inline const areg::InStream& operator >> (const areg::InStream& stream, areg::Identifier& input)
 {
     stream >> input.mValue;
     stream >> input.mName;
     return stream;
 }
 
-inline IEOutStream & operator << (IEOutStream& stream, const Identifier& output)
+inline areg::OutStream& operator << (areg::OutStream& stream, const areg::Identifier& output)
 {
     stream << output.mValue;
     stream << output.mName;
     return stream;
 }
+
+} // namespace areg
 
 #endif  // AREG_BASE_IDENTIFIER_HPP

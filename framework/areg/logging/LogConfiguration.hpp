@@ -17,28 +17,32 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
-#include "areg/base/NESocket.hpp"
+#include "areg/base/SocketDefs.hpp"
 #include "areg/base/Version.hpp"
-#include "areg/persist/NEPersistence.hpp"
+#include "areg/persist/PersistenceDefs.hpp"
 #include "areg/persist/Property.hpp"
-#include "areg/logging/NELogging.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 
 #include <vector>
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ScopeController;
+namespace areg {
+    class ConfigManager;
+    class ScopeController;
+} // namespace areg
 
+namespace areg {
 //////////////////////////////////////////////////////////////////////////
 // LogConfiguration class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Logging configuration is an interface of configuration container.
- *          The inter has methods to get values of configured properties.
- *          All properties are read only and cannot be modified
+ * \brief   Configuration interface for logging system. Provides read-only access to logging
+ *          settings including enabled targets (file, remote, database), layout formats, and scope
+ *          priorities.
  **/
 class AREG_API LogConfiguration
 {
@@ -47,11 +51,9 @@ class AREG_API LogConfiguration
 // Constructor / Destructor. Protected
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief  Constructor / Destructor.
-     **/
-    LogConfiguration( void ) = default;
-    ~LogConfiguration( void ) = default;
+    LogConfiguration();
+
+    ~LogConfiguration() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -61,182 +63,273 @@ public:
     /**
      * \brief   Returns true if logging is enabled.
      **/
-    bool isLoggingEnabled( void ) const;
+    [[nodiscard]]
+    bool is_logging_enabled() const noexcept;
 
     /**
-     * \brief   Returns true if logging via network is enabled.
+     * \brief   Returns true if remote network logging is enabled.
      **/
-    bool isRemoteLoggingEnabled( void ) const;
+    [[nodiscard]]
+    bool is_remote_logging_enabled() const noexcept;
 
     /**
-     * \brief   Returns true if logging in the file is enabled.
+     * \brief   Returns true if file logging is enabled.
      **/
-    bool isFileLoggingEnabled( void ) const;
+    [[nodiscard]]
+    bool is_file_logging_enabled() const noexcept;
 
     /**
-     * \brief   Returns true if logging in database is enabled.
-     *          NOTE: The database logging is not implemented yet.
+     * \brief   Returns true if database logging is enabled. (Not yet implemented.)
      **/
-    bool isDatabaseLoggingEnabled( void ) const;
+    [[nodiscard]]
+    bool is_db_logging_enabled() const noexcept;
 
     /**
-     * \brief   Returns true if logging on debug output window (or console) is enabled.
+     * \brief   Returns true if debug output (console) logging is enabled.
      **/
-    bool isDebugOutputLoggingEnabled( void ) const;
+    [[nodiscard]]
+    bool is_debug_logging_enabled() const noexcept;
 
     /**
-     * \brief   Sets logging enable flag for the specified log type.
-     * \param   logType     The logging type, which enabled flag is set.
-     * \param   isEnabled   The flag, indicating whether the logging of specified type
-     *                      is enabled or disabled. If true, the logging for specified type
-     *                      is enabled.
+     * \brief   Enables or disables logging for a specific target type.
+     *
+     * \param   logType     The logging target type to enable or disable.
+     * \param   isEnabled   True to enable logging for this target; false to disable.
      **/
-    void setLogEnabled(NELogging::eLogingTypes logType, bool isEnabled);
+    void set_log_enabled(areg::LogTarget logType, bool isEnabled);
 
     /**
-     * \brief   Gets and sets the property value of logging version.
+     * \brief   Returns the logging configuration version.
      **/
-    Version getVersion( void ) const;
+    [[nodiscard]]
+    Version version() const noexcept;
 
     /**
-     * \brief   Gets and sets property value of layout format of scope enter.
+     * \brief   Returns the layout format for scope entry messages.
      **/
-    String getLayoutEnter( void ) const;
-    void setLayoutEnter( const String & prop );
+    [[nodiscard]]
+    String layout_enter() const;
+    /**
+     * \brief   Sets the layout format for scope entry messages.
+     **/
+    void set_layout_enter( const String & prop );
 
     /**
-     * \brief   Gets and sets property value of layout format form message text output.
+     * \brief   Returns the layout format for message text output.
      **/
-    String getLayoutMessage( void ) const;
-    void setLayoutMessage( const String & prop );
+    [[nodiscard]]
+    String layout_message() const;
+    /**
+     * \brief   Sets the layout format for message text output.
+     **/
+    void set_layout_message( const String & prop );
 
     /**
-     * \brief   Gets and sets property value of layout format of scope exit.
+     * \brief   Returns the layout format for scope exit messages.
      **/
-    String getLayoutExit( void ) const;
-    void setLayoutExit( const String & prop );
+    [[nodiscard]]
+    String layout_exit() const;
+    /**
+     * \brief   Sets the layout format for scope exit messages.
+     **/
+    void set_layout_exit( const String & prop );
 
     /**
-     * \brief   Gets and sets property value of stack size.
+     * \brief   Returns the configured stack size.
      **/
-    uint32_t getStackSize( void ) const;
-    void setStackSize( uint32_t prop );
+    [[nodiscard]]
+    uint32_t stack_size() const noexcept;
+    /**
+     * \brief   Sets the stack size.
+     **/
+    void set_stack_size( uint32_t prop );
 
     /**
-     * \brief   Gets and sets property value of logging status (enabled / disabled).
+     * \brief   Returns the logging status (enabled or disabled).
      **/
-    bool getStatus( void ) const;
-    void setStatus( bool prop );
+    [[nodiscard]]
+    bool status() const noexcept;
+    /**
+     * \brief   Enables or disables logging.
+     **/
+    void set_status( bool prop );
 
     /**
-     * \brief   Gets and sets property value of append data status.
+     * \brief   Returns true if logs should be appended to existing files.
      **/
-    bool getAppendData( void ) const;
-    void setAppendData( bool prop );
+    [[nodiscard]]
+    bool append_data() const noexcept;
+    /**
+     * \brief   Sets whether logs should be appended to existing files.
+     **/
+    void set_append_data( bool prop );
 
     /**
-     * \brief   Gets and sets property value of file logging setting.
+     * \brief   Returns the configured log file path.
      **/
-    String getLogFile( void ) const;
-    void setLogFile( const String & prop );
+    [[nodiscard]]
+    String log_file() const;
+    /**
+     * \brief   Sets the log file path.
+     **/
+    void set_log_file( const String & prop );
 
     /**
-     * \brief   Gets and sets property value of remote logging enable setting.
+     * \brief   Returns true if remote TCP logging is enabled.
      **/
-    bool getRemoteTcpEnable( void ) const;
-    void setRemoteTcpEnable( bool prop, bool isTemporary = false);
+    bool remote_tcp_enable() const;
+    /**
+     * \brief   Enables or disables remote TCP logging.
+     **/
+    void set_tcp_enable( bool prop, bool isTemporary = false);
 
     /**
-     * \brief   Gets and sets property value of remote host name logging setting.
+     * \brief   Returns the remote host address for logging.
      **/
-    String getRemoteTcpAddress( void ) const;
-    void setRemoteTcpAddress( const String & prop, bool isTemporary = false);
+    String remote_tcp_address() const;
+    /**
+     * \brief   Sets the remote host address for logging.
+     **/
+    void set_tcp_address( const String & prop, bool isTemporary = false);
 
     /**
-     * \brief   Gets and sets property value of remote host port logging setting.
+     * \brief   Returns the remote host port for logging.
      **/
-    uint16_t getRemoteTcpPort( void ) const;
-    void setRemoteTcpPort( uint16_t prop, bool isTemporary = false);
+    uint16_t remote_tcp_port() const;
+    /**
+     * \brief   Sets the remote host port for logging.
+     **/
+    void set_tcp_port( uint16_t prop, bool isTemporary = false);
 
     /**
-     * \brief   Gets and sets property value of database logging enable / disable setting.
+     * \brief   Returns true if database logging is enabled.
      **/
-    bool getDatabaseEnable( void ) const;
-    void setDatabaseEnable( bool prop, bool isTemporary = false);
+    [[nodiscard]]
+    bool database_enable() const noexcept;
+    /**
+     * \brief   Enables or disables database logging.
+     **/
+    void set_database_enable( bool prop, bool isTemporary = false);
 
     /**
-     * \brief   Gets and sets module (process) specific log scopes.
+     * \brief   Returns the number of module-specific log scopes and populates the scope list.
      **/
-    uint32_t getModuleScopes(std::vector<Property>& scopeList);
-    void setModuleScopes(const std::vector<Property>& scopeList);
+    [[nodiscard]]
+    uint32_t module_scopes(std::vector<Property>& scopeList);
+    /**
+     * \brief   Sets the module-specific log scopes.
+     **/
+    void set_module_scopes(const std::vector<Property>& scopeList);
+
+    void enable_scopes(const std::vector<String>& scopeNames, bool enable = true, bool isTemporary = false);
 
     /**
-     * \brief   Gets and sets the name of database engine such as `sqlite`.
+     * \brief   Returns the database engine name (e.g., 'sqlite').
      **/
-    String getDatabaseEngine(void) const;
-    void setDatabaseEngine(const String & dbEngine, bool isTemporary = false);
+    [[nodiscard]]
+    String database_engine() const;
+    /**
+     * \brief   Sets the database engine name.
+     **/
+    void set_database_engine(const String & dbEngine, bool isTemporary = false);
 
     /**
-     * \brief   Gets and sets the full path of the database file.
-     *          When gets, it adds database file name to the location.
-     *          Wehn sets, it splits file path to 2 parts: database name and database location.
+     * \brief   Returns the full path to the database file.
      **/
-    String getDatabaseFullPath(void) const;
-    void setDatabaseFullPath(const String & dbFullPath, bool isTemporary = false);
+    [[nodiscard]]
+    String database_full_path() const;
+    /**
+     * \brief   Sets the full path to the database file.
+     **/
+    void set_db_path(const String & dbFullPath, bool isTemporary = false);
 
     /**
-     * \brief   Gets and sets the database name like "SQLite" or "MySQL", etc.
+     * \brief   Returns the database name (e.g., 'SQLite').
      **/
-    String getDatabaseName(void) const;
-    void setDatabaseName(const String & dbName, bool isTemporary = false);
+    [[nodiscard]]
+    String database_name() const;
+    /**
+     * \brief   Sets the database name.
+     **/
+    void set_database_name(const String & dbName, bool isTemporary = false);
 
     /**
-     * \brief   Gets and sets the database location. The location can be full or relative file path, or an URI.
+     * \brief   Returns the database location (file path or URI).
      **/
-    String getDatabaseLocation(void) const;
-    void setDatabaseLocation(const String& dbLocation, bool isTemporary = false);
+    [[nodiscard]]
+    String database_location() const;
+    /**
+     * \brief   Sets the database location.
+     **/
+    void set_database_location(const String& dbLocation, bool isTemporary = false);
 
     /**
-     * \brief   Gets and sets the database driver, if needed.
+     * \brief   Returns the database driver name.
      **/
-    String getDatabaseDriver(void) const;
-    void setDatabaseDriver(const String& dbDriver, bool isTemporary = false);
+    [[nodiscard]]
+    String database_driver() const;
+    /**
+     * \brief   Sets the database driver name.
+     **/
+    void set_database_driver(const String& dbDriver, bool isTemporary = false);
 
     /**
-     * \brief   Gets and sets the database service address that contains IP-address and port number.
+     * \brief   Returns the database service address (IP and port).
      **/
-    NESocket::SocketAddress getDatabaseAddress(void) const;
-    void setDatabaseAddress(const NESocket::SocketAddress& dbAddress, bool isTemporary = false);
-    void setDatabaseAddress(const String& dbAddress, uint16_t dbPort, bool isTemporary = false);
+    [[nodiscard]]
+    areg::SocketAddress database_address() const;
+    /**
+     * \brief   Sets the database service address (IP and port).
+     **/
+    void set_database_address(const areg::SocketAddress& dbAddress, bool isTemporary = false);
+    /**
+     * \brief   Sets the database service address from host and port.
+     **/
+    void set_database_address(const String& dbAddress, uint16_t dbPort, bool isTemporary = false);
 
     /**
-     * \brief   Gets and sets the database user name and user password.
+     * \brief   Returns the database user credentials (name and password).
      **/
-    NESocket::UserData getDatabaseUser(void) const;
-    void setDatabaseUser(const NESocket::UserData& dbUser, bool isTemporary = false);
-    void setDatabaseUser(const String& dbUserName, const String& dbUserPassword, bool isTemporary = false);
+    [[nodiscard]]
+    areg::UserData database_user() const;
+    /**
+     * \brief   Sets the database user credentials.
+     **/
+    void set_database_user(const areg::UserData& dbUser, bool isTemporary = false);
+    /**
+     * \brief   Sets the database user name and password.
+     **/
+    void set_database_user(const String& dbUserName, const String& dbUserPassword, bool isTemporary = false);
 
     /**
-     * \brief   Saves the configuration in the current config file.
+     * \brief   Saves the current configuration to file.
      **/
-    void saveConfiguration(void);
+    void save_configuration();
 
     /**
-     * \brief   Updates the list of scopes in the application configuration by setting the current state of scopes in configuration.
-     * \param   scopeController     The instance of the scope controller to read states of the scopes.
+     * \brief   Updates configuration with the current state of all active scopes.
+     *
+     * \param   scopeController     The scope controller providing current scope states.
      **/
-    void updateScopeConfiguration(const ScopeController & scopeController) const;
+    void update_scope_configuration(const ScopeController & scopeController) const;
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    ConfigManager& mConfigMan;  //!< Configuration manager for reading/writing properties.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( LogConfiguration );
+    AREG_NOCOPY_NOMOVE( LogConfiguration );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // LogConfiguration inline methods
 //////////////////////////////////////////////////////////////////////////
 
+} // namespace areg
 
 #endif  // AREG_LOGGING_LOGCONFIGURATION_HPP

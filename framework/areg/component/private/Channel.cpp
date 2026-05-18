@@ -15,82 +15,41 @@
  *              process or in the remote PC.
  ************************************************************************/
 #include "areg/component/Channel.hpp"
-#include "areg/base/NECommon.hpp"
+#include "areg/base/CommonDefs.hpp"
+namespace areg {
 
-const Channel & Channel::getInvalidChannel( void )
+const Channel & Channel::invalid_channel()
 {
-    static const Channel _invalidChannel( NEService::SOURCE_UNKNOWN, NEService::TARGET_UNKNOWN, NEService::COOKIE_UNKNOWN );
+    static const Channel _invalidChannel( areg::SOURCE_UNKNOWN, areg::TARGET_UNKNOWN, areg::COOKIE_UNKNOWN );
     return _invalidChannel;
 }
 
-Channel::Channel( void )
-    : mSource( NEService::SOURCE_UNKNOWN )
-    , mTarget( NEService::TARGET_UNKNOWN )
-    , mCookie( NEService::COOKIE_UNKNOWN ) 
-{
-}
-
-Channel::Channel(const ITEM_ID & source, const ITEM_ID & target /*= NEService::TARGET_UNKNOWN*/, const ITEM_ID & cookie /*= NEService::COOKIE_UNKNOWN*/ )
-    : mSource( source )
-    , mTarget( target )
-    , mCookie( cookie )
-{
-}
-
-Channel::Channel( const Channel & source )
-    : mSource( source.mSource )
-    , mTarget( source.mTarget )
-    , mCookie( source.mCookie )
-{
-}
-
-Channel::Channel( Channel && source ) noexcept
-    : mSource( source.mSource )
-    , mTarget( source.mTarget )
-    , mCookie( source.mCookie )
-{
-}
-
-Channel & Channel::operator = ( const Channel & source )
-{
-    mSource = source.mSource;
-    mTarget = source.mTarget;
-    mCookie = source.mCookie;
-    return (*this);
-}
-
-Channel & Channel::operator = ( Channel && source ) noexcept
-{
-    mSource = source.mSource;
-    mTarget = source.mTarget;
-    mCookie = source.mCookie;
-    return (*this);
-}
-
-String Channel::convToString( void ) const
+String Channel::to_string() const
 {
     constexpr const char * format{ "%llu.%llu.%llu" };
 
     char buffer[ 128 ]{ 0 };
-    int len = String::formatString( buffer, 128, format, mSource, mTarget, mCookie );
-    return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::getEmptyString());
+    int32_t len = String::format_string( buffer, 128, format, mSource, mTarget, mCookie );
+    return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::empty_string());
 }
 
-const Channel & Channel::convFromString(const String & channel)
+const Channel & Channel::from_string(const String & channel)
 {
-    mSource = NEService::SOURCE_UNKNOWN;
-    mTarget = NEService::TARGET_UNKNOWN;
-    mCookie = NEService::COOKIE_UNKNOWN;
+    mSource = areg::SOURCE_UNKNOWN;
+    mTarget = areg::TARGET_UNKNOWN;
+    mCookie = areg::COOKIE_UNKNOWN;
 
     String source, target, cookie;
-    NEString::CharPos pos = NEString::START_POS;
-    pos = channel.substring( source, NECommon::OBJECT_SEPARATOR, pos );
-    pos = channel.substring( target, NECommon::OBJECT_SEPARATOR, pos );
-    channel.substring( cookie, NECommon::OBJECT_SEPARATOR, pos );
+    areg::CharPos pos = areg::START_POS;
+    pos = channel.substring( source, areg::OBJECT_SEPARATOR, pos );
+    pos = channel.substring( target, areg::OBJECT_SEPARATOR, pos );
+    channel.substring( cookie, areg::OBJECT_SEPARATOR, pos );
 
-    mSource = static_cast<ITEM_ID>( source.toUInt64() );
-    mTarget = static_cast<ITEM_ID>( target.toUInt64() );
-    mCookie = static_cast<ITEM_ID>( cookie.toUInt64() );
+    mSource = static_cast<ITEM_ID>( source.to_uint64() );
+    mTarget = static_cast<ITEM_ID>( target.to_uint64() );
+    mCookie = static_cast<ITEM_ID>( cookie.to_uint64() );
 
     return (*this);
 }
+
+} // namespace areg

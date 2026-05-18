@@ -15,7 +15,9 @@
 #include "areg/logging/private/LoggerBase.hpp"
 #include "areg/logging/private/LogManager.hpp"
 
-#if AREG_LOGS
+#if AREG_LOGGING
+
+namespace areg {
 
 LoggerBase::LoggerBase( LogConfiguration & logConfig)
     : mLogConfiguration (logConfig)
@@ -25,20 +27,22 @@ LoggerBase::LoggerBase( LogConfiguration & logConfig)
 {
 }
 
-bool LoggerBase::createLayouts(void)
+bool LoggerBase::create_layouts()
 {
-    bool result = mLayoutsMessage.createLayouts(mLogConfiguration.getLayoutMessage());
-    result |= mLayoutsScopeEnter.createLayouts(mLogConfiguration.getLayoutEnter());
-    result |= mLayoutsScopeExit.createLayouts(mLogConfiguration.getLayoutExit());
+    bool result = mLayoutsMessage.create_layouts(mLogConfiguration.layout_message());
+    result |= mLayoutsScopeEnter.create_layouts(mLogConfiguration.layout_enter());
+    result |= mLayoutsScopeExit.create_layouts(mLogConfiguration.layout_exit());
 
     return result;
 }
 
-void LoggerBase::releaseLayouts(void)
+void LoggerBase::release_layouts()
 {
-    mLayoutsMessage.deleteLayouts();
-    mLayoutsScopeEnter.deleteLayouts();
-    mLayoutsScopeExit.deleteLayouts();
+    mLayoutsMessage.delete_layouts();
+    mLayoutsScopeEnter.delete_layouts();
+    mLayoutsScopeExit.delete_layouts();
 }
 
-#endif  // AREG_LOGS
+} // namespace areg
+
+#endif  // AREG_LOGGING

@@ -5,13 +5,9 @@
 
 set(AREG_PACKAGE_NAME   "areg")
 
-if (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "")
-    set(AREG_BUILD_TYPE "${CMAKE_BUILD_TYPE}")
-endif()
-
 # Set processor, if not identified yet.
-if ("${AREG_PROCESSOR}" STREQUAL "")
-    set(AREG_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR})
+if ("${AREG_ARCH}" STREQUAL "")
+    set(AREG_ARCH ${CMAKE_SYSTEM_PROCESSOR})
 endif()
 
 # Detect target platform
@@ -32,7 +28,13 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set(AREG_PLATFORM_WINDOWS TRUE)
     message(STATUS "Areg: >>> Target platform = Windows")
-    
+
+elseif (CMAKE_SYSTEM_NAME STREQUAL "CYGWIN" OR CYGWIN)
+    # The CYGWIN CMake variable is set automatically when CMake is run inside a Cygwin shell;
+    # CMAKE_SYSTEM_NAME may also be reported as "CYGWIN" depending on the CMake and toolchain version.
+    set(AREG_PLATFORM_POSIX TRUE)
+    message(STATUS "Areg: >>> Target platform = Cygwin")
+
 else()
     message(WARNING "Areg: >>> Unknown target platform '${CMAKE_SYSTEM_NAME}'")
 endif()
@@ -45,7 +47,7 @@ endif()
 # Identify compiler short name
 if ("${AREG_COMPILER_FAMILY}" STREQUAL "")
 
-    macro_setup_compilers_data("${CMAKE_CXX_COMPILER}" AREG_COMPILER_FAMILY AREG_COMPILER_SHORT AREG_CXX_COMPILER AREG_C_COMPILER AREG_TARGET AREG_PROCESSOR AREG_BITNESS _compiler_found)
+    macro_setup_compilers_data("${CMAKE_CXX_COMPILER}" AREG_COMPILER_FAMILY AREG_COMPILER_SHORT AREG_CXX_COMPILER AREG_C_COMPILER AREG_TARGET AREG_ARCH AREG_BITNESS _compiler_found)
     if (_compiler_found)
         message(STATUS "Areg: >>> Use system default settings:")
         message(STATUS "Areg: ... Compiler family = '${AREG_COMPILER_FAMILY}'")
@@ -71,7 +73,7 @@ endif()
 
 # Setup for find_xxx() calls
 if ("${AREG_TARGET}" STREQUAL "")
-    macro_default_target(${AREG_PROCESSOR} AREG_TARGET)
+    macro_default_target(${AREG_ARCH} AREG_TARGET)
 endif()
 
 set(CMAKE_FIND_PACKAGE_RESOLVE_SYMLINKS TRUE)
@@ -166,7 +168,7 @@ if (AREG_EXTENDED)
             list(APPEND AREG_EXTENDED_LIBS ncurses)
             set(AREG_EXTENDED_LIBS_STR "-lncurses")
         else()
-            message(STATUS "Areg: >>> No suitable 'ncurses' library found for '${AREG_PROCESSOR}' processor, force to disable extended objects.")
+            message(STATUS "Areg: >>> No suitable 'ncurses' library found for '${AREG_ARCH}' processor, force to disable extended objects.")
             set(AREG_EXTENDED OFF CACHE INTERNAL "Disable Areg Extended objects")
             add_definitions(-DAREG_EXTENDED=0)
         endif()
@@ -177,10 +179,10 @@ else()
     add_definitions(-DAREG_EXTENDED=0)
 endif()
 
-if (AREG_LOGS)
-    add_definitions(-DAREG_LOGS=1)
+if (AREG_LOGGING)
+    add_definitions(-DAREG_LOGGING=1)
 else()
-    add_definitions(-DAREG_LOGS=0)
+    add_definitions(-DAREG_LOGGING=0)
 endif()
 
 if (AREG_BITNESS EQUAL 32)
@@ -193,63 +195,63 @@ endif()
 # Setup product paths
 # -------------------------------------------------------
 
-if (AREG_ENABLE_OUTPUTS)
+if (AREG_OUTPUT_LAYOUT)
 
     # The output directory
     if (NOT DEFINED AREG_OUTPUT_DIR OR "${AREG_OUTPUT_DIR}" STREQUAL "")
         # Relative path of the output folder for the builds
-        set(_product_path "build/${AREG_COMPILER_FAMILY}-${AREG_COMPILER_SHORT}/${AREG_OS}-${AREG_BITNESS}-${AREG_PROCESSOR}-${CMAKE_BUILD_TYPE}-${AREG_BINARY}")
+        set(_product_path "build/${AREG_COMPILER_FAMILY}-${AREG_COMPILER_SHORT}/${AREG_OS}-${AREG_BITNESS}-${AREG_ARCH}-${CMAKE_BUILD_TYPE}-${AREG_LIB_TYPE}")
         string(TOLOWER "${_product_path}" _product_path)
         # The absolute path of 'AREG_OUTPUT_DIR' for builds if it is not set.
-        set(AREG_OUTPUT_DIR "${AREG_BUILD_ROOT}/${_product_path}")
+        set(AREG_OUTPUT_DIR "${AREG_BUILD_DIR}/${_product_path}")
         unset(_product_path)
     endif()
 
 else()
 
     # The build root directory
-    if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
-        set(AREG_BUILD_ROOT "${CMAKE_BINARY_DIR}")
+    if (NOT DEFINED AREG_BUILD_DIR OR "${AREG_BUILD_DIR}" STREQUAL "")
+        set(AREG_BUILD_DIR "${CMAKE_BINARY_DIR}")
     endif()
 
     # The output directory
     if (NOT DEFINED AREG_OUTPUT_DIR OR "${AREG_OUTPUT_DIR}" STREQUAL "")
-        set(AREG_OUTPUT_DIR "${AREG_BUILD_ROOT}")
+        set(AREG_OUTPUT_DIR "${AREG_BUILD_DIR}")
     endif()
 
 endif()
 
 # The directory to output generated files
 if ("${AREG_GENERATE_DIR}" STREQUAL "")
-    set(AREG_GENERATE_DIR "${AREG_BUILD_ROOT}/${AREG_GENERATE}")
+    set(AREG_GENERATE_DIR "${AREG_BUILD_DIR}/${AREG_GENERATE}")
 endif()
 
 # The directory to output static libraries
-if (NOT DEFINED AREG_OUTPUT_LIB OR "${AREG_OUTPUT_LIB}" STREQUAL "")
-    # set absolute path to AREG_OUTPUT_LIB if it is not manually set
-    set(AREG_OUTPUT_LIB "${AREG_OUTPUT_DIR}/lib")
+if (NOT DEFINED AREG_LIB_DIR OR "${AREG_LIB_DIR}" STREQUAL "")
+    # set absolute path to AREG_LIB_DIR if it is not manually set
+    set(AREG_LIB_DIR "${AREG_OUTPUT_DIR}/lib")
 endif()
 
 # The directory to output shared libraries and executables
-if (NOT DEFINED AREG_OUTPUT_BIN OR "${AREG_OUTPUT_BIN}" STREQUAL "")
-    # set absolute path to AREG_OUTPUT_BIN if it is not manually set
-    set(AREG_OUTPUT_BIN "${AREG_OUTPUT_DIR}/bin")
+if (NOT DEFINED AREG_BIN_DIR OR "${AREG_BIN_DIR}" STREQUAL "")
+    # set absolute path to AREG_BIN_DIR if it is not manually set
+    set(AREG_BIN_DIR "${AREG_OUTPUT_DIR}/bin")
 endif()
 
 # The absolute path for compiled object files.
 set(AREG_OUTPUT_OBJ "${AREG_OUTPUT_DIR}/obj")
 
 # Setting output directories
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${AREG_OUTPUT_LIB})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${AREG_BIN_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${AREG_BIN_DIR})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${AREG_LIB_DIR})
 
 # Make sure that the output directories are set for each configuration.
 foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
     string( TOUPPER ${OUTPUTCONFIG} AREG_OUTPUTCONFIG )
-    set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${AREG_OUTPUTCONFIG} ${AREG_OUTPUT_BIN} )
-    set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${AREG_OUTPUTCONFIG} ${AREG_OUTPUT_BIN} )
-    set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${AREG_OUTPUTCONFIG} ${AREG_OUTPUT_LIB} )
+    set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${AREG_OUTPUTCONFIG} ${AREG_BIN_DIR} )
+    set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${AREG_OUTPUTCONFIG} ${AREG_BIN_DIR} )
+    set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${AREG_OUTPUTCONFIG} ${AREG_LIB_DIR} )
 endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 
 # Adding compile options
@@ -259,10 +261,18 @@ add_compile_options(${AREG_COMPILER_OPTIONS})
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${AREG_OUTPUT_DIR})
 
 # Add include search paths
-include_directories(BEFORE "${AREG_FRAMEWORK}" "${AREG_BUILD_ROOT}" "${AREG_GENERATE_DIR}" "${AREG_THIRDPARTY}")
+include_directories(BEFORE "${AREG_FRAMEWORK}" "${AREG_BUILD_DIR}" "${AREG_GENERATE_DIR}" "${AREG_THIRDPARTY}")
 
 # Adding library search paths
 link_directories(BEFORE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
+
+# Pass -no_warning_for_no_symbols on macOS to suppress harmless warnings.
+if (APPLE)
+    set(CMAKE_C_ARCHIVE_CREATE   "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
+    set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
+    set(CMAKE_C_ARCHIVE_FINISH   "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
+    set(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
+endif()
 
 if (NOT DEFINED CMAKE_EXECUTABLE_SUFFIX OR "${CMAKE_EXECUTABLE_SUFFIX}" STREQUAL "")
     if (AREG_PLATFORM_MACOS)
@@ -275,7 +285,7 @@ if (NOT DEFINED CMAKE_EXECUTABLE_SUFFIX OR "${CMAKE_EXECUTABLE_SUFFIX}" STREQUAL
 endif() 
 
 set(COMMON_COMPILE_DEF)
-if(AREG_BINARY MATCHES "static")
+if(AREG_LIB_TYPE MATCHES "static")
     set(COMMON_COMPILE_DEF IMP_AREG_LIB)
 else()
     set(COMMON_COMPILE_DEF IMP_AREG_DLL)
@@ -289,7 +299,7 @@ endif()
 # Check and setup variables for installation
 if (AREG_INSTALL)
     option(INSTALL_GTEST "Disable Googletest installation" OFF)
-    if (NOT "${AREG_INSTALL_PATH}" STREQUAL "")
-        set(CMAKE_INSTALL_PREFIX "${AREG_INSTALL_PATH}")
+    if (NOT "${AREG_INSTALL_DIR}" STREQUAL "")
+        set(CMAKE_INSTALL_PREFIX "${AREG_INSTALL_DIR}")
     endif()
 endif()

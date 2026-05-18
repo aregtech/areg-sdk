@@ -1,17 +1,17 @@
 /**
  * \file    src/provideripc.cpp
  * \brief   Minimal IPC example with request-response.
- *          It gets 'requestHelloService()' call from remote consumer running in other process.
- *          Then sends 'responseHelloService()' and quits application.
+ *          It gets 'hello_service()' call from remote consumer running in other process.
+ *          Then sends 'hello_service()' and quits application.
  *          This example requires `mtrouter`.
  **/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "examples/02_minimalipc/services/HelloServiceStub.hpp"
+#include "examples/02_minimalipc/services/HelloServiceProviderBase.hpp"
 
 // Use these options if compile for Windows with MSVC
 // It links with areg library (dynamic or static) and generated static library
@@ -23,29 +23,29 @@
 //////////////////////////////////////////////////////////////////////////
 // Service Provider: ServiceProvider declaration
 //////////////////////////////////////////////////////////////////////////
-class ServiceProvider   : public    Component
-                        , protected HelloServiceStub
+class ServiceProvider final : public    areg::Component
+                            , protected HelloServiceProviderBase
 {
 public:
-    ServiceProvider(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
-        : Component(entry, owner)
-        , HelloServiceStub(static_cast<Component&>(self()))
+    ServiceProvider(const areg::ComponentEntry& entry, areg::ComponentThread& owner)
+        : areg::Component(entry, owner)
+        , HelloServiceProviderBase(static_cast<areg::Component&>(self()))
     {   }
 
 //////////////////////////////////////////////////////////////////////////
 // HelloService Interface Requests
 //////////////////////////////////////////////////////////////////////////
 protected:
-    virtual void requestHelloService(void) override
+    void request_hello_service() final
     {
         std::cout << "\'Hello Service!\'" << std::endl;
-        responseHelloService();
-        Application::signalAppQuit();
+        response_hello_service();
+        areg::Application::signal_quit();
     }
 
 private:
     //!< The wrapper of this pointer.
-    inline ServiceProvider& self(void)
+    inline ServiceProvider& self()
     {   return (*this); }
 };
 
@@ -57,7 +57,7 @@ BEGIN_MODEL("ProviderModel")
     // Thread 1, provides a service
     BEGIN_REGISTER_THREAD( "Thread1" )
         BEGIN_REGISTER_COMPONENT( "ServiceProvider", ServiceProvider )
-            REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( HelloService::ServiceName, HelloService::InterfaceVersion )
         END_REGISTER_COMPONENT( "ServiceProvider" )
     END_REGISTER_THREAD( "Thread1" )
 // end of model description
@@ -66,15 +66,15 @@ END_MODEL("ProviderModel")
 //////////////////////////////////////////////////////////////////////////
 // main method
 //////////////////////////////////////////////////////////////////////////
-int main(void)
+int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog, using default settings.
-    Application::initApplication();
+    areg::Application::setup();
     // load model to initialize components
-    Application::loadModel("ProviderModel");
+    areg::Application::load_model("ProviderModel");
     // wait until Application quit signal is set.
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    areg::Application::wait_quit(areg::WAIT_INFINITE);
     // release and cleanup resources of application.
-    Application::releaseApplication();
+    areg::Application::release();
     return 0;
 }

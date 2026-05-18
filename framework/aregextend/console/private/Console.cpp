@@ -18,43 +18,47 @@
   ************************************************************************/
 #include "aregextend/console/Console.hpp"
 
+namespace areg::ext {
+
 //////////////////////////////////////////////////////////////////////////
 // Console class implementations.
 //////////////////////////////////////////////////////////////////////////
 
-Console& Console::getInstance(void)
+Console& Console::instance()
 {
     static Console _instance;   // singleton instance.
     return _instance;
 }
 
-Console::Console(void)
+Console::Console() noexcept
     : mIsReady  ( false )
     , mContext  ( 0 )
+    , mSavedPos { 0, 0 }
     , mEnable   (true, false)
     , mLock     (false)
 {
-    _osSetup();
+    _os_setup();
 }
 
-Console::~Console(void)
+Console::~Console() noexcept
 {
-    _osRelease();
+    _os_release();
 }
 
-String Console::waitForInput(Console::CallBack callback) const
+String Console::wait_for_input(Console::CallBack callback) const
 {
     String result;
 
-    mEnable.lock(NECommon::WAIT_INFINITE);
+    mEnable.lock(areg::WAIT_INFINITE);
 
     if (mIsReady)
     {
         do
         {
             result.clear();
+            _os_restore_cursor_position();
             char buffer[512]{ 0 };
-            if (Console::_osWaitInputString(buffer, 512))
+            if (Console::_os_wait_input_string(buffer, 512))
             {
                 result = buffer;
                 if ((static_cast<bool>(callback) == false) || callback(result))
@@ -68,53 +72,55 @@ String Console::waitForInput(Console::CallBack callback) const
     return result;
 }
 
-bool Console::readInputs(const char* format, ...) const
+bool Console::read_inputs(const char* format, ...) const
 {
     va_list argptr;
     va_start(argptr, format);
-    bool result = readInputList(format, argptr);
+    bool result = read_input_list(format, argptr);
     va_end(argptr);
 
     return result;
 }
 
-bool Console::readInputList(const char* format, va_list varList) const
+bool Console::read_input_list(const char* format, va_list varList) const
 {
-    mEnable.lock(NECommon::WAIT_INFINITE);
-    return _osReadInputList(format, varList);
+    mEnable.lock(areg::WAIT_INFINITE);
+    return _os_read_input_list(format, varList);
 }
 
-String Console::readString(void) const
+String Console::read_string() const
 {
     char buffer[512] { 0 };
-    return String(readInputs("%510s", buffer) ? buffer : String::getEmptyString());
+    return String(read_inputs("%510s", buffer) ? buffer : String::empty_string());
 }
 
-void Console::outputMsg(Console::Coord pos, const char* format, ...) const
+void Console::output_msg(Console::Coord pos, const char* format, ...) const
 {
     va_list argptr;
     va_start(argptr, format);
 
     String text;
-    text.formatList(format, argptr);
+    text.format_list(format, argptr);
     va_end(argptr);
 
-    outputStr(pos, text);
+    output_str(pos, text);
 }
 
-void Console::printMsg(const char* format, ...) const
+void Console::print_msg(const char* format, ...) const
 {
     va_list argptr;
     va_start(argptr, format);
 
     String text;
-    text.formatList(format, argptr);
+    text.format_list(format, argptr);
     va_end(argptr);
 
-    _osOutputText(text);
+    _os_output_text(text);
 }
 
-bool Console::readConsoleData(char* buffer, unsigned int bufSize)
+bool Console::read_console_data(char* buffer, uint32_t bufSize)
 {
-    return Console::_osWaitInputString(buffer, bufSize);
+    return Console::_os_wait_input_string(buffer, bufSize);
 }
+
+} // namespace areg::ext

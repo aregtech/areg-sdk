@@ -14,6 +14,7 @@
  *
  ************************************************************************/
 #include "areg/component/StreamableEvent.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // StreamableEvent class implementation
@@ -22,18 +23,18 @@
 //////////////////////////////////////////////////////////////////////////
 // Runtime implementation
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_RUNTIME_EVENT(StreamableEvent, Event)
+AREG_IMPLEMENT_RUNTIME_EVENT(StreamableEvent, Event)
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-StreamableEvent::StreamableEvent( Event::eEventType eventType )
+StreamableEvent::StreamableEvent( areg::EventType eventType )
     : Event (eventType)
 {
 }
 
-StreamableEvent::StreamableEvent( const IEInStream & stream )
-    : Event ( Event::eEventType::EventUnknown )
+StreamableEvent::StreamableEvent( const InStream & stream )
+    : Event ( areg::EventType::EventUnknown )
 {
     stream >> Event::mEventType;
 }
@@ -41,12 +42,14 @@ StreamableEvent::StreamableEvent( const IEInStream & stream )
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
-const IEInStream & StreamableEvent::readStream( const IEInStream & stream )
+const InStream & StreamableEvent::read_stream( const InStream & stream )
 {
     return (stream >> Event::mEventType);
 }
 
-IEOutStream & StreamableEvent::writeStream( IEOutStream & stream ) const
+OutStream & StreamableEvent::write_stream( OutStream & stream ) const
 {
     return (stream << Event::mEventType);
 }
+
+} // namespace areg

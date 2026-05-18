@@ -20,46 +20,47 @@
 #include "aregextend/service/ServiceApplicationBase.hpp"
 
 #ifdef _POSIX
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceApplicationBase class POSIX specific implementation
 //////////////////////////////////////////////////////////////////////////
-bool ServiceApplicationBase::_osIsValid(void) const
+bool ServiceApplicationBase::_os_is_valid() const
 {
     return true;
 }
 
-bool ServiceApplicationBase::_osRegisterService(void)
+bool ServiceApplicationBase::_os_register_service()
 {
     return true;
 }
 
-void ServiceApplicationBase::_osFreeResources(void)
+void ServiceApplicationBase::_os_free_resources()
 {
     mSvcHandle = nullptr;
     mSeMHandle = nullptr;
 }
 
-bool ServiceApplicationBase::_osInitializeService(void)
+bool ServiceApplicationBase::_os_initialize_service()
 {
     return true;
 }
 
-bool ServiceApplicationBase::_osOpenService(void)
+bool ServiceApplicationBase::_os_open_service()
 {
     return true;
 }
 
-bool ServiceApplicationBase::_osCreateService(void)
+bool ServiceApplicationBase::_os_create_service()
 {
     return true;
 }
 
-void ServiceApplicationBase::_osDeleteService(void)
+void ServiceApplicationBase::_os_delete_service()
 {
 }
 
-bool ServiceApplicationBase::_osSetState(NESystemService::eSystemServiceState newState)
+bool ServiceApplicationBase::_os_set_state(areg::ext::ServicePhase newState)
 {
     bool result{ true };
 
@@ -67,25 +68,25 @@ bool ServiceApplicationBase::_osSetState(NESystemService::eSystemServiceState ne
     {
         switch (newState)
         {
-        case NESystemService::eSystemServiceState::ServiceStopped:
+        case areg::ext::ServicePhase::Stopped:
             break;
 
-        case NESystemService::eSystemServiceState::ServiceStarting:
+        case areg::ext::ServicePhase::Starting:
             break;
 
-        case NESystemService::eSystemServiceState::ServiceStopping:
+        case areg::ext::ServicePhase::Stopping:
             break;
 
-        case NESystemService::eSystemServiceState::ServiceRunning:
+        case areg::ext::ServicePhase::Running:
             break;
 
-        case NESystemService::eSystemServiceState::ServiceContinuing:
+        case areg::ext::ServicePhase::Continuing:
             break;
 
-        case NESystemService::eSystemServiceState::ServicePausing:
+        case areg::ext::ServicePhase::Pausing:
             break;
 
-        case NESystemService::eSystemServiceState::ServicePaused:
+        case areg::ext::ServicePhase::Paused:
             break;
 
         default:
@@ -98,9 +99,11 @@ bool ServiceApplicationBase::_osSetState(NESystemService::eSystemServiceState ne
     return result;
 }
 
-int ServiceApplicationBase::_osStartServiceDispatcher(void)
+int32_t ServiceApplicationBase::_os_start_service_dispatcher()
 {
     return RESULT_IGNORED;
 }
+
+} // namespace areg::ext
 
 #endif  // _POSIX

@@ -7,7 +7,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/component/private/ExitEvent.hpp
+ * \file        areg/component/private/ExitEvent.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       Areg Platform, Exit Event declaration.
@@ -15,22 +15,25 @@
  *              and start preparing exit procedure
  *
  ************************************************************************/
-#include "areg/component/private/ExitEvent.hpp"
+#include "areg/component/ExitEvent.hpp"
+namespace areg {
 
-IMPLEMENT_RUNTIME_EVENT(ExitEvent, Event)
+AREG_IMPLEMENT_RUNTIME_EVENT(ExitEvent, Event)
 
-ExitEvent::ExitEvent( void )
-    : Event   ( Event::eEventType::EventExternal )
+ExitEvent::ExitEvent()
+    : Event   ( areg::EventType::EventExternal )
 {
-    mEventPrio = Event::eEventPriority::EventPriorityExit;
+    mEventPrio = areg::EventPriority::ExitPrio;
 }
 
-ExitEvent & ExitEvent::getExitEvent( void )
+ExitEvent & ExitEvent::exit_event()  noexcept
 {
     static ExitEvent  _exitEvent;
     return _exitEvent;
 }
 
-void ExitEvent::destroy( void )
+void ExitEvent::destroy()
 {
 }
+
+} // namespace areg

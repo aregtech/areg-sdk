@@ -145,9 +145,9 @@ macro_normalize_path(_norm_path "c:\\path\\to\\my\\directory")
 
 **Usage:**
 ```cmake
-macro_get_processor("arm64" AREG_PROCESSOR AREG_BITNESS _entry_found)
+macro_get_processor("arm64" AREG_ARCH AREG_BITNESS _entry_found)
 if(_entry_found)
-    message(STATUS "Processor: ${AREG_PROCESSOR}, Bitness: ${AREG_BITNESS}")
+    message(STATUS "Processor: ${AREG_ARCH}, Bitness: ${AREG_BITNESS}")
 endif()
 ```
 
@@ -173,7 +173,7 @@ find_library(_library NAMES ncurses)
 if(_library)
     macro_check_module_architect("${_library}" 
                                 ${AREG_TARGET} 
-                                ${AREG_PROCESSOR} 
+                                ${AREG_ARCH} 
                                 _is_compatible)
     if(_is_compatible)
         message(STATUS "ncurses library is compatible")
@@ -418,7 +418,7 @@ macro_setup_compilers_data("${CMAKE_CXX_COMPILER}"
                           AREG_CXX_COMPILER 
                           AREG_C_COMPILER 
                           AREG_TARGET 
-                          AREG_PROCESSOR 
+                          AREG_ARCH 
                           AREG_BITNESS 
                           _compiler_supports)
 ```

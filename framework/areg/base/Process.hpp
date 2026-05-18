@@ -18,8 +18,9 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies.
@@ -28,11 +29,9 @@
  //////////////////////////////////////////////////////////////////////////
  // Process class declaration
  //////////////////////////////////////////////////////////////////////////
- /**
- * \brief   Process class contain basic functionality of process.
- *          It is a singleton object within process and contains
- *          such methods like getting process name, process path and
- *          extension. The path name does not contain path terminated char.
+/**
+ * \brief   Singleton providing process information such as name, path, executable extension, and
+ *          environment details.
  **/
 
 class AREG_API Process
@@ -56,42 +55,35 @@ public:
     /**
      * \brief   Process environment. Currently support only 32- or 64-bit processes.
      **/
-    typedef enum class E_ProcEnv : int
+    enum class Bitness : int32_t
     {
-          ProcEnvUnknown    = 0
-        , ProcEnv32Bits     = sizeof(uint32_t)
-        , ProcEnv64Bits     = sizeof(uint64_t)
-    } eProcEnv;
+          BitsUnknown   = 0
+        , Bits32        = sizeof(uint32_t)
+        , Bits64        = sizeof(uint64_t)
+    };
 
     /**
-     * \brief   Converts and returns the string value of Process::eProcEnv;
+     * \brief   Returns the string representation of Process::Bitness value.
      **/
-    static inline const char * getString( Process::eProcEnv  val );
+    [[nodiscard]]
+    static inline constexpr const char * as_string( Process::Bitness  val ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Static members
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Returns the instance of process object
+     * \brief   Returns the singleton instance of the Process object.
      **/
-    static Process & getInstance( void );
+    static Process & instance();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor, protected
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Default constructor. Protected.
-     *          To get instance of object, call static method GetProcess()
-     *          The object is singleton.
-     **/
-    Process( void );
+    Process();
 
-    /**
-     * \brief   Destructor.
-     **/
-    ~Process( void ) = default;
+    ~Process() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -99,74 +91,80 @@ private:
 public:
 
     /**
-     * \brief   Return application name of current process.
-     *          The name does not contain files extension.
+     * \brief   Returns the application name without file extension.
      **/
-    inline const String & getAppName( void ) const;
+    [[nodiscard]]
+    inline const String & app_name() const noexcept;
     /**
-     * \brief   Returns the name of current process. 
-     *          The name may contain file extension as well.
+     * \brief   Returns the name of the current process, including file extension if applicable.
      **/
-    inline const String & getName( void ) const;
+    [[nodiscard]]
+    inline const String & name() const noexcept;
 
     /**
-     * \brief   Returns the extension of current process.
+     * \brief   Returns the file extension of the current process executable.
      **/
-    inline const String & getExtension( void ) const;
+    [[nodiscard]]
+    inline const String & extension() const noexcept;
 
     /**
-     * \brief   Returns the path of current process.
-     *          The path does not contain path-separation
-     *          character '\\' at the end.
+     * \brief   Returns the path to the current process, without trailing path-separator character.
      **/
-    inline const String & getPath( void ) const;
+    [[nodiscard]]
+    inline const String & path() const noexcept;
 
     /**
-     * \brief   Returns the full path of current process,
-     *          including file name and file extension.
+     * \brief   Returns the full path including filename and extension.
      **/
-    inline const String & getFullPath( void ) const;
+    [[nodiscard]]
+    inline const String & full_path() const noexcept;
 
     /**
-     * \brief   Return the ID of current process.
+     * \brief   Returns the ID of the current process.
      **/
-    inline id_type getId( void ) const;
+    [[nodiscard]]
+    inline id_type id() const noexcept;
 
     /**
-     * \brief   Returns process environment. It is either 32- or 64-bits.
+     * \brief   Returns the process environment bitness: 32-bit or 64-bit.
      **/
-    inline Process::eProcEnv getEnvironment( void ) const;
-
-    unsigned int getBitness(void) const;
+    [[nodiscard]]
+    inline Process::Bitness environment() const noexcept;
 
     /**
-     * \brief   returns the value of the environment variable var, 
-     *          or an empty string if:
-     *              -   No such environment variable exists or it is empty.
-     *              -   There is a reason that it should not be used 
-     *                  (e.g. elevated privileges in Linux).
-     * \param   var   The environment variable to return value.
+     * \brief   Returns the process environment bitness: 32-bit or 64-bit.
      **/
-    String getSafeEnvVariable( const char * var ) const;
+    [[nodiscard]]
+    uint32_t bitness() const noexcept;
+
+    /**
+     * \brief   Returns the environment variable value or an empty string if the variable does not
+     *          exist, is empty, or should not be used (e.g., due to elevated privileges).
+     *
+     * \param   var     The environment variable name.
+     **/
+    String safe_env_variable( const char * var ) const;
 
 private:
 
     /**
-     * \brief   When the method is called, the full path is passed as parameter.
-     * \param   fullPath    The full path to executable.
+     * \brief   Initializes process paths from the given full executable path.
+     *
+     * \param   fullPath    The full path to the executable.
      **/
-    void _initPaths( const char * fullPath );
+    void _init_paths( const char * fullPath );
 
     /**
-     * \brief	OS specific initialization of process internal data.
-     */
-    void _osInitilize( void );
+     * \brief   OS-specific initialization of process internal data.
+     **/
+    void _os_initilize();
 
     /**
-     * \brief   Returns the value of environment variable or empty strig.
-     * \param   var     The environment variable to return value.
+     * \brief   Returns the environment variable value or an empty string if not found.
+     *
+     * \param   var     The environment variable name.
      **/
-    String _osGetEnvVariable( const char * var ) const;
+    String _os_env_variable( const char * var ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -175,7 +173,7 @@ private:
     /**
      * \brief   The process environment
      **/
-    const eProcEnv  mProcEnv;
+    const Bitness  mProcEnv;
     /**
      * \brief   The ID of process
      **/
@@ -213,61 +211,62 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( Process );
+    AREG_NOCOPY_NOMOVE( Process );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // Process class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline const String & Process::getAppName( void ) const
+inline const String & Process::app_name() const noexcept
 {
     return mAppName;
 }
 
-inline const String & Process::getName(void) const
+inline const String & Process::name() const noexcept
 {
     return mProcessName;
 }
 
-inline const String & Process::getExtension(void) const
+inline const String & Process::extension() const noexcept
 {
     return mProcessExt;
 }
 
-inline const String & Process::getPath(void) const
+inline const String & Process::path() const noexcept
 {
     return mProcessPath;
 }
 
-inline const String & Process::getFullPath(void) const
+inline const String & Process::full_path() const noexcept
 {
     return mProcessFullPath;
 }
 
-inline id_type Process::getId(void) const
+inline id_type Process::id() const noexcept
 {
     return mProcessId;
 }
 
-inline Process::eProcEnv Process::getEnvironment( void ) const
+inline Process::Bitness Process::environment() const noexcept
 {
     return mProcEnv;
 }
 
-inline const char * Process::getString( Process::eProcEnv  val )
+inline constexpr const char * Process::as_string( Process::Bitness  val ) noexcept
 {
     switch (val)
     {
-    case Process::eProcEnv::ProcEnv32Bits:
+    case Process::Bitness::Bits32:
         return "32-bits";
-    case Process::eProcEnv::ProcEnv64Bits:
+    case Process::Bitness::Bits64:
         return "64-bits";
-    case Process::eProcEnv::ProcEnvUnknown:
+    case Process::Bitness::BitsUnknown:
         return "unknown bits";
     default:
-        return "ERR: Unexpected Process::eProcEnv value";
+        return "ERR: Unexpected Process::Bitness value";
     }
 }
 
+} // namespace areg
 #endif  // AREG_BASE_PROCESS_HPP

@@ -5,8 +5,8 @@
 #include "chatter/ui/PageMessaging.hpp"
 #include "chatter/services/CentralMessaging.hpp"
 #include "chatter/DistrbutedApp.hpp"
-#include "chatter/NEDistributedApp.hpp"
-#include "areg/base/GEGlobal.h"
+#include "chatter/DistributedAppDefs.hpp"
+#include "areg/base/areg_global.h"
 #include "chatter/services/ConnectionHandler.hpp"
 
 // PageMessaging dialog
@@ -41,33 +41,33 @@ PageMessaging::~PageMessaging()
     cleanService( );
 }
 
-void PageMessaging::OnServiceStartup( bool /*isStarted*/, Component* /*owner*/)
+void PageMessaging::OnServiceStartup( bool /*isStarted*/, areg::Component* /*owner*/)
 {
     // do nothing
 }
 
-void PageMessaging::OnServiceNetwork( bool /*isConnected*/, DispatcherThread* /*ownerThread*/)
+void PageMessaging::OnServiceNetwork( bool /*isConnected*/, areg::DispatcherThread* /*ownerThread*/)
 {
     // do nothing
 }
 
-void PageMessaging::OnServiceConnection( bool /*isConnected*/, DispatcherThread* /*ownerThread*/)
+void PageMessaging::OnServiceConnection( bool /*isConnected*/, areg::DispatcherThread* /*ownerThread*/)
 {
     // do nothing
 }
 
-void PageMessaging::OnClientConnection( bool /*isConnected*/, DispatcherThread* /*dispThread*/)
+void PageMessaging::OnClientConnection( bool /*isConnected*/, areg::DispatcherThread* /*dispThread*/)
 {
     // do nothing
 }
 
-void PageMessaging::OnClientRegistration( bool isRegistered, DispatcherThread * dispThread )
+void PageMessaging::OnClientRegistration( bool isRegistered, areg::DispatcherThread * dispThread )
 {
     if ( isRegistered )
     {
         if ( (mCentralMessage == nullptr) && (dispThread != nullptr) )
         {
-            mCentralMessage = DEBUG_NEW CentralMessaging( NECommon::COMP_NAME_CENTRAL_SERVER, *dispThread, mConnectionHandler);
+            mCentralMessage = DEBUG_NEW CentralMessaging( chat::COMP_NAME_CENTRAL_SERVER, *dispThread, mConnectionHandler);
             if ( mCentralMessage != nullptr )
             {
                 UpdateData( TRUE );
@@ -79,19 +79,19 @@ void PageMessaging::OnClientRegistration( bool isRegistered, DispatcherThread * 
         outputMessage( mConnectionHandler.GetNickName(), "Is registered", mConnectionHandler.GetTimeConnect(), mConnectionHandler.GetTimeConnected(), mConnectionHandler.GetCookie());
 
         uint32_t cookie = mConnectionHandler.GetCookie();
-        const String & nickName = mConnectionHandler.GetNickName();
-        const NECommon::ListConnections & listConnections = mConnectionHandler.GetConnectionList();
-        if ( listConnections.getSize() > 0 )
+        const areg::String & nickName = mConnectionHandler.GetNickName();
+        const chat::ListConnections & listConnections = mConnectionHandler.GetConnectionList();
+        if ( listConnections.size() > 0 )
         {
-            outputMessage( "<Info>", String::makeString(listConnections.getSize()) + " participants...", 0, 0, 0 );
+            outputMessage( "<Info>", areg::String::make_string(listConnections.size()) + " participants...", 0, 0, 0 );
         }
 
-        for (uint32_t i = 0; i < listConnections.getSize(); ++ i )
+        for (uint32_t i = 0; i < listConnections.size(); ++ i )
         {
-            const NECommon::sConnection & connection = listConnections.getAt(i);
+            const chat::ConnectionRecord & connection = listConnections.value_at(i);
             if ( (connection.cookie != cookie) && (connection.nickName != nickName) )
             {
-                ASSERT(connection.nickName.isEmpty() == false);
+                ASSERT(connection.nickName.is_empty() == false);
                 outputMessage( connection.nickName, "Is registered in system", connection.connectTime, connection.connectedTime, connection.cookie );
             }
         }
@@ -102,40 +102,40 @@ void PageMessaging::OnClientRegistration( bool isRegistered, DispatcherThread * 
     }
 }
 
-void PageMessaging::OnAddConnection( NEConnectionManager::sConnection & data )
+void PageMessaging::OnAddConnection( ConnectionManager::ConnectionRecord & data )
 {
     if ( (mConnectionHandler.GetCookie() != data.cookie) && (mConnectionHandler.GetNickName() != data.nickName) )
         outputMessage( data.nickName, "Is connected and registered", data.connectTime, data.connectedTime, data.cookie );
 }
 
-void PageMessaging::OnRemoveConnection( NEConnectionManager::sConnection & data )
+void PageMessaging::OnRemoveConnection( ConnectionManager::ConnectionRecord & data )
 {
     outputMessage( data.nickName, "Is unregistered and disconnected", data.connectTime, data.connectedTime, data.cookie );
 }
 
-void PageMessaging::OnUpdateConnection( void )
+void PageMessaging::OnUpdateConnection()
 {
     // do nothing
 }
 
-void PageMessaging::OnDisconnectTriggered( void )
+void PageMessaging::OnDisconnectTriggered()
 {
     outputMessage( mConnectionHandler.GetNickName( ), "Disconnects system", mConnectionHandler.GetTimeConnect( ), mConnectionHandler.GetTimeConnected( ), mConnectionHandler.GetCookie( ) );
 }
 
-void PageMessaging::setHeaders( void )
+void PageMessaging::setHeaders()
 {
-    int count = MACRO_ARRAYLEN( PageMessaging::HEADER_TITILES );
+    int32_t count = std::size( PageMessaging::HEADER_TITILES );
     CRect rc( 0, 0, 0, 0 );
     mCtrlList.GetClientRect( &rc );
-    int width1, width2;
-    NECommon::getWidths( rc.Width(), count, width1, width2 );
+    int32_t width1, width2;
+    chat::getWidths( rc.Width(), count, width1, width2 );
 
     for ( int i = 0; i < count; ++ i )
     {
         CString str( HEADER_TITILES[i] );
         LVCOLUMN lv;
-        NEMemory::zeroElement<LVCOLUMN>( lv );
+        areg::zero_element<LVCOLUMN>( lv );
         lv.mask         = LVCF_FMT | LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
         lv.fmt          = LVCFMT_LEFT;
         lv.cx           = i == 0 ? width1 : width2;
@@ -146,17 +146,17 @@ void PageMessaging::setHeaders( void )
     }
 }
 
-bool PageMessaging::isServiceConnected(void) const
+bool PageMessaging::is_service_connected() const
 {
     return ( (mCentralMessage                           != nullptr ) && 
-             (mCentralMessage->isConnected()            == true ) );
+             (mCentralMessage->is_connected()            == true ) );
 }
 
-void PageMessaging::cleanService(void)
+void PageMessaging::cleanService()
 {
     if (mCentralMessage != nullptr)
     {
-        mCentralMessage->clearAllNotifications();
+        mCentralMessage->clear_all_notifications();
         delete mCentralMessage;
         mCentralMessage = nullptr;
     }
@@ -197,7 +197,7 @@ BOOL PageMessaging::OnInitDialog( )
 
     setHeaders( );
 
-    if ( isServiceConnected() )
+    if ( is_service_connected() )
     {
         mCentralMessage->ReceiveMessages( mIsMessages ? true : false );
         mCentralMessage->ReceiveKeytype( mIsKeytype ? true : false );
@@ -213,14 +213,14 @@ void PageMessaging::OnClickedButtonSend( )
     UpdateData( TRUE );
     if ( mCentralMessage != nullptr)
     {
-        DateTime dateTime = DateTime::getNow();
-        outputMessage( CString( mConnectionHandler.GetNickName().getString() )
+        areg::DateTime dateTime = areg::DateTime::now();
+        outputMessage( CString( mConnectionHandler.GetNickName().as_string() )
                      , mTextMsg
-                     , CString( dateTime.formatTime().getString())
+                     , CString( dateTime.format_time().as_string())
                      , CString( "..." )
                      , mConnectionHandler.GetCookie());
 
-        mCentralMessage->requestSendMessage( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), String( mTextMsg.GetString( ) ), dateTime );
+        mCentralMessage->request_send_message( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), areg::String( mTextMsg.GetString( ) ), dateTime );
         mTextMsg = _T("");
         UpdateData(FALSE);
         GetDlgItem( IDC_EDIT_MESSAGE_ALL )->SetFocus( );
@@ -262,7 +262,7 @@ void PageMessaging::OnKickIdle( )
 
 void PageMessaging::OnButtonUpdateSend( CCmdUI* pCmdUI )
 {
-    if ( isServiceConnected() )
+    if ( is_service_connected() )
     {
         CString oldTxt = mTextMsg;
         UpdateData( TRUE );
@@ -292,7 +292,7 @@ void PageMessaging::OnButtonUpdateSend( CCmdUI* pCmdUI )
 
 void PageMessaging::OnCheckUpdate( CCmdUI* pCmdUI )
 {
-    pCmdUI->Enable( isServiceConnected() ? TRUE : FALSE );
+    pCmdUI->Enable( is_service_connected() ? TRUE : FALSE );
 }
 
 void PageMessaging::OnChangeEditMessageAll( )
@@ -303,24 +303,24 @@ void PageMessaging::OnChangeEditMessageAll( )
         UpdateData( TRUE );
         if ( oldTxt != mTextMsg )
         {
-            mCentralMessage->requestKeyTyping( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie( ), String( mTextMsg.GetString( ) ) );
+            mCentralMessage->request_key_typing( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie( ), areg::String( mTextMsg.GetString( ) ) );
         }
     }
 }
 
-void PageMessaging::OnTypeMessage( uint32_t /*cookie*/, NECommon::sMessageData& data)
+void PageMessaging::OnTypeMessage( uint32_t /*cookie*/, chat:: MessageData& data)
 {
     outputTyping( CString( data.nickName ), CString( data.message ), static_cast<uint32_t>(data.dataSave) );
 }
 
-void PageMessaging::OnSendMessage( uint32_t /*cookie*/, NECommon::sMessageData& data)
+void PageMessaging::OnSendMessage( uint32_t /*cookie*/, chat:: MessageData& data)
 {
     outputMessage( data.nickName, data.message, data.timeSend, data.timeReceived, static_cast<uint32_t>(data.dataSave) );
 }
 
 LRESULT PageMessaging::OnOutputMessage( WPARAM /*wParam*/, LPARAM lParam)
 {
-    NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
+    chat:: MessageData * data = reinterpret_cast<chat:: MessageData *>(lParam);
     if ( data != nullptr)
     {
         outputMessage( data->nickName, data->message, data->timeSend, data->timeReceived, static_cast<uint32_t>(data->dataSave) );
@@ -334,7 +334,7 @@ void PageMessaging::outputMessage( CString nickName, CString message, CString da
     removeTyping(nickName, cookie);
 
     LVITEM lv;
-    NEMemory::zeroElement<LVITEM>( lv );
+    areg::zero_element<LVITEM>( lv );
 
     // Column nickname
     lv.mask     = LVIF_TEXT | LVIF_PARAM;
@@ -342,13 +342,13 @@ void PageMessaging::outputMessage( CString nickName, CString message, CString da
     lv.iSubItem = 0;
     lv.pszText  = nickName.GetBuffer( );
     lv.lParam   = cookie;
-    lv.cchTextMax = NECommon::MAXLEN_NICKNAME;
+    lv.cchTextMax = chat::MAXLEN_NICKNAME;
     mCtrlList.InsertItem( &lv );
 
-    if ( dateStart.GetLength( ) > NECommon::DAY_FORMAT_LEN )
-        dateStart = dateStart.Mid( NECommon::DAY_FORMAT_LEN );
-    if ( dateEnd.GetLength( ) > NECommon::DAY_FORMAT_LEN )
-        dateEnd = dateEnd.Mid( NECommon::DAY_FORMAT_LEN );
+    if ( dateStart.GetLength( ) > chat::DAY_FORMAT_LEN )
+        dateStart = dateStart.Mid( chat::DAY_FORMAT_LEN );
+    if ( dateEnd.GetLength( ) > chat::DAY_FORMAT_LEN )
+        dateEnd = dateEnd.Mid( chat::DAY_FORMAT_LEN );
 
     mCtrlList.SetItemText( mLastItem, 1, message.IsEmpty( )     == false ? message.GetBuffer( )     : _T( "..." ) );
     mCtrlList.SetItemText( mLastItem, 2, dateStart.IsEmpty( )   == false ? dateStart.GetBuffer( )   : _T( "..." ) );
@@ -359,17 +359,17 @@ void PageMessaging::outputMessage( CString nickName, CString message, CString da
     ++ mLastItem;
 }
 
-void PageMessaging::outputMessage( const String & nickname, const String & message, const uint64_t begin, const uint64_t end, uint32_t cookie )
+void PageMessaging::outputMessage( const areg::String & nickname, const areg::String & message, const uint64_t begin, const uint64_t end, uint32_t cookie )
 {
-    outputMessage(nickname, message, begin != 0 ? DateTime(begin) : DateTime(), end != 0 ? DateTime(end) : DateTime(), cookie );
+    outputMessage(nickname, message, begin != 0 ? areg::DateTime(begin) : areg::DateTime(), end != 0 ? areg::DateTime(end) : areg::DateTime(), cookie );
 }
 
-void PageMessaging::outputMessage( const String & nickname, const String & message, const DateTime & begin, const DateTime & end, uint32_t cookie )
+void PageMessaging::outputMessage( const areg::String & nickname, const areg::String & message, const areg::DateTime & begin, const areg::DateTime & end, uint32_t cookie )
 {
-    outputMessage( CString(nickname.getString())
-                 , CString(message.getString())
-                 , CString( begin.isValid() ? begin.formatTime().getString() : String::getEmptyString().getString() )
-                 , CString( end.isValid()   ? end.formatTime().getString()   : String::getEmptyString().getString() )
+    outputMessage( CString(nickname.as_string())
+                 , CString(message.as_string())
+                 , CString( begin.is_valid() ? begin.format_time().as_string() : areg::String::empty_string().as_string() )
+                 , CString( end.is_valid()   ? end.format_time().as_string()   : areg::String::empty_string().as_string() )
                  , cookie );
 }
 
@@ -377,7 +377,7 @@ void PageMessaging::outputTyping( CString nickName, CString message, uint32_t co
 {
     if ( message.IsEmpty() == false )
     {
-        int pos = mLastItem;
+        int32_t pos = mLastItem;
         for ( ; pos < mCtrlList.GetItemCount(); ++ pos )
         {
             if ( cookie == static_cast<uint32_t>(mCtrlList.GetItemData(pos)) )
@@ -387,7 +387,7 @@ void PageMessaging::outputTyping( CString nickName, CString message, uint32_t co
         if ( pos == mCtrlList.GetItemCount() )
         {
             LVITEM lv;
-            NEMemory::zeroElement<LVITEM>( lv );
+            areg::zero_element<LVITEM>( lv );
 
             // Column nickname
             lv.mask     = LVIF_TEXT | LVIF_PARAM;
@@ -395,7 +395,7 @@ void PageMessaging::outputTyping( CString nickName, CString message, uint32_t co
             lv.iSubItem = 0;
             lv.pszText  = nickName.GetBuffer( );
             lv.lParam   = cookie;
-            lv.cchTextMax = NECommon::MAXLEN_NICKNAME;
+            lv.cchTextMax = chat::MAXLEN_NICKNAME;
             mCtrlList.InsertItem( &lv );
         }
 
@@ -432,7 +432,7 @@ void PageMessaging::OnDestroy( )
     CPropertyPage::OnDestroy( );
 }
 
-void PageMessaging::OnDefaultClicked( void )
+void PageMessaging::OnDefaultClicked()
 {
     UpdateData(TRUE);
     if ( (mSendEnabled == TRUE) && (mTextMsg.IsEmpty() == FALSE) )

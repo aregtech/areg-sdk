@@ -29,7 +29,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="common\src\NECommon.hpp">
+    <ClInclude Include="common\src\MeshDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="common\src\LocalHelloWorldClient.hpp">

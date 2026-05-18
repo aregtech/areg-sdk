@@ -15,31 +15,45 @@
 
 #include "areg/base/SocketAccepted.hpp"
 
-SocketAccepted::SocketAccepted( const SOCKETHANDLE hSocket, const NESocket::SocketAddress & sockAddress )
+namespace areg {
+
+SocketAccepted::SocketAccepted( const SOCKETHANDLE hSocket, const areg::SocketAddress & sockAddress )
     : Socket  ( hSocket, sockAddress)
 {
 }
 
-bool SocketAccepted::createSocket(const char * /*hostName*/, unsigned short /*portNr*/)
+SocketAccepted::SocketAccepted(const SOCKETHANDLE hSocket, areg::SocketAddress&& sockAddress) noexcept
+    : Socket(hSocket, std::move(sockAddress))
+{
+}
+
+bool SocketAccepted::create(const String& /*hostName*/, uint16_t /*portNr*/)
 {
     return true;
 }
 
-bool SocketAccepted::createSocket(void)
+bool SocketAccepted::create(const char* /*hostName*/, uint16_t /*portNr*/)
 {
     return true;
 }
 
-bool SocketAccepted::operator == (const SocketAccepted & other) const
+bool SocketAccepted::create()
 {
-	return (this == &other) || ( isValid() && (*mSocket == other.getHandle() ));
+    return true;
 }
 
-bool SocketAccepted::setAddress(const char * /*hostName*/, unsigned short /*portNr*/, bool /*isServer*/)
+bool SocketAccepted::operator == (const SocketAccepted & other) const noexcept
+{
+    return (this == &other) || ( is_valid() && (mSocket.value() == other.handle()) );
+}
+
+bool SocketAccepted::set_address(const char * /*hostName*/, uint16_t /*portNr*/, bool /*isServer*/)
 {
     return false;
 }
 
-void SocketAccepted::setAddress(const NESocket::SocketAddress & /*newAddress*/)
+void SocketAccepted::set_address(const areg::SocketAddress & /*newAddress*/)
 {
 }
+
+} // namespace areg

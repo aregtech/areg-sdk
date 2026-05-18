@@ -26,17 +26,17 @@
 /************************************************************************
  * Include files
  ************************************************************************/
-#include "pubservice/src/NETrafficLightFSM.hpp"
+#include "pubservice/src/TrafficLightDefs.hpp"
 
 #include "areg/base/String.hpp"
 #include "areg/component/Timer.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IETrafficLightActionHandler;
-class DispatcherThread;
+class TrafficLightActionHandler;
+namespace areg { class DispatcherThread; }
 
 //////////////////////////////////////////////////////////////////////////
 // TrafficLightFSM class declaration 
@@ -69,7 +69,7 @@ private:
          **/
         TrafficLightEventConsumer( TrafficLightFSM & fsm );
 
-        virtual ~TrafficLightEventConsumer( void ) = default;
+        virtual ~TrafficLightEventConsumer() = default;
 
     private:
     /************************************************************************/
@@ -80,7 +80,7 @@ private:
          * \param   data    The Event Data object passed to event when fired.
          * \remark  The method is not thread safe.
          **/
-        virtual void processEvent( const NETrafficLightFSM::FsmEventData & data ) override;
+        void process_event( const NETrafficLightFSM::FsmEventData & data ) override;
 
     private:
     /************************************************************************/
@@ -95,8 +95,8 @@ private:
     /************************************************************************/
     // Forbidden calls
     /************************************************************************/
-        TrafficLightEventConsumer( void ) = delete;
-        DECLARE_NOCOPY_NOMOVE( TrafficLightEventConsumer );
+        TrafficLightEventConsumer() = delete;
+        AREG_NOCOPY_NOMOVE( TrafficLightEventConsumer );
     };
 
 private:
@@ -108,7 +108,7 @@ private:
     /**
      * \brief   TrafficLight state-machine timer consumer to dispatch the timer events. 
      **/
-    class TrafficLightTimerConsumer : public IETimerConsumer
+    class TrafficLightTimerConsumer : public areg::TimerConsumer
     {
     public:
         /**
@@ -117,7 +117,7 @@ private:
          **/
         TrafficLightTimerConsumer( TrafficLightFSM & fsm );
 
-        virtual ~TrafficLightTimerConsumer( void ) = default;
+        virtual ~TrafficLightTimerConsumer() = default;
 
     /************************************************************************/
     // Timer Consumer override
@@ -126,7 +126,7 @@ private:
         /**
          * \brief   Process State Machine timers.
          **/
-        virtual void processTimer( Timer & timer ) override;
+        void process_timer( areg::Timer & timer ) override;
     
     private:
     /************************************************************************/
@@ -141,8 +141,8 @@ private:
     /************************************************************************/
     // Forbidden calls
     /************************************************************************/
-        TrafficLightTimerConsumer( void ) = delete;
-        DECLARE_NOCOPY_NOMOVE( TrafficLightTimerConsumer );
+        TrafficLightTimerConsumer() = delete;
+        AREG_NOCOPY_NOMOVE( TrafficLightTimerConsumer );
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -150,10 +150,10 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     /************************************************************************
-     * \brief   TrafficLightFSM::eState
+     * \brief   TrafficLightFSM::FsmState
      *          The predefined states of TrafficLight State Machine.
      ************************************************************************/
-    enum class eState
+    enum class FsmState
     {
           UNDEFINED
 
@@ -177,7 +177,8 @@ private:
      * \brief   Returns the string value of TrafficLight states.
      * \param   state   The state value of TrafficLight State Machine.
      **/
-    static inline const char* getString( const TrafficLightFSM::eState state );
+    [[nodiscard]]
+    static inline constexpr const char* as_string( const TrafficLightFSM::FsmState state ) noexcept;
     
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -188,18 +189,18 @@ public:
      * \param   actionHandler   The reference of action handler object to trigger actions.
      * \param   instanceName    The name of FSM instance. By default it has the name of FSM. 
      **/
-    TrafficLightFSM( IETrafficLightActionHandler & actionHandler, const std::string_view & instanceName = NETrafficLightFSM::InstanceDefaultName );
+    TrafficLightFSM( TrafficLightActionHandler & actionHandler, std::string_view instanceName = NETrafficLightFSM::InstanceDefaultName );
 
     /**
      * \brief   TrafficLightFSM class destructor
      **/
-    ~TrafficLightFSM( void );
+    ~TrafficLightFSM();
 
 private:
     /**
      * \brief   Reference to State Machine action handler class object
      **/
-    IETrafficLightActionHandler& mActionHandler;
+    TrafficLightActionHandler& mActionHandler;
 
 public:
 
@@ -207,18 +208,18 @@ public:
      * \brief   Initialize State Machine. Call before calling any trigger.
      * \param   ownerThread The pointer of master thread to process internal events and timers.
      **/
-    void initFSM( DispatcherThread * ownerThread = nullptr );
+    void init_fsm( areg::DispatcherThread * ownerThread = nullptr );
 
     /**
      * \brief   Release State Machine. Call when complete working with FSM.
      **/
-    void releaseFSM( void );
+    void release_fsm();
 
     /**
      * \brief   Call to send and event.
      * \param   data    The name of event, generated in NETrafficLightFSM namespace.
      **/
-    inline void sendEvent( const NETrafficLightFSM::eFsmEventData data );   
+    inline void send_event( const NETrafficLightFSM::FsmEventValue data );
 
 //////////////////////////////////////////////////////////////////////////
 // TrafficLight State Machine Triggers
@@ -231,7 +232,7 @@ public:
      * \return  Returns true if trigger was processed in the current state, otherwise it returns false.
      * \remark  The method is not thread safe.
      **/
-    bool powerOff( void );
+    bool power_off();
 
     /**
      * \brief   Triggered to power on the traffic light.
@@ -239,7 +240,7 @@ public:
      * \return  Returns true if trigger was processed in the current state, otherwise it returns false.
      * \remark  The method is not thread safe.
      **/
-    bool powerOn( void );
+    bool power_on();
 
     /**
      * \brief   Triggered to start controlling the traffic light.
@@ -247,7 +248,7 @@ public:
      * \return  Returns true if trigger was processed in the current state, otherwise it returns false.
      * \remark  The method is not thread safe.
      **/
-    bool startTrafficControl( void );
+    bool start_traffic_control();
 
     /**
      * \brief   Triggered to stop the traffic light controller.
@@ -255,7 +256,7 @@ public:
      * \return  Returns true if trigger was processed in the current state, otherwise it returns false.
      * \remark  The method is not thread safe.
      **/
-    bool stopTrafficControl( void );
+    bool stop_traffic_control();
 
 //////////////////////////////////////////////////////////////////////////
 // Get / Set attributes
@@ -273,7 +274,7 @@ public:
     /**
      * \brief   Returns true if specified timer object is active
      **/
-     inline bool isTimerActive( const NETrafficLightFSM::eFsmTimerData whichTimer ) const;
+     inline bool is_timer_active( const NETrafficLightFSM::FsmTimer whichTimer ) const;
 
 private:
 /************************************************************************/
@@ -283,62 +284,62 @@ private:
     /**
      * \brief   Timer Red object
      **/
-    Timer     mTimerRed;
+    areg::Timer     mTimerRed;
     /**
      * \brief   Timer Red trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
      **/
-    bool onTimerRed( void );
+    bool on_timer_red();
     
     /**
      * \brief   Timer YellowRed object
      **/
-    Timer     mTimerYellowRed;
+    areg::Timer     mTimerYellowRed;
     /**
      * \brief   Timer YellowRed trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
      **/
-    bool onTimerYellowRed( void );
+    bool on_timer_yellow_red();
     
     /**
      * \brief   Timer Green object
      **/
-    Timer     mTimerGreen;
+    areg::Timer     mTimerGreen;
     /**
      * \brief   Timer Green trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
      **/
-    bool onTimerGreen( void );
+    bool on_timer_green();
     
     /**
      * \brief   Timer YellowGreen object
      **/
-    Timer     mTimerYellowGreen;
+    areg::Timer     mTimerYellowGreen;
     /**
      * \brief   Timer YellowGreen trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
      **/
-    bool onTimerYellowGreen( void );
+    bool on_timer_yellow_green();
     
     /**
      * \brief   Timer PedestrianWalk object
      **/
-    Timer     mTimerPedestrianWalk;
+    areg::Timer     mTimerPedestrianWalk;
     /**
      * \brief   Timer PedestrianWalk trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
      **/
-    bool onTimerPedestrianWalk( void );
+    bool on_timer_pedestrian_walk();
     
     /**
      * \brief   Timer VehicleWait object
      **/
-    Timer     mTimerVehicleWait;
+    areg::Timer     mTimerVehicleWait;
     /**
      * \brief   Timer VehicleWait trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
      **/
-    bool onTimerVehicleWait( void );
+    bool on_timer_vehicle_wait();
     
 private:
 /************************************************************************/
@@ -349,7 +350,7 @@ private:
      * \brief   Event StartTrafficLight trigger
      * \return  Returns true if event was processed in the current state. Otherwise it returns false.
      **/
-    bool onEventStartTrafficLight( void );
+    bool on_event_start_traffic_light();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden internal processing methods and attributes
@@ -359,12 +360,12 @@ private:
      * \brief   Returns true if trigger can start processing. If a trigger called from processing action, this will return false.
      * \param   triggerName The string name of trigger to process
      **/
-    bool startProcessing( const char* const triggerName );
+    bool start_processing( const char* const triggerName );
 
     /**
      * \brief   Called when complete processing trigger
      **/
-    void endProcessing( void );
+    void end_processing();
 
     /**
      * \brief   Called when entering next state
@@ -372,7 +373,7 @@ private:
      * \param   nextState   Value of next state to enter
      * \param   nameTrigger The string name of currently processing trigger
      **/
-    void enterState( const TrafficLightFSM::eState curState, const TrafficLightFSM::eState nextState, const char* const nameTrigger );
+    void enter_state( const TrafficLightFSM::FsmState curState, const TrafficLightFSM::FsmState nextState, const char* const nameTrigger );
 
     /**
      * \brief   Called when leaving current state
@@ -380,31 +381,31 @@ private:
      * \param   nextState   Value of next state to enter
      * \param   nameTrigger The string name of currently processing trigger
      **/
-    void leaveState( const TrafficLightFSM::eState curState, const TrafficLightFSM::eState nextState, const char* const nameTrigger );
+    void leave_state( const TrafficLightFSM::FsmState curState, const TrafficLightFSM::FsmState nextState, const char* const nameTrigger );
 
     /**
      * \brief   Called when updating state tree
      * \param   whichState  The value of state to update, including child states
      * \param   curState    The value of current state
      **/
-    void updateStateTree( const TrafficLightFSM::eState whichState, const TrafficLightFSM::eState curState );
+    void update_state_tree( const TrafficLightFSM::FsmState whichState, const TrafficLightFSM::FsmState curState );
 
     /**
      * \brief   Returns true if specified state is in parent tree, e.g. if current state is in child sub-state tree.
      * \param   whichState  The state for checking, usually current state.
      * \param   checkState  The state to check.
      **/
-    bool isInParentTree( TrafficLightFSM::eState whichState, const TrafficLightFSM::eState checkState );
+    bool in_parent_tree( TrafficLightFSM::FsmState whichState, const TrafficLightFSM::FsmState checkState );
 
     /**
      * \brief   Returns true if state machine is in operable state, i.e. it is not UNDEFINED
      **/
-    inline bool isOperable( void ) const;
+    inline bool is_operable() const;
 
     /**
      * \brief   Returns the state machine object
      **/
-    inline TrafficLightFSM & self( void );
+    inline TrafficLightFSM & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Standard internal member variables
@@ -414,11 +415,11 @@ private:
     /**
      * \brief   The name of State Machine.
      **/
-    const String                mFsmName;
+    const areg::String                mFsmName;
     /**
      * \brief   The master thread where event and timers should be processed. If nullptr, the current dispatcher value will be used.
      **/
-    DispatcherThread *          mMasterThread;
+    areg::DispatcherThread *          mMasterThread;
     /**
      * \brief   The flag, indicating whether State Machine is currently processing trigger or not.
      **/
@@ -426,7 +427,7 @@ private:
     /**
      * \brief   The current state of State Machine.
      **/
-    eState                      mState;    
+    FsmState                      mState;    
     /**
      * \brief   The TrafficLight state-machine event consumer.
      **/
@@ -438,22 +439,22 @@ private:
     /**
      * \brief   The array of state to indicate state changes. For parent state, this will indicate the current active child state
      **/
-    eState                      mCurrentStates[static_cast<int>(eState::STATE_SIZE)]
+    FsmState                      mCurrentStates[static_cast<int32_t>(FsmState::STATE_SIZE)]
     {
-        /* UNDEFINED                 */   TrafficLightFSM::eState::UNDEFINED
+        /* UNDEFINED                 */   TrafficLightFSM::FsmState::UNDEFINED
 
-        /* TRAFIC_LIGHT_OFF          */ , TrafficLightFSM::eState::UNDEFINED
-        /* TRAFFIC_LIGHT_ON          */ , TrafficLightFSM::eState::UNDEFINED
-        /* TRAFFIC_LIGHT_INITIALIZE  */ , TrafficLightFSM::eState::UNDEFINED
-        /* TRAFFIC_LIGHT_FUNCTION    */ , TrafficLightFSM::eState::UNDEFINED
-        /* TRAFFIC_LIGHT_YELLOW      */ , TrafficLightFSM::eState::UNDEFINED
-        /* TRAFFIC_LIGHT_RED         */ , TrafficLightFSM::eState::UNDEFINED
-        /* TRAFFIC_LIGHT_VEHICLE_RED */ , TrafficLightFSM::eState::UNDEFINED
-        /* OPPOSIT_PEDESTRIAN_GREEN  */ , TrafficLightFSM::eState::UNDEFINED
-        /* TRAFFIC_LIGHT_GREEN       */ , TrafficLightFSM::eState::UNDEFINED
-        /* TRAFFIC_PEDESTRIAN_GREEN  */ , TrafficLightFSM::eState::UNDEFINED
-        /* TRAFFIC_VEHICLE_GREEN     */ , TrafficLightFSM::eState::UNDEFINED
-        /* TRAFFIC_LIGHT_START       */ , TrafficLightFSM::eState::UNDEFINED   
+        /* TRAFIC_LIGHT_OFF          */ , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_LIGHT_ON          */ , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_LIGHT_INITIALIZE  */ , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_LIGHT_FUNCTION    */ , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_LIGHT_YELLOW      */ , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_LIGHT_RED         */ , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_LIGHT_VEHICLE_RED */ , TrafficLightFSM::FsmState::UNDEFINED
+        /* OPPOSIT_PEDESTRIAN_GREEN  */ , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_LIGHT_GREEN       */ , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_PEDESTRIAN_GREEN  */ , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_VEHICLE_GREEN     */ , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_LIGHT_START       */ , TrafficLightFSM::FsmState::UNDEFINED   
 
     };
 
@@ -463,50 +464,50 @@ private:
     /**
      * \brief   The fixed tree of parent states
      **/
-    static constexpr    eState  sParrentStates[static_cast<int>(eState::STATE_SIZE)]
+    static constexpr    FsmState  sParrentStates[static_cast<int32_t>(FsmState::STATE_SIZE)]
     {
-        /* UNDEFINED                 */   TrafficLightFSM::eState::UNDEFINED
+        /* UNDEFINED                 */   TrafficLightFSM::FsmState::UNDEFINED
 
-        /* TRAFIC_LIGHT_OFF          */ , TrafficLightFSM::eState::UNDEFINED
-        /* TRAFFIC_LIGHT_ON          */ , TrafficLightFSM::eState::UNDEFINED
-        /* TRAFFIC_LIGHT_INITIALIZE  */ , TrafficLightFSM::eState::TRAFFIC_LIGHT_ON
-        /* TRAFFIC_LIGHT_FUNCTION    */ , TrafficLightFSM::eState::TRAFFIC_LIGHT_ON
-        /* TRAFFIC_LIGHT_YELLOW      */ , TrafficLightFSM::eState::TRAFFIC_LIGHT_FUNCTION
-        /* TRAFFIC_LIGHT_RED         */ , TrafficLightFSM::eState::TRAFFIC_LIGHT_FUNCTION
-        /* TRAFFIC_LIGHT_VEHICLE_RED */ , TrafficLightFSM::eState::TRAFFIC_LIGHT_RED
-        /* OPPOSIT_PEDESTRIAN_GREEN  */ , TrafficLightFSM::eState::TRAFFIC_LIGHT_RED
-        /* TRAFFIC_LIGHT_GREEN       */ , TrafficLightFSM::eState::TRAFFIC_LIGHT_FUNCTION
-        /* TRAFFIC_PEDESTRIAN_GREEN  */ , TrafficLightFSM::eState::TRAFFIC_LIGHT_GREEN
-        /* TRAFFIC_VEHICLE_GREEN     */ , TrafficLightFSM::eState::TRAFFIC_LIGHT_GREEN
-        /* TRAFFIC_LIGHT_START       */ , TrafficLightFSM::eState::TRAFFIC_LIGHT_FUNCTION   
+        /* TRAFIC_LIGHT_OFF          */ , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_LIGHT_ON          */ , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_LIGHT_INITIALIZE  */ , TrafficLightFSM::FsmState::TRAFFIC_LIGHT_ON
+        /* TRAFFIC_LIGHT_FUNCTION    */ , TrafficLightFSM::FsmState::TRAFFIC_LIGHT_ON
+        /* TRAFFIC_LIGHT_YELLOW      */ , TrafficLightFSM::FsmState::TRAFFIC_LIGHT_FUNCTION
+        /* TRAFFIC_LIGHT_RED         */ , TrafficLightFSM::FsmState::TRAFFIC_LIGHT_FUNCTION
+        /* TRAFFIC_LIGHT_VEHICLE_RED */ , TrafficLightFSM::FsmState::TRAFFIC_LIGHT_RED
+        /* OPPOSIT_PEDESTRIAN_GREEN  */ , TrafficLightFSM::FsmState::TRAFFIC_LIGHT_RED
+        /* TRAFFIC_LIGHT_GREEN       */ , TrafficLightFSM::FsmState::TRAFFIC_LIGHT_FUNCTION
+        /* TRAFFIC_PEDESTRIAN_GREEN  */ , TrafficLightFSM::FsmState::TRAFFIC_LIGHT_GREEN
+        /* TRAFFIC_VEHICLE_GREEN     */ , TrafficLightFSM::FsmState::TRAFFIC_LIGHT_GREEN
+        /* TRAFFIC_LIGHT_START       */ , TrafficLightFSM::FsmState::TRAFFIC_LIGHT_FUNCTION   
     };
 
     /**
      * \brief   The fixed tree of child states
      **/
-    static constexpr    eState  sChildStates[static_cast<int>(eState::STATE_SIZE)]
-{
-    /* UNDEFINED                    */     TrafficLightFSM::eState::UNDEFINED
+    static constexpr    FsmState  sChildStates[static_cast<int32_t>(FsmState::STATE_SIZE)]
+    {
+        /* UNDEFINED                    */     TrafficLightFSM::FsmState::UNDEFINED
 
-    /* TRAFIC_LIGHT_OFF             */   , TrafficLightFSM::eState::UNDEFINED
-    /* TRAFFIC_LIGHT_ON             */   , TrafficLightFSM::eState::TRAFFIC_LIGHT_INITIALIZE
-    /* TRAFFIC_LIGHT_INITIALIZE     */   , TrafficLightFSM::eState::UNDEFINED
-    /* TRAFFIC_LIGHT_FUNCTION       */   , TrafficLightFSM::eState::TRAFFIC_LIGHT_START
-    /* TRAFFIC_LIGHT_YELLOW         */   , TrafficLightFSM::eState::UNDEFINED
-    /* TRAFFIC_LIGHT_RED            */   , TrafficLightFSM::eState::TRAFFIC_LIGHT_VEHICLE_RED
-    /* TRAFFIC_LIGHT_VEHICLE_RED    */   , TrafficLightFSM::eState::UNDEFINED
-    /* OPPOSIT_PEDESTRIAN_GREEN     */   , TrafficLightFSM::eState::UNDEFINED
-    /* TRAFFIC_LIGHT_GREEN          */   , TrafficLightFSM::eState::TRAFFIC_PEDESTRIAN_GREEN
-    /* TRAFFIC_PEDESTRIAN_GREEN     */   , TrafficLightFSM::eState::UNDEFINED
-    /* TRAFFIC_VEHICLE_GREEN        */   , TrafficLightFSM::eState::UNDEFINED
-    /* TRAFFIC_LIGHT_START          */   , TrafficLightFSM::eState::UNDEFINED
-};
+        /* TRAFIC_LIGHT_OFF             */   , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_LIGHT_ON             */   , TrafficLightFSM::FsmState::TRAFFIC_LIGHT_INITIALIZE
+        /* TRAFFIC_LIGHT_INITIALIZE     */   , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_LIGHT_FUNCTION       */   , TrafficLightFSM::FsmState::TRAFFIC_LIGHT_START
+        /* TRAFFIC_LIGHT_YELLOW         */   , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_LIGHT_RED            */   , TrafficLightFSM::FsmState::TRAFFIC_LIGHT_VEHICLE_RED
+        /* TRAFFIC_LIGHT_VEHICLE_RED    */   , TrafficLightFSM::FsmState::UNDEFINED
+        /* OPPOSIT_PEDESTRIAN_GREEN     */   , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_LIGHT_GREEN          */   , TrafficLightFSM::FsmState::TRAFFIC_PEDESTRIAN_GREEN
+        /* TRAFFIC_PEDESTRIAN_GREEN     */   , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_VEHICLE_GREEN        */   , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_LIGHT_START          */   , TrafficLightFSM::FsmState::UNDEFINED
+    };
    
 //////////////////////////////////////////////////////////////////////////
 // Forbidden functions / methods call
 //////////////////////////////////////////////////////////////////////////
 private:
-    TrafficLightFSM( void );
+    TrafficLightFSM();
     TrafficLightFSM(const TrafficLightFSM & );
     const TrafficLightFSM& operator = (const TrafficLightFSM & );
 };
@@ -525,40 +526,40 @@ private:
 /**
  * \brief   Returns true if state machine is in operable state, i.e. it is not UNDEFINED
  **/
-inline bool TrafficLightFSM::isOperable( void ) const
+inline bool TrafficLightFSM::is_operable() const
 {
-    return (mState != TrafficLightFSM::eState::UNDEFINED);
+    return (mState != TrafficLightFSM::FsmState::UNDEFINED);
 }
 
 /**
  * \brief   Returns the state machine object
  **/
-inline TrafficLightFSM& TrafficLightFSM::self( void )
+inline TrafficLightFSM& TrafficLightFSM::self()
 {
     return (*this);
 }
 
-inline bool TrafficLightFSM::isTimerActive( const NETrafficLightFSM::eFsmTimerData whichTimer ) const
+inline bool TrafficLightFSM::is_timer_active( const NETrafficLightFSM::FsmTimer whichTimer ) const
 {
     switch (whichTimer)
     {
-    case NETrafficLightFSM::eFsmTimerData::Red:
-        return mTimerRed.isActive();
+    case NETrafficLightFSM::FsmTimer::Red:
+        return mTimerRed.is_active();
         
-    case NETrafficLightFSM::eFsmTimerData::YellowRed:
-        return mTimerYellowRed.isActive();
+    case NETrafficLightFSM::FsmTimer::YellowRed:
+        return mTimerYellowRed.is_active();
         
-    case NETrafficLightFSM::eFsmTimerData::Green:
-        return mTimerGreen.isActive();
+    case NETrafficLightFSM::FsmTimer::Green:
+        return mTimerGreen.is_active();
         
-    case NETrafficLightFSM::eFsmTimerData::YellowGreen:
-        return mTimerYellowGreen.isActive();
+    case NETrafficLightFSM::FsmTimer::YellowGreen:
+        return mTimerYellowGreen.is_active();
         
-    case NETrafficLightFSM::eFsmTimerData::PedestrianWalk:
-        return mTimerPedestrianWalk.isActive();
+    case NETrafficLightFSM::FsmTimer::PedestrianWalk:
+        return mTimerPedestrianWalk.is_active();
         
-    case NETrafficLightFSM::eFsmTimerData::VehicleWait:
-        return mTimerVehicleWait.isActive();
+    case NETrafficLightFSM::FsmTimer::VehicleWait:
+        return mTimerVehicleWait.is_active();
         
     default:
         ASSERT(false);  // wrong timer ID.
@@ -568,63 +569,63 @@ inline bool TrafficLightFSM::isTimerActive( const NETrafficLightFSM::eFsmTimerDa
 /**
  * \brief   Sends FSM event to be processed. By default the Event is external
  **/
-inline void TrafficLightFSM::sendEvent( const NETrafficLightFSM::eFsmEventData data )
+inline void TrafficLightFSM::send_event( const NETrafficLightFSM::FsmEventValue data )
 {
     if (mMasterThread != nullptr )
-        NETrafficLightFSM::FsmEvent::sendEvent(NETrafficLightFSM::FsmEventData( data ), static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer), *mMasterThread);
+        NETrafficLightFSM::FsmEvent::send_event(NETrafficLightFSM::FsmEventData( data ), static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer), *mMasterThread);
     else
-        NETrafficLightFSM::FsmEvent::sendEvent(NETrafficLightFSM::FsmEventData( data ), static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer));
+        NETrafficLightFSM::FsmEvent::send_event(NETrafficLightFSM::FsmEventData( data ), static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer));
 }
 /**
  * \brief   Returns the string value of states
  **/
-inline  const char* TrafficLightFSM::getString( const TrafficLightFSM::eState state )
+inline constexpr const char* TrafficLightFSM::as_string( const TrafficLightFSM::FsmState state ) noexcept
 {
     switch (state)
     {
-    case  TrafficLightFSM::eState::UNDEFINED:
-        return "TrafficLightFSM::eState::UNDEFINED";
+    case  TrafficLightFSM::FsmState::UNDEFINED:
+        return "TrafficLightFSM::FsmState::UNDEFINED";
 
-   case  TrafficLightFSM::eState::TRAFIC_LIGHT_OFF:
-      return "TrafficLightFSM::eState::TRAFIC_LIGHT_OFF";
+   case  TrafficLightFSM::FsmState::TRAFIC_LIGHT_OFF:
+      return "TrafficLightFSM::FsmState::TRAFIC_LIGHT_OFF";
 
-   case  TrafficLightFSM::eState::TRAFFIC_LIGHT_ON:
-      return "TrafficLightFSM::eState::TRAFFIC_LIGHT_ON";
+   case  TrafficLightFSM::FsmState::TRAFFIC_LIGHT_ON:
+      return "TrafficLightFSM::FsmState::TRAFFIC_LIGHT_ON";
 
-   case  TrafficLightFSM::eState::TRAFFIC_LIGHT_INITIALIZE:
-      return "TrafficLightFSM::eState::TRAFFIC_LIGHT_INITIALIZE";
+   case  TrafficLightFSM::FsmState::TRAFFIC_LIGHT_INITIALIZE:
+      return "TrafficLightFSM::FsmState::TRAFFIC_LIGHT_INITIALIZE";
 
-   case  TrafficLightFSM::eState::TRAFFIC_LIGHT_FUNCTION:
-      return "TrafficLightFSM::eState::TRAFFIC_LIGHT_FUNCTION";
+   case  TrafficLightFSM::FsmState::TRAFFIC_LIGHT_FUNCTION:
+      return "TrafficLightFSM::FsmState::TRAFFIC_LIGHT_FUNCTION";
 
-   case  TrafficLightFSM::eState::TRAFFIC_LIGHT_YELLOW:
-      return "TrafficLightFSM::eState::TRAFFIC_LIGHT_YELLOW";
+   case  TrafficLightFSM::FsmState::TRAFFIC_LIGHT_YELLOW:
+      return "TrafficLightFSM::FsmState::TRAFFIC_LIGHT_YELLOW";
 
-   case  TrafficLightFSM::eState::TRAFFIC_LIGHT_RED:
-      return "TrafficLightFSM::eState::TRAFFIC_LIGHT_RED";
+   case  TrafficLightFSM::FsmState::TRAFFIC_LIGHT_RED:
+      return "TrafficLightFSM::FsmState::TRAFFIC_LIGHT_RED";
 
-   case  TrafficLightFSM::eState::TRAFFIC_LIGHT_VEHICLE_RED:
-      return "TrafficLightFSM::eState::TRAFFIC_LIGHT_VEHICLE_RED";
+   case  TrafficLightFSM::FsmState::TRAFFIC_LIGHT_VEHICLE_RED:
+      return "TrafficLightFSM::FsmState::TRAFFIC_LIGHT_VEHICLE_RED";
 
-   case  TrafficLightFSM::eState::OPPOSIT_PEDESTRIAN_GREEN:
-      return "TrafficLightFSM::eState::OPPOSIT_PEDESTRIAN_GREEN";
+   case  TrafficLightFSM::FsmState::OPPOSIT_PEDESTRIAN_GREEN:
+      return "TrafficLightFSM::FsmState::OPPOSIT_PEDESTRIAN_GREEN";
 
-   case  TrafficLightFSM::eState::TRAFFIC_LIGHT_GREEN:
-      return "TrafficLightFSM::eState::TRAFFIC_LIGHT_GREEN";
+   case  TrafficLightFSM::FsmState::TRAFFIC_LIGHT_GREEN:
+      return "TrafficLightFSM::FsmState::TRAFFIC_LIGHT_GREEN";
 
-   case  TrafficLightFSM::eState::TRAFFIC_PEDESTRIAN_GREEN:
-      return "TrafficLightFSM::eState::TRAFFIC_PEDESTRIAN_GREEN";
+   case  TrafficLightFSM::FsmState::TRAFFIC_PEDESTRIAN_GREEN:
+      return "TrafficLightFSM::FsmState::TRAFFIC_PEDESTRIAN_GREEN";
 
-   case  TrafficLightFSM::eState::TRAFFIC_VEHICLE_GREEN:
-      return "TrafficLightFSM::eState::TRAFFIC_VEHICLE_GREEN";
+   case  TrafficLightFSM::FsmState::TRAFFIC_VEHICLE_GREEN:
+      return "TrafficLightFSM::FsmState::TRAFFIC_VEHICLE_GREEN";
 
-   case  TrafficLightFSM::eState::TRAFFIC_LIGHT_START:
-      return "TrafficLightFSM::eState::TRAFFIC_LIGHT_START";
+   case  TrafficLightFSM::FsmState::TRAFFIC_LIGHT_START:
+      return "TrafficLightFSM::FsmState::TRAFFIC_LIGHT_START";
 
-    case  TrafficLightFSM::eState::STATE_SIZE: // fall through
+    case  TrafficLightFSM::FsmState::STATE_SIZE: // fall through
     default:
         ASSERT(false);        
-        return "ERR: Unexpected TrafficLightFSM::eState value!";
+        return "ERR: Unexpected TrafficLightFSM::FsmState value!";
    }
 }
 

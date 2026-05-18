@@ -18,15 +18,15 @@
 //               events are powerful and useful objects.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/DateTime.hpp"
-#include "areg/base/IEThreadConsumer.hpp"
+#include "areg/base/ThreadConsumer.hpp"
 #include "areg/base/Thread.hpp"
 
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/Event.hpp"
 
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #include <chrono>
 
@@ -38,64 +38,64 @@
 // Global synchronization objects
 //////////////////////////////////////////////////////////////////////////
 
-static SyncEvent    gEventExit(true, false);    //!< Manual-reset event, initially non-signaled
-static SyncEvent    gEventRun(true, true);      //!< Auto-reset event, initially signaled
-static Mutex        gMutexWait(false);          //!< Initially unlocked
-static Mutex        gMutexDummy(false);         //!< Initially unlocked
+static areg::SyncEvent    gEventExit(true, false);    //!< Manual-reset event, initially non-signaled
+static areg::SyncEvent    gEventRun(true, true);      //!< Auto-reset event, initially signaled
+static areg::Mutex        gMutexWait(false);          //!< Initially unlocked
+static areg::Mutex        gMutexDummy(false);         //!< Initially unlocked
 
 //////////////////////////////////////////////////////////////////////////
 // HelloThread: simple demo worker
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(sync_main_HelloThread_HelloThread);
-DEF_LOG_SCOPE(sync_main_HelloThread_onThreadRuns);
+DEF_LOG_SCOPE(sync_main_HelloThread, HelloThread);
+DEF_LOG_SCOPE(sync_main_HelloThread, on_run);
 
-class HelloThread : public Thread, protected IEThreadConsumer
+class HelloThread final : public areg::Thread, protected areg::ThreadConsumer
 {
 public:
     HelloThread()
-        : Thread(static_cast<IEThreadConsumer &>(*this), "HelloThread"), IEThreadConsumer(), mQuit(true, true)
+        : areg::Thread(static_cast<areg::ThreadConsumer &>(*this), "HelloThread"), areg::ThreadConsumer(), mQuit(true, true)
     {
-        LOG_SCOPE(sync_main_HelloThread_HelloThread);
-        LOG_DBG("Initialized thread [ %s ]", getName().getString());
+        LOG_SCOPE( sync_main_HelloThread, HelloThread );
+        LOG_DBG("Initialized thread [ %s ]", name().as_string());
     }
 
-    SyncEvent mQuit; //!< Signaled when the thread completes
+    areg::SyncEvent mQuit; //!< Signaled when the thread completes
 
 protected:
-    void onThreadRuns() override
+    void on_run() final
     {
-        LOG_SCOPE(sync_main_HelloThread_onThreadRuns);
-        LOG_INFO("!!! Hello Thread !!!, The thread [ %s ] started", getName().getString());
+        LOG_SCOPE( sync_main_HelloThread, on_run );
+        LOG_INFO("!!! Hello Thread !!!, The thread [ %s ] started", name().as_string());
 
-        mQuit.resetEvent();
+        mQuit.reset();
 
         // Wait for auto-reset event before continuing
-        gEventRun.lock(NECommon::WAIT_INFINITE);
+        gEventRun.lock(areg::WAIT_INFINITE);
         LOG_INFO("Auto-reset event 'gEventRun' is signaled");
 
         // Multi-lock with multiple objects
-        IESyncObject* objects[] = { &gEventExit, &gMutexWait, &gEventRun };
-        MultiLock multiLock(objects, MACRO_ARRAYLEN(objects), false);
+        areg::SyncObject* objects[] = { &gEventExit, &gMutexWait, &gEventRun };
+        areg::MultiLock multiLock(objects, std::size(objects), false);
 
-        constexpr unsigned int waitTimeout{ NECommon::WAIT_1_MILLISECOND * 150 };
+        constexpr uint32_t waitTimeout{ areg::WAIT_1_MILLISECOND * 150 };
 
         do
         {
-            int waitResult = multiLock.lock(waitTimeout, true, false);
+            int32_t waitResult = multiLock.lock(waitTimeout, true, false);
 
-            if (waitResult == MultiLock::LOCK_INDEX_ALL)
+            if (waitResult == areg::MultiLock::LOCK_INDEX_ALL)
             {
-                LOG_INFO("All objects are signaled, exiting thread [ %s ]", getName().getString());
+                LOG_INFO("All objects are signaled, exiting thread [ %s ]", name().as_string());
                 std::cout << "All synchronization objects are signaled, exiting thread." << std::endl;
                 break;
             }
-            else if (waitResult == MultiLock::LOCK_INDEX_TIMEOUT)
+            else if (waitResult == areg::MultiLock::LOCK_INDEX_TIMEOUT)
             {
-                Lock lock(gMutexDummy);
-                LOG_DBG("Timeout expired, thread [ %s ] simulating work", getName().getString());
+                areg::Lock lock(gMutexDummy);
+                LOG_DBG("Timeout expired, thread [ %s ] simulating work", name().as_string());
                 std::cout << "Wait multi-lock timeout expired, continue the job." << std::endl;
-                Thread::sleep(waitTimeout);
+                areg::Thread::sleep(waitTimeout);
             }
             else
             {
@@ -104,49 +104,49 @@ protected:
             }
         } while (true);
 
-        mQuit.setEvent();
+        mQuit.set_signaled();
     }
 };
 
 //////////////////////////////////////////////////////////////////////////
 // GoodbyeThread: simple demo worker
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(sync_main_GoodbyeThread_GoodbyeThread);
-DEF_LOG_SCOPE(sync_main_GoodbyeThread_onThreadRuns);
+DEF_LOG_SCOPE(sync_main_GoodbyeThread, GoodbyeThread);
+DEF_LOG_SCOPE(sync_main_GoodbyeThread, on_run);
 
-class GoodbyeThread : public Thread, protected IEThreadConsumer
+class GoodbyeThread final : public areg::Thread, protected areg::ThreadConsumer
 {
 public:
     GoodbyeThread()
-        : Thread(static_cast<IEThreadConsumer &>(*this), "GoodbyeThread"), IEThreadConsumer(), mQuit(false, true)
+        : areg::Thread(static_cast<areg::ThreadConsumer &>(*this), "GoodbyeThread"), areg::ThreadConsumer(), mQuit(false, true)
     {
-        LOG_SCOPE(sync_main_GoodbyeThread_GoodbyeThread);
-        LOG_DBG("Initialized thread [ %s ]", getName().getString());
+        LOG_SCOPE( sync_main_GoodbyeThread, GoodbyeThread );
+        LOG_DBG("Initialized thread [ %s ]", name().as_string());
     }
 
-    SyncEvent mQuit; //!< Signaled when the thread completes
+    areg::SyncEvent mQuit; //!< Signaled when the thread completes
 
 protected:
-    void onThreadRuns() override
+    void on_run() final
     {
-        LOG_SCOPE(sync_main_GoodbyeThread_onThreadRuns);
-        LOG_INFO("!!! Goodbye World !!! Thread [ %s ] started", getName().getString());
+        LOG_SCOPE( sync_main_GoodbyeThread, on_run );
+        LOG_INFO("!!! Goodbye World !!! Thread [ %s ] started", name().as_string());
 
-        mQuit.resetEvent();
+        mQuit.reset();
 
         // Multi-lock with exit event + dummy mutex
-        IESyncObject* objects[] = { &gEventExit, &gMutexDummy };
-        MultiLock multiLock(objects, MACRO_ARRAYLEN(objects), false);
+        areg::SyncObject* objects[] = { &gEventExit, &gMutexDummy };
+        areg::MultiLock multiLock(objects, std::size(objects), false);
 
-        int waitResult = multiLock.lock(NECommon::WAIT_INFINITE, false, false);
+        int32_t waitResult = multiLock.lock(areg::WAIT_INFINITE, false, false);
         LOG_DBG("GoodbyeThread finished lock with result [%d]", waitResult);
         std::cout << "Multi-lock is signaled the elem " << waitResult << " is unlocked" << std::endl;
 
         if (waitResult >= 0)
             multiLock.unlock(waitResult);
 
-        Thread::sleep(NECommon::WAIT_500_MILLISECONDS);
-        mQuit.setEvent();
+        areg::Thread::sleep(areg::WAIT_500_MILLISECONDS);
+        mQuit.set_signaled();
     }
 };
 
@@ -154,56 +154,56 @@ protected:
 // Main: demo entry point
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(sync_main_main);
+DEF_LOG_SCOPE(sync_main, main);
 
 int main()
 {
     std::cout << "Demo: synchronization objects and multi-lock ..." << std::endl;
 
-    LOGGING_CONFIGURE_AND_START(nullptr);
+    LOGGING_CONFIGURE_AND_START(nullptr, false);
 
     {
-        LOG_SCOPE(sync_main_main);
+        LOG_SCOPE( sync_main, main );
 
         gMutexWait.lock();
-        gEventRun.resetEvent();
-        gEventExit.resetEvent();
+        gEventRun.reset();
+        gEventExit.reset();
 
         HelloThread helloThread;
         LOG_DBG("Starting Hello Thread");
-        helloThread.createThread(NECommon::DO_NOT_WAIT);
+        helloThread.start(areg::DO_NOT_WAIT);
 
-        Thread::sleep(NECommon::WAIT_500_MILLISECONDS);
-        gEventRun.setEvent();   // let HelloThread proceed
+        areg::Thread::sleep(areg::WAIT_500_MILLISECONDS);
+        gEventRun.set_signaled();   // let HelloThread proceed
 
-        Thread::sleep(NECommon::WAIT_500_MILLISECONDS);
+        areg::Thread::sleep(areg::WAIT_500_MILLISECONDS);
         gMutexWait.unlock();
-        Thread::sleep(NECommon::WAIT_1_SECOND);
+        areg::Thread::sleep(areg::WAIT_1_SECOND);
 
         GoodbyeThread goodbyeThread;
         LOG_DBG("Starting Goodbye Thread");
-        goodbyeThread.createThread(NECommon::WAIT_INFINITE);
+        goodbyeThread.start(areg::WAIT_INFINITE);
 
-        Thread::sleep(NECommon::WAIT_1_SECOND);
+        areg::Thread::sleep(areg::WAIT_1_SECOND);
 
-        IESyncObject* objects[] = { &helloThread.mQuit, &goodbyeThread.mQuit, &gMutexDummy };
-        gEventExit.setEvent();
-        gEventRun.setEvent();
+        areg::SyncObject* objects[] = { &helloThread.mQuit, &goodbyeThread.mQuit, &gMutexDummy };
+        gEventExit.set_signaled();
+        gEventRun.set_signaled();
 
-        MultiLock multiLock(objects, MACRO_ARRAYLEN(objects), true);
+        areg::MultiLock multiLock(objects, std::size(objects), true);
         std::cout << "All sync objects unlocked. Completing all threads." << std::endl;
 
-        helloThread.shutdownThread(NECommon::WAIT_INFINITE);
-        goodbyeThread.shutdownThread(NECommon::WAIT_INFINITE);
+        helloThread.shutdown(areg::WAIT_INFINITE);
+        goodbyeThread.shutdown(areg::WAIT_INFINITE);
 
         constexpr uint32_t eventTimeout{ 1000 };
         LOG_INFO("Testing event synchronization with timeout [%u] ms", eventTimeout);
 
-        DateTime start{ DateTime::getNow() };
-        SyncEvent localEvent(false, false);
+        areg::DateTime start{ areg::DateTime::now() };
+        areg::SyncEvent localEvent(false, false);
         localEvent.lock(eventTimeout);
-        DateTime end{ DateTime::getNow() };
-        uint64_t duration = end.getTime() - start.getTime();
+        areg::DateTime end{ areg::DateTime::now() };
+        uint64_t duration = end.time() - start.time();
         LOG_INFO("The event was locked for [%lld] ns", duration);
         std::cout << "The event was locked for " << duration << " ns" << std::endl;
     }

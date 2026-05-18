@@ -37,34 +37,46 @@
     <ClCompile Include="units\OptionParserTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="units\TEArrayListTest.cpp">
+    <ClCompile Include="units\ArrayListTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="units\TEFixedArrayTest.cpp">
+    <ClCompile Include="units\FixedArrayTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="units\TEHashMapTest.cpp">
+    <ClCompile Include="units\HashMapTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="units\TEMapTest.cpp">
+    <ClCompile Include="units\MapTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="units\TEPropertyTest.cpp">
+    <ClCompile Include="units\KeyValuePairTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="units\TEStackTest.cpp">
+    <ClCompile Include="units\StackTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="units\TELinkedListTest.cpp">
+    <ClCompile Include="units\LinkedListTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="units\TERingStackTest.cpp">
+    <ClCompile Include="units\RingStackTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="units\TESortedLinkedListTest.cpp">
+    <ClCompile Include="units\SortedLinkedListTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="units\NEStringTest.cpp">
+    <ClCompile Include="units\StringDefsTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\StringDefsTest2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\StringDefsTest3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\RemoteMessageTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\SharedBufferTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

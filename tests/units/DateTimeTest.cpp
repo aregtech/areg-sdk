@@ -19,13 +19,16 @@
 #include "units/GUnitTest.hpp"
 #include "areg/base/DateTime.hpp"
 
-#include "areg/base/NEMemory.hpp"
-#include "areg/base/NEMath.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/MemoryDefs.hpp"
+#include "areg/base/MathDefs.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/Thread.hpp"
 
 #ifdef WINDOWS
+    #ifndef NOMINMAX
+        #define NOMINMAX
+    #endif // !NOMINMAX
     #include <Windows.h>
 #endif  // WINDOWS
 
@@ -33,7 +36,7 @@ namespace
 {
 #ifdef WINDOWS
     //!< Converts Win system time to the areg specific time structure.
-    inline void _convWinSysTime2AregSysTime( const SYSTEMTIME & IN winTime, NEUtilities::sSystemTime & OUT aregTime )
+    inline void _convWinSysTime2AregSysTime( const SYSTEMTIME & winTime, areg::CalendarTime & aregTime )
     {
         aregTime.stYear = static_cast<int>(winTime.wYear);
         aregTime.stMonth = static_cast<int>(winTime.wMonth);
@@ -47,7 +50,7 @@ namespace
     }
 
     //!< Converts areg specific time structure to Windows system time.
-    inline void _convAregSysTime2WinSysTime( const NEUtilities::sSystemTime & IN aregTime, SYSTEMTIME & OUT winTime )
+    inline void _convAregSysTime2WinSysTime( const areg::CalendarTime & aregTime, SYSTEMTIME & winTime )
     {
         winTime.wYear = static_cast<WORD>(aregTime.stYear);
         winTime.wMonth = static_cast<WORD>(aregTime.stMonth);
@@ -91,11 +94,11 @@ namespace
 
 #endif  // WINDOWS
 
-    //!< Checks the values of NEUtilities::sSystemTime type parameter and if does not match
+    //!< Checks the values of areg::CalendarTime type parameter and if does not match
     //!< the expectation, outputs the message to be visible on console.
     //!< The developer passes 'prefix' to identify the value it checks.
     //!< Otherwise, no prefix is displayed.
-    void _checkTimeStruct( const NEUtilities::sSystemTime & time, const char * prefix = "" )
+    void _checkTimeStruct( const areg::CalendarTime & time, const char * prefix = "" )
     {
         EXPECT_GE( time.stYear, 2023 )      << prefix << "Year:   " << time.stYear << std::endl;
 
@@ -157,25 +160,25 @@ namespace
 /**
  * \brief   Checks current date-time value.
  **/
-TEST( DateTimeTest, TestNow )
+TEST( DateTimeTest, test_now )
 {
-    NEUtilities::sSystemTime sysTime;
-    DateTime date( DateTime::getNow( ) );
-    ASSERT_TRUE( date.getTime( ) != 0 );
+    areg::CalendarTime sysTime;
+    areg::DateTime date( areg::DateTime::now( ) );
+    ASSERT_TRUE( date.time( ) != 0 );
 
-    date.getDateTime( sysTime );
+    date.date_time( sysTime );
     _checkTimeStruct( sysTime, "UTC " );
 }
 
-TEST( DateTimeTest, TestOperators)
+TEST( DateTimeTest, test_operators)
 {
     using namespace std::chrono_literals;
 
-    DateTime dateOld( DateTime::getNow( ) );
+    areg::DateTime dateOld( areg::DateTime::now( ) );
 
-    Thread::sleep( NECommon::WAIT_100_MILLISECONDS );
+    areg::Thread::sleep( areg::WAIT_100_MILLISECONDS );
 
-    DateTime dateNew( DateTime::getNow( ) );
+    areg::DateTime dateNew( areg::DateTime::now( ) );
 
     ASSERT_TRUE( dateOld < dateNew);
     ASSERT_TRUE( dateOld <= dateNew);
@@ -189,18 +192,18 @@ TEST( DateTimeTest, TestOperators)
  *          by using Win32 API to make sure that the sequence of
  *          function calls is correct.
  **/
-TEST( DateTimeTest, TestLocalTimeWin32 )
+TEST( DateTimeTest, test_local_time_win32 )
 {
 #ifdef WINDOWS
 
-    DateTime date( DateTime::getNow( ) );
-    ASSERT_TRUE( date.getTime( ) != 0 );
+    areg::DateTime date( areg::DateTime::now( ) );
+    ASSERT_TRUE( date.time( ) != 0 );
 
-    NEUtilities::sSystemTime utcTime;
-    NEUtilities::convToSystemTime( date.getTime( ), utcTime );
+    areg::CalendarTime utcTime;
+    areg::to_system_time( date.time( ), utcTime );
     _checkTimeStruct( utcTime, "UTC Areg " );
 
-    NEUtilities::sSystemTime localTime{ };
+    areg::CalendarTime localTime{ };
     TIME_ZONE_INFORMATION tzi{ };
     SYSTEMTIME utc{ };
     SYSTEMTIME local{ };
@@ -222,28 +225,28 @@ TEST( DateTimeTest, TestLocalTimeWin32 )
  * \brief   Gets current time in UTC and converts to local time.
  *          Checks that values are correct.
  **/
-TEST( DateTimeTest, TestLocalTime )
+TEST( DateTimeTest, test_local_time )
 {
-    DateTime date( DateTime::getNow( ) );
-    ASSERT_TRUE( date.getTime( ) != 0 );
+    areg::DateTime date( areg::DateTime::now( ) );
+    ASSERT_TRUE( date.time( ) != 0 );
 
-    NEUtilities::sSystemTime utcTime;
-    NEUtilities::convToSystemTime( date.getTime( ), utcTime );
+    areg::CalendarTime utcTime;
+    areg::to_system_time( date.time( ), utcTime );
     _checkTimeStruct( utcTime, "Areg UTC " );
 
-    time_t secs1 = NEUtilities::convToSeconds(date.getTime());
-    time_t secs2 = NEUtilities::convToSeconds(utcTime);
+    time_t secs1 = areg::to_seconds(date.time());
+    time_t secs2 = areg::to_seconds(utcTime);
     ASSERT_EQ(secs1, secs2);
 
-    TIME64 micro = NEUtilities::convToTime(utcTime);
-    ASSERT_EQ(date.getTime(), micro);
+    TIME64 micro = areg::to_time(utcTime);
+    ASSERT_EQ(date.time(), micro);
 
-    NEUtilities::sSystemTime localTime{ };
-    NEUtilities::convToLocalTime( utcTime, localTime );
+    areg::CalendarTime localTime{ };
+    areg::to_local_time( utcTime, localTime );
     _checkTimeStruct( localTime, "Areg Local " );
 
-    NEUtilities::sSystemTime sysTime;
-    NEUtilities::convToLocalTime( date.getTime( ), sysTime );
+    areg::CalendarTime sysTime;
+    areg::to_local_time( date.time( ), sysTime );
 
     ASSERT_EQ( localTime.stYear, sysTime.stYear )   << "localTime.stYear = " << localTime.stYear    << ", sysTime.stYear = "  << sysTime.stYear << std::endl;
     ASSERT_EQ( localTime.stMonth, sysTime.stMonth ) << "localTime.stMonth= " << localTime.stMonth   << ", sysTime.stMonth = " << sysTime.stMonth << std::endl;
@@ -261,50 +264,50 @@ TEST( DateTimeTest, TestLocalTime )
  * brief    Gets current time in UTC, coverts to string of local time using ISO8601 format
  *          and makes sure that the conversion is correct.
  **/
-TEST( DateTimeTest, TestFormatISO8601 )
+TEST( DateTimeTest, test_format_iso8601 )
 {
-    DateTime date( DateTime::getNow( ) );
-    ASSERT_TRUE( date.getTime( ) != 0 );
+    areg::DateTime date( areg::DateTime::now( ) );
+    ASSERT_TRUE( date.time( ) != 0 );
 
-    NEUtilities::sSystemTime utcTime;
-    NEUtilities::convToSystemTime( date.getTime( ), utcTime );
+    areg::CalendarTime utcTime;
+    areg::to_system_time( date.time( ), utcTime );
     _checkTimeStruct( utcTime, "Areg UTC " );
 
-    NEUtilities::sSystemTime localTime{ };
-    NEUtilities::convToLocalTime( utcTime, localTime );
+    areg::CalendarTime localTime{ };
+    areg::to_local_time( utcTime, localTime );
     _checkTimeStruct( localTime, "Areg Local " );
 
     struct tm conv { };
-    NEUtilities::convToTm( localTime, conv );
+    areg::to_tm( localTime, conv );
 
     _checkTimeStruct( conv, "struct tm Local " );
 
 
-    NEUtilities::sSystemTime sysTime;
-    NEUtilities::convToLocalTime( date.getTime( ), sysTime );
+    areg::CalendarTime sysTime;
+    areg::to_local_time( date.time( ), sysTime );
 
-    String timestamp = date.formatTime( NEUtilities::TIME_FORMAT_ISO8601_OUTPUT );
-    ASSERT_FALSE( timestamp.isEmpty( ) );
+    areg::String timestamp = date.format_time( areg::TIME_FORMAT_ISO8601_OUTPUT );
+    ASSERT_FALSE( timestamp.is_empty( ) );
 
     char buf[ 128 ];
-    String::formatString( buf, 128, "%04u-", sysTime.stYear );
-    ASSERT_EQ( timestamp.findFirst( buf ), NEString::START_POS );
+    areg::String::format_string( buf, 128, "%04u-", sysTime.stYear );
+    ASSERT_EQ( timestamp.find_first( buf ), areg::START_POS );
 
-    String::formatString( buf, 128, "-%02u-", sysTime.stMonth );
-    ASSERT_TRUE( timestamp.isValidPosition(timestamp.findFirst( buf )) );
+    areg::String::format_string( buf, 128, "-%02u-", sysTime.stMonth );
+    ASSERT_TRUE( timestamp.is_valid_position(timestamp.find_first( buf )) );
 
-    String::formatString( buf, 128, "-%02u", sysTime.stDay );
-    ASSERT_TRUE( timestamp.isValidPosition(timestamp.findFirst( buf )) );
+    areg::String::format_string( buf, 128, "-%02u", sysTime.stDay );
+    ASSERT_TRUE( timestamp.is_valid_position(timestamp.find_first( buf )) );
 
-    String::formatString( buf, 128, " %02u:", sysTime.stHour );
-    ASSERT_TRUE( timestamp.isValidPosition( timestamp.findFirst( buf ) ) );
+    areg::String::format_string( buf, 128, " %02u:", sysTime.stHour );
+    ASSERT_TRUE( timestamp.is_valid_position( timestamp.find_first( buf ) ) );
 
-    String::formatString( buf, 128, ":%02u:", sysTime.stMinute );
-    ASSERT_TRUE( timestamp.isValidPosition( timestamp.findFirst( buf ) ) );
+    areg::String::format_string( buf, 128, ":%02u:", sysTime.stMinute );
+    ASSERT_TRUE( timestamp.is_valid_position( timestamp.find_first( buf ) ) );
 
-    String::formatString( buf, 128, ":%02u,", sysTime.stSecond );
-    ASSERT_TRUE( timestamp.isValidPosition( timestamp.findFirst( buf ) ) );
+    areg::String::format_string( buf, 128, ":%02u,", sysTime.stSecond );
+    ASSERT_TRUE( timestamp.is_valid_position( timestamp.find_first( buf ) ) );
 
-    String::formatString( buf, 128, ",%03u", sysTime.stMillisecs );
-    ASSERT_TRUE( timestamp.isValidPosition( timestamp.findFirst( buf ) ) );
+    areg::String::format_string( buf, 128, ",%03u", sysTime.stMillisecs );
+    ASSERT_TRUE( timestamp.is_valid_position( timestamp.find_first( buf ) ) );
 }

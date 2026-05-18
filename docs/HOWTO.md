@@ -41,12 +41,12 @@ For a complete list of defines and usage examples, see the [Preprocessor Definit
 
 ### Supported Platforms
 
-| Platform | Compilers | Architectures |
-|----------|-----------|---------------|
-| Linux | GCC 9+, Clang 10+ | x86, x86_64, ARM32, ARM64 |
-| Windows | MSVC 2019+, MinGW, Clang | x86, x86_64 |
-| macOS | Apple Clang | x86_64, ARM64 |
-| WSL | GCC, Clang | x86, x86_64 |
+| Platform | Compilers                | Architectures             |
+| -------- | ------------------------ | ------------------------- |
+| Linux    | GCC 9+, Clang 10+        | x86, x86_64, ARM32, ARM64 |
+| Windows  | MSVC 2019+, MinGW, Clang | x86, x86_64               |
+| macOS    | Apple Clang              | x86_64, ARM64             |
+| WSL      | GCC, Clang               | x86, x86_64               |
 
 ### Build Guides
 
@@ -64,9 +64,9 @@ You can create a new project or integrate Areg SDK into an existing one.
 
 ### Integration Options
 
-| Method | Guide |
-|--------|-------|
-| CMake | [Integrating with CMake](./wiki/02b-cmake-integrate.md) |
+| Method        | Guide                                                          |
+| ------------- | -------------------------------------------------------------- |
+| CMake         | [Integrating with CMake](./wiki/02b-cmake-integrate.md)        |
 | Visual Studio | [Integrating with Visual Studio](./wiki/02c-msvc-integrate.md) |
 
 ### Quick Start
@@ -95,12 +95,12 @@ Projects built with Areg SDK can include or exclude logging at compile time. Whe
 
 ### Logging Documentation
 
-| Document | Description |
-|----------|-------------|
-| [Logging Configuration](./wiki/04a-logging-config.md) | Configure log output, levels, and scopes |
-| [Developing with Logging](./wiki/04b-logging-develop.md) | Add logging to your application code |
-| [Log Observer Application](./wiki/04c-logobserver.md) | Monitor logs in real time |
-| [Log Collector Service](./wiki/04d-logcollector.md) | Aggregate logs from multiple processes |
+| Document                                                 | Description                              |
+| -------------------------------------------------------- | ---------------------------------------- |
+| [Logging Configuration](./wiki/04a-logging-config.md)    | Configure log output, levels, and scopes |
+| [Developing with Logging](./wiki/04b-logging-develop.md) | Add logging to your application code     |
+| [Log Observer Application](./wiki/04c-logobserver.md)    | Monitor logs in real time                |
+| [Log Collector Service](./wiki/04d-logcollector.md)      | Aggregate logs from multiple processes   |
 
 ### Quick Example
 
@@ -111,7 +111,7 @@ DEF_TRACE_SCOPE(myapp_main);
 
 int main()
 {
-    Application::initApplication();
+    Application::setup();
     TRACE_SCOPE(myapp_main);
     TRACE_INFO("Application started");
     // ... application code ...

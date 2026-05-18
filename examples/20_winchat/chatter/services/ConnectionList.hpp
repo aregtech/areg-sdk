@@ -1,14 +1,14 @@
 #pragma once
-#include "examples/20_winchat/services/ConnectionManagerClientBase.hpp"
+#include "examples/20_winchat/services/ConnectionManagerConsumerBase.hpp"
 
-class Component;
+namespace areg { class Component; }
 class ConnectionHandler;
 
-class ConnectionList : public ConnectionManagerClientBase
+class ConnectionList final : public ConnectionManagerConsumerBase
 {
 public:
-    ConnectionList( const char * roleName, Component & owner, ConnectionHandler & handlerConnection );
-    ConnectionList( const char * roleName, DispatcherThread & dispThread, ConnectionHandler & handlerConnection );
+    ConnectionList( const char * roleName, areg::Component & owner, ConnectionHandler & handlerConnection );
+    ConnectionList( const char * roleName, areg::DispatcherThread & dispThread, ConnectionHandler & handlerConnection );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -25,9 +25,9 @@ protected:
      * \param   connection      The connection structure after registration.
      * \param   connectionList  The list of all servicing connections.
      * \param   success         Flag, indicating whether the request to register connection succeeded or not.
-     * \see     requestRegisterConnection
+     * \see     request_register_connection
      **/
-    virtual void responseRegisterConnection( const NEConnectionManager::sConnection & connection, const NEConnectionManager::ListConnections & connectionList, bool success ) override;
+    void response_register_connection( const ConnectionManager::ConnectionRecord & connection, const ConnectionManager::ListConnections & connectionList, bool success ) final;
     /**
      * \brief   Broadcast callback.
      *          Triggered each time when new client connection is accepted
@@ -35,7 +35,7 @@ protected:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientConnected New client data, which contains nick name and connected date-time
      **/
-    virtual void broadcastClientConnected( const NEConnectionManager::sConnection & clientConnected ) override;
+    void broadcast_client_connected( const ConnectionManager::ConnectionRecord & clientConnected ) final;
     /**
      * \brief   Broadcast callback.
      *          Triggered each time when client is disconnected
@@ -43,10 +43,10 @@ protected:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientLeft  The connection data of disconnected client.
      **/
-    virtual void broadcastClientDisconnected( const NEConnectionManager::sConnection & clientLeft ) override;
+    void broadcast_client_disconnected( const ConnectionManager::ConnectionRecord & clientLeft ) final;
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -59,7 +59,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -71,6 +71,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ConnectionList( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ConnectionList );
+    ConnectionList() = delete;
+    AREG_NOCOPY_NOMOVE( ConnectionList );
 };

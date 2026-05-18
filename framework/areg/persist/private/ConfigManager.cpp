@@ -18,33 +18,34 @@
   ************************************************************************/
 #include "areg/persist/ConfigManager.hpp"
 
-#include "areg/appbase/NEApplication.hpp"
+#include "areg/appbase/AppDefs.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/Process.hpp"
-#include "areg/persist/IEConfigurationListener.hpp"
+#include "areg/persist/ConfigListener.hpp"
 
 namespace
 {
-    inline uint32_t _findPosition( const TEArrayList<Property>& propList
+    [[nodiscard]]
+    inline uint32_t _find_position( const areg::ArrayList<areg::Property>& propList
                                  , uint32_t startAt
-                                 , const String& section
-                                 , const String& module
-                                 , const String& property
-                                 , const String& position
+                                 , const areg::String& section
+                                 , const areg::String& module
+                                 , const areg::String& propName
+                                 , const areg::String& position
                                  , bool exact
-                                 , NEPersistence::eConfigKeys configKey)
+                                 , areg::ConfigEntry configKey) noexcept
     {
-        uint32_t result { NECommon::INVALID_POSITION };
-        const auto& list{ propList.getData() };
+        uint32_t result { areg::INVALID_POSITION };
+        const auto& list{ propList.data() };
         uint32_t count{ static_cast<uint32_t>(list.size()) };
 
         for (uint32_t pos = startAt; pos < count; ++ pos)
         {
-            const PropertyKey& key = propList[pos].getKey();
-            if ((configKey == NEPersistence::eConfigKeys::EntryAnyKey) || (configKey == key.getKeyType()))
+            const areg::PropertyKey& key = propList[pos].key();
+            if ((configKey == areg::ConfigEntry::AnyKey) || (configKey == key.key_type()))
             {
-                if ((exact && key.isExactProperty(section, module, property, position)) ||
-                    (!exact && key.isModuleProperty(section, module, property, position)))
+                if ((exact && key.is_exact_property(section, module, propName, position)) ||
+                    (!exact && key.is_module_property(section, module, propName, position)))
                 {
                     result = pos;
                     break;
@@ -56,184 +57,184 @@ namespace
     }
 
     template <typename Type>
-    inline void _setPositionValue( TEArrayList<Property>& writeList
-                                 , const TEArrayList<Property>& readList
-                                 , const String& section
-                                 , const String& module
-                                 , const String& property
-                                 , const String& position
-                                 , NEPersistence::eConfigKeys confKey
+    inline void _set_position_value(areg::ArrayList<areg::Property>& writeList
+                                 , const areg::ArrayList<areg::Property>& readList
+                                 , const areg::String& section
+                                 , const areg::String& module
+                                 , const areg::String& propName
+                                 , const areg::String& position
+                                 , areg::ConfigEntry confKey
                                  , const Type& newValue
                                  , bool isTemporary)
     {
-        uint32_t readPos  = _findPosition(readList , 0, section, NEPersistence::SYNTAX_ALL_MODULES, property, position, false, confKey);
-        uint32_t writePos = _findPosition(writeList, 0, section, module, property, position, true , confKey);
+        uint32_t readPos  = _find_position(readList , 0, section, areg::SYNTAX_ALL_MODULES, propName, position, false, confKey);
+        uint32_t writePos = _find_position(writeList, 0, section, module, propName, position, true , confKey);
 
-        while ((writePos != NECommon::INVALID_POSITION) && (writeList[writePos].isTemporary() != isTemporary))
+        while ((writePos != areg::INVALID_POSITION) && (writeList[writePos].is_temporary() != isTemporary))
         {
-            writePos = _findPosition(writeList, writePos + 1, section, module, property, position, true, confKey);
+            writePos = _find_position(writeList, writePos + 1, section, module, propName, position, true, confKey);
         }
 
-        if (readPos == NECommon::INVALID_POSITION)
+        if (readPos == areg::INVALID_POSITION)
         {
-            if (writePos != NECommon::INVALID_POSITION)
+            if (writePos != areg::INVALID_POSITION)
             {
-                writeList[readPos].getValue() = newValue;
+                writeList[writePos].value() = newValue;
             }
             else
             {
-                writeList.add(Property(PropertyKey(section, module, property, position, confKey), PropertyValue(newValue), String::EmptyString, isTemporary));
+                writeList.add(areg::Property(areg::PropertyKey(section, module, propName, position, confKey), areg::PropertyValue(newValue), areg::String::EmptyString, isTemporary));
             }
         }
         else
         {
-            const PropertyValue& readValue = readList[readPos].getValue();
+            const areg::PropertyValue& readValue = readList[readPos].value();
             if (newValue != static_cast<const Type&>(readValue))
             {
-                if ((writePos != NECommon::INVALID_POSITION) && (writeList[writePos].isTemporary() == isTemporary))
+                if ((writePos != areg::INVALID_POSITION) && (writeList[writePos].is_temporary() == isTemporary))
                 {
-                    writeList[writePos].getValue() = newValue;
+                    writeList[writePos].value() = newValue;
                 }
                 else
                 {
-                    writeList.add(Property(PropertyKey(section, module, property, position, confKey), PropertyValue(newValue), String::EmptyString, isTemporary));
+                    writeList.add(areg::Property(areg::PropertyKey(section, module, propName, position, confKey), areg::PropertyValue(newValue), areg::String::EmptyString, isTemporary));
                 }
             }
-            else if (writePos != NECommon::INVALID_POSITION)
+            else if (writePos != areg::INVALID_POSITION)
             {
-                writeList.removeAt(writePos);
+                writeList.remove_at(writePos);
             }
         }
     }
 
-    inline const Property* _getProperty( const NEPersistence::ListProperties& list
-                                       , const String& section
-                                       , const String& module
-                                       , const String& property
-                                       , const String& position
-                                       , NEPersistence::eConfigKeys keyType
-                                       , bool exactMatch)
+    [[nodiscard]]
+    inline const areg::Property* _get_property( const areg::ListProperties& list
+                                              , const areg::String& section
+                                              , const areg::String& module
+                                              , const areg::String& propName
+                                              , const areg::String& position
+                                              , areg::ConfigEntry keyType
+                                              , bool exactMatch) noexcept
     {
-        ASSERT(keyType != NEPersistence::eConfigKeys::EntryInvalid);
+        ASSERT(keyType != areg::ConfigEntry::Invalid);
 
-        uint32_t elemPos = _findPosition(list, 0, section, module, property, position, exactMatch, keyType);
-        return (elemPos != NECommon::INVALID_POSITION ? &list[elemPos] : nullptr);
+        uint32_t elemPos = _find_position(list, 0, section, module, propName, position, exactMatch, keyType);
+        return (elemPos != areg::INVALID_POSITION ? &list[elemPos] : nullptr);
     }
 
-    uint32_t _readConfig(const FileBase& file, NEPersistence::ListProperties& OUT listWritable, NEPersistence::ListProperties& OUT listReadonly, const String& module)
+    uint32_t _read_config(const areg::FileBase& file, areg::ListProperties& listWritable, areg::ListProperties& listReadonly, const areg::String& module)
     {
+        if (!file.is_opened())
+            return 0u;
+
+        file.move_to_begin();
+
+        areg::String line;
+        areg::Property newProperty;
         uint32_t result{ 0 };
 
-        if (file.isOpened())
+        while (file.read_line(line) > 0)
         {
-            file.moveToBegin();
-
-            String line;
-            Property newProperty;
-
-            while (file.readLine(line) > 0)
+            if (!newProperty.parse(line))
+                continue;
+            
+            // add new entry if unique. otherwise, update existing.
+            const areg::PropertyKey& Key = newProperty.key();
+            if (Key.is_all_modules())
             {
-                if (newProperty.parseProperty(line))
-                {
-                    // add new entry if unique. otherwise, update existing.
-                    const PropertyKey& Key = newProperty.getKey();
-                    if (Key.isAllModules())
-                    {
-                        listReadonly.add(newProperty);
-                        ++result;
-                    }
-                    else if (newProperty.isModuleProperty(module))
-                    {
-                        listWritable.add(newProperty);
-                        ++result;
-                    }
-
-                    newProperty.resetData();
-                }
+                listReadonly.add(newProperty);
+                ++result;
             }
+            else if (newProperty.is_module_property(module))
+            {
+                listWritable.add(newProperty);
+                ++result;
+            }
+
+            newProperty.reset();
         }
 
         return result;
     }
 
-    inline bool _saveConfig( const NEPersistence::ListProperties& listWritable
-                           , const NEPersistence::ListProperties& listReadonly
-                           , const String& module
-                           , const FileBase& srcFile
-                           , FileBase& dstFile
+    inline bool _save_config( const areg::ListProperties& listWritable
+                           , const areg::ListProperties& listReadonly
+                           , const areg::String& module
+                           , const areg::FileBase& srcFile
+                           , areg::FileBase& dstFile
                            , bool saveAll)
     {
-        bool result{ false };
-        if (srcFile.canRead() && dstFile.canWrite())
+        if (!srcFile.can_read() && dstFile.can_write())
+            return false;
+
+        
+        uint32_t count{ 0 };
+        srcFile.move_to_begin();
+        dstFile.move_to_begin();
+
+        if (saveAll)
         {
-            uint32_t count{ 0 };
-            srcFile.moveToBegin();
-            dstFile.moveToBegin();
-
-            if (saveAll)
+            count = listReadonly.size();
+            for (uint32_t i = 0; i < count; ++ i)
             {
-                count = listReadonly.getSize();
-                for (uint32_t i = 0; i < count; ++ i)
+                const auto& prop = listReadonly[i];
+                if (prop.is_temporary() == false)
                 {
-                    const auto& prop = listReadonly[i];
-                    if (prop.isTemporary() == false)
-                    {
-                        dstFile.writeLine(prop.convToString());
-                    }
-                }
-
-                count = listWritable.getSize();
-                for (uint32_t i = 0; i < count; ++ i)
-                {
-                    const auto& prop = listWritable[i];
-                    if (prop.isTemporary() == false)
-                    {
-                        dstFile.writeLine(prop.convToString());
-                    }
+                    dstFile.write_line(prop.to_string());
                 }
             }
-            else
+
+            count = listWritable.size();
+            for (uint32_t i = 0; i < count; ++ i)
             {
-                String line;
-                Property newProperty;
-
-                while (srcFile.readLine(line) > 0)
+                const auto& prop = listWritable[i];
+                if (prop.is_temporary() == false)
                 {
-                    if ((newProperty.parseProperty(line) == false) || (newProperty.getKey().getModule() != module))
-                    {
-                        dstFile.writeLine(line);
-                    }
-                    else
-                    {
-                        const PropertyKey& key{ newProperty.getKey() };
-                        const Property* prop = _getProperty(listWritable, key.getSection(), module, key.getProperty(), key.getPosition(), key.getKeyType(), true);
-                        if ((prop != nullptr) && prop->isTemporary())
-                        {
-                            dstFile.writeLine(line);
-                        }
-                    }
+                    dstFile.write_line(prop.to_string());
                 }
+            }
+        }
+        else
+        {
+            areg::String line;
+            areg::Property newProperty;
 
-                count = listWritable.getSize();
-                for (uint32_t i = 0; i < count; ++i)
+            while (srcFile.read_line(line) > 0)
+            {
+                if ((newProperty.parse(line) == false) || (newProperty.key().module() != module))
                 {
-                    const auto& prop = listWritable[i];
-                    if (prop.isTemporary() == false)
+                    dstFile.write_line(line);
+                }
+                else
+                {
+                    const areg::PropertyKey& key{ newProperty.key() };
+                    const areg::Property* prop = _get_property(listWritable, key.section(), module, key.property(), key.position(), key.key_type(), true);
+                    if ((prop != nullptr) && prop->is_temporary())
                     {
-                        dstFile.writeLine(prop.convToString());
+                        dstFile.write_line(line);
                     }
                 }
             }
 
-            result = true;
+            count = listWritable.size();
+            for (uint32_t i = 0; i < count; ++i)
+            {
+                const auto& prop = listWritable[i];
+                if (prop.is_temporary() == false)
+                {
+                    dstFile.write_line(prop.to_string());
+                }
+            }
         }
 
-        return result;
+        return true;
     }
 } // namespace
 
-ConfigManager::ConfigManager( void )
-    : mModule               (Process::getInstance().getAppName())
+namespace areg {
+
+ConfigManager::ConfigManager()
+    : mModule               (Process::instance().app_name())
     , mWritableProperties   ( )
     , mReadonlyProperties   ( )
     , mIsConfigured         (false)
@@ -242,122 +243,120 @@ ConfigManager::ConfigManager( void )
 {
 }
 
-bool ConfigManager::existProperty(const PropertyKey& key) const
+bool ConfigManager::exist(const PropertyKey& key) const noexcept
 {
     Lock lock(mLock);
-    bool result = _findPosition(  mWritableProperties
+    bool result = _find_position(  mWritableProperties
                                 , 0
-                                , key.getSection()
+                                , key.section()
                                 , mModule
-                                , key.getProperty()
-                                , key.getPosition()
+                                , key.property()
+                                , key.position()
                                 , true
-                                , key.getKeyType()) != NECommon::INVALID_POSITION;
+                                , key.key_type()) != areg::INVALID_POSITION;
 
-    if (result == false)
-    {
-        result = _findPosition(  mReadonlyProperties
-                                , 0
-                                , key.getSection()
-                                , NEPersistence::SYNTAX_ALL_MODULES
-                                , key.getProperty()
-                                , key.getPosition()
-                                , false
-                                , key.getKeyType()) != NECommon::INVALID_POSITION;
-    }
+    if (result)
+        return true;
 
-    return result;
+    return (_find_position(  mReadonlyProperties
+                          , 0
+                          , key.section()
+                          , areg::SYNTAX_ALL_MODULES
+                          , key.property()
+                          , key.position()
+                          , false
+                          , key.key_type()) != areg::INVALID_POSITION);
 }
 
-NEPersistence::ListProperties ConfigManager::getSectionProperties(const String& section) const
+areg::ListProperties ConfigManager::section_properties(const String& section) const
 {
     Lock lock(mLock);
-    NEPersistence::ListProperties result;
-    if (section.isEmpty())
+    if (section.is_empty())
     {
-        return result;
+        return areg::ListProperties();
     }
 
-    for (const auto& prop : mWritableProperties.getData())
+    areg::ListProperties result;
+    for (const auto& prop : mWritableProperties.data())
     {
-        if (section == prop.getKey().getSection())
+        if (section == prop.key().section())
         {
             result.add(prop);
         }
     }
 
-    for (const auto& prop : mReadonlyProperties.getData())
+    for (const auto& prop : mReadonlyProperties.data())
     {
-        const String& propSec = prop.getKey().getSection();
-        if ((section == propSec) && (section == NEPersistence::SYNTAX_ANY_VALUE) && (propSec == NEPersistence::SYNTAX_ANY_VALUE))
+        const String& propSec = prop.key().section();
+        if ((section == propSec) && (section == areg::SYNTAX_ANY_VALUE) && (propSec == areg::SYNTAX_ANY_VALUE))
         {
-            result.addIfUnique(prop, false);
+            result.add_if_unique(prop, false);
         }
     }
 
     return result;
 }
 
-const Property* ConfigManager::getProperty( const String& section
-                                          , const String& property
-                                          , const String& position
-                                          , NEPersistence::eConfigKeys keyType /*= NEPersistence::eConfigKeys::EntryAnyKey*/) const
+const Property* ConfigManager::property( const String& section
+                                       , const String& propName
+                                       , const String& position
+                                       , areg::ConfigEntry keyType /*= areg::ConfigEntry::AnyKey*/) const noexcept
 {
     Lock lock(mLock);
 
-    keyType = keyType == NEPersistence::eConfigKeys::EntryInvalid ? NEPersistence::eConfigKeys::EntryAnyKey : keyType;
-    const Property* result{ _getProperty(mWritableProperties, section, mModule, property, position, keyType, true)};
-    return (result != nullptr ? result : _getProperty(mReadonlyProperties, section, NEPersistence::SYNTAX_ALL_MODULES, property, position, keyType, false));
+    keyType = (keyType == areg::ConfigEntry::Invalid) ? areg::ConfigEntry::AnyKey : keyType;
+    const Property* result{ _get_property(mWritableProperties, section, mModule, propName, position, keyType, true) };
+    return (result != nullptr ? result : _get_property(mReadonlyProperties, section, areg::SYNTAX_ALL_MODULES, propName, position, keyType, false));
 }
 
-const Property * ConfigManager::getModuleProperty( const String& section
-                                                 , const String& property
+const Property * ConfigManager::module_property( const String& section
+                                                 , const String& propName
                                                  , const String& position
-                                                 , NEPersistence::eConfigKeys keyType /*= NEPersistence::eConfigKeys::EntryAnyKey*/) const
+                                                 , areg::ConfigEntry keyType /*= areg::ConfigEntry::AnyKey*/) const noexcept
 {
     Lock lock(mLock);
 
-    keyType = keyType == NEPersistence::eConfigKeys::EntryInvalid ? NEPersistence::eConfigKeys::EntryAnyKey : keyType;
-    return _getProperty(mWritableProperties, section, mModule, property, position, keyType, true);
+    keyType = (keyType == areg::ConfigEntry::Invalid) ? areg::ConfigEntry::AnyKey : keyType;
+    return _get_property(mWritableProperties, section, mModule, propName, position, keyType, true);
 }
 
-void ConfigManager::setModuleProperty( const String& section
-                                     , const String& property
+void ConfigManager::set_module_property( const String& section
+                                     , const String& propName
                                      , const String& position
                                      , const String& value
-                                     , NEPersistence::eConfigKeys keyType /*= NEPersistence::eConfigKeys::EntryAnyKey*/
+                                     , areg::ConfigEntry keyType /*= areg::ConfigEntry::AnyKey*/
                                      , bool isTemporary /*= false*/)
 {
     Lock lock(mLock);
 
-    keyType = keyType == NEPersistence::eConfigKeys::EntryInvalid ? NEPersistence::eConfigKeys::EntryAnyKey : keyType;
-    _setPositionValue<String>(mWritableProperties, mReadonlyProperties, section, mModule, property, position, keyType, value, isTemporary);
+    keyType = (keyType == areg::ConfigEntry::Invalid) ? areg::ConfigEntry::AnyKey : keyType;
+    _set_position_value<String>(mWritableProperties, mReadonlyProperties, section, mModule, propName, position, keyType, value, isTemporary);
 }
 
-void ConfigManager::removeModuleProperty(const String& section, const String& property, const String& position, NEPersistence::eConfigKeys keyType)
+void ConfigManager::remove_module_property(const String& section, const String& propName, const String& position, areg::ConfigEntry keyType)
 {
     Lock lock(mLock);
-    uint32_t elemPos = _findPosition(mWritableProperties, 0, section, mModule, property, position, true, keyType);
-    if (elemPos != NECommon::INVALID_POSITION)
+    const uint32_t elemPos{ _find_position(mWritableProperties, 0, section, mModule, propName, position, true, keyType) };
+    if (elemPos != areg::INVALID_POSITION)
     {
-        mWritableProperties.removePosition(elemPos);
+        mWritableProperties.remove_at(elemPos);
     }
 }
 
-int ConfigManager::removeModuleProperties(const String& section, const String& property, NEPersistence::eConfigKeys keyType)
+int32_t ConfigManager::remove_module_properties(const String& section, const String& propName, areg::ConfigEntry keyType)
 {
     Lock lock(mLock);
-    int result{ 0 };
+    int32_t result{ 0 };
     uint32_t i{ 0 };
-    while (i < mWritableProperties.getSize())
+    while (i < mWritableProperties.size())
     {
-        const PropertyKey& key = mWritableProperties[i].getKey();
-        if ((keyType == NEPersistence::eConfigKeys::EntryAnyKey) || (keyType == key.getKeyType()))
+        const PropertyKey& key{ mWritableProperties[i].key() };
+        if ((keyType == areg::ConfigEntry::AnyKey) || (keyType == key.key_type()))
         {
-            if ((section == key.getSection()) && (property == key.getProperty()))
+            if ((section == key.section()) && (propName == key.property()))
             {
                 ++result;
-                mWritableProperties.removeAt(i);
+                mWritableProperties.remove_at(i);
             }
             else
             {
@@ -373,14 +372,15 @@ int ConfigManager::removeModuleProperties(const String& section, const String& p
     return result;
 }
 
-void ConfigManager::removeSectionProperties(const String& section)
+void ConfigManager::remove_section_properties(const String& section)
 {
     Lock lock(mLock);
-    for (uint32_t i = 0; i < mWritableProperties.getSize(); ++i)
+    uint32_t i{ 0 };
+    while (i < mWritableProperties.size())
     {
-        if (mWritableProperties[i].getKey().getSection() == section)
+        if (mWritableProperties[i].key().section() == section)
         {
-            mWritableProperties.removeAt(i);
+            mWritableProperties.remove_at(i);
         }
         else
         {
@@ -389,97 +389,98 @@ void ConfigManager::removeSectionProperties(const String& section)
     }
 }
 
-bool ConfigManager::readConfig(const String& filePath /*= String::EmptyString*/, IEConfigurationListener * listener /*= nullptr*/)
+bool ConfigManager::read_config(const String& filePath /*= String::EmptyString*/, ConfigListener * listener /*= nullptr*/) noexcept
 {
     Lock lock(mLock);
-    if (mIsConfigured == false)
+    if (mIsConfigured)
+        return true;
+    
+    ASSERT(mFilePath.is_empty());
+    String path;
+    if (filePath.is_empty())
     {
-        ASSERT(mFilePath.isEmpty());
-        String path;
-        if (filePath.isEmpty())
-        {
-            path = NEApplication::DEFAULT_CONFIG_FILE;
-        }
-        else
-        {
-            path = filePath;
-        }
+        path = areg::DEFAULT_CONFIG_FILE;
+    }
+    else
+    {
+        path = filePath;
+    }
 
-        path = File::getFileFullPath(File::normalizePath(path));
-        File fileConfig(path, FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ);
-        if (fileConfig.open() && readConfig(fileConfig, listener))
-        {
-            mFilePath = fileConfig.getName();
-        }
+    path = File::file_full_path(File::normalize_path(path));
+    File fileConfig(path, static_cast<uint32_t>(File::OpenMode::Exist) 
+                        | static_cast<uint32_t>(File::OpenMode::Read)
+                        | static_cast<uint32_t>(File::OpenMode::Text)
+                        | static_cast<uint32_t>(File::OpenMode::ShareRead));
+    if (fileConfig.open() && read_config(fileConfig, listener))
+    {
+        mFilePath = fileConfig.name();
+    }
+    
+
+    return mIsConfigured;
+}
+
+bool ConfigManager::read_config(const FileBase& file, ConfigListener * listener /*= nullptr*/) noexcept
+{
+    Lock lock(mLock);
+    if (mIsConfigured)
+        return true;
+    
+    mWritableProperties.clear();
+    mReadonlyProperties.clear();
+    if (listener != nullptr)
+    {
+        listener->prepare_read_configuration(*this);
+    }
+
+    mIsConfigured = _read_config(file, mWritableProperties, mReadonlyProperties, mModule) != 0;
+    if (listener != nullptr)
+    {
+        listener->post_read_configuration(*this);
     }
 
     return mIsConfigured;
 }
 
-bool ConfigManager::readConfig(const FileBase& file, IEConfigurationListener * listener /*= nullptr*/)
-{
-    Lock lock(mLock);
-    if (mIsConfigured == false)
-    {
-        mWritableProperties.clear();
-        mReadonlyProperties.clear();
-        if (listener != nullptr)
-        {
-            listener->prepareReadConfiguration(*this);
-        }
-
-        mIsConfigured = _readConfig(file, mWritableProperties, mReadonlyProperties, mModule) != 0;
-
-        if (listener != nullptr)
-        {
-            listener->postReadConfiguration(*this);
-        }
-    }
-
-    return mIsConfigured;
-}
-
-bool ConfigManager::saveConfig(const String& filePath, IEConfigurationListener * listener /*= nullptr*/)
+bool ConfigManager::save_config(const String& filePath, ConfigListener * listener /*= nullptr*/)
 {
     Lock lock(mLock);
     bool result{ false };
 
-    constexpr unsigned int modeRead {   File::FO_MODE_READ      |
-                                        File::FO_MODE_TEXT      |
-                                        File::FO_MODE_CREATE    |
-                                        File::FO_MODE_SHARE_READ};
-
-    constexpr unsigned int modeWrite{   FileBase::FO_MODE_READ       | 
-                                        FileBase::FO_MODE_TEXT       | 
-                                        FileBase::FO_MODE_CREATE     | 
-                                        FileBase::FO_MODE_WRITE };
-
+    constexpr uint32_t modeRead { static_cast<uint32_t>(File::OpenMode::Read)
+                                | static_cast<uint32_t>(File::OpenMode::Text)
+                                | static_cast<uint32_t>(File::OpenMode::Exist)
+                                | static_cast<uint32_t>(File::OpenMode::ShareRead)};
+    constexpr uint32_t modeWrite{ static_cast<uint32_t>(File::OpenMode::Read)
+                                | static_cast<uint32_t>(File::OpenMode::Text)
+                                | static_cast<uint32_t>(File::OpenMode::Create)
+                                | static_cast<uint32_t>(File::OpenMode::Write) };
     bool saveAll{ false };
 
     String srcPath, dstPath;
-    String tempFile = File::genTempFileName();
+    String tempFile = File::temp_name();
     
-    if (filePath.isEmpty() == false)
+    if (filePath.is_empty() == false)
     {
         dstPath = filePath;
     }
-    else if (mFilePath.isEmpty() == false)
+    else if (mFilePath.is_empty() == false)
     {
         dstPath = mFilePath;
     }
     else
     {
-        dstPath = NEApplication::DEFAULT_CONFIG_FILE;
+        dstPath = areg::DEFAULT_CONFIG_FILE;
         saveAll = true;
     }
 
-    dstPath = File::getFileFullPath( File::normalizePath(dstPath) );
-    srcPath = mFilePath.isEmpty() ? dstPath : mFilePath;
+    dstPath = File::file_full_path( File::normalize_path(dstPath) );
+    srcPath = mFilePath.is_empty() ? dstPath : mFilePath;
 
-    String dstDir = File::getFileDirectory(dstPath);
-    if ((dstDir.isEmpty() == false) && File::existDir(dstDir) == false)
+    String dstDir = File::file_directory(dstPath);
+    if ((dstDir.is_empty() == false) && (File::has_dir(dstDir) == false))
     {
-        File::createDirCascaded(dstDir);
+        File::create_dir_cascaded(dstDir);
     }
 
     File srcFile(srcPath, modeRead );
@@ -487,37 +488,36 @@ bool ConfigManager::saveConfig(const String& filePath, IEConfigurationListener *
 
     if (srcFile.open() && dstFile.open())
     {
-        if (saveConfig(srcFile, dstFile, saveAll, listener))
+        if (save_config(srcFile, dstFile, saveAll, listener))
         {
             srcFile.close();
             dstFile.close();
-            result = File::copyFile(tempFile, dstPath, true);
-            File::deleteFile(tempFile);
+            result = File::copy_file(tempFile, dstPath, true);
+            File::delete_file(tempFile);
         }
     }
 
     return result;
 }
 
-bool ConfigManager::saveConfig(const FileBase& srcFile, FileBase& dstFile, bool saveAll, IEConfigurationListener * listener /*= nullptr*/)
+bool ConfigManager::save_config(const FileBase& srcFile, FileBase& dstFile, bool saveAll, ConfigListener * listener /*= nullptr*/)
 {
     Lock lock(mLock);
     if (listener != nullptr)
     {
-        listener->prepareSaveConfiguration(*this);
+        listener->prepare_save_configuration(*this);
     }
 
-    bool result = _saveConfig(mWritableProperties, mReadonlyProperties, mModule, srcFile, dstFile, saveAll);
-
+    bool result = _save_config(mWritableProperties, mReadonlyProperties, mModule, srcFile, dstFile, saveAll);
     if (listener != nullptr)
     {
-        listener->postSaveConfiguration(*this);
+        listener->post_save_configuration(*this);
     }
 
     return result;
 }
 
-void ConfigManager::setConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, IEConfigurationListener* listener /*= nullptr*/)
+void ConfigManager::set_configuration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, ConfigListener* listener /*= nullptr*/)
 {
     Lock lock(mLock);
 
@@ -527,300 +527,226 @@ void ConfigManager::setConfiguration(const NEPersistence::ListProperties& listRe
 
     if (listener != nullptr)
     {
-        listener->onSetupConfiguration(listReadonly, listWritable, *this);
+        listener->on_setup_configuration(listReadonly, listWritable, *this);
     }
 }
 
 
-Version ConfigManager::getConfigVersion(void) const
+Version ConfigManager::config_version() const noexcept
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryConfigVersion;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getConfigVersion();
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::ConfigVersion };
+    constexpr const areg::ConfigKey& key{ areg::config_version() };
 
-    const Property* prop = _getProperty(mReadonlyProperties, key.section, NEPersistence::SYNTAX_ALL_MODULES, key.property, key.position, confKey, true);
-
-    Version result;
-    if (prop != nullptr)
-    {
-        result = prop->getValueString();
-    }
-    else
-    {
-        result = NEPersistence::CONFIG_VERSION;
-    }
-
-    return result;
+    const Property* prop = _get_property(mReadonlyProperties, key.section, areg::SYNTAX_ALL_MODULES, key.property, key.position, confKey, true);
+    return (prop != nullptr ? prop->value_string() : areg::CONFIG_VERSION);
 }
 
-std::vector<Identifier> ConfigManager::getServiceList(void) const
+std::vector<Identifier> ConfigManager::service_list() const noexcept
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryServiceList;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getServiceList();
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::ServiceList };
+    constexpr const areg::ConfigKey& key{ areg::service_list() };
 
-    const Property* prop = getProperty(key.section, key.property, key.position, confKey);
-
-    std::vector<Identifier> result;
-    if (prop != nullptr)
-    {
-        result = prop->getValue().getIdentifierList(NEApplication::RemoteServiceIdentifiers).getData();
-    }
-
-    return result;
+    const Property* prop = property(key.section, key.property, key.position, confKey);
+    return (prop != nullptr) ? prop->value().identifier_list(areg::RemoteServiceIdentifiers).data() : std::vector<Identifier>();
 }
 
-std::vector<Identifier> ConfigManager::getLogTargets(void) const
-{
-    Lock lock(mLock);
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogTarget;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogTarget();
-
-    const Property* prop = getProperty(key.section, key.property, key.position, confKey);
-
-    std::vector<Identifier> result;
-    if (prop != nullptr)
-    {
-        result = prop->getValue().getIdentifierList(NEApplication::LogTypeIdentifiers).getData();
-    }
-
-    return result;
-}
-
-bool ConfigManager::getLoggingStatus(void) const
+std::vector<Identifier> ConfigManager::log_targets() const noexcept
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogStatus;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogStatus();
+    constexpr const areg::ConfigEntry confKey { areg::ConfigEntry::LogTarget };
+    constexpr const areg::ConfigKey& key{ areg::log_target() };
 
-    const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
-    return (value != nullptr ? value->getBoolean() : NEApplication::DEFAULT_LOG_ENABLED);
+    const Property* prop = property(key.section, key.property, key.position, confKey);
+    return (prop != nullptr ? prop->value().identifier_list(areg::LogTypeIdentifiers).data() : std::vector<Identifier>());
 }
 
-Version ConfigManager::getLogVersion(void) const
+bool ConfigManager::logging_status() const noexcept
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogVersion;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogVersion();
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::LogStatus };
+    constexpr const areg::ConfigKey& key{ areg::log_status() };
 
-    const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
-    Version result;
-    if (value != nullptr)
-    {
-        result = value->getString();
-    }
-    else
-    {
-        result = NEPersistence::CONFIG_VERSION;
-    }
-    return result;
+    const PropertyValue* prop = property_value(key.section, key.property, key.position, confKey);
+    return (prop != nullptr ? prop->as_boolean() : areg::DEFAULT_LOG_ENABLED);
 }
 
-bool ConfigManager::getLogEnabled(const String& logType) const
+Version ConfigManager::log_version() const noexcept
 {
     Lock lock(mLock);
 
-    bool result{ false };
-    if (getLoggingStatus())
-    {
-        constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogEnable;
-        const NEPersistence::sPropertyKey& key = NEPersistence::getLogEnable();
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::LogVersion };
+    constexpr const areg::ConfigKey& key{ areg::log_version() };
 
-        const PropertyValue* value = getPropertyValue(key.section, key.property, logType, confKey);
-        result = (value != nullptr ? value->getBoolean() : NEApplication::DEFAULT_LOG_ENABLED);
-    }
-
-    return result;
+    const PropertyValue* prop = property_value(key.section, key.property, key.position, confKey);
+    return (prop != nullptr ? prop->as_string() : areg::CONFIG_VERSION);
 }
 
-bool ConfigManager::getLogEnabled(NELogging::eLogingTypes logType) const
-{
-    String id = Identifier::convToString( static_cast<unsigned int>(logType)
-                                        , NEApplication::LogTypeIdentifiers
-                                        , static_cast<unsigned int>(NELogging::eLogingTypes::LogTypeUndefined));
-    return getLogEnabled(id);
-}
-
-void ConfigManager::setLogEnabled(NELogging::eLogingTypes logType, bool newValue, bool isTemporary /*= false*/)
-{
-    String id = Identifier::convToString( static_cast<unsigned int>(logType)
-                                        , NEApplication::LogTypeIdentifiers
-                                        , static_cast<unsigned int>(NELogging::eLogingTypes::LogTypeUndefined));
-    setLogEnabled(id, newValue, isTemporary);
-}
-
-String ConfigManager::getLogFileLocation(void) const
+bool ConfigManager::log_enabled(const String& logType) const noexcept
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogFileLocation;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogFileLocation();
-    const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
-
-    String result;
-    if (value != nullptr)
-    {
-        result = value->getString();
-    }
-    else
-    {
-        result = NEApplication::DEFAULT_LOG_FILE;
-    }
-
-    return result;
-}
-
-bool ConfigManager::getLogFileAppend(void) const
-{
-    Lock lock(mLock);
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogFileAppend;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogFileAppend();
-    const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
-    return (value != nullptr ? value->getBoolean() : false);
-}
-
-void ConfigManager::setLogFileAppend(bool newValue, bool isTemporary /*= false*/)
-{
-    Lock lock(mLock);
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogFileAppend;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogFileAppend();
-    setModuleProperty(key.section, key.property, key.position, String::makeString(newValue), confKey, isTemporary);
-}
-
-uint32_t ConfigManager::getLogRemoteQueueSize(void) const
-{
-    Lock lock(mLock);
-
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogRemoteQueueSize;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogRemoteQueueSize();
-    const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
-    return (value != nullptr ? value->getInteger() : NEApplication::DEFAULT_LOG_QUEUE_SIZE);
-}
-
-void ConfigManager::setLogRemoteQueueSize(uint32_t newValue, bool isTemporary /*= false*/)
-{
-    Lock lock(mLock);
-
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogRemoteQueueSize;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogRemoteQueueSize();
-    setModuleProperty(key.section, key.property, key.position, String::makeString(newValue), confKey, isTemporary);
-}
-
-String ConfigManager::getLogLayoutEnter(void) const
-{
-    Lock lock(mLock);
-
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogLayoutEnter;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogLayoutEnter();
-    const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
-
-    String result;
-    if (value != nullptr)
-    {
-        result = value->getString();
-    }
-    else
-    {
-        result = NEApplication::DEFAULT_LAYOUT_SCOPE_ENTER;
-    }
-
-    return result;
-}
-
-void ConfigManager::setLogLayoutEnter(const String& newValue, bool isTemporary /*= false*/)
-{
-    Lock lock(mLock);
-
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogLayoutEnter;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogLayoutEnter();
-    setModuleProperty(key.section, key.property, key.position, newValue, confKey, isTemporary);
-}
-
-String ConfigManager::getLogLayoutMessage(void) const
-{
-    Lock lock(mLock);
-
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogLayoutMessage;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogLayoutMessage();
-    const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
-
-    String result;
-    if (value != nullptr)
-    {
-        result = value->getString();
-    }
-    else
-    {
-        result = NEApplication::DEFAULT_LAYOUT_LOG_MESSAGE;
-    }
+    if (!logging_status())
+        return false;
     
-    return result;
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::LogEnable };
+    constexpr const areg::ConfigKey& key{ areg::log_enable() };
+
+    const PropertyValue* prop = property_value(key.section, key.property, logType, confKey);
+    return (prop != nullptr ? prop->as_boolean() : areg::DEFAULT_LOG_ENABLED);
 }
 
-void ConfigManager::setLogLayoutMessage(const String& newValue, bool isTemporary /*= false*/)
+bool ConfigManager::log_enabled(areg::LogTarget logType) const noexcept
+{
+    String id = Identifier::to_string( static_cast<uint32_t>(logType)
+                                     , areg::LogTypeIdentifiers
+                                     , static_cast<uint32_t>(areg::LogTarget::Undefined));
+    return log_enabled(id);
+}
+
+void ConfigManager::set_log_enabled(areg::LogTarget logType, bool newValue, bool isTemporary /*= false*/)
+{
+    String id = Identifier::to_string( static_cast<uint32_t>(logType)
+                                     , areg::LogTypeIdentifiers
+                                     , static_cast<uint32_t>(areg::LogTarget::Undefined));
+    set_log_enabled(id, newValue, isTemporary);
+}
+
+String ConfigManager::log_file_location() const noexcept
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogLayoutMessage;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogLayoutMessage();
-    setModuleProperty(key.section, key.property, key.position, newValue, confKey, isTemporary);
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::LogFileLocation };
+    constexpr const areg::ConfigKey& key{ areg::log_file_location() };
+    const PropertyValue* prop = property_value(key.section, key.property, key.position, confKey);
+
+    return (prop != nullptr ? prop->as_string() : areg::DEFAULT_LOG_FILE);
 }
 
-String ConfigManager::getLogLayoutExit(void) const
+bool ConfigManager::log_file_append() const noexcept
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogLayoutExit;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogLayoutExit();
-    const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
-
-    String result;
-    if (value != nullptr)
-    {
-        result = value->getString();
-    }
-    else
-    {
-        result = NEApplication::DEFAULT_LAYOUT_SCOPE_EXIT;
-    }
-    
-    return result;
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::LogFileAppend };
+    constexpr const areg::ConfigKey& key{ areg::log_file_append() };
+    const PropertyValue* prop = property_value(key.section, key.property, key.position, confKey);
+    return ((prop != nullptr) && prop->as_boolean());
 }
 
-void ConfigManager::setLogLayoutExit(const String& newValue, bool isTemporary /*= false*/)
+void ConfigManager::set_file_append(bool newValue, bool isTemporary /*= false*/)
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogLayoutExit;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogLayoutExit();
-    setModuleProperty(key.section, key.property, key.position, newValue, confKey, isTemporary);
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::LogFileAppend };
+    constexpr const areg::ConfigKey& key{ areg::log_file_append() };
+    set_module_property(key.section, key.property, key.position, String::make_string(newValue), confKey, isTemporary);
 }
 
-uint32_t ConfigManager::getModuleLogScopes(std::vector<Property>& OUT scopeList) const
+uint32_t ConfigManager::remote_queue_size() const noexcept
 {
     Lock lock(mLock);
 
-    const auto& listRead{ mReadonlyProperties.getData() };
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::LogRemoteQueueSize };
+    constexpr const areg::ConfigKey& key{ areg::remote_queue_size() };
+    const PropertyValue* prop = property_value(key.section, key.property, key.position, confKey);
+    return (prop != nullptr ? prop->as_integer() : areg::DEFAULT_LOG_QUEUE_SIZE);
+}
+
+void ConfigManager::set_remote_queue_size(uint32_t newValue, bool isTemporary /*= false*/)
+{
+    Lock lock(mLock);
+
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::LogRemoteQueueSize };
+    constexpr const areg::ConfigKey& key{ areg::remote_queue_size() };
+    set_module_property(key.section, key.property, key.position, String::make_string(newValue), confKey, isTemporary);
+}
+
+String ConfigManager::log_layout_enter() const noexcept
+{
+    Lock lock(mLock);
+
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::LogLayoutEnter };
+    constexpr const areg::ConfigKey& key{ areg::log_layout_enter() };
+    const PropertyValue* prop = property_value(key.section, key.property, key.position, confKey);
+
+    return (prop != nullptr ? prop->as_string() : areg::DEFAULT_LAYOUT_SCOPE_ENTER);
+}
+
+void ConfigManager::set_layout_enter(const String& newValue, bool isTemporary /*= false*/)
+{
+    Lock lock(mLock);
+
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::LogLayoutEnter };
+    constexpr const areg::ConfigKey& key{ areg::log_layout_enter() };
+    set_module_property(key.section, key.property, key.position, newValue, confKey, isTemporary);
+}
+
+String ConfigManager::log_layout_message() const noexcept
+{
+    Lock lock(mLock);
+
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::LogLayoutMessage };
+    constexpr const areg::ConfigKey& key{ areg::log_layout_message() };
+    const PropertyValue* prop = property_value(key.section, key.property, key.position, confKey);
+
+    return (prop != nullptr ? prop->as_string() : areg::DEFAULT_LAYOUT_LOG_MESSAGE);
+}
+
+void ConfigManager::set_layout_message(const String& newValue, bool isTemporary /*= false*/)
+{
+    Lock lock(mLock);
+
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::LogLayoutMessage };
+    constexpr const areg::ConfigKey& key{ areg::log_layout_message() };
+    set_module_property(key.section, key.property, key.position, newValue, confKey, isTemporary);
+}
+
+String ConfigManager::log_layout_exit() const
+{
+    Lock lock(mLock);
+
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::LogLayoutExit };
+    constexpr const areg::ConfigKey& key{ areg::log_layout_exit() };
+    const PropertyValue* prop = property_value(key.section, key.property, key.position, confKey);
+
+    return (prop != nullptr ? prop->as_string() : areg::DEFAULT_LAYOUT_SCOPE_EXIT);
+}
+
+void ConfigManager::set_layout_exit(const String& newValue, bool isTemporary /*= false*/)
+{
+    Lock lock(mLock);
+
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::LogLayoutExit };
+    constexpr const areg::ConfigKey& key{ areg::log_layout_exit() };
+    set_module_property(key.section, key.property, key.position, newValue, confKey, isTemporary);
+}
+
+uint32_t ConfigManager::module_log_scopes(std::vector<Property>& scopeList) const noexcept
+{
+    Lock lock(mLock);
+
+    const auto& listRead{ mReadonlyProperties.data() };
     for (const auto& entry : listRead)
     {
-        const PropertyKey& key = entry.getKey();
-        if ((key.getKeyType() == NEPersistence::eConfigKeys::EntryLogScope) && key.isAllModules())
+        const PropertyKey& key = entry.key();
+        if ((key.key_type() == areg::ConfigEntry::LogScope) && key.is_all_modules())
         {
             scopeList.push_back(entry);
         }
     }
 
-    const auto& listWrite{ mWritableProperties.getData() };
+    const auto& listWrite{ mWritableProperties.data() };
     for (const auto& entry : listWrite)
     {
-        const PropertyKey& key = entry.getKey();
-        if (key.getKeyType() == NEPersistence::eConfigKeys::EntryLogScope)
+        const PropertyKey& key = entry.key();
+        if (key.key_type() == areg::ConfigEntry::LogScope)
         {
-            ASSERT(key.getModule() == mModule);
+            ASSERT(key.module() == mModule);
             scopeList.push_back(entry);
         }
     }
@@ -828,7 +754,7 @@ uint32_t ConfigManager::getModuleLogScopes(std::vector<Property>& OUT scopeList)
     return static_cast<uint32_t>(scopeList.size());
 }
 
-void ConfigManager::addModuletLogScopes(const std::vector<Property>& scopeList, bool search)
+void ConfigManager::add_log_scopes(const std::vector<Property>& scopeList, bool search)
 {
     Lock lock(mLock);
 
@@ -836,250 +762,418 @@ void ConfigManager::addModuletLogScopes(const std::vector<Property>& scopeList, 
     {
         if (search)
         {
-            setModuleProperty(scope.getKey(), scope.getValueString(), false);
+            set_module_property(scope.key(), scope.value_string(), false);
         }
         else
         {
             mWritableProperties.add(scope);
         }
     }
+
 }
 
-void ConfigManager::addModuleLogScope(const String& scopeName, const String& prio)
+void ConfigManager::add_log_scope(const String& scopeName, const String& prio)
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey{ NEPersistence::eConfigKeys::EntryLogScope };
-    const NEPersistence::sPropertyKey& key{ NEPersistence::getLogScope() };
-    setModuleProperty(key.section, key.property, scopeName, prio, confKey, false);
+    constexpr areg::ConfigEntry confKey{ areg::ConfigEntry::LogScope };
+    const areg::ConfigKey& key{ areg::log_scope() };
+    set_module_property(key.section, key.property, scopeName, prio, confKey, false);
 }
 
-void ConfigManager::addModuleLogScope(const String& scopeName, unsigned int prio)
+void ConfigManager::add_log_scope(const String& scopeName, uint32_t prio)
 {
     PropertyValue value;
-    value.setIdentifierList(prio, NEApplication::LogScopePriorityIndentifiers);
-    addModuleLogScope(scopeName, value.getString());
+    value.set_identifier_list(prio, areg::LogScopePriorityIndentifiers);
+    add_log_scope(scopeName, value.as_string());
 }
 
-bool ConfigManager::removeScope(const String& scopeName)
+bool ConfigManager::remove_scope(const String& scopeName)
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey{ NEPersistence::eConfigKeys::EntryLogScope };
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogScope();
-    uint32_t pos = _findPosition(mWritableProperties, 0, key.section, mModule, key.property, scopeName, true, confKey);
-    if (pos != NECommon::INVALID_POSITION)
+    constexpr areg::ConfigEntry confKey{ areg::ConfigEntry::LogScope };
+    const areg::ConfigKey& key{ areg::log_scope() };
+    const uint32_t pos{ _find_position(mWritableProperties, 0, key.section, mModule, key.property, scopeName, true, confKey) };
+
+    if (pos == areg::INVALID_POSITION)
+        return false;
+
+    mWritableProperties.remove_at(pos);
+    return true;
+}
+
+int32_t ConfigManager::remove_module_scopes()
+{
+    constexpr areg::ConfigEntry confKey{ areg::ConfigEntry::LogScope };
+    const areg::ConfigKey& key = areg::log_scope();
+    return remove_module_properties(key.section, key.property, confKey);
+}
+
+std::vector<Identifier> ConfigManager::remote_service_connections(const String& service) const noexcept
+{
+    Lock lock(mLock);
+
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::ServiceConnection };
+    constexpr const areg::ConfigKey& key{ areg::service_connection() };
+
+    const PropertyValue* prop = property_value(service, key.property, key.position, confKey);
+    return (prop != nullptr ? prop->identifier_list(areg::ConnectionIdentifiers).data() : std::vector<Identifier>());
+}
+
+String ConfigManager::remote_service_name(const String& service, const String& connectType) const noexcept
+{
+    Lock lock(mLock);
+
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::ServiceName };
+    constexpr const areg::ConfigKey& key{ areg::service_name() };
+    const PropertyValue* prop = property_value(service, key.property, connectType, confKey);
+    return (prop != nullptr ? prop->as_string() : String());
+}
+
+String ConfigManager::remote_service_name(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept
+{
+    const String& service = Identifier::to_string( static_cast<uint32_t>(serviceType)
+                                                 , areg::RemoteServiceIdentifiers
+                                                 , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
+    const String & connect = Identifier::to_string( static_cast<uint32_t>(connectType)
+                                                  , areg::ConnectionIdentifiers
+                                                  , static_cast<uint32_t>(areg::ConnectionType::Undefined));
+    return remote_service_name(service, connect);
+}
+
+bool ConfigManager::remote_service_enable(const String& service, const String& connectType) const noexcept
+{
+    Lock lock(mLock);
+
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::ServiceEnable };
+    constexpr const areg::ConfigKey& key{ areg::service_enable() };
+    const PropertyValue* prop = property_value(service, key.property, connectType, confKey);
+    return (prop != nullptr ? prop->as_boolean() : areg::DEFAULT_SERVICE_ENABLED);
+}
+
+bool ConfigManager::remote_service_enable(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept
+{
+    const String& service = Identifier::to_string( static_cast<uint32_t>(serviceType)
+                                                 , areg::RemoteServiceIdentifiers
+                                                 , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
+    const String & connect = Identifier::to_string( static_cast<uint32_t>(connectType)
+                                                  , areg::ConnectionIdentifiers
+                                                  , static_cast<uint32_t>(areg::ConnectionType::Undefined));
+    return remote_service_enable(service, connect);
+}
+
+void ConfigManager::set_service_enable(const String& service, const String& connectType, bool newValue, bool isTemporary /*= false*/)
+{
+    Lock lock(mLock);
+
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::ServiceEnable };
+    constexpr const areg::ConfigKey& key{ areg::service_enable() };
+    set_module_property(service, key.property, connectType, String::make_string(newValue), confKey, isTemporary);
+}
+
+void ConfigManager::set_service_enable(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, bool newValue, bool isTemporary /*= false*/)
+{
+    const String& service = Identifier::to_string( static_cast<uint32_t>(serviceType)
+                                                 , areg::RemoteServiceIdentifiers
+                                                 , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
+    const String & connect = Identifier::to_string( static_cast<uint32_t>(connectType)
+                                                  , areg::ConnectionIdentifiers
+                                                  , static_cast<uint32_t>(areg::ConnectionType::Undefined));
+    set_service_enable(service, connect, newValue, isTemporary);
+}
+
+String ConfigManager::remote_service_address(const String& service, const String& connectType) const noexcept
+{
+    Lock lock(mLock);
+
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::ServiceAddress };
+    constexpr const areg::ConfigKey& key{ areg::service_address() };
+    const PropertyValue* prop = property_value(service, key.property, connectType, confKey);
+    return (prop != nullptr ? prop->as_string() : areg::LocalHost);
+}
+
+String ConfigManager::remote_service_address(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept
+{
+    const String& service = Identifier::to_string( static_cast<uint32_t>(serviceType)
+                                                 , areg::RemoteServiceIdentifiers
+                                                 , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
+    const String & connect = Identifier::to_string( static_cast<uint32_t>(connectType)
+                                                  , areg::ConnectionIdentifiers
+                                                  , static_cast<uint32_t>(areg::ConnectionType::Undefined));
+    return remote_service_address(service, connect);
+}
+
+void ConfigManager::set_service_address(const String& service, const String& connectType, const String& newValue, bool isTemporary /*= false*/)
+{
+    Lock lock(mLock);
+
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::ServiceAddress };
+    constexpr const areg::ConfigKey& key{ areg::service_address() };
+    set_module_property(service, key.property, connectType, newValue, confKey, isTemporary);
+}
+
+void ConfigManager::set_service_address(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, const String& newValue, bool isTemporary /*= false*/)
+{
+    const String& service = Identifier::to_string( static_cast<uint32_t>(serviceType)
+                                                 , areg::RemoteServiceIdentifiers
+                                                 , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
+    const String & connect = Identifier::to_string( static_cast<uint32_t>(connectType)
+                                                  , areg::ConnectionIdentifiers
+                                                  , static_cast<uint32_t>(areg::ConnectionType::Undefined));
+    set_service_address(service, connect, newValue, isTemporary);
+}
+
+uint16_t ConfigManager::remote_service_port(const String& service, const String& connectType) const noexcept
+{
+    Lock lock(mLock);
+
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::ServicePort };
+    constexpr const areg::ConfigKey& key{ areg::service_port() };
+    const PropertyValue* prop = property_value(service, key.property, connectType, confKey);
+    return static_cast<uint16_t>(prop != nullptr ? prop->as_integer() : areg::DEFAULT_ROUTER_PORT);
+}
+
+uint16_t ConfigManager::remote_service_port(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept
+{
+    const String& service = Identifier::to_string( static_cast<uint32_t>(serviceType)
+                                                 , areg::RemoteServiceIdentifiers
+                                                 , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
+    const String & connect = Identifier::to_string( static_cast<uint32_t>(connectType)
+                                                  , areg::ConnectionIdentifiers
+                                                  , static_cast<uint32_t>(areg::ConnectionType::Undefined));
+    return remote_service_port(service, connect);
+}
+
+void ConfigManager::set_service_port(const String& service, const String& connectType, uint16_t newValue, bool isTemporary /*= false*/)
+{
+    Lock lock(mLock);
+
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::ServicePort };
+    constexpr const areg::ConfigKey& key{ areg::service_port() };
+    set_module_property(service, key.property, connectType, String::make_string(static_cast<uint32_t>(newValue)), confKey, isTemporary);
+}
+
+void ConfigManager::set_service_port(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, uint16_t newValue, bool isTemporary /*= false*/)
+{
+    const String& service = Identifier::to_string( static_cast<uint32_t>(serviceType)
+                                                 , areg::RemoteServiceIdentifiers
+                                                 , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
+    const String & connect = Identifier::to_string( static_cast<uint32_t>(connectType)
+                                                  , areg::ConnectionIdentifiers
+                                                  , static_cast<uint32_t>(areg::ConnectionType::Undefined));
+    set_service_port(service, connect, newValue, isTemporary);
+}
+
+String ConfigManager::log_database_property(const String& whichPosition) const noexcept
+{
+    constexpr const areg::ConfigKey& key{ areg::log_database_name() };
+    const PropertyValue* prop = property_value(key.section, key.property, whichPosition);
+    return (prop != nullptr ? prop->value() : String());
+}
+
+void ConfigManager::set_db_property(const String& whichPosition, const String& newValue, bool isTemporary /*= false*/)
+{
+    constexpr const areg::ConfigKey& key{ areg::log_database_name() };
+    set_module_property(key.section, key.property, whichPosition, newValue, areg::ConfigEntry::AnyKey, isTemporary);
+}
+
+uint32_t ConfigManager::buffer_block_size(const String& whichModule /*= areg::EmptyStringA*/) noexcept
+{
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::DefaultBufferBlock };
+    constexpr const areg::ConfigKey& key{ areg::buffer_block_size() };
+    const Property* prop = _get_property(mReadonlyProperties, key.section, whichModule.is_empty() ? areg::SYNTAX_ALL_MODULES : whichModule, key.property, key.position, confKey, true);
+    return (prop != nullptr ? prop->value().as_integer() : 0u);
+}
+
+uint32_t ConfigManager::message_queue_size(const String& whichModule /*= areg::EmptyStringA*/) noexcept
+{
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::DefaultMessageQueue };
+    constexpr const areg::ConfigKey& key{ areg::message_queue_size() };
+    const Property* prop = _get_property(mReadonlyProperties, key.section, whichModule.is_empty() ? areg::SYNTAX_ALL_MODULES : whichModule, key.property, key.position, confKey, true);
+    return ( prop != nullptr ? prop->value().as_integer() : std::numeric_limits<uint32_t>::max() );
+}
+
+uint32_t ConfigManager::network_sndbuf(const String& module /*= areg::EmptyStringA*/, const String& connectType /*= areg::EmptyStringA*/) const noexcept
+{
+    Lock lock(mLock);
+
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::NetSocketSndbuf };
+    constexpr const areg::ConfigKey& key{ areg::net_socket_sndbuf() };
+    const String& transport{ connectType.is_empty() ? String(areg::SYNTAX_ALL_MODULES) : connectType };
+
+    // Step 1: module-specific entry (caller-supplied or current process)
+    const String& mod{ module.is_empty() ? mModule : module };
+    if (!mod.is_empty())
     {
-        mWritableProperties.removeAt(pos);
+        const Property* prop = _get_property(mWritableProperties, key.section, mod, transport, key.position, confKey, true);
+        if (prop != nullptr)
+            return static_cast<uint32_t>(prop->value().as_integer()) * 1024u;
     }
 
-    return (pos != NECommon::INVALID_POSITION);
-}
-
-int ConfigManager::removeModuleScopes(void)
-{
-    constexpr NEPersistence::eConfigKeys confKey{ NEPersistence::eConfigKeys::EntryLogScope };
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogScope();
-    return removeModuleProperties(key.section, key.property, confKey);
-}
-
-std::vector<Identifier> ConfigManager::getRemoteServiceConnections(const String& service) const
-{
-    Lock lock(mLock);
-
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryServiceConnection;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getServiceConnection();
-
-    std::vector<Identifier> result;
-    const PropertyValue* value = getPropertyValue(service, key.property, key.position, confKey);
-    if (value != nullptr)
+    // Step 2: wildcard "*" entry
     {
-        result = value->getIdentifierList(NEApplication::ConnectionIdentifiers).getData();
+        const Property* prop = _get_property(mReadonlyProperties, key.section, String(areg::SYNTAX_ALL_MODULES), transport, key.position, confKey, false);
+        if (prop != nullptr)
+            return static_cast<uint32_t>(prop->value().as_integer()) * 1024u;
     }
 
-    return result;
+    // Step 3: compile-time default
+    return areg::SOCKET_SEND_BUFFER_SIZE;
 }
 
-String ConfigManager::getRemoteServiceName(const String& service, const String& connectType) const
+uint32_t ConfigManager::network_sndbuf(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept
+{
+    const String& module = Identifier::to_string( static_cast<uint32_t>(serviceType)
+                                                , areg::RemoteServiceIdentifiers
+                                                , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
+    const String& connect = Identifier::to_string( static_cast<uint32_t>(connectType)
+                                                 , areg::ConnectionIdentifiers
+                                                 , static_cast<uint32_t>(areg::ConnectionType::Undefined));
+    return network_sndbuf(module, connect);
+}
+
+uint32_t ConfigManager::network_rcvbuf(const String& module /*= areg::EmptyStringA*/, const String& connectType /*= areg::EmptyStringA*/) const noexcept
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryServiceName;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getServiceName();
-    const PropertyValue* value = getPropertyValue(service, key.property, connectType, confKey);
-    return (value != nullptr ? value->getString() : String(String::EmptyString));
-}
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::NetSocketRcvbuf };
+    constexpr const areg::ConfigKey& key{ areg::net_socket_rcvbuf() };
+    const String& transport{ connectType.is_empty() ? String(areg::SYNTAX_ALL_MODULES) : connectType };
 
-String ConfigManager::getRemoteServiceName(NERemoteService::eRemoteServices serviceType, NERemoteService::eConnectionTypes connectType) const
-{
-    const String& service = Identifier::convToString( static_cast<unsigned int>(serviceType)
-                                                    , NEApplication::RemoteServiceIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceUnknown));
-    const String & connect = Identifier::convToString(static_cast<unsigned int>(connectType)
-                                                    , NEApplication::ConnectionIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectUndefined));
-    return getRemoteServiceName(service, connect);
-}
-
-bool ConfigManager::getRemoteServiceEnable(const String& service, const String& connectType) const
-{
-    Lock lock(mLock);
-
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryServiceEnable;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getServiceEnable();
-    const PropertyValue* value = getPropertyValue(service, key.property, connectType, confKey);
-    return (value != nullptr ? value->getBoolean() : NEApplication::DEFAULT_SERVICE_ENABLED);
-}
-
-bool ConfigManager::getRemoteServiceEnable(NERemoteService::eRemoteServices serviceType, NERemoteService::eConnectionTypes connectType) const
-{
-    const String& service = Identifier::convToString( static_cast<unsigned int>(serviceType)
-                                                    , NEApplication::RemoteServiceIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceUnknown));
-    const String & connect = Identifier::convToString(static_cast<unsigned int>(connectType)
-                                                    , NEApplication::ConnectionIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectUndefined));
-    return getRemoteServiceEnable(service, connect);
-}
-
-void ConfigManager::setRemoteServiceEnable(const String& service, const String& connectType, bool newValue, bool isTemporary /*= false*/)
-{
-    Lock lock(mLock);
-
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryServiceEnable;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getServiceEnable();
-    setModuleProperty(service, key.property, connectType, String::makeString(newValue), confKey, isTemporary);
-}
-
-void ConfigManager::setRemoteServiceEnable(NERemoteService::eRemoteServices serviceType, NERemoteService::eConnectionTypes connectType, bool newValue, bool isTemporary /*= false*/)
-{
-    const String& service = Identifier::convToString( static_cast<unsigned int>(serviceType)
-                                                    , NEApplication::RemoteServiceIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceUnknown));
-    const String & connect = Identifier::convToString(static_cast<unsigned int>(connectType)
-                                                    , NEApplication::ConnectionIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectUndefined));
-    setRemoteServiceEnable(service, connect, newValue, isTemporary);
-}
-
-String ConfigManager::getRemoteServiceAddress(const String& service, const String& connectType) const
-{
-    Lock lock(mLock);
-
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryServiceAddress;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getServiceAddress();
-    const PropertyValue* value = getPropertyValue(service, key.property, connectType, confKey);
-
-    String result;
-    if (value != nullptr)
+    // Step 1: module-specific entry (caller-supplied or current process)
+    const String& mod{ module.is_empty() ? mModule : module };
+    if (!mod.is_empty())
     {
-        result = value->getString();
+        const Property* prop = _get_property(mWritableProperties, key.section, mod, transport, key.position, confKey, true);
+        if (prop != nullptr)
+            return static_cast<uint32_t>(prop->value().as_integer()) * 1024u;
     }
-    else
+
+    // Step 2: wildcard "*" entry
     {
-        result = NEApplication::DEFAULT_SERVICE_HOST;
+        const Property* prop = _get_property(mReadonlyProperties, key.section, String(areg::SYNTAX_ALL_MODULES), transport, key.position, confKey, false);
+        if (prop != nullptr)
+            return static_cast<uint32_t>(prop->value().as_integer()) * 1024u;
     }
-    
-    return result;
+
+    // Step 3: compile-time default
+    return areg::SOCKET_RECV_BUFFER_SIZE;
 }
 
-String ConfigManager::getRemoteServiceAddress(NERemoteService::eRemoteServices serviceType, NERemoteService::eConnectionTypes connectType) const
+uint32_t ConfigManager::network_rcvbuf(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept
 {
-    const String& service = Identifier::convToString( static_cast<unsigned int>(serviceType)
-                                                    , NEApplication::RemoteServiceIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceUnknown));
-    const String & connect = Identifier::convToString(static_cast<unsigned int>(connectType)
-                                                    , NEApplication::ConnectionIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectUndefined));
-    return getRemoteServiceAddress(service, connect);
+    const String& module = Identifier::to_string( static_cast<uint32_t>(serviceType)
+                                                , areg::RemoteServiceIdentifiers
+                                                , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
+    const String& connect = Identifier::to_string( static_cast<uint32_t>(connectType)
+                                                 , areg::ConnectionIdentifiers
+                                                 , static_cast<uint32_t>(areg::ConnectionType::Undefined));
+    return network_rcvbuf(module, connect);
 }
 
-void ConfigManager::setRemoteServiceAddress(const String& service, const String& connectType, const String& newValue, bool isTemporary /*= false*/)
+uint32_t ConfigManager::network_batch(const String& module, const String& connectType) const noexcept
+{
+    Lock lock(mLock);
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::NetSocketBatch };
+    constexpr const areg::ConfigKey& key{ areg::net_socket_batch() };
+    const String& transport{ connectType.is_empty() ? String(areg::SYNTAX_ALL_MODULES) : connectType };
+
+    const String& mod{ module.is_empty() ? mModule : module };
+    if (!mod.is_empty())
+    {
+        const Property* prop = _get_property(mWritableProperties, key.section, mod, transport, key.position, confKey, true);
+        if (prop != nullptr)
+            return static_cast<uint32_t>(prop->value().as_integer());
+    }
+
+    {
+        const Property* prop = _get_property(mReadonlyProperties, key.section, String(areg::SYNTAX_ALL_MODULES), transport, key.position, confKey, false);
+        if (prop != nullptr)
+            return static_cast<uint32_t>(prop->value().as_integer());
+    }
+
+    return areg::DEFAULT_BATCH_SIZE;
+}
+
+uint32_t ConfigManager::network_pool_pairs(const String& module, const String& connectType) const noexcept
+{
+    Lock lock(mLock);
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::NetPoolPairs };
+    constexpr const areg::ConfigKey& key{ areg::net_pool_pairs() };
+    const String& transport{ connectType.is_empty() ? String(areg::SYNTAX_ALL_MODULES) : connectType };
+
+    const String& mod{ module.is_empty() ? mModule : module };
+    if (!mod.is_empty())
+    {
+        const Property* prop = _get_property(mWritableProperties, key.section, mod, transport, key.position, confKey, true);
+        if (prop != nullptr)
+            return static_cast<uint32_t>(prop->value().as_integer());
+    }
+
+    {
+        const Property* prop = _get_property(mReadonlyProperties, key.section, String(areg::SYNTAX_ALL_MODULES), transport, key.position, confKey, false);
+        if (prop != nullptr)
+            return static_cast<uint32_t>(prop->value().as_integer());
+    }
+
+    return areg::DEFAULT_POOL_PAIRS;
+}
+
+uint32_t ConfigManager::network_timeout(const String& module, const String& connectType) const noexcept
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryServiceAddress;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getServiceAddress();
-    setModuleProperty(service, key.property, connectType, newValue, confKey, isTemporary);
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::NetSocketTimeout };
+    constexpr const areg::ConfigKey&  key{ areg::net_socket_timeout() };
+    const String& transport{ connectType.is_empty() ? String(areg::SYNTAX_ALL_MODULES) : connectType };
+
+    // Step 1: module-specific entry
+    const String& mod{ module.is_empty() ? mModule : module };
+    if (!mod.is_empty())
+    {
+        const Property* prop = _get_property(mWritableProperties, key.section, mod, transport, key.position, confKey, true);
+        if ((prop != nullptr) && (prop->value().as_integer() > 0))
+            return static_cast<uint32_t>(prop->value().as_integer());
+    }
+
+    // Step 2: wildcard "*" entry
+    {
+        const Property* prop = _get_property(mReadonlyProperties, key.section, String(areg::SYNTAX_ALL_MODULES), transport, key.position, confKey, false);
+        if ((prop != nullptr) && (prop->value().as_integer() > 0))
+            return static_cast<uint32_t>(prop->value().as_integer());
+    }
+
+    // Step 3: compile-time default
+    return areg::SOCKET_SEND_TIMEOUT_MS;
 }
 
-void ConfigManager::setRemoteServiceAddress(NERemoteService::eRemoteServices serviceType, NERemoteService::eConnectionTypes connectType, const String& newValue, bool isTemporary /*= false*/)
-{
-    const String& service = Identifier::convToString( static_cast<unsigned int>(serviceType)
-                                                    , NEApplication::RemoteServiceIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceUnknown));
-    const String & connect = Identifier::convToString(static_cast<unsigned int>(connectType)
-                                                    , NEApplication::ConnectionIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectUndefined));
-    setRemoteServiceAddress(service, connect, newValue, isTemporary);
-}
-
-uint16_t ConfigManager::getRemoteServicePort(const String& service, const String& connectType) const
-{
-    Lock lock(mLock);
-
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryServicePort;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getServicePort();
-    const PropertyValue* value = getPropertyValue(service, key.property, connectType, confKey);
-    return static_cast<uint16_t>(value != nullptr ? value->getInteger() : NEApplication::DEFAULT_ROUTER_PORT);
-}
-
-uint16_t ConfigManager::getRemoteServicePort(NERemoteService::eRemoteServices serviceType, NERemoteService::eConnectionTypes connectType) const
-{
-    const String& service = Identifier::convToString( static_cast<unsigned int>(serviceType)
-                                                    , NEApplication::RemoteServiceIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceUnknown));
-    const String & connect = Identifier::convToString(static_cast<unsigned int>(connectType)
-                                                    , NEApplication::ConnectionIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectUndefined));
-    return getRemoteServicePort(service, connect);
-}
-
-void ConfigManager::setRemoteServicePort(const String& service, const String& connectType, uint16_t newValue, bool isTemporary /*= false*/)
+uint32_t ConfigManager::network_cache(const String& module, const String& connectType) const noexcept
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryServicePort;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getServicePort();
-    setModuleProperty(service, key.property, connectType, String::makeString(static_cast<uint32_t>(newValue)), confKey, isTemporary);
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::NetThreadCache };
+    constexpr const areg::ConfigKey&  key{ areg::net_thread_cache() };
+    const String& transport{ connectType.is_empty() ? String(areg::SYNTAX_ALL_MODULES) : connectType };
+
+    // Step 1: module-specific entry
+    const String& mod{ module.is_empty() ? mModule : module };
+    if (!mod.is_empty())
+    {
+        const Property* prop = _get_property(mWritableProperties, key.section, mod, transport, key.position, confKey, true);
+        if ((prop != nullptr) && (prop->value().as_integer() > 0))
+            return static_cast<uint32_t>(prop->value().as_integer());
+    }
+
+    // Step 2: wildcard "*" entry
+    {
+        const Property* prop = _get_property(mReadonlyProperties, key.section, String(areg::SYNTAX_ALL_MODULES), transport, key.position, confKey, false);
+        if ((prop != nullptr) && (prop->value().as_integer() > 0))
+            return static_cast<uint32_t>(prop->value().as_integer());
+    }
+
+    // Step 3: compile-time default
+    return areg::DEFAULT_THREAD_CACHE_KB;
 }
 
-void ConfigManager::setRemoteServicePort(NERemoteService::eRemoteServices serviceType, NERemoteService::eConnectionTypes connectType, uint16_t newValue, bool isTemporary /*= false*/)
-{
-    const String& service = Identifier::convToString( static_cast<unsigned int>(serviceType)
-                                                    , NEApplication::RemoteServiceIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceUnknown));
-    const String & connect = Identifier::convToString(static_cast<unsigned int>(connectType)
-                                                    , NEApplication::ConnectionIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectUndefined));
-    setRemoteServicePort(service, connect, newValue, isTemporary);
-}
-
-String ConfigManager::getLogDatabaseProperty(const String& whichPosition)
-{
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogDatabaseName();
-    const PropertyValue* value = getPropertyValue(key.section, key.property, whichPosition);
-    return (value != nullptr ? value->getValue() : String::getEmptyString());
-}
-
-void ConfigManager::setLogDatabaseProperty(const String& whichPosition, const String& newValue, bool isTemporary /*= false*/)
-{
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogDatabaseName();
-    setModuleProperty(key.section, key.property, whichPosition, newValue, NEPersistence::EntryAnyKey, isTemporary);
-}
-
-uint32_t ConfigManager::getDefaultBufferBlockSize(const String& whichModule /*= NEString::EmptyStringA*/)
-{
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryDefaultBufferBlock;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getDefaultBufferBlockSize();
-    const Property* prop = _getProperty(mReadonlyProperties, key.section, whichModule.isEmpty() ? NEPersistence::SYNTAX_ALL_MODULES : whichModule, key.property, key.position, confKey, true);
-    return (prop != nullptr ? prop->getValue().getInteger() : 0u);
-}
-
-uint32_t ConfigManager::getDefaultMessageQueueSize(const String& whichModule /*= NEString::EmptyStringA*/)
-{
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryDefaultMessageQueue;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getDefaultMessageQueueSize();
-    const Property* prop = _getProperty(mReadonlyProperties, key.section, whichModule.isEmpty() ? NEPersistence::SYNTAX_ALL_MODULES : whichModule, key.property, key.position, confKey, true);
-    return ( prop != nullptr ? prop->getValue().getInteger() : MAX_UINT_32 );
-}
+} // namespace areg

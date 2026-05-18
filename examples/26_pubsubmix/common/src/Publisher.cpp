@@ -14,26 +14,26 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "aregextend/console/Console.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Log scopes
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(examples_26_pubsubmix_common_Publisher_clientConnected);
-DEF_LOG_SCOPE(examples_26_pubsubmix_common_Publisher_start);
-DEF_LOG_SCOPE(examples_26_pubsubmix_common_Publisher_stop);
-DEF_LOG_SCOPE(examples_26_pubsubmix_common_Publisher_invalidate);
-DEF_LOG_SCOPE(examples_26_pubsubmix_common_Publisher_quit);
-DEF_LOG_SCOPE(examples_26_pubsubmix_common_Publisher_processTimer);
+DEF_LOG_SCOPE(examples_26_pubsubmix_common_Publisher, consumer_connected);
+DEF_LOG_SCOPE(examples_26_pubsubmix_common_Publisher, start);
+DEF_LOG_SCOPE(examples_26_pubsubmix_common_Publisher, stop);
+DEF_LOG_SCOPE(examples_26_pubsubmix_common_Publisher, invalidate);
+DEF_LOG_SCOPE(examples_26_pubsubmix_common_Publisher, quit);
+DEF_LOG_SCOPE(examples_26_pubsubmix_common_Publisher, process_timer);
 
 
 namespace
 {
-    String generateString(uint32_t seqNr)
+    areg::String generateString(uint32_t seqNr)
     {
-        String result;
+        areg::String result;
         return result.format("string_%u", seqNr);
     }
 }
@@ -42,12 +42,12 @@ namespace
 // Publisher class methods
 //////////////////////////////////////////////////////////////////////////
 
-Publisher::Publisher( Component & owner )
-    : PubSubMixStub     ( owner )
-    , IETimerConsumer   ( )
+Publisher::Publisher( areg::Component & owner )
+    : PubSubMixProviderBase     ( owner )
+    , areg::TimerConsumer   ( )
 
-    , mTimerOnChange    (static_cast<IETimerConsumer &>(self()), owner.getRoleName() + "_OnUpdateTimer")
-    , mTimerAlways      (static_cast<IETimerConsumer &>(self()), owner.getRoleName() + "_AlwaysTimer")
+    , mTimerOnChange    (static_cast<areg::TimerConsumer &>(self()), owner.role_name() + "_OnUpdateTimer")
+    , mTimerAlways      (static_cast<areg::TimerConsumer &>(self()), owner.role_name() + "_AlwaysTimer")
     , mClientCount      (0)
 
     , mSeqString        (0)
@@ -60,70 +60,70 @@ Publisher::Publisher( Component & owner )
 {
 }
 
-bool Publisher::clientConnected(const ProxyAddress & client, NEService::eServiceConnection status)
+bool Publisher::consumer_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
 {
-    LOG_SCOPE(examples_26_pubsubmix_common_Publisher_clientConnected);
-    bool result = PubSubMixStub::clientConnected(client, status);
+    LOG_SCOPE( examples_26_pubsubmix_common_Publisher, consumer_connected);
+    bool result = PubSubMixProviderBase::consumer_connected(client, status);
 
-    LOG_DBG("Connection status [ %s ] of the consumer [ %s ]", NEService::getString(status), ProxyAddress::convAddressToPath(client).getString());
-    mClientCount += (NEService::isServiceConnected(status) ? 1 : -1);
+    LOG_DBG("Connection status [ %s ] of the consumer [ %s ]", areg::as_string(status), areg::ProxyAddress::to_path(client).as_string());
+    mClientCount += (areg::is_service_connected(status) ? 1 : -1);
     LOG_DBG("There are [ %d ] connected service consumers", mClientCount);
 
-    if (isServiceProviderStateValid() == false)
+    if (!is_service_provider_state_valid())
     {
-        setServiceProviderState(NEPubSubMix::eServiceState::Uninitialized);
+        set_service_provider_state(PubSubMix::RunState::Uninitialized);
     }
 
     return result;
 }
 
-void Publisher::start(void)
+void Publisher::start()
 {
-    LOG_SCOPE(examples_26_pubsubmix_common_Publisher_start);
+    LOG_SCOPE( examples_26_pubsubmix_common_Publisher, start );
 
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     LOG_DBG("Requested to re-start the service run. Reset values and re-start timers, there are [ %d ] connected clients",  mClientCount);
 
-    mTimerAlways.stopTimer();
-    mTimerOnChange.stopTimer();
+    mTimerAlways.stop_timer();
+    mTimerOnChange.stop_timer();
 
-    setServiceProviderState(NEPubSubMix::eServiceState::Running);
-    const String & roleName = PubSubMixStub::getServiceRole();
+    set_service_provider_state(PubSubMix::RunState::Running);
+    const areg::String & roleName = PubSubMixProviderBase::service_role();
 
-    if (isIntegerAlwaysValid() == false)
+    if (!is_integer_always_valid())
     {
         mSeqInteger = 0; 
-        setIntegerAlways( { mSeqInteger, roleName } );
+        set_integer_always( { mSeqInteger, roleName } );
     }
 
-    if (isStringOnChangeValid() == false)
+    if (!is_string_on_change_valid())
     {
         mSeqString = 0;
-        setStringOnChange( { generateString(mSeqString), roleName } );
+        set_string_on_change( { generateString(mSeqString), roleName } );
     }
 
-    mTimerAlways.startTimer(NEPubSubMix::TimeoutAlways, getComponentThread(), Timer::CONTINUOUSLY);
-    mTimerOnChange.startTimer(NEPubSubMix::TimeoutOnChange, getComponentThread(), Timer::CONTINUOUSLY);
+    mTimerAlways.start_timer(PubSubMix::TimeoutAlways, component_thread(), areg::Timer::CONTINUOUSLY);
+    mTimerOnChange.start_timer(PubSubMix::TimeoutOnChange, component_thread(), areg::Timer::CONTINUOUSLY);
 }
 
-void Publisher::stop(void)
+void Publisher::stop()
 {
-    LOG_SCOPE(examples_26_pubsubmix_common_Publisher_stop);
+    LOG_SCOPE( examples_26_pubsubmix_common_Publisher, stop );
 
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     LOG_DBG("Stopped servicing, resets data, wait for further instructions. There are [ %d ] connected clients", mClientCount);
 
-    mTimerAlways.stopTimer();
-    mTimerOnChange.stopTimer();
+    mTimerAlways.stop_timer();
+    mTimerOnChange.stop_timer();
 
-    setServiceProviderState(NEPubSubMix::eServiceState::Stopped);
+    set_service_provider_state(PubSubMix::RunState::Stopped);
 }
 
-void Publisher::invalidate(void)
+void Publisher::invalidate()
 {
-    LOG_SCOPE(examples_26_pubsubmix_common_Publisher_invalidate);
+    LOG_SCOPE( examples_26_pubsubmix_common_Publisher, invalidate );
 
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     LOG_DBG("Invalidating all data. There are [ %d ] connected clients", mClientCount);
 
     mCountString = 0;
@@ -131,56 +131,56 @@ void Publisher::invalidate(void)
     mSeqString = 0;
     mSeqInteger = 0;
 
-    setServiceProviderState(NEPubSubMix::eServiceState::Uninitialized);
+    set_service_provider_state(PubSubMix::RunState::Uninitialized);
 
-    invalidateIntegerAlways();
-    invalidateStringOnChange();
+    invalidate_integer_always();
+    invalidate_string_on_change();
 }
 
-void Publisher::quit(void)
+void Publisher::quit()
 {
-    LOG_SCOPE(examples_26_pubsubmix_common_Publisher_quit);
+    LOG_SCOPE( examples_26_pubsubmix_common_Publisher, quit );
 
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     LOG_DBG("Requested to quit.There are[% d] connected clients", mClientCount);
 
-    mTimerAlways.stopTimer();
-    mTimerOnChange.stopTimer();
+    mTimerAlways.stop_timer();
+    mTimerOnChange.stop_timer();
 
-    setServiceProviderState(NEPubSubMix::eServiceState::Shutdown);
-    Application::signalAppQuit();
+    set_service_provider_state(PubSubMix::RunState::Shutdown);
+    areg::Application::signal_quit();
 }
 
-void Publisher::processTimer(Timer & timer)
+void Publisher::process_timer(areg::Timer & timer)
 {
-    LOG_SCOPE(examples_26_pubsubmix_common_Publisher_processTimer);
+    LOG_SCOPE( examples_26_pubsubmix_common_Publisher, process_timer );
 
-    const String roleName = getServiceRole();
+    const areg::String roleName = service_role();
 
     if (&timer == &mTimerAlways)
     {
-        Lock lock(mLock);
-        if (++ mCountInteger > NEPubSubMix::CycleAlways)
+        areg::Lock lock(mLock);
+        if (++ mCountInteger > PubSubMix::CycleAlways)
         {
             ++ mSeqInteger;
             mCountInteger = 0;
         }
 
         LOG_DBG("Timer \'Update Always\' has expired, Integer sequence number is [ %u ], the data should be updated", mSeqInteger);
-        setIntegerAlways({ mSeqInteger, roleName });
+        set_integer_always({ mSeqInteger, roleName });
     }
     else if (&timer == &mTimerOnChange)
     {
-        Lock lock(mLock);
-        if (++ mCountString > NEPubSubMix::CycleAlways)
+        areg::Lock lock(mLock);
+        if (++ mCountString > PubSubMix::CycleAlways)
         {
             ++ mSeqString;
             mCountString = 0;
         }
 
-        String data(generateString(mSeqString));
-        LOG_DBG("Timer \'Update OnChange\' has expired, String is [ %s ], the data should be updated only on update", data.getString());
-        setStringOnChange({ data, roleName });
+        areg::String data(generateString(mSeqString));
+        LOG_DBG("Timer \'Update OnChange\' has expired, String is [ %s ], the data should be updated only on update", data.as_string());
+        set_string_on_change({ data, roleName });
     }
     else
     {
@@ -188,7 +188,7 @@ void Publisher::processTimer(Timer & timer)
     }
 }
 
-inline Publisher & Publisher::self(void)
+inline Publisher & Publisher::self()
 {
     return (*this);
 }

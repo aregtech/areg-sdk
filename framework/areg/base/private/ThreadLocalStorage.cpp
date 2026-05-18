@@ -16,6 +16,7 @@
  ************************************************************************/
 #include "areg/base/ThreadLocalStorage.hpp"
 #include "areg/base/Thread.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ThreadLocalStorage class implementation
@@ -30,7 +31,7 @@ ThreadLocalStorage::ThreadLocalStorage(Thread & owningThread)
 {
 }
 
-ThreadLocalStorage::~ThreadLocalStorage( void )
+ThreadLocalStorage::~ThreadLocalStorage()
 {
     mStorageList.clear();
 }
@@ -38,17 +39,70 @@ ThreadLocalStorage::~ThreadLocalStorage( void )
 //////////////////////////////////////////////////////////////////////////
 // ThreadLocalStorage class methods
 //////////////////////////////////////////////////////////////////////////
-NEMemory::uAlign ThreadLocalStorage::getStorageItem( const String & Key ) const
+areg::Primitive ThreadLocalStorage::item( const String & Key ) const
 {
-    NEMemory::uAlign result = NEMemory::InvalidElement;
-
-    StorageList::LISTPOS pos = mStorageList.firstPosition();
-    for ( ; mStorageList.isValidPosition(pos); pos = mStorageList.nextPosition(pos))
+    areg::Primitive result{ areg::InvalidElement };
+    int32_t pos = _find_item(Key);
+    if (pos != areg::INVALID_INDEX)
     {
-        const ThreadLocalStorage::StorageItem& value = mStorageList.valueAtPosition(pos);
+        result = mStorageList[static_cast<uint32_t>(pos)].second;
+    }
+
+    return result;
+}
+
+void ThreadLocalStorage::set_item(const String & Key, areg::Primitive Value)
+{
+    int32_t pos = _find_item(Key);
+    if (pos != areg::INVALID_INDEX)
+    {
+        mStorageList[static_cast<uint32_t>(pos)].second = Value;
+    }
+    else
+    {
+        mStorageList.push_first(ThreadLocalStorage::StorageItem(Key, Value));
+    }
+}
+
+void ThreadLocalStorage::set_item( const String & Key, const void* Value )
+{
+    areg::Primitive aln;
+    aln.valPtr.mElement = const_cast<void *>(Value);
+    set_item(Key, aln);
+}
+
+void ThreadLocalStorage::set_item( const String & Key, uint32_t Value )
+{
+    areg::Primitive aln;
+    aln.valUInt.mElement = Value;
+    set_item(Key, aln);
+}
+
+void ThreadLocalStorage::set_item( const String & Key, uint64_t Value )
+{
+    areg::Primitive aln;
+    aln.valUInt64.mElement = Value;
+    set_item(Key, aln);
+}
+
+void ThreadLocalStorage::set_item( const String & Key, double Value )
+{
+    areg::Primitive aln;
+    aln.valDouble.mElement = Value;
+    set_item(Key, aln);
+}
+
+areg::Primitive ThreadLocalStorage::remove_item( const String & Key )
+{
+    areg::Primitive result{ {0} };
+    StorageList::LISTPOS pos = mStorageList.first_position();
+    for ( ; mStorageList.is_valid_position(pos); pos = mStorageList.next_position(pos))
+    {
+        const ThreadLocalStorage::StorageItem & value = mStorageList.value_at(pos);
         if (value.first == Key)
         {
             result = value.second;
+            mStorageList.remove_at(pos);
             break;
         }
     }
@@ -56,70 +110,21 @@ NEMemory::uAlign ThreadLocalStorage::getStorageItem( const String & Key ) const
     return result;
 }
 
-void ThreadLocalStorage::setStorageItem(const String & Key, NEMemory::uAlign Value)
+bool ThreadLocalStorage::exist( const String & Key ) const
 {
-    mStorageList.pushFirst(ThreadLocalStorage::StorageItem(Key, Value));
-}
-
-void ThreadLocalStorage::setStorageItem( const String & Key, const void* Value )
-{
-    NEMemory::uAlign aln;
-    aln.alignPtr.mElement = const_cast<void *>(Value);
-    setStorageItem(Key, aln);
-}
-
-void ThreadLocalStorage::setStorageItem( const String & Key, unsigned int Value )
-{
-    NEMemory::uAlign aln;
-    aln.alignUInt.mElement = Value;
-    setStorageItem(Key, aln);
-}
-
-void ThreadLocalStorage::setStorageItem( const String & Key, uint64_t Value )
-{
-    NEMemory::uAlign aln;
-    aln.alignUInt64.mElement = Value;
-    setStorageItem(Key, aln);
-}
-
-void ThreadLocalStorage::setStorageItem( const String & Key, double Value )
-{
-    NEMemory::uAlign aln;
-    aln.alignDouble.mElement = Value;
-    setStorageItem(Key, aln);
-}
-
-NEMemory::uAlign ThreadLocalStorage::removeStoragteItem( const String & Key )
-{
-    NEMemory::uAlign result{ {0} };
-    StorageList::LISTPOS pos = mStorageList.firstPosition();
-    for ( ; mStorageList.isValidPosition(pos); pos = mStorageList.nextPosition(pos))
+    StorageList::LISTPOS pos = mStorageList.first_position();
+    for ( ; mStorageList.is_valid_position(pos); pos = mStorageList.next_position(pos))
     {
-        const ThreadLocalStorage::StorageItem & value = mStorageList.valueAtPosition(pos);
-        if (value.first == Key)
-        {
-            result = value.second;
-            mStorageList.removeAt(pos);
-            break;
-        }
-    }
-
-    return result;
-}
-
-bool ThreadLocalStorage::existKey( const String & Key ) const
-{
-    StorageList::LISTPOS pos = mStorageList.firstPosition();
-    for ( ; mStorageList.isValidPosition(pos); pos = mStorageList.nextPosition(pos))
-    {
-        if (mStorageList.valueAtPosition(pos).first== Key)
+        if (mStorageList.value_at(pos).first== Key)
             break;
     }
 
-    return mStorageList.isValidPosition(pos);
+    return mStorageList.is_valid_position(pos);
 }
 
-const String & ThreadLocalStorage::getName( void ) const
+const String & ThreadLocalStorage::name() const
 {
-    return mOwningThread.getName();
+    return mOwningThread.name();
 }
+
+} // namespace areg

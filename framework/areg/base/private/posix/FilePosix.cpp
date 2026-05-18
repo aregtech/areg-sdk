@@ -15,15 +15,14 @@
  *
  ************************************************************************/
 
-#include "areg/base/File.hpp"
 
 #if defined(_POSIX) || defined(POSIX)
 
-
+#include "areg/base/File.hpp"
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/DateTime.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/Containers.hpp"
 
 #include <fcntl.h>
@@ -44,8 +43,7 @@
 // File class implementation
 //////////////////////////////////////////////////////////////////////////
 
-namespace
-{
+namespace {
     //!< POSIX invalid file descriptor.
     constexpr int   POSIX_INVALID_FD        { -1 };
     constexpr char  DIR_NAME_DOCUMENTS[]    { "Documents" };
@@ -54,17 +52,34 @@ namespace
     constexpr char  USER_HOME_DIR[]         { "~" };
     constexpr char  USER_TEMP_DIR[]         { "~/tmp" };
 
-    typedef struct S_PosixFile
+    struct PosixFile
     {
-        //!< The POSIX file description. Invalid or not used if -1 (POSIX_INVALID_FD)
-        int fd  = POSIX_INVALID_FD;
-    } sPosixFile;
+        int fd{ POSIX_INVALID_FD };
+
+        PosixFile() noexcept = default;
+        PosixFile(const PosixFile & src) noexcept = default;
+        PosixFile(int _fd) noexcept : fd(_fd) {}
+        PosixFile(FILEHANDLE fh) noexcept : fd(static_cast<int>(reinterpret_cast<intptr_t>(fh))) {}
+
+        void operator = (int _fd) noexcept { fd = _fd; }
+        void operator = (FILEHANDLE fh) noexcept { fd = static_cast<int>(reinterpret_cast<intptr_t>(fh)); }
+
+        constexpr bool operator == (int _fd) const noexcept { return fd == _fd; }
+        constexpr bool operator != (int _fd) const noexcept { return fd != _fd; }
+
+        bool operator == (FILEHANDLE fh) const noexcept { return fd == static_cast<int>(reinterpret_cast<intptr_t>(fh)); }
+        bool operator != (FILEHANDLE fh) const noexcept { return fd != static_cast<int>(reinterpret_cast<intptr_t>(fh)); }
+
+        explicit constexpr operator int32_t() const noexcept { return fd; }
+        explicit operator FILEHANDLE() const noexcept { return reinterpret_cast<FILEHANDLE>(fd); }
+    };
+
 
     //////////////////////////////////////////////////////////////////////////
     // local statics
     //////////////////////////////////////////////////////////////////////////
 
-    inline const char * _getUserHomeDir( void )
+    inline const char * _posix_user_home()
     {
         const char *homedir = getenv(ENV_USER_HOME);
         if (homedir == nullptr)
@@ -76,7 +91,7 @@ namespace
         return homedir;
     }
 
-    inline const char * _getTempDir( void )
+    inline const char * _posix_temp()
     {
         const char * tempDir = getenv("TMPDIR");
         if (tempDir == nullptr )
@@ -90,240 +105,265 @@ namespace
 
         return (tempDir != nullptr ? tempDir : USER_TEMP_DIR);
     }
-}
+} // namespace
 
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-FILEHANDLE File::_osGetInvalidHandle( void )
+namespace areg {
+
+FILEHANDLE File::_os_invalid_handle() noexcept
 {
-    return static_cast<FILEHANDLE>(nullptr);
+    return reinterpret_cast<FILEHANDLE>(POSIX_INVALID_FD);
 }
 
-void File::_osCloseFile( void )
+void File::_os_close_file() noexcept
 {
-    if ( isOpened( ) )
+    if ( is_opened( ) )
     {
-        sPosixFile * file = reinterpret_cast<sPosixFile *>(mFileHandle);
-
-        if (file->fd != POSIX_INVALID_FD)
+        PosixFile fd{ mFileHandle };
+        if (fd != POSIX_INVALID_FD)
         {
-            ::close( file->fd );
+            ::close( static_cast<int32_t>(fd) );
         }
 
-        delete file;
+        if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitDelete)) != 0)
+        {
+            ::unlink(mFileName.as_string());
+        }
     }
 
-    mFileHandle = File::_osGetInvalidHandle();
+    mFileHandle = File::_os_invalid_handle();
 }
 
-bool File::_osOpenFile( void )
+bool File::_os_open_file() noexcept
 {
-    sPosixFile * file = nullptr;
-
-    if (isOpened() == false)
+    if (is_opened())
     {
-        std::error_code err;
-        file = DEBUG_NEW sPosixFile;
-        if ( (mFileName.isEmpty() == false) && (file != nullptr) )
+        AREG_OUTPUT_WARN("File is already opened. Close file.");
+        return true;
+    }
+
+    if (mFileName.is_empty())
+    {
+        AREG_OUTPUT_ERR("File name is not set. Cannot open file.");
+        return false;
+    }
+
+    PosixFile file;
+    std::error_code err;
+    mFileMode = normalize_mode(mFileMode);
+    int     flag = 0;
+    mode_t  mode = 0;
+
+    if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitRead)) != 0)
+    {
+        flag |= O_RDONLY;
+    }
+
+    if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitWrite)) != 0)
+    {
+        flag &= ~O_RDONLY;
+        flag |= O_RDWR;
+    }
+
+    if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreateNew)) != 0)
+    {
+        flag |= (O_CREAT | O_TRUNC);
+    }
+
+    if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitOpenAlways)) != 0)
+    {
+        flag |= O_CREAT;
+    }
+
+    if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitExist)) != 0)
+    {
+        flag &= ~O_CREAT;
+    }
+
+    if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitTruncate)) != 0)
+    {
+        flag |= O_TRUNC;
+    }
+
+    // Creation permissions: only used by open when O_CREAT is set.
+    // Start with private owner access, then expand for sharing flags.
+    if ((flag & O_CREAT) != 0)
+    {
+        mode = S_IRUSR | S_IWUSR;                  // owner read+write (baseline)
+        if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitShareRead)) != 0)
+            mode |= S_IRGRP;                        // same-group read
+        if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitShareWrite)) != 0)
+            mode |= S_IRGRP | S_IWGRP;              // same-group read+write
+    }
+
+    if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitDirect)) != 0)
+    {
+        flag |= O_SYNC;                             // flush writes to storage on each write() call
+    }
+
+    String dirName(File::file_directory(mFileName));
+    if ( (flag & O_CREAT) != 0 )
+    {
+        if (std::filesystem::exists(mFileName.data(), err))
         {
-            mFileMode = normalizeMode(mFileMode);
-            int     flag = 0;
-            mode_t  mode = 0;
-
-            if ((mFileMode & FileBase::FOB_READ) != 0)
+            if (dirName == mFileName)
             {
-                flag |= O_RDONLY;
+                flag &= ~O_CREAT;   // remove create flag for directories
+                flag &= ~O_TRUNC;   // remove truncate, since it is not applicable for directories
+                flag |= O_DIRECTORY;// set directory option
             }
-
-            if ((mFileMode & FileBase::FOB_WRITE) != 0)
-            {
-                flag &= ~O_RDONLY;
-                flag |= O_RDWR;
-            }
-
-            if ((mFileMode & FileBase::FOB_CREATE) != 0)
-            {
-                flag |= O_CREAT;
-            }
-
-            if ((mFileMode & FileBase::FOB_EXIST) != 0)
-            {
-                flag &= ~O_CREAT;
-            }
-
-            if ( (mFileMode & FileBase::FOB_TRUNCATE) || ((flag & O_CREAT) != 0) )
-            {
-                flag |= O_TRUNC;
-            }
-
-            if ((mFileMode & FileBase::FOB_SHARE_READ) != 0)
-            {
-                mode |= (S_IRUSR | S_IRGRP | S_IROTH);
-            }
-
-            if ((mFileMode & FileBase::FOB_SHARE_WRITE) != 0)
-            {
-                mode |= (S_IWUSR | S_IRUSR) | (S_IRGRP | S_IRGRP) | (S_IROTH | S_IWOTH);
-            }
-            else if (((mFileMode & FileBase::FOB_CREATE) != 0) || ((mFileMode & FileBase::FOB_TRUNCATE) != 0))
-            {
-                mode |= (S_IWUSR | S_IRUSR) | (S_IRGRP | S_IRGRP) | (S_IROTH | S_IWOTH);
-            }
-
-            String dirName(File::getFileDirectory(mFileName));
-            if ( (flag & O_CREAT) != 0 )
-            {
-                if (std::filesystem::exists(mFileName.getData(), err))
-                {
-                    if (dirName == mFileName)
-                    {
-                        flag &= ~O_CREAT;   // remove create flag for directories
-                        flag &= ~O_TRUNC;   // remove truncate, since it is not applicable for directories
-                        flag |= O_DIRECTORY;// set directory option
-                    }
-                    else
-                    {
-                        flag |= O_TRUNC;
-                    }
-                }
-                else
-                {
-                    File::createDirCascaded(dirName);
-                    if (dirName == mFileName)
-                    {
-                        flag |= O_DIRECTORY; // set directory option
-                        flag &= ~O_TRUNC;    // remove truncate, since it is not applicable for directories
-                        flag &=~ O_CREAT;    // we don't need this, because it is automatically created cascaded
-                    }
-                }
-            }
-
-            if (mFileMode & FileBase::FOB_TEMP_FILE)
-            {
-                file->fd =  ::mkstemp(mFileName.getBuffer());
-            }
-            else
-            {
-                file->fd =  ::open(mFileName.getString(), flag, mode);
-            }
-
-            if (file->fd != POSIX_INVALID_FD)
-            {
-                mFileHandle = static_cast<FILEHANDLE>(file);
-            }
-            else
-            {
-                OUTPUT_ERR("Failed to open file [ %s ], errno = [ %p ]", mFileName.getString(), static_cast<id_type>(errno));
-                delete file;
-                file = nullptr;
-            }
+            // else: regular file exists.
+            
+            // BitCreateNew:  O_TRUNC already set above, truncates as expected.
+            // BitOpenAlways: no O_TRUNC, opens existing file without truncating.
         }
         else
         {
-            OUTPUT_ERR("Either file name or file open mode is not set.");
+            File::create_dir_cascaded(dirName);
+            if (dirName == mFileName)
+            {
+                flag |= O_DIRECTORY; // set directory option
+                flag &= ~O_TRUNC;    // remove truncate, since it is not applicable for directories
+                flag &=~ O_CREAT;    // we don't need this, because it is automatically created cascaded
+            }
         }
+    }
+
+    if (mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitTemp))
+    {
+        file =  ::mkstemp(mFileName.buffer());
     }
     else
     {
-        OUTPUT_WARN("File is already opened. Close file.");
+        file =  ::open(mFileName.as_string(), flag, mode);
     }
 
-    return (file != nullptr);
+#ifdef DEBUG
+    if (POSIX_INVALID_FD == static_cast<int>(file.fd))
+    {
+        AREG_OUTPUT_ERR("Failed to open file [ %s ], errno = [ %p ]", mFileName.as_string(), static_cast<id_type>(errno));
+    }
+#endif // DEBUG
+
+    mFileHandle = static_cast<FILEHANDLE>(file);
+    return (mFileHandle != _os_invalid_handle());
 }
 
-unsigned int File::_osReadFile(unsigned char* buffer, unsigned int size) const
+uint32_t File::_os_read_file(uint8_t* buffer, uint32_t size) const noexcept
 {
-    ASSERT(mFileHandle != nullptr);
+    ASSERT(mFileHandle != _os_invalid_handle());
     ASSERT((buffer != nullptr) && (size > 0));
 
-    unsigned int result{ 0 };
-    ssize_t sizeRead = ::read(reinterpret_cast<sPosixFile*>(mFileHandle)->fd, buffer, size);
+    uint32_t result{ 0 };
+    PosixFile file{ mFileHandle };
+    ssize_t sizeRead = ::read(file.fd, buffer, size);
     if (sizeRead > 0)
     {
-        result = static_cast<unsigned int>(sizeRead);
+        result = static_cast<uint32_t>(sizeRead);
     }
 #ifdef  _DEBUG
     else if (sizeRead < 0)
     {
-        OUTPUT_ERR("Failed read file [ %s ], error code [ %p ].", mFileName.getString(), static_cast<id_type>(errno));
+        AREG_OUTPUT_ERR("Failed read file [ %s ], error code [ %p ].", mFileName.as_string(), static_cast<id_type>(errno));
     }
     else
     {
-        OUTPUT_DBG("Finished to read file [ %s ]", mFileName.getString());
+        AREG_OUTPUT_DBG("Finished to read file [ %s ]", mFileName.as_string());
     }
 #endif  // !_DEBUG
 
     return result;
 }
 
-unsigned int File::_osWriteFile(const unsigned char* buffer, unsigned int size)
+uint32_t File::_os_write_file(const uint8_t* buffer, uint32_t size) noexcept
 {
-    ASSERT(mFileHandle != nullptr);
+    ASSERT(mFileHandle != _os_invalid_handle());
     ASSERT((buffer != nullptr) && (size != 0));
 
-    int result = ::write(reinterpret_cast<sPosixFile*>(mFileHandle)->fd, buffer, size);
-    if (result != static_cast<int>(size))
+    PosixFile file{ mFileHandle };
+    int32_t result = ::write(file.fd, buffer, size);
+    if (result != static_cast<int32_t>(size))
     {
-        OUTPUT_ERR("Failed to write [ %d ] bytes of data to file [ %s ]. Error code [ %p ].", size, mFileName.getString(), static_cast<id_type>(errno));
+        AREG_OUTPUT_ERR("Failed to write [ %d ] bytes of data to file [ %s ]. Error code [ %p ].", size, mFileName.as_string(), static_cast<id_type>(errno));
         result = 0;
     }
 
     return result;
 }
 
-unsigned int File::_osSetPositionFile(int offset, IECursorPosition::eCursorPosition startAt) const
+uint32_t File::_os_set_position(int32_t offset, Cursor::SeekOrigin startAt) const noexcept
 {
-    ASSERT(mFileHandle != nullptr);
-    unsigned int result = IECursorPosition::INVALID_CURSOR_POSITION;
+    ASSERT(mFileHandle != _os_invalid_handle());
+    uint32_t result = Cursor::INVALID_CURSOR_POSITION;
 
-    sPosixFile* file = reinterpret_cast<sPosixFile*>(mFileHandle);
+    PosixFile file{ mFileHandle };
     switch (startAt)
     {
-    case IECursorPosition::eCursorPosition::PositionBegin:
-        result = static_cast<unsigned int>(lseek(file->fd, offset, SEEK_SET));
+    case Cursor::SeekOrigin::Begin:
+        result = static_cast<uint32_t>(lseek(file.fd, offset, SEEK_SET));
         break;
 
-    case IECursorPosition::eCursorPosition::PositionCurrent:
-        result = static_cast<unsigned int>(lseek(file->fd, offset, SEEK_CUR));
+    case Cursor::SeekOrigin::Current:
+        result = static_cast<uint32_t>(lseek(file.fd, offset, SEEK_CUR));
         break;
 
-    case IECursorPosition::eCursorPosition::PositionEnd:
-        result = static_cast<unsigned int>(lseek(file->fd, offset, SEEK_END));
+    case Cursor::SeekOrigin::End:
+        result = static_cast<uint32_t>(lseek(file.fd, offset, SEEK_END));
         break;
 
     default:
-        OUTPUT_ERR("Unexpected cursor position value [ %d ]!", startAt);
+        AREG_OUTPUT_ERR("Unexpected cursor position value [ %d ]!", startAt);
         break;
     }
 
     return result;
 }
 
-unsigned int File::_osGetPositionFile( void ) const
+uint32_t File::_os_file_position() const noexcept
 {
-    ASSERT(mFileHandle != nullptr);
-    return static_cast<unsigned int>( lseek(reinterpret_cast<sPosixFile*>(mFileHandle)->fd, 0, SEEK_CUR) );
+    ASSERT(mFileHandle != _os_invalid_handle());
+    PosixFile file{ mFileHandle };
+    return static_cast<uint32_t>( lseek(file.fd, 0, SEEK_CUR) );
 }
 
-bool File::_osTruncateFile( void )
+bool File::_os_truncate_file() noexcept
 {
-    ASSERT(mFileHandle != nullptr);
-    return (RETURNED_OK == ftruncate(reinterpret_cast<sPosixFile*>(mFileHandle)->fd, 0));
+    ASSERT(mFileHandle != _os_invalid_handle());
+    PosixFile file{ mFileHandle };
+    return (areg::RETURNED_OK == ftruncate(file.fd, 0));
 }
 
-void File::_osFlushFile( void )
+bool File::_os_reserve(uint32_t newSize) noexcept
 {
-    ASSERT(mFileHandle != nullptr);
-    fsync(reinterpret_cast<sPosixFile*>(mFileHandle)->fd);
+    ASSERT(mFileHandle != _os_invalid_handle());
+    PosixFile file{ mFileHandle };
+    // ftruncate extends (zero-fills) or shrinks without touching the file pointer.
+    return (areg::RETURNED_OK == ::ftruncate(file.fd, static_cast<off_t>(newSize)));
+}
+
+void File::_os_flush_file() noexcept
+{
+    ASSERT(mFileHandle != _os_invalid_handle());
+    PosixFile file{ mFileHandle };
+    fsync(file.fd);
+}
+
+uint32_t File::_os_file_length() const noexcept
+{
+    ASSERT(mFileHandle != _os_invalid_handle());
+    PosixFile file{ mFileHandle };
+    struct stat st {};
+    return (::fstat(file.fd, &st) == 0) ? static_cast<uint32_t>(st.st_size) : 0u;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-unsigned int File::_osCreateTempFileName(char* buffer, const char* folder, const char* prefix, unsigned int /*unique*/)
+uint32_t File::_os_temp_name(char* buffer, const char* folder, const char* prefix, uint32_t /*unique*/) noexcept
 {
     ASSERT(buffer != nullptr);
     ASSERT(folder != nullptr);
@@ -342,42 +382,42 @@ unsigned int File::_osCreateTempFileName(char* buffer, const char* folder, const
         ::close(fno);
     }
 
-    return static_cast<unsigned int>(strlen(buffer));
+    return static_cast<uint32_t>(strlen(buffer));
 }
 
-unsigned int File::_osGetSpecialDir(char* buffer, unsigned int /*length*/, const eSpecialFolder specialFolder)
+uint32_t File::_os_special_dir(char* buffer, uint32_t /*length*/, const File::SpecialFolder specialFolder) noexcept
 {
     ASSERT(buffer != nullptr);
-    buffer[0] = NEString::EndOfString;
+    buffer[0] = areg::EndOfString;
     const char * filePath = nullptr;
 
     switch (specialFolder)
     {
-    case File::eSpecialFolder::SpecialUserHome:
-        filePath = _getUserHomeDir();
+    case File::SpecialFolder::UserHome:
+        filePath = _posix_user_home();
         ASSERT(filePath != nullptr);
         ::sprintf(buffer, "%s", filePath != nullptr ? filePath : "~");
         break;
 
-    case File::eSpecialFolder::SpecialPersonal:
-        filePath = _getUserHomeDir();
+    case File::SpecialFolder::Personal:
+        filePath = _posix_user_home();
         ASSERT(filePath != nullptr);
         ::sprintf(buffer, "%s%c%s", filePath != nullptr ? filePath : "", File::PATH_SEPARATOR, DIR_NAME_DOCUMENTS);
         break;
 
-    case File::eSpecialFolder::SpecialAppData:
-        filePath = _getUserHomeDir();
+    case File::SpecialFolder::AppData:
+        filePath = _posix_user_home();
         ASSERT(filePath != nullptr);
         ::sprintf(buffer, "%s%c.%s%c%s"
                     , filePath
-                    , static_cast<int>(File::PATH_SEPARATOR)
-                    , Process::getInstance().getAppName().getString()
-                    , static_cast<int>(File::PATH_SEPARATOR)
+                    , static_cast<int32_t>(File::PATH_SEPARATOR)
+                    , Process::instance().app_name().as_string()
+                    , static_cast<int32_t>(File::PATH_SEPARATOR)
                     , DIR_NAME_APPDATA);
         break;
 
-    case File::eSpecialFolder::SpecialTemp:
-        filePath = _getTempDir();
+    case File::SpecialFolder::Temp:
+        filePath = _posix_temp();
         ASSERT(filePath != nullptr);
         ::sprintf(buffer, "%s", filePath);
         break;
@@ -386,7 +426,8 @@ unsigned int File::_osGetSpecialDir(char* buffer, unsigned int /*length*/, const
         break;
     }
 
-    return static_cast<unsigned int>(strlen(buffer));
+    return static_cast<uint32_t>(strlen(buffer));
 }
 
+} // namespace areg
 #endif //  defined(_POSIX) || defined(POSIX)

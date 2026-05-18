@@ -17,18 +17,26 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
 #include "aregextend/db/SqliteRow.hpp"
 
-class SqliteDatabase;
+/************************************************************************
+ * Dependencies
+ ************************************************************************/
+namespace areg::ext {
+    class SqliteDatabase;
+}
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // SqliteStatement class declaration
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * /brief   This class represents a prepared SQL statement that can be executed against a SqliteDatabase.
+ * \brief   Prepared SQLite statement with parameter binding, result row iteration, and column value
+ *          access.
  **/
 class SqliteStatement
 {
@@ -41,25 +49,25 @@ public:
     /**
      * \brief   Enum representing the type of a column in the result set.
      */
-    enum class eColumnType
+    enum class ColumnType  : uint8_t
     {
-          ColumnUnknown     = 0 //!< Unknown column type.
-        , ColumnInteger         //!< 32-bit integer column.
-        , ColumnInteger64       //!< 64-bit integer column.
-        , ColumnDouble          //!< Double-precision floating point column.
-        , ColumnText            //!< Text (string) column.
-        , ColumnBlob            //!< Binary large object column.
-        , ColumnNull            //!< Null column.
+          Unknown   = 0 //!< Unknown column type.
+        , Integer       //!< 32-bit integer column.
+        , Integer64     //!< 64-bit integer column.
+        , Double        //!< Double-precision floating point column.
+        , Text          //!< Text (string) column.
+        , Blob          //!< Binary large object column.
+        , Null          //!< Null column.
     };
 
     /**
      * \brief   Values set when getting the next row in the result set.
      **/
-    enum class eQueryResult
+    enum class QueryResult  : uint8_t
     {
           Failed    = 0 //!< The query failed to execute.
         , HasMore   = 1 //!< The query executed successfully and has rows to process.
-        , HasNoMore = 2 //<! The query executed successfully and has no more rows to process.
+        , HasNoMore = 2 //!< The query executed successfully and has no more rows to process.
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -67,23 +75,22 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Constructs a SqliteStatement and prepares the given SQL statement.
+     * \brief   Constructs and prepares a SqliteStatement with the given SQL.
+     *
      * \param   db      Reference to the SqliteDatabase object.
      * \param   sql     The SQL statement to prepare.
-     */
+     **/
     SqliteStatement(SqliteDatabase& db, const String& sql);
 
     /**
-     * \brief   Constructs a SqliteStatement associated with the given database.
-     *          The statement is not prepared until prepare() is called.
+     * \brief   Constructs a SqliteStatement associated with the database. The statement is not
+     *          prepared until prepare() is called.
+     *
      * \param   db      Reference to the SqliteDatabase object.
-     */
-    SqliteStatement(SqliteDatabase& db);
+     **/
+    SqliteStatement(SqliteDatabase& db) noexcept;
 
-    /**
-     * \brief   Destructor. Finalizes the statement and releases resources.
-     */
-    ~SqliteStatement(void);
+    ~SqliteStatement() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -91,212 +98,302 @@ public:
 public:
     /**
      * \brief   Prepares the SQL statement for execution.
+     *
      * \param   sql     The SQL statement to prepare.
-     * \return  True if the statement was prepared successfully, false otherwise.
-     */
+     * \return  True if the statement was prepared successfully; false otherwise.
+     **/
     bool prepare(const String& sql);
 
     /**
-     * \brief   Executes the prepared statement (for non-SELECT statements).
-     * \return  True if execution was successful, false otherwise.
-     */
-    bool execute(void);
+     * \brief   Executes the prepared statement. For SELECT queries, use next() to fetch results.
+     * \return  True if execution was successful; false otherwise.
+     **/
+    bool execute() noexcept;
 
     /**
      * \brief   Advances to the next row in the result set.
-     * \return  One of the results to execute the query.
-     *              - The returned value `eQueryResult::Failed` means error.
-     *              - The returned value `eQueryResult::HasMore` means there is data in the row to extract.
-     *              - The returned value `eQueryResult::HasNoMore` means all data are extracted, reached the end and there is no more data to extract.
+     *
+     * \return  QueryResult::Failed if an error occurred; QueryResult::HasMore if a row is
+     *          available; QueryResult::HasNoMore if the end of the result set is reached.
      **/
-    SqliteStatement::eQueryResult next(void);
+    [[nodiscard]]
+    SqliteStatement::QueryResult next() noexcept;
 
     /**
-     * \brief   Resets the statement to its initial state, ready for re-execution.
-     */
-    void reset(void);
+     * \brief   Resets the statement to its initial prepared state, allowing re-execution with new
+     *          parameter values.
+     **/
+    void reset() noexcept;
 
     /**
      * \brief   Finalizes the statement and releases associated resources.
-     */
-    void finalize(void);
+     **/
+    void finalize() noexcept;
 
     /**
      * \brief   Checks if the statement is prepared and ready for execution.
-     * \return  True if the statement is prepared, false otherwise.
-     */
-    inline bool isValid(void) const;
-
-    /**
-     * \brief   Returns the current row position in the result set.
-     *          The first row starts with 1. Return 0 if SQL statement is not prepared yet.
+     *
+     * \return  True if the statement is prepared; false otherwise.
      **/
-    inline uint32_t getRowPos(void) const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
-     * \brief   Binds an integer value to the specified parameter index.
-     * \param   index   The 0-based parameter index.
-     * \param   value   The integer value to bind.
-     * \return  True if binding was successful, false otherwise.
-     */
-    bool bindInt32(int index, int32_t value);
-    bool bindUint32(int index, uint32_t value);
+     * \brief   Returns the current row position in the result set. The first row is 1; returns 0 if
+     *          the statement is not prepared.
+     **/
+    [[nodiscard]]
+    inline uint32_t row_pos() const noexcept;
 
     /**
-     * \brief   Binds a 64-bit integer value to the specified parameter index.
-     * \param   index   The 0-based parameter index.
-     * \param   value   The 64-bit integer value to bind.
-     * \return  True if binding was successful, false otherwise.
-     */
-    bool bindInt64(int index, int64_t value);
-    bool bindUint64(int index, uint64_t value);
+     * \brief   Binds a 32-bit integer value to the specified parameter.
+     *
+     * \param   index       The 0-based parameter index.
+     * \param   value       The integer value to bind.
+     * \return  True if binding was successful; false otherwise.
+     **/
+    bool bind_int32(int32_t index, int32_t value) noexcept;
 
     /**
-     * \brief   Binds a double value to the specified parameter index.
-     * \param   index   The 0-based parameter index.
-     * \param   value   The double value to bind.
-     * \return  True if binding was successful, false otherwise.
-     */
-    bool bindDouble(int index, double value);
-    bool bindFloat(int index, float value);
+     * \brief   Binds a 32-bit unsigned integer value to the specified parameter.
+     *
+     * \param   index       The 0-based parameter index.
+     * \param   value       The unsigned integer value to bind.
+     * \return  True if binding was successful; false otherwise.
+     **/
+    bool bind_uint32(int32_t index, uint32_t value) noexcept;
 
     /**
-     * \brief   Binds a text value to the specified parameter index.
-     * \param   index   The 0-based parameter index.
-     * \param   value   The string value to bind.
-     * \return  True if binding was successful, false otherwise.
-     */
-    bool bindText(int index, const String& value);
+     * \brief   Binds a 64-bit integer value to the specified parameter.
+     *
+     * \param   index       The 0-based parameter index.
+     * \param   value       The 64-bit integer value to bind.
+     * \return  True if binding was successful; false otherwise.
+     **/
+    bool bind_int64(int32_t index, int64_t value) noexcept;
 
     /**
-     * \brief   Binds a NULL value to the specified parameter index.
-     * \param   index   The 0-based parameter index.
-     * \return  True if binding was successful, false otherwise.
-     */
-    bool bindNull(int index);
+     * \brief   Binds a 64-bit unsigned integer value to the specified parameter.
+     *
+     * \param   index       The 0-based parameter index.
+     * \param   value       The 64-bit unsigned integer value to bind.
+     * \return  True if binding was successful; false otherwise.
+     **/
+    bool bind_uint64(int32_t index, uint64_t value) noexcept;
+
+    /**
+     * \brief   Binds a double value to the specified parameter.
+     *
+     * \param   index       The 0-based parameter index.
+     * \param   value       The double value to bind.
+     * \return  True if binding was successful; false otherwise.
+     **/
+    bool bind_double(int32_t index, double value) noexcept;
+
+    /**
+     * \brief   Binds a float value to the specified parameter.
+     *
+     * \param   index       The 0-based parameter index.
+     * \param   value       The float value to bind.
+     * \return  True if binding was successful; false otherwise.
+     **/
+    bool bind_float(int32_t index, float value) noexcept;
+
+    /**
+     * \brief   Binds a text value to the specified parameter.
+     *
+     * \param   index       The 0-based parameter index.
+     * \param   value       The string value to bind.
+     * \return  True if binding was successful; false otherwise.
+     **/
+    bool bind_text(int32_t index, const String& value) noexcept;
+
+    /**
+     * \brief   Binds a NULL value to the specified parameter.
+     *
+     * \param   index       The 0-based parameter index.
+     * \return  True if binding was successful; false otherwise.
+     **/
+    bool bind_null(int32_t index) noexcept;
 
     /**
      * \brief   Clears all parameter bindings for the prepared statement.
-     */
-    void clearBindings(void);
+     **/
+    void clear_bindings() noexcept;
 
     /**
-     * \brief   Retrieves the integer value of the specified column in the current row.
-     * \param   index   The 0-based column index.
+     * \brief   Retrieves the 32-bit integer value of the specified column in the current row.
+     *
+     * \param   index       The 0-based column index.
      * \return  The integer value of the column.
-     */
-    int32_t getInt32(int index) const;
-    uint32_t getUint32(int index) const;
+     **/
+    [[nodiscard]]
+    int32_t as_int32(int32_t index) const noexcept;
+
+    /**
+     * \brief   Retrieves the 32-bit unsigned integer value of the specified column in the current row.
+     *
+     * \param   index       The 0-based column index.
+     * \return  The unsigned integer value of the column.
+     **/
+    [[nodiscard]]
+    uint32_t as_uint32(int32_t index) const noexcept;
 
     /**
      * \brief   Retrieves the 64-bit integer value of the specified column in the current row.
-     * \param   index  The 0-based column index.
+     *
+     * \param   index       The 0-based column index.
      * \return  The 64-bit integer value of the column.
-     */
-    int64_t getInt64(int index) const;
-    uint64_t getUint64(int index) const;
+     **/
+    [[nodiscard]]
+    int64_t as_int64(int32_t index) const noexcept;
+
+    /**
+     * \brief   Retrieves the 64-bit unsigned integer value of the specified column in the current row.
+     *
+     * \param   index       The 0-based column index.
+     * \return  The 64-bit unsigned integer value of the column.
+     **/
+    [[nodiscard]]
+    uint64_t as_uint64(int32_t index) const noexcept;
 
     /**
      * \brief   Retrieves the double value of the specified column in the current row.
-     * \param   index  The 0-based column index.
+     *
+     * \param   index       The 0-based column index.
      * \return  The double value of the column.
-     */
-    double getDouble(int index) const;
-    float getFloat(int index) const;
+     **/
+    [[nodiscard]]
+    double as_double(int32_t index) const noexcept;
+    /**
+     * \brief   Retrieves the float value of the specified column in the current row.
+     *
+     * \param   index       The 0-based column index.
+     * \return  The float value of the column.
+     **/
+    [[nodiscard]]
+    float as_float(int32_t index) const noexcept;
 
     /**
      * \brief   Retrieves the text value of the specified column in the current row.
-     * \param   index  The 0-based column index.
+     *
+     * \param   index       The 0-based column index.
      * \return  The string value of the column.
-     */
-    String getText(int index) const;
+     **/
+    [[nodiscard]]
+    String as_text(int32_t index) const;
 
     /**
      * \brief   Checks if the specified column in the current row is NULL.
-     * \param   index  The 0-based column index.
-     * \return  True if the column is NULL, false otherwise.
-     */
-    bool isNull(int column) const;
+     *
+     * \param   column  The 0-based column index.
+     * \return  True if the column is NULL; false otherwise.
+     **/
+    [[nodiscard]]
+    bool is_null(int32_t column) const noexcept;
 
     /**
      * \brief   Checks if the specified column index is valid for the current result set.
-     * \param   index  The 0-based column index.
-     * \return  True if the column index is valid, false otherwise.
-     */
-    bool isColumnValid(int index) const;
+     *
+     * \param   index       The 0-based column index.
+     * \return  True if the column index is valid; false otherwise.
+     **/
+    [[nodiscard]]
+    bool is_column_valid(int32_t index) const noexcept;
 
     /**
      * \brief   Checks if the specified column contains a string value.
-     * \param   index  The 0-based column index.
-     * \return  True if the column is a string, false otherwise.
-     */
-    bool isString(int index) const;
+     *
+     * \param   index       The 0-based column index.
+     * \return  True if the column is a string; false otherwise.
+     **/
+    [[nodiscard]]
+    bool is_string(int32_t index) const noexcept;
 
     /**
      * \brief   Checks if the specified column contains a 32-bit integer value.
-     * \param   index  The 0-based column index.
-     * \return  True if the column is a 32-bit integer, false otherwise.
-     */
-    bool isInteger(int index) const;
+     *
+     * \param   index       The 0-based column index.
+     * \return  True if the column is a 32-bit integer; false otherwise.
+     **/
+    [[nodiscard]]
+    bool is_int(int32_t index) const noexcept;
 
     /**
      * \brief   Checks if the specified column contains a 64-bit integer value.
-     * \param   index  The 0-based column index.
-     * \return  True if the column is a 64-bit integer, false otherwise.
-     */
-    bool isInteger64(int index) const;
+     *
+     * \param   index       The 0-based column index.
+     * \return  True if the column is a 64-bit integer; false otherwise.
+     **/
+    [[nodiscard]]
+    bool is_int64(int32_t index) const noexcept;
 
     /**
      * \brief   Checks if the specified column contains a double value.
-     * \param   index  The 0-based column index.
-     * \return  True if the column is a double, false otherwise.
-     */
-    bool isDouble(int index) const;
+     *
+     * \param   index       The 0-based column index.
+     * \return  True if the column is a double; false otherwise.
+     **/
+    [[nodiscard]]
+    bool is_double(int32_t index) const noexcept;
 
     /**
      * \brief   Returns the number of columns in the result set.
+     *
      * \return  The number of columns.
-     */
-    int getColumnCount(void) const;
+     **/
+    [[nodiscard]]
+    int32_t column_count() const noexcept;
 
     /**
      * \brief   Returns the name of the specified column.
-     * \param   index  The 0-based column index.
+     *
+     * \param   index       The 0-based column index.
      * \return  The name of the column.
-     */
-    String getColumnName(int index) const;
+     **/
+    [[nodiscard]]
+    String column_name(int32_t index) const;
 
     /**
      * \brief   Returns the index of the column with the specified name.
-     * \param   columnName The name of the column.
+     *
+     * \param   columnName      The name of the column.
      * \return  The 0-based index of the column, or -1 if not found.
-     */
-    int getColumnIndex(const String& columnName) const;
+     **/
+    [[nodiscard]]
+    int32_t column_index(const String& columnName) const noexcept;
 
     /**
      * \brief   Returns the type of the specified column.
-     * \param   index  The 0-based column index.
-     * \return  The column type as eColumnType.
-     */
-    SqliteStatement::eColumnType getColumnType(int index) const;
+     *
+     * \param   index       The 0-based column index.
+     * \return  The column type as ColumnType.
+     **/
+    [[nodiscard]]
+    SqliteStatement::ColumnType column_type(int32_t index) const noexcept;
 
     /**
      * \brief   Returns a SqliteRow object representing the current row.
+     *
      * \return  The current SqliteRow.
-     */
-    SqliteRow row() const;
+     **/
+    [[nodiscard]]
+    SqliteRow row() const noexcept;
 
     /**
      * \brief   Advances to the next row and returns a SqliteRow object for it.
+     *
      * \return  The next SqliteRow.
-     */
-    SqliteRow nextRow(void) const;
+     **/
+    [[nodiscard]]
+    SqliteRow next_row() const noexcept;
 
     /**
      * \brief   Advances to the next row in the result set (const overload).
-     * \return  True if a new row is available, false otherwise.
-     */
-    bool next(void) const;
+     *
+     * \return  True if a new row is available; false otherwise.
+     **/
+    bool next() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -309,19 +406,21 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    SqliteStatement(void) = delete; //!< Default constructor is not allowed.
-    DECLARE_NOCOPY_NOMOVE(SqliteStatement); //!< No copy or move allowed.
+    SqliteStatement() = delete; //!< Default constructor is not allowed.
+    AREG_NOCOPY_NOMOVE(SqliteStatement); //!< No copy or move allowed.
 };
 
-inline bool SqliteStatement::isValid(void) const
+inline bool SqliteStatement::is_valid() const noexcept
 {
     return (mStatement != nullptr);
 }
 
 
-inline uint32_t SqliteStatement::getRowPos(void) const
+inline uint32_t SqliteStatement::row_pos() const noexcept
 {
     return mRowPos;
 }
+
+} // namespace areg::ext
 
 #endif // AREG_AREGEXTEND_DB_SQLITESTATEMENT_HPP

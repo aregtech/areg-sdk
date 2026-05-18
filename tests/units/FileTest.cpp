@@ -19,8 +19,8 @@
 #include "units/GUnitTest.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/File.hpp"
-#include "areg/logging/GELog.h"
-#include "areg/logging/NELogging.hpp"
+#include "areg/logging/areg_log.h"
+#include "areg/logging/LoggingDefs.hpp"
 
 #include <fstream>
 #include <filesystem>
@@ -37,9 +37,9 @@
  * \brief   Makes sure that the system has no problem to read file from file system.
  *          The test is using STL objects, which suppose to work under any platform.
  **/
-TEST( FileTest, StlFileRead )
+TEST( FileTest, stl_file_read )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
 
     constexpr char fileName[]{ "./config/areg.init" };
     std::error_code err{};
@@ -60,9 +60,9 @@ TEST( FileTest, StlFileRead )
  * \brief   Makes sure that the system has no problem to read and write file from file system.
  *          The test is using STL objects, which suppose to work under any platform.
  **/
-TEST( FileTest, StlFileReadWrite )
+TEST( FileTest, stl_file_read_write )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
 
     std::fstream fileRead, fileWrite;
     constexpr char fileNameRead[ ]{ "./config/areg.init" };
@@ -90,11 +90,11 @@ TEST( FileTest, StlFileReadWrite )
  * \brief   Makes sure that the system has no problem to read file from file system.
  *          The test is using Win32 API and supposed to work only on Windows system.
  **/
-TEST( FileTest, Win32FileRead )
+TEST( FileTest, win32_file_read )
 {
 #if defined(WINDOWS) && !defined(_MINGW)
 
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
 
     constexpr char fileName[ ]{ "./config/areg.init" };
     ASSERT_TRUE( PathFileExistsA(fileName) );
@@ -117,11 +117,11 @@ TEST( FileTest, Win32FileRead )
  * \brief   Makes sure that the system has no problem to read and write file from file system.
  *          The test is using Win32 API and supposed to work only on Windows system.
  **/
-TEST( FileTest, Win32FileReadWrite )
+TEST( FileTest, win32_file_read_write )
 {
 #if defined(WINDOWS) && !defined(_MINGW)
 
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
 
     constexpr char fileNameRead[ ]{ "./config/areg.init" };
     constexpr char fileNameWrite[ ]{ "./write_with_win32.txt" };
@@ -151,43 +151,46 @@ TEST( FileTest, Win32FileReadWrite )
 /**
  * \brief   The test checks file existence using File API.
  **/
-TEST( FileTest, CheckFileExistence )
+TEST( FileTest, check_file_existence )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
 
-    const String fileName{ "./config/areg.init" };
-    const String fileWrong{ "./config/blah-blah.init" };
-    ASSERT_TRUE( File::existFile( fileName.getString( ) ) );
-    ASSERT_FALSE( File::existFile( fileWrong ) );
+    const areg::String fileName{ "./config/areg.init" };
+    const areg::String fileWrong{ "./config/blah-blah.init" };
+    ASSERT_TRUE( areg::File::has_file( fileName.as_string( ) ) );
+    ASSERT_FALSE( areg::File::has_file( fileWrong ) );
 }
 
 /**
  * \brief   The test checks basic functionality of the file path normalization.
  **/
-TEST( FileTest, NormalizeFilePathBasic )
+TEST( FileTest, normalize_file_path_basic )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
 
-    const String fileName{ "./config/areg.init" };
-    String normalized = File::normalizePath( fileName );
-    ASSERT_TRUE( normalized.getLength( ) > fileName.getLength( ) );
-    ASSERT_TRUE( normalized.endsWith( "areg.init" ) );
+    const areg::String fileName{ "./config/areg.init" };
+    areg::String normalized = areg::File::normalize_path( fileName );
+    ASSERT_TRUE( normalized.length( ) > fileName.length( ) );
+    ASSERT_TRUE( normalized.ends_with( "areg.init" ) );
 }
 
 /**
  * \brief   The test checks file open functionality using File object API.
  **/
-TEST( FileTest, FileOpenBasic )
+TEST( FileTest, file_open_basic )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
 
-    const String fileName{ "./config/areg.init" };
-    constexpr unsigned int mode{ FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_EXIST | FileBase::FO_MODE_SHARE_READ };
-    File file( fileName, mode );
+    const areg::String fileName{ "./config/areg.init" };
+    constexpr unsigned int mode{  static_cast<uint32_t>(areg::File::OpenMode::Read) 
+                                | static_cast<uint32_t>(areg::File::OpenMode::Text) 
+                                | static_cast<uint32_t>(areg::File::OpenMode::Exist)
+                                | static_cast<uint32_t>(areg::File::OpenMode::ShareRead) };
+    areg::File file( fileName, mode );
 
-    ASSERT_TRUE( File::existFile( fileName.getString( ) ) );
+    ASSERT_TRUE( areg::File::has_file( fileName.as_string( ) ) );
     ASSERT_TRUE( file.open( ) );
-    ASSERT_EQ( file.getPosition( ), static_cast<uint32_t>(0) );
+    ASSERT_EQ( file.position( ), static_cast<uint32_t>(0) );
 
     file.close( );
 }
@@ -195,34 +198,41 @@ TEST( FileTest, FileOpenBasic )
 /**
  * \brief   The test checks creating an empty file by using File object API.
  **/
-TEST( FileTest, CreateEmptyFile )
+TEST( FileTest, create_empty_file )
 {
-    Application::setWorkingDirectory( nullptr );
-    const String fileNameWrite{ "./empty_file_areg.txt" };
-    constexpr unsigned int modeWrite{ FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_CREATE | FileBase::FO_MODE_SHARE_READ | FileBase::FO_MODE_WRITE };
+    areg::Application::set_working_directory( nullptr );
+    const areg::String fileNameWrite{ "./empty_file_areg.txt" };
+    constexpr uint32_t modeWrite{ static_cast<uint32_t>(areg::File::OpenMode::Read) 
+                                | static_cast<uint32_t>(areg::File::OpenMode::Text) 
+                                | static_cast<uint32_t>(areg::File::OpenMode::Create) 
+                                | static_cast<uint32_t>(areg::File::OpenMode::ShareRead) 
+                                | static_cast<uint32_t>(areg::File::OpenMode::Write) };
 
-    File fileWrite( fileNameWrite, modeWrite );
+    areg::File fileWrite( fileNameWrite, modeWrite );
     ASSERT_TRUE( fileWrite.open( ) );
     fileWrite.close( );
-    ASSERT_TRUE( File::existFile( fileNameWrite ) );
+    ASSERT_TRUE( areg::File::has_file( fileNameWrite ) );
 }
 
 /**
  * \brief   The test checks the basic functionality of opening and reading a file by using File object API.
  **/
-TEST( FileTest, FileReadBasic )
+TEST( FileTest, file_read_basic )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
 
-    const String fileName{ "./config/areg.init" };
-    constexpr unsigned int mode{ FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_EXIST | FileBase::FO_MODE_SHARE_READ };
-    File file( fileName, mode );
+    const areg::String fileName{ "./config/areg.init" };
+    constexpr uint32_t mode { static_cast<uint32_t>(areg::File::OpenMode::Read)
+                            | static_cast<uint32_t>(areg::File::OpenMode::Text) 
+                            | static_cast<uint32_t>(areg::File::OpenMode::Exist) 
+                            | static_cast<uint32_t>(areg::File::OpenMode::ShareRead) };
+    areg::File file( fileName, mode );
 
-    ASSERT_TRUE(File::existFile( fileName.getString( ) ));
+    ASSERT_TRUE(areg::File::has_file( fileName.as_string( ) ));
     ASSERT_TRUE( file.open( ) );
 
     char buffer[ 1025 ]{ 0 };
-    uint32_t dwRead = static_cast<uint32_t>(file.readString( buffer, 1025 ));
+    uint32_t dwRead = static_cast<uint32_t>(file.read_string( buffer, 1025 ));
     ASSERT_EQ( dwRead, static_cast<uint32_t>(1024) );
     ASSERT_EQ( buffer[ 0 ], '#' );
 
@@ -232,49 +242,56 @@ TEST( FileTest, FileReadBasic )
 /**
  * \brief   The test checks the basic functionality of opening, reading and writing a file by using File object API.
  **/
-TEST( FileTest, FileReadWriteBasic )
+TEST( FileTest, file_read_write_basic )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
 
-    const String fileNameRead{ "./config/areg.init" };
-    const String fileNameWrite{ "./write_with_areg.txt" };
+    const areg::String fileNameRead{ "./config/areg.init" };
+    const areg::String fileNameWrite{ "./write_with_areg.txt" };
 
-    constexpr unsigned int modeRead{ FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_EXIST | FileBase::FO_MODE_SHARE_READ };
-    constexpr unsigned int modeWrite{ FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_CREATE | FileBase::FO_MODE_SHARE_READ | FileBase::FO_MODE_WRITE };
+    constexpr uint32_t modeRead { static_cast<uint32_t>(areg::File::OpenMode::Read)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Text)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Exist)
+                                | static_cast<uint32_t>(areg::File::OpenMode::ShareRead) };
+    constexpr uint32_t modeWrite{ static_cast<uint32_t>(areg::File::OpenMode::Read)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Text)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Create)
+                                | static_cast<uint32_t>(areg::File::OpenMode::ShareRead)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Write) };
 
-    File fileRead( fileNameRead.getString( ), modeRead );
+    areg::File fileRead( fileNameRead.as_string( ), modeRead );
     ASSERT_TRUE( fileRead.open( ) );
 
     char buffer[ 1025 ]{ 0 };
-    uint32_t dwRead = static_cast<uint32_t>(fileRead.readString( buffer, 1025 ));
+    uint32_t dwRead = static_cast<uint32_t>(fileRead.read_string( buffer, 1025 ));
     ASSERT_EQ( dwRead, static_cast<uint32_t>(1024) );
     ASSERT_EQ( buffer[ 0 ], '#' );
     buffer[ 1024 ] = '\0';
     fileRead.close( );
 
-    File fileWrite( fileNameWrite, modeWrite );
+    areg::File fileWrite( fileNameWrite, modeWrite );
     ASSERT_TRUE( fileWrite.open( ) );
-    ASSERT_TRUE( fileWrite.writeString( buffer ) );
+    ASSERT_TRUE( fileWrite.write_string( buffer ) );
 
     fileWrite.close( );
 
-    ASSERT_TRUE( File::existFile( fileNameWrite ) );
+    ASSERT_TRUE( areg::File::has_file( fileNameWrite ) );
 }
 
 /**
  * \brief   The test checks the basic functionality of creating folders cascaded
  *          and deleting them by using File object API.
  **/
-TEST( FileTest, CreateFolderCascaded )
+TEST( FileTest, create_folder_cascaded )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
 
-    const String dirPath( "./dir1/dir2/dir3/" );
-    ASSERT_FALSE( File::existDir( dirPath ) );
-    ASSERT_TRUE( File::createDirCascaded( dirPath ) );
-    ASSERT_TRUE( File::existDir( dirPath ) );
-    ASSERT_TRUE( File::deleteDir( "./dir1/" ) );
-    ASSERT_FALSE( File::existDir( "./dir1/" ) );
+    const areg::String dirPath( "./dir1/dir2/dir3/" );
+    ASSERT_FALSE( areg::File::has_dir( dirPath ) );
+    ASSERT_TRUE( areg::File::create_dir_cascaded( dirPath ) );
+    ASSERT_TRUE( areg::File::has_dir( dirPath ) );
+    ASSERT_TRUE( areg::File::delete_dir( "./dir1/" ) );
+    ASSERT_FALSE( areg::File::has_dir( "./dir1/" ) );
 }
 
 /**
@@ -282,31 +299,39 @@ TEST( FileTest, CreateFolderCascaded )
  *          wring that into another file located in non-existing folder.
  *          The test will create subfolder and create a file inside.
  **/
-TEST( FileTest, FileReadAndWriteInSubfolder )
+TEST( FileTest, file_read_and_write_in_subfolder )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
 
-    const String fileNameRead { "./config/areg.init" };
-    const String fileNameWrite{ "./logs/write_with_areg.txt" };
+    const areg::String fileNameRead { "./config/areg.init" };
+    const areg::String fileNameWrite{ "./logs/write_with_areg.txt" };
 
-    constexpr unsigned int modeRead { FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_EXIST | FileBase::FO_MODE_SHARE_READ };
-    constexpr unsigned int modeWrite{ FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_CREATE | FileBase::FO_MODE_SHARE_READ | FileBase::FO_MODE_WRITE };
+    constexpr uint32_t modeRead { static_cast<uint32_t>(areg::File::OpenMode::Read)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Text)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Exist)
+                                | static_cast<uint32_t>(areg::File::OpenMode::ShareRead) };
 
-    File fileRead( fileNameRead.getString( ), modeRead );
+    constexpr uint32_t modeWrite{ static_cast<uint32_t>(areg::File::OpenMode::Read)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Text)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Create)
+                                | static_cast<uint32_t>(areg::File::OpenMode::ShareRead)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Write) };
+
+    areg::File fileRead( fileNameRead.as_string( ), modeRead );
     ASSERT_TRUE( fileRead.open( ) );
 
     char buffer[ 1025 ]{ 0 };
-    uint32_t dwRead = static_cast<uint32_t>(fileRead.readString(buffer, 1025));
+    uint32_t dwRead = static_cast<uint32_t>(fileRead.read_string(buffer, 1025));
     ASSERT_EQ( dwRead, static_cast<uint32_t>(1024) );
     ASSERT_EQ( buffer[ 0 ], '#' );
     buffer[ 1024 ] = '\0';
     fileRead.close( );
 
-    File fileWrite( fileNameWrite, modeWrite );
+    areg::File fileWrite( fileNameWrite, modeWrite );
     ASSERT_TRUE( fileWrite.open() );
-    ASSERT_TRUE(fileWrite.writeString(buffer));
+    ASSERT_TRUE(fileWrite.write_string(buffer));
 
     fileWrite.close( );
 
-    ASSERT_TRUE( File::existFile(fileNameWrite) );
+    ASSERT_TRUE( areg::File::has_file(fileNameWrite) );
 }

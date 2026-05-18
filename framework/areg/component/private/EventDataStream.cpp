@@ -16,82 +16,63 @@
 #include "areg/component/EventDataStream.hpp"
 
 #include <utility>
-
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class implementation
 //////////////////////////////////////////////////////////////////////////
 
-namespace
-{
-    //! The default name of the event stream.
-    static constexpr std::string_view DefaultStreamName{ "EventDataStream" };
-
-}
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class, static members
 //////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Predefined Empty Data object.
- **/
-const EventDataStream EventDataStream::EmptyData(EventDataStream::eEventData::EventDataEmpty, String("EventDataStream::EmptyData"));
+
+const EventDataStream& EventDataStream::empty_data() noexcept
+{
+    static const EventDataStream _data(EventDataStream::EventDataKind::Empty);
+    return _data;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-EventDataStream::EventDataStream( EventDataStream::eEventData evetDataType, const String & name /*= String::getEmptyString()*/ )
-    : IEIOStream    ( )
+EventDataStream::EventDataStream( EventDataStream::EventDataKind evetDataType )
+    : IOStream      ( )
 
     , mEventDataType(evetDataType)
-    , mBufferName   (name.isEmpty() == false ? name : DefaultStreamName)
     , mDataBuffer   ( )
     , mSharedList   ( )
 {
 }
 
-EventDataStream::EventDataStream( const EventDataStream & buffer, const String & name )
-    : IEIOStream    ( )
-
-    , mEventDataType(buffer.mEventDataType)
-    , mBufferName   (name.isEmpty() == false ? name : DefaultStreamName)
-    , mDataBuffer   (buffer.mDataBuffer)
-    , mSharedList   (buffer.mSharedList)
-{
-    mDataBuffer.moveToBegin();
-}
-
 EventDataStream::EventDataStream( const EventDataStream & src )
-    : IEIOStream    ( )
+    : IOStream    ( )
 
     , mEventDataType(src.mEventDataType)
-    , mBufferName   (src.mBufferName)
     , mDataBuffer   (src.mDataBuffer)
     , mSharedList   (src.mSharedList)
 {
 }
 
 EventDataStream::EventDataStream( EventDataStream && src ) noexcept
-    : IEIOStream    ( )
+    : IOStream    ( )
 
     , mEventDataType( src.mEventDataType )
-    , mBufferName   ( std::move(src.mBufferName) )
     , mDataBuffer   ( std::move(src.mDataBuffer) )
     , mSharedList   ( std::move(src.mSharedList) )
 {
 }
 
-EventDataStream::EventDataStream(const IEInStream & stream)
-    : IEIOStream    ( )
+EventDataStream::EventDataStream(const InStream & stream)
+    : IOStream    ( )
 
-    , mEventDataType( EventDataStream::eEventData::EventDataExternal)
-    , mBufferName   ( DefaultStreamName)
+    , mEventDataType( EventDataStream::EventDataKind::External)
     , mDataBuffer   ( )
     , mSharedList   ( )
 {
-    stream >> mEventDataType >> mBufferName >> mDataBuffer;
+    stream >> mEventDataType >> mDataBuffer;
 }
 
-EventDataStream::~EventDataStream( void )
+EventDataStream::~EventDataStream()
 {
     mSharedList.clear();
     mDataBuffer.invalidate();
@@ -106,7 +87,7 @@ EventDataStream & EventDataStream::operator = ( const EventDataStream & src )
     {
         mSharedList = src.mSharedList;
         mDataBuffer = src.mDataBuffer;
-        mDataBuffer.moveToBegin();
+        mDataBuffer.move_to_begin();
     }
 
     return (*this);
@@ -118,7 +99,7 @@ EventDataStream & EventDataStream::operator = ( EventDataStream && src ) noexcep
     {
         mSharedList = std::move(src.mSharedList);
         mDataBuffer = std::move(src.mDataBuffer);
-        mDataBuffer.moveToBegin( );
+        mDataBuffer.move_to_begin( );
     }
 
     return (*this);
@@ -127,18 +108,18 @@ EventDataStream & EventDataStream::operator = ( EventDataStream && src ) noexcep
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class, Methods
 //////////////////////////////////////////////////////////////////////////
-unsigned int EventDataStream::read( unsigned char* buffer, unsigned int size ) const
+uint32_t EventDataStream::read( uint8_t* buffer, uint32_t size ) const noexcept
 {
     return mDataBuffer.read(buffer, size);
 }
 
-unsigned int EventDataStream::read( IEByteBuffer & buffer ) const
+uint32_t EventDataStream::read(SharedBuffer& buffer ) const
 {
-    unsigned int result = 0;
-    if (mEventDataType == EventDataStream::eEventData::EventDataInternal && mSharedList.isEmpty() == false)
+    uint32_t result = 0;
+    if (mEventDataType == EventDataStream::EventDataKind::Internal && mSharedList.is_empty() == false)
     {
-        static_cast<SharedBuffer &>(buffer) = mSharedList.popFirst();
-        result = buffer.getSizeUsed();
+        static_cast<SharedBuffer &>(buffer) = mSharedList.pop_first();
+        result = buffer.size_used();
     }
     else
     {
@@ -148,33 +129,33 @@ unsigned int EventDataStream::read( IEByteBuffer & buffer ) const
     return result;
 }
 
-unsigned int EventDataStream::read( String & ascii ) const
+uint32_t EventDataStream::read( String & ascii ) const
 {
     return mDataBuffer.read(ascii);
 }
 
-unsigned int EventDataStream::read( WideString & wide ) const
+uint32_t EventDataStream::read( WideString & wide ) const
 {
     return mDataBuffer.read(wide);
 }
 
-void EventDataStream::resetCursor( void ) const
+void EventDataStream::reset() const noexcept
 {
-    mDataBuffer.moveToBegin();
+    mDataBuffer.move_to_begin();
 }
 
-unsigned int EventDataStream::write( const unsigned char* buffer, unsigned int size )
+uint32_t EventDataStream::write( const uint8_t* buffer, uint32_t size )
 {
     return mDataBuffer.write(buffer, size);
 }
 
-unsigned int EventDataStream::write( const IEByteBuffer & buffer )
+uint32_t EventDataStream::write( const SharedBuffer& buffer )
 {
-    unsigned int result = 0;
-    if (mEventDataType == EventDataStream::eEventData::EventDataInternal)
+    uint32_t result = 0;
+    if (mEventDataType == EventDataStream::EventDataKind::Internal)
     {
-        mSharedList.pushLast( static_cast<const SharedBuffer &>(buffer) );
-        result = buffer.getSizeUsed();
+        mSharedList.push_last( static_cast<const SharedBuffer &>(buffer) );
+        result = buffer.size_used();
     }
     else
     {
@@ -184,28 +165,30 @@ unsigned int EventDataStream::write( const IEByteBuffer & buffer )
     return result;
 }
 
-unsigned int EventDataStream::write( const String & ascii )
+uint32_t EventDataStream::write( const String & ascii )
 {
     return mDataBuffer.write(ascii);
 }
 
-unsigned int EventDataStream::write( const WideString & wide )
+uint32_t EventDataStream::write( const WideString & wide )
 {
     return mDataBuffer.write(wide);
 }
 
-void EventDataStream::flush( void )
+void EventDataStream::flush() noexcept
 {
 }
 
-unsigned int EventDataStream::getSizeReadable( void ) const
+uint32_t EventDataStream::size_readable() const noexcept
 {
     ASSERT(false);
     return 0;
 }
 
-unsigned int EventDataStream::getSizeWritable( void ) const
+uint32_t EventDataStream::size_writable() const noexcept
 {
     ASSERT(false);
     return 0;
 }
+
+} // namespace areg

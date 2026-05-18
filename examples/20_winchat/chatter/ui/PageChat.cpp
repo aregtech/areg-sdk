@@ -6,13 +6,12 @@
 #include "chatter/ui/DistributedDialog.hpp"
 #include "chatter/services/DirectChatService.hpp"
 #include "chatter/services/ChatParticipantService.hpp"
-#include "chatter/NEDistributedApp.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/base/DateTime.hpp"
 #include "chatter/services/DirectMessagingClient.hpp"
 
-#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NEDistributedApp::eWndCommands::CmdFirst))
-#define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<uint32_t>(NEDistributedApp::WindowCommand::CmdFirst))
+#define MAKE_MESSAGE(elem)  (static_cast<uint32_t>(elem) + FIRST_MESSAGE)
 
 LPCTSTR PageChat::HEADER_TITILES[] =
 {
@@ -26,10 +25,10 @@ LPCTSTR PageChat::HEADER_TITILES[] =
 
 IMPLEMENT_DYNAMIC(PageChat, CPropertyPage)
 
-PageChat::PageChat( const String & serviceName
-                      , const NEDirectConnection::sInitiator & initiator
-                      , const NEDirectConnection::ListParticipants & listParties
-                      , const NEDirectConnection::sParticipant & ownerConnection
+PageChat::PageChat( const areg::String & serviceName
+                      , const DirectConnection::sInitiator & initiator
+                      , const DirectConnection::ListParticipants & listParties
+                      , const DirectConnection::Participant & ownerConnection
                       , bool isInitiator )
 	: CPropertyPage             (PageChat::IDD)
     , ChatPrticipantHandler   ( serviceName, initiator, listParties, ownerConnection )
@@ -84,9 +83,9 @@ BEGIN_MESSAGE_MAP(PageChat, CPropertyPage)
     ON_UPDATE_COMMAND_UI( IDC_BUTTON_CHAT_SEND, &PageChat::OnButtonUpdateChatSend )
     ON_UPDATE_COMMAND_UI( IDC_EDIT_CHAT, &PageChat::OnEditUpdateChat )
     ON_NOTIFY(UDN_DELTAPOS, IDC_CHAT_TIMER_SPIN, &PageChat::OnDeltaposChatTimerSpin)
-    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdChatJoined  ), &PageChat::OnCmdChatJoined)
-    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdChatMessage ), &PageChat::OnCmdChatMessage)
-    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdChatTyping  ), &PageChat::OnCmdChatTyping)
+    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdChatJoined  ), &PageChat::OnCmdChatJoined)
+    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdChatMessage ), &PageChat::OnCmdChatMessage)
+    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdChatTyping  ), &PageChat::OnCmdChatTyping)
 END_MESSAGE_MAP()
 
 
@@ -107,17 +106,17 @@ BOOL PageChat::OnInitDialog( )
 
     SetChatWindow( reinterpret_cast<ptr_type>(GetSafeHwnd()) );
     setHeaders( );
-    srand(static_cast<unsigned int>(time(nullptr)));
+    srand(static_cast<uint32_t>(time(nullptr)));
 
-    const NEDirectConnection::sInitiator & initiator    = GetInitiator();
-    const NEDirectConnection::ListParticipants & parties= GetParticipantList();
-    const NEDirectConnection::sParticipant & owner      = GetConnectionOwner( );
-    String message("");
-    String comma("");
+    const DirectConnection::sInitiator & initiator    = GetInitiator();
+    const DirectConnection::ListParticipants & parties= GetParticipantList();
+    const DirectConnection::Participant & owner      = GetConnectionOwner( );
+    areg::String message("");
+    areg::String comma("");
 
-    for ( uint32_t i = 0; i < parties.getSize(); ++ i )
+    for ( uint32_t i = 0; i < parties.size(); ++ i )
     {
-        const NEDirectConnection::sParticipant & participant = parties[i];
+        const DirectConnection::Participant & participant = parties[i];
         if ( owner != participant )
         {
             message += comma;
@@ -126,25 +125,25 @@ BOOL PageChat::OnInitDialog( )
         }
     }
 
-    String caption = "[ " + owner.nickName + " ]: " + message;
-    mTitle = CString( caption.getString() );
+    areg::String caption = "[ " + owner.nickName + " ]: " + message;
+    mTitle = CString( caption.as_string() );
     setTabTitle(caption);
     message = "Parties: " + message;
 
     std::any data = std::make_any< ChatPrticipantHandler *>(this);
-    ASSERT(mModelName.isEmpty());
+    ASSERT(mModelName.is_empty());
 
-    NERegistry::Model model = mIsChatInitiator ? DirectChatService::GetModel( initiator, parties, data ) : ChatParticipantService::GetModel(initiator, parties, data);
-    if ( ComponentLoader::isModelLoaded(model.getModelName()) == false )
+    areg::Model model = mIsChatInitiator ? DirectChatService::GetModel( initiator, parties, data ) : ChatParticipantService::GetModel(initiator, parties, data);
+    if ( areg::ComponentLoader::is_model_loaded(model.model_name()) == false )
     {
-        mModelName = model.getModelName();
-        ComponentLoader::addModelUnique( model );
-        ComponentLoader::loadComponentModel( mModelName );    
+        mModelName = model.model_name();
+        areg::ComponentLoader::add_model_unique( model );
+        areg::ComponentLoader::load_component_model( mModelName );    
     }
     else
     {
-        String nickName = mIsChatInitiator ? "[ " + initiator.nickName + " ]" : initiator.nickName;
-        outputMessage( CString( nickName.getString( ) ), CString( "Is already registered..." ), CString( DateTime::getNow().formatTime( ).getString( ) ), CString( ), 0 );
+        areg::String nickName = mIsChatInitiator ? "[ " + initiator.nickName + " ]" : initiator.nickName;
+        outputMessage( CString( nickName.as_string( ) ), CString( "Is already registered..." ), CString( areg::DateTime::now().format_time( ).as_string( ) ), CString( ), 0 );
     }
 
     return TRUE;
@@ -157,7 +156,7 @@ void PageChat::OnClickedCheckChatMessages( )
     if ( client != nullptr )
     {
         UpdateData( TRUE );
-        client->notifyOnBroadcastMessageSent( mIsChatMessage ? true : false );
+        client->notify_on_broadcast_message_sent( mIsChatMessage ? true : false );
     }
 }
 
@@ -168,7 +167,7 @@ void PageChat::OnClickedCheckChatTyping( )
     if ( client != nullptr )
     {
         UpdateData( TRUE );
-        client->notifyOnBroadcastMessageTyped( mIsChatTyping  ? true : false );
+        client->notify_on_broadcast_message_typed( mIsChatTyping  ? true : false );
     }
     if ( mIsChatTyping == FALSE )
     {
@@ -195,7 +194,7 @@ void PageChat::OnClickedButtonChatSend( )
     if ( client != nullptr )
     {
         UpdateData( TRUE );
-        client->requestMessageSend( GetConnectionOwner( ), String( mChatMsg.GetString( ) ), DateTime::getNow() );
+        client->request_message_send( GetConnectionOwner( ), areg::String( mChatMsg.GetString( ) ), areg::DateTime::now() );
         mChatMsg= _T( "" );
         UpdateData( FALSE );
         GetDlgItem( IDC_EDIT_CHAT )->SetFocus( );
@@ -213,9 +212,9 @@ void PageChat::OnDestroy( )
         SetChatWindow(0);
     }
 
-    if (mModelName.isEmpty() == false)
+    if (mModelName.is_empty() == false)
     {
-        ComponentLoader::unloadComponentModel(true, mModelName);
+        areg::ComponentLoader::unload_component_model(true, mModelName);
         mModelName.clear();
 
         ChatPrticipantHandler::Invalidate();
@@ -235,12 +234,12 @@ void PageChat::OnClickedButtonCloseChat( )
         SetChatClient(nullptr);
     }
 
-    String modelName = NEDistributedApp::PREFIX_MODEL + GetServiceName();
-    ComponentLoader::unloadComponentModel(true, modelName );
+    areg::String modelName = NEDistributedApp::PREFIX_MODEL + GetServiceName();
+    areg::ComponentLoader::unload_component_model(true, modelName );
 
     ChatPrticipantHandler::Invalidate();
 
-    ::PostMessage( DistributedDialog::GetDialog()->GetSafeHwnd(), MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdChatClosed), 0, reinterpret_cast<LPARAM>(this));
+    ::PostMessage( DistributedDialog::GetDialog()->GetSafeHwnd(), MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdChatClosed), 0, reinterpret_cast<LPARAM>(this));
 }
 
 void PageChat::OnKickIdle()
@@ -283,19 +282,19 @@ void PageChat::OnEditUpdateChat(CCmdUI * pCmdUI)
     pCmdUI->Enable( IsEmpty() == false);
 }
 
-void PageChat::setHeaders( void )
+void PageChat::setHeaders()
 {
-    int count = MACRO_ARRAYLEN( PageChat::HEADER_TITILES );
+    int32_t count = std::size( PageChat::HEADER_TITILES );
     CRect rc( 0, 0, 0, 0 );
     mCtrlList.GetClientRect( &rc );
-    int width1, width2;
-    NECommon::getWidths( rc.Width(), count, width1, width2 );
+    int32_t width1, width2;
+    chat::getWidths( rc.Width(), count, width1, width2 );
 
     for ( int i = 0; i < count; ++ i )
     {
         CString str( HEADER_TITILES[i] );
         LVCOLUMN lv;
-        NEMemory::zeroElement<LVCOLUMN>( lv );
+        areg::zero_element<LVCOLUMN>( lv );
         lv.mask         = LVCF_FMT | LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
         lv.fmt          = LVCFMT_LEFT;
         lv.cx           = i == 0 ? width1 : width2;
@@ -320,7 +319,7 @@ void PageChat::outputMessage( CString nickName
         removeTyping(nickName, cookie);
 
     LVITEM lv;
-    NEMemory::zeroElement<LVITEM>( lv );
+    areg::zero_element<LVITEM>( lv );
 
     // Column nickname
     lv.mask     = LVIF_TEXT | LVIF_PARAM;
@@ -328,13 +327,13 @@ void PageChat::outputMessage( CString nickName
     lv.iSubItem = 0;
     lv.pszText  = nickName.GetBuffer( );
     lv.lParam   = cookie;
-    lv.cchTextMax = NECommon::MAXLEN_NICKNAME;
+    lv.cchTextMax = chat::MAXLEN_NICKNAME;
     mCtrlList.InsertItem( &lv );
 
-    if ( dateStart.GetLength( ) > NECommon::DAY_FORMAT_LEN )
-        dateStart = dateStart.Mid( NECommon::DAY_FORMAT_LEN );
-    if ( dateEnd.GetLength( ) > NECommon::DAY_FORMAT_LEN )
-        dateEnd = dateEnd.Mid( NECommon::DAY_FORMAT_LEN );
+    if ( dateStart.GetLength( ) > chat::DAY_FORMAT_LEN )
+        dateStart = dateStart.Mid( chat::DAY_FORMAT_LEN );
+    if ( dateEnd.GetLength( ) > chat::DAY_FORMAT_LEN )
+        dateEnd = dateEnd.Mid( chat::DAY_FORMAT_LEN );
 
     mCtrlList.SetItemText( mLastItem, 1, message.IsEmpty( )     == false ? message.GetString( )     : _T( "..." ) );
     mCtrlList.SetItemText( mLastItem, 2, dateStart.IsEmpty( )   == false ? dateStart.GetString( )   : _T( "..." ) );
@@ -348,7 +347,7 @@ void PageChat::outputTyping(CString nickName, CString message, uint32_t cookie )
 {
     if ( message.IsEmpty() == false )
     {
-        int pos = mLastItem;
+        int32_t pos = mLastItem;
         for ( ; pos < mCtrlList.GetItemCount(); ++ pos )
         {
             if ( cookie == static_cast<uint32_t>(mCtrlList.GetItemData(pos)) )
@@ -358,7 +357,7 @@ void PageChat::outputTyping(CString nickName, CString message, uint32_t cookie )
         if ( pos == mCtrlList.GetItemCount() )
         {
             LVITEM lv;
-            NEMemory::zeroElement<LVITEM>( lv );
+            areg::zero_element<LVITEM>( lv );
 
             // Column nickname
             lv.mask     = LVIF_TEXT | LVIF_PARAM;
@@ -366,7 +365,7 @@ void PageChat::outputTyping(CString nickName, CString message, uint32_t cookie )
             lv.iSubItem = 0;
             lv.pszText  = nickName.GetBuffer( );
             lv.lParam   = cookie;
-            lv.cchTextMax = NECommon::MAXLEN_NICKNAME;
+            lv.cchTextMax = chat::MAXLEN_NICKNAME;
             pos = mCtrlList.InsertItem( &lv );
         }
 
@@ -393,13 +392,13 @@ BOOL PageChat::OnKillActive( )
 BOOL PageChat::OnSetActive( )
 {
     DistributedDialog::ChangeCaption(mTitle);
-    setTabTitle( String(mTitle.GetString()) );
+    setTabTitle( areg::String(mTitle.GetString()) );
     return CPropertyPage::OnSetActive( );
 }
 
-void PageChat::setTabTitle( const String & title )
+void PageChat::setTabTitle( const areg::String & title )
 {
-    CString tabTitle( title.getString() );
+    CString tabTitle( title.as_string() );
 
     DistributedDialog * dlg = DistributedDialog::GetDialog( );
     CTabCtrl * tab = dlg->GetTabControl( );
@@ -413,25 +412,25 @@ void PageChat::setTabTitle( const String & title )
 
 LRESULT PageChat::OnCmdChatMessage( WPARAM /*wParam*/, LPARAM lParam)
 {
-    NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
+    chat:: MessageData * data = reinterpret_cast<chat:: MessageData *>(lParam);
     if ( data != nullptr )
     {
         outputMessage( CString( data->nickName )
                      , CString( data->message )
-                     , CString( data->timeSend      != 0 ? DateTime(data->timeSend).formatTime().getString()     : "" )
-                     , CString( data->timeReceived  != 0 ? DateTime(data->timeReceived).formatTime().getString() : "" )
+                     , CString( data->timeSend      != 0 ? areg::DateTime(data->timeSend).format_time().as_string()     : "" )
+                     , CString( data->timeReceived  != 0 ? areg::DateTime(data->timeReceived).format_time().as_string() : "" )
                      , static_cast<uint32_t>(data->dataSave));
         delete data;
 
         if ( isActivePage() == false )
-            setTabTitle( "(*) " + String(mTitle.GetString()) );
+            setTabTitle( "(*) " + areg::String(mTitle.GetString()) );
     }
     return 0;
 }
 
 LRESULT PageChat::OnCmdChatTyping( WPARAM /*wParam*/, LPARAM lParam)
 {
-    NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
+    chat:: MessageData * data = reinterpret_cast<chat:: MessageData *>(lParam);
     if ( data != nullptr )
     {
         outputTyping(CString( data->nickName ), CString( data->message ), static_cast<uint32_t>(data->dataSave));
@@ -446,8 +445,8 @@ LRESULT PageChat::OnCmdChatJoined( WPARAM wParam, LPARAM /*lParam*/ )
     if ( (wParam == 1) && (client != nullptr) )
     {
         UpdateData(TRUE);
-        client->notifyOnBroadcastMessageSent( mIsChatMessage ? true : false );
-        client->notifyOnBroadcastMessageTyped( mIsChatTyping ? true : false );
+        client->notify_on_broadcast_message_sent( mIsChatMessage ? true : false );
+        client->notify_on_broadcast_message_typed( mIsChatTyping ? true : false );
     }
     return 0;
 }
@@ -467,28 +466,28 @@ void PageChat::removeTyping( const CString & /*nickName*/, uint32_t cookie)
     }
 }
 
-bool PageChat::isActivePage( void )
+bool PageChat::isActivePage()
 {
     CPropertySheet * sheet = GetParentSheet();
     return ( sheet != nullptr ? sheet->GetActivePage() == static_cast<const CPropertyPage *>(this) : false);
 }
 
-void PageChat::OnDefaultClicked( void )
+void PageChat::OnDefaultClicked()
 {
     UpdateData(TRUE);
     sendMessage();
 }
 
-void PageChat::sendType(void)
+void PageChat::sendType()
 {
     DirectMessagingClient* client = this->GetChatClient();
     if (client != nullptr)
     {
-        client->requestMessageType(GetConnectionOwner(), String(mChatMsg.GetString()));
+        client->request_message_type(GetConnectionOwner(), areg::String(mChatMsg.GetString()));
     }
 }
 
-void PageChat::sendMessage(void)
+void PageChat::sendMessage()
 {
     if ((mEditEnabled == TRUE) && (mChatMsg.IsEmpty() == FALSE))
     {
@@ -500,7 +499,7 @@ void PageChat::sendMessage(void)
     }
 }
 
-void PageChat::startTimer(void)
+void PageChat::startTimer()
 {
     if (mTimerId != 0)
         KillTimer(mTimerId);
@@ -510,7 +509,7 @@ void PageChat::startTimer(void)
     SetTimer(mTimerId, mTimerValue, nullptr);
 }
 
-void PageChat::stopTimer(void)
+void PageChat::stopTimer()
 {
     if (mTimerId != 0)
     {
@@ -542,7 +541,7 @@ void PageChat::OnTimer(UINT_PTR nIDEvent)
 {
     
     char ch = rand() % 126;
-    while (NEString::isAlphanumeric<char>(ch) == false)
+    while (areg::is_alphanumeric<char>(ch) == false)
     {
         if (++ch > 126)
             ch = 'a';
@@ -564,7 +563,7 @@ void PageChat::OnTimer(UINT_PTR nIDEvent)
 
 void PageChat::OnEnChangeChatTimer()
 {
-    int oldTimer = mTimerValue;
+    int32_t oldTimer = mTimerValue;
     UpdateData(TRUE);
     if (mDoAutotype && oldTimer != mTimerValue)
     {
@@ -577,7 +576,7 @@ void PageChat::OnEnChangeChatTimer()
 void PageChat::OnDeltaposChatTimerSpin(NMHDR* pNMHDR, LRESULT* pResult)
 {
     LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
-    int oldTimer = mTimerValue;
+    int32_t oldTimer = mTimerValue;
 
     mTimerValue += pNMUpDown->iDelta;
     if (mTimerValue < TIMER_MIN_VALUE)

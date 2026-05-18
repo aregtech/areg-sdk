@@ -11,41 +11,41 @@
  ************************************************************************/
 
 #include "locservice/src/ServicingComponent.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/appbase/Application.hpp"
 #include <stdlib.h>
 
 
-DEF_LOG_SCOPE(examples_21_locwatchdog_ServicingComponent_startupServiceInterface);
-DEF_LOG_SCOPE(examples_21_locwatchdog_ServicingComponent_requestStartSleep);
+DEF_LOG_SCOPE(examples_21_locwatchdog_ServicingComponent, startup_service_interface);
+DEF_LOG_SCOPE(examples_21_locwatchdog_ServicingComponent, request_start_sleep);
 
-ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component         ( entry, owner )
-    , HelloWatchdogStub ( static_cast<Component &>(self()) )
+ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    : areg::Component         ( entry, owner )
+    , HelloWatchdogProviderBase ( static_cast<areg::Component &>(self()) )
 {
 }
 
-void ServicingComponent::startupServiceInterface( Component & holder )
+void ServicingComponent::startup_service_interface( areg::Component & holder )
 {
-    LOG_SCOPE(examples_21_locwatchdog_ServicingComponent_startupServiceInterface);
+    LOG_SCOPE( examples_21_locwatchdog_ServicingComponent, startup_service_interface );
     printf("-------------------------------------\n");
-    printf("Start service [ %s ] with role [ %s ]\n", HelloWatchdogStub::getServiceName().getString(), getRoleName().getString());
+    printf("Start service [ %s ] with role [ %s ]\n", HelloWatchdogProviderBase::service_name().as_string(), role_name().as_string());
 
-    HelloWatchdogStub::startupServiceInterface(holder);
-    setServiceState(NEHelloWatchdog::eState::Initialized);
+    HelloWatchdogProviderBase::startup_service_interface(holder);
+    set_service_state(HelloWatchdog::ComponentState::Initialized);
 }
 
-void ServicingComponent::requestStartSleep( unsigned int timeoutSleep )
+void ServicingComponent::request_start_sleep( uint32_t timeoutSleep )
 {
-    LOG_SCOPE(examples_21_locwatchdog_ServicingComponent_requestStartSleep);
+    LOG_SCOPE( examples_21_locwatchdog_ServicingComponent, request_start_sleep );
 
-    LOG_DBG("Received request to sleep [ %u ] ms, the watchdog timeout is [ %u ]", timeoutSleep, NEHelloWatchdog::TimeoutWatchdog);
-    printf("Hello Watchdog! Sleep [ %u ] ms, watchdog timeout [ %u ]\n", timeoutSleep, NEHelloWatchdog::TimeoutWatchdog);
+    LOG_DBG("Received request to sleep [ %u ] ms, the watchdog timeout is [ %u ]", timeoutSleep, HelloWatchdog::TimeoutWatchdog);
+    printf("Hello Watchdog! Sleep [ %u ] ms, watchdog timeout [ %u ]\n", timeoutSleep, HelloWatchdog::TimeoutWatchdog);
 
-    setServiceState( NEHelloWatchdog::eState::Started );
+    set_service_state( HelloWatchdog::ComponentState::Started );
 
-    Thread::sleep(timeoutSleep);
+    areg::Thread::sleep(timeoutSleep);
 
-    responseStartSleep(timeoutSleep);
+    response_start_sleep(timeoutSleep);
 }

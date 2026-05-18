@@ -5,17 +5,17 @@
 #include "register/CentralApp.hpp"
 #include "register/ui/PageBrokerSetup.hpp"
 #include "register/ui/CentralDialog.hpp"
-#include "register/NECentralApp.hpp"
-#include "common/NECommon.hpp"
+#include "register/CentralAppDefs.hpp"
+#include "common/ChatDefs.hpp"
 
 #include "areg/base/String.hpp"
-#include "areg/base/NESocket.hpp"
+#include "areg/base/SocketDefs.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/component/ComponentLoader.hpp"
 
-#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NECentralApp::eWndCommands::CmdFirst))
-#define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<uint32_t>(NECentralApp::WindowCommand::CmdFirst))
+#define MAKE_MESSAGE(elem)  (static_cast<uint32_t>(elem) + FIRST_MESSAGE)
 
 
 // PageBrokerSetup dialog
@@ -34,7 +34,7 @@ PageBrokerSetup::PageBrokerSetup()
 {
 }
 
-void PageBrokerSetup::ServiceConnected(bool /*isConnected*/)
+void PageBrokerSetup::Connected(bool /*isConnected*/)
 {
 }
 
@@ -63,16 +63,16 @@ void PageBrokerSetup::OnBnClickedBrokerConnect( )
     BYTE ip1, ip2, ip3, ip4;
     mCtrlPort.GetWindowText( port );
  
-    String check( port.GetBuffer( ) );
-    if ( (check.isNumeric( false ) == true) && (mCtrlAddress.GetAddress( ip1, ip2, ip3, ip4 ) == 4) )
+    areg::String check( port.GetBuffer( ) );
+    if ( (check.is_numeric( false ) == true) && (mCtrlAddress.GetAddress( ip1, ip2, ip3, ip4 ) == 4) )
     {
-        uint32_t temp = check.toUInt32( );
-        if ( (temp != NESocket::InvalidPort) && (temp < 0xFFFFu) )
+        uint32_t temp = check.to_uint32( );
+        if ( (temp != areg::InvalidPort) && (temp < 0xFFFFu) )
         {
             mBrokerPort = static_cast<USHORT>(temp);
-            String ipAddress;
+            areg::String ipAddress;
             ipAddress.format("%u.%u.%u.%u", ip1, ip2, ip3, ip4);
-            mIsConnected = CentralDialog::StartConnection(ipAddress, static_cast<unsigned short>(mBrokerPort) );
+            mIsConnected = CentralDialog::StartConnection(ipAddress, static_cast<uint16_t>(mBrokerPort) );
         }
     }
 }
@@ -84,11 +84,11 @@ void PageBrokerSetup::OnBnClickedBrokerDisconnect( )
         CPropertySheet * sheet = GetParentSheet();
         if ( sheet != nullptr )
         {
-            ::PostMessage(sheet->m_hWnd, MAKE_MESSAGE(NECentralApp::eWndCommands::CmdServiceConnection), static_cast<WPARAM>(false), 0 );
+            ::PostMessage(sheet->m_hWnd, MAKE_MESSAGE(NECentralApp::WindowCommand::CmdServiceConnection), static_cast<WPARAM>(false), 0 );
         }
 
-        Application::unloadModel( NECommon::MODEL_NAME_CENTRAL_SERVER );
-        Application::stopMessageRouting();
+        areg::Application::unload_model( chat::MODEL_NAME_CENTRAL_SERVER );
+        areg::Application::stop_message_routing();
         mIsConnected = false;
     }
 }
@@ -104,10 +104,10 @@ void PageBrokerSetup::OnBnUpdateBrokerConnect( CCmdUI* pCmdUI )
     BYTE ip1, ip2, ip3, ip4;
     mCtrlPort.GetWindowText( port );
 
-    String check( port.GetBuffer( ) );
-    if ( (check.isNumeric( false ) == true) && (mCtrlAddress.GetAddress( ip1, ip2, ip3, ip4 ) == 4) )
+    areg::String check( port.GetBuffer( ) );
+    if ( (check.is_numeric( false ) == true) && (mCtrlAddress.GetAddress( ip1, ip2, ip3, ip4 ) == 4) )
     {
-        uint32_t temp = check.toUInt32();
+        uint32_t temp = check.to_uint32();
         mBrokerPort = temp > 0xFFFFu ? 0xFFFFu : static_cast<USHORT>(temp);
     }
     else
@@ -167,12 +167,12 @@ BOOL PageBrokerSetup::OnInitDialog( )
     mCtrlAddress.SetAddress( 127, 0, 0, 1 );
     mCtrlPort.SetWindowText( _T( "8181" ) );
 
-    ConnectionConfiguration config(NERemoteService::eRemoteServices::ServiceRouter, NERemoteService::eConnectionTypes::ConnectTcpip);
-    unsigned char field0, field1, field2, field3;
-    if (config.getConnectionIpAddress(field0, field1, field2, field3))
+    areg::ConnectionConfiguration config(areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip);
+    uint8_t field0, field1, field2, field3;
+    if (config.connection_ip_address(field0, field1, field2, field3))
     {
-        mBrokerPort = static_cast<USHORT>(config.getConnectionPort());
-        CString port(String::makeString(mBrokerPort).getString());
+        mBrokerPort = static_cast<USHORT>(config.connection_port());
+        CString port(areg::String::make_string(mBrokerPort).as_string());
         mCtrlAddress.SetAddress(field0, field1, field2, field3);
         mCtrlPort.SetWindowText(port);
     }
@@ -183,7 +183,7 @@ BOOL PageBrokerSetup::OnInitDialog( )
     // EXPTION: OCX Property Pages should return FALSE
 }
 
-void PageBrokerSetup::OnDefaultClicked( void )
+void PageBrokerSetup::OnDefaultClicked()
 {
     CButton * btnConnect = reinterpret_cast<CButton *>(GetDlgItem( IDC_BROKER_CONNECT ));
     CButton * btnDisconnect = reinterpret_cast<CButton *>(GetDlgItem( IDC_BROKER_DISCONNECT ));

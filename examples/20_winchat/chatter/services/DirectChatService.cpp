@@ -7,164 +7,164 @@
 #include "chatter/res/stdafx.h"
 #include "chatter/services/DirectChatService.hpp"
 #include "chatter/services/DirectConnectionClient.hpp"
-#include "chatter/NEDistributedApp.hpp"
+#include "chatter/DistributedAppDefs.hpp"
 #include "chatter/ui/PageConnections.hpp"
 #include "chatter/ui/PageChat.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
 #include "areg/component/ComponentLoader.hpp"
 
-DEF_LOG_SCOPE( chatter_DirectChatService_StartupComponent );
-DEF_LOG_SCOPE( chatter_DirectChatService_ShutdownComponent );
-DEF_LOG_SCOPE( chatter_DirectChatService_RequestChatJoin );
-DEF_LOG_SCOPE( chatter_DirectChatService_RequestMessageSend );
-DEF_LOG_SCOPE( chatter_DirectChatService_RequestMessageType );
-DEF_LOG_SCOPE( chatter_DirectChatService_RequestChatLeave );
+DEF_LOG_SCOPE(chatter_DirectChatService, startup_component);
+DEF_LOG_SCOPE(chatter_DirectChatService, shutdown_component);
+DEF_LOG_SCOPE(chatter_DirectChatService, request_chat_join);
+DEF_LOG_SCOPE(chatter_DirectChatService, request_message_send);
+DEF_LOG_SCOPE(chatter_DirectChatService, request_message_type);
+DEF_LOG_SCOPE(chatter_DirectChatService, request_chat_leave);
 
-NERegistry::Model DirectChatService::GetModel( const NEDirectMessager::sParticipant & initiator
-                                             , const NEDirectMessager::ListParticipants & listParticipants
+areg::Model DirectChatService::GetModel( const DirectMessager::Participant & initiator
+                                             , const DirectMessager::ListParticipants & listParticipants
                                              , std::any data)
 {
-    String    roleName    = NEDistributedApp::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, true );
-    String    threadName  = NEDistributedApp::PREFIX_TRHEAD + roleName;
-    String    modelName   = NEDistributedApp::PREFIX_MODEL  + roleName;
+    areg::String    roleName    = NEDistributedApp::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, true );
+    areg::String    threadName  = NEDistributedApp::PREFIX_TRHEAD + roleName;
+    areg::String    modelName   = NEDistributedApp::PREFIX_MODEL  + roleName;
 
-    uint32_t count = listParticipants.getSize();
-    NERegistry::DependencyEntry depedency(roleName);
-    NERegistry::DependencyList listDependencies( depedency );
+    uint32_t count = listParticipants.size();
+    areg::DependencyEntry depedency(roleName);
+    areg::DependencyList listDependencies( depedency );
     
     for ( uint32_t i = 0; i < count; ++i )
     {
-        const NEDirectConnection::sParticipant & participant = listParticipants[i];
-        NERegistry::DependencyEntry entry( NEDistributedApp::getConnectionServiceRole( participant.nickName, participant.cookie ) );
+        const DirectConnection::Participant & participant = listParticipants[i];
+        areg::DependencyEntry entry( NEDistributedApp::getConnectionServiceRole( participant.nickName, participant.cookie ) );
         listDependencies.mListDependencies.add( entry );
     }
 
-    NERegistry::ServiceEntry          serviceEntry( NEDirectMessager::ServiceName, NEDirectMessager::InterfaceVersion );
-    NERegistry::ServiceList           listServices( serviceEntry );
-    NERegistry::ComponentEntry        componentEntry( threadName, roleName
+    areg::ServiceEntry          serviceEntry( DirectMessager::ServiceName, DirectMessager::InterfaceVersion );
+    areg::ServiceList           listServices( serviceEntry );
+    areg::ComponentEntry        componentEntry( threadName, roleName
                                                     , FUNC_CREATE_COMP(DirectChatService)
                                                     , FUNC_DELETE_COMP
-                                                    , listServices, listDependencies, NERegistry::WorkerThreadList( ) );
-    componentEntry.setData(data);
-    NERegistry::ComponentList         componentList( componentEntry );
-    NERegistry::ComponentThreadEntry  threadEntry( threadName, componentList );
-    NERegistry::ComponentThreadList   threadList( threadEntry );
-    NERegistry::Model                 model( modelName, threadList );
+                                                    , listServices, listDependencies, areg::WorkerThreadList( ) );
+    componentEntry.set_data(data);
+    areg::ComponentList         componentList( componentEntry );
+    areg::ComponentThreadEntry  threadEntry( threadName, componentList );
+    areg::ComponentThreadList   threadList( threadEntry );
+    areg::Model                 model( modelName, threadList );
 
     return model;
 }
 
-DirectChatService::DirectChatService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread)
-    : Component           ( entry, ownerThread )
-    , DirectMessagerStub  ( static_cast<Component &>(self()) )
+DirectChatService::DirectChatService( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread)
+    : areg::Component           ( entry, ownerThread )
+    , DirectMessagerProviderBase  ( static_cast<areg::Component &>(self()) )
 
-    , mPaticipantsHandler   (std::any_cast<ChatPrticipantHandler*>(entry.getData()))
+    , mPaticipantsHandler   (std::any_cast<ChatPrticipantHandler*>(entry.data()))
     , mListClients          ( )
-    , mChatParticipant      ( static_cast<Component &>(self()), entry.mRoleName, mPaticipantsHandler)
+    , mChatParticipant      ( static_cast<areg::Component &>(self()), entry.mRoleName, mPaticipantsHandler)
 {
 }
 
-DirectChatService::~DirectChatService(void)
+DirectChatService::~DirectChatService()
 {
     _clearList();
 }
 
-void DirectChatService::startupComponent( ComponentThread & comThread )
+void DirectChatService::startup_component( areg::ComponentThread & comThread )
 {
-    LOG_SCOPE( chatter_DirectChatService_StartupComponent );
-    Component::startupComponent(comThread);
+    LOG_SCOPE( chatter_DirectChatService, startup_component );
+    areg::Component::startup_component(comThread);
     mPaticipantsHandler->SetConnectionService( this );
 
-    const NEDirectConnection::sInitiator & initiator = mPaticipantsHandler->GetInitiator();
-    const NEDirectConnection::ListParticipants & listParticipants = mPaticipantsHandler->GetParticipantList();
-    uint32_t count {listParticipants.getSize( )};
+    const DirectConnection::sInitiator & initiator = mPaticipantsHandler->GetInitiator();
+    const DirectConnection::ListParticipants & listParticipants = mPaticipantsHandler->GetParticipantList();
+    uint32_t count {listParticipants.size( )};
     for (uint32_t i = 0; i < count; ++ i )
     {
-        const NEDirectConnection::sParticipant & target = listParticipants[i];
+        const DirectConnection::Participant & target = listParticipants[i];
         if ( target != initiator )
         {
-            DirectConnectionClient * client = new DirectConnectionClient( static_cast<Component &>(self( )), mPaticipantsHandler, target );
+            DirectConnectionClient * client = new DirectConnectionClient( static_cast<areg::Component &>(self( )), mPaticipantsHandler, target );
             mListClients.add( client );
         }
     }
 }
 
-void DirectChatService::shutdownComponent( ComponentThread & comThread )
+void DirectChatService::shutdown_component( areg::ComponentThread & comThread )
 {
-    LOG_SCOPE( chatter_DirectChatService_ShutdownComponent );
+    LOG_SCOPE( chatter_DirectChatService, shutdown_component);
     mPaticipantsHandler->SetConnectionService( nullptr );
     
     _clearList();    
-    Component::shutdownComponent(comThread);
+    areg::Component::shutdown_component(comThread);
 }
 
-void DirectChatService::startupServiceInterface( Component & holder )
+void DirectChatService::startup_service_interface( areg::Component & holder )
 {
-    DirectMessagerStub::startupServiceInterface(holder);
-    setChatParticipants( NEDirectMessager::ListParticipants() );
+    DirectMessagerProviderBase::startup_service_interface(holder);
+    set_chat_participants( DirectMessager::ListParticipants() );
 }
 
-void DirectChatService::requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect )
+void DirectChatService::request_chat_join( const DirectMessager::Participant & participant, const areg::DateTime & timeConnect )
 {
-    LOG_SCOPE( chatter_DirectChatService_RequestChatJoin );
+    LOG_SCOPE( chatter_DirectChatService, request_chat_join );
     if ( mPaticipantsHandler->ParticipantExist(participant) )
     {
         bool newParticipant = false;
-        NEDirectMessager::ListParticipants & chatParticipants = getChatParticipants();
+        DirectMessager::ListParticipants & chatParticipants = chat_participants();
         if ( chatParticipants.contains(participant, 0) == false )
         {
             chatParticipants.add(participant);
             newParticipant = true;
         }
 
-        responseChatJoin(true, chatParticipants, timeConnect, DateTime::getNow() );
+        response_chat_join(true, chatParticipants, timeConnect, areg::DateTime::now() );
         if ( newParticipant )
         {
-            broadcastParticipantJoined( participant, timeConnect );
-            notifyChatParticipantsUpdated( );
+            broadcast_participant_joined( participant, timeConnect );
+            notify_chat_participants_updated( );
         }
     }
     else
     {
-        responseChatJoin( false, NEDirectMessager::ListParticipants(), timeConnect, DateTime() );
+        response_chat_join( false, DirectMessager::ListParticipants(), timeConnect, areg::DateTime() );
     }
 }
 
-void DirectChatService::requestMessageSend( const NEDirectMessager::sParticipant & participant, const String & msgText, const DateTime & timeSent )
+void DirectChatService::request_message_send( const DirectMessager::Participant & participant, const areg::String & msgText, const areg::DateTime & timeSent )
 {
-    LOG_SCOPE( chatter_DirectChatService_RequestMessageSend );
-    const NEDirectMessager::ListParticipants & chatParticipants = getChatParticipants( );
+    LOG_SCOPE( chatter_DirectChatService, request_message_send );
+    const DirectMessager::ListParticipants & chatParticipants = chat_participants( );
     if ( chatParticipants.contains(participant, 0) )
     {
-        broadcastMessageSent(participant, msgText, timeSent );
-        broadcastMessageTyped( participant, String::getEmptyString() );
+        broadcast_message_sent(participant, msgText, timeSent );
+        broadcast_message_typed( participant, areg::String::empty_string() );
     }
 }
 
-void DirectChatService::requestMessageType( const NEDirectMessager::sParticipant & participant, const String & msgText )
+void DirectChatService::request_message_type( const DirectMessager::Participant & participant, const areg::String & msgText )
 {
-    LOG_SCOPE( chatter_DirectChatService_RequestMessageType );
-    const NEDirectMessager::ListParticipants & chatParticipants = getChatParticipants( );
+    LOG_SCOPE( chatter_DirectChatService, request_message_type );
+    const DirectMessager::ListParticipants & chatParticipants = chat_participants( );
     if ( chatParticipants.contains( participant, 0 ) )
     {
-        broadcastMessageTyped( participant, msgText );
+        broadcast_message_typed( participant, msgText );
     }
 }
 
-void DirectChatService::requestChatLeave( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeave )
+void DirectChatService::request_chat_leave( const DirectMessager::Participant & participant, const areg::DateTime & timeLeave )
 {
-    LOG_SCOPE( chatter_DirectChatService_RequestChatLeave );
-    NEDirectMessager::ListParticipants & chatParticipants = getChatParticipants( );
-    if ( chatParticipants.removeElem( participant, 0 ) )
+    LOG_SCOPE( chatter_DirectChatService, request_chat_leave );
+    DirectMessager::ListParticipants & chatParticipants = chat_participants( );
+    if ( chatParticipants.remove_elem( participant, 0 ) )
     {
-        broadcastParticipantLeft( participant, timeLeave );
-        notifyChatParticipantsUpdated( );
+        broadcast_participant_left( participant, timeLeave );
+        notify_chat_participants_updated( );
     }
 }
 
-inline void DirectChatService::_clearList(void)
+inline void DirectChatService::_clearList()
 {
-    uint32_t count{ mListClients.getSize() };
+    uint32_t count{ mListClients.size() };
     for (uint32_t i = 0; i < count; ++ i )
     {
         DirectConnectionClient * client = mListClients[i];

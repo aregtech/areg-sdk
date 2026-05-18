@@ -4,37 +4,35 @@
  * \brief           The direct chat service with direct connection clients
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/20_winchat/services/DirectMessagerStub.hpp"
+#include "examples/20_winchat/services/DirectMessagerProviderBase.hpp"
 #include "chatter/services/DirectMessagingClient.hpp"
 
-#include "areg/component/NERegistry.hpp"
-#include "areg/base/TEResourceMap.hpp"
-#include "examples/20_winchat/services/NEDirectConnection.hpp"
-#include "common/NECommon.hpp"
-#include "chatter/NEDistributedApp.hpp"
+#include "areg/component/Model.hpp"
+#include "areg/base/ResourceMap.hpp"
+#include "examples/20_winchat/services/DirectConnection.hpp"
+#include "common/ChatDefs.hpp"
 
 class DirectConnectionClient;
 class ChatPrticipantHandler;
 
-class DirectChatService : public Component
-                        , public DirectMessagerStub
-                          
+class DirectChatService final : public areg::Component
+                              , public DirectMessagerProviderBase
 {
-    using HashMapDirectConnections      = TEMap<String, DirectChatService *>;
-    using MapDirectConnections          = TELockResourceMap<String, DirectChatService *, HashMapDirectConnections>;
-    using ListDirectConnectionClients   = TEArrayList<DirectConnectionClient *>;
+    using HashMapDirectConnections      = areg::OrderedMap<areg::String, DirectChatService *>;
+    using MapDirectConnections          = areg::ConcurrentResourceMap<areg::String, DirectChatService *, HashMapDirectConnections>;
+    using ListDirectConnectionClients   = areg::ArrayList<DirectConnectionClient *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Create and delete component
 //////////////////////////////////////////////////////////////////////////
 public:
-    static NERegistry::Model GetModel( const NEDirectMessager::sParticipant & initiator, const NEDirectMessager::ListParticipants & listParticipants, std::any data );
+    static areg::Model GetModel( const DirectMessager::Participant & initiator, const DirectMessager::ListParticipants & listParticipants, std::any data );
 
 public:
-    DirectChatService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread );
-    virtual ~DirectChatService( void );
+    DirectChatService( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread );
+    ~DirectChatService();
 
 //////////////////////////////////////////////////////////////////////////
 // DirectMessager Interface Requests
@@ -46,9 +44,9 @@ protected:
      *          Request to join chat. The participant should be in the list of connections
      * \param   participant The participant to join chat. The participant should be in the connection list.
      * \param   timeConnect The time-stamp when the request was sent.
-     * \see     responseChatJoin
+     * \see     response_chat_join
      **/
-    virtual void requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect ) override;
+    void request_chat_join( const DirectMessager::Participant & participant, const areg::DateTime & timeConnect ) final;
 
     /**
      * \brief   Request call.
@@ -58,7 +56,7 @@ protected:
      * \param   timeSent    The time-stamp when the message is requested to send.
      * \note    Has no response
      **/
-    virtual void requestMessageSend( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent ) override;
+    void request_message_send( const DirectMessager::Participant & sender, const areg::String & msgText, const areg::DateTime & timeSent ) final;
 
     /**
      * \brief   Request call.
@@ -67,7 +65,7 @@ protected:
      * \param   msgText     The text message while typing.
      * \note    Has no response
      **/
-    virtual void requestMessageType( const NEDirectMessager::sParticipant & participant, const String & msgText ) override;
+    void request_message_type( const DirectMessager::Participant & participant, const areg::String & msgText ) final;
 
     /**
      * \brief   Request call.
@@ -76,7 +74,7 @@ protected:
      * \param   timeLeave   Time-stamp when it was requested to leave chat-room.
      * \note    Has no response
      **/
-    virtual void requestChatLeave( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeave ) override;
+    void request_chat_leave( const DirectMessager::Participant & participant, const areg::DateTime & timeLeave ) final;
 
 protected:
 
@@ -89,7 +87,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    virtual void startupComponent( ComponentThread & comThread ) override;
+    void startup_component( areg::ComponentThread & comThread ) final;
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -97,26 +95,26 @@ protected:
      *          make cleanups in this function call.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    virtual void shutdownComponent( ComponentThread & comThread ) override;
+    void shutdown_component( areg::ComponentThread & comThread ) final;
 
 /************************************************************************/
-// StubBase overrides. Triggered by Component on startup.
+// ProviderBase overrides. Triggered by Component on startup.
 /************************************************************************/
 
     /**
      * \brief   This function is triggered by Component when starts up.
      *          Overwrite this method and set appropriate request and
      *          attribute update notification event listeners here
-     * \param   holder  The holder component of service interface of Stub,
+     * \param   holder  The holder component of service interface of Provider,
      *                  which started up.
      **/
-    virtual void startupServiceInterface( Component & holder ) override;
+    void startup_service_interface( areg::Component & holder ) final;
     
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline void _clearList(void);
+    inline void _clearList();
     
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -133,15 +131,15 @@ private:
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline DirectChatService & self( void );
+    inline DirectChatService & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    DirectChatService( void );
+    DirectChatService();
     DirectChatService( const DirectChatService & /*src*/ );
     const DirectChatService & operator = ( const DirectChatService & /*src*/ );
 };
 
-inline DirectChatService & DirectChatService::self( void )
+inline DirectChatService & DirectChatService::self()
 {   return (*this); }

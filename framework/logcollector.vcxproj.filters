@@ -21,7 +21,7 @@
     <ClInclude Include="logcollector\resources\targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="logcollector\app\NELogCollectorSettings.hpp">
+    <ClInclude Include="logcollector\app\LogCollectorNames.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="logcollector\app\LogCollector.hpp">
@@ -65,7 +65,7 @@
     <ClCompile Include="logcollector\app\private\LogCollector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="logcollector\app\private\NELogCollectorSettings.cpp">
+    <ClCompile Include="logcollector\app\private\LogCollectorNames.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="logcollector\app\private\LogCollectorConsoleService.cpp">

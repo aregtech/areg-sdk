@@ -14,39 +14,49 @@
  *              windows specific code
  *
  ************************************************************************/
-#include "areg/base/Thread.hpp"
-#include "areg/base/IEThreadConsumer.hpp"
 
 #ifdef  _WIN32
 
+/************************************************************************
+ * Include files.
+ ************************************************************************/
+#include "areg/base/Thread.hpp"
+#include "areg/base/ThreadConsumer.hpp"
+
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif // !NOMINMAX
 #include <Windows.h>
 #include <processthreadsapi.h>
+#include <limits>
+
+namespace areg {
 
 /************************************************************************/
 // System specific thread routines
 /************************************************************************/
-void * Thread::_posixThreadRoutine( void * /*data*/ )
+void * Thread::_posix_thread_routine( void * /*data*/ )
 {
     ASSERT(false);
     return nullptr;
 }
 
-unsigned long Thread::_windowsThreadRoutine( void * data )
+unsigned long Thread::_windows_thread_routine( void * data )
 {
-    return Thread::_defaultThreadFunction(data);
+    return Thread::_default_thread_function(data);
 }
 
 /**
  * \brief   This function call is a recommendation from MSDN documentation.
  *          It is using undocumented way to set name of thread in native code.
  **/
-void Thread::_osSetThreadName( id_type threadId, const char* threadName)
+void Thread::_os_set_name( id_type threadId, const char* threadName)
 {
 #ifdef _MSC_VER
     /**
      * \brief   MS Exception value, used to set thread name.
      **/
-    static constexpr unsigned int   SET_NAME_MS_VC_EXCEPTION{ 0x406D1388u };
+    static constexpr uint32_t   SET_NAME_MS_VC_EXCEPTION{ 0x406D1388u };
 
 #pragma pack(push, 8)
     typedef struct tagTHREADNAME_INFO
@@ -77,7 +87,7 @@ void Thread::_osSetThreadName( id_type threadId, const char* threadName)
 #endif // _MSC_VER
 }
 
-void Thread::_osCloseHandle(  THREADHANDLE handle )
+void Thread::_os_close_handle(  THREADHANDLE handle )
 {
     if ( handle != nullptr )
     {
@@ -89,29 +99,29 @@ void Thread::_osCloseHandle(  THREADHANDLE handle )
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-void Thread::_osSleep(unsigned int timeout)
+void Thread::_os_sleep(uint32_t timeout)
 {
     ::Sleep(timeout);
 }
 
-id_type Thread::_osGetCurrentThreadId( void )
+id_type Thread::_os_thread_id() noexcept
 {
     return static_cast<id_type>(::GetCurrentThreadId());
 }
 
-Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
+Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
 {
-    mSyncObject.lock(NECommon::WAIT_INFINITE);
+    mSyncObject.lock(areg::WAIT_INFINITE);
 
-    Thread::eCompletionStatus result = Thread::eCompletionStatus::ThreadInvalid;
+    Thread::ThreadCompletion result = Thread::ThreadCompletion::Invalid;
 
     THREADHANDLE handle = mThreadHandle;
     if (handle != Thread::INVALID_THREAD_HANDLE)
     {
-        _unregisterThread();
+        _unregister_thread();
         mSyncObject.unlock();  // unlock, to let thread complete exit task.
 
-        if ((waitForStopMs != NECommon::DO_NOT_WAIT) && (mWaitForExit.lock(waitForStopMs) == false))
+        if ((waitForStopMs != areg::DO_NOT_WAIT) && (mWaitForExit.lock(waitForStopMs) == false))
         {
 #ifdef  _DEBUG
             //////////////////////////////////////////////////////////////////////////
@@ -130,12 +140,11 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
 #ifdef _MSC_VER
     #pragma warning(disable: 6258)
 #endif // _MSC_VER
-            // here we assume that it was requested to wait for thread exit, but it is still running
             // force to terminate thread and close handles due to waiting timeout expire
-            result = Thread::eCompletionStatus::ThreadTerminated;
-            ::TerminateThread(static_cast<HANDLE>(handle), static_cast<DWORD>(IEThreadConsumer::eExitCodes::ExitTerminated));
-            this->mWaitForRun.resetEvent();
-            this->mWaitForExit.setEvent();
+            result = Thread::ThreadCompletion::Terminated;
+            ::TerminateThread(static_cast<HANDLE>(handle), static_cast<DWORD>(ThreadConsumer::ExitCode::Terminated));
+            this->mWaitForRun.reset();
+            this->mWaitForExit.set_signaled();
 #ifdef _MSC_VER
     #pragma warning(default: 6258)
 #endif // _MSC_VER
@@ -143,16 +152,16 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
         else
         {
             // The thread completed job normally
-            result = Thread::eCompletionStatus::ThreadCompleted;
-            ASSERT (waitForStopMs != NECommon::WAIT_INFINITE || isRunning() == false);
+            result = Thread::ThreadCompletion::Completed;
+            ASSERT (waitForStopMs != areg::WAIT_INFINITE || is_running() == false);
         }
 
-        mSyncObject.lock(NECommon::WAIT_INFINITE);
+        mSyncObject.lock(areg::WAIT_INFINITE);
     }
     else
     {
         // The thread is not valid and not running, nothing to destroy
-        result = Thread::eCompletionStatus::ThreadInvalid;
+        result = Thread::ThreadCompletion::Invalid;
     }
 
     mSyncObject.unlock(); // nothing to do, the thread is already destroyed
@@ -160,74 +169,73 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
     return result;
 }
 
-bool Thread::_osCreateSystemThread( void )
+bool Thread::_os_create() noexcept
 {
-    bool result = false;
-    if ((_isValidNoLock() == false) && (mThreadAddress.getThreadName().isEmpty() == false))
+    if (_is_valid_no_lock() || mThreadAddress.name().is_empty())
+        return false;
+    
+    mWaitForRun.reset();
+    mWaitForExit.reset( );
+
+    DWORD threadId  { 0 };
+    HANDLE handle = ::CreateThread( nullptr
+                                  , mStackSizeKB * areg::ONE_KILOBYTE
+                                  , (LPTHREAD_START_ROUTINE)(&Thread::_windows_thread_routine)
+                                  , static_cast<void *>(this)
+                                  , mStackSizeKB != areg::DEFAULT_STACK_SIZE ? 0u : STACK_SIZE_PARAM_IS_A_RESERVATION
+                                  , &threadId);
+    if (handle == nullptr)
+        return false;
+    
+    mThreadHandle   = static_cast<THREADHANDLE>(handle);
+    mThreadId       = static_cast<id_type>(threadId);
+    mThreadPriority = Thread::ThreadPriority::Normal;
+
+    if (!_register_thread())
     {
-        mWaitForRun.resetEvent();
-        mWaitForExit.resetEvent( );
-
-        unsigned long threadId  { 0 };
-        unsigned long dwFlags   { mStackSizeKB != NECommon::STACK_SIZE_DEFAULT ? 0u : STACK_SIZE_PARAM_IS_A_RESERVATION };
-        unsigned long dwStack   { mStackSizeKB * NECommon::ONE_KILOBYTE };
-        HANDLE handle = ::CreateThread( nullptr, dwStack,
-                                      (LPTHREAD_START_ROUTINE)(&Thread::_windowsThreadRoutine), 
-                                       static_cast<void *>(this), dwFlags, &threadId);
-        if (handle != nullptr)
-        {
-            result          = true;
-            mThreadHandle   = static_cast<THREADHANDLE>(handle);
-            mThreadId       = threadId;
-            mThreadPriority = Thread::eThreadPriority::PriorityNormal;
-
-            if (_registerThread() == false)
-            {
-                result = false;
-                _cleanResources(true);
-            }
-        }
+        _clean_resources(true);
+        return false;
     }
 
-    return result;
+    return true;
 }
 
-Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
+Thread::ThreadPriority Thread::_os_set_priority( ThreadPriority newPriority ) noexcept
 {
     Lock  lock(mSyncObject);
-    Thread::eThreadPriority oldPrio{ mThreadPriority };
+    Thread::ThreadPriority oldPrio{ mThreadPriority };
 
-    if (_isValidNoLock() && (newPriority != mThreadPriority))
+    if (_is_valid_no_lock() && (newPriority != mThreadPriority))
     {
-        int Prio = MIN_INT_32;
+        int32_t Prio = std::numeric_limits<int32_t>::min();
         switch (newPriority)
         {
-        case Thread::eThreadPriority::PriorityLowest:
+        case Thread::ThreadPriority::Lowest:
             Prio = THREAD_PRIORITY_LOWEST;
             break;
 
-        case Thread::eThreadPriority::PriorityLow:
+        case Thread::ThreadPriority::Low:
             Prio = THREAD_PRIORITY_BELOW_NORMAL;
             break;
 
-        case Thread::eThreadPriority::PriorityNormal:
+        case Thread::ThreadPriority::Normal:
             Prio = THREAD_PRIORITY_NORMAL;
             break;
 
-        case Thread::eThreadPriority::PriorityHigh:
+        case Thread::ThreadPriority::High:
             Prio = THREAD_PRIORITY_ABOVE_NORMAL;
             break;
 
-        case Thread::eThreadPriority::PriorityHighest:
+        case Thread::ThreadPriority::Highest:
             Prio = THREAD_PRIORITY_HIGHEST;
             break;
 
-        case Thread::eThreadPriority::PriorityUndefined:     // fall through
+        case Thread::ThreadPriority::Undefined:     // fall through
         default:
             break;  // do nothing, invalid priority value
         }
-        
-        if ((MIN_INT_32 != Prio)  && (::SetThreadPriority(mThreadHandle, Prio) == TRUE))
+
+        if ((std::numeric_limits<int32_t>::min() != Prio) && (::SetThreadPriority(mThreadHandle, Prio) == TRUE))
         {
             mThreadPriority = newPriority;
         }
@@ -236,10 +244,16 @@ Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
     return oldPrio;
 }
 
-size_t Thread::_osGetCurrentStackSize(THREADHANDLE handle)
+size_t Thread::_os_stack_size(THREADHANDLE handle) noexcept
 {
     ULONG size{ 0u };
-    return ((handle != NULL) && SetThreadStackGuarantee(&size) ? static_cast<size_t>(size) : 0);
+    return ((handle != nullptr) && SetThreadStackGuarantee(&size) ? static_cast<size_t>(size) : 0);
 }
 
+void Thread::_os_yield_to_thread() noexcept
+{
+    ::SwitchToThread();
+}
+
+} // namespace areg
 #endif  // _WIN32

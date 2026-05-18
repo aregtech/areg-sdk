@@ -19,175 +19,142 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/DispatcherThread.hpp"
 
 #include "areg/component/private/Watchdog.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
 class Component;
 class ComponentThread;
-class IEWorkerThreadConsumer;
+class WorkerThreadConsumer;
 
 //////////////////////////////////////////////////////////////////////////
 // WorkerThread class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       The Worker Thread is used as a helper thread for component
- *              to perform certain tasks and should be instantiated when 
- *              component has been started. The Worker Thread requires
- *              component object as a master object, which controls
- *              Worker Thread. Specify and pass Worker Thread Consumer
- *              object when creating object to be able to react on
- *              thread start and stop calls. The communication between 
- *              worker threads and component thread should be via custom 
- *              events. Set and remove event listeners when Worker Thread
- *              starts and stops.
- * 
- * \details     Some components may require additional thread to perform
- *              time consuming computation, which may block thread
- *              for longer time. In such case all other components
- *              will not get any event from dispatcher. In such cases,
- *              it is recommended to define Worker Thread and make all
- *              those tasks there. The Worker Thread should be specified
- *              in Model object. As an instance of Dispatcher Thread,
- *              Worker Thread is able to receive and dispatch events.
- *              Use event objects as main instrument for communication.
- *              The Worker Thread may send event only to its master component
- *              and other Worker Threads, related with component. For example,
- *              if a component has 2 worker threads, these 2 threads still
- *              may communicate directly. The events sent by Worker Thread
- *              by default are defined as External and processed in external
- *              event queue. Worker Threads require Consumer object to 
- *              call start and stop functions to set and remove certain
- *              type of event listeners. For every Thread use separate
- *              event objects. Worker Thread is a Runtime Class and
- *              the type of thread is identified during Runtime.
- *
+ * \brief   Helper thread that performs component tasks under control of a binding component;
+ *          communicates via custom events and requires a WorkerThreadConsumer callback handler.
  **/
-class AREG_API WorkerThread    : public DispatcherThread
+class AREG_API WorkerThread final : public DispatcherThread
 {
 //////////////////////////////////////////////////////////////////////////
 // Runtime
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME(WorkerThread)
+    AREG_DECLARE_RUNTIME(WorkerThread)
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes Worker Thread object, but does not start yet.
-     *          Call appropriate create method to start thread.
-     *          Constructor needs to know master component object and
-     *          thread consumer object.
-     * \param   threadName          The name of Worker Thread. Should be
-     *                              unique in application.
-     * \param   bindingComponent    The master (binding) component
-     * \param   threadConsumer      The Consumer object.
-     * \param   watchdogTimeout     The watchdog timeout in milliseconds.
-     *                              The watchdog is a guard to set the timeout to process and event.
-     *                              If timeout is not zero and it expires before the thread processed
-     *                              an event, it terminates and restarts the thread again.
-     *                              There is no guarantee that terminated thread will make all cleanups properly.
-     *                              Watchdog timeout is ignored if it is equal to NECommon::WATCHDOG_IGNORE.
-     * \param   stackSizeKb         The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
-     *                              Pass `NECommon::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
+     * \brief   Initializes a worker thread but does not start it; call appropriate create method to
+     *          start.
+     *
+     * \param   threadName          Unique thread name.
+     * \param   bindingComponent    Master component that owns this worker thread.
+     * \param   threadConsumer      Callback handler for thread lifecycle events.
+     * \param   watchdogTimeout     Watchdog timeout in milliseconds; 0 (WATCHDOG_IGNORE) disables
+     *                              the watchdog.
+     * \param   stackSizeKb         Stack size in kilobytes; 0 (DEFAULT_STACK_SIZE) uses system
+     *                              default.
+     * \param   maxQueue            Maximum message queue size; IGNORE_VALUE uses configured or
+     *                              default value.
      **/
     WorkerThread( const String & threadName
                 , Component & bindingComponent
-                , IEWorkerThreadConsumer & threadConsumer
-                , uint32_t watchdogTimeout  = NECommon::WATCHDOG_IGNORE
-                , uint32_t stackSizeKb      = NECommon::STACK_SIZE_DEFAULT
-                , uint32_t maxQueue         = NECommon::IGNORE_VALUE);
+                , WorkerThreadConsumer & threadConsumer
+                , uint32_t watchdogTimeout  = areg::WATCHDOG_IGNORE
+                , uint32_t stackSizeKb      = areg::DEFAULT_STACK_SIZE
+                , uint32_t maxQueue         = areg::IGNORE_VALUE);
 
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~WorkerThread( void ) = default;
+    virtual ~WorkerThread() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Returns Binding (master) component object
+     * \brief   Returns the master component.
      **/
-    inline Component & getBindingComponent( void ) const;
+    [[nodiscard]]
+    inline Component & binding_component() const noexcept;
 
     /**
-     * \brief   Returns binding component thread object
+     * \brief   Returns the component thread of the master component.
      **/
-    ComponentThread & getBindingComponentThread( void ) const;
+    [[nodiscard]]
+    ComponentThread & binding_component_thread() const;
 
     /**
-     * \brief   Call to make emergency termination of worker thread.
+     * \brief   Terminates the worker thread in an emergency; use only when necessary.
      **/
-    void terminateSelf(void);
+    void terminate_self();
 
     /**
-     * \brief   Returns the watchdog timeout value in milliseconds. The value 0
-     *          (NECommon::WATCHDOG_IGNORE) means the watchdog is ignored by the worker thread.
+     * \brief   Returns the watchdog timeout in milliseconds; 0 means watchdog is disabled.
      **/
-    inline uint32_t getWatchdogTimeout(void) const;
+    [[nodiscard]]
+    inline uint32_t watchdog_timeout() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // overrides
 //////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************/
-// IEEventRouter interface overrides.
+// EventRouter interface overrides.
 /************************************************************************/
     /**
-     * \brief   Posts given event object. If the event addressee is
-     *          not bound with master component or it is an internal
-     *          event, the event will not be delivered and will be
-     *          destroyed.
-     * \param   eventElem   The event object to post.
+     * \brief   Posts an event for delivery; fails and destroys the event if the addressee is not
+     *          the master component or if it is internal.
+     *
+     * \param   eventElem       Event to post.
      **/
-    virtual bool postEvent( Event & eventElem ) override;
+    [[nodiscard]]
+    bool post_event( Event & eventElem ) final;
 
 protected:
 /************************************************************************/
 // Dispatcher overrides
 /************************************************************************/
-    /**
-     * \brief   Call to enable or disable event dispatching threads to receive events.
-     *          Override if need to make event dispatching preparation job.
-     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
-     **/
-    virtual void readyForEvents( bool isReady ) override;
-
-/************************************************************************/
-// Dispatcher Thread overrides
-/************************************************************************/
 
     /**
-     * \brief   Search for consumer thread that can dispatch event.
-     *          It will  lookup whether it has consumer or not
-     *          registered in worker thread. If does not find,  it will search
-     *          in worker thread list of bound  component. 
-     * \param   whichClass  The runtime class ID to search registered component
-     * \return  If found, returns valid pointer of dispatching thread. 
-     *          Otherwise returns nullptr
+     * \brief   On enable: registers event consumers via the WorkerThreadConsumer callback.
+     *          On disable: unregisters them. Then delegates to the base to update mHasStarted.
+     *
+     * \param   is_ready    True to enable event dispatching, false to disable.
      **/
-    virtual DispatcherThread * getEventConsumerThread( const RuntimeClassID & whichClass ) override;
+    void ready_for_events( bool is_ready ) final;
 
 /************************************************************************/
-// IEEventDispatcher overrides
+// DispatcherThread overrides
 /************************************************************************/
 
     /**
-     * \brief	The method is triggered to start dispatching valid event.
-     *          Here dispatcher should forward message to appropriate 
-     *          registered event consumer
-     * \param	eventElem   Event element to dispatch	
-     * \return	Returns true if at least one consumer processed event.
-     *          Otherwise it returns false.
+     * \brief   Finds the consumer thread for a given class; searches this thread first, then the
+     *          master component's dispatcher.
+     *
+     * \param   whichClass      Runtime class ID of the component to find.
+     * \return  Valid dispatcher thread pointer if found; nullptr otherwise.
      **/
-    virtual bool dispatchEvent( Event & eventElem ) override;
+    [[nodiscard]]
+    DispatcherThread * event_consumer_thread( const RuntimeClassID & whichClass ) final;
+
+/************************************************************************/
+// EventDispatcherBase overrides
+/************************************************************************/
+
+    /**
+     * \brief   Wraps the base dispatch with watchdog guard calls so the watchdog can detect a
+     *          stuck event handler.
+     *
+     * \param   eventElem       Event to dispatch.
+     * \return  True if at least one consumer processed the event; false otherwise.
+     **/
+    bool dispatch_event( Event & eventElem ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -196,52 +163,53 @@ private:
     /**
      * \brief   Binding (master) component object
      **/
-    Component &               mBindingComponent;
+    Component &             mBindingComponent;
 
     /**
      * \brief   Worker Thread Consumer object
      **/
-    IEWorkerThreadConsumer &   mWorkerThreadConsumer;
+    WorkerThreadConsumer &  mWorkerThreadConsumer;
 
     /**
      * \brief   The watchdog object to track the event processing.
      **/
-    Watchdog                    mWatchdog;
+    Watchdog                mWatchdog;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Returns reference of Worker Thread
+     * \brief   Returns a reference to this worker thread.
      **/
-    inline WorkerThread & self( void );
+    inline WorkerThread & self() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    WorkerThread( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( WorkerThread );
+    WorkerThread() = delete;
+    AREG_NOCOPY_NOMOVE( WorkerThread );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // WorkerThread class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline Component& WorkerThread::getBindingComponent( void ) const
+inline Component& WorkerThread::binding_component() const noexcept
 {
-    return static_cast<Component &>(mBindingComponent);
+    return mBindingComponent;
 }
 
-inline WorkerThread& WorkerThread::self( void )
+inline WorkerThread& WorkerThread::self() noexcept
 {
     return (*this);
 }
 
-inline uint32_t WorkerThread::getWatchdogTimeout(void) const
+inline uint32_t WorkerThread::watchdog_timeout() const noexcept
 {
-    return mWatchdog.getTimeout();
+    return mWatchdog.timeout();
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_WORKERTHREAD_HPP

@@ -15,74 +15,80 @@
 #include "areg/ipc/private/ClientReceiveThread.hpp"
 
 #include "areg/base/RemoteMessage.hpp"
+#include "areg/base/SocketDefs.hpp"
 #include "areg/ipc/ClientConnection.hpp"
-#include "areg/ipc/IERemoteMessageHandler.hpp"
-#include "areg/ipc/private/NEConnection.hpp"
+#include "areg/ipc/RemoteMessageHandler.hpp"
+#include "areg/ipc/private/ConnectionDefs.hpp"
 
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
+namespace areg {
 
-DEF_LOG_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);
+DEF_LOG_SCOPE(areg_ipc_private_ClientReceiveThread, run_dispatcher);
 
-ClientReceiveThread::ClientReceiveThread(IERemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix)
-    : DispatcherThread  (namePrefix + NEConnection::CLIENT_RECEIVE_MESSAGE_THREAD, NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM)
+ClientReceiveThread::ClientReceiveThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix)
+    : DispatcherThread  (namePrefix + areg::CLIENT_RECEIVE_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_SIZE_MAXIMUM)
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
-    , mBytesReceive     ( 0 )
-    , mSaveDataReceive  ( false )
+    , mRecvStats        ( )
 {
 }
 
-bool ClientReceiveThread::runDispatcher(void)
+bool ClientReceiveThread::run_dispatcher()
 {
-    LOG_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);
-    LOG_DBG("Starting client service dispatcher thread [ %s ]", getName().getString());
-    
-    readyForEvents( true );
+    LOG_SCOPE( areg_ipc_private_ClientReceiveThread, run_dispatcher );
+    LOG_DBG("Starting client service dispatcher thread [ %s ]", name().as_string());
 
-    IESyncObject* syncObjects[2] {&mEventExit, &mEventQueue};
+    // Client receive thread serves one socket.
+    areg::set_receive_mode(areg::ReceiveMode::MonoCache);
+
+    ready_for_events( true );
+
+    SyncObject* syncObjects[2] {&mEventExit, &mEventQueue};
     MultiLock multiLock(syncObjects, 2, false);
     RemoteMessage msgReceived;
-    int whichEvent{ static_cast<int>(EventDispatcherBase::eEventOrder::EventError) };
+    int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
+
+    constexpr uint32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
+    uint32_t drainCount{ 0u };
 
     do
     {
-        whichEvent = multiLock.lock(NECommon::DO_NOT_WAIT, false);
+        whichEvent = drainCount == 0u ? multiLock.lock(areg::DO_NOT_WAIT, false) : MultiLock::LOCK_INDEX_TIMEOUT;
+
         if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
         {
-            whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue); // escape quit
-            int sizeReceive = mConnection.receiveMessage( msgReceived );
+            whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue); // escape quit
+            int32_t sizeReceive = mConnection.receive_message( msgReceived );
             if ( sizeReceive <= 0 )
             {
-                msgReceived.invalidate();
-                mRemoteService.failedReceiveMessage( mConnection.getSocket() );
-                whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventError);
+                mRemoteService.failed_receive_message( mConnection.socket() );
+                whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
+                drainCount = 0u;
             }
             else
             {
-                if (mSaveDataReceive)
-                {
-                    mBytesReceive += static_cast<uint32_t>(sizeReceive);
-                }
-
-                mRemoteService.processReceivedMessage( msgReceived, mConnection.getSocket( ) );
+                accumulate_received(static_cast<uint64_t>(sizeReceive), 1);
+                mRemoteService.process_received_message( msgReceived, mConnection.socket( ) );
+                drainCount = (drainCount + 1) % DRAIN_LIMIT;
             }
-
-            msgReceived.invalidate();
         }
         else
         {
-            Event * eventElem = whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue) ? pickEvent() : nullptr;
-            whichEvent = isExitEvent(eventElem) ? static_cast<int>(EventDispatcherBase::eEventOrder::EventExit) : whichEvent;
+            Event * eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pick_event() : nullptr;
+            whichEvent = is_exit_event(eventElem) ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) : whichEvent;
+            drainCount = 0;
         }
 
-    } while (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue));
+    } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue));
 
-    readyForEvents(false);
-    removeAllEvents( );
+    ready_for_events(false);
+    remove_all_events( );
 
     LOG_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]"
-                , getName().getString()
-                , whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit) ? "SUCCESS" : "FAILURE");
+                , name().as_string()
+                , whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) ? "SUCCESS" : "FAILURE");
 
-    return (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit));
+    return (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
 }
+
+} // namespace areg

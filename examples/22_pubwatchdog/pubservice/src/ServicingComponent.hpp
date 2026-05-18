@@ -12,9 +12,9 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/22_pubwatchdog/services/HelloWatchdogStub.hpp"
+#include "examples/22_pubwatchdog/services/HelloWatchdogProviderBase.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
@@ -24,14 +24,14 @@
             sleep. If sleeping time is bigger than the watchdog timeout, the
             system terminates the thread and restarts again.
  **/
-class ServicingComponent    : public    Component
-                            , protected HelloWatchdogStub
+class ServicingComponent final  : public    areg::Component
+                                , protected HelloWatchdogProviderBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // HelloWorld Interface Requests
@@ -42,52 +42,52 @@ protected:
      * \brief   Request call.
      *          The response triggered when the thread resumed from suspended mode.
      * \param   timeoutSleep    The timeout in milliseconds to suspend the thread.
-     * \see     responseStartSleep
+     * \see     request_start_sleep
      **/
-    virtual void requestStartSleep( unsigned int timeoutSleep ) override;
+    void request_start_sleep( uint32_t timeoutSleep ) final;
 
     /**
      * \brief   Request call.
      *          Called to stop the service.
      * \note    Has no response
      **/
-    virtual void requestStopService( void ) override;
+    void request_stop_service() final;
 
     /**
      * \brief   Request call.
      *          Called to shutdown service and exit application.
      * \note    Has no response
      **/
-    virtual void requestShutdownService( void ) override;
+    void request_shutdown_service() final;
 
 /************************************************************************/
-// StubBase overrides. Triggered by Component on startup.
+// ProviderBase overrides. Triggered by Component on startup.
 /************************************************************************/
 
     /**
      * \brief   This function is triggered by Component when starts up.
      *          Overwrite this method and set appropriate request and
      *          attribute update notification event listeners here
-     * \param   holder  The holder component of service interface of Stub,
+     * \param   holder  The holder component of service interface of Provider,
      *                  which started up.
      **/
-    virtual void startupServiceInterface( Component & holder ) override;
+    void startup_service_interface( areg::Component & holder ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ServicingComponent & self( void );
+    inline ServicingComponent & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    ServicingComponent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServicingComponent );
+    ServicingComponent() = delete;
+    AREG_NOCOPY_NOMOVE( ServicingComponent );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent inline methods
 //////////////////////////////////////////////////////////////////////////
-inline ServicingComponent & ServicingComponent::self( void )
+inline ServicingComponent & ServicingComponent::self()
 {   return (*this);     }

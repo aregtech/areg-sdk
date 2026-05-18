@@ -8,7 +8,7 @@ and testing the correct behavior of notifications when Subscribers run in the sa
 </Description>
     </Overview>
     <DataTypeList>
-        <DataType ID="8" Name="eServiceState" Type="Enumeration" Values="default">
+        <DataType ID="8" Name="RunState" Type="Enumeration" Values="default">
             <Description>The state of the Publisher (service provider)</Description>
             <FieldList>
                 <EnumEntry ID="9" Name="Uninitialized">
@@ -58,7 +58,7 @@ which contains string as a value and name of a service, which updates the value.
         <Attribute ID="4" Name="IntegerAlways" DataType="sInteger" Notify="Always">
             <Description>This  integer should send update notification always when set.</Description>
         </Attribute>
-        <Attribute ID="12" Name="ServiceProviderState" DataType="eServiceState" Notify="OnChange">
+        <Attribute ID="12" Name="ServiceProviderState" DataType="RunState" Notify="OnChange">
             <Description>The state of service provider. The value is always valid, updated on change.</Description>
         </Attribute>
     </AttributeList>

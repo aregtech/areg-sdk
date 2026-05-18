@@ -19,6 +19,8 @@
   * Include files.
   ************************************************************************/
 #include "areg/component/TimerBase.hpp"
+#include "areg/base/MathDefs.hpp"
+namespace areg {
 
  /************************************************************************
   * Dependencies.
@@ -27,45 +29,36 @@ class ComponentThread;
 class WorkerThread;
 
 /**
- * \brief   Watchdog is a guarding object to track thread execution.
- *          It is instantiated in threads and triggered each time the thread
- *          starts to process an event. If the watchdog timeout expired before
- *          the thread could process an event, it riggers procedure to
- *          terminate the component thread and restarts again.
- *          There is no guarantee that terminated thread will make all memory
- *          and stack cleanups. The terminated thread cleans up all components
- *          and proxies registered in the thread, all worker threads and then
- *          terminates the component thread, and restarts again.
- *          Set the watchdog timeout value big enough to process events.
- *          The watchdog timeout is set in milliseconds.
- *          If the watchdog timeout is zero (NECommon::WATCHDOG_IGNORE), the
- *          watchdog is ignored for the thread and thread is not terminated.
+ * \brief   Guards thread execution by monitoring event processing; terminates and restarts threads
+ *          that exceed timeout thresholds.
  **/
-class AREG_API Watchdog  : public TimerBase
+class AREG_API Watchdog final : public TimerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Object specific types and constants
 //////////////////////////////////////////////////////////////////////////
+    friend class WatchdogManager;
+
 public:
-#if defined(BIT64)
+#if (AREG_TARGET_PLATFORM == 64)
     /**
      * \brief   The Sequence number changed each time watchdog is started. It can be zero.
      **/
-    using SEQUENCE_ID   = unsigned int;
+    using SEQUENCE_ID   = uint32_t;
     /**
      * \brief   The unique ID of watchdog guard. It is not a zero and the maximum value is 0xFFFFFFFF.
      **/
-    using GUARD_ID      = unsigned int;
-#else   // !defined(BIT64)
+    using GUARD_ID      = uint32_t;
+#elif (AREG_TARGET_PLATFORM == 32)
     /**
      * \brief   The Sequence number changed each time watchdog is started. It can be zero.
      **/
-    using SEQUENCE_ID   = unsigned short;
+    using SEQUENCE_ID   = uint16_t;
     /**
      * \brief   The unique ID of watchdog guard. It is not a zero and the maximum value is 0xFFFF.
      **/
-    using GUARD_ID      = unsigned short;
-#endif  // defined(BIT64)
+    using GUARD_ID      = uint16_t;
+#endif  // (AREG_TARGET_PLATFORM == 64)
 
     /**
      * \brief   The watchdog ID, which is generated when the watchdog is started.
@@ -82,104 +75,105 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   The watchdog object bind with Component Thread. Should not be instantiated
-     *          for Worker Thread.
-     * \param   thread      The valid instance of the Component Thread.
-     * \param   msTimeout   Timeout in milliseconds of the Watchdog to check thread status.
-     *                      The timeout with value zero disables Watchdog
+     * \brief   Binds the watchdog to a component thread with an optional timeout.
+     *
+     * \param   thread          The component thread to monitor.
+     * \param   msTimeout       Timeout in milliseconds; zero disables watchdog.
      **/
-    Watchdog(ComponentThread& thread, uint32_t msTimeout = NECommon::WATCHDOG_IGNORE);
+    Watchdog(ComponentThread& thread, uint32_t msTimeout = areg::WATCHDOG_IGNORE);
 
     /**
-     * \brief   The watchdog object bind with Worker Thread. Should not be instantiated
-     *          for Component Thread.
-     * \param   thread      The valid instance of the Worker Thread.
-     * \param   msTimeout   Timeout in milliseconds of the Watchdog to check thread status.
-     *                      The timeout with value zero disables Watchdog
+     * \brief   Binds the watchdog to a worker thread with an optional timeout.
+     *
+     * \param   thread          The worker thread to monitor.
+     * \param   msTimeout       Timeout in milliseconds; zero disables watchdog.
      **/
-    Watchdog(WorkerThread& thread, uint32_t msTimeout = NECommon::WATCHDOG_IGNORE);
+    Watchdog(WorkerThread& thread, uint32_t msTimeout = areg::WATCHDOG_IGNORE);
 
-    /**
-     * \brief   Destructor.
-     **/
-    virtual ~Watchdog( void );
+    virtual ~Watchdog();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Call to start the watchdog.
+     * \brief   Starts the watchdog monitoring.
      **/
-    void startGuard(void);
+    void start_guard();
 
     /**
-     * \brief   Call to stop the watchdog.
+     * \brief   Stops the watchdog monitoring.
      **/
-    void stopGuard(void);
+    void stop_guard();
 
     /**
-     * \brief   Returns true if watchdog object is valid and can start timer.
-     *          The Watchdog is valid if the timeout is not zero.
+     * \brief   Returns true if the watchdog is valid and enabled (timeout is not zero).
      **/
-    inline bool isValid( void ) const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
-     * \brief   Returns the watchdog ID.
-     */
-    inline Watchdog::GUARD_ID getId(void) const;
+     * \brief   Returns the watchdog guard identifier.
+     **/
+    [[nodiscard]]
+    inline Watchdog::GUARD_ID id() const noexcept;
 
     /**
      * \brief   Returns the watchdog activation sequence number.
      **/
-    inline Watchdog::SEQUENCE_ID getSequence(void) const;
+    [[nodiscard]]
+    inline Watchdog::SEQUENCE_ID sequence() const noexcept;
 
     /**
-     * \brief   Returns the instance of component thread that contains this watchdog.
-     *          If watchdog belongs to worker thread, it returns the thread of owning component.
-     *          The component thread of the watchdog is always valid.
+     * \brief   Returns the component thread associated with the watchdog.
      **/
-    inline const ComponentThread& getComponentThread(void) const;
+    [[nodiscard]]
+    inline const ComponentThread& component_thread() const noexcept;
 
     /**
-     * \brief   Out of Guard ID and Sequence number generates watchdog ID.
-     *          The ID changed each time when timer is started.
+     * \brief   Generates a watchdog ID from the current guard ID and sequence number.
      **/
-    inline WATCHDOG_ID watchdogId(void);
+    [[nodiscard]]
+    inline WATCHDOG_ID watchdog_id() const noexcept;
 
     /**
-     * \brief   Out of passed Guard ID and Sequence number generates watchdog ID.
-     * \param   guardId     The guard ID.
+     * \brief   Generates a watchdog ID from the given guard ID and sequence number.
+     *
+     * \param   guardId     The guard identifier.
      * \param   sequence    The sequence number.
-     * \return  Generated watchdog ID.
+     * \return  The generated watchdog ID.
      **/
-    inline static WATCHDOG_ID makeWatchdogId(GUARD_ID guardId, SEQUENCE_ID sequence);
+    [[nodiscard]]
+    inline static constexpr WATCHDOG_ID make_watchdog_id(GUARD_ID guardId, SEQUENCE_ID sequence) noexcept;
 
     /**
-     * \brief   Extracts the Guard ID from previously generated watchdog ID.
+     * \brief   Extracts the guard ID from a watchdog ID.
      *
-     * \param   watchdogId  The previously generated watchdog ID.
-     * \return  Guard ID, which exists in watchdog ID value.
+     * \param   watchdog_id     The watchdog ID.
+     * \return  The extracted guard ID.
      **/
-    inline static GUARD_ID makeGuardId(Watchdog::WATCHDOG_ID watchdogId);
+    [[nodiscard]]
+    inline static constexpr GUARD_ID make_guard_id(Watchdog::WATCHDOG_ID watchdog_id) noexcept;
 
     /**
-     * \brief   Extracts the sequence number from previously generated watchdog ID.
+     * \brief   Extracts the sequence number from a watchdog ID.
      *
-     * \param   watchdogId  The previously generated watchdog ID.
-     * \return  Sequence number, which exists in watchdog ID value.
+     * \param   watchdog_id     The watchdog ID.
+     * \return  The extracted sequence number.
      **/
-    inline static SEQUENCE_ID makeSequenceId(Watchdog::WATCHDOG_ID watchdogId);
+    [[nodiscard]]
+    inline static constexpr SEQUENCE_ID make_sequence_id(Watchdog::WATCHDOG_ID watchdog_id) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   This static method generates unique Guard ID for each watchdog object.
-     * \return  Generated unique identifier of the Watchdog object.
+     * \brief   Generates a unique guard ID for each watchdog.
+     *
+     * \return  The generated unique guard ID.
      **/
-    static GUARD_ID _generateId(void);
+    static GUARD_ID _generate_id();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -203,65 +197,65 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    Watchdog(void) = delete;
-    DECLARE_NOCOPY_NOMOVE(Watchdog);
+    Watchdog() = delete;
+    AREG_NOCOPY_NOMOVE(Watchdog);
 };
 
 //////////////////////////////////////////////////////////////////////////
 // Watchdog inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline bool Watchdog::isValid(void) const
+inline bool Watchdog::is_valid() const noexcept
 {
     return (mHandle != nullptr);
 }
 
-inline Watchdog::GUARD_ID Watchdog::getId(void) const
+inline Watchdog::GUARD_ID Watchdog::id() const noexcept
 {
     return mGuardId;
 }
 
-inline Watchdog::SEQUENCE_ID Watchdog::getSequence(void) const
+inline Watchdog::SEQUENCE_ID Watchdog::sequence() const noexcept
 {
     return mSequence;
 }
 
-inline const ComponentThread& Watchdog::getComponentThread(void) const
+inline const ComponentThread& Watchdog::component_thread() const noexcept
 {
     return mComponentThread;
 }
 
-inline Watchdog::WATCHDOG_ID Watchdog::watchdogId(void)
+inline Watchdog::WATCHDOG_ID Watchdog::watchdog_id() const noexcept
 {
-    return Watchdog::makeWatchdogId(mGuardId, mSequence);
+    return Watchdog::make_watchdog_id(mGuardId, mSequence);
 }
 
-inline Watchdog::WATCHDOG_ID Watchdog::makeWatchdogId(GUARD_ID guardId, SEQUENCE_ID sequence)
+inline constexpr Watchdog::WATCHDOG_ID Watchdog::make_watchdog_id(GUARD_ID guardId, SEQUENCE_ID sequence) noexcept
 {
-#if defined(BIT64)
-    return static_cast<WATCHDOG_ID>(MACRO_MAKE_64(guardId, sequence));
-#else   // !defined(BIT64)
-    return static_cast<WATCHDOG_ID>(MACRO_MAKE_32(guardId, sequence));
-#endif  // defined(BIT64)
+#if (AREG_TARGET_PLATFORM ==64)
+    return static_cast<WATCHDOG_ID>(areg::make64(guardId, sequence));
+#elif (AREG_TARGET_PLATFORM == 32)
+    return static_cast<WATCHDOG_ID>(areg::make32(guardId, sequence));
+#endif  // (AREG_TARGET_PLATFORM == 64)
 }
 
-inline Watchdog::GUARD_ID Watchdog::makeGuardId(Watchdog::WATCHDOG_ID watchdogId)
+inline constexpr Watchdog::GUARD_ID Watchdog::make_guard_id(Watchdog::WATCHDOG_ID watchdog_id) noexcept
 {
-#if defined(BIT64)
-    return static_cast<GUARD_ID>(MACRO_64_HI_BYTE32(watchdogId));
-#else   // !defined(BIT64)
-    return static_cast<GUARD_ID>(MACRO_32_HI_BYTE16(watchdogId));
-#endif  // defined(BIT64)
+#if (AREG_TARGET_PLATFORM == 64)
+    return static_cast<GUARD_ID>(areg::hi_dword(watchdog_id));
+#elif (AREG_TARGET_PLATFORM == 32)
+    return static_cast<GUARD_ID>(areg::hi_word(watchdog_id));
+#endif  // (AREG_TARGET_PLATFORM == 64)
 }
 
-inline Watchdog::SEQUENCE_ID Watchdog::makeSequenceId(Watchdog::WATCHDOG_ID watchdogId)
+inline constexpr Watchdog::SEQUENCE_ID Watchdog::make_sequence_id(Watchdog::WATCHDOG_ID watchdog_id) noexcept
 {
-#if defined(BIT64)
-    return static_cast<GUARD_ID>(MACRO_64_LO_BYTE32(watchdogId));
-#else   // !defined(BIT64)
-    return static_cast<GUARD_ID>(MACRO_32_LO_BYTE16(watchdogId));
-#endif  // defined(BIT64)
+#if (AREG_TARGET_PLATFORM == 64)
+    return static_cast<SEQUENCE_ID>(areg::lo_dword(watchdog_id));
+#elif (AREG_TARGET_PLATFORM == 32)
+    return static_cast<SEQUENCE_ID>(areg::lo_word(watchdog_id));
+#endif  // (AREG_TARGET_PLATFORM == 64)
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_WATCHDOG_HPP
-

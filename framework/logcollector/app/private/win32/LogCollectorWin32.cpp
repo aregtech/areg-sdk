@@ -24,8 +24,8 @@
     #endif  // _MSC_VER
 
 #include "areg/appbase/Application.hpp"
-#include "areg/appbase/NEApplication.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/appbase/AppDefs.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/String.hpp"
@@ -33,6 +33,9 @@
 #ifndef WIN32_LEAN_AND_MEAN
     #define WIN32_LEAN_AND_MEAN
 #endif  // WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif // !NOMINMAX
 #include <Windows.h>
 #include <tchar.h>
 
@@ -47,34 +50,34 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
     static_cast<void>(argv);
     static_cast<void>(envp);
-    int result{ ServiceApplicationBase::RESULT_FAILED_RUN };
-    char ** argvTemp = NESystemService::convertArguments<TCHAR>(argv, argc);
-    LogCollector& logger = LogCollector::getInstance();
-    logger.parseOptions(static_cast<int>(argc), argvTemp, NESystemService::ServiceOptionSetup, MACRO_ARRAYLEN(NESystemService::ServiceOptionSetup));
-    result = logger.serviceMain(logger.getCurrentOption(), nullptr);
-    NESystemService::deleteArguments(argvTemp, argc);
+    int32_t result{ areg::ext::ServiceApplicationBase::RESULT_FAILED_RUN };
+    char ** argvTemp = areg::ext::convert_arguments<TCHAR>(argv, argc);
+    LogCollector& logger = LogCollector::instance();
+    logger.parse_options(static_cast<int32_t>(argc), argvTemp, areg::ext::ServiceOptionSetup, std::size(areg::ext::ServiceOptionSetup));
+    result = logger.service_main(logger.current_option(), nullptr);
+    areg::ext::delete_arguments(argvTemp, argc);
 
     return result;
 }
 #else   // _MINGW
 int main(int argc, char* argv[], char* envp[])
 {
-    LogCollector& logger = LogCollector::getInstance();
-    logger.parseOptions(argc, argv, NESystemService::ServiceOptionSetup, MACRO_ARRAYLEN(NESystemService::ServiceOptionSetup));
-    return logger.serviceMain(logger.getCurrentOption(), nullptr);
+    LogCollector& logger = LogCollector::instance();
+    logger.parse_options(argc, argv, areg::ext::ServiceOptionSetup, std::size(areg::ext::ServiceOptionSetup));
+    return logger.service_main(logger.current_option(), nullptr);
 }
 #endif  // _MINGW
 
-VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
+VOID WINAPI _win32_service_main( DWORD argc, LPTSTR * argv )
 {
     try
     {
-        LogCollector& logger = LogCollector::getInstance();
-        logger.setState(NESystemService::eSystemServiceState::ServiceStarting);
-        char** argvTemp = NESystemService::convertArguments<TCHAR>(argv, static_cast<int>(argc));
-        logger.serviceMain(NESystemService::eServiceOption::CMD_Service, argvTemp != nullptr ? argvTemp[0] : nullptr);
-        NESystemService::deleteArguments(argvTemp, static_cast<int>(argc));
-        logger.setState(NESystemService::eSystemServiceState::ServiceStopped);
+        LogCollector& logger = LogCollector::instance();
+        logger.set_state(areg::ext::ServicePhase::Starting);
+        char** argvTemp = areg::ext::convert_arguments<TCHAR>(argv, static_cast<int32_t>(argc));
+        logger.service_main(areg::ext::ServiceOption::CMD_Service, argvTemp != nullptr ? argvTemp[0] : nullptr);
+        areg::ext::delete_arguments(argvTemp, static_cast<int32_t>(argc));
+        logger.set_state(areg::ext::ServicePhase::Stopped);
     }
     catch (const std::exception& /*ex*/)
     {
@@ -82,24 +85,24 @@ VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
     }
 }
 
-VOID WINAPI _win32ServiceCtrlHandler(DWORD CtrlCode)
+VOID WINAPI _win32_service_ctrl_handler(DWORD CtrlCode)
 {
     switch (CtrlCode)
     {
     case SERVICE_CONTROL_STOP:
-        LogCollector::getInstance().controlService(SystemServiceBase::eServiceControl::ServiceStop);
+        LogCollector::instance().control_service(areg::ext::SystemServiceBase::ServiceControl::ServiceStop);
         break;
 
     case SERVICE_CONTROL_PAUSE:
-        LogCollector::getInstance().controlService(SystemServiceBase::eServiceControl::ServicePause);
+        LogCollector::instance().control_service(areg::ext::SystemServiceBase::ServiceControl::ServicePause);
         break;
 
     case SERVICE_CONTROL_CONTINUE:
-        LogCollector::getInstance().controlService(SystemServiceBase::eServiceControl::ServiceContinue);
+        LogCollector::instance().control_service(areg::ext::SystemServiceBase::ServiceControl::ServiceContinue);
         break;
 
     case SERVICE_CONTROL_SHUTDOWN:
-        LogCollector::getInstance().controlService(SystemServiceBase::eServiceControl::ServiceShutdown);
+        LogCollector::instance().control_service(areg::ext::SystemServiceBase::ServiceControl::ServiceShutdown);
         break;
 
     default:

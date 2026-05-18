@@ -16,13 +16,13 @@
 
 #ifdef POSIX
 
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/NEString.hpp"
+#include "areg/base/StringDefs.hpp"
 #include "areg/appbase/Application.hpp"
-#include "areg/appbase/NEApplication.hpp"
+#include "areg/appbase/AppDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Global functions, Begin
@@ -30,9 +30,9 @@
 
 int main(int argc, char* argv[], char* envp[])
 {
-    LogCollector& logger = LogCollector::getInstance();
-    logger.parseOptions(argc, argv, NESystemService::ServiceOptionSetup, MACRO_ARRAYLEN(NESystemService::ServiceOptionSetup));
-    return logger.serviceMain(logger.getCurrentOption(), nullptr);
+    LogCollector& logger = LogCollector::instance();
+    logger.parse_options(argc, argv, areg::ext::ServiceOptionSetup, std::size(areg::ext::ServiceOptionSetup));
+    return logger.service_main(logger.current_option(), nullptr);
 }
 
 //////////////////////////////////////////////////////////////////////////

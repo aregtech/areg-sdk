@@ -3,85 +3,85 @@
  * \file            chatter/services/ConnectionHandler.hpp
  * \brief           The connection handler. Contains service name and
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
 #include "areg/base/DateTime.hpp"
-#include "areg/base/SyncObjects.hpp"
-#include "common/NECommon.hpp"
+#include "areg/base/SyncPrimitives.hpp"
+#include "common/ChatDefs.hpp"
 
 class ConnectionHandler
 {
 public:
-    ConnectionHandler( void );
-    virtual ~ConnectionHandler( void );
+    ConnectionHandler();
+    virtual ~ConnectionHandler();
 
 public:
-    inline void SetNickName( const String & nickName );
+    inline void SetNickName( const areg::String & nickName );
 
-    inline const String & GetNickName( void ) const;
+    inline const areg::String & GetNickName() const;
 
     void SetCookie( uint32_t cookie );
 
-    uint32_t GetCookie( void ) const;
+    uint32_t GetCookie() const;
 
     void SetConnectCookie( uint32_t cookie );
 
-    uint32_t GetConnectCookie( void ) const;
+    uint32_t GetConnectCookie() const;
 
-    uint32_t GetCookieDirect( void ) const;
+    uint32_t GetCookieDirect() const;
 
     inline void SetConnected( bool isConnected );
 
-    inline bool GetConnected( void ) const;
+    inline bool GetConnected() const;
 
     inline void SetRegistered( bool isRegistered );
 
-    inline bool GetRegistered( void ) const;
+    inline bool GetRegistered() const;
 
-    inline void SetTimeConnect( const DateTime & dateTime );
+    inline void SetTimeConnect( const areg::DateTime & dateTime );
 
-    inline const DateTime & GetTimeConnect( void ) const;
+    inline const areg::DateTime & GetTimeConnect() const;
 
-    inline void SetTimeConnected( const DateTime & dateTime );
+    inline void SetTimeConnected( const areg::DateTime & dateTime );
 
-    inline const DateTime & GetTimeConnected( void ) const;
+    inline const areg::DateTime & GetTimeConnected() const;
 
-    inline bool HasName( void ) const;
+    inline bool HasName() const;
 
-    inline bool CanRegister( void ) const;
+    inline bool CanRegister() const;
 
-    inline bool CanConnect( void ) const;
+    inline bool CanConnect() const;
 
-    inline void RemoveConnections( void );
+    inline void RemoveConnections();
 
-    inline const NECommon::ListConnections & GetConnectionList( void ) const;
+    inline const chat::ListConnections & GetConnectionList() const;
 
-    bool IsValid( void ) const;
+    bool IsValid() const;
 
-    bool AddConnection( const NECommon::sConnection & newConnection );
+    bool AddConnection( const chat::ConnectionRecord & newConnection );
 
-    int AddConnections( const NECommon::ListConnections & listConnections );
+    int32_t AddConnections( const chat::ListConnections & listConnections );
 
-    bool RemoveConnection( const NECommon::sConnection & connection );
+    bool RemoveConnection( const chat::ConnectionRecord & connection );
 
-    bool ConnectionExist( const NECommon::sConnection & connection );
+    bool ConnectionExist( const chat::ConnectionRecord & connection );
 
-    void ResetConnectionList( void );
-
-private:
-
-    int findConnection( const NECommon::sConnection & connection ) const;
+    void ResetConnectionList();
 
 private:
-    NECommon::ListConnections mListConnections;
-    String        mNickName;
+
+    int32_t findConnection( const chat::ConnectionRecord & connection ) const;
+
+private:
+    chat::ListConnections mListConnections;
+    areg::String        mNickName;
     uint32_t      mCookie;
     uint32_t      mConnectCookie;
-    DateTime      mTimeConnect;
-    DateTime      mTimeConnected;
+    areg::DateTime      mTimeConnect;
+    areg::DateTime      mTimeConnected;
     bool          mIsRegistered;
     bool          mIsConnected;
-    mutable Mutex mLock;
+    mutable areg::Mutex mLock;
 
 private:
     ConnectionHandler( const ConnectionHandler & /*src*/ );
@@ -89,93 +89,93 @@ private:
 };
 
 
-inline void ConnectionHandler::SetNickName(const String & nickName)
+inline void ConnectionHandler::SetNickName(const areg::String & nickName)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     mIsRegistered = mNickName != nickName ? false : mIsRegistered;
     mNickName   = nickName;
 }
 
-inline const String & ConnectionHandler::GetNickName(void) const
+inline const areg::String & ConnectionHandler::GetNickName() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return mNickName;
 }
 
 inline void ConnectionHandler::SetConnected(bool isConnected)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     mIsConnected    = isConnected;
     mIsRegistered   = mIsConnected ? mIsRegistered : false;
 }
 
-inline bool ConnectionHandler::GetConnected(void) const
+inline bool ConnectionHandler::GetConnected() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return mIsConnected;
 }
 
 inline void ConnectionHandler::SetRegistered(bool isRegistered)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     mIsRegistered   = isRegistered;
 }
 
-inline bool ConnectionHandler::GetRegistered(void) const
+inline bool ConnectionHandler::GetRegistered() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return mIsRegistered;
 }
 
-inline void ConnectionHandler::SetTimeConnect(const DateTime & dateTime)
+inline void ConnectionHandler::SetTimeConnect(const areg::DateTime & dateTime)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     mTimeConnect    = dateTime;
 }
 
-inline const DateTime & ConnectionHandler::GetTimeConnect(void) const
+inline const areg::DateTime & ConnectionHandler::GetTimeConnect() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return mTimeConnect;
 }
 
-inline void ConnectionHandler::SetTimeConnected(const DateTime & dateTime)
+inline void ConnectionHandler::SetTimeConnected(const areg::DateTime & dateTime)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     mTimeConnected  = dateTime;
 }
 
-inline const DateTime & ConnectionHandler::GetTimeConnected(void) const
+inline const areg::DateTime & ConnectionHandler::GetTimeConnected() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return mTimeConnected;
 }
 
-inline bool ConnectionHandler::HasName(void) const
+inline bool ConnectionHandler::HasName() const
 {
-    Lock lock(mLock);
-    return (mNickName.isEmpty() == false);
+    areg::Lock lock(mLock);
+    return (mNickName.is_empty() == false);
 }
 
-inline bool ConnectionHandler::CanRegister(void) const
+inline bool ConnectionHandler::CanRegister() const
 {
-    Lock lock(mLock);
-    return (mNickName.isEmpty() == false) && (mCookie != NECommon::InvalidCookie) && (mIsRegistered == false);
+    areg::Lock lock(mLock);
+    return (mNickName.is_empty() == false) && (mCookie != chat::InvalidCookie) && (mIsRegistered == false);
 }
 
-inline bool ConnectionHandler::CanConnect(void) const
+inline bool ConnectionHandler::CanConnect() const
 {
-    Lock lock(mLock);
-    return (mNickName.isEmpty( ) == false) && (mCookie == NECommon::InvalidCookie);
+    areg::Lock lock(mLock);
+    return (mNickName.is_empty( ) == false) && (mCookie == chat::InvalidCookie);
 }
 
-inline void ConnectionHandler::RemoveConnections(void)
+inline void ConnectionHandler::RemoveConnections()
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     mListConnections.clear();
 }
 
-inline const NECommon::ListConnections & ConnectionHandler::GetConnectionList(void) const
+inline const chat::ListConnections & ConnectionHandler::GetConnectionList() const
 {
     return mListConnections;
 }

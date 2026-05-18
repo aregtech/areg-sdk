@@ -14,37 +14,52 @@
  ************************************************************************/
 #include "areg/base/SocketClient.hpp"
 
-SocketClient::SocketClient( const char * hostName, unsigned short portNr )
+namespace areg {
+
+SocketClient::SocketClient( const char* hostName, uint16_t portNr )
     : Socket  ( )
 {
-    mAddress.resolveAddress(hostName != nullptr ? hostName : NESocket::LocalHost, portNr, false);
+    mAddress.resolve_address(areg::is_empty(hostName) ? areg::LocalHost : hostName, portNr, false);
 }
 
-SocketClient::SocketClient(const NESocket::SocketAddress & remoteAddress)
+SocketClient::SocketClient(const String& hostName, uint16_t portNr)
+    : Socket()
+{
+    mAddress.resolve_address(hostName.is_empty() ? areg::LocalHost : hostName, portNr, false);
+}
+
+SocketClient::SocketClient(const areg::SocketAddress & remoteAddress)
     : Socket  ( )
 {
     mAddress = remoteAddress;
 }
 
-bool SocketClient::createSocket(const char * hostName, unsigned short portNr)
+bool SocketClient::create(const String& hostName, uint16_t portNr)
 {
-    return ( mAddress.resolveAddress(hostName, portNr, false) && createSocket());
+    return (mAddress.resolve_address(hostName, portNr, false) && create());
 }
 
-bool SocketClient::createSocket( void )
+bool SocketClient::create(const char * hostName, uint16_t portNr)
 {
-    decreaseLock();
+    return ( mAddress.resolve_address(hostName, portNr, false) && create());
+}
 
-    if ( mAddress.isValid() )
+bool SocketClient::create()
+{
+    decrease_lock();
+
+    if ( mAddress.is_valid() )
     {
-    	SOCKETHANDLE hSocket = NESocket::clientSocketConnect(static_cast<const char *>(mAddress.getHostAddress()), mAddress.getHostPort());
-        if ( hSocket != NESocket::InvalidSocketHandle )
+        const SOCKETHANDLE hSocket = areg::client_connect(mAddress);
+        if ( hSocket != areg::InvalidSocketHandle )
         {
-        	mSocket = std::make_shared<SOCKETHANDLE>(hSocket);
-            mSendSize = NESocket::getMaxSendSize(hSocket);
-            mRecvSize = NESocket::getMaxReceiveSize(hSocket);
+            mSocket   = SocketHandle(hSocket);
+            mSendSize = areg::max_send_size(hSocket);
+            mRecvSize = areg::max_receive_size(hSocket);
         }
     }
 
-    return isValid();
+    return is_valid();
 }
+
+} // namespace areg

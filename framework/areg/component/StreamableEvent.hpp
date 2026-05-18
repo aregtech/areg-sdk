@@ -19,19 +19,16 @@
 /************************************************************************
  * Include files
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Event.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // StreamableEvent class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Streamable Event is communication event and provides 
- *          possibility to serialize and deserialize event data in the 
- *          streaming object. All Events used to transfer data are
- *          declared as streamable Event. The Streamable Event is not
- *          created and used directly. Instead, one of derived classes
- *          should be used.
+ * \brief   Base class for events that serialize and deserialize data using streaming objects. Not
+ *          created directly; use derived classes instead.
  **/
 class AREG_API StreamableEvent : public Event
 {
@@ -42,28 +39,27 @@ class AREG_API StreamableEvent : public Event
 //////////////////////////////////////////////////////////////////////////
 // Runtime declare
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME_EVENT(StreamableEvent)
+    AREG_DECLARE_RUNTIME_EVENT(StreamableEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Creates streamable event and defines event type.
-     * \param   eventType   The type of event.
+     * \brief   Initializes a streamable event with the specified event type.
+     *
+     * \param   eventType       The type of event.
      **/
-    explicit StreamableEvent( Event::eEventType eventType );
+    explicit StreamableEvent( areg::EventType eventType );
 
     /**
-     * \brief   Creates streamable event and initialize data
-     * \param   stream  The streaming object to read data
+     * \brief   Initializes a streamable event by deserializing data from the given input stream.
+     *
+     * \param   stream      The input stream to read event data from.
      **/
-    StreamableEvent( const IEInStream & stream );
+    StreamableEvent( const InStream & stream );
 
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~StreamableEvent( void ) = default;
+    virtual ~StreamableEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -73,25 +69,28 @@ protected:
 // StreamableEvent overrides
 /************************************************************************/
     /**
-     * \brief   Reads and initialize event data from streaming object.
-     * \param   stream  The streaming object to read out event data
-     * \return  Returns streaming object to read out data.
+     * \brief   Deserializes event data from the given input stream.
+     *
+     * \param   stream      The input stream to read from.
+     * \return  The input stream for method chaining.
      **/
-    virtual const IEInStream & readStream( const IEInStream & stream );
+    virtual const InStream & read_stream( const InStream & stream );
 
     /**
-     * \brief   Writes event data to streaming object
-     * \param   stream  The streaming object to write event data.
-     * \return  Returns streaming object to write event data.
+     * \brief   Serializes event data to the given output stream.
+     *
+     * \param   stream      The output stream to write to.
+     * \return  The output stream for method chaining.
      **/
-    virtual IEOutStream & writeStream( IEOutStream & stream ) const;
+    virtual OutStream & write_stream( OutStream & stream ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    StreamableEvent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( StreamableEvent );
+    StreamableEvent() = delete;
+    AREG_NOCOPY_NOMOVE( StreamableEvent );
 };
 
+} // namespace areg
 #endif  // AREG_COMPONENT_STREAMABLEEVENT_HPP

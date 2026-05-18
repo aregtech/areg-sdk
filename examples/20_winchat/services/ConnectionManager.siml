@@ -4,38 +4,38 @@
         <Description>The connection manager to register each application with client</Description>
     </Overview>
     <DataTypeList>
-        <DataType ID="3" Name="sConnection" Type="Imported">
-            <Location>common/NECommon.hpp</Location>
-            <Namespace>NECommon</Namespace>
-            <ImportedObject>sConnection</ImportedObject>
-            <Description>Imported sConnection structure.</Description>
+        <DataType ID="3" Name="ConnectionRecord" Type="Imported">
+            <Location>common/ChatDefs.hpp</Location>
+            <Namespace>chat</Namespace>
+            <ImportedObject>ConnectionRecord</ImportedObject>
+            <Description>Imported ConnectionRecord structure.</Description>
         </DataType>
         <DataType ID="4" Name="ListConnections" Type="Imported">
-            <Location>common/NECommon.hpp</Location>
-            <Namespace>NECommon</Namespace>
+            <Location>common/ChatDefs.hpp</Location>
+            <Namespace>chat</Namespace>
             <ImportedObject>ListConnections</ImportedObject>
             <Description>Imported list of connected clients object.</Description>
         </DataType>
         <DataType ID="5" Name="MapConnections" Type="Imported">
-            <Location>common/NECommon.hpp</Location>
-            <Namespace>NECommon</Namespace>
+            <Location>common/ChatDefs.hpp</Location>
+            <Namespace>chat</Namespace>
             <ImportedObject>MapConnections</ImportedObject>
             <Description>Connection map</Description>
         </DataType>
-        <DataType ID="15" Name="eConnectionResult" Type="Enumeration" Values="default">
+        <DataType ID="15" Name="ConnectionResult" Type="Enumeration" Values="default">
             <Description>The result of connection</Description>
             <FieldList>
-                <EnumEntry ID="16" Name="ConnectionAccepted">
+                <EnumEntry ID="16" Name="Accepted">
                     <Value>0</Value>
                     <Description>The connection is accepted by system</Description>
                 </EnumEntry>
-                <EnumEntry ID="17" Name="ConnectionClientExist">
+                <EnumEntry ID="17" Name="ClientExist">
                     <Description>The connection is rejected, client exists</Description>
                 </EnumEntry>
-                <EnumEntry ID="18" Name="ConnectionNameReserved">
+                <EnumEntry ID="18" Name="NameReserved">
                     <Description>The name is reserved and cannot be used.</Description>
                 </EnumEntry>
-                <EnumEntry ID="19" Name="ConnectionClosed">
+                <EnumEntry ID="19" Name="Closed">
                     <Description>The connection is closed by system.</Description>
                 </EnumEntry>
                 <EnumEntry ID="20" Name="InvalidClient">
@@ -50,7 +50,7 @@
         </Attribute>
     </AttributeList>
     <MethodList>
-        <Method ID="11" Name="Connect" MethodType="Response">
+        <Method ID="11" Name="connect" MethodType="Response">
             <Description>The result of connection request.</Description>
             <ParamList>
                 <Parameter ID="52" Name="nickName" DataType="String">
@@ -62,12 +62,12 @@
                 <Parameter ID="54" Name="dateTime" DataType="DateTime">
                     <Description>The client service connection time-stamp in UTC</Description>
                 </Parameter>
-                <Parameter ID="55" Name="conResult" DataType="eConnectionResult">
+                <Parameter ID="55" Name="conResult" DataType="ConnectionResult">
                     <Description>The connection operation result</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="14" Name="Connect" MethodType="Request" Response="Connect">
+        <Method ID="14" Name="connect" MethodType="Request" Response="connect">
             <Description>The request to connect to system</Description>
             <ParamList>
                 <Parameter ID="56" Name="nickName" DataType="String">
@@ -78,10 +78,10 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="24" Name="RegisterConnection" MethodType="Response">
+        <Method ID="24" Name="register_connection" MethodType="Response">
             <Description>The result of request to register direct connection service.</Description>
             <ParamList>
-                <Parameter ID="58" Name="connection" DataType="sConnection">
+                <Parameter ID="58" Name="connection" DataType="ConnectionRecord">
                     <Description>The connection structure after registration.</Description>
                 </Parameter>
                 <Parameter ID="59" Name="connectionList" DataType="ListConnections">
@@ -92,7 +92,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="30" Name="RegisterConnection" MethodType="Request" Response="RegisterConnection">
+        <Method ID="30" Name="register_connection" MethodType="Request" Response="register_connection">
             <Description>Request to register direct connection service.</Description>
             <ParamList>
                 <Parameter ID="61" Name="nickName" DataType="String">
@@ -109,7 +109,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="34" Name="Disconnect" MethodType="Request">
+        <Method ID="34" Name="disconnect" MethodType="Request">
             <Description>Request to disconnect.</Description>
             <ParamList>
                 <Parameter ID="65" Name="nickName" DataType="String">
@@ -123,7 +123,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="38" Name="ConnectionUpdated" MethodType="Broadcast">
+        <Method ID="38" Name="connection_updated" MethodType="Broadcast">
             <Description>Notifies all client components the connection has been updated.</Description>
             <ParamList>
                 <Parameter ID="68" Name="updatedList" DataType="MapConnections">
@@ -131,18 +131,18 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="40" Name="ClientConnected" MethodType="Broadcast">
+        <Method ID="40" Name="client_connected" MethodType="Broadcast">
             <Description>Notifies that a new client has been connected.</Description>
             <ParamList>
-                <Parameter ID="69" Name="clientConnected" DataType="sConnection">
+                <Parameter ID="69" Name="clientConnected" DataType="ConnectionRecord">
                     <Description>New client data, which contains nick name and connected date-time</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="43" Name="ClientDisconnected" MethodType="Broadcast">
+        <Method ID="43" Name="client_disconnected" MethodType="Broadcast">
             <Description>Notifies a client has been disconnected.</Description>
             <ParamList>
-                <Parameter ID="70" Name="clientLeft" DataType="sConnection">
+                <Parameter ID="70" Name="clientLeft" DataType="ConnectionRecord">
                     <Description>The connection data of disconnected client.</Description>
                 </Parameter>
             </ParamList>
@@ -150,16 +150,16 @@
     </MethodList>
     <ConstantList>
         <Constant ID="46" Name="InvalidCookie" DataType="uint32">
-            <Value>NECommon::InvalidCookie</Value>
+            <Value>chat::InvalidCookie</Value>
             <Description>Indicates invalid cookie value</Description>
         </Constant>
         <Constant ID="47" Name="NicknameMaxLen" DataType="uint32">
-            <Value>NECommon::MaxlenNickname</Value>
+            <Value>chat::MaxlenNickname</Value>
             <Description>The maximum length of nick name to register.</Description>
         </Constant>
     </ConstantList>
     <IncludeList>
-        <Location ID="59" Name="common/NECommon.hpp">
+        <Location ID="59" Name="common/ChatDefs.hpp">
             <Description>Shared data.</Description>
         </Location>
     </IncludeList>

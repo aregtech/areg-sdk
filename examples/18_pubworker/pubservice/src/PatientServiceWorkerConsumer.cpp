@@ -10,9 +10,9 @@
   ************************************************************************/
 #include "pubservice/src/PatientServiceWorkerConsumer.hpp"
 
-#include "areg/base/NEUtilities.hpp"
-#include "common/NECommon.hpp"
-#include "examples/18_pubworker/services/PatientInformationStub.hpp"
+#include "areg/base/UtilityDefs.hpp"
+#include "common/WorkerDefs.hpp"
+#include "examples/18_pubworker/services/PatientInformationProviderBase.hpp"
 #include "areg/appbase/Application.hpp"
 
 #ifdef _WINDOWS
@@ -24,14 +24,14 @@
 #endif  // _WINDOWS
 
 
-PatientServiceWorkerConsumer::PatientServiceWorkerConsumer(const char * consumerName, PatientInformationStub & infoPatient)
-    : IEWorkerThreadConsumer( NEUtilities::createComponentItemName( NECommon::ServiceNamePatientInfo, consumerName) )
+PatientServiceWorkerConsumer::PatientServiceWorkerConsumer(const char * consumerName, PatientInformationProviderBase & infoPatient)
+    : areg::WorkerThreadConsumer( areg::create_component_item_name( worker::ServiceNamePatientInfo, consumerName) )
 
-    , mStubPatienInfo       ( infoPatient )
+    , mPatienInfo       ( infoPatient )
 {
 }
 
-void PatientServiceWorkerConsumer::registerEventConsumers(WorkerThread & /* workThread */, ComponentThread & /* masterThread */ )
+void PatientServiceWorkerConsumer::register_event_consumers(areg::WorkerThread & /* workThread */, areg::ComponentThread & /* masterThread */ )
 {
     bool quitApp = false;
 
@@ -80,13 +80,13 @@ void PatientServiceWorkerConsumer::registerEventConsumers(WorkerThread & /* work
 
         printf("===============================\n");
 
-        NEPatientInformation::PatientInfo infoPatient;
+        PatientInformation::PatientInfo infoPatient;
         infoPatient.firstName   = firstName;
         infoPatient.lastName    = lastName;
         infoPatient.weight      = weight;
         infoPatient.age         = age;
 
-        mStubPatienInfo.setPatient(infoPatient);
+        mPatienInfo.set_patient(infoPatient);
 
         /******************************************
          * Do you want to continue or exit application?
@@ -103,10 +103,10 @@ void PatientServiceWorkerConsumer::registerEventConsumers(WorkerThread & /* work
 
     } while (!quitApp);
 
-    mStubPatienInfo.invalidatePatient();
-    Application::signalAppQuit();
+    mPatienInfo.invalidate_patient();
+    areg::Application::signal_quit();
 }
 
-void PatientServiceWorkerConsumer::unregisterEventConsumers(WorkerThread & /* workThread */)
+void PatientServiceWorkerConsumer::unregister_event_consumers(areg::WorkerThread & /* workThread */)
 {
 }

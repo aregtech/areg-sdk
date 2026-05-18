@@ -21,105 +21,103 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
-#include "areg/base/IEThreadConsumer.hpp"
-#include "areg/component/IEEventRouter.hpp"
+#include "areg/base/areg_global.h"
+#include "areg/base/ThreadConsumer.hpp"
+#include "areg/component/EventRouter.hpp"
 #include "areg/component/private/EventDispatcherBase.hpp"
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcher class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Event Dispatcher is a component of Dispatcher Thread to queue, 
- *          dispatch and process events in the thread. The dispatcher thread runs
- *          in the loop until gets exit event in the queue of Event Dispatcher.
- *          Do not make long processing and run methods in the long loop, 
- *          because this will delay event processing.
+ * \brief   Component of Dispatcher Thread to queue, dispatch, and process events in a thread. Runs
+ *          in a loop until exit event is received.
  **/
 class AREG_API EventDispatcher  : public    EventDispatcherBase
-                                , public    IEThreadConsumer
-                                , public    IEEventRouter
+                                , public    ThreadConsumer
+                                , public    EventRouter
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialization constructor.
-     * \param   name        The name of Event Dispatcher
-     * \param   maxQeueue   The maximum number of queued external events.
+     * \brief   Creates EventDispatcher with specified name and maximum queue size.
+     *
+     * \param   name            The name of Event Dispatcher
+     * \param   maxQeueue       The maximum number of queued external events.
      **/
     explicit EventDispatcher( const String & name, uint32_t maxQeueue);
-    /**
-     * \brief   Destructor.
-     **/
-    virtual ~EventDispatcher( void );
+
+    virtual ~EventDispatcher();
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations
 //////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************/
-// IEThreadConsumer interface overrides
+// ThreadConsumer interface overrides
 /************************************************************************/
 
     /**
-     * \brief	Function triggered with thread object has been created.
-     *          If this function returns true, thread will continue running.
-     *          If this function returns false, the thread will not run.
-     *          This function might be triggered from different thread
-     *          than function run() is called.
-     * \param	threadObj	The new created Thread object, 
-     *                      which contains this consumer.
-     * \return	Return true if thread should run. Return false, it should not run.
+     * \brief   Triggered when thread object has been created. Returns true if thread should
+     *          continue running; false if not.
+     *
+     * \param   threadObj       The new created Thread object, which contains this consumer.
+     * \return  Return true if thread should run. Return false, it should not run.
      **/
-    virtual bool onThreadRegistered( Thread * threadObj ) override;
+    [[nodiscard]]
+    bool on_thread_registered( Thread * threadObj ) override;
 
     /**
-     * \brief   Function is triggered from thread object when it is going to be destroyed.
+     * \brief   Triggered when thread object is being destroyed.
      **/
-    virtual void onThreadUnregistering( void ) override;
+    void on_thread_unregistering() override;
 
     /**
-     * \brief   Function is called from Thread object, when it is running and fully operable.
+     * \brief   Triggered when thread is running and fully operational.
      **/
-    virtual void onThreadRuns( void ) override;
+    void on_run() override;
 
     /**
-     * \brief   Function is called from Thread object when it is going to exit.
+     * \brief   Triggered when thread is going to exit.
+     *
      * \return  Return thread exit error code.
      **/
-    virtual int onThreadExit( void ) override;
+    int32_t on_exit() override;
 
 /************************************************************************/
-// IEEventRouter interface overrides
+// EventRouter interface overrides
 /************************************************************************/
 
     /**
-     * \brief	Posts event and delivers to its target thread / process.
-     * \param	eventElem	Event object to post.
-     * \return	Returns true if target was found and the event
-     *          delivered with success. Otherwise it returns false.
+     * \brief   Posts event and delivers it to its target thread or process.
+     *
+     * \param   eventElem       Event object to post.
+     * \return  Returns true if target was found and the event delivered successfully. Otherwise
+     *          returns false.
      **/
-    virtual bool postEvent(Event& eventElem) override;
+    [[nodiscard]]
+    bool post_event(Event& eventElem) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Return pointer to Dispatcher Thread where current dispatcher
-     *          is registered.
+     * \brief   Returns pointer to Dispatcher Thread where current dispatcher is registered.
      **/
-    inline DispatcherThread * getDispatcherThread( void ) const;
+    [[nodiscard]]
+    inline DispatcherThread * dispatcher_thread() const noexcept;
 
 protected:
     /**
-     * \brief   Returns true, if dispatcher has more queued events.
-     *          Here, only external events are counted, since
-     *          internal events are proceed immediately after external event.
+     * \brief   Returns true if dispatcher has more queued external events.
      **/
-    inline bool hasMoreEvents( void ) const;
+    [[nodiscard]]
+    inline bool has_more_events() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -136,21 +134,22 @@ private:
 // Hidden / Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    EventDispatcher( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( EventDispatcher );
+    EventDispatcher() = delete;
+    AREG_NOCOPY_NOMOVE( EventDispatcher );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
-inline DispatcherThread * EventDispatcher::getDispatcherThread( void ) const
+inline DispatcherThread * EventDispatcher::dispatcher_thread() const noexcept
 {
     return mDispatcherThread;
 }
 
-inline bool EventDispatcher::hasMoreEvents( void ) const
+inline bool EventDispatcher::has_more_events() const noexcept
 {
-    return (mExternalEvents.isEmpty() == false);
+    return (mExternalEvents.is_empty() == false);
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_EVENTDISPATCHER_HPP

@@ -11,42 +11,42 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "areg/component/IETimerConsumer.hpp"
-#include "examples/24_pubunblock/services/HelloUnblockClientBase.hpp"
+#include "areg/component/TimerConsumer.hpp"
+#include "examples/24_pubunblock/services/HelloUnblockConsumerBase.hpp"
 
-#include "areg/base/TEStack.hpp"
+#include "areg/base/Stack.hpp"
 #include "areg/component/Timer.hpp"
 
 /**
- * \brief   This service client sends a request every 200 ms (NEHelloUnblock::ClientTimeot).
+ * \brief   This service client sends a request every 200 ms (HelloUnblock::ClientTimeot).
  *          Since the service responses with the timeout 500 ms, if do not manually
  *          unblock the request it will fail with reason 'the request is busy'
- *          (NEService::eResultType::RequestBusy).
+ *          (areg::ResultType::RequestBusy).
  *          This client demonstrate that all requests are processed and sent to the client.
  *          Start multiple instances of the client to make sure that all clients properly
  *          receive requests.
  **/
-class ServiceClient : public    Component
-                    , private   HelloUnblockClientBase
-                    , private   IETimerConsumer
+class ServiceClient final : public    areg::Component
+                          , private   HelloUnblockConsumerBase
+                          , private   areg::TimerConsumer
 {
     //!< The list of generated sequence IDs to check the request.
-    using SequenceList = TENolockStack<uint32_t>;
+    using SequenceList = areg::Stack<uint32_t>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ServiceClient( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    ServiceClient( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -59,7 +59,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 /************************************************************************
  * Response HelloUnblock
@@ -70,9 +70,9 @@ protected:
      *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientId    Generated ID for the client used when send request to unblock.
-     * \see     requestIdentifier
+     * \see     request_identifier
      **/
-    virtual void responseIdentifier( unsigned int clientId ) override;
+    void response_identifier( uint32_t clientId ) final;
     /**
      * \brief   Response callback.
      *          The response to hello world request.
@@ -81,20 +81,20 @@ protected:
      * \param   clientId    The ID of the client to send the response. Never is 0.
      * \param   seqNr       The sequence number created by the client. On reply the service sends the sequence number so that
      *          the client can check that all sequences exist.
-     * \see     requestHelloUblock
+     * \see     request_hello_ublock
      **/
-    virtual void responseHelloUnblock( unsigned int clientId, unsigned int seqNr ) override;
+    void response_hello_unblock( uint32_t clientId, uint32_t seqNr ) final;
 
     /**
-     * \brief   This method is triggered if requestHelloUblock call fails.
+     * \brief   This method is triggered if request_hello_ublock call fails.
      *          It may happen if the request is busy and not completed.
      *          Since the request is manually unblocked on service side,
      *          we override this method to make sure that it never fails
-     *          with reason NEService::eResultType::RequestBusy, which happens
+     *          with reason areg::ResultType::RequestBusy, which happens
      *          if the request is still pending.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void requestHelloUblockFailed( NEService::eResultType FailureReason ) override;
+    void request_hello_ublock_failed( areg::ResultType FailureReason ) final;
 
     /**
      * \brief   Triggered, when HelloServiceState attribute is updated. The function contains
@@ -105,19 +105,19 @@ protected:
      * \param   HelloServiceState   The value of HelloServiceState attribute.
      * \param   state               The data validation flag.
      **/
-    virtual void onHelloServiceStateUpdate( NEHelloUnblock::eServiceState HelloServiceState, NEService::eDataStateType state ) override;
+    void on_hello_service_state_update( HelloUnblock::RunState HelloServiceState, areg::DataState state ) final;
 
     /**
      * \brief   Triggered when Timer is expired. 
      * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer ) override;
+    void process_timer( areg::Timer & timer ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ServiceClient & self( void )
+    inline ServiceClient & self()
     {
         return (*this);
     }
@@ -130,7 +130,7 @@ private:
     uint32_t        mSequenceId;    //!< Current sequence ID.
     uint32_t        mRespReceived;  //!< The total number of requests sent
     SequenceList    mSequenceList;  //!< The list of generated sequences.
-    Timer           mTimer;         //!< The timer to send requests.
+    areg::Timer     mTimer;         //!< The timer to send requests.
 #ifdef DEBUG
     uint32_t        mReqCount;      //!< The number of requests. Test only in Debug build.
 #endif // DEBUG
@@ -140,6 +140,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceClient( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServiceClient );
+    ServiceClient() = delete;
+    AREG_NOCOPY_NOMOVE( ServiceClient );
 };

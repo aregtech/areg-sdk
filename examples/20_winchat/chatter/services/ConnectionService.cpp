@@ -4,42 +4,39 @@
  ************************************************************************/
 
 #include "chatter/res/stdafx.h"
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "chatter/services/ConnectionService.hpp"
-#include "areg/component/NERegistry.hpp"
+#include "areg/component/Model.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "common/NECommon.hpp"
-#include "chatter/NEDistributedApp.hpp"
+#include "common/ChatDefs.hpp"
+#include "chatter/DistributedAppDefs.hpp"
 #include "chatter/DistrbutedApp.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
 
-BEGIN_MODEL(NECommon::MODEL_NAME_DISTRIBUTED_CLIENT)
+BEGIN_MODEL(chat::MODEL_NAME_DISTRIBUTED_CLIENT)
 
     BEGIN_REGISTER_THREAD( NEDistributedApp::THREAD_DISTRIBUTED )
-        BEGIN_REGISTER_COMPONENT( NECommon::COMP_NAME_DISTRIBUTED_CLIENT, ConnectionService )
-            REGISTER_DEPENDENCY( NECommon::COMP_NAME_CENTRAL_SERVER )
-        END_REGISTER_COMPONENT( NECommon::COMP_NAME_DISTRIBUTED_CLIENT )
+        BEGIN_REGISTER_COMPONENT( chat::COMP_NAME_DISTRIBUTED_CLIENT, ConnectionService )
+            REGISTER_DEPENDENCY( chat::COMP_NAME_CENTRAL_SERVER )
+        END_REGISTER_COMPONENT( chat::COMP_NAME_DISTRIBUTED_CLIENT )
     END_REGISTER_THREAD( NEDistributedApp::THREAD_DISTRIBUTED )
 
-END_MODEL(NECommon::MODEL_NAME_DISTRIBUTED_CLIENT)
+END_MODEL(chat::MODEL_NAME_DISTRIBUTED_CLIENT)
 
-DEF_LOG_SCOPE( chatter_ConnectionService_CreateComponent );
-DEF_LOG_SCOPE( chatter_ConnectionService_DeleteComponent );
-
-ConnectionService::ConnectionService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread )
-    : Component       ( entry, ownerThread )
+ConnectionService::ConnectionService( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread )
+    : areg::Component       ( entry, ownerThread )
 {
 }
 
-void ConnectionService::startupComponent( ComponentThread & comThread )
+void ConnectionService::startup_component( areg::ComponentThread & comThread )
 {
-    Component::startupComponent(comThread);
-    DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceStartup, 1, reinterpret_cast<LPARAM>(this) );
+    areg::Component::startup_component(comThread);
+    DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceStartup, 1, reinterpret_cast<LPARAM>(this) );
 }
 
-void ConnectionService::shutdownComponent( ComponentThread & comThread )
+void ConnectionService::shutdown_component( areg::ComponentThread & comThread ) noexcept
 {
-    DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceStartup, 0, 0 );
-    Component::shutdownComponent(comThread);
+    DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceStartup, 0, 0 );
+    areg::Component::shutdown_component(comThread);
 }

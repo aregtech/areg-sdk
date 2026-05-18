@@ -11,7 +11,7 @@ The **15_pubsvc** project demonstrates a *Public Service* in a **multi-process e
 ## Concepts Shown
 - **Public Service**: A discoverable service accessible by remote consumers over the network.
 - **Object RPC for IPC**: Simplifies communication between processes via automated request/response dispatching.
-- **Service Discovery**: Consumers automatically detect the provider using `serviceConnected()`, making startup order irrelevant.
+- **Service Discovery**: Consumers automatically detect the provider using `service_connected()`, making startup order irrelevant.
 - **Fault Tolerance**: Services can recover from failures without affecting system operation.
 - **Efficient Communication**: Object RPC reduces overhead and ensures reliable message delivery between processes.
 
@@ -28,4 +28,4 @@ Code is generated from [HelloWorld.siml](./services/HelloWorld.siml) to define t
 - Public, network-accessible services requiring high availability, automated discovery, and reliable message handling.
 
 ## Takeaway
-The **15_pubsvc** example demonstrates how to implement a **Public Service** with **Object RPC** in a **multi-process environment**, using `mtrouter` for message routing, automatic service discovery via `serviceConnected()`, and fault-tolerant communication across distributed applications.
+The **15_pubsvc** example demonstrates how to implement a **Public Service** with **Object RPC** in a **multi-process environment**, using `mtrouter` for message routing, automatic service discovery via `service_connected()`, and fault-tolerant communication across distributed applications.

@@ -76,10 +76,10 @@ Create a `.siml` file defining your service interface. A service interface consi
         <Description>Simple greeting service</Description>
     </Overview>
     <MethodList>
-        <Method ID="2" MethodType="request" Name="Greeting">
+        <Method ID="2" MethodType="request" Name="greeting">
             <Description>Request a personalized greeting</Description>
         </Method>
-        <Method ID="3" MethodType="response" Name="Greeting">
+        <Method ID="3" MethodType="response" Name="greeting">
             <Description>Greeting response</Description>
         </Method>
     </MethodList>
@@ -217,15 +217,15 @@ macro_declare_executable(
 Use generated base classes:
 
 ```cpp
-#include "generated/HelloServiceStub.hpp"
+#include "generated/HelloServiceProviderBase.hpp"
 
-class ServiceProvider : public HelloServiceStub {
+class ServiceProvider : public HelloServiceProviderBase {
 public:
     // Implement request handler
-    virtual void requestGreeting(const String& name) override {
+    void request_greeting(const String& name) override {
         // Business logic here
         String greeting = "Hello, " + name + "!";
-        responseGreeting(greeting);
+        response_greeting(greeting);
     }
 };
 ```
@@ -293,12 +293,16 @@ project/
 │   └── HelloService.siml          # Interface definitions (version controlled)
 ├── src/
 │   ├── generated/                 # Generated code (excluded from VCS)
-│   │   ├── HelloServiceStub.hpp
-│   │   ├── HelloServiceStub.cpp
-│   │   ├── HelloServiceClientBase.hpp
-│   │   ├── HelloServiceClientBase.cpp
-│   │   ├── HelloServiceProxy.hpp
-│   │   └── HelloServiceProxy.cpp
+│   │   ├── HelloService.hpp
+│   │   ├── HelloServiceConsumerBase.hpp
+│   │   ├── HelloServiceProviderBase.hpp
+│   │   ├── private/HelloService.cpp
+│   │   ├── private/HelloServiceConsumerBase.cpp
+│   │   ├── private/HelloServiceEvents.hpp
+│   │   ├── private/HelloServiceEvents.cpp
+│   │   ├── private/HelloServiceProviderBase.cpp
+│   │   ├── private/HelloServiceProxy.hpp
+│   │   └── private/HelloServiceProxy.cpp
 │   └── implementation/            # Business logic (version controlled)
 │       ├── ServiceProvider.cpp
 │       └── ServiceConsumer.cpp

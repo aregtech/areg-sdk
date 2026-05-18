@@ -8,12 +8,12 @@
 //               device.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
-#include "common/NECommon.hpp"
+#include "common/WorkerDefs.hpp"
 #include "pubclient/src/PatientClient.hpp"
 
 #ifdef _MSC_VER
@@ -31,13 +31,13 @@ BEGIN_MODEL(_modelName)
     // define component thread
     BEGIN_REGISTER_THREAD( "TestPatientMonitoring" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( NECommon::ServiceNameHwManager, PatientClient )
+        BEGIN_REGISTER_COMPONENT( worker::ServiceNameHwManager, PatientClient )
             // register service dependencies
-            REGISTER_DEPENDENCY( NECommon::ServiceNamePatientInfo )
+            REGISTER_DEPENDENCY( worker::ServiceNamePatientInfo )
             // register HW worker thread
             REGISTER_WORKER_THREAD( PatientClient::HwWorkerThreadName.data(), PatientClient::HwWorkerThreadConsumer.data() )
         // end of component description
-        END_REGISTER_COMPONENT( NECommon::ServiceNameHwManager )
+        END_REGISTER_COMPONENT( worker::ServiceNameHwManager )
     // end of thread description
     END_REGISTER_THREAD( "TestPatientMonitoring" )
 
@@ -54,20 +54,20 @@ END_MODEL(_modelName)
 int main()
 {
     // Initialize application, enable servicing, routing, timer and watchdog.
-    Application::initApplication(false, true, true, true, true, nullptr );
+    areg::Application::setup(false, true, true, true, true, nullptr );
 
 
     // load model to initialize components
-    Application::loadModel(_modelName);
+    areg::Application::load_model(_modelName);
 
     // wait application quit.
-    Application::waitAppQuit();
+    areg::Application::wait_quit();
 
     // stop and unload components
-    Application::unloadModel(_modelName);
+    areg::Application::unload_model(_modelName);
 
     // release and cleanup resources of application.
-    Application::releaseApplication();
+    areg::Application::release();
 
 	return 0;
 }

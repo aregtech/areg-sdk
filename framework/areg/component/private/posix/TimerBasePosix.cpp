@@ -15,26 +15,31 @@
  *
  ************************************************************************/
 
-#include "areg/component/TimerBase.hpp"
-
 #if defined(_POSIX) || defined(POSIX)
 
+/************************************************************************
+ * Include files.
+ ************************************************************************/
+#include "areg/component/TimerBase.hpp"
 #include "areg/component/private/posix/TimerPosix.hpp"
+
+namespace areg {
 
  //////////////////////////////////////////////////////////////////////////
  // Posix specific methods
  //////////////////////////////////////////////////////////////////////////
 
-TIMERHANDLE TimerBase::_osCreateWaitableTimer( void )
+TIMERHANDLE TimerBase::_os_create() noexcept
 {
-    return static_cast<TIMERHANDLE>(DEBUG_NEW TimerPosix( ));
+    return static_cast<TIMERHANDLE>(DEBUG_NEW areg::os::TimerPosix( ));
 }
 
-void TimerBase::_osDestroyWaitableTimer( TIMERHANDLE handle )
+void TimerBase::_os_destroy( TIMERHANDLE handle ) noexcept
 {
-    TimerPosix * timer = reinterpret_cast<TimerPosix *>(handle);
-    timer->destroyTimer( );
+    areg::os::TimerPosix * timer = reinterpret_cast<areg::os::TimerPosix *>(handle);
+    timer->destroy_timer( );
     delete timer;
 }
 
+} // namespace areg
 #endif  // defined(_POSIX) || defined(POSIX)

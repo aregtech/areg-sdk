@@ -13,19 +13,19 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
-#include "examples/16_pubmesh/services/PublicHelloWorldClientBase.hpp"
-#include "examples/16_pubmesh/services/SystemShutdownClientBase.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/base/areg_global.h"
+#include "examples/16_pubmesh/services/PublicHelloWorldConsumerBase.hpp"
+#include "examples/16_pubmesh/services/SystemShutdownConsumerBase.hpp"
+#include "areg/component/TimerConsumer.hpp"
 
 #include "areg/component/Timer.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
 //////////////////////////////////////////////////////////////////////////
-class PublicHelloWorldClient    : private   PublicHelloWorldClientBase
-                                , private   SystemShutdownClientBase
-                                , private   IETimerConsumer
+class PublicHelloWorldClient final  : private   PublicHelloWorldConsumerBase
+                                    , private   SystemShutdownConsumerBase
+                                    , private   areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -38,12 +38,12 @@ public:
      * \param   owner       The component owning thread.
      * \param   timeout     The timeout in milliseconds to trigger the request to output message
      **/
-    PublicHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, unsigned int timeout );
+    PublicHelloWorldClient( const areg::DependencyEntry & dependency, areg::Component & owner, uint32_t timeout );
 
     /**
      * \brief   Destructor
      **/
-    virtual ~PublicHelloWorldClient(void) = default;
+    virtual ~PublicHelloWorldClient() = default;
 
 protected:
 
@@ -53,9 +53,9 @@ protected:
      *          Overwrite, if need to handle Response call of server object. 
      *          This call will be automatically triggered, on every appropriate request call
      * \param   client  The client registration object that contains unique ID.
-     * \see     requestRegister
+     * \see     request_register
      **/
-    virtual void responseRegister( const NEPublicHelloWorld::sClientRegister & client ) override;
+    void response_register( const PublicHelloWorld::sClientRegister & client ) final;
 
     /**
      * \brief   Response callback.
@@ -63,9 +63,9 @@ protected:
      *          Overwrite, if need to handle Response call of server object. 
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientID    Indicates the ID client that made message output
-     * \see     requestHelloWorld
+     * \see     request_hello_world
      **/
-    virtual void responseHelloWorld( unsigned int clientID ) override;
+    void response_hello_world( uint32_t clientID ) final;
 
     /**
      * \brief   Triggered, when ServiceState attribute is updated. The function contains
@@ -76,10 +76,10 @@ protected:
      * \param   ServiceState    The value of ServiceState attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onServiceStateUpdate( NESystemShutdown::eServiceState ServiceState, NEService::eDataStateType state ) override;
+    void on_service_state_update( SystemShutdown::RunState ServiceState, areg::DataState state ) final;
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -92,42 +92,42 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 /************************************************************************/
-// IETimerConsumer interface overrides.
+// TimerConsumer interface overrides.
 /************************************************************************/
     /**
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer ) override;
+    void process_timer( areg::Timer & timer ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline PublicHelloWorldClient & self( void )
+    inline PublicHelloWorldClient & self()
     {
         return (*this);
     }
 
-    inline String timerName( Component & owner ) const;
+    inline areg::String timer_name( areg::Component & owner ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // member variables
 //////////////////////////////////////////////////////////////////////////
 protected:
-    const unsigned int  mMsTimeout; //!< The timeout for timer to trigger message output of remote service
-    Timer               mTimer;     //!< The timer to trigger to send request to output message
-    NEPublicHelloWorld::sClientRegister   mClient;    //!< The ID given by service.
+    const uint32_t  mMsTimeout; //!< The timeout for timer to trigger message output of remote service
+    areg::Timer     mTimer;     //!< The timer to trigger to send request to output message
+    PublicHelloWorld::sClientRegister   mClient;    //!< The ID given by service.
 
 //////////////////////////////////////////////////////////////////////////
 // forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    PublicHelloWorldClient( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( PublicHelloWorldClient );
+    PublicHelloWorldClient() = delete;
+    AREG_NOCOPY_NOMOVE( PublicHelloWorldClient );
 };
 
 #endif // PUBMESH_COMMON_SRC_PUBLICHELLOWORLDCLIENT_HPP

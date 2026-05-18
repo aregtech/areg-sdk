@@ -18,16 +18,16 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "aregextend/console/SystemServiceConsole.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // RouterConsoleService class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   A service to output statistics..
+ * \brief   Console service that outputs router statistics.
  **/
-class RouterConsoleService  : public    SystemServiceConsole
+class RouterConsoleService final : public areg::ext::SystemServiceConsole
 {
 public:
     //!< The console service role name
@@ -39,23 +39,21 @@ public:
 public:
 
     /**
-     * \brief   Instantiates the component object.
-     * \param   entry   The instance of the component entry that contains the component information.
-     * \param   owner   The instance of component owner thread.
+     * \brief   Initializes the component with entry information and owner thread.
+     *
+     * \param   entry       The component entry containing component information.
+     * \param   owner       The component owner thread.
      **/
-    RouterConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    RouterConsoleService( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
-    /**
-     * \brief   Destructor.
-     **/
-    virtual ~RouterConsoleService( void ) = default;
+    ~RouterConsoleService() override = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    RouterConsoleService( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( RouterConsoleService );
+    RouterConsoleService() = delete;
+    AREG_NOCOPY_NOMOVE( RouterConsoleService );
 };
 
 #endif  // AREG_mtrouter_APP_ROUTERCONSOLESERVICE_HPP

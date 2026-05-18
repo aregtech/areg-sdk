@@ -7,9 +7,9 @@
 //               output "Hello Thread!" message on console.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/Thread.hpp"
-#include "areg/base/IEThreadConsumer.hpp"
+#include "areg/base/ThreadConsumer.hpp"
 
 #include <iostream>
 
@@ -18,22 +18,22 @@
 #endif // _MSC_VER
 
 //! \brief   A thread to run and output message.
-class HelloThread : public Thread, protected IEThreadConsumer
+class HelloThread final : public areg::Thread, protected areg::ThreadConsumer
 {
 public:
-    HelloThread( void )
-        : Thread( static_cast<IEThreadConsumer &>(*this), "HelloThread") // set consumer and the name
-        , IEThreadConsumer( )
+    HelloThread()
+        : areg::Thread( static_cast<areg::ThreadConsumer &>(*this), "HelloThread") // set consumer and the name
+        , areg::ThreadConsumer( )
     {  }
 protected:
 /************************************************************************/
-// IEThreadConsumer interface overrides
+// ThreadConsumer interface overrides
 /************************************************************************/
 
     //! \brief  This callback is triggered when thread runs and fully operable.
-    virtual void onThreadRuns( void ) override
+    void on_run() final
     {
-        std::cout << "!!! Hello Thread \'" << getName( ) << "\' !!!" << std::endl;
+        std::cout << "!!! Hello Thread \'" << name( ) << "\' !!!" << std::endl;
     }
 };
 
@@ -47,9 +47,9 @@ int main()
     // declare thread object.
     HelloThread aThread;
     // create and start thread, wait until it is started.
-    aThread.createThread(NECommon::WAIT_INFINITE);
+    aThread.start(areg::WAIT_INFINITE);
     // stop and destroy thread, clean resources. Wait until thread ends.
-    aThread.shutdownThread(NECommon::WAIT_INFINITE);
+    aThread.shutdown(areg::WAIT_INFINITE);
 
     std::cout << "Exit application!" << std::endl;
     return 0;

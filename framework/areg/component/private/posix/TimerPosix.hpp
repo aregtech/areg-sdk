@@ -18,160 +18,159 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/SpinLockIX.hpp"
+#include "areg/base/private/posix/SpinLockPosix.hpp"
 #include <sys/types.h>
 #include <time.h>
 
 #ifdef __APPLE__
     #include <dispatch/dispatch.h>
+#else   // !__APPLE__
+    using signal_value = union sigval;
 #endif  // __APPLE__
 
 //////////////////////////////////////////////////////////////////////////
 // Dependency.
 //////////////////////////////////////////////////////////////////////////
-class TimerBase;
-class TimerPosix;
+namespace areg {
+    class TimerBase;
+    class TimerManager;
+    class WatchdogManager;
+} // namespace areg
+
+namespace areg::os {
+    class TimerPosix;
 
 #ifdef __APPLE__
 /**
- * \brief   The macOS timer callback function type triggered when timer expires.
- *          The callback receives the pointer to TimerPosix object.
- * \param   timerPtr    Pointer to the TimerPosix object that expired.
+ * \brief   macOS callback type: receives a typed TimerPosix pointer (GCD path).
  */
-typedef void (*FuncPosixTimerRoutine)(TimerPosix* timerPtr);
-#else   // !__APPLE__
+typedef void (*FuncPosixTimerRoutine)(areg::os::TimerPosix* timerPtr);
+#elif defined(__linux__)
 /**
- * \brief   The POSIX timer routing method triggered in a separate thread.
+ * \brief   Linux callback type: unused on Linux (timerfd/epoll path, no callback needed).
  */
-typedef void (*FuncPosixTimerRoutine)( union sigval );
-#endif  // __APPLE__
+typedef void (*FuncPosixTimerRoutine)( void * );
+#else   // Generic POSIX (Cygwin, FreeBSD, etc.)
+/**
+ * \brief   Generic POSIX callback type: called from SIGEV_THREAD with the TimerPosix*
+ *          cast to void* (timer_create path).
+ */
+typedef void (*FuncPosixTimerRoutine)( void * );
+#endif  // __APPLE__ / __linux__ / POSIX
 
 //////////////////////////////////////////////////////////////////////////
 // TimerPosix class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   POSIX specific timer object used by timer manager.
+ * \brief   POSIX-specific timer implementation for handling timer callbacks and state management.
  **/
 class TimerPosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Friend class and constants
 //////////////////////////////////////////////////////////////////////////
-    friend class TimerManager;
-    friend class WatchdogManager;
+    friend class areg::TimerManager;
+    friend class areg::WatchdogManager;
+#if !defined(__linux__) && !defined(__APPLE__)
+    friend void _posix_timer_expired_cb(signal_value si);
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor.
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    /**
-     * \brief   Initializes the POSIX timer object. Sets context, timeout and period.
-     * \param   context         The timer context to set. If this value is nullptr, the timer is invalid
-     *                          and it will never start.
-     * \param   timerRoutine    The pointer to timer routine to trigger when expired. If this value
-     *                          is nullptr, the timer is not started.
-     * \param   msTimeout       Timeout in milliseconds when the timer should expire.
-     * \param   period          The period count. The timer can be trigger either only on (value is 1),
-     *                          or until period is not expired (value is any number),
-     *                          or endless until it is not stopped (value TIMER_PERIOD_ENDLESS).
-     **/
-    TimerPosix( void );
+    TimerPosix();
 
-    /**
-     * \brief   Destructor.
-     **/
-    ~TimerPosix( void );
+    ~TimerPosix();
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes / Operations.
 //////////////////////////////////////////////////////////////////////////
 public:
 
-#ifndef __APPLE__
+#ifdef __linux__
     /**
-     * \brief   Returns POSIX timer ID.
+     * \brief   Returns the Linux timerfd file descriptor, or -1 if not created.
      **/
-    inline timer_t getTimerId( void ) const;
-#endif  // !__APPLE__
+    inline int timer_fd() const noexcept;
+#endif  // __linux__
 
     /**
-     * \brief   Returns POSIX timer context pointer.
+     * \brief   Returns the timer context pointer.
      **/
-    inline void * getContext( void ) const;
+    inline void * context() const noexcept;
 
     /**
-     * \brief   Returns POSIX timer context ID.
+     * \brief   Returns the timer context identifier.
      **/
-    inline id_type getContextId( void ) const;
+    inline id_type context_id() const noexcept;
 
     /**
-     * \brief   Returns timeout due date and time when timer expired or should expire next.
+     * \brief   Returns the due date and time for the next timer expiration.
      **/
-    inline const timespec & getDueTime( void ) const;
+    inline const timespec & due_time() const noexcept;
 
 
     /**
-     * \brief   Returns true if timer is valid, i.e. the timer ID and context are valid.
+     * \brief   Returns true if the timer is valid (has valid ID and context).
      **/
-    inline bool isValid( void ) const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
-     * \brief   Creates, but do not start timer.
-     *          This call will create a time to handle in a separate thread.
-     * \param   funcTimer   The callback function to trigger when timer expires.
-     * \return  Returns true if succeeded to created timer.
+     * \brief   Creates the timer without starting it.
+     *
+     * \param   funcTimer       The callback function to execute on timer expiration.
+     * \return  Returns true if timer creation succeeded; false otherwise.
      **/
-    bool createTimer( FuncPosixTimerRoutine funcTimer );
+    bool create_timer( FuncPosixTimerRoutine funcTimer ) noexcept;
 
     /**
-     * \brief   Creates and starts timer with timeout and period count values specified in
-     *          the give Timer object. If the specified timeout or period values in
-     *          the Timer object are zero, the timer is created, but not started.
-     *          This function creates a timer to handle in a separate thread.
-     * \param   context     The timer object that contains timeout and period information.
-     * \param   contextId   The timer context ID to set.
-     * \param   funcTimer   The callback function to trigger when timer expires.
-     * \return  Returns true if timer is created and started with success.
+     * \brief   Creates and starts the timer with the timeout and period from the given context.
+     *
+     * \param   context         The timer object containing timeout and period values.
+     * \param   contextId       The context identifier to associate with the timer.
+     * \param   funcTimer       The callback function to execute on timer expiration.
+     * \return  Returns true if timer creation and start succeeded; false otherwise.
      **/
-    bool startTimer( TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer );
+    bool start_timer( TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer ) noexcept;
 
     /**
-     * \brief   Restarts the timer if the timeout and the period values are not zero.
-     *          The timer should be initialized before calling this method.
-     * \return  Returns true if timer is restarted with success.
+     * \brief   Restarts the timer if timeout and period are not zero.
+     *
+     * \return  Returns true if timer restart succeeded; false otherwise.
      **/
-    bool restartTimer( void );
+    bool restart_timer() noexcept;
 
     /**
-     * \brief   Stops timer, resets timeout and period values.
+     * \brief   Stops the timer and resets timeout and period values.
      **/
-    bool stopTimer( void );
+    bool stop_timer() noexcept;
 
     /**
-     * \brief   Pause timer. So that, when it is restarted it will use same timeout and remaining period count.
+     * \brief   Pauses the timer while preserving timeout and remaining period.
      **/
-    bool pauseTimer( void );
+    bool pause_timer() noexcept;
 
     /**
      * \brief   Destroys and invalidates the timer.
      **/
-    void destroyTimer( void );
+    void destroy_timer() noexcept;
 
     /**
-     * \brief   Called by timer manager when timer is expired. Returns true if timer 
-     *          can continue running. Returns false if timer should be stopped.
-     *          The timer can run if it is periodic and the period count is greater 
-     *          than zero. The timer is stopped if period count is zero.
-     * \param   timeoutMs   The timeout in milliseconds when timer expired.
-     * \return  Returns true if timer can continue running. Returns false if timer 
-     *          should be stopped.
+     * \brief   Called by the timer manager when the timer expires; returns true if timer can
+     *          continue running.
+     *
+     * \param   timeoutMs       The timeout in milliseconds when timer expired.
+     * \return  Returns true if timer is periodic and period count is greater than zero; false if
+     *          timer should stop.
      **/
-    void timerExpired( void );
+    void timer_expired() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Internal private methods.
@@ -179,33 +178,34 @@ public:
 private:
 
     /**
-     * \brief   Creates and initializes the timer that is handled in a separate thread.
-     * \param   funcTimer   The callback function to trigger when timer expires.
-     * \return  Returns true if succeeded to create timer.
+     * \brief   Internal method to create and initialize the timer.
+     *
+     * \param   funcTimer       The callback function to execute on timer expiration.
+     * \return  Returns true if timer creation succeeded; false otherwise.
      **/
-    inline bool _createTimer( FuncPosixTimerRoutine funcTimer );
+    bool _create_timer( FuncPosixTimerRoutine funcTimer ) noexcept;
 
     /**
-     * \brief	Initializes and starts the timer.
-     * \return	Returns true if timer succeeded to start.
+     * \brief   Internal method to start the timer.
+     *
+     * \return  Returns true if timer start succeeded; false otherwise.
      **/
-    inline bool _startTimer( void );
+    bool _start_timer() noexcept;
 
     /**
-     * \brief   Stops the timer.
+     * \brief   Internal method to stop the timer.
      **/
-    inline void _stopTimer( void );
+    void _stop_timer() noexcept;
 
     /**
-     * \brief   Destroys the timer.
+     * \brief   Internal method to destroy the timer.
      **/
-    inline void _destroyTimer( void );
+    void _destroy_timer() noexcept;
 
     /**
-     * \brief   Returns true if timer is started. The timer considered started if
-     *          due time is not zero.
+     * \brief   Returns true if the timer is currently started (due time is not zero).
      **/
-    inline bool _isStarted( void ) const;
+    inline bool _is_started() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
@@ -224,12 +224,21 @@ private:
      * \brief   The callback function to call when timer expires.
      */
     FuncPosixTimerRoutine   mTimerCallback;
-#else   // !__APPLE__
+#elif defined(__linux__)
     /**
-     * \brief   The timer ID, set when creates timer.
+     * \brief   Linux timerfd file descriptor (-1 when not created).
+     */
+    int                     mTimerFd;
+#else   // Generic POSIX (Cygwin, FreeBSD, etc.)
+    /**
+     * \brief   POSIX timer handle (timer_create path).
      */
     timer_t                 mTimerId;
-#endif  // __APPLE__
+    /**
+     * \brief   Callback invoked via SIGEV_THREAD when the timer expires.
+     */
+    FuncPosixTimerRoutine   mTimerCallback;
+#endif  // __APPLE__ / __linux__ / POSIX
 
     /**
      * \brief   The context pointer passed to POSIX timer, set when using Timer object.
@@ -251,59 +260,63 @@ private:
     /**
      * \brief   Synchronization object.
      */
-    mutable SpinLockIX      mLock;
+    mutable SpinLockPosix  mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( TimerPosix );
+    AREG_NOCOPY_NOMOVE( TimerPosix );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // TimerPosix class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef __APPLE__
-inline timer_t TimerPosix::getTimerId(void) const
+#ifdef __linux__
+inline int TimerPosix::timer_fd() const noexcept
 {
-	SpinAutolockIX lock(mLock);
-    return mTimerId;
+    SpinAutolockPosix lock(mLock);
+    return mTimerFd;
 }
-#endif  // !__APPLE__
+#endif  // __linux__
 
-inline void * TimerPosix::getContext(void) const
+inline void * TimerPosix::context() const noexcept
 {
-	SpinAutolockIX lock(mLock);
+	SpinAutolockPosix lock(mLock);
     return mContext;
 }
 
-inline id_type TimerPosix::getContextId(void) const
+inline id_type TimerPosix::context_id() const noexcept
 {
-    SpinAutolockIX lock(mLock);
+    SpinAutolockPosix lock(mLock);
     return mContextId;
 }
 
-inline const timespec & TimerPosix::getDueTime(void) const
+inline const timespec & TimerPosix::due_time() const noexcept
 {
-	SpinAutolockIX lock(mLock);
+	SpinAutolockPosix lock(mLock);
     return mDueTime;
 }
 
-inline bool TimerPosix::isValid(void) const
+inline bool TimerPosix::is_valid() const noexcept
 {
-	SpinAutolockIX lock(mLock);
+    SpinAutolockPosix lock(mLock);
 #ifdef __APPLE__
     return (((mContext != nullptr) || (mContextId != 0u)) && (mTimerQueue != nullptr));
-#else   // !__APPLE__
-    return (((mContext != nullptr) || (mContextId != 0u)) && (mTimerId != 0));
-#endif  // __APPLE__
+#elif defined(__linux__)
+    return (((mContext != nullptr) || (mContextId != 0u)) && (mTimerFd >= 0));
+#else   // Generic POSIX
+    return (((mContext != nullptr) || (mContextId != 0u)) && (mTimerId != static_cast<timer_t>(0)));
+#endif  // __APPLE__ / __linux__ / POSIX
 }
 
-inline bool TimerPosix::_isStarted(void) const
+inline bool TimerPosix::_is_started() const noexcept
 {
     return ((mDueTime.tv_sec != 0) || (mDueTime.tv_nsec != 0));
 }
+
+} // namespace areg::os
 
 #endif  // defined(_POSIX) || defined(POSIX)
 

@@ -19,9 +19,9 @@
 #include "units/GUnitTest.hpp"
 #include "areg/base/String.hpp"
 
-TEST( StringUtilsTest, TestBufferAutoSetWhenFormat )
+TEST( StringUtilsTest, test_buffer_auto_set_when_format )
 {
-    String str;
+    areg::String str;
     str.format("I want to try some extra [ %s ], [ %s ], [ %s ], [ %s ], [ %s ], [ %s ], [ %s ], , [ %s ], , [ %s ] string"
                 , "extra"
                 , "very extra"
@@ -34,5 +34,5 @@ TEST( StringUtilsTest, TestBufferAutoSetWhenFormat )
                 , "very-very-very-very-very-very-very-very extra"
     );
 
-    ASSERT_TRUE( str.getLength( ) > static_cast<NEString::CharCount>(128) );
+    ASSERT_TRUE( str.length( ) > static_cast<areg::CharCount>(128) );
 }

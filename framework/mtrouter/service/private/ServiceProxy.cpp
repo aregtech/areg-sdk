@@ -17,33 +17,33 @@
 
 #include <utility>
 
-ServiceProxy::ServiceProxy( void )
+ServiceProxy::ServiceProxy()
     : mProxyAddress ( )
-    , mConnectStatus( NEService::eServiceConnection::ServiceConnectionUnknown )
+    , mConnectStatus( areg::ServiceConnectionState::Unknown )
 {
 }
 
-ServiceProxy::ServiceProxy( const ProxyAddress & addrProxy )
+ServiceProxy::ServiceProxy( const areg::ProxyAddress & addrProxy )
     : mProxyAddress ( addrProxy )
-    , mConnectStatus( addrProxy.isValid() ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown )
+    , mConnectStatus( addrProxy.is_valid() ? areg::ServiceConnectionState::Pending : areg::ServiceConnectionState::Unknown )
 {
 }
 
-ServiceProxy::ServiceProxy( ProxyAddress && addrProxy ) noexcept
+ServiceProxy::ServiceProxy( areg::ProxyAddress && addrProxy ) noexcept
     : mProxyAddress ( std::move(addrProxy) )
-    , mConnectStatus( mProxyAddress.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown )
+    , mConnectStatus( mProxyAddress.is_valid( ) ? areg::ServiceConnectionState::Pending : areg::ServiceConnectionState::Unknown )
 {
 }
 
-ServiceProxy::ServiceProxy(const StubAddress & addrStub)
-    : mProxyAddress (static_cast<const ServiceAddress&>(addrStub))
-    , mConnectStatus(NEService::eServiceConnection::ServiceConnectionUnknown)
+ServiceProxy::ServiceProxy(const areg::StubAddress & addrStub)
+    : mProxyAddress (static_cast<const areg::ServiceAddress&>(addrStub))
+    , mConnectStatus(areg::ServiceConnectionState::Unknown)
 {
 }
 
-ServiceProxy::ServiceProxy( StubAddress && addrStub) noexcept
+ServiceProxy::ServiceProxy( areg::StubAddress && addrStub) noexcept
     : mProxyAddress (std::move(addrStub))
-    , mConnectStatus(NEService::eServiceConnection::ServiceConnectionUnknown)
+    , mConnectStatus(areg::ServiceConnectionState::Unknown)
 {
 }
 
@@ -75,18 +75,18 @@ ServiceProxy & ServiceProxy::operator = ( ServiceProxy && serviceProxy ) noexcep
     return (*this);
 }
 
-ServiceProxy & ServiceProxy::operator = ( const ProxyAddress & addrProxy )
+ServiceProxy & ServiceProxy::operator = ( const areg::ProxyAddress & addrProxy )
 {
     mProxyAddress   = addrProxy;
-    mConnectStatus  = addrProxy.isValid() ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown;
+    mConnectStatus  = addrProxy.is_valid() ? areg::ServiceConnectionState::Pending : areg::ServiceConnectionState::Unknown;
     
     return (*this);
 }
 
-ServiceProxy & ServiceProxy::operator = ( ProxyAddress && addrProxy ) noexcept
+ServiceProxy & ServiceProxy::operator = ( areg::ProxyAddress && addrProxy ) noexcept
 {
     mProxyAddress   = std::move(addrProxy);
-    mConnectStatus  = mProxyAddress.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown;
+    mConnectStatus  = mProxyAddress.is_valid( ) ? areg::ServiceConnectionState::Pending : areg::ServiceConnectionState::Unknown;
     
     return (*this);
 }
@@ -96,62 +96,62 @@ bool ServiceProxy::operator == ( const ServiceProxy & serviceProxy ) const
     return ServiceProxy::operator == (serviceProxy.mProxyAddress);
 }
 
-bool ServiceProxy::operator == ( const ProxyAddress & addrProxy ) const
+bool ServiceProxy::operator == ( const areg::ProxyAddress & addrProxy ) const
 {
-    return  (static_cast<const ServiceAddress &>(mProxyAddress) == static_cast<const ServiceAddress &>(addrProxy))  && 
-            (mProxyAddress.getThread() == addrProxy.getThread()) && 
-            (mProxyAddress.getCookie() == addrProxy.getCookie());
+    return  (static_cast<const areg::ServiceAddress &>(mProxyAddress) == static_cast<const areg::ServiceAddress &>(addrProxy))  && 
+            (mProxyAddress.thread() == addrProxy.thread()) && 
+            (mProxyAddress.cookie() == addrProxy.cookie());
 }
 
-bool ServiceProxy::operator == ( const StubAddress & addrStub ) const
+bool ServiceProxy::operator == ( const areg::StubAddress & addrStub ) const
 {
-    return static_cast<const ServiceAddress &>(mProxyAddress) == static_cast<const ServiceAddress &>(addrStub);
+    return static_cast<const areg::ServiceAddress &>(mProxyAddress) == static_cast<const areg::ServiceAddress &>(addrStub);
 }
 
-void ServiceProxy::_setServiceStatus( NEService::eServiceConnection newStatus )
+void ServiceProxy::_set_service_status( areg::ServiceConnectionState newStatus )
 {
-    mConnectStatus = NEService::eServiceConnection::ServiceConnectionUnknown;
-    if ( mProxyAddress.isValid() )
+    mConnectStatus = areg::ServiceConnectionState::Unknown;
+    if ( mProxyAddress.is_valid() )
     {
         mConnectStatus = newStatus;
-        if ( newStatus == NEService::eServiceConnection::ServiceConnected )
+        if ( newStatus == areg::ServiceConnectionState::Connected )
         {
-            mConnectStatus = mProxyAddress.getTarget( ) != NEService::TARGET_UNKNOWN ? NEService::eServiceConnection::ServiceConnected : NEService::eServiceConnection::ServicePending;
+            mConnectStatus = mProxyAddress.target( ) != areg::TARGET_UNKNOWN ? areg::ServiceConnectionState::Connected : areg::ServiceConnectionState::Pending;
         }
     }
 }
 
-void ServiceProxy::_setService( const ProxyAddress & addrProxy, NEService::eServiceConnection connectStatus /*= NEService::eServiceConnection::ServicePending*/ )
+void ServiceProxy::_set_service( const areg::ProxyAddress & addrProxy, areg::ServiceConnectionState connectStatus /*= areg::ServiceConnectionState::Pending*/ )
 {
     mProxyAddress   = addrProxy;
-    _setServiceStatus(connectStatus);
+    _set_service_status(connectStatus);
 }
 
-bool ServiceProxy::stubAvailable( const StubAddress & addrStub )
+bool ServiceProxy::stub_available( const areg::StubAddress & addrStub )
 {
-    mConnectStatus = NEService::eServiceConnection::ServiceConnectionUnknown;
-    if ( mProxyAddress.isValid() )
+    mConnectStatus = areg::ServiceConnectionState::Unknown;
+    if ( mProxyAddress.is_valid() )
     {
-        if ( addrStub.isValid() )
+        if ( addrStub.is_valid() )
         {
-            mProxyAddress.setTarget( addrStub.getSource() );
-            mConnectStatus = NEService::eServiceConnection::ServiceConnected;
+            mProxyAddress.set_target( addrStub.source() );
+            mConnectStatus = areg::ServiceConnectionState::Connected;
         }
         else
         {
-            mConnectStatus = NEService::eServiceConnection::ServicePending;
+            mConnectStatus = areg::ServiceConnectionState::Pending;
         }
     }
-    return isConnected();
+    return is_connected();
 }
 
-bool ServiceProxy::stubUnavailable(void)
+bool ServiceProxy::stub_unavailable()
 {
-    mConnectStatus = NEService::eServiceConnection::ServiceConnectionUnknown;
-    if ( mProxyAddress.isValid() )
+    mConnectStatus = areg::ServiceConnectionState::Unknown;
+    if ( mProxyAddress.is_valid() )
     {
-        mProxyAddress.setTarget( NEService::TARGET_UNKNOWN );
-        mConnectStatus = NEService::eServiceConnection::ServicePending;
+        mProxyAddress.set_target( areg::TARGET_UNKNOWN );
+        mConnectStatus = areg::ServiceConnectionState::Pending;
     }
-    return isWaiting();
+    return is_waiting();
 }

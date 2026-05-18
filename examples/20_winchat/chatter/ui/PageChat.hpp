@@ -7,12 +7,12 @@
 
 #include "chatter/res/stdafx.h"
 #include "chatter/res/resource.h"
-#include "common/NECommon.hpp"
-#include "areg/base/GEGlobal.h"
+#include "common/ChatDefs.hpp"
+#include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
-#include "areg/base/TEArrayList.hpp"
-#include "areg/base/TEHashMap.hpp"
-#include "examples/20_winchat/services/NEDirectConnection.hpp"
+#include "areg/base/ArrayList.hpp"
+#include "areg/base/HashMap.hpp"
+#include "examples/20_winchat/services/DirectConnection.hpp"
 #include "chatter/services/ChatPrticipantHandler.hpp"
 
 class PageChat  : public CPropertyPage
@@ -29,10 +29,10 @@ private:
 	DECLARE_DYNAMIC(PageChat)
 
 public:
-	PageChat( const String & serviceName
-              , const NEDirectConnection::sInitiator & initiator
-              , const NEDirectConnection::ListParticipants & listParties
-              , const NEDirectConnection::sParticipant & ownerConnection
+	PageChat( const areg::String & serviceName
+              , const DirectConnection::sInitiator & initiator
+              , const DirectConnection::ListParticipants & listParties
+              , const DirectConnection::Participant & ownerConnection
               , bool isInitiator );
 	virtual ~PageChat() = default;
 
@@ -40,16 +40,16 @@ public:
 	enum { IDD = IDD_PAGE_CHAT };
 
 public:
-    void OnDefaultClicked( void );
+    void OnDefaultClicked();
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
+	void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
 	DECLARE_MESSAGE_MAP()
 public:
-    virtual BOOL OnInitDialog( ) override;
-    virtual BOOL OnKillActive( ) override;
-    virtual BOOL OnSetActive( ) override;
+    BOOL OnInitDialog( ) override;
+    BOOL OnKillActive( ) override;
+    BOOL OnSetActive( ) override;
 
 public:
     afx_msg void OnClickedCheckChatMessages( );
@@ -71,16 +71,16 @@ public:
     afx_msg void OnDeltaposChatTimerSpin(NMHDR* pNMHDR, LRESULT* pResult);
 
 private:
-    void setHeaders( void );
-    void setTabTitle( const String & title );
+    void setHeaders();
+    void setTabTitle( const areg::String & title );
     void outputMessage(CString nickName, CString message, CString dateStart, CString dateEnd, uint32_t cookie, bool removeType = true);
     void outputTyping(CString nickName, CString message, uint32_t cookie );
     void removeTyping(const CString & nickName, uint32_t cookie);
-    bool isActivePage( void );
-    void sendMessage( void );
-    void sendType( void );
-    void startTimer( void );
-    void stopTimer(void);
+    bool isActivePage();
+    void sendMessage();
+    void sendType();
+    void startTimer();
+    void stopTimer();
 
 private:
     // The chatting edit control
@@ -110,8 +110,8 @@ private:
     // The timer ID
     UINT_PTR            mTimerId;
     // The name of dynamically created model.
-    String              mModelName;
+    areg::String              mModelName;
 
 private:
-    DECLARE_NOCOPY_NOMOVE(PageChat);
+    AREG_NOCOPY_NOMOVE(PageChat);
 };

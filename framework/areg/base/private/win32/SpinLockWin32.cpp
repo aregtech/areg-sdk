@@ -13,46 +13,53 @@
  * \brief       Areg Platform, OS specific spin-lock synchronization object.
  *
  ************************************************************************/
- /************************************************************************
-  * Include files.
-  ************************************************************************/
+/************************************************************************
+ * Include files.
+ ************************************************************************/
 
-#include "areg/base/private/win32/SpinLockWin32.hpp"
 
 #ifdef _WIN32
-#if defined (__cplusplus) && (__cplusplus > 201703L)
+/************************************************************************
+ * Includes
+ ************************************************************************/
+#include "areg/base/private/win32/SpinLockWin32.hpp"
+
+#if defined (__cplusplus) && (__cplusplus >= 201703L)
 
 #include "areg/base/Thread.hpp"
 #include <thread>
+
+namespace areg::os {
 
 //////////////////////////////////////////////////////////////////////////
 // SpinLockWin32 class, Methods
 //////////////////////////////////////////////////////////////////////////
 
-
-SpinLockWin32::SpinLockWin32( void )
-    : mSpinLock     ( )
-    , mOwnerThread  ( 0 )
-    , mLockCount    ( 0 )
+SpinLockWin32::SpinLockWin32() noexcept
+    : mSpinLock     { false }
+    , mOwnerThread  { 0 }
+    , mLockCount    { 0 }
 {
 }
 
-SpinLockWin32::~SpinLockWin32( void )
+SpinLockWin32::~SpinLockWin32() noexcept
 {
     unlock();
 }
 
-bool SpinLockWin32::lock( void )
+bool SpinLockWin32::lock() noexcept
 {
-    id_type currThread = Thread::getCurrentThreadId( );
+    const id_type currThread = Thread::current_thread_id();
 
     if ( mOwnerThread != currThread )
     {
-        while ( mSpinLock.test_and_set( std::memory_order_acquire ) )
+        // Test-and-set spin: attempt to acquire; if already locked, spin with a
+        // non-modifying load to avoid hammering the cache line with writes
+        while ( mSpinLock.exchange(true, std::memory_order_acquire) )
         {
-            while ( mSpinLock.test( std::memory_order_relaxed ) )
+            while ( mSpinLock.load(std::memory_order_relaxed) )
             {
-                std::this_thread::yield();  // _YIELD_PROCESSOR(); // spin
+                std::this_thread::yield();
             }
         }
 
@@ -62,24 +69,24 @@ bool SpinLockWin32::lock( void )
     }
     else
     {
-        mLockCount ++;
+        ++mLockCount;
     }
 
     return true;
 }
 
-bool SpinLockWin32::unlock( void )
+bool SpinLockWin32::unlock() noexcept
 {
     bool result = false;
 
-    id_type currThread = Thread::getCurrentThreadId( );
+    const id_type currThread = Thread::current_thread_id();
     if ( mOwnerThread == currThread )
     {
         ASSERT( mLockCount != 0 );
-        if ( -- mLockCount == 0 )
+        if ( --mLockCount == 0 )
         {
             mOwnerThread = 0;
-            mSpinLock.clear( std::memory_order_release );   // release lock
+            mSpinLock.store(false, std::memory_order_release);
         }
 
         result = true;
@@ -88,14 +95,14 @@ bool SpinLockWin32::unlock( void )
     return result;
 }
 
-bool SpinLockWin32::tryLock( void )
+bool SpinLockWin32::try_lock() noexcept
 {
     bool result = true;
-    id_type currThread = Thread::getCurrentThreadId( );
-    if ( mOwnerThread !=  currThread )
+    const id_type currThread = Thread::current_thread_id();
+    if ( mOwnerThread != currThread )
     {
         result = false;
-        if ( mSpinLock.test_and_set( std::memory_order_acquire ) == false )
+        if ( !mSpinLock.exchange(true, std::memory_order_acquire) )
         {
             ASSERT( mLockCount == 0 );
             mLockCount  = 1;
@@ -108,5 +115,6 @@ bool SpinLockWin32::tryLock( void )
     return result;
 }
 
-#endif // defined (__cplusplus) && (__cplusplus > 201703L)
+} // namespace areg::os
+#endif // defined (__cplusplus) && (__cplusplus >= 201703L)
 #endif  // _WIN32

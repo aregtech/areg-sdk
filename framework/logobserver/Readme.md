@@ -41,7 +41,7 @@ Configure the `logobserver` using the following command-line option:
   **Example**: `./logobserver --load=/path/to/config.file`
 
 
-### Console Commands
+### areg::ext::Console Commands
 
 When running as a console application, the following commands can be used to manage logging and connected instances:
 

@@ -15,46 +15,74 @@
 #include "areg/ipc/ClientConnection.hpp"
 
 #include "areg/base/RemoteMessage.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/base/SocketDefs.hpp"
+#include "areg/component/ServiceDefs.hpp"
 
-#include "areg/logging/GELog.h"
+namespace areg {
 
-ClientConnection::ClientConnection( void )
+ClientConnection::ClientConnection()
     : SocketConnectionBase    ( )
-    , mClientSocket ( )
-    , mCookie       ( NEService::COOKIE_UNKNOWN )
+    , mClientSocket         ( )
+    , mCookie               ( areg::COOKIE_UNKNOWN )
+    , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )
+    , mSockRecvBuf          ( areg::SOCKET_RECV_BUFFER_SIZE )
+    , mSockSendTimeoutMs    ( areg::SOCKET_SEND_TIMEOUT_MS )
 {
 }
 
-ClientConnection::ClientConnection(const String & hostName, unsigned short portNr)
+ClientConnection::ClientConnection(const String & hostName, uint16_t portNr)
     : SocketConnectionBase    ( )
-    , mClientSocket ( hostName, portNr )
-    , mCookie       ( NEService::COOKIE_UNKNOWN )
+    , mClientSocket         ( hostName, portNr )
+    , mCookie               ( areg::COOKIE_UNKNOWN )
+    , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )
+    , mSockRecvBuf          ( areg::SOCKET_RECV_BUFFER_SIZE )
+    , mSockSendTimeoutMs    ( areg::SOCKET_SEND_TIMEOUT_MS )
 {
 }
 
-ClientConnection::ClientConnection(const NESocket::SocketAddress & remoteAddress)
+ClientConnection::ClientConnection(const areg::SocketAddress & remoteAddress)
     : SocketConnectionBase    ( )
-    , mClientSocket ( remoteAddress )
-    , mCookie       ( NEService::COOKIE_UNKNOWN )
+    , mClientSocket         ( remoteAddress )
+    , mCookie               ( areg::COOKIE_UNKNOWN )
+    , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )
+    , mSockRecvBuf          ( areg::SOCKET_RECV_BUFFER_SIZE )
+    , mSockSendTimeoutMs    ( areg::SOCKET_SEND_TIMEOUT_MS )
 {
 }
 
 
-bool ClientConnection::createSocket(const String & hostName, unsigned short portNr)
+bool ClientConnection::create_socket(const String & hostName, uint16_t portNr)
 {
-    setCookie( mClientSocket.createSocket(hostName, portNr) ? NEService::COOKIE_LOCAL : NEService::COOKIE_UNKNOWN );
-    return mClientSocket.isValid();
+    set_cookie( mClientSocket.create(hostName, portNr) ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
+    if (mClientSocket.is_valid())
+    {
+        areg::set_send_size(mClientSocket.handle(), mSockSendBuf);
+        areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
+        areg::set_send_timeout(mClientSocket.handle(), mSockSendTimeoutMs);
+        areg::socket_set_no_delay(mClientSocket.handle());
+    }
+
+    return mClientSocket.is_valid();
 }
 
-bool ClientConnection::createSocket(void)
+bool ClientConnection::create_socket()
 {
-    setCookie( mClientSocket.createSocket() ? NEService::COOKIE_LOCAL : NEService::COOKIE_UNKNOWN );
-    return mClientSocket.isValid();
+    set_cookie( mClientSocket.create() ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
+    if (mClientSocket.is_valid())
+    {
+        areg::set_send_size(mClientSocket.handle(), mSockSendBuf);
+        areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
+        areg::set_send_timeout(mClientSocket.handle(), mSockSendTimeoutMs);
+        areg::socket_set_no_delay(mClientSocket.handle());
+    }
+
+    return mClientSocket.is_valid();
 }
 
-void ClientConnection::closeSocket(void)
+void ClientConnection::close_socket()
 {
-    setCookie(NEService::COOKIE_UNKNOWN);
-    mClientSocket.closeSocket();
+    set_cookie(areg::COOKIE_UNKNOWN);
+    mClientSocket.close();
 }
+
+} // namespace areg

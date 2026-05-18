@@ -18,15 +18,20 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
-#include "aregextend/service/NESystemService.hpp"
-#include "aregextend/service/ServiceCommunicatonBase.hpp"
+#include "aregextend/service/SystemServiceDefs.hpp"
+#include "aregextend/service/ServiceCommunicationBase.hpp"
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IEConfigurationListener;
+
+namespace areg {
+    class ConfigListener;
+} // namespace areg
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // SystemServiceBase class declaration
@@ -51,57 +56,57 @@ public:
      * \brief   SystemServiceBase::RESULT_SUCCEEDED
      *          Returns value indicating no error, i.e. operation succeeded.
      **/
-    static constexpr int        RESULT_SUCCEEDED        { 0 };
+    static constexpr int32_t        RESULT_SUCCEEDED        { 0 };
 
     /**
      * \brief   SystemServiceBase::RESULT_FAILED_INIT
      *          Returns value indicating error during initialization.
      **/
-    static constexpr int        RESULT_FAILED_INIT      { 1 };
+    static constexpr int32_t        RESULT_FAILED_INIT      { 1 };
 
     /**
      * \brief   SystemServiceBase::RESULT_FAILED_INSTALL
      *          Returns value indicating error during installation of the service.
      *          Valid for Windows OS and ignored in Linux.
      **/
-    static constexpr int        RESULT_FAILED_INSTALL   { 2 };
+    static constexpr int32_t        RESULT_FAILED_INSTALL   { 2 };
 
     /**
      * \brief   SystemServiceBase::RESULT_FAILED_RUN
      *          Returns value indicating error during run.
      **/
-    static constexpr int        RESULT_FAILED_RUN       { 3 };
+    static constexpr int32_t        RESULT_FAILED_RUN       { 3 };
 
     /**
      * \brief   SystemServiceBase::RESULT_IGNORED
      *          Returns value indicating that the operation was ignored.
      **/
-    static constexpr int        RESULT_IGNORED          { 4 };
+    static constexpr int32_t        RESULT_IGNORED          { 4 };
 
     /**
-     * \brief   SystemServiceBase::eServiceControl
+     * \brief   SystemServiceBase::ServiceControl
      *          The control constants of the service.
      **/
-    typedef enum E_ServiceControl
+    enum class ServiceControl   : uint8_t
     {
           ServiceStop       = 1 //!< The service received control to stop.
         , ServicePause          //!< The service received control to pause.
         , ServiceContinue       //!< The service received control to resume paused service.
         , ServiceShutdown       //!< The service received control to shutdown.
-    } eServiceControl;
+    };
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initializes instance of message router service.
+     * \brief   Initializes instance of message router service with the specified communication
+     *          controller.
+     *
+     * \param   commBase    The communication controller object for the service.
      **/
-    SystemServiceBase( ServiceCommunicatonBase & commBase );
-    /**
-     * \brief   Destructor.
-     **/
-    virtual ~SystemServiceBase( void ) = default;
+    SystemServiceBase( ServiceCommunicationBase & commBase );
+    virtual ~SystemServiceBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -109,144 +114,167 @@ protected:
 public:
 
     /**
-     * \brief   Triggered when the system changes the service control state.
-     *          This is operated via operating system and valid for Windows OS.
-     *          In Linux OS this has no effect.
+     * \brief   Triggered when the system changes the service control state. This is operated via
+     *          operating system and valid for Windows OS. In Linux OS this has no effect.
+     *
      * \param   control     The control triggered by system.
      **/
-    void controlService(SystemServiceBase::eServiceControl control);
+    void control_service(SystemServiceBase::ServiceControl control);
 
 /************************************************************************/
 // SystemServiceBase overrides
 /************************************************************************/
 
     /**
-     * \brief   Parses the NESystemService::eServiceOption options passed
-     *          in the command line and returns true if succeeded.
-     *          Override and implement this method if the options differ than
-     *          NESystemService::eServiceOption
+     * \brief   Parses the areg::ext::ServiceOption options passed in the command line and
+     *          returns true if succeeded. Override and implement this method if the options differ
+     *          than areg::ext::ServiceOption
+     *
      * \param   argc    The number of options to parse.
      * \param   argv    The options to parse.
-     * \return  Returns true if succeeded to parse command line options,
-     *          found no failure and the application can continue working.
-     *          To interrupt the application, return false.
+     * \return  Returns true if succeeded to parse command line options, found no failure and the
+     *          application can continue working. To interrupt the application, return false.
      **/
-    virtual bool parseOptions( int argc, const char ** argv, const OptionParser::sOptionSetup * optSetup, uint32_t optCount );
-    virtual bool parseOptions( int argc, char** argv, const OptionParser::sOptionSetup* optSetup, uint32_t optCount);
+    virtual bool parse_options( int32_t argc, const char ** argv, const OptionParser::OptionSetup * optSetup, uint32_t optCount );
+    /**
+     * \brief   Parses the areg::ext::ServiceOption options passed in the command line and
+     *          returns true if succeeded. Override and implement this method if the options differ
+     *          than areg::ext::ServiceOption
+     *
+     * \param   argc    The number of options to parse.
+     * \param   argv    The options to parse.
+     * \return  Returns true if succeeded to parse command line options, found no failure and the
+     *          application can continue working. To interrupt the application, return false.
+     **/
+    virtual bool parse_options( int32_t argc, char** argv, const OptionParser::OptionSetup* optSetup, uint32_t optCount);
 
     /**
-     * \brief   Checks the listed options and prepares to dispatch.
-     *          In case of failure or request to display manual, prints the
-     *          help to use command line options properly.
-     *          Override the method if need extra checkups or preparations.
-     * \param   opts    The list of options. By default, they are
-     *                  type of NESystemService::eServiceOption.
-     * \return  Returns true if found no failure and the application can continue working.
-     *          To interrupt the application, return false.
+     * \brief   Checks the listed options and prepares to dispatch. In case of failure or request to
+     *          display manual, prints the help to use command line options properly. Override the
+     *          method if need extra checkups or preparations.
+     *
+     * \param   opts    The list of options. By default, they are type of
+     *                  areg::ext::ServiceOption.
+     * \return  Returns true if found no failure and the application can continue working. To
+     *          interrupt the application, return false.
      **/
-    virtual bool prepareOptions(const OptionParser::InputOptionList& opts);
+    virtual bool prepare_options(const OptionParser::InputOptionList& opts);
 
     /**
-     * \brief   Dispatches the option, makes basic initialization like setting configuration file or set verbose flag.
+     * \brief   Dispatches the option, makes basic initialization like setting configuration file or
+     *          set verbose flag.
+     *
      * \param   opt     The option to dispatch.
-     * \return  If operation succeeded, returns true. Otherwise, if the option is not recognized or value is unexpected,
-     *          returns false.
+     * \return  If operation succeeded, returns true. Otherwise, if the option is not recognized or
+     *          value is unexpected, returns false.
      **/
-    virtual bool dispatchOption(const OptionParser::sOption& opt);
+    virtual bool dispatch_option(const OptionParser::InputOption& opt);
 
     /**
-     * \brief   Is the main entry point to install, uninstall, register and start service.
-     *          Normally, called from the main() method.
-     * \param   optStartup  Option that is set to start service. Can be eServiceOption::CMD_Undefined
-     *                      if need to run with default option.
-     * \param   argument    Option argument. Can be empty or nullptr if no argument is expected
-     *                      or need to use default value.
+     * \brief   Is the main entry point to install, uninstall, register and start service. Normally,
+     *          called from the main() method.
+     *
+     * \param   optStartup      Option that is set to start service. Can be
+     *                          ServiceOption::CMD_Undefined if need to run with default option.
+     * \param   argument        Option argument. Can be empty or nullptr if no argument is expected
+     *                          or need to use default value.
      * \return  The result of execution.
      **/
-    virtual int serviceMain(NESystemService::eServiceOption optStartup, const char* argument);
+    virtual int32_t service_main(areg::ext::ServiceOption optStartup, const char* argument);
 
     /**
      * \brief   Sends remote message to the target specified in the message structure.
-     * \param   message     The message to send to the target. The message contains information of the source and target.
+     *
+     * \param   message     The message to send to the target. The message contains information of
+     *                      the source and target.
      **/
-    virtual void sendMessageToTarget(const RemoteMessage& message);
+    virtual void send_message_to_target(const RemoteMessage& message);
 
     /**
      * \brief   Triggered to initialize the service application.
-     * \param   option      The option that was set to run. Can be eServiceOption::CMD_Undefined if unknown or should be ignored.
-     * \param   value       The option value as a string. Can be empty string or nullptr if should be ignored.
-     * \param   fileConfig  The pointer to the configuration file. Can be empty or nullptr if should be ignored.
+     *
+     * \param   option          The option that was set to run. Can be ServiceOption::CMD_Undefined
+     *                          if unknown or should be ignored.
+     * \param   value           The option value as a string. Can be empty string or nullptr if
+     *                          should be ignored.
+     * \param   fileConfig      The pointer to the configuration file. Can be empty or nullptr if
+     *                          should be ignored.
      * \return  Returns true if succeeded to initialize application and the application can run.
-     *          Otherwise, the application run should be interrupted and the failure code 1 is returned.
+     *          Otherwise, the application run should be interrupted and the failure code 1 is
+     *          returned.
      **/
-    virtual bool serviceInitialize(NESystemService::eServiceOption option, const char* value, const char* fileConfig) = 0;
+    virtual bool service_initialize(areg::ext::ServiceOption option, const char* value, const char* fileConfig) = 0;
 
     /**
      * \brief   Triggered when service application is going to exit.
      **/
-    virtual void serviceRelease( void ) = 0;
+    virtual void service_release() = 0;
 
     /**
      * \brief   Call to create and install the service in the system.
+     *
      * \return  Returns true if registration succeeded.
      **/
-    virtual bool serviceInstall( void ) = 0;
+    virtual bool service_install() = 0;
 
     /**
      * \brief   Call to delete and uninstall the service in the system.
      **/
-    virtual void serviceUninstall( void ) = 0;
+    virtual void service_uninstall() = 0;
 
     /**
      * \brief   Registers system service in the system.
      **/
-    virtual bool registerService( void ) = 0;
+    virtual bool register_service() = 0;
 
     /**
      * \brief   Opens operating system service for further processing.
+     *
      * \return  Returns true if succeeded.
      **/
-    virtual bool serviceOpen( void ) = 0;
+    virtual bool service_open() = 0;
 
     /**
      * \brief   Called to start the system service.
+     *
      * \return  Returns true, if started with success.
      **/
-    virtual bool serviceStart( void ) = 0;
+    virtual bool service_start() = 0;
 
     /**
      * \brief   Called to pause the system service.
      **/
-    virtual void servicePause( void ) = 0;
+    virtual void service_pause() = 0;
 
     /**
      * \brief   Called to resume paused system service.
      **/
-    virtual bool serviceContinue( void ) = 0;
+    virtual bool service_continue() = 0;
 
     /**
      * \brief   Called to stop the system service.
      **/
-    virtual void serviceStop( void ) = 0;
+    virtual void service_stop() = 0;
 
     /**
      * \brief   Called to shutdown the system service.
      **/
-    virtual void serviceShutdown( void ) = 0;
+    virtual void service_shutdown() = 0;
 
     /**
      * \brief   Sets the state of the system service.
      **/
-    virtual bool setState( NESystemService::eSystemServiceState newState ) = 0;
+    virtual bool set_state( areg::ext::ServicePhase newState ) = 0;
 
     /**
      * \brief   Called to setup service and start service dispatcher.
-     * \return  Returns value indicating the successful state of the operation.
-     *          If returns RESULT_SUCCEEDED, it succeeded to start the service dispatcher (Windows related).
-     *          If returns RESULT_IGNORED, the operation is ignored (case for POSIX or if dispatcher started).
-     *          In all other cases it should return RESULT_FAILED_INIT.
+     *
+     * \return  Returns value indicating the successful state of the operation. If returns
+     *          RESULT_SUCCEEDED, it succeeded to start the service dispatcher (Windows related). If
+     *          returns RESULT_IGNORED, the operation is ignored (case for POSIX or if dispatcher
+     *          started). In all other cases it should return RESULT_FAILED_INIT.
      **/
-    virtual int startServiceDispatcher( void ) = 0;
+    virtual int32_t start_service_dispatcher() = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -255,33 +283,36 @@ public:
     /**
      * \brief   Returns current command of message router service.
      **/
-    inline NESystemService::eServiceOption getCurrentOption( void ) const;
+    [[nodiscard]]
+    inline areg::ext::ServiceOption current_option() const noexcept;
 
     /**
      * \brief   Sets the current command of message router service.
-     * \param   optService  The router service command option to set.
+     *
+     * \param   optService      The router service command option to set.
      **/
-    inline void setCurrentOption( NESystemService::eServiceOption optService );
+    inline void set_current_option( areg::ext::ServiceOption optService );
 
     /**
      * \brief   Returns the state of message router service.
      **/
-    inline NESystemService::eSystemServiceState getState( void ) const;
+    [[nodiscard]]
+    inline areg::ext::ServicePhase state() const noexcept;
 
     /**
      * \brief   Returns the instance of data rate helper object to use when computing data rate.
      **/
-    inline DataRateHelper& getDataRateHelper(void) const;
+    inline DataRateHelper& data_rate_helper() const;
 
     /**
      * \brief   Return the instance of the communication controller object.
      **/
-    inline ServiceCommunicatonBase& getCommunicationController(void) const;
+    inline ServiceCommunicationBase& communication_controller() const;
 
     /**
-     * \brief   Resets default options.
+     * \brief   Resets service options to their default values.
      **/
-    void resetDefaultOptions(void);
+    void reset();
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -294,58 +325,52 @@ protected:
 
     /**
      * \brief   Triggered to print the help message on console.
-     * \param   isCmdLine   Flag indicating whether it should print the help
-     *                      of using service in command line or help of user input commands.
-     *                      If 'true', the printing message is about using the service in
-     *                      command line. Otherwise, if application expects user inputs, prints
-     *                      the help of command options.
+     *
+     * \param   isCmdLine       Flag indicating whether it should print the help of using service in
+     *                          command line or help of user input commands. If 'true', the printing
+     *                          message is about using the service in command line. Otherwise, if
+     *                          application expects user inputs, prints the help of command options.
      **/
-    virtual void printHelp( bool isCmdLine ) = 0;
+    virtual void print_help( bool isCmdLine ) = 0;
 
     /**
      * \brief   Triggered to start the console service.
      **/
-    virtual void startConsoleService( void ) = 0;
+    virtual void start_console_service() = 0;
 
     /**
-     * \brief   Stops the consoler service.
+     * \brief   Stops the console service.
      **/
-    virtual void stopConsoleService( void ) = 0;
+    virtual void stop_console_service() = 0;
 
     /**
      * \brief   Triggered to receive a function to validate and check the input option values.
      **/
-    virtual Console::CallBack getOptionCheckCallback( void ) const = 0;
+    virtual Console::CallBack option_check_callback() const = 0;
 
     /**
-     * \brief   Triggered if need to run console with extended features.
-     *          In extended feature, the console can output message at any position on the screen.
+     * \brief   Triggered if need to run console outputs and inputs.
      **/
-    virtual void runConsoleInputExtended( void ) = 0;
-
-    /**
-     * \brief   Triggered if need to run console with simple (not extended) features.
-     **/
-    virtual void runConsoleInputSimple( void ) = 0;
+    virtual void run_console_io() = 0;
 
     /**
      * \brief   Run application as a background process without input or output on console.
      **/
-    virtual void runService(void) = 0;
+    virtual void run_service() = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
 protected:
-    ServiceCommunicatonBase &               mCommunication;
+    ServiceCommunicationBase &               mCommunication;
     /**
      * \brief   The message router service state.
      **/
-    NESystemService::eSystemServiceState    mSystemServiceState;
+    areg::ext::ServicePhase    mSystemServiceState;
     /**
      * \brief   The current command to execute by message router service.
      **/
-    NESystemService::eServiceOption         mSystemServiceOption;
+    areg::ext::ServiceOption         mSystemServiceOption;
     /**
      * \brief   OS specific service handle
      **/
@@ -355,7 +380,7 @@ protected:
      **/
     void *                                  mSeMHandle;
     /**
-     * \brief   The relative or full path to the configuration file. By default, NEApplication::DEFAULT_CONFIG_FILE
+     * \brief   The relative or full path to the configuration file. By default, areg::DEFAULT_CONFIG_FILE
      **/
     String                                  mFileConfig;
 
@@ -363,36 +388,38 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( SystemServiceBase );
+    AREG_NOCOPY_NOMOVE( SystemServiceBase );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // SystemServiceBase class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline NESystemService::eSystemServiceState SystemServiceBase::getState( void ) const
+inline areg::ext::ServicePhase SystemServiceBase::state() const noexcept
 {
     return mSystemServiceState;
 }
 
-inline DataRateHelper& SystemServiceBase::getDataRateHelper(void) const
+inline DataRateHelper& SystemServiceBase::data_rate_helper() const
 {
-    return  mCommunication.getDataRateHelper();
+    return  mCommunication.data_rate_helper();
 }
 
-inline ServiceCommunicatonBase& SystemServiceBase::getCommunicationController(void) const
+inline ServiceCommunicationBase& SystemServiceBase::communication_controller() const
 {
-    return const_cast<ServiceCommunicatonBase&>(mCommunication);
+    return const_cast<ServiceCommunicationBase&>(mCommunication);
 }
 
-inline NESystemService::eServiceOption SystemServiceBase::getCurrentOption(void) const
+inline areg::ext::ServiceOption SystemServiceBase::current_option() const noexcept
 {
     return mSystemServiceOption;
 }
 
-inline void SystemServiceBase::setCurrentOption( NESystemService::eServiceOption optService )
+inline void SystemServiceBase::set_current_option( areg::ext::ServiceOption optService )
 {
     mSystemServiceOption = optService;
 }
+
+} // namespace areg::ext
 
 #endif  // AREG_AREGEXTEND_SERVICE_SYSTEMSERVICEBASE_HPP

@@ -13,16 +13,16 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
-#include "areg/component/IETimerConsumer.hpp"
-#include "examples/16_pubmesh/services/LocalHelloWorldClientBase.hpp"
-#include "examples/16_pubmesh/services/SystemShutdownClientBase.hpp"
+#include "areg/base/areg_global.h"
+#include "areg/component/TimerConsumer.hpp"
+#include "examples/16_pubmesh/services/LocalHelloWorldConsumerBase.hpp"
+#include "examples/16_pubmesh/services/SystemShutdownConsumerBase.hpp"
 
 #include "areg/component/Timer.hpp"
 
 //! \brief   A Local service client.
-class LocalHelloWorldClient : private   LocalHelloWorldClientBase
-                            , private   IETimerConsumer
+class LocalHelloWorldClient final : private   LocalHelloWorldConsumerBase
+                                  , private   areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -35,9 +35,9 @@ public:
      * \param   owner       The component owning thread.
      * \param   timeout The timeout in milliseconds to trigger the request to output message
      **/
-    LocalHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, unsigned int timeout );
+    LocalHelloWorldClient( const areg::DependencyEntry & dependency, areg::Component & owner, uint32_t timeout );
 
-    virtual ~LocalHelloWorldClient(void) = default;
+    virtual ~LocalHelloWorldClient() = default;
 
 protected:
     /**
@@ -46,12 +46,12 @@ protected:
      *          Overwrite, if need to handle Response call of server object. 
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientInfo  The client information set by servicing component. If empty or invalid ID, the message output failed.
-     * \see     requestHelloWorld
+     * \see     hello_world
      **/
-    virtual void responseHelloWorld( const NELocalHelloWorld::sConnectedClient & clientInfo ) override;
+    void response_hello_world( const LocalHelloWorld::sConnectedClient & clientInfo ) final;
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -64,42 +64,42 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 /************************************************************************/
-// IETimerConsumer interface overrides.
+// TimerConsumer interface overrides.
 /************************************************************************/
     /**
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer ) override;
+    void process_timer( areg::Timer & timer ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline LocalHelloWorldClient & self( void )
+    inline LocalHelloWorldClient & self()
     {
         return (*this);
     }
 
     //!< Generated unique timer name.
-    inline String timerName( Component & owner ) const;
+    inline areg::String timer_name( areg::Component & owner ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // member variables
 //////////////////////////////////////////////////////////////////////////
-    const unsigned int  mMsTimeout; //!< The timeout in milliseconds to set for timer
-    Timer               mTimer;     //!< The timer to trigger to send request to output message
-    unsigned int        mID;        //!< The ID given by service.
+    const uint32_t  mMsTimeout; //!< The timeout in milliseconds to set for timer
+    areg::Timer     mTimer;     //!< The timer to trigger to send request to output message
+    uint32_t        mID;        //!< The ID given by service.
 
 //////////////////////////////////////////////////////////////////////////
 // forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    LocalHelloWorldClient( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( LocalHelloWorldClient );
+    LocalHelloWorldClient() = delete;
+    AREG_NOCOPY_NOMOVE( LocalHelloWorldClient );
 };
 
 #endif // PUBMESH_COMMON_SRC_LOCALHELLOWORLDCLIENT_HPP

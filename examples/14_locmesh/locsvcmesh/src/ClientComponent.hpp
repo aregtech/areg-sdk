@@ -19,20 +19,20 @@
 /**
  * \brief   The main component that controls application shutdown.
  **/
-class ClientComponent : public Component
+class ClientComponent final : public areg::Component
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ClientComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    ClientComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 
-    inline ClientComponent & self( void )
+    inline ClientComponent & self()
     {
         return (*this);
     }
@@ -48,6 +48,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ClientComponent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ClientComponent );
+    ClientComponent() = delete;
+    AREG_NOCOPY_NOMOVE( ClientComponent );
 };

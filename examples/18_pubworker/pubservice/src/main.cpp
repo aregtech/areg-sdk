@@ -10,13 +10,13 @@
 //               startup and unload on exit.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #include "pubservice/src/PatientService.hpp"
-#include "common/NECommon.hpp"
+#include "common/WorkerDefs.hpp"
 
 #ifdef _MSC_VER
     #pragma comment(lib, "areg")
@@ -33,13 +33,13 @@ BEGIN_MODEL(_modelName)
     // define component thread
     BEGIN_REGISTER_THREAD( _threadPatient )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( NECommon::ServiceNamePatientInfo, PatientService )
+        BEGIN_REGISTER_COMPONENT( worker::ServiceNamePatientInfo, PatientService )
             // register Patient service
-            REGISTER_IMPLEMENT_SERVICE( NEPatientInformation::ServiceName, NEPatientInformation::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( PatientInformation::ServiceName, PatientInformation::InterfaceVersion )
             // register HW worker thread
             REGISTER_WORKER_THREAD( PatientService::PatientServiceWorkerThread.data(), PatientService::PatienServiceConsumerName.data() )
         // end of component description
-        END_REGISTER_COMPONENT( NECommon::ServiceNamePatientInfo )
+        END_REGISTER_COMPONENT( worker::ServiceNamePatientInfo )
     // end of thread description
     END_REGISTER_THREAD( _threadPatient )
 
@@ -56,18 +56,18 @@ END_MODEL(_modelName)
 int main()
 {
     // Initialize application, enable servicing, routing, timer and watchdog.
-    Application::initApplication(false, true, true, true, true, nullptr );
+    areg::Application::setup(false, true, true, true, true, nullptr );
 
     // load model to initialize components
-    Application::loadModel(_modelName);
+    areg::Application::load_model(_modelName);
 
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    areg::Application::wait_quit(areg::WAIT_INFINITE);
 
     // stop and unload components
-    Application::unloadModel(_modelName);
+    areg::Application::unload_model(_modelName);
 
     // release and cleanup resources of application.
-    Application::releaseApplication();
+    areg::Application::release();
 
 	return 0;
 }

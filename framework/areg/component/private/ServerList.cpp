@@ -17,155 +17,156 @@
 
 #include "areg/component/StubAddress.hpp"
 #include "areg/component/ProxyAddress.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ServerList class implementation
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(areg_component_private_ServerList_findServer);
-DEF_LOG_SCOPE(areg_component_private_ServerList_registerClient);
-DEF_LOG_SCOPE(areg_component_private_ServerList_unregisterClient);
-DEF_LOG_SCOPE(areg_component_private_ServerList_registerServer);
-DEF_LOG_SCOPE(areg_component_private_ServerList_unregisterServer);
+DEF_LOG_SCOPE(areg_component_private_ServerList, find_provider);
+DEF_LOG_SCOPE(areg_component_private_ServerList, register_consumer);
+DEF_LOG_SCOPE(areg_component_private_ServerList, unregister_consumer);
+DEF_LOG_SCOPE(areg_component_private_ServerList, register_provider);
+DEF_LOG_SCOPE(areg_component_private_ServerList, unregister_provider);
 
 //////////////////////////////////////////////////////////////////////////
 // Methods.
 //////////////////////////////////////////////////////////////////////////
-ServerList::MAPPOS ServerList::findServer(const ServerInfo& server) const
+ServerList::MAPPOS ServerList::find_provider(const ServerInfo& server) const
 {
     return find(server);
 }
 
-ServerList::MAPPOS ServerList::findServer(const StubAddress& whichServer) const
+ServerList::MAPPOS ServerList::find_provider(const StubAddress& whichServer) const
 {
-    LOG_SCOPE(areg_component_private_ServerList_findServer);
-    LOG_DBG("Search server based on server address [ %s ]", StubAddress::convAddressToPath(whichServer).getString());
+    LOG_SCOPE( areg_component_private_ServerList, find_provider);
+    LOG_DBG("Search server based on server address [ %s ]", StubAddress::to_path(whichServer).as_string());
 
     ServerInfo server(whichServer);
     return ServerList::find(server);
 }
 
-ServerList::MAPPOS ServerList::findServer(const ProxyAddress& whichClient) const
+ServerList::MAPPOS ServerList::find_provider(const ProxyAddress& whichClient) const
 {
-    LOG_SCOPE(areg_component_private_ServerList_findServer);
-    LOG_DBG("Search server based on proxy address [ %s ]", ProxyAddress::convAddressToPath(whichClient).getString());
+    LOG_SCOPE( areg_component_private_ServerList, find_provider);
+    LOG_DBG("Search server based on proxy address [ %s ]", ProxyAddress::to_path(whichClient).as_string());
 
     ServerInfo server(whichClient);
     return ServerList::find(server);
 }
 
-const ServerInfo & ServerList::registerClient( const ProxyAddress & whichClient, ClientInfo & out_client )
+const ServerInfo & ServerList::register_consumer( const ProxyAddress & whichClient, ClientInfo & out_client )
 {
-    LOG_SCOPE(areg_component_private_ServerList_registerClient);
+    LOG_SCOPE( areg_component_private_ServerList, register_consumer);
 
-    std::pair<ServerListBase::MAPPOS, bool> added = addIfUnique(ServerInfo(whichClient), ClientList());
+    std::pair<ServerListBase::MAPPOS, bool> added = add_if_unique(ServerInfo(whichClient), ClientList());
     LOG_DBG("[ %s ] entry for client [ %s ]"
                 , added.second ? "CREATED NEW" : "EXTRACTED EXISTING"
-                , ProxyAddress::convAddressToPath(whichClient).getString());
+                , ProxyAddress::to_path(whichClient).as_string());
 
     ServerListBase::MAPPOS pos = added.first;
-    ASSERT(ServerListBase::isValidPosition(pos));
+    ASSERT(ServerListBase::is_valid_position(pos));
 
-    out_client = pos->second.registerClient(whichClient, pos->first);
+    out_client = pos->second.register_consumer(whichClient, pos->first);
     LOG_DBG("There are [ %d ] registered clients for service [ %s ]"
-                , pos->second.getSize()
-                , StubAddress::convAddressToPath(pos->first.getAddress()).getString());
+                , pos->second.size()
+                , StubAddress::to_path(pos->first.address()).as_string());
 
     return pos->first;
 }
 
 
-ServerInfo ServerList::unregisterClient( const ProxyAddress & whichClient, ClientInfo & out_client )
+ServerInfo ServerList::unregister_consumer( const ProxyAddress & whichClient, ClientInfo & out_client )
 {
-    LOG_SCOPE(areg_component_private_ServerList_unregisterClient);
+    LOG_SCOPE( areg_component_private_ServerList, unregister_consumer);
 
     ServerInfo result;
-    ServerListBase::MAPPOS pos = findServer(whichClient);
-    if (ServerListBase::isValidPosition(pos))
+    ServerListBase::MAPPOS pos = find_provider(whichClient);
+    if (ServerListBase::is_valid_position(pos))
     {
-        pos->second.unregisterClient(whichClient, out_client);
+        pos->second.unregister_consumer(whichClient, out_client);
         result = pos->first;
 
         LOG_DBG("Unregistered client [ %s ] from [ %s ] service [ %s ] with status [ %s ]. There are still [ %d ] registered clients"
-                    , ProxyAddress::convAddressToPath(out_client.getAddress()).getString()
-                    , pos->first.getAddress().isRemoteAddress() ? "REMOTE" : "LOCAL"
-                    , StubAddress::convAddressToPath(pos->first.getAddress()).getString()
-                    , NEService::getString(pos->first.getConnectionStatus())
-                    , pos->second.getSize());
+                    , ProxyAddress::to_path(out_client.address()).as_string()
+                    , pos->first.address().is_remote_address() ? "REMOTE" : "LOCAL"
+                    , StubAddress::to_path(pos->first.address()).as_string()
+                    , areg::as_string(pos->first.connection_status())
+                    , pos->second.size());
 
-        if (pos->second.isEmpty())
+        if (pos->second.is_empty())
         {
-            const StubAddress & addrStub = pos->first.getAddress();
-            if (addrStub.getSource() == NEService::SOURCE_UNKNOWN || addrStub.isRemoteAddress())
+            const StubAddress & addrStub = pos->first.address();
+            if (addrStub.source() == areg::SOURCE_UNKNOWN || addrStub.is_remote_address())
             {
-                removePosition(pos);
+                remove_at(pos);
             }
         }
     }
     else
     {
-        LOG_INFO("No service for client [ %s ], ignore unregister", ProxyAddress::convAddressToPath(whichClient).getString());
+        LOG_INFO("No service for client [ %s ], ignore unregister", ProxyAddress::to_path(whichClient).as_string());
     }
 
     return result;
 }
 
-const ServerInfo & ServerList::registerServer( const StubAddress & addrStub, ClientList & out_clinetList )
+const ServerInfo & ServerList::register_provider( const StubAddress & addrStub, ClientList & out_clinetList )
 {
-    LOG_SCOPE(areg_component_private_ServerList_registerServer);
+    LOG_SCOPE( areg_component_private_ServerList, register_provider );
 
-    ASSERT(addrStub.isValid() );
+    ASSERT(addrStub.is_valid() );
 
     ServerInfo server(addrStub);
-    std::pair<ServerListBase::MAPPOS, bool> added = addIfUnique(server, ClientList());
+    std::pair<ServerListBase::MAPPOS, bool> added = add_if_unique(server, ClientList());
     LOG_DBG("[ %s ] entry for server [ %s ]"
                 , added.second ? "CREATED NEW" : "EXTRACTED EXISTING"
-                , StubAddress::convAddressToPath(addrStub).getString());
+                , StubAddress::to_path(addrStub).as_string());
 
     ServerListBase::MAPPOS pos = added.first;
-    ASSERT(ServerListBase::isValidPosition(pos));
+    ASSERT(ServerListBase::is_valid_position(pos));
 
-    ServerInfo& key = ServerListBase::keyAtPosition(pos);
-    ClientList& value = ServerListBase::valueAtPosition(pos);
+    ServerInfo& key = ServerListBase::key_at(pos);
+    ClientList& value = ServerListBase::value_at(pos);
 
     key = server;
-    key.setConnectionStatus( addrStub.getSource() != NEService::SOURCE_UNKNOWN ? NEService::eServiceConnection::ServiceConnected : NEService::eServiceConnection::ServicePending );
-    value.serverAvailable(key, out_clinetList);
+    key.set_connection_status( addrStub.source() != areg::SOURCE_UNKNOWN ? areg::ServiceConnectionState::Connected : areg::ServiceConnectionState::Pending );
+    value.provider_available(key, out_clinetList);
 
     LOG_DBG("The [ %s ] service [ %s ] is with status [ %s ]. [ %d ] clients are going to be notified."
-                    , addrStub.isRemoteAddress() ? "REMOTE" : "LOCAL"
-                    , StubAddress::convAddressToPath(addrStub).getString()
-                    , NEService::getString(server.getConnectionStatus())
-                    , out_clinetList.getSize());
+                    , addrStub.is_remote_address() ? "REMOTE" : "LOCAL"
+                    , StubAddress::to_path(addrStub).as_string()
+                    , areg::as_string(server.connection_status())
+                    , out_clinetList.size());
 
     return key;
 }
 
-ServerInfo ServerList::unregisterServer( const StubAddress & whichServer, ClientList & out_clinetList )
+ServerInfo ServerList::unregister_provider( const StubAddress & whichServer, ClientList & out_clinetList )
 {
-    LOG_SCOPE(areg_component_private_ServerList_unregisterServer);
+    LOG_SCOPE( areg_component_private_ServerList, unregister_provider);
 
     ServerInfo result(whichServer);
     ServerListBase::MAPPOS pos = find(result);
 
-    if (ServerListBase::isValidPosition(pos))
+    if (ServerListBase::is_valid_position(pos))
     {
-        ServerInfo& key = ServerListBase::keyAtPosition(pos);
-        ClientList& value = ServerListBase::valueAtPosition(pos);
+        ServerInfo& key = ServerListBase::key_at(pos);
+        ClientList& value = ServerListBase::value_at(pos);
 
         result = key;
-        value.serverUnavailable(out_clinetList);
+        value.provider_unavailable(out_clinetList);
 
         LOG_INFO("Found and unregistered [ %s ] service [ %s ], [ %d ] clients are going to be notified, the list is [ %s ]"
-                        , whichServer.isRemoteAddress() ? "REMOTE" : "LOCAL"
-                        , StubAddress::convAddressToPath(whichServer).getString()
-                        , out_clinetList.getSize()
-                        , value.isEmpty() ? "EMPTY" : "NOT EMPTY");
+                        , whichServer.is_remote_address() ? "REMOTE" : "LOCAL"
+                        , StubAddress::to_path(whichServer).as_string()
+                        , out_clinetList.size()
+                        , value.is_empty() ? "EMPTY" : "NOT EMPTY");
 
-        if ( value.isEmpty())
+        if ( value.is_empty())
         {
-            removePosition(pos);
+            remove_at(pos);
         }
         else
         {
@@ -176,26 +177,28 @@ ServerInfo ServerList::unregisterServer( const StubAddress & whichServer, Client
     return result;
 }
 
-NEService::eServiceConnection ServerList::getServerState(const StubAddress & whichServer) const
+areg::ServiceConnectionState ServerList::server_state(const StubAddress & whichServer) const
 {
-    ServerListBase::MAPPOS pos = findServer(whichServer);
-    return (ServerListBase::isValidPosition(pos) ? pos->first.getConnectionStatus() : NEService::eServiceConnection::ServiceConnectionUnknown);
+    ServerListBase::MAPPOS pos = find_provider(whichServer);
+    return (ServerListBase::is_valid_position(pos) ? pos->first.connection_status() : areg::ServiceConnectionState::Unknown);
 }
 
-const ClientList & ServerList::getClientList(const StubAddress & whichServer) const
+const ClientList & ServerList::client_list(const StubAddress & whichServer) const
 {
-    ServerListBase::MAPPOS pos = findServer(whichServer);
-    ASSERT(ServerListBase::isValidPosition(pos));
+    ServerListBase::MAPPOS pos = find_provider(whichServer);
+    ASSERT(ServerListBase::is_valid_position(pos));
     return pos->second;
 }
 
-bool ServerList::isServerRegistered(const StubAddress & server) const
+bool ServerList::is_server_registered(const StubAddress & server) const
 {
-    return (ServerListBase::isValidPosition(find(ServerInfo(server))));
+    return (ServerListBase::is_valid_position(find(ServerInfo(server))));
 }
 
-const ServerInfo * ServerList::findClientServer(const ProxyAddress & whichClient) const
+const ServerInfo * ServerList::find_client_server(const ProxyAddress & whichClient) const
 {
-    ServerListBase::MAPPOS pos = findServer( whichClient );
-    return ( ServerListBase::isValidPosition(pos) ? &(pos->first) : nullptr);
+    ServerListBase::MAPPOS pos = find_provider( whichClient );
+    return ( ServerListBase::is_valid_position(pos) ? &(pos->first) : nullptr);
 }
+
+} // namespace areg

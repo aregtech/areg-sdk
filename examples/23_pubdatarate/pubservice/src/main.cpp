@@ -7,12 +7,14 @@
 //               which predefined methods are called from remote clients.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
+#include "areg/base/String.hpp"
 
 #include "pubservice/src/ServicingComponent.hpp"
+#include "pubservice/src/UtilityDefs.hpp"
 
 #ifdef _MSC_VER
     #pragma comment(lib, "areg")
@@ -32,15 +34,15 @@ constexpr char const _modelName[]  { "ServiceModel" };   //!< The name of model
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestServiceThread" )
+    BEGIN_REGISTER_THREAD( "TestServiceProviderThread" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT(NELargeData::ServiceRoleName, ServicingComponent)
+        BEGIN_REGISTER_COMPONENT(LargeData::ServiceRoleName, ServicingComponent)
             // register HelloWorld service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NELargeData::ServiceName, NELargeData::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( LargeData::ServiceName, LargeData::InterfaceVersion )
         // end of component description
-        END_REGISTER_COMPONENT(NELargeData::ServiceRoleName)
+        END_REGISTER_COMPONENT(LargeData::ServiceRoleName)
     // end of thread description
-    END_REGISTER_THREAD( "TestServiceThread" )
+    END_REGISTER_THREAD( "TestServiceProviderThread" )
 
 // end of model description
 END_MODEL(_modelName)
@@ -48,42 +50,64 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(example_23_pubservice_main_main);
+DEF_LOG_SCOPE(examples_23_pubservice_main, main);
 /**
  * \brief   The main method enables logging, service manager and timer.
  *          it loads and unloads the services, releases application.
  **/
-int main()
+int main(int argc, char* argv[])
 {
     printf("Testing large data servicing, run as a ultra-small Server...\n");
 
+    // Parse command-line arguments so the benchmark can start unattended.
+    // Example: 23_pubservice -t=0 -l=1 -c=10 -s
+    if (argc > 1)
+    {
+        areg::String cmd;
+        for (int i = 1; i < argc; ++i)
+        {
+            if (i > 1)
+            {
+                cmd += " ";
+            }
+
+            cmd += argv[i];
+        }
+
+        cmd.make_lower();
+        util::g_startup_options.parseCommand(cmd);
+    }
+
     // force to start logging with default settings
-    LOGGING_CONFIGURE_AND_START( nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr, false );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::initApplication( );
+    areg::Application::setup( );
 
     do
     {
-        LOG_SCOPE(example_23_pubservice_main_main);
+        LOG_SCOPE( examples_23_pubservice_main, main );
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components
-        Application::loadModel(_modelName);
+        areg::Application::load_model(_modelName);
 
         LOG_DBG("Servicing model is loaded");
 
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        areg::Application::wait_quit(areg::WAIT_INFINITE);
 
         // stop and unload components
-        Application::unloadModel(_modelName);
+        areg::Application::unload_model(_modelName);
 
         // release and cleanup resources of application.
-        Application::releaseApplication();
+        areg::Application::release();
 
     } while (false);
 
+    // Release the console before writing directly to stdout so the final message
+    // appears at the right position (just below the last output row), not mid-screen.
+    areg::ext::Console::instance().uninitialize();
     printf("Completed testing large data servicing component. Check the logs...\n");
 
 	return 0;

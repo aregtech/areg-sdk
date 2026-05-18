@@ -16,23 +16,24 @@
 #include "areg/base/Process.hpp"
 
 #include "areg/base/File.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 #include <filesystem>
 #include <iostream>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // Process class implementation
 //////////////////////////////////////////////////////////////////////////
 
-Process & Process::getInstance( void )
+Process & Process::instance()
 {
     static Process _theProcess;
     return _theProcess;
 }
 
 
-Process::Process( void )
-    : mProcEnv          ( static_cast<Process::eProcEnv>(sizeof(id_type)) )
+Process::Process()
+    : mProcEnv          ( static_cast<Process::Bitness>(sizeof(id_type)) )
     , mProcessId        ( Process::UNKNOWN_PROCESS )
     , mProcessHandle    ( nullptr )
     , mAppName          ( )
@@ -42,42 +43,43 @@ Process::Process( void )
     , mProcessFullPath  ( )
     , mIsInitialized    ( false )
 {
-    _osInitilize();
+    _os_initilize();
 }
 
-void Process::_initPaths( const char * fullPath )
+void Process::_init_paths( const char * fullPath )
 {
     ASSERT(fullPath != nullptr);
     mProcessFullPath = fullPath;
-    std::filesystem::path procPath(mProcessFullPath.getData());
+    std::filesystem::path procPath(mProcessFullPath.data());
 
     if (procPath.empty() == false)
     {
-        mProcessPath = procPath.parent_path().empty() ? String::getEmptyString() : procPath.parent_path().string();
-        mProcessName = procPath.filename().empty()    ? String::getEmptyString() : procPath.filename().string();
-        mAppName     = procPath.stem().empty()        ? String::getEmptyString() : procPath.stem().string();
-        mProcessExt  = procPath.extension().empty()   ? String::getEmptyString() : procPath.extension().string();
+        mProcessPath = procPath.parent_path().empty() ? String::empty_string() : procPath.parent_path().string();
+        mProcessName = procPath.filename().empty()    ? String::empty_string() : procPath.filename().string();
+        mAppName     = procPath.stem().empty()        ? String::empty_string() : procPath.stem().string();
+        mProcessExt  = procPath.extension().empty()   ? String::empty_string() : procPath.extension().string();
     }
 }
 
-unsigned int Process::getBitness(void) const
+uint32_t Process::bitness() const noexcept
 {
-    if ((static_cast<uint16_t>(mProcEnv) & static_cast<uint16_t>(Process::eProcEnv::ProcEnv32Bits)) != 0)
+    if ((static_cast<uint16_t>(mProcEnv) & static_cast<uint16_t>(Process::Bitness::Bits32)) != 0)
     {
-        return static_cast<unsigned int>(NEService::eInstanceBitness::Bitness32);
+        return static_cast<uint32_t>(areg::InstanceBitness::Bitness32);
     }
-    else if ((static_cast<uint16_t>(mProcEnv) & static_cast<uint16_t>(Process::eProcEnv::ProcEnv64Bits)) != 0)
+    else if ((static_cast<uint16_t>(mProcEnv) & static_cast<uint16_t>(Process::Bitness::Bits64)) != 0)
     {
-        return static_cast<unsigned int>(NEService::eInstanceBitness::Bitness64);
+        return static_cast<uint32_t>(areg::InstanceBitness::Bitness64);
     }
     else
     {
-        return static_cast<unsigned int>(NEService::eInstanceBitness::BitnessUnknown);
+        return static_cast<uint32_t>(areg::InstanceBitness::BitnessUnknown);
     }
 }
 
-String Process::getSafeEnvVariable( const char * var ) const
+String Process::safe_env_variable( const char * var ) const
 {
-    return _osGetEnvVariable( var );
+    return _os_env_variable( var );
 }
 
+} // namespace areg

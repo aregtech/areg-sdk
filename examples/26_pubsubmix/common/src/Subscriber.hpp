@@ -12,9 +12,9 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
-#include "examples/26_pubsubmix/services/PubSubMixClientBase.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/areg_global.h"
+#include "examples/26_pubsubmix/services/PubSubMixConsumerBase.hpp"
+#include "areg/base/MathDefs.hpp"
 
 /**
  * \brief   The PubSub service consumer object.
@@ -28,7 +28,7 @@
  *              - Always   : this means to receive update notification each
  *                           the value is set even if the value is not updated.
  **/
-class Subscriber    : protected PubSubMixClientBase
+class Subscriber final    : protected PubSubMixConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -45,16 +45,16 @@ public:
      *                      This parameter helps to compute the position for each
      *                      subscriber, so that it can output information.
      **/
-    Subscriber( const NERegistry::DependencyEntry & entry, Component & owner, int position );
+    Subscriber( const areg::DependencyEntry & entry, areg::Component & owner, int32_t position );
 
-    virtual ~Subscriber( void ) = default;
+    ~Subscriber() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -67,7 +67,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
     /**
      * \brief   Triggered, when StringOnChange attribute is updated. The function contains
@@ -78,7 +78,7 @@ protected:
      * \param   StringOnChange  The value of StringOnChange attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onStringOnChangeUpdate(const NEPubSubMix::sString & StringOnChange, NEService::eDataStateType state) override;
+    void on_string_on_change_update(const PubSubMix::sString & StringOnChange, areg::DataState state) final;
 
     /**
      * \brief   Triggered, when IntegerAlways attribute is updated. The function contains
@@ -89,7 +89,7 @@ protected:
      * \param   IntegerAlways   The value of IntegerAlways attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onIntegerAlwaysUpdate(const NEPubSubMix::sInteger & IntegerAlways, NEService::eDataStateType state) override;
+    void on_integer_always_update(const PubSubMix::sInteger & IntegerAlways, areg::DataState state) final;
 
     /**
      * \brief   Triggered, when ServiceProviderState attribute is updated. The function contains
@@ -100,32 +100,32 @@ protected:
      * \param   ServiceProviderState    The value of ServiceProviderState attribute.
      * \param   state                   The data validation flag.
      **/
-    virtual void onServiceProviderStateUpdate(NEPubSubMix::eServiceState ServiceProviderState, NEService::eDataStateType state) override;
+    void on_service_provider_state_update(PubSubMix::RunState ServiceProviderState, areg::DataState state) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline Subscriber & self(void);
+    inline Subscriber & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    NEPubSubMix::sInteger   mOldInteger;    //!< Old integer value to compare when output on console.
+    PubSubMix::sInteger   mOldInteger;    //!< Old integer value to compare when output on console.
     bool                    mOldState;      //!< Flag, indicating whether the old integer value is valid or not.
-    NEPubSubMix::sString    mOldString;     //!< Old string value to compare when output on console.
-    NEMath::sCoord          mCoordInt;      //!< The coordinate to output the information about integer update.
-    NEMath::sCoord          mCoordStr;      //!< The coordinate to output the information about string update
-    NEMath::sCoord          mCoordSep;      //!< The coordinate to output a separation line.
+    PubSubMix::sString    mOldString;     //!< Old string value to compare when output on console.
+    areg::Coord          mCoordInt;      //!< The coordinate to output the information about integer update.
+    areg::Coord          mCoordStr;      //!< The coordinate to output the information about string update
+    areg::Coord          mCoordSep;      //!< The coordinate to output a separation line.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    Subscriber(void);
-    DECLARE_NOCOPY_NOMOVE(Subscriber);
+    Subscriber();
+    AREG_NOCOPY_NOMOVE(Subscriber);
 };
 
 #endif // PUBSUBMIX_COMMON_SUBSCRIBER_HPP

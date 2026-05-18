@@ -17,9 +17,9 @@
 
 #include "areg/component/Component.hpp"
 #include "areg/component/DispatcherThread.hpp"
-#include "areg/base/IEIOStream.hpp"
-#include "areg/base/NECommon.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/IOStream.hpp"
+#include "areg/base/CommonDefs.hpp"
+#include "areg/base/MathDefs.hpp"
 
 #include <string_view>
 #include <utility>
@@ -28,14 +28,15 @@
 // ComponentAddress class implementation
 //////////////////////////////////////////////////////////////////////////
 
-namespace
-{
+namespace {
     /**
-     * \brief   Constant. The name of invalid component.
+     * \brief   The name of invalid component.
      *          Do not use this name as role name for component.
      **/
     constexpr std::string_view   INVALID_COMPONENT_NAME     { "INVALID_COMPONENT_NAME" };
-}
+} // namespace
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // Static variables
@@ -43,67 +44,60 @@ namespace
 /**
  * \brief   The address of invalid component
  **/
-const ComponentAddress & ComponentAddress::getInvalidComponentAddress( void )
+const ComponentAddress & ComponentAddress::invalid_component_address() noexcept
 {
-    static const ComponentAddress _invalidComponentAddress(ThreadAddress::getInvalidThreadAddress(), String(INVALID_COMPONENT_NAME));
+    static const ComponentAddress _invalidComponentAddress(ThreadAddress::invalid_thread_address(), String(INVALID_COMPONENT_NAME));
     return _invalidComponentAddress;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-ComponentAddress::ComponentAddress( void )
+ComponentAddress::ComponentAddress()
     : mRoleName     ( INVALID_COMPONENT_NAME )
-    , mThreadAddress( ThreadAddress::getInvalidThreadAddress() )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mThreadAddress( ThreadAddress::invalid_thread_address() )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
 }
 
 ComponentAddress::ComponentAddress( const ThreadAddress & threadAddress )
     : mRoleName     ( INVALID_COMPONENT_NAME )
     , mThreadAddress( threadAddress )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
 }
 
 ComponentAddress::ComponentAddress( const ThreadAddress & threadAddress, const String & roleName )
-    : mRoleName     ( roleName.isEmpty() ? INVALID_COMPONENT_NAME : roleName)
+    : mRoleName     ( roleName.is_empty() ? INVALID_COMPONENT_NAME : roleName)
     , mThreadAddress( threadAddress )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    mRoleName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
-    mMagicNum   = ComponentAddress::_magicNumber(*this);
+    mRoleName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
+    mMagicNum   = ComponentAddress::_magic_number(*this);
 }
 
 ComponentAddress::ComponentAddress( const String & roleName )
-    : mRoleName     ( roleName.isEmpty() ? INVALID_COMPONENT_NAME : roleName)
-    , mThreadAddress( DispatcherThread::getCurrentDispatcherThread().getAddress() )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    : mRoleName     ( roleName.is_empty() ? INVALID_COMPONENT_NAME : roleName)
+    , mThreadAddress( DispatcherThread::current_dispatcher_thread().address() )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    mRoleName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
-    Component* comp = Component::findComponentByName(roleName);
+    mRoleName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
+    Component* comp = Component::find_by_name(roleName);
     if (comp != nullptr)
     {
-        mThreadAddress = comp->getAddress( ).getThreadAddress( );
+        mThreadAddress = comp->address( ).thread_address( );
     }
 
-    mMagicNum   = ComponentAddress::_magicNumber(*this);
+    mMagicNum   = ComponentAddress::_magic_number(*this);
 }
 
 ComponentAddress::ComponentAddress( const String & roleName, const String & nameThread )
-    : mRoleName     ( roleName.isEmpty() ? INVALID_COMPONENT_NAME : roleName)
-    , mThreadAddress( nameThread.isEmpty() != false ? DispatcherThread::getDispatcherThread(nameThread).getAddress() : ThreadAddress::getInvalidThreadAddress())
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    : mRoleName     ( roleName.is_empty() ? INVALID_COMPONENT_NAME : roleName)
+    , mThreadAddress( nameThread.is_empty() != false ? DispatcherThread::dispatcher_thread(nameThread).address() : ThreadAddress::invalid_thread_address())
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    mRoleName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
-    mMagicNum   = ComponentAddress::_magicNumber(*this);
-}
-
-ComponentAddress::ComponentAddress( const ComponentAddress & src )
-    : mRoleName     ( src.mRoleName )
-    , mThreadAddress( src.mThreadAddress )
-    , mMagicNum     ( src.mMagicNum )
-{
+    mRoleName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
+    mMagicNum   = ComponentAddress::_magic_number(*this);
 }
 
 ComponentAddress::ComponentAddress( ComponentAddress && src ) noexcept
@@ -113,51 +107,46 @@ ComponentAddress::ComponentAddress( ComponentAddress && src ) noexcept
 {
 }
 
-ComponentAddress::ComponentAddress( const IEInStream & stream )
+ComponentAddress::ComponentAddress( const InStream & stream )
     : mRoleName     ( stream )
     , mThreadAddress( stream )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    mMagicNum   = ComponentAddress::_magicNumber(*this);
+    mMagicNum   = ComponentAddress::_magic_number(*this);
 }
 
-bool ComponentAddress::isValid( void ) const
-{
-    return (mMagicNum != NEMath::CHECKSUM_IGNORE) && mThreadAddress.isValid();
-}
-
-String ComponentAddress::convToString(void) const
+String ComponentAddress::to_string() const
 {
     String result;
 
     result.append(mRoleName)
-          .append(NECommon::COMPONENT_PATH_SEPARATOR)
-          .append(ThreadAddress::convAddressToPath(mThreadAddress));
+          .append(areg::COMPONENT_PATH_SEPARATOR)
+          .append(ThreadAddress::to_path(mThreadAddress));
 
     return result;
 }
 
-void ComponentAddress::convFromString(const char * pathComponent, const char** out_nextPart /*= nullptr*/)
+void ComponentAddress::from_string(const char * pathComponent, const char** nextPart /*= nullptr*/)
 {
     const char* strSource = pathComponent;
 
-    mRoleName       = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource);
-    mThreadAddress  = ThreadAddress::convPathToAddress(strSource, &strSource);
-    mMagicNum       = ComponentAddress::_magicNumber(*this);
+    mRoleName       = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
+    mThreadAddress  = ThreadAddress::from_path(strSource, &strSource);
+    mMagicNum       = ComponentAddress::_magic_number(*this);
 
-    if (out_nextPart != nullptr)
-        *out_nextPart = strSource;
+    if (nextPart != nullptr)
+        *nextPart = strSource;
 }
 
-unsigned int ComponentAddress::_magicNumber(const ComponentAddress & addrComp)
+uint32_t ComponentAddress::_magic_number(const ComponentAddress & addrComp) noexcept
 {
-    unsigned int result = NEMath::CHECKSUM_IGNORE;
-    if (addrComp.mThreadAddress.isValid() && (addrComp.mRoleName.isEmpty() == false) && (addrComp.mRoleName != INVALID_COMPONENT_NAME))
+    uint32_t result{ areg::CHECKSUM_IGNORE };
+    if (addrComp.mThreadAddress.is_valid() && (addrComp.mRoleName.is_empty() == false) && (addrComp.mRoleName != INVALID_COMPONENT_NAME))
     {
-        result = NEMath::crc32Init();
-        result = NEMath::crc32Start(result, addrComp.mThreadAddress.getThreadName().getString());
-        result = NEMath::crc32Start(result, addrComp.mRoleName.getString());
-        result = NEMath::crc32Finish(result);
+        result = areg::crc32_init();
+        result = areg::crc32_start(result, addrComp.mThreadAddress.name().as_string());
+        result = areg::crc32_start(result, addrComp.mRoleName.as_string());
+        result = areg::crc32_finish(result);
     }
 
     return result;
@@ -166,14 +155,16 @@ unsigned int ComponentAddress::_magicNumber(const ComponentAddress & addrComp)
 //////////////////////////////////////////////////////////////////////////
 // Static methods
 //////////////////////////////////////////////////////////////////////////
-String ComponentAddress::convAddressToPath( const ComponentAddress& componentAddress )
+String ComponentAddress::to_path( const ComponentAddress& componentAddress )
 {
-    return componentAddress.convToString();
+    return componentAddress.to_string();
 }
 
-ComponentAddress ComponentAddress::convPathToAddress( const char* componentPath, const char** out_nextPart /*= nullptr*/ )
+ComponentAddress ComponentAddress::from_path( const char* componentPath, const char** out_nextPart /*= nullptr*/ )
 {
     ComponentAddress result;
-    result.convFromString(componentPath, out_nextPart);
+    result.from_string(componentPath, out_nextPart);
     return result;
 }
+
+} // namespace areg

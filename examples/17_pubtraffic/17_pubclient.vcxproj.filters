@@ -26,7 +26,7 @@
     <ClInclude Include="pubclient\src\TrafficLightClient.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="common\NECommon.hpp">
+    <ClInclude Include="common\TrafficDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

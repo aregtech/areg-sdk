@@ -12,11 +12,11 @@
   * Include files.
   ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/19_pubfsm/services/PowerManagerStub.hpp"
-#include "examples/19_pubfsm/services/TrafficControllerStub.hpp"
-#include "pubservice/src/IETrafficLightActionHandler.hpp"
+#include "examples/19_pubfsm/services/PowerManagerProviderBase.hpp"
+#include "examples/19_pubfsm/services/TrafficControllerProviderBase.hpp"
+#include "pubservice/src/TrafficLightActionHandler.hpp"
 
 #include "pubservice/src/PowerControllerClient.hpp"
 #include "pubservice/src/TrafficLightFSM.hpp"
@@ -31,27 +31,27 @@
  *          It is designed to demonstrate the features and the use of FSM with the
  *          help of Areg framework.
  **/
-class TrafficLightService   : public    Component
-                            , protected PowerManagerStub
-                            , protected TrafficControllerStub
-                            , protected IETrafficLightActionHandler
+class TrafficLightService final   : public    areg::Component
+                            , protected PowerManagerProviderBase
+                            , protected TrafficControllerProviderBase
+                            , protected TrafficLightActionHandler
 {
 public:
     /**
      * \brief   Constructor, initializes servicing objects from registry entry.
      **/
-    TrafficLightService( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    TrafficLightService( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
     /**
      * \brief   Destructor
      **/
-    virtual ~TrafficLightService( void );
+    ~TrafficLightService();
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
-// PowerManagerStub action overrides triggered by state-machine.
+// PowerManagerProviderBase action overrides triggered by state-machine.
 /************************************************************************/
 
     /**
@@ -59,69 +59,69 @@ protected:
      *          Called to power ON the traffic lights.
      * \note    Has no response
      **/
-    virtual void requestPowerOn( void ) override;
+    void request_power_on() final;
 
     /**
      * \brief   Request call.
      *          Called to power OFF the traffic lights.
      * \note    Has no response
      **/
-    virtual void requestPowerOff( void ) override;
+    void request_power_off() final;
 
     /**
      * \brief   Request call.
      *          Triggered to start the traffic light
-     * \see     responseStartTrafficLight
+     * \see     request_start_traffic_light
      **/
-    virtual void requestStartTrafficLight( void ) override;
+    void request_start_traffic_light() final;
 
     /**
      * \brief   Request call.
      *          Call to stop the traffic lights and put them in initialization state.
-     * \see     responseStopTrafficLight
+     * \see     request_stop_traffic_light
      **/
-    virtual void requestStopTrafficLight( void ) override;
+    void request_stop_traffic_light() final;
 
 /************************************************************************/
-// IETrafficLightActionHandler action overrides
+// TrafficLightActionHandler action overrides
 /************************************************************************/
 
    /**
     * \brief   Action to perform when traffic light is off.
     **/
-   virtual void actionPowerOff( void ) override;
+   void action_power_off() final;
 
    /**
     * \brief   Acton to perform when power on the traffic light.
     **/
-   virtual void actionPowerOn( void ) override;
+   void action_power_on() final;
 
    /**
     * \brief   Action to perform when vehicle light is yellow.
     **/
-   virtual void actionVehicleYellow( void ) override;
+   void action_vehicle_yellow() final;
 
    /**
     * \brief   Action to perform when vehicle light is red.
     **/
-   virtual void actionVehicleRed( void ) override;
+   void action_vehicle_red() final;
 
    /**
     * \brief   Action to perform when pedestrian light is red.
     **/
-   virtual void actionPedestrianRed( void ) override;
+   void action_pedestrian_red() final;
 
    /**
     * \brief   Action to perform when vehicle light is green.
     * \param   isEastWest    Flag, indicating whether this action is triggered for East-West or South-North direction. The default direction is South-North.
     **/
-   virtual void actionVehicleGreen( bool isEastWest ) override;
+   void action_vehicle_green( bool isEastWest ) final;
 
    /**
     * \brief   Action to perform when pedestrian light state is green.
     * \param   isEastWest    Flag, indicating whether this action is triggered for East-West or South-North direction. The default direction is South-North.
     **/
-   virtual void actionPedestrianGreen( bool isEastWest ) override;
+   void action_pedestrian_green( bool isEastWest ) final;
 
 /************************************************************************/
 // Component overrides
@@ -132,7 +132,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    virtual void startupComponent( ComponentThread & comThread ) override;
+    void startup_component( areg::ComponentThread & comThread ) final;
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -140,7 +140,7 @@ protected:
      *          make cleanups in this function call.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    virtual void shutdownComponent( ComponentThread & comThread ) override;
+    void shutdown_component( areg::ComponentThread & comThread ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
@@ -149,7 +149,7 @@ private:
     /**
      * \brief   Wrapper of this pointer.
      **/
-    inline TrafficLightService & self( void );
+    inline TrafficLightService & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -163,15 +163,15 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    TrafficLightService( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( TrafficLightService );
+    TrafficLightService() = delete;
+    AREG_NOCOPY_NOMOVE( TrafficLightService );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // inline members
 //////////////////////////////////////////////////////////////////////////
 
-inline TrafficLightService & TrafficLightService::self( void )
+inline TrafficLightService & TrafficLightService::self()
 {
     return (*this);
 }

@@ -11,9 +11,9 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/18_pubworker/services/PatientInformationStub.hpp"
+#include "examples/18_pubworker/services/PatientInformationProviderBase.hpp"
 #include "pubservice/src/PatientServiceWorkerConsumer.hpp"
 
 #include <string_view>
@@ -21,8 +21,8 @@
 /**
  * \brief   The servicing object.
  **/
-class PatientService    : public    Component
-                        , private   PatientInformationStub
+class PatientService final  : public    areg::Component
+                            , private   PatientInformationProviderBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants.
@@ -40,7 +40,7 @@ public:
     static constexpr std::string_view PatientServiceWorkerThread { "PatientServiceWorkerThread" };
 
 public:
-    PatientService( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    PatientService( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
 protected:
 
@@ -53,7 +53,7 @@ protected:
      * \param   workerThreadName    The name of worker thread, which consumer should return
      * \return  Return valid pointer if worker thread has assigned consumer.
      **/
-    virtual IEWorkerThreadConsumer * workerThreadConsumer( const String & consumerName, const String & workerThreadName ) override;
+    areg::WorkerThreadConsumer * worker_thread_consumer( const areg::String & consumerName, const areg::String & workerThreadName ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members.
@@ -62,7 +62,7 @@ private:
     /**
      * \brief   Wrapper of this pointer.
      **/
-    inline PatientService & self( void );
+    inline PatientService & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -77,6 +77,6 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    PatientService( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( PatientService );
+    PatientService() = delete;
+    AREG_NOCOPY_NOMOVE( PatientService );
 };

@@ -21,30 +21,31 @@
     #include "sqlite3/amalgamation/sqlite3.h"
 #endif  // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
 
-namespace
-{
-    inline sqlite3_stmt* _sqlite_stmt(void* stmtObject)
+namespace {
+    inline sqlite3_stmt* _sqlite_stmt(void* stmtObject) noexcept
     {
         return reinterpret_cast<sqlite3_stmt*>(stmtObject);
     }
-}
+} // namespace
 
-SqliteRow::SqliteRow(void)
+namespace areg::ext {
+
+SqliteRow::SqliteRow() noexcept
     : mStatement(nullptr)
 {
 }
 
-SqliteRow::SqliteRow(SqliteStatement& statement)
+SqliteRow::SqliteRow(SqliteStatement& statement) noexcept
     : mStatement(statement.mStatement)
 {
 }
 
-SqliteRow::SqliteRow(void* statement)
+SqliteRow::SqliteRow(void* statement) noexcept
     : mStatement(statement)
 {
 }
 
-SqliteRow::SqliteRow(const SqliteRow& src)
+SqliteRow::SqliteRow(const SqliteRow& src) noexcept
     : mStatement(src.mStatement)
 {
 }
@@ -55,7 +56,7 @@ SqliteRow::SqliteRow(SqliteRow&& src) noexcept
     src.mStatement = nullptr; // Transfer ownership
 }
 
-SqliteRow& SqliteRow::operator = (const SqliteRow& src)
+SqliteRow& SqliteRow::operator = (const SqliteRow& src) noexcept
 {
     mStatement = src.mStatement;
     return (*this);
@@ -68,100 +69,102 @@ SqliteRow& SqliteRow::operator = (SqliteRow&& src) noexcept
     return (*this);
 }
 
-int SqliteRow::getInt(int column) const
+int32_t SqliteRow::as_int(int32_t column) const noexcept
 {
-    ASSERT(isValid());
+    ASSERT(is_valid());
     ASSERT(column >= 0);
     return sqlite3_column_int(_sqlite_stmt(mStatement), column);
 }
 
-int64_t SqliteRow::getInt64(int column) const
+int64_t SqliteRow::as_int64(int32_t column) const noexcept
 {
-    ASSERT(isValid());
+    ASSERT(is_valid());
     ASSERT(column >= 0);
     return sqlite3_column_int64(_sqlite_stmt(mStatement), column);
 }
 
-double SqliteRow::getDouble(int column) const
+double SqliteRow::as_double(int32_t column) const noexcept
 {
-    ASSERT(isValid());
+    ASSERT(is_valid());
     ASSERT(column >= 0);
     return sqlite3_column_double(_sqlite_stmt(mStatement), column);
 }
 
-String SqliteRow::getText(int column) const
+String SqliteRow::as_text(int32_t column) const noexcept
 {
     return String(reinterpret_cast<const char*>(sqlite3_column_text(_sqlite_stmt(mStatement), column)));
 }
 
-bool SqliteRow::isNull(int column) const
+bool SqliteRow::is_null(int32_t column) const noexcept
 {
-    ASSERT(isValid());
+    ASSERT(is_valid());
     ASSERT(column >= 0);
     return (sqlite3_column_type(_sqlite_stmt(mStatement), column) == SQLITE_NULL);
 }
 
-bool SqliteRow::isColumnValid(int column) const
+bool SqliteRow::is_column_valid(int32_t column) const noexcept
 {
-    ASSERT(isValid());
+    ASSERT(is_valid());
     ASSERT(column >= 0);
     return (sqlite3_column_type(_sqlite_stmt(mStatement), column) != SQLITE_NULL);
 }
 
-bool SqliteRow::isString(int column) const
+bool SqliteRow::is_string(int32_t column) const noexcept
 {
-    ASSERT(isValid());
+    ASSERT(is_valid());
     ASSERT(column >= 0);
     return (sqlite3_column_type(_sqlite_stmt(mStatement), column) == SQLITE_TEXT);
 }
 
-bool SqliteRow::isInteger(int column) const
+bool SqliteRow::is_integer(int32_t column) const noexcept
 {
-    ASSERT(isValid());
+    ASSERT(is_valid());
     ASSERT(column >= 0);
     return (sqlite3_column_type(_sqlite_stmt(mStatement), column) == SQLITE_INTEGER);
 }
 
-bool SqliteRow::isInteger64(int column) const
+bool SqliteRow::is_integer64(int32_t column) const noexcept
 {
-    ASSERT(isValid());
+    ASSERT(is_valid());
     ASSERT(column >= 0);
     return (sqlite3_column_type(_sqlite_stmt(mStatement), column) == SQLITE_INTEGER);
 }
 
-bool SqliteRow::isDouble(int column) const
+bool SqliteRow::is_double(int32_t column) const noexcept
 {
-    ASSERT(isValid());
+    ASSERT(is_valid());
     ASSERT(column >= 0);
     return (sqlite3_column_type(_sqlite_stmt(mStatement), column) == SQLITE_FLOAT);
 }
 
-int SqliteRow::getColumnCount(void) const
+int32_t SqliteRow::column_count() const noexcept
 {
-    ASSERT(isValid());
+    ASSERT(is_valid());
     return sqlite3_column_count(_sqlite_stmt(mStatement));
 }
 
-String SqliteRow::getColumnName(int column) const
+String SqliteRow::column_name(int32_t column) const noexcept
 {
-    ASSERT(isValid());
+    ASSERT(is_valid());
     ASSERT(column >= 0);
     const char* columnName = sqlite3_column_name(_sqlite_stmt(mStatement), column);
     return String((columnName != nullptr) ? columnName : String::EmptyString);
 }
 
-int SqliteRow::getColumnIndex(const String& columnName) const
+int32_t SqliteRow::column_index(const String& columnName) const noexcept
 {
-    ASSERT(isValid());
-    ASSERT(!columnName.isEmpty());
-    int columnCount = getColumnCount();
+    ASSERT(is_valid());
+    ASSERT(!columnName.is_empty());
+    int32_t columnCount = column_count();
     for (int index = 0; index < columnCount; ++index)
     {
-        if (getColumnName(index) == columnName)
+        if (column_name(index) == columnName)
         {
             return index;
         }
     }
 
-    return NECommon::INVALID_INDEX; // Column not found
+    return areg::INVALID_INDEX; // Column not found
 }
+
+} // namespace areg::ext

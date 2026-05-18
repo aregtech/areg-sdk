@@ -17,11 +17,13 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
-#include "areg/logging/NELogging.hpp"
+#include "areg/base/areg_global.h"
+#include "areg/logging/LoggingDefs.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 #include <atomic>
+#include <string_view>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////////
 // LogScope class declaration
@@ -44,31 +46,29 @@ class AREG_API LogScope
 //////////////////////////////////////////////////////////////////////////////
 // Internal types and constants
 //////////////////////////////////////////////////////////////////////////////
-    using session   = std::atomic_uint32_t;
+    using session_id    = std::atomic_uint32_t;
 
 //////////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Sets the name of scope, which should be unique and cannot be changed,
-     *          and sets message priority. By default, the message priority NELogging::PrioNotset,
-     *          which means the logging of message is disabled.
-     * \param   scopeName   The unique name of the log scope.
-     * \param   priority    The message priority of log scope.
-     **/
-    LogScope( const char * scopeName, NELogging::eLogPriority priority = NELogging::eLogPriority::PrioNotset );
 
     /**
-     * \brief   Initializes the logging scope object from the stream.
-     * \param   stream  The streaming object that contains the scope attributes.
+     * \brief   Constructs a log scope from a string literal, computing the scope ID at
+     *          compile time and storing the name as a zero-allocation string_view.
+     *          A compile-time check enforces the maximum scope name length.
+     *
+     * \tparam  N           Length of the string literal including the null terminator.
+     *                      Deduced automatically from the literal.
+     * \param   scopeName   The string literal name of the scope. Must have static storage
+     *                      duration for the lifetime of this LogScope object.
+     * \param   priority    The initial log message priority. Defaults to PrioNotset.
      **/
-    LogScope(const IEInStream & stream);
+    template<uint32_t N>
+    explicit LogScope( const char (&scopeName)[N]
+                     , areg::LogPriority priority = areg::LogPriority::PrioNotset ) noexcept;
 
-    /**
-     * \brief   Destructor.
-     **/
-    ~LogScope( void );
+    ~LogScope();
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -77,19 +77,19 @@ public:
     /**
      * \brief   Converts and returns 32-bit integer value of the scope.
      **/
-    inline operator unsigned int ( void ) const;
+    [[nodiscard]]
+    inline explicit constexpr operator uint32_t () const noexcept;
 
     /**
      * \brief   Writes the scope data into the stream.
-     * \note    The log scope class does not have operator to deserialize
-     *          the scope object, because of 2 reasons:
-     *              1.  LogScope does not have default constructor. Because it
-     *                  sets empty name, which is not unique;
-     *              2.  The name of the log scope cannot be changed.
-     * \param   stream  The stream object to write data.
-     * \param   output  The scope to write into the stream object.
+     *
+     * \param   stream      The stream object to write data.
+     * \param   output      The scope to write into the stream object.
+     * \note    The log scope class does not have operator to deserialize the scope object, because
+     *          of 2 reasons: 1. LogScope does not have default constructor. Because it sets empty
+     *          name, which is not unique; 2. The name of the log scope cannot be changed.
      **/
-    inline friend IEOutStream & operator << ( IEOutStream & stream, const LogScope & output );
+    inline friend OutStream & operator << ( OutStream & stream, const LogScope & output );
 
 //////////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -97,68 +97,93 @@ public:
 
     /**
      * \brief   Sets scope log message priority level by integer value.
+     *
      * \param   newPrio     Scope log message priority level to set.
      **/
-    inline void setPriority( unsigned int newPrio );
+    inline void set_priority( uint32_t newPrio ) noexcept;
 
     /**
      * \brief   Sets scope log message priority level by name.
+     *
      * \param   newPrio     The name of the log priority level to add.
      **/
-    inline void setPriority( const char * newPrio );
-    inline void setPriority( const String & newPrio );
+    inline void set_priority( const char * newPrio ) noexcept;
+    /**
+     * \brief   Sets scope log message priority level by name.
+     *
+     * \param   newPrio     The name of the log priority level to add.
+     **/
+    inline void set_priority( const String & newPrio ) noexcept;
 
     /**
-     * \brief   Adds priority level to the existing priority level of the scope.
-     *          The priority level is added bitwise.
+     * \brief   Adds priority level to the existing priority level of the scope. The priority level is added bitwise.
+     *
      * \param   addPrio     The log message priority level to add.
      **/
-    inline void addPriority( NELogging::eLogPriority addPrio );
+    inline void add_priority( areg::LogPriority addPrio ) noexcept;
 
     /**
-     * \brief   Adds priority level to the existing priority level of the scope,
-     *          where the priority level is added by name.
-     *          The priority level is added bitwise.
+     * \brief   Adds priority level to the existing priority level of the scope, where the priority
+     *          level is added by name. The priority level is added bitwise.
+     *
      * \param   addPrio     The name of the log priority level to add.
      **/
-    inline void addPriority( const char * addPrio );
-    inline void addPriority( const String & addPrio );
+    inline void add_priority( const char * addPrio ) noexcept;
+    /**
+     * \brief   Adds priority level to the existing priority level of the scope, where the priority
+     *          level is added by name. The priority level is added bitwise.
+     *
+     * \param   addPrio     The name of the log priority level to add.
+     * \note    Move overload. Takes ownership of the string.
+     **/
+    inline void add_priority( const String & addPrio ) noexcept;
 
     /**
-     * \brief   Removes priority level from the existing priority level of the scope.
-     *          The operation is made bitwise.
+     * \brief   Removes priority level from the existing priority level of the scope. The operation is made bitwise.
+     *
      * \param   remPrio     The log priority level to remove.
      **/
-    inline void removePriority( NELogging::eLogPriority remPrio );
+    inline void remove_priority( areg::LogPriority remPrio ) noexcept;
 
     /**
-     * \brief   Removes priority level from the existing priority level of the scope,
-     *          where the priority level is passed by name.
-     *          The operation is made bitwise.
+     * \brief   Removes priority level from the existing priority level of the scope, where the
+     *          priority level is passed by name. The operation is made bitwise.
+     *
      * \param   remPrio     The name of the log priority level to remove.
      **/
-    inline void removePriority( const char * remPrio );
-    inline void removePriority( const String & remPrio );
+    inline void remove_priority( const char * remPrio ) noexcept;
+    /**
+     * \brief   Removes priority level from the existing priority level of the scope, where the
+     *          priority level is passed by name. The operation is made bitwise.
+     *
+     * \param   remPrio     The name of the log priority level to remove.
+     * \note    Move overload. Takes ownership of the string.
+     **/
+    inline void remove_priority( const String & remPrio ) noexcept;
 
     /**
      * \brief   Returns the value of log message priority.
      **/
-    inline unsigned int getPriority( void ) const;
+    [[nodiscard]]
+    inline uint32_t priority() const noexcept;
 
     /**
      * \brief   Returns the ID of log scope.
      **/
-    inline unsigned int getScopeId( void ) const;
+    [[nodiscard]]
+    inline constexpr uint32_t id() const noexcept;
 
     /**
      * \brief   Returns the name of the log scope.
      **/
-    inline const String & getScopeName( void ) const;
+    [[nodiscard]]
+    inline constexpr std::string_view name() const noexcept;
 
     /**
      * \brief   Returns the session ID of the log scope, used to identify the scope in the session.
      **/
-    inline uint32_t getSessionId(void) const;
+    [[nodiscard]]
+    inline uint32_t session() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -167,28 +192,26 @@ private:
     /**
      * \brief   The ID of log scope. It cannot be changed
      **/
-    const unsigned int  mScopeId;
+    const uint32_t  mScopeId;
     /**
      * \brief   The log message priority of the scope.
      **/
-    unsigned int        mScopePrio;
+    uint32_t        mScopePrio;
+
+#if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
     /**
      * \brief   The name of log scope. It cannot be changed
      **/
-    const String        mScopeName;
-    /**
-     * \brief   The log scope is active or not.
-     **/
-     const bool         mIsRegistered;
+    const std::string_view  mScopeName;
      /**
       * \brief   The session ID of the log scope, used to identify the scope in the session.
       **/
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(disable: 4251)
-#endif  // _MSC_VER
-     mutable session    mSessionId;
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+     mutable session_id mSessionId;
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////////
@@ -196,50 +219,37 @@ private:
 //////////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Increases the session ID and returns the value to use in log messages.
+     * \brief   Increments the session ID and returns the new value to use in log messages.
      **/
-    inline uint32_t nextSession(void) const;
+    [[nodiscard]]
+    inline uint32_t next_session() const noexcept;
+
+    [[nodiscard]]
+    inline LogScope & self() noexcept;
+
     /**
-     * \brief   Returns LogScope object
+     * \brief   Registers this scope with LogManager. Separated from the constructor body
+     *          so that the template constructor does not need to include LogManager.hpp.
      **/
-    inline LogScope & self( void );
+    void _register() noexcept;
 
 //////////////////////////////////////////////////////////////////////////////
 // Forbidden methods
 //////////////////////////////////////////////////////////////////////////////
 private:
-    LogScope( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( LogScope );
+    LogScope() = delete;
+    AREG_NOCOPY_NOMOVE( LogScope );
 };
-
-//////////////////////////////////////////////////////////////////////////
-// Hasher of LogScope class
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A template to calculate hash value of the LogScope.
- */
-namespace std
-{
-    template<>
-    struct hash<LogScope>
-    {
-        //! A function to convert LogScope object to unsigned int.
-        inline unsigned int operator()(const LogScope& key) const
-        {
-            return static_cast<unsigned int>(key);
-        }
-    };
-}
 
 //////////////////////////////////////////////////////////////////////////////
 // inline functions implementation
 //////////////////////////////////////////////////////////////////////////////
 
-inline IEOutStream & operator << ( IEOutStream & stream, const LogScope & output )
+inline OutStream & operator << ( OutStream & stream, const LogScope & output )
 {
     stream << output.mScopeId;
     stream << output.mScopePrio;
-    stream << output.mScopeName;
+    stream << String{ output.mScopeName.data() };
 
     return stream;
 }
@@ -248,74 +258,126 @@ inline IEOutStream & operator << ( IEOutStream & stream, const LogScope & output
 // LogScope class inline functions implementation
 //////////////////////////////////////////////////////////////////////////////
 
-inline uint32_t LogScope::nextSession(void) const
+inline uint32_t LogScope::next_session() const noexcept
 {
-    return mSessionId.fetch_add(1);
+    return mSessionId.fetch_add(1, std::memory_order_relaxed);
 }
 
-inline LogScope & LogScope::self( void )
+inline LogScope & LogScope::self() noexcept
 {
     return (*this);
 }
 
-inline LogScope::operator unsigned int ( void ) const
+inline constexpr LogScope::operator uint32_t () const noexcept
 {
     return mScopeId;
 }
 
-inline void LogScope::setPriority( unsigned int newPrio )
+inline void LogScope::set_priority( uint32_t newPrio ) noexcept
 {
     mScopePrio  = newPrio;
 }
 
-inline void LogScope::addPriority( NELogging::eLogPriority addPrio )
+inline void LogScope::add_priority( areg::LogPriority addPrio ) noexcept
 {
-    mScopePrio  |= static_cast<unsigned int>(addPrio);
+    mScopePrio  |= static_cast<uint32_t>(addPrio);
 }
 
-void LogScope::addPriority( const char * addPrio )
+void LogScope::add_priority( const char * addPrio ) noexcept
 {
-    addPriority( NELogging::stringToLogPrio(addPrio) );
+    add_priority( areg::string_to_priority(addPrio) );
 }
 
-void LogScope::addPriority( const String & addPrio )
+void LogScope::add_priority( const String & addPrio ) noexcept
 {
-    addPriority( NELogging::stringToLogPrio(addPrio) );
+    add_priority( areg::string_to_priority(addPrio) );
 }
 
-inline void LogScope::removePriority( NELogging::eLogPriority remPrio )
+inline void LogScope::remove_priority( areg::LogPriority remPrio ) noexcept
 {
-    mScopePrio  &= ~static_cast<unsigned int>(remPrio);
+    mScopePrio  &= ~static_cast<uint32_t>(remPrio);
 }
 
-void LogScope::removePriority( const char * remPrio )
+void LogScope::remove_priority( const char * remPrio ) noexcept
 {
-    removePriority( NELogging::stringToLogPrio(remPrio) );
+    remove_priority( areg::string_to_priority(remPrio) );
 }
 
-void LogScope::removePriority( const String & remPrio )
+void LogScope::remove_priority( const String & remPrio ) noexcept
 {
-    removePriority( NELogging::stringToLogPrio(remPrio) );
+    remove_priority( areg::string_to_priority(remPrio) );
 }
 
-inline unsigned int LogScope::getPriority( void ) const
+inline uint32_t LogScope::priority() const noexcept
 {
     return mScopePrio;
 }
 
-inline unsigned int LogScope::getScopeId( void ) const
+inline constexpr uint32_t LogScope::id() const noexcept
 {
     return mScopeId;
 }
 
-inline const String & LogScope::getScopeName( void ) const
+inline constexpr std::string_view LogScope::name() const noexcept
 {
     return mScopeName;
 }
 
-inline uint32_t LogScope::getSessionId(void) const
+inline uint32_t LogScope::session() const noexcept
 {
     return mSessionId;
 }
+
+} // namespace areg
+
+//////////////////////////////////////////////////////////////////////////////
+// LogScope template constructor implementation
+//////////////////////////////////////////////////////////////////////////////
+
+#if AREG_LOGGING
+
+template<uint32_t N>
+inline areg::LogScope::LogScope( const char (&scopeName)[N], areg::LogPriority priority ) noexcept
+    : mScopeId      ( areg::make_id(scopeName) )
+    , mScopePrio    ( static_cast<uint32_t>(priority) )
+    , mScopeName    ( scopeName, N - 1u )
+    , mSessionId    ( 0u )
+{
+    static_assert(N <= 256u, "Scope name exceeds maximum allowed length (255 chars)");
+    _register();
+}
+
+#else   // AREG_LOGGING
+
+template<uint32_t N>
+inline areg::LogScope::LogScope( const char (&)[N], areg::LogPriority ) noexcept
+    : mScopeId      ( areg::CHECKSUM_IGNORE )
+    , mScopePrio    ( static_cast<uint32_t>(areg::LogPriority::PrioInvalid) )
+    , mScopeName    ( )
+    , mSessionId    ( 0u )
+{
+    static_assert(N <= 256u, "Scope name exceeds maximum allowed length (255 chars)");
+}
+
+#endif  // AREG_LOGGING
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of LogScope class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the LogScope.
+ */
+namespace std {
+    template<>
+    struct hash<areg::LogScope>
+    {
+        //! A function to convert LogScope object to uint32_t.
+        [[nodiscard]]
+        inline uint32_t operator()(const areg::LogScope& key) const noexcept
+        {
+            return key.id();
+        }
+    };
+} // namespace std
 
 #endif  // AREG_LOGGING_LOGSCOPE_HPP

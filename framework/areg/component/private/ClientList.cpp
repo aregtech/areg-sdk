@@ -17,6 +17,7 @@
 
 #include "areg/component/private/ServerInfo.hpp"
 #include "areg/component/ProxyAddress.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ClientList class implementation
@@ -25,69 +26,71 @@
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-bool ClientList::existClient( const ProxyAddress & client ) const
+bool ClientList::exist( const ProxyAddress & client ) const noexcept
 {
     return contains(ClientInfo(client));
 }
 
-const ClientInfo & ClientList::getClient( const ProxyAddress & whichClient ) const
+const ClientInfo & ClientList::consumer( const ProxyAddress & whichClient ) const noexcept
 {
     LISTPOS pos = find(ClientInfo(whichClient));
-    return (isValidPosition(pos) ? *pos : ClientInfo::getInvalidClientInfo());
+    return (is_valid_position(pos) ? *pos : ClientInfo::invalid_client_info());
 }
 
-const ClientInfo & ClientList::registerClient( const ProxyAddress & whichClient, const ServerInfo & server )
+const ClientInfo & ClientList::register_consumer( const ProxyAddress & whichClient, const ServerInfo & server )
 {
     ClientInfo clInfo(whichClient);
     LISTPOS pos = find(clInfo);
-    if (isInvalidPosition(pos))
+    if (!is_valid_position(pos))
     {
-        pushLast(std::move(clInfo));
-        pos = lastPosition();
+        push_last(std::move(clInfo));
+        pos = last_position();
     }
 
-    ClientInfo & client = valueAtPosition(pos);
-    client.setTargetServer( server.getAddress() );
-    client.setConnectionStatus( server.getConnectionStatus() );
+    ClientInfo & client = value_at(pos);
+    client.set_target( server.address() );
+    client.set_connection_status( server.connection_status() );
 
     return client;
 }
 
-bool ClientList::unregisterClient( const ProxyAddress & whichClient, ClientInfo & out_client )
+bool ClientList::unregister_consumer( const ProxyAddress & whichClient, ClientInfo & clientInfo )
 {
     bool result{ false };
 
     LISTPOS pos = find( ClientInfo(whichClient) );
-    if (isValidPosition(pos))
+    if (is_valid_position(pos))
     {
-        removeAt(pos, out_client);
+        remove_at(pos, clientInfo);
         result = true;
     }
 
     return result;
 }
 
-void ClientList::serverAvailable( const ServerInfo & whichServer, ClientList & out_clientList )
+void ClientList::provider_available( const ServerInfo & whichServer, ClientList & clientInfoList )
 {
-    NEService::eServiceConnection state = whichServer.getConnectionStatus();
-    const StubAddress & addrStub = whichServer.getAddress();
+    areg::ServiceConnectionState state = whichServer.connection_status();
+    const StubAddress & addrStub = whichServer.address();
 
-    for ( LISTPOS pos = firstPosition(); isValidPosition(pos); ++ pos)
+    for ( LISTPOS pos = first_position(); is_valid_position(pos); ++ pos)
     {
         ClientInfo & client = *pos;
-        client.setTargetServer(addrStub);
-        client.setConnectionStatus( state );
-        out_clientList.pushFirst(client);
+        client.set_target(addrStub);
+        client.set_connection_status( state );
+        clientInfoList.push_first(client);
     }
 }
 
-void ClientList::serverUnavailable( ClientList & out_clientList )
+void ClientList::provider_unavailable( ClientList & clientInfoList )
 {
-    for (LISTPOS pos = firstPosition(); isValidPosition(pos); ++pos )
+    for (LISTPOS pos = first_position(); is_valid_position(pos); ++pos )
     {
-        ClientInfo & client = valueAtPosition( pos );
-        out_clientList.pushLast( client );
-        client.setTargetServer( StubAddress::getInvalidStubAddress() );
-        client.setConnectionStatus( NEService::eServiceConnection::ServicePending );
+        ClientInfo & client = value_at( pos );
+        clientInfoList.push_last( client );
+        client.set_target( StubAddress::invalid_stub_address() );
+        client.set_connection_status( areg::ServiceConnectionState::Pending );
     }
 }
+
+} // namespace areg

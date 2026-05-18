@@ -4,17 +4,17 @@
  * \brief           The direct connection service client object
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
-#include "examples/20_winchat/services/DirectConnectionClientBase.hpp"
-#include "areg/component/NERegistry.hpp"
+#include "areg/base/areg_global.h"
+#include "examples/20_winchat/services/DirectConnectionConsumerBase.hpp"
+#include "areg/component/Model.hpp"
 
 class ChatPrticipantHandler;
 
-class DirectConnectionClient  : public DirectConnectionClientBase
+class DirectConnectionClient final : public DirectConnectionConsumerBase
 {
 public:
-    DirectConnectionClient( Component & owner, ChatPrticipantHandler* participantsHandler, const NEDirectConnection::sParticipant & target );
-    virtual ~DirectConnectionClient( void ) = default;
+    DirectConnectionClient( areg::Component & owner, ChatPrticipantHandler* participantsHandler, const DirectConnection::Participant & target );
+    ~DirectConnectionClient() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -29,15 +29,15 @@ protected:
      * \param   target              The targeted participant to include in chat-room
      * \param   initiator           The chat-room initiator
      * \param   listParticipants    List of chat-room participants
-     * \see     requestConnectoinSetup
+     * \see     request_connectoin_setup
      **/
-    virtual void responseConnectoinSetup( bool succeeded
-                                        , const NEDirectConnection::sParticipant & target
-                                        , const NEDirectConnection::sInitiator & initiator
-                                        , const NEDirectConnection::ListParticipants & listParticipants ) override;
+    void response_connectoin_setup( bool succeeded
+                                        , const DirectConnection::Participant & target
+                                        , const DirectConnection::sInitiator & initiator
+                                        , const DirectConnection::ListParticipants & listParticipants ) final;
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -50,7 +50,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -59,6 +59,6 @@ private:
     ChatPrticipantHandler * mParticipantsHandler;
 
 private:
-    DirectConnectionClient( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( DirectConnectionClient );
+    DirectConnectionClient() = delete;
+    AREG_NOCOPY_NOMOVE( DirectConnectionClient );
 };

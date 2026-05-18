@@ -9,11 +9,11 @@
 //               calls, it uses a timer.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/base/NEUtilities.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/base/UtilityDefs.hpp"
+#include "areg/logging/areg_log.h"
 
 #include "subscribermulti/src/Subscriber.hpp"
 
@@ -25,7 +25,7 @@
 
 constexpr char const _modelName[]  { "PubSub_model" };  //!< The name of model
 constexpr char const _serviceName[]{ "Publisher" };     //!< The name of the service
-const String         _subscriber (NEUtilities::generateName("Subscriber")); //!< Generated name of service client component
+const areg::String         _subscriber (areg::generate_name("Subscriber")); //!< Generated name of service client component
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -55,7 +55,7 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_main);
+DEF_LOG_SCOPE(examples_27_pubsubmulti_subscribermulti, main);
 /**
  * \brief   The main method enables logging, service manager and timer.
  *          it loads and unloads the services, releases application.
@@ -64,26 +64,26 @@ int main()
 {
     printf("Testing PubSub service consumer...\n");
     // force to start logging with default settings
-    LOGGING_CONFIGURE_AND_START( nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr, false );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::initApplication( );
+    areg::Application::setup( );
 
     do
     {
-        LOG_SCOPE(example_27_pubsubmulti_subscribermulti_main);
+        LOG_SCOPE( examples_27_pubsubmulti_subscribermulti, main );
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components
-        Application::loadModel(_modelName);
+        areg::Application::load_model(_modelName);
 
         LOG_DBG("Servicing model is loaded");
 
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        areg::Application::wait_quit(areg::WAIT_INFINITE);
 
         // release and cleanup resources of application.
-        Application::releaseApplication();
+        areg::Application::release();
 
     } while (false);
 

@@ -4,20 +4,20 @@
  * \brief           The connection manager client component implementation
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
-#include "examples/20_winchat/services/CentralMessagerClientBase.hpp"
+#include "areg/base/areg_global.h"
+#include "examples/20_winchat/services/CentralMessagerConsumerBase.hpp"
 
-class DispatcherThread;
+namespace areg { class DispatcherThread; }
 class ConnectionHandler;
 
-class CentralMessaging    : public CentralMessagerClientBase
+class CentralMessaging final : public CentralMessagerConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Create and delete component
 //////////////////////////////////////////////////////////////////////////
 public:
-    CentralMessaging( const char * roleName, DispatcherThread & ownerThread, ConnectionHandler & handlerConnection );
-    virtual ~CentralMessaging( void ) = default;
+    CentralMessaging( const char * roleName, areg::DispatcherThread & ownerThread, ConnectionHandler & handlerConnection );
+    ~CentralMessaging() = default;
 
 public:
 
@@ -41,7 +41,7 @@ protected:
      * \param   newMessage  The message sent by initiator
      * \param   dateTime    The local time-stamp of initiator
      **/
-    virtual void broadcastSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime ) override;
+    void broadcast_send_message( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage, const areg::DateTime & dateTime ) final;
     /**
      * \brief   Server broadcast.
      *          Sent each time when a client is typing a key
@@ -51,7 +51,7 @@ protected:
      * \param   cookie      Assigned cookie of initiator
      * \param   newMessage  The message typed by initiator
      **/
-    virtual void broadcastKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage ) override;
+    void broadcast_key_typing( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage ) final;
     /**
      * \brief   Server broadcast.
      *          Server broadcasts a message to all clients.
@@ -60,10 +60,10 @@ protected:
      * \param   serverMessage   The message sent by servicing server
      * \param   dateTime        The time-stamp of servicing component
      **/
-    virtual void broadcastBroadcastMessage( const String & serverMessage, const DateTime & dateTime ) override;
+    void broadcast_broadcast_message( const areg::String & serverMessage, const areg::DateTime & dateTime ) final;
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -76,13 +76,13 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline CentralMessaging & self( void );
+    inline CentralMessaging & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden variables
@@ -96,13 +96,13 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    CentralMessaging( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( CentralMessaging );
+    CentralMessaging() = delete;
+    AREG_NOCOPY_NOMOVE( CentralMessaging );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // CentralMessaging inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline CentralMessaging & CentralMessaging::self( void )
+inline CentralMessaging & CentralMessaging::self()
 {   return (*this);     }

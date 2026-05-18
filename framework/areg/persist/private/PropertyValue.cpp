@@ -13,10 +13,11 @@
  * \brief       Property Key object to persist application data.
  ************************************************************************/
 #include "areg/persist/PropertyValue.hpp"
-#include "areg/persist/NEPersistence.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/persist/PersistenceDefs.hpp"
+#include "areg/base/UtilityDefs.hpp"
 
 #include <utility>
+namespace areg {
 
 PropertyValue::PropertyValue(const PropertyValue & source)
     : mValue( source.mValue )
@@ -31,177 +32,64 @@ PropertyValue::PropertyValue( PropertyValue && source ) noexcept
 PropertyValue::PropertyValue( const String & value )
     : mValue( )
 {
-    parseValue( static_cast<const String &>(value) );
+    parse_value( static_cast<const String &>(value) );
 }
 
 PropertyValue::PropertyValue(String&& value) noexcept
     : mValue()
 {
-    parseValue(std::move(value));
+    parse_value(std::move(value));
 }
 
 PropertyValue::PropertyValue( const char * value )
     : mValue( )
 {
-    parseValue(value);
+    parse_value(value);
 }
 
-PropertyValue::PropertyValue(unsigned int intValue)
-    : mValue( String::makeString(intValue, NEString::eRadix::RadixDecimal) )
+PropertyValue::PropertyValue(uint32_t intValue)
+    : mValue( String::make_string(intValue, areg::Radix::Decimal) )
 {
 }
 
 PropertyValue::PropertyValue(double dValue)
-    : mValue( String::makeString( dValue ) )
+    : mValue( String::make_string( dValue ) )
 {
 }
 
 PropertyValue::PropertyValue(bool bValue)
-    : mValue(String::makeString(bValue))
+    : mValue(String::make_string(bValue))
 {
 }
 
 PropertyValue::PropertyValue(const std::vector<Identifier> & idList)
     : mValue( )
 {
-    setIndentifier(idList);
+    set_identifier(idList);
 }
 
-PropertyValue & PropertyValue::operator = ( const PropertyValue & source )
+uint32_t PropertyValue::identifier( const std::vector<Identifier> & idList ) const
 {
-    mValue  = source.mValue;
-    return (*this);
-}
-
-PropertyValue & PropertyValue::operator = ( PropertyValue && source ) noexcept
-{
-    mValue  = std::move(source.mValue);
-    return (*this);
-}
-
-PropertyValue & PropertyValue::operator = ( const String & value )
-{
-    parseValue(value);
-    return (*this);
-}
-
-PropertyValue& PropertyValue::operator = (String && value) noexcept
-{
-    parseValue(std::move(value));
-    return (*this);
-}
-
-PropertyValue & PropertyValue::operator = (unsigned int intValue)
-{
-    mValue.fromUInt32(intValue);
-    return (*this);
-}
-
-PropertyValue & PropertyValue::operator = (double dValue)
-{
-    mValue.fromDouble(dValue);
-    return (*this);
-}
-
-PropertyValue& PropertyValue::operator = (bool bValue)
-{
-    mValue.fromBool(bValue);
-    return (*this);
-}
-
-PropertyValue & PropertyValue::operator = (const std::vector<Identifier> & idList)
-{
-    setIndentifier(idList);
-    return (*this);
-}
-
-bool PropertyValue::operator == ( const PropertyValue & other ) const
-{
-    return (mValue == other.mValue);
-}
-
-bool PropertyValue::operator != ( const PropertyValue & other ) const
-{
-    return (mValue != other.mValue);
-}
-
-PropertyValue::operator unsigned int(void) const
-{
-    return getInteger(NEString::eRadix::RadixDecimal);
-}
-
-PropertyValue::operator const String& (void) const
-{
-    return getString();
-}
-
-PropertyValue::operator double(void) const
-{
-    return getDouble();
-}
-
-PropertyValue::operator bool(void) const
-{
-    return getBoolean();
-}
-
-const String & PropertyValue::getValue(void) const
-{
-    return mValue;
-}
-
-void PropertyValue::setValue( const char * value )
-{
-    parseValue(value);
-}
-
-void PropertyValue::setValue( const String & value )
-{
-    parseValue( static_cast<const String &>(value) );
-}
-
-void PropertyValue::setValue( String && value )
-{
-    parseValue( std::move(value) );
-}
-
-const String & PropertyValue::getString(void) const
-{
-    return mValue;
-}
-
-unsigned int PropertyValue::getInteger( NEString::eRadix radix /*= NEString::RadixDecimal*/ ) const
-{
-    return mValue.toUInt32( static_cast<NEString::eRadix>(radix) );
-}
-
-double PropertyValue::getDouble(void) const
-{
-    return mValue.toDouble( );
-}
-
-unsigned int PropertyValue::getIndetifier( const std::vector<Identifier> & idList ) const
-{
-    unsigned int result = Identifier::BAD_IDENTIFIER_VALUE;
-    if ( (idList.empty() == false) && (mValue.isEmpty() == false) )
+    if (idList.empty() || mValue.is_empty())
+        return Identifier::BAD_IDENTIFIER_VALUE;
+    
+    uint32_t result = Identifier::BAD_IDENTIFIER_VALUE;
+    std::vector<StringBase<char>> list { mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
+    for (auto& entry : list)
     {
-        std::vector<TEString<char>> list { mValue.split(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER) };
-        for (auto& entry : list)
+        String value{ entry.trim_all() };
+        for (const auto& id : idList)
         {
-            String value{ entry.trimAll() };
-            for (const auto& id : idList)
+            const String& idName = id.name();
+            if (value == idName)
             {
-                const String& idName = id.getName();
-                if (value == idName)
+                if (result == Identifier::BAD_IDENTIFIER_VALUE)
                 {
-                    if (result == Identifier::BAD_IDENTIFIER_VALUE)
-                    {
-                        result = id.getValue();
-                    }
-                    else
-                    {
-                        result |= id.getValue();
-                    }
+                    result = id.value();
+                }
+                else
+                {
+                    result |= id.value();
                 }
             }
         }
@@ -210,46 +98,21 @@ unsigned int PropertyValue::getIndetifier( const std::vector<Identifier> & idLis
     return result;
 }
 
-void PropertyValue::setString(const char * value)
+ArrayList<Identifier> PropertyValue::identifier_list(const std::vector<Identifier>& lookupList) const
 {
-    parseValue( value );
-}
-
-bool PropertyValue::getBoolean(void) const
-{
-    return mValue.toBool();
-}
-
-void PropertyValue::setBoolean(bool newValue)
-{
-    mValue = String::makeString(newValue);
-}
-
-void PropertyValue::setInteger(unsigned int intValue, NEString::eRadix radix /*= NEString::RadixDecimal*/ )
-{
-    mValue = String::makeString(intValue, radix);
-}
-
-void PropertyValue::setDouble(double dValue)
-{
-    mValue = String::makeString( dValue );
-}
-
-TEArrayList<Identifier> PropertyValue::getIdentifierList(const std::vector<Identifier>& lookupList) const
-{
-    TEArrayList<Identifier> result;
-    if ((lookupList.empty() == false) && (mValue.isEmpty() == false))
+    ArrayList<Identifier> result;
+    if ((lookupList.empty() == false) && (mValue.is_empty() == false))
     {
-        std::vector<TEString<char>> list{ mValue.split(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER) };
+        std::vector<StringBase<char>> list{ mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
         for (auto& entry : list)
         {
-            String value{ entry.trimAll() };
+            String value{ entry.trim_all() };
             for (const auto& id : lookupList)
             {
-                const String& idName = id.getName();
+                const String& idName = id.name();
                 if (value == idName)
                 {
-                    result.addIfUnique(id);
+                    result.add_if_unique(id);
                     break; // found and added, break the loop
                 }
             }
@@ -259,53 +122,53 @@ TEArrayList<Identifier> PropertyValue::getIdentifierList(const std::vector<Ident
     return result;
 }
 
-void PropertyValue::setIdentifierList(unsigned int idBits, const std::vector<Identifier>& lookupList)
+void PropertyValue::set_identifier_list(uint32_t idBits, const std::vector<Identifier>& lookupList)
 {
     mValue.clear();
     for (const auto& entry : lookupList)
     {
-        if ((idBits & entry.getValue()) != 0)
+        if ((idBits & entry.value()) != 0)
         {
-            if (mValue.isEmpty() == false)
+            if (mValue.is_empty() == false)
             {
-                mValue.append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER)
-                      .append(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER)
-                      .append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER);
+                mValue.append(areg::SYNTAX_WHITESPACE_DELIMITER)
+                      .append(areg::SYNTAX_VALUE_LIST_DELIMITER)
+                      .append(areg::SYNTAX_WHITESPACE_DELIMITER);
             }
 
-            mValue += entry.getName();
+            mValue += entry.name();
         }
     }
 }
 
-void PropertyValue::setIndentifier(const std::vector<Identifier> & idList)
+void PropertyValue::set_identifier(const std::vector<Identifier> & idList)
 {
     mValue.clear();
     for ( const auto& entry : idList )
     {
-        if ( mValue.isEmpty() == false )
+        if ( mValue.is_empty() == false )
         {
-            mValue.append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER)
-                  .append(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER)
-                  .append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER);
+            mValue.append(areg::SYNTAX_WHITESPACE_DELIMITER)
+                  .append(areg::SYNTAX_VALUE_LIST_DELIMITER)
+                  .append(areg::SYNTAX_WHITESPACE_DELIMITER);
         }
 
-        mValue += entry.getName();
+        mValue += entry.name();
     }
 }
 
-TEArrayList<String> PropertyValue::getValueList(bool makeUnique /*= false*/) const
+ArrayList<String> PropertyValue::value_list(bool makeUnique /*= false*/) const
 {
-    TEArrayList<String> result;
-    if (mValue.isEmpty() == false)
+    ArrayList<String> result;
+    if (mValue.is_empty() == false)
     {
-        std::vector<TEString<char>> list{ mValue.split(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER) };
+        std::vector<StringBase<char>> list{ mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
         for (auto& entry : list)
         {
-            String value{ entry.trimAll() };
+            String value{ entry.trim_all() };
             if (makeUnique)
             {
-                result.addIfUnique(value);
+                result.add_if_unique(value);
             }
             else
             {
@@ -317,62 +180,41 @@ TEArrayList<String> PropertyValue::getValueList(bool makeUnique /*= false*/) con
     return result;
 }
 
-void PropertyValue::setValueList(const std::vector<String>& list)
+void PropertyValue::set_value_list(const std::vector<String>& list)
 {
     mValue.clear();
     for (const auto& entry : list)
     {
-        if (mValue.isEmpty() == false)
+        if (mValue.is_empty() == false)
         {
-            mValue.append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER)
-                  .append(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER)
-                  .append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER);
+            mValue.append(areg::SYNTAX_WHITESPACE_DELIMITER)
+                  .append(areg::SYNTAX_VALUE_LIST_DELIMITER)
+                  .append(areg::SYNTAX_WHITESPACE_DELIMITER);
         }
 
         mValue += entry;
     }
 }
 
-void PropertyValue::parseValue(const char * value)
-{
-    mValue  = value;
-    _parseValue();
-}
-
-void PropertyValue::parseValue( const String & value )
-{
-    mValue  = value;
-    _parseValue();
-}
-
-void PropertyValue::parseValue( String && value )
-{
-    mValue  = std::move(value);
-    _parseValue();
-}
-
-void PropertyValue::resetValue(void)
-{
-    mValue.clear();
-}
-
-String PropertyValue::convToString(void) const
+String PropertyValue::to_string() const
 {
     String result (mValue);
-    if (mValue.isEmpty() == false)
+    if (mValue.is_empty() == false)
     {
-        result += NEPersistence::SYNTAX_END_COMMAND;
+        result += areg::SYNTAX_END_COMMAND;
     }
 
     return result;
 }
 
-inline void PropertyValue::_parseValue(void)
+void PropertyValue::_parse_value()
 {
-    mValue.trimAll();
-    int32_t len = mValue.getLength();
-    while ((len != 0) && (mValue[len - 1] == NEPersistence::SYNTAX_END_COMMAND))
+    mValue.trim_all();
+    int32_t len = mValue.length();
+    while ((len != 0) && (mValue[len - 1] == areg::SYNTAX_END_COMMAND))
     {
-        len = mValue.resize(len - 1).getLength();
+        len = mValue.resize(len - 1).length();
     }
 }
+
+} // namespace areg

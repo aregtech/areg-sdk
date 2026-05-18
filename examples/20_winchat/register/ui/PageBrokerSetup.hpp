@@ -16,13 +16,13 @@ public:
 	virtual ~PageBrokerSetup() = default;
 
 public:
-    void ServiceConnected( bool isConnected );
+    void Connected( bool isConnected );
 
-    void OnDefaultClicked( void );
+    void OnDefaultClicked();
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
-    virtual BOOL OnInitDialog( ) override;
+	void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
+    BOOL OnInitDialog( ) override;
 
 	DECLARE_MESSAGE_MAP()
 

@@ -11,64 +11,64 @@
  ************************************************************************/
 
 #include "pubservice/src/ServicingComponent.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/appbase/Application.hpp"
 #include <stdlib.h>
 
-DEF_LOG_SCOPE(examples_22_pubservice_ServicingComponent_startupServiceInterface);
-DEF_LOG_SCOPE(examples_22_pubservice_ServicingComponent_requestStartSleep);
-DEF_LOG_SCOPE(examples_22_pubservice_ServicingComponent_requestStopService);
+DEF_LOG_SCOPE(examples_22_pubservice_ServicingComponent, startup_service_interface);
+DEF_LOG_SCOPE(examples_22_pubservice_ServicingComponent, request_start_sleep);
+DEF_LOG_SCOPE(examples_22_pubservice_ServicingComponent, request_stop_service);
 
-ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component         ( entry, owner )
-    , HelloWatchdogStub ( static_cast<Component &>(self()) )
+ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    : areg::Component         ( entry, owner )
+    , HelloWatchdogProviderBase ( static_cast<areg::Component &>(self()) )
 {
 }
 
-void ServicingComponent::startupServiceInterface( Component & holder )
+void ServicingComponent::startup_service_interface( areg::Component & holder )
 {
-    LOG_SCOPE(examples_22_pubservice_ServicingComponent_startupServiceInterface);
+    LOG_SCOPE( examples_22_pubservice_ServicingComponent, startup_service_interface );
     printf("-------------------------------------\n");
-    printf("Start service [ %s ] with role [ %s ]\n", HelloWatchdogStub::getServiceName().getString(), getRoleName().getString());
+    printf("Start service [ %s ] with role [ %s ]\n", HelloWatchdogProviderBase::service_name().as_string(), role_name().as_string());
 
-    HelloWatchdogStub::startupServiceInterface(holder);
-    setServiceState(NEHelloWatchdog::eState::Initialized);
+    HelloWatchdogProviderBase::startup_service_interface(holder);
+    set_service_state(HelloWatchdog::ComponentState::Initialized);
 }
 
-void ServicingComponent::requestStartSleep( unsigned int timeoutSleep )
+void ServicingComponent::request_start_sleep( uint32_t timeoutSleep )
 {
-    LOG_SCOPE(examples_22_pubservice_ServicingComponent_requestStartSleep);
+    LOG_SCOPE( examples_22_pubservice_ServicingComponent, request_start_sleep );
 
-    LOG_DBG("Received request to sleep [ %u ] ms, the watchdog timeout is [ %u ]", timeoutSleep, NEHelloWatchdog::TimeoutWatchdog);
+    LOG_DBG("Received request to sleep [ %u ] ms, the watchdog timeout is [ %u ]", timeoutSleep, HelloWatchdog::TimeoutWatchdog);
 
-    if (getServiceState() != NEHelloWatchdog::eState::Stopped )
+    if (service_state() != HelloWatchdog::ComponentState::Stopped )
     {
-        printf( "Hello Watchdog! Sleep [ %u ] ms, watchdog timeout [ %u ]\n", timeoutSleep, NEHelloWatchdog::TimeoutWatchdog );
-        setServiceState( NEHelloWatchdog::eState::Started );
-        Thread::sleep( timeoutSleep );
-        responseStartSleep( timeoutSleep );
+        printf( "Hello Watchdog! Sleep [ %u ] ms, watchdog timeout [ %u ]\n", timeoutSleep, HelloWatchdog::TimeoutWatchdog );
+        set_service_state( HelloWatchdog::ComponentState::Started );
+        areg::Thread::sleep( timeoutSleep );
+        response_start_sleep( timeoutSleep );
     }
     else
     {
         LOG_DBG("Ignoring request to sleep, the service is in stopped state");
-        responseStartSleep( 0 );
+        response_start_sleep( 0 );
     }
 }
 
-void ServicingComponent::requestStopService( void )
+void ServicingComponent::request_stop_service()
 {
-    LOG_SCOPE( examples_22_pubservice_ServicingComponent_requestStopService );
+    LOG_SCOPE( examples_22_pubservice_ServicingComponent, request_stop_service );
     LOG_DBG("Received request to stop service");
     printf("Requested to stop the service.\n");
-    setServiceState( NEHelloWatchdog::eState::Stopped );
+    set_service_state( HelloWatchdog::ComponentState::Stopped );
 }
 
-void ServicingComponent::requestShutdownService( void )
+void ServicingComponent::request_shutdown_service()
 {
-    LOG_SCOPE( examples_22_pubservice_ServicingComponent_requestStopService );
+    LOG_SCOPE( examples_22_pubservice_ServicingComponent, request_stop_service );
     LOG_DBG("Shutdown the service");
     printf( "Shutdown the service and quit application.\n" );
-    setServiceState( NEHelloWatchdog::eState::Stopped );
-    Application::signalAppQuit();
+    set_service_state( HelloWatchdog::ComponentState::Stopped );
+    areg::Application::signal_quit();
 }

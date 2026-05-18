@@ -3,20 +3,22 @@
  * \brief   Implementation of the service component.
  **/
 #include "common/src/ServiceComponent.hpp"
+#include "areg/appbase/Application.hpp"
 
 #include <iostream>
 
-ServiceComponent::ServiceComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component         ( entry, owner )
-    , HelloServiceStub  ( static_cast<Component &>(self()) )
+ServiceComponent::ServiceComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    : areg::Component         ( entry, owner )
+    , HelloServiceProviderBase  ( static_cast<areg::Component &>(self()) )
 {
 }
 
-void ServiceComponent::requestHelloService(const String & client)
+void ServiceComponent::request_hello_service(const areg::String & client)
 {
     // output message
     std::cout << "\'Hello Service!\' from " << client << std::endl;
 
     // reply to unblock the request
-    responseHelloService(true);
+    response_hello_service(true);
+    areg::Application::signal_quit();
 }

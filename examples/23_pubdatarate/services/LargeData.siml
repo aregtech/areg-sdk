@@ -6,23 +6,47 @@ This service will demonstrate the TCP/IP data rate by sending
 image data to connected clients.</Description>
     </Overview>
     <DataTypeList>
-        <DataType ID="42" Name="ImageBlock" Type="Imported">
-            <Location>common/NELargeData.hpp</Location>
-            <Namespace>NELargeData</Namespace>
-            <ImportedObject>ImageBlock</ImportedObject>
-            <Description/>
+        <DataType ID="58" Name="ImageGenerator" Type="Structure">
+            <Description>Image generator settings</Description>
+            <FieldList>
+                <Field ID="59" Name="width" DataType="uint32">
+                    <Value IsDefault="true">0</Value>
+                    <Description>Width of the image</Description>
+                </Field>
+                <Field ID="60" Name="height" DataType="uint32">
+                    <Value IsDefault="true">0</Value>
+                    <Description>Height of the image</Description>
+                </Field>
+                <Field ID="61" Name="linesBlock" DataType="uint32">
+                    <Value IsDefault="true">0</Value>
+                    <Description>Lines in one block. Cannot be heigher than the `height`</Description>
+                </Field>
+                <Field ID="62" Name="pixelTime" DataType="uint32">
+                    <Value IsDefault="true">0</Value>
+                    <Description>Pixel time in nanoseconds. Valu 0 means streamming non-stop.</Description>
+                </Field>
+                <Field ID="63" Name="channels" DataType="uint32">
+                    <Value IsDefault="true">0</Value>
+                    <Description>Number of parallel channels to generate pixels</Description>
+                </Field>
+            </FieldList>
         </DataType>
     </DataTypeList>
+    <AttributeList>
+        <Attribute ID="64" Name="ImageGenSetting" DataType="ImageGenerator" Notify="OnChange">
+            <Description>Image Generator Settings.</Description>
+        </Attribute>
+    </AttributeList>
     <MethodList>
-        <Method ID="40" Name="ImageBlockAcquired" MethodType="Broadcast">
+        <Method ID="40" Name="image_block_acquired" MethodType="Broadcast">
             <Description>Called to notify all connected clients that new image data is available.</Description>
             <ParamList>
-                <Parameter ID="51" Name="imageBlock" DataType="ImageBlock">
+                <Parameter ID="51" Name="imageBlock" DataType="BinaryBuffer">
                     <Description>Acquired image block.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="41" Name="ServiceStopping" MethodType="Broadcast">
+        <Method ID="41" Name="service_stopping" MethodType="Broadcast">
             <Description>Called to notify all clients that service is shutting down.</Description>
         </Method>
     </MethodList>

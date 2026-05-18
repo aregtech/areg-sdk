@@ -25,7 +25,7 @@ Before installing Areg SDK via vcpkg, ensure you have:
 - **C++17 Compiler** - GCC, Clang/LLVM, or MSVC
 - **Java 17+** - Required for Areg code generation tools
 
-**Supported Platforms:** Windows, Linux, macOS  
+**Supported Platforms:** Linux, macOS, and Windows  
 **Supported Architectures:** x86, x86_64, ARM, AArch64
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
@@ -36,7 +36,7 @@ Before installing Areg SDK via vcpkg, ensure you have:
 
 [vcpkg](https://github.com/microsoft/vcpkg) is Microsoft's cross-platform C++ package manager that simplifies dependency management:
 
-✅ **Cross-platform** - Works on Windows, Linux, and macOS  
+✅ **Cross-platform** - Works on Linux, macOS, and Windows  
 ✅ **CMake integration** - Automatic library detection  
 ✅ **Visual Studio integration** - Zero-configuration package usage  
 ✅ **Reproducible builds** - Consistent library versions across teams
@@ -171,7 +171,7 @@ Create `main.cpp`:
 
 int main() {
     String greeting("Hello from Areg SDK!");
-    std::cout << greeting.getData() << std::endl;
+    std::cout << greeting.data() << std::endl;
     return 0;
 }
 ```
@@ -251,7 +251,7 @@ Replace the contents of `main.cpp`:
 
 int main() {
     String greeting("Hello from Areg SDK!");
-    std::cout << greeting.getData() << std::endl;
+    std::cout << greeting.data() << std::endl;
     return 0;
 }
 ```

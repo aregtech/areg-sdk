@@ -14,23 +14,33 @@
  *              windows specific code
  *
  ************************************************************************/
-#include "areg/base/Thread.hpp"
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/IEThreadConsumer.hpp"
-#include "areg/base/NEUtilities.hpp"
+/************************************************************************
+ * Includes
+ ************************************************************************/
+#include "areg/base/Thread.hpp"
+#include "areg/base/ThreadConsumer.hpp"
+#include "areg/base/UtilityDefs.hpp"
 
 #ifndef _POSIX_PRIORITY_SCHEDULING
     #define _POSIX_PRIORITY_SCHEDULING
 #endif  // _POSIX_PRIORITY_SCHEDULING
 
-#include <limits.h>
 #include <pthread.h>
 #include <sched.h>
 #include <time.h>
 #include <errno.h>
 #include <sys/types.h>
+
+#ifdef min
+    #undef min
+#endif // min
+#ifdef max
+    #undef max
+#endif // max
+#include <limits>
 
 #if __has_include(<sys/unistd.h>)
     #include <sys/signal.h>
@@ -40,29 +50,30 @@
     #include <signal.h>
 #endif  // __has_include(<sys/unistd.h>)
 
-namespace
-{
+namespace {
 
     //!< POSIX thread structure
-    typedef struct S_PosixThread
+    struct PosixThread
     {
         pthread_t       pthreadId;      //!< The POSIX thread ID
         pthread_attr_t  pthreadAttr;    //!< The POSIX thread attribute
-    } sPosixThread;
+    };
 
 } // namespace
+
+namespace areg {
 
 /************************************************************************/
 // System specific thread routines
 /************************************************************************/
-void * Thread::_posixThreadRoutine( void * data )
+void* Thread::_posix_thread_routine(void* data)
 {
-    int oldState{ 0 };
-    int oldType{ 0 };
+    int32_t oldState{ 0 };
+    int32_t oldType{ 0 };
     ::pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldState);
-    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldType);
+    pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, &oldType);
 
-    Thread::_defaultThreadFunction(data);
+    Thread::_default_thread_function(data);
 
     ::pthread_setcancelstate(oldState, nullptr);
     ::pthread_setcanceltype(oldType, nullptr);
@@ -71,7 +82,7 @@ void * Thread::_posixThreadRoutine( void * data )
     return nullptr;
 }
 
-unsigned long Thread::_windowsThreadRoutine( void * /* data */ )
+unsigned long Thread::_windows_thread_routine(void* /* data */)
 {
     ASSERT(false);
     return 0;
@@ -83,24 +94,24 @@ unsigned long Thread::_windowsThreadRoutine( void * /* data */ )
  **/
 #if ((__GLIBC__ > 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ >= 12)))
 
-void Thread::_osSetThreadName( id_type threadId, const char* threadName)
+void Thread::_os_set_name(id_type threadId, const char* threadName)
 {
     pthread_setname_np(threadId, threadName != nullptr ? threadName : "");
 }
 
 #else// !((__GLIBC__ > 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ >= 12)))
 
-void Thread::_osSetThreadName( id_type /*threadId*/, const char* /*threadName*/)
+void Thread::_os_set_name(id_type /*threadId*/, const char* /*threadName*/)
 {
 }
 
 #endif // !((__GLIBC__ > 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ >= 12)))
 
-void Thread::_osCloseHandle(  THREADHANDLE handle )
+void Thread::_os_close_handle(THREADHANDLE handle)
 {
     if (handle != nullptr)
     {
-        sPosixThread *pthread = reinterpret_cast<sPosixThread *>(handle);
+        PosixThread* pthread = reinterpret_cast<PosixThread*>(handle);
         pthread_attr_destroy(&pthread->pthreadAttr);
         delete pthread;
     }
@@ -110,103 +121,102 @@ void Thread::_osCloseHandle(  THREADHANDLE handle )
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-void Thread::_osSleep(unsigned int timeout)
+void Thread::_os_sleep(uint32_t timeout)
 {
     // since _POSIX_C_SOURCE >= 199309L use nanosleep
     // otherwise, can use:
-    //      unsigned int sec    = ms / 1000;
-    //      unsigned int micro  = (ms % 1000) * 1000;
+    //      uint32_t sec    = ms / 1000;
+    //      uint32_t micro  = (ms % 1000) * 1000;
     //      sleep(sec);
     //      usleep(micro);
 
     struct timespec ts;
-    ts.tv_sec   = timeout / 1'000;
-    ts.tv_nsec  = (timeout % 1'000) * 1'000'000 + 1;
+    ts.tv_sec = timeout / 1'000;
+    ts.tv_nsec = (timeout % 1'000) * 1'000'000 + 1;
     nanosleep(&ts, nullptr);
 }
 
-id_type Thread::_osGetCurrentThreadId( void )
+id_type Thread::_os_thread_id()  noexcept
 {
-    return NEUtilities::convToNum<id_type, pthread_t>(pthread_self());
+    return to_num<id_type, pthread_t>(pthread_self());
 }
 
-Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
+Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
 {
     // Initially, the thread is not valid and not running, nothing to destroy
-    Thread::eCompletionStatus result = Thread::eCompletionStatus::ThreadInvalid;
-    pthread_t threadId  = NEUtilities::convToPtr<pthread_t, id_type>(Thread::INVALID_THREAD_ID);
+    Thread::ThreadCompletion result = Thread::ThreadCompletion::Invalid;
+    pthread_t threadId = to_ptr<pthread_t, id_type>(Thread::INVALID_THREAD_ID);
 
     do
     {
         Lock lock(mSyncObject);
         if (mThreadHandle == Thread::INVALID_THREAD_HANDLE)
         {
-            return Thread::eCompletionStatus::ThreadInvalid;
+            return Thread::ThreadCompletion::Invalid;
         }
 
-        threadId = NEUtilities::convToPtr<pthread_t, id_type>(mThreadId);
-        _unregisterThread();
+        threadId = to_ptr<pthread_t, id_type>(mThreadId);
+        _unregister_thread();
 
-    } while(false);
+    } while (false);
 
-    if ((waitForStopMs != NECommon::DO_NOT_WAIT) && (mWaitForExit.lock(waitForStopMs) == false))
+    if ((waitForStopMs != DO_NOT_WAIT) && (mWaitForExit.lock(waitForStopMs) == false))
     {
-        // here we assume that it was requested to wait for thread exit, but it is still running
         // force to terminate thread and close handles due to waiting timeout expire
-        OUTPUT_DBG("The thread [ %s ] should be terminated", mThreadAddress.getThreadName().getString());
-        result = Thread::eCompletionStatus::ThreadTerminated;
+        AREG_OUTPUT_DBG("The thread [ %s ] should be terminated", mThreadAddress.name().as_string());
+        result = Thread::ThreadCompletion::Terminated;
         pthread_cancel(threadId);
-        mWaitForRun.resetEvent();
-        mWaitForExit.setEvent();
+        mWaitForRun.reset();
+        mWaitForExit.set_signaled();
     }
     else
     {
         // The thread completed job normally
-        OUTPUT_DBG("The thread [ %s ] completed job", mThreadAddress.getThreadName().getString());
-        result = Thread::eCompletionStatus::ThreadCompleted;
-        ASSERT (waitForStopMs != NECommon::WAIT_INFINITE || isRunning() == false);
+        AREG_OUTPUT_DBG("The thread [ %s ] completed job", mThreadAddress.name().as_string());
+        result = Thread::ThreadCompletion::Completed;
+        ASSERT(waitForStopMs != WAIT_INFINITE || is_running() == false);
     }
 
     return result;
 }
 
-bool Thread::_osCreateSystemThread( void )
+bool Thread::_os_create() noexcept
 {
-    bool result { false };
+    bool result{ false };
 
-    if ((_isValidNoLock() == false) && (mThreadAddress.getThreadName().isEmpty() == false))
+    if ((_is_valid_no_lock() == false) && (mThreadAddress.name().is_empty() == false))
     {
-        sPosixThread * handle = new sPosixThread;
-        if ( handle != nullptr)
+        PosixThread* handle = new  PosixThread;
+        if (handle != nullptr)
         {
-            mWaitForRun.resetEvent();
-            mWaitForExit.resetEvent( );
+            mWaitForRun.reset();
+            mWaitForExit.reset();
             if (RETURNED_OK == ::pthread_attr_init(&handle->pthreadAttr))
             {
-                if (mStackSizeKB != NECommon::STACK_SIZE_DEFAULT)
+                if (mStackSizeKB != areg::DEFAULT_STACK_SIZE)
                 {
-                    size_t stackSizeBytes = static_cast<size_t>(mStackSizeKB) * 1024u;
-                    ::pthread_attr_setstacksize(&handle->pthreadAttr, stackSizeBytes);
+                    size_t stackSize = static_cast<size_t>(mStackSizeKB) * areg::ONE_KILOBYTE;
+                    ::pthread_attr_setstacksize(&handle->pthreadAttr, stackSize);
                 }
-                
-                if ((RETURNED_OK == ::pthread_attr_setdetachstate(&handle->pthreadAttr, PTHREAD_CREATE_DETACHED)) &&
-                    (RETURNED_OK == ::pthread_create(&handle->pthreadId, &handle->pthreadAttr, &Thread::_posixThreadRoutine, static_cast<void *>(this))) )
-                {
-                    result          = true;
-                    mThreadHandle   = static_cast<THREADHANDLE>(handle);
-                    mThreadId       = NEUtilities::convToNum<id_type, pthread_t>(handle->pthreadId);
-                    mThreadPriority = Thread::eThreadPriority::PriorityNormal;
 
-                    if (_registerThread() == false)
+                if ((RETURNED_OK == ::pthread_attr_setdetachstate(&handle->pthreadAttr, PTHREAD_CREATE_DETACHED)) &&
+                    (RETURNED_OK == ::pthread_create(&handle->pthreadId, &handle->pthreadAttr, &Thread::_posix_thread_routine, static_cast<void*>(this))))
+                {
+                    result = true;
+                    mThreadHandle = static_cast<THREADHANDLE>(handle);
+                    mThreadId = to_num<id_type, pthread_t>(handle->pthreadId);
+                    mThreadPriority = Thread::ThreadPriority::Normal;
+
+                    if (_register_thread() == false)
                     {
                         result = false;
-                        _cleanResources(true);
+                        _clean_resources(true);
                     }
                 }
 
                 if (result == false)
                 {
-                    _osCloseHandle(handle);
+                    _os_close_handle(handle);
                 }
             }
             else
@@ -219,43 +229,43 @@ bool Thread::_osCreateSystemThread( void )
     return result;
 }
 
-Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
+Thread::ThreadPriority Thread::_os_set_priority(ThreadPriority newPriority) noexcept
 {
     /**
      * if priority of a thread is changed, a real-time scheduling policy must be used,
      * possible policies are SCHED_FIFO and SCHED_RR. We use SCHED_RR (round robin) here.
      **/
-    static constexpr int schedPolicy{ SCHED_RR };
-    static const int minPriority{ sched_get_priority_min( schedPolicy ) };
-    static const int maxPriority{ sched_get_priority_max( schedPolicy ) };
-    static const int deltaPrio  { (maxPriority - minPriority) / 4 };
+    static constexpr int32_t schedPolicy{ SCHED_RR };
+    static const int32_t minPriority{ sched_get_priority_min(schedPolicy) };
+    static const int32_t maxPriority{ sched_get_priority_max(schedPolicy) };
+    static const int32_t deltaPrio{ (maxPriority - minPriority) / 4 };
 
     Lock  lock(mSyncObject);
-    Thread::eThreadPriority oldPrio = mThreadPriority;
-    if (_isValidNoLock() && (newPriority != oldPrio))
+    Thread::ThreadPriority oldPrio = mThreadPriority;
+    if (_is_valid_no_lock() && (newPriority != oldPrio))
     {
-        int schedPrio       { MIN_INT_32 };
-        pthread_t threadId  { NEUtilities::convToPtr<pthread_t, id_type>(mThreadId) };
+        int32_t schedPrio{ std::numeric_limits<int32_t>::min() };
+        pthread_t threadId{ to_ptr<pthread_t, id_type>(mThreadId) };
         switch (newPriority)
         {
-        case Thread::eThreadPriority::PriorityLowest:
-            schedPrio  = minPriority;
+        case Thread::ThreadPriority::Lowest:
+            schedPrio = minPriority;
             break;
 
-        case Thread::eThreadPriority::PriorityLow:
-            schedPrio  = minPriority + 1 * deltaPrio;
+        case Thread::ThreadPriority::Low:
+            schedPrio = minPriority + 1 * deltaPrio;
             break;
 
-        case Thread::eThreadPriority::PriorityNormal:
-            schedPrio  = minPriority + 2 * deltaPrio;
+        case Thread::ThreadPriority::Normal:
+            schedPrio = minPriority + 2 * deltaPrio;
             break;
 
-        case Thread::eThreadPriority::PriorityHigh:
-            schedPrio  = minPriority + 3 * deltaPrio;
+        case Thread::ThreadPriority::High:
+            schedPrio = minPriority + 3 * deltaPrio;
             break;
 
-        case Thread::eThreadPriority::PriorityHighest:
-            schedPrio  = maxPriority;
+        case Thread::ThreadPriority::Highest:
+            schedPrio = maxPriority;
             break;
 
         default:
@@ -263,17 +273,17 @@ Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
         }
 
         struct sched_param schedParam;
-        schedParam.sched_priority   = schedPrio;
+        schedParam.sched_priority = schedPrio;
 
-        if ((MIN_INT_32 != schedPrio) && (RETURNED_OK == ::pthread_setschedparam(threadId, schedPolicy, &schedParam)))
+        if ((std::numeric_limits<int32_t>::min() != schedPrio) && (areg::RETURNED_OK == ::pthread_setschedparam(threadId, schedPolicy, &schedParam)))
         {
             mThreadPriority = newPriority;
         }
 #ifdef DEBUG
         else
         {
-            OUTPUT_ERR("Cannot set thread priority [ %s ] (POSIX priority %d ) for thread [ %p ] , failed with error code [ %x ]."
-                , Thread::getString(newPriority)
+            AREG_OUTPUT_ERR("Cannot set thread priority [ %s ] (POSIX priority %d ) for thread [ %p ] , failed with error code [ %x ]."
+                , Thread::as_string(newPriority)
                 , schedParam.sched_priority
                 , static_cast<id_type>(mThreadId)
                 , errno);
@@ -284,11 +294,18 @@ Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
     return oldPrio;
 }
 
-size_t Thread::_osGetCurrentStackSize(THREADHANDLE handle)
+size_t Thread::_os_stack_size(THREADHANDLE handle) noexcept
 {
     size_t size{ 0u };
-    sPosixThread* thread = reinterpret_cast<sPosixThread*>(handle);
+    PosixThread* thread = reinterpret_cast<PosixThread*>(handle);
     return ((thread != nullptr) && (RETURNED_OK == pthread_attr_getstacksize(&thread->pthreadAttr, &size)) ? size : 0);
 }
+
+void Thread::_os_yield_to_thread() noexcept
+{
+    sched_yield();
+}
+
+} // namespace areg
 
 #endif  // defined(_POSIX) || defined(POSIX)

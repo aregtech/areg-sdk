@@ -16,62 +16,90 @@
 #include "areg/ipc/SocketConnectionBase.hpp"
 #include "areg/base/Socket.hpp"
 #include "areg/base/RemoteMessage.hpp"
-#include "areg/base/NEMemory.hpp"
+#include "areg/base/MemoryDefs.hpp"
+#include "areg/base/SocketDefs.hpp"
+#include "areg/ipc/private/ConnectionDefs.hpp"
 
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
-int SocketConnectionBase::sendMessage(const RemoteMessage & in_message, const Socket & clientSocket) const
+namespace areg {
+
+SocketConnectionBase::SocketConnectionBase() noexcept
 {
-    int result{ -1 };
-    if ( in_message.isValid() && clientSocket.isValid() )
+}
+
+int32_t SocketConnectionBase::send_message(const RemoteMessage & message, SOCKETHANDLE hSocket) const
+{
+    int32_t result{ -1 };
+    const areg::MessageHeader* header = message.header();
+    if ((header != nullptr) && areg::is_valid_socket(hSocket))
     {
-        in_message.bufferCompletionFix();
-        const NEMemory::sRemoteMessageHeader & buffer = reinterpret_cast<const NEMemory::sRemoteMessageHeader &>( *in_message.getByteBuffer() );
-        result = clientSocket.sendData( reinterpret_cast<const unsigned char *>(&buffer), sizeof(NEMemory::sRemoteMessageHeader) );
-        if ((result == sizeof(NEMemory::sRemoteMessageHeader)) && (buffer.rbhBufHeader.biUsed != 0))
-        {
-            ASSERT(buffer.rbhBufHeader.biLength >= buffer.rbhBufHeader.biUsed);
-            // send the aligned length.
-            result += clientSocket.sendData(in_message.getBuffer(), static_cast<int>(buffer.rbhBufHeader.biLength));
-        }
+        message.buffer_completion_fix();
+        ASSERT(header->rbhBufHeader.biLength >= header->rbhBufHeader.biUsed);
+        const int32_t totalLen = static_cast<int32_t>(sizeof(areg::MessageHeader) + header->rbhBufHeader.biUsed);
+        result = areg::send_data(hSocket, reinterpret_cast<const uint8_t *>(header), totalLen);
     }
 
     return result;
 }
 
-int SocketConnectionBase::receiveMessage(RemoteMessage & out_message, const Socket & clientSocket) const
+int32_t SocketConnectionBase::send_messages_batch(const RemoteMessage* const* messages, uint32_t count, SOCKETHANDLE hSocket) const
 {
-    int result{ -1 };
-    if ( clientSocket.isValid() && clientSocket.isAlive() )
+    if ((messages == nullptr) || (count == 0u) || !areg::is_valid_socket(hSocket))
+        return 0;
+
+    // Build IoBuffer array on the stack; capped at the same bound as THREAD_BATCH_LIMIT.
+    const uint32_t batchCount{ (count < areg::THREAD_BATCH_LIMIT) ? count : areg::THREAD_BATCH_LIMIT };
+    areg::IoBuffer ioBuffer[areg::THREAD_BATCH_LIMIT];
+    uint32_t bufCount { 0u };
+    uint32_t totalSize{ 0u };
+
+    for (uint32_t i = 0u; i < batchCount; ++i)
     {
-        NEMemory::sRemoteMessageHeader msgHeader{};
+        const RemoteMessage* msg{ messages[i] };
+        const areg::MessageHeader* hdr = msg != nullptr ? msg->header() : nullptr;
+        if (hdr == nullptr)
+            continue;
 
-        out_message.invalidate();
-        result = clientSocket.receiveData(reinterpret_cast<unsigned char *>(&msgHeader), sizeof(NEMemory::sRemoteMessageHeader));
-        if ( result == sizeof(NEMemory::sRemoteMessageHeader) )
-        {
-            result = sizeof(NEMemory::sRemoteMessageHeader);
-            unsigned char * buffer = out_message.initMessage( msgHeader );
-            if ( (buffer != nullptr) && (msgHeader.rbhBufHeader.biUsed > 0))
-            {
-                ASSERT(msgHeader.rbhBufHeader.biLength >= msgHeader.rbhBufHeader.biUsed);
+        msg->buffer_completion_fix();
+        ASSERT(hdr->rbhBufHeader.biLength >= hdr->rbhBufHeader.biUsed);
+        uint32_t bufSize = static_cast<uint32_t>(sizeof(areg::MessageHeader)) + hdr->rbhBufHeader.biUsed;
+        ioBuffer[bufCount++] = { reinterpret_cast<const uint8_t*>(hdr), bufSize };
+        totalSize += bufSize;
+    }
 
-                // receive aligned length of data.
-                result += clientSocket.receiveData(buffer, static_cast<int>(msgHeader.rbhBufHeader.biLength));
-            }
-
-            out_message.moveToBegin();
-            if ( out_message.isChecksumValid() == false )
-            {
-                result = 0;
-                out_message.invalidate();
-            }
-        }
-        else
-        {
-            result = (result > 0) && (result != sizeof(NEMemory::sRemoteMessageHeader)) ? 0 : result;
-        }
+    int32_t result = send_messages_batch(ioBuffer, bufCount, hSocket, totalSize);
+    if (count > areg::THREAD_BATCH_LIMIT)
+    {
+        result += send_messages_batch(messages + batchCount, count - batchCount, hSocket);
     }
 
     return result;
 }
+
+int32_t SocketConnectionBase::receive_message(RemoteMessage & message, const Socket & socket) const
+{
+    areg::MessageHeader msgHeader{};
+    int32_t result = socket.receive(reinterpret_cast<uint8_t *>(&msgHeader), sizeof(areg::MessageHeader));
+    if (result != sizeof(areg::MessageHeader))
+        return 0;
+
+    if (msgHeader.rbhBufHeader.biUsed > areg::MAX_MESSAGE_DATA_SIZE)
+        return 0;
+
+    uint8_t * buffer = message.init_message( msgHeader);
+    if ((msgHeader.rbhBufHeader.biUsed != 0) && (buffer != nullptr))
+    {
+        ASSERT(msgHeader.rbhBufHeader.biLength >= msgHeader.rbhBufHeader.biUsed);
+
+        // receive aligned length of data.
+        const int32_t rest = socket.receive(buffer, static_cast<int32_t>(msgHeader.rbhBufHeader.biUsed));
+        message.set_size_used(msgHeader.rbhBufHeader.biUsed);
+        result = rest > 0 ? (result + rest) : 0;
+    }
+
+    message.move_to_begin();
+    return (message.is_checksum_valid() ? result : 0);
+}
+
+} // namespace areg

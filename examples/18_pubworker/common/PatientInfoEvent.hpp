@@ -9,10 +9,10 @@
  /************************************************************************
   * Include files
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
-#include "areg/component/TEEvent.hpp"
+#include "areg/base/areg_global.h"
+#include "areg/component/EventTemplate.hpp"
 #include "areg/base/SharedBuffer.hpp"
-#include "examples/18_pubworker/services/NEPatientInformation.hpp"
+#include "examples/18_pubworker/services/PatientInformation.hpp"
 
 /**
  * \brief   The patient information event data, event and the event consumer object declaration.
@@ -23,11 +23,11 @@ public:
     /**
      * \brief   Defines the data type contained in buffer.
      **/
-    typedef enum E_UpdateCommands
+    enum class UpdateCommands : uint8_t
     {
-          CMD_Undefined     = 0 //!< No information is in buffer or it is undefined.
+          CMD_Undefined = 0     //!< No information is in buffer or it is undefined.
         , CMD_PatientInfo       //!< The buffer contains patient information data.
-    } eUpdateCommands;
+    };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors, destructor, operators and the attributes.
@@ -37,17 +37,17 @@ public:
     /**
      * \brief   Default constructor.
      **/
-    inline PatientInfoEventData( void );
+    inline PatientInfoEventData();
 
     /**
      * \brief   Initializes the patient information 
      **/
-    inline PatientInfoEventData( const NEPatientInformation::PatientInfo & infoPatient );
+    inline PatientInfoEventData( const PatientInformation::PatientInfo & infoPatient );
 
     /**
      * \brief   Sets the shared buffer that already contains patient information data.
      **/
-    inline PatientInfoEventData( const SharedBuffer & data );
+    inline PatientInfoEventData( const areg::SharedBuffer & data );
 
     /**
      * \brief   Copies patient information data from given source.
@@ -72,30 +72,30 @@ public:
     /**
      * \brief   Gets buffer that contains patient information.
      **/
-    inline const SharedBuffer & getData( void ) const;
+    inline const areg::SharedBuffer & data() const;
 
     /**
-     * \brief   Declare PatientInfoEventData::eUpdateCommands as streamable.
+     * \brief   Declare PatientInfoEventData::UpdateCommands as streamable.
      **/
-    DECLARE_STREAMABLE( PatientInfoEventData::eUpdateCommands );
+    AREG_DECLARE_STREAMABLE( PatientInfoEventData::UpdateCommands );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    SharedBuffer    mData;  //!< The shared buffer that contains patient information.
+    areg::SharedBuffer    mData;  //!< The shared buffer that contains patient information.
 };
 
 //////////////////////////////////////////////////////////////////////////
-// Implement PatientInfoEventData::eUpdateCommands streamable.
+// Implement PatientInfoEventData::UpdateCommands streamable.
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_STREAMABLE( PatientInfoEventData::eUpdateCommands );
+AREG_IMPLEMENT_STREAMABLE( PatientInfoEventData::UpdateCommands );
 
 //////////////////////////////////////////////////////////////////////////
 // Define custom event and the event consumer.
 //////////////////////////////////////////////////////////////////////////
-DECLARE_EVENT( PatientInfoEventData, PatientInfoEvent, IEPatientInfoEventConsumer );
+AREG_DECLARE_EVENT( PatientInfoEventData, PatientInfoEvent, IEPatientInfoEventConsumer );
 
 //////////////////////////////////////////////////////////////////////////
 // inline methods
@@ -104,19 +104,19 @@ DECLARE_EVENT( PatientInfoEventData, PatientInfoEvent, IEPatientInfoEventConsume
 //////////////////////////////////////////////////////////////////////////
 // PatientInfoEventData class inline methods
 //////////////////////////////////////////////////////////////////////////
-inline PatientInfoEventData::PatientInfoEventData( void )
+inline PatientInfoEventData::PatientInfoEventData()
     : mData ( )
 {
 }
 
-inline PatientInfoEventData::PatientInfoEventData( const NEPatientInformation::PatientInfo & infoPatient )
+inline PatientInfoEventData::PatientInfoEventData( const PatientInformation::PatientInfo & infoPatient )
     : mData ( )
 {
-    mData << PatientInfoEventData::CMD_PatientInfo;
+    mData << PatientInfoEventData::UpdateCommands::CMD_PatientInfo;
     mData << infoPatient;
 }
 
-inline PatientInfoEventData::PatientInfoEventData( const SharedBuffer & data )
+inline PatientInfoEventData::PatientInfoEventData( const areg::SharedBuffer & data )
     : mData ( data )
 {
 }
@@ -127,11 +127,11 @@ inline PatientInfoEventData::PatientInfoEventData( const PatientInfoEventData & 
 }
 
 inline PatientInfoEventData::PatientInfoEventData( PatientInfoEventData && src ) noexcept
-    : mData ( static_cast<SharedBuffer &&>(src.mData) )
+    : mData ( static_cast<areg::SharedBuffer &&>(src.mData) )
 {
 }
 
-inline const SharedBuffer & PatientInfoEventData::getData( void ) const
+inline const areg::SharedBuffer & PatientInfoEventData::data() const
 {
     return mData;
 }

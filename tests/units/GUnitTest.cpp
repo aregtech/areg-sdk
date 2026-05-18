@@ -22,13 +22,26 @@
 #ifdef _MSC_VER
     #pragma comment(lib, "areg")
     #pragma comment(lib, "aregextend")
+
+#if defined(IMP_AREG_LIB)
+
+  // Enable or disable memory leak detect only for Debug version
+#ifdef  DEBUG
+#pragma comment(lib, "dbghelp")
+#endif  // DEBUG
+
+#pragma comment(lib, "advapi32")
+#pragma comment(lib, "psapi")
+#pragma comment(lib, "shell32")
+#pragma comment(lib, "ws2_32")
+#endif 
 #endif // _MSC_VER
 
 
 /**
  * \brief   A dummy test to run to make sure that Unit Tests are running.
  **/
-TEST(GUnitTestDummy, BasicAssertion)
+TEST(GUnitTestDummy, basic_assertion)
 {
     EXPECT_EQ(2*2, 4);
 }
@@ -37,11 +50,11 @@ TEST(GUnitTestDummy, BasicAssertion)
  * \brief   A dummy test using Areg library to make sure that the unit tests are
  *          properly linked with Areg framework library.
  **/
-TEST(GUnitTestDummy, BasicString )
+TEST(GUnitTestDummy, basic_string )
 {
     constexpr std::string_view _hello{ "hello areg-sdk" };
 
-    String hello( _hello );
-    hello = hello.makeUpper( );
-    EXPECT_EQ( hello.compare( _hello, false ), NEMath::eCompare::Equal );
+    areg::String hello( _hello );
+    hello = hello.make_upper( );
+    EXPECT_EQ( hello.compare( _hello, false ), areg::Ordering::Equal );
 }

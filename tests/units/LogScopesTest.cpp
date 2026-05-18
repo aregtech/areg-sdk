@@ -17,19 +17,63 @@
  * Include files.
  ************************************************************************/
 #include "units/GUnitTest.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/appbase/Application.hpp"
+#include "areg/persist/ConfigListener.hpp"
+#include "areg/persist/ConfigManager.hpp"
 
 #include <string_view>
 
-namespace
-{
+//!< Test-local macros for changing/querying scope priorities (moved from areg_log.h).
+#if AREG_LOGGING
+    #define SCOPE_PRIORITY_CHANGE(path, method, prio)  areg::set_scope_priority(#path "." #method, static_cast<unsigned int>(prio))
+    #define SCOPE_PRIORITY_GET(path, method)           areg::scope_priority(#path "." #method)
+
+namespace {
     //!< The default config file
-    constexpr   std::string_view    DEFAULT_CONFIG_FILE { NEApplication::DEFAULT_CONFIG_FILE };
+    constexpr   std::string_view    DEFAULT_CONFIG_FILE { areg::DEFAULT_CONFIG_FILE };
 
     //!< Config file for testing
     constexpr   std::string_view    TEST_CONFIG_FILE    { "./logs/test_log.init" };
-}
+
+    class TestConfigListener final : public areg::ConfigListener
+    {
+
+    protected:
+        void prepare_save_configuration(areg::ConfigManager& /*config*/) final
+        {
+        }
+
+        void post_save_configuration(areg::ConfigManager& /*config*/) final
+        {
+        }
+
+        void prepare_read_configuration(areg::ConfigManager& /*config*/) final
+        {
+        }
+
+        void on_setup_configuration(const areg::ListProperties& /*listReadonly*/, const areg::ListProperties& /*listWritable*/, areg::ConfigManager& /*config*/) final
+        {
+        }
+
+        void post_read_configuration(areg::ConfigManager& config) final
+        {
+            config.set_service_enable(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip, false, false);
+            config.set_service_enable(areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip, false, false);
+        }
+
+    };
+
+} // namespace
+
+#define LOG_TEST_SETUP(start)                                                   \
+TestConfigListener  logConfig;                                                  \
+areg::Application::setup(start, true, false, true, false, nullptr, &logConfig); \
+areg::Application::set_working_directory( nullptr );
+
+
+#define  LOG_TEST_RELEASE()     \
+areg::Application::release();
 
 /************************************************************************
  * Testing scopes
@@ -38,153 +82,162 @@ namespace
 /**
  * \brief   This is a basic test to start and stop the logging.
  **/
-DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_StartAndStopLogging_exp );
-TEST( LogScopeTest, StartAndStopLogging )
+DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, start_and_stop_logging);
+TEST( LogScopeTest, start_and_stop_logging )
 {
-    Application::setWorkingDirectory( nullptr );
-    ASSERT_TRUE( LOGGING_START(DEFAULT_CONFIG_FILE.data()) || !AREG_LOGS );
-    ASSERT_TRUE( IS_LOGGING_STARTED( ) || !AREG_LOGS );
+    LOG_TEST_SETUP(false);
+
+    ASSERT_TRUE( LOGGING_START(DEFAULT_CONFIG_FILE.data()) || !AREG_LOGGING );
+    ASSERT_TRUE( IS_LOGGING_STARTED( ) || !AREG_LOGGING );
     
     do
     {
-        LOG_SCOPE( areg_unit_tests_LogScopeTest_StartAndStopLogging_exp );
+        LOG_SCOPE( areg_unit_tests_LogScopeTest, start_and_stop_logging);
         LOG_DBG( "The logging started." );
     } while ( false );
 
     LOGGING_STOP( );
-    ASSERT_TRUE( !IS_LOGGING_STARTED( ) || !AREG_LOGS );
+    ASSERT_TRUE( !IS_LOGGING_STARTED( ) || !AREG_LOGGING );
+
+    LOG_TEST_RELEASE();
 }
 
 /**
  * \brief   This test load and saves the log configuration without a change.
  **/
-DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_LoadAndSaveConfiguration );
-TEST( LogScopeTest, LoadAndSaveConfiguration )
+DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, load_and_save_configuration);
+TEST( LogScopeTest, load_and_save_configuration )
 {
-    Application::setWorkingDirectory( nullptr );
-    ASSERT_TRUE( LOGGING_START(DEFAULT_CONFIG_FILE.data()) || !AREG_LOGS );
-    ASSERT_TRUE( IS_LOGGING_STARTED() || !AREG_LOGS );
+    LOG_TEST_SETUP(false);
+
+    ASSERT_TRUE( LOGGING_START(DEFAULT_CONFIG_FILE.data()) || !AREG_LOGGING );
+    ASSERT_TRUE( IS_LOGGING_STARTED() || !AREG_LOGGING );
 
     do
     {
-        LOG_SCOPE( areg_unit_tests_LogScopeTest_LoadAndSaveConfiguration );
-        ASSERT_TRUE( NELogging::saveLogging( TEST_CONFIG_FILE.data( ) ) );
+        LOG_SCOPE( areg_unit_tests_LogScopeTest, load_and_save_configuration);
+        ASSERT_TRUE( areg::save_logging( TEST_CONFIG_FILE.data( ) ) );
         LOG_DBG( "Successfully saved configuration in the file [ %s ]", TEST_CONFIG_FILE.data( ) );
 
     } while ( false );
 
     LOGGING_STOP( );
-    ASSERT_TRUE( (AREG_LOGS == 0) || (IS_LOGGING_STARTED( ) == false) );
+    ASSERT_TRUE( (AREG_LOGGING == 0) || (IS_LOGGING_STARTED( ) == false) );
+
+    LOG_TEST_RELEASE();
 }
 
 /**
  * \brief   This test saves the log configuration and loads again.
  **/
-DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_LoadSavedLogConfiguration_part1 );
-DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_LoadSavedLogConfiguration_part2 );
-TEST( LogScopeTest, LoadSavedLogConfiguration )
+DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, load_saved_log_configuration_part1);
+DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, load_saved_log_configuration_part2);
+TEST( LogScopeTest, load_saved_log_configuration_part1 )
 {
-    Application::setWorkingDirectory( nullptr );
-    String defaultConfig{ DEFAULT_CONFIG_FILE };
-    String testConfig{ TEST_CONFIG_FILE };
+    LOG_TEST_SETUP(false);
+
+    areg::String defaultConfig{ DEFAULT_CONFIG_FILE };
+    areg::String testConfig{ TEST_CONFIG_FILE };
     bool isLogEnabled{ false };
 
     do
     {
-        if ( LOGGING_START(defaultConfig) || !AREG_LOGS)
+        if ( LOGGING_START(defaultConfig) || !AREG_LOGGING)
         {
-            LOG_SCOPE( areg_unit_tests_LogScopeTest_LoadSavedLogConfiguration_part1 );
-            ASSERT_TRUE( IS_LOGGING_STARTED( ) || !AREG_LOGS );
+            LOG_SCOPE( areg_unit_tests_LogScopeTest, load_saved_log_configuration_part1);
+            ASSERT_TRUE( IS_LOGGING_STARTED( ) || !AREG_LOGGING );
             isLogEnabled = IS_LOGGING_ENABLED( );
-            LOG_DBG( ">>> Configured logging from default file, going to save in [ %s ]", testConfig.getString( ) );
+            LOG_DBG( ">>> Configured logging from default file, going to save in [ %s ]", testConfig.as_string( ) );
 
-            ASSERT_TRUE( NELogging::saveLogging( testConfig ) );
+            ASSERT_TRUE( areg::save_logging( testConfig ) );
         }
 
         LOGGING_STOP( );
-        ASSERT_TRUE( !IS_LOGGING_STARTED( ) || !AREG_LOGS );
+        ASSERT_TRUE( !IS_LOGGING_STARTED( ) || !AREG_LOGGING );
     } while ( false );
 
     do
     {
-        ConfigManager config;
-        config.readConfig(testConfig);
-        Application::getConfigManager().replaceModuleProperty(config.getModuleProperties());
+        areg::ConfigManager config;
+        config.read_config(testConfig);
+        areg::Application::config_manager().replace_module_property(config.module_properties());
 
-        if ( LOGGING_START( testConfig ) || !AREG_LOGS)
+        if ( LOGGING_START( testConfig ) || !AREG_LOGGING)
         {
-            LOG_SCOPE( areg_unit_tests_LogScopeTest_LoadSavedLogConfiguration_part2 );
-            ASSERT_TRUE( IS_LOGGING_STARTED() || !AREG_LOGS );
+            LOG_SCOPE( areg_unit_tests_LogScopeTest, load_saved_log_configuration_part2);
+            ASSERT_TRUE( IS_LOGGING_STARTED() || !AREG_LOGGING );
             ASSERT_TRUE(isLogEnabled == IS_LOGGING_ENABLED( ));
-            LOG_DBG( ">>> Configured logging from saved file [ %s ]", testConfig.getString( ) );
+            LOG_DBG( ">>> Configured logging from saved file [ %s ]", testConfig.as_string( ) );
         }
 
         LOGGING_STOP( );
-        ASSERT_TRUE( !IS_LOGGING_STARTED( ) || !AREG_LOGS );
+        ASSERT_TRUE( !IS_LOGGING_STARTED( ) || !AREG_LOGGING );
     } while ( false );
 
+    LOG_TEST_RELEASE();
 }
 
 /**
  * \brief   This test changes the scope priority and logs messages.
  **/
 // Define log scopes for testing
-DEF_LOG_SCOPE( areg_scopeLeaf1 );
-DEF_LOG_SCOPE( areg_scopeLeaf2 );
-DEF_LOG_SCOPE( areg_node1_scopeLeaf1 );
-DEF_LOG_SCOPE( areg_node2_scopeLeaf2 );
-DEF_LOG_SCOPE( areg_node3_scopeLeaf3 );
-DEF_LOG_SCOPE( areg_node4_scopeLeaf4 );
-DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig );
-DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_debug );
-DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_info );
-DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_warning );
-DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_error );
-DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_fatal );
-DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_noscope );
-DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_nolog );
+DEF_LOG_SCOPE(areg, scope_leaf1);
+DEF_LOG_SCOPE(areg, scope_leaf2);
+DEF_LOG_SCOPE(areg_node1, scope_leaf1);
+DEF_LOG_SCOPE(areg_node2, scope_leaf2);
+DEF_LOG_SCOPE(areg_node3, scope_leaf3);
+DEF_LOG_SCOPE(areg_node4, scope_leaf4);
+DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config);
+DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_debug);
+DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_info);
+DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_warning);
+DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_error);
+DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_fatal);
+DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_noscope);
+DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_nolog);
 
-TEST( LogScopeTest, ChangeScopePrioAndSaveConfig )
+TEST( LogScopeTest, change_scope_prio_and_save_config )
 {
-    Application::setWorkingDirectory( nullptr );
-    String defaultConfig{ DEFAULT_CONFIG_FILE };
-    String testConfig{ TEST_CONFIG_FILE };
+    LOG_TEST_SETUP(false);
+
+    areg::String defaultConfig{ DEFAULT_CONFIG_FILE };
+    areg::String testConfig{ TEST_CONFIG_FILE };
 
     LOGGING_START( defaultConfig );
     do
     {
-        LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig );
-        ASSERT_TRUE( IS_LOGGING_STARTED() || !AREG_LOGS );
-        LOG_DBG( ">>> Configured logging from default file, going to save in [ %s ]", testConfig.getString( ) );
+        LOG_SCOPE( areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config);
+        ASSERT_TRUE( IS_LOGGING_STARTED() || !AREG_LOGGING );
+        LOG_DBG( ">>> Configured logging from default file, going to save in [ %s ]", testConfig.as_string( ) );
         LOG_DBG( "Change logging priorities" );
 
-        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_debug, PRIO_LOG_ALL ));
-        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_info, PRIO_INFO ) );
-        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_warning, PRIO_WARNING ));
-        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_error, PRIO_ERROR ) );
-        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_fatal, PRIO_FATAL ) );
-        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_noscope, PRIO_NOSCOPES( PRIO_WARNING ) ) );
-        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_nolog, PRIO_NOLOGS ) );
+        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_debug   , PRIO_LOG_ALL ));
+        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_info    , PRIO_INFO ) );
+        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_warning , PRIO_WARNING ));
+        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_error   , PRIO_ERROR ) );
+        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_fatal   , PRIO_FATAL ) );
+        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_noscope , PRIO_NOSCOPES( PRIO_WARNING ) ) );
+        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_nolog   , PRIO_NOLOGS ) );
 
     } while ( false );
 
     do
     {
-        LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_debug );
+        LOG_SCOPE( areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_debug );
         LOG_DBG( "This scope logs everything" );
 
     } while ( false );
 
     do
     {
-        LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_info );
+        LOG_SCOPE( areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_info );
         LOG_DBG( "This debug message is invisible!!!" );
         LOG_INFO( "This info and higher priority messages are visible" );
     } while ( false );
 
     do
     {
-        LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_warning );
+        LOG_SCOPE( areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_warning );
         LOG_DBG( "This debug message is invisible!!!" );
         LOG_INFO( "This info message is invisible!!!" );
         LOG_WARN( "This warning and higher priority messages are visible" );
@@ -192,7 +245,7 @@ TEST( LogScopeTest, ChangeScopePrioAndSaveConfig )
 
     do
     {
-        LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_error );
+        LOG_SCOPE( areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_error );
         LOG_DBG( "This debug message is invisible!!!" );
         LOG_INFO( "This info message is invisible!!!" );
         LOG_WARN( "This warning message is invisible!!!" );
@@ -201,7 +254,7 @@ TEST( LogScopeTest, ChangeScopePrioAndSaveConfig )
 
     do
     {
-        LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_fatal );
+        LOG_SCOPE( areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_fatal );
         LOG_DBG( "This debug message is invisible!!!" );
         LOG_INFO( "This info message is invisible!!!" );
         LOG_WARN( "This warning message is invisible!!!" );
@@ -212,19 +265,18 @@ TEST( LogScopeTest, ChangeScopePrioAndSaveConfig )
 
     do
     {
-        LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_noscope );
+        LOG_SCOPE( areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_noscope );
         LOG_DBG( "This log has no scope output" );
         LOG_INFO( "Check the log output by scope ID" );
         LOG_WARN( "Enabling scope output and you'll see only exit" );
-        SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_noscope, PRIO_LOG_ALL );
+        SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_noscope, PRIO_LOG_ALL );
     } while ( false );
 
     // bring back the prio settings:
-    SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_noscope, PRIO_NOSCOPES( PRIO_WARNING ) );
-
+    SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_noscope, PRIO_NOSCOPES( PRIO_WARNING ) );
     do
     {
-        LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_nolog );
+        LOG_SCOPE( areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_nolog );
         LOG_DBG( "This debug message is invisible!!!" );
         LOG_INFO( "This info message is invisible!!!" );
         LOG_WARN( "This warning message is invisible!!!" );
@@ -234,14 +286,16 @@ TEST( LogScopeTest, ChangeScopePrioAndSaveConfig )
 
     do
     {
-        LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig );
-        LOG_DBG( "Saving current state in the [ %s ] file", testConfig.getString( ) );
-        ASSERT_TRUE( NELogging::saveLogging( testConfig ) );
-        LOG_DBG( "Successfully saved [ %s ] file", testConfig.getString( ) );
+        LOG_SCOPE( areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config );
+        LOG_DBG( "Saving current state in the [ %s ] file", testConfig.as_string( ) );
+        ASSERT_TRUE( areg::save_logging( testConfig ) );
+        LOG_DBG( "Successfully saved [ %s ] file", testConfig.as_string( ) );
     } while ( false );
 
     LOGGING_STOP( );
-    ASSERT_TRUE( !IS_LOGGING_STARTED( ) || !AREG_LOGS );
+    ASSERT_TRUE( !IS_LOGGING_STARTED( ) || !AREG_LOGGING );
+
+    LOG_TEST_RELEASE();
 }
 
 /**
@@ -251,20 +305,21 @@ TEST( LogScopeTest, ChangeScopePrioAndSaveConfig )
  *              3. load scopes from saved config;
  *              4. checks the priority that are set correct.
  **/
-DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf1 );
-DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf2 );
-DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_fatalNode1_leaf );
-DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_fatalNode2_leaf );
-DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode1_leaf );
-DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode2_leaf );
-DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode1_noScope );
-DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode2_noScope );
-DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_information );
-TEST( LogScopeTest, ScopePriorityGroupping )
+DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, scope_priority_groupping_err_leaf1);
+DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, scope_priority_groupping_err_leaf2);
+DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, scope_priority_groupping_fatal_node1_leaf);
+DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, scope_priority_groupping_fatal_node2_leaf);
+DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, scope_priority_groupping_warn_node1_leaf);
+DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, scope_priority_groupping_warn_node2_leaf);
+DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, scope_priority_groupping_infoNode1_no_scope);
+DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, scope_priority_groupping_infoNode2_no_scope);
+DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, scope_priority_groupping_information);
+TEST( LogScopeTest, scope_priority_groupping )
 {
-    Application::setWorkingDirectory( nullptr );
-    String defaultConfig{ DEFAULT_CONFIG_FILE };
-    String testConfig{ TEST_CONFIG_FILE };
+    LOG_TEST_SETUP(false);
+
+    areg::String defaultConfig{ DEFAULT_CONFIG_FILE };
+    areg::String testConfig{ TEST_CONFIG_FILE };
 
     uint32_t information{ 0 };
     uint32_t errLeaf1{ 0 };
@@ -280,22 +335,22 @@ TEST( LogScopeTest, ScopePriorityGroupping )
 
     do
     {
-        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_information, PRIO_NOSCOPES( PRIO_INFO ) ) );
-        LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_information );
+        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, scope_priority_groupping_information, PRIO_NOSCOPES( PRIO_INFO ) ) );
+        LOG_SCOPE( areg_unit_tests_LogScopeTest, scope_priority_groupping_information );
         LOG_DBG ( ">>>  Testing debug priority                         >>>>>>>>>>>>>>>" );
         LOG_INFO( ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
         LOG_INFO( ">>>>>>>>    Change log priorities   >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
         LOG_INFO( ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
 
-        ASSERT_TRUE( IS_LOGGING_STARTED( ) || !AREG_LOGS );
-        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf1, PRIO_ERROR ) );
-        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf2, PRIO_ERROR ) );
-        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_fatalNode1_leaf, PRIO_FATAL ) );
-        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_fatalNode2_leaf, PRIO_FATAL ) );
-        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode1_leaf, PRIO_WARNING ) );
-        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode2_leaf, PRIO_WARNING ) );
-        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode1_noScope, PRIO_NOSCOPES( PRIO_INFO ) ) );
-        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode2_noScope, PRIO_NOSCOPES( PRIO_INFO ) ) );
+        ASSERT_TRUE( IS_LOGGING_STARTED( ) || !AREG_LOGGING );
+        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, scope_priority_groupping_err_leaf1, PRIO_ERROR ) );
+        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, scope_priority_groupping_err_leaf2, PRIO_ERROR ) );
+        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, scope_priority_groupping_fatal_node1_leaf, PRIO_FATAL ) );
+        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, scope_priority_groupping_fatal_node2_leaf, PRIO_FATAL ) );
+        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, scope_priority_groupping_warn_node1_leaf, PRIO_WARNING ) );
+        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, scope_priority_groupping_warn_node2_leaf, PRIO_WARNING ) );
+        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, scope_priority_groupping_infoNode1_no_scope, PRIO_NOSCOPES( PRIO_INFO ) ) );
+        ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, scope_priority_groupping_infoNode2_no_scope, PRIO_NOSCOPES( PRIO_INFO ) ) );
 
         LOG_INFO( ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
         LOG_INFO( ">>>>>>>>    Make logging                  >>>>>>>>>>>>>>>>>>>>>>>>>" );
@@ -305,7 +360,7 @@ TEST( LogScopeTest, ScopePriorityGroupping )
 
     do
     {
-        LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf1 );
+        LOG_SCOPE( areg_unit_tests_LogScopeTest, scope_priority_groupping_err_leaf1 );
         LOG_DBG( "This log should be invisible" );
         LOG_INFO( "This log should be invisible" );
         LOG_WARN( "This log should be invisible" );
@@ -315,7 +370,7 @@ TEST( LogScopeTest, ScopePriorityGroupping )
 
     do
     {
-        LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_fatalNode1_leaf );
+        LOG_SCOPE( areg_unit_tests_LogScopeTest, scope_priority_groupping_fatal_node1_leaf );
         LOG_DBG( "This log should be invisible" );
         LOG_INFO( "This log should be invisible" );
         LOG_WARN( "This log should be invisible" );
@@ -325,7 +380,7 @@ TEST( LogScopeTest, ScopePriorityGroupping )
 
     do
     {
-        LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode1_leaf );
+        LOG_SCOPE( areg_unit_tests_LogScopeTest, scope_priority_groupping_warn_node1_leaf );
         LOG_DBG( "This log should be invisible" );
         LOG_INFO( "This log should be invisible" );
         LOG_WARN( "This log should be visible!" );
@@ -335,7 +390,7 @@ TEST( LogScopeTest, ScopePriorityGroupping )
 
     do
     {
-        LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode1_noScope );
+        LOG_SCOPE( areg_unit_tests_LogScopeTest, scope_priority_groupping_infoNode1_no_scope );
         LOG_DBG( "This log should be invisible" );
         LOG_INFO( "This log should be visible without scopes!" );
         LOG_WARN( "This log should be visible without scopes!" );
@@ -346,26 +401,26 @@ TEST( LogScopeTest, ScopePriorityGroupping )
 
     do
     {
-        LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_information );
+        LOG_SCOPE( areg_unit_tests_LogScopeTest, scope_priority_groupping_information );
         LOG_INFO( ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
         LOG_INFO( ">>>>>>>>    Store scope priority  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
         LOG_INFO( ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
 
-        information         = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_information );
-        errLeaf1            = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf1 );
-        errLeaf2            = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf2 );
-        fatalNode1_leaf     = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_fatalNode1_leaf );
-        fatalNode2_leaf     = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_fatalNode2_leaf );
-        warnNode1_leaf      = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode1_leaf );
-        warnNode2_leaf      = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode2_leaf );
-        infoNode1_noScope   = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode1_noScope );
-        infoNode2_noScope   = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode2_noScope );
+        information         = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, scope_priority_groupping_information );
+        errLeaf1            = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, scope_priority_groupping_err_leaf1 );
+        errLeaf2            = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, scope_priority_groupping_err_leaf2 );
+        fatalNode1_leaf     = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, scope_priority_groupping_fatal_node1_leaf );
+        fatalNode2_leaf     = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, scope_priority_groupping_fatal_node2_leaf );
+        warnNode1_leaf      = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, scope_priority_groupping_warn_node1_leaf );
+        warnNode2_leaf      = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, scope_priority_groupping_warn_node2_leaf );
+        infoNode1_noScope   = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, scope_priority_groupping_infoNode1_no_scope );
+        infoNode2_noScope   = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, scope_priority_groupping_infoNode2_no_scope );
 
         LOG_INFO( ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
         LOG_INFO( ">>>>>>>>    Saving logging configuration  >>>>>>>>>>>>>>>>>>>>>>>>>" );
         LOG_INFO( ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
 
-        ASSERT_TRUE( NELogging::saveLogging( testConfig ) );
+        ASSERT_TRUE( areg::save_logging( testConfig ) );
 
         LOG_INFO( ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
         LOG_INFO( ">>>>>>>>    Stopping logging    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
@@ -380,15 +435,15 @@ TEST( LogScopeTest, ScopePriorityGroupping )
 
     } while ( false );
 
-    ConfigManager config;
-    config.readConfig(testConfig);
-    Application::getConfigManager().replaceModuleProperty(config.getModuleProperties());
+    areg::ConfigManager config;
+    config.read_config(testConfig);
+    areg::Application::config_manager().replace_module_property(config.module_properties());
 
     LOGGING_START( testConfig );
 
     do
     {
-        LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_information );
+        LOG_SCOPE( areg_unit_tests_LogScopeTest, scope_priority_groupping_information );
         LOG_DBG( ">>>  Testing debug priority                         >>>>>>>>>>>>>>>" );
         LOG_INFO( ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
         LOG_INFO( ">>>>>>>>    Restarted logging  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
@@ -398,7 +453,7 @@ TEST( LogScopeTest, ScopePriorityGroupping )
 
     do
     {
-        LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf1 );
+        LOG_SCOPE( areg_unit_tests_LogScopeTest, scope_priority_groupping_err_leaf1 );
         LOG_DBG( "This log should be invisible" );
         LOG_INFO( "This log should be invisible" );
         LOG_WARN( "This log should be invisible" );
@@ -408,7 +463,7 @@ TEST( LogScopeTest, ScopePriorityGroupping )
 
     do
     {
-        LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_fatalNode1_leaf );
+        LOG_SCOPE( areg_unit_tests_LogScopeTest, scope_priority_groupping_fatal_node1_leaf );
         LOG_DBG( "This log should be invisible" );
         LOG_INFO( "This log should be invisible" );
         LOG_WARN( "This log should be invisible" );
@@ -418,7 +473,7 @@ TEST( LogScopeTest, ScopePriorityGroupping )
 
     do
     {
-        LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode1_leaf );
+        LOG_SCOPE( areg_unit_tests_LogScopeTest, scope_priority_groupping_warn_node1_leaf );
         LOG_DBG( "This log should be invisible" );
         LOG_INFO( "This log should be invisible" );
         LOG_WARN( "This log should be visible!" );
@@ -428,7 +483,7 @@ TEST( LogScopeTest, ScopePriorityGroupping )
 
     do
     {
-        LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode1_noScope );
+        LOG_SCOPE( areg_unit_tests_LogScopeTest, scope_priority_groupping_infoNode1_no_scope );
         LOG_DBG( "This log should be invisible" );
         LOG_INFO( "This log should be visible without scopes!" );
         LOG_WARN( "This log should be visible without scopes!" );
@@ -436,16 +491,20 @@ TEST( LogScopeTest, ScopePriorityGroupping )
         LOG_FATAL( "This log should be visible without scopes!" );
     } while ( false );
 
-    ASSERT_TRUE( (information      == SCOPE_PRIORITY_GET(areg_unit_tests_LogScopeTest_ScopePriorityGroupping_information)) || !AREG_LOGS);
-    ASSERT_TRUE( (errLeaf1         == SCOPE_PRIORITY_GET(areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf1)) || !AREG_LOGS);
-    ASSERT_TRUE( (errLeaf2         == SCOPE_PRIORITY_GET(areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf2)) || !AREG_LOGS);
-    ASSERT_TRUE( (fatalNode1_leaf  == SCOPE_PRIORITY_GET(areg_unit_tests_LogScopeTest_ScopePriorityGroupping_fatalNode1_leaf)) || !AREG_LOGS);
-    ASSERT_TRUE( (fatalNode2_leaf  == SCOPE_PRIORITY_GET(areg_unit_tests_LogScopeTest_ScopePriorityGroupping_fatalNode2_leaf)) || !AREG_LOGS);
-    ASSERT_TRUE( (warnNode1_leaf   == SCOPE_PRIORITY_GET(areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode1_leaf)) || !AREG_LOGS);
-    ASSERT_TRUE( (warnNode2_leaf   == SCOPE_PRIORITY_GET(areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode2_leaf)) || !AREG_LOGS);
-    ASSERT_TRUE( (infoNode1_noScope== SCOPE_PRIORITY_GET(areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode1_noScope)) || !AREG_LOGS);
-    ASSERT_TRUE( (infoNode2_noScope== SCOPE_PRIORITY_GET(areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode2_noScope)) || !AREG_LOGS);
+    ASSERT_TRUE( (information      == SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, scope_priority_groupping_information )) || !AREG_LOGGING);
+    ASSERT_TRUE( (errLeaf1         == SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, scope_priority_groupping_err_leaf1 )) || !AREG_LOGGING);
+    ASSERT_TRUE( (errLeaf2         == SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, scope_priority_groupping_err_leaf2 )) || !AREG_LOGGING);
+    ASSERT_TRUE( (fatalNode1_leaf  == SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, scope_priority_groupping_fatal_node1_leaf )) || !AREG_LOGGING);
+    ASSERT_TRUE( (fatalNode2_leaf  == SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, scope_priority_groupping_fatal_node2_leaf )) || !AREG_LOGGING);
+    ASSERT_TRUE( (warnNode1_leaf   == SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, scope_priority_groupping_warn_node1_leaf )) || !AREG_LOGGING);
+    ASSERT_TRUE( (warnNode2_leaf   == SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, scope_priority_groupping_warn_node2_leaf )) || !AREG_LOGGING);
+    ASSERT_TRUE( (infoNode1_noScope== SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, scope_priority_groupping_infoNode1_no_scope )) || !AREG_LOGGING);
+    ASSERT_TRUE( (infoNode2_noScope== SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, scope_priority_groupping_infoNode2_no_scope )) || !AREG_LOGGING);
 
     LOGGING_STOP( );
     ASSERT_FALSE( IS_LOGGING_STARTED() );
+
+    LOG_TEST_RELEASE();
 }
+
+#endif

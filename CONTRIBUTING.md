@@ -85,11 +85,18 @@ When reporting an issue, please include:
 Pull requests should follow these rules:
 
 * one clear improvement per pull request
-* keep the existing code style
 * include tests when possible
 * include a `Signed-off-by` line in every commit
 
-### c. Documentation
+### c. Coding Style
+
+All contributions must follow the Areg SDK coding style.
+
+* **Coding style guide:** `./docs/AREG_CODING_STYLE.md`
+
+If your change touches existing code, keep changes consistent with the surrounding file style unless the change is part of a deliberate refactor that updates the whole file/module.
+
+### d. Documentation
 
 Improvements to guides, examples, comments, and general documentation are welcome.
 Small corrections only require a Signed-off-by line.

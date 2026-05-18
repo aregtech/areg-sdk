@@ -18,121 +18,109 @@
     <ClCompile Include="areg\appbase\private\configure.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\GEGlobal.cpp">
+    <ClCompile Include="areg\base\private\areg_global.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\IEByteBuffer.cpp">
+    <ClCompile Include="areg\base\private\Cursor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\IECursorPosition.cpp">
+    <ClCompile Include="areg\base\private\IOStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\IEGenericObject.cpp">
+    <ClCompile Include="areg\base\private\ThreadConsumer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\IEIOStream.cpp">
+    <ClCompile Include="areg\base\private\CommonDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\IEThreadConsumer.cpp">
+    <ClCompile Include="areg\base\private\DebugDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\NECommon.cpp">
+    <ClCompile Include="areg\base\private\MathDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\NEDebug.cpp">
+    <ClCompile Include="areg\base\private\MemoryDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\NEMath.cpp">
+    <ClCompile Include="areg\base\private\StringDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\NEMemory.cpp">
+    <ClCompile Include="areg\base\private\UtilityDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\NEString.cpp">
+    <ClCompile Include="areg\component\private\EventConsumer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\NEUtilities.cpp">
+    <ClCompile Include="areg\component\private\ProxyListener.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\IEEventConsumer.cpp">
+    <ClCompile Include="areg\component\private\QueueListener.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\IEEventDispatcher.cpp">
+    <ClCompile Include="areg\component\private\RemoteEventConsumer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\IEEventRouter.cpp">
+    <ClCompile Include="areg\component\private\WorkerThreadConsumer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\IEProxyListener.cpp">
+    <ClCompile Include="areg\component\private\Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\IEQueueListener.cpp">
+    <ClCompile Include="areg\component\private\ServiceDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\IERemoteEventConsumer.cpp">
+    <ClCompile Include="areg\component\private\EventTemplate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\IEWorkerThreadConsumer.cpp">
+    <ClCompile Include="areg\ipc\private\ConnectionProvider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\NERegistry.cpp">
+    <ClCompile Include="areg\ipc\private\RegistrationConsumer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\NEService.cpp">
+    <ClCompile Include="areg\ipc\private\RemoteMessageHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\TEEvent.cpp">
+    <ClCompile Include="areg\ipc\private\RemoteServiceDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\ipc\private\IEServiceConnectionProvider.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\IEServiceRegisterConsumer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\IERemoteMessageHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\NERemoteService.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\persist\private\NEPersistence.cpp">
+    <ClCompile Include="areg\persist\private\PersistenceDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\logging\private\Layouts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\logging\private\NELogOptions.cpp">
+    <ClCompile Include="areg\logging\private\LogOptions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\logging\private\NELogging.cpp">
+    <ClCompile Include="areg\logging\private\LoggingDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\IESyncObject.cpp">
+    <ClCompile Include="areg\base\private\SyncObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\NESocket.cpp">
+    <ClCompile Include="areg\base\private\SocketDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\IEWaitableBaseIX.cpp">
+    <ClCompile Include="areg\base\private\posix\WaitablePosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\NEDebugPosix.cpp">
+    <ClCompile Include="areg\base\private\posix\DebugDefsPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\NESocketPosix.cpp">
+    <ClCompile Include="areg\base\private\posix\SocketDefsPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\NEUtilitiesPosix.cpp">
+    <ClCompile Include="areg\base\private\posix\UtilityDefsPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\win32\NESocketWin32.cpp">
+    <ClCompile Include="areg\base\private\win32\SocketDefsWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\win32\NEUtilitiesWin32.cpp">
+    <ClCompile Include="areg\base\private\win32\UtilityDefsWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\IESyncObjectBaseIX.cpp">
+    <ClCompile Include="areg\base\private\posix\SyncObjectPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\appbase\private\Application.cpp">
@@ -144,34 +132,34 @@
     <ClCompile Include="areg\appbase\private\win32\ApplicationWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\CriticalSectionIX.cpp">
+    <ClCompile Include="areg\base\private\posix\CriticalSectionPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\posix\FilePosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\WaitableTimerIX.cpp">
+    <ClCompile Include="areg\base\private\posix\WaitableTimerPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\MutexIX.cpp">
+    <ClCompile Include="areg\base\private\posix\MutexPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\posix\ProcessPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\SyncLockAndWaitIX.cpp">
+    <ClCompile Include="areg\base\private\posix\SyncLockAndWaitPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\posix\ThreadPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\WaitableEventIX.cpp">
+    <ClCompile Include="areg\base\private\posix\WaitableEventPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\WaitableMutexIX.cpp">
+    <ClCompile Include="areg\base\private\posix\WaitableMutexPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\WaitableSemaphoreIX.cpp">
+    <ClCompile Include="areg\base\private\posix\WaitableSemaphorePosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\win32\FileWin32.cpp">
@@ -181,12 +169,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\win32\ThreadWin32.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\base\private\BufferPosition.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\base\private\BufferStreamBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\DateTime.cpp">
@@ -202,9 +184,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\Identifier.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\base\private\Object.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\Thread.cpp">
@@ -258,16 +237,16 @@
     <ClCompile Include="areg\base\private\RemoteMessage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\SyncObjects.cpp">
+    <ClCompile Include="areg\base\private\SyncPrimitives.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\Containers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\win32\SyncObjectsWin32.cpp">
+    <ClCompile Include="areg\base\private\win32\SyncPrimitivesWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\SyncObjectsPosix.cpp">
+    <ClCompile Include="areg\base\private\posix\SyncPrimitivesPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\posix\TimerManagerPosix.cpp">
@@ -462,7 +441,7 @@
     <ClCompile Include="areg\logging\private\LogScope.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\IETimerConsumer.cpp">
+    <ClCompile Include="areg\component\private\TimerConsumer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\ipc\private\ServerConnectionBase.cpp">
@@ -471,16 +450,16 @@
     <ClCompile Include="areg\base\private\win32\SpinLockWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\SpinLockIX.cpp">
+    <ClCompile Include="areg\base\private\posix\SpinLockPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\appbase\private\NEApplication.cpp">
+    <ClCompile Include="areg\appbase\private\AppDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\WideString.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\win32\NEDebugWin32.cpp">
+    <ClCompile Include="areg\base\private\win32\DebugDefsWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\logging\private\LogConfiguration.cpp">
@@ -534,13 +513,13 @@
     <ClCompile Include="areg\logging\private\ScopeNodes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\ipc\private\IEServiceRegisterProvider.cpp">
+    <ClCompile Include="areg\ipc\private\RegistrationProvider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\ipc\private\IEServiceConnectionConsumer.cpp">
+    <ClCompile Include="areg\ipc\private\ConnectionConsumer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\ipc\private\ServiceEventConsumerBase.cpp">
+    <ClCompile Include="areg\ipc\private\ServiceEventConsumer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\ipc\private\ServiceEvent.cpp">
@@ -552,222 +531,267 @@
     <ClCompile Include="areg\persist\private\ConfigManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\ipc\private\NEConnection.cpp">
+    <ClCompile Include="areg\ipc\private\ConnectionDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\persist\private\IEConfigurationListener.cpp">
+    <ClCompile Include="areg\persist\private\ConfigListener.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\persist\private\IEDatabaseEngine.cpp">
+    <ClCompile Include="areg\persist\private\DatabaseEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\logging\private\DatabaseLogger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\logging\private\IELogDatabaseEngine.cpp">
+    <ClCompile Include="areg\logging\private\LogDatabaseEngine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\EventRouter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\EventStack.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\base\private\win32\SocketMultiplexerWin32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\base\private\posix\SocketMultiplexerPosix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\base\private\SocketMultiplexer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\macos\TimerManagerMacOS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\macos\TimerPosixMacOS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\macos\WatchdogManagerMacOS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\linux\TimerManagerBaseLinux.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\linux\TimerManagerLinux.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\linux\TimerPosixLinux.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\linux\WatchdogManagerLinux.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\base\private\linux\ProcessLinux.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\base\private\linux\SocketMultiplexerLinux.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\base\private\macos\ProcessMacOS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\base\private\macos\SocketMultiplexerMacOS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\base\private\macos\SpinLockMacOS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\base\private\macos\WaitableTimerMacOS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\MpscEventQueue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\ipc\private\DataRateStats.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="areg\system\windows\GEWindows.h">
+    <ClInclude Include="areg\system\windows\areg_windows.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\system\GEPlatform.h">
+    <ClInclude Include="areg\system\areg_platform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\appbase\private\configure.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\appbase\NEApplication.hpp">
+    <ClInclude Include="areg\appbase\AppDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\NEDebug.hpp">
+    <ClInclude Include="areg\base\private\DebugDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\Containers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\SyncObjects.hpp">
+    <ClInclude Include="areg\base\SyncPrimitives.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\GEGlobal.h">
+    <ClInclude Include="areg\base\areg_global.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\GEMacros.h">
+    <ClInclude Include="areg\base\areg_macros.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\GESwitches.h">
+    <ClInclude Include="areg\base\areg_switches.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\GETypes.h">
+    <ClInclude Include="areg\base\areg_types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\IEByteBuffer.hpp">
+    <ClInclude Include="areg\base\Cursor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\IECursorPosition.hpp">
+    <ClInclude Include="areg\base\IOStream.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\IEGenericObject.hpp">
+    <ClInclude Include="areg\base\ThreadConsumer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\IEIOStream.hpp">
+    <ClInclude Include="areg\base\CommonDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\IEThreadConsumer.hpp">
+    <ClInclude Include="areg\base\MathDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\NECommon.hpp">
+    <ClInclude Include="areg\base\MemoryDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\NEMath.hpp">
+    <ClInclude Include="areg\base\SocketDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\NEMemory.hpp">
+    <ClInclude Include="areg\base\StringDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\NESocket.hpp">
+    <ClInclude Include="areg\base\UtilityDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\NEString.hpp">
+    <ClInclude Include="areg\base\ArrayList.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\NEUtilities.hpp">
+    <ClInclude Include="areg\base\FixedArray.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TEArrayList.hpp">
+    <ClInclude Include="areg\base\HashMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TEFixedArray.hpp">
+    <ClInclude Include="areg\base\LinkedList.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TEHashMap.hpp">
+    <ClInclude Include="areg\base\KeyValuePair.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TELinkedList.hpp">
+    <ClInclude Include="areg\base\ResourceMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TEProperty.hpp">
+    <ClInclude Include="areg\base\RingStack.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TEResourceMap.hpp">
+    <ClInclude Include="areg\base\RuntimeResourceMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TERingStack.hpp">
+    <ClInclude Include="areg\base\SortedLinkedList.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TERuntimeResourceMap.hpp">
+    <ClInclude Include="areg\base\Stack.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TESortedLinkedList.hpp">
+    <ClInclude Include="areg\base\StringBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TEStack.hpp">
+    <ClInclude Include="areg\component\private\QueueListener.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TEString.hpp">
+    <ClInclude Include="areg\component\EventConsumer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\component\private\IEEventDispatcher.hpp">
+    <ClInclude Include="areg\component\ProxyListener.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\component\private\IEQueueListener.hpp">
+    <ClInclude Include="areg\component\RemoteEventConsumer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\component\IEEventConsumer.hpp">
+    <ClInclude Include="areg\component\WorkerThreadConsumer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\component\IEEventRouter.hpp">
+    <ClInclude Include="areg\component\Model.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\component\IEProxyListener.hpp">
+    <ClInclude Include="areg\component\ServiceDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\component\IERemoteEventConsumer.hpp">
+    <ClInclude Include="areg\component\EventTemplate.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\component\IEWorkerThreadConsumer.hpp">
+    <ClInclude Include="areg\ipc\ConnectionProvider.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\component\NERegistry.hpp">
+    <ClInclude Include="areg\ipc\RegistrationConsumer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\component\NEService.hpp">
+    <ClInclude Include="areg\ipc\RemoteServiceDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\component\TEEvent.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\ipc\IEServiceConnectionProvider.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\ipc\IEServiceRegisterConsumer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\ipc\NERemoteService.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\persist\NEPersistence.hpp">
+    <ClInclude Include="areg\persist\PersistenceDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\logging\private\Layouts.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\logging\private\NELogOptions.hpp">
+    <ClInclude Include="areg\logging\private\LogOptions.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\logging\GELog.h">
+    <ClInclude Include="areg\logging\areg_log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\logging\NELogging.hpp">
+    <ClInclude Include="areg\logging\LoggingDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\system\posix\GEPosix.h">
+    <ClInclude Include="areg\system\posix\areg_posix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TEResourceListMap.hpp">
+    <ClInclude Include="areg\base\ResourceListMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\IESyncObject.hpp">
+    <ClInclude Include="areg\base\SyncObject.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TETemplateBase.hpp">
+    <ClInclude Include="areg\base\TemplateBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\posix\IEWaitableBaseIX.hpp">
+    <ClInclude Include="areg\base\private\posix\WaitablePosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\posix\NESyncTypesIX.hpp">
+    <ClInclude Include="areg\base\private\posix\SyncDefsPosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\posix\IESyncObjectBaseIX.hpp">
+    <ClInclude Include="areg\base\private\posix\SyncObjectPosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\appbase\Application.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\posix\CriticalSectionIX.hpp">
+    <ClInclude Include="areg\base\private\posix\CriticalSectionPosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\posix\WaitableTimerIX.hpp">
+    <ClInclude Include="areg\base\private\posix\WaitableTimerPosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\posix\MutexIX.hpp">
+    <ClInclude Include="areg\base\private\posix\MutexPosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\posix\SyncLockAndWaitIX.hpp">
+    <ClInclude Include="areg\base\private\posix\SyncLockAndWaitPosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\posix\WaitableEventIX.hpp">
+    <ClInclude Include="areg\base\private\posix\WaitableEventPosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\posix\WaitableMutexIX.hpp">
+    <ClInclude Include="areg\base\private\posix\WaitableMutexPosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\posix\WaitableSemaphoreIX.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\base\private\BufferPosition.hpp">
+    <ClInclude Include="areg\base\private\posix\WaitableSemaphorePosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\private\WriteConverter.hpp">
@@ -777,9 +801,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\private\ReadConverter.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\base\BufferStreamBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\DateTime.hpp">
@@ -795,9 +816,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\Identifier.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\base\Object.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\String.hpp">
@@ -860,7 +878,7 @@
     <ClInclude Include="areg\component\private\EventQueue.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\component\private\ExitEvent.hpp">
+    <ClInclude Include="areg\component\ExitEvent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\private\ServiceManager.hpp">
@@ -1019,10 +1037,10 @@
     <ClInclude Include="areg\logging\LogScope.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\component\IETimerConsumer.hpp">
+    <ClInclude Include="areg\component\TimerConsumer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\ipc\IERemoteMessageHandler.hpp">
+    <ClInclude Include="areg\ipc\RemoteMessageHandler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\ipc\SendMessageEvent.hpp">
@@ -1040,7 +1058,7 @@
     <ClInclude Include="areg\base\private\win32\SpinLockWin32.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\posix\SpinLockIX.hpp">
+    <ClInclude Include="areg\base\private\posix\SpinLockPosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\WideString.hpp">
@@ -1064,7 +1082,7 @@
     <ClInclude Include="areg\component\private\TimerManagerEvent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TEMap.hpp">
+    <ClInclude Include="areg\base\OrderedMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\logging\private\NetTcpLogger.hpp">
@@ -1088,16 +1106,16 @@
     <ClInclude Include="areg\logging\private\ScopeNodes.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\ipc\IEServiceRegisterProvider.hpp">
+    <ClInclude Include="areg\ipc\RegistrationProvider.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\ipc\IEServiceConnectionConsumer.hpp">
+    <ClInclude Include="areg\ipc\ConnectionConsumer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\ipc\ServiceEvent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\ipc\ServiceEventConsumerBase.hpp">
+    <ClInclude Include="areg\ipc\ServiceEventConsumer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\ipc\private\RouterClient.hpp">
@@ -1106,25 +1124,49 @@
     <ClInclude Include="areg\persist\ConfigManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\ipc\private\NEConnection.hpp">
+    <ClInclude Include="areg\ipc\private\ConnectionDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\persist\IEConfigurationListener.hpp">
+    <ClInclude Include="areg\persist\ConfigListener.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\TEValue.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\persist\IEDatabaseEngine.hpp">
+    <ClInclude Include="areg\persist\DatabaseEngine.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\logging\private\DatabaseLogger.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\logging\IELogDatabaseEngine.hpp">
+    <ClInclude Include="areg\logging\LogDatabaseEngine.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\resources\resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\component\EventRouter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\component\EventDefs.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\base\TableDefs.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\component\private\EventStack.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\base\SocketMultiplexer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\base\SharedPrimitive.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\component\private\MpscEventQueue.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\ipc\DataRateStats.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1143,6 +1185,7 @@
     <None Include="areg\resources\areg_post_build.bat">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\conf\toolchains\clang-linux-arm32.cmake" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt">
@@ -1181,5 +1224,9 @@
     <Text Include="areg\component\private\win32\CMakeLists.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="areg\component\private\linux\CMakeLists.txt" />
+    <Text Include="areg\component\private\macos\CMakeLists.txt" />
+    <Text Include="areg\base\private\linux\CMakeLists.txt" />
+    <Text Include="areg\base\private\macos\CMakeLists.txt" />
   </ItemGroup>
 </Project>

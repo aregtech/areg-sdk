@@ -19,19 +19,18 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
-#include "areg/component/NEService.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/component/ServiceDefs.hpp"
+#include "areg/base/IOStream.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // Channel class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Channel class, which provides connection of services.
- *          Every connection, independent whether it is local or remote,
- *          has a communication channel. Each registered service gets associated
- *          channel given by system and contains information of communication source and target.
+ * \brief   Represents a communication channel between services; contains source and target
+ *          identifiers and a system-assigned cookie.
  **/
 class AREG_API Channel
 {
@@ -40,97 +39,71 @@ class AREG_API Channel
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Defines invalid channel object.
+     * \brief   Returns a predefined invalid channel object.
      **/
-    static const Channel & getInvalidChannel( void);                //!< Invalid channel
+    static const Channel & invalid_channel();                //!< Invalid channel
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    /**
-     * \brief   Default constructor
-     **/
-    Channel( void );
+    constexpr Channel() noexcept = default;
+
+    constexpr Channel( const Channel & source ) noexcept = default;
+
+    constexpr Channel( Channel && source ) noexcept = default;
+
+    ~Channel() = default;
 
     /**
-     * \brief   Constructor. Sets channel data, which are the communication source and target IDs, and the cookie set by system.
-     * \param   source  The channel communication source ID set by system.
-     * \param   target  The channel communication target ID set by system.
-     * \param   cookie  The ID assigned by system.
+     * \brief   Initializes the channel with source and target identifiers and an optional cookie.
+     *
+     * \param   source      The channel communication source ID.
+     * \param   target      The channel communication target ID.
+     * \param   cookie      The system-assigned ID.
      **/
-    explicit Channel( const ITEM_ID & source, const ITEM_ID & target = NEService::TARGET_UNKNOWN, const ITEM_ID & cookie = NEService::COOKIE_UNKNOWN );
-
-    /**
-     * \brief   Copy constructor.
-     * \param   source  The source of data to copy.
-     **/
-    Channel( const Channel & source );
-
-    /**
-     * \brief   Move constructor.
-     * \param   source  The source of data to move.
-     **/
-    Channel( Channel && source ) noexcept;
-
-    /**
-     * \brief   Destructor
-     **/
-    ~Channel( void ) = default;
+    explicit inline constexpr Channel( const ITEM_ID & source, const ITEM_ID & target = areg::TARGET_UNKNOWN, const ITEM_ID & cookie = areg::COOKIE_UNKNOWN ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Copies channel data from given source
-     * \param   source  The source of data to copy.
-     **/
-    Channel & operator = ( const Channel & source );
+    inline constexpr Channel & operator = ( const Channel & source ) noexcept = default;
+
+    inline constexpr Channel & operator = ( Channel && source ) noexcept = default;
+
+    [[nodiscard]]
+    inline constexpr bool operator == ( const Channel & other ) const noexcept;
+
+    [[nodiscard]]
+    inline constexpr bool operator != ( const Channel & other ) const noexcept;
 
     /**
-     * \brief   Moves channel data from given source
-     * \param   source  The source of data to move.
+     * \brief   Converts the channel to its ITEM_ID representation.
      **/
-    Channel & operator = ( Channel && source ) noexcept;
-
-    /**
-     * \brief   Checks equality of 2 channels and returns true if they are equal.
-     *          Channels are equal if source, target and cookies are equal.
-     * \param   other   The Channel object to compare
-     **/
-    inline bool operator == ( const Channel & other ) const;
-
-    /**
-     * \brief   Checks inequality of 2 channels and returns true if they are not equal.
-     *          Channels are not equal if source, target or cookies are not equal.
-     * \param   other   The Channel object to compare
-     **/
-    inline bool operator != ( const Channel & other ) const;
-
-    /**
-     * \brief   Converts channel object to 32-bit unsigned integer value.
-     **/
-    inline explicit operator const ITEM_ID & ( void ) const;
+    [[nodiscard]]
+    inline explicit constexpr operator const ITEM_ID & () const noexcept;
 
 /************************************************************************/
 // Friend global operators for streaming
 /************************************************************************/
 
     /**
-     * \brief   Streaming operator. Reads from stream and initialize connection channel data.
-     * \param   stream  The streaming object to read data.
-     * \param   input   Connection channel to initialize.
+     * \brief   Reads channel data from stream.
+     *
+     * \param       stream  The stream object to read from.
+     * \param[out]  input   The channel to initialize with data from the stream.
      **/
-    friend inline const IEInStream & operator >> ( const IEInStream & stream, Channel & input );
+    friend inline const InStream & operator >> ( const InStream & stream, Channel & input );
 
     /**
-     * \brief   Streaming operator. Writes connection channel data into stream.
-     * \param   stream  The streaming object to write data.
-     * \param   output  Connection channel to stream.
+     * \brief   Writes channel data to stream.
+     *
+     * \param[out]  stream  The stream object to write to.
+     * \param       output  The channel to write.
      **/
-    friend inline IEOutStream & operator << ( IEOutStream & stream, const Channel & output);
+    friend inline OutStream & operator << ( OutStream & stream, const Channel & output);
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -138,59 +111,68 @@ public:
 public:
 
     /**
-     * \brief   Returns the source ID of channel.
+     * \brief   Returns the source identifier of the channel.
      **/
-    inline const ITEM_ID & getSource( void ) const;
+    [[nodiscard]]
+    inline constexpr const ITEM_ID& source() const noexcept;
 
     /**
-     * \brief   Sets the source ID of channel.
-     * \param   source  The new source ID to set in channel
+     * \brief   Sets the source identifier of the channel.
+     *
+     * \param   source      The new source identifier.
      **/
-    inline void setSource(const ITEM_ID & source );
+    inline constexpr void set_source(const ITEM_ID& source ) noexcept;
 
     /**
-     * \brief   Returns the target ID of channel.
+     * \brief   Returns the target identifier of the channel.
      **/
-    inline const ITEM_ID & getTarget( void ) const;
+    [[nodiscard]]
+    inline constexpr const ITEM_ID& target() const noexcept;
     /**
-     * \brief   Sets the source ID of channel.
-     * \param   target  The new target ID to set in channel
+     * \brief   Sets the target identifier of the channel.
+     *
+     * \param   target      The new target identifier.
      **/
 
-    inline void setTarget(const ITEM_ID & target );
+    inline constexpr void set_target(const ITEM_ID & target ) noexcept;
 
     /**
-     * \brief   Returns the cookie ID of channel.
+     * \brief   Returns the cookie identifier of the channel.
      **/
-    inline const ITEM_ID & getCookie( void ) const;
+    [[nodiscard]]
+    inline constexpr const ITEM_ID & cookie() const noexcept;
 
     /**
-     * \brief   Sets the source ID of channel.
-     * \param   cookie  The new cookie ID to set in channel
+     * \brief   Sets the cookie identifier of the channel.
+     *
+     * \param   cookie      The new cookie identifier.
      **/
-    inline void setCookie(const ITEM_ID & cookie );
+    inline constexpr void set_cookie(const ITEM_ID & cookie ) noexcept;
 
     /**
-     * \brief   Returns true, if channel data is valid.
+     * \brief   Returns true if the channel data is valid.
      **/
-    inline bool isValid( void ) const;
+    [[nodiscard]]
+    inline constexpr bool is_valid() const noexcept;
 
     /**
-     * \brief   Invalidates channel.
+     * \brief   Invalidates the channel.
      **/
-    inline void invalidate( void );
+    inline constexpr void invalidate() noexcept;
 
 public:
     /**
-     * \brief   Converts channel data to string
+     * \brief   Converts the channel data to a string representation.
      **/
-    String convToString( void ) const;
+    [[nodiscard]]
+    String to_string() const;
 
     /**
-     * \brief   Creates channel data from string
-     * \param   channel     Null-terminated string, which contains channel data.
+     * \brief   Initializes the channel from a string representation.
+     *
+     * \param   channel     The string containing channel data.
      **/
-    const Channel & convFromString( const String & channel );
+    const Channel & from_string( const String & channel );
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -200,79 +182,86 @@ private:
     /**
      * \brief   Channel source ID
      **/
-    ITEM_ID     mSource;
+    ITEM_ID     mSource{ areg::SOURCE_UNKNOWN };
     /**
      * \brief   Channel Target ID
      **/
-    ITEM_ID     mTarget;
+    ITEM_ID     mTarget{ areg::TARGET_UNKNOWN };
     /**
      * \brief   Channel Cookie assigned by system
      **/
-    ITEM_ID     mCookie;
+    ITEM_ID     mCookie{ areg::COOKIE_UNKNOWN };
 };
 
 //////////////////////////////////////////////////////////////////////////
 // Channel class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const ITEM_ID & Channel::getSource(void) const
+inline constexpr Channel::Channel(const ITEM_ID& source, const ITEM_ID& target /*= areg::TARGET_UNKNOWN*/, const ITEM_ID& cookie /*= areg::COOKIE_UNKNOWN*/) noexcept
+    : mSource(source)
+    , mTarget(target)
+    , mCookie(cookie)
+{
+}
+
+inline constexpr bool Channel::operator == (const Channel& other) const noexcept
+{
+    return (this != &other ? (mCookie == other.mCookie) && (mTarget == other.mTarget) && (mSource == other.mSource) : true);
+}
+
+inline constexpr bool Channel::operator != (const Channel& other) const noexcept
+{
+    return (this != &other ? (mCookie != other.mCookie) || (mTarget != other.mTarget) || (mSource != other.mSource) : false);
+}
+
+inline constexpr Channel::operator const ITEM_ID& () const noexcept
 {
     return mSource;
 }
 
-inline void Channel::setSource(const ITEM_ID & source)
+inline constexpr const ITEM_ID & Channel::source() const noexcept
+{
+    return mSource;
+}
+
+inline constexpr void Channel::set_source(const ITEM_ID & source) noexcept
 {
     mSource = source;
 }
 
-inline const ITEM_ID & Channel::getTarget(void) const
+inline constexpr const ITEM_ID & Channel::target() const noexcept
 {
     return mTarget;
 }
 
-inline void Channel::setTarget(const ITEM_ID & target)
+inline constexpr void Channel::set_target(const ITEM_ID & target) noexcept
 {
     mTarget = target;
 }
 
-inline const ITEM_ID & Channel::getCookie(void) const
+inline constexpr const ITEM_ID & Channel::cookie() const noexcept
 {
     return mCookie;
 }
 
-inline void Channel::setCookie(const ITEM_ID & cookie)
+inline constexpr void Channel::set_cookie(const ITEM_ID & cookie) noexcept
 {
     mCookie = cookie;
 }
 
-inline bool Channel::operator == ( const Channel & other ) const
+inline constexpr bool Channel::is_valid() const noexcept
 {
-    return ( this != & other ? (mCookie == other.mCookie) && (mTarget == other.mTarget) && (mSource == other.mSource) : true );
+    return (mCookie != areg::COOKIE_UNKNOWN);
 }
 
-inline bool Channel::operator!=(const Channel & other) const
+inline constexpr void Channel::invalidate() noexcept
 {
-    return ( this != & other ? (mCookie != other.mCookie) || (mTarget != other.mTarget) || (mSource != other.mSource) : false );
+    mSource = areg::SOURCE_UNKNOWN;
+    mTarget = areg::TARGET_UNKNOWN;
+    mCookie = areg::COOKIE_UNKNOWN;
 }
 
-inline Channel::operator const ITEM_ID & ( void ) const
-{
-    return mSource;
-}
-
-inline bool Channel::isValid( void ) const
-{
-    return (mCookie != NEService::COOKIE_UNKNOWN);
-}
-
-inline void Channel::invalidate( void )
-{
-    mSource = NEService::SOURCE_UNKNOWN;
-    mTarget = NEService::TARGET_UNKNOWN;
-    mCookie = NEService::COOKIE_UNKNOWN;
-}
-
-inline const IEInStream & operator >> ( const IEInStream & stream, Channel & input )
+inline const InStream & operator >> ( const InStream & stream, Channel & input )
 {
     stream >> input.mSource;
     stream >> input.mTarget;
@@ -280,7 +269,7 @@ inline const IEInStream & operator >> ( const IEInStream & stream, Channel & inp
     return stream;
 }
 
-inline IEOutStream & operator << ( IEOutStream & stream, const Channel & output)
+inline OutStream & operator << ( OutStream & stream, const Channel & output)
 {
     stream << output.mSource;
     stream << output.mTarget;
@@ -288,4 +277,5 @@ inline IEOutStream & operator << ( IEOutStream & stream, const Channel & output)
     return stream;
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_CHANNEL_HPP

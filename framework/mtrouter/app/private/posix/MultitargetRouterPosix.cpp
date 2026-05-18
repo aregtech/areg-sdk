@@ -16,13 +16,13 @@
 
 #ifdef _POSIX
 
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/NEString.hpp"
+#include "areg/base/StringDefs.hpp"
 #include "areg/appbase/Application.hpp"
-#include "areg/appbase/NEApplication.hpp"
+#include "areg/appbase/AppDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Global functions, Begin
@@ -30,9 +30,9 @@
 
 int main(int argc, char* argv[], char* envp[])
 {
-    MultitargetRouter& router = MultitargetRouter::getInstance();
-    router.parseOptions(argc, argv, NESystemService::ServiceOptionSetup, MACRO_ARRAYLEN(NESystemService::ServiceOptionSetup));
-    return router.serviceMain(router.getCurrentOption(), nullptr);
+    MultitargetRouter& router = MultitargetRouter::instance();
+    router.parse_options(argc, argv, areg::ext::ServiceOptionSetup, std::size(areg::ext::ServiceOptionSetup));
+    return router.service_main(router.current_option(), nullptr);
 }
 
 //////////////////////////////////////////////////////////////////////////

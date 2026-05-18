@@ -13,9 +13,13 @@
  * \brief       Areg Platform, service server connection class.
  ************************************************************************/
 #include "aregextend/service/ServerConnection.hpp"
-#include "areg/ipc/NERemoteService.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/ipc/RemoteServiceDefs.hpp"
+#include "areg/component/ServiceDefs.hpp"
 #include "areg/base/RemoteMessage.hpp"
+
+#include <shared_mutex>
+
+namespace areg::ext {
 
 ServerConnection::ServerConnection(const ITEM_ID & channelId )
     : ServerConnectionBase  ( )
@@ -24,55 +28,68 @@ ServerConnection::ServerConnection(const ITEM_ID & channelId )
 {
 }
 
-ServerConnection::ServerConnection(const ITEM_ID & channelId, const char * hostName, unsigned short portNr)
+ServerConnection::ServerConnection(const ITEM_ID & channelId, const char * hostName, uint16_t portNr)
     : ServerConnectionBase  ( hostName, portNr)
     , SocketConnectionBase  ( )
     , mChannelId            ( channelId )
 {
 }
 
-ServerConnection::ServerConnection(const ITEM_ID & channelId, const NESocket::SocketAddress & serverAddress)
+ServerConnection::ServerConnection(const ITEM_ID & channelId, const areg::SocketAddress & serverAddress)
     : ServerConnectionBase  ( serverAddress )
     , SocketConnectionBase  ( )
     , mChannelId            ( channelId )
 {
 }
 
-void ServerConnection::rejectConnection(SocketAccepted & clientConnection)
+void ServerConnection::reject_connection(SocketAccepted & clientConnection)
 {
-    const ITEM_ID & cookie = getCookie(clientConnection.getHandle());
-    RemoteMessage msgReject = NERemoteService::createRejectNotify(mChannelId, cookie);
-    sendMessage(msgReject, clientConnection);
-    closeConnection(clientConnection);
+    const ITEM_ID & cookie_id = cookie(clientConnection.handle());
+    RemoteMessage msgReject = areg::create_reject_notify(mChannelId, cookie_id);
+    send_message(msgReject, clientConnection);
+    close_connection(clientConnection);
 }
 
-void ServerConnection::closeAllConnections(void)
+void ServerConnection::close_all_connections()
 {
-    Lock lock( mLock );
+    std::unique_lock<std::shared_mutex> lock( mLock );
     RemoteMessage msgByeClient;
-    if ( msgByeClient.initMessage(NERemoteService::getMessageNotifyClientConnection().rbHeader ) != nullptr )
+    if ( msgByeClient.init_message(areg::notify_client_connection().rbHeader ) != nullptr )
     {
-        msgByeClient.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
-        msgByeClient.setSource( mChannelId );
+        msgByeClient.set_sequence( areg::SEQUENCE_NUMBER_ANY );
+        msgByeClient.set_source( mChannelId );
 
-        for (MapSocketToObject::MAPPOS pos = mAcceptedConnections.firstPosition(); mAcceptedConnections.isValidPosition(pos); pos = mAcceptedConnections.nextPosition(pos))
+        for (MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position(); mAcceptedConnections.is_valid_position(pos); pos = mAcceptedConnections.next_position(pos))
         {
-            SocketAccepted clientConnection = mAcceptedConnections.valueAtPosition(pos);
-            const ITEM_ID& target{ getCookie(clientConnection) };
-            if (target >= NEService::COOKIE_REMOTE_SERVICE)
+            SocketAccepted clientConnection = mAcceptedConnections.value_at(pos);
+            // Read handle directly to avoid re-acquiring lock.
+            const SOCKETHANDLE hSocket{ clientConnection.handle() };
+            MapSocketToCookie::MAPPOS posC{ mSocketToCookie.find(hSocket) };
+            const ITEM_ID target{ mSocketToCookie.is_valid_position(posC) ? mSocketToCookie.value_at(posC) : areg::COOKIE_UNKNOWN };
+            if (target >= areg::COOKIE_REMOTE_SERVICE)
             {
                 RemoteMessage msgDisconnect{ msgByeClient.clone() };
-                msgDisconnect.setTarget(target);
-                msgDisconnect << target << NEService::eServiceConnection::ServiceDisconnected;
-                sendMessage(msgDisconnect, clientConnection);
+                msgDisconnect.set_target(target);
+                msgDisconnect << target << areg::ServiceConnectionState::Disconnected;
+                send_message(msgDisconnect, clientConnection);
             }
         }
     }
 
-    mMasterList.clear();
+    for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position();
+          mAcceptedConnections.is_valid_position(pos);
+          pos = mAcceptedConnections.next_position(pos) )
+    {
+        const SOCKETHANDLE hSocket{ mAcceptedConnections.value_at(pos).handle() };
+        mMultiplexer.unregister_socket(hSocket);
+        areg::socket_interrupt(hSocket);
+    }
+
     mCookieToSocket.clear();
     mSocketToCookie.clear();
     mAcceptedConnections.clear();
 
-    mCookieGenerator    = NEService::COOKIE_REMOTE_SERVICE;
+    mCookieGenerator    = areg::COOKIE_REMOTE_SERVICE;
 }
+
+} // namespace areg::ext

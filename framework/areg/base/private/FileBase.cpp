@@ -15,259 +15,219 @@
  ************************************************************************/
 
 #include "areg/base/FileBase.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/WideString.hpp"
-#include "areg/base/IEByteBuffer.hpp"
+#include "areg/base/SharedBuffer.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/Process.hpp"
+
+#include <algorithm>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // Local methods.
 //////////////////////////////////////////////////////////////////////////
 namespace {
 
-template<typename CharType, class ClassType>
-inline int _readString(const FileBase & file, ClassType & outValue)
+template<typename CharType, typename ClassType, typename Parser>
+inline int32_t _read_parsed(const FileBase& file, ClassType& outValue, Parser parse)
 {
-    unsigned int result = 0;
     outValue.clear();
-    if ((file.isOpened() == false) || (file.canRead() == false))
+    if (!file.is_opened() || !file.can_read())
+        return 0;
+
+    constexpr uint32_t  maxBufSize = 1024u;
+    constexpr uint32_t  strLength  = maxBufSize - 1u;
+    CharType            buffer[maxBufSize];
+
+    uint32_t result = 0u;
+    while (true)
     {
-        return static_cast<int>(result);
-    } 
+        const uint32_t oldPos   = file.position();
+        uint32_t readLength     = file.read(reinterpret_cast<uint8_t*>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
+        readLength              = std::min(strLength, readLength);
+        buffer[readLength]      = static_cast<CharType>(areg::EndOfString);
 
-    constexpr unsigned int maxBufSize = 1024;
-    CharType buffer[maxBufSize] { };
-    unsigned int strLength  { maxBufSize - 1 };
-    CharType * context      { nullptr };
-    unsigned int length     { 0 };
-    do 
-    {
-        buffer[0]               = NEString::EndOfString;
-        unsigned int oldPos     = file.getPosition();
-        unsigned int readLength = file.read(reinterpret_cast<unsigned char *>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
-        readLength              = MACRO_MIN(strLength, readLength);
-        buffer[readLength]      = NEString::EndOfString;
+        if (readLength == 0)
+            break;
 
-        length = readLength;
-        if ( readLength != 0 )
-        {
-            const CharType * str = NEString::getPrintable<CharType>( buffer, static_cast<NEString::CharCount>(readLength), &context );
-            length = context != nullptr ? MACRO_ELEM_COUNT( buffer, context ) : readLength;
+        CharType*         context = nullptr;
+        const CharType*   str     = parse(buffer, static_cast<areg::CharCount>(readLength), &context);
 
-            outValue    += str;
-            result      += length;
-            int newPos   = static_cast<int>(result * sizeof(CharType)) + static_cast<int>(oldPos);
-            file.setPosition(newPos, IECursorPosition::eCursorPosition::PositionBegin);
-            if ( context != (buffer + readLength) )
-            {
-                length = 0; // break loop
-            }
-        }
+        const uint32_t length = (context != nullptr) ? static_cast<uint32_t>(context - buffer) : readLength;
+        outValue += str;
+        result   += length;
 
-    } while ( length != 0 );
+        // Reposition file cursor to just after consumed portion
+        file.set_position(static_cast<int32_t>(oldPos + length * sizeof(CharType)), Cursor::SeekOrigin::Begin);
+        if (context != (buffer + readLength))
+            break;
+    }
 
-    return static_cast<int>(result);
+    return static_cast<int32_t>(result);
 }
 
-template<typename CharType, class ClassType>
-inline int _readLine(const FileBase & file, ClassType & outValue)
+template<typename CharType, typename ClassType>
+inline int32_t _read_string(const FileBase& file, ClassType& outValue)
 {
-    unsigned int result = 0;
-    outValue.clear();
-    if ((file.isOpened() == false) || (file.canRead() == false))
-    {
-        return static_cast<int>(result);
-    } 
+    return _read_parsed<CharType>(file, outValue,
+                        [](CharType* buf, areg::CharCount len, CharType** ctx) -> const CharType*
+                        {
+                            return areg::printable<CharType>(buf, len, ctx);
+                        });
+}
 
-    constexpr unsigned int maxBufSize = 1024;
-    CharType buffer[maxBufSize] { };
-    unsigned int strLength  { maxBufSize - 1 };
-    CharType * context      { nullptr };
-    unsigned int length     { 0 };
-    do 
-    {
-        buffer[0]               = NEString::EndOfString;
-        unsigned int oldPos     = file.getPosition();
-        unsigned int readLength = file.read(reinterpret_cast<unsigned char *>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
-        readLength              = MACRO_MIN(strLength, readLength);
-        buffer[readLength]      = NEString::EndOfString;
-
-        length = readLength;
-        if ( readLength != 0 )
-        {
-            const CharType * str = NEString::getLine<CharType>( buffer, static_cast<NEString::CharCount>(readLength), &context );
-            length   = context != nullptr ? MACRO_ELEM_COUNT(buffer, context) : readLength;
-            outValue+= str;
-            result  += length;
-            int newPos  = static_cast<int>( (result * sizeof(CharType)) + oldPos );
-            file.setPosition(newPos, IECursorPosition::eCursorPosition::PositionBegin);
-            if ( context != (buffer + readLength) )
-            {
-                length = 0; // break loop
-            }
-        }
-    } while ( length > 0 );
-
-    return static_cast<int>(result);
+template<typename CharType, typename ClassType>
+inline int32_t _read_line(const FileBase& file, ClassType& outValue)
+{
+    return _read_parsed<CharType>(file, outValue,
+                        [](CharType* buf, areg::CharCount len, CharType** ctx) -> const CharType*
+                        {
+                            return areg::line<CharType>(buf, len, ctx);
+                        });
 }
 
 template<typename CharType>
-inline int _readString(const FileBase & file, CharType * buffer, int charCount)
+inline int32_t _read_string(const FileBase& file, CharType* buffer, int32_t charCount)
 {
-    unsigned int result = 0;
-    if (file.isOpened() && file.canRead())
-    {
-        if ((buffer != nullptr) && (charCount > 1))
-        {
-            unsigned int strLength  = static_cast<unsigned int>(charCount) - 1;
-            buffer[0]               = NEString::EndOfString;
-            unsigned int oldPos     = file.getPosition();
-            CharType * context      = nullptr;
-            unsigned int readLength = file.read(reinterpret_cast<unsigned char *>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
-            readLength              = MACRO_MIN(strLength, readLength);
-            buffer[readLength]      = NEString::EndOfString;
+    if (!file.is_opened() || !file.can_read() || (buffer == nullptr) || (charCount <= 1))
+        return 0;
 
-            if ( readLength != 0 )
-            {
-                NEString::getPrintable<CharType>( buffer, charCount, &context );
-                ASSERT((context == nullptr) || (context >= buffer));
-                result = context != nullptr ? MACRO_ELEM_COUNT( buffer, context ) : readLength;
-                int newPos = static_cast<int>( (result * sizeof(CharType)) + oldPos );
-                file.setPosition(newPos, IECursorPosition::eCursorPosition::PositionBegin);
-            }
-        }
-    }
+    const uint32_t strLength = static_cast<uint32_t>(charCount) - 1u;
+    const uint32_t oldPos    = file.position();
 
-    return static_cast<int>(result);
+    uint32_t readLength = file.read(reinterpret_cast<uint8_t*>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
+    readLength          = std::min(strLength, readLength);
+    buffer[readLength]  = static_cast<CharType>(areg::EndOfString);
+
+    if (readLength == 0)
+        return 0;
+
+    CharType* context = nullptr;
+    areg::printable<CharType>(buffer, static_cast<areg::CharCount>(readLength), &context);
+    ASSERT((context == nullptr) || (context >= buffer));
+
+    const uint32_t result = (context != nullptr) ? static_cast<uint32_t>(context - buffer) : readLength;
+    file.set_position(static_cast<int32_t>(oldPos + result * sizeof(CharType)), Cursor::SeekOrigin::Begin);
+
+    return static_cast<int32_t>(result);
 }
 
 template<typename CharType>
-inline int _readLine(const FileBase & file, CharType * buffer, int charCount)
+inline int32_t _read_line(const FileBase& file, CharType* buffer, int32_t charCount)
 {
-    unsigned int result = 0;
-    if (file.isOpened() && file.canRead())
-    {
-        if ((buffer != nullptr) && (charCount > 1))
-        {
-            unsigned int strLength  = static_cast<unsigned int>(charCount) - 1;
-            buffer[0]               = NEString::EndOfString;
-            unsigned int oldPos     = file.getPosition();
-            CharType * context      = nullptr;
-            unsigned int readLength = file.read(reinterpret_cast<unsigned char *>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
-            readLength              = MACRO_MIN(strLength, readLength);
-            buffer[readLength]      = NEString::EndOfString;
-            if ( readLength != 0 )
-            {
-                NEString::getLine<CharType>(buffer, charCount, &context);
-                ASSERT((context == nullptr) || (context >= buffer));
-                result = context != nullptr ? MACRO_ELEM_COUNT(buffer, context) : readLength;
-                int newPos = static_cast<int>( (result * sizeof(CharType)) + oldPos );
-                file.setPosition(newPos, IECursorPosition::eCursorPosition::PositionBegin);
-            }
-        }
-    }
+    if (!file.is_opened() || !file.can_read() || (buffer == nullptr) || (charCount <= 1))
+        return 0;
 
-    return static_cast<int>(result);
+    const uint32_t strLength = static_cast<uint32_t>(charCount) - 1u;
+    const uint32_t oldPos    = file.position();
+
+    uint32_t readLength = file.read(reinterpret_cast<uint8_t*>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
+    readLength          = std::min(strLength, readLength);
+    buffer[readLength]  = static_cast<CharType>(areg::EndOfString);
+
+    if (readLength == 0)
+        return 0;
+
+    CharType* context = nullptr;
+    areg::line<CharType>(buffer, static_cast<areg::CharCount>(readLength), &context);
+    ASSERT((context == nullptr) || (context >= buffer));
+
+    const uint32_t result = (context != nullptr)
+        ? static_cast<uint32_t>(context - buffer)
+        : readLength;
+
+    file.set_position(
+        static_cast<int32_t>(oldPos + result * sizeof(CharType)),
+        Cursor::SeekOrigin::Begin);
+
+    return static_cast<int32_t>(result);
 }
 
 template<typename CharType>
-inline bool _writeString(FileBase & file, const CharType * buffer, int strLen = static_cast<int>(NEString::COUNT_ALL) )
+inline bool _writeString(FileBase& file, const CharType* buffer, int32_t strLen = static_cast<int32_t>(areg::COUNT_ALL))
 {
-    bool result = false;
-    if (file.isOpened() && file.canWrite())
-    {
-        if (buffer != nullptr)
-        {
-            unsigned int len = strLen >= 0 ? static_cast<unsigned int>(strLen) : static_cast<unsigned int>(NEString::getStringLength<CharType>( buffer ));
-            len += file.isBinaryMode() ? 1 : 0;
-            len *= sizeof(CharType);
+    if (!file.is_opened() || !file.can_write() || (buffer == nullptr))
+        return false;
 
-            result = (file.write( reinterpret_cast<const unsigned char *>(buffer), len ) == len);
-        }
-    }
+    // In binary mode include null terminator; in text mode exclude it
+    uint32_t len = (strLen >= 0) ? static_cast<uint32_t>(strLen) : static_cast<uint32_t>(areg::string_length<CharType>(buffer));
 
-    return result;
+    if (file.is_binary_mode())
+        ++len;  // include null terminator
+
+    const uint32_t byteLen = len * sizeof(CharType);
+    return file.write(reinterpret_cast<const uint8_t*>(buffer), byteLen) == byteLen;
 }
 
 template<typename CharType>
-inline  bool _writeLine(FileBase & file, const CharType * buffer)
+inline bool _writeLine(FileBase& file, const CharType* buffer)
 {
-    bool result = false;
-    if (file.isOpened() && file.canWrite())
-    {
-        if (buffer != nullptr)
-        {
-            unsigned int len = static_cast<unsigned int>(NEString::getStringLineLength<CharType>(buffer));
-            len *= sizeof(CharType);
-            if ( file.write(reinterpret_cast<const unsigned char *>(buffer), len) == len )
-                result = file.writeChar( TEString<CharType>::NewLine );
-        }
-    }
+    if (!file.is_opened() || !file.can_write() || (buffer == nullptr))
+        return false;
 
-    return result;
-}
-
-template<typename DataType>
-NEMath::eCompare _compareData( const DataType * memBuffer1, const DataType * memBuffer2, std::function<NEMath::eCompare( const DataType *, const DataType * )> func )
-{
-    return func( memBuffer1, memBuffer2 );
+    const uint32_t byteLen = static_cast<uint32_t>(areg::string_line_length<CharType>(buffer)) * sizeof(CharType);
+    return (file.write(reinterpret_cast<const uint8_t*>(buffer), byteLen) == byteLen) && file.write_char(StringBase<CharType>::NewLine);
 }
 
 template<typename CharType>
-unsigned int _searchText( const FileBase & file, unsigned int startPos, const CharType * text, uint32_t length, bool sensitive )
+uint32_t _searchText( const FileBase&   file
+                    , uint32_t          startPos
+                    , const CharType*   text
+                    , uint32_t          length
+                    , bool              sensitive )
 {
-    unsigned int result{ IECursorPosition::INVALID_CURSOR_POSITION };
-    if ( file.canRead( ) && (startPos != IECursorPosition::INVALID_CURSOR_POSITION) )
+    if (!file.can_read()
+        || (startPos == Cursor::INVALID_CURSOR_POSITION)
+        || areg::is_empty<CharType>(text)
+        || (length == 0))
     {
-        unsigned int posSearch = file.setPosition( static_cast<int>(startPos), IECursorPosition::eCursorPosition::PositionBegin );
-        if ( (NEString::isEmpty<CharType>(text) == false) && (length != 0) )
-        {
-            unsigned int dataLen = length * 2;
-            unsigned int bufLen  = length + 1;
-            unsigned int readLen = 0;
-            CharType * fileData = new CharType[ bufLen ];
-
-            while ( result == IECursorPosition::INVALID_CURSOR_POSITION )
-            {
-                if ( readLen != 0 )
-                {
-                    NEMemory::memMove( fileData, fileData + length, readLen - length );
-                    readLen -= length;
-                }
-
-                unsigned int inBuf = readLen;
-                readLen = file.read( reinterpret_cast<unsigned char *>(fileData), (dataLen - readLen) * sizeof( CharType) ) / sizeof(CharType);
-                if ( (readLen == 0) || (readLen < static_cast<unsigned int>(length)) )
-                    break;
-
-                readLen += inBuf;
-                for ( unsigned int i = 0; (readLen - i) >= static_cast<unsigned int>(length); ++i )
-                {
-                    NEMath::eCompare comp = _compareData<CharType>( (fileData + i)
-                                                                , text
-                                                                , [length, sensitive]( const CharType * buf1, const CharType * buf2 ) -> NEMath::eCompare
-                                                                {
-                                                                    return NEString::compareStrings<CharType, CharType>( buf1, buf2, static_cast<NEString::CharCount>(length), sensitive );
-                                                                }
-                    );
-
-                    if ( comp == NEMath::eCompare::Equal )
-                    {
-                        posSearch += i * sizeof(CharType);
-                        result = posSearch;
-                        break;
-                    }
-                }
-
-                posSearch += static_cast<unsigned int>(length) * sizeof(CharType);
-            }
-
-            delete [] fileData;
-        }
+        return Cursor::INVALID_CURSOR_POSITION;
     }
 
-    return result;
+    uint32_t posSearch = file.set_position(static_cast<int32_t>(startPos), Cursor::SeekOrigin::Begin);
+
+    const uint32_t winSize  = 2u * length;
+    const uint32_t charSize = static_cast<uint32_t>(sizeof(CharType));
+
+    auto buffer = std::make_unique<CharType[]>(winSize);
+    CharType* const fileData = buffer.get();
+
+    // comparator, do not recreate lambda per iteration
+    auto matches = [&](const CharType* candidate) -> bool
+    {
+        return areg::compare_strings<CharType, CharType>(candidate, text, static_cast<areg::CharCount>(length), sensitive) == areg::Ordering::Equal;
+    };
+
+    uint32_t inBuf = 0u;  // valid chars currently in buffer
+    while (true)
+    {
+        // Slide window: keep the back half for overlap between chunks
+        if (inBuf >= length)
+        {
+            areg::mem_move(fileData, fileData + length, (inBuf - length) * charSize);
+            inBuf -= length;
+        }
+
+        const uint32_t toRead  = (winSize - inBuf) * charSize;
+        const uint32_t didRead = file.read(reinterpret_cast<uint8_t*>(fileData + inBuf), toRead) / charSize;
+        inBuf += didRead;
+        if (inBuf < length)
+            break;  // not enough data to match
+
+        const uint32_t scanEnd = inBuf - length;
+        for (uint32_t i = 0u; i <= scanEnd; ++i)
+        {
+            if (matches(fileData + i))
+                return posSearch + i * charSize;
+        }
+
+        posSearch += length * charSize;
+        if (didRead == 0)
+            break;  // EOF
+    }
+
+    return Cursor::INVALID_CURSOR_POSITION;
 }
 
 } // namespace
@@ -279,14 +239,14 @@ unsigned int _searchText( const FileBase & file, unsigned int startPos, const Ch
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-FileBase::FileBase( void )
-    : IEIOStream        ( )
-    , IECursorPosition  ( )
+FileBase::FileBase()
+    : IOStream      ( )
+    , Cursor        ( )
 
-    , mFileName         (String::getEmptyString())
-    , mFileMode         (static_cast<unsigned int>(FO_MODE_INVALID))
-    , mReadConvert      (static_cast<IEInStream &>(self()), static_cast<IECursorPosition &>(self()) )
-    , mWriteConvert     (static_cast<IEOutStream &>(self()), static_cast<IECursorPosition &>(self()) )
+    , mFileName     (String::empty_string())
+    , mFileMode     (static_cast<uint32_t>(OpenMode::Invalid))
+    , mReadConvert  (static_cast<InStream &>(self()), static_cast<Cursor &>(self()) )
+    , mWriteConvert (static_cast<OutStream &>(self()), static_cast<Cursor &>(self()) )
 {
 }
 
@@ -294,124 +254,130 @@ FileBase::FileBase( void )
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-unsigned int FileBase::normalizeMode(unsigned int mode) const
+uint32_t FileBase::normalize_mode(uint32_t mode) const noexcept
 {
-    if ((mode != FO_MODE_INVALID) != 0)
+    if ((mode != static_cast<uint32_t>(OpenMode::Invalid)) != 0)
     {
-        mode |= FO_MODE_READ;
+        mode |= static_cast<uint32_t>(OpenMode::Read);
     }
 
-    if ((mode & FOB_WRITE) != 0)
+    if ((mode & static_cast<uint32_t>(OpenFlag::BitWrite)) != 0)
     {
-        mode |= FO_MODE_WRITE;
+        mode |= static_cast<uint32_t>(OpenMode::Write);
     }
 
-    if ((mode & FOB_ATTACH) != 0)
+    if ((mode & static_cast<uint32_t>(OpenFlag::BitTemp)) != 0)
     {
-        mode &= ~(FOB_DETACH | FOB_TRUNCATE | FOB_TEMP_FILE | FOB_SHARE_WRITE | FOB_WRITE);
-        mode |= FO_MODE_ATTACH;
+        mode &= ~(static_cast<uint32_t>(OpenFlag::BitExist) | static_cast<uint32_t>(OpenFlag::BitOpenAlways));
+        mode |= static_cast<uint32_t>(OpenMode::CreateTemp);
     }
 
-    if ((mode & FOB_DETACH) != 0)
+    if ((mode & static_cast<uint32_t>(OpenFlag::BitText)) != 0)
     {
-        mode &= ~(FOB_ATTACH | FOB_TEMP_FILE | FOB_SHARE_WRITE);
-        mode |= FO_MODE_DETACH;
-    }
-
-    if ((mode & FOB_TEMP_FILE) != 0)
-    {
-        mode &= ~(FOB_FOR_DELETE | FOB_EXIST | FOB_ATTACH | FOB_DETACH | FOB_SHARE_READ | FOB_SHARE_WRITE);
-        mode |= FO_MODE_CREATE_TEMP;
-    }
-
-    if ((mode & FOB_TEXT) != 0)
-    {
-        mode &= ~FOB_BINARY;
-        mode |= FO_MODE_TEXT;
+        mode &= ~static_cast<uint32_t>(OpenFlag::BitBinary);
+        mode |= static_cast<uint32_t>(OpenMode::Text);
     }
     else
     {
-        mode |= FO_MODE_BINARY;
+        mode |= static_cast<uint32_t>(OpenMode::Binary);
     }
 
-    if ((mode & FOB_BINARY) != 0)
+    if ((mode & static_cast<uint32_t>(OpenFlag::BitBinary)) != 0)
     {
-        mode &= ~FOB_TEXT;
-        mode |= FO_MODE_BINARY;
+        mode &= ~static_cast<uint32_t>(OpenFlag::BitText);
+        mode |= static_cast<uint32_t>(OpenMode::Binary);
     }
 
-    if (((mode & FOB_WRITE) == 0) && ((mode & FOB_READ) != 0))
+    if (((mode & static_cast<uint32_t>(OpenFlag::BitCreateNew)) != 0) && ((mode & static_cast<uint32_t>(OpenFlag::BitExist)) != 0))
     {
-        mode |= FOB_EXIST;
+        mode &= ~(  static_cast<uint32_t>(OpenFlag::BitCreateNew)
+                  | static_cast<uint32_t>(OpenFlag::BitExist)
+                  | static_cast<uint32_t>(OpenFlag::BitTruncate));
+        mode |= (   static_cast<uint32_t>(OpenMode::OpenAlways)
+                  | static_cast<uint32_t>(OpenMode::Write)
+                  | static_cast<uint32_t>(OpenMode::Read));
     }
-    else if ((mode & FOB_CREATE) != 0)
+    else if ((mode & static_cast<uint32_t>(OpenFlag::BitOpenAlways)) != 0)
     {
-        mode &= ~FO_MODE_EXIST;
-        mode |= FO_MODE_CREATE;
-        mode |= FO_MODE_WRITE;
+        mode &= ~(   static_cast<uint32_t>(OpenFlag::BitCreateNew)
+                   | static_cast<uint32_t>(OpenFlag::BitExist)
+                   | static_cast<uint32_t>(OpenFlag::BitTruncate)
+                 );
+        mode |= static_cast<uint32_t>(OpenMode::Write);
+        mode |= static_cast<uint32_t>(OpenMode::Read);
+    }
+    else if ((mode & static_cast<uint32_t>(OpenFlag::BitCreateNew)) != 0)
+    {
+        mode &= ~static_cast<uint32_t>(OpenMode::Exist);
+        mode |= static_cast<uint32_t>(OpenMode::Create);
+        mode |= static_cast<uint32_t>(OpenMode::Write);
+    }
+    else if (((mode & static_cast<uint32_t>(OpenFlag::BitWrite)) == 0) && ((mode & static_cast<uint32_t>(OpenFlag::BitRead)) != 0))
+    {
+        mode |= static_cast<uint32_t>(OpenFlag::BitExist);
     }
 
-    if ((mode & FOB_EXIST) != 0)
+    if ((mode & static_cast<uint32_t>(OpenFlag::BitExist)) != 0)
     {
-        mode |= FO_MODE_EXIST;
+        mode |= static_cast<uint32_t>(OpenMode::Exist);
     }
     else
     {
-        mode &= ~FOB_TRUNCATE;
+        mode &= ~static_cast<uint32_t>(OpenFlag::BitTruncate);
     }
 
-    if ((mode & FOB_TRUNCATE) != 0)
+    if ((mode & static_cast<uint32_t>(OpenFlag::BitTruncate)) != 0)
     {
-        mode |= FO_MODE_TRUNCATE;
+        mode |= static_cast<uint32_t>(OpenMode::Truncate);
     }
 
-    if ((mode & FOB_WRITE_DIRECT) != 0)
+    if ((mode & static_cast<uint32_t>(OpenFlag::BitDirect)) != 0)
     {
-        mode |= FO_MODE_WRITE_DIRECT;
+        mode |= static_cast<uint32_t>(OpenMode::WriteDirect);
     }
 
     return mode;
 }
 
-int FileBase::append( const unsigned char* buffer, unsigned int length )
+int32_t FileBase::append( const uint8_t* buffer, uint32_t length )
 {
-    unsigned int result = 0;
-    if ((length != 0) && (buffer != nullptr) && isOpened() && canWrite())
+    uint32_t result = 0;
+    if ((length != 0) && (buffer != nullptr) && is_opened() && can_write())
     {
-        moveToEnd();
+        move_to_end();
         result = write(buffer, length);
     }
 
-    return static_cast<int>(result);
+    return static_cast<int32_t>(result);
 }
 
-int FileBase::readInvert( unsigned char * buffer, unsigned int length ) const
+int32_t FileBase::read_invert( uint8_t * buffer, uint32_t length ) const
 {
-    unsigned int result = 0;
-    if ((length != 0) && (buffer != nullptr) && isOpened() && canRead())
+    uint32_t result = 0;
+    if ((length != 0) && (buffer != nullptr) && is_opened() && can_read())
     {
         result = read(buffer, length);
-        unsigned int count = result / 2;
-        for (unsigned int i = 0; i < count; ++ i)
+        uint32_t count = result / 2;
+        for (uint32_t i = 0; i < count; ++ i)
         {
-            unsigned char ch = buffer[i];
+            uint8_t ch = buffer[i];
             buffer[i] = buffer[length - 1 - i];
             buffer[length - 1 - i] = ch;
         }
     }
 
-    return static_cast<int>(result);
+    return static_cast<int32_t>(result);
 }
 
-int FileBase::writeInvert( const unsigned char * buffer, int unsigned length )
+int32_t FileBase::write_invert( const uint8_t * buffer, uint32_t length )
 {
-    unsigned int result = 0;
-    if ((length != 0) && (buffer != nullptr) && isOpened() && canWrite())
+    uint32_t result = 0;
+    if ((length != 0) && (buffer != nullptr) && is_opened() && can_write())
     {
-        unsigned char* temp = (buffer != nullptr) && (length > 0) ? DEBUG_NEW unsigned char[length] : nullptr;
+        uint8_t* temp = (buffer != nullptr) && (length > 0) ? DEBUG_NEW uint8_t[length] : nullptr;
         if (temp != nullptr )
         {
-            for (unsigned int i = 0; i < length; ++ i)
+            for (uint32_t i = 0; i < length; ++ i)
                 temp[i] = buffer[length - 1 - i];
             
             result = write(temp, length);
@@ -419,106 +385,106 @@ int FileBase::writeInvert( const unsigned char * buffer, int unsigned length )
         }
     }
 
-    return static_cast<int>(result);
+    return static_cast<int32_t>(result);
 }
 
-int FileBase::readString( char * IN OUT buffer, int IN charCount) const
+int32_t FileBase::read_string( char * buffer, int32_t charCount) const
 {
-    return _readString<char>(self(), buffer, charCount);
+    return _read_string<char>(self(), buffer, charCount);
 }
 
-int FileBase::readString( wchar_t * IN OUT buffer, int IN charCount ) const
+int32_t FileBase::read_string( wchar_t * buffer, int32_t charCount ) const
 {
-    return _readString<wchar_t>(self(), buffer, charCount);
+    return _read_string<wchar_t>(self(), buffer, charCount);
 }
 
-int FileBase::readString(String & OUT outValue ) const
+int32_t FileBase::read_string(String & outValue ) const
 {
-    return _readString<char, String>(self(), outValue);
+    return _read_string<char, String>(self(), outValue);
 }
 
-int FileBase::readString(WideString & OUT outValue) const
+int32_t FileBase::read_string(WideString & outValue) const
 {
-    return _readString<char, WideString>(self(), outValue);
+    return _read_string<char, WideString>(self(), outValue);
 }
 
-int FileBase::readLine( char * IN OUT buffer, int IN charCount) const
+int32_t FileBase::read_line( char * buffer, int32_t charCount) const
 {
-    return _readLine<char>(self(), buffer, charCount);
+    return _read_line<char>(self(), buffer, charCount);
 }
 
-int FileBase::readLine( wchar_t * IN OUT buffer, int IN charCount ) const
+int32_t FileBase::read_line( wchar_t * buffer, int32_t charCount ) const
 {
-    return _readLine<wchar_t>(self(), buffer, charCount);
+    return _read_line<wchar_t>(self(), buffer, charCount);
 }
 
-int FileBase::readLine( String & OUT outBuffer) const
+int32_t FileBase::read_line( String & buffer) const
 {
-    return _readLine<char, String>(self(), outBuffer);
+    return _read_line<char, String>(self(), buffer);
 }
 
-int FileBase::readLine(WideString & OUT outBuffer) const
+int32_t FileBase::read_line(WideString & buffer) const
 {
-    return _readLine<wchar_t, WideString>(self(), outBuffer);
+    return _read_line<wchar_t, WideString>(self(), buffer);
 }
 
-bool FileBase::writeString( const char* buffer )
+bool FileBase::write_string( const char* buffer )
 {
     return _writeString<char>(self(), buffer, -1);
 }
 
-bool FileBase::writeString( const wchar_t* buffer)
+bool FileBase::write_string( const wchar_t* buffer)
 {
     return _writeString<wchar_t>(self(), buffer, -1);
 }
 
-bool FileBase::writeString(const String& buffer)
+bool FileBase::write_string(const String& buffer)
 {
-    return _writeString<char>(self(), buffer.getString(), static_cast<int>(buffer.getLength()));
+    return _writeString<char>(self(), buffer.as_string(), static_cast<int32_t>(buffer.length()));
 }
 
-bool FileBase::writeString(const WideString& buffer)
+bool FileBase::write_string(const WideString& buffer)
 {
-    return _writeString<wchar_t>(self(), buffer.getString(), static_cast<int>(buffer.getLength()));
+    return _writeString<wchar_t>(self(), buffer.as_string(), static_cast<int32_t>(buffer.length()));
 }
 
-bool FileBase::writeLine( const char* buffer)
+bool FileBase::write_line( const char* buffer)
 {
     return _writeLine<char>(self(), buffer);
 }
 
-bool FileBase::writeLine( const wchar_t* buffer)
+bool FileBase::write_line( const wchar_t* buffer)
 {
     return _writeLine<wchar_t>(self(), buffer);
 }
 
-bool FileBase::writeLine(const String& buffer)
+bool FileBase::write_line(const String& buffer)
 {
     return _writeLine<char>(self(), buffer);
 }
 
-bool FileBase::writeLine(const WideString& buffer)
+bool FileBase::write_line(const WideString& buffer)
 {
     return _writeLine<wchar_t>(self(), buffer);
 }
 
-unsigned int FileBase::resizeAndFill(unsigned int newSize, unsigned char fillValue )
+uint32_t FileBase::resize_and_fill(uint32_t newSize, uint8_t fillValue )
 {
-    unsigned int curPos = getPosition();
-    unsigned int result = curPos;
+    uint32_t curPos = position();
+    uint32_t result = curPos;
 
     if (newSize > 0)
     {
-        unsigned int newPos = reserve(newSize);
-        if ((newPos != IECursorPosition::INVALID_CURSOR_POSITION) && (newPos > curPos))
+        uint32_t newPos = reserve(newSize);
+        if ((newPos != Cursor::INVALID_CURSOR_POSITION) && (newPos > curPos))
         {
-            setPosition(static_cast<int>(curPos), IECursorPosition::eCursorPosition::PositionBegin);
-            for (unsigned int i = 0; i < newPos; ++ i)
+            set_position(static_cast<int32_t>(curPos), Cursor::SeekOrigin::Begin);
+            for (uint32_t i = 0; i < newPos; ++ i)
             {
-                write( &fillValue, sizeof( unsigned char ) );
+                write( &fillValue, sizeof( uint8_t ) );
             }
 
-            ASSERT(getPosition() == newPos);
+            ASSERT(position() == newPos);
             result = newPos;
         }
     }
@@ -526,28 +492,28 @@ unsigned int FileBase::resizeAndFill(unsigned int newSize, unsigned char fillVal
     return result;
 }
 
-void FileBase::resetCursor(void) const
+void FileBase::reset() const noexcept
 {
-    setPosition(0, IECursorPosition::eCursorPosition::PositionBegin);
+    set_position(0, Cursor::SeekOrigin::Begin);
 }
 
-unsigned int FileBase::read(IEByteBuffer & buffer) const
+uint32_t FileBase::read(SharedBuffer& buffer) const
 {
-    unsigned int result = 0;
+    uint32_t result = 0;
     buffer.invalidate();
 
-    if ( isOpened() && canRead() )
+    if ( is_opened() && can_read() )
     {
-        signed   int sizeReserve= 0;
-        unsigned int sizeRead   = 0;
+        int32_t sizeReserve = 0;
+        uint32_t sizeRead   = 0;
 
-        if (readInt(sizeReserve) && (sizeReserve > 0))
+        if (read_int(sizeReserve) && (sizeReserve > 0))
         {
-            sizeRead = buffer.reserve(static_cast<unsigned int>(sizeReserve), false);
-            unsigned char * data = sizeRead != 0 ? buffer.getBuffer() : nullptr;
+            sizeRead = buffer.reserve(static_cast<uint32_t>(sizeReserve), false);
+            uint8_t * data = sizeRead != 0 ? buffer.buffer() : nullptr;
             if ( (data != nullptr) && (read(data, sizeRead) == sizeRead) )
             {
-                result = sizeRead + sizeof(int);
+                result = sizeRead + sizeof(int32_t);
             }
         }
     }
@@ -555,151 +521,169 @@ unsigned int FileBase::read(IEByteBuffer & buffer) const
     return result;
 }
 
-unsigned int FileBase::read(String & ascii) const
+uint32_t FileBase::read(String & ascii) const
 {
-    return static_cast<unsigned int>(readString(ascii));
+    return static_cast<uint32_t>(read_string(ascii));
 }
 
-unsigned int FileBase::read(WideString & wide) const
+uint32_t FileBase::read(WideString & wide) const
 {
-    return static_cast<unsigned int>(readString(wide));
+    return static_cast<uint32_t>(read_string(wide));
 }
 
-unsigned int FileBase::write(const IEByteBuffer & buffer)
+uint32_t FileBase::write(const SharedBuffer& buffer)
 {
-    unsigned int result = 0;
+    uint32_t result = 0;
 
-    if ( isOpened() && canWrite() )
+    if ( is_opened() && can_write() )
     {
-        const unsigned char * data  = buffer.getBuffer();
-        unsigned int sizeUsed       = buffer.getSizeUsed();
+        const uint8_t * data  = buffer.buffer();
+        uint32_t sizeUsed     = buffer.size_used();
 
-        if (writeInt(static_cast<int>(sizeUsed)) && (write(data, sizeUsed) == sizeUsed))
+        if (write_int(static_cast<int32_t>(sizeUsed)) && (write(data, sizeUsed) == sizeUsed))
         {
-            result = sizeUsed + sizeof(int);
+            result = sizeUsed + sizeof(int32_t);
         }
     }
 
     return result;
 }
 
-unsigned int FileBase::write(const String & ascii)
+uint32_t FileBase::write(const String & ascii)
 {
-    const char * buffer = ascii.getString();
-    unsigned int space  = isTextMode() != 0 ? static_cast<uint32_t>(ascii.getLength()) * sizeof(char) : ascii.getSpace();
+    const char * buffer = ascii.as_string();
+    uint32_t space  = is_text_mode() != 0 ? static_cast<uint32_t>(ascii.length()) * sizeof(char) : ascii.space();
 
-    return write(reinterpret_cast<const unsigned char *>(buffer), space);
+    return write(reinterpret_cast<const uint8_t *>(buffer), space);
 }
 
-unsigned int FileBase::write(const WideString & wide)
+uint32_t FileBase::write(const WideString & wide)
 {
-    const wchar_t * buffer  = wide.getString();
-    unsigned int space      = isTextMode() != 0 ? static_cast<uint32_t>(wide.getLength()) * sizeof(wchar_t) : wide.getSpace();
+    const wchar_t * buffer  = wide.as_string();
+    uint32_t space      = is_text_mode() != 0 ? static_cast<uint32_t>(wide.length()) * sizeof(wchar_t) : wide.space();
 
-    return write(reinterpret_cast<const unsigned char *>(buffer), space);
+    return write(reinterpret_cast<const uint8_t *>(buffer), space);
 }
 
 bool FileBase::write(const char * ascii)
 {
-    return writeString(ascii);
+    return write_string(ascii);
 }
 
 bool FileBase::write(const wchar_t * wide)
 {
-    return writeString(wide);
+    return write_string(wide);
 }
 
-unsigned int FileBase::searchData( unsigned int startPos, const unsigned char * buffer, uint32_t length ) const
+uint32_t FileBase::search_data( uint32_t        startPos
+                               , const uint8_t*  buffer
+                               , uint32_t        length ) const
 {
-    unsigned int result{ IECursorPosition::INVALID_CURSOR_POSITION };
-    if ( canRead( ) && (startPos != IECursorPosition::INVALID_CURSOR_POSITION))
+    if (!can_read()
+        || (startPos == Cursor::INVALID_CURSOR_POSITION)
+        || (buffer == nullptr)
+        || (length == 0))
     {
-        unsigned int posSearch = setPosition( static_cast<int>(startPos), IECursorPosition::eCursorPosition::PositionBegin );
-        if ( (buffer != nullptr) && (length != 0) )
-        {
-            unsigned int dataLen = length * 2;
-            unsigned int readLen = 0;
-            unsigned char * fileData = new unsigned char[ dataLen ];
-
-            while ((result == IECursorPosition::INVALID_CURSOR_POSITION) && (posSearch != IECursorPosition::INVALID_CURSOR_POSITION))
-            {
-                if ( readLen != 0 )
-                {
-                    NEMemory::memMove( fileData, fileData + length, readLen - length );
-                    readLen = length;
-                }
-
-                readLen = read( fileData, dataLen - readLen ) + readLen;
-                if ( (readLen == 0) || (readLen < static_cast<unsigned int>(length)) )
-                    break;
-
-                for ( unsigned int i = 0; (readLen - i) >= length; ++i )
-                {
-                    NEMath::eCompare comp = _compareData<unsigned char>( (fileData + i)
-                                                                       , buffer
-                                                                       , [length]( const unsigned char * buf1, const unsigned char * buf2 ) -> NEMath::eCompare
-                                                                         {
-                                                                             return NEMemory::memCompare( buf1, buf2, length );
-                                                                         }
-                                                                        );
-
-                    if ( comp == NEMath::eCompare::Equal )
-                    {
-                        posSearch += i;
-                        result = posSearch;
-                        break;
-                    }
-                }
-
-                posSearch += length;
-            }
-
-            delete[ ] fileData;
-        }
+        return Cursor::INVALID_CURSOR_POSITION;
     }
 
-    return result;
+    uint32_t posSearch = set_position(static_cast<int32_t>(startPos), Cursor::SeekOrigin::Begin);
+    if (posSearch == Cursor::INVALID_CURSOR_POSITION)
+        return Cursor::INVALID_CURSOR_POSITION;
+
+    const uint32_t winSize = 2u * length;
+    auto   storage = std::make_unique<uint8_t[]>(winSize);
+    uint8_t* const fileData = storage.get();
+
+    // comparator, avoid recreating lambda per iteration
+    auto matches = [&](const uint8_t* candidate) -> bool
+                    {
+                        return areg::mem_compare(candidate, buffer, length) == areg::Ordering::Equal;
+                    };
+
+    uint32_t inBuf = 0u;  // valid bytes currently in buffer
+    while (true)
+    {
+        // Slide window: preserve back half for cross-chunk overlap
+        if (inBuf >= length)
+        {
+            areg::mem_move(fileData, fileData + length, inBuf - length);
+            inBuf -= length;
+        }
+
+        const uint32_t didRead = read(fileData + inBuf, winSize - inBuf);
+        inBuf += didRead;
+
+        if (inBuf < length)
+            break;  // not enough data to match
+
+        // Fast scan: use memchr to skip to first candidate byte
+        const uint8_t  firstByte = buffer[0];
+        const uint8_t* scanBegin = fileData;
+        const uint8_t* scanEnd   = fileData + inBuf - length;
+
+        while (scanBegin <= scanEnd)
+        {
+            const uint8_t* hit = static_cast<const uint8_t*>(::memchr(scanBegin, firstByte, static_cast<std::size_t>(scanEnd - scanBegin) + 1u));
+
+            if (hit == nullptr)
+                break;
+
+            if (matches(hit))
+                return posSearch + static_cast<uint32_t>(hit - fileData);
+
+            scanBegin = hit + 1u;
+        }
+
+        posSearch += length;
+        if (didRead == 0)
+            break;  // EOF
+    }
+
+    return Cursor::INVALID_CURSOR_POSITION;
 }
 
-unsigned int FileBase::searchData( unsigned int startPos, const IEByteBuffer & buffer ) const
+uint32_t FileBase::search_data( uint32_t startPos, const SharedBuffer& buffer ) const
 {
-    return searchData(startPos, buffer.getBuffer(), buffer.getSizeUsed());
+    return search_data(startPos, buffer.buffer(), buffer.size_used());
 }
 
-unsigned int FileBase::searchText( unsigned int startPos, const char * text, bool caseSensitive ) const
+uint32_t FileBase::search_text( uint32_t startPos, const char * text, bool caseSensitive ) const
 {
-    return _searchText<char>( *this, startPos, text, static_cast<uint32_t>(NEString::getStringLength<char>( text )), caseSensitive );
+    return _searchText<char>( *this, startPos, text, static_cast<uint32_t>(areg::string_length<char>( text )), caseSensitive );
 }
 
-unsigned int FileBase::searchText( unsigned int startPos, const wchar_t * text, bool caseSensitive ) const
+uint32_t FileBase::search_text( uint32_t startPos, const wchar_t * text, bool caseSensitive ) const
 {
-    return _searchText<wchar_t>( *this, startPos, text, static_cast<uint32_t>(NEString::getStringLength<wchar_t>( text )), caseSensitive );
+    return _searchText<wchar_t>( *this, startPos, text, static_cast<uint32_t>(areg::string_length<wchar_t>( text )), caseSensitive );
 }
 
-unsigned int FileBase::searchText( unsigned int startPos, const String & text, bool caseSensitive ) const
+uint32_t FileBase::search_text( uint32_t startPos, const String & text, bool caseSensitive ) const
 {
-    return _searchText<char>( *this, startPos, text.getString(), static_cast<uint32_t>(text.getLength()), caseSensitive );
+    return _searchText<char>( *this, startPos, text.as_string(), static_cast<uint32_t>(text.length()), caseSensitive );
 }
 
-unsigned int FileBase::searchText( unsigned int startPos, const WideString & text, bool caseSensitive ) const
+uint32_t FileBase::search_text( uint32_t startPos, const WideString & text, bool caseSensitive ) const
 {
-    return _searchText<wchar_t>( *this, startPos, text.getString( ), static_cast<uint32_t>(text.getLength( )), caseSensitive );
+    return _searchText<wchar_t>( *this, startPos, text.as_string( ), static_cast<uint32_t>(text.length( )), caseSensitive );
 }
 
-void FileBase::flush(void)
+void FileBase::flush() noexcept
 {
 }
 
-void FileBase::normalizeName(String & IN OUT name)
+void FileBase::normalize_name(String & name)
 {
     // replace all "%time%"
     char fmt[128] { 0 };
-    NEUtilities::sSystemTime st;
-    DateTime::getNow(st, true);
-    String::formatString(fmt, 128, FileBase::TIMESTAMP_FORMAT.data(), st.stYear, st.stMonth, st.stDay, st.stHour, st.stMinute, st.stSecond, st.stMillisecs);
-    name.replace(FileBase::FILE_MASK_TIMESTAMP, fmt, NEString::START_POS, true);
+    areg::CalendarTime st;
+    DateTime::now(st, true);
+    String::format_string(fmt, 128, FileBase::TIMESTAMP_FORMAT.data(), st.stYear, st.stMonth, st.stDay, st.stHour, st.stMinute, st.stSecond, st.stMillisecs);
+    name.replace(FileBase::FILE_MASK_TIMESTAMP, fmt, areg::START_POS, true);
 
     // replace all "%appname%"
-    const String & appName = Process::getInstance().getAppName();
-    name.replace(FileBase::FILE_MASK_APPNAME, appName, NEString::START_POS, true);
+    const String & appName = Process::instance().app_name();
+    name.replace(FileBase::FILE_MASK_APPNAME, appName, areg::START_POS, true);
 }
+
+} // namespace areg

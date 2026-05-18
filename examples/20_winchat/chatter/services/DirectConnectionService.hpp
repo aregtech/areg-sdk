@@ -4,32 +4,32 @@
  * \brief           The messaging service client object
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/20_winchat/services/DirectConnectionStub.hpp"
+#include "examples/20_winchat/services/DirectConnectionProviderBase.hpp"
 
 #include "areg/base/DateTime.hpp"
 #include "areg/base/String.hpp"
 
-class DirectConnectionService   : public Component
-                                , public DirectConnectionStub
+class DirectConnectionService final : public areg::Component
+                                    , public DirectConnectionProviderBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    static DirectConnectionService * GetService( void );
+    static DirectConnectionService * GetService();
 
-    static NERegistry::Model GetModel( const String & nickName, uint32_t cookie, std::any data );
+    static areg::Model GetModel( const areg::String & nickName, uint32_t cookie, std::any data );
 
-    static String GetGeneratedService( const String & nickName, uint32_t cookie );
+    static areg::String GetGeneratedService( const areg::String & nickName, uint32_t cookie );
 
-    inline void SetOwnerData(const String & nickName, uint32_t cookie );
+    inline void SetOwnerData(const areg::String & nickName, uint32_t cookie );
 
 public:
-    DirectConnectionService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread );
-    virtual ~DirectConnectionService( void );
+    DirectConnectionService( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread );
+    ~DirectConnectionService();
 
 //////////////////////////////////////////////////////////////////////////
 // DirectConnection Interface Requests
@@ -41,27 +41,27 @@ protected:
      *          Request to setup the direct connection to chat room initiator.
      * \param   initiator           The initiator to setup connection
      * \param   listParticipants    The list of chat-room participants
-     * \see     responseConnectoinSetup
+     * \see     response_connectoin_setup
      **/
-    virtual void requestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants ) override;
+    void request_connectoin_setup( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants ) final;
 
     /**
      * \brief   Request call.
      *          The request to add a participant in the direct chat-room.
      * \param   initiator           The initiator to add to chat-room
      * \param   listParticipants    List of participants
-     * \see     responseAddParticipant
+     * \see     response_add_participant
      **/
-    virtual void requestAddParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants ) override;
+    void request_add_participant( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants ) final;
 
     /**
      * \brief   Request call.
      *          Request to remove initiator from chat-room
      * \param   initiator           The initiator to remove from chat-room
      * \param   listParticipants    List of chat-room participants
-     * \see     responseRemoveParticipant
+     * \see     response_remove_participant
      **/
-    virtual void requestRemoveParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants ) override;
+    void request_remove_participant( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants ) final;
 
     /**
      * \brief   Request call.
@@ -69,26 +69,26 @@ protected:
      * \param   initiator   The initiator to close chat-room.
      * \note    Has no response
      **/
-    virtual void requestCloseConnection( const NEDirectConnection::sInitiator & initiator ) override;
+    void request_close_connection( const DirectConnection::sInitiator & initiator ) final;
 
 private:
-    inline DirectConnectionService & self( void );
+    inline DirectConnectionService & self();
 
-    inline bool isInitiatorValid( const NEDirectConnection::sInitiator & initiator ) const;
+    inline bool isInitiatorValid( const DirectConnection::sInitiator & initiator ) const;
 
-    inline bool exists( const NEDirectConnection::sInitiator & initiator ) const;
+    inline bool exists( const DirectConnection::sInitiator & initiator ) const;
 
-    inline uint64_t getSession( const NEDirectConnection::ListParticipants & listParticipants );
+    inline uint64_t getSession( const DirectConnection::ListParticipants & listParticipants );
 
 private:
     static DirectConnectionService *  mService;
 
-    String      mNickName;
+    areg::String      mNickName;
     uint32_t    mCookie;
 };
 
-inline DirectConnectionService & DirectConnectionService::self( void )
+inline DirectConnectionService & DirectConnectionService::self()
 {   return (*this);                             }
 
-inline void DirectConnectionService::SetOwnerData( const String & nickName, uint32_t cookie )
+inline void DirectConnectionService::SetOwnerData( const areg::String & nickName, uint32_t cookie )
 {   mNickName   = nickName; mCookie = cookie;   }

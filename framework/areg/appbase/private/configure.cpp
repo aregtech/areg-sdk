@@ -15,15 +15,15 @@
  *
  ************************************************************************/
 #include "areg/appbase/private/configure.hpp"
-#include "areg/base/GEMacros.h"
+#include "areg/base/areg_macros.h"
 
 #ifdef DEBUG
 
     #if !defined(EXP_AREG_DLL) && !defined(EXP_AREG_LIB) && !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
         #ifdef MS_VISUAL_CPP
-            #pragma message(">>> WARNING: No import / export compiler option set. Use default IMP_AREG_DLL. Refer to the GESwitches.h file for details.")
+            #pragma message(">>> WARNING: No import / export compiler option set. Use default IMP_AREG_DLL. Refer to the areg_switches.h file for details.")
         #else
-            #pragma message ">>> WARNING: No import / export compiler option set. Use default IMP_AREG_DLL. Refer to the GESwitches.h file for details."
+            #pragma message ">>> WARNING: No import / export compiler option set. Use default IMP_AREG_DLL. Refer to the areg_switches.h file for details."
         #endif
     #endif  // !defined(EXP_AREG_DLL) && !defined(EXP_AREG_LIB) && !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
 
@@ -41,25 +41,25 @@
         #endif
     #endif
 
-    #if !defined(AREG_LOGS)
+    #if !defined(AREG_LOGGING)
         #ifdef MS_VISUAL_CPP
-            #pragma message(">>> The AREG_LOGS is not defined, setting default value 1")
+            #pragma message(">>> The AREG_LOGGING is not defined, setting default value 1")
         #else
-            #pragma message ">>> The AREG_LOGS is not defined, setting default value 1"
+            #pragma message ">>> The AREG_LOGGING is not defined, setting default value 1"
         #endif
-    #elif AREG_LOGS
+    #elif AREG_LOGGING
         #ifdef MS_VISUAL_CPP
             #pragma message (">>> Compiling the sources WITH logs")
         #else
             #pragma message ">>> Compiling the sources WITH logs"
         #endif
-    #else   // !AREG_LOGS
+    #else   // !AREG_LOGGING
         #ifdef MS_VISUAL_CPP
             #pragma message (">>> Compiling the sources WITHOUT logs")
         #else
             #pragma message ">>> Compiling the sources WITHOUT logs"
         #endif
-    #endif // AREG_LOGS
+    #endif // AREG_LOGGING
 
     #if !defined(AREG_EXTENDED)
         #ifdef MS_VISUAL_CPP

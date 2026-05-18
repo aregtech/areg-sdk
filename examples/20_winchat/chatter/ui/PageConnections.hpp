@@ -1,15 +1,17 @@
 #pragma once
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "chatter/res/resource.h"
 #include "areg/base/String.hpp"
-#include "examples/20_winchat/services/NEDirectConnection.hpp"
-#include "examples/20_winchat/services/NEConnectionManager.hpp"
+#include "examples/20_winchat/services/DirectConnection.hpp"
+#include "examples/20_winchat/services/ConnectionManager.hpp"
 
-class String;
-class Component;
+namespace areg { 
+    class Component;
+    class DispatcherThread;
+}
+
 class ConnectionList;
-class DispatcherThread;
 class ConnectionHandler;
 
 // PageConnections dialog
@@ -28,27 +30,27 @@ public:
 
 public:
 
-    void OnServiceStartup( bool isStarted, Component * owner );
-    void OnServiceNetwork( bool isConnected, DispatcherThread * ownerThread );
-    void OnServiceConnection( bool isConnected, DispatcherThread * ownerThread );
-    void OnClientConnection( bool isConnected, DispatcherThread *dispThread );
-    void OnClientRegistration( bool isRegistered, DispatcherThread * dispThread );
-    void OnAddConnection( NEConnectionManager::sConnection & data );
-    void OnRemoveConnection( NEConnectionManager::sConnection & data );
-    void OnUpdateConnection( void );
-    void OnDisconnectTriggered( void );
+    void OnServiceStartup( bool isStarted, areg::Component * owner );
+    void OnServiceNetwork( bool isConnected, areg::DispatcherThread * ownerThread );
+    void OnServiceConnection( bool isConnected, areg::DispatcherThread * ownerThread );
+    void OnClientConnection( bool isConnected, areg::DispatcherThread *dispThread );
+    void OnClientRegistration( bool isRegistered, areg::DispatcherThread * dispThread );
+    void OnAddConnection( ConnectionManager::ConnectionRecord & data );
+    void OnRemoveConnection( ConnectionManager::ConnectionRecord & data );
+    void OnUpdateConnection();
+    void OnDisconnectTriggered();
 
-    void OnDefaultClicked( void );
+    void OnDefaultClicked();
 
 public:
 
-    const String & GetRegisteredName( void ) const;
+    const areg::String & GetRegisteredName() const;
 
-    uint32_t GetRegisteredCookie( void ) const;
+    uint32_t GetRegisteredCookie() const;
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
-    virtual BOOL OnInitDialog( ) override;
+	void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
+    BOOL OnInitDialog( ) override;
 
 	DECLARE_MESSAGE_MAP()
 protected:
@@ -58,23 +60,23 @@ protected:
     afx_msg void OnDestroy( );
 
 private:
-    inline void cleanService( void );
+    inline void cleanService();
 
-    inline bool isServiceConnected( void ) const;
+    inline bool is_service_connected() const;
 
-    inline void setHeaders( void );
+    inline void setHeaders();
 
-    inline int getSelectedConnections( NEDirectConnection::sInitiator & outParticipant, NEDirectConnection::ListParticipants & outListParticipants );
+    inline int32_t getSelectedConnections( DirectConnection::sInitiator & outParticipant, DirectConnection::ListParticipants & outListParticipants );
 
-    inline void addConnection( const NEConnectionManager::sConnection & connection );
+    inline void addConnection( const ConnectionManager::ConnectionRecord & connection );
 
-    inline int findConnection( const NEConnectionManager::sConnection & connection ) const;
+    inline int32_t findConnection( const ConnectionManager::ConnectionRecord & connection ) const;
 
-    inline void removeConnection( const NEConnectionManager::sConnection & connection );
+    inline void removeConnection( const ConnectionManager::ConnectionRecord & connection );
 
-    inline void unloadModel( void );
+    inline void unload_model();
 
-    inline bool loadModel( const String & nickName, const uint32_t cookie );
+    inline bool load_model( const areg::String & nickName, const uint32_t cookie );
 
 private:
     // List of connections
@@ -82,9 +84,9 @@ private:
     // Connection list service client
     ConnectionList *    mClientConnections;
     // The name of direct connection model, which contains service
-    String              mDirectConnectModel;
+    areg::String        mDirectConnectModel;
     // The name of generated direct connection service
-    String              mDirectConnectService;
+    areg::String        mDirectConnectService;
     // The instance of connection handler object
     ConnectionHandler & mConnectionHandler;
     BOOL                mChatEnable;

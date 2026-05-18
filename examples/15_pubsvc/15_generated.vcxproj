@@ -45,16 +45,16 @@
     <None Include="services\HelloWorld.siml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\15_pubsvc\services\private\HelloWorldClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\15_pubsvc\services\private\HelloWorldConsumerBase.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\15_pubsvc\services\private\HelloWorldEvents.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\15_pubsvc\services\private\HelloWorldProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\15_pubsvc\services\private\HelloWorldStub.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\15_pubsvc\services\private\NEHelloWorld.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\15_pubsvc\services\private\HelloWorldProviderBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\15_pubsvc\services\private\HelloWorld.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)examples\15_pubsvc\services\HelloWorldClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\15_pubsvc\services\HelloWorldStub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\15_pubsvc\services\NEHelloWorld.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\15_pubsvc\services\HelloWorldConsumerBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\15_pubsvc\services\HelloWorldProviderBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\15_pubsvc\services\HelloWorld.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\15_pubsvc\services\private\HelloWorldEvents.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\15_pubsvc\services\private\HelloWorldProxy.hpp" />
   </ItemGroup>

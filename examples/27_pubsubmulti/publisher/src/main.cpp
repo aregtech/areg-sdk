@@ -7,10 +7,10 @@
 //               which predefined methods are called from remote clients.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #include "publisher/src/Publisher.hpp"
 
@@ -37,7 +37,7 @@ BEGIN_MODEL( _modelName )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _serviceName, Publisher )
             // register HelloWorld service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NEPubSub::ServiceName, NEPubSub::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( PubSub::ServiceName, PubSub::InterfaceVersion )
         // end of component description
         END_REGISTER_COMPONENT( _serviceName )
     // end of thread description
@@ -49,7 +49,7 @@ END_MODEL( _modelName )
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(example_27_pubsubmulti_publisher_main);
+DEF_LOG_SCOPE(examples_27_pubsubmulti_publisher, main);
 /**
  * \brief   The main method enables logging, service manager and timer.
  *          it loads and unloads the services, releases application.
@@ -59,26 +59,26 @@ int main( )
     printf( "Testing PubSub featured service ...\n" );
 
     // force to start logging with default settings
-    LOGGING_CONFIGURE_AND_START( nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr, false );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::initApplication( );
+    areg::Application::setup( );
 
     do
     {
-        LOG_SCOPE(example_27_pubsubmulti_publisher_main);
+        LOG_SCOPE( examples_27_pubsubmulti_publisher, main );
         LOG_DBG( "The application has been initialized, loading model [ %s ]", _modelName );
 
         // load model to initialize components
-        Application::loadModel( _modelName );
+        areg::Application::load_model( _modelName );
 
         LOG_DBG( "Servicing model is loaded" );
 
         // wait until Application quit signal is set.
-        Application::waitAppQuit( NECommon::WAIT_INFINITE );
+        areg::Application::wait_quit( areg::WAIT_INFINITE );
 
         // release and cleanup resources of application.
-        Application::releaseApplication( );
+        areg::Application::release( );
 
     } while ( false );
 

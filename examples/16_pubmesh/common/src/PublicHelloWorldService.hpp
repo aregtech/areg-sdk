@@ -13,13 +13,13 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
-#include "examples/16_pubmesh/services/PublicHelloWorldStub.hpp"
+#include "areg/base/areg_global.h"
+#include "examples/16_pubmesh/services/PublicHelloWorldProviderBase.hpp"
 
 //! \brief  Implementation of a public service to receive requests from remote clients.
-class PublicHelloWorldService : private PublicHelloWorldStub
+class PublicHelloWorldService : private PublicHelloWorldProviderBase
 {
-    using ClientList = TELinkedList< NEPublicHelloWorld::sClientRegister >;
+    using ClientList = areg::LinkedList< PublicHelloWorld::sClientRegister >;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -27,21 +27,26 @@ class PublicHelloWorldService : private PublicHelloWorldStub
 public:
     
     /**
-     * \brief   Initializes Stub by given component object, which should be already instantiated.
-     * \param   masterComp  The master component object, which is initializing service Stub.
+     * \brief   Initializes Provider by given component object, which should be already instantiated.
+     * \param   masterComp  The master component object, which is initializing service provider.
      * \note    Before constructor is called, the instance of Component must be already initialized.
      **/
-    PublicHelloWorldService(Component & masterComp);
+    PublicHelloWorldService(areg::Component & masterComp);
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~PublicHelloWorldService(void) = default;
+    virtual ~PublicHelloWorldService() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // HelloWorld Interface Requests
 //////////////////////////////////////////////////////////////////////////
 protected:
+
+    /**
+     * \brief   Need this to call from child classes.
+     **/
+    bool consumer_connected(const areg::ProxyAddress& client, areg::ServiceConnectionState status) override;
 
     /**
      * \brief   Request call.
@@ -50,46 +55,38 @@ protected:
      * \param   service The service address of the client.
      * \param   thread  The thread name where client is running. Required to provide uniqueness.
      * \param   process The name of process. Optional parameter, used to make output in logs.
-     * \see     responseRegister
+     * \see     request_register
      **/
-    virtual void requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process ) override;
+    void request_register( const areg::String & name, const areg::ServiceAddress & service, const areg::String & thread, const areg::String & process ) override;
 
     /**
      * \brief   Request call.
-     *          Sent to unregister connected client.
+     *          Sent to request_unregister connected client.
      * \param   client  The client registration object indicating the unregistered client.
      * \note    Has no response
      **/
-    virtual void requestUnregister( const NEPublicHelloWorld::sClientRegister & client ) override;
+    void request_unregister( const PublicHelloWorld::sClientRegister & client ) override;
 
     /**
      * \brief   Request call.
      *          Outputs message on console. If additional message is not empty, outputs the additional message as well.
      * \param   clientID    The ID of registered client to make message output
-     * \see     responseHelloWorld
+     * \see     request_hello_world
      **/
-    virtual void requestHelloWorld( unsigned int clientID ) override;
-
-    /**
-     * \brief   Triggered when proxy client either connected or disconnected to stub.
-     * \param   client  The address of proxy client, which connection status is changed.
-     * \param   status  The service consumer connection status.
-     * \return  Returns true if connected service consumer is relevant to the provider.
-     **/
-    virtual bool clientConnected( const ProxyAddress & client, NEService::eServiceConnection status ) override;
+    void request_hello_world( uint32_t clientID ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 protected:
-    ClientList      mClientList;    //!< The list of registered clients
-    unsigned int    mNumMessages;   //!< The number or processed messages on console.
+    ClientList  mClientList;    //!< The list of registered clients
+    uint32_t    mNumMessages;   //!< The number or processed messages on console.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    PublicHelloWorldService( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( PublicHelloWorldService );
+    PublicHelloWorldService() = delete;
+    AREG_NOCOPY_NOMOVE( PublicHelloWorldService );
 };
 
 #endif // PUBMESH_COMMON_SRC_PUBLICHELLOWORLDSERVICE_HPP

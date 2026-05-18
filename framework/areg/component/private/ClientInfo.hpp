@@ -18,18 +18,20 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/ProxyAddress.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 
-class StubAddress;
+namespace areg {
+    class StubAddress;
+} // namespace areg
+
+namespace areg {
 //////////////////////////////////////////////////////////////////////////
 // ClientInfo class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This is a helper class used of servicing interface client used by
- *          Service Manager and it contains information of client proxy address
- *          and client state.
+ * \brief   Helper class for servicing interface clients; contains proxy address and client state.
  **/
 class ClientInfo
 {
@@ -38,101 +40,60 @@ class ClientInfo
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Predefines invalid client info object
+     * \brief   Returns a predefined invalid client info object.
      **/
-    static const ClientInfo & getInvalidClientInfo( void );
+    [[nodiscard]]
+    static const ClientInfo & invalid_client_info() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
+    ClientInfo();
+
     /**
-     * \brief   Initializes default values.
-     **/
-    ClientInfo( void );
-    /**
-     * \brief   Initializes object and sets client Proxy address value.
-     * \param   client  The Proxy address of the client
+     * \brief   Initializes the object with the given proxy address.
      **/
     explicit ClientInfo( const ProxyAddress & client );
+
     /**
-     * \brief   Initializes object and sets client Proxy address value.
-     * \param   client  The Proxy address of the client
+     * \brief   Initializes the object with the given proxy address.
      **/
     explicit ClientInfo( ProxyAddress && client ) noexcept;
-    /**
-     * \brief   Copies values from given source.
-     * \param   src     The source of data to copy.
-     **/
-    ClientInfo( const ClientInfo & src );
-    /**
-     * \brief   Moves values from given source.
-     * \param   src     The source of data to move.
-     **/
-    ClientInfo( ClientInfo && src ) noexcept;
-    /**
-     * \brief   Destructor
-     **/
-    ~ClientInfo( void ) = default;
+
+    ClientInfo(const ClientInfo& src) = default;
+
+    ClientInfo(ClientInfo&& src) noexcept;
+
+    ~ClientInfo() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Copies Client Info data from given source.
-     * \param   src     The source of Client Info to get data.
-     **/
-    ClientInfo & operator = ( const ClientInfo & src );
-    /**
-     * \brief   Moves Client Info data from given source.
-     * \param   src     The source of Client Info to get data.
-     **/
-    ClientInfo & operator = ( ClientInfo && src ) noexcept;
-    /**
-     * \brief   Copies passed client Proxy address, if Service Info
-     *          object is valid, it sets client in Waiting state
-     * \param   client  The source of proxy address to extract data.
-     **/
-    ClientInfo & operator = ( const ProxyAddress & client );
-    /**
-     * \brief   Moves passed client Proxy address, if Service Info
-     *          object is valid, it sets client in Waiting state
-     * \param   client  The source of proxy address to extract data.
-     **/
-    ClientInfo & operator = ( ProxyAddress && client ) noexcept;
+
+    inline ClientInfo& operator = (ClientInfo&& src) noexcept;
+
+    inline ClientInfo& operator = (const ProxyAddress& client);
+
+    inline ClientInfo & operator = ( ProxyAddress && client ) noexcept;
+
+    [[nodiscard]]
+    inline bool operator == ( const ClientInfo & other ) const noexcept;
+
+    [[nodiscard]]
+    inline bool operator == ( const ProxyAddress & client ) const noexcept;
+
+    [[nodiscard]]
+    inline bool operator == ( const StubAddress & server ) const noexcept;
 
     /**
-     * \brief   Checks equality of 2 Client Info objects. 2 objects are equal if
-     *          Service Info and the Proxy addresses are equal.
-     * \param   other   The second instance of client info to check.
-     * \return  Returns true if Service Info and the Proxy addresses are equal
+     * \brief   Converts client info to a 32-bit unsigned integer.
      **/
-    bool operator == ( const ClientInfo & other ) const;
-    /**
-     * \brief   Checks equality of data of client and given proxy and returns true
-     *          if proxy address of client service and if proxy addresses are equal.
-     *          Checking state of client is ignored.
-     * \param   client  The proxy address to check equality.
-     * \return  Returns true if proxy address of client service and given proxy address 
-     *          are equal.
-     **/
-    bool operator == ( const ProxyAddress & client ) const;
-    /**
-     * \brief   Check equality / compatibility of servicing client and
-     *          given stub address, and returns true if the proxy address
-     *          of client is compatible with given stub address.
-     *          Checking state of client is ignored.
-     * \param   server  The Stub address to check equality / compatibility.
-     * \return  Returns true if existing proxy address is compatible with
-     *          given proxy address.
-     **/
-    bool operator == ( const StubAddress & server ) const;
+    [[nodiscard]]
+    explicit inline operator uint32_t () const noexcept;
 
-    /**
-     * \brief   Operator to covert client info to 32-bit unsigned integer.
-     **/
-    explicit operator unsigned int ( void ) const;
+    ClientInfo& operator = (const ClientInfo& src) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -140,60 +101,127 @@ public:
 public:
 
     /**
-    * \brief   Sets target server object in client info.
-    * \param   addrStub    The address of targeted server component to set in client information.
-    **/
-    void setTargetServer( const StubAddress & addrStub );
+     * \brief   Sets the target service provider address.
+     * \param   addrStub    The address of the service provider.
+     **/
+    void set_target( const StubAddress & addrStub );
 
     /**
-     * \brief   Called when server is in connected state.
-     *          It will set the address of Stub of server and will change the state of client.
-     *          If specified address of Stub is valid, it sets client state connected.
-     *          Otherwise, if Service Info is valid, it will set client state waiting.
-     *          Otherwise, it sets client state undefined.
-     *          Service Info is valid, if Role Name and Service Names are valid.
-     *          For more information of Service Info see description of ServiceInfo class.
-     * \param   newConnection   The address of the Stub of server (service provider).
-     *                          If valid address, this will change the state of client to connected.
+     * \brief   Sets the client connection state based on the server stub address.
+     *
+     * \param   newConnection       The stub address of the server; valid address sets client to
+     *                              Connected, otherwise to Waiting or Undefined.
      **/
-    void setConnectionStatus( NEService::eServiceConnection newConnection );
+    void set_connection_status( areg::ServiceConnectionState newConnection ) noexcept;
 
     /**
-     * \brief   Returns the state of client.
-     *          For more information, see description of states
-     *          defined in ClientInfo::eClientState
+     * \brief   Returns the client connection state.
      **/
-    inline NEService::eServiceConnection getConnectionStatus( void ) const;
+    [[nodiscard]]
+    inline areg::ServiceConnectionState connection_status() const noexcept;
 
     /**
-     * \brief   Returns the address of Proxy of client
+     * \brief   Returns the proxy address of the client.
      **/
-    inline const ProxyAddress & getAddress( void ) const;
+    [[nodiscard]]
+    inline const ProxyAddress & address() const noexcept;
 
     /**
-     * \brief   Returns true if client is in waiting state
+     * \brief   Returns true if the client is in Waiting state.
      **/
-    inline bool isWaitingConnection( void ) const;
+    [[nodiscard]]
+    inline bool is_waiting() const noexcept;
 
     /**
-     * \brief   Returns true if client is in connected state.
+     * \brief   Returns true if the client is in Connected state.
      **/
-    inline bool isConnected( void ) const;
+    [[nodiscard]]
+    inline bool is_connected() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   The address of Proxy of client.
-     **/
-    ProxyAddress                  mClientAddress;
-
-    /**
-     * \brief   The current state of client
-     **/
-    NEService::eServiceConnection  mClientState;
+    ProxyAddress                  mClientAddress;   //!< The address of Proxy of client.
+    areg::ServiceConnectionState  mClientState;     //!< The current state of client
 };
+
+//////////////////////////////////////////////////////////////////////////
+// ClientInfo class inline functions implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+
+inline ClientInfo& ClientInfo::operator = (ClientInfo&& src) noexcept
+{
+    mClientAddress = std::move(src.mClientAddress);
+    mClientState = src.mClientState;
+
+    return (*this);
+}
+
+inline ClientInfo& ClientInfo::operator = (const ProxyAddress& client)
+{
+    mClientAddress = client;
+    set_connection_status(areg::ServiceConnectionState::Pending);
+    return (*this);
+}
+
+inline ClientInfo& ClientInfo::operator = (ProxyAddress&& client) noexcept
+{
+    mClientAddress = std::move(client);
+    set_connection_status(areg::ServiceConnectionState::Pending);
+    return (*this);
+}
+
+inline bool ClientInfo::operator == (const ProxyAddress& client) const noexcept
+{
+    return mClientAddress == client;
+}
+
+inline bool ClientInfo::operator == (const ClientInfo& other) const noexcept
+{
+    return (this != &other ? mClientAddress == other.mClientAddress : true);
+}
+
+inline bool ClientInfo::operator == (const StubAddress& server) const noexcept
+{
+    return mClientAddress == server;
+}
+
+inline ClientInfo::operator uint32_t () const noexcept
+{
+    const ServiceAddress& addrService = static_cast<const ServiceAddress&>(mClientAddress);
+    return static_cast<uint32_t>(addrService);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Inline attributes
+//////////////////////////////////////////////////////////////////////////
+
+inline areg::ServiceConnectionState ClientInfo::connection_status() const noexcept
+{
+    return mClientState;
+}
+
+inline const ProxyAddress & ClientInfo::address() const noexcept
+{
+    return mClientAddress;
+}
+
+inline bool ClientInfo::is_waiting() const noexcept
+{
+    return (mClientState == areg::ServiceConnectionState::Pending);
+}
+
+inline bool ClientInfo::is_connected() const noexcept
+{
+    return (mClientState == areg::ServiceConnectionState::Connected);
+}
+
+} // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
 // Hasher of ClientInfo class
@@ -201,41 +229,17 @@ private:
 /**
  * \brief   A template to calculate hash value of the ClientInfo.
  */
-namespace std
-{
+namespace std {
     template<>
-    struct hash<ClientInfo>
+    struct hash<areg::ClientInfo>
     {
-        //! A function to convert ClientInfo object to unsigned int.
-        inline unsigned int operator()(const ClientInfo& key) const
+        //! A function to convert ClientInfo object to uint32_t.
+        [[nodiscard]]
+        inline uint32_t operator()(const areg::ClientInfo& key) const noexcept
         {
-            return static_cast<unsigned int>(key);
+            return static_cast<uint32_t>(key);
         }
     };
-}
-
-//////////////////////////////////////////////////////////////////////////
-// ClientInfo class inline functions implementation
-//////////////////////////////////////////////////////////////////////////
-
-inline NEService::eServiceConnection ClientInfo::getConnectionStatus( void ) const
-{
-    return mClientState;
-}
-
-inline const ProxyAddress & ClientInfo::getAddress( void ) const
-{
-    return mClientAddress;
-}
-
-inline bool ClientInfo::isWaitingConnection( void ) const
-{
-    return (mClientState == NEService::eServiceConnection::ServicePending);
-}
-
-inline bool ClientInfo::isConnected( void ) const
-{
-    return (mClientState == NEService::eServiceConnection::ServiceConnected);
-}
+} // namespace std
 
 #endif  // AREG_COMPONENT_PRIVATE_CLIENTINFO_HPP

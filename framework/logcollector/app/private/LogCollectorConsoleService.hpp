@@ -18,16 +18,17 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "aregextend/console/SystemServiceConsole.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // LogCollectorConsoleService class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   A service to output statistics..
+ * \brief   Service component that outputs statistics and provides console interaction for the
+ *          LogCollector application.
  **/
-class LogCollectorConsoleService  : public SystemServiceConsole
+class LogCollectorConsoleService  : public areg::ext::SystemServiceConsole
 {
 public:
     //!< The console service role name
@@ -39,24 +40,21 @@ public:
 public:
 
     /**
-     * \brief   Instantiates the component object.
-     * \param   entry   The entry of registry, which describes the component.
-     * \param   owner   The component owner thread.
-     * \param   data    The optional component data set in system. Can be empty / no data.
+     * \brief   Instantiates the component with registry entry and owner thread.
+     *
+     * \param   entry       The registry entry that describes the component.
+     * \param   owner       The component owner thread.
      **/
-    LogCollectorConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    LogCollectorConsoleService( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
-    /**
-     * \brief   Destructor.
-     **/
-    virtual ~LogCollectorConsoleService( void ) = default;
+    virtual ~LogCollectorConsoleService() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    LogCollectorConsoleService( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( LogCollectorConsoleService );
+    LogCollectorConsoleService() = delete;
+    AREG_NOCOPY_NOMOVE( LogCollectorConsoleService );
 };
 
 #endif  // AREG_LOGCOLLECTOR_APP_LOGCOLLECTORCONSOLESERVICE_HPP

@@ -7,10 +7,10 @@
 //               which predefined methods are called from remote clients.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #include "pubservice/src/ServicingComponent.hpp"
 
@@ -38,7 +38,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT(_serviceName, ServicingComponent )
             // register HelloWorld service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( HelloWorld::ServiceName, HelloWorld::InterfaceVersion )
         // end of component description
         END_REGISTER_COMPONENT(_serviceName)
     // end of thread description
@@ -50,35 +50,35 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(example_15_pubservice_main_main);
+DEF_LOG_SCOPE(examples_15_pubservice_main, main);
 //! \brief   A Demo public service to process requests, and send response and broadcast.
 int main()
 {
     std::cout << "A Demo public service to process requests, and send response and broadcast ..." << std::endl;
 
     // force to start logging with default settings
-    LOGGING_CONFIGURE_AND_START( nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr, false );
     // Initialize application use default settings: enable logging, servicing, routing, timer and watchdog.
-    Application::initApplication( );
+    areg::Application::setup( );
 
     do 
     {
-        LOG_SCOPE(example_15_pubservice_main_main);
+        LOG_SCOPE( examples_15_pubservice_main, main );
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components
-        Application::loadModel( _modelName );
+        areg::Application::load_model( _modelName );
         LOG_DBG( "Servicing model is loaded" );
         // wait until Application quit signal is set.
-        Application::waitAppQuit( NECommon::WAIT_INFINITE );
+        areg::Application::wait_quit( areg::WAIT_INFINITE );
 
         std::cout
-            << (Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI)
+            << (areg::Application::find_model( _modelName ).alive_duration( ) / areg::DURATION_1_MILLI)
             << " ms passed. Model is unloaded, releasing resources to exit application ..."
             << std::endl;
 
         // release and cleanup resources of application.
-        Application::releaseApplication( );
+        areg::Application::release( );
 
     } while (false);
 

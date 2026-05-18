@@ -11,9 +11,9 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/25_pubsub/services/PubSubClientBase.hpp"
+#include "examples/25_pubsub/services/PubSubConsumerBase.hpp"
 
 /**
  * \brief   The PubSub service consumer object.
@@ -27,21 +27,21 @@
  *              - Always   : this means to receive update notification each
  *                           the value is set even if the value is not updated.
  **/
-class Subscriber: public    Component
-                , protected PubSubClientBase
+class Subscriber final  : public    areg::Component
+                        , protected PubSubConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    Subscriber( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    Subscriber( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -54,7 +54,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
     /**
      * \brief   Triggered, when StringOnChange attribute is updated. The function contains
@@ -65,7 +65,7 @@ protected:
      * \param   StringOnChange  The value of StringOnChange attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onStringOnChangeUpdate( const String & StringOnChange, NEService::eDataStateType state ) override;
+    void on_string_on_change_update( const areg::String & StringOnChange, areg::DataState state ) final;
 
     /**
      * \brief   Triggered, when IntegerAlways attribute is updated. The function contains
@@ -76,7 +76,7 @@ protected:
      * \param   IntegerAlways   The value of IntegerAlways attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onIntegerAlwaysUpdate( unsigned int IntegerAlways, NEService::eDataStateType state ) override;
+    void on_integer_always_update( uint32_t IntegerAlways, areg::DataState state ) final;
 
     /**
      * \brief   Triggered, when ServiceProviderState attribute is updated. The function contains
@@ -87,27 +87,27 @@ protected:
      * \param   ServiceProviderState    The value of ServiceProviderState attribute.
      * \param   state                   The data validation flag.
      **/
-    virtual void onServiceProviderStateUpdate( NEPubSub::eServiceState ServiceProviderState, NEService::eDataStateType state ) override;
+    void on_service_provider_state_update( PubSub::RunState ServiceProviderState, areg::DataState state ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline Subscriber & self(void);
+    inline Subscriber & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    uint32_t    mOldInteger;    //!< Old integer value to compare when output on console.
-    bool        mOldState;      //!< Flag, indicating whether the old integer value is valid or not.
-    String      mOldString;     //!< Old string value to compare when output on console.
+    uint32_t     mOldInteger;    //!< Old integer value to compare when output on console.
+    bool         mOldState;      //!< Flag, indicating whether the old integer value is valid or not.
+    areg::String mOldString;     //!< Old string value to compare when output on console.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    Subscriber(void);
-    DECLARE_NOCOPY_NOMOVE(Subscriber);
+    Subscriber();
+    AREG_NOCOPY_NOMOVE(Subscriber);
 };

@@ -7,13 +7,13 @@
 //               which predefined methods are called from remote clients.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "aregextend/console/Console.hpp"
 
-#include "common/src/NECommon.hpp"
+#include "common/src/PubSubDefs.hpp"
 #include "common/src/PubSubMixed.hpp"
 #include "pubsubctrl/src/PubSubController.hpp"
 
@@ -33,7 +33,7 @@ namespace
     constexpr char const _modelName[]       { "ServiceModel" };
 
     //!< Generates the name of second Publisher that is using same interface.
-    String SecondRole(NEUtilities::generateName(NECommon::PublisherSecond));
+    areg::String SecondRole(areg::generate_name(pubsub::PublisherSecond));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -48,12 +48,12 @@ BEGIN_MODEL( _modelName )
     // define component thread
     BEGIN_REGISTER_THREAD( "TestServiceThread1" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT(NECommon::ContollerPublisher, PubSubController )
+        BEGIN_REGISTER_COMPONENT(pubsub::ContollerPublisher, PubSubController )
             // register HelloWorld service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NEPubSubMix::ServiceName, NEPubSubMix::InterfaceVersion )
-            REGISTER_DEPENDENCY(NECommon::ContollerPublisher)
+            REGISTER_IMPLEMENT_SERVICE( PubSubMix::ServiceName, PubSubMix::InterfaceVersion )
+            REGISTER_DEPENDENCY(pubsub::ContollerPublisher)
         // end of component description
-        END_REGISTER_COMPONENT(NECommon::ContollerPublisher)
+        END_REGISTER_COMPONENT(pubsub::ContollerPublisher)
     // end of thread description
     END_REGISTER_THREAD( "TestServiceThread1" )
 
@@ -62,8 +62,8 @@ BEGIN_MODEL( _modelName )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT(SecondRole, PubSubMixed)
             // register HelloWorld service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NEPubSubMix::ServiceName, NEPubSubMix::InterfaceVersion )
-            REGISTER_DEPENDENCY(NECommon::ContollerPublisher)
+            REGISTER_IMPLEMENT_SERVICE( PubSubMix::ServiceName, PubSubMix::InterfaceVersion )
+            REGISTER_DEPENDENCY(pubsub::ContollerPublisher)
             REGISTER_DEPENDENCY(SecondRole)
         // end of component description
         END_REGISTER_COMPONENT(SecondRole)
@@ -76,7 +76,7 @@ END_MODEL( _modelName )
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(example_26_pubsubmix_pubsubctrl_main);
+DEF_LOG_SCOPE(examples_26_pubsubmix_pubsubctrl, main);
 /**
  * \brief   The main method enables logging, service manager and timer.
  *          it loads and unloads the services, releases application.
@@ -86,35 +86,35 @@ int main( )
     printf( "Testing PubSub featured service ...\n" );
 
     // force to start logging with default settings
-    LOGGING_CONFIGURE_AND_START( nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr, false );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::initApplication( );
+    areg::Application::setup( );
 
     do
     {
-        LOG_SCOPE(example_26_pubsubmix_pubsubctrl_main);
+        LOG_SCOPE( examples_26_pubsubmix_pubsubctrl, main );
         LOG_DBG( "The application has been initialized, loading model [ %s ]", _modelName );
 
         // Output the title of the application.
-        Console & console = Console::getInstance();
-        console.clearScreen();
-        console.outputTxt(NECommon::CoordTitle, _title);
-        console.outputTxt(NECommon::CoordSubtitle, NECommon::Separator);
+        areg::ext::Console & console = areg::ext::Console::instance();
+        console.clear_screen();
+        console.output_txt(pubsub::CoordTitle, _title);
+        console.output_txt(pubsub::CoordSubtitle, pubsub::Separator);
 
         // Set this value to have correct outputs on console, it plays no other role.
-        ComponentLoader::setComponentData(SecondRole, std::make_any<int>(1));
+        areg::ComponentLoader::set_component_data(SecondRole, std::make_any<int32_t>(1));
 
         // load model to initialize components
-        Application::loadModel( _modelName );
+        areg::Application::load_model( _modelName );
 
         LOG_DBG( "Servicing model is loaded" );
 
         // wait until Application quit signal is set.
-        Application::waitAppQuit( NECommon::WAIT_INFINITE );
+        areg::Application::wait_quit( areg::WAIT_INFINITE );
 
         // release and cleanup resources of application.
-        Application::releaseApplication( );
+        areg::Application::release( );
 
     } while ( false );
 

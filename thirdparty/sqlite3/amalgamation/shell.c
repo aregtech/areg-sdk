@@ -521,7 +521,7 @@ typedef struct Prompts {
 ** library to interactively collect line edited input.
 */
 SQLITE_INTERNAL_LINKAGE char *
-shellGetLine(FILE *pfIn, char *zBufPrior, int nLen,
+shellline(FILE *pfIn, char *zBufPrior, int nLen,
              short isContinuation, Prompts azPrompt);
 #endif /* defined(SQLITE_CIO_PROMPTED_IN) */
 /*
@@ -1754,7 +1754,7 @@ static FILE * openChrSource(const char *zFile){
 ** If zLine is not NULL then it is a malloced buffer returned from
 ** a previous call to this routine that may be reused.
 */
-static char *local_getline(char *zLine, FILE *in){
+static char *local_line(char *zLine, FILE *in){
   int nLine = zLine==0 ? 0 : 100;
   int n = 0;
 
@@ -1802,14 +1802,14 @@ static char *one_input_line(FILE *in, char *zPrior, int isContinuation){
   char *zPrompt;
   char *zResult;
   if( in!=0 ){
-    zResult = local_getline(zPrior, in);
+    zResult = local_line(zPrior, in);
   }else{
     zPrompt = isContinuation ? CONTINUATION_PROMPT : mainPrompt;
 #if SHELL_USE_LOCAL_GETLINE
     sputz(stdout, zPrompt);
     fflush(stdout);
     do{
-      zResult = local_getline(zPrior, stdin);
+      zResult = local_line(zPrior, stdin);
       zPrior = 0;
       /* ^C trap creates a false EOF, so let "interrupt" thread catch up. */
       if( zResult==0 ) sqlite3_sleep(50);

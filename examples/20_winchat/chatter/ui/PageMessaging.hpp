@@ -1,13 +1,14 @@
 #pragma once
 
 #include "areg/base/String.hpp"
-#include "areg/base/TEArrayList.hpp"
-#include "common/NECommon.hpp"
+#include "areg/base/ArrayList.hpp"
+#include "common/ChatDefs.hpp"
 #include "chatter/res/resource.h"
-#include "examples/20_winchat/services/NEConnectionManager.hpp"
+#include "examples/20_winchat/services/ConnectionManager.hpp"
 
-class Component;
-class DispatcherThread;
+namespace areg { class Component; }
+namespace areg { class DispatcherThread; }
+
 class CentralMessaging;
 class ConnectionHandler;
 class ConnectionList;
@@ -29,23 +30,23 @@ public:
 
 public:
 
-    void OnServiceStartup( bool isStarted, Component * owner );
-    void OnServiceNetwork( bool isConnected, DispatcherThread * ownerThread );
-    void OnServiceConnection( bool isConnected, DispatcherThread * ownerThread );
-    void OnClientConnection( bool isConnected, DispatcherThread *dispThread );
-    void OnClientRegistration( bool isRegistered, DispatcherThread * dispThread );
-    void OnAddConnection( NEConnectionManager::sConnection & data );
-    void OnRemoveConnection( NEConnectionManager::sConnection & data );
-    void OnUpdateConnection( void );
-    void OnDisconnectTriggered( void );
-    void OnTypeMessage( uint32_t cookie, NECommon::sMessageData & data );
-    void OnSendMessage( uint32_t cookie, NECommon::sMessageData & data );
+    void OnServiceStartup( bool isStarted, areg::Component * owner );
+    void OnServiceNetwork( bool isConnected, areg::DispatcherThread * ownerThread );
+    void OnServiceConnection( bool isConnected, areg::DispatcherThread * ownerThread );
+    void OnClientConnection( bool isConnected, areg::DispatcherThread *dispThread );
+    void OnClientRegistration( bool isRegistered, areg::DispatcherThread * dispThread );
+    void OnAddConnection( ConnectionManager::ConnectionRecord & data );
+    void OnRemoveConnection( ConnectionManager::ConnectionRecord & data );
+    void OnUpdateConnection();
+    void OnDisconnectTriggered();
+    void OnTypeMessage( uint32_t cookie, chat:: MessageData & data );
+    void OnSendMessage( uint32_t cookie, chat:: MessageData & data );
 
-    void OnDefaultClicked( void );
+    void OnDefaultClicked();
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
-    virtual BOOL OnInitDialog( ) override;
+	void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
+    BOOL OnInitDialog( ) override;
 
 	DECLARE_MESSAGE_MAP()
 public:
@@ -62,15 +63,15 @@ public:
 
 private:
 
-    void setHeaders( void );
+    void setHeaders();
 
-    void cleanService( void );
+    void cleanService();
 
-    bool isServiceConnected( void ) const;
+    bool is_service_connected() const;
 
     void outputMessage( CString nickName, CString message, CString dateStart, CString dateEnd, uint32_t cookie );
-    void outputMessage( const String & nickname, const String & message, const uint64_t begin, const uint64_t end, uint32_t cookie );
-    void outputMessage( const String & nickname, const String & message, const DateTime & begin, const DateTime & end, uint32_t cookie);
+    void outputMessage( const areg::String & nickname, const areg::String & message, const uint64_t begin, const uint64_t end, uint32_t cookie );
+    void outputMessage( const areg::String & nickname, const areg::String & message, const areg::DateTime & begin, const areg::DateTime & end, uint32_t cookie);
     void outputTyping( CString nickName, CString message, uint32_t cookie );
     void removeTyping( const CString & nickName, uint32_t cookie );
 

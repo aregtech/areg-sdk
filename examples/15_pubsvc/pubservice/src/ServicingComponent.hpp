@@ -12,9 +12,9 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/15_pubsvc/services/HelloWorldStub.hpp"
+#include "examples/15_pubsvc/services/HelloWorldProviderBase.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
@@ -26,17 +26,17 @@
  *              b. Request without response;
  *              c. Broadcasts with a parameter;
  **/
-class ServicingComponent    : public    Component
-                            , protected HelloWorldStub
+class ServicingComponent final  : public    areg::Component
+                                , protected HelloWorldProviderBase
 {
     //!< The type of list of connected clients.
-    using ClientList = TELinkedList<NEHelloWorld::sConnectedClient>;
+    using ClientList = areg::LinkedList<HelloWorld::sConnectedClient>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // HelloWorld Interface Requests
@@ -47,9 +47,9 @@ protected:
      * \brief   Request call.
      *          Request to print hello world
      * \param   roleName    The role name of client component that requested to print hello world
-     * \see     responseHelloWorld
+     * \see     hello_world
      **/
-    virtual void requestHelloWorld( const String & roleName ) override;
+    void request_hello_world( const areg::String & roleName ) final;
 
     /**
      * \brief   Request call.
@@ -58,20 +58,20 @@ protected:
      * \param   roleName    Service client component role name
      * \note    Has no response
      **/
-    virtual void requestShutdownService( unsigned int clientID, const String & roleName ) override;
+    void request_shutdown_service( uint32_t clientID, const areg::String & roleName ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    ClientList      mClientList;    //!< The list of connected clients.
-    signed short    mRemainRequest; //!< The maximum number of processing requests.
+    ClientList  mClientList;    //!< The list of connected clients.
+    int16_t     mRemainRequest; //!< The maximum number of processing requests.
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ServicingComponent & self( void )
+    inline ServicingComponent & self()
     {
         return (*this);
     }
@@ -79,6 +79,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    ServicingComponent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServicingComponent );
+    ServicingComponent() = delete;
+    AREG_NOCOPY_NOMOVE( ServicingComponent );
 };

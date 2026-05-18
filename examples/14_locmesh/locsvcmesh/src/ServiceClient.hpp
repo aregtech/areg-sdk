@@ -12,20 +12,20 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
-#include "examples/14_locmesh/services/HelloWorldClientBase.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/base/areg_global.h"
+#include "examples/14_locmesh/services/HelloWorldConsumerBase.hpp"
+#include "areg/component/TimerConsumer.hpp"
 
 #include "areg/component/Timer.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
 //////////////////////////////////////////////////////////////////////////
-class ServiceClient : protected HelloWorldClientBase
-                    , private   IETimerConsumer
+class ServiceClient final : protected HelloWorldConsumerBase
+                          , private   areg::TimerConsumer
 {
     //!< Timeout to wait before sending message
-    static constexpr unsigned int   TIMEOUT_VALUE   { 100 };
+    static constexpr uint32_t   TIMEOUT_VALUE   { 100 };
 
 public:
 
@@ -34,9 +34,9 @@ public:
      * \param   roleName    The role name of the component.
      * \param   owner       The component owning thread.
      **/
-    ServiceClient( const String & roleName, Component & owner );
+    ServiceClient( const areg::String & roleName, areg::Component & owner );
 
-    virtual ~ServiceClient(void) = default;
+    ~ServiceClient() = default;
 
 protected:
 
@@ -47,9 +47,9 @@ protected:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientName  The name of connected client that requested to output message.
      * \param   clientId    Thegiven ID of the client that requested to output message.
-     * \see     requestHelloWorld
+     * \see     hello_world
      **/
-    virtual void responseHelloWorld( const String & clientName, unsigned int clientId ) override;
+    void response_hello_world( const areg::String & clientName, uint32_t clientId ) final;
 
     /**
      * \brief   Server broadcast.
@@ -57,11 +57,11 @@ protected:
      *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      **/
-    virtual void broadcastReachedMaximum( int maxNumber ) override;
+    void broadcast_reached_maximum( int32_t maxNumber ) final;
 
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -74,24 +74,24 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 /************************************************************************/
-// IETimerConsumer interface overrides.
+// TimerConsumer interface overrides.
 /************************************************************************/
 
     /**
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer ) override;
+    void process_timer( areg::Timer & timer ) final;
 
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ServiceClient & self( void )
+    inline ServiceClient & self()
     {
         return (*this);
     }
@@ -99,18 +99,18 @@ private:
     /**
      * \brief   Generates unique timer name.
      **/
-    inline String timerName( Component & owner ) const;
+    inline areg::String timer_name( areg::Component & owner ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // member variables
 //////////////////////////////////////////////////////////////////////////
-    Timer           mTimer; //!< The timer to trigger to send request to output message
-    unsigned int    mID;    //!< The ID given by service.
+    areg::Timer           mTimer; //!< The timer to trigger to send request to output message
+    uint32_t    mID;    //!< The ID given by service.
 
 //////////////////////////////////////////////////////////////////////////
 // forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceClient( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServiceClient );
+    ServiceClient() = delete;
+    AREG_NOCOPY_NOMOVE( ServiceClient );
 };

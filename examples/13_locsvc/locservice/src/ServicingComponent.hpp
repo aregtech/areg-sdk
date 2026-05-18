@@ -12,22 +12,22 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/13_locsvc/services/HelloWorldStub.hpp"
+#include "examples/13_locsvc/services/HelloWorldProviderBase.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
 //////////////////////////////////////////////////////////////////////////
 //! \brief   A demo of servicing component with requests, response and broadcasts.
-class ServicingComponent    : public    Component
-                            , protected HelloWorldStub
+class ServicingComponent final  : public    areg::Component
+                                , protected HelloWorldProviderBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // HelloWorld Interface Requests
@@ -38,28 +38,28 @@ protected:
      * \brief   Request call.
      *          Request to print hello world
      * \param   roleName    The role name of client component that requested to print hello world
-     * \see     responseHelloWorld
+     * \see     hello_world
      **/
-    virtual void requestHelloWorld( const String & roleName ) override;
+    void request_hello_world( const areg::String & roleName ) final;
 
     /**
      * \brief   Request call.
      *          Sent by client to request to shutdown service and the application. This request has no response.
      * \note    Has no response
      **/
-    virtual void requestShutdownService( void ) override;
+    void request_shutdown_service() final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    signed short    mRemainRequest; //!< The maximum number of processing requests.
+    int16_t mRemainRequest; //!< The maximum number of processing requests.
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ServicingComponent & self( void )
+    inline ServicingComponent & self()
     {
         return (*this);
     }
@@ -67,6 +67,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    ServicingComponent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServicingComponent );
+    ServicingComponent() = delete;
+    AREG_NOCOPY_NOMOVE( ServicingComponent );
 };

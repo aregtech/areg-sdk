@@ -13,23 +13,24 @@
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, OS specific spin-lock synchronization object.
- * 
+ *
  ************************************************************************/
- /************************************************************************
-  * Include files.
-  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+/************************************************************************
+ * Include files.
+ ************************************************************************/
+#include "areg/base/areg_global.h"
 
 #ifdef _WIN32
-#if defined (__cplusplus) && (__cplusplus > 201703L)
+#if defined (__cplusplus) && (__cplusplus >= 201703L)
 
 #include <atomic>
+namespace areg::os {
 
 //////////////////////////////////////////////////////////////////////////
 // SpinLockWin32 class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Windows specific recursive spin-lock with atomic operations.
+ * \brief   Windows-specific recursive spin-lock with atomic operations.
  **/
 class SpinLockWin32
 {
@@ -37,58 +38,45 @@ class SpinLockWin32
 // Constructor / Destructor.
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Sets the instance of CriticalSectionIX object, which is the 
-     *          real POSIX spin-lock wrapper class.
-     **/
-    SpinLockWin32( void );
+    SpinLockWin32() noexcept;
 
-    /**
-     * \brief   Destructor.
-     **/
-    ~SpinLockWin32( void );
+    ~SpinLockWin32() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations.
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// Override operations, IESyncObject interface
+// Override operations, SyncObject interface
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Waits for ownership of spin-lock object. If the spin-lock
-     *          object is currently owned by another thread, call of
-     *          this function cause wait indefinitely for ownership.
-     *          In contrast, when a mutex object is used for mutual exclusion,
-     *          the lock() function accept a specified time-out interval.
+     * \brief   Acquires spin-lock ownership, waiting indefinitely if the lock is held by another
+     *          thread.
      **/
-    bool lock( void );
+    bool lock() noexcept;
 
     /**
-     * \brief   Releases ownership of the spin-lock object.
-     * \return  Returns true if spin-lock owning thread called unlock.
-     *          Otherwise, it returns false.
+     * \brief   Releases ownership of the spin-lock.
+     *
+     * \return  Returns true if the spin-lock owning thread called unlock; false otherwise.
      **/
-    bool unlock( void );
+    bool unlock() noexcept;
 
     /**
-     * \brief   Attempts to take the spin-lock ownership without blocking thread.
-     *          If the call is successful, the calling thread
-     *          takes ownership of the spin-lock.
-     * \return  If current thread successfully has taken the ownership or the thread
-     *          already has the ownership of spin-lock, the return value is true.
-     *          If another thread already owns the critical section,
-     *          the return value is false.
+     * \brief   Attempts to acquire spin-lock ownership without blocking.
+     *
+     * \return  Returns true if the current thread acquired or already owns the spin-lock; false if
+     *          another thread owns it.
      **/
-    bool tryLock( void );
+    bool try_lock() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    std::atomic_flag        mSpinLock;      //!< Atomic flag to acquire
+    std::atomic<bool>       mSpinLock;      //!< false = unlocked, true = locked
     std::atomic<id_type>    mOwnerThread;   //!< Atomic owner thread ID
     std::atomic<uint32_t>   mLockCount;     //!< The number of recursive locks
 
@@ -96,14 +84,16 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( SpinLockWin32 );
+    AREG_NOCOPY_NOMOVE( SpinLockWin32 );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // SpinLock inline methods
 //////////////////////////////////////////////////////////////////////////
 
-#endif // defined (__cplusplus) && (__cplusplus > 201703L)
+} // namespace areg::os
+
+#endif // defined (__cplusplus) && (__cplusplus >= 201703L)
 
 #endif // _WIN32
 

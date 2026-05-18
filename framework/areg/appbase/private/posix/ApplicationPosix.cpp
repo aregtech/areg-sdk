@@ -5,14 +5,17 @@
 * \brief       Areg Platform, Windows OS specific Application methods implementation
 *              Windows apecifix API calls.
 ************************************************************************/
-#include "areg/appbase/Application.hpp"
 
 #if	defined(_POSIX) || defined(POSIX)
 
+/************************************************************************
+ * Include files.
+ ************************************************************************/
+#include "areg/appbase/Application.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/Process.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #include <dirent.h>
 #include <stdio.h>
@@ -22,15 +25,13 @@
     #include <libproc.h>
 #endif  // __APPLE__
 
-namespace
-{
-
+namespace {
 
 #ifdef __APPLE__    //macOS
 
-    int _getProcIdByName(const char* procName)
+    int32_t _getProcIdByName(const char* procName)
     {
-        if (NEString::isEmpty<char>(procName))
+        if (areg::is_empty<char>(procName))
             return -1;
 
         // macOS implementation using sysctl
@@ -56,7 +57,7 @@ namespace
 
         for (int i = 0; i < count && pid < 0; ++i)
         {
-            if (NEString::compareIgnoreCase<char, char>(procName, procs[i].kp_proc.p_comm) == NEMath::eCompare::Equal)
+            if (areg::compare_ignore_case<char, char>(procName, procs[i].kp_proc.p_comm) == areg::Ordering::Equal)
             {
                 pid = procs[i].kp_proc.p_pid;
             }
@@ -68,9 +69,9 @@ namespace
 
 #else   // Linux
 
-    int _getProcIdByName(const char* procName)
+    int32_t _getProcIdByName(const char* procName)
     {
-        if (NEString::isEmpty<char>(procName))
+        if (areg::is_empty<char>(procName))
             return -1;
 
         // Linux implementation using /proc
@@ -79,28 +80,28 @@ namespace
         int pid {-1};
 
         DIR* dir = opendir(dirProc);
-        char* buffer = dir != nullptr ? DEBUG_NEW char[File::MAXIMUM_PATH + 1] : nullptr;
+        char* buffer = dir != nullptr ? DEBUG_NEW char[areg::File::MAXIMUM_PATH + 1] : nullptr;
         if (buffer == nullptr)
             return pid;
 
         for (struct dirent* dirEntry = readdir(dir); (pid < 0) && (dirEntry != nullptr); dirEntry = readdir(dir))
         {
-            if (NEString::isNumeric<char>(dirEntry->d_name[0]))
+            if (areg::is_numeric<char>(dirEntry->d_name[0]))
             {
-                String name;
+                areg::String name;
                 name.format(fmt, dirEntry->d_name);
-                FILE* file = fopen(name.getBuffer(), "r");
+                FILE* file = fopen(name.as_string(), "r");
                 if (file != nullptr)
                 {
-                    if (fgets(buffer, File::MAXIMUM_PATH + 1, file) != nullptr)
+                    if (fgets(buffer, areg::File::MAXIMUM_PATH + 1, file) != nullptr)
                     {
-                        NEString::CharPos pos = NEString::findLast<char>(File::PATH_SEPARATOR, buffer);
-                        if (NEString::isPositionValid(pos))
+                        areg::CharPos pos = areg::find_last<char>(areg::File::PATH_SEPARATOR, buffer);
+                        if (areg::is_position_valid(pos))
                         {
                             char* procPath = buffer + pos + 1;
-                            if (NEString::compareIgnoreCase<char, char>(procName, procPath) == NEMath::eCompare::Equal)
+                            if (areg::compare_ignore_case<char, char>(procName, procPath) == areg::Ordering::Equal)
                             {
-                                pid = NEString::makeInteger<char>(dirEntry->d_name, nullptr);
+                                pid = areg::make_integer<char>(dirEntry->d_name, nullptr);
                             }
                         }
                     }
@@ -116,46 +117,51 @@ namespace
     }
 #endif  // Linux
 
-    DEF_LOG_SCOPE(areg_appbase_ApplicationPosix__handleSignalBrokenPipe);
-    void _handleSignalBrokenPipe(int s)
+    DEF_LOG_SCOPE(areg_appbase_ApplicationPosix, _handle_signal_broken_pipe);
+    void _handle_signal_broken_pipe(int32_t s)
     {
-        LOG_SCOPE(areg_appbase_ApplicationPosix__handleSignalBrokenPipe);
+        LOG_SCOPE( areg_appbase_ApplicationPosix, _handle_signal_broken_pipe );
         LOG_WARN("Caught SIGPIPE signal [ %d ]", s);
     }
 
-    DEF_LOG_SCOPE(areg_appbase_ApplicationPosix__handleSignalSegmentationFault);
-    void _handleSignalSegmentationFault(int s)
+    DEF_LOG_SCOPE(areg_appbase_ApplicationPosix, _handle_signal_segmentation_fault);
+    void _handle_signal_segmentation_fault(int32_t s)
     {
-        LOG_SCOPE(areg_appbase_ApplicationPosix__handleSignalSegmentationFault);
+        LOG_SCOPE( areg_appbase_ApplicationPosix, _handle_signal_segmentation_fault );
         LOG_ERR("Caught segmentation fault!!! Parameter [ %d ]", s);
+
+        // Restore the default handler and re-raise so the kernel terminates the
+        // process, closes all sockets, and generates a core dump.
+        signal(SIGSEGV, SIG_DFL);
+        raise(SIGSEGV);
     }
 
 } // namespace
 
-void Application::_osSetupHandlers( void )
+void areg::Application::_os_setup_handlers()
 {
-    Application & theApp = Application::getInstance();
+    Application & theApp = Application::instance();
     Lock lock(theApp.mLock);
 
     if ( theApp.mSetup == false )
     {
 
-        signal(SIGPIPE, &_handleSignalBrokenPipe);
-        signal(SIGSEGV, &_handleSignalSegmentationFault);
+        signal(SIGPIPE, &_handle_signal_broken_pipe);
+        signal(SIGSEGV, &_handle_signal_segmentation_fault);
 
         theApp.mSetup = true;
     }
 }
 
-void Application::_osReleaseHandlers(void)
+void areg::Application::_os_release_handlers()
 {
-    Application& theApp = Application::getInstance();
+    Application& theApp = Application::instance();
     Lock lock(theApp.mLock);
 
     if (theApp.mSetup)
     {
-        signal(SIGPIPE, nullptr);
-        signal(SIGSEGV, nullptr);
+        signal(SIGPIPE, SIG_DFL);
+        signal(SIGSEGV, SIG_DFL);
         theApp.mSetup = false;
     }
 }
@@ -163,18 +169,18 @@ void Application::_osReleaseHandlers(void)
 /**
  * \brief   Windows OS specific implementation of method.
  **/
-bool Application::_osStartLocalService(const wchar_t* serviceName, const wchar_t* serviceExecutable)
+bool areg::Application::_os_start_local_service(const wchar_t* serviceName, const wchar_t* serviceExecutable)
 {
-    ASSERT(NEString::isEmpty<wchar_t>(serviceName) == false);
-    ASSERT(NEString::isEmpty<wchar_t>(serviceExecutable) == false);
+    ASSERT(areg::is_empty<wchar_t>(serviceName) == false);
+    ASSERT(areg::is_empty<wchar_t>(serviceExecutable) == false);
     String serviceExe(serviceExecutable);
-    int pid = _getProcIdByName(serviceExe);
+    int32_t pid = _getProcIdByName(serviceExe);
     bool result{ pid > 0 };
     if (pid < 0)
     {
         constexpr std::string_view fmt { "systemctl start %s" };
         char cmd[512];
-        String::formatString(cmd, 512, fmt.data(), serviceName);
+        String::format_string(cmd, 512, fmt.data(), serviceName);
         result = std::system(cmd);
     }
 

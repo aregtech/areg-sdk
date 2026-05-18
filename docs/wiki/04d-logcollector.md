@@ -532,13 +532,13 @@ logger::*::port::tcpip      = 8282          # Listen port
 
 **Configuration breakdown:**
 
-| Property | Default | Description |
-|----------|---------|-------------|
-| `logger::*::service` | `logcollector` | Log Collector process name |
-| `logger::*::connect` | `tcpip` | Communication protocol (TCP/IP only) |
-| `logger::*::enable::tcpip` | `true` | Enable/disable TCP/IP |
-| `logger::*::address::tcpip` | `127.0.0.1` | IP address to bind |
-| `logger::*::port::tcpip` | `8282` | Port number |
+| Property                    | Default        | Description                          |
+| --------------------------- | -------------- | ------------------------------------ |
+| `logger::*::service`        | `logcollector` | Log Collector process name           |
+| `logger::*::connect`        | `tcpip`        | Communication protocol (TCP/IP only) |
+| `logger::*::enable::tcpip`  | `true`         | Enable/disable TCP/IP                |
+| `logger::*::address::tcpip` | `127.0.0.1`    | IP address to bind                   |
+| `logger::*::port::tcpip`    | `8282`         | Port number                          |
 
 ---
 
@@ -635,7 +635,7 @@ log::*::scope::* = DEBUG | SCOPE
 int main()
 {
     // Initialize with logging and configuration
-    Application::initApplication(
+    Application::setup(
         true,   // Enable logging
         true,   // Enable service manager
         true,   // Enable router client (if needed)
@@ -646,10 +646,10 @@ int main()
     );
     
     // Application code
-    Application::loadModel("MyServiceModel");
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::load_model("MyServiceModel");
+    Application::wait_quit(areg::WAIT_INFINITE);
     
-    Application::releaseApplication();
+    Application::release();
     return 0;
 }
 ```

@@ -18,66 +18,83 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
+#include "areg/base/SocketDefs.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/ipc/SendMessageEvent.hpp"
-
-#include <atomic>
+#include "areg/ipc/DataRateStats.hpp"
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IERemoteMessageHandler;
-class ClientConnection;
+namespace areg {
+    class RemoteMessageHandler;
+    class ClientConnection;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ClientSendThread class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The message sender thread. All messages to be sent to remote routing service
- *          are queued in message sender thread. 
+ * \brief   Message sender thread that queues and sends all messages to remote routing service.
  **/
-class ClientSendThread  : public    DispatcherThread
-                        , public    IESendMessageEventConsumer
+class ClientSendThread final    : public    DispatcherThread
+                                , public    SendMessageEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes Service handler and client connection objects.
-     * \param   remoteService   The instance of remote service to process messages.
-     * \param   connection      The instance of client connection object to send messages.
-     * \param   namePrefix      The prefix to add to the NEConnection::CLIENT_SEND_MESSAGE_THREAD
-     *                          to have unique thread names.
+     * \brief   Initializes message sender with service handler and client connection.
+     *
+     * \param   remoteService       Remote service handler for processing messages.
+     * \param   connection          Client connection object for sending messages.
+     * \param   namePrefix          Prefix for thread name to ensure uniqueness.
      **/
-    ClientSendThread(IERemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix );
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~ClientSendThread( void ) = default;
+    ClientSendThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix );
+    virtual ~ClientSendThread() = default;
 
-/************************************************************************/
-// Actions and attributes.
-/************************************************************************/
+    /************************************************************************/
+    // Actions and attributes.
+    /************************************************************************/
 public:
     /**
-     * \brief   Returns accumulative value of sent data size and rests the existing value to zero.
+     * \brief   Returns accumulative value of sent data size and resets the existing value to zero.
      *          The operations are atomic. The value can be used to display data rate, for example.
      **/
-    inline uint32_t extractDataSend( void ) const;
+    [[nodiscard]]
+    inline uint64_t extract_data_send() const noexcept;
 
     /**
-     * \brief   Call to enable or disable the received data calculation.
-     *          It as well resets the existing calculated data.
-     * \param   enable  Flag, indicating whether data calculation is enabled or not.
+     * \brief   Returns accumulative count of sent messages and resets the existing value to zero.
+     *          The operations are atomic.
      **/
-    inline void setEnableCalculateData(bool enable);
+    [[nodiscard]]
+    inline uint32_t extract_msgs_sent() const noexcept;
 
     /**
-     * \brief   Returns flag, indicating whether data calculation is enabled or not.
+     * \brief   Call to enable or disable the received data calculation. It also resets the existing
+     *          calculated data.
+     *
+     * \param   enable      Flag, indicating whether data calculation is enabled or not.
      **/
-    inline bool isCalculateDataEnabled(void) const;
+    inline void set_data_rate_enabled(bool enable) noexcept;
+
+    [[nodiscard]]
+    inline bool is_data_rate_enabled() const noexcept;
+
+    /**
+     * \brief   Accumulates bytes and message counts from a per-client send thread into the
+     *          global counters queried by DataRateHelper. Called by PoolSendThread when
+     *          mSaveDataSend is enabled. Thread-safe: uses atomic add.
+     *
+     * \param   bytes   Number of bytes sent.
+     * \param   msgs    Number of messages sent.
+     **/
+    inline void accumulate_sent(uint64_t bytes, uint32_t msgs) noexcept;
 
 protected:
 /************************************************************************/
@@ -85,39 +102,35 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Call to enable or disable event dispatching threads to receive events.
-     *          Override if need to make event dispatching preparation job.
-     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
+     * \brief   Enables or disables event dispatching. Override to perform preparation work.
+     *
+     * \param   is_ready     Flag indicating whether dispatcher is ready for events.
      **/
-    virtual void readyForEvents( bool isReady ) override;
+    void ready_for_events( bool is_ready ) final;
 
 /************************************************************************/
-// IEEventRouter interface overrides
+// EventRouter interface overrides
 /************************************************************************/
 
     /**
-     * \brief	Posts event and delivers to its target.
-     *          Since the Dispatcher Thread is a Base object for
-     *          Worker and Component threads, it does nothing
-     *          and only destroys event object without processing.
-     *          Override this method or use Worker / Component thread.
-     * \param	eventElem	Event object to post
-     * \return	In this class it always returns true.
+     * \brief   Posts and delivers event to target. Override in derived classes to process events.
+     *
+     * \param   eventElem       Event object to post.
+     * \return  Returns true.
      **/
-    virtual bool postEvent( Event & eventElem ) override;
+    [[nodiscard]]
+    bool post_event( Event & eventElem ) final;
 
 private:
 /************************************************************************/
-// IESendMessageEventConsumer interface overrides.
+// SendMessageEventConsumer interface overrides.
 /************************************************************************/
     /**
-     * \brief   Automatically triggered when event is dispatched by registered
-     *          worker / component thread.
-     * \param   data    The data object passed in event. It should have at least
-     *                  default constructor and assigning operator.
-     *                  This object is not used for IPC.
+     * \brief   Processes send message events dispatched by worker or component thread.
+     *
+     * \param   data    Send message event data to process.
      **/
-    virtual void processEvent( const SendMessageEventData & data ) override;
+    void process_event( const SendMessageEventData & data ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -126,47 +139,52 @@ private:
     /**
      * \brief   The instance of remote service handler to dispatch messages.
      **/
-    IERemoteMessageHandler&     mRemoteService;
+    RemoteMessageHandler&           mRemoteService;
     /**
      * \brief   The instance of connection to send messages from remote routing service.
      **/
-    ClientConnection &          mConnection;
-
+    ClientConnection &              mConnection;
     /**
-     * \brief   Accumulative value of sent data size.
+     * \brief   Atomic stats (bytes + messages sent + enabled flag).
      **/
-    mutable std::atomic_uint    mBytesSend;
-
-    /**
-     * \brief   Flag, indicating whether data calculation is enabled or disabled. By default, it is disabled.
-     **/
-    bool                        mSaveDataSend;
+    DataRateStats                   mSendStats;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ClientSendThread( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ClientSendThread );
+    ClientSendThread() = delete;
+    AREG_NOCOPY_NOMOVE( ClientSendThread );
 };
 
-inline uint32_t ClientSendThread::extractDataSend( void ) const
+//////////////////////////////////////////////////////////////////////////
+// ClientSendThread class inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline uint64_t ClientSendThread::extract_data_send() const noexcept
 {
-    return static_cast<uint32_t>(mBytesSend.exchange( 0 ));
+    return mSendStats.extract_bytes();
 }
 
-inline void ClientSendThread::setEnableCalculateData(bool enable)
+inline uint32_t ClientSendThread::extract_msgs_sent() const noexcept
 {
-    if (mSaveDataSend != enable)
-    {
-        mBytesSend.store(0u);
-        mSaveDataSend = enable;
-    }
+    return mSendStats.extract_msgs();
 }
 
-inline bool ClientSendThread::isCalculateDataEnabled(void) const
+inline void ClientSendThread::set_data_rate_enabled(bool enable) noexcept
 {
-    return mSaveDataSend;
+    mSendStats.set_enabled(enable);
 }
 
+inline bool ClientSendThread::is_data_rate_enabled() const noexcept
+{
+    return mSendStats.is_enabled();
+}
+
+inline void ClientSendThread::accumulate_sent(uint64_t bytes, uint32_t msgs) noexcept
+{
+    mSendStats.accumulate(bytes, msgs);
+}
+
+} // namespace areg
 #endif  // AREG_IPC_PRIVATE_CLIENTSENDTHREAD_HPP

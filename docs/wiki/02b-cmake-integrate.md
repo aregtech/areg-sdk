@@ -47,7 +47,7 @@ Create `main.cpp`:
 
 int main() {
     String greeting("Hello from Areg SDK!");
-    std::cout << greeting.getData() << std::endl;
+    std::cout << greeting.data() << std::endl;
     return 0;
 }
 ```
@@ -80,8 +80,8 @@ Hello from Areg SDK!
 ### Supported Platforms
 
 - **Linux** - GCC, Clang
-- **Windows** - MSVC, MinGW, Clang
-- **macOS** - Clang, GCC
+- **Windows** - MSVC, MinGW, Clang, Cygwin GCC
+- **macOS** - Clang
 
 **Verify installation:**
 
@@ -157,7 +157,7 @@ Create `main.cpp`:
 
 int main() {
     String greeting("Hello from Areg SDK!");
-    std::cout << greeting.getData() << std::endl;
+    std::cout << greeting.data() << std::endl;
     return 0;
 }
 ```
@@ -189,9 +189,9 @@ cmake_minimum_required(VERSION 3.20)
 project(myapp)
 
 # Disable examples and tests for faster builds
-option(AREG_BUILD_EXAMPLES "Build examples" OFF)
-option(AREG_BUILD_TESTS "Build tests" OFF)
-option(AREG_ENABLE_OUTPUTS "Use Areg output dirs" OFF)
+option(AREG_EXAMPLES "Build examples" OFF)
+option(AREG_TESTS "Build tests" OFF)
+option(AREG_OUTPUT_LAYOUT "Use Areg output dirs" OFF)
 
 # Fetch Areg SDK
 include(FetchContent)
@@ -263,9 +263,11 @@ vcpkg install areg
 
 **Platform-specific:**
 ```bash
-vcpkg install areg:x64-linux      # 64-bit Linux
-vcpkg install areg:x64-windows    # 64-bit Windows
-vcpkg install areg:x86-windows    # 32-bit Windows
+vcpkg install areg:x64-linux    # 64-bit Linux
+vcpkg install areg:x86-linux    # 32-bit Linux
+vcpkg install areg:x64-osx      # 64-bit macOS
+vcpkg install areg:x64-windows  # 64-bit Windows
+vcpkg install areg:x86-windows  # 32-bit Windows
 ```
 
 #### Step 3: Integrate vcpkg
@@ -415,21 +417,21 @@ Configure Areg SDK build behavior:
 
 ```cmake
 # Disable examples and tests (faster builds)
-option(AREG_BUILD_EXAMPLES "Build examples" OFF)
-option(AREG_BUILD_TESTS "Build unit tests" OFF)
+option(AREG_EXAMPLES "Build examples" OFF)
+option(AREG_TESTS "Build unit tests" OFF)
 
 # Disable Areg-specific output directories
-option(AREG_ENABLE_OUTPUTS "Use Areg output structure" OFF)
+option(AREG_OUTPUT_LAYOUT "Use Areg output structure" OFF)
 
 # Build extended library
 option(AREG_EXTENDED "Build aregextend library" ON)
 
 # Disable logging (smaller binaries)
-option(AREG_LOGS "Enable logging" OFF)
+option(AREG_LOGGING "Enable logging" OFF)
 
 # Build static libraries instead of shared
-option(AREG_BINARY "areg library type" "static")
-option(AREG_LOGGER_BINARY "areglogger library type" "static")
+option(AREG_LIB_TYPE "areg library type" "static")
+option(AREG_LOGGER_LIB_TYPE "areglogger library type" "static")
 ```
 
 **Complete example:**
@@ -438,8 +440,8 @@ cmake_minimum_required(VERSION 3.20)
 project(myapp)
 
 # Configure Areg SDK
-option(AREG_BUILD_EXAMPLES "Build examples" OFF)
-option(AREG_BUILD_TESTS "Build tests" OFF)
+option(AREG_EXAMPLES "Build examples" OFF)
+option(AREG_TESTS "Build tests" OFF)
 option(AREG_EXTENDED "Build extended" ON)
 
 # Fetch Areg SDK
@@ -576,9 +578,9 @@ if(NOT areg_FOUND)
     message(STATUS "Areg SDK not found, fetching from GitHub...")
     
     # Configure build
-    option(AREG_BUILD_EXAMPLES "Build examples" OFF)
-    option(AREG_BUILD_TESTS "Build tests" OFF)
-    set(AREG_BUILD_ROOT "${CMAKE_SOURCE_DIR}/product")
+    option(AREG_EXAMPLES "Build examples" OFF)
+    option(AREG_TESTS "Build tests" OFF)
+    set(AREG_BUILD_DIR "${CMAKE_SOURCE_DIR}/product")
     
     # Fetch sources
     include(FetchContent)
@@ -698,7 +700,7 @@ target_link_libraries(myapp areg)  # Wrong - missing namespace
 **Solution:**
 ```bash
 # Explicitly specify architecture
-cmake -B ./build -DAREG_PROCESSOR=x86
+cmake -B ./build -DAREG_ARCH=x86
 ```
 **Or use toolchain file for cross-compilation.**
 
@@ -706,17 +708,17 @@ cmake -B ./build -DAREG_PROCESSOR=x86
 
 ### Options Not Applied
 
-**Problem:** `AREG_BUILD_EXAMPLES=OFF` but examples still build.  
+**Problem:** `AREG_EXAMPLES=OFF` but examples still build.  
 **Solution:**  
 *Set options BEFORE fetching:*
 ```cmake
 # Correct order
-option(AREG_BUILD_EXAMPLES "Build examples" OFF)
+option(AREG_EXAMPLES "Build examples" OFF)
 FetchContent_Declare(areg-sdk ...)
 
 # Wrong order - options ignored
 FetchContent_Declare(areg-sdk ...)
-option(AREG_BUILD_EXAMPLES "Build examples" OFF)  # Too late
+option(AREG_EXAMPLES "Build examples" OFF)  # Too late
 ```
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>

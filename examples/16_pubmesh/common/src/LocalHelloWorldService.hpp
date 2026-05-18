@@ -13,15 +13,15 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
-#include "examples/16_pubmesh/services/LocalHelloWorldStub.hpp"
+#include "areg/base/areg_global.h"
+#include "examples/16_pubmesh/services/LocalHelloWorldProviderBase.hpp"
 
 //! \brief  A local service to receive request to output message on console
-class LocalHelloWorldService  : private LocalHelloWorldStub
+class LocalHelloWorldService final : private LocalHelloWorldProviderBase
 {
 
     //!< The type of list of connected clients.
-    using ClientList = TELinkedList<NELocalHelloWorld::sConnectedClient>;
+    using ClientList = areg::LinkedList<LocalHelloWorld::sConnectedClient>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -30,11 +30,11 @@ public:
 
     /**
      * \brief   Instantiates the component object.
-     * \param   masterComp  The service owner component, required by LocalHelloWorldStub.
+     * \param   masterComp  The service owner component, required by LocalHelloWorldProviderBase.
      **/
-    LocalHelloWorldService( Component & masterComp );
+    LocalHelloWorldService( areg::Component & masterComp );
 
-    virtual ~LocalHelloWorldService(void) = default;
+    ~LocalHelloWorldService() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // HelloWorld Interface Requests
@@ -45,22 +45,22 @@ protected:
      * \brief   Request call.
      *          Request to print hello world
      * \param   roleName    The role name of client component that requested to print hello world
-     * \see     responseHelloWorld
+     * \see     hello_world
      **/
-    virtual void requestHelloWorld( const String & roleName ) override;
+    void request_hello_world( const areg::String & roleName ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    ClientList      mClientList;    //!< The list of connected clients.
-    unsigned int    mNumRequests;   //!< The number of executed requests.
+    ClientList  mClientList;    //!< The list of connected clients.
+    uint32_t    mNumRequests;   //!< The number of executed requests.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    LocalHelloWorldService( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( LocalHelloWorldService );
+    LocalHelloWorldService() = delete;
+    AREG_NOCOPY_NOMOVE( LocalHelloWorldService );
 };
 
 #endif  // PUBMESH_COMMON_SRC_LOCALHELLOWORLDSERVICE_HPP

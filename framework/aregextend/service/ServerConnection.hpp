@@ -18,14 +18,16 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/ipc/ServerConnectionBase.hpp"
 #include "areg/ipc/SocketConnectionBase.hpp"
 
 #include "areg/base/Containers.hpp"
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/base/SocketServer.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // ServerConnection class declaration.
@@ -47,42 +49,38 @@ class ServerConnection  : public    ServerConnectionBase
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Creates instance of object with invalid socket object and
-     *          sets the unique channel ID of the service in the system.
-     *          Before sending or receiving data, the socket should be created
-     *          and bound to socket address.
-     * \param   channelId   The unique channel ID of the service connectivity in the system.
+     * \brief   Creates instance of object with invalid socket object and sets the unique channel ID
+     *          of the service in the system. Before sending or receiving data, the socket should be
+     *          created and bound to socket address.
+     *
+     * \param   channelId       The unique channel ID of the service connectivity in the system.
      **/
     explicit ServerConnection(const ITEM_ID & channelId );
 
     /**
-     * \brief   Creates instance of object with invalid socket object.
-     *          Before sending or receiving data, the socket should be created 
-     *          and bound to specified local IP-address and port.
-     *          When instantiated, it will resolved passed host
-     *          name and port number. If succeeded to resolve,
-     *          it will set resolved IP-address and port number
-     *          as socket address. If passed hostName is nullptr,
-     *          it resolve connection for local host.
-     * \param   channelId   The unique channel ID of the service connectivity in the system.
-     * \param   hostName    Host name or IP-address of server.
-     * \param   portNr      Port number of server.
-     **/
-    ServerConnection(const ITEM_ID & channelId, const char * hostName, unsigned short portNr );
-
-    /**
-     * \brief   Creates instance of object with invalid socket object.
-     *          Before sending or receiving data, the socket should be created 
-     *          and bound to host and port. Specified serverAddress will be set as server address.
+     * \brief   Creates instance of object with invalid socket object. Before sending or receiving
+     *          data, the socket should be created and bound to specified local IP-address and port.
+     *          When instantiated, it will resolved passed host name and port number. If succeeded
+     *          to resolve, it will set resolved IP-address and port number as socket address. If
+     *          passed hostName is nullptr, it resolve connection for local host.
+     *
      * \param   channelId       The unique channel ID of the service connectivity in the system.
-     * \param   serverAddress   Address of server.
+     * \param   hostName        Host name or IP-address of server.
+     * \param   portNr          Port number of server.
      **/
-    ServerConnection(const ITEM_ID & channelId, const NESocket::SocketAddress & serverAddress );
+    ServerConnection(const ITEM_ID & channelId, const char * hostName, uint16_t portNr );
 
     /**
-     * \brief   Destructor.
+     * \brief   Creates instance of object with invalid socket object. Before sending or receiving
+     *          data, the socket should be created and bound to host and port. Specified
+     *          serverAddress will be set as server address.
+     *
+     * \param   channelId           The unique channel ID of the service connectivity in the system.
+     * \param   serverAddress       Address of server.
      **/
-    virtual ~ServerConnection( void ) = default;
+    ServerConnection(const ITEM_ID & channelId, const areg::SocketAddress & serverAddress );
+
+    virtual ~ServerConnection() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -92,97 +90,108 @@ public:
     /**
      * \brief   Returns the unique service connectivity channel ID in the system.
      **/
-    inline const ITEM_ID & getChannelId(void) const;
+    inline const ITEM_ID & channel_id() const;
 
     /**
      * \brief   Call to reject connection. When rejected, the socket connection will be closed and
      *          no more data will be accepted from connection.
+     *
      * \param   clientConnection    Connection to reject.
      **/
-    void rejectConnection( SocketAccepted & clientConnection );
+    void reject_connection( SocketAccepted & clientConnection );
 
     /**
-     * \brief   Call to close all existing accepted connections
+     * \brief   Call to close all existing accepted connections.
      **/
-    void closeAllConnections( void );
+    void close_all_connections();
 
     /**
-     * \brief   If socket is valid, sends data using existing socket connection and returns length in bytes
-     *          of data in Remote Buffer. And returns negative number if either socket is invalid,
-     *          or failed to send data to remote host. No data will be sent, if Remote Buffer is empty.
-     *          Before sending data, the method will check and validate existing checksum in buffer
-     *          structure. And if checksum is invalid, the data will not be sent to remote target.
-     *          If checksum is invalid, the returned value is zero.
-     *          Note:   The returned value of sent data (used data length) will be different of total buffer length.
-     *          Note:   If Remote Buffer is empty, nothing will be sent.
-     *          Note:   The call is blocking and method will not return until all data are not sent
-     *                  or if data sending fails.
-     *          Note:   Check and set checksum before sending data.
-     * \param   in_message      The instance of buffer to send. The checksum number of Remote Buffer object
-     *                          will be checked before sending. If checksum is invalid, the data will not be sent.
+     * \brief   If socket is valid, sends data using existing socket connection and returns length
+     *          in bytes of data in Remote Buffer. And returns negative number if either socket is
+     *          invalid, or failed to send data to remote host. No data will be sent, if Remote
+     *          Buffer is empty. Before sending data, the method will check and validate existing
+     *          checksum in buffer structure. And if checksum is invalid, the data will not be sent
+     *          to remote target. If checksum is invalid, the returned value is zero. Note: The
+     *          returned value of sent data (used data length) will be different of total buffer
+     *          length. Note: If Remote Buffer is empty, nothing will be sent. Note: The call is
+     *          blocking and method will not return until all data are not sent or if data sending
+     *          fails. Note: Check and set checksum before sending data.
+     *
+     * \param   in_message      The instance of buffer to send. The checksum number of Remote Buffer
+     *                          object will be checked before sending. If checksum is invalid, the
+     *                          data will not be sent.
      * \param   clientSocket    The accepted socket object
-     * \return  Returns length in bytes of data in Remote Buffer sent to remote host. 
-     *          Returns negative number if socket is not valid of failed to send.
-     *          Returns zero, if checksum in Remote Buffer was not validated or Remote Buffer object is empty.
+     * \return  Returns length in bytes of data in Remote Buffer sent to remote host. Returns
+     *          negative number if socket is not valid of failed to send. Returns zero, if checksum
+     *          in Remote Buffer was not validated or Remote Buffer object is empty.
      **/
-    inline int sendMessage( const RemoteMessage & in_message, const SocketAccepted & clientSocket ) const;
+    inline int32_t send_message( const RemoteMessage & in_message, const SocketAccepted & clientSocket ) const;
 
     /**
-     * \brief   If socket is valid, receives data using existing socket connection and returns length in bytes
-     *          of data in Remote Buffer. And returns negative number if either socket is invalid,
-     *          or failed to receive data from remote host. If Remote Buffer data is empty or checksum is,
-     *          not matching, it will return zero.
-     *          Note:   The returned value of received data (used data length) will be different of total buffer length.
-     *          Note:   If received Remote Buffer was empty, on output out_message in invalid.
-     *          Note:   The call is blocking and method will not return until all data are not received
-     *                  or if data receiving fails.
-     * \param   out_message     The instance of Remote Buffer to receive data. The checksum number of Remote Buffer object
-     *                          will be checked after receiving data. If checksum is invalid, the data will invalidated and dropped.
+     * \brief   Sends multiple messages to the same client in a single scatter/gather syscall.
+     *          All messages must target the same clientSocket. Messages with invalid state are skipped.
+     *
+     * \param   messages    Array of pointers to messages to send.
+     * \param   count       Number of entries in the array.
+     * \param   clientSocket    Target accepted client socket.
+     * \return  Total bytes sent on success; negative on error.
+     **/
+    inline int32_t send_messages_batch( const RemoteMessage* const* messages, uint32_t count, const SocketAccepted & clientSocket ) const;
+
+    /**
+     * \brief   Sends a message directly using a raw socket handle, bypassing SocketAccepted
+     *          construction. Use in the hot-path send loop after resolving the handle via
+     *          handle_by_cookie().
+     *
+     * \param   in_message  The message to send.
+     * \param   hSocket     Raw OS socket handle of the target client.
+     * \return  Bytes sent on success; zero on invalid checksum; negative on error.
+     **/
+    inline int32_t send_message( const RemoteMessage & in_message, SOCKETHANDLE hSocket ) const;
+
+    /**
+     * \brief   Sends multiple messages to a raw socket handle in a single scatter/gather syscall.
+     *
+     * \param   messages    Array of pointers to messages to send.
+     * \param   count       Number of entries in the array.
+     * \param   hSocket     Raw OS socket handle of the target client.
+     * \return  Total bytes sent on success; negative on error.
+     **/
+    inline int32_t send_messages_batch( const RemoteMessage* const* messages, uint32_t count, SOCKETHANDLE hSocket ) const;
+
+    inline int32_t send_messages_batch(const areg::IoBuffer* messages, uint32_t count, const SocketAccepted& clientSocket, uint32_t totalSize = 0) const;
+
+    inline int32_t send_messages_batch(const areg::IoBuffer* messages, uint32_t count, SOCKETHANDLE hSocket, uint32_t totalSize = 0) const;
+
+    /**
+     * \brief   If socket is valid, receives data using existing socket connection and returns
+     *          length in bytes of data in Remote Buffer. And returns negative number if either
+     *          socket is invalid, or failed to receive data from remote host. If Remote Buffer data
+     *          is empty or checksum is, not matching, it will return zero. Note: The returned value
+     *          of received data (used data length) will be different of total buffer length. Note:
+     *          If received Remote Buffer was empty, on output out_message in invalid. Note: The
+     *          call is blocking and method will not return until all data are not received or if
+     *          data receiving fails.
+     *
+     * \param   out_message     The instance of Remote Buffer to receive data. The checksum number
+     *                          of Remote Buffer object will be checked after receiving data. If
+     *                          checksum is invalid, the data will invalidated and dropped.
      * \param   clientSocket    The accepted socket object
-     * \return  Returns length in bytes of data in Remote Buffer received from remote host.
-     *          Returns negative number if socket is not valid of failed to send.
-     *          Returns zero, if checksum in Remote Buffer was not validated or data in Remote Buffer object is empty.
+     * \return  Returns length in bytes of data in Remote Buffer received from remote host. Returns
+     *          negative number if socket is not valid of failed to send. Returns zero, if checksum
+     *          in Remote Buffer was not validated or data in Remote Buffer object is empty.
      **/
-    inline int receiveMessage( RemoteMessage & out_message, const SocketAccepted & clientSocket ) const;
+    inline int32_t receive_message( RemoteMessage & out_message, const SocketAccepted & clientSocket ) const;
 
     /**
-     * \brief   If socket is valid, sends data using existing socket connection and returns length in bytes
-     *          of data in Remote Buffer. And returns negative number if either socket is invalid,
-     *          or failed to send data to remote host. No data will be sent, if Remote Buffer is empty.
-     *          Before sending data, the method will check and validate existing checksum in buffer
-     *          structure. And if checksum is invalid, the data will not be sent to remote target.
-     *          If checksum is invalid, the returned value is zero.
-     *          Note:   The returned value of sent data (used data length) will be different of total buffer length.
-     *          Note:   If Remote Buffer is empty, nothing will be sent.
-     *          Note:   The call is blocking and method will not return until all data are not sent
-     *                  or if data sending fails.
-     *          Note:   Check and set checksum before sending data.
-     * \param   in_message      The instance of buffer to send. The checksum number of Remote Buffer object
-     *                          will be checked before sending. If checksum is invalid, the data will not be sent.
-     * \param   clientCookie    The cookie number of accepted socket connection
-     * \return  Returns length in bytes of data in Remote Buffer sent to remote host. 
-     *          Returns negative number if socket is not valid of failed to send.
-     *          Returns zero, if checksum in Remote Buffer was not validated or Remote Buffer object is empty.
+     * \brief   Removes the specified socket handle from the multiplexer watch set.
+     *          After this call the ServerReceiveThread will no longer wake up for
+     *          data on this socket. Call immediately after handing the socket off
+     *          to a dedicated per-client receive thread.
+     *
+     * \param   hSocket     Handle of the socket to deregister.
      **/
-    inline int sendMessage( const RemoteMessage & in_message, const ITEM_ID & clientCookie ) const;
-
-    /**
-     * \brief   If socket is valid, receives data using existing socket connection and returns length in bytes
-     *          of data in Remote Buffer. And returns negative number if either socket is invalid,
-     *          or failed to receive data from remote host. If Remote Buffer data is empty or checksum is,
-     *          not matching, it will return zero.
-     *          Note:   The returned value of received data (used data length) will be different of total buffer length.
-     *          Note:   If received Remote Buffer was empty, on output out_message in invalid.
-     *          Note:   The call is blocking and method will not return until all data are not received
-     *                  or if data receiving fails.
-     * \param   out_message     The instance of Remote Buffer to receive data. The checksum number of Remote Buffer object
-     *                          will be checked after receiving data. If checksum is invalid, the data will invalidated and dropped.
-     * \param   clientCookie    The cookie number of accepted socket connection
-     * \return  Returns length in bytes of data in Remote Buffer received from remote host.
-     *          Returns negative number if socket is not valid of failed to send.
-     *          Returns zero, if checksum in Remote Buffer was not validated or data in Remote Buffer object is empty.
-     **/
-    inline int receiveMessage( RemoteMessage & out_message, const ITEM_ID & clientCookie ) const;
+    inline void unregister_from_multiplexer(SOCKETHANDLE hSocket) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
@@ -197,37 +206,59 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServerConnection(void) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServerConnection );
+    ServerConnection() = delete;
+    AREG_NOCOPY_NOMOVE( ServerConnection );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ServerConnection class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline const ITEM_ID & ServerConnection::getChannelId(void) const
+inline const ITEM_ID & ServerConnection::channel_id() const
 {
     return mChannelId;
 }
 
-inline int ServerConnection::sendMessage(const RemoteMessage & in_message, const SocketAccepted & clientSocket) const
+inline int32_t ServerConnection::send_message(const RemoteMessage & in_message, const SocketAccepted & clientSocket) const
 {
-    return SocketConnectionBase::sendMessage(in_message, clientSocket);
+    return SocketConnectionBase::send_message(in_message, clientSocket.handle());
 }
 
-inline int ServerConnection::sendMessage(const RemoteMessage & in_message, const ITEM_ID & clientCookie) const
+inline int32_t ServerConnection::send_messages_batch(const RemoteMessage* const* messages, uint32_t count, const SocketAccepted & clientSocket) const
 {
-    return SocketConnectionBase::sendMessage(in_message, getClientByCookie(clientCookie) );
+    return SocketConnectionBase::send_messages_batch(messages, count, clientSocket.handle());
 }
 
-inline int ServerConnection::receiveMessage(RemoteMessage & out_message, const SocketAccepted & clientSocket) const
+inline int32_t ServerConnection::send_message(const RemoteMessage & in_message, SOCKETHANDLE hSocket) const
 {
-    return SocketConnectionBase::receiveMessage(out_message, clientSocket);
+    return SocketConnectionBase::send_message(in_message, hSocket);
 }
 
-inline int ServerConnection::receiveMessage(RemoteMessage & out_message, const ITEM_ID & clientCookie) const
+inline int32_t ServerConnection::send_messages_batch(const RemoteMessage* const* messages, uint32_t count, SOCKETHANDLE hSocket) const
 {
-    return SocketConnectionBase::receiveMessage(out_message,getClientByCookie(clientCookie));
+    return SocketConnectionBase::send_messages_batch(messages, count, hSocket);
 }
+
+inline int32_t ServerConnection::send_messages_batch(const areg::IoBuffer* messages, uint32_t count, const SocketAccepted& clientSocket, uint32_t totalSize /*= 0*/) const
+{
+    return SocketConnectionBase::send_messages_batch(messages, count, clientSocket.handle(), totalSize);
+}
+
+inline int32_t ServerConnection::send_messages_batch(const areg::IoBuffer* messages, uint32_t count, SOCKETHANDLE hSocket, uint32_t totalSize /*= 0*/) const
+{
+    return SocketConnectionBase::send_messages_batch(messages, count, hSocket, totalSize);
+}
+
+inline int32_t ServerConnection::receive_message(RemoteMessage & out_message, const SocketAccepted & clientSocket) const
+{
+    return SocketConnectionBase::receive_message(out_message, clientSocket);
+}
+
+inline void ServerConnection::unregister_from_multiplexer(SOCKETHANDLE hSocket) noexcept
+{
+    mMultiplexer.unregister_socket(hSocket);
+}
+
+} // namespace areg::ext
 
 #endif  // AREG_AREGEXTEND_SERVICE_SERVERCONNECTION_HPP

@@ -23,193 +23,193 @@
 #include <string>
 
 //!< Basic options with no data passed as a command line strings
-TEST( OptionParserTest, CommandLineOptionSimpleNoData )
+TEST( OptionParserTest, command_line_option_simple_no_data )
 {
-    OptionParser::sOptionSetup setup[ ]
+    areg::ext::OptionParser::OptionSetup setup[ ]
     {
-          { "-a", "-a", 1, OptionParser::FREESTYLE_DATA, {}, {}, {} }
-        , { "-b", "-b", 2, OptionParser::FREESTYLE_DATA, {}, {}, {} }
-        , { "-c", "-c", 3, OptionParser::FREESTYLE_DATA, {}, {}, {} }
+          { "-a", "-a", 1, areg::ext::OptionParser::FREESTYLE_DATA, {}, {}, {} }
+        , { "-b", "-b", 2, areg::ext::OptionParser::FREESTYLE_DATA, {}, {}, {} }
+        , { "-c", "-c", 3, areg::ext::OptionParser::FREESTYLE_DATA, {}, {}, {} }
     };
 
     const wchar_t * cmdLine[]{ L"OptionParserTest", L"-a", L"-b", L"-c" };
 
-    uint32_t setupCount = MACRO_ARRAYLEN( setup );
-    uint32_t optCount = MACRO_ARRAYLEN( cmdLine );
+    uint32_t setupCount = std::size( setup );
+    uint32_t optCount = std::size( cmdLine );
 
-    OptionParser parser( setup, setupCount );
+    areg::ext::OptionParser parser( setup, setupCount );
 
-    ASSERT_TRUE(parser.parseCommandLine( cmdLine, optCount ));
+    ASSERT_TRUE(parser.parse_command_line( cmdLine, optCount ));
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), optCount - 1 );
+    const areg::ext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size(), optCount - 1 );
     for (uint32_t i = 1; i < optCount; ++i)
     {
         ASSERT_EQ( opts[ i - 1 ].inCommand, static_cast<int>(i) );
-        ASSERT_TRUE( OptionParser::isFreestyle( opts[ i - 1 ].inField ) );
-        ASSERT_TRUE( OptionParser::isString( opts[ i - 1 ].inField ) );
-        ASSERT_FALSE( OptionParser::hasRange( opts[ i - 1 ].inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_freestyle( opts[ i - 1 ].inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_string( opts[ i - 1 ].inField ) );
+        ASSERT_FALSE( areg::ext::OptionParser::has_range( opts[ i - 1 ].inField ) );
     }
 }
 
 //!< Basic options with data passed as a command line strings
-TEST( OptionParserTest, CommandLineOptionSimpleWithData )
+TEST( OptionParserTest, command_line_option_simple_with_data )
 {
-    OptionParser::sOptionSetup setup[ ]
+    areg::ext::OptionParser::OptionSetup setup[ ]
     {
-          { "-a", "-a", 1, OptionParser::INTEGER_NO_RANGE, {}, {}, {}  }
-        , { "-b", "-b", 2, OptionParser::FLOAT_NO_RANGE  , {}, {}, {}  }
-        , { "-c", "-c", 3, OptionParser::STRING_NO_RANGE , {}, {}, {}  }
+          { "-a", "-a", 1, areg::ext::OptionParser::INTEGER_NO_RANGE, {}, {}, {}  }
+        , { "-b", "-b", 2, areg::ext::OptionParser::FLOAT_NO_RANGE  , {}, {}, {}  }
+        , { "-c", "-c", 3, areg::ext::OptionParser::STRING_NO_RANGE , {}, {}, {}  }
     };
 
     const wchar_t * cmdLine[ ]{ L"OptionParserTest", L"-a=1", L"-b=2.3", L"-c=something" };
 
-    OptionParser parser( setup, MACRO_ARRAYLEN( setup ) );
+    areg::ext::OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseCommandLine( cmdLine, MACRO_ARRAYLEN( cmdLine ) ) );
+    ASSERT_TRUE( parser.parse_command_line( cmdLine, std::size( cmdLine ) ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize( ), MACRO_ARRAYLEN( setup ) );
+    const areg::ext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size( ), std::size( setup ) );
 
     ASSERT_EQ( opts[ 0u ].inCommand, 1 );
-    ASSERT_TRUE(  OptionParser::isInteger(opts[ 0u ].inField) );
-    ASSERT_FALSE( OptionParser::hasRange( opts[ 0u ].inField ) );
+    ASSERT_TRUE(  areg::ext::OptionParser::is_integer(opts[ 0u ].inField) );
+    ASSERT_FALSE( areg::ext::OptionParser::has_range( opts[ 0u ].inField ) );
     ASSERT_EQ( opts[ 0u ].inValue.valInt, 1 );
 
     ASSERT_EQ( opts[ 1u ].inCommand, 2 );
-    ASSERT_TRUE(  OptionParser::isFloat( opts[ 1u ].inField ) );
-    ASSERT_FALSE( OptionParser::hasRange( opts[ 1u ].inField ) );
+    ASSERT_TRUE(  areg::ext::OptionParser::is_float( opts[ 1u ].inField ) );
+    ASSERT_FALSE( areg::ext::OptionParser::has_range( opts[ 1u ].inField ) );
     ASSERT_EQ( opts[ 1u ].inValue.valFloat, 2.3f );
 
     ASSERT_EQ( opts[ 2u ].inCommand, 3 );
-    ASSERT_TRUE(  OptionParser::isString( opts[ 2u ].inField ) );
-    ASSERT_FALSE( OptionParser::hasRange( opts[ 2u ].inField ) );
+    ASSERT_TRUE(  areg::ext::OptionParser::is_string( opts[ 2u ].inField ) );
+    ASSERT_FALSE( areg::ext::OptionParser::has_range( opts[ 2u ].inField ) );
     ASSERT_EQ( opts[ 2u ].inString.size(), 1u );
     ASSERT_EQ( opts[ 2u ].inString[0], "something" );
 }
 
 //!< Options with data, but no assignment symbol passed as a command line strings
-TEST( OptionParserTest, CommandLineOptionWithDataNoAssignment )
+TEST( OptionParserTest, command_line_option_with_data_no_assignment )
 {
-    OptionParser::sOptionSetup setup[ ]
+    areg::ext::OptionParser::OptionSetup setup[ ]
     {
-          { "-a", "-a", 1, OptionParser::INTEGER_NO_RANGE, {}, {}, {}  }
-        , { "-b", "-b", 2, OptionParser::FLOAT_NO_RANGE  , {}, {}, {}  }
-        , { "-c", "-c", 3, OptionParser::STRING_NO_RANGE , {}, {}, {}  }
+          { "-a", "-a", 1, areg::ext::OptionParser::INTEGER_NO_RANGE, {}, {}, {}  }
+        , { "-b", "-b", 2, areg::ext::OptionParser::FLOAT_NO_RANGE  , {}, {}, {}  }
+        , { "-c", "-c", 3, areg::ext::OptionParser::STRING_NO_RANGE , {}, {}, {}  }
     };
 
     const wchar_t * cmdLine[ ]{ L"OptionParserTest", L"-a", L"1", L"-b", L"2.3", L"-c", L"some", L"thing" };
 
-    OptionParser parser( setup, MACRO_ARRAYLEN( setup ) );
+    areg::ext::OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseCommandLine( cmdLine, MACRO_ARRAYLEN( cmdLine ) ) );
+    ASSERT_TRUE( parser.parse_command_line( cmdLine, std::size( cmdLine ) ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize( ), MACRO_ARRAYLEN( setup ) );
+    const areg::ext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size( ), std::size( setup ) );
 
     ASSERT_EQ( opts[ 0u ].inCommand, 1 );
-    ASSERT_TRUE( OptionParser::isInteger( opts[ 0u ].inField ) );
-    ASSERT_FALSE( OptionParser::hasRange( opts[ 0u ].inField ) );
+    ASSERT_TRUE( areg::ext::OptionParser::is_integer( opts[ 0u ].inField ) );
+    ASSERT_FALSE( areg::ext::OptionParser::has_range( opts[ 0u ].inField ) );
     ASSERT_EQ( opts[ 0u ].inValue.valInt, 1 );
 
     ASSERT_EQ( opts[ 1u ].inCommand, 2 );
-    ASSERT_TRUE( OptionParser::isFloat( opts[ 1u ].inField ) );
-    ASSERT_FALSE( OptionParser::hasRange( opts[ 1u ].inField ) );
+    ASSERT_TRUE( areg::ext::OptionParser::is_float( opts[ 1u ].inField ) );
+    ASSERT_FALSE( areg::ext::OptionParser::has_range( opts[ 1u ].inField ) );
     ASSERT_EQ( opts[ 1u ].inValue.valFloat, 2.3f );
 
     ASSERT_EQ( opts[ 2u ].inCommand, 3 );
-    ASSERT_TRUE( OptionParser::isString( opts[ 2u ].inField ) );
-    ASSERT_FALSE( OptionParser::hasRange( opts[ 2u ].inField ) );
+    ASSERT_TRUE( areg::ext::OptionParser::is_string( opts[ 2u ].inField ) );
+    ASSERT_FALSE( areg::ext::OptionParser::has_range( opts[ 2u ].inField ) );
     ASSERT_EQ( opts[ 2u ].inString.size( ), 2u );
     ASSERT_EQ( opts[ 2u ].inString[ 0u ], "some" );
     ASSERT_EQ( opts[ 2u ].inString[ 1u ], "thing" );
 }
 
 //!< Options with short and long names and no data, passed as a command line strings
-TEST( OptionParserTest, CommandLineOptionMixedNoData )
+TEST( OptionParserTest, command_line_option_mixed_no_data )
 {
-    OptionParser::sOptionSetup setup[ ]
+    areg::ext::OptionParser::OptionSetup setup[ ]
     {
-          { "-a", "-aaa"        , 1, OptionParser::FREESTYLE_DATA, {}, {}, {}  }
-        , { "-b", "-bc"         , 2, OptionParser::FREESTYLE_DATA, {}, {}, {}  }
-        , { "-d", "-def"        , 3, OptionParser::FREESTYLE_DATA, {}, {}, {}  }
-        , { "-g", "--blah-blah" , 4, OptionParser::FREESTYLE_DATA, {}, {}, {}  }
+          { "-a", "-aaa"        , 1, areg::ext::OptionParser::FREESTYLE_DATA, {}, {}, {}  }
+        , { "-b", "-bc"         , 2, areg::ext::OptionParser::FREESTYLE_DATA, {}, {}, {}  }
+        , { "-d", "-def"        , 3, areg::ext::OptionParser::FREESTYLE_DATA, {}, {}, {}  }
+        , { "-g", "--blah-blah" , 4, areg::ext::OptionParser::FREESTYLE_DATA, {}, {}, {}  }
     };
 
     const wchar_t * cmdLine[ ]{ L"OptionParserTest", L"-a", L"-bc", L"-def", L"--blah-blah"};
 
-    uint32_t setupCount = MACRO_ARRAYLEN( setup );
-    uint32_t optCount = MACRO_ARRAYLEN( cmdLine );
+    uint32_t setupCount = std::size( setup );
+    uint32_t optCount = std::size( cmdLine );
 
-    OptionParser parser( setup, setupCount );
+    areg::ext::OptionParser parser( setup, setupCount );
 
-    ASSERT_TRUE( parser.parseCommandLine( cmdLine, optCount ) );
+    ASSERT_TRUE( parser.parse_command_line( cmdLine, optCount ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), optCount - 1u );
+    const areg::ext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size(), optCount - 1u );
     for (uint32_t i = 1; i < optCount; ++i )
     {
         ASSERT_EQ( opts[ i - 1u ].inCommand, static_cast<int>(i));
-        ASSERT_TRUE( OptionParser::isFreestyle( opts[ i - 1u ].inField ) );
-        ASSERT_TRUE( OptionParser::isString( opts[ i - 1u ].inField ) );
-        ASSERT_FALSE( OptionParser::hasRange( opts[ i - 1u ].inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_freestyle( opts[ i - 1u ].inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_string( opts[ i - 1u ].inField ) );
+        ASSERT_FALSE( areg::ext::OptionParser::has_range( opts[ i - 1u ].inField ) );
     }
 }
 
 //!< Options with short and long names and with data, passed as a command line strings
-TEST( OptionParserTest, CommandLineOptionMixedWithData )
+TEST( OptionParserTest, command_line_option_mixed_with_data )
 {
-    OptionParser::sOptionSetup setup[ ]
+    areg::ext::OptionParser::OptionSetup setup[ ]
     {
-          { "-a", "-aaa"        , 1, OptionParser::INTEGER_IN_RANGE , {1 , 10 }, {         }, {} }
-        , { "-b", "-bc"         , 2, OptionParser::FLOAT_IN_RANGE   , {       }, {0.1f, 10.1f}, {} }
-        , { "-d", "-def"        , 3, OptionParser::STRING_IN_RANGE  , {       }, {         }, {"some", "thing", "somethingelse" } }
-        , { "-g", "--blah-blah" , 4, OptionParser::STRING_NO_RANGE  , {       }, {         }, {} }
+          { "-a", "-aaa"        , 1, areg::ext::OptionParser::INTEGER_IN_RANGE , {1 , 10 }, {         }, {} }
+        , { "-b", "-bc"         , 2, areg::ext::OptionParser::FLOAT_IN_RANGE   , {       }, {0.1f, 10.1f}, {} }
+        , { "-d", "-def"        , 3, areg::ext::OptionParser::STRING_IN_RANGE  , {       }, {         }, {"some", "thing", "somethingelse" } }
+        , { "-g", "--blah-blah" , 4, areg::ext::OptionParser::STRING_NO_RANGE  , {       }, {         }, {} }
     };
 
     const wchar_t * cmdLine[ ]{ L"OptionParserTest", L"-a", L"=", L"1", L"-bc", L"=", L"2.3", L"-def", L"some", L"--blah-blah", L"thing", L"and", L"somethingelse" };
 
-    OptionParser parser( setup, MACRO_ARRAYLEN( setup ) );
+    areg::ext::OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseCommandLine( cmdLine, MACRO_ARRAYLEN( cmdLine ) ) );
+    ASSERT_TRUE( parser.parse_command_line( cmdLine, std::size( cmdLine ) ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize( ), MACRO_ARRAYLEN( setup ) );
+    const areg::ext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size( ), std::size( setup ) );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 0u ];
+        const areg::ext::OptionParser::InputOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 1 );
-        ASSERT_TRUE( OptionParser::isInteger( opt.inField ) );
-        ASSERT_TRUE( OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_integer( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inValue.valInt, 1 );
     } while ( false );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 1u ];
+        const areg::ext::OptionParser::InputOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
-        ASSERT_TRUE( OptionParser::isFloat( opt.inField ) );
-        ASSERT_TRUE( OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_float( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inValue.valFloat, 2.3f );
     } while ( false );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 2u ];
+        const areg::ext::OptionParser::InputOption & opt = opts[ 2u ];
         ASSERT_EQ( opt.inCommand, 3 );
-        ASSERT_TRUE( OptionParser::isString( opt.inField ) );
-        ASSERT_TRUE( OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_string( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inString.size( ), 1u );
         ASSERT_EQ( opt.inString[ 0 ], "some" );
     } while ( false );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 3u ];
+        const areg::ext::OptionParser::InputOption & opt = opts[ 3u ];
         ASSERT_EQ( opt.inCommand, 4 );
-        ASSERT_TRUE( OptionParser::isString( opt.inField ) );
-        ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_string( opt.inField ) );
+        ASSERT_FALSE( areg::ext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inString.size( ), 3u );
         ASSERT_EQ( opt.inString[ 0 ], "thing" );
         ASSERT_EQ( opt.inString[ 1 ], "and" );
@@ -218,213 +218,213 @@ TEST( OptionParserTest, CommandLineOptionMixedWithData )
 }
 
 //!< Options with data in the quote that contains a space, passed as a command line strings
-TEST( OptionParserTest, CommandLineOptionLongDataInQuote )
+TEST( OptionParserTest, command_line_option_long_data_in_quote )
 {
-    OptionParser::sOptionSetup setup[ ]
+    areg::ext::OptionParser::OptionSetup setup[ ]
     {
-          { "-a", "-abc"        , 1, OptionParser::INTEGER_IN_RANGE , {1 , 10 }, {         }, {} }
-        , { "-s", "-scope"      , 2, OptionParser::STRING_NO_RANGE  , {       }, {0.1f, 10.1f}, {} }
+          { "-a", "-abc"        , 1, areg::ext::OptionParser::INTEGER_IN_RANGE , {1 , 10 }, {         }, {} }
+        , { "-s", "-scope"      , 2, areg::ext::OptionParser::STRING_NO_RANGE  , {       }, {0.1f, 10.1f}, {} }
     };
 
     constexpr std::string_view scope {"* .areg_ * = DEBUG | SCOPE"};
     const wchar_t * cmdLine[ ]{ L"OptionParserTest", L"-scope", L"\" * .areg_ * = DEBUG | SCOPE\"" };
 
-    OptionParser parser( setup, MACRO_ARRAYLEN( setup ) );
+    areg::ext::OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseCommandLine( cmdLine, MACRO_ARRAYLEN( cmdLine ) ) );
+    ASSERT_TRUE( parser.parse_command_line( cmdLine, std::size( cmdLine ) ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), 1u );
+    const areg::ext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size(), 1u );
 
-    const OptionParser::sOption & opt = opts[ 0u ];
+    const areg::ext::OptionParser::InputOption & opt = opts[ 0u ];
     ASSERT_EQ( opt.inCommand, 2 );
-    ASSERT_TRUE( OptionParser::isString( opt.inField ) );
-    ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
+    ASSERT_TRUE( areg::ext::OptionParser::is_string( opt.inField ) );
+    ASSERT_FALSE( areg::ext::OptionParser::has_range( opt.inField ) );
     ASSERT_EQ( opt.inString.size( ), 1u );
     ASSERT_EQ( opt.inString[ 0 ], scope );
 }
 
 //!< Options with default option setup
-TEST( OptionParserTest, CommandLineOptionDefaultData )
+TEST( OptionParserTest, command_line_option_default_data )
 {
-    OptionParser::sOptionSetup setup[ ]
+    areg::ext::OptionParser::OptionSetup setup[ ]
     {
-          { OptionParser::getDefaultOptionSetup() }
-        , { "-s", "-scope"  , 2, OptionParser::STRING_NO_RANGE, {}, {}, {} }
+          { areg::ext::OptionParser::default_option_setup() }
+        , { "-s", "-scope"  , 2, areg::ext::OptionParser::STRING_NO_RANGE, {}, {}, {} }
     };
 
     constexpr std::string_view scope {"* .areg_ * = DEBUG | SCOPE"};
     const wchar_t * cmdLine[ ]{ L"OptionParserTest", L"freestyle", L"-scope", L"\" * .areg_ * = DEBUG | SCOPE\"" };
 
-    OptionParser parser( setup, MACRO_ARRAYLEN( setup ) );
+    areg::ext::OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseCommandLine( cmdLine, MACRO_ARRAYLEN( cmdLine ) ) );
+    ASSERT_TRUE( parser.parse_command_line( cmdLine, std::size( cmdLine ) ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), 2u );
+    const areg::ext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size(), 2u );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 0u ];
+        const areg::ext::OptionParser::InputOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 0 );
-        ASSERT_TRUE( OptionParser::isFreestyle( opt.inField ) );
-        ASSERT_TRUE( OptionParser::isString( opt.inField ) );
-        ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_freestyle( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_string( opt.inField ) );
+        ASSERT_FALSE( areg::ext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inString.size( ), 1u );
         ASSERT_EQ( opt.inString[ 0u ], "freestyle" );
     } while ( false );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 1u ];
+        const areg::ext::OptionParser::InputOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
-        ASSERT_TRUE( OptionParser::isString( opt.inField ) );
-        ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_string( opt.inField ) );
+        ASSERT_FALSE( areg::ext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inString.size( ), 1u );
         ASSERT_EQ( opt.inString[ 0 ], scope );
     } while ( false );
 }
 
 //!< Option with no data, passed as a string separated with space
-TEST( OptionParserTest, OptionsSimpleNoData )
+TEST( OptionParserTest, options_simple_no_data )
 {
-    OptionParser::sOptionSetup setup[ ]
+    areg::ext::OptionParser::OptionSetup setup[ ]
     {
-          { "-a", "-a", 1, OptionParser::FREESTYLE_DATA, {}, {}, {} }
-        , { "-b", "-b", 2, OptionParser::FREESTYLE_DATA, {}, {}, {} }
-        , { "-c", "-c", 3, OptionParser::FREESTYLE_DATA, {}, {}, {} }
+          { "-a", "-a", 1, areg::ext::OptionParser::FREESTYLE_DATA, {}, {}, {} }
+        , { "-b", "-b", 2, areg::ext::OptionParser::FREESTYLE_DATA, {}, {}, {} }
+        , { "-c", "-c", 3, areg::ext::OptionParser::FREESTYLE_DATA, {}, {}, {} }
     };
 
     const wchar_t * optLine{ L"-a -b -c" };
 
-    uint32_t setupCount = MACRO_ARRAYLEN( setup );
+    uint32_t setupCount = std::size( setup );
 
-    OptionParser parser( setup, setupCount );
+    areg::ext::OptionParser parser( setup, setupCount );
 
-    ASSERT_TRUE( parser.parseOptionLine( optLine ) );
+    ASSERT_TRUE( parser.parse_option_line( optLine ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ(opts.getSize(), 3u );
+    const areg::ext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ(opts.size(), 3u );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 0u ];
+        const areg::ext::OptionParser::InputOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 1 );
-        ASSERT_TRUE( OptionParser::isFreestyle( opt.inField ) );
-        ASSERT_TRUE( OptionParser::isString( opt.inField ) );
-        ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_freestyle( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_string( opt.inField ) );
+        ASSERT_FALSE( areg::ext::OptionParser::has_range( opt.inField ) );
     } while ( false );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 1u ];
+        const areg::ext::OptionParser::InputOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
-        ASSERT_TRUE( OptionParser::isFreestyle( opt.inField ) );
-        ASSERT_TRUE( OptionParser::isString( opt.inField ) );
-        ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_freestyle( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_string( opt.inField ) );
+        ASSERT_FALSE( areg::ext::OptionParser::has_range( opt.inField ) );
     } while ( false );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 2u ];
+        const areg::ext::OptionParser::InputOption & opt = opts[ 2u ];
         ASSERT_EQ( opt.inCommand, 3 );
-        ASSERT_TRUE( OptionParser::isFreestyle( opt.inField ) );
-        ASSERT_TRUE( OptionParser::isString( opt.inField ) );
-        ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_freestyle( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_string( opt.inField ) );
+        ASSERT_FALSE( areg::ext::OptionParser::has_range( opt.inField ) );
     } while ( false );
 }
 
 //!< Option with data, passed as a string separated with space
-TEST( OptionParserTest, OptionSimpleWithData )
+TEST( OptionParserTest, option_simple_with_data )
 {
-    OptionParser::sOptionSetup setup[ ]
+    areg::ext::OptionParser::OptionSetup setup[ ]
     {
-          { "-a", "-a", 1, OptionParser::INTEGER_NO_RANGE, {}, {}, {}  }
-        , { "-b", "-b", 2, OptionParser::FLOAT_NO_RANGE  , {}, {}, {}  }
-        , { "-c", "-c", 3, OptionParser::STRING_NO_RANGE , {}, {}, {}  }
+          { "-a", "-a", 1, areg::ext::OptionParser::INTEGER_NO_RANGE, {}, {}, {}  }
+        , { "-b", "-b", 2, areg::ext::OptionParser::FLOAT_NO_RANGE  , {}, {}, {}  }
+        , { "-c", "-c", 3, areg::ext::OptionParser::STRING_NO_RANGE , {}, {}, {}  }
     };
 
     const wchar_t * optLine{ L"-a=1 -b=2.3 -c=something" };
 
-    OptionParser parser( setup, MACRO_ARRAYLEN( setup ) );
+    areg::ext::OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseOptionLine( optLine ) );
+    ASSERT_TRUE( parser.parse_option_line( optLine ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize( ), MACRO_ARRAYLEN( setup ) );
+    const areg::ext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size( ), std::size( setup ) );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 0u ];
+        const areg::ext::OptionParser::InputOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 1 );
-        ASSERT_TRUE( OptionParser::isInteger( opt.inField ) );
-        ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_integer( opt.inField ) );
+        ASSERT_FALSE( areg::ext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inValue.valInt, 1 );
     } while ( false );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 1u ];
+        const areg::ext::OptionParser::InputOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
-        ASSERT_TRUE( OptionParser::isFloat( opt.inField ) );
-        ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_float( opt.inField ) );
+        ASSERT_FALSE( areg::ext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inValue.valFloat, 2.3f );
     } while ( false );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 2u ];
+        const areg::ext::OptionParser::InputOption & opt = opts[ 2u ];
         ASSERT_EQ( opt.inCommand, 3 );
-        ASSERT_TRUE( OptionParser::isString( opt.inField ) );
-        ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_string( opt.inField ) );
+        ASSERT_FALSE( areg::ext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inString.size( ), 1u );
         ASSERT_EQ( opt.inString[ 0 ], "something" );
     } while ( false );
 }
 
 //!< Option with data and no assignment symbol, passed as a string separated with space
-TEST( OptionParserTest, OptionWithDataNoAssignment )
+TEST( OptionParserTest, option_with_data_no_assignment )
 {
-    OptionParser::sOptionSetup setup[ ]
+    areg::ext::OptionParser::OptionSetup setup[ ]
     {
-          { "-a", "-a", 1, OptionParser::INTEGER_NO_RANGE, {}, {}, {}  }
-        , { "-b", "-b", 2, OptionParser::FLOAT_NO_RANGE  , {}, {}, {}  }
-        , { "-c", "-c", 3, OptionParser::STRING_NO_RANGE , {}, {}, {}  }
+          { "-a", "-a", 1, areg::ext::OptionParser::INTEGER_NO_RANGE, {}, {}, {}  }
+        , { "-b", "-b", 2, areg::ext::OptionParser::FLOAT_NO_RANGE  , {}, {}, {}  }
+        , { "-c", "-c", 3, areg::ext::OptionParser::STRING_NO_RANGE , {}, {}, {}  }
     };
 
     const wchar_t * optLine{ L"-a 1 -b 2.3 -c some thing" };
 
-    OptionParser parser( setup, MACRO_ARRAYLEN( setup ) );
+    areg::ext::OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseOptionLine( optLine ) );
+    ASSERT_TRUE( parser.parse_option_line( optLine ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), 3u );
+    const areg::ext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size(), 3u );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 0u ];
+        const areg::ext::OptionParser::InputOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 1 );
-        ASSERT_TRUE( OptionParser::isInteger( opt.inField ) );
-        ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_integer( opt.inField ) );
+        ASSERT_FALSE( areg::ext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inValue.valInt, 1 );
     } while ( false );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 1u ];
+        const areg::ext::OptionParser::InputOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
-        ASSERT_TRUE( OptionParser::isFloat( opt.inField ) );
-        ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_float( opt.inField ) );
+        ASSERT_FALSE( areg::ext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inValue.valFloat, 2.3f );
     } while ( false );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 2u ];
+        const areg::ext::OptionParser::InputOption & opt = opts[ 2u ];
         ASSERT_EQ( opt.inCommand, 3 );
-        ASSERT_TRUE( OptionParser::isString( opt.inField ) );
-        ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_string( opt.inField ) );
+        ASSERT_FALSE( areg::ext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inString.size( ), 2u );
         ASSERT_EQ( opt.inString[ 0 ], "some" );
         ASSERT_EQ( opt.inString[ 1 ], "thing" );
@@ -432,59 +432,59 @@ TEST( OptionParserTest, OptionWithDataNoAssignment )
 }
 
 //!< Mixed option with data, passed as a string separated with space
-TEST( OptionParserTest, OptionMixedWithData )
+TEST( OptionParserTest, option_mixed_with_data )
 {
-    OptionParser::sOptionSetup setup[ ]
+    areg::ext::OptionParser::OptionSetup setup[ ]
     {
-          { "-a", "-aaa"        , 1, OptionParser::INTEGER_IN_RANGE , {1 , 10 }, {         }, {} }
-        , { "-b", "-bc"         , 2, OptionParser::FLOAT_IN_RANGE   , {       }, {0.1f, 10.1f}, {} }
-        , { "-d", "-def"        , 3, OptionParser::STRING_IN_RANGE  , {       }, {         }, {"some", "thing", "somethingelse" } }
-        , { "-g", "--blah-blah" , 4, OptionParser::STRING_NO_RANGE  , {       }, {         }, {} }
+          { "-a", "-aaa"        , 1, areg::ext::OptionParser::INTEGER_IN_RANGE , {1 , 10 }, {         }, {} }
+        , { "-b", "-bc"         , 2, areg::ext::OptionParser::FLOAT_IN_RANGE   , {       }, {0.1f, 10.1f}, {} }
+        , { "-d", "-def"        , 3, areg::ext::OptionParser::STRING_IN_RANGE  , {       }, {         }, {"some", "thing", "somethingelse" } }
+        , { "-g", "--blah-blah" , 4, areg::ext::OptionParser::STRING_NO_RANGE  , {       }, {         }, {} }
     };
 
     const wchar_t * optLine{ L"-a = 1  -bc=2.3   -def some --blah-blah thing and somethingelse" };
 
-    OptionParser parser( setup, MACRO_ARRAYLEN( setup ) );
+    areg::ext::OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseOptionLine( optLine ) );
+    ASSERT_TRUE( parser.parse_option_line( optLine ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), 4u );
+    const areg::ext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size(), 4u );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 0u ];
+        const areg::ext::OptionParser::InputOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 1 );
-        ASSERT_TRUE( OptionParser::isInteger( opt.inField ) );
-        ASSERT_TRUE( OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_integer( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inValue.valInt, 1 );
     } while ( false );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 1u ];
+        const areg::ext::OptionParser::InputOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
-        ASSERT_TRUE( OptionParser::isFloat( opt.inField ) );
-        ASSERT_TRUE( OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_float( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inValue.valFloat, 2.3f );
     } while ( false );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 2u ];
+        const areg::ext::OptionParser::InputOption & opt = opts[ 2u ];
         ASSERT_EQ( opt.inCommand, 3 );
-        ASSERT_TRUE( OptionParser::isString( opt.inField ) );
-        ASSERT_TRUE( OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_string( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inString.size( ), 1u );
         ASSERT_EQ( opt.inString[ 0u ], "some" );
     } while ( false );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 3u ];
+        const areg::ext::OptionParser::InputOption & opt = opts[ 3u ];
         ASSERT_EQ( opt.inCommand, 4 );
-        ASSERT_TRUE( OptionParser::isString( opt.inField ) );
-        ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( areg::ext::OptionParser::is_string( opt.inField ) );
+        ASSERT_FALSE( areg::ext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inString.size( ), 3u );
         ASSERT_EQ( opt.inString[ 0 ], "thing" );
         ASSERT_EQ( opt.inString[ 1 ], "and" );
@@ -493,121 +493,121 @@ TEST( OptionParserTest, OptionMixedWithData )
 }
 
 //!< Option with data in the quote that contains space, passed as a string separated with space
-TEST( OptionParserTest, OptionLongDataInQuote )
+TEST( OptionParserTest, option_long_data_in_quote )
 {
-    OptionParser::sOptionSetup setup[ ]
+    areg::ext::OptionParser::OptionSetup setup[ ]
     {
-          { "-a", "-abc"        , 1, OptionParser::INTEGER_IN_RANGE , {1 , 10 }, {}, {} }
-        , { "-s", "-scope"      , 2, OptionParser::STRING_NO_RANGE  , {       }, {}, {} }
+          { "-a", "-abc"        , 1, areg::ext::OptionParser::INTEGER_IN_RANGE , {1 , 10 }, {}, {} }
+        , { "-s", "-scope"      , 2, areg::ext::OptionParser::STRING_NO_RANGE  , {       }, {}, {} }
     };
 
     constexpr std::string_view scope {"*.areg_* = DEBUG | SCOPE"};
     const wchar_t * optLine{ L"-scope \"*.areg_* = DEBUG | SCOPE\"" };
 
-    OptionParser parser( setup, MACRO_ARRAYLEN( setup ) );
+    areg::ext::OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseOptionLine( optLine ) );
+    ASSERT_TRUE( parser.parse_option_line( optLine ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), 1u );
+    const areg::ext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size(), 1u );
 
-    const OptionParser::sOption & opt = opts[ 0u ];
+    const areg::ext::OptionParser::InputOption & opt = opts[ 0u ];
     ASSERT_EQ( opt.inCommand, 2 );
-    ASSERT_TRUE( OptionParser::isString( opt.inField ) );
-    ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
+    ASSERT_TRUE( areg::ext::OptionParser::is_string( opt.inField ) );
+    ASSERT_FALSE( areg::ext::OptionParser::has_range( opt.inField ) );
     ASSERT_EQ( opt.inString.size( ), 1u );
     ASSERT_EQ( opt.inString[ 0 ], scope );
 }
 
 //!< Option with data in the quote that contains error (quote is not closed), passed as a string separated with space
-TEST( OptionParserTest, OptionLongDataInQuoteWithError )
+TEST( OptionParserTest, option_long_data_in_quote_with_error )
 {
-    OptionParser::sOptionSetup setup[ ]
+    areg::ext::OptionParser::OptionSetup setup[ ]
     {
-          { "-a", "-abc"        , 1, OptionParser::INTEGER_IN_RANGE , {1 , 10 }, {         }, {} }
-        , { "-s", "-scope"      , 2, OptionParser::STRING_NO_RANGE  , {       }, {0.1f, 10.1f}, {} }
+          { "-a", "-abc"        , 1, areg::ext::OptionParser::INTEGER_IN_RANGE , {1 , 10 }, {         }, {} }
+        , { "-s", "-scope"      , 2, areg::ext::OptionParser::STRING_NO_RANGE  , {       }, {0.1f, 10.1f}, {} }
     };
 
     constexpr std::string_view scope {"*.areg_* = DEBUG | SCOPE"};
     constexpr std::string_view error {"-a = 5"};
     const wchar_t * optLine{ L"-scope \"*.areg_* = DEBUG | SCOPE -a = 5" };
 
-    OptionParser parser( setup, MACRO_ARRAYLEN( setup ) );
+    areg::ext::OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_FALSE( parser.parseOptionLine( optLine ) );
+    ASSERT_FALSE( parser.parse_option_line( optLine ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), 1u );
+    const areg::ext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size(), 1u );
 
-    const OptionParser::sOption & opt = opts[ 0u ];
+    const areg::ext::OptionParser::InputOption & opt = opts[ 0u ];
     ASSERT_EQ( opt.inCommand, 2 );
-    ASSERT_TRUE( OptionParser::isString( opt.inField ) );
-    ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
+    ASSERT_TRUE( areg::ext::OptionParser::is_string( opt.inField ) );
+    ASSERT_FALSE( areg::ext::OptionParser::has_range( opt.inField ) );
     ASSERT_EQ( opt.inString.size( ), 1u );
     ASSERT_NE( opt.inString[0], scope );
-    ASSERT_TRUE( opt.inString[0].endsWith(error) );
+    ASSERT_TRUE( opt.inString[0].ends_with(error) );
 }
 
 //!< Option with multiple data, passed as a string separated with space
-TEST( OptionParserTest, OptionMultipleParametersAsciiChar )
+TEST( OptionParserTest, option_multiple_parameters_ascii_char )
 {
-    OptionParser::sOptionSetup setup[ ]
+    areg::ext::OptionParser::OptionSetup setup[ ]
     {
-          { "cp", "copy", 1, OptionParser::STRING_NO_RANGE, {}, {}, {} }
-        , { "mv", "move", 2, OptionParser::STRING_NO_RANGE, {}, {}, {} }
+          { "cp", "copy", 1, areg::ext::OptionParser::STRING_NO_RANGE, {}, {}, {} }
+        , { "mv", "move", 2, areg::ext::OptionParser::STRING_NO_RANGE, {}, {}, {} }
     };
 
     const char * optLine{ "copy ./file.txt ./some/" };
 
-    OptionParser parser( setup, MACRO_ARRAYLEN( setup ) );
+    areg::ext::OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseOptionLine( optLine ) );
+    ASSERT_TRUE( parser.parse_option_line( optLine ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), 1u );
+    const areg::ext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size(), 1u );
 
-    const OptionParser::sOption & opt = opts[ 0u ];
+    const areg::ext::OptionParser::InputOption & opt = opts[ 0u ];
     ASSERT_EQ( opt.inCommand, 1 );
-    ASSERT_TRUE( OptionParser::isString( opt.inField ) );
-    ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
+    ASSERT_TRUE( areg::ext::OptionParser::is_string( opt.inField ) );
+    ASSERT_FALSE( areg::ext::OptionParser::has_range( opt.inField ) );
     ASSERT_EQ( opt.inString.size( ), 2u );
     ASSERT_EQ( opt.inString[ 0 ], "./file.txt" );
     ASSERT_EQ( opt.inString[ 1 ], "./some/" );
 }
 
 //!< Example of options to pass Geometry figures, passed as a string separated with space, with and without quotes.
-TEST( OptionParserTest, OptionFiguresWithData )
+TEST( OptionParserTest, option_figures_with_data )
 {
-    enum Figure
+    enum class Figure
     {
           Triangle = 1
         , Rectangle = 2
     };
 
-    const OptionParser::sOptionSetup setup[ ]
+    const areg::ext::OptionParser::OptionSetup setup[ ]
     {
-          {"-t", "--tri"  , static_cast<int>(Figure::Triangle) , OptionParser::STRING_NO_RANGE, {}, {}, {}}
-        , { "-r", "--rect", static_cast<int>(Figure::Rectangle), OptionParser::STRING_NO_RANGE, {}, {}, {} }
+          {"-t", "--tri"  , static_cast<int>(Figure::Triangle) , areg::ext::OptionParser::STRING_NO_RANGE, {}, {}, {}}
+        , { "-r", "--rect", static_cast<int>(Figure::Rectangle), areg::ext::OptionParser::STRING_NO_RANGE, {}, {}, {} }
     };
 
-    OptionParser parser1( setup, MACRO_ARRAYLEN( setup ) );
+    areg::ext::OptionParser parser1( setup, std::size( setup ) );
     const char * optCase1 = "-t \"{1, 1}, { 5, 10 }, { 20, 3 }\" --rect \"{1, 10}, 5, 3\"";
-    ASSERT_TRUE( parser1.parseOptionLine( optCase1 ) );
+    ASSERT_TRUE( parser1.parse_option_line( optCase1 ) );
 
-    OptionParser parser2( setup, MACRO_ARRAYLEN( setup ) );
+    areg::ext::OptionParser parser2( setup, std::size( setup ) );
     const char * optCase2 = "-t {1,1} {5,10} {20,3} --rect {1,10} 5 3";
-    ASSERT_TRUE( parser2.parseOptionLine( optCase2 ) );
+    ASSERT_TRUE( parser2.parse_option_line( optCase2 ) );
 
-    ASSERT_EQ( parser1.getOptions().getSize(), parser2.getOptions().getSize() );
-    ASSERT_EQ( parser1.getOptions().getSize(), 2u );
+    ASSERT_EQ( parser1.options().size(), parser2.options().size() );
+    ASSERT_EQ( parser1.options().size(), 2u );
 
-    const OptionParser::InputOptionList & opts1 = parser1.getOptions( );
-    const OptionParser::InputOptionList & opts2 = parser2.getOptions( );
+    const areg::ext::OptionParser::InputOptionList & opts1 = parser1.options( );
+    const areg::ext::OptionParser::InputOptionList & opts2 = parser2.options( );
 
     do
     {
-        const OptionParser::sOption & opt1 = opts1[ 0u ];
-        const OptionParser::sOption & opt2 = opts2[ 0u ];
+        const areg::ext::OptionParser::InputOption & opt1 = opts1[ 0u ];
+        const areg::ext::OptionParser::InputOption & opt2 = opts2[ 0u ];
         ASSERT_EQ( opt1.inCommand , static_cast<int>(Figure::Triangle) );
         ASSERT_EQ( opt1.inCommand , opt2.inCommand );
         ASSERT_EQ( opt1.inField   , opt2.inField );
@@ -624,8 +624,8 @@ TEST( OptionParserTest, OptionFiguresWithData )
 
     do
     {
-        const OptionParser::sOption & opt1 = opts1[ 1u ];
-        const OptionParser::sOption & opt2 = opts2[ 1u ];
+        const areg::ext::OptionParser::InputOption & opt1 = opts1[ 1u ];
+        const areg::ext::OptionParser::InputOption & opt2 = opts2[ 1u ];
         ASSERT_EQ( opt1.inCommand , static_cast<int>(Figure::Rectangle) );
         ASSERT_EQ( opt1.inCommand , opt2.inCommand );
         ASSERT_EQ( opt1.inField   , opt2.inField );

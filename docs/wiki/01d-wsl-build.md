@@ -268,7 +268,7 @@ sudo apt-get install -y gcc-multilib g++-multilib
 **2. Configure for 32-bit:**
 
 ```bash
-cmake -B ./build -DAREG_PROCESSOR=x86 -DAREG_COMPILER_FAMILY=llvm
+cmake -B ./build -DAREG_ARCH=x86 -DAREG_COMPILER_FAMILY=llvm
 ```
 
 **3. Build:**
@@ -322,7 +322,7 @@ sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils
 **2. Configure for ARM:**
 
 ```bash
-cmake -B ./build -DAREG_PROCESSOR=arm -DAREG_COMPILER_FAMILY=gnu
+cmake -B ./build -DAREG_ARCH=arm -DAREG_COMPILER_FAMILY=gnu
 ```
 
 **3. Build:**
@@ -353,7 +353,7 @@ sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aar
 **2. Configure for AArch64:**
 
 ```bash
-cmake -B ./build -DAREG_PROCESSOR=aarch64 -DAREG_COMPILER_FAMILY=gnu
+cmake -B ./build -DAREG_ARCH=aarch64 -DAREG_COMPILER_FAMILY=gnu
 ```
 
 **3. Build:**

@@ -7,27 +7,27 @@ each application has one instance of implemented service where
 the role name is a nick name of a registered application.</Description>
     </Overview>
     <DataTypeList>
-        <DataType ID="2" Name="sParticipant" Type="Imported">
-            <Location>common/NECommon.hpp</Location>
-            <Namespace>NECommon</Namespace>
-            <ImportedObject>sParticipant</ImportedObject>
+        <DataType ID="2" Name="Participant" Type="Imported">
+            <Location>common/ChatDefs.hpp</Location>
+            <Namespace>chat</Namespace>
+            <ImportedObject>Participant</ImportedObject>
             <Description/>
         </DataType>
         <DataType ID="3" Name="sInitiator" Type="Imported">
-            <Location>common/NECommon.hpp</Location>
-            <Namespace>NECommon</Namespace>
+            <Location>common/ChatDefs.hpp</Location>
+            <Namespace>chat</Namespace>
             <ImportedObject>sInitiator</ImportedObject>
             <Description/>
         </DataType>
         <DataType ID="4" Name="ListParticipants" Type="Imported">
-            <Location>common/NECommon.hpp</Location>
-            <Namespace>NECommon</Namespace>
+            <Location>common/ChatDefs.hpp</Location>
+            <Namespace>chat</Namespace>
             <ImportedObject>ListParticipants</ImportedObject>
             <Description/>
         </DataType>
         <DataType ID="6" Name="MapParticipants" Type="Imported">
-            <Location>common/NECommon.hpp</Location>
-            <Namespace>NECommon</Namespace>
+            <Location>common/ChatDefs.hpp</Location>
+            <Namespace>chat</Namespace>
             <ImportedObject>MapParticipants</ImportedObject>
             <Description/>
         </DataType>
@@ -38,7 +38,7 @@ the role name is a nick name of a registered application.</Description>
         </Attribute>
     </AttributeList>
     <MethodList>
-        <Method ID="12" Name="ConnectoinSetup" MethodType="Request" Response="ConnectoinSetup">
+        <Method ID="12" Name="connectoin_setup" MethodType="Request" Response="connectoin_setup">
             <Description>Request to setup the direct connection to chat room initiator.</Description>
             <ParamList>
                 <Parameter ID="51" Name="initiator" DataType="sInitiator">
@@ -49,13 +49,13 @@ the role name is a nick name of a registered application.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="15" Name="ConnectoinSetup" MethodType="Response">
+        <Method ID="15" Name="connectoin_setup" MethodType="Response">
             <Description>The response of connection setup</Description>
             <ParamList>
                 <Parameter ID="53" Name="succeeded" DataType="bool">
                     <Description>Flag, indicating whether the connection setup succeeded or not.</Description>
                 </Parameter>
-                <Parameter ID="54" Name="target" DataType="sParticipant">
+                <Parameter ID="54" Name="target" DataType="Participant">
                     <Description>The targeted participant to include in chat-room</Description>
                 </Parameter>
                 <Parameter ID="55" Name="initiator" DataType="sInitiator">
@@ -66,7 +66,7 @@ the role name is a nick name of a registered application.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="20" Name="AddParticipant" MethodType="Request" Response="AddParticipant">
+        <Method ID="20" Name="add_participant" MethodType="Request" Response="add_participant">
             <Description>The request to add a participant in the direct chat-room.</Description>
             <ParamList>
                 <Parameter ID="57" Name="initiator" DataType="sInitiator">
@@ -77,7 +77,7 @@ the role name is a nick name of a registered application.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="23" Name="AddParticipant" MethodType="Response">
+        <Method ID="23" Name="add_participant" MethodType="Response">
             <Description>The response to add initiator to chat room</Description>
             <ParamList>
                 <Parameter ID="59" Name="succeeded" DataType="bool">
@@ -88,7 +88,7 @@ the role name is a nick name of a registered application.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="26" Name="RemoveParticipant" MethodType="Request" Response="RemoveParticipant">
+        <Method ID="26" Name="remove_participant" MethodType="Request" Response="remove_participant">
             <Description>Request to remove initiator from chat-room</Description>
             <ParamList>
                 <Parameter ID="61" Name="initiator" DataType="sInitiator">
@@ -99,7 +99,7 @@ the role name is a nick name of a registered application.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="30" Name="RemoveParticipant" MethodType="Response">
+        <Method ID="30" Name="remove_participant" MethodType="Response">
             <Description>Response to remove initiator from chat-room</Description>
             <ParamList>
                 <Parameter ID="63" Name="succeeded" DataType="bool">
@@ -110,7 +110,7 @@ the role name is a nick name of a registered application.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="33" Name="CloseConnection" MethodType="Request">
+        <Method ID="33" Name="close_connection" MethodType="Request">
             <Description>Request to close chat-room. There is no response expected.</Description>
             <ParamList>
                 <Parameter ID="65" Name="initiator" DataType="sInitiator">
@@ -121,15 +121,15 @@ the role name is a nick name of a registered application.</Description>
     </MethodList>
     <ConstantList>
         <Constant ID="36" Name="InvalidSession" DataType="uint64">
-            <Value>NECommon::InvalidSession</Value>
+            <Value>chat::InvalidSession</Value>
             <Description>Indicates Invalid session</Description>
         </Constant>
         <Constant ID="37" Name="InvalidCookie" DataType="uint32">
-            <Value>NECommon::InvalidCookie</Value>
+            <Value>chat::InvalidCookie</Value>
             <Description>Indicates Invalid cookie</Description>
         </Constant>
-        <Constant ID="38" Name="ServicePrefixStub" DataType="String">
-            <Value>&quot;ChatStub&quot;</Value>
+        <Constant ID="38" Name="ServicePrefixProvider" DataType="String">
+            <Value>&quot;ChatProvider&quot;</Value>
             <Description>The prefix to add when create stub instance</Description>
         </Constant>
         <Constant ID="39" Name="ServicePrefixClient" DataType="String">
@@ -138,7 +138,7 @@ the role name is a nick name of a registered application.</Description>
         </Constant>
     </ConstantList>
     <IncludeList>
-        <Location ID="47" Name="common/NECommon.hpp">
+        <Location ID="47" Name="common/ChatDefs.hpp">
             <Description>Shared data</Description>
         </Location>
     </IncludeList>

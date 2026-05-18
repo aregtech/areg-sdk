@@ -10,87 +10,68 @@
  * \file        areg/base/private/posix/ProcessPosix.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       The class to handle process. Get process ID, process handle, process name, etc.
- *              POSIX specific implementation
+ * \brief       Areg Platform, POSIX process implementation.
+ *              _os_initilize: uses getpid() + readlink("/proc/self/exe") for
+ *              all non-Apple POSIX platforms (Linux, Cygwin, etc.).
+ *              _os_env_variable: uses getenv(), common to all POSIX platforms.
+ *              macOS uses _NSGetExecutablePath -- see macos/ProcessMacOS.cpp.
+ *              ProcessLinux.cpp is reserved for future Linux-specific optimizations.
+ *
  ************************************************************************/
-#include "areg/base/Process.hpp"
 
 #if defined(_POSIX) || defined(POSIX)
 
+/************************************************************************
+ * Includes
+ ************************************************************************/
+#include "areg/base/Process.hpp"
 #include "areg/base/File.hpp"
-
-#include <unistd.h>
-#include <stdlib.h>     /* getenv */
-#include <iostream>
-
-#ifdef __APPLE__
-    #include <mach-o/dyld.h>
-#endif // __APPLE__
+#include <stdlib.h>     // getenv
+#include <unistd.h>     // readlink, getpid
+#include <cstring>
 
 //////////////////////////////////////////////////////////////////////////
-// Process class implementation
+// Non-Apple POSIX: _os_initilize using getpid() + readlink("/proc/self/exe")
 //////////////////////////////////////////////////////////////////////////
 
-void Process::_osInitilize( void )
+#ifndef __APPLE__
+
+namespace areg {
+
+void Process::_os_initilize()
 {
-    mProcessId = ::getpid( );
+    mProcessId     = ::getpid();
     mProcessHandle = static_cast<void *>(&mProcessId);
 
     char buffer[File::MAXIMUM_PATH];
-    ::memset( buffer, 0, File::MAXIMUM_PATH );
+    ::memset(buffer, 0, File::MAXIMUM_PATH);
 
-#ifdef __APPLE__
-    // macOS: use _NSGetExecutablePath to get the executable path
-    uint32_t bufSize = static_cast<uint32_t>(File::MAXIMUM_PATH);
-    if (_NSGetExecutablePath(buffer, &bufSize) != 0)
+    // /proc/self/exe is available on Linux and Cygwin.
+    // readlink returns -1 silently on systems that lack it; buffer stays empty.
+    ssize_t len = ::readlink("/proc/self/exe", buffer, File::MAXIMUM_PATH - 1);
+    if ((len > 0) && (len < File::MAXIMUM_PATH))
     {
-        // Buffer too small, try with the required size
-        if (bufSize <= File::MAXIMUM_PATH)
-        {
-            _NSGetExecutablePath(buffer, &bufSize);
-        }
+        buffer[len] = '\0';
     }
 
-    // Resolve any symlinks to get the real path
-    char realPath[File::MAXIMUM_PATH];
-    if (::realpath(buffer, realPath) != nullptr)
-    {
-        ::strncpy(buffer, realPath, File::MAXIMUM_PATH - 1);
-        buffer[File::MAXIMUM_PATH - 1] = '\0';
-    }
-
-#else   // !__APPLE__ (Linux and other POSIX systems)
-    constexpr const char _fmtCmdLine[] = "/proc/%lu/cmdline";
-    constexpr const char _fmtExePath[] = "/proc/%lu/exe";
-
-    char path[256];
-    ::memset( path, 0, 256 );
-
-    sprintf( path, _fmtCmdLine, static_cast<unsigned long>(mProcessId) );
-    FILE * file = ::fopen( path, "r" );
-    if ( (file == nullptr) || (::fgets( buffer, File::MAXIMUM_PATH, file ) == nullptr))
-    {
-        sprintf( path, _fmtExePath, static_cast<unsigned long>(mProcessId) );
-        ssize_t len = readlink( path, buffer, File::MAXIMUM_PATH );
-        if ((len > 0) && (len < File::MAXIMUM_PATH))
-        {
-            buffer[len] = '\0';
-        }
-    }
-
-    if (file != nullptr)
-    {
-        ::fclose(file);
-    }
-#endif  // __APPLE__
-
-    _initPaths( buffer );
+    _init_paths(buffer);
 }
 
+} // namespace areg
 
-String Process::_osGetEnvVariable( const char* var ) const
+#endif  // !__APPLE__
+
+//////////////////////////////////////////////////////////////////////////
+// Common POSIX: _os_env_variable -- shared by all POSIX platforms
+//////////////////////////////////////////////////////////////////////////
+
+namespace areg {
+
+String Process::_os_env_variable(const char * var) const
 {
     return String(var != nullptr ? ::getenv(var) : String::EmptyString);
 }
 
-#endif // defined(_POSIX) || defined(POSIX)
+} // namespace areg
+
+#endif  // defined(_POSIX) || defined(POSIX)

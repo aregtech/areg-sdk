@@ -36,6 +36,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{7D57975F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{1D3709F1-9915-4CEA-A9F6-4D3FDFD79965}"
 	ProjectSection(SolutionItems) = preProject
+		docs\AREG_CODING_STYLE.md = docs\AREG_CODING_STYLE.md
 		docs\DEVELOP.md = docs\DEVELOP.md
 		docs\HelloService.md = docs\HelloService.md
 		docs\HelloService.siml = docs\HelloService.siml
@@ -693,9 +694,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dummy", "examples\dummy\dum
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "github-workflows", "github-workflows", "{85EF9AE6-92A6-4DD9-833C-455EEAEA186D}"
 	ProjectSection(SolutionItems) = preProject
+		.github\instructions\.instructions.md = .github\instructions\.instructions.md
 		.github\workflows\accessibility-bot.yml = .github\workflows\accessibility-bot.yml
 		.github\workflows\cmake.yml = .github\workflows\cmake.yml
 		.github\workflows\codeql-analysis.yml = .github\workflows\codeql-analysis.yml
+		.github\copilot-instructions.md = .github\copilot-instructions.md
 		.github\workflows\msbuild.yml = .github\workflows\msbuild.yml
 		.github\workflows\validate-pr.yml = .github\workflows\validate-pr.yml
 	EndProjectSection
@@ -760,6 +763,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wiki", "wiki", "{C33D0DF1-A
 		docs\wiki\07a-troubleshooting-wsl-update.md = docs\wiki\07a-troubleshooting-wsl-update.md
 		docs\wiki\07b-troubleshooting-cmake-linux-builds.md = docs\wiki\07b-troubleshooting-cmake-linux-builds.md
 		docs\wiki\07c-troubleshooting-integration.md = docs\wiki\07c-troubleshooting-integration.md
+		docs\wiki\07d-troubleshooting-network-tunning.md = docs\wiki\07d-troubleshooting-network-tunning.md
 		docs\wiki\08a-examples-and-tests.md = docs\wiki\08a-examples-and-tests.md
 		docs\wiki\README.md = docs\wiki\README.md
 	EndProjectSection
@@ -824,22 +828,22 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "29_syncevent", "examples\29
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "toolchains", "toolchains", "{E653E5C4-D807-4A3A-993A-C797E915E56A}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "toolchains", "toolchains", "{0A039AB8-2CA0-41CA-9AA0-C81A861AF4FB}"
 	ProjectSection(SolutionItems) = preProject
-		conf\exports\example\toolchains\clang-linux-arm32.cmake = conf\exports\example\toolchains\clang-linux-arm32.cmake
-		conf\exports\example\toolchains\clang-linux-arm64.cmake = conf\exports\example\toolchains\clang-linux-arm64.cmake
-		conf\exports\example\toolchains\clang-linux-x64.cmake = conf\exports\example\toolchains\clang-linux-x64.cmake
-		conf\exports\example\toolchains\clang-linux-x86.cmake = conf\exports\example\toolchains\clang-linux-x86.cmake
-		conf\exports\example\toolchains\clang-macos-arm64.cmake = conf\exports\example\toolchains\clang-macos-arm64.cmake
-		conf\exports\example\toolchains\clang-macos-x64.cmake = conf\exports\example\toolchains\clang-macos-x64.cmake
-		conf\exports\example\toolchains\clang-win-x64.cmake = conf\exports\example\toolchains\clang-win-x64.cmake
-		conf\exports\example\toolchains\clang-win-x86.cmake = conf\exports\example\toolchains\clang-win-x86.cmake
-		conf\exports\example\toolchains\gnu-linux-arm32.cmake = conf\exports\example\toolchains\gnu-linux-arm32.cmake
-		conf\exports\example\toolchains\gnu-linux-arm64.cmake = conf\exports\example\toolchains\gnu-linux-arm64.cmake
-		conf\exports\example\toolchains\gnu-linux-x64.cmake = conf\exports\example\toolchains\gnu-linux-x64.cmake
-		conf\exports\example\toolchains\gnu-linux-x86.cmake = conf\exports\example\toolchains\gnu-linux-x86.cmake
-		conf\exports\example\toolchains\msvc-win-x64.cmake = conf\exports\example\toolchains\msvc-win-x64.cmake
-		conf\exports\example\toolchains\msvc-win-x86.cmake = conf\exports\example\toolchains\msvc-win-x86.cmake
+		conf\toolchains\clang-linux-arm32.cmake = conf\toolchains\clang-linux-arm32.cmake
+		conf\toolchains\clang-linux-arm64.cmake = conf\toolchains\clang-linux-arm64.cmake
+		conf\toolchains\clang-linux-x64.cmake = conf\toolchains\clang-linux-x64.cmake
+		conf\toolchains\clang-linux-x86.cmake = conf\toolchains\clang-linux-x86.cmake
+		conf\toolchains\clang-macos-arm64.cmake = conf\toolchains\clang-macos-arm64.cmake
+		conf\toolchains\clang-macos-x64.cmake = conf\toolchains\clang-macos-x64.cmake
+		conf\toolchains\clang-win-x64.cmake = conf\toolchains\clang-win-x64.cmake
+		conf\toolchains\clang-win-x86.cmake = conf\toolchains\clang-win-x86.cmake
+		conf\toolchains\gnu-linux-arm32.cmake = conf\toolchains\gnu-linux-arm32.cmake
+		conf\toolchains\gnu-linux-arm64.cmake = conf\toolchains\gnu-linux-arm64.cmake
+		conf\toolchains\gnu-linux-x64.cmake = conf\toolchains\gnu-linux-x64.cmake
+		conf\toolchains\gnu-linux-x86.cmake = conf\toolchains\gnu-linux-x86.cmake
+		conf\toolchains\msvc-win-x64.cmake = conf\toolchains\msvc-win-x64.cmake
+		conf\toolchains\msvc-win-x86.cmake = conf\toolchains\msvc-win-x86.cmake
 	EndProjectSection
 EndProject
 Global
@@ -1574,7 +1578,7 @@ Global
 		{49BD1BA3-692A-48DC-85F9-4F31415132C7} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{57D67BC9-C172-47F0-A379-6DA93E845202} = {07BFF46A-D4BC-4FAD-9727-D959755BFBAC}
 		{E5605BA4-CC97-4635-B9B6-E73F10A8704F} = {07BFF46A-D4BC-4FAD-9727-D959755BFBAC}
-		{E653E5C4-D807-4A3A-993A-C797E915E56A} = {31AB3D1E-3F6C-4415-B3A5-BB8AA449A1E2}
+		{0A039AB8-2CA0-41CA-9AA0-C81A861AF4FB} = {A9875C78-1248-4693-9310-5C46C73DDCEB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1034084F-74DD-4B33-86E3-D8038C748F48}

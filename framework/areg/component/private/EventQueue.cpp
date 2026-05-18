@@ -8,106 +8,46 @@
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventQueue.cpp
- * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Areg Platform, Event queue class
+ * \brief       Areg Platform, event queue implementation.
  *
  ************************************************************************/
 #include "areg/component/private/EventQueue.hpp"
 
 #include "areg/component/Event.hpp"
-#include "areg/component/private/ExitEvent.hpp"
-#include "areg/component/ServiceResponseEvent.hpp"
-#include "areg/component/private/IEQueueListener.hpp"
-
 #include "areg/base/RuntimeClassID.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// EventQueue class implementation
-//////////////////////////////////////////////////////////////////////////
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
-// EventQueue class, constructor / destructor
+// EventQueue -- constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-EventQueue::EventQueue( IEQueueListener & eventListener, SortedEventStack & eventQueue )
-    : mEventListener(eventListener)
-    , mEventQueue   (eventQueue)
-{
-}
 
-//////////////////////////////////////////////////////////////////////////
-// EventQueue class, methods
-//////////////////////////////////////////////////////////////////////////
-void EventQueue::pushEvent( Event& evendElem, Event** OUT removedEvent )
+EventQueue::EventQueue(QueueListener& eventListener, EventStack& eventQueue)
+    : mEventListener    ( eventListener )
+    , mEventQueue       ( eventQueue )
 {
-    mEventListener.signalEvent( mEventQueue.pushEvent(&evendElem, removedEvent) );
-}
-
-Event* EventQueue::popEvent( void )
-{
-    Event* result{ nullptr };
-    uint32_t size = mEventQueue.popEvent(&result);
-    if (size == 0)
-    {
-        mEventListener.signalEvent(0);
-    }
-
-    return result;
-}
-
-void EventQueue::removeAllEvents(void)
-{
-    mEventQueue.deleteAllEvents();
-    mEventListener.signalEvent(0);
-}
-
-void EventQueue::removeEvents( bool keepSpecials /*= false*/ )
-{
-    uint32_t remain = mEventQueue.deleteAllLowerPriority(keepSpecials ? Event::eEventPriority::EventPriorityHigh : Event::eEventPriority::EventPriorityCritical);
-    mEventListener.signalEvent(remain);
-}
-
-void EventQueue::removeEvents( const RuntimeClassID & eventClassId )
-{
-    uint32_t remain = mEventQueue.deleteAllMatchClass(eventClassId);
-    mEventListener.signalEvent(remain);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// ExternalEventQueue class implementation
+// InternalEventQueue -- constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 
-ExternalEventQueue::ExternalEventQueue( IEQueueListener & eventListener, uint32_t maxQueue)
-    : EventQueue( eventListener, mStack )
-    , mStack    ( maxQueue)
+InternalEventQueue::InternalEventQueue()
+    : EventQueue    ( static_cast<QueueListener&>(self()), mStack )
+    , mStack        ( )
 {
 }
 
-ExternalEventQueue::~ExternalEventQueue(void)
+InternalEventQueue::~InternalEventQueue()
 {
-    mStack.deleteAllEvents();
+    mStack.delete_all_events();
 }
 
-//////////////////////////////////////////////////////////////////////////
-// InternalEventQueue class implementation
-//////////////////////////////////////////////////////////////////////////
-
-InternalEventQueue::InternalEventQueue(uint32_t maxQueue)
-    : EventQueue( static_cast<IEQueueListener &>(self()), mStack )
-    , mStack    ( maxQueue )
+void InternalEventQueue::signal_event(uint32_t /* eventCount */)
 {
+    // no need
 }
 
-InternalEventQueue::~InternalEventQueue(void)
-{
-    mStack.deleteAllEvents();
-}
-
-void InternalEventQueue::signalEvent(uint32_t /* eventCount */)
-{
-}
-
-inline InternalEventQueue & InternalEventQueue::self( void )
-{
-    return (*this);
-}
+} // namespace areg

@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\NEPubSub.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\PubSub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\PubSubClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\PubSubConsumerBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\PubSubEvents.cpp">
@@ -27,7 +27,7 @@
     <ClCompile Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\PubSubProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\PubSubStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\PubSubProviderBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -38,13 +38,13 @@
     <ClInclude Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\PubSubProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\27_pubsubmulti\services\NEPubSub.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\27_pubsubmulti\services\PubSub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\27_pubsubmulti\services\PubSubClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\27_pubsubmulti\services\PubSubConsumerBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\27_pubsubmulti\services\PubSubStub.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\27_pubsubmulti\services\PubSubProviderBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

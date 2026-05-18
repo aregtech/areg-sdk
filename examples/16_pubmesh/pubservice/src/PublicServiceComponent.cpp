@@ -12,51 +12,51 @@
 
 #include "pubservice/src/PublicServiceComponent.hpp"
 #include "areg/appbase/Application.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
-DEF_LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_clientConnected);
-DEF_LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_requestHelloWorld );
-DEF_LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_requestSystemShutdown );
+DEF_LOG_SCOPE(examples_16_pubmesh_pubservice_PublicServiceComponent, consumer_connected);
+DEF_LOG_SCOPE(examples_16_pubmesh_pubservice_PublicServiceComponent, request_hello_world);
+DEF_LOG_SCOPE(examples_16_pubmesh_pubservice_PublicServiceComponent, request_system_shutdown);
 
-PublicServiceComponent::PublicServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-    : Component                 ( entry, owner )
-    , SystemShutdownStub        ( static_cast<Component &>(self()) )
-    , PublicHelloWorldService   ( static_cast<Component &>(self()) )
-    , mLocalClient              ( entry.mDependencyServices[0], static_cast<Component &>(self()), PublicServiceComponent::LOCAL_TIMEOUT )
+PublicServiceComponent::PublicServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+    : areg::Component                 ( entry, owner )
+    , SystemShutdownProviderBase        ( static_cast<areg::Component &>(self()) )
+    , PublicHelloWorldService   ( static_cast<areg::Component &>(self()) )
+    , mLocalClient              ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()), PublicServiceComponent::LOCAL_TIMEOUT )
 {
     // initially set invalid that the connected clients ignore the value.
-    SystemShutdownStub::invalidateServiceState( );
+    SystemShutdownProviderBase::invalidate_service_state( );
 }
 
-void PublicServiceComponent::startupComponent( ComponentThread & comThread )
+void PublicServiceComponent::startup_component( areg::ComponentThread & comThread )
 {
-    Component::startupComponent( comThread );
+    areg::Component::startup_component( comThread );
 
     // Notify service is available and ready to operate.
-    SystemShutdownStub::setServiceState( NESystemShutdown::eServiceState::ServiceReady );
+    SystemShutdownProviderBase::set_service_state( SystemShutdown::RunState::ServiceReady );
 }
 
-bool PublicServiceComponent::clientConnected(const ProxyAddress & client, NEService::eServiceConnection status)
+bool PublicServiceComponent::consumer_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
 {
-    LOG_SCOPE(examples_16_pubmesh_pubservice_PublicServiceComponent_clientConnected);
-    LOG_INFO("The consumer [ %s ] is [ %s ]", ProxyAddress::convAddressToPath(client).getString(), NEService::getString(status));
+    LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent, consumer_connected );
+    LOG_INFO("The consumer [ %s ] is [ %s ]", areg::ProxyAddress::to_path(client).as_string(), areg::as_string(status));
 
     bool result{ true };
-    if (SystemShutdownStub::clientConnected(client, status))
+    if (SystemShutdownProviderBase::consumer_connected(client, status))
     {
-        if (status == NEService::eServiceConnection::ServiceConnected)
+        if (status == areg::ServiceConnectionState::Connected)
         {
-            if (SystemShutdownStub::isServiceStateValid() == false)
+            if (SystemShutdownProviderBase::is_service_state_valid() == false)
             {
-                NESystemShutdown::eServiceState state = mNumMessages >= NEPublicHelloWorld::MaximumOutputs ?
-                    NESystemShutdown::eServiceState::ServiceShutdown :
-                    NESystemShutdown::eServiceState::ServiceReady;
-                LOG_INFO("The service state is invalid, updating to the state [ %s ]", NESystemShutdown::getString(state));
-                SystemShutdownStub::setServiceState(state);
+                SystemShutdown::RunState state = mNumMessages >= PublicHelloWorld::MaximumOutputs ?
+                    SystemShutdown::RunState::Shutdown :
+                    SystemShutdown::RunState::ServiceReady;
+                LOG_INFO("The service state is invalid, updating to the state [ %s ]", SystemShutdown::as_string(state));
+                SystemShutdownProviderBase::set_service_state(state);
             }
         }
     }
-    else if (PublicHelloWorldService::clientConnected(client, status) == false)
+    else if (PublicHelloWorldService::consumer_connected(client, status) == false)
     {
         LOG_WARN("Unexpected service consumer is connected!");
         result = false;
@@ -65,24 +65,24 @@ bool PublicServiceComponent::clientConnected(const ProxyAddress & client, NEServ
     return result;
 }
 
-void PublicServiceComponent::requestHelloWorld( unsigned int clientID )
+void PublicServiceComponent::request_hello_world( uint32_t clientID )
 {
-    LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_requestHelloWorld );
-    PublicHelloWorldService::requestHelloWorld( clientID );
+    LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent, request_hello_world );
+    PublicHelloWorldService::request_hello_world( clientID );
 
-    if ( mNumMessages >= NEPublicHelloWorld::MaximumOutputs )
+    if ( mNumMessages >= PublicHelloWorld::MaximumOutputs )
     {
-        LOG_WARN( "Reached maximum outputs [ %d ], preparing to shutdown", mNumMessages );
-        printf( ">>> Reached maximum outputs [ %d ] <<<\n", mNumMessages );
+        LOG_WARN( "Reached maximum outputs [ %u ], preparing to shutdown", mNumMessages );
+        printf( ">>> Reached maximum outputs [ %u ] <<<\n", mNumMessages );
         // Notify the service unavailable state, so that the clients stop sending requests
-        SystemShutdownStub::setServiceState( NESystemShutdown::eServiceState::ServiceShutdown );
+        SystemShutdownProviderBase::set_service_state( SystemShutdown::RunState::Shutdown );
     }
 }
 
-void PublicServiceComponent::requestSystemShutdown( void )
+void PublicServiceComponent::request_system_shutdown()
 {
-    LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_requestSystemShutdown );
+    LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent, request_system_shutdown );
     LOG_WARN( "No more service connected consumers. Processing the request to shutdown the system!" );
     printf("Processing the system shutdown!\n");
-    Application::signalAppQuit();
+    areg::Application::signal_quit();
 }

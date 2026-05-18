@@ -8,10 +8,14 @@
 //               multithreading environment.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
-#include "areg/base/GEMacros.h"
+#ifndef _USE_MATH_DEFINES
+    #define _USE_MATH_DEFINES
+#endif // _USE_MATH_DEFINES
+
+#include "areg/base/areg_global.h"
+#include "areg/base/areg_macros.h"
 #include "areg/base/Thread.hpp"
-#include "areg/base/IEThreadConsumer.hpp"
+#include "areg/base/ThreadConsumer.hpp"
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/String.hpp"
 
@@ -23,43 +27,43 @@
 #endif // _MSC_VER
 
 //! \brief Thread to read buffer and output message
-class HelloThread : public Thread, protected IEThreadConsumer
+class HelloThread final : public areg::Thread, protected areg::ThreadConsumer
 {
 public:
-    explicit HelloThread(SharedBuffer& buffer)
-        : Thread(*this, "HelloThread") // set consumer and name
+    explicit HelloThread(areg::SharedBuffer& buffer)
+        : areg::Thread(*this, "HelloThread") // set consumer and name
         , mBuffer(buffer)
     {
     }
 
 protected:
 /************************************************************************/
-// IEThreadConsumer interface
+// ThreadConsumer interface
 /************************************************************************/
-    void onThreadRuns() override
+    void on_run() final
     {
-        std::cout << "Thread [" << getName() << "] started..." << std::endl;
+        std::cout << "Thread [" << name() << "] started..." << std::endl;
 
-        int numDigit{};
+        int32_t numDigit{};
         float numPI{};
-        String strMsg{};
+        areg::String strMsg{};
 
-        mBuffer.moveToBegin();
+        mBuffer.move_to_begin();
         mBuffer >> numDigit >> numPI >> strMsg;
 
         std::cout << "*********************************" << std::endl;
         std::cout << "BEGIN dump buffer data .........." << std::endl;
         std::cout << "Saved integer  : " << numDigit << std::endl;
         std::cout << "Saved PI number: " << numPI << std::endl;
-        std::cout << "Saved string   : " << strMsg.getString() << std::endl;
+        std::cout << "Saved string   : " << strMsg.as_string() << std::endl;
         std::cout << "END dump buffer data ............" << std::endl;
         std::cout << "*********************************" << std::endl;
 
-        std::cout << "Thread [" << getName() << "] completed job." << std::endl;
+        std::cout << "Thread [" << name() << "] completed job." << std::endl;
     }
 
 private:
-    SharedBuffer& mBuffer;
+    areg::SharedBuffer& mBuffer;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -69,16 +73,16 @@ int main()
 {
     std::cout << "Demo: write and read data from binary buffer..." << std::endl;
 
-    SharedBuffer buffer;
-    buffer << 1234 << static_cast<float>(M_PI) << String("!!!Hello World!!!");
+    areg::SharedBuffer buffer;
+    buffer << 1234 << static_cast<float>(M_PI) << areg::String("!!!Hello World!!!");
 
     HelloThread aThread(buffer);
 
     // Start thread and wait until it starts
-    aThread.createThread(NECommon::WAIT_INFINITE);
+    aThread.start(areg::WAIT_INFINITE);
 
     // Stop thread and clean resources
-    aThread.shutdownThread(NECommon::WAIT_INFINITE);
+    aThread.shutdown(areg::WAIT_INFINITE);
 
     std::cout << "Exit application!" << std::endl;
     return 0;

@@ -4,46 +4,46 @@
  ************************************************************************/
 
 #include "chatter/services/DirectConnectionClient.hpp"
-#include "chatter/NEDistributedApp.hpp"
+#include "chatter/DistributedAppDefs.hpp"
 #include "chatter/services/ChatPrticipantHandler.hpp"
 
 
- DirectConnectionClient::DirectConnectionClient( Component & owner, ChatPrticipantHandler * participantsHandler, const NEDirectConnection::sParticipant & target )
-    : DirectConnectionClientBase  ( NEDistributedApp::getConnectionServiceRole(target.nickName, target.cookie).getString(), owner )
+ DirectConnectionClient::DirectConnectionClient( areg::Component & owner, ChatPrticipantHandler * participantsHandler, const DirectConnection::Participant & target )
+    : DirectConnectionConsumerBase  ( NEDistributedApp::getConnectionServiceRole(target.nickName, target.cookie).as_string(), owner )
 
     , mParticipantsHandler          ( participantsHandler )
 {
      ASSERT(mParticipantsHandler != nullptr);
 }
 
-bool DirectConnectionClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
+bool DirectConnectionClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
-    bool result = DirectConnectionClientBase::serviceConnected( status, proxy );
-    if ( isConnected( ) )
+    bool result = DirectConnectionConsumerBase::service_connected( status, proxy );
+    if ( is_connected( ) )
     {
-        requestConnectoinSetup( mParticipantsHandler->GetInitiator( ), mParticipantsHandler->GetParticipantList( ) );
+        request_connectoin_setup( mParticipantsHandler->GetInitiator( ), mParticipantsHandler->GetParticipantList( ) );
     }
     else
     {
-        requestCloseConnection( mParticipantsHandler->GetInitiator( ) );
+        request_close_connection( mParticipantsHandler->GetInitiator( ) );
     }
 
     return result;
 }
 
 #ifdef  DEBUG
-void DirectConnectionClient::responseConnectoinSetup( bool /* succeeded */
-                                                    , const NEDirectConnection::sParticipant & /* target */
-                                                    , const NEDirectConnection::sInitiator & initiator
-                                                    , const NEDirectConnection::ListParticipants & /* listParticipants */ )
+void DirectConnectionClient::response_connectoin_setup( bool /* succeeded */
+                                                    , const DirectConnection::Participant & /* target */
+                                                    , const DirectConnection::sInitiator & initiator
+                                                    , const DirectConnection::ListParticipants & /* listParticipants */ )
 {
     ASSERT(mParticipantsHandler->GetInitiator() == initiator);
 }
 #else   // DEBUG
-void DirectConnectionClient::responseConnectoinSetup( bool /* succeeded */
-                                                    , const NEDirectConnection::sParticipant & /* target */
-                                                    , const NEDirectConnection::sInitiator & /*initiator*/
-                                                    , const NEDirectConnection::ListParticipants & /* listParticipants */ )
+void DirectConnectionClient::response_connectoin_setup( bool /* succeeded */
+                                                    , const DirectConnection::Participant & /* target */
+                                                    , const DirectConnection::sInitiator & /*initiator*/
+                                                    , const DirectConnection::ListParticipants & /* listParticipants */ )
 {
 }
 #endif  // DEBUG

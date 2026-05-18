@@ -12,28 +12,28 @@
   * Include files.
   ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/16_pubmesh/services/SystemShutdownStub.hpp"
+#include "examples/16_pubmesh/services/SystemShutdownProviderBase.hpp"
 #include "common/src/PublicHelloWorldService.hpp"
 #include "common/src/LocalHelloWorldClient.hpp"
 
 //!<\ brief     The public service component, which controls
 //!             the service start and shutdown states.
-class PublicServiceComponent    : public    Component
-                                , private   SystemShutdownStub
-                                , private   PublicHelloWorldService
+class PublicServiceComponent final  : public    areg::Component
+                                    , private   SystemShutdownProviderBase
+                                    , private   PublicHelloWorldService
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants.
 //////////////////////////////////////////////////////////////////////////
-    static constexpr unsigned  int  LOCAL_TIMEOUT   { 555 };//!< Timeout to output message in local service.
+    static constexpr uint32_t  LOCAL_TIMEOUT   { 555 };//!< Timeout to output message in local service.
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    PublicServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    PublicServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -46,7 +46,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    virtual void startupComponent( ComponentThread & comThread ) override;
+    void startup_component( areg::ComponentThread & comThread ) final;
 
     /**
      * \brief   Triggered when proxy client either connected or disconnected to stub.
@@ -54,22 +54,22 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    virtual bool clientConnected(const ProxyAddress & client, NEService::eServiceConnection status) override;
+    bool consumer_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status) final;
 
     /**
      * \brief   Request call.
      *          Outputs message on console. If additional message is not empty, outputs the additional message as well.
      * \param   clientID    The ID of registered client to make message output
-     * \see     responseHelloWorld
+     * \see     request_hello_world
      **/
-    virtual void requestHelloWorld( unsigned int clientID ) override;
+    void request_hello_world( uint32_t clientID ) final;
 
     /**
      * \brief   Request call.
      *          The request to shutdown the system.
      * \note    Has no response
      **/
-    virtual void requestSystemShutdown( void ) override;
+    void request_system_shutdown() final;
 
 private:
 //////////////////////////////////////////////////////////////////////////
@@ -77,7 +77,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
     LocalHelloWorldClient   mLocalClient;   //! Client of local service
 
-    inline PublicServiceComponent & self( void )
+    inline PublicServiceComponent & self()
     {
         return (*this);
     }
@@ -86,6 +86,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    PublicServiceComponent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( PublicServiceComponent );
+    PublicServiceComponent() = delete;
+    AREG_NOCOPY_NOMOVE( PublicServiceComponent );
 };

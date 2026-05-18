@@ -1,15 +1,15 @@
 /**
  * \file    src/main.cpp
- * \brief   Minimal RPC example to call 'requestHelloService()' of remote object running in the same process, but in other thread.
+ * \brief   Minimal RPC example to call 'hello_service()' of remote object running in the same process, but in other thread.
  **/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "examples/01_minimalrpc/services/HelloServiceStub.hpp"
-#include "examples/01_minimalrpc/services/HelloServiceClientBase.hpp"
+#include "examples/01_minimalrpc/services/HelloServiceProviderBase.hpp"
+#include "examples/01_minimalrpc/services/HelloServiceConsumerBase.hpp"
 
 // Use these options if compile for Windows with MSVC
 // It links with areg library (dynamic or static) and generated static library
@@ -19,43 +19,43 @@
 #endif // _MSC_VER
 
 //!< Service Provider: ServiceProvider declaration
-class ServiceProvider   : public    Component
-                        , protected HelloServiceStub
+class ServiceProvider final : public    areg::Component
+                            , protected HelloServiceProviderBase
 {
 public:
-    ServiceProvider(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
-        : Component(entry, owner)
-        , HelloServiceStub(static_cast<Component&>(self()))
+    ServiceProvider(const areg::ComponentEntry& entry, areg::ComponentThread& owner)
+        : areg::Component(entry, owner)
+        , HelloServiceProviderBase(static_cast<areg::Component&>(self()))
     {   }
 
     //!< The request method of the HelloService Interface
-    virtual void requestHelloService(void) override
+    void request_hello_service() final
     {
         std::cout << "\'Hello Service!\'" << std::endl;
-        Application::signalAppQuit();   // quit application is if received response
+        areg::Application::signal_quit();   // quit application is if received response
     }
 
 private:
-    inline ServiceProvider& self(void)
+    inline ServiceProvider& self()
     {   return (*this); }
 };
 
 //!< ServiceConsumer declaration
-class ServiceConsumer   : public    Component
-                        , protected HelloServiceClientBase
+class ServiceConsumer final : public    areg::Component
+                            , protected HelloServiceConsumerBase
 {
 public:
-    ServiceConsumer(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-		: Component             ( entry, owner )
-		, HelloServiceClientBase( entry.mDependencyServices[0].mRoleName, owner )
+    ServiceConsumer(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+		: areg::Component             ( entry, owner )
+		, HelloServiceConsumerBase( entry.mDependencyServices[0].mRoleName, owner )
 	{   }
 
     //!< Service discovery notification. Called when the "ServiceProvder" is available and unavailable.
     //!< The `status` parameter contains availability flag. Return `true` if the service connection notification is relevant.
-    virtual bool serviceConnected(NEService::eServiceConnection status, ProxyBase& proxy) override
+    bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase& proxy) final
     {
-        if (HelloServiceClientBase::serviceConnected(status, proxy) && NEService::isServiceConnected(status))
-            requestHelloService();  // Call of method of remote "ServiceProvider" object.
+        if (HelloServiceConsumerBase::service_connected(status, proxy) && areg::is_service_connected(status))
+            request_hello_service();  // Call of method of remote "ServiceProvider" object.
         // Return `true` if the service connection notification is relevant.
         return true;
     }
@@ -70,7 +70,7 @@ BEGIN_MODEL("ServiceModel")
     // Thread 1 without watchdog, contains a service provider
     BEGIN_REGISTER_THREAD( "Thread1" )
         BEGIN_REGISTER_COMPONENT( "ServiceProvider", ServiceProvider )
-            REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( HelloService::ServiceName, HelloService::InterfaceVersion )
         END_REGISTER_COMPONENT( "ServiceProvider" )
     END_REGISTER_THREAD( "Thread1" )
 
@@ -85,15 +85,15 @@ BEGIN_MODEL("ServiceModel")
 END_MODEL("ServiceModel")
 
 //!< main function
-int main(void)
+int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog, using default settings.
-    Application::initApplication();
+    areg::Application::setup();
     // load model to initialize components
-    Application::loadModel("ServiceModel");
+    areg::Application::load_model("ServiceModel");
     // wait until Application quit signal is set.
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    areg::Application::wait_quit(areg::WAIT_INFINITE);
     // release and cleanup resources of application.
-    Application::releaseApplication();
+    areg::Application::release();
     return 0;
 }

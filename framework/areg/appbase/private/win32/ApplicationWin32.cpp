@@ -5,15 +5,23 @@
  * \brief       Areg Platform, Windows OS specific Application methods implementation
  *              Windows apecifix API calls.
  ************************************************************************/
-#include "areg/appbase/Application.hpp"
 
 #ifdef _WIN32
 
+/************************************************************************
+ * Include files.
+ ************************************************************************/
+#include "areg/appbase/Application.hpp"
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif // !NOMINMAX
 #include <Windows.h>
 
-void Application::_osSetupHandlers( void )
+namespace areg {
+
+void Application::_os_setup_handlers()
 {
-    Application & theApp = Application::getInstance();
+    Application & theApp = Application::instance();
     Lock lock(theApp.mLock);
 
     if (theApp.mSetup == false)
@@ -22,9 +30,9 @@ void Application::_osSetupHandlers( void )
     }
 }
 
-void Application::_osReleaseHandlers(void)
+void Application::_os_release_handlers()
 {
-    Application& theApp = Application::getInstance();
+    Application& theApp = Application::instance();
     Lock lock(theApp.mLock);
 
     if (theApp.mSetup)
@@ -36,56 +44,64 @@ void Application::_osReleaseHandlers(void)
 /**
  * \brief   Windows OS specific implementation of method.
  **/
-bool Application::_osStartLocalService(const wchar_t* serviceName, const wchar_t* /*serviceExecutable*/)
+bool Application::_os_start_local_service(const wchar_t* serviceName, const wchar_t* /*serviceExecutable*/)
 {
-    ASSERT(NEString::isEmpty<wchar_t>(serviceName) == false);
-    bool result = false;
+    ASSERT(!areg::is_empty<wchar_t>(serviceName));
 
     DWORD rights = SC_MANAGER_CONNECT | SC_MANAGER_ENUMERATE_SERVICE | SC_MANAGER_QUERY_LOCK_STATUS | STANDARD_RIGHTS_READ;
     SC_HANDLE SeMHandle = ::OpenSCManager(nullptr, nullptr, rights);
-    if (SeMHandle != nullptr)
+    if (SeMHandle == nullptr)
     {
-        rights = SERVICE_PAUSE_CONTINUE | SERVICE_QUERY_STATUS | SERVICE_START;
-        SC_HANDLE SvcHandle = ::OpenService(SeMHandle, serviceName, rights);
-        if (SvcHandle != nullptr)
-        {
-            SERVICE_STATUS serviceStatus{ };
-            if (::QueryServiceStatus(SvcHandle, &serviceStatus))
-            {
-                switch (serviceStatus.dwCurrentState)
-                {
-                    /*nothing to do*/
-                case SERVICE_CONTINUE_PENDING:  // fall through
-                case SERVICE_START_PENDING:     // fall through
-                case SERVICE_RUNNING:
-                    result = true;
-                    break;
-
-                    /*service was paused*/
-                case SERVICE_PAUSE_PENDING:
-                case SERVICE_PAUSED:
-                    result = ::ControlService(SvcHandle, SERVICE_CONTROL_CONTINUE, &serviceStatus) != FALSE;
-                    break;
-
-                    /*service not running*/
-                case SERVICE_STOP_PENDING:
-                case SERVICE_STOPPED:
-                    result = ::StartService(SvcHandle, 0, nullptr) != FALSE;
-                    break;
-
-                    /*in all other cases*/
-                default:
-                    break;
-                }
-            }
-
-            ::CloseServiceHandle(SvcHandle);
-        }
-
-        ::CloseServiceHandle(SeMHandle);
+        return false;
     }
 
+    rights = SERVICE_PAUSE_CONTINUE | SERVICE_QUERY_STATUS | SERVICE_START;
+    SC_HANDLE SvcHandle = ::OpenService(SeMHandle, serviceName, rights);
+    if (SvcHandle == nullptr)
+    {
+        ::CloseServiceHandle(SeMHandle);
+        return false;
+    }
+
+    SERVICE_STATUS serviceStatus{ };
+    if (::QueryServiceStatus(SvcHandle, &serviceStatus) == FALSE)
+    {
+        ::CloseServiceHandle(SvcHandle);
+        ::CloseServiceHandle(SeMHandle);
+        return false;
+    }
+
+    bool result{ true };
+    switch (serviceStatus.dwCurrentState)
+    {
+        /*nothing to do*/
+    case SERVICE_CONTINUE_PENDING:  // fall through
+    case SERVICE_START_PENDING:     // fall through
+    case SERVICE_RUNNING:
+        break;
+
+        /*service was paused*/
+    case SERVICE_PAUSE_PENDING:     // fall through
+    case SERVICE_PAUSED:
+        result = ::ControlService(SvcHandle, SERVICE_CONTROL_CONTINUE, &serviceStatus) != FALSE;
+        break;
+
+        /*service not running*/
+    case SERVICE_STOP_PENDING:      // fall through
+    case SERVICE_STOPPED:
+        result = ::StartService(SvcHandle, 0, nullptr) != FALSE;
+        break;
+
+        /*in all other cases*/
+    default:
+        result = false;
+        break;
+    }
+
+    ::CloseServiceHandle(SvcHandle);
+    ::CloseServiceHandle(SeMHandle);
     return result;
 }
 
+} // namespace areg
 #endif // _WIN32

@@ -13,16 +13,24 @@
  * \brief       The class to handle process. Get process ID, process handle, process name, etc.
  *              Windows specific implementation
  ************************************************************************/
-#include "areg/base/Process.hpp"
 
 #ifdef	_WIN32
 
+/************************************************************************
+ * Includes
+ ************************************************************************/
+#include "areg/base/Process.hpp"
 #include "areg/base/File.hpp"
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif // !NOMINMAX
 #include <Windows.h>
 #include <Psapi.h>
 #include <tchar.h>
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // Process class implementation
@@ -32,23 +40,23 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-void Process::_osInitilize( void )
+void Process::_os_initilize()
 {
     mProcessId      = ::GetCurrentProcessId();
     mProcessHandle	= static_cast<void *>(::GetCurrentProcess());
 
     TCHAR fullPath[File::MAXIMUM_PATH];
-    NEMemory::memZero(fullPath, (File::MAXIMUM_PATH) * sizeof(TCHAR));
+    areg::mem_zero(fullPath, (File::MAXIMUM_PATH) * sizeof(TCHAR));
 
     if ( ::GetModuleFileNameEx( static_cast<HANDLE>(mProcessHandle), nullptr, fullPath, MAX_PATH) != 0 )
     {
         String temp(fullPath);
-        _initPaths(temp.getString());
+        _init_paths(temp.as_string());
     }
 }
 
 
-String Process::_osGetEnvVariable( const char* var ) const
+String Process::_os_env_variable( const char* var ) const
 {
     String result;
     uint32_t length = var != nullptr ? static_cast<uint32_t>(::GetEnvironmentVariableA(var, nullptr, 0)) : 0;
@@ -64,4 +72,5 @@ String Process::_osGetEnvVariable( const char* var ) const
     return result;
 }
 
+} // namespace areg
 #endif // _WIN32

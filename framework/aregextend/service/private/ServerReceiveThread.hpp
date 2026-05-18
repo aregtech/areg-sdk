@@ -18,17 +18,25 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/DispatcherThread.hpp"
-
-#include <atomic>
+#include "areg/ipc/DataRateStats.hpp"
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IEServiceConnectionHandler;
-class IERemoteMessageHandler;
-class ServerConnection;
+namespace areg {
+    class RemoteMessage;
+    class RemoteMessageHandler;
+    class SocketAddress;
+} // namespace areg
+
+namespace areg::ext {
+    class ConnectionHandler;
+    class ServerConnection;
+}
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // ServerConnection class declaration.
@@ -36,7 +44,7 @@ class ServerConnection;
 /**
  * \brief   The IPC message receiving thread of server socket.
  **/
-class ServerReceiveThread    : public    DispatcherThread
+class ServerReceiveThread final : public    DispatcherThread
 {
     //!< Number of retries to accept socket connection
     static constexpr uint32_t RETRY_COUNT   { 5 };
@@ -46,38 +54,57 @@ class ServerReceiveThread    : public    DispatcherThread
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes connection, connection servicing and connection handling objects
-     * \param   connectHandler  The instance of server socket connect / disconnect handling interface
-     * \param   remoteService   The instance of remote servicing handler
-     * \param   connection      The instance of server connection object.
+     * \brief   Initializes connection, connection servicing and connection handling objects.
+     *
+     * \param   connectHandler      The instance of server socket connect / disconnect handling
+     *                              interface
+     * \param   remoteService       The instance of remote servicing handler
+     * \param   connection          The instance of server connection object.
      **/
-    ServerReceiveThread( IEServiceConnectionHandler & connectHandler, IERemoteMessageHandler& remoteService, ServerConnection & connection );
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~ServerReceiveThread( void ) = default;
+    ServerReceiveThread( ConnectionHandler & connectHandler, RemoteMessageHandler& remoteService, ServerConnection & connection );
+    virtual ~ServerReceiveThread() = default;
 
 /************************************************************************/
 // Actions and attributes.
 /************************************************************************/
 public:
     /**
-     * \brief   Returns accumulative value of received data size and rests the existing value to zero.
-     *          The operations are atomic. The value can be used to display data rate, for example.
+     * \brief   Returns accumulative value of received data size and resets the existing value to
+     *          zero. The operations are atomic. The value can be used to display data rate, for example.
      **/
-    inline uint32_t extractDataReceive( void ) const;
+    [[nodiscard]]
+    inline uint64_t extract_data_received() const noexcept;
 
     /**
-     * \brief   Call to enable or disable the received data calculation.
-     *          It as well resets the existing calculated data.
-     * \param   enable  Flag, indicating whether data calculation is enabled or not.
+     * \brief   Returns accumulative count of received messages and resets the existing value to zero.
+     *          The operations are atomic.
      **/
-    inline void setEnableCalculateData(bool enable);
+    [[nodiscard]]
+    inline uint32_t extract_msgs_received() const noexcept;
 
     /**
-     * \brief   Returns flag, indicating whether data calculation is enabled or not.
+     * \brief   Call to enable or disable the received data calculation. It also resets the existing
+     *          calculated data.
+     *
+     * \param   enable      Flag, indicating whether data calculation is enabled or not.
      **/
-    inline bool isCalculateDataEnabled(void) const;
+    inline void set_data_rate_enabled(bool enable) noexcept;
+
+    /**
+     * \brief   Returns true if data and message rating is enabled.
+     **/
+    [[nodiscard]]
+    inline bool is_data_rate_enabled() const noexcept;
+
+    /**
+     * \brief   Accumulates bytes and message counts from a per-client receive thread into the
+     *          global counters queried by DataRateHelper. Called by PoolReceiveThread when
+     *          mSaveDataReceive is enabled. Thread-safe: uses atomic add.
+     *
+     * \param   bytes   Number of bytes received.
+     * \param   msgs    Number of messages received.
+     **/
+    inline void accumulate_received(uint64_t bytes, uint32_t msgs) noexcept;
 
 protected:
 /************************************************************************/
@@ -85,13 +112,31 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief	Triggered when dispatcher starts running. 
-     *          In this function runs main dispatching loop.
-     *          Events are picked and dispatched here.
-     *          Override if logic should be changed.
-     * \return	Returns true if Exit Event is signaled.
+     * \brief   Triggered when dispatcher starts running. In this function runs main dispatching
+     *          loop. Events are picked and dispatched here. Override if logic should be changed.
+     *
+     * \return  Returns true if Exit Event is signaled.
      **/
-    virtual bool runDispatcher( void ) override;
+    bool run_dispatcher() final;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden helpers
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    /**
+     * \brief   Processes one socket event identified by \a hSocket.
+     *          Handles both new connection acceptance and data reception from
+     *          an already-accepted client. On new connections, \a addrAccepted
+     *          must contain the peer address returned by wait_connection().
+     *
+     * \param   hSocket         The ready socket handle returned by wait_connection().
+     * \param   addrAccepted    Peer address; meaningful only for new (not-yet-accepted)
+     *                          connections.
+     * \param   msgReceived     Reusable message buffer. Caller must call invalidate()
+     *                          after this method returns.
+     **/
+    void _process_connection_event(SOCKETHANDLE hSocket, const areg::SocketAddress & addrAccepted, areg::RemoteMessage & msgReceived);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -100,53 +145,57 @@ private:
     /**
      * \brief   Service connection handler.
      **/
-    IEServiceConnectionHandler& mConnectHandler;
+    ConnectionHandler&          mConnectHandler;
     /**
      * \brief   The instance of remote service message handler.
      **/
-    IERemoteMessageHandler &    mRemoteService;
+    RemoteMessageHandler &      mRemoteService;
     /**
      * \brief   The instance of server connection object
      **/
     ServerConnection &          mConnection;
     /**
-     * \brief   Accumulative value of received data size.
-     */
-    mutable std::atomic_uint    mBytesReceive;
-    /**
-     * \brief   Flag, indicating whether data calculation is enabled or disabled. By default, it is disabled.
+     * \brief   Atomic stats (bytes + messages received + enabled flag).
      **/
-    bool                        mSaveDataReceive;
+    DataRateStats                   mRecvStats;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServerReceiveThread( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServerReceiveThread );
+    ServerReceiveThread() = delete;
+    AREG_NOCOPY_NOMOVE( ServerReceiveThread );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// ServerConnection inline methods.
+// ServerReceiveThread inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t ServerReceiveThread::extractDataReceive(void) const
+inline uint64_t ServerReceiveThread::extract_data_received() const noexcept
 {
-    return mBytesReceive.exchange(0);
+    return mRecvStats.extract_bytes();
 }
 
-inline void ServerReceiveThread::setEnableCalculateData(bool enable)
+inline uint32_t ServerReceiveThread::extract_msgs_received() const noexcept
 {
-    if (mSaveDataReceive != enable)
-    {
-        mBytesReceive.store(0u);
-        mSaveDataReceive = enable;
-    }
+    return mRecvStats.extract_msgs();
 }
 
-inline bool ServerReceiveThread::isCalculateDataEnabled(void) const
+inline void ServerReceiveThread::set_data_rate_enabled(bool enable) noexcept
 {
-    return mSaveDataReceive;
+    mRecvStats.set_enabled(enable);
 }
+
+inline bool ServerReceiveThread::is_data_rate_enabled() const noexcept
+{
+    return mRecvStats.is_enabled();
+}
+
+inline void ServerReceiveThread::accumulate_received(uint64_t bytes, uint32_t msgs) noexcept
+{
+    mRecvStats.accumulate(bytes, msgs);
+}
+
+} // namespace areg::ext
 
 #endif  // AREG_AREGEXTEND_SERVICE_PRIVATE_SERVERRECEIVETHREAD_HPP

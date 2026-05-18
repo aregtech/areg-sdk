@@ -4,7 +4,7 @@
         <Description>The simple traffic light that triggers timeout and changes traffic light state.</Description>
     </Overview>
     <DataTypeList>
-        <DataType ID="2" Name="eTrafficLight" Type="Enumeration" Values="default">
+        <DataType ID="2" Name="TrafficLight" Type="Enumeration" Values="default">
             <Description>The simple traffic light states</Description>
             <FieldList>
                 <EnumEntry ID="3" Name="LightOff">
@@ -23,10 +23,10 @@
         </DataType>
     </DataTypeList>
     <AttributeList>
-        <Attribute ID="19" Name="SouthNorth" DataType="eTrafficLight" Notify="OnChange">
+        <Attribute ID="19" Name="SouthNorth" DataType="TrafficLight" Notify="OnChange">
             <Description>The light state of south-north traffic.</Description>
         </Attribute>
-        <Attribute ID="20" Name="EastWest" DataType="eTrafficLight" Notify="OnChange">
+        <Attribute ID="20" Name="EastWest" DataType="TrafficLight" Notify="OnChange">
             <Description>The light state of east-west traffic.</Description>
         </Attribute>
     </AttributeList>

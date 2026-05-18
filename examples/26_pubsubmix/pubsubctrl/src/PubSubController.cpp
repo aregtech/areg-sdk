@@ -13,10 +13,10 @@
 
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "aregextend/console/Console.hpp"
 
-#include "common/src/NECommon.hpp"
+#include "common/src/PubSubDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Log scopes
@@ -40,131 +40,131 @@ namespace
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-const OptionParser::sOptionSetup PubSubController::ValidOptions[]
+const areg::ext::OptionParser::OptionSetup PubSubController::ValidOptions[]
 {
-      {"i", "invalid", static_cast<int>(eCommands::CMD_Invalidate)  , OptionParser::NO_DATA , {}, {}, {} }
-    , {"p", "pause"  , static_cast<int>(eCommands::CMD_Pause)       , OptionParser::NO_DATA , {}, {}, {} }
-    , {"s", "start"  , static_cast<int>(eCommands::CMD_Start)       , OptionParser::NO_DATA , {}, {}, {} }
-    , {"q", "quit"   , static_cast<int>(eCommands::CMD_Quit)        , OptionParser::NO_DATA , {}, {}, {} }
-    , {"h", "help"   , static_cast<int>(eCommands::CMD_Help)        , OptionParser::NO_DATA , {}, {}, {} }
+      {"i", "invalid", static_cast<int32_t>(OptionFlag::CMD_Invalidate)  , areg::ext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"p", "pause"  , static_cast<int32_t>(OptionFlag::CMD_Pause)       , areg::ext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"s", "start"  , static_cast<int32_t>(OptionFlag::CMD_Start)       , areg::ext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"q", "quit"   , static_cast<int32_t>(OptionFlag::CMD_Quit)        , areg::ext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"h", "help"   , static_cast<int32_t>(OptionFlag::CMD_Help)        , areg::ext::OptionParser::NO_DATA , {}, {}, {} }
 };
 
 //////////////////////////////////////////////////////////////////////////
 // PubSubController class methods
 //////////////////////////////////////////////////////////////////////////
 
-PubSubController::PubSubController( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-    : Component         ( entry, owner )
-    , Publisher         ( static_cast<Component &>(self()) )
-    , IEThreadConsumer  ( )
+PubSubController::PubSubController( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+    : areg::Component         ( entry, owner )
+    , Publisher         ( static_cast<areg::Component &>(self()) )
+    , areg::ThreadConsumer  ( )
 
-    , mSubscriber       ( entry.mDependencyServices[0], static_cast<Component &>(self()), 0 )
+    , mSubscriber       ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()), 0 )
 
-    , mConsoleThread    (static_cast<IEThreadConsumer &>(self()), entry.mRoleName + "_Thread")
+    , mConsoleThread    (static_cast<areg::ThreadConsumer &>(self()), entry.mRoleName + "_Thread")
 {
 }
 
-void PubSubController::startupComponent(ComponentThread & comThread)
+void PubSubController::startup_component(areg::ComponentThread & comThread)
 {
-    Component::startupComponent(comThread);
-    mConsoleThread.createThread(NECommon::WAIT_INFINITE);
+    areg::Component::startup_component(comThread);
+    mConsoleThread.start(areg::WAIT_INFINITE);
 }
 
-void PubSubController::shutdownComponent(ComponentThread & comThread)
+void PubSubController::shutdown_component(areg::ComponentThread & comThread)
 {
-    mConsoleThread.shutdownThread(NECommon::WAIT_INFINITE);
-    Component::shutdownComponent(comThread);
+    mConsoleThread.shutdown(areg::WAIT_INFINITE);
+    areg::Component::shutdown_component(comThread);
 }
 
-void PubSubController::onThreadRuns(void)
+void PubSubController::on_run()
 {
-    Console & console = Console::getInstance();
-    OptionParser parser(ValidOptions, MACRO_ARRAYLEN(ValidOptions));
-    console.lockConsole();
-    console.enableConsoleInput(true);
-    printMessage(String::EmptyString, eCommands::CMD_Undefined);
-    console.unlockConsole();
+    areg::ext::Console & console = areg::ext::Console::instance();
+    areg::ext::OptionParser parser(ValidOptions, std::size(ValidOptions));
+    console.lock_console();
+    console.enable_console_input(true);
+    print_message(areg::String::EmptyString, OptionFlag::CMD_Undefined);
+    console.unlock_console();
 
-    eCommands cmd = eCommands::CMD_Undefined;
+    OptionFlag cmd = OptionFlag::CMD_Undefined;
 
     do
     {
-        String message;
-        String usrInput = console.readString();
-        console.lockConsole();
+        areg::String message;
+        areg::String usrInput = console.read_string();
+        console.lock_console();
 
-        if (parser.parseOptionLine(usrInput.getString()))
+        if (parser.parse_option_line(usrInput.as_string()))
         {
-            const OptionParser::InputOptionList & opts = parser.getOptions();
-            cmd = opts.getSize() == 1u ? static_cast<eCommands>(opts[0u].inCommand) : eCommands::CMD_Error;
+            const areg::ext::OptionParser::InputOptionList & opts = parser.options();
+            cmd = opts.size() == 1u ? static_cast<OptionFlag>(opts[0u].inCommand) : OptionFlag::CMD_Error;
             switch (cmd)
             {
-            case PubSubController::eCommands::CMD_Invalidate:
+            case PubSubController::OptionFlag::CMD_Invalidate:
                 invalidate();
                 message = "Requested to invalidate data...";
                 break;
 
-            case PubSubController::eCommands::CMD_Pause:
+            case PubSubController::OptionFlag::CMD_Pause:
                 stop();
                 message = "Requested to pause service...";
                 break;
 
-            case PubSubController::eCommands::CMD_Start:
+            case PubSubController::OptionFlag::CMD_Start:
                 start();
                 message = "Requested to start service...";
                 break;
 
-            case PubSubController::eCommands::CMD_Quit:
+            case PubSubController::OptionFlag::CMD_Quit:
                 quit();
                 message = "Request to quit application...";
                 break;
 
-            case PubSubController::eCommands::CMD_Help:
+            case PubSubController::OptionFlag::CMD_Help:
                 break;
 
-            case PubSubController::eCommands::CMD_Undefined:
-            case PubSubController::eCommands::CMD_Error:
+            case PubSubController::OptionFlag::CMD_Undefined:
+            case PubSubController::OptionFlag::CMD_Error:
             default:
-                cmd = PubSubController::eCommands::CMD_Error;
-                message.format(NECommon::FormatError.data(), usrInput.getString());
+                cmd = PubSubController::OptionFlag::CMD_Error;
+                message.format(pubsub::FormatError.data(), usrInput.as_string());
                 break;
             }
         }
         else
         {
-            cmd = PubSubController::eCommands::CMD_Error;
-            message.format(NECommon::FormatError.data(), usrInput.getString());
+            cmd = PubSubController::OptionFlag::CMD_Error;
+            message.format(pubsub::FormatError.data(), usrInput.as_string());
         }
 
-        printMessage(message, cmd);
-        console.unlockConsole();
+        print_message(message, cmd);
+        console.unlock_console();
 
-    } while (cmd != eCommands::CMD_Quit);
+    } while (cmd != OptionFlag::CMD_Quit);
 }
 
 
-inline void PubSubController::printMessage(const String & message, eCommands cmd)
+inline void PubSubController::print_message(const areg::String & message, OptionFlag cmd)
 {
-    Console & console = Console::getInstance();
-    if (cmd == eCommands::CMD_Error)
+    areg::ext::Console & console = areg::ext::Console::instance();
+    if (cmd == OptionFlag::CMD_Error)
     {
-        console.outputStr(NECommon::CoordInfoMsg, message);
+        console.output_str(pubsub::CoordInfoMsg, message);
     }
-    else if (cmd == eCommands::CMD_Help)
+    else if (cmd == OptionFlag::CMD_Help)
     {
-        console.outputStr(NECommon::CoordInfoMsg, _help);
+        console.output_str(pubsub::CoordInfoMsg, _help);
     }
-    else if (cmd != eCommands::CMD_Undefined)
+    else if (cmd != OptionFlag::CMD_Undefined)
     {
-        console.outputMsg(NECommon::CoordInfoMsg, message);
+        console.output_msg(pubsub::CoordInfoMsg, message);
     }
 
-    console.outputStr(NECommon::CoordSeparate, NECommon::Separator);
-    console.outputStr(NECommon::CoordUserInput, NECommon::UserInput);
-    console.refreshScreen();
+    console.output_str(pubsub::CoordSeparate, pubsub::Separator);
+    console.output_str(pubsub::CoordUserInput, pubsub::UserInput);
+    console.refresh_screen();
 }
 
-inline PubSubController & PubSubController::self(void)
+inline PubSubController & PubSubController::self()
 {
     return (*this);
 }

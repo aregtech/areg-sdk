@@ -10,11 +10,11 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
-#include "areg/base/IEThreadConsumer.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/base/areg_global.h"
+#include "areg/base/ThreadConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 #include "areg/component/Component.hpp"
-#include "examples/27_pubsubmulti/services/PubSubStub.hpp"
+#include "examples/27_pubsubmulti/services/PubSubProviderBase.hpp"
 
 #include "areg/base/Thread.hpp"
 #include "areg/component/Timer.hpp"
@@ -38,17 +38,17 @@
  *              - Always   : this means to receive update notification each
  *                           the value is set even if the value is not updated.
  **/
-class Publisher : public    Component
-                , protected PubSubStub
-                , private   IETimerConsumer
-                , private   IEThreadConsumer
+class Publisher final : public    areg::Component
+                      , protected PubSubProviderBase
+                      , private   areg::TimerConsumer
+                      , private   areg::ThreadConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // The list of internal types and constants
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The commands of PubSub
-    enum class eCommands : int
+    enum class OptionFlag : int32_t
     {
           CMD_Undefined     //!< Undefined command, no command is entered
         , CMD_Error         //!< Error happened
@@ -60,13 +60,13 @@ private:
     };
 
     //!< The list of valid options
-    static const OptionParser::sOptionSetup ValidOptions[];
+    static const areg::ext::OptionParser::OptionSetup ValidOptions[];
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    Publisher( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    Publisher( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides.
@@ -83,7 +83,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    virtual void startupComponent(ComponentThread & comThread) override;
+    void startup_component(areg::ComponentThread & comThread) final;
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -91,10 +91,10 @@ protected:
      *          make cleanups in this function call.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    virtual void shutdownComponent( ComponentThread & comThread ) override;
+    void shutdown_component( areg::ComponentThread & comThread ) final;
 
 /************************************************************************/
-// IETimerConsumer interface overrides.
+// TimerConsumer interface overrides.
 /************************************************************************/
 
     /**
@@ -103,10 +103,10 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer ) override;
+    void process_timer( areg::Timer & timer ) final;
 
 /************************************************************************/
-// IEThreadConsumer interface overrides
+// ThreadConsumer interface overrides
 /************************************************************************/
 
     /**
@@ -114,12 +114,12 @@ protected:
      *          running and fully operable. If thread needs run in loop, the loop 
      *          should be implemented here. When consumer exits this function, 
      *          the thread will complete work. To restart thread running, 
-     *          createThread() method should be called again.
+     *          start() method should be called again.
      **/
-    virtual void onThreadRuns( void ) override;
+    void on_run() final;
 
 /************************************************************************/
-// StubBase overrides.
+// ProviderBase overrides.
 /************************************************************************/
 
     /**
@@ -128,7 +128,7 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    virtual bool clientConnected(const ProxyAddress & client, NEService::eServiceConnection status) override;
+    bool consumer_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -136,41 +136,41 @@ protected:
 private:
 
     //!< Starts updating values.
-    void start(void);
+    void start();
 
     //!< Pauses and stop updating values.
-    void stop(void);
+    void stop();
 
     //!< Invalidates the values, on the next start the value should be reset and validated.
-    void invalidate(void);
+    void invalidate();
 
     //!< Quits the service provider application.
-    void quit(void);
+    void quit();
 
     //! Outputs message on console
-    inline void printMessage(const String & message, eCommands cmd);
+    inline void print_message(const areg::String & message, OptionFlag cmd);
 
     //! Wrapper of the this pointer
-    inline Publisher & self(void);
+    inline Publisher & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    Timer       mTimerOnChange;     //!< The timer to update values with feature to notify on update
-    Timer       mTimerAlways;       //!< The timer to update values with feature to notify always
+    areg::Timer mTimerOnChange;     //!< The timer to update values with feature to notify on update
+    areg::Timer mTimerAlways;       //!< The timer to update values with feature to notify always
     int32_t     mClientCount;       //!< The number of connected clients.
     uint32_t    mSeqString;         //!< The sequence number of the string.
     uint16_t    mCountString;       //!< The count number of the string to change.
     uint32_t    mSeqInteger;        //!< The sequence number of the integer.
     uint16_t    mCountInteger;      //!< The count number of the integer to change.
-    Thread      mConsoleThread;     //!< The thread to run console to interact with users.
-    Mutex       mLock;              //!< Synchronization object for multithreading environment.
+    areg::Thread mConsoleThread;     //!< The thread to run console to interact with users.
+    areg::Mutex  mLock;              //!< Synchronization object for multithreading environment.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    Publisher(void) = delete;
-    DECLARE_NOCOPY_NOMOVE(Publisher);
+    Publisher() = delete;
+    AREG_NOCOPY_NOMOVE(Publisher);
 };

@@ -16,46 +16,49 @@
 #include "areg/component/TimerBase.hpp"
 
 #include "areg/base/DateTime.hpp"
+namespace areg {
 
-unsigned int TimerBase::getTickCount(void)
+uint32_t TimerBase::tick_count()
 {
-    return static_cast<unsigned int>(DateTime::getSystemTickCount());
+    return static_cast<uint32_t>(DateTime::system_tick_count());
 }
 
-TimerBase::TimerBase( const eTimerType timerType
+TimerBase::TimerBase( const TimerType timerType
                     , const String& timerName
-                    , unsigned int timeoutMs    /*= NECommon::INVALID_TIMEOUT*/
-                    , unsigned int eventCount   /*= TimerBase::CONTINUOUSLY*/)
+                    , uint32_t timeoutMs    /*= areg::INVALID_TIMEOUT*/
+                    , uint32_t eventCount   /*= TimerBase::CONTINUOUSLY*/
+                    , EventPriority prio    /*= areg::DefaultPriority*/)
     : mTimerType    ( timerType )
     , mHandle       ( nullptr   )
     , mName         ( timerName )
     , mTimeoutInMs  ( timeoutMs )
     , mEventsCount  ( eventCount)
     , mActive       ( false     )
+    , mPriority     ( prio      )
     , mLock         ( false     )
 {
-    createWaitableTimer();
+    create_waitable_timer();
 }
 
-TimerBase::~TimerBase(void)
+TimerBase::~TimerBase()
 {
-    destroyWaitableTimer();
+    destroy_waitable_timer();
 }
 
-bool TimerBase::createWaitableTimer( void )
+bool TimerBase::create_waitable_timer() noexcept
 {
     Lock lock( mLock );
 
-    if ( (mHandle == nullptr) && (mTimeoutInMs != NECommon::INVALID_TIMEOUT) )
+    if ( (mHandle == nullptr) && (mTimeoutInMs != areg::INVALID_TIMEOUT) )
     {
-        mHandle = _osCreateWaitableTimer( );
+        mHandle = _os_create( );
     }
 
     return (mHandle != nullptr);
 }
 
 
-void TimerBase::destroyWaitableTimer( void )
+void TimerBase::destroy_waitable_timer()
 {
     Lock lock( mLock );
 
@@ -63,6 +66,8 @@ void TimerBase::destroyWaitableTimer( void )
     mHandle = nullptr;
     if ( handle != nullptr )
     {
-        _osDestroyWaitableTimer( handle );
+        _os_destroy( handle );
     }
 }
+
+} // namespace areg

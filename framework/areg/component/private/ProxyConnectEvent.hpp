@@ -19,20 +19,17 @@
 /************************************************************************
  * Include files
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/ServiceResponseEvent.hpp"
 #include "areg/component/StubAddress.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyConnectEvent class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Event class to send connection established notification
- *          to the Proxy object. The Event is sent from Router Service
- *          to notify Proxy object that connection with Stub is established
- *          or Proxy is disconnected from Stub. When connection is established,
- *          the Event will contain Stub address as server for Proxy and
- *          starting from that point, the Proxy and Stub can start communication.
+ * \brief   Event sent to Proxy to notify connection status with Stub. Connection established or
+ *          lost, contains Stub address for communication.
  **/
 class ProxyConnectEvent   : public ServiceResponseEvent
 {
@@ -44,54 +41,53 @@ class ProxyConnectEvent   : public ServiceResponseEvent
 //////////////////////////////////////////////////////////////////////////
 // Declare Runtime Event
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME_EVENT(ProxyConnectEvent)
+    AREG_DECLARE_RUNTIME_EVENT(ProxyConnectEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initialization constructor. Initialize Connection Event, which
-     *          is indicating to Proxy specified in address that the connection
-     *          with Stub, specified in address, either is established or lost.
-     * \param   proxy           The address of Proxy to send Connection Event.
-     * \param   server          The address of Stub object. If valid, Proxy can send request events.
-     * \param   connectStatus   Indicates the connection status.
+     * \brief   Initializes Connection Event indicating to Proxy that connection with Stub is
+     *          established or lost.
+     *
+     * \param   proxy               The address of Proxy to send Connection Event.
+     * \param   server              The address of Stub object. If valid, Proxy can send request
+     *                              events.
+     * \param   connectStatus       Indicates the connection status.
      **/
-    ProxyConnectEvent( const ProxyAddress & proxy, const StubAddress & server, NEService::eServiceConnection connectStatus );
+    ProxyConnectEvent( const ProxyAddress & proxy, const StubAddress & server, areg::ServiceConnectionState connectStatus );
 
     /**
-     * \brief   Copy constructor.
-     * \param   target  The target Proxy address to initialize event.
-     * \param   src     The source of data to copy.
+     * \brief   Clones event data for different target Proxy address.
+     *
+     * \param   target      The target Proxy address to initialize event.
+     * \param   src         The source of data to copy.
      **/
     ProxyConnectEvent(const ProxyAddress & target, const ProxyConnectEvent & src);
 
     /**
-     * \brief   Initialization constructor.
-     *          Creates event from streaming object and initializes data
-     * \param   stream  The streaming object to read data
+     * \brief   Creates event from streaming object and initializes data.
+     *
+     * \param   stream      The streaming object to read data
      **/
-    ProxyConnectEvent(const IEInStream & stream);
+    ProxyConnectEvent(const InStream & stream);
 
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~ProxyConnectEvent( void ) = default;
+    virtual ~ProxyConnectEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Returns the target address Stub object.
+     * \brief   Returns the target address of Stub object.
      **/
-    inline const StubAddress & getStubAddress( void ) const;
+    inline const StubAddress & stub_address() const;
 
     /**
      * \brief   Returns the current connection status set in proxy connect event.
      **/
-    inline NEService::eServiceConnection getConnectionStatus( void ) const;
+    inline areg::ServiceConnectionState connection_status() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -101,18 +97,20 @@ protected:
 // StreamableEvent overrides
 /************************************************************************/
     /**
-     * \brief   Reads and initialize event data from streaming object.
-     * \param   stream  The streaming object to read out event data
+     * \brief   Reads and initializes event data from streaming object.
+     *
+     * \param   stream      The streaming object to read out event data
      * \return  Returns streaming object to read out data.
      **/
-    virtual const IEInStream & readStream( const IEInStream & stream ) override;
+    const InStream & read_stream( const InStream & stream ) override;
 
     /**
-     * \brief   Writes event data to streaming object
-     * \param   stream  The streaming object to write event data.
+     * \brief   Writes event data to streaming object.
+     *
+     * \param   stream      The streaming object to write event data.
      * \return  Returns streaming object to write event data.
      **/
-    virtual IEOutStream & writeStream( IEOutStream & stream ) const override;
+    OutStream & write_stream( OutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -126,28 +124,29 @@ private:
     /**
      * \brief   The proxy connection status.
      **/
-    NEService::eServiceConnection   mConnectionStatus;
+    areg::ServiceConnectionState   mConnectionStatus;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    ProxyConnectEvent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ProxyConnectEvent );
+    ProxyConnectEvent() = delete;
+    AREG_NOCOPY_NOMOVE( ProxyConnectEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyConnectEvent class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const StubAddress & ProxyConnectEvent::getStubAddress( void ) const
+inline const StubAddress & ProxyConnectEvent::stub_address() const
 {
     return mStubAddress;
 }
 
-inline NEService::eServiceConnection ProxyConnectEvent::getConnectionStatus( void ) const
+inline areg::ServiceConnectionState ProxyConnectEvent::connection_status() const
 {
     return mConnectionStatus;
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_PROXYCONNECTEVENT_HPP

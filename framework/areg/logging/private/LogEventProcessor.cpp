@@ -19,84 +19,82 @@
 #include "areg/logging/private/LogEventProcessor.hpp"
 
 #include "areg/base/FileBuffer.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 #include "areg/logging/LogScope.hpp"
 #include "areg/logging/private/LogManager.hpp"
 #include "areg/logging/private/ScopeNodes.hpp"
 
-#if AREG_LOGS
+#if AREG_LOGGING
+
+namespace areg {
 
 LogEventProcessor::LogEventProcessor( LogManager & logManager )
     : mLogManager (logManager)
 {
 }
 
-void LogEventProcessor::processLogEvent( LoggingEventData::eLoggingAction cmdLog, const SharedBuffer & stream )
+void LogEventProcessor::process_log_event( const LoggingEventData & data )
 {
-    stream.moveToBegin( );
-
-    switch ( cmdLog )
+    switch ( data.logging_action() )
     {
-    case LoggingEventData::eLoggingAction::LoggingStartLogs:
-        _loggingStartLogs( );
+    case LoggingEventData::LogAction::StartLogs:
+        _logging_start_logs( );
         break;
 
-    case LoggingEventData::eLoggingAction::LoggingStopLogs:
-        _loggingStopLogs( );
+    case LoggingEventData::LogAction::StopLogs:
+        _logging_stop_logs( );
         break;
 
-    case LoggingEventData::eLoggingAction::LoggingSetEnableLogs:
-        _loggingSetEnableLogs( true );
+    case LoggingEventData::LogAction::EnableLogs:
+        _set_logging_enabled( true );
         break;
 
-    case LoggingEventData::eLoggingAction::LoggingSetDisableLogs:
-        _loggingSetEnableLogs( false );
+    case LoggingEventData::LogAction::DisableLogs:
+        _set_logging_enabled( false );
         break;
 
-    case LoggingEventData::eLoggingAction::LoggingSaveScopes:
-        _loggingSaveScopes( );
+    case LoggingEventData::LogAction::SaveScopes:
+        _logging_save_scopes( );
         break;
 
-    case LoggingEventData::eLoggingAction::LoggingLogMessage:
-        _loggingLogMessage( stream );
+    case LoggingEventData::LogAction::LogMessage:
+        _logging_log_message( data );
         break;
 
-    case LoggingEventData::eLoggingAction::LoggingUpdateScopes:   // fall through
-    case LoggingEventData::eLoggingAction::LoggingQueryScopes:    // fall through
-    case LoggingEventData::eLoggingAction::LoggingUndefined:      // fall through
+    case LoggingEventData::LogAction::UpdateScopes:   // fall through
+    case LoggingEventData::LogAction::QueryScopes:    // fall through
+    case LoggingEventData::LogAction::Undefined:      // fall through
     default:
         break; // ignore, do nothing
     }
 }
 
-inline void LogEventProcessor::_loggingStartLogs( void )
+inline void LogEventProcessor::_logging_start_logs()
 {
-    mLogManager.startLogs( );
+    mLogManager.start_logs( );
 }
 
-inline void LogEventProcessor::_loggingStopLogs( void )
+inline void LogEventProcessor::_logging_stop_logs()
 {
-    mLogManager.stopLogs( );
+    mLogManager.stop_logs( );
 }
 
-inline void LogEventProcessor::_loggingSetEnableLogs( bool logsEnable )
+inline void LogEventProcessor::_set_logging_enabled( bool logsEnable )
 {
-    mLogManager.mLogConfig.setRemoteTcpEnable(logsEnable);
+    mLogManager.mLogConfig.set_tcp_enable(logsEnable);
 }
 
-inline void LogEventProcessor::_loggingSaveScopes( void )
+inline void LogEventProcessor::_logging_save_scopes()
 {
-    mLogManager.mLogConfig.saveConfiguration( );
+    mLogManager.mLogConfig.save_configuration( );
 }
 
-inline void LogEventProcessor::_loggingLogMessage( const SharedBuffer & data )
+inline void LogEventProcessor::_logging_log_message( const LoggingEventData & data )
 {
-    const NELogging::sLogMessage * logMessage = reinterpret_cast<const NELogging::sLogMessage *>(data.getBuffer( ));
-    ASSERT( logMessage != nullptr );
-    mLogManager.writeLogMessage( *logMessage );
+    mLogManager.write_log_message( data );
 }
 
-inline void LogEventProcessor::_changeScopePriority( const SharedBuffer & stream, unsigned int scopeCount )
+inline void LogEventProcessor::_change_scope_priority( const SharedBuffer & stream, uint32_t scopeCount )
 {
     String scopeName{ };
     uint32_t scopeId{ };
@@ -107,8 +105,10 @@ inline void LogEventProcessor::_changeScopePriority( const SharedBuffer & stream
         stream >> scopeName;
         stream >> scopeId;
         stream >> scopePrio;
-        mLogManager.changeScopePriority( scopeName, scopeId, scopePrio );
+        mLogManager.change_scope_priority( scopeName, scopeId, scopePrio );
     }
 }
 
-#endif  // AREG_LOGS
+} // namespace areg
+
+#endif  // AREG_LOGGING

@@ -11,19 +11,19 @@
   * Include files.
   ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/19_pubfsm/services/TrafficControllerClientBase.hpp"
+#include "examples/19_pubfsm/services/TrafficControllerConsumerBase.hpp"
 
 /**
  * \brief   Traffic light controller client, i.e. the lights.
  *          It receives the state of lights to display (output on console).
  **/
-class TrafficLightClient    : public    Component
-                            , private   TrafficControllerClientBase
+class TrafficLightClient final    : public    areg::Component
+                            , private   TrafficControllerConsumerBase
 {
 public:
-    TrafficLightClient(const NERegistry::ComponentEntry& entry, ComponentThread& owner);
+    TrafficLightClient(const areg::ComponentEntry& entry, areg::ComponentThread& owner);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides.
@@ -39,7 +39,7 @@ protected:
      * \param   TrafficSouthNorth   The value of TrafficSouthNorth attribute.
      * \param   state               The data validation flag.
      **/
-    virtual void onTrafficSouthNorthUpdate( const NETrafficController::sTrafficLight & TrafficSouthNorth, NEService::eDataStateType state ) override;
+    void on_traffic_south_north_update( const TrafficController::sTrafficLight & TrafficSouthNorth, areg::DataState state ) final;
 
     /**
      * \brief   Triggered, when TrafficEastWest attribute is updated. The function contains
@@ -50,7 +50,7 @@ protected:
      * \param   TrafficEastWest The value of TrafficEastWest attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onTrafficEastWestUpdate( const NETrafficController::sTrafficLight & TrafficEastWest, NEService::eDataStateType state ) override;
+    void on_traffic_east_west_update( const TrafficController::sTrafficLight & TrafficEastWest, areg::DataState state ) final;
 
     /**
      * \brief   Server broadcast.
@@ -60,7 +60,7 @@ protected:
      * \param   LightVehicle    Light state for vehicles
      * \param   LightPedestrian Light state for pedestrians.
      **/
-    virtual void broadcastSouthNorth( NETrafficController::eVehicleTrafficLight LightVehicle, NETrafficController::ePedestrianTrafficLight LightPedestrian ) override;
+    void broadcast_south_north( TrafficController::VehicleTrafficLight LightVehicle, TrafficController::PedestrianTrafficLight LightPedestrian ) final;
 
     /**
      * \brief   Server broadcast.
@@ -70,10 +70,10 @@ protected:
      * \param   LightVehicle    Light state for vehicles
      * \param   LightPedestrian Light state for pedestrians.
      **/
-    virtual void broadcastEastWest( NETrafficController::eVehicleTrafficLight LightVehicle, NETrafficController::ePedestrianTrafficLight LightPedestrian ) override;
+    void broadcast_east_west( TrafficController::VehicleTrafficLight LightVehicle, TrafficController::PedestrianTrafficLight LightPedestrian ) final;
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -86,7 +86,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -101,6 +101,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    TrafficLightClient( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( TrafficLightClient );
+    TrafficLightClient() = delete;
+    AREG_NOCOPY_NOMOVE( TrafficLightClient );
 };

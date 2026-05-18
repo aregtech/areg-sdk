@@ -29,6 +29,9 @@
 #ifndef WIN32_LEAN_AND_MEAN
     #define WIN32_LEAN_AND_MEAN
 #endif  // WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif // !NOMINMAX
 #include <Windows.h>
 #include <tchar.h>
 
@@ -39,7 +42,7 @@
 namespace
 {
 
-    inline char ** _convertArguments( TCHAR ** argv, int argc )
+    inline char ** _convert_args( TCHAR ** argv, int32_t argc )
     {
         char ** argvTemp = argc != 0 ? DEBUG_NEW char * [static_cast<uint32_t>(argc)] : nullptr;
         if ( argvTemp != nullptr )
@@ -47,17 +50,17 @@ namespace
             for ( uint32_t i = 0; i < static_cast<uint32_t>(argc); ++i )
             {
                 TCHAR * entry = argv[i];
-                uint32_t length = static_cast<uint32_t>(NEString::getStringLength<TCHAR>( entry ));
+                uint32_t length = static_cast<uint32_t>(areg::string_length<TCHAR>( entry ));
                 uint32_t size = length + 1u;
                 char * arg = DEBUG_NEW char[size];
-                NEString::copyString<char, TCHAR>( arg, static_cast<NEString::CharCount>(size), entry );
+                areg::copy_string<char, TCHAR>( arg, static_cast<areg::CharCount>(size), entry );
                 argvTemp[i] = arg;
             }
         }
         return argvTemp;
     }
 
-    inline void _deleteArguments( char ** argv, int argc )
+    inline void _delete_args( char ** argv, int32_t argc )
     {
         if ( argv != nullptr )
         {
@@ -76,16 +79,16 @@ namespace
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
     static_cast<void>(envp);
-    char** argvTemp = _convertArguments(argv, static_cast<int>(argc));
-    LogObserver::getInstance().logMain(static_cast<int>(argc), argvTemp);
-    _deleteArguments(argvTemp, static_cast<int>(argc));
+    char** argvTemp = _convert_args(argv, static_cast<int32_t>(argc));
+    LogObserver::instance().log_main(static_cast<int32_t>(argc), argvTemp);
+    _delete_args(argvTemp, static_cast<int32_t>(argc));
 
     return 0;
 }
 #else
 int main(int argc, char* argv[], char* envp[])
 {
-    LogObserver::getInstance().logMain(static_cast<int>(argc), argv);
+    LogObserver::instance().log_main(static_cast<int32_t>(argc), argv);
     return 0;
 }
 #endif

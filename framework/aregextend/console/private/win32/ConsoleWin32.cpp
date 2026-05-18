@@ -8,7 +8,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        aregextend/console/private/win32/Console.cpp
+ * \file        aregextend/console/private/win32/ConsoleWin32.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, Basic OS specific console implementation.
@@ -26,34 +26,59 @@
 #ifndef WIN32_LEAN_AND_MEAN
     #define WIN32_LEAN_AND_MEAN
 #endif  // WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif // !NOMINMAX
 #include <Windows.h>
 #include <stdio.h>
 
-namespace
-{
-    //!< Clear the screen.
-    constexpr std::string_view  CMD_CLEAR_SCREEN    { "\x1B[2J" };
-    //!< Scroll cursor back.
-    constexpr std::string_view  CMD_SCROLL_BACK     { "\x1B[3J" };
-    //!< Clear line.
-    constexpr std::string_view  CMD_CLEAR_LINE      { "\x1B[2K" };
-    //!< Reset.
-    constexpr std::string_view  CMD_RESET           { "\x1B[0m" };
-    //!< The command to save cursor position in memory
-    constexpr std::string_view  CMD_SAVE_CURSOR     { "\x1B[s" };
-    //!< The command to restore previously saved cursor position
-    constexpr std::string_view  CMD_RESTORE_CURSOR  { "\x1B[u" };
-    //!< The command to move cursor one line up from current position
-    constexpr std::string_view  CMD_ONE_LINE_UP     { "\x1B[1F" };
-    //!< The command to move cursor one line down from current position
-    constexpr std::string_view  CMD_ONE_LINE_DOWN   { "\x1B[1E" };
-}
+namespace {
+
+    thread_local areg::ext::Console::Coord _savedCursorPos{ 0, 0 };
+    thread_local bool _hasSavedCursorPos{ false };
+
+    /**
+     * \brief   Writes text at the given position WITHOUT moving the visible
+     *          cursor.  First clears the line from posX to the right edge,
+     *          then writes the text.  The cursor stays wherever it was (e.g.
+     *          at the input prompt), so gets_s / fgets are not disturbed.
+     *          Newline and carriage-return characters are replaced with spaces
+     *          because WriteConsoleOutputCharacterA renders them as glyphs (?).
+     **/
+    void _write_at(HANDLE hOut, SHORT posX, SHORT posY, const char* data, DWORD len)
+    {
+        CONSOLE_SCREEN_BUFFER_INFO info{};
+        GetConsoleScreenBufferInfo(hOut, &info);
+
+        const SHORT width = info.dwSize.X;
+        const COORD writePos{ posX, posY };
+
+        // Clear the line from posX to the right edge.
+        DWORD filled{ 0 };
+        FillConsoleOutputCharacterA(hOut, ' ', static_cast<DWORD>(width - posX), writePos, &filled);
+        FillConsoleOutputAttribute(hOut, info.wAttributes, static_cast<DWORD>(width - posX), writePos, &filled);
+
+        // Strip trailing \r and \n: WriteConsoleOutputCharacterA renders them
+        // as visible glyphs (?) instead of control characters.
+        while ((len > 0) && ((data[len - 1] == '\n') || (data[len - 1] == '\r')))
+        {
+            --len;
+        }
+
+        // Write the text at the position (cursor does not move).
+        DWORD written{ 0 };
+        WriteConsoleOutputCharacterA(hOut, data, len, writePos, &written);
+    }
+
+} // namespace
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // Console Windows OS specific implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool Console::_osSetup(void)
+bool Console::_os_setup() noexcept
 {
     if (mIsReady == false)
     {
@@ -62,20 +87,23 @@ bool Console::_osSetup(void)
         if ((hStdOut != nullptr) && (GetConsoleMode(hStdOut, &mode) == TRUE))
         {
             mContext = static_cast<ptr_type>(mode);
-            mode |= ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+            mode |= ENABLE_PROCESSED_OUTPUT;
             SetConsoleMode(hStdOut, mode);
-            DWORD written = 0;
-            if (WriteConsoleA(hStdOut, CMD_CLEAR_SCREEN.data(), static_cast<DWORD>(CMD_CLEAR_SCREEN.length()), &written, nullptr) == TRUE)
+
+            // Clear the screen using Win32 API (no VT sequences needed).
+            CONSOLE_SCREEN_BUFFER_INFO info{};
+            if (GetConsoleScreenBufferInfo(hStdOut, &info))
             {
-                written = 0;
-                WriteConsoleA(hStdOut, CMD_RESET.data(), static_cast<DWORD>(CMD_RESET.length()), &written, nullptr);
-                written = 0;
-                WriteConsoleA(hStdOut, CMD_SCROLL_BACK.data(), static_cast<DWORD>(CMD_SCROLL_BACK.length()), &written, nullptr);
+                DWORD cells = static_cast<DWORD>(info.dwSize.X) * static_cast<DWORD>(info.dwSize.Y);
+                DWORD filled{ 0 };
+                COORD origin{ 0, 0 };
+                FillConsoleOutputCharacterA(hStdOut, ' ', cells, origin, &filled);
+                FillConsoleOutputAttribute(hStdOut, info.wAttributes, cells, origin, &filled);
+                SetConsoleCursorPosition(hStdOut, origin);
                 mIsReady = true;
             }
             else
             {
-                // restore previous mode.
                 mode = static_cast<DWORD>(mContext);
                 SetConsoleMode(hStdOut, mode);
                 mContext = 0;
@@ -86,86 +114,106 @@ bool Console::_osSetup(void)
     return mIsReady;
 }
 
-void Console::_osRelease(void)
+void Console::_os_release() noexcept
 {
     if (mIsReady)
     {
-        // restore previous mode.
         HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-        DWORD written = 0;
-        WriteConsoleA(hStdOut, CMD_CLEAR_SCREEN.data(), static_cast<DWORD>(CMD_CLEAR_SCREEN.length()), &written, nullptr);
-        written = 0;
-        WriteConsoleA(hStdOut, CMD_RESET.data(), static_cast<DWORD>(CMD_RESET.length()), &written, nullptr);
+
+        // Ensure the cursor is visible before exiting.
+        CONSOLE_CURSOR_INFO ci{};
+        if ((hStdOut != nullptr) && GetConsoleCursorInfo(hStdOut, &ci))
+        {
+            ci.bVisible = TRUE;
+            SetConsoleCursorInfo(hStdOut, &ci);
+        }
+
+        CONSOLE_SCREEN_BUFFER_INFO info{};
+        if ((hStdOut != nullptr) && GetConsoleScreenBufferInfo(hStdOut, &info))
+        {
+            const SHORT finalRow = static_cast<SHORT>(mMaxUsedRow + 1);
+            COORD pos{ 0, (finalRow < info.dwSize.Y) ? finalRow : static_cast<SHORT>(info.dwSize.Y - 1) };
+            SetConsoleCursorPosition(hStdOut, pos);
+            DWORD written{ 0 };
+            WriteConsoleA(hStdOut, "\n", 1, &written, nullptr);
+        }
+
         DWORD mode = static_cast<DWORD>(mContext);
         SetConsoleMode(hStdOut, mode);
-        mContext = 0;
-        mIsReady = false;
+        mContext  = 0;
+        mIsReady  = false;
     }
 }
 
-void Console::_osOutputText(Console::Coord pos, const String& text) const
+void Console::_os_output_text(Console::Coord pos, const String& text) const noexcept
 {
     Lock lock(mLock);
-
-    DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleCursorPosition(hStdOut, COORD{static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY)});
-    WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, nullptr);
-    WriteConsoleA(hStdOut, text.getString(), static_cast<DWORD>(text.getLength()), &written, nullptr);
+    DWORD len = static_cast<DWORD>(text.length());
+    _write_at(hStdOut, static_cast<SHORT>(pos.posX), static_cast<SHORT>(pos.posY), text.as_string(), len);
+
+    if (static_cast<int32_t>(pos.posY) > mMaxUsedRow)
+    {
+        mMaxUsedRow = static_cast<int32_t>(pos.posY);
+    }
 }
 
-void Console::_osOutputText(Console::Coord pos, const std::string_view& text) const
+void Console::_os_output_text(Console::Coord pos, std::string_view text) const noexcept
+{
+    Lock lock(mLock);
+    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD len = static_cast<DWORD>(text.length());
+    _write_at(hStdOut, static_cast<SHORT>(pos.posX), static_cast<SHORT>(pos.posY),
+              text.data(), len);
+
+    if (static_cast<int32_t>(pos.posY) > mMaxUsedRow)
+    {
+        mMaxUsedRow = static_cast<int32_t>(pos.posY);
+    }
+}
+
+void Console::_os_output_text(const String& text) const noexcept
 {
     Lock lock(mLock);
 
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleCursorPosition(hStdOut, COORD{ static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) });
-    WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, nullptr);
+    WriteConsoleA(hStdOut, text.as_string(), static_cast<DWORD>(text.length()), &written, nullptr);
+}
+
+void Console::_os_output_text(std::string_view text) const noexcept
+{
+    Lock lock(mLock);
+
+    DWORD written = 0;
+    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleA(hStdOut, text.data(), static_cast<DWORD>(text.length()), &written, nullptr);
 }
 
-void Console::_osOutputText(const String& text) const
-{
-    Lock lock(mLock);
-
-    DWORD written = 0;
-    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    WriteConsoleA(hStdOut, text.getString(), static_cast<DWORD>(text.getLength()), &written, nullptr);
-}
-
-void Console::_osOutputText(const std::string_view& text) const
-{
-    Lock lock(mLock);
-
-    DWORD written = 0;
-    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    WriteConsoleA(hStdOut, text.data(), static_cast<DWORD>(text.length()), &written, nullptr);
-}
-
-Console::Coord Console::_osGetCursorPosition(void) const
+Console::Coord Console::_os_get_cursor_position() const noexcept
 {
     Lock lock(mLock);
 
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
     CONSOLE_SCREEN_BUFFER_INFO bufferInfo;
-    NEMemory::memZero(&bufferInfo, sizeof(CONSOLE_SCREEN_BUFFER_INFO));
+    areg::mem_zero(&bufferInfo, sizeof(CONSOLE_SCREEN_BUFFER_INFO));
     GetConsoleScreenBufferInfo(hStdOut, &bufferInfo);
     const COORD& coord = reinterpret_cast<const COORD&>(bufferInfo.dwCursorPosition);
 
     return Console::Coord{ coord.X, coord.Y };
 }
 
-void Console::_osSetCursorCurPosition(Console::Coord pos) const
+void Console::_os_set_cursor_cur_position(Console::Coord pos) const noexcept
 {
     Lock lock(mLock);
 
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    mSavedPos = { static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) };
     SetConsoleCursorPosition(hStdOut, COORD{ static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) });
 }
 
-bool Console::_osWaitInputString(char* buffer, uint32_t size)
+bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 {
 #if !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
     #if defined(_WIN32) && !defined(_MINGW)
@@ -178,70 +226,123 @@ bool Console::_osWaitInputString(char* buffer, uint32_t size)
 #endif  // !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
 }
 
-void Console::_osRefreshScreen(void) const
+void Console::_os_refresh_screen() const noexcept
 {
-    Lock lock(mLock);
-
-    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    FlushConsoleInputBuffer(hStdOut);
+    // no-op
 }
 
-void Console::_osClearLine( void ) const
+void Console::_os_clear_line() const noexcept
 {
     Lock lock(mLock);
-
-    DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, nullptr);
-}
-
-void Console::_osClearScreen( void ) const
-{
-    Lock lock(mLock);
-
-    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    if (hStdOut != nullptr)
+    CONSOLE_SCREEN_BUFFER_INFO info{};
+    if (GetConsoleScreenBufferInfo(hStdOut, &info))
     {
-        DWORD written = 0;
-        WriteConsoleA(hStdOut, CMD_CLEAR_SCREEN.data(), static_cast<DWORD>(CMD_CLEAR_SCREEN.length()), &written, nullptr);
+        DWORD filled{ 0 };
+        const COORD curPos = info.dwCursorPosition;
+        const DWORD clearLen = static_cast<DWORD>(info.dwSize.X - curPos.X);
+        FillConsoleOutputCharacterA(hStdOut, ' ', clearLen, curPos, &filled);
+        FillConsoleOutputAttribute(hStdOut, info.wAttributes, clearLen, curPos, &filled);
     }
 }
 
-bool Console::_osReadInputList(const char* format, va_list varList) const
+void Console::_os_clear_line_at_position(Console::Coord pos) const noexcept
+{
+    Lock lock(mLock);
+    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO info{};
+    if (GetConsoleScreenBufferInfo(hStdOut, &info))
+    {
+        const COORD writePos{ static_cast<SHORT>(pos.posX), static_cast<SHORT>(pos.posY) };
+        const DWORD clearLen = static_cast<DWORD>(info.dwSize.X - pos.posX);
+        DWORD filled{ 0 };
+        FillConsoleOutputCharacterA(hStdOut, ' ', clearLen, writePos, &filled);
+        FillConsoleOutputAttribute(hStdOut, info.wAttributes, clearLen, writePos, &filled);
+    }
+}
+
+void Console::_os_clear_screen() const noexcept
+{
+    Lock lock(mLock);
+    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO info{};
+    if ((hStdOut != nullptr) && GetConsoleScreenBufferInfo(hStdOut, &info))
+    {
+        DWORD cells = static_cast<DWORD>(info.dwSize.X) * static_cast<DWORD>(info.dwSize.Y);
+        DWORD filled{ 0 };
+        COORD origin{ 0, 0 };
+        FillConsoleOutputCharacterA(hStdOut, ' ', cells, origin, &filled);
+        FillConsoleOutputAttribute(hStdOut, info.wAttributes, cells, origin, &filled);
+        SetConsoleCursorPosition(hStdOut, origin);
+    }
+}
+
+bool Console::_os_read_input_list(const char* format, va_list varList) const
 {
     return (vscanf(format, varList) > 0);
 }
 
-void Console::_osSaveCursorPosition(void) const
+void Console::_os_save_cursor_position() const noexcept
 {
     Lock lock(mLock);
-    DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    WriteConsoleA(hStdOut, CMD_SAVE_CURSOR.data(), static_cast<DWORD>(CMD_SAVE_CURSOR.length()), &written, nullptr);
+
+    CONSOLE_SCREEN_BUFFER_INFO info{};
+    if ((hStdOut != nullptr) && (GetConsoleScreenBufferInfo(hStdOut, &info) == TRUE))
+    {
+        _savedCursorPos   = { info.dwCursorPosition.X, info.dwCursorPosition.Y };
+        _hasSavedCursorPos = true;
+    }
+    else
+    {
+        _savedCursorPos   = mSavedPos;
+        _hasSavedCursorPos = true;
+    }
 }
 
-void Console::_osRestoreCursorPosition(void) const
+void Console::_os_restore_cursor_position() const noexcept
 {
     Lock lock(mLock);
-    DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    WriteConsoleA(hStdOut, CMD_RESTORE_CURSOR.data(), static_cast<DWORD>(CMD_RESTORE_CURSOR.length()), &written, nullptr);
+    const Console::Coord target = _hasSavedCursorPos ? _savedCursorPos : mSavedPos;
+
+    CONSOLE_SCREEN_BUFFER_INFO info{};
+    SHORT targetX{ static_cast<SHORT>(target.posX) };
+    SHORT targetY{ static_cast<SHORT>(target.posY) };
+    if ((hStdOut != nullptr) && (GetConsoleScreenBufferInfo(hStdOut, &info) == TRUE))
+    {
+        targetX = static_cast<SHORT>(targetX < 0 ? 0 : (targetX >= info.dwSize.X ? info.dwSize.X - 1 : targetX));
+        targetY = static_cast<SHORT>(targetY < 0 ? 0 : (targetY >= info.dwSize.Y ? info.dwSize.Y - 1 : targetY));
+    }
+
+    SetConsoleCursorPosition(hStdOut, COORD{ targetX, targetY });
+    _hasSavedCursorPos = false;
 }
 
-void Console::_osMoveCursorOneLineUp(void) const
+void Console::_os_move_cursor_one_line_up() const noexcept
 {
     Lock lock(mLock);
-    DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    WriteConsoleA(hStdOut, CMD_ONE_LINE_UP.data(), static_cast<DWORD>(CMD_ONE_LINE_UP.length()), &written, nullptr);
+    CONSOLE_SCREEN_BUFFER_INFO info{};
+    if (GetConsoleScreenBufferInfo(hStdOut, &info) && info.dwCursorPosition.Y > 0)
+    {
+        COORD pos{ 0, static_cast<SHORT>(info.dwCursorPosition.Y - 1) };
+        SetConsoleCursorPosition(hStdOut, pos);
+    }
 }
 
-void Console::_osMoveCursorOneLineDown(void) const
+void Console::_os_move_cursor_one_line_down() const noexcept
 {
     Lock lock(mLock);
-    DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    WriteConsoleA(hStdOut, CMD_ONE_LINE_DOWN.data(), static_cast<DWORD>(CMD_ONE_LINE_DOWN.length()), &written, nullptr);
+    CONSOLE_SCREEN_BUFFER_INFO info{};
+    if (GetConsoleScreenBufferInfo(hStdOut, &info))
+    {
+        COORD pos{ 0, static_cast<SHORT>(info.dwCursorPosition.Y + 1) };
+        SetConsoleCursorPosition(hStdOut, pos);
+    }
 }
+
+} // namespace areg::ext
 
 #endif  // defined(_WIN32) && (AREG_EXTENDED)

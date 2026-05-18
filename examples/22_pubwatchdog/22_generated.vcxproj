@@ -45,16 +45,16 @@
     <None Include="services\HelloWatchdog.siml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdogClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdogConsumerBase.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdogEvents.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdogProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdogStub.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\NEHelloWatchdog.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdogProviderBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdog.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)examples\22_pubwatchdog\services\HelloWatchdogClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\22_pubwatchdog\services\HelloWatchdogStub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\22_pubwatchdog\services\NEHelloWatchdog.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\22_pubwatchdog\services\HelloWatchdogConsumerBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\22_pubwatchdog\services\HelloWatchdogProviderBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\22_pubwatchdog\services\HelloWatchdog.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdogEvents.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdogProxy.hpp" />
   </ItemGroup>

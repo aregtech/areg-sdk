@@ -287,6 +287,28 @@ router::*::connect          = tcpip			                # Supported connection pro
 router::*::enable::tcpip    = true			                # TCP/IP protocol enable/disable flag
 router::*::address::tcpip   = localhost                     # Router IP address (127.0.0.1). Change for remote router.
 router::*::port::tcpip      = 8181			                # Router TCP port number (default: 8181)
+# Router socket buffers configured in net::mtrouter::... section above.
+
+# ---------------------------------------------------------------------------
+# Network Socket Buffer Settings
+# ---------------------------------------------------------------------------
+# Format: net::MODULE::TRANSPORT::sndbuf|rcvbuf = SIZE_IN_KB
+#   MODULE    = process name ("mtrouter", "logcollector") or "*" (all processes).
+#   TRANSPORT = "tcpip" (future: "udp", "sm" for shared memory).
+#   Value is in KB (kilobytes). E.g., 4096 = 4 MB, 8192 = 8MB, 12288 = 12MB, 16384 = 16 MB.
+#   Not applied on Windows — OS autotuning is used there instead.
+#   On Linux, the kernel doubles the configured value internally.
+# ---------------------------------------------------------------------------
+net::mtrouter::tcpip::sndbuf        = 8192                  # Router SO_SNDBUF (8192 KB = 8 MB). Increase for 3MB+ frames.
+net::mtrouter::tcpip::rcvbuf        = 8192                  # Router SO_RCVBUF (8192 KB = 8 MB).
+net::logcollector::tcpip::sndbuf    = 2048                  # Logger SO_SNDBUF (2048 KB = 2 MB — log traffic is bursty but small).
+net::logcollector::tcpip::rcvbuf    = 2048                  # Logger SO_RCVBUF (2048 KB = 2 MB).
+net::*::tcpip::sndbuf               = 8192                  # Default SO_SNDBUF for all services (uncomment to set a global default).
+net::*::tcpip::rcvbuf               = 8192                  # Default SO_RCVBUF for all services (uncomment to set a global default).
+net::*::tcpip::batch                = 64                    # Send/drain batch size per dispatcher wake-up. 0 = use compile-time DEFAULT_BATCH_SIZE.
+net::*::tcpip::pairs                = 0                     # Pool thread-pair count. 0 = disabled (shared send/recv threads). >0 = dedicated pool pairs per N clients.
+net::*::tcpip::timeout              = 2500                  # SO_SNDTIMEO in ms. Raise (e.g. 30000) when debugging on Windows to prevent breakpoint-pause disconnects.
+net::*::tcpip::cache                = 512                   # The size per-socket cache to receive data. Same value is used to initialize send cache.
 
 # ---------------------------------------------------------------------------
 # Remote Logger Settings
@@ -299,6 +321,7 @@ logger::*::connect          = tcpip			                # Supported connection pro
 logger::*::enable::tcpip    = true			                # TCP/IP protocol enable/disable flag
 logger::*::address::tcpip   = localhost                     # Log collector IP address (127.0.0.1). Change for remote collector.
 logger::*::port::tcpip      = 8282			                # Log collector TCP port number (default: 8282)
+# Logger socket buffers configured in net::logger::... section above.
 
 # ###########################################################################
 # APPLICATION-SPECIFIC LOG SCOPES

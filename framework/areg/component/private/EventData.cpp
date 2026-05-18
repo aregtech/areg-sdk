@@ -18,6 +18,7 @@
 #include "areg/component/EventData.hpp"
 
 #include <utility>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // EventData class implementation
@@ -26,15 +27,15 @@
 //////////////////////////////////////////////////////////////////////////
 // EventData class Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-EventData::EventData( unsigned int msgId, EventDataStream::eEventData dataType, const String & name /*= String::getEmptyString()*/ )
-    : mDataType (NEService::getMessageDataType(msgId))
-    , mData     (dataType, name)
+EventData::EventData( uint32_t msgId, EventDataStream::EventDataKind dataType)
+    : mDataType (areg::message_data_type(msgId))
+    , mData     (dataType)
 {
 }
 
-EventData::EventData( unsigned int msgId, const EventDataStream & args, const String & name /*= String::getEmptyString()*/ )
-    : mDataType (NEService::getMessageDataType(msgId))
-    , mData     (args, name)
+EventData::EventData( uint32_t msgId, const EventDataStream & args)
+    : mDataType (areg::message_data_type(msgId))
+    , mData     (args)
 {
 }
 
@@ -50,13 +51,13 @@ EventData::EventData( EventData && src ) noexcept
 {
 }
 
-EventData::EventData(const IEInStream & stream)
-    : mDataType ( NEService::eMessageDataType::UndefinedDataType )
-    , mData     ( EventDataStream::eEventData::EventDataExternal )
+EventData::EventData(const InStream & stream)
+    : mDataType ( areg::MessageDataType::UndefinedData )
+    , mData     ( EventDataStream::EventDataKind::External )
 {
     stream >> mDataType;
     stream >> mData;
-    mData.resetCursor();
+    mData.reset();
 }
 
 EventData & EventData::operator = (const EventData & src)
@@ -76,3 +77,5 @@ EventData & EventData::operator = ( EventData && src ) noexcept
 
     return (*this);
 }
+
+} // namespace areg

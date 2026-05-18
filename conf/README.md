@@ -9,8 +9,48 @@ conf/
 ├── cmake/          # CMake build configuration files
 ├── exports/        # Installation templates and examples
 ├── msvc/           # Microsoft Visual Studio property files
+├── toolchains/     # CMake toolchain files for all supported platforms
 └── README.md       # This file
 ```
+
+---
+
+## Toolchains
+
+The [./toolchains](./toolchains/) directory contains ready-to-use CMake toolchain files for all platforms supported by areg-sdk. Pass a toolchain file at configure time with `-DCMAKE_TOOLCHAIN_FILE`.
+
+| Toolchain File | Target | Compiler |
+|----------------|--------|----------|
+| `gnu-linux-x64.cmake` | Linux x86-64 | GCC (native) |
+| `gnu-linux-x86.cmake` | Linux x86 32-bit | GCC (native multilib) |
+| `gnu-linux-arm32.cmake` | Linux ARM 32-bit | GCC (cross, arm-linux-gnueabihf) |
+| `gnu-linux-arm64.cmake` | Linux ARM 64-bit | GCC (cross, aarch64-linux-gnu) |
+| `clang-linux-x64.cmake` | Linux x86-64 | Clang (native) |
+| `clang-linux-x86.cmake` | Linux x86 32-bit | Clang (native multilib) |
+| `clang-linux-arm32.cmake` | Linux ARM 32-bit | Clang (cross, arm-linux-gnueabihf) |
+| `clang-linux-arm64.cmake` | Linux ARM 64-bit | Clang (cross, aarch64-linux-gnu) |
+| `clang-macos-x64.cmake` | macOS x86-64 (Intel) | Apple Clang |
+| `clang-macos-arm64.cmake` | macOS ARM64 (Apple Silicon) | Apple Clang |
+| `clang-win-x64.cmake` | Windows x86-64 | Clang-CL |
+| `clang-win-x86.cmake` | Windows x86 32-bit | Clang-CL |
+| `msvc-win-x64.cmake` | Windows x86-64 | MSVC |
+| `msvc-win-x86.cmake` | Windows x86 32-bit | MSVC |
+
+**Usage example** (from the areg-sdk root):
+```bash
+cmake -B ./build -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/gnu-linux-arm64.cmake
+cmake --build ./build -j$(nproc)
+```
+
+For cross-compilation toolchains (`gnu-linux-arm*`, `clang-linux-arm*`) also supply the sysroot:
+```bash
+cmake -B ./build \
+      -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/gnu-linux-arm64.cmake \
+      -DCMAKE_SYSROOT=/path/to/aarch64-sysroot
+```
+
+> The same toolchain files are also available in `conf/exports/example/toolchains/` for use in
+> downstream projects that are based on the bundled example template.
 
 ---
 
@@ -96,26 +136,10 @@ The `example/` subdirectory contains:
 - `CMakeLists.txt` - Example CMake project using Areg SDK
 - `example.cpp` - Sample application source code
 - `ReadMe.md` - Example project documentation
-- `toolchains/` - CMake toolchain files for cross-compilation
+- `toolchains/` - Copies of the toolchain files from `conf/toolchains/`, adapted for use from the example project root
 
-**Available Toolchains:**
-
-| Toolchain File | Target Platform |
-|----------------|-----------------|
-| `gnu-linux-x64.cmake` | Linux x86-64 with GCC |
-| `gnu-linux-x86.cmake` | Linux x86 (32-bit) with GCC |
-| `gnu-linux-arm32.cmake` | Linux ARM 32-bit with GCC |
-| `gnu-linux-arm64.cmake` | Linux ARM 64-bit (AARCH64) with GCC |
-| `clang-linux-x64.cmake` | Linux x86-64 with Clang |
-| `clang-linux-x86.cmake` | Linux x86 (32-bit) with Clang |
-| `clang-linux-arm32.cmake` | Linux ARM 32-bit with Clang |
-| `clang-linux-arm64.cmake` | Linux ARM 64-bit with Clang |
-| `clang-macos-x64.cmake` | macOS x86-64 (Intel) with Apple Clang |
-| `clang-macos-arm64.cmake` | macOS ARM64 (Apple Silicon) with Apple Clang |
-| `clang-win-x64.cmake` | Windows x86-64 with Clang |
-| `clang-win-x86.cmake` | Windows x86 (32-bit) with Clang |
-| `msvc-win-x64.cmake` | Windows x86-64 with MSVC |
-| `msvc-win-x86.cmake` | Windows x86 (32-bit) with MSVC |
+See [conf/toolchains/](../toolchains/) for the full list of toolchain files and their descriptions.
+These copies differ only in the usage path shown in comments (`./toolchains/` vs `./conf/toolchains/`).
 
 ---
 

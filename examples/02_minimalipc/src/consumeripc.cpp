@@ -1,17 +1,17 @@
 /**
  * \file    src/consumeripc.cpp
  * \brief   Minimal IPC example with request-response.
- *          It calls 'requestHelloService()' of remote object running in other process.
- *          Quits application when service is disconnected or received 'responseHelloService()' response.
+ *          It calls 'hello_service()' of remote object running in other process.
+ *          Quits application when service is disconnected or received 'hello_service()' response.
  *          This example requires `mtrouter`.
  **/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "examples/02_minimalipc/services/HelloServiceClientBase.hpp"
+#include "examples/02_minimalipc/services/HelloServiceConsumerBase.hpp"
 
 // Use these options if compile for Windows with MSVC
 // It links with areg library (dynamic or static) and generated static library
@@ -23,34 +23,34 @@
 //////////////////////////////////////////////////////////////////////////
 // ServiceConsumer declaration
 //////////////////////////////////////////////////////////////////////////
-class ServiceConsumer   : public    Component
-                        , protected HelloServiceClientBase
+class ServiceConsumer final : public    areg::Component
+                            , protected HelloServiceConsumerBase
 {
 public:
-    ServiceConsumer(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-		: Component             ( entry, owner )
-		, HelloServiceClientBase( entry.mDependencyServices[0].mRoleName, owner )
+    ServiceConsumer(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+		: areg::Component( entry, owner )
+		, HelloServiceConsumerBase( entry.mDependencyServices[0].mRoleName, owner )
 	{   }
 
 protected:
     //!< Service discovery notification. Called when the "ServiceProvder" is available and unavailable.
     //!< The `status` parameter contains availability flag. Return `true` if the service connection notification is relevant.
-    virtual bool serviceConnected(NEService::eServiceConnection status, ProxyBase& proxy) override
+    bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase& proxy) final
     {
-        if (HelloServiceClientBase::serviceConnected(status, proxy) && NEService::isServiceConnected(status))
-            requestHelloService();  // Call of method of remote "ServiceProvider" object.
-        else if (NEService::isServiceConnected(status) == false)
-            Application::signalAppQuit(); // quit application if service connection is lost.
+        if (HelloServiceConsumerBase::service_connected(status, proxy) && areg::is_service_connected(status))
+            request_hello_service();  // Call of method of remote "ServiceProvider" object.
+        else if (areg::is_service_connected(status) == false)
+            areg::Application::signal_quit(); // quit application if service connection is lost.
 
         // Return `true` if the service connection notification is relevant. "Relevance" can be checked via proxy.
-        return (static_cast<const ProxyBase *>(getProxy()) == static_cast<const ProxyBase *>(&proxy));
+        return (static_cast<const areg::ProxyBase *>(service_proxy()) == static_cast<const areg::ProxyBase *>(&proxy));
     }
 
     //!< The response from Service Provider
-    virtual void responseHelloService(void) override
+    void response_hello_service() final
     {
         std::cout << "\'Good bye Service!\'" << std::endl;
-        Application::signalAppQuit();   // quit application is if received response
+        areg::Application::signal_quit();   // quit application is if received response
     }
 };
 
@@ -71,15 +71,15 @@ END_MODEL("ConsumerModel")
 //////////////////////////////////////////////////////////////////////////
 // main method
 //////////////////////////////////////////////////////////////////////////
-int main(void)
+int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog, using default settings.
-    Application::initApplication();
+    areg::Application::setup();
     // load model to initialize components
-    Application::loadModel("ConsumerModel");
+    areg::Application::load_model("ConsumerModel");
     // wait until Application quit signal is set.
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    areg::Application::wait_quit(areg::WAIT_INFINITE);
     // release and cleanup resources of application.
-    Application::releaseApplication();
+    areg::Application::release();
     return 0;
 }

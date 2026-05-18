@@ -20,7 +20,7 @@ if (MINGW)
     set(AREG_COMPILER_VERSION -std=c++17)
     list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -municode -MMD ${AREG_USER_DEFINES})
 
-    if (${AREG_PROCESSOR} STREQUAL ${_proc_x86} OR ${AREG_PROCESSOR} STREQUAL ${_proc_x64})
+    if (${AREG_ARCH} STREQUAL ${_proc_x86} OR ${AREG_ARCH} STREQUAL ${_proc_x64})
         if(${AREG_BITNESS} EQUAL 32)
             list(APPEND AREG_COMPILER_OPTIONS -m32)
             list(APPEND AREG_LDFLAGS -m32)
@@ -30,14 +30,18 @@ if (MINGW)
         endif()
     endif()
 
-    if (AREG_BUILD_TYPE MATCHES "Debug")
+    if(${CMAKE_BUILD_TYPE} MATCHES "Release")
+        list(APPEND AREG_COMPILER_OPTIONS -O3 -ffunction-sections -fdata-sections)
+        if (NOT CMAKE_CROSSCOMPILING)
+            list(APPEND AREG_COMPILER_OPTIONS -march=native -mtune=native)
+        endif()
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+        list(APPEND AREG_LDFLAGS   -Wl,--gc-sections -Wl,-O1   stdc++   m   pthread   advapi32   psapi   shell32   ws2_32)
+        set(AREG_LDFLAGS_STR    "-Wl,--gc-sections -Wl,-O1 -lstdc++ -lm -lpthread -ladvapi32 -lpsapi -lshell32 -lws2_32")
+    else()
         list(APPEND AREG_COMPILER_OPTIONS -O0 -g3)
         list(APPEND AREG_LDFLAGS   stdc++   m   pthread   advapi32   psapi   shell32   ws2_32   dbghelp)
         set(AREG_LDFLAGS_STR    "-lstdc++ -lm -lpthread -ladvapi32 -lpsapi -lshell32 -lws2_32 -ldbghelp")
-    else()
-        list(APPEND AREG_COMPILER_OPTIONS -O2)
-        list(APPEND AREG_LDFLAGS   stdc++   m   pthread   advapi32   psapi   shell32   ws2_32)
-        set(AREG_LDFLAGS_STR    "-lstdc++ -lm -lpthread -ladvapi32 -lpsapi -lshell32 -lws2_32")
     endif()
 else()
 
@@ -53,13 +57,23 @@ else()
         set(AREG_COMPILER_VERSION -std=c++17)
     endif()
 
-    if(CMAKE_BUILD_TYPE MATCHES Release)
-        list(APPEND AREG_COMPILER_OPTIONS -O2)
+    if(${CMAKE_BUILD_TYPE} MATCHES "Release")
+        list(APPEND AREG_COMPILER_OPTIONS -O3 -ffunction-sections -fdata-sections)
+        if (NOT CYGWIN)
+            list(APPEND AREG_COMPILER_OPTIONS -fvisibility=hidden "$<$<COMPILE_LANGUAGE:CXX>:-fvisibility-inlines-hidden>")
+        endif()
+        if (NOT CMAKE_CROSSCOMPILING AND NOT CYGWIN)
+            list(APPEND AREG_COMPILER_OPTIONS -march=native -mtune=native)
+        endif()
+        # LTO is disabled on Cygwin.
+        if (NOT CYGWIN)
+            set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+        endif()
     else()
         list(APPEND AREG_COMPILER_OPTIONS -O0 -g3)
     endif()
 
-    if (${AREG_PROCESSOR} STREQUAL ${_proc_x86} OR ${AREG_PROCESSOR} STREQUAL ${_proc_x64})
+    if (${AREG_ARCH} STREQUAL ${_proc_x86} OR ${AREG_ARCH} STREQUAL ${_proc_x64})
         if(${AREG_BITNESS} EQUAL 32)
             list(APPEND AREG_COMPILER_OPTIONS -m32)
             list(APPEND AREG_LDFLAGS -m32)
@@ -71,19 +85,55 @@ else()
 
     # Linker flags (-l is not necessary)
     if (AREG_PLATFORM_MACOS)
-        list(APPEND AREG_LDFLAGS stdc++ m pthread)
-        set(AREG_LDFLAGS_STR "-lstdc++ -lm -lpthread")
+        if(${CMAKE_BUILD_TYPE} MATCHES "Release")
+            list(APPEND AREG_LDFLAGS -Wl,-dead_strip m pthread)
+            set(AREG_LDFLAGS_STR "-Wl,-dead_strip -lm -lpthread")
+        else()
+            list(APPEND AREG_LDFLAGS m pthread)
+            set(AREG_LDFLAGS_STR "-lm -lpthread")
+        endif()
+        # GCC on macOS links -lc++ via CMake's implicit-library and via the g++ driver.
+        # Suppress the warning when Apple ld64 supports the flag (Xcode 15+).
+        include(CheckLinkerFlag)
+        check_linker_flag(CXX "-Wl,-no_warn_duplicate_libraries" _areg_ld_no_dup_libs)
+        if (_areg_ld_no_dup_libs)
+            list(APPEND AREG_LDFLAGS -Wl,-no_warn_duplicate_libraries)
+            string(APPEND AREG_LDFLAGS_STR " -Wl,-no_warn_duplicate_libraries")
+        endif()
+        unset(_areg_ld_no_dup_libs CACHE)
     else()
-        list(APPEND AREG_LDFLAGS stdc++ m pthread rt)
-        set(AREG_LDFLAGS_STR "-lstdc++ -lm -lpthread -lrt")
+        if(${CMAKE_BUILD_TYPE} MATCHES "Release")
+            list(APPEND AREG_LDFLAGS -Wl,--gc-sections -Wl,-O1 stdc++ m pthread rt)
+            set(AREG_LDFLAGS_STR "-Wl,--gc-sections -Wl,-O1 -lstdc++ -lm -lpthread -lrt")
+        else()
+            list(APPEND AREG_LDFLAGS stdc++ m pthread rt)
+            set(AREG_LDFLAGS_STR "-lstdc++ -lm -lpthread -lrt")
+        endif()
+
+        # GCC on x86-64 does not inline 16-byte (128-bit) atomics
+        # Detect this at configure time
+        include(CheckCXXSourceCompiles)
+        check_cxx_source_compiles("
+            #include <atomic>
+            #include <cstdint>
+            struct alignas(16) Align16 { uint64_t a; uint64_t b; };
+            std::atomic<Align16> x;
+            int main() {
+                Align16 expected{0, 0}, desired{1, 1};
+                return x.compare_exchange_strong(expected, desired);
+            }
+        " AREG_HAVE_NATIVE_16BYTE_ATOMICS)
+
+        if(NOT AREG_HAVE_NATIVE_16BYTE_ATOMICS)
+            list(APPEND AREG_LDFLAGS atomic)
+            string(APPEND AREG_LDFLAGS_STR " -latomic")
+        endif()
     endif()
 endif()
 
 # disable SQLite warnings
 list(APPEND AREG_OPT_DISABLE_WARN_THIRDPARTY
-        -Wno-everything
-        -Wno-unused-function
-        -Wno-unused-but-set-variable
+        -w
 )
 
 list(APPEND AREG_OPT_DISABLE_WARN_COMMON

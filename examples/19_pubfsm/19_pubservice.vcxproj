@@ -39,17 +39,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="common\NECommon.hpp" />
-    <ClInclude Include="pubservice\src\IETrafficLightActionHandler.hpp" />
-    <ClInclude Include="pubservice\src\NETrafficLightFSM.hpp" />
+    <ClInclude Include="common\FsmDefs.hpp" />
+    <ClInclude Include="pubservice\src\TrafficLightActionHandler.hpp" />
+    <ClInclude Include="pubservice\src\TrafficLightDefs.hpp" />
     <ClInclude Include="pubservice\src\TrafficLightFSM.hpp" />
     <ClInclude Include="pubservice\src\TrafficLightService.hpp" />
     <ClInclude Include="pubservice\src\PowerControllerClient.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pubservice\src\IETrafficLightActionHandler.cpp" />
+    <ClCompile Include="pubservice\src\TrafficLightActionHandler.cpp" />
     <ClCompile Include="pubservice\src\main.cpp" />
-    <ClCompile Include="pubservice\src\NETrafficLightFSM.cpp" />
+    <ClCompile Include="pubservice\src\TrafficLightDefs.cpp" />
     <ClCompile Include="pubservice\src\TrafficLightFSM.cpp" />
     <ClCompile Include="pubservice\src\TrafficLightService.cpp" />
     <ClCompile Include="pubservice\src\PowerControllerClient.cpp" />

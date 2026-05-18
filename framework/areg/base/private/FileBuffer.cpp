@@ -15,6 +15,7 @@
  ************************************************************************/
 #include "areg/base/FileBuffer.hpp"
 #include "areg/base/WideString.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // FileBuffer class implementation
@@ -23,15 +24,15 @@
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-FileBuffer::FileBuffer( unsigned int mode       /*= (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY)*/
-                      , const char * name       /*= nullptr*/
-                      , unsigned int blockSize  /*= BLOCK_SIZE*/)
+FileBuffer::FileBuffer( uint32_t mode       /*= (static_cast<uint32_t>(FileBase::OpenMode::Write) | static_cast<uint32_t>(FileBase::OpenMode::Binary))*/
+                      , const char * name   /*= nullptr*/
+                      , uint32_t blockSize  /*= BLOCK_SIZE*/)
     : FileBase      ( )
 
     , mSharedBuffer (blockSize)
     , mIsOpened     (false)
 {
-    mFileMode = mode & (~ static_cast<unsigned int>(FileBase::FOB_ATTACH) );  // FOB_MODE_ATTACH
+    mFileMode = mode;
     mFileName = name;
 }
 
@@ -41,7 +42,8 @@ FileBuffer::FileBuffer(SharedBuffer & sharedBuffer, const char* name /*= nullptr
     , mSharedBuffer (sharedBuffer)
     , mIsOpened     (false)
 {
-    mFileMode = FileBase::FO_MODE_ATTACH;
+    mFileMode = static_cast<uint32_t>(FileBase::OpenMode::Write)
+              | static_cast<uint32_t>(FileBase::OpenMode::Binary);
     mFileName = name;
 }
 
@@ -49,9 +51,10 @@ FileBuffer::FileBuffer(const SharedBuffer & sharedBuffer, const char* name /*= n
     : FileBase      ( )
 
     , mSharedBuffer (sharedBuffer)
-    , mIsOpened     ( sharedBuffer.isValid() )
+    , mIsOpened     ( sharedBuffer.is_valid() )
 {
-    mFileMode = FileBase::FO_MODE_ATTACH | FileBase::FO_MODE_READ;
+    mFileMode = static_cast<uint32_t>(FileBase::OpenMode::Write)
+              | static_cast<uint32_t>(FileBase::OpenMode::Binary);
     mFileName = name;
 }
 
@@ -59,46 +62,57 @@ FileBuffer::FileBuffer(const SharedBuffer & sharedBuffer, const char* name /*= n
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-inline void FileBuffer::_setName(const char* name)
+inline void FileBuffer::_set_name(const char* name)
 {
     mFileName = name;
-    FileBase::normalizeName(mFileName);
+    FileBase::normalize_name(mFileName);
 }
 
-bool FileBuffer::open( void )
+bool FileBuffer::open()
 {
-    if ((isOpened() == false) && (mFileMode != FileBase::FO_MODE_INVALID))
+    if ((is_opened() == false) && (mFileMode != static_cast<uint32_t>(FileBase::OpenMode::Invalid)))
     {
-        mFileMode = normalizeMode(mFileMode);
-        if (isAttachMode() == false)
+        mFileMode = normalize_mode(mFileMode);
+        if (!mSharedBuffer.is_shared())
         {
-            mSharedBuffer.reserve(mSharedBuffer.getBlockSize(), false);
+            // Owner: may allocate or reset the buffer.
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreateNew)) != 0)
+            {
+                // CreateNew: reset the buffer and then allocate.
+                mSharedBuffer.invalidate();
+                mSharedBuffer.reserve(mSharedBuffer.block_size(), false);
+            }
+            else if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitOpenAlways)) != 0)
+            {
+                // OpenAlways: allocate only if the buffer is not yet valid; keep existing data.
+                if (mSharedBuffer.is_valid() == false)
+                {
+                    mSharedBuffer.reserve(mSharedBuffer.block_size(), false);
+                }
+            }
+            // else BitExist: do not allocate; succeed only if the buffer is already valid.
         }
         else
         {
-            ASSERT(isValid());
+            // Non-owner (shared view): buffer must already be valid.
+            ASSERT(is_valid());
         }
 
-        mIsOpened   = isValid();
+        mIsOpened   = is_valid();
     }
 
     return mIsOpened;
 }
 
-bool FileBuffer::open(const String& fileName, unsigned int mode)
+bool FileBuffer::open(const String& fileName, uint32_t mode)
 {
     bool result = false;
-    if (isOpened() == false)
+    if (is_opened() == false)
     {
-        if (isValid() == false)
+        mFileMode = mode != static_cast<uint32_t>(FileBase::OpenMode::Invalid) ? mode : mFileMode;
+        if (mFileMode != static_cast<uint32_t>(FileBase::OpenMode::Invalid))
         {
-            mode &= ~FileBase::FOB_ATTACH;
-        }
-
-        mFileMode = mode != FileBase::FO_MODE_INVALID ? mode : mFileMode;
-        if (mFileMode != FileBase::FO_MODE_INVALID)
-        {
-            _setName(fileName);
+            _set_name(fileName);
             result = open();
         }
     }
@@ -106,19 +120,23 @@ bool FileBuffer::open(const String& fileName, unsigned int mode)
     return result;
 }
 
-void FileBuffer::close( void )
+void FileBuffer::close()
 {
-    // keep file name and mode that it can be again reopened.
-    // remove 'attached' flag, since the buffer is not valid any mode
-    mIsOpened   = false;
-    mFileMode  &= ~FileBase::FOB_ATTACH;
-    mSharedBuffer.invalidate();
+    mIsOpened = false;
+    if (is_force_delete())
+    {
+        remove();
+    }
+    else
+    {
+        mSharedBuffer.invalidate();
+    }
 }
 
-unsigned int FileBuffer::read(unsigned char* buffer, unsigned int size) const
+uint32_t FileBuffer::read(uint8_t* buffer, uint32_t size) const noexcept
 {
-    unsigned int result = 0;
-    if (isOpened() && canRead())
+    uint32_t result = 0;
+    if (is_opened() && can_read())
     {
         result = mSharedBuffer.read(buffer, size);
     }
@@ -126,16 +144,16 @@ unsigned int FileBuffer::read(unsigned char* buffer, unsigned int size) const
     return result;
 }
 
-unsigned int FileBuffer::getSizeReadable( void ) const
+uint32_t FileBuffer::size_readable() const noexcept
 {
-    return (isOpened() ? mSharedBuffer.getSizeReadable() : 0);
+    return (is_opened() ? mSharedBuffer.size_readable() : 0);
 }
 
-unsigned int FileBuffer::write(const unsigned char* buffer, unsigned int size)
+uint32_t FileBuffer::write(const uint8_t* buffer, uint32_t size) noexcept
 {
-    unsigned int result = 0;
+    uint32_t result = 0;
 
-    if (isOpened() && canWrite())
+    if (is_opened() && can_write())
     {
         result = mSharedBuffer.write(buffer, size);
     }
@@ -143,43 +161,44 @@ unsigned int FileBuffer::write(const unsigned char* buffer, unsigned int size)
     return result;
 }
 
-unsigned int FileBuffer::getSizeWritable( void ) const
+uint32_t FileBuffer::size_writable() const noexcept
 {
-    return (isOpened() ? mSharedBuffer.getSizeWritable() : 0);
+    return (is_opened() ? mSharedBuffer.size_writable() : 0);
 }
 
-bool FileBuffer::remove( void )
+bool FileBuffer::remove()
 {
+    if (mSharedBuffer.is_shared())
+        return false;   // non-owner cannot delete the shared backing buffer
+
     mSharedBuffer.invalidate();
-
-    mFileName   = String::getEmptyString();
-    mFileMode   = FileBase::FO_MODE_INVALID;
-    mIsOpened   = false;
-
+    mFileName = String::empty_string();
+    mFileMode = static_cast<uint32_t>(FileBase::OpenMode::Invalid);
+    mIsOpened = false;
     return true;
 }
 
-unsigned int FileBuffer::getLength( void ) const
+uint32_t FileBuffer::length() const noexcept
 {
-    return (isOpened() ? mSharedBuffer.getSizeUsed() : NEMemory::INVALID_SIZE);
+    return (is_opened() ? mSharedBuffer.size_used() : areg::INVALID_SIZE);
 }
 
-bool FileBuffer::isOpened() const
+bool FileBuffer::is_opened() const noexcept
 {
     return mIsOpened;
 }
 
-unsigned int FileBuffer::reserve(unsigned int newSize)
+uint32_t FileBuffer::reserve(uint32_t newSize)
 {
-    return (isOpened() ? mSharedBuffer.reserve(newSize, false) : NEMemory::INVALID_SIZE);
+    return (is_opened() ? mSharedBuffer.reserve(newSize, false) : areg::INVALID_SIZE);
 }
 
-bool FileBuffer::truncate( void )
+bool FileBuffer::truncate()
 {
     bool result = false;
-    if (isOpened() && canWrite())
+    if (is_opened() && can_write())
     {
-        if (isAttachMode() == false)
+        if (!mSharedBuffer.is_shared())
         {
             mSharedBuffer.invalidate();
             result = true;
@@ -189,61 +208,70 @@ bool FileBuffer::truncate( void )
     return result;
 }
 
-unsigned int FileBuffer::setPosition( int offset, IECursorPosition::eCursorPosition startAt ) const
+uint32_t FileBuffer::set_position( int32_t offset, Cursor::SeekOrigin startAt ) const noexcept
 {
-    return (isOpened() ? mSharedBuffer.setPosition(offset, startAt) : IECursorPosition::INVALID_CURSOR_POSITION);
+    return (is_opened() ? mSharedBuffer.set_position(offset, startAt) : Cursor::INVALID_CURSOR_POSITION);
 }
 
-unsigned int FileBuffer::getPosition( void ) const
+uint32_t FileBuffer::position() const noexcept
 {
-    return (isOpened() ? mSharedBuffer.getPosition() : IECursorPosition::INVALID_CURSOR_POSITION);
+    return (is_opened() ? mSharedBuffer.position() : Cursor::INVALID_CURSOR_POSITION);
 }
 
-unsigned int FileBuffer::normalizeMode( unsigned int mode ) const
+uint32_t FileBuffer::normalize_mode( uint32_t mode ) const noexcept
 {
-    if (mSharedBuffer.isShared())
+    if (mSharedBuffer.is_shared() || mSharedBuffer.is_view())
     {
-        mode |= FileBase::FO_MODE_ATTACH;
+        // Non-owner (shared or view): enforce read-only; the buffer must already exist.
+        mode &= ~static_cast<uint32_t>(FileBase::OpenFlag::BitWrite);
+        mode |=  static_cast<uint32_t>(FileBase::OpenFlag::BitExist);
     }
     else
     {
-        mode &= ~FileBase::FOB_ATTACH;
+        // Owner: apply default creation policy when none is specified.
+        if (((mode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreateNew)) == 0) &&
+            ((mode & static_cast<uint32_t>(FileBase::OpenFlag::BitExist)) == 0))
+        {
+            mode |= static_cast<uint32_t>(FileBase::OpenFlag::BitOpenAlways);
+        }
     }
 
-    return FileBase::normalizeMode(mode);
+    return FileBase::normalize_mode(mode);
 }
 
-unsigned int FileBuffer::insertAt( const unsigned char* buffer, unsigned int size, unsigned int atPos )
+uint32_t FileBuffer::insert_at( const uint8_t* buffer, uint32_t size, uint32_t atPos )
 {
-    return (isOpened() && canWrite() ? mSharedBuffer.insertAt(buffer, size, atPos) : 0);
+    return (is_opened() && can_write() ? mSharedBuffer.insert_at(buffer, size, atPos) : 0);
 }
 
-unsigned int FileBuffer::read(IEByteBuffer & buffer) const
+uint32_t FileBuffer::read(SharedBuffer& buffer) const
 {
     return FileBase::read(buffer);
 }
 
-unsigned int FileBuffer::read(String & ascii) const
+uint32_t FileBuffer::read(String & ascii) const
 {
     return FileBase::read(ascii);
 }
 
-unsigned int FileBuffer::read(WideString & wide) const
+uint32_t FileBuffer::read(WideString & wide) const
 {
     return FileBase::read(wide);
 }
 
-unsigned int FileBuffer::write(const IEByteBuffer & buffer)
+uint32_t FileBuffer::write(const SharedBuffer& buffer)
 {
     return FileBase::write(buffer);
 }
 
-unsigned int FileBuffer::write(const String & ascii)
+uint32_t FileBuffer::write(const String & ascii)
 {
     return FileBase::write(ascii);
 }
 
-unsigned int FileBuffer::write(const WideString & wide)
+uint32_t FileBuffer::write(const WideString & wide)
 {
     return FileBase::write(wide);
 }
+
+} // namespace areg

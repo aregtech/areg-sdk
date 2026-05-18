@@ -21,16 +21,20 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/DispatcherThread.hpp"
 
 #include "areg/component/private/Watchdog.hpp"
-#include "areg/base/TEResourceMap.hpp"
+#include "areg/base/ResourceMap.hpp"
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Component;
+namespace areg {
+    class Component;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentThread class declaration
@@ -42,7 +46,7 @@ class Component;
  *          and no component data is shared between several threads.
  *          Every component thread can have several component objects.
  **/
-class AREG_API ComponentThread  : public    DispatcherThread
+class AREG_API ComponentThread final : public DispatcherThread
 {
 //////////////////////////////////////////////////////////////////////////
 // Local types and constants
@@ -52,12 +56,12 @@ private:
      * \brief   ComponentThread::ListComponent;
      *          Linked List of instantiated components in the Component Thread.
      **/
-    using ListComponent     = TELinkedList<Component*>;
+    using ListComponent     = LinkedList<Component*>;
 
 //////////////////////////////////////////////////////////////////////////
 // Declare as Runtime instance
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME(ComponentThread)
+    AREG_DECLARE_RUNTIME(ComponentThread)
 
 //////////////////////////////////////////////////////////////////////////
 // Static functions
@@ -65,27 +69,28 @@ private:
 public:
 
     /**
-     * \brief   Returns the current Component object of current Component Thread.
-     *          The current should be Component Thread and there should be
-     *          current Component set in the thread.
-     *          If current thread is not a Component Thread and there is
-     *          current Component set in the thread, it will return nullptr.
+     * \brief   Returns the current Component object of current Component Thread. The current should
+     *          be Component Thread and there should be current Component set in the thread. If
+     *          current thread is not a Component Thread and there is current Component set in the
+     *          thread, it will return nullptr.
+     *
      * \return  Returns the current Component object of current Component Thread.
      **/
-    static Component * getCurrentComponent( void );
+    [[nodiscard]]
+    static Component * current_component() noexcept;
 
     /**
-     * \brief   Sets current Component object of current Component Thread.
-     *          By passing nullptr, it will reset current Component in the Component Thread.
-     *          The current Component is set automatically in every Component Thread
-     *          before processing Event. And resets current Component when
-     *          Event processing is completed.
-     * \param   curComponent    The current Component to set in the current
-     *                          Component Thread. If nullptr, it will reset current Component.
-     * \return  The function returns true if current Thread is Component Thread.
-     *          Otherwise, current Component is not set and function returns false.
+     * \brief   Sets current Component object of current Component Thread. By passing nullptr, it
+     *          will reset current Component in the Component Thread. The current Component is set
+     *          automatically in every Component Thread before processing Event. And resets current
+     *          Component when Event processing is completed.
+     *
+     * \param   curComponent    The current Component to set in the current Component Thread. If
+     *                          nullptr, it will reset current Component.
+     * \return  The function returns true if current Thread is Component Thread. Otherwise, current
+     *          Component is not set and function returns false.
      **/
-    static bool setCurrentComponent( Component * curComponent );
+    static bool set_current_component( Component * curComponent ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -93,92 +98,94 @@ public:
 public:
 
     /**
-     * \brief   Initialization constructor.
-     *          To create dispatcher thread, unique thread name required.
-     * \param   threadName      The unique name of component thread.
-     * \param   watchdogTimeout The watchdog timeout in milliseconds.
-     *                          The watchdog is a guard to set the timeout to process and event.
-     *                          If timeout is not zero and it expires before the thread processed
-     *                          an event, it terminates and restarts the thread again.
-     *                          There is no guarantee that terminated thread will make all cleanups properly.
-     * \param   stackSizeKb     The stack size of thread in kilobytes (1 KB = 1024 Bytes). Pass `NECommon::STACK_SIZE_DEFAULT` (0)
-     *                          to ignore changing stack size and use system default stack size.
-     * \param   maxQeueue       The maximum number of events in the internal event queue.
-     *                          Pass NECommon::IGNORE_VALUE to use default value set in configuration or ignore the parameter if not configured.
+     * \brief   Initializes dispatcher thread. Requires unique thread name.
+     *
+     * \param   threadName          The unique name of component thread.
+     * \param   watchdogTimeout     The watchdog timeout in milliseconds. The watchdog is a guard to
+     *                              set the timeout to process and event. If timeout is not zero and
+     *                              it expires before the thread processed an event, it terminates
+     *                              and restarts the thread again. There is no guarantee that
+     *                              terminated thread will make all cleanups properly.
+     * \param   stackSizeKb         The stack size of thread in kilobytes (1 KB = 1024 Bytes). Pass
+     *                              `areg::DEFAULT_STACK_SIZE` (0) to ignore changing stack size
+     *                              and use system default stack size.
+     * \param   maxQeueue           The maximum number of events in the internal event queue. Pass
+     *                              areg::IGNORE_VALUE to use default value set in configuration
+     *                              or ignore the parameter if not configured.
      **/
     explicit ComponentThread( const String & threadName
-                            , uint32_t watchdogTimeout  = NECommon::WATCHDOG_IGNORE
-                            , uint32_t stackSizeKb      = NECommon::STACK_SIZE_DEFAULT
-                            , uint32_t maxQeueue        = NECommon::IGNORE_VALUE);
+                            , uint32_t watchdogTimeout  = areg::WATCHDOG_IGNORE
+                            , uint32_t stackSizeKb      = areg::DEFAULT_STACK_SIZE
+                            , uint32_t maxQeueue        = areg::IGNORE_VALUE);
 
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~ComponentThread( void ) = default;
+    virtual ~ComponentThread() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and overrides.
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Call to terminate the component thread and make cleanups.
-     *          This method cleans up all components and worker threads bind
-     *          with the component thread. After calling this method the component
-     *          thread is not valid and not operable anymore.
-     *          The method does not automatically delete the component thread object.
+     * \brief   Terminates the component thread and makes cleanups. This method cleans up all
+     *          components and worker threads bind with the component thread. After calling this
+     *          method the component thread is not valid and not operable anymore. The method does
+     *          not automatically delete the component thread object.
      **/
-    void terminateSelf( void );
+    void terminate_self();
 
     /**
      * \brief   Returns the watchdog timeout value in milliseconds. The value 0
-     *          (NECommon::WATCHDOG_IGNORE) means the watchdog is ignored by the worker thread.
+     *          (areg::WATCHDOG_IGNORE) means the watchdog is ignored by the worker thread.
      **/
-    inline uint32_t getWatchdogTimeout(void) const;
+    inline uint32_t watchdog_timeout() const noexcept;
 
 /************************************************************************/
 // Thread overrides
 /************************************************************************/
 
     /**
-     * \brief	Shuts down the thread and frees resources. If waiting timeout is not 'DO_NOT_WAIT and it expires,
-     *          the function terminates the thread. The shutdown thread can be re-created again.
-     *          The calling thread (current thread) may be blocked until target thread completes the job.
-     * \param	waitForStopMs	Waiting time out in milliseconds until target thread is finis run.
-     *                          -   Set DO_NOT_WAIT to trigger exit and immediately return
-     *                              without waiting for thread to complete the job.
-     *                          -   Set WAIT_INFINITE to trigger exit and wait until thread completes the job.
-     *                          -   Set any other value in milliseconds to specify waiting time
-     *                              until thread completes the job or timeout expires.
-     * \return	Returns the thread completion status. The following statuses are defined:
-     *              Thread::ThreadTerminated  -- The waiting timeout expired and thread was terminated;
-     *              Thread::ThreadCompleted   -- The thread was valid and completed normally;
-     *              Thread::ThreadInvalid     -- The thread was not valid and was not running, nothing was done.
+     * \brief   Shuts down the thread and frees resources. If waiting timeout is not 'DO_NOT_WAIT
+     *          and it expires, the function terminates the thread. The shutdown thread can be
+     *          re-created again. The calling thread (current thread) may be blocked until target
+     *          thread completes the job.
+     *
+     * \param   waitForStopMs       Waiting time out in milliseconds until target thread is finis
+     *                              run. - Set DO_NOT_WAIT to trigger exit and immediately return
+     *                              without waiting for thread to complete the job. - Set
+     *                              WAIT_INFINITE to trigger exit and wait until thread completes
+     *                              the job. - Set any other value in milliseconds to specify
+     *                              waiting time until thread completes the job or timeout expires.
+     * \return  Returns the thread completion status. The following statuses are defined:
+     *          Thread::Terminated -- The waiting timeout expired and thread was terminated;
+     *          Thread::Completed -- The thread was valid and completed normally; Thread::Invalid --
+     *          The thread was not valid and was not running, nothing was done.
      **/
-    virtual Thread::eCompletionStatus shutdownThread( unsigned int waitForStopMs = NECommon::DO_NOT_WAIT ) override;
+    Thread::ThreadCompletion shutdown( uint32_t waitForStopMs = areg::DO_NOT_WAIT ) final;
 
     /**
      * \brief   Wait for thread completion. It will neither sent exit message, nor terminate thread.
-     *          The function waits as long, until the thread is not completed.
-     *          It will return true if thread has been completed or waiting timeout is NECommon::DO_NOT_WAIT.
-     *          If thread exists normally, it will return true.
-     * \param   waitForCompleteMs   The timeout to wait for completion.
-     * \return  Returns true if either thread completed or the waiting timeout is NECommon::DO_NOT_WAIT.
+     *          The function waits as long, until the thread is not completed. It will return true
+     *          if thread has been completed or waiting timeout is areg::DO_NOT_WAIT. If thread
+     *          exists normally, it will return true.
+     *
+     * \param   waitForCompleteMs       The timeout to wait for completion.
+     * \return  Returns true if either thread completed or the waiting timeout is
+     *          areg::DO_NOT_WAIT.
      **/
-    virtual bool completionWait( unsigned int waitForCompleteMs = NECommon::WAIT_INFINITE ) override;
+    bool wait_completion( uint32_t waitForCompleteMs = areg::WAIT_INFINITE ) final;
 
 /************************************************************************/
-// IEEventRouter interface overrides
+// EventRouter interface overrides
 /************************************************************************/
 
     /**
-     * \brief   Posts event. Push event in internal or external 
-     *          event queue depending on event type.
-     *          Thread should have registered consumer for
-     *          specified event object.
-     * \param   eventElem   The event object to push in the queue.
+     * \brief   Posts event. Push event in internal or external event queue depending on event type.
+     *          Thread should have registered consumer for specified event object.
+     *
+     * \param   eventElem       The event object to push in the queue.
      * \return  Returns true if successfully pushed event in the queue.
      **/
-    virtual bool postEvent( Event & eventElem ) override;
+    [[nodiscard]]
+    bool post_event( Event & eventElem ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides. Protected
@@ -189,87 +196,76 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief	Triggered when dispatcher starts running. 
-     *          In this function runs main dispatching loop.
-     *          Events are picked and dispatched here.
-     *          Override if logic should be changed.
-     * \return	Returns true if Exit Event is signaled.
+     * \brief   Creates components, runs the dispatch loop, then tears down. Overrides the base
+     *          dispatcher's run_dispatcher to sandwich the component lifecycle around the loop.
+     *
+     * \return  Returns true if the Exit event was the reason for stopping.
      **/
-    virtual bool runDispatcher( void ) override;
+    bool run_dispatcher() final;
 
     /**
-     * \brief   Search for consumer thread that can dispatch event.
-     *          It will check whether component thread has 
-     *          registered consumer or not. If not found, will check in worker thread
-     *          list of every registered component.
-     * \param   whichClass  The runtime class ID to search registered component
-     * \return  If found, returns valid pointer of dispatching thread. 
-     *          Otherwise returns nullptr
+     * \brief   Finds the dispatcher thread whose consumer handles eventClassId.  Searches this
+     *          thread first; if not found, searches each registered component's worker threads.
+     *
+     * \param   whichClass      Runtime class ID to search for.
+     * \return  Valid pointer to the owning dispatcher thread, or nullptr if not found.
      **/
-    virtual DispatcherThread * getEventConsumerThread( const RuntimeClassID & whichClass ) override;
+    DispatcherThread * event_consumer_thread( const RuntimeClassID & whichClass ) final;
 
 /************************************************************************/
-// IEThreadConsumer interface overrides
+// ThreadConsumer interface overrides
 /************************************************************************/
 
     /**
-     * \brief   Function is called from Thread object when it is going to exit.
-     *          This method is triggered after exiting from Run() function.
-     * \return  Return thread exit error code.
+     * \brief   Called after the dispatcher loop exits. Shuts down and destroys all components.
+     *
+     * \return  Thread exit error code.
      **/
-    virtual int onThreadExit( void ) override;
+    int32_t on_exit() final;
 
 /************************************************************************/
-// ComponentThread overrides
-/************************************************************************/
-
-    /**
-     * \brief	Called before component thread starts dispatching
-     *          event messaged. By default, the list of registered
-     *          component entries are taken from application model
-     *          object. Overwrite for additional operations.
-     * \return	Returns number of instantiated components.
-     **/
-    virtual int createComponents( void );
-
-    /**
-     * \brief	Called after components are created.
-     *          For event component will trigger
-     *          start call to start initialization.
-     *          Overwrite for additional operations
-     **/
-    virtual void startComponents( void );
-
-    /**
-     * \brief	Triggered after getting exit notification.
-     *          Before thread exits, for every instantiated
-     *          component will trigger shutdown call to
-     *          clean up component.
-     *          Overwrite for additional operation.
-     **/
-    virtual void shutdownComponents( void );
-
-    /**
-     * \brief   Called after shutting down components.
-     *          For every registered component it will call
-     *          appropriate registered delete function
-     *          to destroy components.
-     **/
-    virtual void destroyComponents( void );
-
-/************************************************************************/
-// IEEventDispatcher overrides
+// ComponentThread lifecycle -- not virtual: ComponentThread is final
 /************************************************************************/
 
     /**
-     * \brief	The method is triggered to start dispatching valid event.
-     *          Here dispatcher should forward message to appropriate 
-     *          registered event consumer
-     * \param	eventElem   Event element to dispatch	
-     * \return	Returns true if at least one consumer processed event.
-     *          Otherwise it returns false.
+     * \brief   Instantiates all components registered for this thread in the application model.
+     *          Called once from run_dispatcher() before the dispatch loop starts.
+     *
+     * \return  Number of components successfully created.
      **/
-    virtual bool dispatchEvent( Event & eventElem ) override;
+    int32_t create_components();
+
+    /**
+     * \brief   Sends the startup notification to every instantiated component.
+     *          Called once from run_dispatcher() after create_components() succeeds.
+     **/
+    void start_components();
+
+    /**
+     * \brief   Sends the shutdown notification to every component and stops all proxy objects.
+     *          Called from on_exit() before destroy_components().
+     **/
+    void shutdown_components();
+
+    /**
+     * \brief   Invokes the registered delete function for every component, or calls delete
+     *          directly if no delete function is registered.
+     *          Called from on_exit() after shutdown_components().
+     **/
+    void destroy_components();
+
+/************************************************************************/
+// EventDispatcherBase overrides
+/************************************************************************/
+
+    /**
+     * \brief   Wraps the base dispatch with watchdog guard calls so the watchdog can detect a
+     *          stuck event handler.
+     *
+     * \param   eventElem       Event element to dispatch.
+     * \return  True if at least one consumer processed the event.
+     **/
+    bool dispatch_event( Event & eventElem ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -278,24 +274,25 @@ private:
     /**
      * \brief   Returns reference to component thread.
      **/
-    inline ComponentThread & self( void );
+    [[nodiscard]]
+    inline ComponentThread & self() noexcept;
 
     /**
-     * \brief   Returns pointer of current component thread.
-     *          If returns nullptr, the current thread is not
-     *          a Component Thread.
+     * \brief   Returns pointer of current component thread. If returns nullptr, the current thread
+     *          is not a Component Thread.
      **/
-    static inline ComponentThread * _getCurrentComponentThread( void );
+    [[nodiscard]]
+    static inline ComponentThread * _current_component_thread() noexcept;
 
     /**
      * \brief   Called to shutdown proxies registered in the thread.
      **/
-    inline void _shutdownProxies( void );
+    inline void _shutdown_proxies();
 
     /**
      * \brief   Called to shutdown components registered in the thread.
      **/
-    inline void _shutdownComponents( void );
+    inline void _shutdown_components();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -315,7 +312,8 @@ private:
      **/
     Watchdog        mWatchdog;
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
 
@@ -324,25 +322,26 @@ private:
      **/
     ListComponent   mListComponent;
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    ComponentThread( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ComponentThread );
+    ComponentThread() = delete;
+    AREG_NOCOPY_NOMOVE( ComponentThread );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentThread inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t ComponentThread::getWatchdogTimeout(void) const
+inline uint32_t ComponentThread::watchdog_timeout() const noexcept
 {
-    return mWatchdog.getTimeout();
+    return mWatchdog.timeout();
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_COMPONENTTHREAD_HPP

@@ -20,16 +20,16 @@
 // ControllerComponent class declaration
 //////////////////////////////////////////////////////////////////////////
 //! \brief   The servicing component, which controls the application shutdown.
-class ControllerComponent   : public    Component
+class ControllerComponent final  : public    areg::Component
 {
 public:
-    ControllerComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    ControllerComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ControllerComponent & self( void )
+    inline ControllerComponent & self()
     {
         return (*this);
     }
@@ -43,24 +43,24 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ControllerComponent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ControllerComponent );
+    ControllerComponent() = delete;
+    AREG_NOCOPY_NOMOVE( ControllerComponent );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // SecondaryComponent class declaration
 //////////////////////////////////////////////////////////////////////////
-class SecondaryComponent    : public    Component
+class SecondaryComponent final    : public    areg::Component
 {
 public:
-    SecondaryComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    SecondaryComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
 private:
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
 //////////////////////////////////////////////////////////////////////////
 
-    inline SecondaryComponent & self( void )
+    inline SecondaryComponent & self()
     {
         return (*this);
     }
@@ -76,6 +76,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    SecondaryComponent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( SecondaryComponent );
+    SecondaryComponent() = delete;
+    AREG_NOCOPY_NOMOVE( SecondaryComponent );
 };

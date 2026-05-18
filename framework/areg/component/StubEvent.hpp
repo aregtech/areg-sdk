@@ -29,20 +29,21 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/RuntimeObject.hpp"
-#include "areg/component/IEEventConsumer.hpp"
+#include "areg/component/EventConsumer.hpp"
 #include "areg/component/StreamableEvent.hpp"
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/component/StubAddress.hpp"
+namespace areg {
 
 /************************************************************************
  * List of declared classes
  ************************************************************************/
 // class StreamableEvent
     class StubEvent;
-// class IEEventConsumer
-    class IEStubEventConsumer;
+// class EventConsumer
+    class StubEventConsumer;
 
 /************************************************************************
  * Dependencies
@@ -55,7 +56,7 @@ class StubConnectEvent;
 /************************************************************************
  * \brief   This file contains declarations of following classes:
  *              1. StubEvent
- *              2. IEStubEventConsumer
+ *              2. StubEventConsumer
  *          These objects are defining event object for component communication
  *          and the consumer object to parse and process event.
  *          For more information, see description bellow.
@@ -65,22 +66,20 @@ class StubConnectEvent;
 // StubEvent class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   StubEvent class is a base class for all kind of Request events
- *          processed on Stub side. StubEvent cannot be used for internal event.
- *          By default it is marked as Service Internal to communicate with
- *          ServiceManager.
+ * \brief   Base class for request events processed on the stub side. Cannot be used directly;
+ *          marked as internal for service manager communication.
  **/
 class AREG_API StubEvent  : public StreamableEvent
 {
 /************************************************************************/
 // Friend classes
 /************************************************************************/
-    friend class IEStubEventConsumer;
+    friend class StubEventConsumer;
 
 //////////////////////////////////////////////////////////////////////////
 // Declare as runtime event object
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME_EVENT(StubEvent)
+    AREG_DECLARE_RUNTIME_EVENT(StubEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -91,21 +90,21 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Initialize component event from streaming object.
+     * \brief   Initializes the event by deserializing data from the given input stream.
+     *
+     * \param   stream      The input stream containing serialized event data.
      **/
-    StubEvent( const IEInStream & stream );
+    StubEvent( const InStream & stream );
     
     /**
-     * \brief   Initializes target Stub addresses and sets event type.
-     * \param	toTarget    The address of target Stub
-     * \param	eventType   The type of event.
+     * \brief   Initializes the event with the target stub address and event type.
+     *
+     * \param   toTarget        The address of the target stub.
+     * \param   eventType       The type of event.
      **/
-    StubEvent(const StubAddress & toTarget, Event::eEventType eventType );
+    StubEvent(const StubAddress & toTarget, areg::EventType eventType );
 
-    /**
-     * \brief   Destructor.
-     **/
-    virtual ~StubEvent( void ) = default;
+    virtual ~StubEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -115,18 +114,18 @@ public:
 // Event class overrides
 /************************************************************************/
     /**
-     * \brief   Sends the event to target thread. If target thread
-     *          is nullptr, it searches event target thread, registered in system.
+     * \brief   Sends the event to the target thread. If the target thread is null, searches for the
+     *          target thread in the system.
      **/
-    virtual void deliverEvent( void ) override;
+    void deliver_event() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Returns the address of Stub of event target.
+     * \brief   Returns the address of the target stub.
      **/
-    inline const StubAddress & getTargetStub( void ) const;
+    inline const StubAddress & target_stub() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -137,16 +136,20 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Initialize component address from reading stream
-     * \param   stream  The reading stream to read out data
+     * \brief   Deserializes the stub address from the input stream.
+     *
+     * \param   stream      The input stream to read from.
+     * \return  The input stream for method chaining.
      **/
-    virtual const IEInStream & readStream( const IEInStream & stream ) override;
+    const InStream & read_stream( const InStream & stream ) override;
 
     /**
-     * \brief   Write component address to stream.
-     * \param   stream  The writing stream to write in data
+     * \brief   Serializes the stub address to the output stream.
+     *
+     * \param   stream      The output stream to write to.
+     * \return  The output stream for method chaining.
      **/
-    virtual IEOutStream & writeStream( IEOutStream & stream ) const override;
+    OutStream & write_stream( OutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -161,41 +164,37 @@ protected:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    StubEvent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( StubEvent );
+    StubEvent() = delete;
+    AREG_NOCOPY_NOMOVE( StubEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// IEStubEventConsumer class declaration
+// StubEventConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   All Stub (service provider) objects are instances of 
- *          IEStubEventConsumer to receive and process component events.
- *          IEStubEventConsumer is registered at component thread as a
- *          consumer of Stub specific events. It is extended in StubBase
- *          class, which is a base class for all Stub objects.
+ * \brief   Base class for service provider (stub) event handlers; receives and processes
+ *          stub-specific events registered with the component thread.
  **/
-class AREG_API IEStubEventConsumer  : public IEEventConsumer
+class AREG_API StubEventConsumer  : public EventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Default constructor
-     * \param   stubAddress The address of stub object, which is handling consumer
+     * \brief   Initializes the consumer with a stub address.
+     *
+     * \param   stubAddress     Address of the stub object this consumer handles.
      **/
-    explicit IEStubEventConsumer( const StubAddress & stubAddress );
+    explicit StubEventConsumer( const StubAddress & stubAddress );
+
+    virtual ~StubEventConsumer() = default;
 
     /**
-     * \brief   Destructor
+     * \brief   Returns a pointer to the event currently being processed.
      **/
-    virtual ~IEStubEventConsumer( void ) = default;
-
-    /**
-     * \brief   Returns the pointer to the currently processing event object.
-     **/
-    inline const Event* getCurrentEvent(void) const;
+    [[nodiscard]]
+    inline const Event* current_event() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides, event processing functions.
@@ -203,90 +202,91 @@ protected:
 protected:
 
     /**
-     * \brief	This event processing function is triggered when Stub 
-     *          is receiving request to start a function.
-     * \param	eventElem	Service Request event object to process,
-     *                      which contains request ID and serialized
-     *                      parameters.
+     * \brief   Pure virtual; processes a request to invoke a service function.
+     *
+     * \param   eventElem       Service request event containing the request ID and serialized
+     *                          parameters.
      **/
-    virtual void processRequestEvent( ServiceRequestEvent & eventElem ) = 0;
+    virtual void process_request_event( ServiceRequestEvent & eventElem ) = 0;
 
     /**
-     * \brief	This event processing function is triggered when Stub
-     *          is receiving request to send attribute data.
-     * \param	eventElem	Service Request event object to process,
-     *                      which contains attribute ID.
+     * \brief   Pure virtual; processes a request to get attribute data.
+     *
+     * \param   eventElem       Service request event containing the attribute ID.
      **/
-    virtual void processAttributeEvent( ServiceRequestEvent & eventElem ) = 0;
+    virtual void process_attribute_event( ServiceRequestEvent & eventElem ) = 0;
 
     /**
-     * \brief	This function is triggered when component event should
-     *          be processed and this component event is not a 
-     *          Service Request type.
-     * \param	eventElem	Component Event to process.
+     * \brief   Pure virtual; processes a component event that is not a service request.
+     *
+     * \param   eventElem       Component event to process.
      **/
-    virtual void processStubEvent( StubEvent & eventElem ) = 0;
+    virtual void process_stub_event( StubEvent & eventElem ) = 0;
 
     /**
-     * \brief	This function is triggered when generic event 
-     *          should be processed
-     * \param	eventElem	Generic Event object to process.
+     * \brief   Pure virtual; processes a generic event.
+     *
+     * \param   eventElem       Generic event to process.
      **/
-    virtual void processGenericEvent( Event & eventElem ) = 0;
+    virtual void process_generic_event( Event & eventElem ) = 0;
 
     /**
-     * \brief   Triggered by system when stub is registered in service. The connection status indicated
-     *          registration status. If succeeded, the value is NEService::ServiceConnected
-     * \param   stubTarget  The address of registered service provider
-     * \param   status      The connection status of the service provider.
+     * \brief   Pure virtual; processes a notification that the stub has been registered with the
+     *          service.
+     *
+     * \param   stubTarget      Address of the registered service provider.
+     * \param   status          Connection status (Connected on success).
      **/
-    virtual void processStubRegisteredEvent( const StubAddress & stubTarget, NEService::eServiceConnection status ) = 0;
+    virtual void process_registered_event( const StubAddress & stubTarget, areg::ServiceConnectionState status ) = 0;
 
     /**
-     * \brief   Send by system when client is requested connect / disconnect
-     * \param   proxyAddress    The address of the service consumer proxy.
-     * \param   status          The service consumer connection status.
+     * \brief   Pure virtual; processes a notification that a client is requesting connection or
+     *          disconnection.
+     *
+     * \param   proxyAddress    Address of the service consumer proxy.
+     * \param   status          Service consumer connection status.
      **/
-    virtual void processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::eServiceConnection status ) = 0;
+    virtual void process_connect_event( const ProxyAddress & proxyAddress, areg::ServiceConnectionState status ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
 /************************************************************************/
-// IEEventConsumer interface overrides
+// EventConsumer interface overrides
 /************************************************************************/
     /**
-     * \brief   Override derived from Event Consumer class.
-     *          the type of event and appropriate processing function
-     *          call is processed here. This method is triggered by
-     *          dispatcher.
-     * \param   eventElem   Event object to start processing.
+     * \brief   Dispatches event to the appropriate handler based on event type.
+     *
+     * \param   eventElem       Event to process.
      **/
-    virtual void startEventProcessing( Event & eventElem ) override;
+    void start_event_processing( Event & eventElem ) final override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Processes request event
-     * \param   requestEvent    The request event to process
+     * \brief   Processes a local request event.
+     *
+     * \param   reqEvent    Local request event to process.
      **/
-    void _localProcessRequestEvent( RequestEvent & requestEvent );
+    void _local_request( RequestEvent & reqEvent );
 
     /**
-     * \brief   Processes notification request event.
-     * \param   notifyRequest   The notification request event to process
+     * \brief   Processes a local notification request event.
+     *
+     * \param   notifyRequest       Notification request event to process.
      **/
-    void _localProcessNotifyRequestEvent( NotifyRequestEvent & notifyRequest );
+    void _local_notify_request( NotifyRequestEvent & notifyRequest );
 
     /**
-     * \brief   Processes connection update notification.
-     *          Processes when service registered and when client connection changed.
-     * \param   notifyConnect   The connection notification event.
+     * \brief   Processes a connection update notification (registration or client connection
+     *          change).
+     *
+     * \param   notifyConnect       Connection notification event.
      **/
-    void _localProcessConnectEvent( StubConnectEvent & notifyConnect );
+    void _local_connect( StubConnectEvent & notifyConnect );
 
 private:
     //!< The address of stub object, which is handling consumer.
@@ -298,8 +298,8 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IEStubEventConsumer( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( IEStubEventConsumer );
+    StubEventConsumer() = delete;
+    AREG_NOCOPY_NOMOVE( StubEventConsumer );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -310,14 +310,15 @@ private:
 // StubEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const StubAddress & StubEvent::getTargetStub( void ) const
+inline const StubAddress & StubEvent::target_stub() const
 {
     return mTargetStubAddress;
 }
 
-inline const Event* IEStubEventConsumer::getCurrentEvent(void) const
+inline const Event* StubEventConsumer::current_event() const
 {
     return mCurEvent;
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_STUBEVENT_HPP

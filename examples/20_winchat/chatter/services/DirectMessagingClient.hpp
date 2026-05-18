@@ -4,23 +4,23 @@
  * \brief           The messaging service client object
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/20_winchat/services/DirectMessagerClientBase.hpp"
-#include "chatter/NEDistributedApp.hpp"
+#include "examples/20_winchat/services/DirectMessagerConsumerBase.hpp"
+#include "chatter/DistributedAppDefs.hpp"
 
 class ChatPrticipantHandler;
 
-class DirectMessagingClient   : public DirectMessagerClientBase
+class DirectMessagingClient final : public DirectMessagerConsumerBase
 {
 public:
-    DirectMessagingClient( Component & owner, const char * roleName, ChatPrticipantHandler * handlerParticipants );
-    virtual ~DirectMessagingClient( void ) = default;
+    DirectMessagingClient( areg::Component & owner, const char * roleName, ChatPrticipantHandler * handlerParticipants );
+    ~DirectMessagingClient() = default;
 
     /**
      * \brief   Call to send request to leave the chat and release notifications.
      **/
-    void shutdownChat(void);
+    void shutdownChat();
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -35,9 +35,9 @@ protected:
      * \param   listParticipant The list of participants.
      * \param   timeConnect     Time-stamp when it was requested to join chat
      * \param   timeConnected   Time-stamp when the request to join was accepted and new participants was registered.
-     * \see     requestChatJoin
+     * \see     request_chat_join
      **/
-    virtual void responseChatJoin( bool succeed, const NEDirectMessager::ListParticipants & listParticipant, const DateTime & timeConnect, const DateTime & timeConnected ) override;
+    void response_chat_join( bool succeed, const DirectMessager::ListParticipants & listParticipant, const areg::DateTime & timeConnect, const areg::DateTime & timeConnected ) final;
 
     /**
      * \brief   Server broadcast.
@@ -48,7 +48,7 @@ protected:
      * \param   msgText     The message, which was sent.
      * \param   timeSent    The time-stamp when the message was sent.
      **/
-    virtual void broadcastMessageSent( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent ) override;
+    void broadcast_message_sent( const DirectMessager::Participant & sender, const areg::String & msgText, const areg::DateTime & timeSent ) final;
 
     /**
      * \brief   Server broadcast.
@@ -58,7 +58,7 @@ protected:
      * \param   participant The structure of participant, who initiated message during typing.
      * \param   msgText     The text message while typing.
      **/
-    virtual void broadcastMessageTyped( const NEDirectMessager::sParticipant & participant, const String & msgText ) override;
+    void broadcast_message_typed( const DirectMessager::Participant & participant, const areg::String & msgText ) final;
 
     /**
      * \brief   Server broadcast.
@@ -68,7 +68,7 @@ protected:
      * \param   participant The structure of participant, joined chat-room.
      * \param   timeJoined  Time-stamp when participant joined the chat-room
      **/
-    virtual void broadcastParticipantJoined( const NEDirectMessager::sParticipant & participant, const DateTime & timeJoined ) override;
+    void broadcast_participant_joined( const DirectMessager::Participant & participant, const areg::DateTime & timeJoined ) final;
 
     /**
      * \brief   Server broadcast.
@@ -78,7 +78,7 @@ protected:
      * \param   participant The structure of participant, who left the chat-room.
      * \param   timeLeft    The time-stamp when the participant left chat-room.
      **/
-    virtual void broadcastParticipantLeft( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeft ) override;
+    void broadcast_participant_left( const DirectMessager::Participant & participant, const areg::DateTime & timeLeft ) final;
 
     /**
      * \brief   Server broadcast.
@@ -86,10 +86,10 @@ protected:
      *          Overwrite, if need to handle Broadcast call of server object. 
      *          This call will be automatically triggered, on every appropriate request call
      **/
-    virtual void broadcastChatClosed( void ) override;
+    void broadcast_chat_closed() final;
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -102,17 +102,17 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline DirectMessagingClient & self( void );
+    inline DirectMessagingClient & self();
 
-    inline void updateChatOutput( NEDistributedApp::eWndCommands cmdSend, const NEDirectMessager::sParticipant & participant, const String & msgText, const DateTime & dateStart, const DateTime & dateEnd );
+    inline void updateChatOutput(NEDistributedApp::WindowCommand cmdSend, const DirectMessager::Participant & participant, const areg::String & msgText, const areg::DateTime & dateStart, const areg::DateTime & dateEnd );
 
-    inline void postMessage(NEDistributedApp::eWndCommands cmdSend, ptr_type wParam, ptr_type lParam);
+    inline void postMessage(NEDistributedApp::WindowCommand cmdSend, ptr_type wParam, ptr_type lParam);
 
 private:
     ChatPrticipantHandler * mParticipantsHandler;
@@ -121,11 +121,11 @@ private:
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
 private:
-    DirectMessagingClient( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( DirectMessagingClient );
+    DirectMessagingClient() = delete;
+    AREG_NOCOPY_NOMOVE( DirectMessagingClient );
 };
 
-inline DirectMessagingClient & DirectMessagingClient::self( void )
+inline DirectMessagingClient & DirectMessagingClient::self()
 {
     return (*this);
 }

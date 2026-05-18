@@ -5,7 +5,7 @@
 This service will demonstrate how the system watchdog works in case of public service.</Description>
     </Overview>
     <DataTypeList>
-        <DataType ID="27" Name="eState" Type="Enumeration" Values="default">
+        <DataType ID="27" Name="ComponentState" Type="Enumeration" Values="default">
             <Description>The state of component to start a timer and output &quot;Hello Watchdog&quot; message.</Description>
             <FieldList>
                 <EnumEntry ID="29" Name="Initialized">
@@ -21,12 +21,12 @@ This service will demonstrate how the system watchdog works in case of public se
         </DataType>
     </DataTypeList>
     <AttributeList>
-        <Attribute ID="33" Name="ServiceState" DataType="eState" Notify="OnChange">
+        <Attribute ID="33" Name="ServiceState" DataType="ComponentState" Notify="OnChange">
             <Description>The state of the service.</Description>
         </Attribute>
     </AttributeList>
     <MethodList>
-        <Method ID="22" Name="StartSleep" MethodType="Request" Response="StartSleep">
+        <Method ID="22" Name="start_sleep" MethodType="Request" Response="start_sleep">
             <Description>The response triggered when the thread resumed from suspended mode.</Description>
             <ParamList>
                 <Parameter ID="51" Name="timeoutSleep" DataType="uint32">
@@ -34,7 +34,7 @@ This service will demonstrate how the system watchdog works in case of public se
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="26" Name="StartSleep" MethodType="Response">
+        <Method ID="26" Name="start_sleep" MethodType="Response">
             <Description>Triggered to stop the timer.</Description>
             <ParamList>
                 <Parameter ID="52" Name="timeoutSleep" DataType="uint32">
@@ -42,10 +42,10 @@ This service will demonstrate how the system watchdog works in case of public se
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="40" Name="StopService" MethodType="Request">
+        <Method ID="40" Name="stop_service" MethodType="Request">
             <Description>Called to stop the service.</Description>
         </Method>
-        <Method ID="41" Name="ShutdownService" MethodType="Request">
+        <Method ID="41" Name="shutdown_service" MethodType="Request">
             <Description>Called to shutdown service and exit application.</Description>
         </Method>
     </MethodList>

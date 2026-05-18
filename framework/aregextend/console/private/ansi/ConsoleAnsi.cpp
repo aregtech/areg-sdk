@@ -7,7 +7,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        aregextend/console/private/posix/ConsolePosix.cpp
+ * \file        aregextend/console/private/ansi/ConsoleAnsi.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, Basic OS specific console implementation
@@ -28,21 +28,33 @@
     #ifndef WIN32_LEAN_AND_MEAN
         #define WIN32_LEAN_AND_MEAN
     #endif  // WIN32_LEAN_AND_MEAN
+    #ifndef NOMINMAX
+        #define NOMINMAX
+    #endif // !NOMINMAX
     #include <Windows.h>
+
+#else   // !_WIN32
+
+    // POSIX raw-mode terminal control for character-by-character input.
+    #include <termios.h>
+    #include <unistd.h>
 
 #endif // _WIN32
 
 #include <stdio.h>
 
-namespace
-{
+namespace {
     //!< Clear the screen.
     constexpr std::string_view  CMD_CLEAR_SCREEN{ "\x1B[2J\x1B[1;1f" };
-    //!< Clear line.
-    constexpr std::string_view  CMD_CLEAR_LINE  { "\x1B[2K" };
+    //!< Clear from cursor position to the end of the line.
+    constexpr std::string_view  CMD_CLEAR_LINE  { "\x1B[0K" };
+    //!< Hide cursor (DECTCEM).
+    // constexpr std::string_view  CMD_CURSOR_HIDE { "\x1B[?25l" };
+    //!< Show cursor (DECTCEM).
+    constexpr std::string_view  CMD_CURSOR_SHOW { "\x1B[?25h" };
 
     //!< Enables the ASCII control sequence for applications compiled with Win32 API.
-    void _enableAsciiControlSequence(void)
+    void _enable_ascii_control_sequence()
     {
 
 #ifdef _WIN32
@@ -74,71 +86,99 @@ namespace
 #endif // _WIN32
 
     }
-}
+} // namespace
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // Console Windows OS specific implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool Console::_osSetup(void)
+bool Console::_os_setup() noexcept
 {
-    _enableAsciiControlSequence();
+    _enable_ascii_control_sequence();
     mIsReady = true;
     printf("%s", CMD_CLEAR_SCREEN.data());
     ::fflush(stdout);
     return mIsReady;
 }
 
-void Console::_osRelease(void)
+void Console::_os_release() noexcept
 {
-    mIsReady = false;
-    printf("%s", CMD_CLEAR_SCREEN.data());
+    if (mIsReady)
+    {
+        mIsReady = false;
+        const int32_t finalRow = static_cast<int>(mMaxUsedRow + 2);
+        printf("%s\x1B[%d;1H\n", CMD_CURSOR_SHOW.data(), finalRow);
+        ::fflush(stdout);
+    }
+}
+
+void Console::_os_output_text(Console::Coord pos, const String& text) const noexcept
+{
+    Lock lock(mLock);
+    const int32_t col     = (pos.posX     > 0) ? pos.posX     : 1;
+    const int32_t row     = (pos.posY     > 0) ? pos.posY     : 1;
+    const int32_t savecol = (mSavedPos.posX > 0) ? mSavedPos.posX : 1;
+    const int32_t saverow = (mSavedPos.posY > 0) ? mSavedPos.posY : 1;
+    if (static_cast<int32_t>(pos.posY) > mMaxUsedRow)
+    {
+        mMaxUsedRow = static_cast<int32_t>(pos.posY);
+    }
+
+    printf("\x1B[%d;%dH%s%s\x1B[%d;%dH", row, col, CMD_CLEAR_LINE.data(), text.as_string(), saverow, savecol);
     ::fflush(stdout);
 }
 
-void Console::_osOutputText(Console::Coord pos, const String& text) const
+void Console::_os_output_text(Console::Coord pos, std::string_view text) const noexcept
 {
     Lock lock(mLock);
-    printf("\x1B[%d;%dH%s%s", pos.posY, pos.posX, CMD_CLEAR_LINE.data(), text.getString());
+    // Move to target row/col, clear line, write text, return cursor to mSavedPos.
+    const int32_t col     = (pos.posX     > 0) ? pos.posX     : 1;
+    const int32_t row     = (pos.posY     > 0) ? pos.posY     : 1;
+    const int32_t savecol = (mSavedPos.posX > 0) ? mSavedPos.posX : 1;
+    const int32_t saverow = (mSavedPos.posY > 0) ? mSavedPos.posY : 1;
+    if (static_cast<int32_t>(pos.posY) > mMaxUsedRow)
+    {
+        mMaxUsedRow = static_cast<int32_t>(pos.posY);
+    }
+
+    printf("\x1B[%d;%dH%s%s\x1B[%d;%dH", row, col, CMD_CLEAR_LINE.data(), text.data(), saverow, savecol);
+    ::fflush(stdout);
 }
 
-void Console::_osOutputText(Console::Coord pos, const std::string_view& text) const
+void Console::_os_output_text(const String& text) const noexcept
 {
     Lock lock(mLock);
-    printf("\x1B[%d;%dH%s%s", pos.posY, pos.posX, CMD_CLEAR_LINE.data(), text.data());
+    printf("%s", text.as_string());
+    ::fflush(stdout);
 }
 
-void Console::_osOutputText(const String& text) const
-{
-    Lock lock(mLock);
-    printf("%s", text.getString());
-}
-
-void Console::_osOutputText(const std::string_view& text) const
+void Console::_os_output_text(std::string_view text) const noexcept
 {
     Lock lock(mLock);
     printf("%s", text.data());
+    ::fflush(stdout);
 }
 
-Console::Coord Console::_osGetCursorPosition(void) const
+Console::Coord Console::_os_get_cursor_position() const noexcept
 {
     Lock lock(mLock);
-    constexpr int _EOY{ static_cast<int>(';') };
-    constexpr int _EOX{ static_cast<int>('R') };
-    constexpr int _ZERO{ static_cast<int>('0') };
+    constexpr int32_t _EOY{ static_cast<int32_t>(';') };
+    constexpr int32_t _EOX{ static_cast<int32_t>('R') };
+    constexpr int32_t _ZERO{ static_cast<int32_t>('0') };
 
     Console::Coord result{ 0, 0 };
     printf("\x1B[6n");
     if ((getchar() == '\x1B') && (getchar() == '['))
     {
-        int ch = getchar();
-        while (ch != _EOY)
+        int32_t ch;
+        while ((ch = getchar()) != _EOY)
         {
             result.posY = result.posY * 10 + (ch - _ZERO);
         }
 
-        ch = getchar();
-        while (ch != _EOX)
+        while ((ch = getchar()) != _EOX)
         {
             result.posX = result.posX * 10 + (ch - _ZERO);
         }
@@ -147,84 +187,265 @@ Console::Coord Console::_osGetCursorPosition(void) const
     return result;
 }
 
-void Console::_osSetCursorCurPosition(Console::Coord pos) const
+void Console::_os_set_cursor_cur_position(Console::Coord pos) const noexcept
 {
+    const int32_t col = (pos.posX > 0) ? pos.posX : 1;
+    const int32_t row = (pos.posY > 0) ? pos.posY : 1;
     Lock lock(mLock);
-    printf("\x1B[%d;%dH", pos.posY, pos.posX);
+    // Track in software so _os_output_text can restore here without a DSR query.
+    mSavedPos = { col, row };
+    printf("\x1B[%d;%dH", row, col);
+    ::fflush(stdout);
 }
 
-bool Console::_osWaitInputString(char* buffer, uint32_t size)
+bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 {
     ASSERT(buffer != nullptr);
-#if !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
-    #if defined(_WIN32) && !defined(_MINGW)
-        if (::gets_s(buffer, size) == nullptr)
-            return false;
-    #else   // defined(_WIN32)
-        if (::fgets(buffer, size, stdin) == nullptr)
-            return false;
-    #endif  // defined(_WIN32)
-#else  // !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
-    #if defined(_POSIX) || defined(POSIX)
-        if (::fgets(buffer, size, stdin) == nullptr)
-            return false;
-    #else // defined(_POSIX) || defined(POSIX)
-        if (::gets_s(buffer, size) == nullptr)
-            return false;
-    #endif // defined(_POSIX) || defined(POSIX)
-#endif // !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
 
-    NEString::trimAll<char>(buffer);
-    return ( NEString::isEmpty(buffer) == false );
+    Console& console = Console::instance();
+
+    Console::Coord startPos;
+    {
+        Lock lock(console.mLock);
+        startPos = console.mSavedPos;
+        printf("\x1B[%d;%dH%s", startPos.posY, startPos.posX, CMD_CLEAR_LINE.data());
+        ::fflush(stdout);
+    }
+
+    uint32_t len = 0;
+
+#if defined(_WIN32)
+
+    HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
+    DWORD oldMode{ 0u };
+    const bool rawMode{ GetConsoleMode(hIn, &oldMode) == TRUE };
+    if (!rawMode)
+    {
+#if !defined(_MINGW)
+        const bool ok{ ::gets_s(buffer, size) != nullptr };
+#else
+        const bool ok{ ::fgets(buffer, static_cast<int>(size), stdin) != nullptr };
+#endif
+        areg::trim_all<char>(buffer);
+        return (ok && (areg::is_empty(buffer) == false));
+    }
+
+    SetConsoleMode(hIn, (oldMode & ~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT)) | ENABLE_PROCESSED_INPUT);
+
+    while (len < (size - 1u))
+    {
+        char ch{ 0 };
+        DWORD nRead{ 0u };
+        if ((ReadConsoleA(hIn, &ch, 1u, &nRead, nullptr) == FALSE) || (nRead == 0u))
+        {
+            break;  // Console closed or error
+        }
+
+        if (ch == '\r')
+        {
+            // Enter key on Windows delivers \r, not \n.
+            break;
+        }
+        else if (ch == '\b')
+        {
+            if (len > 0u)
+            {
+                Lock lock(console.mLock);
+                --len;
+                printf("\b \b");
+                ::fflush(stdout);
+                --console.mSavedPos.posX;
+            }
+        }
+        else if ((static_cast<unsigned char>(ch) >= 32u) && (static_cast<unsigned char>(ch) < 127u))
+        {
+            // Printable ASCII: echo and advance the tracked cursor position.
+            Lock lock(console.mLock);
+            buffer[len++] = ch;
+            printf("%c", ch);
+            ::fflush(stdout);
+            ++console.mSavedPos.posX;
+        }
+        // Ignore \n, non-printable control codes, and high bytes (function
+        // keys are handled by the Windows console before reaching here).
+    }
+
+    if (rawMode)
+    {
+        SetConsoleMode(hIn, oldMode);
+    }
+
+#else   // POSIX
+
+    struct termios old_tio{};
+    const bool rawMode{ tcgetattr(STDIN_FILENO, &old_tio) == 0 };
+    if (rawMode)
+    {
+        struct termios raw_tio{ old_tio };
+        raw_tio.c_lflag &= ~static_cast<tcflag_t>(ICANON | ECHO);
+        raw_tio.c_cc[VMIN]  = 1;   // block until at least 1 byte available
+        raw_tio.c_cc[VTIME] = 0;   // no read timeout
+        tcsetattr(STDIN_FILENO, TCSANOW, &raw_tio);
+    }
+
+    if (!rawMode)
+    {
+        const bool ok{ ::fgets(buffer, static_cast<int>(size), stdin) != nullptr };
+        areg::trim_all<char>(buffer);
+        return (ok && (areg::is_empty(buffer) == false));
+    }
+
+    while (len < (size - 1u))
+    {
+        char ch{ 0 };
+        const ssize_t n = read(STDIN_FILENO, &ch, 1);
+        if (n <= 0)
+        {
+            break;  // EOF or EINTR (e.g. Ctrl-D, SIGINT)
+        }
+
+        const auto uch = static_cast<unsigned char>(ch);
+
+        if ((ch == '\n') || (ch == '\r'))
+        {
+            break;
+        }
+        else if ((ch == '\b') || (uch == 127u))
+        {
+            // Backspace (^H) or DEL
+            if (len > 0u)
+            {
+                Lock lock(console.mLock);
+                --len;
+                printf("\b \b");
+                ::fflush(stdout);
+                --console.mSavedPos.posX;
+            }
+        }
+        else if (ch == '\x1B')
+        {
+            char seq{ 0 };
+            if ((read(STDIN_FILENO, &seq, 1) == 1) && (seq == '['))
+            {
+                char fin{ 0 };
+                while (read(STDIN_FILENO, &fin, 1) == 1)
+                {
+                    if (((fin >= 'A') && (fin <= 'Z')) ||
+                        ((fin >= 'a') && (fin <= 'z')) ||
+                        (fin == '~'))
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+        else if ((ch == '\x03') || (ch == '\x04'))
+        {
+            // Ctrl-C (ETX) or Ctrl-D (EOT): abort cleanly
+            break;
+        }
+        else if ((uch >= 32u) && (uch < 127u))
+        {
+            // Printable ASCII: echo and advance the tracked cursor position.
+            Lock lock(console.mLock);
+            buffer[len++] = ch;
+            printf("%c", ch);
+            ::fflush(stdout);
+            ++console.mSavedPos.posX;
+        }
+        // Ignore other control characters and non-ASCII bytes (high UTF-8 bytes)
+    }
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &old_tio);
+
+#endif  // defined(_WIN32)
+
+    buffer[len] = '\0';
+
+    {
+        Lock lock(console.mLock);
+        console.mSavedPos = startPos;
+    }
+
+    areg::trim_all<char>(buffer);
+    return (areg::is_empty(buffer) == false);
 }
 
-void Console::_osRefreshScreen(void) const
+void Console::_os_refresh_screen() const noexcept
 {
     Lock lock(mLock);
     ::fflush(stdout);
 }
 
-void Console::_osClearLine( void ) const
+void Console::_os_clear_line() const noexcept
 {
     Lock lock(mLock);
     printf("%s", CMD_CLEAR_LINE.data());
     ::fflush(stdout);
 }
 
-void Console::_osClearScreen( void ) const
+void Console::_os_clear_line_at_position(Console::Coord pos) const noexcept
+{
+    // Clamp to 1-based (same rule as _os_set_cursor_cur_position).
+    const int32_t col  = (pos.posX       > 0) ? pos.posX       : 1;
+    const int32_t row  = (pos.posY       > 0) ? pos.posY       : 1;
+
+    Lock lock(mLock);
+
+    const int32_t save_col = (mSavedPos.posX > 0) ? mSavedPos.posX : 1;
+    const int32_t save_row = (mSavedPos.posY > 0) ? mSavedPos.posY : 1;
+
+    char buf[64];
+    const int32_t len = snprintf(buf, sizeof(buf),
+                             "\x1B[%d;%dH\x1B[K\x1B[%d;%dH",
+                             row, col, save_row, save_col);
+    if (len > 0)
+    {
+        ::fwrite(buf, 1, static_cast<size_t>(len), stdout);
+        ::fflush(stdout);
+    }
+}
+
+void Console::_os_clear_screen() const noexcept
 {
     Lock lock(mLock);
     printf("%s", CMD_CLEAR_SCREEN.data());
     ::fflush(stdout);
 }
 
-bool Console::_osReadInputList(const char* format, va_list varList) const
+bool Console::_os_read_input_list(const char* format, va_list varList) const
 {
     return (vscanf(format, varList) > 0);
 }
 
-void Console::_osSaveCursorPosition(void) const
+void Console::_os_save_cursor_position() const noexcept
 {
-    Lock lock(mLock);
-    printf("\x1B[s");
+    // No-op
 }
 
-void Console::_osRestoreCursorPosition(void) const
+void Console::_os_restore_cursor_position() const noexcept
 {
     Lock lock(mLock);
-    printf("\x1B[u");
+    const int32_t col = (mSavedPos.posX > 0) ? mSavedPos.posX : 1;
+    const int32_t row = (mSavedPos.posY > 0) ? mSavedPos.posY : 1;
+    printf("\x1B[%d;%dH%s", row, col, CMD_CURSOR_SHOW.data());
+    ::fflush(stdout);
 }
 
-void Console::_osMoveCursorOneLineUp(void) const
+void Console::_os_move_cursor_one_line_up() const noexcept
 {
     Lock lock(mLock);
     printf("\x1B[1F");
+    ::fflush(stdout);
 }
 
-void Console::_osMoveCursorOneLineDown(void) const
+void Console::_os_move_cursor_one_line_down() const noexcept
 {
     Lock lock(mLock);
     printf("\x1B[1E");
+    ::fflush(stdout);
 }
+
+} // namespace areg::ext
 
 #endif  // !(AREG_EXTENDED)

@@ -11,12 +11,12 @@
   * Include files.
   ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
-#include "examples/19_pubfsm/services/PowerManagerClientBase.hpp"
-#include "areg/base/IEThreadConsumer.hpp"
+#include "areg/base/areg_global.h"
+#include "examples/19_pubfsm/services/PowerManagerConsumerBase.hpp"
+#include "areg/base/ThreadConsumer.hpp"
 
 #include "areg/base/Thread.hpp"
-#include "areg/component/TEEvent.hpp"
+#include "areg/component/EventTemplate.hpp"
 
 #include <string_view>
 
@@ -32,20 +32,21 @@ public:
     /**
      * \brief   The actions to trigger, i.e. the event data.
      **/
-    typedef enum class E_Actions
+    enum class Action   : uint8_t
     {
-          NoAction          //!< No action
-        , ActionPowerOff    //!< Power OFF the traffic lights
-        , ActionPowerOn     //!< Power ON the traffic lights
-        , ActionStartLight  //!< Start the traffic lights
-        , ActionStopLight   //!< Stop the traffic lights.
-    } eAction;
+          None          //!< No action
+        , PowerOff      //!< Power OFF the traffic lights
+        , PowerOn       //!< Power ON the traffic lights
+        , StartLight    //!< Start the traffic lights
+        , StopLight     //!< Stop the traffic lights.
+    };
 
     /**
-     * \brief   Converts the value of PowerControllerEventData::eAction into the string.
+     * \brief   Converts the value of PowerControllerEventData::Action into the string.
      *          Used to make logging.
      **/
-    inline static const char * getString( PowerControllerEventData::eAction action );
+    [[nodiscard]]
+    inline static constexpr const char * as_string( PowerControllerEventData::Action action ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors, destructor, operators, attributes
@@ -54,40 +55,41 @@ public:
     /**
      * \brief   Default constructor
      **/
-    inline PowerControllerEventData( void );
+    inline PowerControllerEventData() noexcept;
     /**
      * \brief   Set the initial value of event data.
      **/
-    inline PowerControllerEventData( PowerControllerEventData::eAction action );
+    inline PowerControllerEventData( PowerControllerEventData::Action action ) noexcept;
     /**
      * \brief   Copy the data from given source
      **/
-    inline PowerControllerEventData( const PowerControllerEventData & src );
+    inline PowerControllerEventData( const PowerControllerEventData & src ) noexcept;
     /**
      * \brief   Move the data from given source
      **/
-    inline PowerControllerEventData( PowerControllerEventData && src );
+    inline PowerControllerEventData( PowerControllerEventData && src ) noexcept;
     /**
      * \brief   Copy the data from given source
      **/
-    inline void operator = ( const PowerControllerEventData & src );
+    inline void operator = ( const PowerControllerEventData & src ) noexcept;
     /**
      * \brief   Move the data from given source
      **/
-    inline void operator = ( PowerControllerEventData && src );
+    inline void operator = ( PowerControllerEventData && src ) noexcept;
     /**
      * \brief   Returns the event data value.
      **/
-    inline PowerControllerEventData::eAction getAction( void ) const;
+    [[nodiscard]]
+    inline PowerControllerEventData::Action getAction() const noexcept;
 
 private:
-    PowerControllerEventData::eAction     mAction;  //!< The power controller event data value.
+    PowerControllerEventData::Action     mAction;  //!< The power controller event data value.
 };
 
 //////////////////////////////////////////////////////////////////////////
 // Declare the Power Controller Event and the event consumer objects.
 //////////////////////////////////////////////////////////////////////////
-DECLARE_EVENT(PowerControllerEventData, PowerControllerEvent, IEPowerControllerEventConsumer);
+AREG_DECLARE_EVENT(PowerControllerEventData, PowerControllerEvent, IEPowerControllerEventConsumer);
 
 /**
  * \brief   The actual power controller service client.
@@ -98,9 +100,9 @@ DECLARE_EVENT(PowerControllerEventData, PowerControllerEvent, IEPowerControllerE
  *          As soon as the power controller gets request to start, the traffic
  *          lights start automatically to run.
  **/
-class PowerControllerClient : public    PowerManagerClientBase
-                            , protected IEThreadConsumer
-                            , protected IEPowerControllerEventConsumer
+class PowerControllerClient final : public    PowerManagerConsumerBase
+                                  , protected areg::ThreadConsumer
+                                  , protected IEPowerControllerEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants
@@ -121,11 +123,11 @@ public:
      * \param   roleName    The role name of the power controller service.
      * \param   owner       The client owning component.
      **/
-    PowerControllerClient( const char* roleName, Component & owner );
+    PowerControllerClient( const char* roleName, areg::Component & owner );
     /**
      * \brief   Destructor.
      **/
-    virtual ~PowerControllerClient( void ) = default;
+    ~PowerControllerClient() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -143,9 +145,9 @@ protected:
      * \param   Success Flag, indicating whether the operation succeeded or not.
      *          This flag is 'true' if lights are initialization state of if traffic light is already functioning.
      *          This flag is 'false' if lights are OFF.
-     * \see     requestStartTrafficLight
+     * \see     request_start_traffic_light
      **/
-    virtual void responseStartTrafficLight( bool Success ) override;
+    void response_start_traffic_light( bool Success ) final;
 
 /************************************************************************
  * Response StopTrafficLight
@@ -158,12 +160,12 @@ protected:
      * \param   Success Flag, indicating whether the request was processed with success or not.
      *          This flag is 'true' if traffic light are functioning or lights are in initialization state.
      *          This flag is 'false' if traffic lights are OFF.
-     * \see     requestStopTrafficLight
+     * \see     request_stop_traffic_light
      **/
-    virtual void responseStopTrafficLight( bool Success ) override;
+    void response_stop_traffic_light( bool Success ) final;
 
 /************************************************************************/
-// IEThreadConsumer interface overrides
+// ThreadConsumer interface overrides
 /************************************************************************/
 
     /**
@@ -171,9 +173,9 @@ protected:
      *          running and fully operable. If thread needs run in loop, the loop 
      *          should be implemented here. When consumer exits this function, 
      *          the thread will complete work. To restart thread running, 
-     *          createThread() method should be called again.
+     *          start() method should be called again.
      **/
-    virtual void onThreadRuns( void ) override;
+    void on_run() final;
 
 /************************************************************************/
 // IEPowerControllerEventConsumer overrides
@@ -183,10 +185,10 @@ protected:
      * \brief  Override operation. Implement this function to receive events and make processing
      * \param  data    The data, which was passed as an event.
      **/
-    virtual void processEvent( const PowerControllerEventData & data ) override;
+    void process_event( const PowerControllerEventData & data ) final;
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -199,13 +201,13 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline PowerControllerClient & self( void );    //!< The wrapper of this pointer
+    inline PowerControllerClient & self();    //!< The wrapper of this pointer
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -214,65 +216,75 @@ private:
     /**
      * \brief   The thread object to get user inputs from console.
      **/
-    Thread  mConsole;
+    areg::Thread  mConsole;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    PowerControllerClient( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( PowerControllerClient );
+    PowerControllerClient() = delete;
+    AREG_NOCOPY_NOMOVE( PowerControllerClient );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // inline members
 //////////////////////////////////////////////////////////////////////////
 
-inline PowerControllerClient & PowerControllerClient::self( void )
+inline PowerControllerClient & PowerControllerClient::self()
 {
     return (*this);
 }
 
-inline PowerControllerEventData::PowerControllerEventData(void)
-    : mAction   (PowerControllerEventData::eAction::NoAction)
+inline PowerControllerEventData::PowerControllerEventData() noexcept
+    : mAction   (PowerControllerEventData::Action::None)
 {
 }
 
-inline PowerControllerEventData::PowerControllerEventData(PowerControllerEventData::eAction action)
+inline PowerControllerEventData::PowerControllerEventData(PowerControllerEventData::Action action) noexcept
     : mAction   ( action )
 {
 }
 
-inline PowerControllerEventData::PowerControllerEventData(const PowerControllerEventData & src)
+inline PowerControllerEventData::PowerControllerEventData(const PowerControllerEventData & src) noexcept
     : mAction   ( src.mAction )
 {
 }
 
-inline void PowerControllerEventData::operator = (const PowerControllerEventData & src)
+inline PowerControllerEventData::PowerControllerEventData(PowerControllerEventData&& src) noexcept
+    : mAction(src.mAction)
+{
+}
+
+inline void PowerControllerEventData::operator = (const PowerControllerEventData & src) noexcept
 {
     mAction = src.mAction;
 }
 
-inline PowerControllerEventData::eAction PowerControllerEventData::getAction(void) const
+inline void PowerControllerEventData::operator = (PowerControllerEventData && src) noexcept
+{
+    mAction = src.mAction;
+}
+
+inline PowerControllerEventData::Action PowerControllerEventData::getAction() const noexcept
 {
     return mAction;
 }
 
-const char * PowerControllerEventData::getString(PowerControllerEventData::eAction action)
+inline constexpr const char * PowerControllerEventData::as_string(PowerControllerEventData::Action action) noexcept
 {
     switch (action)
     {
-    case PowerControllerEventData::eAction::NoAction:
-        return "PowerControllerEventData::NoAction";
-    case PowerControllerEventData::eAction::ActionPowerOff:
-        return "PowerControllerEventData::ActionPowerOff";
-    case PowerControllerEventData::eAction::ActionPowerOn:
-        return "PowerControllerEventData::ActionPowerOn";
-    case PowerControllerEventData::eAction::ActionStartLight:
-        return "PowerControllerEventData::ActionStartLight";
-    case PowerControllerEventData::eAction::ActionStopLight:
-        return "PowerControllerEventData::ActionStopLight";
+    case PowerControllerEventData::Action::None:
+        return "PowerControllerEventData::None";
+    case PowerControllerEventData::Action::PowerOff:
+        return "PowerControllerEventData::PowerOff";
+    case PowerControllerEventData::Action::PowerOn:
+        return "PowerControllerEventData::PowerOn";
+    case PowerControllerEventData::Action::StartLight:
+        return "PowerControllerEventData::StartLight";
+    case PowerControllerEventData::Action::StopLight:
+        return "PowerControllerEventData::StopLight";
     default:
-        return "ERR: Undefined PowerControllerEventData::eAction value!";
+        return "ERR: Undefined PowerControllerEventData::Action value!";
     }
 }

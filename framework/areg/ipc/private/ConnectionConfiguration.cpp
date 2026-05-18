@@ -18,9 +18,11 @@
  ************************************************************************/
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/appbase/Application.hpp"
-#include "areg/appbase/NEApplication.hpp"
+#include "areg/appbase/AppDefs.hpp"
 #include "areg/base/Identifier.hpp"
 #include "areg/persist/ConfigManager.hpp"
+
+namespace areg {
 
 ConnectionConfiguration::ConnectionConfiguration(const String& service, const String& connectType)
     : mServiceName  ( service )
@@ -28,86 +30,111 @@ ConnectionConfiguration::ConnectionConfiguration(const String& service, const St
 {
 }
 
-ConnectionConfiguration::ConnectionConfiguration(NERemoteService::eRemoteServices service, NERemoteService::eConnectionTypes connectType)
-    : mServiceName  (Identifier::convToString(static_cast<unsigned int>(service), NEApplication::RemoteServiceIdentifiers, static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceUnknown)))
-    , mConnectType  (Identifier::convToString(static_cast<unsigned int>(connectType), NEApplication::ConnectionIdentifiers, static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectUndefined)))
+ConnectionConfiguration::ConnectionConfiguration(areg::RemoteServiceKind service, areg::ConnectionType connectType)
+    : mServiceName  (Identifier::to_string(static_cast<uint32_t>(service), areg::RemoteServiceIdentifiers, static_cast<uint32_t>(areg::RemoteServiceKind::Unknown)))
+    , mConnectType  (Identifier::to_string(static_cast<uint32_t>(connectType), areg::ConnectionIdentifiers, static_cast<uint32_t>(areg::ConnectionType::Undefined)))
 {
 }
 
-String ConnectionConfiguration::getConnectionAddress( void ) const
+String ConnectionConfiguration::connection_address() const
 {
-    return Application::getConfigManager().getRemoteServiceAddress(mServiceName, mConnectType);
+    return Application::config_manager().remote_service_address(mServiceName, mConnectType);
 }
 
-void ConnectionConfiguration::setConnectionAddress(const String& address)
+void ConnectionConfiguration::set_connection_address(const String& address)
 {
-    Application::getConfigManager().setRemoteServiceAddress(mServiceName, mConnectType, address);
+    Application::config_manager().set_service_address(mServiceName, mConnectType, address);
 }
 
-void ConnectionConfiguration::setConnectionData(const String& address, unsigned short portNr)
+void ConnectionConfiguration::set_connection_data(const String& address, uint16_t portNr)
 {
-    Application::getConfigManager().setRemoteServiceAddress(mServiceName, mConnectType, address);
-    Application::getConfigManager().setRemoteServicePort(mServiceName, mConnectType, portNr);
+    Application::config_manager().set_service_address(mServiceName, mConnectType, address);
+    Application::config_manager().set_service_port(mServiceName, mConnectType, portNr);
 }
 
-bool ConnectionConfiguration::isConfigured(void) const
+bool ConnectionConfiguration::is_configured() const noexcept
 {
-    return Application::isConfigured();
+    return Application::is_configured();
 }
 
-bool ConnectionConfiguration::getConnectionEnableFlag( void ) const
+bool ConnectionConfiguration::connection_enable_flag() const
 {
-    return Application::getConfigManager().getRemoteServiceEnable(mServiceName, mConnectType);
+    return Application::config_manager().remote_service_enable(mServiceName, mConnectType);
 }
 
-void ConnectionConfiguration::setConnectionEnableFlag(bool isEnabled)
+void ConnectionConfiguration::set_connection_enable(bool is_enabled)
 {
-    Application::getConfigManager().setRemoteServiceEnable(mServiceName, mConnectType, isEnabled);
+    Application::config_manager().set_service_enable(mServiceName, mConnectType, is_enabled);
 }
 
-unsigned short ConnectionConfiguration::getConnectionPort( void ) const
+uint16_t ConnectionConfiguration::connection_port() const noexcept
 {
-    return Application::getConfigManager().getRemoteServicePort(mServiceName, mConnectType);
+    return Application::config_manager().remote_service_port(mServiceName, mConnectType);
 }
 
-void ConnectionConfiguration::setConnectionPort(unsigned short portNr)
+void ConnectionConfiguration::set_connection_port(uint16_t portNr)
 {
-    Application::getConfigManager().setRemoteServicePort(mServiceName, mConnectType, portNr);
+    Application::config_manager().set_service_port(mServiceName, mConnectType, portNr);
 }
 
-bool ConnectionConfiguration::getConnectionIpAddress( unsigned char & OUT field0
-                                                    , unsigned char & OUT field1
-                                                    , unsigned char & OUT field2
-                                                    , unsigned char & OUT field3 )
+uint32_t ConnectionConfiguration::socket_send_buffer() const noexcept
+{
+    return Application::config_manager().network_sndbuf(areg::EmptyStringA, mConnectType);
+}
+
+uint32_t ConnectionConfiguration::socket_recv_buffer() const noexcept
+{
+    return Application::config_manager().network_rcvbuf(areg::EmptyStringA, mConnectType);
+}
+
+uint32_t ConnectionConfiguration::batch_size() const noexcept
+{
+    return Application::config_manager().network_batch(areg::EmptyStringA, mConnectType);
+}
+
+uint32_t ConnectionConfiguration::pool_pairs() const noexcept
+{
+    return Application::config_manager().network_pool_pairs(areg::EmptyStringA, mConnectType);
+}
+
+uint32_t ConnectionConfiguration::socket_send_timeout() const noexcept
+{
+    return Application::config_manager().network_timeout(areg::EmptyStringA, mConnectType);
+}
+
+bool ConnectionConfiguration::connection_ip_address( uint8_t & field0
+                                                   , uint8_t & field1
+                                                   , uint8_t & field2
+                                                   , uint8_t & field3 )
 {
     bool result = false;
     field0 = field1 = field2 = field3 = 0u;
 
-    String addr{ getConnectionAddress() };
-    if ( addr.isEmpty() == false )
+    String addr{ connection_address() };
+    if ( addr.is_empty() == false )
     {
-        const char * buffer = addr.getString( );
+        const char * buffer = addr.as_string( );
         const char * next   = nullptr;
 
-        uint32_t f0 = String::makeUInt32(buffer, NEString::eRadix::RadixDecimal, &next);
-        if ( (buffer != next) && (f0 <= 0xFFu) && (*next == NESocket::IP_SEPARATOR) )
+        uint32_t f0 = String::make_uint32(buffer, areg::Radix::Decimal, &next);
+        if ( (buffer != next) && (f0 <= 0xFFu) && (*next == areg::IP_SEPARATOR) )
         {
             buffer = next + 1;
-            uint32_t f1 = String::makeUInt32( buffer, NEString::eRadix::RadixDecimal, &next );
-            if ( (buffer != next) && (f1 <= 0xFFu) && (*next == NESocket::IP_SEPARATOR) )
+            uint32_t f1 = String::make_uint32( buffer, areg::Radix::Decimal, &next );
+            if ( (buffer != next) && (f1 <= 0xFFu) && (*next == areg::IP_SEPARATOR) )
             {
                 buffer = next + 1;
-                uint32_t f2 = String::makeUInt32( buffer, NEString::eRadix::RadixDecimal, &next );
-                if ( (buffer != next) && (f2 <= 0xFFu) && (*next == NESocket::IP_SEPARATOR) )
+                uint32_t f2 = String::make_uint32( buffer, areg::Radix::Decimal, &next );
+                if ( (buffer != next) && (f2 <= 0xFFu) && (*next == areg::IP_SEPARATOR) )
                 {
                     buffer = next + 1;
-                    uint32_t f3 = String::makeUInt32( buffer, NEString::eRadix::RadixDecimal, &next );
+                    uint32_t f3 = String::make_uint32( buffer, areg::Radix::Decimal, &next );
                     if ( (buffer != next) && (f3 <= 0xFFu) )
                     {
-                        field0 = static_cast<unsigned char>(f0);
-                        field1 = static_cast<unsigned char>(f1);
-                        field2 = static_cast<unsigned char>(f2);
-                        field3 = static_cast<unsigned char>(f3);
+                        field0 = static_cast<uint8_t>(f0);
+                        field1 = static_cast<uint8_t>(f1);
+                        field2 = static_cast<uint8_t>(f2);
+                        field3 = static_cast<uint8_t>(f3);
                         result = true;
                     }
                 }
@@ -117,3 +144,5 @@ bool ConnectionConfiguration::getConnectionIpAddress( unsigned char & OUT field0
 
     return result;
 }
+
+} // namespace areg

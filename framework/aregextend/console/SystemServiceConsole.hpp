@@ -18,9 +18,9 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 #include "areg/component/StubBase.hpp"
 
 #include "areg/component/Timer.hpp"
@@ -28,7 +28,11 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class DataRateHelper;
+namespace areg::ext {
+    class DataRateHelper;
+} // namespace areg::ext
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // SystemServiceConsole class declaration
@@ -40,7 +44,7 @@ class DataRateHelper;
  **/
 class SystemServiceConsole  : public    Component
                             , protected StubBase
-                            , protected IETimerConsumer
+                            , protected TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -49,16 +53,15 @@ protected:
 
     /**
      * \brief   Instantiates the component object.
-     * \param   dataRate    The pointer to the optional data rate helper object to extract send and receive data rates.
+     *
+     * \param   dataRate    The pointer to the optional data rate helper object to extract send and
+     *                      receive data rates.
      * \param   entry       The component entry object set in the model.
      * \param   owner       The instance of component owner thread.
      **/
-    SystemServiceConsole(DataRateHelper* dataRate, const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    SystemServiceConsole(DataRateHelper* dataRate, const areg::ComponentEntry & entry, ComponentThread & owner );
 
-    /**
-     * \brief   Destructor.
-     **/
-    virtual ~SystemServiceConsole( void ) = default;
+    virtual ~SystemServiceConsole() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -69,33 +72,24 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   This function is triggered by Component when starts up.
-     *          Overwrite this method and set appropriate request and
-     *          attribute update notification event listeners here
-     * \param   holder  The holder component of service interface of Stub,
-     *                  which started up.
+     * \brief   This function is triggered by Component when starts up. Override this method and set
+     *          appropriate request and attribute update notification event listeners here.
+     *
+     * \param   holder      The holder component of service interface of Stub, which started up.
      **/
-    virtual void startupServiceInterface( Component & holder ) override;
-
-    /**
-     * \brief   This function is triggered by Component when shuts down.
-     *          Overwrite this method to remove listeners and stub cleanup
-     * \param   holder  The holder component of service interface of Stub,
-     *                  which shuts down.
-     **/
-    virtual void shutdownServiceInterface ( Component & holder ) override;
+    void startup_service_interface( Component & holder ) override;
 
 /************************************************************************/
-// IETimerConsumer interface overrides.
+// TimerConsumer class overrides.
 /************************************************************************/
 
     /**
-     * \brief   Triggered when Timer is expired.
-     *          The passed Timer parameter is indicating object, which has been expired.
-     *          Overwrite method to receive messages.
-     * \param   timer   The timer object that is expired.
+     * \brief   Triggered when Timer is expired. The passed Timer parameter is indicating object,
+     *          which has been expired. Override method to receive messages.
+     *
+     * \param   timer       The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer ) override;
+    void process_timer( Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // These methods must exist, but can have empty body
@@ -106,64 +100,61 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Sends update notification message to all clients.
-     *          This method can be called manually to send update
-     *          notification message after updating attribute value.
+     * \brief   Sends update notification message to all clients. This method can be called manually
+     *          to send update notification message after updating attribute value. Override to
+     *          implement method.
      *
-     *          Overwrite to implement method
-     *
-     * \param   msgId   The attribute message ID to notify clients.
+     * \param   msgId       The attribute message ID to notify clients.
      **/
-    virtual void sendNotification( unsigned int msgId ) override;
+    void send_notification( uint32_t msgId ) override;
 
     /**
-     * \brief   Sends error message to clients.
-     *          If message ID is a request, it should send result NEService::RequestError or NEService::RequestCanceled, depending on msgCancel flag.
-     *          If message ID is a response, it should send result NEService::Invalid.
-     *          If message ID is an attribute, it should send result NEService::ResultDataInvalid
-     *          and invalidate attribute data value.
+     * \brief   Sends error message to clients. If message ID is a request, it should send result
+     *          areg::RequestError or areg::RequestCanceled, depending on msgCancel flag.
+     *          If message ID is a response, it should send result areg::Invalid. If message ID
+     *          is an attribute, it should send result areg::ResultDataInvalid and invalidate
+     *          attribute data value. Override to implement method.
      *
-     *          Overwrite to implement method
-     *
-     * \param   msgId       The message ID to send error message
-     * \param   msgCancel   Indicates whether the request is canceled or should respond with error.
-     *                      This parameter has sense only for request IDs.
-     *                      It is ignored for response and attributes IDs.
+     * \param   msgId           The message ID to send error message.
+     * \param   msgCancel       Indicates whether the request is canceled or should respond with
+     *                          error. This parameter has sense only for request IDs. It is ignored
+     *                          for response and attributes IDs.
      **/
-    virtual void errorRequest( unsigned int msgId, bool msgCancel ) override;
+    void error_request( uint32_t msgId, bool msgCancel ) override;
 
 /************************************************************************/
-// IEStubEventConsumer interface overrides.
+// StubEventConsumer class overrides.
 /************************************************************************/
 
     /**
-     * \brief   Triggered to process service request event.
-     *          Overwrite method to process every service request event.
-     * \param   eventElem   Service Request Event object, contains request
-     *                      call ID and parameters.
+     * \brief   Triggered to process service request event. Override method to process every service
+     *          request event.
+     *
+     * \param   eventElem       Service Request Event object, contains request call ID and
+     *                          parameters.
      **/
-    virtual void processRequestEvent( ServiceRequestEvent & eventElem ) override;
+    void process_request_event( ServiceRequestEvent & eventElem ) override;
 
     /**
-     * \brief   Triggered to process attribute update notification event.
-     *          Override method to process request to get attribute value and
-     *          process notification request of attribute update.
-     * \param   eventElem   Service Request Event object, contains attribute ID.
+     * \brief   Triggered to process attribute update notification event. Override method to process
+     *          request to get attribute value and process notification request of attribute update.
+     *
+     * \param   eventElem       Service Request Event object, contains attribute ID.
      **/
-    virtual void processAttributeEvent( ServiceRequestEvent & eventElem ) override;
+    void process_attribute_event( ServiceRequestEvent & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Returns the instance of SystemServiceConsole
+     * \brief   Returns the instance of SystemServiceConsole.
      **/
-    inline SystemServiceConsole & self( void );
+    inline SystemServiceConsole & self();
     /**
      * \brief   Called to output sent and received data rate messages.
      **/
-    inline void _outputDataRate(void);
+    inline void _output_data_rate();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
@@ -175,16 +166,18 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    SystemServiceConsole( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( SystemServiceConsole );
+    SystemServiceConsole() = delete;
+    AREG_NOCOPY_NOMOVE( SystemServiceConsole );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // SystemServiceConsole inline methods
 //////////////////////////////////////////////////////////////////////////
-inline SystemServiceConsole & SystemServiceConsole::self( void )
+inline SystemServiceConsole & SystemServiceConsole::self()
 {
     return (*this);
 }
+
+} // namespace areg::ext
 
 #endif  // AREG_AREGEXTEND_CONSOLE_SYSTEMSERVICECONSOLE_HPP

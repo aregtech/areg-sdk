@@ -11,21 +11,21 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/17_pubtraffic/services/SimpleTrafficLightClientBase.hpp"
+#include "examples/17_pubtraffic/services/SimpleTrafficLightConsumerBase.hpp"
 
-#include "common/NECommon.hpp"
+#include "common/TrafficDefs.hpp"
 
 //! The simple service client, which receives data update notifications.
-class TrafficLightClient    : public    Component
-                            , protected SimpleTrafficLightClientBase
+class TrafficLightClient final  : public    areg::Component
+                                , protected SimpleTrafficLightConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants.
 //////////////////////////////////////////////////////////////////////////
 public:
-    TrafficLightClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    TrafficLightClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // Protected members.
@@ -33,7 +33,7 @@ public:
 protected:
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -46,7 +46,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
     /**
      * \brief   Triggered, when SouthNorth attribute is updated. The function contains
@@ -57,7 +57,7 @@ protected:
      * \param   SouthNorth  The value of SouthNorth attribute.
      * \param   state       The data validation flag.
      **/
-    virtual void onSouthNorthUpdate( NESimpleTrafficLight::eTrafficLight SouthNorth, NEService::eDataStateType state ) override;
+    void on_south_north_update( SimpleTrafficLight::TrafficLight SouthNorth, areg::DataState state ) final;
 
     /**
      * \brief   Triggered, when EastWest attribute is updated. The function contains
@@ -68,7 +68,7 @@ protected:
      * \param   EastWest    The value of EastWest attribute.
      * \param   state       The data validation flag.
      **/
-    virtual void onEastWestUpdate( NESimpleTrafficLight::eTrafficLight EastWest, NEService::eDataStateType state ) override;
+    void on_east_west_update( SimpleTrafficLight::TrafficLight EastWest, areg::DataState state ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members.
@@ -78,7 +78,7 @@ private:
     /**
      * \brief   Returns instance of TrafficLightClient.
      **/
-    inline TrafficLightClient & self( void )
+    inline TrafficLightClient & self()
     {
         return (*this);
     }
@@ -86,11 +86,11 @@ private:
     /**
      * \brief   Makes message outputs on console.
      **/
-    inline void outputState(NESimpleTrafficLight::eTrafficLight lightState);
+    inline void output_state(SimpleTrafficLight::TrafficLight lightState);
 
 private:
     /**
      * \brief   The symbolic traffic direction that is South-North or East-West.
      **/
-    NECommon::eTrafficDirection  mTrafficDirection;
+    traffic::TrafficDirection  mTrafficDirection;
 };

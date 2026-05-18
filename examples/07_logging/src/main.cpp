@@ -4,8 +4,8 @@
 // Version     :
 // Copyright   : (c) 2021-2026 Aregtech UG.All rights reserved.
 // Description : This project demonstrates use of logging (tracing). The 
-//               logging requires source code compilation with AREG_LOGS=1
-//               preprocessor directive to enable logging macro. It as well
+//               logging requires source code compilation with AREG_LOGGING=1
+//               preprocessor definition to enable logging macro. It as well
 //               requires log enabling in the configuration file (by default 
 //               "./config/areg.init" file). If there is no configuration file,
 //               the logging can be forced to be enabled to apply default
@@ -15,41 +15,41 @@
 //               default settings.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
-#include "areg/base/IEThreadConsumer.hpp"
+#include "areg/base/areg_global.h"
+#include "areg/base/ThreadConsumer.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/Thread.hpp"
 
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #ifdef  _MSC_VER
     #pragma comment(lib, "areg")
 #endif // _MSC_VER
 
-DEF_LOG_SCOPE(logging_main_HelloThread_HelloThread);
-DEF_LOG_SCOPE(logging_main_HelloThread_onThreadRuns);
-DEF_LOG_SCOPE(logging_main_main);
+DEF_LOG_SCOPE(logging_main_HelloThread, HelloThread);
+DEF_LOG_SCOPE(logging_main_HelloThread, on_run);
+DEF_LOG_SCOPE(logging_main, main);
 
 //! \brief Thread to run
-class HelloThread : public Thread, protected IEThreadConsumer
+class HelloThread final : public areg::Thread, protected areg::ThreadConsumer
 {
 public:
     HelloThread()
-        : Thread(*this, "HelloThread")
+        : areg::Thread(*this, "HelloThread")
     {
-        LOG_SCOPE(logging_main_HelloThread_HelloThread);
-        LOG_DBG("Initialized thread [ %s ]", getName().getString());
+        LOG_SCOPE(logging_main_HelloThread, HelloThread);
+        LOG_DBG("Initialized thread [ %s ]", name().as_string());
     }
 
 protected:
     /************************************************************************/
-    // IEThreadConsumer interface overrides
+    // ThreadConsumer interface overrides
     /************************************************************************/
-    void onThreadRuns() override
+    void on_run() override
     {
-        LOG_SCOPE(logging_main_HelloThread_onThreadRuns);
+        LOG_SCOPE(logging_main_HelloThread, on_run);
 
-        LOG_WARN("Thread [ %s ] running, outputting messages...", getName().getString());
+        LOG_WARN("Thread [ %s ] running, outputting messages...", name().as_string());
         LOG_INFO("!!!Hello Thread!!!");
         LOG_DBG("!!!Hello Tracing!!!");
     }
@@ -64,23 +64,24 @@ int main()
     std::cout << "Demo to run tracing / logging ..." << std::endl;
 
     // Forces to start logging with default settings (logs go to appropriate "logs" subfolder)
-    LOGGING_CONFIGURE_AND_START(nullptr);
+    LOGGING_CONFIGURE_AND_START(nullptr, true);
 
     do
     {
-        LOG_SCOPE(logging_main_main);
+        LOG_SCOPE(logging_main, main);
 
         LOG_DBG("Starting Hello World thread");
         HelloThread aThread;
 
-        aThread.createThread(NECommon::WAIT_INFINITE);
-        LOG_DBG("%s to create thread [ %s ]", aThread.isValid() ? "SUCCEEDED" : "FAILED", aThread.getName().getString());
+        aThread.start(areg::WAIT_INFINITE);
+        LOG_DBG("%s to create thread [ %s ]", aThread.is_valid() ? "SUCCEEDED" : "FAILED", aThread.name().as_string());
 
-        LOG_INFO("Stopping and destroying thread [ %s ]", aThread.getName().getString());
-        Thread::eCompletionStatus status = aThread.shutdownThread(NECommon::WAIT_INFINITE);
-
-        LOG_WARN_IF(Thread::eCompletionStatus::ThreadCompleted != status, "The thread exit abnormal, status = [ %d ]", static_cast<int>(status));
-        LOG_INFO_IF(Thread::eCompletionStatus::ThreadCompleted == status, "The thread exit normal");
+        LOG_INFO("Stopping and destroying thread [ %s ]", aThread.name().as_string());
+#if AREG_LOGGING
+        areg::Thread::ThreadCompletion status = aThread.shutdown(areg::WAIT_INFINITE);
+#endif  // AREG_LOGGING
+        LOG_WARN_IF(areg::Thread::ThreadCompletion::Completed != status, "The thread exit abnormal, status = [ %d ]", static_cast<int32_t>(status));
+        LOG_INFO_IF(areg::Thread::ThreadCompletion::Completed == status, "The thread exit normal");
 
     } while (false);
 

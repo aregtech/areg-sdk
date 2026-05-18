@@ -10,196 +10,221 @@
  * \file        areg/base/private/RemoteMessage.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Remote Shared Buffer class. This Buffer is used for 
+ * \brief       Remote Shared Buffer class. This Buffer is used for
  *              Read and Write of data during remote communication
- *              between different processes running either on same or 
+ *              between different processes running either on same or
  *              different hosts.
  *
  ************************************************************************/
 #include "areg/base/RemoteMessage.hpp"
 
-#include "areg/base/NEMemory.hpp"
-#include "areg/base/NEMath.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/base/MemoryDefs.hpp"
+#include "areg/base/MathDefs.hpp"
+#include "areg/logging/areg_log.h"
 
+#include <algorithm>
 #include <string.h>
 #include <cstddef>
 
-inline unsigned int RemoteMessage::_checksumCalculate( const NEMemory::sRemoteMessage & remoteMessage )
-{
-    const unsigned int offset   = offsetof( NEMemory::sRemoteMessageHeader, rbhSource );
-    const unsigned char * data  = reinterpret_cast<const unsigned char *>(&remoteMessage.rbHeader.rbhSource);
-    const unsigned int remain   = remoteMessage.rbHeader.rbhBufHeader.biOffset - offset;
-    const unsigned int used     = remoteMessage.rbHeader.rbhBufHeader.biUsed;
-    const unsigned int length   = used + remain;
+namespace areg {
 
-    return NEMath::crc32Calculate( data, static_cast<int>(length) );
+const ITEM_ID        RemoteMessage::_INVALID_COOKIE     { static_cast<ITEM_ID>(areg::Cookie::Invalid) };
+const SequenceNumber RemoteMessage::_INVALID_SEQUENCE   { areg::SEQUENCE_NUMBER_ANY };
+
+uint32_t RemoteMessage::_checksum_calculate(const areg::RawMessage& remoteMessage) noexcept
+{
+#if 0
+    const uint32_t offset = offsetof(areg::MessageHeader, rbhSource);
+    const uint8_t* data = reinterpret_cast<const uint8_t*>(&remoteMessage.rbHeader.rbhSource);
+    const uint32_t remain = remoteMessage.rbHeader.rbhBufHeader.biOffset - offset;
+    const uint32_t used = remoteMessage.rbHeader.rbhBufHeader.biUsed;
+    const uint32_t length = used + remain;
+
+    return areg::crc32_calculate(data, static_cast<int32_t>(length));
+#else
+    const uint32_t buffer[ ] =
+    {
+         remoteMessage.rbHeader.rbhBufHeader.biOffset
+        , static_cast<uint32_t>(remoteMessage.rbHeader.rbhBufHeader.biBufType)
+        , remoteMessage.rbHeader.rbhBufHeader.biUsed
+        , areg::hi_dword(static_cast<uint64_t>(remoteMessage.rbHeader.rbhSource))
+        , areg::lo_dword(static_cast<uint64_t>(remoteMessage.rbHeader.rbhSource))
+        , remoteMessage.rbHeader.rbhMessageId
+        , remoteMessage.rbHeader.rbhResult
+        , areg::hi_dword(static_cast<uint64_t>(remoteMessage.rbHeader.rbhSequenceNr))
+        , areg::lo_dword(static_cast<uint64_t>(remoteMessage.rbHeader.rbhSequenceNr))
+    };
+
+    return areg::crc32_calculate(reinterpret_cast<const uint8_t*>(buffer), static_cast<int32_t>(sizeof(buffer)));
+#endif
 }
 
-RemoteMessage::RemoteMessage(unsigned int blockSize /*= NEMemory::BLOCK_SIZE*/)
+RemoteMessage::RemoteMessage(uint32_t blockSize /*= areg::BLOCK_SIZE*/)
     : SharedBuffer  ( blockSize )
 {
 }
 
-RemoteMessage::RemoteMessage(unsigned int reserveSize, unsigned int blockSize)
+RemoteMessage::RemoteMessage(bool init, uint32_t blockSize /*= areg::BLOCK_SIZE*/)
+    : SharedBuffer(blockSize)
+{
+    if (init)
+    {
+        reserve(blockSize == 0 ? 1u : blockSize, false);
+    }
+}
+
+RemoteMessage::RemoteMessage(uint32_t reserveSize, uint32_t blockSize)
     : SharedBuffer  ( blockSize )
 {
     reserve(reserveSize, false);
 }
 
-RemoteMessage::RemoteMessage(const unsigned char * buffer, unsigned int size, unsigned int blockSize /*= NEMemory::BLOCK_SIZE*/)
+RemoteMessage::RemoteMessage(const uint8_t * buffer, uint32_t size, uint32_t blockSize /*= areg::BLOCK_SIZE*/)
     : SharedBuffer  ( blockSize )
 {
     reserve(size, false);
-    writeData(buffer, size);
+    write_data(buffer, size);
 }
 
-unsigned int RemoteMessage::initBuffer(unsigned char *newBuffer, unsigned int bufLength, bool makeCopy) const
+RemoteMessage::RemoteMessage(const areg::MessageHeader& rmHeader, uint32_t reserve, uint32_t blockSize)
+    : SharedBuffer  ( blockSize) 
 {
-    unsigned int result{ IECursorPosition::INVALID_CURSOR_POSITION };
+    uint32_t sizeUsed{ std::max(rmHeader.rbhBufHeader.biUsed, reserve != 0 ? reserve : 1u) };
+    sizeUsed = areg::align_size(sizeUsed, block_size());
 
-    if (newBuffer != nullptr)
+    uint32_t sizeBuffer = sizeUsed + sizeof(areg::MessageHeader);
+    uint8_t* result = DEBUG_NEW uint8_t[sizeBuffer];
+    if (result != nullptr)
     {
-        result = 0;
-        unsigned int dataOffset { getDataOffset() };
-        unsigned int dataLength { bufLength - dataOffset };
-
-        NEMemory::memZero(newBuffer, sizeof(NEMemory::sRemoteMessage));
-        NEMemory::sRemoteMessageHeader & header = NEMemory::constructElems<NEMemory::sRemoteMessage>(newBuffer, 1)->rbHeader;
-
-        header.rbhBufHeader.biBufSize   = bufLength;
-        header.rbhBufHeader.biLength    = dataLength;
-        header.rbhBufHeader.biOffset    = dataOffset;
-        header.rbhBufHeader.biBufType   = NEMemory::eBufferType::BufferRemote;
-        header.rbhBufHeader.biUsed      = 0;
-
-        if (isValid())
-        {
-            const NEMemory::sRemoteMessageHeader & hdrSrc = { _getHeader() };
-            header.rbhTarget    = hdrSrc.rbhTarget;
-            header.rbhSource    = hdrSrc.rbhSource;
-            header.rbhMessageId = hdrSrc.rbhMessageId;
-            header.rbhResult    = hdrSrc.rbhResult;
-            header.rbhSequenceNr= hdrSrc.rbhSequenceNr;
-        }
-
-        if ( makeCopy )
-        {
-            unsigned char * dstBuf{ NEMemory::getBufferDataWrite(reinterpret_cast<NEMemory::sByteBuffer *>(&header.rbhBufHeader)) };
-            const unsigned char* srcBuf { NEMemory::getBufferDataRead(mByteBuffer.get()) };
-            unsigned int srcCount { getSizeUsed() };
-            srcCount = MACRO_MIN(srcCount, dataLength);
-            result   = srcCount;
-
-            header.rbhBufHeader.biUsed  = srcCount;
-            NEMemory::memCopy( dstBuf, dataLength, srcBuf, srcCount );
-        }
-    }
-
-    return result;
-}
-
-bool RemoteMessage::isChecksumValid(void) const
-{
-    return isValid() ? getChecksum() == RemoteMessage::_checksumCalculate( _getRemoteMessage() ) : false;
-}
-
-void RemoteMessage::bufferCompletionFix(void) const
-{
-    if ( isValid() )
-    {
-        const NEMemory::sRemoteMessage & msg = _getRemoteMessage();
-        const NEMemory::sRemoteMessageHeader & header = msg.rbHeader;
-
-        unsigned int checksum   = RemoteMessage::_checksumCalculate( msg );
-        unsigned int dataUsed   = header.rbhBufHeader.biUsed;
-        unsigned int dataLen    = header.rbhBufHeader.biUsed;
-        unsigned int bufSize    = header.rbhBufHeader.biOffset + dataUsed;
-
-        dataLen = MACRO_MAX(dataLen, sizeof(NEMemory::BufferData));
-        dataLen = MACRO_ALIGN_SIZE(dataLen, sizeof(int));
-
-        bufSize = MACRO_MAX(bufSize, sizeof(NEMemory::sRemoteMessage));
-        bufSize = MACRO_ALIGN_SIZE(bufSize, sizeof(int));
-
-        ASSERT(dataLen <= header.rbhBufHeader.biLength);
-
-        const_cast<NEMemory::sRemoteMessageHeader &>(header).rbhBufHeader.biBufSize   = bufSize;
-        const_cast<NEMemory::sRemoteMessageHeader &>(header).rbhBufHeader.biLength    = dataLen;
-        const_cast<NEMemory::sRemoteMessageHeader &>(header).rbhChecksum              = checksum;
+        areg::RawMessage* msg = reinterpret_cast<areg::RawMessage *>(result);
+        areg::MessageHeader& hdr{ msg->rbHeader };
+        areg::mem_copy(&hdr, sizeof(areg::MessageHeader), &rmHeader, sizeof(areg::MessageHeader));
+        hdr.rbhBufHeader.biLength = sizeUsed;
+        hdr.rbhBufHeader.biOffset = sizeof(areg::MessageHeader);
+        hdr.rbhBufHeader.biUsed = 0u;
+        mByteBuffer = std::shared_ptr<areg::RawBuffer>(reinterpret_cast<areg::RawBuffer*>(msg), ByteBufferDeleter());
     }
 }
 
-unsigned char * RemoteMessage::initMessage(const NEMemory::sRemoteMessageHeader & rmHeader, unsigned int reserve /*= 0*/ )
+uint32_t RemoteMessage::init_buffer(uint8_t *newBuffer, uint32_t bufLength, bool makeCopy) const noexcept
 {
+    if (newBuffer == nullptr)
+        return Cursor::INVALID_CURSOR_POSITION;
+
+    const uint32_t dataLength { bufLength - static_cast<uint32_t>(sizeof(areg::MessageHeader))};
+
+    areg::RawMessage* msgDst        = areg::construct_elems<areg::RawMessage>(newBuffer, 1); // new(newBuffer) areg::RawMessage;
+    areg::MessageHeader & hdrDst    = msgDst->rbHeader;
+    hdrDst.rbhBufHeader.biLength    = dataLength;
+    hdrDst.rbhBufHeader.biOffset    = sizeof(areg::MessageHeader);
+    hdrDst.rbhBufHeader.biBufType   = areg::BufferType::Remote;
+    hdrDst.rbhBufHeader.biUsed      = 0;
+
+    if (!makeCopy || (mByteBuffer.get() == nullptr))
+        return 0u;
+
+    const areg::RawMessage* msgSrc     = reinterpret_cast<const areg::RawMessage *>(mByteBuffer.get());
+    const areg::MessageHeader & hdrSrc = { msgSrc->rbHeader };
+    uint8_t* dstBuf       = msgDst->rbData;
+    const uint8_t* srcBuf = msgSrc->rbData;
+    uint32_t srcCount     = std::min(hdrSrc.rbhBufHeader.biUsed, dataLength);
+
+    hdrDst.rbhTarget    = hdrSrc.rbhTarget;
+    hdrDst.rbhSource    = hdrSrc.rbhSource;
+    hdrDst.rbhMessageId = hdrSrc.rbhMessageId;
+    hdrDst.rbhResult    = hdrSrc.rbhResult;
+    hdrDst.rbhSequenceNr= hdrSrc.rbhSequenceNr;
+    hdrDst.rbhBufHeader.biUsed = srcCount;
+    areg::mem_copy(dstBuf, dataLength, srcBuf, srcCount);
+
+    return hdrDst.rbhBufHeader.biUsed;
+}
+
+void RemoteMessage::buffer_completion_fix() const
+{
+    const areg::MessageHeader* hdr = header();
+    if (hdr == nullptr)
+        return;
+
+    // skip redundant writes when already fixed.
+    if (hdr->rbhChecksum != areg::CHECKSUM_INVALID)
+        return;
+
+    const_cast<areg::MessageHeader *>(hdr)->rbhChecksum = RemoteMessage::_checksum_calculate(reinterpret_cast<const areg::RawMessage &>(*hdr));
+}
+
+uint8_t * RemoteMessage::init_message(const areg::MessageHeader & rmHeader, uint32_t reserve /*= 0*/ )
+{
+    uint32_t sizeUsed{ std::max(rmHeader.rbhBufHeader.biUsed, reserve != 0 ? reserve : 1u) };
+    sizeUsed = areg::align_size(sizeUsed, block_size());
+
+    areg::RawMessage* msg = reinterpret_cast<areg::RawMessage*>(mByteBuffer.get());
+    if ((mByteBuffer.use_count() == 1) && (msg != nullptr))
+    {
+        if (msg->rbHeader.rbhBufHeader.biLength >= sizeUsed)
+        {
+            const uint32_t biLength = msg->rbHeader.rbhBufHeader.biLength;
+            const uint32_t biOffset = msg->rbHeader.rbhBufHeader.biOffset;
+
+            areg::mem_copy(&msg->rbHeader, sizeof(areg::MessageHeader), &rmHeader, sizeof(areg::MessageHeader));
+
+            msg->rbHeader.rbhBufHeader.biLength = biLength;
+            msg->rbHeader.rbhBufHeader.biOffset = biOffset;
+            msg->rbHeader.rbhBufHeader.biUsed   = std::min(rmHeader.rbhBufHeader.biUsed, biLength);
+
+            mPosition  = 0u;
+            mViewStart = 0u;
+            mViewEnd   = 0u;
+            return msg->rbData;
+        }
+    }
+
+    // Slow path: allocate a new buffer.
     invalidate();
 
-    reserve = MACRO_MAX(reserve, 1);
-    unsigned int sizeUsed   = MACRO_MAX(rmHeader.rbhBufHeader.biUsed, reserve);
-    unsigned int hdrSize    = getHeaderSize();
-    unsigned int msgSize    = hdrSize + sizeUsed;
-    unsigned int sizeBuffer = MACRO_ALIGN_SIZE(msgSize, mBlockSize);
-    unsigned int sizeData   = sizeBuffer - hdrSize;
-    unsigned char * result  = DEBUG_NEW unsigned char[sizeBuffer];
-    if ( result != nullptr )
-    {
-        NEMemory::memZero(result, sizeof(NEMemory::sRemoteMessage));
-        NEMemory::sRemoteMessage * msg      = NEMemory::constructElems<NEMemory::sRemoteMessage>(result, 1);
-        NEMemory::sRemoteMessageHeader & dst= msg->rbHeader;
-        dst.rbhBufHeader.biBufSize  = sizeBuffer;
-        dst.rbhBufHeader.biLength   = sizeData;
-        dst.rbhBufHeader.biOffset   = getDataOffset();
-        dst.rbhBufHeader.biBufType  = NEMemory::eBufferType::BufferRemote;
-        dst.rbhBufHeader.biUsed     = rmHeader.rbhBufHeader.biUsed;
-        dst.rbhTarget               = rmHeader.rbhTarget;
-        dst.rbhChecksum             = rmHeader.rbhChecksum;
-        dst.rbhSource               = rmHeader.rbhSource;
-        dst.rbhMessageId            = rmHeader.rbhMessageId;
-        dst.rbhResult               = rmHeader.rbhResult;
-        dst.rbhSequenceNr           = rmHeader.rbhSequenceNr;
-        msg->rbData[0]              = static_cast<NEMemory::BufferData>(0);
+    uint32_t sizeBuffer = sizeUsed + sizeof(areg::MessageHeader);
+    uint8_t * result    = DEBUG_NEW uint8_t[sizeBuffer];
+    if (result == nullptr)
+        return nullptr;
 
-        mByteBuffer = std::shared_ptr<NEMemory::sByteBuffer>(reinterpret_cast<NEMemory::sByteBuffer *>(msg), ByteBufferDeleter());
-    }
+    msg = reinterpret_cast<areg::RawMessage*>(result);
+    areg::MessageHeader& hdr{ msg->rbHeader };
+    areg::mem_copy(&hdr, sizeof(areg::MessageHeader), &rmHeader, sizeof(areg::MessageHeader));
+    hdr.rbhBufHeader.biLength   = sizeUsed;
+    hdr.rbhBufHeader.biOffset   = sizeof(areg::MessageHeader);
+    hdr.rbhBufHeader.biUsed     = 0u;
+    mByteBuffer = std::shared_ptr<areg::RawBuffer>(reinterpret_cast<areg::RawBuffer *>(msg), ByteBufferDeleter());
 
-    return getBuffer();
+    return msg->rbData;
 }
 
 RemoteMessage RemoteMessage::clone(const ITEM_ID & source /*= 0*/, const ITEM_ID & target /*= 0*/) const
 {
     RemoteMessage result;
-    unsigned int reserved{ getSizeUsed() };
-    unsigned char * dst{ result.initMessage(getRemoteMessage()->rbHeader, reserved) };
+    uint32_t reserved{ size_used() };
+    uint8_t * dst{ result.init_message(remote_message()->rbHeader, reserved) };
 
     if (dst != nullptr)
     {
-        if (source != NEService::COOKIE_UNKNOWN)
+        if (source != areg::COOKIE_UNKNOWN)
         {
-            result.setSource(source);
+            result.set_source(source);
         }
 
-        if (target != NEService::COOKIE_UNKNOWN)
+        if (target != areg::COOKIE_UNKNOWN)
         {
-            result.setTarget(target);
+            result.set_target(target);
         }
 
         if (reserved != 0u)
         {
-            const unsigned char * src{ getBuffer() };
-            NEMemory::memCopy(dst, reserved, src, reserved);
-            result.setSizeUsed(reserved);
+            const uint8_t * src{ buffer() };
+            areg::mem_copy(dst, reserved, src, reserved);
+            result.set_size_used(reserved);
         }
     }
 
     return result;
 }
 
-unsigned int RemoteMessage::getDataOffset(void) const
-{
-    return offsetof(NEMemory::sRemoteMessage, rbData);
-}
-
-unsigned int RemoteMessage::getHeaderSize(void) const
-{
-    return sizeof(NEMemory::sRemoteMessage);
-}
+} // namespace areg

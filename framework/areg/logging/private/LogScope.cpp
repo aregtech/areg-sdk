@@ -13,9 +13,9 @@
  * \brief       Log Message object definition.
  ************************************************************************/
 
- /************************************************************************
-  * Include files.
-  ************************************************************************/
+/************************************************************************
+ * Include files.
+ ************************************************************************/
 #include "areg/logging/LogScope.hpp"
 #include "areg/logging/private/LogManager.hpp"
 
@@ -27,65 +27,40 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////////
 
-#if AREG_LOGS
+namespace areg {
 
-LogScope::LogScope( const char * scopeName, NELogging::eLogPriority priority /*= NELogging::PrioNotset*/ )
-    : mScopeId      ( NELogging::makeScopeId(scopeName)  )
-    , mScopePrio    ( priority )
-    , mScopeName    ( scopeName != nullptr ? scopeName : "" )
-    , mIsRegistered ( true )
-    , mSessionId    ( 0 )
+#if AREG_LOGGING
+
+LogScope::~LogScope()
 {
-    LogManager::registerLogScope( self() );
+    LogManager::unregister_log_scope( self() );
 }
 
-LogScope::LogScope(const IEInStream & stream)
-    : mScopeId      ( stream.read32Bits() )
-    , mScopePrio    ( stream.read32Bits() )
-    , mScopeName    ( stream )
-    , mIsRegistered ( false )
-    , mSessionId    ( 0 )
+void LogScope::_register() noexcept
 {
+    LogManager::register_log_scope( self() );
 }
 
-LogScope::~LogScope( void )
+void LogScope::set_priority(const char* newPrio) noexcept
 {
-    if (mIsRegistered)
-    {
-        LogManager::unregisterLogScope(self());
-    }
+    set_priority(static_cast<uint32_t>(areg::string_to_priority(newPrio)));
 }
 
-void LogScope::setPriority(const char* newPrio)
+void LogScope::set_priority(const areg::String& newPrio) noexcept
 {
-    setPriority(NELogging::stringToLogPrio(newPrio));
+    set_priority(static_cast<uint32_t>(areg::string_to_priority(newPrio)));
 }
 
-void LogScope::setPriority(const String& newPrio)
-{
-    setPriority(NELogging::stringToLogPrio(newPrio));
-}
+#else   // AREG_LOGGING
 
-#else   // AREG_LOGS
-
-LogScope::LogScope(const char* /*scopeName*/, NELogging::eLogPriority /*priority*/ /*= NELogging::PrioNotset*/)
-    : mScopeId      ( 0 )
-    , mScopePrio    ( static_cast<unsigned int>(NELogging::eLogPriority::PrioInvalid) )
-    , mScopeName    ( )
-    , mIsRegistered (false)
+LogScope::~LogScope()
 {
 }
 
-LogScope::LogScope(const IEInStream& /*stream*/ )
-    : mScopeId      ( 0 )
-    , mScopePrio    ( static_cast<unsigned int>(NELogging::eLogPriority::PrioInvalid) )
-    , mScopeName    ( )
-    , mIsRegistered (false)
+void LogScope::_register() noexcept
 {
 }
 
-LogScope::~LogScope(void)
-{
-}
+#endif  // AREG_LOGGING
 
-#endif  // AREG_LOGS
+} // namespace areg

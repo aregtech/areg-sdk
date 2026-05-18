@@ -15,13 +15,13 @@
 //               Type "start" to start changing light states.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "aregextend/console/Console.hpp"
 
-#include "common/NECommon.hpp"
+#include "common/TrafficDefs.hpp"
 #include "pubservice/src/TrafficLightService.hpp"
 
 #ifdef _MSC_VER
@@ -39,11 +39,11 @@ BEGIN_MODEL(_modelName)
     // define component thread
     BEGIN_REGISTER_THREAD( _threadName )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( NECommon::SimpleLightControllerName, TrafficLightService )
+        BEGIN_REGISTER_COMPONENT( traffic::SimpleLightControllerName, TrafficLightService )
             // register SimpleTrafficLight and SimpleTrafficSwitch service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NESimpleTrafficLight::ServiceName, NESimpleTrafficLight::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( SimpleTrafficLight::ServiceName, SimpleTrafficLight::InterfaceVersion )
         // end of component description
-        END_REGISTER_COMPONENT( NECommon::SimpleLightControllerName )
+        END_REGISTER_COMPONENT( traffic::SimpleLightControllerName )
     // end of thread description
     END_REGISTER_THREAD( _threadName )
 
@@ -57,21 +57,21 @@ END_MODEL(_modelName)
 int main()
 {
     // Initialize application, enable servicing, routing, timer and watchdog.
-    Application::initApplication(true, true, true, true, true, nullptr);
+    areg::Application::setup(true, true, true, true, true, nullptr);
 
 
     // load model to initialize components
-    Application::loadModel(_modelName);
+    areg::Application::load_model(_modelName);
 
     // The components are initialized. Find the service component thread.
     // It is used to send custom event.
-    Thread * thread = Thread::findThreadByName(_threadName);
+    areg::Thread * thread = areg::Thread::find_by_name(_threadName);
     ASSERT(thread != nullptr );
-    ASSERT(thread->isInstanceOfRuntimeClass("DispatcherThread"));
+    ASSERT(thread->is_runtime("DispatcherThread"));
 
     bool doLoop = true;
-    Console & console = Console::getInstance( );
-    console.enableConsoleInput( true );
+    areg::ext::Console & console = areg::ext::Console::instance( );
+    console.enable_console_input( true );
 
     std::string_view commands[]
     {
@@ -80,7 +80,7 @@ int main()
         , { "start" }
     };
 
-    console.outputTxt( { 0, 0 }, "A demo of a service to send data update notification (PubSub feature)...." );
+    console.output_txt( { 0, 0 }, "A demo of a service to send data update notification (PubSub feature)...." );
 
     do 
     {
@@ -88,46 +88,46 @@ int main()
         //      - 'start'   to switch ON traffic light and start changing states.
         //      - 'stop'    to stop changing states and set traffic light OFF.
         //      - 'quit' or 'q' to quit application(s). This will also send signal to stop clients.
-        console.outputTxt( { 0, 2 }, "============================================" );
-        console.outputTxt( { 0, 3 }, "- Type \"start\" to start the traffic light." );
-        console.outputTxt( { 0, 4 }, "- Type \"stop\"  to stop the traffic light." );
-        console.outputTxt( { 0, 5 }, "- Type \"quit\"  to quit the traffic light." );
-        console.outputTxt( { 0, 6 }, "Type command: " );
-        console.refreshScreen( );
-        console.waitForInput( [&]( const String & cmd ) -> bool
+        console.output_txt( { 0, 2 }, "============================================" );
+        console.output_txt( { 0, 3 }, "- Type \"start\" to start the traffic light." );
+        console.output_txt( { 0, 4 }, "- Type \"stop\"  to stop the traffic light." );
+        console.output_txt( { 0, 5 }, "- Type \"quit\"  to quit the traffic light." );
+        console.output_txt( { 0, 6 }, "Type command: " );
+        console.refresh_screen( );
+        console.wait_for_input( [&]( const areg::String & cmd ) -> bool
             {
-                if ( cmd.compare( commands[0], false ) == NEMath::eCompare::Equal )
+                if ( cmd.compare( commands[0], false ) == areg::Ordering::Equal )
                 {
                     // It is 'quit' --> quit application(s).
-                    DispatcherThread * dispatcher = static_cast<DispatcherThread *>(thread);
-                    TrafficSwitchEvent::sendEvent( TrafficSwitchData( false ), *dispatcher );
+                    areg::DispatcherThread * dispatcher = static_cast<areg::DispatcherThread *>(thread);
+                    TrafficSwitchEvent::send_event( TrafficSwitchData( false ), *dispatcher );
                     doLoop = false; // quit the loop
                 }
-                else if ( cmd.compare( commands[1], false ) == NEMath::eCompare::Equal )
+                else if ( cmd.compare( commands[1], false ) == areg::Ordering::Equal )
                 {
                     // It is 'stop' --> stop the traffic light.
-                    DispatcherThread * dispatcher = static_cast<DispatcherThread *>(thread);
-                    TrafficSwitchEvent::sendEvent( TrafficSwitchData( false ), *dispatcher );
+                    areg::DispatcherThread * dispatcher = static_cast<areg::DispatcherThread *>(thread);
+                    TrafficSwitchEvent::send_event( TrafficSwitchData( false ), *dispatcher );
                 }
-                else if ( cmd.compare( commands[2], false ) == NEMath::eCompare::Equal )
+                else if ( cmd.compare( commands[2], false ) == areg::Ordering::Equal )
                 {
                     // It is 'start' --> start the traffic light.
-                    DispatcherThread * dispatcher = static_cast<DispatcherThread *>(thread);
-                    TrafficSwitchEvent::sendEvent( TrafficSwitchData( true ), *dispatcher );
+                    areg::DispatcherThread * dispatcher = static_cast<areg::DispatcherThread *>(thread);
+                    TrafficSwitchEvent::send_event( TrafficSwitchData( true ), *dispatcher );
                 }
 
                 return true;
             });
 
-        Thread::switchThread();
+        areg::Thread::switch_thread();
 
     } while (doLoop);
         
     // stop and unload components
-    Application::unloadModel(_modelName);
+    areg::Application::unload_model(_modelName);
 
     // release and cleanup resources of application.
-    Application::releaseApplication();
+    areg::Application::release();
 
 	return 0;
 }

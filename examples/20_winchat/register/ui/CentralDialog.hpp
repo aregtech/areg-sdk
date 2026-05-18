@@ -23,27 +23,27 @@ class CentralDialog : public CPropertySheet
 {
     // Construction
 public:
-    CentralDialog( void );	// standard constructor
+    CentralDialog();	// standard constructor
 
                                             // Dialog Data
     enum { TITLE = IDS_APPLICATION_TITLE };
 
 public:
-    static bool StartConnection( const String & ipAddress, unsigned short portNr );
+    static bool StartConnection( const areg::String & ipAddress, uint16_t portNr );
 
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX) override;	// DDX/DDV support
+    void DoDataExchange(CDataExchange* pDX) override;	// DDX/DDV support
 
 protected:
     HICON m_hIcon;
 
     // Generated message map functions
-    virtual BOOL OnInitDialog() override;
+    BOOL OnInitDialog() override;
     afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
     afx_msg void OnPaint();
     afx_msg HCURSOR OnQueryDragIcon();
     afx_msg LRESULT OnCmdServiceConnection(WPARAM wParam, LPARAM lParam);
-    afx_msg void OnRedirectOK( void );
+    afx_msg void OnRedirectOK();
     DECLARE_MESSAGE_MAP()
 
 private:

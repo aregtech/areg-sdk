@@ -15,7 +15,10 @@
  ************************************************************************/
 #include "areg/component/private/TimerEventData.hpp"
 #include "areg/component/Timer.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
+#include "areg/component/DispatcherThread.hpp"
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // TimerEvent class implementation
@@ -24,41 +27,44 @@
 //////////////////////////////////////////////////////////////////////////
 // TimerEvent class, implement Runtime
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_RUNTIME(TimerEvent, TimerEventBase)
+AREG_IMPLEMENT_RUNTIME(TimerEvent, areg::Event)
 
 //////////////////////////////////////////////////////////////////////////
 // TimerEvent class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-TimerEvent::TimerEvent( const TimerEventData & data )
-    : TimerEventBase(Event::eEventType::EventCustomExternal, data)
+TimerEvent::TimerEvent( const TimerEventData & data, areg::EventPriority prio /*= areg::DefaultPriority*/ )
+    : areg::Event(areg::EventType::EventCustomExternal, prio)
+    , mData(data)
 {
     if (mData.mTimer != nullptr)
     {
-        mData.mTimer->_queueTimer();
+        mData.mTimer->_queue_timer();
     }
 }
 
-TimerEvent::TimerEvent( Timer &timer )
-    : TimerEventBase(Event::eEventType::EventCustomExternal, TimerEventData(timer))
+TimerEvent::TimerEvent( Timer & timer, areg::EventPriority prio /*= areg::DefaultPriority*/ )
+    : areg::Event(areg::EventType::EventCustomExternal, prio)
+    , mData(timer)
 {
-    timer._queueTimer();
+    timer._queue_timer();
 }
 
-TimerEvent::TimerEvent(Timer & timer, DispatcherThread & target)
-    : TimerEventBase(Event::eEventType::EventCustomExternal, TimerEventData(timer))
+TimerEvent::TimerEvent(Timer & timer, DispatcherThread & target, areg::EventPriority prio /*= areg::DefaultPriority*/)
+    : areg::Event(areg::EventType::EventCustomExternal, prio)
+    , mData(timer)
 {
-    ASSERT(target.isRunning());
+    ASSERT(target.is_running());
 
-    setEventConsumer(static_cast<IEEventConsumer *>(&timer.getConsumer()));
-    registerForThread(&target);
-    timer._queueTimer();
+    set_event_consumer(static_cast<EventConsumer *>(&timer.consumer()));
+    register_for_thread(&target);
+    timer._queue_timer();
 }
 
-TimerEvent::~TimerEvent( void )
+TimerEvent::~TimerEvent()
 {
     if (mData.mTimer != nullptr)
     {
-        mData.mTimer->_unqueueTimer();
+        mData.mTimer->_unqueue_timer();
         mData.mTimer = nullptr;
     }
 }
@@ -66,23 +72,28 @@ TimerEvent::~TimerEvent( void )
 //////////////////////////////////////////////////////////////////////////
 // TimerEvent class, static methods
 //////////////////////////////////////////////////////////////////////////
-bool TimerEvent::sendEvent( Timer & timer, id_type dispatchThreadId )
+bool TimerEvent::send_event( Timer & timer, id_type dispatchThreadId )
 {
-    return TimerEvent::sendEvent(timer, DispatcherThread::getDispatcherThread(dispatchThreadId));
+    return TimerEvent::send_event(timer, DispatcherThread::dispatcher_thread(dispatchThreadId));
 }
 
-bool TimerEvent::sendEvent(Timer & timer, DispatcherThread & dispatchThread)
+bool TimerEvent::send_event(Timer & timer, DispatcherThread & dispatchThread, areg::EventPriority prio /*= areg::EventPriority::NormalPrio*/)
 {
-    bool result{ false };
-    if ( dispatchThread.isRunning() )
+    if (!dispatchThread.is_running())
+        return false;
+    
+    TimerEvent* timerEvent = DEBUG_NEW TimerEvent(timer, dispatchThread, prio);
+    if (timerEvent == nullptr)
+        return false;
+
+    Event & event = static_cast<Event &>(*timerEvent);
+    const bool result = dispatchThread.event_dispatcher().post_event(event);
+    if (!result)
     {
-        TimerEvent* timerEvent = DEBUG_NEW TimerEvent(timer, dispatchThread);
-        if (timerEvent != nullptr)
-        {
-            static_cast<Event *>(timerEvent)->deliverEvent();
-            result = true;
-        }
+        event.destroy();
     }
 
     return result;
 }
+
+} // namespace areg

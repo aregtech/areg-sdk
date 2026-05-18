@@ -15,7 +15,8 @@
 #include "register/res/stdafx.h"
 #include "register/ui/CentralDialog.hpp"
 #include "register/CentralApp.hpp"
-#include "common/NECommon.hpp"
+#include "register/CentralAppDefs.hpp"
+#include "common/ChatDefs.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
@@ -24,8 +25,8 @@
 #define new DEBUG_NEW
 #endif
 
-#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NECentralApp::eWndCommands::CmdFirst))
-#define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<uint32_t>(NECentralApp::WindowCommand::CmdFirst))
+#define MAKE_MESSAGE(elem)  (static_cast<uint32_t>(elem) + FIRST_MESSAGE)
 
 
 // CAboutDlg dialog used for App About
@@ -77,26 +78,26 @@ CentralDialog::CentralDialog( )
     AddPage( &mPageConnections );
 }
 
-bool CentralDialog::StartConnection( const String & ipAddress, unsigned short portNr )
+bool CentralDialog::StartConnection( const areg::String & ipAddress, uint16_t portNr )
 {
     bool result = false;
     CentralDialog * dlg = static_cast<CentralDialog *>(theApp.GetMainWnd());
 
     if ( dlg != nullptr )
     {
-        if ( Application::startMessageRouting(ipAddress, portNr) )
+        if ( areg::Application::start_message_routing(ipAddress, portNr) )
         {
-            CString nickName    = NECommon::SERVER_NAME;
-            CString dateStart( DateTime::getNow().formatTime().getString() );
+            CString nickName    = chat::SERVER_NAME;
+            CString dateStart( areg::DateTime::now().format_time().as_string() );
             CString message;
 
             std::any data = std::make_any<HWND>(dlg->mPageConnections.GetSafeHwnd());
-            ComponentLoader::setComponentData( NECommon::COMP_NAME_CENTRAL_SERVER, data );
-            if ( Application::loadModel( NECommon::MODEL_NAME_CENTRAL_SERVER ) )
+            areg::ComponentLoader::set_component_data( chat::COMP_NAME_CENTRAL_SERVER, data );
+            if ( areg::Application::load_model( chat::MODEL_NAME_CENTRAL_SERVER ) )
             {
                 message     = _T("Successfully started servicing ...");
                 result = true;
-                ::PostMessage(dlg->GetSafeHwnd(), MAKE_MESSAGE(NECentralApp::eWndCommands::CmdServiceConnection), static_cast<WPARAM>(true), 0 );
+                ::PostMessage(dlg->GetSafeHwnd(), MAKE_MESSAGE(NECentralApp::WindowCommand::CmdServiceConnection), static_cast<WPARAM>(true), 0 );
             }
             else
             {
@@ -122,7 +123,7 @@ BEGIN_MESSAGE_MAP(CentralDialog, CPropertySheet)
     ON_WM_QUERYDRAGICON()
     ON_COMMAND(IDOK, &CentralDialog::OnRedirectOK)
 
-    ON_MESSAGE( MAKE_MESSAGE(NECentralApp::eWndCommands::CmdServiceConnection   ), &CentralDialog::OnCmdServiceConnection )
+    ON_MESSAGE( MAKE_MESSAGE(NECentralApp::WindowCommand::CmdServiceConnection   ), &CentralDialog::OnCmdServiceConnection )
 END_MESSAGE_MAP()
 
 
@@ -204,12 +205,12 @@ void CentralDialog::OnPaint()
         SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
 
         // Center icon in client rectangle
-        int cxIcon = GetSystemMetrics(SM_CXICON);
-        int cyIcon = GetSystemMetrics(SM_CYICON);
+        int32_t cxIcon = GetSystemMetrics(SM_CXICON);
+        int32_t cyIcon = GetSystemMetrics(SM_CYICON);
         CRect rect;
         GetClientRect(&rect);
-        int x = (rect.Width() - cxIcon + 1) / 2;
-        int y = (rect.Height() - cyIcon + 1) / 2;
+        int32_t x = (rect.Width() - cxIcon + 1) / 2;
+        int32_t y = (rect.Height() - cyIcon + 1) / 2;
 
         // Draw the icon
         dc.DrawIcon(x, y, m_hIcon);
@@ -230,13 +231,13 @@ HCURSOR CentralDialog::OnQueryDragIcon()
 LRESULT CentralDialog::OnCmdServiceConnection( WPARAM wParam, LPARAM /*lParam*/)
 {
     bool isConnected = wParam != 0;
-    mPageConnections.ServiceConnected(isConnected);
-    mPageSetupNetwork.ServiceConnected(isConnected);
+    mPageConnections.Connected(isConnected);
+    mPageSetupNetwork.Connected(isConnected);
     this->SetActivePage(&mPageConnections);
     return 0;
 }
 
-void CentralDialog::OnRedirectOK( void )
+void CentralDialog::OnRedirectOK()
 {
     CPropertyPage * active = GetActivePage();
     if ( active == &mPageSetupNetwork )

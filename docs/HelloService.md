@@ -16,18 +16,18 @@ This tutorial demonstrates how to build multithreaded and multiprocess applicati
 
 ## Table of Contents
 
-- [Introduction](#introduction)
-- [What You Will Learn](#what-you-will-learn)
-- [Key Concepts](#key-concepts)
-- [Project Structure](#project-structure)
-- [Service Interface Definition](#service-interface-definition)
-- [Code Generation](#code-generation)
-- [Understanding Models](#understanding-models)
-- [Example Projects](#example-projects)
-  - [onethread](#onethread)
-  - [twothreads](#twothreads)
-  - [multiprocess](#multiprocess)
-- [Running the Multiprocess Example](#running-the-multiprocess-example)
+  - [Introduction](#introduction)
+  - [What You Will Learn](#what-you-will-learn)
+  - [Key Concepts](#key-concepts)
+  - [Project Structure](#project-structure)
+  - [Service Interface Definition](#service-interface-definition)
+  - [Code Generation](#code-generation)
+  - [Understanding Models](#understanding-models)
+  - [Example Projects](#example-projects)
+    - [onethread](#onethread)
+    - [twothreads](#twothreads)
+    - [multiprocess](#multiprocess)
+  - [Running the Multiprocess Example](#running-the-multiprocess-example)
 
 ---
 
@@ -35,10 +35,10 @@ This tutorial demonstrates how to build multithreaded and multiprocess applicati
 
 This example contains three projects under `examples/03_helloservice`. All three reuse the same **ServiceComponent** and **ClientComponent** implementations but demonstrate different execution models:
 
-| Project | Description |
-|---------|-------------|
-| [onethread](../examples/03_helloservice/onethread/) | Service and client run in one thread |
-| [twothreads](../examples/03_helloservice/twothreads/) | Service and client run in separate threads |
+| Project                                                   | Description                                  |
+| --------------------------------------------------------- | -------------------------------------------- |
+| [onethread](../examples/03_helloservice/onethread/)       | Service and client run in one thread         |
+| [twothreads](../examples/03_helloservice/twothreads/)     | Service and client run in separate threads   |
 | [multiprocess](../examples/03_helloservice/multiprocess/) | Service and client run in separate processes |
 
 ---
@@ -62,10 +62,10 @@ This example contains three projects under `examples/03_helloservice`. All three
 
 ### Role Name Rules
 
-| Service Type | Role Name Scope |
-|--------------|-----------------|
-| Local | Unique within the process |
-| Public | Unique across the network |
+| Service Type | Role Name Scope           |
+| ------------ | ------------------------- |
+| Local        | Unique within the process |
+| Public       | Unique across the network |
 
 ### Connection Callbacks
 
@@ -73,12 +73,12 @@ Components receive notifications when connections change:
 
 **Client Component:**
 ```cpp
-void serviceConnected(NEService::eNetConnection status, ProxyBase& proxy)
+void service_connected(areg::NetConnection status, ProxyBase& proxy)
 ```
 
 **Service Component:**
 ```cpp
-bool clientConnected(const ProxyAddress& client, NEService::eServiceConnection connectionStatus)
+bool clientConnected(const ProxyAddress& client, areg::ServiceConnectionState connectionStatus)
 ```
 
 ---
@@ -110,7 +110,7 @@ Create a service interface file that defines the communication contract. The fil
         <Description>Hello world service example</Description>
     </Overview>
     <MethodList>
-        <Method ID="2" Name="HelloService" MethodType="Request" Response="HelloService">
+        <Method ID="2" Name="hello_service" MethodType="Request" Response="hello_service">
             <Description>Request to output a greeting.</Description>
             <ParamList>
                 <Parameter ID="3" Name="client" DataType="String">
@@ -118,7 +118,7 @@ Create a service interface file that defines the communication contract. The fil
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="4" Name="HelloService" MethodType="Response">
+        <Method ID="4" Name="hello_service" MethodType="Response">
             <Description>Response indicating whether the greeting was successful.</Description>
             <ParamList>
                 <Parameter ID="5" Name="success" DataType="bool">
@@ -132,7 +132,7 @@ Create a service interface file that defines the communication contract. The fil
 
 **Key attributes:**
 - `Category="Public"` makes the service accessible across processes (use `Category="Local"` for thread-only services)
-- `MethodType="Request"` with `Response="HelloService"` links the request to its response
+- `MethodType="Request"` with `Response="hello_service"` links the request to its response
 - `MethodType="Response"` defines what the service returns
 
 ---
@@ -144,7 +144,7 @@ Create a service interface file that defines the communication contract. The fil
 
 ### Using CMake
 
-In your `CMakeLists.txt`, use the `addServiceInterface` macro:
+In your `CMakeLists.txt`, use the `addServiceInterface` cmake function:
 
 ```cmake
 addServiceInterface(03_generated examples/03_helloservice/services/HelloService.siml)
@@ -163,11 +163,11 @@ java -jar <areg-sdk>/tools/codegen.jar \
 
 ### Generated Classes
 
-| Class | Purpose |
-|-------|---------|
-| `HelloServiceStub` | Base class for service provider implementation |
-| `HelloServiceClientBase` | Base class for service consumer implementation |
-| `NEHelloService` | Namespace with service constants and types |
+| Class                    | Purpose                                        |
+| ------------------------ | ---------------------------------------------- |
+| `HelloServiceProviderBase`       | Base class for service provider implementation |
+| `HelloServiceConsumerBase` | Base class for service consumer implementation |
+| `HelloService`         | Namespace with service constants and types     |
 
 ---
 
@@ -180,25 +180,27 @@ A **model** defines how threads, components, and services are organized. Models 
 
 ### Model Lifecycle
 
-1. `Application::loadModel()` starts threads and initializes components
+1. `Application::load_model()` starts threads and initializes components
 2. Services become available and clients connect automatically
-3. `Application::unloadModel()` stops threads and releases resources
+3. `Application::unload_model()` stops threads and releases resources
 
 ### Static Model Macros
 
-| Macro | Purpose |
-|-------|---------|
-| `BEGIN_MODEL` / `END_MODEL` | Define a model |
-| `BEGIN_REGISTER_THREAD` / `END_REGISTER_THREAD` | Define a thread |
-| `BEGIN_REGISTER_COMPONENT` / `END_REGISTER_COMPONENT` | Define a component |
-| `REGISTER_IMPLEMENT_SERVICE` | Declare a service the component provides |
-| `REGISTER_DEPENDENCY` | Declare a service the component consumes |
+| Macro                                                 | Purpose                                  |
+| ----------------------------------------------------- | ---------------------------------------- |
+| `BEGIN_MODEL` / `END_MODEL`                           | Define a model                           |
+| `BEGIN_REGISTER_THREAD` / `END_REGISTER_THREAD`       | Define a thread                          |
+| `BEGIN_REGISTER_COMPONENT` / `END_REGISTER_COMPONENT` | Define a component                       |
+| `REGISTER_IMPLEMENT_SERVICE`                          | Declare a service the component provides |
+| `REGISTER_DEPENDENCY`                                 | Declare a service the component consumes |
 
 ---
 
 ## Example Projects
 
 ### onethread
+
+**Project:** 03_onethread
 
 Both service and client run in the same thread. This is the simplest configuration.
 
@@ -211,9 +213,9 @@ Both service and client run in the same thread. This is the simplest configurati
 constexpr char const _model[]{ "ServiceModel" };
 
 BEGIN_MODEL(_model)
-    BEGIN_REGISTER_THREAD("Thread1", NECommon::WATCHDOG_IGNORE)
+    BEGIN_REGISTER_THREAD("Thread1", areg::WATCHDOG_IGNORE)
         BEGIN_REGISTER_COMPONENT("ServiceComponent", ServiceComponent)
-            REGISTER_IMPLEMENT_SERVICE(NEHelloService::ServiceName, NEHelloService::InterfaceVersion)
+            REGISTER_IMPLEMENT_SERVICE(HelloService::ServiceName, HelloService::InterfaceVersion)
         END_REGISTER_COMPONENT("ServiceComponent")
         BEGIN_REGISTER_COMPONENT("ServiceClient", ClientComponent)
             REGISTER_DEPENDENCY("ServiceComponent")
@@ -223,11 +225,11 @@ END_MODEL(_model)
 
 int main()
 {
-    Application::initApplication();
-    Application::loadModel(_model);
-    Application::waitAppQuit();
-    Application::unloadModel(_model);
-    Application::releaseApplication();
+    Application::setup();
+    Application::load_model(_model);
+    Application::wait_quit();
+    Application::unload_model(_model);
+    Application::release();
     return 0;
 }
 ```
@@ -235,6 +237,8 @@ int main()
 ---
 
 ### twothreads
+
+**Project:** 03_twothreads
 
 Service and client run in separate threads within the same process.
 
@@ -247,13 +251,13 @@ Service and client run in separate threads within the same process.
 constexpr char const _model[]{ "ServiceModel" };
 
 BEGIN_MODEL(_model)
-    BEGIN_REGISTER_THREAD("Thread1", NECommon::WATCHDOG_IGNORE)
+    BEGIN_REGISTER_THREAD("Thread1", areg::WATCHDOG_IGNORE)
         BEGIN_REGISTER_COMPONENT("ServiceComponent", ServiceComponent)
-            REGISTER_IMPLEMENT_SERVICE(NEHelloService::ServiceName, NEHelloService::InterfaceVersion)
+            REGISTER_IMPLEMENT_SERVICE(HelloService::ServiceName, HelloService::InterfaceVersion)
         END_REGISTER_COMPONENT("ServiceComponent")
     END_REGISTER_THREAD("Thread1")
 
-    BEGIN_REGISTER_THREAD("Thread2", NECommon::WATCHDOG_IGNORE)
+    BEGIN_REGISTER_THREAD("Thread2", areg::WATCHDOG_IGNORE)
         BEGIN_REGISTER_COMPONENT("ServiceClient", ClientComponent)
             REGISTER_DEPENDENCY("ServiceComponent")
         END_REGISTER_COMPONENT("ServiceClient")
@@ -262,11 +266,11 @@ END_MODEL(_model)
 
 int main()
 {
-    Application::initApplication();
-    Application::loadModel(_model);
-    Application::waitAppQuit();
-    Application::unloadModel(_model);
-    Application::releaseApplication();
+    Application::setup();
+    Application::load_model(_model);
+    Application::wait_quit();
+    Application::unload_model(_model);
+    Application::release();
     return 0;
 }
 ```
@@ -275,25 +279,27 @@ int main()
 
 ### multiprocess
 
+**Projects:** 03_pubservice, 03_pubclient
+
 Service and client run in separate processes, communicating through `mtrouter`.
 
-**Service Process (`serviceproc`):**
+**Service Process (`03_pubservice`):**
 
 ```cpp
 BEGIN_MODEL(_model)
-    BEGIN_REGISTER_THREAD("Thread1", NECommon::WATCHDOG_IGNORE)
+    BEGIN_REGISTER_THREAD("Thread1", areg::WATCHDOG_IGNORE)
         BEGIN_REGISTER_COMPONENT("ServiceComponent", ServiceComponent)
-            REGISTER_IMPLEMENT_SERVICE(NEHelloService::ServiceName, NEHelloService::InterfaceVersion)
+            REGISTER_IMPLEMENT_SERVICE(HelloService::ServiceName, HelloService::InterfaceVersion)
         END_REGISTER_COMPONENT("ServiceComponent")
     END_REGISTER_THREAD("Thread1")
 END_MODEL(_model)
 ```
 
-**Client Process (`clientproc`):**
+**Client Process (`03_pubclient`):**
 
 ```cpp
 BEGIN_MODEL(_model)
-    BEGIN_REGISTER_THREAD("Thread1", NECommon::WATCHDOG_IGNORE)
+    BEGIN_REGISTER_THREAD("Thread1", areg::WATCHDOG_IGNORE)
         BEGIN_REGISTER_COMPONENT("ServiceClient", ClientComponent)
             REGISTER_DEPENDENCY("ServiceComponent")
         END_REGISTER_COMPONENT("ServiceClient")
@@ -318,15 +324,15 @@ The same `ServiceComponent` and `ClientComponent` classes work without modificat
 
    Only one service instance should run:
    ```bash
-   ./serviceproc
+   ./03_pubservice
    ```
 
 3. **Start client processes**
 
    Multiple clients can connect simultaneously:
    ```bash
-   ./clientproc
-   ./clientproc  # Additional clients get unique names automatically
+   ./03_pubclient
+   ./03_pubclient  # Additional clients get unique names automatically
    ```
 
 4. **Observe the communication**

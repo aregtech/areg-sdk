@@ -18,21 +18,18 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/ipc/SocketConnectionBase.hpp"
 
 #include "areg/base/SocketClient.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ClientConnection class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The Client Socket is used to connect to remote host server,
- *          send and receive data. Before sending or receiving any data,
- *          the socket should be created and as soon as connection is not needed,
- *          it should be closed.
- *          Client socket is using only TCP/IP connection. All other types
- *          and protocols are out of scope of this class and are not considered.
+ * \brief   TCP/IP client socket for connecting to remote host, sending and receiving data in
+ *          blocking mode. Supports address resolution and connection state management.
  **/
 class AREG_API ClientConnection : private   SocketConnectionBase
 {
@@ -40,36 +37,25 @@ class AREG_API ClientConnection : private   SocketConnectionBase
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates instance with invalid socket object. Before sending
-     *          or receiving data, the socket should be created and connected to remote host.
-     **/
-    ClientConnection( void );
+    ClientConnection();
 
     /**
-     * \brief   Creates instance of object with invalid socket object. Before sending
-     *          or receiving data, the socket should be created and connected to remote host.
-     *          When instantiated, it resolves host name and port number. If succeeded to resolve,
-     *          it sets resolved IP-address and port number as socket address. If passed hostName is nullptr,
-     *          it resolve connection for localhost.
-     * \param   hostName    Host name or IP-address of remote server to connect. If nullptr, the connection
-     *                      is setup for localhost.
+     * \brief   Creates instance and resolves specified host name and port to socket address.
+     *
+     * \param   hostName    Host name or IP-address of remote server to connect. If nullptr,
+     *                      resolves to localhost.
      * \param   portNr      Port number of remote server to connect, should not be invalid port.
      **/
-    ClientConnection( const String & hostName, unsigned short portNr );
+    ClientConnection( const String & hostName, uint16_t portNr );
 
     /**
-     * \brief   Creates instance of object with invalid socket object. Before sending
-     *          or receiving data, the socket should be created and connected to remote host.
-     *          Specified remoteAddress is a remote server address to connect.
-     * \param   remoteAddress   Address of remote host to connect.
+     * \brief   Creates instance with specified remote server socket address.
+     *
+     * \param   remoteAddress       Address of remote host to connect.
      **/
-    ClientConnection( const NESocket::SocketAddress & remoteAddress );
+    ClientConnection( const areg::SocketAddress & remoteAddress );
 
-    /**
-     * \brief   Destructor.
-     **/
-    virtual ~ClientConnection( void ) = default;
+    virtual ~ClientConnection() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -77,133 +63,156 @@ public:
 public:
 
     /**
-     * \brief   Returns cookie of client connection set by server.
-     *          Cookie is checked when sending or receiving data as
-     *          source or target in Remote Buffer.
+     * \brief   Returns the connection cookie identifier set by server.
      **/
-    const ITEM_ID & getCookie( void ) const;
+    [[nodiscard]]
+    inline const ITEM_ID & cookie() const noexcept;
 
     /**
-     * \brief   Sets cookie of client connection set by server
-     *          Cookie is checked when sending or receiving data as
-     *          source or target in Remote Buffer.
+     * \brief   Sets the connection cookie identifier.
      **/
-    void setCookie(const ITEM_ID & newCookie );
+    inline void set_cookie(const ITEM_ID & newCookie ) noexcept;
 
     /**
-     * \brief   Return Socket Address object.
+     * \brief   Returns the socket address object.
      **/
-    const NESocket::SocketAddress & getAddress( void ) const;
+    [[nodiscard]]
+    inline const areg::SocketAddress & address() const noexcept;
 
     /**
-     * \brief   Sets Socket Address. If hostName is not IP-address, it will 
-     *          try to resolve first then set. The isServer parameter is needed
-     *          to resolve address either for server or for client.
-     *          For accepted sockets this call plays no role, because the
-     *          the address automatically is resolved when accepting connection.
-     * \param   hostName    Host name or IP-address to set. If name is specified,
-     *                      first it will be resolved to get IP-address.
+     * \brief   Resolves host name and sets socket address.
+     *
+     * \param   hostName    Host name or IP-address to set. If name is specified, first it will be
+     *                      resolved to get IP-address.
      * \param   portNr      Valid port number of socket connection.
-     * \return  Returns true if succeeded to resolve and set Socket Address.
+     * \return  Returns true if host name resolution and address setting succeeded.
      **/
-    bool setAddress( const String & hostName, unsigned short portNr );
+    inline bool set_address( const String & hostName, uint16_t portNr );
 
     /**
-     * \brief   Sets socket address. The address should be either invalid
-     *          or already resolved with IP-address.
-     * \param   newAddress  The new address to set.
+     * \brief   Sets socket address from a resolved SocketAddress object.
+     *
+     * \param   newAddress      The new address to set.
      **/
-    void setAddress( const NESocket::SocketAddress & newAddress );
+    inline void set_address( const areg::SocketAddress & newAddress );
 
     /**
-     * \brief   Returns true if existing socket descriptor is valid.
-     *          The function is not checking socket descriptor validation.
+     * \brief   Returns true if socket descriptor is valid.
      **/
-    bool isValid( void ) const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
-     * \brief   Returns the socket object.
+     * \brief   Returns reference to the underlying socket object.
      **/
-    Socket & getSocket( void );
+    [[nodiscard]]
+    inline Socket & socket();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Before sending or receiving any data from remote host,
-     *          call this method to create new socket descriptor and 
-     *          connect to specified remote host and port.
+     * \brief   Creates socket descriptor and connects to specified remote host and port.
+     *
      * \param   hostName    The name of host to connect.
      * \param   portNr      The valid port number to connect.
-     * \return  Returns true if operation succeeded.
+     * \return  Returns true if socket creation and connection succeeded.
      **/
-    bool createSocket( const String & hostName, unsigned short portNr );
+    bool create_socket( const String & hostName, uint16_t portNr );
 
     /**
-     * \brief   Before sending or receiving any data from remote host,
-     *          call this method to create new socket descriptor and 
-     *          connects to existing socket address. The remote host address
-     *          and port number should be already set in socket address.
-     * \return  Returns true if operation succeeded.
+     * \brief   Creates socket descriptor and connects to existing socket address. Address must be
+     *          set before calling.
+     *
+     * \return  Returns true if socket creation and connection succeeded.
      **/
-    bool createSocket( void );
+    bool create_socket();
 
     /**
-     * \brief   Closes existing socket.
-     *          The call will disconnect from remote server.
+     * \brief   Closes the socket and disconnects from remote server.
      **/
-    void closeSocket( void );
+    void close_socket();
 
 public:
     /**
-     * \brief   If socket is valid, sends data using existing socket connection and returns length in bytes
-     *          of data in Remote Buffer. And returns negative number if either socket is invalid,
-     *          or failed to send data to remote host. No data will be sent, if Remote Buffer is empty.
-     *          Before sending data, the method will check and validate existing checksum in buffer
-     *          structure. And if checksum is invalid, the data will not be sent to remote target.
-     *          If checksum is invalid, the returned value is zero.
-     *          Note:   The returned value of sent data (used data length) will be different of total buffer length.
-     *          Note:   If Remote Buffer is empty, nothing will be sent.
-     *          Note:   The call is blocking and method will not return until all data are not sent
-     *                  or if data sending fails.
-     *          Note:   Check and set checksum before sending data.
-     * \param   in_message  The instance of buffer to send. The checksum number of Remote Buffer object
-     *                      will be checked before sending. If checksum is invalid, the data will not be sent.
-     * \return  Returns length in bytes of data in Remote Buffer sent to remote host. 
-     *          Returns negative number if socket is not valid of failed to send.
-     *          Returns zero, if checksum in Remote Buffer was not validated or Remote Buffer object is empty.
+     * \brief   Sends message data via socket connection. Validates checksum before sending. Returns
+     *          bytes sent, zero if invalid checksum, or negative on failure.
+     *
+     * \param   in_message      The instance of buffer to send. The checksum number of Remote Buffer
+     *                          object will be checked before sending. If checksum is invalid, the
+     *                          data will not be sent.
+     * \return  Returns length in bytes of data sent; zero if checksum invalid or buffer empty;
+     *          negative if socket invalid or send failed.
      **/
-    int sendMessage( const RemoteMessage & in_message ) const;
+    inline int32_t send_message( const RemoteMessage & in_message ) const;
 
     /**
-     * \brief   If socket is valid, receives data using existing socket connection and returns length in bytes
-     *          of data in Remote Buffer. And returns negative number if either socket is invalid,
-     *          or failed to receive data from remote host. If Remote Buffer data is empty or checksum is,
-     *          not matching, it will return zero.
-     *          Note:   The returned value of received data (used data length) will be different of total buffer length.
-     *          Note:   If received Remote Buffer was empty, on output out_message in invalid.
-     *          Note:   The call is blocking and method will not return until all data are not received
-     *                  or if data receiving fails.
-     * \param   out_message The instance of Remote Buffer to receive data. The checksum number of Remote Buffer object
-     *                      will be checked after receiving data. If checksum is invalid, the data will invalidated and dropped.
-     * \return  Returns length in bytes of data in Remote Buffer received from remote host.
-     *          Returns negative number if socket is not valid of failed to send.
-     *          Returns zero, if checksum in Remote Buffer was not validated or data in Remote Buffer object is empty.
+     * \brief   Sends a batch of messages via scatter-gather (writev / WSASend) in a single syscall.
+     *
+     * \param   messages    Array of pointers to messages to send. Entries may be nullptr (skipped).
+     * \param   count       Number of entries in the array.
+     * \return  Returns total bytes sent on success, or 0 / negative on failure.
+     *
+     * \note    Threading: call only from the send thread that owns this connection.
      **/
-    int receiveMessage( RemoteMessage & out_message ) const;
+    inline int32_t send_messages_batch( const RemoteMessage* const* messages, uint32_t count ) const;
 
     /**
-     * \brief   Sets socket in read-only more, i.e. no send message is possible anymore.
+     * \brief   Sends a batch of messages via scatter-gather (writev / WSASend) in a single syscall.
+     *
+     * \param   messages    Array of pointers to messages to send. Entries may be nullptr (skipped).
+     * \param   count       Number of entries in the array.
+     * \return  Returns total bytes sent on success, or 0 / negative on failure.
+     *
+     * \note    Threading: call only from the send thread that owns this connection.
+     **/
+    inline int32_t send_messages_batch(const areg::IoBuffer* ioBuffer, uint32_t count, uint32_t totalSize = 0) const;
+
+    /**
+     * \brief   Receives message data via socket connection. Validates checksum after receiving.
+     *          Returns bytes received, zero if invalid checksum, or negative on failure.
+     *
+     * \param[in,out] out_message     The instance of Remote Buffer to receive data. The checksum
+     *                                number of Remote Buffer object will be checked after receiving
+     *                                data. If checksum is invalid, the data will invalidated and
+     *                                dropped.
+     * \return  Returns length in bytes of data received; zero if checksum invalid or buffer empty;
+     *          negative if socket invalid or receive failed.
+     **/
+    inline int32_t receive_message( RemoteMessage & out_message ) const;
+
+    /**
+     * \brief   Configures the socket-buffer sizes applied when create_socket() succeeds.
+     *          Call before create_socket().  Values of zero leave the platform defaults.
+     *          Windows applies only SO_SNDBUF and preserves OS receive-window autotuning.
+     *
+     * \param   sendBuf     Desired SO_SNDBUF size in bytes (0 = keep default).
+     * \param   recvBuf     Desired SO_RCVBUF size in bytes (0 = keep default).
+     **/
+    inline void set_socket_buffers(uint32_t sendBuf, uint32_t recvBuf) noexcept;
+
+    /**
+     * \brief   Configures the SO_SNDTIMEO value applied when create_socket() succeeds.
+     *          Call before create_socket().  A value of zero leaves the compile-time default.
+     *
+     * \param   timeoutMs   Desired SO_SNDTIMEO in milliseconds (0 = keep default).
+     **/
+    inline void set_send_timeout(uint32_t timeoutMs) noexcept;
+
+    /**
+     * \brief   Sets socket to read-only mode, disabling message sending.
+     *
      * \return  Returns true if operation succeeds.
      **/
-    bool disableSend( void );
+    inline bool disable_send();
 
     /**
-     * \brief   Sets socket in write-only more, i.e. no receive message is possible anymore.
+     * \brief   Sets socket to write-only mode, disabling message receiving.
+     *
      * \return  Returns true if operation succeeds.
      **/
-    bool disableReceive( void );
+    inline bool disable_receive();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -219,70 +228,107 @@ private:
      **/
     ITEM_ID         mCookie;
 
+    /**
+     * \brief   SO_SNDBUF size applied after create_socket() succeeds.
+     **/
+    uint32_t        mSockSendBuf;
+
+    /**
+     * \brief   Requested SO_RCVBUF size for create_socket().
+     **/
+    uint32_t        mSockRecvBuf;
+
+    /**
+     * \brief   SO_SNDTIMEO value in ms applied after create_socket() succeeds.
+     **/
+    uint32_t        mSockSendTimeoutMs;
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( ClientConnection );
+    AREG_NOCOPY_NOMOVE( ClientConnection );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ClientConnection class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline const ITEM_ID & ClientConnection::getCookie( void ) const
+inline const ITEM_ID & ClientConnection::cookie() const noexcept
 {
     return mCookie;
 }
 
-inline void ClientConnection::setCookie(const ITEM_ID & newCookie )
+inline void ClientConnection::set_cookie(const ITEM_ID & newCookie ) noexcept
 {
     mCookie = newCookie;
 }
 
-inline const NESocket::SocketAddress & ClientConnection::getAddress( void ) const
+inline const areg::SocketAddress & ClientConnection::address() const noexcept
 {
-    return mClientSocket.getAddress();
+    return mClientSocket.address();
 }
 
-inline bool ClientConnection::setAddress(const String& hostName, unsigned short portNr)
+inline bool ClientConnection::set_address(const String& hostName, uint16_t portNr)
 {
-    return mClientSocket.setAddress(hostName, portNr, false);
+    return mClientSocket.set_address(hostName, portNr, false);
 }
 
-inline void ClientConnection::setAddress( const NESocket::SocketAddress & newAddress )
+inline void ClientConnection::set_address( const areg::SocketAddress & newAddress )
 {
-    mClientSocket.setAddress(newAddress);
+    mClientSocket.set_address(newAddress);
 }
 
-inline bool ClientConnection::isValid( void ) const
+inline bool ClientConnection::is_valid() const noexcept
 {
-    return mClientSocket.isValid();
+    return mClientSocket.is_valid();
 }
 
-inline bool ClientConnection::disableSend( void )
+inline bool ClientConnection::disable_send()
 {
-    return mClientSocket.disableSend( );
+    return mClientSocket.disable_send( );
 }
 
-inline bool ClientConnection::disableReceive( void )
+inline bool ClientConnection::disable_receive()
 {
-    return mClientSocket.disableReceive();
+    return mClientSocket.disable_receive();
 }
 
-inline Socket & ClientConnection::getSocket( void )
+inline Socket & ClientConnection::socket()
 {
     return mClientSocket;
 }
 
-inline int ClientConnection::sendMessage(const RemoteMessage & in_message) const
+inline int32_t ClientConnection::send_message(const RemoteMessage & in_message) const
 {
-    return SocketConnectionBase::sendMessage(in_message, mClientSocket);
+    return SocketConnectionBase::send_message(in_message, mClientSocket);
 }
 
-inline int ClientConnection::receiveMessage(RemoteMessage & out_message) const
+inline int32_t ClientConnection::send_messages_batch(const RemoteMessage* const* messages, uint32_t count) const
 {
-    return SocketConnectionBase::receiveMessage(out_message, mClientSocket);
+    return SocketConnectionBase::send_messages_batch(messages, count, mClientSocket);
 }
 
+inline int32_t ClientConnection::send_messages_batch(const areg::IoBuffer* ioBuffer, uint32_t count, uint32_t totalSize) const
+{
+    return SocketConnectionBase::send_messages_batch(ioBuffer, count, mClientSocket, totalSize);
+}
+
+inline int32_t ClientConnection::receive_message(RemoteMessage & out_message) const
+{
+    return SocketConnectionBase::receive_message(out_message, mClientSocket);
+}
+
+inline void ClientConnection::set_socket_buffers(uint32_t sendBuf, uint32_t recvBuf) noexcept
+{
+    mSockSendBuf = (sendBuf > 0) ? sendBuf : mSockSendBuf;
+    mSockRecvBuf = (recvBuf > 0) ? recvBuf : mSockRecvBuf;
+}
+
+inline void ClientConnection::set_send_timeout(uint32_t timeoutMs) noexcept
+{
+    mSockSendTimeoutMs = (timeoutMs > 0) ? timeoutMs : mSockSendTimeoutMs;
+}
+
+} // namespace areg
 #endif  // AREG_IPC_CLIENTCONNECTION_HPP

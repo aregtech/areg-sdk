@@ -17,130 +17,132 @@
 
 #include "areg/component/StubAddress.hpp"
 #include "areg/component/ProxyAddress.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 #include "areg/component/private/ServiceManager.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceManagerEventData class implementation
 //////////////////////////////////////////////////////////////////////////
 
-ServiceManagerEventData ServiceManagerEventData::stopMessageRouterClient(void)
+ServiceManagerEventData ServiceManagerEventData::stop_router_client()
 {
-    return ServiceManagerEventData( ServiceManagerEventData::eServiceManagerCommands::CMD_StopRoutingClient );
+    return ServiceManagerEventData( ServiceManagerEventData::ServiceManagerCommand::CMD_StopRoutingClient );
 }
 
-ServiceManagerEventData ServiceManagerEventData::shutdownServiceManager(void)
+ServiceManagerEventData ServiceManagerEventData::shutdown_service_manager()
 {
-    return ServiceManagerEventData( ServiceManagerEventData::eServiceManagerCommands::CMD_ShutdownService );
+    return ServiceManagerEventData( ServiceManagerEventData::ServiceManagerCommand::CMD_ShutdownService );
 }
 
-ServiceManagerEventData ServiceManagerEventData::registerProxy(const ProxyAddress & addrProxy)
+ServiceManagerEventData ServiceManagerEventData::register_proxy(const ProxyAddress & addrProxy)
 {
-    ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterProxy );
-    IEOutStream & stream = data.getWriteStream();
+    ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy );
+    OutStream & stream = data.write_stream();
     stream << addrProxy;
-    stream << addrProxy.getChannel();
+    stream << addrProxy.channel();
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::unregisterProxy( const ProxyAddress & addrProxy, NEService::eDisconnectReason reason )
+ServiceManagerEventData ServiceManagerEventData::unregister_proxy( const ProxyAddress & addrProxy, areg::DisconnectReason reason )
 {
-    ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterProxy );
-    IEOutStream & stream = data.getWriteStream();
+    ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy );
+    OutStream & stream = data.write_stream();
     stream << addrProxy;
-    stream << addrProxy.getChannel();
+    stream << addrProxy.channel();
     stream << reason;
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::registerStub(const StubAddress & addrStub)
+ServiceManagerEventData ServiceManagerEventData::register_stub(const StubAddress & addrStub)
 {
-    ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterStub );
-    IEOutStream & stream = data.getWriteStream();
+    ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProvider);
+    OutStream & stream = data.write_stream();
     stream << addrStub;
-    stream << addrStub.getChannel();
+    stream << addrStub.channel();
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::unregisterStub( const StubAddress & addrStub, NEService::eDisconnectReason reason )
+ServiceManagerEventData ServiceManagerEventData::unregister_stub( const StubAddress & addrStub, areg::DisconnectReason reason )
 {
-    ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterStub );
-    IEOutStream & stream = data.getWriteStream();
+    ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProvider);
+    OutStream & stream = data.write_stream();
     stream << addrStub;
-    stream << addrStub.getChannel();
+    stream << addrStub.channel();
     stream << reason;
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::configureConnection(NERemoteService::eRemoteServices service, unsigned int connectTypes)
+ServiceManagerEventData ServiceManagerEventData::configure_connection(areg::RemoteServiceKind service, uint32_t connectTypes)
 {
-    ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_ConfigureConnection );
-    IEOutStream & stream = data.getWriteStream();
+    ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection );
+    OutStream & stream = data.write_stream();
     stream << service;
     stream << connectTypes;
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::startConnection(NERemoteService::eRemoteServices service, unsigned int connectTypes)
+ServiceManagerEventData ServiceManagerEventData::start_connection(areg::RemoteServiceKind service, uint32_t connectTypes)
 {
-    ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_StartConnection );
-    IEOutStream & stream = data.getWriteStream();
+    ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection );
+    OutStream & stream = data.write_stream();
     stream << service;
     stream << connectTypes;
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::startNetConnection( const String & ipAddress, unsigned short portNr )
+ServiceManagerEventData ServiceManagerEventData::start_net_connection( const String & ipAddress, uint16_t portNr )
 {
-    ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_StartNetConnection );
-    IEOutStream & stream = data.getWriteStream( );
+    ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection );
+    OutStream & stream = data.write_stream( );
     stream << ipAddress;
     stream << portNr;
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::stopConnection(void)
+ServiceManagerEventData ServiceManagerEventData::stop_connection()
 {
-    return ServiceManagerEventData( ServiceManagerEventData::eServiceManagerCommands::CMD_StopConnection );
+    return ServiceManagerEventData( ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection );
 }
 
-ServiceManagerEventData ServiceManagerEventData::registerConnection(const Channel & channel)
+ServiceManagerEventData ServiceManagerEventData::register_connection(const Channel & channel)
 {
-    ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterConnection );
-    IEOutStream & stream = data.getWriteStream();
+    ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterConnection );
+    OutStream & stream = data.write_stream();
     stream << channel;
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::unregisterConnection(const Channel & channel)
+ServiceManagerEventData ServiceManagerEventData::unregister_connection(const Channel & channel)
 {
-    ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterConnection );
-    IEOutStream & stream = data.getWriteStream();
+    ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterConnection );
+    OutStream & stream = data.write_stream();
     stream << channel;
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::lostConnection(const Channel & channel)
+ServiceManagerEventData ServiceManagerEventData::lost_connection(const Channel & channel)
 {
-    ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_LostConnection );
-    IEOutStream & stream = data.getWriteStream();
+    ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection );
+    OutStream & stream = data.write_stream();
     stream << channel;
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::terminateComponentThread(const String& threadName)
+ServiceManagerEventData ServiceManagerEventData::terminate_component_thread(const String& threadName)
 {
-    ServiceManagerEventData data(ServiceManagerEventData::eServiceManagerCommands::CMD_TerminateComponentThread);
-    IEOutStream& stream = data.getWriteStream();
+    ServiceManagerEventData data(ServiceManagerEventData::ServiceManagerCommand::CMD_TerminateComponentThread);
+    OutStream& stream = data.write_stream();
     stream << threadName;
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::createComponentThread(const String& threadName)
+ServiceManagerEventData ServiceManagerEventData::create_component_thread(const String& threadName)
 {
-    ServiceManagerEventData data(ServiceManagerEventData::eServiceManagerCommands::CMD_StartComponentThread);
-    IEOutStream& stream = data.getWriteStream();
+    ServiceManagerEventData data(ServiceManagerEventData::ServiceManagerCommand::CMD_StartComponentThread);
+    OutStream& stream = data.write_stream();
     stream << threadName;
     return data;
 }
 
+} // namespace areg

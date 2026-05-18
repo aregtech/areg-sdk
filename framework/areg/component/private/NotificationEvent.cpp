@@ -16,6 +16,7 @@
 #include "areg/component/NotificationEvent.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/ProxyBase.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // NotificationEventData class implementation
@@ -24,7 +25,7 @@
 //////////////////////////////////////////////////////////////////////////
 // NotificationEventData class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-NotificationEventData::NotificationEventData( const ProxyBase & proxy, NEService::eResultType notifyType, unsigned int notifyId, const SequenceNumber & seqNr )
+NotificationEventData::NotificationEventData( const ProxyBase & proxy, areg::ResultType notifyType, uint32_t notifyId, const SequenceNumber & seqNr )
     : mProxy        (&proxy)
     , mNotifyType   (notifyType)
     , mNotifyId     (notifyId)
@@ -84,19 +85,27 @@ NotificationEventData & NotificationEventData::operator = ( NotificationEventDat
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, implement runtime
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_RUNTIME_EVENT(NotificationEvent, Event)
+AREG_IMPLEMENT_RUNTIME_EVENT(NotificationEvent, Event)
 
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, static methods
 //////////////////////////////////////////////////////////////////////////
-void NotificationEvent::sendEvent( const NotificationEventData& data, IENotificationEventConsumer* caller /*= nullptr*/ )
+void NotificationEvent::send_event( const NotificationEventData& data, NotificationConsumer* caller /*= nullptr*/ )
 {
     NotificationEvent* eventElem = DEBUG_NEW NotificationEvent(data);
     if (eventElem != nullptr)
     {
         if (caller != nullptr)
-            eventElem->setEventConsumer(static_cast<IEEventConsumer *>(caller));
-        static_cast<Event *>(eventElem)->deliverEvent();
+        {
+            eventElem->set_event_consumer(static_cast<EventConsumer *>(caller));
+        }
+
+        if ((eventElem->mTargetThread != nullptr) && eventElem->mTargetThread->event_dispatcher().post_event(*eventElem))
+        {
+            return;
+        }
+
+        eventElem->destroy();
     }
 }
 
@@ -104,35 +113,37 @@ void NotificationEvent::sendEvent( const NotificationEventData& data, IENotifica
 // NotificationEvent class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 NotificationEvent::NotificationEvent( const NotificationEventData& data )
-    : Event (Event::eEventType::EventNotifyClient)
+    : Event (areg::EventType::EventNotifyClient)
     , mData (data)
 {
-    setTargetThread();
+    set_target_thread();
 }
 
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, methods
 //////////////////////////////////////////////////////////////////////////
-void NotificationEvent::setTargetThread( void )
+void NotificationEvent::set_target_thread()
 {
-    const ProxyBase * proxy = mData.getProxy();
-    DispatcherThread& dispThread = proxy != nullptr ? proxy->getProxyDispatcherThread() : DispatcherThread::getCurrentDispatcherThread();
-    ASSERT(dispThread.isValid());
-    registerForThread(&dispThread);
+    const ProxyBase * proxy = mData.service_proxy();
+    DispatcherThread& dispThread = proxy != nullptr ? proxy->proxy_dispatcher_thread() : DispatcherThread::current_dispatcher_thread();
+    ASSERT(dispThread.is_valid());
+    register_for_thread(&dispThread);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// IENotificationEventConsumer class implementation
+// NotificationConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// IENotificationEventConsumer class, methods
+// NotificationConsumer class, methods
 //////////////////////////////////////////////////////////////////////////
-void IENotificationEventConsumer::startEventProcessing( Event& eventElem )
+void NotificationConsumer::start_event_processing( Event& eventElem )
 {
-    NotificationEvent* eventNotify = RUNTIME_CAST(&eventElem, NotificationEvent);
+    NotificationEvent* eventNotify = AREG_RUNTIME_CAST(&eventElem, NotificationEvent);
     if (eventNotify != nullptr)
     {
-        processNotificationEvent(*eventNotify);
+        process_notification_event(*eventNotify);
     }
 }
+
+} // namespace areg

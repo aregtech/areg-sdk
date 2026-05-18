@@ -15,124 +15,146 @@
 
 #include "areg/logging/ScopeMessage.hpp"
 
+#include "areg/base/DateTime.hpp"
 #include "areg/logging/LogScope.hpp"
-#include "areg/logging/private/LogMessage.hpp"
 #include "areg/logging/private/LoggingEvent.hpp"
 #include "areg/logging/private/LogManager.hpp"
 
 #include <stdarg.h>
+#include <utility>
 
-#if AREG_LOGS
+namespace areg {
+
+#if AREG_LOGGING
 
 ScopeMessage::ScopeMessage( const LogScope & logScope )
-    : mScopeName( logScope.getScopeName() )
-    , mScopeId  ( logScope.mScopeId       )
-    , mSessionId( logScope.nextSession()  )
-    , mTimestamp( DateTime::getNow()      )
-    , mScopePrio( logScope.mScopePrio     )
+    : mScope    ( logScope )
+    , mSessionId( logScope.mScopePrio != 0u ? logScope.next_session() : 0 )
+    , mTimestamp( logScope.mScopePrio != 0u ? static_cast<TIME64>(DateTime::timestamp()) : static_cast<TIME64>(0u) )
 {
-    if ( isScopeEnabled() )
+    if ( is_scope_enabled() )
     {
-        LogMessage msg{ NELogging::eLogMessageType::LogMessageScopeEnter, mScopeId, mSessionId, 0u, NELogging::PrioScope, mScopeName };
-        LogManager::logMessage(msg);
+        RemoteMessage msg = areg::make_log_message( areg::LogMessageType::ScopeEnter
+                                                  , logScope.mScopeId
+                                                  , mSessionId
+                                                  , 0u
+                                                  , areg::LogPriority::PrioScope
+                                                  , mScope.name().data()
+                                                  , static_cast<uint32_t>(mScope.name().size()));
+        LogManager::log_message(std::move(msg));
     }
 }
 
-ScopeMessage::~ScopeMessage( void )
+ScopeMessage::~ScopeMessage()
 {
-    if ( isScopeEnabled() )
+    if ( is_scope_enabled() )
     {
-        LogMessage msg{ NELogging::eLogMessageType::LogMessageScopeExit, mScopeId, mSessionId, mTimestamp, NELogging::PrioScope, mScopeName };
-        LogManager::logMessage(msg);
+        RemoteMessage msg = areg::make_log_message( areg::LogMessageType::ScopeExit
+                                                  , mScope.mScopeId
+                                                  , mSessionId
+                                                  , mTimestamp
+                                                  , areg::LogPriority::PrioScope
+                                                  , mScope.name().data()
+                                                  , static_cast<uint32_t>(mScope.name().size()));
+        LogManager::log_message(std::move(msg));
     }
 }
 
-void ScopeMessage::logDebug( const char * format, ... ) const
+void ScopeMessage::log_debug( const char * format, ... ) const
 {
-    if ( isDbgEnabled() )
+    if ( is_dbg_enabled() )
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_sendLog(mScopeId, mSessionId, mTimestamp, NELogging::PrioDebug, format, args);
+        ScopeMessage::_send_log(mScope.id(), mSessionId, mTimestamp, areg::LogPriority::PrioDebug, format, args);
         va_end(args);
     }
 }
 
-void ScopeMessage::logInfo( const char * format, ... ) const
+void ScopeMessage::log_info( const char * format, ... ) const
 {
-    if ( isInfoEnabled() )
+    if ( is_info_enabled() )
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_sendLog(mScopeId, mSessionId, mTimestamp, NELogging::PrioInfo, format, args);
+        ScopeMessage::_send_log(mScope.id(), mSessionId, mTimestamp, areg::LogPriority::PrioInfo, format, args);
         va_end(args);
     }
 }
 
-void ScopeMessage::logWarning(const char * format, ...) const
+void ScopeMessage::log_warning(const char * format, ...) const
 {
-    if ( isWarnEnabled() )
+    if ( is_warn_enabled() )
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_sendLog(mScopeId, mSessionId, mTimestamp, NELogging::PrioWarning, format, args);
+        ScopeMessage::_send_log(mScope.id(), mSessionId, mTimestamp, areg::LogPriority::PrioWarning, format, args);
         va_end(args);
     }
 }
 
-void ScopeMessage::logError( const char * format, ... ) const
+void ScopeMessage::log_error( const char * format, ... ) const
 {
-    if ( isErrEnabled() )
+    if ( is_err_enabled() )
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_sendLog(mScopeId, mSessionId, mTimestamp, NELogging::PrioError, format, args);
+        ScopeMessage::_send_log(mScope.id(), mSessionId, mTimestamp, areg::LogPriority::PrioError, format, args);
         va_end(args);
     }
 }
 
-void ScopeMessage::logFatal( const char * format, ... ) const
+void ScopeMessage::log_fatal( const char * format, ... ) const
 {
-    if ( isFatalEnabled() )
+    if ( is_fatal_enabled() )
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_sendLog(mScopeId, mSessionId, mTimestamp, NELogging::PrioFatal, format, args);
+        ScopeMessage::_send_log(mScope.id(), mSessionId, mTimestamp, areg::LogPriority::PrioFatal, format, args);
         va_end(args);
     }
 }
 
-void ScopeMessage::logMessage(NELogging::eLogPriority logPrio, const char * format, ...)
+void ScopeMessage::log_message(areg::LogPriority logPrio, const char * format, ...)
+{
+    if ( is_prio_enabled(logPrio) )
+    {
+        va_list args;
+        va_start(args, format);
+        ScopeMessage::_send_log(mScope.id(), mSessionId, mTimestamp, logPrio, format, args);
+        va_end(args);
+    }
+}
+
+void ScopeMessage::log( areg::LogPriority logPrio, const char * format, ... ) 
 {
     va_list args;
     va_start(args, format);
-    ScopeMessage::_sendLog(mScopeId, mSessionId, mTimestamp, logPrio, format, args);
+    ScopeMessage::_send_log(areg::LOG_SCOPE_ID_NONE, 0u, 0u, logPrio, format, args);
     va_end(args);
 }
 
-void ScopeMessage::log( NELogging::eLogPriority logPrio, const char * format, ... ) 
+inline void ScopeMessage::_send_log( uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const char * format, va_list args )
 {
-    va_list args;
-    va_start(args, format);
-    ScopeMessage::_sendLog(NELogging::LOG_SCOPE_ID_NONE, 0u, 0u, logPrio, format, args);
-    va_end(args);
+    RemoteMessage msg = areg::make_log_message(areg::LogMessageType::MessageText, scopeId, sessionId, scopeStamp, msgPrio, nullptr, 0u);
+    if (!msg.is_valid())
+        return;
+
+    areg::LogEntry* log = reinterpret_cast<areg::LogEntry*>(msg.buffer());
+    log->logMessageLen = static_cast<uint32_t>(String::format_string_list(log->logMessage, areg::LOG_MSG_SIZE, format, args));
+    LogManager::log_message(std::move(msg));
 }
 
-inline void ScopeMessage::_sendLog( unsigned int scopeId, unsigned int sessionId, TIME64 scopeStamp, NELogging::eLogPriority msgPrio, const char * format, va_list args )
-{
-    LogMessage logData(NELogging::eLogMessageType::LogMessageText, scopeId, sessionId, scopeStamp, msgPrio, nullptr, 0);
-    logData.logMessageLen = static_cast<uint32_t>(String::formatStringList( logData.logMessage, NELogging::LOG_MESSAGE_IZE, format, args ));
-    LogManager::logMessage( logData );
-}
+#else   // AREG_LOGGING
 
-#else   // AREG_LOGS
-
-ScopeMessage::ScopeMessage(const LogScope& /*logScope*/)
+ScopeMessage::ScopeMessage(const areg::LogScope& /*logScope*/)
 {
 }
 
-ScopeMessage::~ScopeMessage(void)
+ScopeMessage::~ScopeMessage()
 {
 }
 
-#endif // AREG_LOGS
+#endif // AREG_LOGGING
+
+} // namespace areg

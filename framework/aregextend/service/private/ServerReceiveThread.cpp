@@ -16,159 +16,212 @@
 
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/SocketAccepted.hpp"
-#include "areg/ipc/private/NEConnection.hpp"
-#include "areg/ipc/IERemoteMessageHandler.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/base/SocketDefs.hpp"
+#include "areg/component/ExitEvent.hpp"
+#include "areg/ipc/private/ConnectionDefs.hpp"
+#include "areg/ipc/RemoteMessageHandler.hpp"
+#include "areg/logging/areg_log.h"
 
-#include "aregextend/service/IEServiceConnectionHandler.hpp"
+#include "aregextend/service/ConnectionHandler.hpp"
 #include "aregextend/service/ServerConnection.hpp"
+#include "aregextend/service/private/ServiceThreadHelper.hpp"
 
+namespace areg::ext {
 
-DEF_LOG_SCOPE(areg_aregextend_service_ServerReceiveThread_runDispatcher);
+DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_ServerReceiveThread, run_dispatcher);
+DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_ServerReceiveThread, _process_connection_event);
 
-ServerReceiveThread::ServerReceiveThread( IEServiceConnectionHandler & connectHandler, IERemoteMessageHandler & remoteService, ServerConnection & connection )
-    : DispatcherThread  ( NEConnection::SERVER_RECEIVE_MESSAGE_THREAD, NECommon::DEFAULT_BLOCK_SIZE, NECommon::QUEUE_SIZE_MAXIMUM )
+ServerReceiveThread::ServerReceiveThread( ConnectionHandler & connectHandler, RemoteMessageHandler & remoteService, ServerConnection & connection )
+    : DispatcherThread  ( areg::SERVER_RECEIVE_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_SIZE_MAXIMUM )
     , mConnectHandler   ( connectHandler )
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
-    , mBytesReceive     ( 0 )
-    , mSaveDataReceive  ( false )
+    , mRecvStats        ( )
 {
 }
 
-bool ServerReceiveThread::runDispatcher(void)
+void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const areg::SocketAddress & addrAccepted, areg::RemoteMessage & msgReceived)
 {
-    LOG_SCOPE( areg_aregextend_service_ServerReceiveThread_runDispatcher );
-    LOG_DBG("Starting dispatcher [ %s ]", getName().getString());
-
-    readyForEvents(true);
-    int whichEvent{ static_cast<int>(EventDispatcherBase::eEventOrder::EventError) };
-    if ( mConnection.serverListen( NESocket::MAXIMUM_LISTEN_QUEUE_SIZE) )
+    DEBUG_LOG_SCOPE( areg_aregextend_service_ServerReceiveThread, _process_connection_event );
+    SocketAccepted clientSocket;
+    if (!mConnection.is_connection_accepted(hSocket, clientSocket))
     {
-        IESyncObject* syncObjects[2] = {&mEventExit, &mEventQueue};
+        if ( !addrAccepted.is_valid() )
+        {
+            DEBUG_LOG_WARN("Socket [ %u ] is no longer registered, it was deregistered while still in the event queue. Ignoring.", hSocket);
+            return;
+        }
+
+        clientSocket = SocketAccepted(hSocket, std::move(addrAccepted));
+        if (mConnectHandler.can_accept_connection(clientSocket))
+        {
+            DEBUG_LOG_INFO("Accepting new connection of socket [ %u ], client [ %s : %d ]"
+                        , hSocket
+                        , clientSocket.address().host_address().as_string()
+                        , clientSocket.address().host_port());
+
+            mConnection.accept_connection(clientSocket);
+            if ( mConnectHandler.on_client_accepted(clientSocket) )
+                return;
+        }
+        else if (clientSocket.is_alive())
+        {
+            DEBUG_LOG_WARN("Rejecting new connection of socket [ %u ], client [ %s : %d ]"
+                            , hSocket
+                            , clientSocket.address().host_address().as_string()
+                            , clientSocket.address().host_port());
+
+            mConnection.reject_connection(clientSocket);
+            clientSocket.close();
+            return;
+        }
+        else
+        {
+            DEBUG_LOG_WARN("The connection of socket [ %u ] is not alive anymore, client [ %s : %d ], ignore connection."
+                            , hSocket
+                            , clientSocket.address().host_address().as_string()
+                            , clientSocket.address().host_port());
+
+            mConnection.close_connection(clientSocket);
+            return;
+        }
+    }
+
+    DEBUG_LOG_DBG("Received connection event of socket [ %u ], client [ %s : %d ]"
+                , hSocket
+                , clientSocket.address().host_address().as_string()
+                , clientSocket.address().host_port());
+
+    const int32_t sizeReceived = mConnection.receive_message(msgReceived, clientSocket);
+
+#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
+    const areg::SocketAddress& addSocket = clientSocket.address();
+    DEBUG_LOG_DBG("Received [ %d ] bytes from socket [ %u ]", sizeReceived, static_cast<uint32_t>(clientSocket.handle()));
+#endif   // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
+
+    if (sizeReceived > 0)
+    {
+        accumulate_received(static_cast<uint64_t>(sizeReceived), 1u);
+
+        DEBUG_LOG_DBG("Received [ %d ] bytes of message [ %u ] from source [ %u ], client [ %s : %d ], message size [ %u ]"
+                    , sizeReceived
+                    , static_cast<uint32_t>(msgReceived.message_id())
+                    , static_cast<uint32_t>(msgReceived.source())
+                    , addSocket.host_address().as_string()
+                    , addSocket.host_port()
+                    , msgReceived.size_used());
+
+        mRemoteService.process_received_message(msgReceived, clientSocket);
+        if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, areg::THREAD_DRAIN_LIMIT - 1u, clientSocket,
+                msgReceived, [this](uint64_t bytes, uint32_t msgs) { accumulate_received(bytes, msgs); }))
+        {
+            mRemoteService.failed_receive_message(clientSocket);
+        }
+    }
+    else
+    {
+        DEBUG_LOG_WARN("Failed to receive message from client socket [ %s : %d ], socket [ %u ], server valid [ %s ]. Going to close connection"
+                        , addSocket.host_address().as_string()
+                        , addSocket.host_port()
+                        , clientSocket.handle()
+                        , mConnection.is_valid() ? "YES" : "NO");
+
+        mRemoteService.failed_receive_message(clientSocket);
+    }
+}
+
+bool ServerReceiveThread::run_dispatcher()
+{
+    DEBUG_LOG_SCOPE( areg_aregextend_service_ServerReceiveThread, run_dispatcher );
+    DEBUG_LOG_DBG("Starting dispatcher [ %s ]", name().as_string());
+
+    areg::set_receive_mode(areg::ReceiveMode::MultiCache);
+
+    ready_for_events(true);
+    int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
+    if ( mConnection.server_listen( areg::MAXIMUM_LISTEN_QUEUE_SIZE) )
+    {
+        SyncObject* syncObjects[2] = {&mEventExit, &mEventQueue};
         MultiLock multiLock(syncObjects, 2, false);
 
         RemoteMessage msgReceived;
+        areg::SocketAddress addrDrain;
         uint32_t retryCount = 0;
-        do 
+        do
         {
-            whichEvent = multiLock.lock(NECommon::DO_NOT_WAIT, false);
+            whichEvent = multiLock.lock(areg::DO_NOT_WAIT, false);
             if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
             {
-                whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue); // escape quit
-                NESocket::SocketAddress addrAccepted;
-                SOCKETHANDLE hSocket = mConnection.waitForConnectionEvent(addrAccepted);
+                whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue); // escape quit
+                areg::SocketAddress addrAccepted;
+                SOCKETHANDLE hSocket = mConnection.wait_connection(addrAccepted);
 
-                if (mConnection.isValid() == false)
+                if (!mConnection.is_valid())
                 {
-                    LOG_WARN("The server socket is not valid anymore, should quit receive thread!");
-                    if (NESocket::isSocketHandleValid(hSocket))
+                    DEBUG_LOG_WARN("The server socket is not valid anymore, should quit receive thread!");
+                    if (areg::is_valid_socket(hSocket))
                     {
-                        NESocket::socketClose(hSocket);
+                        areg::socket_close(hSocket);
                     }
 
-                    whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventExit);
+                    whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
                 }
-                else if (hSocket == NESocket::FailedSocketHandle)
+                else if (hSocket == areg::FailedSocketHandle)
                 {
-                    LOG_WARN("Failed selecting server socket, going to retry [ %d ] times before restart.", (RETRY_COUNT - retryCount - 1));
                     if (++retryCount >= RETRY_COUNT)
                     {
-                        mConnectHandler.connectionFailure();
-                        whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventExit);
+                        mConnectHandler.connection_failure();
+                        whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
                     }
+
+                    DEBUG_LOG_WARN("Failed selecting server socket, going to retry [ %d ] times before restart.", (RETRY_COUNT - retryCount));
                 }
-                else if ( hSocket != NESocket::InvalidSocketHandle )
+                else if ( hSocket != areg::InvalidSocketHandle )
                 {
                     retryCount = 0;
+                    _process_connection_event(hSocket, addrAccepted, msgReceived);
+                    // msgReceived.invalidate();
 
-                    SocketAccepted clientSocket;
-                    if (mConnection.isConnectionAccepted(hSocket) )
+#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
+                    uint32_t drainCount{ 0 };
+#endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
+                    for (uint32_t drain = 0; drain < areg::THREAD_DRAIN_LIMIT; ++drain)
                     {
-                        clientSocket = mConnection.getClientByHandle( hSocket );
-                        LOG_DBG("Received connection event of socket [ %u ], client [ %s : %d ]"
-                                            , hSocket
-                                            , clientSocket.getAddress().getHostAddress().getString()
-                                            , clientSocket.getAddress().getHostPort());
-                    }
-                    else
-                    {
-                        clientSocket = SocketAccepted(hSocket, addrAccepted);
-                        if ( mConnectHandler.canAcceptConnection(clientSocket)  )
+                        const SOCKETHANDLE hDrain = mConnection.wait_connection_nowait(addrDrain);
+                        if ( !areg::is_valid_socket(hDrain) )
                         {
-                            LOG_DBG("Accepting new connection of socket [ %u ], client [ %s : %d ]"
-                                            , hSocket
-                                            , addrAccepted.getHostAddress().getString()
-                                            , addrAccepted.getHostPort());
-                            
-                            mConnection.acceptConnection(clientSocket);
-                        }
-                        else if ( clientSocket.isAlive() )
-                        {
-                            LOG_WARN("Rejecting new connection of socket [ %u ], client [ %s : %d ]"
-                                            , hSocket
-                                            , addrAccepted.getHostAddress().getString()
-                                            , addrAccepted.getHostPort());
-                            
-                            mConnection.rejectConnection(clientSocket);
-                            clientSocket.closeSocket();
-                            continue;
-                        }
-                        else
-                        {
-                            LOG_WARN( "The connection of socket [ %u ] is not alive anymore, client [ %s : %d ], ignore connection."
-                                        , hSocket
-                                        , addrAccepted.getHostAddress( ).getString( )
-                                        , addrAccepted.getHostPort( ) );
-                            mConnection.closeConnection( clientSocket );
-                            continue;
-                        }
-                    }
-
-#if AREG_LOGS
-                    const NESocket::SocketAddress& addSocket = clientSocket.getAddress();
-#endif // AREG_LOGS
-                    int sizeReceived = mConnection.receiveMessage(msgReceived, clientSocket);
-                    if (sizeReceived > 0 )
-                    {
-                        if (mSaveDataReceive)
-                        {
-                            mBytesReceive += static_cast<uint32_t>(sizeReceived);
+                            break;
                         }
 
-                        LOG_DBG("Received message [ %p ] from source [ %p ], client [ %s : %d ]"
-                                    , static_cast<id_type>(msgReceived.getMessageId())
-                                    , static_cast<id_type>(msgReceived.getSource())
-                                    , addSocket.getHostAddress().getString()
-                                    , addSocket.getHostPort());
-
-                        mRemoteService.processReceivedMessage(msgReceived, clientSocket);
+#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
+                        ++drainCount;
+#endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
+                        _process_connection_event(hDrain, addrDrain, msgReceived);
+                        // msgReceived.invalidate();
                     }
-                    else
+
+#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
+                    if (drainCount >= areg::THREAD_DRAIN_LIMIT)
                     {
-                        LOG_DBG("Failed to receive message from client socket [ %s : %d ], socket [ %u ]. Going to close connection"
-                                        , addSocket.getHostAddress().getString()
-                                        , addSocket.getHostPort()
-                                        , clientSocket.getHandle());
-
-                        mRemoteService.failedReceiveMessage(clientSocket);
+                        DEBUG_LOG_WARN("Receive drain loop exhausted thread drain limit (%d) -- inbound event queue is growing", areg::THREAD_DRAIN_LIMIT);
                     }
-
-                    msgReceived.invalidate();
+#endif   // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
                 }
             }
             else
             {
-                Event * eventElem = whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue) ? pickEvent() : nullptr;
-                whichEvent = isExitEvent(eventElem) ? static_cast<int>(EventDispatcherBase::eEventOrder::EventExit) : whichEvent;
+                Event * eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pick_event() : nullptr;
+                whichEvent = is_exit_event(eventElem) ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) : whichEvent;
             }
 
-        } while (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue));
+        } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue));
     }
 
-    readyForEvents(false);
-    removeAllEvents();
+    ready_for_events(false);
+    remove_all_events();
 
-    LOG_DBG("Dispatcher [ %s ] completed job and stopping running.", mDispatcherName.getString());
-    return (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit));
+    DEBUG_LOG_DBG("Dispatcher [ %s ] completed job and stopping running.", mDispatcherName.as_string());
+    return (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
 }
+
+} // namespace areg::ext

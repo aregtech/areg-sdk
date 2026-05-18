@@ -14,13 +14,13 @@
 //                  - Type "ew" to subscribe to another set of data updates.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/logging/areg_log.h"
+#include "areg/base/UtilityDefs.hpp"
 
-#include "common/NECommon.hpp"
+#include "common/FsmDefs.hpp"
 #include "pubclient/src/TrafficLightClient.hpp"
 
 #ifdef _MSC_VER
@@ -38,7 +38,7 @@
 constexpr char const _modelName[]  { "TheModel" };   //!< The name of model
 constexpr char const _threadName[] { "TestTrafficLightThread" }; //!< The name of component wonning thread.
 static char clientRole[128];    //!< The role name of service client.
-static const char* const _compName  = NEUtilities::generateName(NECommon::SerivceLightClient, clientRole, 128); //!< Generated name of the service owner, unique for client application.
+static const char* const _compName  = areg::generate_name(fsm::SerivceLightClient, clientRole, 128); //!< Generated name of the service owner, unique for client application.
 
 // Describe mode, set model name
 BEGIN_MODEL(_modelName)
@@ -48,7 +48,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _compName, TrafficLightClient )
             // register TrafficController dependency.
-            REGISTER_DEPENDENCY(NECommon::ServiceLightController)
+            REGISTER_DEPENDENCY(fsm::ServiceLightController)
         // end of component description
         END_REGISTER_COMPONENT( _compName )
     // end of thread description
@@ -60,7 +60,7 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(pubclient_src_main_main);
+DEF_LOG_SCOPE(pubclient_src_main, main);
 
 /**
  * \brief   The main method does not start the logging, enables service manager and timer.
@@ -87,14 +87,14 @@ int main()
     }
 
     // Check whether the right option is selected.
-    if ( (NEString::compareIgnoreCase<char, char>(buffer, "sn") == NEMath::eCompare::Equal) || 
-         (NEString::compare<char, char>(buffer, "1") == NEMath::eCompare::Equal) )
+    if ( (areg::compare_ignore_case<char, char>(buffer, "sn") == areg::Ordering::Equal) || 
+         (areg::compare<char, char>(buffer, "1") == areg::Ordering::Equal) )
     {
         isEastWest = false;
         printf("\nSelected Choice: South-North traffic.\n");
     }
-    else if ((NEString::compareIgnoreCase<char, char>(buffer, "ew") == NEMath::eCompare::Equal) ||
-             (NEString::compare<char, char>(buffer, "2") == NEMath::eCompare::Equal) )
+    else if ((areg::compare_ignore_case<char, char>(buffer, "ew") == areg::Ordering::Equal) ||
+             (areg::compare<char, char>(buffer, "2") == areg::Ordering::Equal) )
     {
         isEastWest = true;
         printf("\nSelected Choice: East-West traffic.\n");
@@ -107,28 +107,28 @@ int main()
 
     printf("\n...........................................\n");
 
-    ComponentLoader::setComponentData(_compName, std::make_any<bool>(isEastWest));
+    areg::ComponentLoader::set_component_data(_compName, std::make_any<bool>(isEastWest));
 
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::initApplication( );
+    areg::Application::setup( );
 
     do 
     {
-        LOG_SCOPE(pubclient_src_main_main);
+        LOG_SCOPE( pubclient_src_main, main );
         LOG_DBG("Starting traffic light for direction [ %s ]", isEastWest ? "East-West" : "South-North");
 
         // By passing nullptr, load all models to initialize components
-        Application::loadModel( nullptr );
+        areg::Application::load_model( nullptr );
 
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        areg::Application::wait_quit(areg::WAIT_INFINITE);
 
         // By passing nullptr, stop and unload all models.
-        Application::unloadModel( nullptr );
+        areg::Application::unload_model( nullptr );
 
         // release and cleanup resources of application.
-        Application::releaseApplication();
+        areg::Application::release();
 
     } while (false);
 

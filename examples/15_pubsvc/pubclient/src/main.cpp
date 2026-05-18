@@ -9,11 +9,11 @@
 //               calls, it uses a timer.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/base/NEUtilities.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/base/UtilityDefs.hpp"
+#include "areg/logging/areg_log.h"
 
 #include "ServiceClient.hpp"
 
@@ -24,7 +24,7 @@
 
 constexpr char const _modelName[]  { "HelloModel" };    //!< The name of model
 constexpr char const _serviceName[]{ "HelloService" };  //!< The name of provided service
-const String     _serviceClient  = NEUtilities::generateName("ServiceClient"); //!< Generated name of service client component
+const areg::String   _serviceClient  = areg::generate_name("ServiceClient"); //!< Generated name of service client component
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -40,11 +40,11 @@ BEGIN_MODEL(_modelName)
     // define component thread
     BEGIN_REGISTER_THREAD( "TestServiceThread" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( _serviceClient.getString(), ServiceClient )
+        BEGIN_REGISTER_COMPONENT( _serviceClient.as_string(), ServiceClient )
             // register service dependency
             REGISTER_DEPENDENCY(_serviceName)
         // end of component description
-        END_REGISTER_COMPONENT( _serviceClient.getString() )
+        END_REGISTER_COMPONENT( _serviceClient.as_string() )
     // end of thread description
     END_REGISTER_THREAD( "TestServiceThread" )
 
@@ -54,7 +54,7 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(example_15_pubclient_main_main);
+DEF_LOG_SCOPE(examples_15_pubclient_main, main);
 /**
  * \brief   The main method enables logging, service manager and timer.
  *          it loads and unloads the services, releases application.
@@ -64,29 +64,29 @@ int main()
     printf("Testing remote servicing ultra-small client...\n");
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::initApplication( );
+    areg::Application::setup( );
 
     // force to start logging with default settings
-    LOGGING_CONFIGURE_AND_START(nullptr);
+    LOGGING_CONFIGURE_AND_START(nullptr, false);
 
     do
     {
-        LOG_SCOPE(example_15_pubclient_main_main);
+        LOG_SCOPE( examples_15_pubclient_main, main );
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components
-        Application::loadModel(_modelName);
+        areg::Application::load_model(_modelName);
 
         LOG_DBG("Servicing model is loaded");
 
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        areg::Application::wait_quit(areg::WAIT_INFINITE);
 
         // stop and unload components
-        Application::unloadModel(_modelName);
+        areg::Application::unload_model(_modelName);
 
         // release and cleanup resources of application.
-        Application::releaseApplication();
+        areg::Application::release();
 
     } while (false);
 

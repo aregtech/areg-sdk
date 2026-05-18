@@ -7,50 +7,66 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/component/private/WatchdogManagerWin.cpp
+ * \file        areg/component/private/posix/WatchdogManagerPosix.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, The Thread Watchdog Manager.
  *              Controlling, triggering and stopping timer to check threads.
- *              POSIX specific calls.
+ *              Generic POSIX implementation using timer_create + SIGEV_THREAD
+ *              (Cygwin, FreeBSD, and any other non-Linux non-Apple POSIX platform).
+ *              Linux:  areg/component/private/linux/WatchdogManagerLinux.cpp
+ *              macOS:  areg/component/private/macos/WatchdogManagerMacOS.cpp
  *
  ************************************************************************/
-#include "areg/component/private/WatchdogManager.hpp"
 
+#if !defined(__linux__) && !defined(__APPLE__)
 #if defined(_POSIX) || defined(POSIX)
 
+/************************************************************************
+ * Include files.
+ ************************************************************************/
+#include "areg/component/private/WatchdogManager.hpp"
 #include "areg/component/private/posix/TimerPosix.hpp"
-#include "areg/base/private/posix/SyncLockAndWaitIX.hpp"
-#include "areg/component/Timer.hpp"
-#include "areg/base/NEUtilities.hpp"
-
-#ifndef __APPLE__
-    #include <signal.h>
-#endif  // !__APPLE__
+#include "areg/component/private/Watchdog.hpp"
 #include <time.h>
-#include <errno.h>
 
-//////////////////////////////////////////////////////////////////////////
-// POSIX specific methods
-//////////////////////////////////////////////////////////////////////////
+namespace areg {
 
-void WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
+void WatchdogManager::_posix_watchdog_expired(void * ptr) noexcept
 {
-    TimerPosix* posixTimer = reinterpret_cast<TimerPosix*>(handle);
-    if (posixTimer != nullptr)
+    areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(ptr);
+    WatchdogManager & watchdogManager = WatchdogManager::instance();
+    ASSERT(posixTimer != nullptr);
+    Watchdog::WATCHDOG_ID watchdog_id = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->context_id());
+    Watchdog::GUARD_ID    guardId     = Watchdog::make_guard_id(watchdog_id);
+    Watchdog *            watchdog    = watchdogManager.mWatchdogResource.find_resource_object(guardId);
+
+    if (watchdog != nullptr)
     {
-        posixTimer->stopTimer();
+        const uint32_t highValue = static_cast<uint32_t>(posixTimer->mDueTime.tv_sec);
+        const uint32_t lowValue  = static_cast<uint32_t>(posixTimer->mDueTime.tv_nsec);
+        posixTimer->stop_timer();
+        watchdogManager._process_expired_timer(watchdog, watchdog_id, highValue, lowValue);
     }
 }
 
-bool WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
+void WatchdogManager::_os_timer_stop(TIMERHANDLE handle)
 {
-    bool result = false;
-    TimerPosix* posixTimer = reinterpret_cast<TimerPosix*>(watchdog.getHandle());
+    areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(handle);
     if (posixTimer != nullptr)
     {
-        Watchdog::WATCHDOG_ID watchdogId = watchdog.watchdogId();
-        if (posixTimer->startTimer(watchdog, watchdogId, &WatchdogManager::_posixWatchdogExpiredRoutine))
+        posixTimer->stop_timer();
+    }
+}
+
+bool WatchdogManager::_os_timer_start(Watchdog & watchdog)
+{
+    bool result = false;
+    areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(watchdog.handle());
+    if (posixTimer != nullptr)
+    {
+        const Watchdog::WATCHDOG_ID watchdog_id = watchdog.watchdog_id();
+        if (posixTimer->start_timer(watchdog, watchdog_id, &WatchdogManager::_posix_watchdog_expired))
         {
             result = true;
         }
@@ -59,41 +75,7 @@ bool WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
     return result;
 }
 
-#ifdef __APPLE__
-void WatchdogManager::_posixWatchdogExpiredRoutine(TimerPosix* posixTimer)
-{
-    WatchdogManager& watchdogManager = WatchdogManager::getInstance();
-    ASSERT(posixTimer != nullptr);
-    Watchdog::WATCHDOG_ID watchdogId = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->getContextId());
-    Watchdog::GUARD_ID guardId  = Watchdog::makeGuardId(watchdogId);
-    Watchdog* watchdog          = watchdogManager.mWatchdogResource.findResourceObject(guardId);
-
-    if (watchdog != nullptr)
-    {
-        unsigned int highValue 	= static_cast<unsigned int>(posixTimer->mDueTime.tv_sec);
-        unsigned int lowValue  	= static_cast<unsigned int>(posixTimer->mDueTime.tv_nsec);
-        posixTimer->stopTimer();
-        watchdogManager._processExpiredTimer(watchdog, watchdogId, highValue, lowValue);
-    }
-}
-#else   // !__APPLE__
-void WatchdogManager::_posixWatchdogExpiredRoutine(union sigval argSig)
-{
-    WatchdogManager& watchdogManager = WatchdogManager::getInstance();
-    TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(argSig.sival_ptr);
-    ASSERT(posixTimer != nullptr);
-    Watchdog::WATCHDOG_ID watchdogId = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->getContextId());
-    Watchdog::GUARD_ID guardId  = Watchdog::makeGuardId(watchdogId);
-    Watchdog* watchdog          = watchdogManager.mWatchdogResource.findResourceObject(guardId);
-
-    if (watchdog != nullptr)
-    {
-        unsigned int highValue 	= static_cast<unsigned int>(posixTimer->mDueTime.tv_sec);
-        unsigned int lowValue  	= static_cast<unsigned int>(posixTimer->mDueTime.tv_nsec);
-        posixTimer->stopTimer();
-        watchdogManager._processExpiredTimer(watchdog, watchdogId, highValue, lowValue);
-    }
-}
-#endif  // __APPLE__
+} // namespace areg
 
 #endif  // defined(_POSIX) || defined(POSIX)
+#endif  // !defined(__linux__) && !defined(__APPLE__)

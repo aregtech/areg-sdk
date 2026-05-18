@@ -20,6 +20,7 @@
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/RequestEvents.hpp"
 #include "areg/component/private/StubConnectEvent.hpp"
+namespace areg {
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -29,18 +30,18 @@
 //////////////////////////////////////////////////////////////////////////
 // StubEvent class, implement runtime
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_RUNTIME_EVENT(StubEvent, StreamableEvent)
+AREG_IMPLEMENT_RUNTIME_EVENT(StubEvent, StreamableEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // StubEvent class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-StubEvent::StubEvent( const StubAddress& toTarget, Event::eEventType eventType )
+StubEvent::StubEvent( const StubAddress& toTarget, areg::EventType eventType )
     : StreamableEvent   (eventType)
     , mTargetStubAddress(toTarget)
 {
 }
 
-StubEvent::StubEvent( const IEInStream & stream  )
+StubEvent::StubEvent( const InStream & stream  )
     : StreamableEvent   (stream)
     , mTargetStubAddress(stream)
 {
@@ -49,31 +50,34 @@ StubEvent::StubEvent( const IEInStream & stream  )
 //////////////////////////////////////////////////////////////////////////
 // StubEvent class, methods
 //////////////////////////////////////////////////////////////////////////
-const IEInStream & StubEvent::readStream( const IEInStream & stream )
+const InStream & StubEvent::read_stream( const InStream & stream )
 {
-    StreamableEvent::readStream(stream);
+    StreamableEvent::read_stream(stream);
     stream >> mTargetStubAddress;
     return stream;
 }
 
-IEOutStream & StubEvent::writeStream( IEOutStream & stream ) const
+OutStream & StubEvent::write_stream( OutStream & stream ) const
 {
-    StreamableEvent::writeStream(stream);
+    StreamableEvent::write_stream(stream);
     stream << mTargetStubAddress;
     return stream;
 }
 
-void StubEvent::deliverEvent( void )
+void StubEvent::deliver_event()
 {
     if ( mTargetThread == nullptr )
     {
-        Thread * thread = Thread::findThreadByName( mTargetStubAddress.getThread() );
-        registerForThread( thread != nullptr ? RUNTIME_CAST(thread, DispatcherThread) : nullptr );
+        Thread * thread = Thread::find_by_name( mTargetStubAddress.thread() );
+        register_for_thread( thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr );
     }
 
     if ( mTargetThread != nullptr )
     {
-        StreamableEvent::deliverEvent();
+        if (!mTargetThread->event_dispatcher().post_event(*this))
+        {
+            destroy();
+        }
     }
     else
     {
@@ -82,106 +86,106 @@ void StubEvent::deliverEvent( void )
 }
 
 //////////////////////////////////////////////////////////////////////////
-// IEStubEventConsumer class implementation
+// StubEventConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// IEStubEventConsumer class, constructor / destructor
+// StubEventConsumer class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-IEStubEventConsumer::IEStubEventConsumer( const StubAddress & stubAddress )
-    : IEEventConsumer   ( )
+StubEventConsumer::StubEventConsumer( const StubAddress & stubAddress )
+    : EventConsumer   ( )
     , mStubAddress      ( stubAddress )
     , mCurEvent         ( nullptr )
 {
 }
 
-inline void IEStubEventConsumer::_localProcessRequestEvent( RequestEvent & requestEvent )
+inline void StubEventConsumer::_local_request( RequestEvent & reqEvent )
 {
-    Component *curComponent   = Component::findComponentByName(requestEvent.getTargetStub().getRoleName());
-    ComponentThread::setCurrentComponent(curComponent);
+    Component *curComponent   = Component::find_by_name(reqEvent.target_stub().role_name());
+    ComponentThread::set_current_component(curComponent);
 
-    if (NEService::isRequestId(requestEvent.getRequestId()))
+    if (areg::is_request_id(reqEvent.request_id()))
     {
-        processRequestEvent(requestEvent);
+        process_request_event(reqEvent);
     }
     else
     {
-        processStubEvent(static_cast<StubEvent&>(requestEvent));
+        process_stub_event(static_cast<StubEvent&>(reqEvent));
     }
 
-    ComponentThread::setCurrentComponent(nullptr);
+    ComponentThread::set_current_component(nullptr);
 }
 
-inline void IEStubEventConsumer::_localProcessNotifyRequestEvent( NotifyRequestEvent & notifyRequest )
+inline void StubEventConsumer::_local_notify_request( NotifyRequestEvent & notifyRequest )
 {
-    Component *curComponent   = Component::findComponentByName(notifyRequest.getTargetStub().getRoleName());
-    ComponentThread::setCurrentComponent(curComponent);
+    Component *curComponent   = Component::find_by_name(notifyRequest.target_stub().role_name());
+    ComponentThread::set_current_component(curComponent);
 
-    unsigned int reqId = notifyRequest.getRequestId();
-    if (NEService::isAttributeId(reqId) || NEService::isResponseId(reqId))
+    uint32_t reqId = notifyRequest.request_id();
+    if (areg::is_attribute_id(reqId) || areg::is_response_id(reqId))
     {
-        processAttributeEvent(notifyRequest);
+        process_attribute_event(notifyRequest);
     }
     else
     {
-        processStubEvent( static_cast<StubEvent &>(notifyRequest) );
+        process_stub_event( static_cast<StubEvent &>(notifyRequest) );
     }
 
-    ComponentThread::setCurrentComponent(nullptr);
+    ComponentThread::set_current_component(nullptr);
 }
 
-inline void IEStubEventConsumer::_localProcessConnectEvent( StubConnectEvent & notifyConnect )
+inline void StubEventConsumer::_local_connect( StubConnectEvent & notifyConnect )
 {
-    if ( notifyConnect.getRequestId() == static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection) )
+    if ( notifyConnect.request_id() == static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection) )
     {
-        if (notifyConnect.getRequestType() == NEService::eRequestType::ServiceConnection)
+        if (notifyConnect.request_type() == areg::RequestType::ServiceConnection)
         {
-            processStubRegisteredEvent(notifyConnect.getTargetStub(), notifyConnect.getConnectionStatus());
+            process_registered_event(notifyConnect.target_stub(), notifyConnect.connection_status());
         }
         else
         {
-            processClientConnectEvent(notifyConnect.getEventSource(), notifyConnect.getConnectionStatus());
+            process_connect_event(notifyConnect.event_source(), notifyConnect.connection_status());
         }
     }
     else
     {
-        processStubEvent( static_cast<StubEvent &>(notifyConnect));
+        process_stub_event( static_cast<StubEvent &>(notifyConnect));
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
-// IEStubEventConsumer class, methods
+// StubEventConsumer class, methods
 //////////////////////////////////////////////////////////////////////////
-void IEStubEventConsumer::startEventProcessing( Event & eventElem )
+void StubEventConsumer::start_event_processing( Event & eventElem )
 {
     mCurEvent = &eventElem;
-    StubEvent* stubEvent = RUNTIME_CAST(&eventElem, StubEvent);
+    StubEvent* stubEvent = AREG_RUNTIME_CAST(&eventElem, StubEvent);
     if ( stubEvent != nullptr )
     {
-        if ( stubEvent->getTargetStub() == mStubAddress )
+        if ( stubEvent->target_stub() == mStubAddress )
         {
-            RequestEvent* reqEvent = RUNTIME_CAST(stubEvent, RequestEvent);
+            RequestEvent* reqEvent = AREG_RUNTIME_CAST(stubEvent, RequestEvent);
             if (reqEvent != nullptr)
             {
-                _localProcessRequestEvent(*reqEvent);
+                _local_request(*reqEvent);
             }
             else
             {
-                NotifyRequestEvent * notifyRequest = RUNTIME_CAST(stubEvent, NotifyRequestEvent);
+                NotifyRequestEvent * notifyRequest = AREG_RUNTIME_CAST(stubEvent, NotifyRequestEvent);
                 if ( notifyRequest != nullptr )
                 {
-                    _localProcessNotifyRequestEvent(*notifyRequest);
+                    _local_notify_request(*notifyRequest);
                 }
                 else
                 {
-                    StubConnectEvent * stubConnectEvent = RUNTIME_CAST(stubEvent, StubConnectEvent);
+                    StubConnectEvent * stubConnectEvent = AREG_RUNTIME_CAST(stubEvent, StubConnectEvent);
                     if (stubConnectEvent != nullptr)
                     {
-                        _localProcessConnectEvent(*stubConnectEvent);
+                        _local_connect(*stubConnectEvent);
                     }
                     else
                     {
-                        processStubEvent(*stubEvent);
+                        process_stub_event(*stubEvent);
                     }
                 }
             }
@@ -193,8 +197,10 @@ void IEStubEventConsumer::startEventProcessing( Event & eventElem )
     }
     else
     {
-        processGenericEvent(eventElem);
+        process_generic_event(eventElem);
     }
 
     mCurEvent = nullptr;
 }
+
+} // namespace areg

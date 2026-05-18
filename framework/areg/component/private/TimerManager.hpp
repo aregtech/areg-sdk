@@ -22,42 +22,35 @@
  ************************************************************************/
 #include "areg/component/private/TimerManagerBase.hpp"
 
-#include "areg/base/SyncObjects.hpp"
-#include "areg/base/TEResourceMap.hpp"
-
+#include "areg/base/SyncPrimitives.hpp"
+#include "areg/base/ResourceMap.hpp"
+   
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Timer;
-class TimerPosix;
+namespace areg {
+    class Timer;
+} // namespace areg
+
+namespace areg::os {
+    class TimerPosix;
+} // namespace areg::os
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // TimerManager class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       The Time Manager object is starting and stopping timers.
- *              It generates Timer Events and forwards to Target Consumer.
- *              The Timer Manager is a singleton object and created
- *              only once on the first request until it is not requested
- *              to be stopped.
- * 
- *          When the timer is requested to be started, 
- *          the timer Manager generates Timer Managing event object
- *          and places in the queue of timer thread. If the timer thread
- *              is resumed because it received timer managing event, it 
- *              forwards to Timer Manager, which creates system timer.
- *              If timer thread is resumed because one of timers is
- *              fired, it triggers expired function of Timer Manager
- *              and the object is generating Timer Event and sends to
- *              the queue of Timer Consumer Thread.
- *
+ * \brief   Manages timers and generates timer events to target consumers. Singleton pattern.
+ *          Creates system timers and delivers timer events to the consumer's owner thread.
  **/
-class TimerManager  : protected TimerManagerBase
+class TimerManager final : protected TimerManagerBase
 {
 
 //////////////////////////////////////////////////////////////////////////
 // Predefined constants and types
-//////////////////////////////////////////////////////////////////////////    
+//////////////////////////////////////////////////////////////////////////
 private:
     /**
      * \brief   TimerManager::TIMER_THREAD_NAME
@@ -65,8 +58,8 @@ private:
      **/
     static constexpr std::string_view TIMER_THREAD_NAME { "_AREG_TIMER_THREAD_NAME_" };
 
-    using MapTimerResource  = TEHashMap<TIMERHANDLE, Timer *>;
-    using TimerResource     = TELockResourceMap<TIMERHANDLE, Timer *, MapTimerResource>;
+    using MapTimerResource  = HashMap<TIMERHANDLE, Timer *>;
+    using TimerResource     = ConcurrentResourceMap<TIMERHANDLE, Timer *, MapTimerResource>;
 
 //////////////////////////////////////////////////////////////////////////
 // Static members
@@ -77,9 +70,9 @@ private:
 /************************************************************************/
 
     /**
-     * \brief   Returns reference to Timer Manager object.
+     * \brief   Returns a reference to the TimerManager singleton instance.
      **/
-    static TimerManager & getInstance( void );
+    static TimerManager & instance();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -90,71 +83,62 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   If needed, creates Time Manager object and Timer Thread.
-     *          Returns reference to the object.
+     * \brief   Creates the TimerManager singleton and its timer thread if not already running.
+     *
+     * \return  Returns true if the timer manager was started.
      **/
-    static bool startTimerManager( void );
+    static bool start_timer_manager();
 
     /**
-     * \brief   Stops Timer Manager and Timer Thread. Cancels and stops all timers.
-     *          If 'waitComplete' is set to true, the calling thread is
-     *          blocked until Timer Manager thread completes jobs and cleans resources.
-     *          Otherwise, this triggers stop and exit events, and immediately returns.
-     * \param   waitComplete    If true, waits for Timer Manager to complete the jobs
-     *                          and exit threads. Otherwise, it triggers exit and returns.
+     * \brief   Stops the TimerManager and cancels all timers.
+     *
+     * \param   waitComplete    If true, blocks until the timer manager completes and exits. If
+     *                          false, triggers the exit and returns immediately.
      **/
-    static void stopTimerManager(bool waitComplete);
+    static void stop_timer_manager(bool waitComplete);
 
     /**
-     * \brief   The calling thread is blocked until Timer Manager did not
-     *          complete the job and exit. This should be called if previously
-     *          it was requested to stop the Timer Manager without waiting for completion.
+     * \brief   Blocks until the TimerManager exits (call after stop_timer_manager with
+     *          waitComplete=false).
      **/
-    static void waitTimerManager(void);
+    static void wait_timer_manager();
 
     /**
-     * \brief   Returns true if Timer Manager has been started and ready to process timers.
+     * \brief   Returns true if the TimerManager is running and ready.
      **/
-    static bool isTimerManagerStarted( void );
+    [[nodiscard]]
+    static bool is_manager_started();
 
     /**
-     * \brief   Starts the timer. If succeeds, returns true.
-     *          When timer event is fired, it will be dispatched in the
-     *          thread where it was started, i.e. in the current thread.
-     * \param   timer   The timer object that should be started
-     * \return  Returns true if timer was successfully created.
+     * \brief   Starts a timer. The timer event will be dispatched in the calling thread.
+     *
+     * \param   timer       The timer object to start.
+     * \return  Returns true if the timer was successfully created.
      **/
-    static bool startTimer(Timer &timer);
+    static bool start_timer(Timer &timer);
 
     /**
-     * \brief   Starts the timer. If succeeds, returns true.
-     *          The timer event will be dispatched in the specified
-     *          thread context.
-     * \param   timer       The timer object that should be started
-     * \param   whichThread The dispatcher thread where the timer 
-     *                      event should be dispatched.
-     * \return  Returns true if timer was successfully created.
+     * \brief   Starts a timer and specifies the target thread for the timer event.
+     *
+     * \param   timer           The timer object to start.
+     * \param   whichThread     The dispatcher thread where the timer event should be delivered.
+     * \return  Returns true if the timer was successfully created.
      **/
-    static bool startTimer(Timer &timer, const DispatcherThread & whichThread);
+    static bool start_timer(Timer &timer, const DispatcherThread & whichThread);
 
     /**
-     * \brief   Stops the timer.
-     * \param   timer   The timer object that should be stopped
+     * \brief   Stops a running timer.
+     *
+     * \param   timer       The timer object to stop.
      **/
-    static void stopTimer(Timer &timer);
+    static void stop_timer(Timer &timer);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Constructor
-     **/
-    TimerManager( void );
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~TimerManager( void );
+    TimerManager();
+    virtual ~TimerManager();
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides.
@@ -165,114 +149,119 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Automatically triggered when event is dispatched by timer thread
-     * \param   data    The data object passed in event.
+     * \brief   Processes timer manager events dispatched by the timer thread.
+     *
+     * \param   data    The timer manager event data.
      **/
-    virtual void processEvent( const TimerManagerEventData & data) override;
+    void process_event( const TimerManagerEventData & data) final;
 
 /************************************************************************/
 // DispatcherThread overrides
 /************************************************************************/
 
     /**
-     * \brief   Call to enable or disable event dispatching threads to receive events.
-     *          Override if need to make event dispatching preparation job.
-     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
+     * \brief   Enables or disables event dispatching to the timer manager.
+     *
+     * \param   is_ready    If true, the dispatcher is ready to receive events. If false, event
+     *                      dispatching is disabled.
      **/
-    virtual void readyForEvents( bool isReady ) override;
+    void ready_for_events( bool is_ready ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations. Called from Timer Thread.
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Called when expired timers should be processed.
+     * \brief   Processes expired timers and generates timer events.
+     *
+     * \param   timer       The expired timer object.
+     * \param   handle      The timer handle.
+     * \param   hiBytes     The high 32 bits of the expiration time.
+     * \param   loBytes     The low 32 bits of the expiration time.
      **/
-    void _processExpiredTimer(Timer * timer, TIMERHANDLE handle, uint32_t hiBytes, uint32_t loBytes);
+    void _process_expired_timer(Timer * timer, TIMERHANDLE handle, uint32_t hiBytes, uint32_t loBytes);
 
     /**
-     * \brief   Stops and removes all timers, i.e. unregisters all timers.
+     * \brief   Stops and removes all registered timers.
      **/
-    void _removeAllTimers( void );
+    void _remove_all_timers();
 
     /**
-     * \brief   Registers timer in the timer resource map.
-     *          Before registering timer, it creates system timer.
-     *          if successfully created, stores in the resource map.
-     *          The timers should be unique in the timer map.
-     * \param   timer       The timer object that should be registered
-     * \param   whichThread The dispatcher thread, where the timer event should be dispatched.
-     * \return  Returns true if succeeded to register timer in the map.
+     * \brief   Registers a timer in the timer map after creating the system timer.
+     *
+     * \param   timer           The timer object to register.
+     * \param   whichThread     The dispatcher thread where the timer event should be delivered.
+     * \return  Returns true if the timer was successfully registered.
+     * \note    Timers must be unique in the timer map.
      **/
-    bool _registerTimer( Timer & timer, const DispatcherThread & whichThread );
+    bool _register_timer( Timer & timer, const DispatcherThread & whichThread );
 
     /**
-     * \brief   Registers timer in the timer resource map.
-     *          Before registering timer, it creates system timer.
-     *          if successfully created, stores in the resource map.
-     *          The timers should be unique in the timer map.
-     * \param   timer           The timer object that should be registered
-     * \param   whichThreadId   The dispatcher thread, where the timer event should be dispatched.
-     * \return  Returns true if succeeded to register timer in the map.
+     * \brief   Unregisters and stops a timer, closing its system handle.
+     *
+     * \param   timer       The timer object to unregister.
      **/
-    bool _registerTimer( Timer & timer, id_type whichThreadId );
-
-    /**
-     * \brief   Unregisters timer manager in the timer resource map.
-     *          Before unregistering timer, it stops and closes system timer.
-     * \param   timer   The pointer to timer object that should be unregistered.
-     **/
-    void _unregisterTimer( Timer & timer );
+    void _unregister_timer( Timer & timer );
 
 //////////////////////////////////////////////////////////////////////////
 //  OS specific hidden methods
 //////////////////////////////////////////////////////////////////////////
-private:
+public:
 
 #ifdef _WIN32
 
     /**
-     * \brief   Windows OS specific timer routine function. Triggered, when one of timer is expired.
-     * \param   argPtr          The pointer of argument passed to timer expired callback function
-     * \param   timerLowValue   The low value of timer expiration
-     * \param   timerHighValue  The high value of timer expiration.
+     * \brief   Windows timer callback function triggered when a timer expires.
+     *
+     * \param   argPtr              Argument pointer passed to the timer callback.
+     * \param   timerLowValue       Low 32 bits of the expiration time.
+     * \param   timerHighValue      High 32 bits of the expiration time.
      **/
-    static void _windowsTimerExpiredRoutine( void * argPtr, unsigned long timerLowValue, unsigned long timerHighValue );
+    static void _windows_timer_expired( void * argPtr, unsigned long timerLowValue, unsigned long timerHighValue ) noexcept;
 
 #endif // !_WIN32
 
-
-#if defined(_POSIX) || defined(POSIX)
+private:
 
 #ifdef __APPLE__
     /**
-     * \brief   macOS timer callback function. Triggered when one of timers is expired.
-     * \param   timerPtr        The pointer to the TimerPosix object that expired.
+     * \brief   macOS GCD timer callback triggered when a timer expires.
+     *
+     * \param   timerPtr    Pointer to the expired areg::os::TimerPosix object.
      **/
-    static void _posixTimerExpiredRoutine( TimerPosix* timerPtr );
-#else   // !__APPLE__
+    static void _posix_timer_expired( areg::os::TimerPosix* timerPtr );
+#elif defined(__linux__)
     /**
-     * \brief   POSIX timer routine function. Triggered, when one of timer is expired.
-     * \param   argSig          The value passed to thread signal when the timer was created.
-     *                          This value is passed to routine callback.
+     * \brief   Called by the epoll loop when a registered timerfd becomes readable.
+     *          Looks up the Timer in mTimerResource and dispatches the expiry.
+     *
+     * \param   handle  OS timer handle (TimerPosix*) that fired.
      **/
-    static void _posixTimerExpiredRoutine( union sigval argSig );
-#endif  // __APPLE__
-
-#endif  // defined(_POSIX) || defined(POSIX)
+    void _on_timerfd_expired(TIMERHANDLE handle) final;
+#elif defined(_POSIX) || defined(POSIX)
+    /**
+     * \brief   Generic POSIX SIGEV_THREAD callback triggered when a timer expires.
+     *          Called with the TimerPosix pointer cast to void*.
+     *
+     * \param   timerPtr    Pointer to the expired areg::os::TimerPosix object (as void*).
+     **/
+    static void _posix_timer_expired( void * timerPtr ) noexcept;
+#endif  // __APPLE__ / __linux__ / POSIX
 
     /**
-     * \brief   Starts system timer and returns true if timer started with success.
-     * \param   timer   The timer object.
-     * \return  Returns true if system timer started with success.
+     * \brief   Starts a system-level timer and returns true if successful.
+     *
+     * \param   timer       The timer object to start at the OS level.
+     * \return  Returns true if the system timer started successfully.
      **/
-    static bool _osSystemTimerStart( Timer& timer );
+    static bool _os_timer_start( Timer& timer );
 
     /**
-     * \brief   Stops previously started waitable timer.
-     * \param   timerHandle The waitable timer handle to destroy.
+     * \brief   Stops a system timer and closes its handle.
+     *
+     * \param   timerHandle     The handle of the waitable timer to stop and destroy.
      **/
-    static void _osSsystemTimerStop( TIMERHANDLE timerHandle );
+    static void _os_timer_stop( TIMERHANDLE timerHandle );
 
 //////////////////////////////////////////////////////////////////////////
 //  Member variables.
@@ -287,7 +276,8 @@ private:
 //  Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( TimerManager );
+    AREG_NOCOPY_NOMOVE( TimerManager );
 };
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_TIMERMANAGER_HPP

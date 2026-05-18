@@ -17,19 +17,23 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
-#include "areg/logging/NELogging.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 #include "areg/logging/private/LoggingEvent.hpp"
 
-#if AREG_LOGS
+#if AREG_LOGGING
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class LogManager;
-class LogConfiguration;
-class LoggerBase;
-class IEInStream;
+namespace areg {
+    class LogManager;
+    class LogConfiguration;
+    class LoggerBase;
+    class InStream;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // LogEventProcessor class declaration
@@ -46,10 +50,12 @@ class LogEventProcessor
 public:
     /**
      * \brief   Initializes the logging event processor and set the instance of log manager.
+     *
+     * \param   logManager      The log manager instance.
      **/
     LogEventProcessor( LogManager & logManager );
 
-    ~LogEventProcessor( void ) = default;
+    ~LogEventProcessor() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -58,10 +64,10 @@ public:
 
     /**
      * \brief   Dispatches and processes the log event.
-     * \param   cmdLog  The log command to process.
-     * \param   stream  The serialized data of the event.
+     *
+     * \param   data        The logging event data containing the action and payload.
      **/
-    void processLogEvent( LoggingEventData::eLoggingAction cmdLog, const SharedBuffer & stream );
+    void process_log_event( const LoggingEventData & data );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -72,38 +78,43 @@ private:
 /************************************************************************/
 
     /**
-     * \brief   Start the logging.
+     * \brief   Starts logging.
      **/
-    void _loggingStartLogs( void );
+    void _logging_start_logs();
 
     /**
-     * \brief   Stop logging
+     * \brief   Stops logging.
      **/
-    void _loggingStopLogs( void );
+    void _logging_stop_logs();
 
     /**
      * \brief   Enables or disables logs.
+     *
+     * \param   logsEnable      True to enable logs, false to disable.
      **/
-    void _loggingSetEnableLogs( bool logsEnable );
+    void _set_logging_enabled( bool logsEnable );
 
     /**
      * \brief   Saves log configuration in the file.
      **/
-    void _loggingSaveScopes( void );
+    void _logging_save_scopes();
 
     /**
-     * \brief   Logs the message.
+     * \brief   Writes the log message to all registered loggers.
+     *
+     * \param   data    The logging event data containing the log entry.
      **/
-    void _loggingLogMessage( const SharedBuffer & data );
+    void _logging_log_message( const LoggingEventData & data );
 
     /**
      * \brief   Changes the priority of the scopes. The streaming object contains the list of scopes
-     *          with priority to change. Each scope entry can be either a single scope
-     *          or scope group. In case of scope group, the scope ID is ignored (should be 0).
-     * \param   stream      The buffer with scope name, scope ID and scope priority.
-     * \param   scopeCount  The number of scopes in the binary buffer.
+     *          with priority to change. Each scope entry can be either a single scope or scope
+     *          group. In case of scope group, the scope ID is ignored (should be 0).
+     *
+     * \param   stream          The buffer with scope name, scope ID and scope priority.
+     * \param   scopeCount      The number of scopes in the binary buffer.
      **/
-    void _changeScopePriority( const SharedBuffer & stream, unsigned int scopeCount );
+    void _change_scope_priority( const SharedBuffer & stream, uint32_t scopeCount );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -117,9 +128,11 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    LogEventProcessor( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( LogEventProcessor );
+    LogEventProcessor() = delete;
+    AREG_NOCOPY_NOMOVE( LogEventProcessor );
 };
 
-#endif  // AREG_LOGS
+} // namespace areg
+
+#endif  // AREG_LOGGING
 #endif  // AREG_LOGGING_PRIVATE_LOGEVENTPROCESSOR_HPP

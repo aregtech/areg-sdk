@@ -8,65 +8,64 @@
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/private/RuntimeBase.cpp
- * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Areg Platform Runtime Object class
+ * \brief       Areg Platform, Runtime Object base class implementation.
  *
  ************************************************************************/
 #include "areg/base/private/RuntimeBase.hpp"
 #include "areg/base/RuntimeClassID.hpp"
+#include "areg/base/String.hpp"
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
-// RuntimeBase class implementation
+// RuntimeBase -- virtual method implementations
 //////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////
-// Hidden static calls.
-//////////////////////////////////////////////////////////////////////////
-inline const RuntimeClassID & RuntimeBase::_getClassId( void )
+const RuntimeClassID & RuntimeBase::class_id() const noexcept
 {
-    static const RuntimeClassID _classId("RuntimeBase");
-    return _classId;
+    return RuntimeBase::CLASS_ID;
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// Methods
-//////////////////////////////////////////////////////////////////////////
-const RuntimeClassID & RuntimeBase::getRuntimeClassId( void ) const
+std::string_view RuntimeBase::class_name() const noexcept
 {
-    return _getClassId();
+    return RuntimeBase::CLASS_ID.name();
 }
 
-const String & RuntimeBase::getRuntimeClassName( void ) const
+const char* RuntimeBase::class_string() const noexcept
 {
-    return RuntimeBase::_getClassId().getName();
+    return RuntimeBase::CLASS_ID.name().data();
 }
 
-bool RuntimeBase::isInstanceOfRuntimeClass( const char * className ) const
+uint32_t RuntimeBase::class_number() const noexcept
 {
-    return (RuntimeBase::_getClassId() == className);
+    return RuntimeBase::CLASS_ID.magic();
 }
 
-bool RuntimeBase::isInstanceOfRuntimeClass( const String & className ) const
+bool RuntimeBase::is_runtime( const char * className ) const noexcept
 {
-    return (RuntimeBase::_getClassId() == className);
+    return (RuntimeBase::CLASS_ID.name() == className);
 }
 
-bool RuntimeBase::isInstanceOfRuntimeClass( const RuntimeClassID & classId ) const
+bool RuntimeBase::is_runtime( std::string_view className ) const noexcept
 {
-    return (RuntimeBase::_getClassId() == classId);
+    return (RuntimeBase::CLASS_ID.name() == className);
 }
 
-bool RuntimeBase::isInstanceOfRuntimeClass(unsigned int classMagic) const
+bool RuntimeBase::is_runtime( const String & className ) const noexcept
 {
-    return (RuntimeBase::_getClassId().getMagic() == classMagic);
+    return (className == RuntimeBase::CLASS_ID.name());
 }
 
-unsigned int RuntimeBase::getRuntimeClassNumber(void) const
+bool RuntimeBase::is_runtime( const RuntimeClassID & classId ) const noexcept
 {
-    return RuntimeBase::_getClassId().getMagic();
+    return (RuntimeBase::CLASS_ID.magic() == classId.magic());
 }
+
+bool RuntimeBase::is_runtime( uint32_t classMagic ) const noexcept
+{
+    return (RuntimeBase::CLASS_ID.magic() == classMagic);
+}
+
+} // namespace areg

@@ -17,13 +17,15 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
-#include "areg/base/NEMath.hpp"
+#include "areg/base/MathDefs.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 
 #include <functional>
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // Console class declaration
@@ -61,7 +63,7 @@ public:
      *          The lines on console are Y-coordinates.
      *          The columns on console are X-coordinates.
      **/
-    using Coord     = NEMath::sCoord;
+    using Coord     = areg::Coord;
 
     //!< The default buffer size to input on console.
     static constexpr uint32_t INPUT_BUFFER_SIZE { 512 };
@@ -70,8 +72,8 @@ public:
 // Hidden constructor / destructor.
 //////////////////////////////////////////////////////////////////////////
 private:
-    Console(void);
-    ~Console(void);
+    Console() noexcept;
+    ~Console() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.
@@ -81,292 +83,329 @@ public:
     /**
      * \brief   Returns the only instance of Console object to make outputs.
      **/
-    static Console& getInstance(void);
+    static Console& instance();
 
     /**
-     * \brief   Before calling the method the console input must be enabled.
-     *          Otherwise, the user cannot make input on console.
-     * 
-     *          When called, the calling thread is blocked until user completes
-     *          the input procedure. By completion, it triggers the callback and
-     *          passes the input string of length maximum 255 characters to validate.
-     *          Returns input string if it is validated by callback call or the
-     *          callback is empty. Repeats the procedure if callback is not empty
-     *          and the input was not validated.
-     *          
-     * \param   callback    The callback to validate user input string.
-     * \return  Returns input string maximum 255 characters after validation by callback,
-     *          or if the callback is empty.
-     **/
-    String waitForInput( Console::CallBack callback ) const;
-
-    /**
-     * \brief   Before calling the method the console input must be enabled.
-     *          Otherwise, the user cannot make input on console.
+     * \brief   Before calling the method the console input must be enabled. Otherwise, the user
+     *          cannot make input on console. When called, the calling thread is blocked until user
+     *          completes the input procedure. By completion, it triggers the callback and passes
+     *          the input string of length maximum 255 characters to validate. Returns input string
+     *          if it is validated by callback call or the callback is empty. Repeats the procedure
+     *          if callback is not empty and the input was not validated.
      *
-     *          Reads and converts formated inputs from console similar to 'gets_s' or 'fgets' methods
-     *          and writes the data into the given arguments. Each argument must be a pointer
-     *          to a variable of a type that corresponds to a type specifier in format. The maximum
-     *          length of the strings must be specified in the format.
-     * 
-     * \param   format      The format of input.
-     *          arguments   The list of pointers to the variables.
+     * \param   callback    The callback to validate user input string.
+     * \return  Returns input string maximum 255 characters after validation by callback, or if the
+     *          callback is empty.
+     **/
+    String wait_for_input( Console::CallBack callback ) const;
+
+    /**
+     * \brief   Before calling the method the console input must be enabled. Otherwise, the user
+     *          cannot make input on console. Reads and converts formatted inputs from console
+     *          similar to 'gets_s' or 'fgets' methods and writes the data into the given arguments.
+     *          Each argument must be a pointer to a variable of a type that corresponds to a type
+     *          specifier in format. The maximum length of the strings must be specified in the format.
+     *
+     * \param   format      The format of input. arguments The list of pointers to the variables.
      * \return  Upon successful completion, these functions return true. Otherwise, returns false.
      **/
-    bool readInputs(const char* format, ...) const;
+    bool read_inputs(const char* format, ...) const;
 
     /**
-     * \brief   Before calling the method the console input must be enabled.
-     *          Otherwise, the user cannot make input on console.
-     *
-     *          Reads and converts formated inputs from console similar to 'vscanf' method
-     *          and writes the data into the given variable argument list. Each argument 
-     *          in the list must be a pointer to a variable of a type that corresponds to a type
-     *          specifier in format. The maximum expected length of the strings must be 
-     *          specified in the format.
+     * \brief   Before calling the method the console input must be enabled. Otherwise, the user
+     *          cannot make input on console. Reads and converts formatted inputs from console
+     *          similar to 'vscanf' method and writes the data into the given variable argument
+     *          list. Each argument in the list must be a pointer to a variable of a type that
+     *          corresponds to a type specifier in format. The maximum expected length of the
+     *          strings must be specified in the format.
      *
      * \param   format      The format of input.
      * \param   varList     The variable argument list of pointers to the variables.
      * \return  Upon successful completion, these functions return true. Otherwise, returns false.
      **/
-    bool readInputList(const char* format, va_list varList) const;
+    bool read_input_list(const char* format, va_list varList) const;
 
     /**
-     * \brief   Before calling the method the console input must be enabled.
-     *          Otherwise, the user cannot make input on console.
-     * 
-     *          Reads from console a string with maximum length 512 characters and returns it.
+     * \brief   Before calling the method the console input must be enabled. Otherwise, the user
+     *          cannot make input on console. Reads from console a string with maximum length 512
+     *          characters and returns it.
      *
      * \return  Returns the string input on console.
      **/
-    String readString(void) const;
+    String read_string() const;
 
     /**
-     * \brief   Call if there is no need anymore to make any message output.
-     *          Otherwise, it is called when the Console objects is destroyed.
+     * \brief   Call if there is no need anymore to make any message output. Otherwise, it is called
+     *          when the Console objects is destroyed.
      **/
-    inline void uninitialize(void);
+    inline void uninitialize() noexcept;
 
     /**
      * \brief   Returns true if the Console is initialized and ready to run.
      **/
-    inline bool isReady( void ) const;
+    [[nodiscard]]
+    inline bool is_ready() const noexcept;
 
     /**
-     * \brief   Enables or disables the console input. It has no effect if the Console
-     *          already is blocked by waiting for the user input. This is used to synchronize
-     *          input and output procedures in the multithreading environment.
+     * \brief   Enables or disables the console input. It has no effect if the Console already is
+     *          blocked by waiting for the user input. This is used to synchronize input and output
+     *          procedures in the multithreading environment.
      **/
-    inline bool enableConsoleInput(bool enable);
+    inline bool enable_console_input(bool enable) noexcept;
 
     /**
      * \brief   Outputs the text message at the given coordinate.
+     *
      * \param   pos     The X- and Y-coordinate to start to output the message text.
      * \param   text    The message text to output.
      **/
-    inline void outputStr(Console::Coord pos, const String& text) const;
-    inline void outputTxt(Console::Coord pos, const std::string_view& text) const;
+    inline void output_str(Console::Coord pos, const String& text) const noexcept;
+    /**
+     * \brief   Outputs the text message at the given coordinate.
+     *
+     * \param   pos     The X- and Y-coordinate to start to output the message text.
+     * \param   text    The message text to output.
+     **/
+    inline void output_txt(Console::Coord pos, std::string_view text) const noexcept;
 
     /**
-     * \brief   Outputs the formated text message with arguments at the given coordinate.
-     * \param   pos     The X- and Y-coordinate to start to output the message text.
-     * \param   format  The text format with arguments to output the message.
+     * \brief   Outputs the formatted text message with arguments at the given coordinate.
+     *
+     * \param   pos         The X- and Y-coordinate to start to output the message text.
+     * \param   format      The text format with arguments to output the message.
      **/
-    void outputMsg(Console::Coord pos, const char* format, ...) const;
+    void output_msg(Console::Coord pos, const char* format, ...) const;
 
     /**
      * \brief   Outputs the text message at the current cursor position.
-     * \param   text  The text to output.
+     *
+     * \param   text    The text to output.
      **/
-    inline void printStr(const String& text) const;
-    inline void printTxt(const std::string_view& text) const;
+    inline void print_str(const String& text) const noexcept;
 
     /**
-     * \brief   Outputs the formated text message with arguments at the current cursor position.
-     * \param   format  The text format with arguments to output the message.
+     * \brief   Outputs the text message at the current cursor position.
+     *
+     * \param   text    The text to output.
      **/
-    void printMsg(const char* format, ...) const;
+    inline void print_txt(std::string_view text) const noexcept;
+
+    /**
+     * \brief   Outputs the formatted text message with arguments at the current cursor position.
+     *
+     * \param   format      The text format with arguments to output the message.
+     **/
+    void print_msg(const char* format, ...) const;
 
     /**
      * \brief   Returns the current coordinate of the cursor on the console.
      **/
-    inline Console::Coord getCursorCurPosition(void) const;
+    [[nodiscard]]
+    inline Console::Coord cursor_cur_position() const noexcept;
 
     /**
      * \brief   Sets the cursor position at the specified position on console.
+     *
      * \param   pos     The X- and Y-coordinate of console to move the cursor.
      **/
-    inline void setCursorCurPosition(Console::Coord pos) const;
+    inline void set_cursor_cur_position(Console::Coord pos) const noexcept;
 
     /**
-     * \brief   Moves and place the cursor at the begin of specified line.
-     *          The first line starts with index 0.
-     * 
+     * \brief   Moves and place the cursor at the begin of specified line. The first line starts
+     *          with index 0.
+     *
      * \param   line    The line to move cursor. The first line starts with index 0.
-     */
-    inline void moveToLine(int16_t line) const;
+     **/
+    inline void move_to_line(int16_t line) const noexcept;
 
     /**
      * \brief   Saves the cursor current position in memory.
      **/
-    inline void saveCursorPosition(void) const;
+    inline void save_cursor_position() const noexcept;
 
     /**
      * \brief   Restores previously saved in memory cursor position.
      **/
-    inline void restoreCursorPosition(void) const;
+    inline void restore_cursor_position() const noexcept;
 
     /**
      * \brief   Moves cursor one line up from current position.
      **/
-    inline void moveCursorOneLineUp(void) const;
+    inline void move_cursor_one_line_up() const noexcept;
 
     /**
      * \brief   Moves cursor one line down from current position.
      **/
-    inline void moveCursorOneLineDown(void) const;
+    inline void move_cursor_one_line_down() const noexcept;
 
     /**
-     * \brief   Clears the line starting from the cursor current position until the end of the line. 
+     * \brief   Clears the line starting from the cursor current position until the end of the line.
      **/
-    inline void clearCurrentLine( void ) const;
+    inline void clear_current_line() const noexcept;
 
     /**
-     * \brief   Clear the specified line starting from specified posX position until
-     *          the end of the line.
-     * \param   pos     The position to start clearing line.
-     *                  The 'posY' parameter specifies the line index and
-     *                  the 'posX' parameter specifies the starting position to clear. 
+     * \brief   Clear the specified line starting from specified posX position until the end of the
+     *          line.
+     *
+     * \param   pos     The position to start clearing line. The 'posY' parameter specifies the line
+     *                  index and the 'posX' parameter specifies the starting position to clear.
      **/
-    inline void clearLine(Console::Coord pos) const;
+    inline void clear_line(Console::Coord pos) const noexcept;
 
     /**
      * \brief   Clears the screen.
      **/
-    inline void clearScreen( void ) const;
+    inline void clear_screen() const noexcept;
 
     /**
      * \brief   Return the user input command.
      **/
-    inline const String& getUserInput(void) const;
+    inline const String& user_input() const noexcept;
 
     /**
-     * \brief   Call to refresh the console screen and show updates.
-     *          Without this call the console behavior is unpredicted (depends on OS).
+     * \brief   Call to refresh the console screen and show updates. Without this call the console
+     *          behavior is unpredicted (depends on OS).
      **/
-    inline void refreshScreen(void) const;
+    inline void refresh_screen() const noexcept;
 
     /**
      * \brief   Locks the console to prevent other threads to output or change cursor position.
+     *
      * \return  Returns true if succeeded to lock. Otherwise, returns false.
      **/
-    inline bool lockConsole( void );
+    inline bool lock_console() noexcept;
 
     /**
      * \brief   Unlocks previously locked console.
      **/
-    inline void unlockConsole( void );
+    inline void unlock_console() noexcept;
 
     /**
      * \brief   Reads data from the console into the provided buffer.
-     * \param   buffer  The buffer to store the read data.
-     * \param   bufSize The size of the buffer.
-     * \return  Returns true if the data was successfully read and the buffer contains not empty data, otherwise false.
+     *
+     * \param   buffer      The buffer to store the read data.
+     * \param   bufSize     The size of the buffer.
+     * \return  Returns true if the data was successfully read and the buffer contains not empty
+     *          data, otherwise false.
      **/
-    static bool readConsoleData(char* buffer, unsigned int bufSize);
+    static bool read_console_data(char* buffer, uint32_t bufSize);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden, OS specific methods.
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Setup the console to start to input / output the messages.
-     *          OS specific implementation.
+     * \brief   Setup the console to start to input / output the messages. OS specific implementation.
      **/
-    bool _osSetup(void);
+    bool _os_setup() noexcept;
     /**
-     * \brief   Release the console, so that there will be no more inputs / outputs.
-     *          OS specific implementation.
+     * \brief   Release the console, so that there will be no more inputs / outputs. OS specific implementation.
      **/
-    void _osRelease(void);
+    void _os_release() noexcept;
 
     /**
-     * \brief   Outputs the specified message text at specified coordinate.
-     *          OS specific implementation.
+     * \brief   Outputs the specified message text at specified coordinate. OS specific implementation.
+     *
      * \param   pos     The position on console to output message.
      * \param   text    The text message to output.
      **/
-    void _osOutputText(Console::Coord pos, const String& text) const;
-    void _osOutputText(Console::Coord pos, const std::string_view& text) const;
-    void _osOutputText(const String& text) const;
-    void _osOutputText(const std::string_view& text) const;
-
+    void _os_output_text(Console::Coord pos, const String& text) const noexcept;
     /**
-     * \brief   Returns the current position of the cursor on the console.
-     *          OS specific implementation.
+     * \brief   Outputs the specified message text at specified coordinate. OS specific implementation.
+     *
+     * \param   pos     The position on console to output message.
+     * \param   text    The text message to output.
      **/
-    Console::Coord _osGetCursorPosition(void) const;
+    void _os_output_text(Console::Coord pos, std::string_view text) const noexcept;
+    /**
+     * \brief   Outputs the specified message text at specified coordinate. OS specific implementation.
+     *
+     * \param   text    The text message to output.
+     **/
+    void _os_output_text(const String& text) const noexcept;
+    /**
+     * \brief   Outputs the specified message text at specified coordinate. OS specific implementation.
+     *
+     * \param   text    The text message to output.
+     **/
+    void _os_output_text(std::string_view text) const noexcept;
 
     /**
-     * \brief   Moves the cursor at specified position on the console.
-     *          OS specific implementation.
+     * \brief   Returns the current position of the cursor on the console. OS specific implementation.
+     **/
+    Console::Coord _os_get_cursor_position() const noexcept;
+
+    /**
+     * \brief   Moves the cursor at specified position on the console. OS specific implementation.
+     *
      * \param   pos     The X- and Y-coordinate of console to move the cursor.
      **/
-    void _osSetCursorCurPosition(Console::Coord pos) const;
+    void _os_set_cursor_cur_position(Console::Coord pos) const noexcept;
 
     /**
-     * \brief   Refreshes the screen to display output messages.
-     *          OS specific implementation.
+     * \brief   Refreshes the screen to display output messages. OS specific implementation.
      **/
-    void _osRefreshScreen(void) const;
+    void _os_refresh_screen() const noexcept;
 
     /**
-     * \brief   Clears the line starting from the cursor position until the end of line. 
+     * \brief   Clears the line starting from the cursor position until the end of line.
      **/
-    void _osClearLine( void ) const;
+    void _os_clear_line() const noexcept;
+
+    /**
+     * \brief   Clears the specified row from column pos.posX to the right edge WITHOUT
+     *          physically moving the OS cursor.  Implementations must NOT call
+     *          SetConsoleCursorPosition() (Win32) or emit a CUP sequence (ANSI) that
+     *          moves the visible cursor, because the input thread may be running
+     *          gets_s() / fgets() concurrently and Windows echoes typed characters at
+     *          the current OS cursor position.
+     *
+     * \param   pos     The console coordinate (column, row) of the line to clear.
+     **/
+    void _os_clear_line_at_position(Console::Coord pos) const noexcept;
 
     /**
      * \brief   Clears console screen.
      **/
-    void _osClearScreen( void ) const;
+    void _os_clear_screen() const noexcept;
 
     /**
-     * \brief   Reads and converts formated inputs from console similar to 'vscanf' method
-     *          and writes the data into the given variable argument list.
+     * \brief   Reads and converts formatted inputs from console similar to 'vscanf' method and
+     *          writes the data into the given variable argument list.
      *
      * \param   format      The format of input.
      * \param   varList     The variable argument list of pointers to the variables.
      * \return  Upon successful completion, these functions return true. Otherwise, returns false.
      **/
-    bool _osReadInputList(const char* format, va_list varList) const;
+    bool _os_read_input_list(const char* format, va_list varList) const;
 
     /**
      * \brief   OS specific implementation to save the cursor current position in memory.
      **/
-    void _osSaveCursorPosition(void) const;
+    void _os_save_cursor_position() const noexcept;
 
     /**
      * \brief   OS specific implementation to restore previously saved in memory cursor position.
      **/
-    void _osRestoreCursorPosition(void) const;
+    void _os_restore_cursor_position() const noexcept;
 
     /**
      * \brief   OS specific implementation to move cursor one line up from current position.
      **/
-    void _osMoveCursorOneLineUp(void) const;
+    void _os_move_cursor_one_line_up() const noexcept;
 
     /**
      * \brief   OS specific implementation to move cursor one line down from current position.
      **/
-    void _osMoveCursorOneLineDown(void) const;
+    void _os_move_cursor_one_line_down() const noexcept;
 
     /**
-     * \brief   A blocking call to wait for user input of string on the console.
-     *          OS specific implementation.
-     * \param   buffer  The buffer to fill in input, should be big enough.
-     * \param   size    The size of buffer.
+     * \brief   A blocking call to wait for user input of string on the console. OS specific implementation.
+     *
+     * \param   buffer      The buffer to fill in input, should be big enough.
+     * \param   size        The size of buffer.
      **/
-    static bool _osWaitInputString(char * buffer, uint32_t size);
+    static bool _os_wait_input_string(char * buffer, uint32_t size);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -375,140 +414,148 @@ private:
     /**
      * \brief   The flag, indicating whether the Console is ready to operate.
      **/
-    bool            mIsReady;
+    bool                mIsReady;
     /**
      * \brief   The last input command as a string on the console.
      **/
-    String          mUsrInput;
+    String              mUsrInput;
     /**
      * \brief   The context. It is OS specific.
      **/
-    ptr_type        mContext;
+    ptr_type            mContext;
+    /**
+     * \brief   Saved cursor position, used by save_cursor_position / restore_cursor_position.
+     **/
+    mutable Coord       mSavedPos;
+    /**
+     * \brief   The highest posY (row) used in any positioned write. Used by _os_release()
+     *          to position the terminal cursor below the last output row on exit.
+     **/
+    mutable int32_t     mMaxUsedRow { 0 };
     /**
      * \brief   An object used to block the user input procedure to use in multithreading environment.
      **/
-    mutable SyncEvent       mEnable;
+    mutable SyncEvent   mEnable;
     /**
      * \brief   The synchronization object used in multithreading environment.
      **/
-    mutable ResourceLock    mLock;
+    mutable Mutex       mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( Console );
+    AREG_NOCOPY_NOMOVE( Console );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // Console class inline method implementations.
 //////////////////////////////////////////////////////////////////////////
-inline void Console::uninitialize( void )
+inline void Console::uninitialize() noexcept
 {
-    _osRelease( );
+    _os_release( );
 }
 
-inline bool Console::isReady( void ) const
+inline bool Console::is_ready() const noexcept
 {
     return mIsReady;
 }
 
-inline bool Console::enableConsoleInput( bool enable )
+inline bool Console::enable_console_input( bool enable ) noexcept
 {
-    return enable ? (mIsReady && mEnable.setEvent( )) : (mIsReady == false) || (mEnable.resetEvent( ));
+    return enable ? (mIsReady && mEnable.set_signaled()) : (mIsReady == false) || (mEnable.reset( ));
 }
 
-inline void Console::outputStr( Console::Coord pos, const String & text ) const
+inline void Console::output_str( Console::Coord pos, const String & text ) const noexcept
 {
-    _osOutputText( pos, text );
+    _os_output_text( pos, text );
 }
 
-inline void Console::outputTxt( Console::Coord pos, const std::string_view & text ) const
+inline void Console::output_txt( Console::Coord pos, std::string_view text ) const noexcept
 {
-    _osOutputText( pos, text );
+    _os_output_text( pos, text );
 }
 
-inline void Console::printStr(const String& text) const
+inline void Console::print_str(const String& text) const noexcept
 {
-    _osOutputText(text);
+    _os_output_text(text);
 }
 
-inline void Console::printTxt(const std::string_view& text) const
+inline void Console::print_txt(std::string_view text) const noexcept
 {
-    _osOutputText(text);
+    _os_output_text(text);
 }
 
-inline Console::Coord Console::getCursorCurPosition( void ) const
+inline Console::Coord Console::cursor_cur_position() const noexcept
 {
-    return _osGetCursorPosition( );
+    return _os_get_cursor_position( );
 }
 
-inline void Console::setCursorCurPosition( Console::Coord pos ) const
+inline void Console::set_cursor_cur_position( Console::Coord pos ) const noexcept
 {
-    _osSetCursorCurPosition( pos );
+    _os_set_cursor_cur_position( pos );
 }
 
-inline void Console::moveToLine(int16_t line) const
+inline void Console::move_to_line(int16_t line) const noexcept
 {
-    setCursorCurPosition(Coord{ 0, line });
+    set_cursor_cur_position(Coord{ 0, line });
 }
 
-inline void Console::saveCursorPosition(void) const
+inline void Console::save_cursor_position() const noexcept
 {
-    _osSaveCursorPosition();
+    _os_save_cursor_position();
 }
 
-inline void Console::restoreCursorPosition(void) const
+inline void Console::restore_cursor_position() const noexcept
 {
-    _osRestoreCursorPosition();
+    _os_restore_cursor_position();
 }
 
-inline void Console::moveCursorOneLineUp(void) const
+inline void Console::move_cursor_one_line_up() const noexcept
 {
-    _osMoveCursorOneLineUp();
+    _os_move_cursor_one_line_up();
 }
 
-inline void Console::moveCursorOneLineDown(void) const
+inline void Console::move_cursor_one_line_down() const noexcept
 {
-    _osMoveCursorOneLineDown();
+    _os_move_cursor_one_line_down();
 }
 
-inline const String & Console::getUserInput( void ) const
+inline const String & Console::user_input() const noexcept
 {
     return mUsrInput;
 }
 
-inline void Console::refreshScreen( void ) const
+inline void Console::refresh_screen() const noexcept
 {
-    _osRefreshScreen( );
+    _os_refresh_screen( );
 }
 
-inline bool Console::lockConsole( void )
+inline bool Console::lock_console() noexcept
 {
-    return mLock.lock(NECommon::WAIT_INFINITE);
+    return mLock.lock(areg::WAIT_INFINITE);
 }
 
-inline void Console::unlockConsole( void )
+inline void Console::unlock_console() noexcept
 {
     mLock.unlock( );
 }
 
-inline void Console::clearCurrentLine( void ) const
+inline void Console::clear_current_line() const noexcept
 {
-    _osClearLine( );
+    _os_clear_line( );
 }
 
-inline void Console::clearLine(Console::Coord pos) const
+inline void Console::clear_line(Console::Coord pos) const noexcept
 {
-    saveCursorPosition();
-    setCursorCurPosition(pos);
-    clearCurrentLine();
-    restoreCursorPosition();
+    _os_clear_line_at_position(pos);
 }
 
-inline void Console::clearScreen( void ) const
+inline void Console::clear_screen() const noexcept
 {
-    _osClearScreen();
+    _os_clear_screen();
 }
+
+} // namespace areg::ext
 
 #endif  // AREG_AREGEXTEND_CONSOLE_CONSOLE_HPP

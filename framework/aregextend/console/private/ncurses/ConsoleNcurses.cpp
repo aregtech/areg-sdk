@@ -24,17 +24,13 @@
 
 #include <ncurses.h>
 
-namespace
-{
-    Console::Coord  _cursorPos{ -1, -1 };
-    bool            _isSaved{ false };
-}
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // Console POSIX specific implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool Console::_osSetup(void)
+bool Console::_os_setup() noexcept
 {
     if (mIsReady == false)
     {
@@ -50,10 +46,13 @@ bool Console::_osSetup(void)
     return mIsReady;
 }
 
-void Console::_osRelease(void)
+void Console::_os_release() noexcept
 {
     if (mIsReady)
     {
+        // Ensure cursor is visible before tearing down ncurses.
+        curs_set(1);
+
     	if (mContext != 0)
     	{
             delwin(reinterpret_cast<WINDOW *>(mContext));
@@ -63,45 +62,61 @@ void Console::_osRelease(void)
         refresh();
         mContext = 0;
         mIsReady = false;
+
+        const int finalRow = static_cast<int>(mMaxUsedRow + 2);
+        printf("\x1B[%d;1H\n", finalRow);
+        ::fflush(stdout);
     }
 }
 
-void Console::_osOutputText(Console::Coord pos, const String& text) const
+void Console::_os_output_text(Console::Coord pos, const String& text) const noexcept
 {
     Lock lock(mLock);
 
     if (mContext != 0)
     {
         ASSERT(mIsReady);
-        mvwaddstr(reinterpret_cast<WINDOW *>(mContext), pos.posY, pos.posX, text.getString());
-        wclrtoeol(reinterpret_cast<WINDOW *>(mContext));
+        WINDOW* win = reinterpret_cast<WINDOW*>(mContext);
+        mvwaddstr(win, pos.posY, pos.posX, text.as_string());
+        wclrtoeol(win);
+        wmove(win, mSavedPos.posY, mSavedPos.posX);
+        if (static_cast<int32_t>(pos.posY) > mMaxUsedRow)
+        {
+            mMaxUsedRow = static_cast<int32_t>(pos.posY);
+        }
     }
 }
 
-void Console::_osOutputText(Console::Coord pos, const std::string_view& text) const
+void Console::_os_output_text(Console::Coord pos, std::string_view text) const noexcept
 {
     Lock lock(mLock);
 
     if (mContext != 0)
     {
         ASSERT(mIsReady);
-        mvwaddstr(reinterpret_cast<WINDOW*>(mContext), pos.posY, pos.posX, text.data());
-        wclrtoeol(reinterpret_cast<WINDOW *>(mContext));
+        WINDOW* win = reinterpret_cast<WINDOW*>(mContext);
+        mvwaddstr(win, pos.posY, pos.posX, text.data());
+        wclrtoeol(win);
+        wmove(win, mSavedPos.posY, mSavedPos.posX);
+        if (static_cast<int32_t>(pos.posY) > mMaxUsedRow)
+        {
+            mMaxUsedRow = static_cast<int32_t>(pos.posY);
+        }
     }
 }
 
-void Console::_osOutputText(const String& text) const
+void Console::_os_output_text(const String& text) const noexcept
 {
     Lock lock(mLock);
 
     if (mContext != 0)
     {
         ASSERT(mIsReady);
-        waddstr(reinterpret_cast<WINDOW*>(mContext), text.getString());
+        waddstr(reinterpret_cast<WINDOW*>(mContext), text.as_string());
     }
 }
 
-void Console::_osOutputText(const std::string_view& text) const
+void Console::_os_output_text(std::string_view text) const noexcept
 {
     Lock lock(mLock);
 
@@ -112,7 +127,7 @@ void Console::_osOutputText(const std::string_view& text) const
     }
 }
 
-Console::Coord Console::_osGetCursorPosition(void) const
+Console::Coord Console::_os_get_cursor_position() const noexcept
 {
     Lock lock(mLock);
 
@@ -120,7 +135,7 @@ Console::Coord Console::_osGetCursorPosition(void) const
     if (mContext != 0)
     {
         ASSERT(mIsReady);
-        int posX{ 0 }, posY{ 0 };
+        int32_t posX{ 0 }, posY{ 0 };
         getyx(reinterpret_cast<WINDOW*>(mContext), posY, posX);
         pos.posX = static_cast<int16_t>(posX);
         pos.posY = static_cast<int16_t>(posY);
@@ -129,10 +144,12 @@ Console::Coord Console::_osGetCursorPosition(void) const
     return pos;
 }
 
-void Console::_osSetCursorCurPosition(Console::Coord pos) const
+void Console::_os_set_cursor_cur_position(Console::Coord pos) const noexcept
 {
     Lock lock(mLock);
 
+    // Track in software so _os_output_text can restore here without a query.
+    mSavedPos = pos;
     if (mContext != 0)
     {
         wmove(reinterpret_cast<WINDOW*>(mContext), pos.posY, pos.posX);
@@ -140,20 +157,17 @@ void Console::_osSetCursorCurPosition(Console::Coord pos) const
     }
 }
 
-bool Console::_osWaitInputString(char* buffer, uint32_t size)
+bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 {
     ASSERT(buffer != nullptr);
-    // Use getnstr which operates on stdscr (the standard screen).
-    // This is a static method, so we cannot use mContext (non-static member).
-    // ncurses provides stdscr as a global after initscr() is called.
-    if ((stdscr == nullptr) || (getnstr(buffer, static_cast<int>(size)) != OK))
+    if ((stdscr == nullptr) || (getnstr(buffer, static_cast<int32_t>(size)) != OK))
         return false;
 
-    NEString::trimAll<char>(buffer);
-    return (NEString::isEmpty<char>(buffer) == false);
+    areg::trim_all<char>(buffer);
+    return (areg::is_empty<char>(buffer) == false);
 }
 
-void Console::_osRefreshScreen(void) const
+void Console::_os_refresh_screen() const noexcept
 {
     if (mContext != 0)
     {
@@ -161,7 +175,7 @@ void Console::_osRefreshScreen(void) const
     }
 }
 
-void Console::_osClearLine( void ) const
+void Console::_os_clear_line() const noexcept
 {
     Lock lock(mLock);
 
@@ -171,7 +185,21 @@ void Console::_osClearLine( void ) const
     }
 }
 
-void Console::_osClearScreen( void ) const
+void Console::_os_clear_line_at_position(Console::Coord pos) const noexcept
+{
+    Lock lock(mLock);
+
+    if (mContext != 0)
+    {
+        WINDOW* win = reinterpret_cast<WINDOW*>(mContext);
+        wmove(win, static_cast<int>(pos.posY), static_cast<int>(pos.posX));
+        wclrtoeol(win);
+        wmove(win, static_cast<int>(mSavedPos.posY), static_cast<int>(mSavedPos.posX));
+        wrefresh(win);
+    }
+}
+
+void Console::_os_clear_screen() const noexcept
 {
     Lock lock(mLock);
 
@@ -181,46 +209,52 @@ void Console::_osClearScreen( void ) const
     }
 }
 
-bool Console::_osReadInputList(const char* format, va_list varList) const
+bool Console::_os_read_input_list(const char* format, va_list varList) const
 {
     return (mContext != 0 ? vw_scanw(reinterpret_cast<WINDOW *>(mContext), format, varList) >= 0 : false);
 }
 
-void Console::_osSaveCursorPosition(void) const
+void Console::_os_save_cursor_position() const noexcept
 {
     Lock lock(mLock);
-    _cursorPos = _osGetCursorPosition();
-    _isSaved = true;
-}
-
-void Console::_osRestoreCursorPosition(void) const
-{
-    Lock lock(mLock);
-
-    if (_isSaved)
+    if (mContext != 0)
     {
-        if (mContext != 0)
-        {
-            wmove(reinterpret_cast<WINDOW*>(mContext), _cursorPos.posY, _cursorPos.posX);
-            wrefresh(reinterpret_cast<WINDOW*>(mContext));
-        }
+        WINDOW* win = reinterpret_cast<WINDOW*>(mContext);
+        int curY{ 0 }, curX{ 0 };
+        getyx(win, curY, curX);
+        mSavedPos = { static_cast<int16_t>(curX), static_cast<int16_t>(curY) };
 
-        _isSaved = false;
+        // Hide the cursor to prevent visible jumping during batch updates.
+        curs_set(0);
     }
 }
 
-void Console::_osMoveCursorOneLineUp(void) const
+void Console::_os_restore_cursor_position() const noexcept
 {
     Lock lock(mLock);
-    Console::Coord pos = _osGetCursorPosition();
+
+    if (mContext != 0)
+    {
+        // Move to the software-tracked input position and show the cursor.
+        wmove(reinterpret_cast<WINDOW*>(mContext), mSavedPos.posY, mSavedPos.posX);
+        curs_set(1);
+    }
+}
+
+void Console::_os_move_cursor_one_line_up() const noexcept
+{
+    Lock lock(mLock);
+    Console::Coord pos = _os_get_cursor_position();
     mvcur(pos.posY, pos.posX, pos.posY - 1, 1);
 }
 
-void Console::_osMoveCursorOneLineDown(void) const
+void Console::_os_move_cursor_one_line_down() const noexcept
 {
     Lock lock(mLock);
-    Console::Coord pos = _osGetCursorPosition();
+    Console::Coord pos = _os_get_cursor_position();
     mvcur(pos.posY, pos.posX, pos.posY + 1, 1);
 }
+
+} // namespace areg::ext
 
 #endif  // defined(POSIX) && (AREG_EXTENDED)

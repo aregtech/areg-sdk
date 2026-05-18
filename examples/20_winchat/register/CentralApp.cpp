@@ -82,7 +82,7 @@ BOOL CentralApp::InitInstance()
     SetRegistryKey(_T("Local AppWizard-Generated Applications"));
 
     // Don't start connection with the router, this will be started on UI
-    Application::initApplication(true, true, false, true, false, nullptr);
+    areg::Application::setup(true, true, false, true, false, nullptr);
 
     do
     {
@@ -120,9 +120,9 @@ BOOL CentralApp::InitInstance()
 
 
 
-int CentralApp::ExitInstance( )
+int32_t CentralApp::ExitInstance( )
 {
-    Application::releaseApplication();
+    areg::Application::release();
 
     return CWinApp::ExitInstance( );
 }

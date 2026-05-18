@@ -18,10 +18,10 @@
     <None Include="services\PatientInformation.siml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\18_pubworker\services\private\NEPatientInformation.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\18_pubworker\services\private\PatientInformation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\18_pubworker\services\private\PatientInformationClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\18_pubworker\services\private\PatientInformationConsumerBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="$(AregGenerateDir)examples\18_pubworker\services\private\PatientInformationEvents.cpp">
@@ -30,7 +30,7 @@
     <ClCompile Include="$(AregGenerateDir)examples\18_pubworker\services\private\PatientInformationProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\18_pubworker\services\private\PatientInformationStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\18_pubworker\services\private\PatientInformationProviderBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -41,13 +41,13 @@
     <ClInclude Include="$(AregGenerateDir)examples\18_pubworker\services\private\PatientInformationProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\18_pubworker\services\NEPatientInformation.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\18_pubworker\services\PatientInformation.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\18_pubworker\services\PatientInformationClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\18_pubworker\services\PatientInformationConsumerBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\18_pubworker\services\PatientInformationStub.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\18_pubworker\services\PatientInformationProviderBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

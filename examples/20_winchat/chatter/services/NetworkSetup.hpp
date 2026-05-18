@@ -1,16 +1,16 @@
 #pragma once
-#include "examples/20_winchat/services/ConnectionManagerClientBase.hpp"
+#include "examples/20_winchat/services/ConnectionManagerConsumerBase.hpp"
 
-class Component;
+namespace areg { class Component; }
 class ConnectionHandler;
 
-class NetworkSetup :  public ConnectionManagerClientBase
+class NetworkSetup final : public ConnectionManagerConsumerBase
 {
 public:
-    NetworkSetup( const char * roleName, Component & owner, ConnectionHandler & handlerConnection );
-    virtual ~NetworkSetup( ) = default;
+    NetworkSetup( const char * roleName, areg::Component & owner, ConnectionHandler & handlerConnection );
+    ~NetworkSetup( ) = default;
 
-    void DisconnectServicing( void );
+    void DisconnectServicing();
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -28,12 +28,12 @@ protected:
      * \param   cookie      Connection assigned cookie for client service
      * \param   dateTime    The client service connection time-stamp in UTC
      * \param   result      The connection operation result
-     * \see     requestConnect
+     * \see     request_connect
      **/
-    virtual void responseConnect( const String & nickName, unsigned int cookie, const DateTime & dateTime, NEConnectionManager::eConnectionResult result ) override;
+    void response_connect( const areg::String & nickName, uint32_t cookie, const areg::DateTime & dateTime, ConnectionManager::ConnectionResult result ) final;
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -46,7 +46,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -58,6 +58,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    NetworkSetup( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( NetworkSetup );
+    NetworkSetup() = delete;
+    AREG_NOCOPY_NOMOVE( NetworkSetup );
 };

@@ -17,11 +17,11 @@
 //               unsubscribe to data update messages during run-time.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #include "locsvcmesh/src/ClientComponent.hpp"
 #include "locsvcmesh/src/ServicingComponents.hpp"
@@ -50,7 +50,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _mainServiceName, ControllerComponent )
             // register HelloWorld service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( HelloWorld::ServiceName, HelloWorld::InterfaceVersion )
         // end of component description
         END_REGISTER_COMPONENT( _mainServiceName )
     // end of thread description
@@ -66,7 +66,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "SecondaryComponent", SecondaryComponent )
             // register HelloWorld service implementation and the dependencies.
-            REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( HelloWorld::ServiceName, HelloWorld::InterfaceVersion )
             REGISTER_DEPENDENCY(_mainServiceName)
             REGISTER_DEPENDENCY("SecondaryComponent")
         // end of component description
@@ -80,7 +80,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "ThirdComponent", SecondaryComponent )
             // register HelloWorld service implementation and the dependencies.
-            REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( HelloWorld::ServiceName, HelloWorld::InterfaceVersion )
             REGISTER_DEPENDENCY( _mainServiceName )
             REGISTER_DEPENDENCY( "SecondaryComponent")
         // end of component description
@@ -102,39 +102,39 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(example_14_locsvcmesh_main);
+DEF_LOG_SCOPE(examples_14_locsvcmesh, main);
 //! \brief   A Demo of mesh of local services and clients.
 int main()
 {
     std::cout << "A Demo of mesh of local services and clients ..." << std::endl;
 
     // force to start logging with default settings
-    LOGGING_CONFIGURE_AND_START( nullptr );
-    Application::initApplication( true, true, false, true, true, nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr, false );
+    areg::Application::setup( true, true, false, true, true, nullptr );
 
     do
     {
-        LOG_SCOPE( example_14_locsvcmesh_main );
+        LOG_SCOPE( examples_14_locsvcmesh, main );
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         std::any data = true;
-        ComponentLoader::getInstance().setComponentData(_mainServiceName, data );
+        areg::ComponentLoader::instance().set_component_data(_mainServiceName, data );
 
         // load model to initialize components
-        Application::loadModel(_modelName);
+        areg::Application::load_model(_modelName);
         LOG_DBG("Servicing model is loaded");
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        areg::Application::wait_quit(areg::WAIT_INFINITE);
         // stop and unload components
-        Application::unloadModel(_modelName);
+        areg::Application::unload_model(_modelName);
 
         std::cout
-            << (Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI)
+            << (areg::Application::find_model( _modelName ).alive_duration( ) / areg::DURATION_1_MILLI)
             << " ms passed. Model is unloaded, releasing resources to exit application ..."
             << std::endl;
 
         // release and cleanup resources of application.
-        Application::releaseApplication();
+        areg::Application::release();
 
     } while (false);
 

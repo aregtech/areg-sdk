@@ -15,7 +15,8 @@
  ************************************************************************/
 #include "areg/component/private/EventConsumerMap.hpp"
 
-#include "areg/component/IEEventConsumer.hpp"
+#include "areg/component/EventConsumer.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerList class implementation
@@ -25,46 +26,40 @@
 // EventConsumerList class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-EventConsumerList::~EventConsumerList( void )
+EventConsumerList::~EventConsumerList()
 {
-    removeAllConsumers();
+    remove_all_consumers();
 }
 
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerList class, methods
 //////////////////////////////////////////////////////////////////////////
-bool EventConsumerList::addConsumer( IEEventConsumer& whichConsumer )
+bool EventConsumerList::add_consumer( EventConsumer& whichConsumer )
 {
-    bool result = false;
-    if (EventConsumerListBase::pushLastIfUnique(&whichConsumer))
-    {
-        result = true;
-        whichConsumer.consumerRegistered(true);
-    }
+    if (!EventConsumerListBase::push_last_unique(&whichConsumer))
+        return false;
     
-    return result;
+    whichConsumer.consumer_registered(true);
+    return true;
 }
 
-bool EventConsumerList::removeConsumer( IEEventConsumer& whichConsumer )
+bool EventConsumerList::remove_consumer( EventConsumer& whichConsumer ) noexcept
 {
-    bool result = false;
-    if ( EventConsumerListBase::removeEntry(&whichConsumer) )
-    {
-        result = true;
-        whichConsumer.consumerRegistered(false);
-    }
-
-    return result;
+    if (!EventConsumerListBase::remove_entry(&whichConsumer))
+        return false;
+    
+    whichConsumer.consumer_registered(false);
+    return true;
 }
 
-void EventConsumerList::removeAllConsumers( void )
+void EventConsumerList::remove_all_consumers() noexcept
 {
-    EventConsumerListBase::LISTPOS pos = EventConsumerListBase::firstPosition();
-    for (; isValidPosition(pos); pos = nextPosition(pos))
+    EventConsumerListBase::LISTPOS pos = EventConsumerListBase::first_position();
+    for (; is_valid_position(pos); pos = next_position(pos))
     {
-        IEEventConsumer* consumer = valueAtPosition(pos);
+        EventConsumer* consumer = value_at(pos);
         ASSERT(consumer != nullptr);
-        consumer->consumerRegistered(false);
+        consumer->consumer_registered(false);
     }
 
     EventConsumerListBase::clear();
@@ -78,22 +73,24 @@ void EventConsumerList::removeAllConsumers( void )
 //////////////////////////////////////////////////////////////////////////
 #if defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG)
 
-void ImplEventConsumerMap::implCleanResource( RuntimeClassID & Key, EventConsumerList * Resource )
+void ImplEventConsumerMap::impl_clean_resource( RuntimeClassID & Key, EventConsumerList* Resource )
 {
-    OUTPUT_DBG("Resource [ %s ]: Removing all consumers and deleting resource at address [ %p ]", Key.getName().getString(), Resource);
+    AREG_OUTPUT_DBG("Resource [ %s ]: Removing all consumers and deleting resource at address [ %p ]", Key.name().as_string(), Resource);
     ASSERT(Resource != nullptr);
-    Resource->removeAllConsumers();
+    Resource->remove_all_consumers();
     delete Resource;
     Resource = nullptr;
 }
 
 #else   // !(defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG))
 
-void ImplEventConsumerMap::implCleanResource( RuntimeClassID & /*Key*/, EventConsumerList * Resource )
+void ImplEventConsumerMap::impl_clean_resource( RuntimeClassID & /*Key*/, EventConsumerList * Resource )
 {
-    Resource->removeAllConsumers();
+    Resource->remove_all_consumers();
     delete Resource;
     Resource = nullptr;
 }
 
 #endif  // defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG)
+
+} // namespace areg

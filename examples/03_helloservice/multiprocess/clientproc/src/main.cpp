@@ -3,8 +3,8 @@
  * \brief   Runs service and the client in one thread.
  **/
 
-#include "areg/base/GEGlobal.h"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/areg_global.h"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/String.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
@@ -21,7 +21,7 @@
 //!< The name of model
 constexpr char const _modelName[]{ "ServiceModel" };
 //!< Client component name. Let's generate the name for client service, we'll use it later.
-const String _client(NEUtilities::generateName("ServiceClient"));
+const areg::String _client(areg::generate_name("ServiceClient"));
 
 // Describe model, register the service consumer (client)
 BEGIN_MODEL(_modelName)
@@ -39,23 +39,23 @@ END_MODEL(_modelName)
 // main method
 //////////////////////////////////////////////////////////////////////////
 
-int main( void )
+int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::initApplication( );
+    areg::Application::setup( );
 
     // load model to initialize components
-    Application::loadModel(_modelName);
+    areg::Application::load_model(_modelName);
 
     // wait until Application quit signal is set.
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    areg::Application::wait_quit(areg::WAIT_INFINITE);
 
     // stop and unload components
-    Application::unloadModel(_modelName);
+    areg::Application::unload_model(_modelName);
 
     // release and cleanup resources of application.
-    Application::releaseApplication();
+    areg::Application::release();
 
     return 0;
 }

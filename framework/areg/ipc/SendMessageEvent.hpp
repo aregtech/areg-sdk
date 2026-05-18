@@ -18,104 +18,104 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
-#include "areg/component/TEEvent.hpp"
+#include "areg/base/areg_global.h"
+#include "areg/component/EventTemplate.hpp"
 #include "areg/base/RemoteMessage.hpp"
 
 #include <utility>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // SendMessageEventData class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The data to set when sending remote message.
- *          Is used when sending message to remote process to dispatch and handle message.
- *          The remote message with data is created and set before sending message.
- *          The object is used when passing event to message sending threat for further processing.
+ * \brief   Wraps remote message data with command instruction for message sender thread.
  **/
 class AREG_API SendMessageEventData
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
 //////////////////////////////////////////////////////////////////////////
-private:
+public:
     //!< The command to process when send message.
-    enum eSendMessage
+    enum class SendCommand  : uint8_t
     {
-          MessageForward    //!< Forward message to target.
+          ForwardMessage    //!< Forward message to target.
         , ExitThread        //!< Stop sending message and exit the thread.
+        , InvalidMessage    //!< Ignore, the message is invalid
     };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates a message with instruction to stop sending message and exit thread.
-     **/
-    inline SendMessageEventData( void );
+    inline SendMessageEventData();
 
     /**
-     * \brief   Sets the remote message buffer with the instruction to forward message
-     *          to the target for further processing.
-     * \param   remoteMessage   The remote message object to initialize.
-     *                          The message should already contain information and instructions
-     *                          for remote process.
+     * \brief   Initializes with remote message and forward instruction (copy).
+     *
+     * \param   remoteMessage       Remote message to initialize.
      **/
     inline explicit SendMessageEventData( const RemoteMessage & remoteMessage );
 
     /**
-     * \brief   Copies remote message data from given source.
-     * \param   source  The source, which contains remote message.
+     * \brief   Initializes with remote message and forward instruction (move).
+     *          Transfers ownership of the message payload without copying.
+     *
+     * \param   remoteMessage       Remote message to move from.
      **/
+    inline explicit SendMessageEventData( RemoteMessage && remoteMessage ) noexcept;
+
     inline SendMessageEventData( const SendMessageEventData & source );
 
-    /**
-     * \brief   Moves remote message data from given source.
-     * \param   source  The source, which contains remote message.
-     **/
     inline SendMessageEventData( SendMessageEventData && source ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
-    ~SendMessageEventData( void )= default;
+    ~SendMessageEventData()= default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators and attributes
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Empties existing message buffer and copies remote message data from given source.
-     * \param   source  The source, which contains remote message.
-     **/
+
     inline SendMessageEventData & operator = ( const SendMessageEventData & source );
 
-    /**
-     * \brief   Empties existing message buffer and moves remote message data from given source.
-     * \param   source  The source, which contains remote message.
-     **/
     inline SendMessageEventData & operator = ( SendMessageEventData && source ) noexcept;
 
     /**
-     * \brief   Returns instance of remote message.
+     * \brief   Returns the remote message instance.
      **/
-    inline const RemoteMessage & getRemoteMessage( void ) const;
+    [[nodiscard]]
+    inline const RemoteMessage & remote_message() const noexcept;
+
+    [[nodiscard]]
+    inline const ITEM_ID& message_target() const noexcept;
+
+    [[nodiscard]]
+    inline const ITEM_ID& message_source() const noexcept;
 
     /**
-     * \brief   Returns the command instruction to handle messages.
+     * \brief   Returns the command instruction.
      **/
-    inline SendMessageEventData::eSendMessage getCommand( void ) const;
+    [[nodiscard]]
+    inline SendMessageEventData::SendCommand command() const noexcept;
 
     /**
-     * \brief   Returns true if message is with instruction to forward the message.
+     * \brief   Returns true if message has forward instruction.
      **/
-    inline bool isForwardMessage( void ) const;
+    [[nodiscard]]
+    inline bool is_forward_message() const noexcept;
 
     /**
-     * \brief   Returns true if message is with instruction to quit the thread.
+     * \brief   Returns true if message has exit thread instruction.
      **/
-    inline bool isExitThreadMessage( void ) const;
+    [[nodiscard]]
+    inline bool is_exit_message() const noexcept;
+
+    inline void set_remote_message(const RemoteMessage& message, SendMessageEventData::SendCommand command);
+
+    inline void set_remote_message(RemoteMessage&& message, SendMessageEventData::SendCommand command) noexcept;
+
+    inline void set_command(SendMessageEventData::SendCommand command) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variable
@@ -129,14 +129,26 @@ private:
     /**
      * \brief   The action to perform on the message.
      **/
-    eSendMessage    mCmdSendMessage;
+    SendCommand    mCmdSendMessage;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// SendMessageEvent and IESendMessageEventConsumer declaration
+// SendMessageEvent and SendMessageEventConsumer declaration
 //////////////////////////////////////////////////////////////////////////
-//!< Declaration of SendMessageEvent event and IESendMessageEventConsumer consumer classes
-DECLARE_EVENT(SendMessageEventData, SendMessageEvent, IESendMessageEventConsumer)
+//!< Declaration of SendMessageEvent event and SendMessageEventConsumer consumer classes
+AREG_DECLARE_EVENT(SendMessageEventData, SendMessageEvent, SendMessageEventConsumer)
+
+/**
+ * \brief   Pending send entry: holds everything needed for deferred group-send.
+ *          sendEvt is nullptr for the triggering message (owned by the dispatch
+ *          chain -- never call destroy() on it). msg is always valid.
+ **/
+struct PendingSend
+{
+    SOCKETHANDLE            socket;     //!< Resolved socket handle for this message.
+    const RemoteMessage*    msg;        //!< Message to send; always valid.
+    SendMessageEvent*       sendEvt;    //!< Owning event; nullptr for trigger (don't destroy).
+};
 
 //////////////////////////////////////////////////////////////////////////
 // SendMessageEventData class inline functions
@@ -144,13 +156,19 @@ DECLARE_EVENT(SendMessageEventData, SendMessageEvent, IESendMessageEventConsumer
 
 inline SendMessageEventData::SendMessageEventData(const RemoteMessage& remoteMessage)
     : mRemoteMessage    (remoteMessage)
-    , mCmdSendMessage   ( SendMessageEventData::eSendMessage::MessageForward )
+    , mCmdSendMessage   ( SendMessageEventData::SendCommand::ForwardMessage )
 {
 }
 
-inline SendMessageEventData::SendMessageEventData(void)
+inline SendMessageEventData::SendMessageEventData(RemoteMessage&& remoteMessage) noexcept
+    : mRemoteMessage    ( std::move(remoteMessage) )
+    , mCmdSendMessage   ( SendMessageEventData::SendCommand::ForwardMessage )
+{
+}
+
+inline SendMessageEventData::SendMessageEventData()
     : mRemoteMessage    ( )
-    , mCmdSendMessage   ( SendMessageEventData::eSendMessage::ExitThread )
+    , mCmdSendMessage   ( SendMessageEventData::SendCommand::ExitThread )
 {
 }
 
@@ -164,6 +182,7 @@ inline SendMessageEventData::SendMessageEventData(SendMessageEventData&& source)
     : mRemoteMessage    ( std::move(source.mRemoteMessage) )
     , mCmdSendMessage   ( source.mCmdSendMessage )
 {
+    source.mCmdSendMessage = SendCommand::InvalidMessage;
 }
 
 inline SendMessageEventData& SendMessageEventData::operator = (const SendMessageEventData& source)
@@ -177,27 +196,56 @@ inline SendMessageEventData& SendMessageEventData::operator = (SendMessageEventD
 {
     mRemoteMessage  = std::move(source.mRemoteMessage);
     mCmdSendMessage = source.mCmdSendMessage;
+    source.mCmdSendMessage = SendCommand::InvalidMessage;
     return (*this);
 }
 
-inline const RemoteMessage & SendMessageEventData::getRemoteMessage( void ) const
+inline const RemoteMessage & SendMessageEventData::remote_message() const noexcept
 {
     return mRemoteMessage;
 }
 
-inline SendMessageEventData::eSendMessage SendMessageEventData::getCommand( void ) const
+inline const ITEM_ID& SendMessageEventData::message_target() const noexcept
+{
+    return mRemoteMessage.target();
+}
+
+inline const ITEM_ID& SendMessageEventData::message_source() const noexcept
+{
+    return mRemoteMessage.source();
+}
+
+inline SendMessageEventData::SendCommand SendMessageEventData::command() const noexcept
 {
     return mCmdSendMessage;
 }
 
-inline bool SendMessageEventData::isForwardMessage( void ) const
+inline bool SendMessageEventData::is_forward_message() const noexcept
 {
-    return (mCmdSendMessage == eSendMessage::MessageForward);
+    return (mCmdSendMessage == SendCommand::ForwardMessage);
 }
 
-inline bool SendMessageEventData::isExitThreadMessage( void ) const
+inline bool SendMessageEventData::is_exit_message() const noexcept
 {
-    return (mCmdSendMessage == eSendMessage::ExitThread);
+    return (mCmdSendMessage == SendCommand::ExitThread);
 }
 
+inline void SendMessageEventData::set_remote_message(const RemoteMessage& message, SendMessageEventData::SendCommand command)
+{
+    mRemoteMessage  = message;
+    mCmdSendMessage = command;
+}
+
+inline void SendMessageEventData::set_remote_message(RemoteMessage&& message, SendMessageEventData::SendCommand command) noexcept
+{
+    mRemoteMessage  = std::move(message);
+    mCmdSendMessage = command;
+}
+
+inline void SendMessageEventData::set_command(SendMessageEventData::SendCommand command) noexcept
+{
+    mCmdSendMessage = command;
+}
+
+} // namespace areg
 #endif  // AREG_IPC_SENDMESSAGEEVENT_HPP

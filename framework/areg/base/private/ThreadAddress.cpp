@@ -13,10 +13,10 @@
  * \brief       Areg Platform, Thread Address class
  ************************************************************************/
 #include "areg/base/ThreadAddress.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/Process.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/MathDefs.hpp"
 
 #include <utility>
 
@@ -26,18 +26,17 @@
 
 namespace
 {
-/**
- * \brief   Invalid thread name
- **/
+    //!< Invalid thread name constant
 constexpr std::string_view   INVALID_THREAD_NAME     { "INVALID_THREAD_NAME" };
-
 }
+
+namespace areg {
 
 /************************************************************************/
 // ThreadAddress
 /************************************************************************/
 
-const ThreadAddress & ThreadAddress::getInvalidThreadAddress(void)
+const ThreadAddress & ThreadAddress::invalid_thread_address()
 {
     static const ThreadAddress _invalidAddress;
     return _invalidAddress;
@@ -46,25 +45,25 @@ const ThreadAddress & ThreadAddress::getInvalidThreadAddress(void)
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-ThreadAddress::ThreadAddress( void )
+ThreadAddress::ThreadAddress()
     : mThreadName   ( INVALID_THREAD_NAME )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
 }
 
 ThreadAddress::ThreadAddress( const char * threadName )
     : mThreadName   ( threadName != nullptr ? threadName : INVALID_THREAD_NAME )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    mThreadName.truncate( NEUtilities::ITEM_NAMES_MAX_LENGTH );
-    mMagicNum    = ThreadAddress::_magicNumber(*this);
+    mThreadName.truncate( areg::ITEM_NAMES_MAX_LENGTH );
+    mMagicNum    = ThreadAddress::_magic_number(*this);
 }
 
 ThreadAddress::ThreadAddress( const String & threadName )
     : mThreadName   ( threadName )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    mMagicNum    = ThreadAddress::_magicNumber(*this);
+    mMagicNum    = ThreadAddress::_magic_number(*this);
 }
 
 ThreadAddress::ThreadAddress( const ThreadAddress & src )
@@ -77,33 +76,33 @@ ThreadAddress::ThreadAddress( ThreadAddress && src ) noexcept
     : mThreadName   ( std::move(src.mThreadName) )
     , mMagicNum     ( src.mMagicNum )
 {
-    src.mMagicNum   = NEMath::CHECKSUM_IGNORE;
+    src.mMagicNum   = areg::CHECKSUM_IGNORE;
 }
 
-ThreadAddress::ThreadAddress( const IEInStream & stream )
+ThreadAddress::ThreadAddress( const InStream & stream )
     : mThreadName   ( stream )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    mMagicNum    = ThreadAddress::_magicNumber(*this);
+    mMagicNum    = ThreadAddress::_magic_number(*this);
 }
 
-bool ThreadAddress::isValid( void ) const
+bool ThreadAddress::is_valid() const noexcept
 {
-    return (mMagicNum != NEMath::CHECKSUM_IGNORE);
+    return (mMagicNum != areg::CHECKSUM_IGNORE);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-String ThreadAddress::convAddressToPath( const ThreadAddress& threadAddress )
+String ThreadAddress::to_path( const ThreadAddress& threadAddress )
 {
-    return threadAddress.convToString();
+    return threadAddress.to_string();
 }
 
-ThreadAddress ThreadAddress::convPathToAddress( const char* threadPath, const char** OUT out_nextPart /*= nullptr*/ )
+ThreadAddress ThreadAddress::from_path( const char* threadPath, const char** nextPart /*= nullptr*/ )
 {
     ThreadAddress result;
-    result.convFromString(threadPath, out_nextPart);
+    result.from_string(threadPath, nextPart);
     return result;
 }
 
@@ -111,30 +110,28 @@ ThreadAddress ThreadAddress::convPathToAddress( const char* threadPath, const ch
 // Operators
 //////////////////////////////////////////////////////////////////////////
 
-void ThreadAddress::convFromString(const char * threadPath, const char** OUT out_nextPart /*= nullptr*/)
+void ThreadAddress::from_string(const char * threadPath, const char** nextPart /*= nullptr*/)
 {
     const char* strSource   = threadPath;
-    if (out_nextPart != nullptr)
+    if (nextPart != nullptr)
     {
-        *out_nextPart = threadPath;
+        *nextPart = threadPath;
     }
 
-    mThreadName  = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource);
-    mMagicNum    = ThreadAddress::_magicNumber(*this);
+    mThreadName  = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
+    mMagicNum    = ThreadAddress::_magic_number(*this);
 
-    if (out_nextPart != nullptr)
+    if (nextPart != nullptr)
     {
-        *out_nextPart = strSource;
+        *nextPart = strSource;
     }
 }
 
-unsigned int ThreadAddress::_magicNumber(const ThreadAddress & addrThread)
+uint32_t ThreadAddress::_magic_number(const ThreadAddress & addrThread)
 {
-    unsigned int result = NEMath::CHECKSUM_IGNORE;
-    if ((addrThread.mThreadName.isEmpty() == false) && (addrThread.mThreadName != INVALID_THREAD_NAME))
-    {
-        result = NEMath::crc32Calculate(addrThread.mThreadName.getString());
-    }
-
-    return result;
+    return (!addrThread.mThreadName.is_empty() && (addrThread.mThreadName != INVALID_THREAD_NAME))
+            ? areg::crc32_calculate(addrThread.mThreadName.as_string())
+            : areg::CHECKSUM_IGNORE;
 }
+
+} // namespace areg

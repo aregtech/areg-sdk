@@ -20,19 +20,23 @@
 /************************************************************************
  * Includes
  ************************************************************************/
-#include "areg/base/TERuntimeResourceMap.hpp"
+#include "areg/base/RuntimeResourceMap.hpp"
 #include "areg/base/Containers.hpp"
-#include "areg/base/TEResourceMap.hpp"
+#include "areg/base/ResourceMap.hpp"
+
+/************************************************************************
+ * Dependencies
+ ************************************************************************/
+namespace areg {
+    class EventConsumer;
+} // namespace areg
+
+namespace areg {
 
 /************************************************************************
  * Declared classes
  ************************************************************************/
 class EventConsumerList;
-
-/************************************************************************
- * Dependencies
- ************************************************************************/
-class IEEventConsumer;
 
 /************************************************************************
  * \brief   In this file are declared Event Consumer contain classes:
@@ -45,14 +49,11 @@ class IEEventConsumer;
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerList class declaration
 //////////////////////////////////////////////////////////////////////////
-using EventConsumerListBase	= TELinkedList<IEEventConsumer *>;
+using EventConsumerListBase	= LinkedList<EventConsumer *>;
 
 /**
- * \brief   Event Consumer List is a helper class containing 
- *          Event Consumer objects. It is used in Dispatcher, when 
- *          collecting list of Consumers, which are registered 
- *          to dispatch certain Event Object.
- *          For use, see implementation of EventDispatcherBase class
+ * \brief   Helper class containing Event Consumer objects. Used in Dispatcher when collecting list
+ *          of Consumers registered to dispatch certain Event Object.
  **/
 class EventConsumerList   : public EventConsumerListBase
 {
@@ -60,24 +61,13 @@ class EventConsumerList   : public EventConsumerListBase
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Default Constructor. Initializes empty list
-     **/
-    EventConsumerList( void ) = default;
-    /**
-     * \brief   Copy constructor.
-     * \param   src     The source of data to copy.
-     **/
+    EventConsumerList() = default;
+
     EventConsumerList(const EventConsumerList & src) = default;
-    /**
-     * \brief   Move constructor.
-     * \param   src     The source of data to move.
-     **/
+
     EventConsumerList( EventConsumerList && src ) noexcept = default;
-    /**
-     * \brief   Destructor
-     **/
-    ~EventConsumerList( void );
+
+    ~EventConsumerList();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -85,66 +75,69 @@ public:
 public:
     /**
      * \brief   Assigns entries from given source.
-     * \param   src     THe source of event consumer list.
-     */
+     *
+     * \param   src     The source of event consumer list.
+     **/
     inline EventConsumerList & operator = (const EventConsumerList & src ) = default;
 
     /**
      * \brief   Assigns entries from given source.
-     * \param   src     THe source of event consumer list.
-     */
+     *
+     * \param   src     The source of event consumer list.
+     **/
     inline EventConsumerList & operator = ( EventConsumerList && src ) noexcept = default;
 
     /**
-     * \brief   Adds Event Consumer object to the list. Returns true, 
-     *          if Event Consumer object is added to the list. The function does not 
-     *          check whether the Event Consumer already exists in the list or not.
-     *          To check whether there is already Event Consumer in the list
-     *          call existConsumer() method.
-     * \param   whichConsumer   The Event Consumer object to add to the list.
+     * \brief   Adds Event Consumer object to the list. Returns true if successfully added. Does not
+     *          check for duplicates; use exist() to verify.
+     *
+     * \param   whichConsumer       The Event Consumer object to add to the list.
      * \return  Returns true if Event Consumer is added to the list.
      **/
-    bool addConsumer( IEEventConsumer & whichConsumer );
+    bool add_consumer( EventConsumer & whichConsumer );
 
     /**
-     * \brief   Removes Event Consumer object from the List. The function will 
-     *          search for the Event Consumer object by pointer and remove 
-     *          the first match. The function does not check whether there is still 
-     *          same Event Consumer exist in the list or not.
-     *          To check whether there is already Event Consumer in the list
-     *          call existConsumer() method.
-     * \param   whichConsumer   The Event Consumer object to remove from the list.
+     * \brief   Removes Event Consumer object from the list. Searches by pointer and removes the
+     *          first match. Does not check for further occurrences; use exist() to verify.
+     *
+     * \param   whichConsumer       The Event Consumer object to remove from the list.
      * \return  Returns true if Event Consumer was removed from the list.
      **/
-    bool removeConsumer( IEEventConsumer & whichConsumer );
+    bool remove_consumer( EventConsumer & whichConsumer ) noexcept;
 
     /**
      * \brief   Removes all Event Consumers from the list.
      **/
-    void removeAllConsumers( void );
+    void remove_all_consumers() noexcept;
 
     /**
-     * \brief   Returns true, if the specified Event Consumer already exists in the list.
-     *          The lookup will be done by pointer address value.
-     * \param   whichConsumer   The Event Consumer object to search.
-     * \return  Returns true, if the specified Event Consumer already exists in the list.
+     * \brief   Returns true if the specified Event Consumer exists in the list. Lookup is done by
+     *          pointer address value.
+     *
+     * \param   whichConsumer       The Event Consumer object to search.
+     * \return  Returns true if the specified Event Consumer already exists in the list.
      **/
-    inline bool existConsumer( IEEventConsumer & whichConsumer ) const;
+    [[nodiscard]]
+    inline bool exist( EventConsumer & whichConsumer ) const noexcept;
 };
 
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerMap class declaration
 //////////////////////////////////////////////////////////////////////////
 
-class ImplEventConsumerMap	: public TEResourceMapImpl<RuntimeClassID, EventConsumerList *>
+/**
+ * \brief   Helper class for managing maps of event consumer lists.
+ **/
+class ImplEventConsumerMap	: public ResourceMapImpl<RuntimeClassID, EventConsumerList *>
 {
 public:
     /**
-     * \brief	Called when all resources are removed.
-     * \param	Key	        The Key value of resource
-     * \param	Resource	Pointer to resource object
+     * \brief   Called when all resources are removed from the map.
+     *
+     * \param   Key         The key associated with the resource being removed.
+     * \param   Resource    The event consumer list to clean.
      **/
-    void implCleanResource( RuntimeClassID & Key, EventConsumerList * Resource );
+    void impl_clean_resource( RuntimeClassID & Key, EventConsumerList * Resource );
 };
 /**
  * \brief   Event Consumer Map is a helper class containing 
@@ -154,7 +147,7 @@ public:
  *          It is used in Dispatcher, when a Consumer is registered for Event.
  *          For use, see implementation of EventDispatcherBase class
  **/
-using EventConsumerMap  = TELockRuntimeResourceMap<EventConsumerList *, ImplEventConsumerMap>;
+using EventConsumerMap  = ConcurrentRuntimeResourceMap<EventConsumerList *, ImplEventConsumerMap>;
 
 //////////////////////////////////////////////////////////////////////////
 // Inline functions implementation
@@ -163,9 +156,10 @@ using EventConsumerMap  = TELockRuntimeResourceMap<EventConsumerList *, ImplEven
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerList class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline bool EventConsumerList::existConsumer( IEEventConsumer & whichConsumer ) const
+inline bool EventConsumerList::exist( EventConsumer & whichConsumer ) const noexcept
 {
     return EventConsumerListBase::contains( &whichConsumer);
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_EVENTCONSUMERMAP_HPP

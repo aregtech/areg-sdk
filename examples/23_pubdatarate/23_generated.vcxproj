@@ -42,16 +42,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\23_pubdatarate\services\private\LargeDataClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\23_pubdatarate\services\private\LargeDataConsumerBase.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\23_pubdatarate\services\private\LargeDataEvents.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\23_pubdatarate\services\private\LargeDataProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\23_pubdatarate\services\private\LargeDataStub.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\23_pubdatarate\services\private\NELargeData.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\23_pubdatarate\services\private\LargeDataProviderBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\23_pubdatarate\services\private\LargeData.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)examples\23_pubdatarate\services\LargeDataClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\23_pubdatarate\services\LargeDataStub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\23_pubdatarate\services\NELargeData.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\23_pubdatarate\services\LargeDataConsumerBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\23_pubdatarate\services\LargeDataProviderBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\23_pubdatarate\services\LargeData.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\23_pubdatarate\services\private\LargeDataEvents.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\23_pubdatarate\services\private\LargeDataProxy.hpp" />
   </ItemGroup>

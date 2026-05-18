@@ -9,10 +9,10 @@
 //               unsubscribe to data update messages during run-time.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "locservice/src/ServicingComponent.hpp"
 #include "locservice/src/ServiceClient.hpp"
 
@@ -36,11 +36,11 @@ constexpr char const _roleName[]    { "TestServiceComponent" }; //!< Service rol
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD_EX( "TestServiceThread", NEHelloWatchdog::TimeoutWatchdog)
+    BEGIN_REGISTER_THREAD_EX( "TestServiceThread", HelloWatchdog::TimeoutWatchdog)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT(_roleName, ServicingComponent )
             // register HelloWatchdog service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NEHelloWatchdog::ServiceName, NEHelloWatchdog::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( HelloWatchdog::ServiceName, HelloWatchdog::InterfaceVersion )
         // end of component description
         END_REGISTER_COMPONENT(_roleName)
     // end of thread description
@@ -68,7 +68,7 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(main_main);
+DEF_LOG_SCOPE(main, main);
 /**
  * \brief   The main method enables logging, service manager and timer.
  *          it loads and unloads the services, releases application.
@@ -77,28 +77,28 @@ int main()
 {
     printf("Testing Watchdog on local services\n");
     // force to start logging with default settings
-    LOGGING_CONFIGURE_AND_START( nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr, false );
     // Initialize application, enable logging, servicing, timer and watchdog.
-    Application::initApplication(true, true, false, true, true );
+    areg::Application::setup(true, true, false, true, true );
 
     do
     {
-        LOG_SCOPE(main_main);
+        LOG_SCOPE( main, main );
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components
-        Application::loadModel(_modelName);
+        areg::Application::load_model(_modelName);
 
         LOG_DBG("Servicing model is loaded");
 
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        areg::Application::wait_quit(areg::WAIT_INFINITE);
 
         // stop and unload components
-        Application::unloadModel(_modelName);
+        areg::Application::unload_model(_modelName);
 
         // release and cleanup resources of application.
-        Application::releaseApplication();
+        areg::Application::release();
 
     } while (false);
 

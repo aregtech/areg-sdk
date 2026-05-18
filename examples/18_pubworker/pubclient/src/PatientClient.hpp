@@ -12,9 +12,9 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/18_pubworker/services/PatientInformationClientBase.hpp"
+#include "examples/18_pubworker/services/PatientInformationConsumerBase.hpp"
 
 #include "pubclient/src/HardwareWorkerConsumer.hpp"
 #include <string_view>
@@ -24,8 +24,8 @@
  *          of worker thread, and the communication between servicing component and
  *          the worker thread via custom events.
  **/
-class PatientClient : public    Component
-                    , protected PatientInformationClientBase
+class PatientClient final : public    areg::Component
+                          , protected PatientInformationConsumerBase
 {
 
 //////////////////////////////////////////////////////////////////////////
@@ -45,7 +45,7 @@ public:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    PatientClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    PatientClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -61,7 +61,7 @@ protected:
      * \param   Patient The value of Patient attribute.
      * \param   state   The data validation flag.
      **/
-    virtual void onPatientUpdate( const NEPatientInformation::PatientInfo & Patient, NEService::eDataStateType state ) override;
+    void on_patient_update( const PatientInformation::PatientInfo & Patient, areg::DataState state ) final;
 
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -74,7 +74,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
     /**
      * \brief   Returns pointer to Worker Thread Consumer object identified
@@ -85,13 +85,13 @@ protected:
      * \param   workerThreadName    The name of worker thread, which consumer should return
      * \return  Return valid pointer if worker thread has assigned consumer.
      **/
-    virtual IEWorkerThreadConsumer * workerThreadConsumer( const String & consumerName, const String & workerThreadName ) override;
+    areg::WorkerThreadConsumer * worker_thread_consumer( const areg::String & consumerName, const areg::String & workerThreadName ) final;
 
 private:
     /**
      * \brief   Wrapper of this pointer.
      **/
-    inline PatientClient & self( void );
+    inline PatientClient & self();
 
 private:
     /**
@@ -103,6 +103,6 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    PatientClient( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( PatientClient );
+    PatientClient() = delete;
+    AREG_NOCOPY_NOMOVE( PatientClient );
 };

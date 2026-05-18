@@ -35,7 +35,7 @@ This guide provides a comprehensive reference for preprocessor definitions used 
 | [IMP_LOGGER_DLL](#imp_logger_dll) | Import     | Import from areglogger shared library | ❌ Manual         |
 | [IMP_LOGGER_LIB](#imp_logger_lib) | Import     | Import from areglogger static library | ❌ Manual         |
 | [AREG_EXTENDED](#areg_extended)   | Feature    | Enable extended library features      | ⚙️ Configurable   |
-| [AREG_LOGS](#areg_logs)           | Feature    | Enable logging infrastructure         | ⚙️ Configurable   |
+| [AREG_LOGGING](#areg_logging)     | Feature    | Enable logging infrastructure         | ⚙️ Configurable   |
 | [BIT32](#bit32)                   | Bitness    | Enable 32-bit compilation             | ✅ Yes            |
 | [BIT64](#bit64)                   | Bitness    | Enable 64-bit compilation             | ✅ Yes            |
 
@@ -184,7 +184,7 @@ cmake -B ./build -DCMAKE_BUILD_TYPE=Release
 
 **CMake example:**
 ```bash
-cmake -B ./build -DAREG_BINARY=shared
+cmake -B ./build -DAREG_LIB_TYPE=shared
 ```
 
 **Visual Studio:** Default configuration for areg library.
@@ -208,7 +208,7 @@ cmake -B ./build -DAREG_BINARY=shared
 
 **CMake example:**
 ```bash
-cmake -B ./build -DAREG_BINARY=static
+cmake -B ./build -DAREG_LIB_TYPE=static
 ```
 **Visual Studio:** Manually set in areg project properties.
 
@@ -269,7 +269,7 @@ target_link_libraries(myapp PRIVATE areg::areg)
 **CMake example (auto-set):**
 ```cmake
 # Configure areg as static
-option(AREG_BINARY "areg library type" "static")
+option(AREG_LIB_TYPE "areg library type" "static")
 
 # Using Areg CMake functions
 macro_declare_executable(myapp main.cpp)
@@ -309,7 +309,7 @@ target_link_libraries(myapp PRIVATE areg::areg)
 
 **CMake example:**
 ```bash
-cmake -B ./build -DAREG_LOGGER_BINARY=shared
+cmake -B ./build -DAREG_LOGGER_LIB_TYPE=shared
 ```
 
 **Visual Studio:** Default configuration for areglogger library.
@@ -332,7 +332,7 @@ cmake -B ./build -DAREG_LOGGER_BINARY=shared
 
 **CMake example:**
 ```bash
-cmake -B ./build -DAREG_LOGGER_BINARY=static
+cmake -B ./build -DAREG_LOGGER_LIB_TYPE=static
 ```
 
 **Visual Studio:** Manually set in areglogger project properties.
@@ -434,7 +434,7 @@ Edit `msvc_setup.props`:
 
 ---
 
-### AREG_LOGS
+### AREG_LOGGING
 
 **Purpose:** Enables logging infrastructure in Areg Framework.  
 **Auto-set:** No (configurable, default is ON)  
@@ -446,10 +446,10 @@ Edit `msvc_setup.props`:
 **CMake example:**
 ```bash
 # Enable logging (default)
-cmake -B ./build -DAREG_LOGS=ON
+cmake -B ./build -DAREG_LOGGING=ON
 
 # Disable logging
-cmake -B ./build -DAREG_LOGS=OFF
+cmake -B ./build -DAREG_LOGGING=OFF
 ```
 
 **Visual Studio:**
@@ -480,7 +480,7 @@ Edit `msvc_setup.props`:
 
 **CMake example:**
 ```bash
-cmake -B ./build -DAREG_PROCESSOR=x86
+cmake -B ./build -DAREG_ARCH=x86
 ```
 
 **Visual Studio:** Select **Win32** platform.
@@ -501,7 +501,7 @@ cmake -B ./build -DAREG_PROCESSOR=x86
 
 **CMake example:**
 ```bash
-cmake -B ./build -DAREG_PROCESSOR=x64
+cmake -B ./build -DAREG_ARCH=x64
 ```
 
 **Visual Studio:** Select **x64** platform.
@@ -552,7 +552,7 @@ target_link_libraries(myapp PRIVATE areg::areg)
 **CMake:**
 ```cmake
 # Configure areg as static
-set(AREG_BINARY "static" CACHE STRING "areg library type")
+set(AREG_LIB_TYPE "static" CACHE STRING "areg library type")
 
 add_executable(myapp main.cpp)
 target_compile_definitions(myapp PRIVATE IMP_AREG_LIB)
@@ -568,15 +568,15 @@ target_link_libraries(myapp PRIVATE areg::areg)
 **Required defines:**
 - Platform define (auto-set)
 - Import define for areg
-- `AREG_LOGS` disabled
+- `AREG_LOGGING` disabled
 - `NDEBUG` (Release build)
 
 **CMake:**
 ```bash
 cmake -B ./build \
   -DAREG_BUILD_TYPE=Release \
-  -DAREG_LOGS=OFF \
-  -DAREG_BINARY=shared
+  -DAREG_LOGGING=OFF \
+  -DAREG_LIB_TYPE=shared
 ```
 
 **Impact:**
@@ -650,10 +650,10 @@ target_link_libraries(myapp PRIVATE areg::areg ${PLATFORM_LIBS})
 **CMake:**
 ```bash
 # Build areg as shared library
-cmake -B ./build -DAREG_BINARY=shared
+cmake -B ./build -DAREG_LIB_TYPE=shared
 
 # Build areg as static library
-cmake -B ./build -DAREG_BINARY=static
+cmake -B ./build -DAREG_LIB_TYPE=static
 ```
 
 > [!NOTE]

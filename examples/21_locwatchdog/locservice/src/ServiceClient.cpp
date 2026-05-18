@@ -10,78 +10,78 @@
  * Include files.
  ************************************************************************/
 #include "locservice/src/ServiceClient.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/appbase/Application.hpp"
 
-DEF_LOG_SCOPE(examples_21_locwatchdog_ServiceClient_serviceConnected);
-DEF_LOG_SCOPE(examples_21_locwatchdog_ServiceClient_onServiceStateUpdate);
-DEF_LOG_SCOPE(examples_21_locwatchdog_ServiceClient_responseStartSleep);
+DEF_LOG_SCOPE(examples_21_locwatchdog_ServiceClient, service_connected);
+DEF_LOG_SCOPE(examples_21_locwatchdog_ServiceClient, on_service_state_update);
+DEF_LOG_SCOPE(examples_21_locwatchdog_ServiceClient, response_start_sleep);
 
-ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component              ( entry, owner )
-    , HelloWatchdogClientBase( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
+ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    : areg::Component              ( entry, owner )
+    , HelloWatchdogConsumerBase( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
 
     , mSleepTimeout          ( 0 )
     , mRestarts              ( 0 )
 {
 }
 
-bool ServiceClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
+bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
-    LOG_SCOPE(examples_21_locwatchdog_ServiceClient_serviceConnected);
-    bool result = HelloWatchdogClientBase::serviceConnected(status, proxy);
+    LOG_SCOPE( examples_21_locwatchdog_ServiceClient, service_connected );
+    bool result = HelloWatchdogConsumerBase::service_connected(status, proxy);
 
-    if (isConnected())
+    if (is_connected())
     {
-        if (++ mRestarts <= NEHelloWatchdog::MaximumRestarts)
+        if (++ mRestarts <= HelloWatchdog::MaximumRestarts)
         {
             // dynamic subscribe on messages.
-            notifyOnServiceStateUpdate( true );
-            mSleepTimeout   = NEHelloWatchdog::InitialSleepTimeout;
+            notify_on_service_state_update( true );
+            mSleepTimeout   = HelloWatchdog::InitialSleepTimeout;
             LOG_DBG( "Initialized thread sleep timeout [ %u ] ms, sending first request", mSleepTimeout );
 
-            requestStartSleep( mSleepTimeout );
+            request_start_sleep( mSleepTimeout );
         }
         else
         {
             LOG_DBG("Reached maximum number of service restarts, exit application");
             printf("Reached maximum number of service restarts, exit application ...\n");
-            Application::signalAppQuit();
+            areg::Application::signal_quit();
         }
     }
     else
     {
         LOG_DBG( "Completing watchdog test with final sleep timeout [ %u ] ms", mSleepTimeout );
         // clear all subscriptions.
-        clearAllNotifications();
+        clear_all_notifications();
     }
 
     return result;
 }
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
-void ServiceClient::onServiceStateUpdate( NEHelloWatchdog::eState ServiceState, NEService::eDataStateType state )
+void ServiceClient::on_service_state_update( HelloWatchdog::ComponentState ServiceState, areg::DataState state )
 {
-    LOG_SCOPE(examples_21_locwatchdog_ServiceClient_onServiceStateUpdate);
-    LOG_DBG("Current service state is [ %s ], data state is [ %s ]", NEHelloWatchdog::getString(ServiceState), NEService::getString(state));
+    LOG_SCOPE( examples_21_locwatchdog_ServiceClient, on_service_state_update );
+    LOG_DBG("Current service state is [ %s ], data state is [ %s ]", HelloWatchdog::as_string(ServiceState), areg::as_string(state));
 }
 
-#else  // AREG_LOGS
+#else  // AREG_LOGGING
 
-void ServiceClient::onServiceStateUpdate( NEHelloWatchdog::eState /*ServiceState*/, NEService::eDataStateType /*state*/ )
+void ServiceClient::on_service_state_update( HelloWatchdog::ComponentState /*ServiceState*/, areg::DataState /*state*/ )
 {
 }
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 
-void ServiceClient::responseStartSleep( unsigned int timeoutSleep )
+void ServiceClient::response_start_sleep( uint32_t timeoutSleep )
 {
-    LOG_SCOPE(examples_21_locwatchdog_ServiceClient_responseStartSleep);
+    LOG_SCOPE( examples_21_locwatchdog_ServiceClient, response_start_sleep );
     LOG_DBG("Completed service sleep, current timeout is [ %u ]", timeoutSleep);
 
     ASSERT( timeoutSleep == mSleepTimeout);
-    mSleepTimeout += NEHelloWatchdog::TimeoutStep;
+    mSleepTimeout += HelloWatchdog::TimeoutStep;
 
-    requestStartSleep(mSleepTimeout);
+    request_start_sleep(mSleepTimeout);
 }

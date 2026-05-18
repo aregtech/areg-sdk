@@ -4,26 +4,26 @@
 #include "chatter/services/ConnectionHandler.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "chatter/NEDistributedApp.hpp"
+#include "chatter/DistributedAppDefs.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
 
-DEF_LOG_SCOPE(chatter_NetworkSetup_serviceConnected);
-DEF_LOG_SCOPE(chatter_NetworkSetup_responseConnect);
+DEF_LOG_SCOPE(chatter_NetworkSetup, service_connected);
+DEF_LOG_SCOPE(chatter_NetworkSetup, response_connect);
 
-NetworkSetup::NetworkSetup( const char * roleName, Component & owner, ConnectionHandler & handlerConnection )
-    : ConnectionManagerClientBase (roleName, owner.getMasterThread() )
+NetworkSetup::NetworkSetup( const char * roleName, areg::Component & owner, ConnectionHandler & handlerConnection )
+    : ConnectionManagerConsumerBase (roleName, owner.master_thread() )
 
     , mConnectionHandler( handlerConnection )
 {
 }
 
-void NetworkSetup::responseConnect( const String & nickName, unsigned int cookie, const DateTime & dateTime, NEConnectionManager::eConnectionResult result )
+void NetworkSetup::response_connect( const areg::String & nickName, uint32_t cookie, const areg::DateTime & dateTime, ConnectionManager::ConnectionResult result )
 {
-    LOG_SCOPE(chatter_NetworkSetup_responseConnect);
-    LOG_DBG("Got connection [ %s ], cookie [ %u ], connection result [ %s ]", nickName.getString(), cookie, NEConnectionManager::getString(result));
-    DateTime timeConnected = DateTime::getNow();
+    LOG_SCOPE( chatter_NetworkSetup, response_connect );
+    LOG_DBG("Got connection [ %s ], cookie [ %u ], connection result [ %s ]", nickName.as_string(), cookie, ConnectionManager::as_string(result));
+    areg::DateTime timeConnected = areg::DateTime::now();
 
-    if (result == NEConnectionManager::eConnectionResult::ConnectionAccepted)
+    if (result == ConnectionManager::ConnectionResult::Accepted)
     {
         mConnectionHandler.SetNickName(nickName);
         mConnectionHandler.SetConnectCookie(cookie);
@@ -33,42 +33,42 @@ void NetworkSetup::responseConnect( const String & nickName, unsigned int cookie
     else
     {
         mConnectionHandler.SetNickName(nickName);
-        mConnectionHandler.SetCookie(NEConnectionManager::InvalidCookie);
-        mConnectionHandler.SetConnectCookie(NEConnectionManager::InvalidCookie);
-        mConnectionHandler.SetTimeConnect(DateTime());
-        mConnectionHandler.SetTimeConnected(DateTime());
+        mConnectionHandler.SetCookie(ConnectionManager::InvalidCookie);
+        mConnectionHandler.SetConnectCookie(ConnectionManager::InvalidCookie);
+        mConnectionHandler.SetTimeConnect(areg::DateTime());
+        mConnectionHandler.SetTimeConnected(areg::DateTime());
     }
 
     mConnectionHandler.SetRegistered( false );
-    bool isConnected = result == NEConnectionManager::eConnectionResult::ConnectionAccepted;
-    DispatcherThread *dispThread = getDispatcherThread();
-    DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdClientConnection, isConnected ? 1 : 0, reinterpret_cast<LPARAM>(dispThread) );
+    bool isConnected = result == ConnectionManager::ConnectionResult::Accepted;
+    areg::DispatcherThread *dispThread = dispatcher_thread();
+    DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdClientConnection, isConnected ? 1 : 0, reinterpret_cast<LPARAM>(dispThread) );
 }
 
-bool NetworkSetup::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
+bool NetworkSetup::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
-    LOG_SCOPE(chatter_NetworkSetup_serviceConnected);
+    LOG_SCOPE( chatter_NetworkSetup, service_connected );
 
-    bool result = ConnectionManagerClientBase::serviceConnected( status, proxy );
-    if ( isConnected( ) )
+    bool result = ConnectionManagerConsumerBase::service_connected( status, proxy );
+    if ( is_connected( ) )
     {
-        LOG_DBG("The service is connected, network setup can start. posting NEDistributedApp::eWndCommands::CmdServiceNetwork message");
-        DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceNetwork, 1, reinterpret_cast<LPARAM>(getDispatcherThread( )) );
+        LOG_DBG("The service is connected, network setup can start. posting NEDistributedApp::WindowCommand::CmdServiceNetwork message");
+        DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceNetwork, 1, reinterpret_cast<LPARAM>(dispatcher_thread( )) );
     }
     else
     {
-        LOG_DBG("The service is disconnected, network setup stops. posting NEDistributedApp::eWndCommands::CmdServiceNetwork message");
-        DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceNetwork, 0, 0 );
+        LOG_DBG("The service is disconnected, network setup stops. posting NEDistributedApp::WindowCommand::CmdServiceNetwork message");
+        DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceNetwork, 0, 0 );
     }
 
     return result;
 }
 
-void NetworkSetup::DisconnectServicing(void)
+void NetworkSetup::DisconnectServicing()
 {
     if (mConnectionHandler.GetRegistered())
     {
         mConnectionHandler.SetRegistered(false);
-        requestDisconnect( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), mConnectionHandler.GetTimeConnect() );
+        request_disconnect( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), mConnectionHandler.GetTimeConnect() );
     }
 }

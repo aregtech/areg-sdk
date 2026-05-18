@@ -17,82 +17,76 @@
 
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/component/StubAddress.hpp"
-#include "areg/base/IEIOStream.hpp"
-#include "areg/base/NEUtilities.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/IOStream.hpp"
+#include "areg/base/UtilityDefs.hpp"
+#include "areg/base/MathDefs.hpp"
 #include "areg/component/DispatcherThread.hpp"
 
 #include <utility>
+namespace areg {
 
-String ServiceAddress::convAddressToPath( const ServiceAddress & addService )
+String ServiceAddress::to_path( const ServiceAddress & addService )
 {
-    return addService.convToString();
+    return addService.to_string();
 }
 
-ServiceAddress ServiceAddress::convPathToAddress( const char * pathService, const char ** out_nextPart /*= nullptr */ )
+ServiceAddress ServiceAddress::from_path( const char * pathService, const char ** nextPart /*= nullptr */ )
 {
     ServiceAddress result;
-    result.convFromString(pathService, out_nextPart);
+    result.from_string(pathService, nextPart);
     return result;
 }
 
-ServiceAddress::ServiceAddress( void )
+ServiceAddress::ServiceAddress()
     : ServiceItem   ( )
-    , mRoleName     ( String::getEmptyString(), 0 )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mRoleName     ( String::empty_string(), 0 )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
 }
 
 ServiceAddress::ServiceAddress( const String & serviceName
                               , const Version & serviceVersion
-                              , NEService::eServiceType serviceType
+                              , areg::ServiceType serviceType
                               , const String & roleName )
     : ServiceItem   ( serviceName, serviceVersion, serviceType )
     , mRoleName     ( roleName )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    mRoleName.truncate( NEUtilities::ITEM_NAMES_MAX_LENGTH );
-    mMagicNum = ServiceAddress::_magicNumber(*this);
+    mRoleName.truncate( areg::ITEM_NAMES_MAX_LENGTH );
+    mMagicNum = ServiceAddress::_magic_number(*this);
 }
 
 ServiceAddress::ServiceAddress( const ServiceItem & serviceItem, const String & roleName )
     : ServiceItem   ( serviceItem )
     , mRoleName     ( roleName )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    mRoleName.truncate( NEUtilities::ITEM_NAMES_MAX_LENGTH );
-    mMagicNum = ServiceAddress::_magicNumber(*this);
+    mRoleName.truncate( areg::ITEM_NAMES_MAX_LENGTH );
+    mMagicNum = ServiceAddress::_magic_number(*this);
 }
 
 ServiceAddress::ServiceAddress( const StubAddress & addrStub )
     : ServiceItem   ( static_cast<const ServiceItem &>(addrStub) )
-    , mRoleName     ( addrStub.getRoleName() )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mRoleName     ( addrStub.role_name() )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    mMagicNum = ServiceAddress::_magicNumber(*this);
+    mMagicNum = ServiceAddress::_magic_number(*this);
 }
 
 ServiceAddress::ServiceAddress( const ProxyAddress & addrProxy )
     : ServiceItem   ( static_cast<const ServiceItem &>(addrProxy) )
-    , mRoleName     ( addrProxy.getRoleName() )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mRoleName     ( addrProxy.role_name() )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    mMagicNum = ServiceAddress::_magicNumber(*this);
+    mMagicNum = ServiceAddress::_magic_number(*this);
 }
 
-ServiceAddress::ServiceAddress( const IEInStream & stream )
+ServiceAddress::ServiceAddress( const InStream & stream )
     : ServiceItem   ( stream )
     , mRoleName     ( stream )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    mMagicNum = ServiceAddress::_magicNumber(*this);
-}
-
-ServiceAddress::ServiceAddress( const ServiceAddress & source )
-    : ServiceItem   ( static_cast<const ServiceItem &>(source) )
-    , mRoleName     ( source.mRoleName )
-    , mMagicNum     ( source.mMagicNum )
-{
+    mMagicNum = ServiceAddress::_magic_number(*this);
 }
 
 ServiceAddress::ServiceAddress( ServiceAddress && source ) noexcept
@@ -102,36 +96,37 @@ ServiceAddress::ServiceAddress( ServiceAddress && source ) noexcept
 {
 }
 
-String ServiceAddress::convToString(void) const
+String ServiceAddress::to_string() const
 {
-    String result( ServiceItem::convToString() );
-    result.append(NECommon::COMPONENT_PATH_SEPARATOR).append(mRoleName);
-
-    return result;
+    return ServiceItem::to_string()
+                        .append(areg::COMPONENT_PATH_SEPARATOR)
+                        .append(mRoleName);
 }
 
-void ServiceAddress::convFromString(const char * pathService, const char** out_nextPart /*= nullptr */)
+void ServiceAddress::from_string(const char * pathService, const char** nextPart /*= nullptr */)
 {
     const char* strSource   = pathService;
-    ServiceItem::convFromString(pathService, &strSource);
-    mRoleName   = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource);
-    mMagicNum   = ServiceAddress::_magicNumber(*this);
+    ServiceItem::from_string(pathService, &strSource);
+    mRoleName   = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
+    mMagicNum   = ServiceAddress::_magic_number(*this);
 
-    if (out_nextPart != nullptr)
-        *out_nextPart = strSource;
+    if (nextPart != nullptr)
+        *nextPart = strSource;
 }
 
-unsigned int ServiceAddress::_magicNumber(const ServiceAddress addrService)
+uint32_t ServiceAddress::_magic_number(const ServiceAddress addrService) noexcept
 {
-    unsigned int result = NEMath::CHECKSUM_IGNORE;
-    if ( addrService.isValidated() )
+    uint32_t result{ areg::CHECKSUM_IGNORE };
+    if ( addrService.is_validated() )
     {
-        result = NEMath::crc32Init();
-        result = NEMath::crc32Start( result, addrService.mServiceName.getString() );
-        result = NEMath::crc32Start( result, static_cast<unsigned char>(addrService.mServiceType));
-        result = NEMath::crc32Start( result, addrService.mRoleName.getString() );
-        result = NEMath::crc32Finish(result);
+        result = areg::crc32_init();
+        result = areg::crc32_start( result, addrService.mServiceName.as_string() );
+        result = areg::crc32_start( result, static_cast<uint8_t>(addrService.mServiceType));
+        result = areg::crc32_start( result, addrService.mRoleName.as_string() );
+        result = areg::crc32_finish(result);
     }
 
     return result;
 }
+
+} // namespace areg

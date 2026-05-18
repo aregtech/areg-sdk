@@ -2,7 +2,7 @@
  * \file    twothreads/src/main.cpp
  * \brief   Runs service and the client in one thread.
  **/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
 
@@ -24,7 +24,7 @@ BEGIN_MODEL(_modelName)
     // Thread 1, provides a service
     BEGIN_REGISTER_THREAD( "Thread1" )
         BEGIN_REGISTER_COMPONENT( "ServiceComponent", ServiceComponent )
-            REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( HelloService::ServiceName, HelloService::InterfaceVersion )
         END_REGISTER_COMPONENT( "ServiceComponent" )
     END_REGISTER_THREAD( "Thread1" )
 
@@ -42,23 +42,23 @@ END_MODEL(_modelName)
 // main method
 //////////////////////////////////////////////////////////////////////////
 
-int main( void )
+int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::initApplication( );
+    areg::Application::setup( );
 
     // load model to initialize components
-    Application::loadModel(_modelName);
+    areg::Application::load_model(_modelName);
 
     // wait until Application quit signal is set.
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    areg::Application::wait_quit(areg::WAIT_INFINITE);
 
     // stop and unload components
-    Application::unloadModel(_modelName);
+    areg::Application::unload_model(_modelName);
 
     // release and cleanup resources of application.
-    Application::releaseApplication();
+    areg::Application::release();
 
     return 0;
 }

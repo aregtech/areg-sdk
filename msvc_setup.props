@@ -70,7 +70,7 @@
         <AregOutputObj></AregOutputObj>
 
         <!-- ********************************************************************************************************************************** -->
-        <!-- Property to compile the extended features of Areg SDK. By default, it is not compiled with extended features.                      -->
+        <!-- Property to compile the extended features of Areg SDK. By default, it is compiled with extended features.                      -->
         <!-- Set 1 to compile with extended features. Set 0 or ignore setting to compile without extended features.                             -->
         <!-- ********************************************************************************************************************************** -->
         <AregExtended>1</AregExtended>

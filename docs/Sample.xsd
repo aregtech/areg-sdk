@@ -28,7 +28,7 @@
             <xs:enumeration value="SomeStruct"/>
             <xs:enumeration value="SomeEnum"/>
             <xs:enumeration value="SomeArray"/>
-            <xs:enumeration value="NEMemory::uAlign"/>
+            <xs:enumeration value="areg::Primitive"/>
         </xs:restriction>
     </xs:simpleType>
 

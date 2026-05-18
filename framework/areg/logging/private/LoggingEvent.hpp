@@ -12,25 +12,18 @@
  * \file        areg/logging/private/LoggingEvent.hpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Areg Platform, The logging thread, which is receiving logging events and performs log operations. 
+ * \brief       Areg Platform, The logging thread, which is receiving logging events and performs log operations.
  ************************************************************************/
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
-#include "areg/component/TEEvent.hpp"
-#include "areg/base/SharedBuffer.hpp"
+#include "areg/base/areg_global.h"
+#include "areg/component/EventTemplate.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
-/************************************************************************
- * Dependencies
- ************************************************************************/
-class LogMessage;
-namespace NELogging
-{
-    struct sLogMessage;
-}
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // LoggingEventData class declaration
@@ -50,114 +43,99 @@ class LoggingEventData
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   LoggingEventData::eLoggingAction
+     * \brief   LoggingEventData::LogAction
      *          The list of supported actions for logging.
      **/
-    typedef enum class E_LoggingAction
+    enum class LogAction    : uint8_t
     {
-          LoggingUndefined      //!< Action is undefined, do nothing
-        , LoggingStartLogs      //!< Action to notify to start logging
-        , LoggingStopLogs       //!< Action to notify to stop logging
-        , LoggingSetEnableLogs  //!< Action to notify to enable logging
-        , LoggingSetDisableLogs //!< Action to notify to stop logging
-        , LoggingSaveScopes     //!< Action to notify to save scope list
-        , LoggingLogMessage     //!< Action to output logging message
-        , LoggingUpdateScopes   //!< Action to update scope priorities
-        , LoggingQueryScopes    //!< Action to send the list of scopes.
-    } eLoggingAction;
+          Undefined     //!< Action is undefined, do nothing
+        , StartLogs     //!< Action to notify to start logging
+        , StopLogs      //!< Action to notify to stop logging
+        , EnableLogs    //!< Action to notify to enable logging
+        , DisableLogs   //!< Action to notify to stop logging
+        , SaveScopes    //!< Action to notify to save scope list
+        , LogMessage    //!< Action to output logging message
+        , UpdateScopes  //!< Action to update scope priorities
+        , QueryScopes   //!< Action to send the list of scopes.
+    };
 
     /**
-     * \brief   Converts and returns the string of LoggingEventData::eLoggingAction value
+     * \brief   Converts and returns the string representation of a LogAction value.
+     *
+     * \param   action      The LogAction value to convert.
+     * \return  Returns the string representation of the LogAction.
      **/
-    static inline const char * getString( LoggingEventData::eLoggingAction action );
+    [[nodiscard]]
+    static inline constexpr const char * as_string( LoggingEventData::LogAction action ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates the logging even data with undefined action
-     **/
-    LoggingEventData( void );
+    LoggingEventData() noexcept;
 
     /**
-     * \brief   Creates the logging even data with specified action
-     * \param   action  The action ID to set in event data
+     * \brief   Creates the logging event data with specified action.
+     *
+     * \param   action      The action ID to set in event data.
      **/
-    explicit LoggingEventData( LoggingEventData::eLoggingAction action );
-    
-    /**
-     * \brief   Creates the logging even data with specified action and data
-     * \param   action      The action ID to set in event data
-     * \param   dataBuffer  The buffer of data set.
-     **/
-    LoggingEventData( LoggingEventData::eLoggingAction action, const SharedBuffer & dataBuffer );
+    explicit LoggingEventData( LoggingEventData::LogAction action ) noexcept;
 
-    /**
-     * \brief   Creates the logging even data with specified action and logging message data
-     * \param   action  The action ID to set in event data
-     * \param   logData The buffer of logging message data set.
-     **/
-    LoggingEventData( LoggingEventData::eLoggingAction action, const NELogging::sLogMessage & logData );
+    LoggingEventData( const LoggingEventData & src ) noexcept;
 
-    /**
-     * \brief   Copies logging event data from given source.
-     * \param   src     The source to copy data.
-     **/
-    LoggingEventData( const LoggingEventData & src );
-
-    /**
-     * \brief   Copies logging event data from given source.
-     * \param   src     The source to copy data.
-     **/
     LoggingEventData( LoggingEventData && src ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
-    ~LoggingEventData( void ) = default;
+    ~LoggingEventData() noexcept = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Operators
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Copies data from given source
-     * \param   src     The source of data to copy.
-     **/
-    LoggingEventData & operator = ( const LoggingEventData & src );
+    LoggingEventData & operator = ( const LoggingEventData & src ) noexcept;
 
-    /**
-     * \brief   Moves data from given source
-     * \param   src     The source of data to move.
-     **/
     LoggingEventData & operator = ( LoggingEventData && src ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
+public:
 
     /**
      * \brief   Returns the value of action set in event data.
      **/
-    inline LoggingEventData::eLoggingAction getLoggingAction( void ) const;
+    [[nodiscard]]
+    inline LoggingEventData::LogAction logging_action() const noexcept;
 
     /**
-     * \brief   Returns the streaming buffer for writing.
+     * \brief   Sets the action in the event data.
+     *
+     * \param   action      The action to set.
      **/
-    inline SharedBuffer & getWritableStream( void );
+    inline void set_action( LoggingEventData::LogAction action ) noexcept;
 
     /**
-     * \brief   Returns the streaming buffer for reading.
+     * \brief   Returns a pointer to the LogEntry embedded in the message buffer.
+     *          Valid only for LogMessage events -- returns nullptr if the message is not allocated.
      **/
-    inline const SharedBuffer & getReadableStream( void ) const;
+    [[nodiscard]]
+    inline const areg::LogEntry* log_entry() const noexcept;
+
+    /**
+     * \brief   Returns a mutable reference to the pre-built remote message.
+     *          Valid (is_valid() == true) only for LogMessage events.
+     **/
+    [[nodiscard]]
+    inline areg::RemoteMessage & message() noexcept;
+
+    /**
+     * \brief   Returns the pre-built remote message for forwarding to NetTcpLogger.
+     *          Valid (is_valid() == true) only for LogMessage events.
+     **/
+    [[nodiscard]]
+    inline const areg::RemoteMessage & message() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    LoggingEventData::eLoggingAction  mAction;
-    SharedBuffer                  mDataBuffer;
+    LoggingEventData::LogAction     mAction;    //!< The action to perform.
+    areg::RemoteMessage             mMessage;   //!< Pre-built log message; invalid (null buffer) for non-LogMessage events.
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -165,46 +143,69 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   Declare LoggingEvent class, derived from TEEvent object,
- *          and IELoggingEventConsumer class, derived from TEEventConsumer object
+ * \brief   Declare LoggingEvent class, derived from EventTemplate object,
+ *          and LoggingEventConsumer class, derived from TEEventConsumer object
  **/
-DECLARE_EVENT(LoggingEventData, LoggingEvent, IELoggingEventConsumer)
+AREG_DECLARE_EVENT(LoggingEventData, LoggingEvent, LoggingEventConsumer)
 
 //////////////////////////////////////////////////////////////////////////
 // LoggingEventData class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline LoggingEventData::eLoggingAction LoggingEventData::getLoggingAction( void ) const
+inline LoggingEventData::LogAction LoggingEventData::logging_action() const noexcept
 {
     return mAction;
 }
 
-inline SharedBuffer & LoggingEventData::getWritableStream( void )
+inline void LoggingEventData::set_action( LoggingEventData::LogAction action ) noexcept
 {
-    return mDataBuffer;
+    mAction = action;
 }
 
-inline const SharedBuffer & LoggingEventData::getReadableStream( void ) const
+inline const areg::LogEntry* LoggingEventData::log_entry() const noexcept
 {
-    return mDataBuffer;
+    return mMessage.is_valid() ? reinterpret_cast<const areg::LogEntry*>(mMessage.buffer()) : nullptr;
 }
 
-inline const char * LoggingEventData::getString( LoggingEventData::eLoggingAction action )
+inline areg::RemoteMessage & LoggingEventData::message() noexcept
+{
+    return mMessage;
+}
+
+inline const areg::RemoteMessage & LoggingEventData::message() const noexcept
+{
+    return mMessage;
+}
+
+inline constexpr const char * LoggingEventData::as_string( LoggingEventData::LogAction action ) noexcept
 {
     switch ( action )
     {
-    CASE_MAKE_STRING(LoggingEventData::eLoggingAction::LoggingUndefined);
-    CASE_MAKE_STRING(LoggingEventData::eLoggingAction::LoggingStartLogs);
-    CASE_MAKE_STRING(LoggingEventData::eLoggingAction::LoggingStopLogs);
-    CASE_MAKE_STRING(LoggingEventData::eLoggingAction::LoggingSetEnableLogs);
-    CASE_MAKE_STRING(LoggingEventData::eLoggingAction::LoggingSetDisableLogs);
-    CASE_MAKE_STRING(LoggingEventData::eLoggingAction::LoggingSaveScopes);
-    CASE_MAKE_STRING(LoggingEventData::eLoggingAction::LoggingLogMessage);
-    CASE_MAKE_STRING(LoggingEventData::eLoggingAction::LoggingUpdateScopes);
-    CASE_MAKE_STRING(LoggingEventData::eLoggingAction::LoggingQueryScopes);
-    CASE_DEFAULT("ERR: Undefined LoggingEventData::eLoggingAction value!");
+    case LoggingEventData::LogAction::Undefined:
+        return "LoggingEventData::LogAction::Undefined";
+    case LoggingEventData::LogAction::StartLogs:
+        return "LoggingEventData::LogAction::StartLogs";
+    case LoggingEventData::LogAction::StopLogs:
+        return "LoggingEventData::LogAction::StopLogs";
+    case LoggingEventData::LogAction::EnableLogs:
+        return "LoggingEventData::LogAction::EnableLogs";
+    case LoggingEventData::LogAction::DisableLogs:
+        return "LoggingEventData::LogAction::DisableLogs";
+    case LoggingEventData::LogAction::SaveScopes:
+        return "LoggingEventData::LogAction::SaveScopes";
+    case LoggingEventData::LogAction::LogMessage:
+        return "LoggingEventData::LogAction::LogMessage";
+    case LoggingEventData::LogAction::UpdateScopes:
+        return "LoggingEventData::LogAction::UpdateScopes";
+    case LoggingEventData::LogAction::QueryScopes:
+        return "LoggingEventData::LogAction::QueryScopes";
+    default:
+        ASSERT(false);
+        return "ERR: Undefined LoggingEventData::LogAction value!";
     }
 }
 
-#endif  // AREG_LOGS
+} // namespace areg
+
+#endif  // AREG_LOGGING
 #endif  // AREG_LOGGING_PRIVATE_LOGGINGEVENT_HPP

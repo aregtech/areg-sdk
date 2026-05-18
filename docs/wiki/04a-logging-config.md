@@ -47,7 +47,7 @@ log::*::scope::* = DEBUG | SCOPE
 int main()
 {
     // Initialize with logging enabled
-    Application::initApplication(
+    Application::setup(
         true,   // Enable logging ← Important
         true,   // Enable service manager
         false,  // Disable router client (for this example)
@@ -58,10 +58,10 @@ int main()
     );
     
     // Your application code
-    Application::loadModel("MyModel");
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::load_model("MyModel");
+    Application::wait_quit(areg::WAIT_INFINITE);
     
-    Application::releaseApplication();
+    Application::release();
     return 0;
 }
 ```
@@ -103,7 +103,7 @@ int main()
 **Specify custom location:**
 
 ```cpp
-Application::initApplication(
+Application::setup(
     true,   // Enable logging
     true, true, true, false,
     "./my-config/custom.init",  // Custom config file
@@ -153,12 +153,12 @@ log::*::enable::file = true
 
 ### Available Destinations
 
-| Destination | Value | Description | Use Case |
-|-------------|-------|-------------|----------|
-| **File** | `file` | Local log files | Development, production |
-| **Remote** | `remote` | Centralized log collector | Distributed systems |
-| **Debug Output** | `debug` | IDE debug console (MSVC) | Visual Studio debugging |
-| **Database** | `db` | Database storage | Long-term analysis |
+| Destination      | Value    | Description               | Use Case                |
+| ---------------- | -------- | ------------------------- | ----------------------- |
+| **File**         | `file`   | Local log files           | Development, production |
+| **Remote**       | `remote` | Centralized log collector | Distributed systems     |
+| **Debug Output** | `debug`  | IDE debug console (MSVC)  | Visual Studio debugging |
+| **Database**     | `db`     | Database storage          | Long-term analysis      |
 
 ---
 
@@ -177,11 +177,11 @@ log::*::file::location = ./logs/%appname%_%time%.log
 
 **File naming masks:**
 
-| Mask | Replaced With | Example |
-|------|---------------|---------|
-| `%appname%` | Application name | `myapp` |
-| `%time%` | Timestamp (YYYYMMDD_HHMMSS) | `20260127_103045` |
-| `%pid%` | Process ID | `12345` |
+| Mask        | Replaced With               | Example           |
+| ----------- | --------------------------- | ----------------- |
+| `%appname%` | Application name            | `myapp`           |
+| `%time%`    | Timestamp (YYYYMMDD_HHMMSS) | `20260127_103045` |
+| `%pid%`     | Process ID                  | `12345`           |
 
 **Examples:**
 
@@ -340,20 +340,20 @@ log::*::layout::exit = %d: [ %t  %x.%z: Exit <-- ]%n
 
 ### Format Specifiers
 
-| Specifier | Description | Example Output |
-|-----------|-------------|----------------|
-| `%a` | Logging object ID | `0x12345678` |
-| `%c` | Tick count since start | `1234567` |
-| `%d` | Date and time | `2026-01-27 10:30:45.123` |
-| `%e` | Module (process) ID | `12345` |
-| `%m` | Log message text | `Application started` |
-| `%n` | End-of-line | (newline) |
-| `%p` | Message priority | `DEBUG`, `INFO`, `WARN` |
-| `%s` | Message scope ID | `0x00001234` |
-| `%t` | Thread ID | `54321` |
-| `%x` | Module (process) name | `myapp.exe` |
-| `%y` | Thread name | `WorkerThread` |
-| `%z` | Scope name | `main::initialize` |
+| Specifier | Description            | Example Output            |
+| --------- | ---------------------- | ------------------------- |
+| `%a`      | Logging object ID      | `0x12345678`              |
+| `%c`      | Tick count since start | `1234567`                 |
+| `%d`      | Date and time          | `2026-01-27 10:30:45.123` |
+| `%e`      | Module (process) ID    | `12345`                   |
+| `%m`      | Log message text       | `Application started`     |
+| `%n`      | End-of-line            | (newline)                 |
+| `%p`      | Message priority       | `DEBUG`, `INFO`, `WARN`   |
+| `%s`      | Message scope ID       | `0x00001234`              |
+| `%t`      | Thread ID              | `54321`                   |
+| `%x`      | Module (process) name  | `myapp.exe`               |
+| `%y`      | Thread name            | `WorkerThread`            |
+| `%z`      | Scope name             | `main::initialize`        |
 
 > [!NOTE]
 > `%m` (message) and `%z` (scope name) are mutually exclusive in the same layout.
@@ -468,12 +468,12 @@ log::*::remote::queue = 100
 
 ### Connection Settings
 
-| Property | Default | Description |
-|----------|---------|-------------|
-| `logger::*::connect` | `tcpip` | Protocol (TCP/IP only) |
-| `logger::*::address::tcpip` | `127.0.0.1` | Log collector IP |
-| `logger::*::port::tcpip` | `8282` | Log collector port |
-| `log::*::remote::queue` | `100` | Message buffer size |
+| Property                    | Default     | Description            |
+| --------------------------- | ----------- | ---------------------- |
+| `logger::*::connect`        | `tcpip`     | Protocol (TCP/IP only) |
+| `logger::*::address::tcpip` | `127.0.0.1` | Log collector IP       |
+| `logger::*::port::tcpip`    | `8282`      | Log collector port     |
+| `log::*::remote::queue`     | `100`       | Message buffer size    |
 
 ---
 
@@ -577,15 +577,15 @@ log::myapp::scope::module_baz = NOTSET
 
 ### Priority Levels
 
-| Priority | Value | What Gets Logged |
-|----------|-------|------------------|
-| **NOTSET** | Disabled | Nothing |
-| **FATAL** | Highest | Fatal errors only |
-| **ERROR** | High | Errors + Fatal |
-| **WARN** | Medium | Warnings + Errors + Fatal |
-| **INFO** | Low | Info + Warnings + Errors + Fatal |
-| **DEBUG** | Lowest | Everything (Debug + Info + Warn + Error + Fatal) |
-| **SCOPE** | Special | Scope entry/exit only |
+| Priority   | Value    | What Gets Logged                                 |
+| ---------- | -------- | ------------------------------------------------ |
+| **NOTSET** | Disabled | Nothing                                          |
+| **FATAL**  | Highest  | Fatal errors only                                |
+| **ERROR**  | High     | Errors + Fatal                                   |
+| **WARN**   | Medium   | Warnings + Errors + Fatal                        |
+| **INFO**   | Low      | Info + Warnings + Errors + Fatal                 |
+| **DEBUG**  | Lowest   | Everything (Debug + Info + Warn + Error + Fatal) |
+| **SCOPE**  | Special  | Scope entry/exit only                            |
 
 ---
 
@@ -860,7 +860,7 @@ log::*::layout::message = %p: %m%n
 **1. Check logging is enabled:**
 
 ```cpp
-Application::initApplication(
+Application::setup(
     true,   // Must be true ← Check this
     true, true, true, false,
     "./areg.init",
@@ -1072,10 +1072,10 @@ log::myapp::scope::* = DEBUG | SCOPE
 
 ```cpp
 // Application A
-Application::initApplication(true, true, true, true, false, "./config/appA.init", nullptr);
+Application::setup(true, true, true, true, false, "./config/appA.init", nullptr);
 
 // Application B
-Application::initApplication(true, true, true, true, false, "./config/appB.init", nullptr);
+Application::setup(true, true, true, true, false, "./config/appB.init", nullptr);
 ```
 
 ---

@@ -7,10 +7,34 @@ message(STATUS "Areg: >>> Preparing settings for CLang compiler under \'${AREG_O
 
 if (AREG_PLATFORM_WINDOWS)
 
-    if(CMAKE_BUILD_TYPE MATCHES Release)
-        list(APPEND AREG_COMPILER_OPTIONS -O2)
+    get_property(_areg_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+    if (_areg_multi_config)
+        # Multi-config generator (Visual Studio + ClangCL): scope flags per-configuration.
+        list(APPEND AREG_COMPILER_OPTIONS
+            $<$<CONFIG:Release>:-O3>
+            $<$<CONFIG:Release>:-ffunction-sections>
+            $<$<CONFIG:Release>:-fdata-sections>
+            $<$<NOT:$<CONFIG:Release>>:-Od>
+            $<$<NOT:$<CONFIG:Release>>:-RTC1>
+        )
+        if (NOT CMAKE_CROSSCOMPILING)
+            list(APPEND AREG_COMPILER_OPTIONS
+                $<$<CONFIG:Release>:-march=native>
+                $<$<CONFIG:Release>:-mtune=native>
+            )
+        endif()
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
     else()
-        list(APPEND AREG_COMPILER_OPTIONS -Od -RTC1 -c)
+        # Single-config generator: CMAKE_BUILD_TYPE is reliable.
+        if(${CMAKE_BUILD_TYPE} MATCHES "Release")
+            list(APPEND AREG_COMPILER_OPTIONS -O3 -ffunction-sections -fdata-sections)
+            if (NOT CMAKE_CROSSCOMPILING)
+                list(APPEND AREG_COMPILER_OPTIONS -march=native -mtune=native)
+            endif()
+            set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+        else()
+            list(APPEND AREG_COMPILER_OPTIONS -Od -RTC1 -c)
+        endif()
     endif()
 
     # Win32 API
@@ -28,10 +52,14 @@ if (AREG_PLATFORM_WINDOWS)
 
 else()
 
-    if(NOT CMAKE_BUILD_TYPE MATCHES Release)
-        list(APPEND AREG_COMPILER_OPTIONS -O0 -g3)
+    if(${CMAKE_BUILD_TYPE} MATCHES "Release")
+        list(APPEND AREG_COMPILER_OPTIONS -O3 -ffunction-sections -fdata-sections -fvisibility=hidden "$<$<COMPILE_LANGUAGE:CXX>:-fvisibility-inlines-hidden>")
+        if (NOT CMAKE_CROSSCOMPILING)
+            list(APPEND AREG_COMPILER_OPTIONS -march=native -mtune=native)
+        endif()
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
     else()
-        list(APPEND AREG_COMPILER_OPTIONS -O2)
+        list(APPEND AREG_COMPILER_OPTIONS -O0 -g3)
     endif()
 
     # POSIX API
@@ -50,13 +78,46 @@ else()
     list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0)
     # Linker flags (-l is not necessary)
     if (AREG_PLATFORM_MACOS)
-        list(APPEND AREG_LDFLAGS c++   m   pthread)
-        set(AREG_LDFLAGS_STR  "-lc++ -lm -lpthread")
+        if(${CMAKE_BUILD_TYPE} MATCHES "Release")
+            list(APPEND AREG_LDFLAGS -Wl,-dead_strip m pthread)
+            set(AREG_LDFLAGS_STR  "-Wl,-dead_strip -lm -lpthread")
+        else()
+            list(APPEND AREG_LDFLAGS m   pthread)
+            set(AREG_LDFLAGS_STR  "-lm -lpthread")
+        endif()
+        if(NOT ("c++" IN_LIST CMAKE_CXX_IMPLICIT_LINK_LIBRARIES))
+            list(APPEND AREG_LDFLAGS c++)
+            string(APPEND AREG_LDFLAGS_STR " -lc++")
+        endif()
         set(AREG_COMPILER_VERSION -stdlib=libc++)
     else()
-        list(APPEND AREG_LDFLAGS stdc++   m   pthread   rt)
-        set(AREG_LDFLAGS_STR  "-lstdc++ -lm -lpthread -lrt")
+        if(${CMAKE_BUILD_TYPE} MATCHES "Release")
+            list(APPEND AREG_LDFLAGS -Wl,--gc-sections -Wl,-O1 stdc++ m pthread rt)
+            set(AREG_LDFLAGS_STR  "-Wl,--gc-sections -Wl,-O1 -lstdc++ -lm -lpthread -lrt")
+        else()
+            list(APPEND AREG_LDFLAGS stdc++   m   pthread   rt)
+            set(AREG_LDFLAGS_STR  "-lstdc++ -lm -lpthread -lrt")
+        endif()
         set(AREG_COMPILER_VERSION -stdlib=libstdc++)
+
+        # Clang on non-x86-64 Linux (e.g. ARMv7, RISC-V) may emit __atomic_*_16
+        # Check passes, libatomic is not pulled in for the common case.
+        include(CheckCXXSourceCompiles)
+        check_cxx_source_compiles("
+            #include <atomic>
+            #include <cstdint>
+            struct alignas(16) Align16 { uint64_t a; uint64_t b; };
+            std::atomic<Align16> x;
+            int main() {
+                Align16 expected{0, 0}, desired{1, 1};
+                return x.compare_exchange_strong(expected, desired);
+            }
+        " AREG_HAVE_NATIVE_16BYTE_ATOMICS)
+
+        if(NOT AREG_HAVE_NATIVE_16BYTE_ATOMICS)
+            list(APPEND AREG_LDFLAGS atomic)
+            string(APPEND AREG_LDFLAGS_STR " -latomic")
+        endif()
     endif()
 
 endif()

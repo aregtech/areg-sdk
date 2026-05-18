@@ -50,15 +50,18 @@
     <ClCompile Include="aregextend\db\private\SqliteRow.cpp" />
     <ClCompile Include="aregextend\db\private\SqliteStatement.cpp" />
     <ClCompile Include="aregextend\service\private\DataRateHelper.cpp" />
-    <ClCompile Include="aregextend\service\private\NESystemService.cpp" />
+    <ClCompile Include="aregextend\service\private\SystemServiceDefs.cpp" />
     <ClCompile Include="aregextend\service\private\posix\ServiceApplicationBasePosix.cpp" />
+    <ClCompile Include="aregextend\service\private\ClientConnectionPair.cpp" />
+    <ClCompile Include="aregextend\service\private\PoolReceiveThread.cpp" />
+    <ClCompile Include="aregextend\service\private\PoolSendThread.cpp" />
     <ClCompile Include="aregextend\service\private\ServiceApplicationBase.cpp" />
     <ClCompile Include="aregextend\service\private\SystemServiceBase.cpp" />
-    <ClCompile Include="aregextend\service\private\IEServiceConnectionHandler.cpp" />
+    <ClCompile Include="aregextend\service\private\ConnectionHandler.cpp" />
     <ClCompile Include="aregextend\service\private\ServerConnection.cpp" />
     <ClCompile Include="aregextend\service\private\ServerReceiveThread.cpp" />
     <ClCompile Include="aregextend\service\private\ServerSendThread.cpp" />
-    <ClCompile Include="aregextend\service\private\ServiceCommunicatonBase.cpp" />
+    <ClCompile Include="aregextend\service\private\ServiceCommunicationBase.cpp" />
     <ClCompile Include="aregextend\service\private\win32\ServiceApplicationBaseWin32.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -75,15 +78,19 @@
     <ClInclude Include="aregextend\db\SqliteRow.hpp" />
     <ClInclude Include="aregextend\db\SqliteStatement.hpp" />
     <ClInclude Include="aregextend\service\DataRateHelper.hpp" />
-    <ClInclude Include="aregextend\service\NESystemService.hpp" />
+    <ClInclude Include="aregextend\service\private\ServiceThreadHelper.hpp" />
+    <ClInclude Include="aregextend\service\SystemServiceDefs.hpp" />
     <ClInclude Include="aregextend\console\SystemServiceConsole.hpp" />
     <ClInclude Include="aregextend\service\ServiceApplicationBase.hpp" />
     <ClInclude Include="aregextend\service\SystemServiceBase.hpp" />
-    <ClInclude Include="aregextend\service\IEServiceConnectionHandler.hpp" />
+    <ClInclude Include="aregextend\service\ConnectionHandler.hpp" />
     <ClInclude Include="aregextend\service\ServerConnection.hpp" />
+    <ClInclude Include="aregextend\service\private\ClientConnectionPair.hpp" />
+    <ClInclude Include="aregextend\service\private\PoolReceiveThread.hpp" />
+    <ClInclude Include="aregextend\service\private\PoolSendThread.hpp" />
     <ClInclude Include="aregextend\service\private\ServerReceiveThread.hpp" />
     <ClInclude Include="aregextend\service\private\ServerSendThread.hpp" />
-    <ClInclude Include="aregextend\service\ServiceCommunicatonBase.hpp" />
+    <ClInclude Include="aregextend\service\ServiceCommunicationBase.hpp" />
     <ClInclude Include="aregextend\resources\resource.h" />
   </ItemGroup>
   <ItemGroup>

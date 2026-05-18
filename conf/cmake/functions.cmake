@@ -80,7 +80,7 @@ set(_proc_arm64 "AARCH64")
 #                 ${var_found}      [out]  -- Boolean flag indicating whether the processor is supported (TRUE/FALSE).
 # Usage ........: macro_get_processor(<processor_name> <var_processor> <var_bitness> <var_found>)
 # Example ......: 
-#   macro_get_processor("arm64" AREG_PROCESSOR AREG_BITNESS _entry_found)
+#   macro_get_processor("arm64" AREG_ARCH AREG_BITNESS _entry_found)
 # ---------------------------------------------------------------------------
 macro(macro_get_processor processor_name var_processor var_bitness var_found)
     set(${var_found} FALSE)
@@ -152,9 +152,6 @@ macro(macro_check_module_architect path_module target_name target_proc var_compa
             cmake_path(GET _module_path EXTENSION _file_ext)
             if ("${_file_ext}" STREQUAL ".tbd")
                 # .tbd files are text-based stubs provided by Apple's SDK.
-                # These are guaranteed to be compatible with the current platform
-                # since they're just interface definitions - the actual library
-                # is provided by the system at runtime.
                 set(${var_compatible} TRUE)
                 message(STATUS "Areg: >>> File '${path_module}' is a macOS stub library (.tbd), assuming compatible")
             else()
@@ -264,7 +261,7 @@ macro(macro_find_ncurses_package var_include var_library var_found)
     find_path(${var_include}    NAMES ncurses.h)
     find_library(${var_library} NAMES ncurses)
     if (${var_include} AND ${var_library})
-        macro_check_module_architect("${${var_library}}" ${AREG_TARGET} ${AREG_PROCESSOR} ${var_found})
+        macro_check_module_architect("${${var_library}}" ${AREG_TARGET} ${AREG_ARCH} ${var_found})
     endif()
 endmacro(macro_find_ncurses_package)
 
@@ -304,7 +301,7 @@ macro(macro_find_gtest_package var_include var_library var_found)
         endif()
 
         if (EXISTS "${_gtest_location}")
-            macro_check_module_architect("${_gtest_location}" ${AREG_TARGET} ${AREG_PROCESSOR} ${var_found})
+            macro_check_module_architect("${_gtest_location}" ${AREG_TARGET} ${AREG_ARCH} ${var_found})
         else()
             set(${var_found} TRUE)
         endif()
@@ -334,7 +331,7 @@ macro(macro_find_sqlite_package var_include var_library var_found)
     if (SQLite3_FOUND)
         set(${var_library} "${SQLite3_LIBRARIES}")
         set(${var_include} "${SQLite3_INCLUDE_DIRS}")
-        macro_check_module_architect("${SQLite3_LIBRARY}" ${AREG_TARGET} ${AREG_PROCESSOR} ${var_found})
+        macro_check_module_architect("${SQLite3_LIBRARY}" ${AREG_TARGET} ${AREG_ARCH} ${var_found})
     endif()
 endmacro(macro_find_sqlite_package)
 
@@ -345,7 +342,7 @@ endmacro(macro_find_sqlite_package)
 #               ${var_value}    [in]  -- Default value if the variable is not yet defined.
 #               ${var_describe} [in]  -- Description of the variable for the CMake cache.
 # Usage ......: macro_create_option(<name-var> <default-value> <describe>)
-# Example ....: macro_create_option(AREG_LOGS ON "Compile with logs")
+# Example ....: macro_create_option(AREG_LOGGING ON "Compile with logs")
 # ---------------------------------------------------------------------------
 macro(macro_create_option var_name var_value var_describe)
     if (NOT DEFINED ${var_name})
@@ -413,7 +410,7 @@ macro(macro_parse_arguments res_sources res_libs res_resources)
             list(APPEND ${res_sources} "${_full_path}")
             # Check for resource file extension
             cmake_path(GET _full_path EXTENSION _ext)
-            if (_ext STREQUAL "rc")
+            if (_ext STREQUAL ".rc")
                 list(APPEND ${res_resources} "${_full_path}")
             endif()
         else()
@@ -522,7 +519,7 @@ macro(macro_default_target target_processor var_name_target)
         if (${_proc} MATCHES "${_proc_x64}")
             set(${var_name_target} "x86_64-w64-mingw32")
         elseif (${_proc} MATCHES "${_proc_x86}")
-            set(${var_name_target} "i386-w32-mingw32")
+            set(${var_name_target} "i686-w64-mingw32")
         endif()
     else()
         set(${var_name_target})
@@ -554,7 +551,7 @@ endmacro(macro_default_target)
 #                                             AREG_CXX_COMPILER 
 #                                             AREG_C_COMPILER 
 #                                             AREG_TARGET 
-#                                             AREG_PROCESSOR 
+#                                             AREG_ARCH 
 #                                             AREG_BITNESS 
 #                                             _compiler_supports)
 # ---------------------------------------------------------------------------
@@ -579,7 +576,7 @@ macro(macro_setup_compilers_data
     # Iterate over known compilers to identify the compiler type
     # Note: "c++" and "cc" use "wrapper" family - they need runtime detection since they
     # can be symlinks/wrappers for either GCC or Clang depending on the system
-    foreach(_entry "clang-cl;llvm;clang-cl" "clang++;llvm;clang" "clang;llvm;clang" "appleclang++;llvm;appleclang" "g++;gnu;gcc" "gcc;gnu;gcc" "c++;wrapper;cc" "cc;wrapper;cc" "cl;msvc;cl")
+    foreach(_entry "clang-cl;llvm;clang-cl" "appleclang++;llvm;appleclang" "clang++;llvm;clang" "clang;llvm;clang" "g++;gnu;gcc" "gcc;gnu;gcc" "c++;wrapper;cc" "cc;wrapper;cc" "cl;msvc;cl")
         list(GET _entry 0 _cxx_comp)
 
         # Check if the provided compiler matches the known C++ compiler
@@ -709,13 +706,13 @@ macro(macro_setup_compilers_data_by_family compiler_family var_name_short var_na
                     set(${var_name_cxx}   "${_cxx_comp}")
                     set(${var_name_c}     "${_cc_comp}")
                 endif()
-                macro_default_target("${AREG_PROCESSOR}" ${var_name_target})
-            elseif ("${AREG_PROCESSOR}" STREQUAL "${_proc_arm32}" AND "${_family}" STREQUAL "gnu")
+                macro_default_target("${AREG_ARCH}" ${var_name_target})
+            elseif ("${AREG_ARCH}" STREQUAL "${_proc_arm32}" AND "${_family}" STREQUAL "gnu")
                 set(${var_name_short}  g++)
                 set(${var_name_cxx}    arm-linux-gnueabihf-g++)
                 set(${var_name_c}      arm-linux-gnueabihf-gcc)
                 set(${var_name_target} arm-linux-gnueabihf)
-            elseif ("${AREG_PROCESSOR}" STREQUAL "${_proc_arm64}" AND "${_family}" STREQUAL "gnu")
+            elseif ("${AREG_ARCH}" STREQUAL "${_proc_arm64}" AND "${_family}" STREQUAL "gnu")
                 set(${var_name_short}  g++)
                 set(${var_name_cxx}    aarch64-linux-gnu-g++)
                 set(${var_name_c}      aarch64-linux-gnu-gcc)
@@ -724,7 +721,7 @@ macro(macro_setup_compilers_data_by_family compiler_family var_name_short var_na
                 set(${var_name_short} "${_cxx_comp}")
                 set(${var_name_cxx}   "${_cxx_comp}")
                 set(${var_name_c}     "${_cc_comp}")
-                macro_default_target("${AREG_PROCESSOR}" ${var_name_target})
+                macro_default_target("${AREG_ARCH}" ${var_name_target})
             endif()
 
             # Mark compiler as found
@@ -758,14 +755,28 @@ function(setAppOptions target_name library_list)
     # Apply common compiler options, such as disabling certain warnings
     target_compile_options(${target_name} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
-    # Link the Areg library, additional specified libraries, and any extended or extra libraries
-    target_link_libraries(${target_name} PRIVATE
-        ${AREG_PACKAGE_NAME}::aregextend   # Areg extended library
-        ${library_list}                    # Custom libraries to link
-        ${AREG_PACKAGE_NAME}::areg         # Core Areg library
-        ${AREG_EXTENDED_LIBS}              # Extended libraries, if any
-        ${AREG_LDFLAGS}                    # Linker flags (stdc++, pthread, etc.)
-    )
+    # Link areg library, additional specified libraries, and any extended or extra libraries.
+    # Wrapping the archive group in --start-group/--end-group forces the linker to make
+    # multiple passes until all inter-archive symbol references are resolved.
+    if (NOT MSVC AND NOT APPLE AND "${AREG_LIB_TYPE}" STREQUAL "static")
+        target_link_libraries(${target_name} PRIVATE
+            -Wl,--start-group
+            ${AREG_PACKAGE_NAME}::aregextend
+            ${library_list}
+            ${AREG_PACKAGE_NAME}::areg
+            ${AREG_EXTENDED_LIBS}
+            -Wl,--end-group
+            ${AREG_LDFLAGS}
+            )
+    else()
+        target_link_libraries(${target_name} PRIVATE
+            ${AREG_PACKAGE_NAME}::aregextend   # Areg extended library
+            ${library_list}                    # Custom libraries to link
+            ${AREG_PACKAGE_NAME}::areg         # Core Areg library
+            ${AREG_EXTENDED_LIBS}              # Extended libraries, if any
+            ${AREG_LDFLAGS}                    # Linker flags (stdc++, pthread, etc.)
+            )
+    endif()
 
 endfunction(setAppOptions)
 
@@ -838,17 +849,22 @@ function(setStaticLibOptions target_name library_list)
     target_compile_options(${target_name} PRIVATE ${AREG_COMPILER_VERSION})
     target_compile_options(${target_name} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
-    # Additional compile options for non-Windows platforms
-    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32" OR MINGW2)
-        target_compile_options(${target_name} PRIVATE "-Bstatic")  # Ensure static linking
-        target_compile_options(${target_name} PRIVATE -fPIC)       # Position-independent code
+    # Position-independent code is required on non-Windows platforms so that static
+    # library object files can be linked into shared libraries or position-independent executables.
+    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32" OR MINGW)
+        target_compile_options(${target_name} PRIVATE -fPIC)
     endif()
 
-    # Link the static library with the provided libraries and Areg framework
-    target_link_libraries(${target_name} PRIVATE 
-                          ${library_list} 
-                          ${AREG_PACKAGE_NAME}::areg
-    )
+    # On Cygwin with a shared areg, AREG_API expands to __attribute__((dllimport)),
+    # GNU ld must encounter the areg import library during the same archive.
+    # On other platforms areg is intentionally omitted.
+    if (CYGWIN AND NOT "${AREG_LIB_TYPE}" STREQUAL "static")
+        target_link_libraries(${target_name} PRIVATE
+                              ${library_list}
+                              ${AREG_PACKAGE_NAME}::areg)
+    else()
+        target_link_libraries(${target_name} PRIVATE ${library_list})
+    endif()
 
 endfunction(setStaticLibOptions)
 
@@ -931,10 +947,15 @@ function(addStaticLibEx_C target_name target_namespace source_list library_list)
         target_compile_options(${target_name} PRIVATE -fPIC)
     endif()
 
-    target_link_libraries(${target_name} PRIVATE 
-                         ${library_list} 
-                         ${AREG_PACKAGE_NAME}::areg
-    )
+    # Cygwin shared builds, record areg as a direct dep.
+    # On other platforms, omit areg to avoid duplicate entries on macOS ld.
+    if (CYGWIN AND NOT "${AREG_LIB_TYPE}" STREQUAL "static")
+        target_link_libraries(${target_name} PRIVATE
+                             ${library_list}
+                             ${AREG_PACKAGE_NAME}::areg)
+    else()
+        target_link_libraries(${target_name} PRIVATE ${library_list})
+    endif()
 endfunction(addStaticLibEx_C)
 
 # ---------------------------------------------------------------------------
@@ -1047,6 +1068,9 @@ endfunction(addSharedLib)
 # ---------------------------------------------------------------------------
 macro(macro_add_service_interface lib_name interface_doc codegen_root output_path codegen_tool)
 
+    # NOTE: return() inside a macro exits the *calling function*, not the macro.
+    # These guards all use FATAL_ERROR which aborts CMake, so return() is dead code
+    # but kept for clarity. Do not soften these to WARNING without removing return().
     if (NOT ${Java_FOUND})
         message(FATAL_ERROR "Areg Setup: Java not found! Install Java 17 or higher to run the code generator.")
         return()
@@ -1064,35 +1088,45 @@ macro(macro_add_service_interface lib_name interface_doc codegen_root output_pat
         return()
     endif()
 
+    # Set path for generated files
+    set(_generate "${codegen_root}/${output_path}")
+
     # Run the code generator tool
     execute_process(COMMAND ${Java_JAVA_EXECUTABLE} -jar ${codegen_tool} --doc=${interface_doc} --root=${codegen_root} --target=${output_path})
 
-    # Set path for generated files
-    set(_generate "${codegen_root}/${output_path}")
-    
-    # List of generated source and header files
+    # List of generated source and header files (initialize fresh — macro runs in caller scope)
+    set(_sources)
     list(APPEND _sources
-        ${_generate}/private/${_interface_name}ClientBase.cpp
+        ${_generate}/private/${_interface_name}.cpp
+        ${_generate}/private/${_interface_name}ConsumerBase.cpp
         ${_generate}/private/${_interface_name}Events.cpp
+        ${_generate}/private/${_interface_name}ProviderBase.cpp
         ${_generate}/private/${_interface_name}Proxy.cpp
-        ${_generate}/private/${_interface_name}Stub.cpp
-        ${_generate}/private/NE${_interface_name}.cpp
+        ${_generate}/${_interface_name}.hpp
+        ${_generate}/${_interface_name}ConsumerBase.hpp
+        ${_generate}/${_interface_name}ProviderBase.hpp
         ${_generate}/private/${_interface_name}Events.hpp
         ${_generate}/private/${_interface_name}Proxy.hpp
-        ${_generate}/${_interface_name}ClientBase.hpp
-        ${_generate}/${_interface_name}Stub.hpp
-        ${_generate}/NE${_interface_name}.hpp
     )
-
-    # Add generated files to an existing or new static library
-    if (TARGET ${lib_name})
-        target_sources(${lib_name} PRIVATE "${_sources}")
+    # Add to build targets if in generate-only mode
+    if (AREG_GENERATE_ONLY)
+        message(STATUS "Areg: >>> AREG_GENERATE_ONLY=ON: Skipping library '${lib_name}'")
+        if (NOT TARGET ${lib_name})
+            add_library(${lib_name} INTERFACE)
+        endif()
     else()
-        message(STATUS "Areg Setup: Adding new service interface library ${lib_name}")
-        addStaticLib(${lib_name} "${_sources}")
-        target_compile_options(${lib_name} PRIVATE "${AREG_OPT_DISABLE_WARN_CODEGEN}")
+        # Add generated files to an existing or new static library
+        if (TARGET ${lib_name})
+            target_sources(${lib_name} PRIVATE "${_sources}")
+        else()
+            message(STATUS "Areg Setup: Adding new service interface library ${lib_name}")
+            addStaticLib(${lib_name} "${_sources}")
+            target_compile_options(${lib_name} PRIVATE "${AREG_OPT_DISABLE_WARN_CODEGEN}")
+        endif()
     endif()
 
+    unset(_si_doc)
+    unset(_interface_name)
     unset(_generate)
     unset(_sources)
 
@@ -1194,12 +1228,19 @@ macro(macro_declare_static_library lib_name)
         message(FATAL_ERROR "Areg: >>> Source list to build static library \'${exe_name}\' is empty")
     endif()
 
-    # Declare the static library using gathered sources and libraries
-    addStaticLibEx(${lib_name} "" "${_sources}" "${_libs}")
+    if (AREG_GENERATE_ONLY)
+        message(STATUS "Areg Setup: AREG_GENERATE_ONLY is ON. Skipping static library compilation for ${lib_name}")
+        if (NOT TARGET ${lib_name})
+            add_library(${lib_name} INTERFACE)
+        endif()
+    else()
+        # Declare the static library using gathered sources and libraries
+        addStaticLibEx(${lib_name} "" "${_sources}" "${_libs}")
 
-    # If on Windows, set the RC files' language property
-    if ((AREG_DEVELOP_ENV MATCHES "Win32") AND (NOT MINGW) AND _resources)
-        set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
+        # If on Windows, set the RC files' language property
+        if ((AREG_DEVELOP_ENV MATCHES "Win32") AND (NOT MINGW) AND _resources)
+            set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
+        endif()
     endif()
 
     # Clean up temporary variables
@@ -1228,12 +1269,19 @@ macro(macro_declare_shared_library lib_name)
         message(FATAL_ERROR "Areg: >>> Source list to build shared library \'${exe_name}\' is empty")
     endif()
 
-    # Declare the shared library using gathered sources and libraries
-    addSharedLibEx(${lib_name} "" "${_sources}" "${_libs}")
+    if (AREG_GENERATE_ONLY)
+        message(STATUS "Areg Setup: AREG_GENERATE_ONLY is ON. Skipping shared library compilation for ${lib_name}")
+        if (NOT TARGET ${lib_name})
+            add_library(${lib_name} INTERFACE)
+        endif()
+    else()
+        # Declare the shared library using gathered sources and libraries
+        addSharedLibEx(${lib_name} "" "${_sources}" "${_libs}")
 
-    # If on Windows, set the RC files' language property
-    if ((AREG_DEVELOP_ENV MATCHES "Win32") AND (NOT MINGW) AND _resources)
-        set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
+        # If on Windows, set the RC files' language property
+        if ((AREG_DEVELOP_ENV MATCHES "Win32") AND (NOT MINGW) AND _resources)
+            set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
+        endif()
     endif()
 
     # Clean up temporary variables
@@ -1263,12 +1311,23 @@ macro(macro_declare_executable exe_name)
         message(FATAL_ERROR "Areg: >>> Source list to build executable \'${exe_name}\' is empty")
     endif()
 
-    # Declare the executable using gathered sources and libraries
-    addExecutableEx(${exe_name} "" "${_sources}" "${_libs}")
+    # Determine if executable should be built or skipped due to generate-only mode
+    if (AREG_GENERATE_ONLY)
+        message(STATUS "Areg Setup: AREG_GENERATE_ONLY is ON. Skipping executable compilation for ${exe_name}")
 
-    # If on Windows, set the RC files' language property
-    if ((AREG_DEVELOP_ENV MATCHES "Win32") AND (NOT MINGW) AND _resources)
-        set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
+        if (NOT TARGET ${exe_name})
+            add_executable(${exe_name} "dummy.cpp")
+            set_source_files_properties("dummy.cpp" PROPERTIES GENERATED TRUE)
+            set_target_properties(${exe_name} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+        endif()
+    else()
+        # Declare the executable using gathered sources and libraries
+        addExecutableEx(${exe_name} "" "${_sources}" "${_libs}")
+    
+        # If on Windows, set the RC files' language property
+        if ((AREG_DEVELOP_ENV MATCHES "Win32") AND (NOT MINGW) AND _resources)
+            set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
+        endif()
     endif()
 
     # Clean up temporary variables
@@ -1306,7 +1365,7 @@ function(printAregConfigStatus var_make_print var_prefix var_header var_footer)
 
     # Print detailed configuration status, each with the defined prefix
     message(STATUS "${var_prefix}: >>> CMAKE_SOURCE_DIR    = '${CMAKE_SOURCE_DIR}', build type '${CMAKE_BUILD_TYPE}'")
-    message(STATUS "${var_prefix}: >>> Build Environment ..: System '${CMAKE_SYSTEM_NAME}', ${AREG_BITNESS}-bit '${AREG_PROCESSOR}' platform, Env '${AREG_DEVELOP_ENV}'")
+    message(STATUS "${var_prefix}: >>> Build Environment ..: System '${CMAKE_SYSTEM_NAME}', ${AREG_BITNESS}-bit '${AREG_ARCH}' platform, Env '${AREG_DEVELOP_ENV}'")
     message(STATUS "${var_prefix}: >>> Used CXX-Compiler ..: '${CMAKE_CXX_COMPILER}'")
     message(STATUS "${var_prefix}: >>> Used C-Compiler ....: '${CMAKE_C_COMPILER}'")
     message(STATUS "${var_prefix}: >>> Compiler Version ...: C++ standard 'c++${CMAKE_CXX_STANDARD}', compiler family '${AREG_COMPILER_FAMILY}', target '${CMAKE_CXX_COMPILER_TARGET}'")
@@ -1315,10 +1374,11 @@ function(printAregConfigStatus var_make_print var_prefix var_header var_footer)
     message(STATUS "${var_prefix}: >>> Binary Output Dir ..: '${CMAKE_RUNTIME_OUTPUT_DIRECTORY}'")
     message(STATUS "${var_prefix}: >>> Generated Files Dir : '${AREG_GENERATE_DIR}'")
     message(STATUS "${var_prefix}: >>> Packages Dir .......: '${FETCHCONTENT_BASE_DIR}'")
-    message(STATUS "${var_prefix}: >>> Build Modules ......: areg = '${AREG_BINARY}', aregextend = static, areglogger = '${AREG_LOGGER_BINARY}', executable extension '${CMAKE_EXECUTABLE_SUFFIX}'")
+    message(STATUS "${var_prefix}: >>> Build Modules ......: areg = '${AREG_LIB_TYPE}', aregextend = static, areglogger = '${AREG_LOGGER_LIB_TYPE}', executable extension '${CMAKE_EXECUTABLE_SUFFIX}'")
     message(STATUS "${var_prefix}: >>> Java Version .......: '${Java_VERSION_STRING}', Java executable = '${Java_JAVA_EXECUTABLE}', minimum version required = 17")
-    message(STATUS "${var_prefix}: >>> Packages Use .......: SQLite3 package use = '${AREG_SQLITE_PACKAGE}', GTest package use = '${AREG_GTEST_PACKAGE}'")
-    message(STATUS "${var_prefix}: >>> Other Options ......: Examples = '${AREG_BUILD_EXAMPLES}', Unit Tests = '${AREG_BUILD_TESTS}', Areg Extended = '${AREG_EXTENDED}', Logs = '${AREG_LOGS}'")
+    message(STATUS "${var_prefix}: >>> Packages Use .......: SQLite3 package use = '${AREG_SYSTEM_SQLITE}', GTest package use = '${AREG_SYSTEM_GTEST}'")
+    message(STATUS "${var_prefix}: >>> Feature Options ....: Logs = '${AREG_LOGGING}', Extended = '${AREG_EXTENDED}'")
+    message(STATUS "${var_prefix}: >>> Other Options ......: Examples = '${AREG_EXAMPLES}', Unit Tests = '${AREG_TESTS}'")
     message(STATUS "${var_prefix}: >>> Installation .......: Enabled = '${AREG_INSTALL}', location = '${CMAKE_INSTALL_PREFIX}'")
 
     # Print the footer section with separators

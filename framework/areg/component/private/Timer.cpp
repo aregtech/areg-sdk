@@ -20,9 +20,11 @@
 
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/base/DateTime.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/base/MathDefs.hpp"
+#include "areg/logging/areg_log.h"
+namespace areg {
 
-DEF_LOG_SCOPE(areg_component_Timer_startTimer);
+DEF_LOG_SCOPE(areg_component_Timer, start_timer);
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,11 +34,12 @@ DEF_LOG_SCOPE(areg_component_Timer_startTimer);
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-Timer::Timer( IETimerConsumer& timerConsumer
-            , const String & timerName  /*= String::getEmptyString()*/
-            , uint32_t timeoutMs        /*= NECommon::INVALID_TIMEOUT*/
-            , int maxQueued             /*= Timer::DEFAULT_MAXIMUM_QUEUE*/)
-    : TimerBase         ( TimerBase::eTimerType::TimerTypeNormal, NEUtilities::generateName(timerName), timeoutMs )
+Timer::Timer( TimerConsumer& timerConsumer
+            , const String & timerName  /*= String::empty_string()*/
+            , uint32_t timeoutMs        /*= areg::INVALID_TIMEOUT*/
+            , int32_t maxQueued         /*= Timer::DEFAULT_MAXIMUM_QUEUE*/
+            , areg::EventPriority prio  /*= areg::DefaultPriority*/)
+    : TimerBase         (TimerBase::TimerType::PerThreadTimer, areg::generate_name(timerName), timeoutMs, TimerBase::CONTINUOUSLY, prio)
     , mConsumer         (timerConsumer)
 
     , mCurrentQueued    (0)
@@ -48,56 +51,70 @@ Timer::Timer( IETimerConsumer& timerConsumer
 {
 }
 
-Timer::~Timer(void)
+Timer::~Timer()
 {
-    _stopTimer();
+    _stop_timer();
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
 
-bool Timer::startTimer( unsigned int timeoutInMs, unsigned int eventCount /*= Timer::CONTINUOUSLY*/ )
+bool Timer::start_timer( uint32_t timeoutInMs, uint32_t eventCount /*= Timer::CONTINUOUSLY*/ )
 {
-    return startTimer(timeoutInMs, DispatcherThread::getCurrentDispatcherThread(), eventCount);
+    return start_timer(timeoutInMs, DispatcherThread::current_dispatcher_thread(), eventCount);
 }
 
-bool Timer::startTimer(unsigned int timeoutInMs, DispatcherThread & whichThread, unsigned int eventCount /*= Timer::CONTINUOUSLY*/)
+bool Timer::start_timer(uint32_t timeoutInMs, DispatcherThread & whichThread, uint32_t eventCount /*= Timer::CONTINUOUSLY*/)
 {
-    LOG_SCOPE(areg_component_Timer_startTimer);
+    LOG_SCOPE( areg_component_Timer, start_timer );
 
     Lock lock(mLock);
 
-    if (isActive())
+    if (is_active())
     {
         LOG_WARN("The timer [ %s ] is still active, going to stop first. Current timeout [ %u ] ms and event count [ %d]"
-                    , mName.getString()
-                    , mTimeoutInMs
-                    , mEventsCount);
+            , mName.as_string()
+            , mTimeoutInMs
+            , mEventsCount);
 
-        TimerManager::stopTimer(self());
+        TimerManager::stop_timer(self());
     }
 
     if (eventCount != 0)
     {
-        LOG_DBG("Starting [ %s ] with timeout [ %u ] ms and event count [ %d ]", mName.getString(), timeoutInMs, eventCount);
+        LOG_DBG("Starting [ %s ] with timeout [ %u ] ms and event count [ %d ], target thread [ %s ]"
+            , mName.as_string()
+            , timeoutInMs
+            , eventCount
+            , whichThread.is_running() ? "RUNNING" : "NOT RUNNING");
 
         mTimeoutInMs    = timeoutInMs;
         mEventsCount    = eventCount;
         mCurrentQueued  = 0;
-        mActive         = true;
+        mDispatchThread = nullptr;
 
-        if (TimerBase::createWaitableTimer())
+        if (whichThread.is_running() && TimerBase::create_waitable_timer())
         {
-            mStarted = TimerManager::startTimer(self(), whichThread);
+            mStarted        = TimerManager::start_timer(self(), whichThread);
+            mActive         = mStarted;
             mDispatchThread = mStarted ? &whichThread : nullptr;
         }
+#if AREG_LOGGING
+        else
+        {
+            LOG_WARN("The target thread [ %u : %s ]static_cast is not running or failed to create a timer [ %s ]"
+                , whichThread.id()
+                , whichThread.name().as_string()
+                , mName.as_string());
+        }
+#endif // AREG_LOGGING
 
         return (mDispatchThread != nullptr);
     }
     else
     {
-        LOG_WARN("Ignoring to start a timer [ %s ] with either 0 timeout or 0 event count", mName.getString());
+        LOG_WARN("Ignoring to start a timer [ %s ] with either 0 timeout or 0 event count", mName.as_string());
         mTimeoutInMs = timeoutInMs;
         mEventsCount = 0;
 
@@ -105,27 +122,36 @@ bool Timer::startTimer(unsigned int timeoutInMs, DispatcherThread & whichThread,
     }
 }
 
-void Timer::stopTimer(void)
+void Timer::stop_timer()
 {
-    _stopTimer();
+    _stop_timer();
 }
 
-bool Timer::timerIsExpired(unsigned int highValue, unsigned int lowValue, ptr_type /*context*/ )
+bool Timer::timer_is_expired(uint32_t highValue, uint32_t lowValue, ptr_type /*context*/)
 {
     Lock lock(mLock);
+    if (mEventsCount == 0u)
+    {
+        mActive = false;
+        return false;
+    }
 
     if (mExpiredAt != 0)
     {
         mStartedAt = mExpiredAt;
     }
 
-    mExpiredAt = MACRO_MAKE_64(highValue, lowValue);
-    mEventsCount -= (mEventsCount != 0 && mEventsCount != TimerBase::CONTINUOUSLY ? 1 : 0);
-    mActive = mEventsCount != 0;
+    mExpiredAt = areg::make64(highValue, lowValue);
 
-    if (mTimeoutInMs != NECommon::INVALID_TIMEOUT)
+    const bool isContinuous = (mEventsCount == TimerBase::CONTINUOUSLY);
+    if (!isContinuous)
+        --mEventsCount;
+
+    bool isDelivered{ false };
+    if ((mTimeoutInMs != areg::INVALID_TIMEOUT) && (mDispatchThread != nullptr))
     {
-        TimerEvent::sendEvent(*this, *mDispatchThread);
+        isDelivered = TimerEvent::send_event(*this, *mDispatchThread, mPriority);
+        mActive = isDelivered && (isContinuous || (mEventsCount != 0u));
     }
     else
     {
@@ -135,57 +161,59 @@ bool Timer::timerIsExpired(unsigned int highValue, unsigned int lowValue, ptr_ty
     return mActive;
 }
 
-void Timer::timerStarting(unsigned int highValue, unsigned int lowValue, ptr_type /*context*/)
+void Timer::timer_starting(uint32_t highValue, uint32_t lowValue, ptr_type /*context*/)
 {
-    mStartedAt = MACRO_MAKE_64(highValue, lowValue);
+    mStartedAt = areg::make64(highValue, lowValue);
     mExpiredAt = 0;
 }
 
-void Timer::_queueTimer( void )
+void Timer::_queue_timer()
 {
     Lock lock(mLock);
 
-    if ( mMaxQueued != Timer::IGNORE_TIMER_QUEUE && mEventsCount > static_cast<unsigned int>(mMaxQueued) )
+    if ( mMaxQueued != Timer::IGNORE_TIMER_QUEUE && mEventsCount > static_cast<uint32_t>(mMaxQueued) )
     {
         if (mDispatchThread != nullptr)
         {
             if ((++ mCurrentQueued > mMaxQueued) && mStarted)
             {
                 mStarted = false;
-                TimerManager::stopTimer(self());
+                TimerManager::stop_timer(self());
             }
         }
     }
 }
 
-void Timer::_unqueueTimer( void )
+void Timer::_unqueue_timer()
 {
     Lock lock(mLock);
 
-    if ( mMaxQueued != Timer::IGNORE_TIMER_QUEUE && mEventsCount > static_cast<unsigned int>(mMaxQueued) )
+    if ( mMaxQueued != Timer::IGNORE_TIMER_QUEUE && mEventsCount > static_cast<uint32_t>(mMaxQueued) )
     {
         if (mDispatchThread != nullptr)
         {
            if ((-- mCurrentQueued < mMaxQueued) && (mStarted == false))
            {
-                mStarted = TimerManager::startTimer(self(), *mDispatchThread);
+                mStarted = TimerManager::start_timer(self(), *mDispatchThread);
            }
         }
     }
 }
 
-inline void Timer::_stopTimer(void)
+void Timer::_stop_timer()
 {
     Lock lock(mLock);
 
-    TimerManager::stopTimer(self());
+    TimerManager::stop_timer(self());
 
     mStarted        = false;
     mActive         = false;
     mDispatchThread = nullptr;
     mCurrentQueued  = 0;
-    mTimeoutInMs    = NECommon::INVALID_TIMEOUT;
+    mTimeoutInMs    = areg::INVALID_TIMEOUT;
     mEventsCount    = 0;
     mStartedAt      = 0;
     mExpiredAt      = 0;
 }
+
+} // namespace areg

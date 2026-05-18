@@ -11,73 +11,57 @@
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       The logging thread, which is receiving log events
- *              and performs logging operations. 
+ *              and performs logging operations.
  ************************************************************************/
 /************************************************************************
  * Include files.
  ************************************************************************/
 #include "areg/logging/private/LoggingEvent.hpp"
-#include "areg/logging/private/LogMessage.hpp"
 
 #include <utility>
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
-namespace
-{
-    constexpr const uint32_t _logMessageSize{ static_cast<uint32_t>(sizeof(NELogging::sLogMessage)) };
-    constexpr const uint32_t _logNamesSize{ static_cast<uint32_t>(NELogging::LOG_NAMES_SIZE * 2) };
-    constexpr const uint32_t _logLocalMessage{ _logMessageSize - _logNamesSize };
-}
+namespace areg {
 
-LoggingEventData::LoggingEventData( void )
-    : mAction       ( LoggingEventData::eLoggingAction::LoggingUndefined )
-    , mDataBuffer   ( )
+LoggingEventData::LoggingEventData() noexcept
+    : mAction   ( LoggingEventData::LogAction::Undefined )
+    , mMessage  ( )
 {
 }
 
-LoggingEventData::LoggingEventData( LoggingEventData::eLoggingAction action )
-    : mAction       ( action )
-    , mDataBuffer   ( )
+LoggingEventData::LoggingEventData( LoggingEventData::LogAction action ) noexcept
+    : mAction   ( action )
+    , mMessage  ( )
 {
 }
 
-LoggingEventData::LoggingEventData( LoggingEventData::eLoggingAction action, const SharedBuffer & dataBuffer )
-    : mAction       ( action )
-    , mDataBuffer   ( dataBuffer )
-{
-}
-
-LoggingEventData::LoggingEventData( LoggingEventData::eLoggingAction action, const NELogging::sLogMessage & logData )
-    : mAction       ( action )
-    , mDataBuffer   (_logMessageSize, reinterpret_cast<const unsigned char *>(&logData), _logLocalMessage)
-{
-}
-
-LoggingEventData::LoggingEventData( const LoggingEventData & src )
-    : mAction       ( src.mAction )
-    , mDataBuffer   ( src.mDataBuffer )
+LoggingEventData::LoggingEventData( const LoggingEventData & src ) noexcept
+    : mAction   ( src.mAction )
+    , mMessage  ( src.mMessage )
 {
 }
 
 LoggingEventData::LoggingEventData( LoggingEventData && src ) noexcept
-    : mAction       ( src.mAction )
-    , mDataBuffer   ( std::move(src.mDataBuffer) )
+    : mAction   ( src.mAction )
+    , mMessage  ( std::move(src.mMessage) )
 {
 }
 
-LoggingEventData & LoggingEventData::operator = (const LoggingEventData & src)
+LoggingEventData & LoggingEventData::operator = (const LoggingEventData & src) noexcept
 {
-    mAction = src.mAction;
-    mDataBuffer = src.mDataBuffer;
+    mAction     = src.mAction;
+    mMessage    = src.mMessage;
     return (*this);
 }
 
 LoggingEventData & LoggingEventData::operator = ( LoggingEventData && src ) noexcept
 {
-    mAction = src.mAction;
-    mDataBuffer = std::move(src.mDataBuffer);
+    mAction     = src.mAction;
+    mMessage    = std::move(src.mMessage);
     return (*this);
 }
 
-#endif  // AREG_LOGS
+} // namespace areg
+
+#endif  // AREG_LOGGING

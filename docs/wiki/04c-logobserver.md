@@ -324,7 +324,7 @@ Usage of Areg Log Observer console application :
 -h, --help      : Display this message on console.  Usage: --help
 -l, --load      : Command line option to configure. Usage: './logobserver --load=<path-to-init-file>'
 -n, --instances : Display list of log instances.    Usage: --instances
--o, --scope     : Update log scope priorities.      Usage: --scope *::areg_base_NESocket=NOTSET, '*' can be a cookie.
+-o, --scope     : Update log scope priorities.      Usage: --scope *::areg_base_socket_defs=NOTSET, '*' can be a cookie.
 -p, --pause     : Pause the log observer.           Usage: --pause
 -q, --quit      : Stop and quit the log observer.   Usage: --quit
 -r, --restart   : Start / continue log observer.    Usage: --restart
@@ -355,9 +355,9 @@ Type '-q' or '--quit' to quit the application ...:
 **4. Save current configuration:** type `-f`
     **Generated config file:**
     ```ini
-    log::provider::scope::provider_main_initialize = DEBUG | SCOPE
-    log::provider::scope::provider_ServiceImpl_processData = DEBUG | SCOPE
-    log::provider::scope::provider_Network_connect = DEBUG
+    log::provider::scope::provider_main.initialize = DEBUG | SCOPE
+    log::provider::scope::provider_ServiceImpl.process_data = DEBUG | SCOPE
+    log::provider::scope::provider_Network.connect = DEBUG
     ```
 
 **5. Pause and resume:** type `-p` to pause, `-r` to resume`

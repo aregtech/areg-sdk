@@ -11,271 +11,271 @@
   ************************************************************************/
 #include "pubservice/src/TrafficLightService.hpp"
 
-#include "common/NECommon.hpp"
+#include "common/FsmDefs.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_requestPowerOn);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_requestPowerOff);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_requestStartTrafficLight);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_requestStopTrafficLight);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPowerOff);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPowerOn);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionVehicleYellow);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionVehicleRed);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPedestrianRed);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionVehicleGreen);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPedestrianGreen);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_startupComponent);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_shutdownComponent);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, request_power_on);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, request_power_off);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, request_start_traffic_light);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, request_stop_traffic_light);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, action_power_off);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, action_power_on);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, action_vehicle_yellow);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, action_vehicle_red);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, action_pedestrian_red);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, action_vehicle_green);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, action_pedestrian_green);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, startup_component);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, shutdown_component);
 
-TrafficLightService::TrafficLightService(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component                     ( entry, owner )
-    , PowerManagerStub              ( static_cast<Component &>(self()) )
-    , TrafficControllerStub         ( static_cast<Component &>(self()) )
-    , IETrafficLightActionHandler   ( )
+TrafficLightService::TrafficLightService(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    : areg::Component             ( entry, owner )
+    , PowerManagerProviderBase    ( static_cast<areg::Component &>(self()) )
+    , TrafficControllerProviderBase( static_cast<areg::Component &>(self()) )
+    , TrafficLightActionHandler   ( )
 
-    , mConsoleInput                 ( entry.mRoleName, static_cast<Component &>(self()) )
-    , mLightFsm                     ( static_cast<IETrafficLightActionHandler &>(self()) )
+    , mConsoleInput               ( entry.mRoleName, static_cast<areg::Component &>(self()) )
+    , mLightFsm                   ( static_cast<TrafficLightActionHandler &>(self()) )
 {
 
 }
 
-TrafficLightService::~TrafficLightService(void)
+TrafficLightService::~TrafficLightService()
 {
-    mLightFsm.releaseFSM();
+    mLightFsm.release_fsm();
 }
 
-void TrafficLightService::requestPowerOn(void)
+void TrafficLightService::request_power_on()
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_requestPowerOn);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, request_power_on );
 
-    mLightFsm.powerOn();
+    mLightFsm.power_on();
 }
 
-void TrafficLightService::requestPowerOff(void)
+void TrafficLightService::request_power_off()
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_requestPowerOff);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, request_power_off );
 
-    mLightFsm.powerOff();
+    mLightFsm.power_off();
 }
 
-void TrafficLightService::requestStartTrafficLight(void)
+void TrafficLightService::request_start_traffic_light()
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_requestStartTrafficLight);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, request_start_traffic_light );
 
     bool result = false;
-    const NETrafficController::sTrafficLight & lights = getTrafficEastWest();
+    const TrafficController::sTrafficLight & lights = traffic_east_west();
 
-    if ((lights.trafficDirection != NETrafficController::eTrafficDirection::DirectionUndefiend) && (lights.lightVehicle != NETrafficController::eVehicleTrafficLight::VehicleLightOFF))
+    if ((lights.trafficDirection != TrafficController::TrafficDirection::Undefined) && (lights.lightVehicle != TrafficController::VehicleTrafficLight::Off))
     {
-        mLightFsm.startTrafficControl();
+        mLightFsm.start_traffic_control();
         result = true;
     }
 
-    responseStartTrafficLight(result);
+    response_start_traffic_light(result);
 }
 
-void TrafficLightService::requestStopTrafficLight(void)
+void TrafficLightService::request_stop_traffic_light()
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_requestStopTrafficLight);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, request_stop_traffic_light );
 
     bool result = false;
-    const NETrafficController::sTrafficLight & lights = getTrafficEastWest();
+    const TrafficController::sTrafficLight & lights = traffic_east_west();
 
-    if ((lights.trafficDirection != NETrafficController::eTrafficDirection::DirectionUndefiend) && (lights.lightVehicle != NETrafficController::eVehicleTrafficLight::VehicleLightOFF))
+    if ((lights.trafficDirection != TrafficController::TrafficDirection::Undefined) && (lights.lightVehicle != TrafficController::VehicleTrafficLight::Off))
     {
-        mLightFsm.stopTrafficControl();
+        mLightFsm.stop_traffic_control();
         result = true;
     }
 
-    responseStopTrafficLight(result);
+    response_stop_traffic_light(result);
 }
 
-void TrafficLightService::actionPowerOff(void)
+void TrafficLightService::action_power_off()
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPowerOff);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, action_power_off );
     LOG_DBG("Handling traffic light power OFF");
 
-    NETrafficController::sTrafficLight lights;
-    lights.lightVehicle     = NETrafficController::eVehicleTrafficLight::VehicleLightOFF;
-    lights.lightPedestrian  = NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF;
+    TrafficController::sTrafficLight lights;
+    lights.lightVehicle     = TrafficController::VehicleTrafficLight::Off;
+    lights.lightPedestrian  = TrafficController::PedestrianTrafficLight::Off;
 
-    setLightsPowerState(NEPowerManager::ePoweredState::LightsOFF);
+    set_lights_power_state(PowerManager::PowerState::LightsOFF);
 
-    lights.trafficDirection = NETrafficController::eTrafficDirection::DirectionSouthNorth;
-    setTrafficSouthNorth(lights);
+    lights.trafficDirection = TrafficController::TrafficDirection::SouthNorth;
+    set_traffic_south_north(lights);
 
-    lights.trafficDirection = NETrafficController::eTrafficDirection::DirectionEastWest;
-    setTrafficEastWest(lights);
+    lights.trafficDirection = TrafficController::TrafficDirection::EastWest;
+    set_traffic_east_west(lights);
 
-    broadcastEastWest(NETrafficController::eVehicleTrafficLight::VehicleLightOFF, NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF);
-    broadcastSouthNorth(NETrafficController::eVehicleTrafficLight::VehicleLightOFF, NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF);
+    broadcast_east_west(TrafficController::VehicleTrafficLight::Off, TrafficController::PedestrianTrafficLight::Off);
+    broadcast_south_north(TrafficController::VehicleTrafficLight::Off, TrafficController::PedestrianTrafficLight::Off);
 }
 
-void TrafficLightService::actionPowerOn(void)
+void TrafficLightService::action_power_on()
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPowerOn);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, action_power_on );
 
     LOG_DBG("Handling traffic light power ON");
 
-    NETrafficController::sTrafficLight lights;
-    lights.lightVehicle     = NETrafficController::eVehicleTrafficLight::VehicleLightsInit;
-    lights.lightPedestrian  = NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF;
+    TrafficController::sTrafficLight lights;
+    lights.lightVehicle     = TrafficController::VehicleTrafficLight::Initializing;
+    lights.lightPedestrian  = TrafficController::PedestrianTrafficLight::Off;
 
-    setLightsPowerState(NEPowerManager::ePoweredState::LightsON);
+    set_lights_power_state(PowerManager::PowerState::LightsON);
 
-    lights.trafficDirection = NETrafficController::eTrafficDirection::DirectionSouthNorth;
-    setTrafficSouthNorth(lights);
+    lights.trafficDirection = TrafficController::TrafficDirection::SouthNorth;
+    set_traffic_south_north(lights);
 
-    lights.trafficDirection = NETrafficController::eTrafficDirection::DirectionEastWest;
-    setTrafficEastWest(lights);
+    lights.trafficDirection = TrafficController::TrafficDirection::EastWest;
+    set_traffic_east_west(lights);
 
-    broadcastEastWest(NETrafficController::eVehicleTrafficLight::VehicleLightsInit, NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF);
-    broadcastSouthNorth(NETrafficController::eVehicleTrafficLight::VehicleLightsInit, NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF);
+    broadcast_east_west(TrafficController::VehicleTrafficLight::Initializing, TrafficController::PedestrianTrafficLight::Off);
+    broadcast_south_north(TrafficController::VehicleTrafficLight::Initializing, TrafficController::PedestrianTrafficLight::Off);
 }
 
-void TrafficLightService::actionVehicleYellow(void)
+void TrafficLightService::action_vehicle_yellow()
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionVehicleYellow);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, action_vehicle_yellow );
     LOG_DBG("Vehicle light is yellow, pedestrian is red");
 
-    NETrafficController::sTrafficLight sn, ew;
+    TrafficController::sTrafficLight sn, ew;
     
-    sn.lightVehicle     = NETrafficController::eVehicleTrafficLight::VehicleLightYellow;
-    sn.lightPedestrian  = NETrafficController::ePedestrianTrafficLight::PedestrianLightRed;
-    sn.trafficDirection = NETrafficController::eTrafficDirection::DirectionSouthNorth;
+    sn.lightVehicle     = TrafficController::VehicleTrafficLight::Yellow;
+    sn.lightPedestrian  = TrafficController::PedestrianTrafficLight::Red;
+    sn.trafficDirection = TrafficController::TrafficDirection::SouthNorth;
 
-    ew.lightVehicle     = NETrafficController::eVehicleTrafficLight::VehicleLightYellow;
-    ew.lightPedestrian  = NETrafficController::ePedestrianTrafficLight::PedestrianLightRed;
-    ew.trafficDirection = NETrafficController::eTrafficDirection::DirectionEastWest;
+    ew.lightVehicle     = TrafficController::VehicleTrafficLight::Yellow;
+    ew.lightPedestrian  = TrafficController::PedestrianTrafficLight::Red;
+    ew.trafficDirection = TrafficController::TrafficDirection::EastWest;
 
-    setTrafficSouthNorth(sn);
-    setTrafficEastWest(ew);
+    set_traffic_south_north(sn);
+    set_traffic_east_west(ew);
 
-    broadcastSouthNorth(sn.lightVehicle, sn.lightPedestrian);
-    broadcastEastWest(ew.lightVehicle, ew.lightPedestrian);
+    broadcast_south_north(sn.lightVehicle, sn.lightPedestrian);
+    broadcast_east_west(ew.lightVehicle, ew.lightPedestrian);
 
-    LOG_INFO("SOUTH-NORTH : Vehicle [ %6s ], pedestrian [ %6s ]", NECommon::getName(sn.lightVehicle), NECommon::getName(sn.lightPedestrian));
-    LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", NECommon::getName(ew.lightVehicle), NECommon::getName(ew.lightPedestrian));
+    LOG_INFO("SOUTH-NORTH : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::name(sn.lightVehicle), fsm::name(sn.lightPedestrian));
+    LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::name(ew.lightVehicle), fsm::name(ew.lightPedestrian));
 }
 
-void TrafficLightService::actionVehicleRed(void)
+void TrafficLightService::action_vehicle_red()
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionVehicleRed);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, action_vehicle_red );
     LOG_DBG("Vehicle light is red. Initially, pedestrian is red");
 
-    NETrafficController::sTrafficLight sn = getTrafficSouthNorth();
-    NETrafficController::sTrafficLight ew = getTrafficEastWest();
+    TrafficController::sTrafficLight sn = traffic_south_north();
+    TrafficController::sTrafficLight ew = traffic_east_west();
 
-    sn.lightVehicle     = NETrafficController::eVehicleTrafficLight::VehicleLightRed;
-    sn.lightPedestrian  = NETrafficController::ePedestrianTrafficLight::PedestrianLightRed;
+    sn.lightVehicle     = TrafficController::VehicleTrafficLight::Red;
+    sn.lightPedestrian  = TrafficController::PedestrianTrafficLight::Red;
 
-    setTrafficSouthNorth(sn);
-    broadcastSouthNorth(sn.lightVehicle, sn.lightPedestrian);
+    set_traffic_south_north(sn);
+    broadcast_south_north(sn.lightVehicle, sn.lightPedestrian);
 
-    LOG_INFO("SOUTH-NORTH : Vehicle [ %6s ], pedestrian [ %6s ]", NECommon::getName(sn.lightVehicle), NECommon::getName(sn.lightPedestrian));
-    LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", NECommon::getName(ew.lightVehicle), NECommon::getName(ew.lightPedestrian));
+    LOG_INFO("SOUTH-NORTH : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::name(sn.lightVehicle), fsm::name(sn.lightPedestrian));
+    LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::name(ew.lightVehicle), fsm::name(ew.lightPedestrian));
 }
 
-void TrafficLightService::actionPedestrianRed(void)
+void TrafficLightService::action_pedestrian_red()
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPedestrianRed);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, action_pedestrian_red );
     LOG_DBG("Pedestrian light is red. Vehicle light is unchanged.");
 
     LOG_DBG("Setting traffic light states for direction East-West");
-    NETrafficController::sTrafficLight sn = getTrafficSouthNorth();
-    NETrafficController::sTrafficLight ew = getTrafficEastWest();
+    TrafficController::sTrafficLight sn = traffic_south_north();
+    TrafficController::sTrafficLight ew = traffic_east_west();
 
-    sn.lightPedestrian  = NETrafficController::ePedestrianTrafficLight::PedestrianLightRed;
-    ew.lightPedestrian  = NETrafficController::ePedestrianTrafficLight::PedestrianLightRed;
+    sn.lightPedestrian  = TrafficController::PedestrianTrafficLight::Red;
+    ew.lightPedestrian  = TrafficController::PedestrianTrafficLight::Red;
 
-    setTrafficSouthNorth(sn);
-    setTrafficEastWest(ew);
-    broadcastSouthNorth(sn.lightVehicle, sn.lightPedestrian);
-    broadcastEastWest(ew.lightVehicle, ew.lightPedestrian);
+    set_traffic_south_north(sn);
+    set_traffic_east_west(ew);
+    broadcast_south_north(sn.lightVehicle, sn.lightPedestrian);
+    broadcast_east_west(ew.lightVehicle, ew.lightPedestrian);
 
-    LOG_INFO("SOUTH-NORTH : Vehicle [ %6s ], pedestrian [ %6s ]", NECommon::getName(sn.lightVehicle), NECommon::getName(sn.lightPedestrian));
-    LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", NECommon::getName(ew.lightVehicle), NECommon::getName(ew.lightPedestrian));
+    LOG_INFO("SOUTH-NORTH : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::name(sn.lightVehicle), fsm::name(sn.lightPedestrian));
+    LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::name(ew.lightVehicle), fsm::name(ew.lightPedestrian));
 }
 
-void TrafficLightService::actionVehicleGreen( bool isEastWest )
+void TrafficLightService::action_vehicle_green( bool isEastWest )
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionVehicleGreen);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, action_vehicle_green );
 
-    NETrafficController::sTrafficLight sn = getTrafficSouthNorth();
-    NETrafficController::sTrafficLight ew = getTrafficEastWest();
+    TrafficController::sTrafficLight sn = traffic_south_north();
+    TrafficController::sTrafficLight ew = traffic_east_west();
 
     if (isEastWest)
     {
         LOG_DBG("East-West direction vehicle light is green. Pedestrian light is unchanged.");
 
-        ew.lightVehicle = NETrafficController::eVehicleTrafficLight::VehicleLightGreen;
-        setTrafficEastWest(ew);
-        broadcastEastWest(ew.lightVehicle, ew.lightPedestrian);
+        ew.lightVehicle = TrafficController::VehicleTrafficLight::Green;
+        set_traffic_east_west(ew);
+        broadcast_east_west(ew.lightVehicle, ew.lightPedestrian);
     }
     else
     {
         LOG_DBG("North-South direction vehicle light is green. Pedestrian light is unchanged.");
 
-        sn.lightVehicle = NETrafficController::eVehicleTrafficLight::VehicleLightGreen;
-        setTrafficSouthNorth(sn);
-        broadcastSouthNorth(sn.lightVehicle, sn.lightPedestrian);
+        sn.lightVehicle = TrafficController::VehicleTrafficLight::Green;
+        set_traffic_south_north(sn);
+        broadcast_south_north(sn.lightVehicle, sn.lightPedestrian);
     }
 
-    LOG_INFO("SOUTH-NORTH : Vehicle [ %6s ], pedestrian [ %6s ]", NECommon::getName(sn.lightVehicle), NECommon::getName(sn.lightPedestrian));
-    LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", NECommon::getName(ew.lightVehicle), NECommon::getName(ew.lightPedestrian));
+    LOG_INFO("SOUTH-NORTH : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::name(sn.lightVehicle), fsm::name(sn.lightPedestrian));
+    LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::name(ew.lightVehicle), fsm::name(ew.lightPedestrian));
 }
 
-void TrafficLightService::actionPedestrianGreen(bool isEastWest)
+void TrafficLightService::action_pedestrian_green(bool isEastWest)
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPedestrianGreen);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, action_pedestrian_green );
 
-    NETrafficController::sTrafficLight sn = getTrafficSouthNorth();
-    NETrafficController::sTrafficLight ew = getTrafficEastWest();
+    TrafficController::sTrafficLight sn = traffic_south_north();
+    TrafficController::sTrafficLight ew = traffic_east_west();
 
     if (isEastWest)
     {
         LOG_DBG("East-West direction pedestrian light is green. Vehicle light is unchanged.");
 
-        ew.lightPedestrian = NETrafficController::ePedestrianTrafficLight::PedestrianLightGreen;
-        setTrafficEastWest(ew);
-        broadcastEastWest(ew.lightVehicle, ew.lightPedestrian);
+        ew.lightPedestrian = TrafficController::PedestrianTrafficLight::Green;
+        set_traffic_east_west(ew);
+        broadcast_east_west(ew.lightVehicle, ew.lightPedestrian);
 
 
-        sn.lightVehicle = NETrafficController::eVehicleTrafficLight::VehicleLightRed;
-        setTrafficSouthNorth( sn );
-        broadcastSouthNorth( sn.lightVehicle, sn.lightPedestrian );
+        sn.lightVehicle = TrafficController::VehicleTrafficLight::Red;
+        set_traffic_south_north( sn );
+        broadcast_south_north( sn.lightVehicle, sn.lightPedestrian );
     }
     else
     {
         LOG_DBG("North-South direction pedestrian light is green. Vehicle light is unchanged.");
 
-        sn.lightPedestrian = NETrafficController::ePedestrianTrafficLight::PedestrianLightGreen;
-        setTrafficSouthNorth(sn);
-        broadcastSouthNorth(sn.lightVehicle, sn.lightPedestrian);
+        sn.lightPedestrian = TrafficController::PedestrianTrafficLight::Green;
+        set_traffic_south_north(sn);
+        broadcast_south_north(sn.lightVehicle, sn.lightPedestrian);
 
-        ew.lightVehicle = NETrafficController::eVehicleTrafficLight::VehicleLightRed;
-        setTrafficEastWest( ew );
-        broadcastEastWest( ew.lightVehicle, ew.lightPedestrian );
+        ew.lightVehicle = TrafficController::VehicleTrafficLight::Red;
+        set_traffic_east_west( ew );
+        broadcast_east_west( ew.lightVehicle, ew.lightPedestrian );
     }
 
-    LOG_INFO("SOUTH-NORTH : Vehicle [ %6s ], pedestrian [ %6s ]", NECommon::getName(sn.lightVehicle), NECommon::getName(sn.lightPedestrian));
-    LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", NECommon::getName(ew.lightVehicle), NECommon::getName(ew.lightPedestrian));
+    LOG_INFO("SOUTH-NORTH : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::name(sn.lightVehicle), fsm::name(sn.lightPedestrian));
+    LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::name(ew.lightVehicle), fsm::name(ew.lightPedestrian));
 }
 
-void TrafficLightService::startupComponent(ComponentThread & comThread)
+void TrafficLightService::startup_component(areg::ComponentThread & comThread)
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_startupComponent);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, startup_component );
 
-    Component::startupComponent(comThread);
-    mLightFsm.initFSM(&comThread);
+    areg::Component::startup_component(comThread);
+    mLightFsm.init_fsm(&comThread);
 }
 
-void TrafficLightService::shutdownComponent(ComponentThread & comThread)
+void TrafficLightService::shutdown_component(areg::ComponentThread & comThread)
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_shutdownComponent);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, shutdown_component );
 
-    mLightFsm.releaseFSM();
-    Component::shutdownComponent(comThread);
+    mLightFsm.release_fsm();
+    areg::Component::shutdown_component(comThread);
 }

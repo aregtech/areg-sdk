@@ -11,8 +11,8 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
-#include "areg/component/IEWorkerThreadConsumer.hpp"
+#include "areg/base/areg_global.h"
+#include "areg/component/WorkerThreadConsumer.hpp"
 #include "common/PatientInfoEvent.hpp"
 
 /**
@@ -21,8 +21,8 @@
  *          worker thread and the binding component (master), or between worker threads
  *          of the same binding component (master).
  **/
-class HardwareWorkerConsumer    : public    IEWorkerThreadConsumer
-                                , private   IEPatientInfoEventConsumer
+class HardwareWorkerConsumer final  : public    areg::WorkerThreadConsumer
+                                    , private   IEPatientInfoEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -36,12 +36,12 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~HardwareWorkerConsumer(void) = default;
+    virtual ~HardwareWorkerConsumer() = default;
 
 protected:
 
 /************************************************************************/
-// IEWorkerThreadConsumer overrides
+// WorkerThreadConsumer overrides
 /************************************************************************/
 
     /**
@@ -51,7 +51,7 @@ protected:
      * \param   workThread      The Worker Thread object to notify startup
      * \param   masterThread    The component thread, which owns worker thread.
      **/
-    virtual void registerEventConsumers( WorkerThread & workThread, ComponentThread & masterThread ) override;
+    void register_event_consumers( areg::WorkerThread & workThread, areg::ComponentThread & masterThread ) final;
 
     /**
      * \brief   Triggered by Worker Thread when stops running.
@@ -59,30 +59,30 @@ protected:
      *          method to stop receiving events.
      * \param   workThread  The Worker Thread object to notify stop
      **/
-    virtual void unregisterEventConsumers( WorkerThread & workThread ) override;
+    void unregister_event_consumers( areg::WorkerThread & workThread ) final;
 
     /**
      * \brief  Override operation. Implement this function to receive events and make processing
      * \param  data    The data, which was passed as an event.
      **/
-    virtual void processEvent( const PatientInfoEventData & data ) override;
+    void process_event( const PatientInfoEventData & data ) final;
 
 private:
 
     /**
      * \brief   Updates the patient information (assumes here updates the HW data).
      **/
-    void updateInfoPatient( const SharedBuffer & data );
+    void update_info_patient( const areg::SharedBuffer & data );
 
     /**
      * \brief   Wrapper of this pointer.
      **/
-    inline HardwareWorkerConsumer & self( void );
+    inline HardwareWorkerConsumer & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    HardwareWorkerConsumer( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( HardwareWorkerConsumer );
+    HardwareWorkerConsumer() = delete;
+    AREG_NOCOPY_NOMOVE( HardwareWorkerConsumer );
 };

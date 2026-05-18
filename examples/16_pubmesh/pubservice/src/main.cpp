@@ -10,13 +10,13 @@
 //               application exits and can as well stop working.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/Component.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
-#include "common/src/NECommon.hpp"
+#include "common/src/MeshDefs.hpp"
 #include "common/src/LocalHelloWorldService.hpp"
 #include "common/src/PublicHelloWorldClient.hpp"
 #include "pubservice/src/PublicServiceComponent.hpp"
@@ -28,15 +28,15 @@
 #endif // _MSC_VER
 
 //!<\brief  The local service component.
-class LocalServiceComponent : public Component
+class LocalServiceComponent : public areg::Component
 {
-    static constexpr unsigned int TIMEOUT_CONTROLLER_SERVICE_CLIENT{ 500 };
+    static constexpr uint32_t TIMEOUT_CONTROLLER_SERVICE_CLIENT{ 500 };
 
 public:
-    LocalServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-        : Component         ( entry, owner )
-        , mLocalService     ( static_cast<Component &>(self()) )
-        , mControllerClient ( entry.mDependencyServices[0], static_cast<Component &>(self()), TIMEOUT_CONTROLLER_SERVICE_CLIENT )
+    LocalServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+        : areg::Component         ( entry, owner )
+        , mLocalService     ( static_cast<areg::Component &>(self()) )
+        , mControllerClient ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()), TIMEOUT_CONTROLLER_SERVICE_CLIENT )
     {
     }
 
@@ -44,7 +44,7 @@ private:
     LocalHelloWorldService  mLocalService;
     PublicHelloWorldClient  mControllerClient;
 
-    LocalServiceComponent & self( void )
+    LocalServiceComponent & self()
     {
         return (*this);
     }
@@ -67,32 +67,32 @@ BEGIN_MODEL( _modelName )
     // define component thread
     BEGIN_REGISTER_THREAD( "ControllerServiceThread" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( NECommon::PublicControllerService, PublicServiceComponent )
+        BEGIN_REGISTER_COMPONENT( mesh::PublicControllerService, PublicServiceComponent )
             // register RemoteRegistry, SystemShutdown service implementation and the dependency.
-            REGISTER_IMPLEMENT_SERVICE( NEPublicHelloWorld::ServiceName, NEPublicHelloWorld::InterfaceVersion )
-            REGISTER_IMPLEMENT_SERVICE( NESystemShutdown::ServiceName, NESystemShutdown::InterfaceVersion )
-            REGISTER_DEPENDENCY(NECommon::LocalService)
+            REGISTER_IMPLEMENT_SERVICE( PublicHelloWorld::ServiceName, PublicHelloWorld::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( SystemShutdown::ServiceName, SystemShutdown::InterfaceVersion )
+            REGISTER_DEPENDENCY(mesh::LocalService)
         // end of component description
-        END_REGISTER_COMPONENT( NECommon::PublicControllerService )
+        END_REGISTER_COMPONENT( mesh::PublicControllerService )
 
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( NECommon::LocalService, LocalServiceComponent )
+        BEGIN_REGISTER_COMPONENT( mesh::LocalService, LocalServiceComponent )
             // register LocalHelloWorld service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NELocalHelloWorld::ServiceName, NELocalHelloWorld::InterfaceVersion )
-            REGISTER_DEPENDENCY(NECommon::PublicControllerService)
+            REGISTER_IMPLEMENT_SERVICE( LocalHelloWorld::ServiceName, LocalHelloWorld::InterfaceVersion )
+            REGISTER_DEPENDENCY(mesh::PublicControllerService)
         // end of component description
-        END_REGISTER_COMPONENT( NECommon::LocalService )
+        END_REGISTER_COMPONENT( mesh::LocalService )
 
     // end of thread description
     END_REGISTER_THREAD( "TestMainServiceThread" )
 
-// end of model NECommon::ModelName
+// end of model mesh::ModelName
 END_MODEL( _modelName )
 
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(example_16_pubmesh_pubservice_main_main);
+DEF_LOG_SCOPE(examples_16_pubmesh_pubservice_main, main);
 /**
  * \brief   The main method enables logging, service manager and timer.
  *          it loads and unloads the services, releases application.
@@ -102,33 +102,33 @@ int main()
     std::cout << "A Demo of meshed services. The process with controller service, public and local services and clients ..." << std::endl;
 
     // force to start logging with default settings
-    LOGGING_CONFIGURE_AND_START( nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr, false );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::initApplication( );
+    areg::Application::setup( );
 
     do 
     {
-        LOG_SCOPE( example_16_pubmesh_pubservice_main_main );
+        LOG_SCOPE( examples_16_pubmesh_pubservice_main, main );
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName );
 
         std::cout << "Loading services, wait for services ..." << std::endl;
 
         // load model to initialize components
-        Application::loadModel( _modelName );
+        areg::Application::load_model( _modelName );
 
         LOG_DBG("Servicing model is loaded");
         
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        areg::Application::wait_quit(areg::WAIT_INFINITE);
 
         std::cout
-            << (Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI)
+            << (areg::Application::find_model( _modelName ).alive_duration( ) / areg::DURATION_1_MILLI)
             << " ms passed. Model is unloaded, releasing resources to exit application ..."
             << std::endl;
 
         // release and cleanup resources of application.
-        Application::releaseApplication();
+        areg::Application::release();
 
     } while (false);
     

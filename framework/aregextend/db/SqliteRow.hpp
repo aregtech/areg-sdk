@@ -17,13 +17,18 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
+
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class SqliteStatement;
+namespace areg::ext {
+    class SqliteStatement;
+} // namespace areg::ext
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // SqliteRow class declaration
@@ -38,52 +43,28 @@ class SqliteRow
 // Constructors / operators.
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Default constructor. Initializes an invalid row.
-     */
-    SqliteRow(void);
+    SqliteRow() noexcept;
 
     /**
      * \brief   Constructs a SqliteRow from a SqliteStatement.
-     * \param   statement   Reference to the SqliteStatement object.
-     */
-    SqliteRow(SqliteStatement& statement);
+     * \param   statement       Reference to the SqliteStatement object.
+     **/
+    SqliteRow(SqliteStatement& statement) noexcept;
 
     /**
      * \brief   Constructs a SqliteRow from a raw statement pointer.
-     * \param   statement   Pointer to the underlying SQLite statement.
-     */
-    SqliteRow(void* statement);
+     * \param   statement       Pointer to the underlying SQLite statement.
+     **/
+    SqliteRow(void* statement) noexcept;
 
-    /**
-     * \brief   Copy constructor.
-     * \param   src     The source SqliteRow to copy from.
-     */
-    SqliteRow(const SqliteRow& src);
+    SqliteRow(const SqliteRow& src) noexcept;
 
-    /**
-     * \brief   Move constructor.
-     * \param   src     The source SqliteRow to move from.
-     */
     SqliteRow(SqliteRow&& src) noexcept;
 
-    /**
-     * \brief   Destructor. Defaulted.
-     */
-    ~SqliteRow(void) = default;
+    ~SqliteRow() = default;
 
-    /**
-     * \brief   Copy assignment operator.
-     * \param   src     The source SqliteRow to copy from.
-     * \return  Reference to this object.
-     */
-    SqliteRow& operator = (const SqliteRow& src);
+    SqliteRow& operator = (const SqliteRow& src) noexcept;
 
-    /**
-     * \brief   Move assignment operator.
-     * \param   src     The source SqliteRow to move from.
-     * \return  Reference to this object.
-     */
     SqliteRow& operator = (SqliteRow&& src) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
@@ -92,99 +73,127 @@ public:
 public:
     /**
      * \brief   Checks if the row is valid (i.e., associated with a statement).
+     *
      * \return  True if valid, false otherwise.
-     */
-    inline bool isValid(void) const;
+     **/
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Retrieves the integer value of the specified column.
-     * \param   column  The 0-based column index.
+     *
+     * \param   column      The 0-based column index.
      * \return  The integer value of the column.
-     */
-    int getInt(int column) const;
+     **/
+    [[nodiscard]]
+    int32_t as_int(int32_t column) const noexcept;
 
     /**
      * \brief   Retrieves the 64-bit integer value of the specified column.
-     * \param   column  The 0-based column index.
+     *
+     * \param   column      The 0-based column index.
      * \return  The 64-bit integer value of the column.
-     */
-    int64_t getInt64(int column) const;
+     **/
+    [[nodiscard]]
+    int64_t as_int64(int32_t column) const noexcept;
 
     /**
      * \brief   Retrieves the double value of the specified column.
-     * \param   column  The 0-based column index.
+     *
+     * \param   column      The 0-based column index.
      * \return  The double value of the column.
-     */
-    double getDouble(int column) const;
+     **/
+    [[nodiscard]]
+    double as_double(int32_t column) const noexcept;
 
     /**
      * \brief   Retrieves the text value of the specified column.
-     * \param   column  The 0-based column index.
+     *
+     * \param   column      The 0-based column index.
      * \return  The string value of the column.
-     */
-    String getText(int column) const;
+     **/
+    [[nodiscard]]
+    String as_text(int32_t column) const noexcept;
 
     /**
      * \brief   Checks if the specified column is NULL.
-     * \param   column  The 0-based column index.
+     *
+     * \param   column      The 0-based column index.
      * \return  True if the column is NULL, false otherwise.
-     */
-    bool isNull(int column) const;
+     **/
+    [[nodiscard]]
+    bool is_null(int32_t column) const noexcept;
 
     /**
      * \brief   Checks if the specified column index is valid.
-     * \param   column  The 0-based column index.
+     *
+     * \param   column      The 0-based column index.
      * \return  True if the column index is valid, false otherwise.
-     */
-    bool isColumnValid(int column) const;
+     **/
+    [[nodiscard]]
+    bool is_column_valid(int32_t column) const noexcept;
 
     /**
      * \brief   Checks if the specified column contains a string value.
-     * \param   column  The 0-based column index.
+     *
+     * \param   column      The 0-based column index.
      * \return  True if the column is a string, false otherwise.
-     */
-    bool isString(int column) const;
+     **/
+    [[nodiscard]]
+    bool is_string(int32_t column) const noexcept;
 
     /**
      * \brief   Checks if the specified column contains a 32-bit integer value.
-     * \param   column  The 0-based column index.
+     *
+     * \param   column      The 0-based column index.
      * \return  True if the column is a 32-bit integer, false otherwise.
-     */
-    bool isInteger(int column) const;
+     **/
+    [[nodiscard]]
+    bool is_integer(int32_t column) const noexcept;
 
     /**
      * \brief   Checks if the specified column contains a 64-bit integer value.
-     * \param   column  The 0-based column index.
+     *
+     * \param   column      The 0-based column index.
      * \return  True if the column is a 64-bit integer, false otherwise.
-     */
-    bool isInteger64(int column) const;
+     **/
+    [[nodiscard]]
+    bool is_integer64(int32_t column) const noexcept;
 
     /**
      * \brief   Checks if the specified column contains a double value.
-     * \param   column  The 0-based column index.
+     *
+     * \param   column      The 0-based column index.
      * \return  True if the column is a double, false otherwise.
-     */
-    bool isDouble(int column) const;
+     **/
+    [[nodiscard]]
+    bool is_double(int32_t column) const noexcept;
 
     /**
      * \brief   Returns the number of columns in the row.
+     *
      * \return  The number of columns.
-     */
-    int getColumnCount(void) const;
+     **/
+    [[nodiscard]]
+    int32_t column_count() const noexcept;
 
     /**
      * \brief   Returns the name of the specified column.
-     * \param   column  The 0-based column index.
+     *
+     * \param   column      The 0-based column index.
      * \return  The name of the column.
-     */
-    String getColumnName(int column) const;
+     **/
+    [[nodiscard]]
+    String column_name(int32_t column) const noexcept;
 
     /**
      * \brief   Returns the index of the column with the specified name.
-     * \param   columnName The name of the column.
+     *
+     * \param   columnName      The name of the column.
      * \return  The 0-based index of the column, or -1 if not found.
-     */
-    int getColumnIndex(const String& columnName) const;
+     **/
+    [[nodiscard]]
+    int32_t column_index(const String& columnName) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -196,9 +205,11 @@ protected:
     void* mStatement;
 };
 
-inline bool SqliteRow::isValid(void) const
+inline bool SqliteRow::is_valid() const noexcept
 {
     return (mStatement != nullptr);
 }
+
+} // namespace areg::ext
 
 #endif // AREG_AREGEXTEND_DB_SQLITEROW_HPP

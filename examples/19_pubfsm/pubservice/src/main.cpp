@@ -19,12 +19,12 @@
 //                    all clients.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
-#include "common/NECommon.hpp"
+#include "common/FsmDefs.hpp"
 #include "pubservice/src/TrafficLightService.hpp"
 
 #ifdef _MSC_VER
@@ -42,14 +42,14 @@ BEGIN_MODEL(_modelName)
     // define component thread
     BEGIN_REGISTER_THREAD( _threadName )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( NECommon::ServiceLightController, TrafficLightService )
+        BEGIN_REGISTER_COMPONENT( fsm::ServiceLightController, TrafficLightService )
             // register PowerManager and TrafficController service implementation, and the dependencies (client runs in the same thread).
-            REGISTER_IMPLEMENT_SERVICE( NEPowerManager::ServiceName, NEPowerManager::InterfaceVersion )
-            REGISTER_IMPLEMENT_SERVICE( NETrafficController::ServiceName, NETrafficController::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( PowerManager::ServiceName, PowerManager::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( TrafficController::ServiceName, TrafficController::InterfaceVersion )
             // The power controller local service and the client run in the same thread.
-            REGISTER_DEPENDENCY(NECommon::ServiceLightController)
+            REGISTER_DEPENDENCY(fsm::ServiceLightController)
         // end of component description
-        END_REGISTER_COMPONENT( NECommon::SimpleLightControllerName )
+        END_REGISTER_COMPONENT( fsm::SimpleLightControllerName )
     // end of thread description
     END_REGISTER_THREAD( _threadName )
 
@@ -67,19 +67,19 @@ int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::initApplication( );
+    areg::Application::setup( );
 
     // load model to initialize components
-    Application::loadModel(_modelName);
+    areg::Application::load_model(_modelName);
 
     // wait until Application quit signal is set.
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    areg::Application::wait_quit(areg::WAIT_INFINITE);
         
     // stop and unload components
-    Application::unloadModel(_modelName);
+    areg::Application::unload_model(_modelName);
 
     // release and cleanup resources of application.
-    Application::releaseApplication();
+    areg::Application::release();
 
 	return 0;
 }

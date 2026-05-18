@@ -20,9 +20,10 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/ProxyEvent.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies.
@@ -45,6 +46,10 @@ class ProxyAddress;
 //////////////////////////////////////////////////////////////////////////
 // ServiceResponseEvent class declaration
 //////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Base class for all response events sent from Stub to Proxy after processing request
+ *          calls. Handles response delivery and attribute update notifications.
+ **/
 class AREG_API ServiceResponseEvent    : public ProxyEvent
 {
 //////////////////////////////////////////////////////////////////////////
@@ -61,7 +66,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 // Declare as runtime event.
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME_EVENT(ServiceResponseEvent)
+    AREG_DECLARE_RUNTIME_EVENT(ServiceResponseEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -69,38 +74,37 @@ protected:
 protected:
 
     /**
-     * \brief   Creates service response event. Sets given parameters
-     * \param   target      The event target proxy address
-     * \param   result      The response result
-     * \param   responseId  The response message ID
-     * \param   eventType   The type of event.
-     * \param   seqNr       The sequence number of call.
+     * \brief   Creates service response event and sets parameters.
+     *
+     * \param   target          The event target proxy address
+     * \param   result          The response result
+     * \param   respId      The response message ID
+     * \param   eventType       The type of event.
+     * \param   seqNr           The sequence number of call.
      **/
     ServiceResponseEvent( const ProxyAddress & target
-                        , NEService::eResultType result
-                        , unsigned int responseId
-                        , Event::eEventType eventType
-                        , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
+                        , areg::ResultType result
+                        , uint32_t respId
+                        , areg::EventType eventType
+                        , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY );
 
     /**
-     * \brief   Copies all data from given source, except the target proxy address. This is used if proxy needs to clone
-     *          event data to send to different target proxy objects.
-     * \param   target  The target proxy address
-     * \param   src     The service response source to copy data.
+     * \brief   Copies all data from given source, except the target proxy address. This is used if
+     *          proxy needs to clone event data to send to different target proxy objects.
+     *
+     * \param   target      The target proxy address
+     * \param   src         The service response source to copy data.
      **/
     ServiceResponseEvent(const ProxyAddress & target, const ServiceResponseEvent & src );
 
     /**
-     * \brief   Creates event from streaming object and initializes data
-     * \param   stream  The streaming object to read data
+     * \brief   Creates event from streaming object and initializes data.
+     *
+     * \param   stream      The streaming object to read data
      **/
-    ServiceResponseEvent(const IEInStream & stream);
+    ServiceResponseEvent(const InStream & stream);
 
-    /**
-     * \brief   Destructor. Protected.
-     * \remark  Do not call directly, use Destroy() method to clean properly.
-     **/
-    virtual ~ServiceResponseEvent( void ) = default;
+    virtual ~ServiceResponseEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -108,39 +112,40 @@ protected:
 public:
 
     /**
-     * \brief   Get and set response message ID.
+     * \brief   Returns response message ID.
      **/
-    inline unsigned int getResponseId( void ) const;
+    inline uint32_t response_id() const noexcept;
 
     /**
-     * \brief   Returns response call result
+     * \brief   Returns response call result.
      **/
-    inline NEService::eResultType getResult( void ) const;
+    [[nodiscard]]
+    inline areg::ResultType result() const noexcept;
 
     /**
      * \brief   Returns sequence number of call.
      **/
-    inline const SequenceNumber & getSequenceNumber( void ) const;
+    inline const SequenceNumber & sequence_number() const noexcept;
 
     /**
      * \brief   Sets sequence number of call.
+     *
+     * \param   newSeqNr    The new sequence number to set.
      **/
-    inline void setSequenceNumber( const SequenceNumber & newSeqNr );
+    inline void set_sequence_number( const SequenceNumber & newSeqNr ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Clones existing service event object.
-     *          Copies all data and sets specified target proxy address.
-     *          Overwrite this method in every service response specific
-     *          class to be able to clone events.
-     * \param   target  The target proxy address.
-     * \return  Cloned service response event object, which contains specified
-     *          target proxy address.
+     * \brief   Clones existing service event object with specified target proxy address. Override
+     *          this method in each service response specific class.
+     *
+     * \param   target      The target proxy address.
+     * \return  Cloned service response event object, which contains specified target proxy address.
      **/
-    virtual ServiceResponseEvent * cloneForTarget(const ProxyAddress & target) const;
+    virtual ServiceResponseEvent * clone_for_target(const ProxyAddress & target) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -150,18 +155,20 @@ protected:
 // StreamableEvent overrides
 /************************************************************************/
     /**
-     * \brief   Reads and initialize event data from streaming object.
-     * \param   stream  The streaming object to read out event data
+     * \brief   Reads and initializes event data from streaming object.
+     *
+     * \param   stream      The streaming object to read out event data
      * \return  Returns streaming object to read out data.
      **/
-    virtual const IEInStream & readStream( const IEInStream & stream ) override;
+    const InStream & read_stream( const InStream & stream ) override;
 
     /**
-     * \brief   Writes event data to streaming object
-     * \param   stream  The streaming object to write event data.
+     * \brief   Writes event data to streaming object.
+     *
+     * \param   stream      The streaming object to write event data.
      * \return  Returns streaming object to write event data.
      **/
-    virtual IEOutStream & writeStream( IEOutStream & stream ) const override;
+    OutStream & write_stream( OutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -170,48 +177,49 @@ protected:
     /**
      * \brief   The response message ID
      **/
-    unsigned int            mResponseId;
+    uint32_t            mResponseId;
 
     /**
      * \brief   The response result
      **/
-    NEService::eResultType mResult;
+    areg::ResultType    mResult;
 
     /**
      * \brief   The sequence number.
      **/
-    SequenceNumber          mSequenceNr;
+    SequenceNumber      mSequenceNr;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceResponseEvent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServiceResponseEvent );
+    ServiceResponseEvent() = delete;
+    AREG_NOCOPY_NOMOVE( ServiceResponseEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceResponseEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline unsigned int ServiceResponseEvent::getResponseId( void ) const
+inline uint32_t ServiceResponseEvent::response_id() const noexcept
 {
     return mResponseId;
 }
 
-inline NEService::eResultType ServiceResponseEvent::getResult( void ) const
+inline areg::ResultType ServiceResponseEvent::result() const noexcept
 {
     return mResult;
 }
 
-inline const SequenceNumber & ServiceResponseEvent::getSequenceNumber( void ) const
+inline const SequenceNumber & ServiceResponseEvent::sequence_number() const noexcept
 {
     return mSequenceNr;
 }
 
-inline void ServiceResponseEvent::setSequenceNumber( const SequenceNumber & newSeqNr )
+inline void ServiceResponseEvent::set_sequence_number( const SequenceNumber & newSeqNr ) noexcept
 {
     mSequenceNr = newSeqNr;
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_SERVICERESPONSEEVENT_HPP

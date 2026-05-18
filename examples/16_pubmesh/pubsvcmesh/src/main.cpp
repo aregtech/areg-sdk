@@ -9,13 +9,13 @@
 //               service completes the job and exits.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
-#include "common/src/NECommon.hpp"
+#include "common/src/MeshDefs.hpp"
 #include "common/src/LocalHelloWorldClient.hpp"
 #include "common/src/LocalHelloWorldService.hpp"
 #include "common/src/PublicHelloWorldClient.hpp"
@@ -28,21 +28,21 @@
 #endif // _MSC_VER
 
 //!<\brief  Local service component
-class LocalServiceComponent : public Component
+class LocalServiceComponent final : public areg::Component
 {
-    static constexpr unsigned int   PUBLIC_CLIENT_TIMEOUT   { 1'000 };  //!< The timeout to send request to public service
-    static constexpr unsigned int   LOCAL_CLIENT_TIMEOUT    {   500 };  //!< The timeout to send request to local service
+    static constexpr uint32_t   PUBLIC_CLIENT_TIMEOUT   { 1'000 };  //!< The timeout to send request to public service
+    static constexpr uint32_t   LOCAL_CLIENT_TIMEOUT    {   500 };  //!< The timeout to send request to local service
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     //!< Initializes the local component
-    LocalServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-        : Component                 ( entry, owner )
-        , mLocalService             ( static_cast<Component &>(self()) )
-        , mControllerServiceClient  ( entry.mDependencyServices[0], static_cast<Component &>(self( )), PUBLIC_CLIENT_TIMEOUT )
-        , mLocServiceClient         ( entry.mDependencyServices[1], static_cast<Component &>(self( )), LOCAL_CLIENT_TIMEOUT )
+    LocalServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+        : areg::Component                 ( entry, owner )
+        , mLocalService             ( static_cast<areg::Component &>(self()) )
+        , mControllerServiceClient  ( entry.mDependencyServices[0], static_cast<areg::Component &>(self( )), PUBLIC_CLIENT_TIMEOUT )
+        , mLocServiceClient         ( entry.mDependencyServices[1], static_cast<areg::Component &>(self( )), LOCAL_CLIENT_TIMEOUT )
     {
     }
 
@@ -52,7 +52,7 @@ private:
     LocalHelloWorldClient   mLocServiceClient;          //!< The instance of local service client.
 
 private:
-    LocalServiceComponent & self( void )
+    LocalServiceComponent & self()
     {
         return (*this);
     }
@@ -60,22 +60,22 @@ private:
 
 
 //!<\brief  A public service component
-class PublicServiceComponent : public Component
+class PublicServiceComponent final : public areg::Component
 {
-    static constexpr unsigned int   TIMEOUT_CONTROLLER_SERVICE_CLIENT   {   700 };
-    static constexpr unsigned int   TIMEOUT_PUBLIC_SERVICE_CLIENT       { 1'000 };
-    static constexpr unsigned int   TIMEOUT_LOCAL_SERVICE_CLIENT_1      {   800 };
-    static constexpr unsigned int   TIMEOUT_LOCAL_SERVICE_CLIENT_2      { 1'200 };
+    static constexpr uint32_t   TIMEOUT_CONTROLLER_SERVICE_CLIENT   {   700 };
+    static constexpr uint32_t   TIMEOUT_PUBLIC_SERVICE_CLIENT       { 1'000 };
+    static constexpr uint32_t   TIMEOUT_LOCAL_SERVICE_CLIENT_1      {   800 };
+    static constexpr uint32_t   TIMEOUT_LOCAL_SERVICE_CLIENT_2      { 1'200 };
 
 public:
 
-    PublicServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-        : Component                 ( entry, owner )
-        , mPublicService            ( static_cast<Component &>(self()) )
-        , mControllerServiceClient  ( entry.mDependencyServices[0], static_cast<Component &>(self()), TIMEOUT_CONTROLLER_SERVICE_CLIENT )
-        , mPublicServiceClient      ( entry.mDependencyServices[1], static_cast<Component &>(self()), TIMEOUT_PUBLIC_SERVICE_CLIENT )
-        , mLocalServiceClient1      ( entry.mDependencyServices[2], static_cast<Component &>(self()), TIMEOUT_LOCAL_SERVICE_CLIENT_1 )
-        , mLocalServiceClient2      ( entry.mDependencyServices[3], static_cast<Component &>(self()), TIMEOUT_LOCAL_SERVICE_CLIENT_2 )
+    PublicServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+        : areg::Component                 ( entry, owner )
+        , mPublicService            ( static_cast<areg::Component &>(self()) )
+        , mControllerServiceClient  ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()), TIMEOUT_CONTROLLER_SERVICE_CLIENT )
+        , mPublicServiceClient      ( entry.mDependencyServices[1], static_cast<areg::Component &>(self()), TIMEOUT_PUBLIC_SERVICE_CLIENT )
+        , mLocalServiceClient1      ( entry.mDependencyServices[2], static_cast<areg::Component &>(self()), TIMEOUT_LOCAL_SERVICE_CLIENT_1 )
+        , mLocalServiceClient2      ( entry.mDependencyServices[3], static_cast<areg::Component &>(self()), TIMEOUT_LOCAL_SERVICE_CLIENT_2 )
     {
     }
 
@@ -86,7 +86,7 @@ private:
     LocalHelloWorldClient   mLocalServiceClient1;
     LocalHelloWorldClient   mLocalServiceClient2;
 
-    PublicServiceComponent & self( void )
+    PublicServiceComponent & self()
     {
         return (*this);
     }
@@ -111,57 +111,57 @@ BEGIN_MODEL(_modelName)
     // define component thread
     BEGIN_REGISTER_THREAD( "MeshFirstThread" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( NECommon::PublicSecondService, PublicServiceComponent )
+        BEGIN_REGISTER_COMPONENT( mesh::PublicSecondService, PublicServiceComponent )
             // register RemoteRegistry service implementation and the dependencies.
-            REGISTER_IMPLEMENT_SERVICE( NEPublicHelloWorld::ServiceName, NEPublicHelloWorld::InterfaceVersion )
-            REGISTER_DEPENDENCY(NECommon::PublicControllerService)
-            REGISTER_DEPENDENCY(NECommon::PublicThirdService)
-            REGISTER_DEPENDENCY(NECommon::LocalService)
+            REGISTER_IMPLEMENT_SERVICE( PublicHelloWorld::ServiceName, PublicHelloWorld::InterfaceVersion )
+            REGISTER_DEPENDENCY(mesh::PublicControllerService)
+            REGISTER_DEPENDENCY(mesh::PublicThirdService)
+            REGISTER_DEPENDENCY(mesh::LocalService)
             REGISTER_DEPENDENCY( _localService )
         // end of component description
-        END_REGISTER_COMPONENT( NECommon::PublicSecondService )
+        END_REGISTER_COMPONENT( mesh::PublicSecondService )
 
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( NECommon::LocalService, LocalServiceComponent )
+        BEGIN_REGISTER_COMPONENT( mesh::LocalService, LocalServiceComponent )
             // register RemoteRegistry service implementation and the dependencies.
-            REGISTER_IMPLEMENT_SERVICE( NELocalHelloWorld::ServiceName, NELocalHelloWorld::InterfaceVersion )
-            REGISTER_DEPENDENCY(NECommon::PublicThirdService)
+            REGISTER_IMPLEMENT_SERVICE( LocalHelloWorld::ServiceName, LocalHelloWorld::InterfaceVersion )
+            REGISTER_DEPENDENCY(mesh::PublicThirdService)
             REGISTER_DEPENDENCY( _localService )
         // end of component description
-        END_REGISTER_COMPONENT( NECommon::LocalService )
+        END_REGISTER_COMPONENT( mesh::LocalService )
     // end of thread description
     END_REGISTER_THREAD( "MeshFirstThread" )
 
     BEGIN_REGISTER_THREAD( "MeshSecondThread" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( NECommon::PublicThirdService, PublicServiceComponent )
+        BEGIN_REGISTER_COMPONENT( mesh::PublicThirdService, PublicServiceComponent )
             // register RemoteRegistry service implementation and the dependencies.
-            REGISTER_IMPLEMENT_SERVICE( NEPublicHelloWorld::ServiceName, NEPublicHelloWorld::InterfaceVersion )
-            REGISTER_DEPENDENCY(NECommon::PublicSecondService)
-            REGISTER_DEPENDENCY(NECommon::PublicThirdService)
-            REGISTER_DEPENDENCY(NECommon::LocalService)
+            REGISTER_IMPLEMENT_SERVICE( PublicHelloWorld::ServiceName, PublicHelloWorld::InterfaceVersion )
+            REGISTER_DEPENDENCY(mesh::PublicSecondService)
+            REGISTER_DEPENDENCY(mesh::PublicThirdService)
+            REGISTER_DEPENDENCY(mesh::LocalService)
             REGISTER_DEPENDENCY( _localService )
         // end of component description
-        END_REGISTER_COMPONENT( NECommon::PublicThirdService )
+        END_REGISTER_COMPONENT( mesh::PublicThirdService )
 
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _localService, LocalServiceComponent )
             // register LocalHelloWorld service implementation and the dependencies.
-            REGISTER_IMPLEMENT_SERVICE( NELocalHelloWorld::ServiceName, NELocalHelloWorld::InterfaceVersion )
-            REGISTER_DEPENDENCY(NECommon::PublicControllerService)
+            REGISTER_IMPLEMENT_SERVICE( LocalHelloWorld::ServiceName, LocalHelloWorld::InterfaceVersion )
+            REGISTER_DEPENDENCY(mesh::PublicControllerService)
             REGISTER_DEPENDENCY( _localService )
         // end of component description
         END_REGISTER_COMPONENT( _localService )
     // end of thread description
     END_REGISTER_THREAD( "MeshSecondThread" )
 
-// end of model NECommon::ModelName
+// end of model mesh::ModelName
 END_MODEL(_modelName)
 
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(example_16_pubmesh_pubsvcmesh_main_main);
+DEF_LOG_SCOPE(examples_16_pubmesh_pubsvcmesh_main, main);
 /**
  * \brief   The main method enables logging, service manager and timer.
  *          it loads and unloads the services, releases application.
@@ -171,33 +171,33 @@ int main()
     std::cout << "A Demo of meshed services. The process public and local services and clients ..." << std::endl;
 
     // force to start logging with default settings
-    LOGGING_CONFIGURE_AND_START( nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr, false );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::initApplication();
+    areg::Application::setup();
 
     do 
     {
-        LOG_SCOPE( example_16_pubmesh_pubsvcmesh_main_main );
+        LOG_SCOPE( examples_16_pubmesh_pubsvcmesh_main, main );
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         std::cout << "Loading services, wait for services ..." << std::endl;
 
         // load model to initialize components
-        Application::loadModel( _modelName );
+        areg::Application::load_model( _modelName );
 
         LOG_DBG("Servicing model is loaded");
         
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        areg::Application::wait_quit(areg::WAIT_INFINITE);
 
         std::cout
-            << (Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI)
+            << (areg::Application::find_model( _modelName ).alive_duration( ) / areg::DURATION_1_MILLI)
             << " ms passed. Model is unloaded, releasing resources to exit application ..."
             << std::endl;
 
         // release and cleanup resources of application.
-        Application::releaseApplication();
+        areg::Application::release();
 
     } while (false);
     

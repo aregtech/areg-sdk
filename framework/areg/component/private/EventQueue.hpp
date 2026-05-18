@@ -10,33 +10,42 @@
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventQueue.hpp
- * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Areg Platform, Event queue class declaration
+ * \brief       Areg Platform, event queue classes for internal and external event dispatch.
  *
  ************************************************************************/
 
 /************************************************************************
  * Includes
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
-#include "areg/component/private/SortedEventStack.hpp"
-#include "areg/component/private/IEQueueListener.hpp"
+#include "areg/base/areg_global.h"
+#include "areg/base/SyncPrimitives.hpp"
+#include "areg/component/private/EventStack.hpp"
+#include "areg/component/private/QueueListener.hpp"
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Event;
-class RuntimeClassID;
+namespace areg {
+    class Event;
+    class RuntimeClassID;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // EventQueue class declaration
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   Event queue class is a base class for external and 
- *          internal event queue classes. It contains basic methods to
- *          push and pop event objects from Stack.
+ * \brief   Base class for event queues. Wraps a EventStack and a QueueListener and
+ *          provides push/pop/remove operations. The base class performs no locking -- derived
+ *          classes are responsible for thread safety.
+ *
+ * \note    push_event() and pop_event() are non-virtual. ExternalEventQueue hides them with
+ *          locked versions. All callers in EventDispatcherBase use the concrete derived types
+ *          directly, so no virtual dispatch is required on the hot path.
  **/
 class AREG_API EventQueue
 {
@@ -45,236 +54,193 @@ class AREG_API EventQueue
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initialization constructor.
-     *          Event Listener object, which is signaled when Queue is receiving 
-     *          new Event object or when Queue is empty.
-     *          The caller should define queue stack object, which will hold event elements
-     * \param   eventListener   The Event Listener object, which should
-     *                          be signaled when receive new Event or when
-     *                          the Queue is empty.
-     * \param   messageQueue    The instance of event queue object to keep event elements.
+     * \brief   Initializes the queue with the given listener and backing stack.
+     *
+     * \param   eventListener   Listener to notify on push/remove operations.
+     * \param   messageQueue    Backing FIFO stack for this queue instance.
      **/
-    EventQueue( IEQueueListener & eventListener, SortedEventStack & messageQueue );
+    EventQueue(QueueListener& eventListener, EventStack& messageQueue);
 
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~EventQueue( void ) = default;
+    virtual ~EventQueue() = default;
 
 //////////////////////////////////////////////////////////////////////////
-// OPerations
+// Operations
 //////////////////////////////////////////////////////////////////////////
 public:
 
     /**
-     * \brief   Locks Queue, prevent accessing from other threads.
-     *          If Queue was locked by other thread, the current thread will
-     *          wait, until it is not unlocked.
-     * \return  Returns true, if Event Queue is locked with success.
+     * \brief   Returns true if the queue contains no events.
      **/
-    inline bool lockQueue( void );
+    [[nodiscard]]
+    inline bool is_empty() const noexcept;
 
     /**
-     * \brief   Unlocks previously locked Event Queue, letting other
-     *          threads having data access
+     * \brief   Pushes an event into the queue and notifies the listener. If the queue is full
+     *          and an event is evicted, it is either returned via removedEvent or destroyed.
+     *
+     * \param   eventElem       The event to enqueue.
      **/
-    inline void unlockQueue( void );
+    inline void push_event(Event& eventElem);
 
     /**
-     * \brief   Returns true, if Event Queue is empty.
+     * \brief   Pops the first event from the queue. Notifies the listener if the queue becomes
+     *          empty.
+     *
+     * \return  The popped event pointer, or nullptr if the queue was empty.
      **/
-    inline bool isEmpty( void ) const;
+    inline Event* pop_event() noexcept;
 
     /**
-     * \brief   Pushes new Event in the Queue and notifies Event Listener
-     *          about new Event element availability.
-     * \param   evendElem       The Event object to push in the Queue.
-     * \param   removedEvent    If pushing new Event causes removing old Event and
-     *                          and the parameter is not nullptr, it will return 
-     *                          the removed Event object.
+     * \brief   Removes all non-Exit events from the queue and notifies the listener.
      **/
-    void pushEvent( Event & evendElem, Event** OUT removedEvent);
+    inline void remove_events() noexcept;
 
     /**
-     * \brief   Pops Event object from Queue and notifies Event Listener if
-     *          there is no more Event element in the Queue left.
-     * \return  Returns Event object pending in FIFO Stack.
-     *          If Queue was not empty, it will return valid pointer.
-     *          If Queue was empty, it will return nullptr.
+     * \brief   Removes all events with the specified runtime class ID (except ExitPrio) and
+     *          notifies the listener.
+     *
+     * \param   eventClassId    Runtime class ID of events to remove.
      **/
-    Event * popEvent( void );
+    inline void remove_events(const RuntimeClassID& eventClassId) noexcept;
 
     /**
-     * \brief   Removes all Event elements from the Queue and if keepSpecials is true,
-     *          it will not remove special predefined Exit Event (ExitEvent) objects,
-     *          which notify Dispatcher to complete job and exit.
-     *          After Events are removed, it will signal Event Listener whether queue is 
-     *          empty or not.
-     *          When Event objects are removed from the Queue, Destroy() method of every
-     *          Event is called to make cleanup
-     * \param   keepSpecials    If true, it will remove all Event objects from the Queue,
-     *                          except predefined special Exit Event (ExitEvent).
-     *                          Otherwise it will remove all elements.
+     * \brief   Removes every event from the queue (including Exit events) and resets the
+     *          listener signal.
      **/
-    void removeEvents( bool keepSpecials );
-
-    /**
-     * \brief   Removes the specified Runtime Event objects from the Queue and returns
-     *          the number of removed Events. For every Event the method Destroy() will
-     *          be called to make cleanup
-     *          After Events are removed, it will signal Event Listener whether queue is 
-     *          empty or not.
-     * \param   eventClassId    Runtime class ID of Event object to remove from the Queue.
-     **/
-    void removeEvents( const RuntimeClassID & eventClassId );
-
-    /**
-     * \brief   Removes all events. Makes event queue empty and resets the signal.
-     **/
-    void removeAllEvents( void );
+    inline void remove_all_events() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
-// Member variables
+// Members -- protected so derived classes can implement locked variants
+//////////////////////////////////////////////////////////////////////////
+protected:
+    QueueListener&  mEventListener; //!< Listener notified on queue state changes.
+    EventStack&     mEventQueue;    //!< Backing FIFO stack (no internal lock).
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Queue Listener object, which is signaled every time 
-     *          new Event is pushed or removed.
-     **/
-    IEQueueListener &   mEventListener;
-    /**
-     * \brief   Event queue stack object, which stores event elements
-     **/
-    SortedEventStack &  mEventQueue;
-
-//////////////////////////////////////////////////////////////////////////
-// Forbidden method calls.
-//////////////////////////////////////////////////////////////////////////
-private:
-    EventQueue( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( EventQueue );
+    EventQueue() = delete;
+    AREG_NOCOPY_NOMOVE(EventQueue);
 };
 
-//////////////////////////////////////////////////////////////////////////
-// ExternalEventQueue class declaration
-//////////////////////////////////////////////////////////////////////////
-
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
-/**
- * \brief   External event queue class declaration, which is accessed from many threads.
- *          Used to queue external types of event. 
- **/
-class AREG_API ExternalEventQueue   : public    EventQueue
-{
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Initialization constructor.
-     *          Event Listener object, which is signaled when Queue is receiving 
-     *          new Event object or when Queue is empty.
-     * \param   eventListener   The Event Listener object, which should
-     *                          be signaled when receive new Event or when
-     *                          the Queue is empty.
-     * \param   maxQueue        The maximum number of event elements in the queue.
-     *                          The value NECommon::IGNORE_VALUE (0) means ignore the maximum size.
-     **/
-    ExternalEventQueue( IEQueueListener & eventListener, uint32_t maxQueue );
-
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~ExternalEventQueue( void );
-
-//////////////////////////////////////////////////////////////////////////
-// members
-//////////////////////////////////////////////////////////////////////////
-private:
-    //! The stack to store queued elements.
-    SortedEventStack    mStack;
-
-//////////////////////////////////////////////////////////////////////////
-// Forbidden method calls.
-//////////////////////////////////////////////////////////////////////////
-private:
-    ExternalEventQueue( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ExternalEventQueue );
-};
 
 //////////////////////////////////////////////////////////////////////////
 // InternalEventQueue class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Internal event queue class declaration, which is accessed only from one thread.
- *          Used to queue external types of event. 
+ * \brief   Single-threaded event queue for internal (intra-thread) events.
+ *
+ *          Proxy notification events and other intra-component signals are pushed and popped
+ *          exclusively within the owner dispatcher thread. No locking is performed; the
+ *          base EventQueue methods are used directly on the lock-free EventStack.
  **/
-class AREG_API InternalEventQueue   : public    EventQueue
-                                    , private   IEQueueListener
+class AREG_API InternalEventQueue final : public    EventQueue
+                                        , private   QueueListener
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initialize internal queue with the default queue size.
-     * \param   maxQueue        The maximum number of event elements in the queue.
-     *                          The value NECommon::IGNORE_VALUE (0) means ignore the maximum size.
+     * \brief   Initializes the internal event queue with an optional capacity limit.
+     *
+     * \param   maxQueue    Maximum event capacity. Pass areg::IGNORE_VALUE (0) to read from
+     *                      application configuration or use an unlimited queue.
      **/
-    InternalEventQueue( uint32_t maxQueue);
+    explicit InternalEventQueue();
+
+    virtual ~InternalEventQueue();
+
+//////////////////////////////////////////////////////////////////////////
+// QueueListener override -- intentional no-op
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   No-op: the internal queue does not drive a SyncEvent. The dispatcher checks
+     *          the internal queue proactively after each external event, so no signal is
+     *          needed.
+     **/
+    void signal_event(uint32_t eventCount) final;
 
     /**
-     * \brief   Destructor
+     * \brief   Returns a reference to this object (used in constructor initializer list).
      **/
-    virtual ~InternalEventQueue( void );
+    inline InternalEventQueue& self() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
-// Hidden methods
-//////////////////////////////////////////////////////////////////////////
-private:
-/************************************************************************/
-// IEQueueListener interface overrides
-/************************************************************************/
-    /**
-     * \brief	Triggered from Event Queue object every time when new event
-     *          element is pushed into queue or when queue is empty.
-     *          Override method to provide queuing logic.
-     * \param	eventCount	The number of event elements currently in the queue.
-     *                      If zero, queue is empty, dispatcher can be suspended.
-     **/
-    virtual void signalEvent(uint32_t eventCount ) override;
-
-private:
-    //! The stack to store queued elements.
-    SortedEventStack   mStack;
-
-    inline InternalEventQueue& self(void);
-
-//////////////////////////////////////////////////////////////////////////
-// Forbidden method calls.
+// Members
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( InternalEventQueue );
+    EventStack    mStack; //!< Backing FIFO queue; accessed from a single thread.
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden method calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE(InternalEventQueue);
 };
 
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif  // _MSC_VER
+
 //////////////////////////////////////////////////////////////////////////
-// EventQueue class inline functions implementation
+// EventQueue inline implementation
 //////////////////////////////////////////////////////////////////////////
-inline bool EventQueue::lockQueue( void )
+
+inline bool EventQueue::is_empty() const noexcept
 {
-    return mEventQueue.lockStack();
+    return mEventQueue.is_empty();
 }
 
-inline void EventQueue::unlockQueue( void )
+inline void EventQueue::push_event(Event& eventElem)
 {
-    mEventQueue.unlockStack();
+    mEventListener.signal_event(mEventQueue.push_event(&eventElem));
 }
 
-inline bool EventQueue::isEmpty( void ) const
+inline Event* EventQueue::pop_event() noexcept
 {
-    return mEventQueue.isEmpty();
+    Event* result{ nullptr };
+    const uint32_t size = mEventQueue.pop_event(&result);
+    if (size == 0)
+    {
+        mEventListener.signal_event(0);
+    }
+
+    return result;
 }
 
+inline void EventQueue::remove_all_events() noexcept
+{
+    mEventQueue.delete_all_events();
+    mEventListener.signal_event(0);
+}
+
+inline void EventQueue::remove_events() noexcept
+{
+    const uint32_t remain = mEventQueue.delete_except_exit();
+    mEventListener.signal_event(remain);
+}
+
+inline void EventQueue::remove_events(const RuntimeClassID& eventClassId) noexcept
+{
+    const uint32_t remain = mEventQueue.delete_matching(eventClassId);
+    mEventListener.signal_event(remain);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// InternalEventQueue inline implementation
+//////////////////////////////////////////////////////////////////////////
+
+inline InternalEventQueue& InternalEventQueue::self() noexcept
+{
+    return (*this);
+}
+
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_EVENTQUEUE_HPP

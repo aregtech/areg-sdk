@@ -34,19 +34,19 @@ echo     # Areg SDK not found as a package, fetching from GitHub.
 echo     # ##################################################################
 echo.
 echo     # The root directory for Areg SDK build outputs.
-echo     set^(AREG_BUILD_ROOT "${CMAKE_BINARY_DIR}"^)
+echo     set^(AREG_BUILD_DIR "${CMAKE_BINARY_DIR}"^)
 echo     # Location of fetched third-party sources ^(including Areg SDK^).
-echo     set^(AREG_PACKAGES   "${CMAKE_BINARY_DIR}/packages"^)
+echo     set^(AREG_DEPS_DIR   "${CMAKE_BINARY_DIR}/packages"^)
 echo     # Build Areg shared library.
-echo     set^(AREG_BINARY    shared^)
+echo     set^(AREG_LIB_TYPE    shared^)
 echo     # Disable building Areg SDK examples, unit tests and build structures.
-echo     option^(AREG_BUILD_TESTS    "Build areg-sdk tests"    OFF^)
-echo     option^(AREG_BUILD_EXAMPLES "Build areg-sdk examples" OFF^)
-echo     option^(AREG_GTEST_PACKAGE  "Build GTest"             OFF^)
-echo     option^(AREG_ENABLE_OUTPUTS "Areg build structure"    OFF^)
+echo     option^(AREG_TESTS    "Build areg-sdk tests"    OFF^)
+echo     option^(AREG_EXAMPLES "Build areg-sdk examples" OFF^)
+echo     option^(AREG_SYSTEM_GTEST  "Build GTest"             OFF^)
+echo     option^(AREG_OUTPUT_LAYOUT "Areg build structure"    OFF^)
 echo.
 echo     include^(FetchContent^)
-echo     set^(FETCHCONTENT_BASE_DIR "${AREG_PACKAGES}"^)
+echo     set^(FETCHCONTENT_BASE_DIR "${AREG_DEPS_DIR}"^)
 echo.
 echo     FetchContent_Declare^(
 echo         areg
@@ -81,10 +81,10 @@ echo     ^<Overview ID="1" Name="HelloService" Version="1.0.0" Category="Public"
 echo         ^<Description^>The hello service minimal RPC application with request and response^</Description^>
 echo     ^</Overview^>
 echo     ^<MethodList^>
-echo         ^<Method ID="2" Name="HelloService" MethodType="Request" Response="HelloService"^>
+echo         ^<Method ID="2" Name="hello_service" MethodType="Request" Response="hello_service"^>
 echo            ^<Description^>The request to output Hello Service!^</Description^>
 echo         ^</Method^>
-echo         ^<Method ID="4" Name="HelloService" MethodType="Response"^>
+echo         ^<Method ID="4" Name="hello_service" MethodType="Response"^>
 echo            ^<Description^>The response indicating success request has been executed.^</Description^>
 echo         ^</Method^>
 echo     ^</MethodList^>
@@ -97,29 +97,29 @@ if "%APP_MODE%"=="1" (
     REM provider.cpp
     (
     echo #include ^<iostream^>
-    echo #include "areg/base/GEGlobal.h"
+    echo #include "areg/base/areg_global.h"
     echo #include "areg/appbase/Application.hpp"
     echo #include "areg/component/Component.hpp"
     echo #include "areg/component/ComponentLoader.hpp"
     echo #include "areg/component/ComponentThread.hpp"
-    echo #include "src/services/HelloServiceStub.hpp"
+    echo #include "src/services/HelloWorldProviderBase.hpp"
     echo.
     echo ^//!^< Service Provider: ServiceProvider class declaration
-    echo class ServiceProvider   : public    Component
-    echo                         , protected HelloServiceStub
+    echo class ServiceProvider final : public    areg^:^:Component
+    echo                             , protected HelloWorldProviderBase
     echo ^{
     echo public:
-    echo     ServiceProvider^(const NERegistry^:^:ComponentEntry^& entry, ComponentThread^& owner^)
-    echo         : Component^(entry, owner^)
-    echo         , HelloServiceStub^(static_cast^<Component^&^>^(self^(^)^)^)
+    echo     ServiceProvider^(const areg^:^:ComponentEntry^& entry, areg^:^:ComponentThread^& owner^)
+    echo         : areg^:^:Component^(entry, owner^)
+    echo         , HelloWorldProviderBase^(static_cast^<areg^:^:Component^&^>^(self^(^)^)^)
     echo     { }
     echo.
     echo protected:
-    echo     virtual void requestHelloService^(void^) override
+    echo     void request_hello_service^(void^) final
     echo     ^{
     echo         std^:^:cout ^<^< "\'Hello Service^!\'" ^<^< std^:^:endl;
-    echo         responseHelloService^(^);
-    echo         Application^:^:signalAppQuit^(^);
+    echo         response_hello_service^(^);
+    echo         areg^:^:Application^:^:signal_quit^(^);
     echo     ^}
     echo.
     echo private:
@@ -130,17 +130,17 @@ if "%APP_MODE%"=="1" (
     echo BEGIN_MODEL^("ProviderModel"^)
     echo     BEGIN_REGISTER_THREAD^("Thread1"^)
     echo         BEGIN_REGISTER_COMPONENT^("ServiceProvider", ServiceProvider^)
-    echo             REGISTER_IMPLEMENT_SERVICE^(NEHelloService^:^:ServiceName, NEHelloService^:^:InterfaceVersion^)
+    echo             REGISTER_IMPLEMENT_SERVICE^(HelloService^:^:ServiceName, HelloService^:^:InterfaceVersion^)
     echo         END_REGISTER_COMPONENT^("ServiceProvider"^)
     echo     END_REGISTER_THREAD^("Thread1"^)
     echo END_MODEL^("ProviderModel"^)
     echo.
     echo int main^(void^)
     echo ^{
-    echo     Application^:^:initApplication^(^);
-    echo     Application^:^:loadModel^("ProviderModel"^);
-    echo     Application^:^:waitAppQuit^(NECommon^:^:WAIT_INFINITE^);
-    echo     Application^:^:releaseApplication^(^);
+    echo     areg^:^:Application^:^:setup^(^);
+    echo     areg^:^:Application^:^:load_model^("ProviderModel"^);
+    echo     areg^:^:Application^:^:wait_quit^(areg^:^:WAIT_INFINITE^);
+    echo     areg^:^:Application^:^:release^(^);
     echo     return 0;
     echo ^}
     ) > "%PROJ_ROOT%\src\provider.cpp"
@@ -148,38 +148,38 @@ if "%APP_MODE%"=="1" (
     REM consumer.cpp
     (
     echo #include ^<iostream^>
-    echo #include "areg/base/GEGlobal.h"
+    echo #include "areg/base/areg_global.h"
     echo #include "areg/appbase/Application.hpp"
     echo #include "areg/component/Component.hpp"
     echo #include "areg/component/ComponentLoader.hpp"
     echo #include "areg/component/ComponentThread.hpp"
-    echo #include "src/services/HelloServiceClientBase.hpp"
+    echo #include "src/services/HelloWorldConsumerBase.hpp"
     echo.
     echo ^//!^< Service Consumer: ServiceConsumer class declaration
-    echo class ServiceConsumer   : public    Component
-    echo                         , protected HelloServiceClientBase
+    echo class ServiceConsumer final : public    areg^:^:Component
+    echo                             , protected HelloWorldConsumerBase
     echo ^{
     echo public:
-    echo     ServiceConsumer^(const NERegistry^:^:ComponentEntry^& entry, ComponentThread^& owner^)
-    echo         : Component             ^(entry, owner^)
-    echo         , HelloServiceClientBase^(entry.mDependencyServices[0].mRoleName, owner^)
+    echo     ServiceConsumer^(const areg^:^:ComponentEntry^& entry, areg^:^:ComponentThread^& owner^)
+    echo         : areg^:^:Component^(entry, owner^)
+    echo         , HelloWorldConsumerBase^(entry.mDependencyServices[0].mRoleName, owner^)
     echo     {   }
     echo.
     echo protected:
-    echo     virtual bool serviceConnected^(NEService^:^:eServiceConnection status, ProxyBase^& proxy^) override
+    echo     bool service_connected^(areg^:^:ServiceConnectionState status, areg^:^:ProxyBase^& proxy^) final
     echo     ^{
-    echo         if ^(HelloServiceClientBase^:^:serviceConnected^(status, proxy^) ^&^& NEService^:^:isServiceConnected^(status^)^)
-    echo             requestHelloService^(^);
-    echo         else if ^(NEService^:^:isServiceConnected^(status^) == false^)
-    echo             Application^:^:signalAppQuit^(^);
+    echo         if ^(HelloServiceConsumerBase^:^:service_connected^(status, proxy^) ^&^& areg^:^:is_service_connected^(status^)^)
+    echo             request_hello_service^(^);
+    echo         else if ^(areg^:^:is_service_connected^(status^) == false^)
+    echo             areg^:^:Application^:^:signal_quit^(^);
     echo.
-    echo         return ^(static_cast^<const ProxyBase *^>^(getProxy^(^)^) == static_cast^<const ProxyBase *^>^(^&proxy^)^);
+    echo         return ^(static_cast^<const areg^:^:ProxyBase *^>^(service_proxy^(^)^) == static_cast^<const areg^:^:ProxyBase *^>^(^&proxy^)^);
     echo     ^}
     echo.
-    echo     virtual void responseHelloService^(void^) override
+    echo     void response_hello_service^(void^) final
     echo     ^{
     echo         std^:^:cout ^<^< "\'Good bye Service^!\'" ^<^< std^:^:endl;
-    echo         Application^:^:signalAppQuit^(^);
+    echo         areg^:^:Application^:^:signal_quit^(^);
     echo     ^}
     echo ^};
     echo.
@@ -193,10 +193,10 @@ if "%APP_MODE%"=="1" (
     echo.
     echo int main^(void^)
     echo ^{
-    echo     Application^:^:initApplication^(^);
-    echo     Application^:^:loadModel^("ConsumerModel"^);
-    echo     Application^:^:waitAppQuit^(NECommon^:^:WAIT_INFINITE^);
-    echo     Application^:^:releaseApplication^(^);
+    echo     areg^:^:Application^:^:setup^(^);
+    echo     areg^:^:Application^:^:load_model^("ConsumerModel"^);
+    echo     areg^:^:Application^:^:wait_quit^(areg^:^:WAIT_INFINITE^);
+    echo     areg^:^:Application^:^:release^(^);
     echo     return 0;
     echo ^}
     ) > "%PROJ_ROOT%\src\consumer.cpp"
@@ -218,28 +218,28 @@ if "%APP_MODE%"=="1" (
     echo  **/
     echo.
     echo #include ^<iostream^>
-    echo #include "areg/base/GEGlobal.h"
+    echo #include "areg/base/areg_global.h"
     echo #include "areg/appbase/Application.hpp"
     echo #include "areg/component/Component.hpp"
     echo #include "areg/component/ComponentLoader.hpp"
     echo #include "areg/component/ComponentThread.hpp"
-    echo #include "src/services/HelloServiceStub.hpp"
-    echo #include "src/services/HelloServiceClientBase.hpp"
+    echo #include "src/services/HelloServiceProviderBase.hpp"
+    echo #include "src/services/HelloServiceConsumerBase.hpp"
     echo.
     echo ^//!^< Service Provider: ServiceProvider class declaration
-    echo class ServiceProvider   : public    Component
-    echo                         , protected HelloServiceStub
+    echo class ServiceProvider final : public    Component
+    echo                             , protected HelloServiceProviderBase
     echo ^{
     echo public:
-    echo     ServiceProvider^(const NERegistry^:^:ComponentEntry^& entry, ComponentThread^& owner^)
-    echo         : Component^(entry, owner^)
-    echo         , HelloServiceStub^(static_cast^<Component^&^>^(self^(^)^)^)
+    echo     ServiceProvider^(const areg^:^:ComponentEntry^& entry, areg^:^:ComponentThread^& owner^)
+    echo         : areg^:^:Component^(entry, owner^)
+    echo         , HelloServiceProviderBase^(static_cast^<areg^:^:Component^&^>^(self^(^)^)^)
     echo     { }
     echo.
-    echo     virtual void requestHelloService^(void^) override
+    echo     void request_hello_service^(void^) final
     echo     ^{
     echo         std^:^:cout ^<^< "\'Hello Service^!\'" ^<^< std^:^:endl;
-    echo         responseHelloService^(^);
+    echo         response_hello_service^(^);
     echo     ^}
     echo.
     echo private:
@@ -248,33 +248,33 @@ if "%APP_MODE%"=="1" (
     echo ^};
     echo.
     echo ^//!^< Service Consumer: ServiceConsumer class declaration
-    echo class ServiceConsumer   : public    Component
-    echo                         , protected HelloServiceClientBase
+    echo class ServiceConsumer final : public    areg^:^:Component
+    echo                             , protected HelloServiceConsumerBase
     echo ^{
     echo public:
-    echo     ServiceConsumer^(const NERegistry^:^:ComponentEntry ^& entry, ComponentThread ^& owner^)
-    echo         : Component^(entry, owner^)
-    echo         , HelloServiceClientBase^(entry.mDependencyServices[0].mRoleName, owner^)
+    echo     ServiceConsumer^(const areg^:^:ComponentEntry ^& entry, areg^:^:ComponentThread ^& owner^)
+    echo         : areg^:^:Component^(entry, owner^)
+    echo         , HelloServiceConsumerBase^(entry.mDependencyServices[0].mRoleName, owner^)
     echo     { }
     echo.
-    echo     virtual bool serviceConnected^(NEService^:^:eServiceConnection status, ProxyBase^& proxy^) override
+    echo     bool service_connected^(areg^:^:ServiceConnectionState status, areg^:^:ProxyBase^& proxy^) final
     echo     ^{
-    echo         if ^(HelloServiceClientBase^:^:serviceConnected^(status, proxy^) ^&^& NEService^:^:isServiceConnected^(status^)^)
-    echo             requestHelloService^(^);
+    echo         if ^(HelloServiceConsumerBase^:^:service_connected^(status, proxy^) ^&^& areg^:^:is_service_connected^(status^)^)
+    echo             request_hello_service^(^);
     echo         return true;
     echo     ^}
     echo.
-    echo     virtual void responseHelloService^(void^) override
+    echo     void response_hello_service^(void^) final
     echo     ^{
     echo         std^:^:cout ^<^< "Received response, end application" ^<^< std^:^:endl;
-    echo         Application^:^:signalAppQuit^(^);
+    echo         areg^:^:Application^:^:signal_quit^(^);
     echo     ^}
     echo ^};
     echo.
     echo BEGIN_MODEL^("ServiceModel"^)
     echo     BEGIN_REGISTER_THREAD^( "Thread1" ^)
     echo         BEGIN_REGISTER_COMPONENT^( "ServiceProvider", ServiceProvider ^)
-    echo             REGISTER_IMPLEMENT_SERVICE^( NEHelloService^:^:ServiceName, NEHelloService^:^:InterfaceVersion ^)
+    echo             REGISTER_IMPLEMENT_SERVICE^( HelloService^:^:ServiceName, HelloService^:^:InterfaceVersion ^)
     echo         END_REGISTER_COMPONENT^( "ServiceProvider" ^)
     echo     END_REGISTER_THREAD^( "Thread1" ^)
     echo.
@@ -287,10 +287,10 @@ if "%APP_MODE%"=="1" (
     echo.
     echo int main^(void^)
     echo ^{
-    echo     Application^:^:initApplication^(^);
-    echo     Application^:^:loadModel^("ServiceModel"^);
-    echo     Application^:^:waitAppQuit^(NECommon^:^:WAIT_INFINITE^);
-    echo     Application^:^:releaseApplication^(^);
+    echo     areg^:^:Application^:^:setup^(^);
+    echo     areg^:^:Application^:^:load_model^("ServiceModel"^);
+    echo     areg^:^:Application^:^:wait_quit^(areg^:^:WAIT_INFINITE^);
+    echo     areg^:^:Application^:^:release^(^);
     echo     return 0;
     echo ^}
     ) > "%PROJ_ROOT%\src\main.cpp"

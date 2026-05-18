@@ -43,10 +43,10 @@
                 </EnumEntry>
             </FieldList>
         </DataType>
-        <DataType ID="11" Name="uAlign" Type="Imported">
-            <Description>This example exports NEMemory::uAlign in the service interface.</Description>
-            <Namespace>NEMemory</Namespace>
-            <Location>areg/base/NEMemory.hpp</Location>
+        <DataType ID="11" Name="Primitive" Type="Imported">
+            <Description>This example exports areg::Primitive in the service interface.</Description>
+            <Namespace>areg</Namespace>
+            <Location>areg/base/MemoryDefs.hpp</Location>
         </DataType>
         <DataType ID="12" Name="SomeArray" Type="DefinedType">
             <Description>Defines new type of array</Description>
@@ -78,13 +78,13 @@
         </Attribute>
     </AttributeList>
     <MethodList>
-        <Method ID="17" MethodType="request" Name="SomeRequest1" Response="SomeResponse1">
+        <Method ID="17" MethodType="request" Name="some_request1" Response="some_response1">
             <Description>Request and response with no parameters.</Description>
         </Method>
-        <Method ID="19" MethodType="response" Name="SomeResponse1">
+        <Method ID="19" MethodType="response" Name="some_response1">
             <Description/>
         </Method>
-        <Method ID="20" MethodType="request" Name="SomeRequest2" Response="SomeResponse">
+        <Method ID="20" MethodType="request" Name="some_request2" Response="some_response">
             <Description>A request with parameters that is connected to SomeResponse interface.</Description>
             <ParamList>
                 <Parameter DataType="int32" ID="21" Name="param1"/>
@@ -95,36 +95,36 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="22" MethodType="response" Name="SomeResponse">
+        <Method ID="22" MethodType="response" Name="some_response">
             <Description>Response, where 2 requests can connect.</Description>
             <ParamList>
                 <Parameter DataType="bool" ID="26" Name="succeeded"/>
             </ParamList>
         </Method>
-        <Method ID="25" MethodType="request" Name="SomeRequest3" Response="SomeResponse">
-            <Description>Another request with parameter that is connected with SomeResponse method</Description>
+        <Method ID="25" MethodType="request" Name="some_request3" Response="some_response">
+            <Description>Another request with parameter that is connected with some_response method</Description>
             <ParamList>
-                <Parameter DataType="NEMemory::uAlign" ID="28" Name="param"/>
+                <Parameter DataType="areg::Primitive" ID="28" Name="param"/>
             </ParamList>
         </Method>
-        <Method ID="27" MethodType="request" Name="StandAlone">
+        <Method ID="27" MethodType="request" Name="stand_alone">
             <Description>A request with no response.</Description>
         </Method>
-        <Method ID="29" MethodType="broadcast" Name="SomeBroadcast">
+        <Method ID="29" MethodType="broadcast" Name="some_broadcast">
             <Description>Broadcast with parameters. Can pass multiple parameters at once.</Description>
             <ParamList>
                 <Parameter DataType="SomeEnum" ID="30" Name="value1">
                     <Description>We already have 'param1' in response, this parameter name must differ.</Description>
                 </Parameter>
-                <Parameter DataType="NEMemory::uAlign" ID="31" Name="value2"/>
+                <Parameter DataType="areg::Primitive" ID="31" Name="value2"/>
                 <Parameter DataType="SomeStruct" ID="32" Name="value3"/>
                 <Parameter DataType="SomeArray" ID="34" Name="value4"/>
             </ParamList>
         </Method>
-        <Method ID="39" MethodType="request" Name="SomeRequestNoResponse">
+        <Method ID="39" MethodType="request" Name="some_request_no_response">
             <Description>This request does not have a response.</Description>
         </Method>
-        <Method ID="40" MethodType="request" Name="SomeBroadcastNoParams">
+        <Method ID="40" MethodType="request" Name="some_broadcast_no_params">
             <Description>This broadcast has not parameters.</Description>
         </Method>
     </MethodList>
@@ -144,7 +144,7 @@
         </Constant>
     </ConstantList>
     <IncludeList>
-        <Location ID="36" Name="areg/base/NEMath.hpp">
+        <Location ID="36" Name="areg/base/MathDefs.hpp">
             <Description>can make additional includes</Description>
         </Location>
         <Location ID="43" Name="areg/example/nonexist/folder/DataType.dtml">

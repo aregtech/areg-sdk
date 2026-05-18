@@ -14,103 +14,181 @@
  ************************************************************************/
 #include "areg/ipc/ServerConnectionBase.hpp"
 
-#include "areg/component/NEService.hpp"
+#include "areg/base/SocketDefs.hpp"
+#include "areg/component/ServiceDefs.hpp"
+#include "areg/logging/areg_log.h"
 
-ServerConnectionBase::ServerConnectionBase( void )
+namespace areg {
+
+DEF_LOG_SCOPE(areg_ipc_ServerConnectionBase, accept_connection);
+DEF_LOG_SCOPE(areg_ipc_ServerConnectionBase, close_connection_cookie);
+
+ServerConnectionBase::ServerConnectionBase()
     : mServerSocket         ( )
-    , mCookieGenerator      ( NEService::COOKIE_REMOTE_SERVICE )
+    , mMultiplexer          ( )
+    , mCookieGenerator      ( areg::COOKIE_REMOTE_SERVICE )
     , mAcceptedConnections  ( )
     , mCookieToSocket       ( )
     , mSocketToCookie       ( )
-    , mMasterList           ( ServerConnectionBase::MASTER_LIST_SIZE )
+    , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )
+    , mSockRecvBuf          ( areg::SOCKET_RECV_BUFFER_SIZE )
+    , mSockSendTimeoutMs    ( areg::SOCKET_SEND_TIMEOUT_MS )
     , mLock                 ( )
 {
 }
 
-ServerConnectionBase::ServerConnectionBase(const String & hostName, unsigned short portNr)
+ServerConnectionBase::ServerConnectionBase(const String & hostName, uint16_t portNr)
     : mServerSocket         ( hostName, portNr )
-    , mCookieGenerator      ( NEService::COOKIE_REMOTE_SERVICE )
+    , mMultiplexer          ( )
+    , mCookieGenerator      ( areg::COOKIE_REMOTE_SERVICE )
     , mAcceptedConnections  ( )
     , mCookieToSocket       ( )
     , mSocketToCookie       ( )
-    , mMasterList           ( ServerConnectionBase::MASTER_LIST_SIZE )
+    , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )
+    , mSockRecvBuf          ( areg::SOCKET_RECV_BUFFER_SIZE )
+    , mSockSendTimeoutMs    ( areg::SOCKET_SEND_TIMEOUT_MS )
     , mLock                 ( )
 {
 }
 
-ServerConnectionBase::ServerConnectionBase(const NESocket::SocketAddress & serverAddress)
+ServerConnectionBase::ServerConnectionBase(const areg::SocketAddress & serverAddress)
     : mServerSocket         ( serverAddress )
-    , mCookieGenerator      ( NEService::COOKIE_REMOTE_SERVICE )
+    , mMultiplexer          ( )
+    , mCookieGenerator      ( areg::COOKIE_REMOTE_SERVICE )
     , mAcceptedConnections  ( )
     , mCookieToSocket       ( )
     , mSocketToCookie       ( )
-    , mMasterList           ( ServerConnectionBase::MASTER_LIST_SIZE )
+    , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )
+    , mSockRecvBuf          ( areg::SOCKET_RECV_BUFFER_SIZE )
+    , mSockSendTimeoutMs    ( areg::SOCKET_SEND_TIMEOUT_MS )
     , mLock                 ( )
 {
 }
 
-bool ServerConnectionBase::createSocket(const String & hostName, unsigned short portNr)
+bool ServerConnectionBase::create_socket(const String & hostName, uint16_t portNr)
 {
-    Lock lock(mLock);
-    return mServerSocket.createSocket(hostName, portNr);
+    std::unique_lock<std::shared_mutex> lock(mLock);
+    if (mServerSocket.create(hostName, portNr))
+    {
+        mMultiplexer.register_socket(mServerSocket.handle(), true);
+        mIsInterrupted.store(false, std::memory_order_release);
+        return true;
+    }
+
+    return false;
 }
 
-bool ServerConnectionBase::createSocket(void)
+bool ServerConnectionBase::create_socket()
 {
-    Lock lock(mLock);
-    return mServerSocket.createSocket();
+    std::unique_lock<std::shared_mutex> lock(mLock);
+    if (mServerSocket.create())
+    {
+        mMultiplexer.register_socket(mServerSocket.handle(), true);
+        mIsInterrupted.store(false, std::memory_order_release);
+        return true;
+    }
+
+    return false;
 }
 
-void ServerConnectionBase::closeSocket(void)
+void ServerConnectionBase::close_socket()
 {
-    Lock lock(mLock);
-    mMasterList.clear();
+    std::unique_lock<std::shared_mutex> lock(mLock);
+    mMultiplexer.reset();
+
+    for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position();
+          mAcceptedConnections.is_valid_position(pos);
+          pos = mAcceptedConnections.next_position(pos) )
+    {
+        areg::socket_interrupt(mAcceptedConnections.value_at(pos).handle());
+    }
+
     mCookieToSocket.clear();
     mSocketToCookie.clear();
     mAcceptedConnections.clear();
-    mCookieGenerator = NEService::COOKIE_REMOTE_SERVICE;
+    mCookieGenerator = areg::COOKIE_REMOTE_SERVICE;
 
-    mServerSocket.closeSocket();
+    mServerSocket.close();
 }
 
-bool ServerConnectionBase::serverListen(int maxQueueSize /*= NESocket::MAXIMUM_LISTEN_QUEUE_SIZE */)
+void ServerConnectionBase::interrupt_connections() noexcept
 {
-    return mServerSocket.listenConnection(maxQueueSize);
+    {
+        std::shared_lock<std::shared_mutex> lock(mLock);
+        for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position();
+              mAcceptedConnections.is_valid_position(pos);
+              pos = mAcceptedConnections.next_position(pos) )
+        {
+            areg::socket_interrupt(mAcceptedConnections.value_at(pos).handle());
+        }
+    }
+
+    mIsInterrupted.store(true, std::memory_order_release);
 }
 
-SOCKETHANDLE ServerConnectionBase::waitForConnectionEvent(NESocket::SocketAddress & out_addrNewAccepted)
+bool ServerConnectionBase::server_listen(int32_t maxQueueSize /*= areg::MAXIMUM_LISTEN_QUEUE_SIZE */)
 {
-    return mServerSocket.waitConnectionEvent(out_addrNewAccepted, static_cast<const SOCKETHANDLE *>(mMasterList), static_cast<int32_t>(mMasterList.getSize()));
+    return mServerSocket.listen(maxQueueSize);
 }
 
-bool ServerConnectionBase::acceptConnection(SocketAccepted & clientConnection)
+SOCKETHANDLE ServerConnectionBase::wait_connection(areg::SocketAddress & out_addrNewAccepted)
 {
-    Lock lock(mLock);
+    return mServerSocket.wait_connection_event(mMultiplexer, out_addrNewAccepted);
+}
+
+SOCKETHANDLE ServerConnectionBase::wait_connection_nowait(areg::SocketAddress & out_addrNewAccepted)
+{
+    return mServerSocket.wait_connection_nowait(mMultiplexer, out_addrNewAccepted);
+}
+
+bool ServerConnectionBase::accept_connection(SocketAccepted & clientConnection)
+{
+    LOG_SCOPE(areg_ipc_ServerConnectionBase, accept_connection);
+    std::unique_lock<std::shared_mutex> lock(mLock);
     bool result = false;
 
-    if ( mServerSocket.isValid() && clientConnection.isValid( ) )
+    if ( mServerSocket.is_valid() && clientConnection.is_valid( ) )
     {
-        const SOCKETHANDLE hSocket = clientConnection.getHandle();
-        ASSERT(hSocket != NESocket::InvalidSocketHandle);
+        const SOCKETHANDLE hSocket = clientConnection.handle();
+        ASSERT(areg::is_valid_socket(hSocket));
+        ASSERT(mMultiplexer.is_registered(hSocket) == false);
 
-        if ( mMasterList.find(hSocket) == -1)
+        if ( !result && !mAcceptedConnections.contains(hSocket) )
         {
-            ASSERT(mAcceptedConnections.contains( hSocket ) == false);
             ASSERT(mSocketToCookie.contains(hSocket) == false);
 
-            ITEM_ID cookie{ mCookieGenerator ++ };
-            ASSERT(cookie >= NEService::COOKIE_REMOTE_SERVICE);
+            ASSERT(!mMultiplexer.is_registered(hSocket));
+            if (!mMultiplexer.register_socket(hSocket, false))
+            {
+                clientConnection.close();
+                return false;
+            }
 
-            mAcceptedConnections.setAt(hSocket, clientConnection);
-            mCookieToSocket.setAt(cookie, hSocket);
-            mSocketToCookie.setAt(hSocket, cookie);
-            mMasterList.add( hSocket );
+            areg::set_send_size(hSocket, mSockSendBuf);
+            areg::set_recv_size(hSocket, mSockRecvBuf);
+            areg::set_send_timeout(hSocket, mSockSendTimeoutMs);
+            // Apply TCP_NODELAY, TCP_QUICKACK (Linux), keepalive, and ACK-frequency tuning.
+            areg::socket_set_no_delay(hSocket);
+
+            ITEM_ID cookie{ mCookieGenerator ++ };
+            ASSERT(cookie >= areg::COOKIE_REMOTE_SERVICE);
+
+            mAcceptedConnections.set_value_at(hSocket, clientConnection);
+            mCookieToSocket.set_value_at(cookie, hSocket);
+            mSocketToCookie.set_value_at(hSocket, cookie);
             result = true;
+
+            LOG_INFO("Accepted new connection: socket [ %u ] assigned cookie [ %u ], total accepted [ %u ]"
+                        , static_cast<uint32_t>(hSocket)
+                        , static_cast<uint32_t>(cookie)
+                        , mAcceptedConnections.size());
         }
         else
         {
-            ASSERT(mAcceptedConnections.contains( hSocket ));
             ASSERT(mSocketToCookie.contains(hSocket));
+            LOG_WARN("Connection on socket [ %u ] already accepted (duplicate accept call), total accepted [ %u ]"
+                        , static_cast<uint32_t>(hSocket)
+                        , mAcceptedConnections.size());
             result = true;
         }
     }
@@ -118,40 +196,59 @@ bool ServerConnectionBase::acceptConnection(SocketAccepted & clientConnection)
     return result;
 }
 
-void ServerConnectionBase::closeConnection(SocketAccepted & clientConnection)
+void ServerConnectionBase::close_connection(SocketAccepted & clientConnection)
 {
-    Lock lock( mLock );
+    std::unique_lock<std::shared_mutex> lock( mLock );
 
-    SOCKETHANDLE hSocket{ clientConnection.getHandle() };
+    SOCKETHANDLE hSocket{ clientConnection.handle() };
     MapSocketToCookie::MAPPOS pos{ mSocketToCookie.find(hSocket) };
-    ITEM_ID cookie{ mSocketToCookie.isValidPosition(pos) ? static_cast<ITEM_ID>(mSocketToCookie.valueAtPosition(pos)) : NEService::COOKIE_UNKNOWN };
+    ITEM_ID cookie{ mSocketToCookie.is_valid_position(pos) ? static_cast<ITEM_ID>(mSocketToCookie.value_at(pos)) : areg::COOKIE_UNKNOWN };
 
-    mSocketToCookie.removeAt(hSocket);
-    mCookieToSocket.removeAt(cookie);
-    mAcceptedConnections.removeAt(hSocket);
-    mMasterList.removeElem(hSocket, 0);
+    mMultiplexer.unregister_socket(hSocket);
+    mSocketToCookie.remove_at(hSocket);
+    mCookieToSocket.remove_at(cookie);
+    mAcceptedConnections.remove_at(hSocket);
 
-    clientConnection.closeSocket();
+    clientConnection.close();
 }
 
-void ServerConnectionBase::closeConnection( const ITEM_ID & cookie )
+void ServerConnectionBase::close_connection( const ITEM_ID & cookie )
 {
-    Lock lock(mLock);
+    LOG_SCOPE(areg_ipc_ServerConnectionBase, close_connection_cookie);
+    std::unique_lock<std::shared_mutex> lock(mLock);
 
     MapCookieToSocket::MAPPOS posCookie = mCookieToSocket.find( cookie );
-    if (mCookieToSocket.isValidPosition(posCookie))
+    if (mCookieToSocket.is_valid_position(posCookie))
     {
-        SOCKETHANDLE hSocket = mCookieToSocket.valueAtPosition(posCookie);
+        SOCKETHANDLE hSocket = mCookieToSocket.value_at(posCookie);
         MapSocketToObject::MAPPOS posClient = mAcceptedConnections.find(hSocket);
 
-        mCookieToSocket.removePosition( posCookie );        
-        mSocketToCookie.removeAt( hSocket );
-        mMasterList.removeElem( hSocket, 0 );
-        if (mAcceptedConnections.isValidPosition(posClient))
+        mMultiplexer.unregister_socket(hSocket);
+        // Shut down I/O immediately.
+        areg::socket_interrupt(hSocket);
+        mCookieToSocket.remove_at( posCookie );
+        mSocketToCookie.remove_at( hSocket );
+        if (mAcceptedConnections.is_valid_position(posClient))
         {
-            SocketAccepted client(mAcceptedConnections.valueAtPosition(posClient));
-            mAcceptedConnections.removePosition(posClient);
-            client.closeSocket( );
+            SocketAccepted client(mAcceptedConnections.value_at(posClient));
+            mAcceptedConnections.remove_at(posClient);
+            client.close();
         }
+        else
+        {
+            // The socket fd is not owned by any SocketAccepted, close it directly.
+            areg::socket_close(hSocket);
+        }
+
+        LOG_INFO("Closed connection for cookie [ %u ], socket [ %u ], remaining accepted [ %u ]"
+                    , static_cast<uint32_t>(cookie)
+                    , static_cast<uint32_t>(hSocket)
+                    , mAcceptedConnections.size());
+    }
+    else
+    {
+        LOG_WARN("close_connection called for unknown cookie [ %u ] -- already closed or never registered", static_cast<uint32_t>(cookie));
     }
 }
+
+} // namespace areg

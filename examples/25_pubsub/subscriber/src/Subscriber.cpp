@@ -11,15 +11,15 @@
 #include "subscriber/src/Subscriber.hpp"
 
 #include "areg/appbase/Application.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "aregextend/console/Console.hpp"
 
 #include <string_view>
 
-DEF_LOG_SCOPE(examples_25_subscriber_Subscriber_serviceConnected);
-DEF_LOG_SCOPE(examples_25_subscriber_Subscriber_onStringOnChangeUpdate);
-DEF_LOG_SCOPE(examples_25_subscriber_Subscriber_onIntegerAlwaysUpdate);
-DEF_LOG_SCOPE(examples_25_subscriber_Subscriber_onServiceProviderStateUpdate);
+DEF_LOG_SCOPE(examples_25_subscriber_Subscriber, service_connected);
+DEF_LOG_SCOPE(examples_25_subscriber_Subscriber, on_string_on_change_update);
+DEF_LOG_SCOPE(examples_25_subscriber_Subscriber, on_integer_always_update);
+DEF_LOG_SCOPE(examples_25_subscriber_Subscriber, on_service_provider_state_update);
 
 namespace
 {
@@ -34,93 +34,93 @@ namespace
     constexpr std::string_view  _txtConnected   { "Connected to PubSub service" };
     constexpr std::string_view  _fmtDisconnected{ "Connected to PubSub service with status [ %s ]" };
 
-    constexpr Console::Coord    _coordTitle     { 0, 1 };
-    constexpr Console::Coord    _coordSubtitle  { 0, 2 };
-    constexpr Console::Coord    _coordStatus    { 0, 3 };
+    constexpr areg::ext::Console::Coord    _coordTitle     { 0, 1 };
+    constexpr areg::ext::Console::Coord    _coordSubtitle  { 0, 2 };
+    constexpr areg::ext::Console::Coord    _coordStatus    { 0, 3 };
 
-    constexpr Console::Coord    _coordInteger   { 0, 5 };
-    constexpr Console::Coord    _coordString    { 0, 6 };
+    constexpr areg::ext::Console::Coord    _coordInteger   { 0, 5 };
+    constexpr areg::ext::Console::Coord    _coordString    { 0, 6 };
 }
 
-Subscriber::Subscriber( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-    : Component         ( entry, owner )
-    , PubSubClientBase  ( entry.mDependencyServices[0], static_cast<Component &>(self()) )
+Subscriber::Subscriber( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+    : areg::Component         ( entry, owner )
+    , PubSubConsumerBase  ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()) )
     , mOldInteger       ( 0 )
     , mOldState         ( false )
     , mOldString        (_invalid )
 {
 }
 
-bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
+bool Subscriber::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
-    LOG_SCOPE(examples_25_subscriber_Subscriber_serviceConnected);
-    PubSubClientBase::serviceConnected( status, proxy );
+    LOG_SCOPE( examples_25_subscriber_Subscriber, service_connected );
+    PubSubConsumerBase::service_connected( status, proxy );
 
-    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::getString(status));
+    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::as_string(status));
 
-    bool connected = NEService::isServiceConnected(status);
-    notifyOnServiceProviderStateUpdate(connected);
+    bool connected = areg::is_service_connected(status);
+    notify_on_service_provider_state_update(connected);
 
-    Console & console = Console::getInstance();
+    areg::ext::Console & console = areg::ext::Console::instance();
 
     if (connected == false)
     {
-        notifyOnStringOnChangeUpdate(false);
-        notifyOnIntegerAlwaysUpdate(false);
+        notify_on_string_on_change_update(false);
+        notify_on_integer_always_update(false);
 
-        console.outputMsg(_coordStatus, _fmtDisconnected.data(), NEService::getString(status));
+        console.output_msg(_coordStatus, _fmtDisconnected.data(), areg::as_string(status));
     }
     else
     {
-        console.clearScreen();
-        console.outputTxt(_coordTitle, _title);
-        console.outputTxt(_coordSubtitle, _separator);
-        console.outputTxt(_coordStatus, _txtConnected);
+        console.clear_screen();
+        console.output_txt(_coordTitle, _title);
+        console.output_txt(_coordSubtitle, _separator);
+        console.output_txt(_coordStatus, _txtConnected);
     }
 
-    console.refreshScreen();
+    console.refresh_screen();
 
     return true;
 }
 
-void Subscriber::onStringOnChangeUpdate(const String & StringOnChange, NEService::eDataStateType state)
+void Subscriber::on_string_on_change_update(const areg::String & StringOnChange, areg::DataState state)
 {
-    LOG_SCOPE(examples_25_subscriber_Subscriber_onStringOnChangeUpdate);
-    Console & console = Console::getInstance();
-    if (state == NEService::eDataStateType::DataIsOK)
+    LOG_SCOPE( examples_25_subscriber_Subscriber, on_string_on_change_update );
+    areg::ext::Console & console = areg::ext::Console::instance();
+    if (state == areg::DataState::DataIsOK)
     {
-        LOG_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ]", mOldString.getString(), StringOnChange.getString());
-        console.outputMsg(_coordString, "%s%s => %s { changed }", _txtString.data(), mOldString.getString(), StringOnChange.getString());
+        LOG_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ]", mOldString.as_string(), StringOnChange.as_string());
+        console.output_msg(_coordString, "%s%s => %s { changed }", _txtString.data(), mOldString.as_string(), StringOnChange.as_string());
         mOldString = StringOnChange;
     }
     else
     {
-        LOG_INFO("The STRING (on change) have got invalidated, old value [ %s ]", mOldString.getString());
+        LOG_INFO("The STRING (on change) have got invalidated, old value [ %s ]", mOldString.as_string());
 
-        console.outputMsg(_coordString, "%s%s => INVALID { invalid }", _txtString.data(), mOldString.getString());
+        console.output_msg(_coordString, "%s%s => INVALID { invalid }", _txtString.data(), mOldString.as_string());
         mOldString = _invalid;
 
-        if (isServiceProviderStateValid() == false)
+        if (!is_service_provider_state_valid())
         {
             LOG_WARN("Provider state is invalid, unsubscribe on data { StringOnChange } update");
-            notifyOnStringOnChangeUpdate(false);
+            notify_on_string_on_change_update(false);
         }
     }
 
-    console.refreshScreen();
+    console.refresh_screen();
 }
 
-void Subscriber::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService::eDataStateType state)
+void Subscriber::on_integer_always_update(uint32_t IntegerAlways, areg::DataState state)
 {
-    LOG_SCOPE(examples_25_subscriber_Subscriber_onIntegerAlwaysUpdate);
-    Console & console = Console::getInstance();
-    String oldInt = mOldState ? String::makeString(mOldInteger) : _invalid;
-    if (state == NEService::eDataStateType::DataIsOK)
+    LOG_SCOPE( examples_25_subscriber_Subscriber, on_integer_always_update );
+    areg::ext::Console & console = areg::ext::Console::instance();
+    areg::String oldInt = mOldState ? areg::String::make_string(mOldInteger) : _invalid;
+    if (state == areg::DataState::DataIsOK)
     {
-        LOG_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.getString(), IntegerAlways);
-        console.outputMsg(_coordInteger, "%s%s => %u { %s }"
+        LOG_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.as_string(), IntegerAlways);
+        console.output_msg(_coordInteger, "%s%s => %u { %s }"
                           , _txtInteger.data()
-                          , oldInt.getString()
+                          , oldInt.as_string()
                           , IntegerAlways
                           , (mOldState == false) || (IntegerAlways != mOldInteger) ? "changed" : "UNCHANGED");
         mOldInteger = IntegerAlways;
@@ -128,49 +128,49 @@ void Subscriber::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService::eD
     }
     else
     {
-        LOG_DBG("The INTEGER (ALWAYS) have got invalidated, old value [ %s ]", oldInt.getString());
+        LOG_DBG("The INTEGER (ALWAYS) have got invalidated, old value [ %s ]", oldInt.as_string());
 
-        console.outputMsg(_coordInteger, "%s%s => INVALID { invalid }", _txtInteger.data(), oldInt.getString());
+        console.output_msg(_coordInteger, "%s%s => INVALID { invalid }", _txtInteger.data(), oldInt.as_string());
         mOldInteger = 0;
         mOldState = false;
 
-        if (isServiceProviderStateValid() == false)
+        if (!is_service_provider_state_valid())
         {
             LOG_WARN("Provider state is invalid, unsubscribe on data { IntegerAlways } update");
-            notifyOnIntegerAlwaysUpdate(false);
+            notify_on_integer_always_update(false);
         }
     }
 
-    console.refreshScreen();
+    console.refresh_screen();
 }
 
-void Subscriber::onServiceProviderStateUpdate(NEPubSub::eServiceState ServiceProviderState, NEService::eDataStateType state)
+void Subscriber::on_service_provider_state_update(PubSub::RunState ServiceProviderState, areg::DataState state)
 {
-    LOG_SCOPE(examples_25_subscriber_Subscriber_onServiceProviderStateUpdate);
-    if (state == NEService::eDataStateType::DataIsOK)
+    LOG_SCOPE( examples_25_subscriber_Subscriber, on_service_provider_state_update );
+    if (state == areg::DataState::DataIsOK)
     {
-        if (isIntegerAlwaysValid() == false)
+        if (!is_integer_always_valid())
         {
             LOG_DBG("The integer to update ALWAYS is not valid, subscribe on data");
-            notifyOnIntegerAlwaysUpdate(true);
+            notify_on_integer_always_update(true);
         }
 
-        if (isStringOnChangeValid() == false)
+        if (!is_string_on_change_valid())
         {
             LOG_DBG("The string to update ON CHANGE is not valid, subscribe on data");
-            notifyOnStringOnChangeUpdate(true);
+            notify_on_string_on_change_update(true);
         }
 
-        if (ServiceProviderState == NEPubSub::eServiceState::Shutdown)
+        if (ServiceProviderState == PubSub::RunState::Shutdown)
         {
-            notifyOnStringOnChangeUpdate(false);
-            notifyOnIntegerAlwaysUpdate(false);
-            Application::signalAppQuit();
+            notify_on_string_on_change_update(false);
+            notify_on_integer_always_update(false);
+            areg::Application::signal_quit();
         }
     }
 }
 
-inline Subscriber & Subscriber::self(void)
+inline Subscriber & Subscriber::self()
 {
     return (*this);
 }

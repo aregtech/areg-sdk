@@ -18,23 +18,23 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
-#include "areg/base/NECommon.hpp"
+#include "areg/base/CommonDefs.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
+#include "areg/component/EventDefs.hpp"
 
-/************************************************************************
- * Dependencies
- ************************************************************************/
+#include <limits>
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // TimerBase class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The timer is used to fire event in a certain period of time.
- *          This class is a base class for all types of timers like Timer
- *          and Watchdog used to control thread executions.
+ * \brief   Base class for timers that trigger events at specified intervals; supports one-shot and
+ *          continuous modes with optional watchdog protection.
  **/
 class AREG_API TimerBase
 {
@@ -47,10 +47,10 @@ public:
      * \brief   The types of supported timers.
      *          At the moment it supports normal timer and watchdog.
      */
-    enum class eTimerType : uint8_t
+    enum class TimerType    : uint8_t
     {
-          TimerTypeNormal       //! Normal timer
-        , TimerTypeWatchdog     //! Watchdog timer.
+          PerThreadTimer       //! Normal timer
+        , WatchdogTimer     //! Watchdog timer.
     };
 
     /**
@@ -58,105 +58,115 @@ public:
      *          This value is used to set continues Timer, which will not
      *          stop, until it is not requested to be stopped manually.
      **/
-    static constexpr unsigned int   CONTINUOUSLY{ static_cast<unsigned int>(~0) };    /*0xFFFFFFFF*/
+    static constexpr uint32_t   CONTINUOUSLY{ std::numeric_limits<uint32_t>::max() };    /*0xFFFFFFFF*/
 
     /**
      * \brief   TimerBase::ONE_TIME
      *          Timer which is fired one time.
      */
-    static constexpr unsigned int   ONE_TIME    { static_cast<unsigned int>(1u) };
+    static constexpr uint32_t   ONE_TIME    { static_cast<uint32_t>(1u) };
 
     /**
-     * \brief   Retrieves the number of milliseconds that have elapsed
-     *          since the system was started, up to 49.7 days.
+     * \brief   Returns the system uptime in milliseconds since startup, wrapping after
+     *          approximately 49.7 days.
      **/
-    static unsigned int getTickCount( void );
+    static uint32_t tick_count();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   The protected constructor that gets the timer name and timeout.
-     *          By default, the timeout is invalid.
-     * \param   timerType   The type of timer. Currently it is either Normal or Watchdog.
-     * \param   timerName   The name of Timer. Can be empty if no name is needed.
-     * \param   timeoutMs   The timer timeout in milliseconds. By default it is zero.
-     * \param   eventCount  The amount of times that event should run:
-     *                      - TimerBase::CONTINUOUSLY if runs continuously until manually stopped.
-     *                      - TimerBase::ONE_TIME if runs one time, then automatically stopped.
-     *                      If values is zero, does not run the timer.
-     *                      Any other number defines the amount of timeout events to fire.
+     * \brief   Initializes timer with type, name, timeout, and event count.
+     *
+     * \param   timerType       Timer type: Normal or Watchdog.
+     * \param   timerName       name of timer; can be empty.
+     * \param   timeoutMs       Timeout in milliseconds; defaults to INVALID_TIMEOUT.
+     * \param   eventCount      Number of events to fire: CONTINUOUSLY (indefinite), ONE_TIME
+     *                          (single), or a specific count; zero disables firing.
+     * \param   prio            Timer Event priority (default: DefaultPriority).
      **/
-    TimerBase( const eTimerType timerType
+    TimerBase( const TimerType timerType
              , const String & timerName
-             , unsigned int timeoutMs   = NECommon::INVALID_TIMEOUT
-             , unsigned int eventCount  = TimerBase::CONTINUOUSLY );
+             , uint32_t timeoutMs   = areg::INVALID_TIMEOUT
+             , uint32_t eventCount  = TimerBase::CONTINUOUSLY
+             , EventPriority prio   = areg::DefaultPriority);
 
 public:
-    /**
-     * \brief   Destructor.
-     **/
-    virtual ~TimerBase( void );
+    virtual ~TimerBase();
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Returns the timeout of timer in milliseconds.
+     * \brief   Returns the timer timeout in milliseconds.
      **/
-    inline unsigned int getTimeout( void ) const;
+    [[nodiscard]]
+    inline uint32_t timeout() const noexcept;
 
     /**
-     * \brief   Set the timeout of timer in milliseconds.
-     * \param   timeoutMs   The timeout of timer in milliseconds.
+     * \brief   Sets the timer timeout in milliseconds.
+     *
+     * \param   timeoutMs       Timeout value in milliseconds.
      **/
-    inline void setTimeout(unsigned int timeoutMs);
+    inline void set_timeout(uint32_t timeoutMs) noexcept;
 
     /**
-     * \brief   Returns the amount of events, which timer still needs to send.
-     *          This function returns zero, if timer is stopped (automatically or manually),
-     *          and returns Timer::CONTINUOUSLY for continues events.
+     * \brief   Returns the number of events remaining to fire; zero if stopped, CONTINUOUSLY for
+     *          infinite.
      **/
-    inline unsigned int getEventCount(void) const;
+    [[nodiscard]]
+    inline uint32_t event_count() const noexcept;
 
     /**
-     * \brief   Set the number of timeout events to fire.
-     * 
-     * \param   eventCount  The amount of times that event should run:
-     *                      - TimerBase::CONTINUOUSLY if runs continuously until manually stopped.
-     *                      - TimerBase::ONE_TIME if runs one time, then automatically stopped.
-     *                      If values is zero, does not run the timer.
-     *                      Any other number defines the amount of timeout events to fire.
+     * \brief   Sets the number of timeout events to fire.
+     *
+     * \param   eventCount      Event count: CONTINUOUSLY (indefinite), ONE_TIME (single), or a
+     *                          specific count; zero disables firing.
      **/
-    inline void setEventCount(unsigned int eventCount);
+    inline void set_event_count(uint32_t eventCount) noexcept;
 
     /**
-     * \brief   Returns the name of timer.
+     * \brief   Returns the timer name.
      **/
-    inline const String& getName(void) const;
+    [[nodiscard]]
+    inline const String& name() const noexcept;
 
     /**
-     * \brief   Returns the handle of the system waitable timer.
+     * \brief   Returns the OS timer handle.
      **/
-    inline TIMERHANDLE getHandle( void ) const;
+    [[nodiscard]]
+    inline TIMERHANDLE handle() const noexcept;
 
     /**
-     * \brief   Returns true if timer is active.
+     * \brief   Returns true if the timer is currently active.
      **/
-    inline bool isActive( void ) const;
+    [[nodiscard]]
+    inline bool is_active() const noexcept;
 
     /**
-     * \brief   Returns true if timer is valid. The valid timer has timeout
-     *          not equal to NECommon::INVALID_TIMEOUT;
+     * \brief   Returns true if the timer is valid (has a defined timeout).
      **/
-    inline bool isValid( void ) const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
-     * \brief   Returns the type of the timer.
+     * \brief   Returns the timer type.
      **/
-    inline TimerBase::eTimerType getTimerType( void ) const;
+    [[nodiscard]]
+    inline TimerBase::TimerType timer_type() const noexcept;
+
+    /**
+     * \brief   Returns the timer priority.
+     **/
+    [[nodiscard]]
+    inline areg::EventPriority priority() const noexcept;
+
+    /**
+     * \brief   Sets the timer priority.
+     **/
+    inline void set_priority(areg::EventPriority prio) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected methods
@@ -164,18 +174,16 @@ public:
 protected:
 
     /**
-     * \brief   Call to creates system waitable timer.
-     *          The timer can be used if succeeded to create handle.
-     *          It has OS specific implementation
-     * \return  Returns true if succeeded to create system timer or the timer was already created.
+     * \brief   Creates an OS-specific timer handle. Has platform-dependent implementation.
+     *
+     * \return  Returns true if creation succeeded or timer was already created.
      **/
-    bool createWaitableTimer( void );
+    bool create_waitable_timer() noexcept;
 
     /**
-     * \brief   Call to destroy system waitable.
-     *          After calling this method, the timer cannot be used anymore.
+     * \brief   Destroys the OS timer. Timer cannot be used after this call.
      **/
-    void destroyWaitableTimer( void );
+    void destroy_waitable_timer();
 
 //////////////////////////////////////////////////////////////////////////
 // OS specific hidden members
@@ -183,15 +191,19 @@ protected:
 private:
 
     /**
-     * \brief   OS specific implementation of creating waitable timer and
-     *          returns the handle of created timer.
+     * \brief   Platform-specific implementation to create and return an OS timer handle.
+     *
+     * \return  OS timer handle.
      **/
-    TIMERHANDLE _osCreateWaitableTimer( void );
+    [[nodiscard]]
+    TIMERHANDLE _os_create() noexcept;
 
     /**
-     * \brief   OS specific implementation to destroy waitable timer.
+     * \brief   Platform-specific implementation to destroy an OS timer.
+     *
+     * \param   handle      OS timer handle to destroy.
      **/
-    void _osDestroyWaitableTimer( TIMERHANDLE handle );
+    void _os_destroy( TIMERHANDLE handle ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -200,84 +212,99 @@ protected:
     /**
      * \brief   The type of the timer.
      */
-    const eTimerType    mTimerType;
+    const TimerType mTimerType;
     /**
      * \brief   The timer handle.
      */
-    TIMERHANDLE         mHandle;
+    TIMERHANDLE     mHandle;
     /**
      * \brief   Timer name. If not empty, it is unique name
      **/
-    const String        mName;
+    const String    mName;
     /**
      * \brief   Timeout to fire timer.
      **/
-    unsigned int        mTimeoutInMs;
+    uint32_t        mTimeoutInMs;
     /**
      * \brief   The amount of events to fire
      **/
-    unsigned int        mEventsCount;
+    uint32_t        mEventsCount;
     /**
      * \brief   Flag, indicating whether the timer is active or not.
      **/
-    bool                mActive;
+    bool            mActive;
+    /**
+     * \brief   The timer priority.
+     **/
+    EventPriority   mPriority;
     /**
      * \brief   Synchronization object
      **/
-    ResourceLock        mLock;
+    Mutex           mLock;
 
 private:
-    TimerBase( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE(TimerBase);
+    TimerBase() = delete;
+    AREG_NOCOPY_NOMOVE(TimerBase);
 };
 
 //////////////////////////////////////////////////////////////////////////
 // Timer class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool TimerBase::isValid( void ) const
+inline bool TimerBase::is_valid() const noexcept
 {
-    return ((mTimeoutInMs != NECommon::INVALID_TIMEOUT) && (mHandle != nullptr));
+    return ((mTimeoutInMs != areg::INVALID_TIMEOUT) && (mHandle != nullptr));
 }
 
-inline void TimerBase::setEventCount(unsigned int eventCount)
+inline void TimerBase::set_event_count(uint32_t eventCount) noexcept
 {
     mEventsCount = eventCount;
 }
 
-inline const String & TimerBase::getName( void ) const
+inline const String & TimerBase::name() const noexcept
 {
     return mName;
 }
 
-inline unsigned int TimerBase::getTimeout( void ) const
+inline uint32_t TimerBase::timeout() const noexcept
 {
     return mTimeoutInMs;
 }
 
-inline void TimerBase::setTimeout(unsigned int timeoutMs)
+inline void TimerBase::set_timeout(uint32_t timeoutMs) noexcept
 {
     mTimeoutInMs = timeoutMs;
 }
 
-inline unsigned int TimerBase::getEventCount(void) const
+inline uint32_t TimerBase::event_count() const noexcept
 {
     return mEventsCount;
 }
 
-inline TIMERHANDLE TimerBase::getHandle(void) const
+inline TIMERHANDLE TimerBase::handle() const noexcept
 {
     return mHandle;
 }
 
-inline bool TimerBase::isActive(void) const
+inline bool TimerBase::is_active() const noexcept
 {
     return mActive;
 }
 
-inline TimerBase::eTimerType TimerBase::getTimerType(void) const
+inline TimerBase::TimerType TimerBase::timer_type() const noexcept
 {
     return mTimerType;
 }
 
+inline areg::EventPriority TimerBase::priority() const noexcept
+{
+    return mPriority;
+}
+
+inline void TimerBase::set_priority(areg::EventPriority prio) noexcept
+{
+    mPriority = prio;
+}
+
+} // namespace areg
 #endif  // AREG_COMPONENT_TIMERBASE_HPP

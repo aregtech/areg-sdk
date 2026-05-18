@@ -12,31 +12,31 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
-#include "areg/base/IEThreadConsumer.hpp"
+#include "areg/base/areg_global.h"
+#include "areg/base/ThreadConsumer.hpp"
 #include "areg/component/Component.hpp"
-#include "areg/component/IETimerConsumer.hpp"
-#include "areg/component/TEEvent.hpp"
-#include "examples/23_pubdatarate/services/LargeDataStub.hpp"
+#include "areg/component/TimerConsumer.hpp"
+#include "areg/component/EventTemplate.hpp"
+#include "areg/component/ProxyAddress.hpp"
+#include "examples/23_pubdatarate/services/LargeDataProviderBase.hpp"
 
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/RemoteMessage.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/component/Timer.hpp"
 #include "aregextend/console/Console.hpp"
 
 #include "common/SimpleBitmap.hpp"
-#include "common/NELargeData.hpp"
-#include "pubservice/src/NEUtilities.hpp"
+#include "common/LargeDataDefs.hpp"
+#include "pubservice/src/UtilityDefs.hpp"
 
 #include <atomic>
 #include <string_view>
 
 //!< Declare as a class to use in namespace.
-class OptionData : public NEUtilities::sOptionData
-{
-};
+using OptionData = util::OptionValues;
 
-DECLARE_EVENT(OptionData, EventOption, IEOptionConsumer);
+AREG_DECLARE_EVENT(OptionData, EventOption, IEOptionConsumer);
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
@@ -46,12 +46,12 @@ DECLARE_EVENT(OptionData, EventOption, IEOptionConsumer);
  *          and sends to the clients. This demo show the data rate when generates data
  *          and when sends data to the clients.
  **/
-class ServicingComponent    : public    Component
-                            , protected LargeDataStub
-                            , protected IEThreadConsumer
+class ServicingComponent final  : public    areg::Component
+                                , protected LargeDataProviderBase
+                                , protected areg::ThreadConsumer
 {
     friend class OptionConsumer;
-    friend class TimerConsumer;
+    friend class ServicingTimerConsumer;
 
 //////////////////////////////////////////////////////////////////////////
 // Internal classes
@@ -69,7 +69,7 @@ class ServicingComponent    : public    Component
             {
             }
 
-        virtual ~OptionConsumer( void ) = default;
+        virtual ~OptionConsumer() = default;
 
     private:
     /************************************************************************/
@@ -80,7 +80,7 @@ class ServicingComponent    : public    Component
          * \brief   Triggered when option event is fired.
          * \param   data    The option data.
          **/
-        virtual void processEvent(const OptionData& data) override;
+        void process_event(const OptionData& data) final;
 
     private:
         ServicingComponent &    mService;   //!< The service, which handles the options
@@ -88,35 +88,35 @@ class ServicingComponent    : public    Component
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
-        OptionConsumer( void ) = delete;
-        DECLARE_NOCOPY_NOMOVE(OptionConsumer);
+        OptionConsumer() = delete;
+        AREG_NOCOPY_NOMOVE(OptionConsumer);
     };
 
 //////////////////////////////////////////////////////////////////////////
-// ServicingComponent::TimerConsumer class declaration
+// ServicingComponent::ServicingTimerConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
     //!< The timer consumer object
-    class TimerConsumer : public    IETimerConsumer
+    class ServicingTimerConsumer : public    areg::TimerConsumer
     {
     public:
-        TimerConsumer( ServicingComponent & service )
-            : IETimerConsumer   ( )
-            , mService          ( service )
+        ServicingTimerConsumer( ServicingComponent & service )
+            : areg::TimerConsumer ( )
+            , mService      ( service )
             {
             }
 
-        virtual ~TimerConsumer( void ) = default;
+        virtual ~ServicingTimerConsumer() = default;
 
     private:
     /************************************************************************/
-    // IETimerConsumer interface overrides.
+    // TimerConsumer interface overrides.
     /************************************************************************/
 
         /**
          * \brief   Triggered when Timer is expired. 
          * \param   timer   The timer object that is expired.
          **/
-        virtual void processTimer( Timer & timer ) override;
+        void process_timer( areg::Timer & timer ) final;
 
     private:
         ServicingComponent &    mService;   //!< The service, which handles the options
@@ -124,8 +124,8 @@ class ServicingComponent    : public    Component
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
-        TimerConsumer( void ) = delete;
-        DECLARE_NOCOPY_NOMOVE(TimerConsumer);
+        ServicingTimerConsumer() = delete;
+        AREG_NOCOPY_NOMOVE(ServicingTimerConsumer);
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -133,62 +133,132 @@ class ServicingComponent    : public    Component
 //////////////////////////////////////////////////////////////////////////
 
     //!< Coordinates to output application title / headline
-    static constexpr Console::Coord     COORD_TITLE     { 1, 2 };
+    static constexpr areg::ext::Console::Coord     COORD_TITLE     { 1,  2 };
 
-    static constexpr Console::Coord     COORD_COMM_RATE { 1, 3 };
+    //!< Coordinates to output a long separator line below the title
+    static constexpr areg::ext::Console::Coord     COORD_SEP1{ 1,  3 };
+
+    //!< Coordinates to output network communication rate (row 5, blank row 4 between separator and data)
+    static constexpr areg::ext::Console::Coord     COORD_COMM_RATE { 1,  5 };
 
     //!< Coordinates to output data rate
-    static constexpr Console::Coord     COORD_DATA_RATE { 1, 4 };
+    static constexpr areg::ext::Console::Coord     COORD_DATA_RATE { 1,  6 };
 
     //!< Coordinates to output item rate
-    static constexpr Console::Coord     COORD_ITEM_RATE { 1, 5 };
+    static constexpr areg::ext::Console::Coord     COORD_ITEM_RATE { 1,  7 };
 
-    //!< Coordinates to output information of thread suspend statistics
-    static constexpr Console::Coord     COORD_INFO_SLEEP{ 1, 6 };
+    //!< Coordinates to output on-time / late statistics (blank row 8 before this)
+    static constexpr areg::ext::Console::Coord     COORD_STATS     { 1,  9 };
 
-    //!< Coordinates to input the option commands
-    static constexpr Console::Coord     COORD_OPTIONS   { 1, 7 };
+    //!< Coordinates to output the theoretical (ideal) data rate
+    static constexpr areg::ext::Console::Coord     COORD_IDEAL_RATE{ 1, 10 };
+
+    //!< Coordinates to output short separator below rate block
+    static constexpr areg::ext::Console::Coord     COORD_SEP2      { 1, 11 };
+
+    //!< Coordinates to input the option commands (blank row 12 before this)
+    static constexpr areg::ext::Console::Coord     COORD_OPTIONS   { 1, 13 };
 
     //!< Coordinates to output the error information.
-    static constexpr Console::Coord     COORD_ERROR_INFO{ 1, 8 };
+    static constexpr areg::ext::Console::Coord     COORD_ERROR_INFO{ 1, 15 };
 
     //!< Coordinates to output the options information or application help
-    static constexpr Console::Coord     COORD_OPT_INFO  { 1, 10 };
+    static constexpr areg::ext::Console::Coord     COORD_OPT_INFO  { 1, 17 };
+
+    //!< Number of rows reserved for the info / help output block.
+    static constexpr int16_t  OPT_INFO_LINES   { 18 };
 
     //!< Message to output as application title / headline
-    static constexpr std::string_view   MSG_APP_TITLE   { "Application to test data rate, service part...\n" };
+    static constexpr std::string_view   MSG_APP_TITLE       { " Application to test data rate, Service Provider part..." };
+
+    //!< Long separator drawn below the title
+    static constexpr std::string_view   MSG_SEPARATOR       { " --------------------------------------------------------------------------------------------" };
 
     //!< The message to output network communication rate.
-    static constexpr std::string_view   MSG_COMM_RATE   { "Network communication: sent [ % 4.02f ] %s / sec, receive [ % 4.02f ] %s / sec.\n" };
+    static constexpr std::string_view   MSG_NET_RATE_SENT   { " Network sent rate ..: data   [ %8.2f ] %s / sec, [ %u ] blocks/sec." };
 
-    //!< The message to output data rate information
-    static constexpr std::string_view   MSG_DATA_RATE   { "Data rate: sent [ % 4.02f ] %s / sec.\n" };
+    //!< The message to output broadcast data rate information (actual bytes broadcast per second).
+    static constexpr std::string_view   MSG_QUEUE_RATE_SENT { " Broadcast rate .....: sent   [ %8.2f ] %s / sec, [ %u ] blocks/sec." };
 
-    //!< The message to output item rate information
-    static constexpr std::string_view   MSG_ITEM_RATE   { "Block rate: sent [ %u ] items / sec, each [ % 4.02f ] %s. Sleep [ %u ] times, ignored [ %u ] times.\n" };
+    //!< The message to output the theoretical (ideal) data rate based on image parameters.
+    static constexpr std::string_view   MSG_IDEAL_RATE_SENT { " Theoretical rate ...: ideal  [ %8.2f ] %s / sec, [ %8u ] blocks/sec." };
+    //!< The message to output on-time / late delivery statistics
+    static constexpr std::string_view   MSG_STATS_RATE      { " Stats on data ......: ontime [ %u ] msg, delayed [ %u ] msg." };
+
+    //!< Short separator drawn below the rate block
+    static constexpr std::string_view   MSG_SEP2            { " ---------------------------------------" };
 
     //!< The message to output as application option input
-    static constexpr std::string_view   MSG_INPUT_OPTION{ "Input options. Or type \'-q\' to quit application, or type \'-h\' to read help: " };
+    static constexpr std::string_view   MSG_INPUT_OPTION    { " Input options. Or type \'-q\' to quit application, or type \'-h\' to read help: " };
 
     //!< The message to output as an error.
-    static constexpr std::string_view   MSG_INVALID_CMD { "Invalid command or value, type \'-h\' or \'--help\' for commands.\n" };
+    static constexpr std::string_view   MSG_INVALID_CMD     { " Invalid command or value, type \'-h\' or \'--help\' for commands." };
 
     //!< The option command input thread.
-    static constexpr std::string_view   THREAD_WAITINPUT{ "ConsoleInputThread" };
+    static constexpr std::string_view   THREAD_WAITINPUT    { "ConsoleInputThread" };
 
     //!< The data generating thread.
-    static constexpr std::string_view   THREAD_GENERATE { "GenerateImageThread" };
+    static constexpr std::string_view   THREAD_GENERATE     { "GenerateImageThread" };
 
     //!< Timer name.
-    static constexpr std::string_view   TIMER_NAME      { "DataRateTimer" };
+    static constexpr std::string_view   TIMER_NAME          { "DataRateTimer" };
 
-    using ImageBlock = NELargeData::ImageBlock;
+    struct Remote
+    {
+        areg::RemoteMessage message{};
+        uint32_t            offset{0u};
+    };
+
+    using ImageBlock    = LargeData::ImageBlock;
+    using RawImageBlock = LargeData::RawImageBlock;
+    using MessageList   = std::vector <Remote>;
+    /**
+     * \brief   Per-proxy pre-serialized message pool.
+     *          Each connected consumer gets its own pool because the wire message header
+     *          embeds the target proxy address, making the byte layout proxy-specific.
+     **/
+    struct ProxyPool
+    {
+        uint32_t    proxyId {}; //!< The digital id of the proxy, unit withing system
+        MessageList messages{}; //!< The list of pre-build messages.
+        uint32_t    frameId{};  //!< The sequence id of actual frame
+        uint32_t    depth{};    //!< The depth of messages, i.e. `depth * block_duration` == 100ms
+        uint32_t    channels{}; //!< Number of channels. The length of `messages` is `channels * blocks_per_frame * depths`
+        uint32_t    loop{};     //!< The current loop in dept
+    };
+
+    using PrebuildMessages = std::vector<ProxyPool>;
+
+    struct DataRate
+    {
+        DataRate() = default;
+        DataRate(const DataRate&) = default;
+
+        //!< Data Rate in bytes
+        uint64_t    sentData    { 0u };
+        //!< Image blocks rate, number blocks.
+        uint32_t    sentBlocks  { 0u };
+        //!< Number of blocks sent on time (within their target period).
+        uint32_t    ontimeBlocks{ 0u };
+        //!< Number of blocks sent late (past their target deadline).
+        uint32_t    lateBlocks  { 0u };
+    };
+
+    //!< Use a coarse sleep chunk and a busy loop for the final gap. This keeps the long-run
+    //!< rate locked to the absolute block schedule while avoiding sub-millisecond sleeps.
+#if defined(_WIN32)
+    static constexpr int64_t COARSE_SLEEP_NS{ 15'000'000LL };   // 15 ms
+#elif defined(__APPLE__)
+    static constexpr int64_t COARSE_SLEEP_NS{ 2'000'000LL };    //  2 ms
+#else
+    static constexpr int64_t COARSE_SLEEP_NS{ 500'000LL };      //  0.5 ms (was 4 ms)
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -196,28 +266,28 @@ public:
 protected:
 
 /************************************************************************/
-// StubBase overrides. Triggered by Component on startup.
+// ProviderBase overrides. Triggered by Component on startup.
 /************************************************************************/
 
     /**
      * \brief   This function is triggered by Component when starts up.
      *          Overwrite this method and set appropriate request and
      *          attribute update notification event listeners here
-     * \param   holder  The holder component of service interface of Stub,
+     * \param   holder  The holder component of service interface of Provider,
      *                  which started up.
      **/
-    virtual void startupServiceInterface( Component & holder ) override;
+    void startup_service_interface( areg::Component & holder ) final;
 
     /**
      * \brief   This function is triggered by Component when shuts down.
-     *          Overwrite this method to remove listeners and stub cleanup
-     * \param   holder  The holder component of service interface of Stub,
+     *          Overwrite this method to remove listeners and provider cleanup
+     * \param   holder  The holder component of service interface of provider,
      *                  which shuts down.
      **/
-    virtual void shutdownServiceInterface ( Component & holder ) override;
+    void shutdown_service_interface ( areg::Component & holder ) noexcept final;
 
 /************************************************************************/
-// StubBase overrides
+// ProviderBase overrides
 /************************************************************************/
     /**
      * \brief   Triggered when proxy client either connected or disconnected to stub.
@@ -225,10 +295,10 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    virtual bool clientConnected( const ProxyAddress & client, NEService::eServiceConnection status ) override;
+    bool consumer_connected( const areg::ProxyAddress & client, areg::ServiceConnectionState status ) final;
 
 /************************************************************************/
-// IEThreadConsumer interface overrides
+// ThreadConsumer interface overrides
 /************************************************************************/
 
     /**
@@ -236,9 +306,9 @@ protected:
      *          running and fully operable. If thread needs run in loop, the loop 
      *          should be implemented here. When consumer exits this function, 
      *          the thread will complete work. To restart thread running, 
-     *          createThread() method should be called again.
+     *          start() method should be called again.
      **/
-    virtual void onThreadRuns( void ) override;
+    void on_run() final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -248,77 +318,74 @@ private:
     /**
      * \brief   Triggered when option event is fired.
      **/
-    void onOptionEvent( const OptionData& data );
+    void on_option_event( const OptionData& data );
 
     /**
      * \brief   Triggered when Timer is expired. 
      **/
-    void onTimerExpired( void );
+    void on_timer_expired();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< Bitmap object to generate data.
-    SimpleBitmap                mBitmap;
-    //!< List of generated image blocks.
-    std::vector<ImageBlock>     mBlockList;
-    //! The timer to trigger to output data
-    Timer                       mTimer;
-    //! The thread to input from console.
-    Thread                      mInputThread;
-    //! The thread to generate image data.
-    Thread                      mImageThread;
+    SimpleBitmap            mBitmap;
+    //!< Pre-built flat send queue of size `blocks × channels`.
+    std::vector<ImageBlock> mSendList;
+    //!< Snapshot of connected proxy addresses used to rebuild mPrebuiltMessages.
+    std::vector<areg::ProxyAddress>     mActiveProxies;
+    //!< Prebuilt messages
+    PrebuildMessages        mPrebuiltMessages;
+    //!< Data rates
+    DataRate                mDataRate;
+    //!< The timer to trigger to output data
+    areg::Timer             mTimer;
+    //!< The thread to input from console.
+    areg::Thread            mInputThread;
+    //!< The thread to generate image data.
+    areg::Thread            mImageThread;
     //! The actual options.
-    NEUtilities::sOptionData    mOptions;
+    util::OptionValues      mOptions;
     //! The atomic object to quit input thread.
-    std::atomic_bool            mQuitThread;
+    std::atomic_bool        mQuitThread;
     //! The atomic object to notify that options changed.
-    std::atomic_bool            mOptionChanged;
-    //! The event to pause generate image.
-    //! The data generating thread should be paused when non-signaled and should run when signaled.
-    SyncEvent                   mPauseEvent;
+    std::atomic_bool        mOptionChanged;
+    //! The event to pause generate image. The data generating thread should be paused when non-signaled and should run when signaled.
+    areg::SyncEvent         mPauseEvent;
     //!< Number of connected clients.
-    int32_t                     mClients;
-    //!< Data Rate in bytes
-    uint64_t                    mDataRate;
-    //!< Image blocks rate, number blocks.
-    uint32_t                    mItemRate;
-    //!< Number of blocks that put to sleep.
-    uint32_t                    mDidSleep;
-    //!< Number of blocks that ignored sleep.
-    uint32_t                    mIgnoreSleep;
+    int32_t                 mClients;
     //!< The object to receive option data change event
-    OptionConsumer              mOptionConsumer;
+    OptionConsumer          mOptionConsumer;
     //!< The object to receive timer expired event
-    TimerConsumer               mTimerConsumer;    
+    ServicingTimerConsumer  mTimerConsumer;
     //!< The synchronization item.
-    CriticalSection             mLock;
+    areg::CriticalSection   mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< Return reference to this object.
-    inline ServicingComponent & self( void );
+    inline ServicingComponent & self();
 
     //!< Called for the thread that waits for user option input command.
-    void _runInputThread(void);
+    void _run_input_thread();
 
     //!< Called for the thread that generates image data and sends to the clients.
-    void _runImageThread(void);
-
-    //!< Calculates and returns time in nanoseconds required to generate one image block.
-    uint64_t _getBlockImageTime(void) const;
+    void _run_image_thread();
 
     //!< Outputs the options information.
-    void _printInfo(void) const;
+    void _print_info() const;
 
     //!< Outputs the application help.
-    void _printHelp(void) const;
+    void _print_help() const;
+
+    //!< Clears the info/help output region before re-printing it.
+    void _clear_opt_info() const;
 
     //!< Generates and initializes the image blocks.
-    void _initBlockList(void);
+    void _init_block_list();
 
     /**
      * \brief   Updates the statistics  to output on console. Called each time when
@@ -330,19 +397,56 @@ private:
      *                      data or ignored. It is used to compute blocks that were put in 
      *                      sleep or ignored.
      */
-    void _updateData(uint64_t genData, uint32_t genBlocks, Wait::eWaitResult waitResult);
+    void _update_data(uint64_t sendData, uint32_t sentBlocks, uint32_t ontimeBlocks, uint32_t lateBlocks);
+
+    [[nodiscard]]
+    inline bool _is_running() const noexcept;
+
+    inline void _broadcast_block(areg::SharedBuffer& entry);
+
+    inline bool _can_loop() const noexcept;
+
+    /**
+     * \brief   Builds the pre-serialized wire-message pool directly from the current
+     *          image blocks in `mSendList`.
+     **/
+    uint32_t _build_prebuilt_messages();
+
+    inline uint64_t time_passed(const std::chrono::steady_clock::time_point& time_begin) const;
+
+    inline void print_rates(areg::ext::Console& console);
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    ServicingComponent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServicingComponent );
+    ServicingComponent() = delete;
+    AREG_NOCOPY_NOMOVE( ServicingComponent );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent inline methods
 //////////////////////////////////////////////////////////////////////////
-inline ServicingComponent & ServicingComponent::self( void )
+inline ServicingComponent & ServicingComponent::self()
 {
     return (*this);
+}
+
+inline bool ServicingComponent::_is_running() const noexcept
+{
+    return (!mQuitThread.load(std::memory_order_relaxed) && !mOptionChanged.load(std::memory_order_relaxed) && mOptions.hasStart());
+}
+
+inline bool ServicingComponent::_can_loop() const noexcept
+{
+    return (!mQuitThread.load(std::memory_order_relaxed) && !mOptionChanged.load(std::memory_order_relaxed));
+}
+
+inline void ServicingComponent::_broadcast_block(areg::SharedBuffer& entry)
+{
+    broadcast_image_block_acquired(entry);
+}
+
+inline uint64_t ServicingComponent::time_passed(const std::chrono::steady_clock::time_point& time_begin) const
+{
+    return (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - time_begin).count());
 }

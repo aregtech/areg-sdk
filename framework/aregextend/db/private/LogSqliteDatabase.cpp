@@ -21,11 +21,11 @@
 
 #include "areg/base/DateTime.hpp"
 #include "areg/base/File.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/MathDefs.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/Thread.hpp"
-#include "areg/component/NEService.hpp"
-#include "areg/logging/NELogging.hpp"
+#include "areg/component/ServiceDefs.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 
 #if defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
     #include <sqlite3.h>
@@ -34,8 +34,7 @@
 #endif  // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
 
 
-namespace
-{
+namespace {
     //////////////////////////////////////////////////////////////////////////
     // Log specific SQL scripts for SQLite3 database.
     //////////////////////////////////////////////////////////////////////////
@@ -403,29 +402,31 @@ namespace
 
     constexpr char const _master[]   { "sqlite_master" };
     constexpr char const _temp[]     { "sqlite_temp_master" };
-}
+} // namespace
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // LogSqliteDatabase class implementation.
 //////////////////////////////////////////////////////////////////////////
 
-String LogSqliteDatabase::getReadScopesQuery(void)
+String LogSqliteDatabase::read_scopes_query()
 {
     return String(_sqlGetScopeLogMessages);
 }
 
-String LogSqliteDatabase::getReadInstancesQuery(void)
+String LogSqliteDatabase::read_instances_query()
 {
     return String(_sqlGetInstScopeLogMessages);
 }
 
-String LogSqliteDatabase::getReadAllLogMessagesQuery(void)
+String LogSqliteDatabase::read_all_log_messages_query()
 {
     return String(_sqlGetAllLogMessages);
 }
 
-LogSqliteDatabase::LogSqliteDatabase(void)
-    : IELogDatabaseEngine   ( )
+LogSqliteDatabase::LogSqliteDatabase()
+    : LogDatabaseEngine   ( )
 
     , mDatabase             ( )
     , mStmtLogs             (mDatabase)
@@ -436,7 +437,7 @@ LogSqliteDatabase::LogSqliteDatabase(void)
 {
 }
 
-LogSqliteDatabase::~LogSqliteDatabase(void)
+LogSqliteDatabase::~LogSqliteDatabase()
 {
     mStmtLogs.finalize();
     mDatabase.disconnect();
@@ -451,7 +452,7 @@ inline bool LogSqliteDatabase::_open(const String& dbPath, bool readOnly)
     bool result{ true };
     mDatabase.disconnect();
     mIsInitialized = false;
-    if (dbPath.isEmpty() == false)
+    if (dbPath.is_empty() == false)
     {
         mDbInitPath = dbPath;
     }
@@ -466,7 +467,7 @@ inline bool LogSqliteDatabase::_open(const String& dbPath, bool readOnly)
     return result;
 }
 
-inline void LogSqliteDatabase::_createTables(void)
+inline void LogSqliteDatabase::_create_tables() noexcept
 {
     VERIFY(mDatabase.execute(_sqlCreateTbVersion));
     VERIFY(mDatabase.execute(_sqlCreateTbInstances));
@@ -474,121 +475,121 @@ inline void LogSqliteDatabase::_createTables(void)
     VERIFY(mDatabase.execute(_sqlCreateTbLogs));
 }
 
-inline void LogSqliteDatabase::_createIndexes(void)
+inline void LogSqliteDatabase::_create_indexes() noexcept
 {
     VERIFY(mDatabase.execute(_sqlCraeteIdxCookie));
     VERIFY(mDatabase.execute(_sqlCreateIdxScopes));
     VERIFY(mDatabase.execute(_sqlCreateIdxLogs));
 }
 
-inline void LogSqliteDatabase::_initialize(void)
+inline void LogSqliteDatabase::_initialize() noexcept
 {
-    Process& proc{ Process::getInstance() };
-    DateTime now{ DateTime::getNow() };
-    String module{ proc.getAppName() };
-    id_type threadId{ Thread::getCurrentThreadId() };
-    String thread{ Thread::getThreadName(threadId) };
+    Process& proc{ Process::instance() };
+    DateTime now{ DateTime::now() };
+    String module{ proc.app_name() };
+    id_type threadId{ Thread::current_thread_id() };
+    String thread{ Thread::thread_name(threadId) };
 
     char sql[SQL_LEN]{};
-    String::formatString( sql, SQL_LEN, _fmtVersion.data()
-                        , Process::getInstance().getName().getString()
-                        , NELogging::LOG_VERSION.data()
+    String::format_string( sql, SQL_LEN, _fmtVersion.data()
+                        , Process::instance().name().as_string()
+                        , areg::LOG_VERSION.data()
                         , "Areg SDK database logging module. Visit https://areg.tech for more information."
                         , "Created by Areg log observer API module."
-                        , mDatabase.getPath().getString()
-                        , static_cast<uint64_t>(now.getTime())
+                        , mDatabase.path().as_string()
+                        , static_cast<uint64_t>(now.time())
                         );
     VERIFY(mDatabase.execute(sql));
 
-    String::formatString(sql, SQL_LEN, _fmtLog.data()
-                        , static_cast<uint64_t>(NEService::COOKIE_LOCAL)
-                        , static_cast<uint32_t>(NEMath::CHECKSUM_IGNORE)
+    String::format_string(sql, SQL_LEN, _fmtLog.data()
+                        , static_cast<uint64_t>(areg::COOKIE_LOCAL)
+                        , static_cast<uint32_t>(areg::CHECKSUM_IGNORE)
                         , static_cast<uint32_t>(0u)
-                        , static_cast<uint32_t>(NELogging::eLogMessageType::LogMessageText)
-                        , static_cast<uint32_t>(NELogging::eLogPriority::PrioIgnore)
-                        , static_cast<uint64_t>(proc.getId())
+                        , static_cast<uint32_t>(areg::LogMessageType::MessageText)
+                        , static_cast<uint32_t>(areg::LogPriority::PrioIgnore)
+                        , static_cast<uint64_t>(proc.id())
                         , static_cast<uint64_t>(threadId)
                         , "Starting database logging..."
-                        , thread.getString()
-                        , module.getString()
-                        , static_cast<uint64_t>(now.getTime())
-                        , static_cast<uint64_t>(now.getTime())
+                        , thread.as_string()
+                        , module.as_string()
+                        , static_cast<uint64_t>(now.time())
+                        , static_cast<uint64_t>(now.time())
                         , static_cast<uint32_t>(0u)
                         );
     VERIFY(mDatabase.execute(sql));
 }
 
-inline void LogSqliteDatabase::_copyLogMessage(SqliteStatement& stmt, SharedBuffer& buf)
+inline void LogSqliteDatabase::_copy_log_message(SqliteStatement& stmt, SharedBuffer& buf)
 {
-    constexpr uint32_t _logSize{ static_cast<uint32_t>(sizeof(NELogging::sLogMessage)) };
+    constexpr uint32_t _logSize{ static_cast<uint32_t>(sizeof(areg::LogEntry)) };
     buf.reserve(_logSize, false);
-    buf.setSizeUsed(_logSize);
-    buf.moveToBegin();
-    NELogging::sLogMessage* log = reinterpret_cast<NELogging::sLogMessage*>(buf.getBuffer());
+    buf.set_size_used(_logSize);
+    buf.move_to_begin();
+    areg::LogEntry* log = reinterpret_cast<areg::LogEntry*>(buf.buffer());
 
     ASSERT(log != nullptr);
-    log->logDataType = NELogging::eLogDataType::LogDataRemote;
-    log->logSource = NEService::COOKIE_ANY;
-    log->logTarget = NEService::COOKIE_ANY;
+    log->logDataType = areg::LogDataType::Remote;
+    log->logSource = areg::COOKIE_ANY;
+    log->logTarget = areg::COOKIE_ANY;
 
-    log->logMsgType     = static_cast<NELogging::eLogMessageType>(stmt.getUint32(0));
-    log->logMessagePrio = static_cast<NELogging::eLogPriority>(stmt.getUint32(1));
-    log->logCookie      = static_cast<ITEM_ID>( stmt.getInt64(2));
-    log->logModuleId    = static_cast<ITEM_ID>( stmt.getInt64(3));
-    log->logThreadId    = static_cast<ITEM_ID>( stmt.getInt64(4));
-    log->logTimestamp   = static_cast<TIME64>(  stmt.getUint64(5));
-    log->logReceived    = static_cast<TIME64>(  stmt.getUint64(6));
-    log->logDuration    = static_cast<uint32_t>(stmt.getUint32(7));
-    log->logScopeId     = static_cast<uint32_t>(stmt.getUint32(8));
-    log->logSessionId   = static_cast<uint32_t>(stmt.getUint32(9));
-    String msg          = stmt.getText(10);
-    String thread       = stmt.getText(11);
-    String module       = stmt.getText(12);
+    log->logMsgType     = static_cast<areg::LogMessageType>(stmt.as_uint32(0));
+    log->logMessagePrio = static_cast<areg::LogPriority>(stmt.as_uint32(1));
+    log->logCookie      = static_cast<ITEM_ID>( stmt.as_int64(2));
+    log->logModuleId    = static_cast<ITEM_ID>( stmt.as_int64(3));
+    log->logThreadId    = static_cast<ITEM_ID>( stmt.as_int64(4));
+    log->logTimestamp   = static_cast<TIME64>(  stmt.as_uint64(5));
+    log->logReceived    = static_cast<TIME64>(  stmt.as_uint64(6));
+    log->logDuration    = static_cast<uint32_t>(stmt.as_uint32(7));
+    log->logScopeId     = static_cast<uint32_t>(stmt.as_uint32(8));
+    log->logSessionId   = static_cast<uint32_t>(stmt.as_uint32(9));
+    String msg          = stmt.as_text(10);
+    String thread       = stmt.as_text(11);
+    String module       = stmt.as_text(12);
 
-    log->logMessageLen  = msg.getLength();
-    log->logThreadLen   = thread.getLength();
-    log->logModuleLen   = module.getLength();
+    log->logMessageLen  = static_cast<uint32_t>(msg.length());
+    log->logThreadLen   = static_cast<uint32_t>(thread.length());
+    log->logModuleLen   = static_cast<uint32_t>(module.length());
 
-    NEString::copyStringFast(log->logMessage, msg.getString(), msg.getLength());
-    NEString::copyStringFast(log->logThread, thread.getString(), thread.getLength());
-    NEString::copyStringFast(log->logModule, module.getString(), module.getLength());
+    areg::copy_string_fast(log->logMessage, msg.as_string(), msg.length());
+    areg::copy_string_fast(log->logThread, thread.as_string(), thread.length());
+    areg::copy_string_fast(log->logModule, module.as_string(), module.length());
 }
 
-inline void LogSqliteDatabase::_copyLogInstances(SqliteStatement& stmt, NEService::sServiceConnectedInstance& inst)
+inline void LogSqliteDatabase::_copy_log_instances(SqliteStatement& stmt, areg::ConnectedInstance& inst)
 {
-    inst.ciSource   = static_cast<NEService::eMessageSource>(  stmt.getUint32(0));
-    inst.ciBitness  = static_cast<NEService::eInstanceBitness>(stmt.getUint32(1));
-    inst.ciCookie   = static_cast<ITEM_ID>(stmt.getInt64(2));
-    inst.ciTimestamp= static_cast<TIME64>( stmt.getInt64(3));
-    inst.ciInstance = stmt.getText(4);
-    inst.ciLocation = stmt.getText(5);
+    inst.ciSource   = static_cast<areg::MessageSource>(  stmt.as_uint32(0));
+    inst.ciBitness  = static_cast<areg::InstanceBitness>(stmt.as_uint32(1));
+    inst.ciCookie   = static_cast<ITEM_ID>(stmt.as_int64(2));
+    inst.ciTimestamp= static_cast<TIME64>( stmt.as_int64(3));
+    inst.ciInstance = stmt.as_text(4);
+    inst.ciLocation = stmt.as_text(5);
 }
 
-inline void LogSqliteDatabase::_copyLogScopes(SqliteStatement& stmt, NELogging::sScopeInfo& scope)
+inline void LogSqliteDatabase::_copy_log_scopes(SqliteStatement& stmt, areg::ScopeEntry& scope)
 {
-    scope.scopeName = stmt.getText(0);
-    scope.scopeId   = static_cast<uint32_t>(stmt.getUint32(1));
-    scope.scopePrio = static_cast<uint32_t>(stmt.getUint32(2));
+    scope.scopeName = stmt.as_text(0);
+    scope.scopeId   = static_cast<uint32_t>(stmt.as_uint32(1));
+    scope.scopePrio = static_cast<uint32_t>(stmt.as_uint32(2));
 }
 
-bool LogSqliteDatabase::isOperable(void) const
+bool LogSqliteDatabase::is_operable() const noexcept
 {
-    return mDatabase.isOperable();
+    return mDatabase.is_operable();
 }
 
 bool LogSqliteDatabase::connect(const String& dbPath, bool readOnly)
 {
     Lock lock(mLock);
-    if (mDbLogEnabled && mDatabase.isOperable() == false)
+    if (mDbLogEnabled && mDatabase.is_operable() == false)
     {
-        bool exists = File::existFile(dbPath);
+        bool exists = File::has_file(dbPath);
         ASSERT(mIsInitialized == false);
         if (_open(dbPath, readOnly))
         {
             if (exists == false)
             {
-                _createTables();
-                _createIndexes();
+                _create_tables();
+                _create_indexes();
                 _initialize();
                 commit(true);
             }
@@ -604,16 +605,16 @@ bool LogSqliteDatabase::connect(const String& dbPath, bool readOnly)
     return mIsInitialized;
 }
 
-void LogSqliteDatabase::disconnect(void)
+void LogSqliteDatabase::disconnect()
 {
     Lock lock(mLock);
-    if ((mDatabase.isOperable() == false) || (mIsInitialized == false))
+    if ((mDatabase.is_operable() == false) || (mIsInitialized == false))
         return;
 
-    if (mStmtLogs.isValid())
+    if (mStmtLogs.is_valid())
         mStmtLogs.finalize();
 
-    dropTable("filter_rules");
+    drop_table("filter_rules");
     mDatabase.commit(true);
     mDatabase.disconnect();
     mIsInitialized = false;
@@ -625,7 +626,7 @@ bool LogSqliteDatabase::execute(const String& sql)
     return mDatabase.execute(sql);
 }
 
-bool LogSqliteDatabase::begin(void)
+bool LogSqliteDatabase::begin()
 {
     Lock lock(mLock);
     return mDatabase.begin();
@@ -637,477 +638,477 @@ bool LogSqliteDatabase::commit(bool doCommit)
     return mDatabase.commit(doCommit);
 }
 
-bool LogSqliteDatabase::areTablesInitialized(void) const
+bool LogSqliteDatabase::tables_initialized() const noexcept
 {
     return mIsInitialized;
 }
 
-bool LogSqliteDatabase::logMessage(const NELogging::sLogMessage& message)
+bool LogSqliteDatabase::log_message(const areg::LogEntry& message)
 {
     Lock lock(mLock);
-    if (mStmtLogs.isValid() == false)
+    if (mStmtLogs.is_valid() == false)
     {
         return false;
     }
 
-    mStmtLogs.bindUint64( 0, static_cast<uint64_t>(message.logCookie));
-    mStmtLogs.bindUint32( 1, static_cast<uint32_t>(message.logScopeId));
-    mStmtLogs.bindUint32( 2, static_cast<uint32_t>(message.logSessionId));
-    mStmtLogs.bindUint32( 3, static_cast<uint32_t>(message.logMsgType));
-    mStmtLogs.bindUint32( 4, static_cast<uint32_t>(message.logMessagePrio));
-    mStmtLogs.bindUint64( 5, static_cast<uint64_t>(message.logModuleId));
-    mStmtLogs.bindUint64( 6, static_cast<uint64_t>(message.logThreadId));
-    mStmtLogs.bindText(   7, message.logMessage);
-    mStmtLogs.bindText(   8, message.logThread);
-    mStmtLogs.bindText(   9, message.logModule);
-    mStmtLogs.bindUint64(10, static_cast<uint64_t>(message.logTimestamp));
-    mStmtLogs.bindUint64(11, static_cast<uint64_t>(message.logReceived));
-    mStmtLogs.bindUint32(12, static_cast<uint64_t>(message.logDuration));
+    mStmtLogs.bind_uint64( 0, static_cast<uint64_t>(message.logCookie));
+    mStmtLogs.bind_uint32( 1, static_cast<uint32_t>(message.logScopeId));
+    mStmtLogs.bind_uint32( 2, static_cast<uint32_t>(message.logSessionId));
+    mStmtLogs.bind_uint32( 3, static_cast<uint32_t>(message.logMsgType));
+    mStmtLogs.bind_uint32( 4, static_cast<uint32_t>(message.logMessagePrio));
+    mStmtLogs.bind_uint64( 5, static_cast<uint64_t>(message.logModuleId));
+    mStmtLogs.bind_uint64( 6, static_cast<uint64_t>(message.logThreadId));
+    mStmtLogs.bind_text(   7, message.logMessage);
+    mStmtLogs.bind_text(   8, message.logThread);
+    mStmtLogs.bind_text(   9, message.logModule);
+    mStmtLogs.bind_uint64(10, static_cast<uint64_t>(message.logTimestamp));
+    mStmtLogs.bind_uint64(11, static_cast<uint64_t>(message.logReceived));
+    mStmtLogs.bind_uint32(12, static_cast<uint32_t>(message.logDuration));
 
-    bool result{ mStmtLogs.next() == SqliteStatement::eQueryResult::HasNoMore };
+    bool result{ mStmtLogs.next() == SqliteStatement::QueryResult::HasNoMore };
     mStmtLogs.reset();
-    mStmtLogs.clearBindings();
+    mStmtLogs.clear_bindings();
     return result;
 }
 
-bool LogSqliteDatabase::logInstanceConnected(const NEService::sServiceConnectedInstance& instance, const DateTime& timestamp)
+bool LogSqliteDatabase::log_instance_connected(const areg::ConnectedInstance& instance, const DateTime& timestamp)
 {
     Lock lock(mLock);
-    Process& proc    { Process::getInstance() };
-    String   module  { proc.getAppName() };
-    id_type  threadId{ Thread::getCurrentThreadId() };
-    String   thread  { Thread::getThreadName(threadId) };
+    Process& proc    { Process::instance() };
+    String   module  { proc.app_name() };
+    id_type  threadId{ Thread::current_thread_id() };
+    String   thread  { Thread::thread_name(threadId) };
 
     char sqlInst[SQL_LEN];
-    String::formatString( sqlInst, SQL_LEN, _fmtInstance.data()
+    String::format_string( sqlInst, SQL_LEN, _fmtInstance.data()
                         , static_cast<uint64_t>(instance.ciCookie)
                         , static_cast<uint32_t>(instance.ciSource)
                         , static_cast<uint32_t>(instance.ciBitness)
                         , instance.ciInstance.c_str()
                         , instance.ciLocation.c_str()
                         , static_cast<uint64_t>(instance.ciTimestamp)
-                        , static_cast<uint64_t>(timestamp.getTime())
+                        , static_cast<uint64_t>(timestamp.time())
                         );
     return mDatabase.execute(sqlInst);
 }
 
-bool LogSqliteDatabase::logInstanceDisconnected(const ITEM_ID& cookie, const DateTime& timestamp)
+bool LogSqliteDatabase::log_instance_disconnected(const ITEM_ID& cookie, const DateTime& timestamp)
 {
     Lock lock(mLock);
-    logScopesDeactivate(cookie, timestamp);
+    log_scopes_deactivate(cookie, timestamp);
 
-    Process& proc{ Process::getInstance() };
-    String module{ proc.getAppName() };
-    id_type threadId{ Thread::getCurrentThreadId() };
-    String thread{ Thread::getThreadName(threadId) };
+    Process& proc{ Process::instance() };
+    String module{ proc.app_name() };
+    id_type threadId{ Thread::current_thread_id() };
+    String thread{ Thread::thread_name(threadId) };
 
     char sqlInst[SQL_LEN];
-    String::formatString( sqlInst, SQL_LEN, _fmtUpdInstance.data()
-                        , static_cast<uint64_t>(timestamp.getTime())
-                        , static_cast<uint64_t>(DateTime::getNow().getTime())
+    String::format_string( sqlInst, SQL_LEN, _fmtUpdInstance.data()
+                        , static_cast<uint64_t>(timestamp.time())
+                        , static_cast<uint64_t>(DateTime::now().time())
                         , static_cast<uint64_t>(cookie)
                         );
     return mDatabase.execute(sqlInst);
 }
 
-bool LogSqliteDatabase::logScopeActivate(const NELogging::sScopeInfo & scope, const ITEM_ID& cookie, const DateTime& timestamp)
+bool LogSqliteDatabase::log_scope_activate(const areg::ScopeEntry & scope, const ITEM_ID& cookie, const DateTime& timestamp)
 {
-    return logScopeActivate(scope.scopeName, scope.scopeId, scope.scopePrio, cookie, timestamp);
+    return log_scope_activate(scope.scopeName, scope.scopeId, scope.scopePrio, cookie, timestamp);
 }
 
-uint32_t LogSqliteDatabase::logScopesActivate(const NELogging::ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp)
+uint32_t LogSqliteDatabase::log_scopes_activate(const areg::ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp)
 {
     Lock lock(mLock);
     uint32_t result{ 0 };
     SqliteStatement stmt(mDatabase, _sqlInsertScope);
-    for (const auto& scope : scopes.getData())
+    for (const auto& scope : scopes.data())
     {
-        stmt.bindUint32(0, static_cast<uint32_t>(scope.scopeId));
-        stmt.bindUint64(1, static_cast<uint64_t>(cookie));
-        stmt.bindUint32(2, static_cast<uint32_t>(scope.scopePrio));
-        stmt.bindText(  3, scope.scopeName.getString());
-        stmt.bindUint64(4, static_cast<uint64_t>(timestamp.getTime()));
-        result += stmt.next() == SqliteStatement::eQueryResult::HasMore ? 1 : 0;
+        stmt.bind_uint32(0, static_cast<uint32_t>(scope.scopeId));
+        stmt.bind_uint64(1, static_cast<uint64_t>(cookie));
+        stmt.bind_uint32(2, static_cast<uint32_t>(scope.scopePrio));
+        stmt.bind_text(  3, scope.scopeName.as_string());
+        stmt.bind_uint64(4, static_cast<uint64_t>(timestamp.time()));
+        result += stmt.next() == SqliteStatement::QueryResult::HasMore ? 1 : 0;
         stmt.reset();
-        stmt.clearBindings();
+        stmt.clear_bindings();
     }
 
     return result;
 }
 
-bool LogSqliteDatabase::logScopeActivate(const String& scopeName, uint32_t scopeId, uint32_t scopePrio, const ITEM_ID& cookie, const DateTime& timestamp)
+bool LogSqliteDatabase::log_scope_activate(const String& scopeName, uint32_t scopeId, uint32_t scopePrio, const ITEM_ID& cookie, const DateTime& timestamp)
 {
     char sql[SQL_LEN];
-    String::formatString( sql, SQL_LEN, _fmtScopes.data()
+    String::format_string( sql, SQL_LEN, _fmtScopes.data()
                         , static_cast<uint32_t>(scopeId)
                         , static_cast<uint64_t>(cookie)
                         , static_cast<uint32_t>(scopePrio)
-                        , scopeName.getString()
-                        , static_cast<uint64_t>(timestamp.getTime())
+                        , scopeName.as_string()
+                        , static_cast<uint64_t>(timestamp.time())
                         );
     return execute(sql);
 }
 
-bool LogSqliteDatabase::logScopesDeactivate(const ITEM_ID& cookie, const DateTime& timestamp)
+bool LogSqliteDatabase::log_scopes_deactivate(const ITEM_ID& cookie, const DateTime& timestamp)
 {
     char sql[SQL_LEN];
-    String::formatString( sql, SQL_LEN, _fmtUpdScopes.data()
-                        , static_cast<uint64_t>(timestamp.getTime())
+    String::format_string( sql, SQL_LEN, _fmtUpdScopes.data()
+                        , static_cast<uint64_t>(timestamp.time())
                         , static_cast<uint64_t>(cookie)
                         );
     return execute(sql);
 }
 
-bool LogSqliteDatabase::logScopeDeactivate(const ITEM_ID& cookie, unsigned int scopeId, const DateTime& timestamp)
+bool LogSqliteDatabase::log_scope_deactivate(const ITEM_ID& cookie, uint32_t scopeId, const DateTime& timestamp)
 {
     char sql[SQL_LEN];
-    String::formatString( sql, SQL_LEN, _fmtUpdScope.data()
-                        , static_cast<uint64_t>(timestamp.getTime())
+    String::format_string( sql, SQL_LEN, _fmtUpdScope.data()
+                        , static_cast<uint64_t>(timestamp.time())
                         , static_cast<uint64_t>(cookie)
                         , static_cast<uint32_t>(scopeId)
                         );
     return execute(sql);
 }
 
-bool LogSqliteDatabase::rollback(void)
+bool LogSqliteDatabase::rollback()
 {
     Lock lock(mLock);
     return mDatabase.rollback();
 }
 
-std::vector<String> LogSqliteDatabase::getLogInstanceNames(void)
+std::vector<String> LogSqliteDatabase::log_instance_names()
 {
     std::vector<String> result;
-    getLogInstanceNames(result);
+    log_instance_names(result);
     return result;
 }
 
-void LogSqliteDatabase::getLogInstanceNames(std::vector<String>& OUT names)
+void LogSqliteDatabase::log_instance_names(std::vector<String>& names)
 {
     Lock lock(mLock);
     names.clear();
     SqliteStatement stmt(mDatabase, _sqlGetInstanceName);
-    if (stmt.isValid())
+    if (stmt.is_valid())
     {
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
-            String instName{ stmt.getText(0) };
-            if (instName.isEmpty() == false)
+            String instName{ stmt.as_text(0) };
+            if (instName.is_empty() == false)
             {
                 names.push_back(instName);
             }
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<uint32_t>(names.size()));
+    ASSERT(stmt.row_pos() == static_cast<uint32_t>(names.size()));
 }
 
-std::vector<ITEM_ID> LogSqliteDatabase::getLogInstances(void)
+std::vector<ITEM_ID> LogSqliteDatabase::log_instances()
 {
     std::vector<ITEM_ID> result;
-    getLogInstances(result);
+    log_instances(result);
     return result;
 }
 
-void LogSqliteDatabase::getLogInstances(std::vector<ITEM_ID>& OUT ids)
+void LogSqliteDatabase::log_instances(std::vector<ITEM_ID>& ids)
 {
     Lock lock(mLock);
     ids.clear();
     SqliteStatement stmt(mDatabase, _sqlGetInstanceIds);
-    if (stmt.isValid())
+    if (stmt.is_valid())
     {
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
-            ITEM_ID instId{ static_cast<ITEM_ID>(stmt.getInt64(0)) };
+            ITEM_ID instId{ static_cast<ITEM_ID>(stmt.as_int64(0)) };
             ids.push_back(instId);
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<uint32_t>(ids.size()));
+    ASSERT(stmt.row_pos() == static_cast<uint32_t>(ids.size()));
 }
 
-std::vector<String> LogSqliteDatabase::getLogThreadNames(void)
+std::vector<String> LogSqliteDatabase::log_thread_names()
 {
     std::vector<String> result;
-    getLogThreadNames(result);
+    log_thread_names(result);
     return result;
 }
 
-void LogSqliteDatabase::getLogThreadNames(std::vector<String>& OUT names)
+void LogSqliteDatabase::log_thread_names(std::vector<String>& names)
 {
     Lock lock(mLock);
     names.clear();
     SqliteStatement stmt(mDatabase, _sqlGetThreadNames);
-    if (stmt.isValid())
+    if (stmt.is_valid())
     {
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
-            String instName{ stmt.getText(0) };
+            String instName{ stmt.as_text(0) };
             names.push_back(instName);
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<uint32_t>(names.size()));
+    ASSERT(stmt.row_pos() == static_cast<uint32_t>(names.size()));
 }
 
-std::vector<ITEM_ID> LogSqliteDatabase::getLogThreads(void)
+std::vector<ITEM_ID> LogSqliteDatabase::log_threads()
 {
     std::vector<ITEM_ID> result;
-    getLogThreads(result);
+    log_threads(result);
     return result;
 }
 
-void LogSqliteDatabase::getLogThreads(std::vector<ITEM_ID>& OUT ids)
+void LogSqliteDatabase::log_threads(std::vector<ITEM_ID>& ids)
 {
     Lock lock(mLock);
     ids.clear();
     SqliteStatement stmt(mDatabase, _sqlGetThreadIds);
-    if (stmt.isValid())
+    if (stmt.is_valid())
     {
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
-            ITEM_ID instId{ static_cast<ITEM_ID>(stmt.getInt64(0)) };
+            ITEM_ID instId{ static_cast<ITEM_ID>(stmt.as_int64(0)) };
             ids.push_back(instId);
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<uint32_t>(ids.size()));
+    ASSERT(stmt.row_pos() == static_cast<uint32_t>(ids.size()));
 }
 
-std::vector<String> LogSqliteDatabase::getPriorityNames(void)
+std::vector<String> LogSqliteDatabase::log_priority_names()
 {
     std::vector<String> result{
         { 
-          NELogging::logPrioToString(NELogging::eLogPriority::PrioAny)
-        , NELogging::logPrioToString(NELogging::eLogPriority::PrioScope)
-        , NELogging::logPrioToString(NELogging::eLogPriority::PrioDebug)
-        , NELogging::logPrioToString(NELogging::eLogPriority::PrioInfo)
-        , NELogging::logPrioToString(NELogging::eLogPriority::PrioWarning)
-        , NELogging::logPrioToString(NELogging::eLogPriority::PrioError)
-        , NELogging::logPrioToString(NELogging::eLogPriority::PrioFatal)
+          areg::priority_to_string(areg::LogPriority::PrioAny)
+        , areg::priority_to_string(areg::LogPriority::PrioScope)
+        , areg::priority_to_string(areg::LogPriority::PrioDebug)
+        , areg::priority_to_string(areg::LogPriority::PrioInfo)
+        , areg::priority_to_string(areg::LogPriority::PrioWarning)
+        , areg::priority_to_string(areg::LogPriority::PrioError)
+        , areg::priority_to_string(areg::LogPriority::PrioFatal)
         }
     };
     return result;
 }
 
-void LogSqliteDatabase::getPriorityNames(std::vector<String>& OUT names)
+void LogSqliteDatabase::log_priority_names(std::vector<String>& names)
 {
-    names = getPriorityNames();
+    names = log_priority_names();
 }
 
-std::vector<NEService::sServiceConnectedInstance> LogSqliteDatabase::getLogInstanceInfos(void)
+std::vector<areg::ConnectedInstance> LogSqliteDatabase::log_instance_infos()
 {
-    std::vector<NEService::sServiceConnectedInstance> result;
-    getLogInstanceInfos(result);
+    std::vector<areg::ConnectedInstance> result;
+    log_instance_infos(result);
     return result;
 }
 
-void LogSqliteDatabase::getLogInstanceInfos(std::vector<NEService::sServiceConnectedInstance>& OUT infos)
+void LogSqliteDatabase::log_instance_infos(std::vector<areg::ConnectedInstance>& infos)
 {
     Lock lock(mLock);
     infos.clear();
     SqliteStatement stmt(mDatabase, _sqlGetLogInstances);
-    if (stmt.isValid())
+    if (stmt.is_valid())
     {
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
-            NEService::sServiceConnectedInstance inst;
-            _copyLogInstances(stmt, inst);
+            areg::ConnectedInstance inst;
+            _copy_log_instances(stmt, inst);
             infos.push_back(inst);
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<uint32_t>(infos.size()));
+    ASSERT(stmt.row_pos() == static_cast<uint32_t>(infos.size()));
 }
 
-std::vector<NELogging::sScopeInfo> LogSqliteDatabase::getLogInstScopes(ITEM_ID IN instId)
+std::vector<areg::ScopeEntry> LogSqliteDatabase::log_inst_scopes(ITEM_ID instId)
 {
-    std::vector<NELogging::sScopeInfo> result;
-    getLogInstScopes(result, instId);
+    std::vector<areg::ScopeEntry> result;
+    log_inst_scopes(result, instId);
     return result;
 }
 
-void LogSqliteDatabase::getLogInstScopes(std::vector<NELogging::sScopeInfo>& OUT scopes, ITEM_ID IN instId)
+void LogSqliteDatabase::log_inst_scopes(std::vector<areg::ScopeEntry>& scopes, ITEM_ID instId)
 {
     Lock lock(mLock);
     scopes.clear();
     SqliteStatement stmt(mDatabase, _sqlGetLogScopes);
-    if (stmt.isValid())
+    if (stmt.is_valid())
     {
-        stmt.bindUint64(0, static_cast<uint64_t>(instId));
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        stmt.bind_uint64(0, static_cast<uint64_t>(instId));
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
-            NELogging::sScopeInfo scope;
-            _copyLogScopes(stmt, scope);
+            areg::ScopeEntry scope;
+            _copy_log_scopes(stmt, scope);
             scopes.push_back(scope);
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<uint32_t>(scopes.size()));
+    ASSERT(stmt.row_pos() == static_cast<uint32_t>(scopes.size()));
 }
 
-std::vector<SharedBuffer> LogSqliteDatabase::getLogMessages(void)
+std::vector<SharedBuffer> LogSqliteDatabase::log_messages()
 {
     std::vector<SharedBuffer> result;
-    getLogMessages(result);
+    log_messages(result);
     return result;
 }
 
-void LogSqliteDatabase::getLogMessages(std::vector<SharedBuffer>& OUT messages)
+void LogSqliteDatabase::log_messages(std::vector<SharedBuffer>& messages)
 {
     Lock lock(mLock);
     messages.clear();
     SqliteStatement stmt(mDatabase, _sqlGetAllLogMessages);
-    if (stmt.isValid())
+    if (stmt.is_valid())
     {
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             SharedBuffer buf;
-            _copyLogMessage(stmt, buf);
+            _copy_log_message(stmt, buf);
             messages.push_back(buf);
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<uint32_t>(messages.size()));
+    ASSERT(stmt.row_pos() == static_cast<uint32_t>(messages.size()));
 }
 
-std::vector<SharedBuffer> LogSqliteDatabase::getLogInstMessages(ITEM_ID IN instId)
+std::vector<SharedBuffer> LogSqliteDatabase::log_inst_messages(ITEM_ID instId)
 {
     std::vector<SharedBuffer> result;
-    getLogInstMessages(result, instId);
+    log_inst_messages(result, instId);
     return result;
 }
 
-void LogSqliteDatabase::getLogInstMessages(std::vector<SharedBuffer>& OUT messages, ITEM_ID IN instId)
+void LogSqliteDatabase::log_inst_messages(std::vector<SharedBuffer>& messages, ITEM_ID instId)
 {
-    if (instId == NEService::COOKIE_ANY)
+    if (instId == areg::COOKIE_ANY)
     {
-        getLogMessages(messages);
+        log_messages(messages);
         return;
     }
 
     Lock lock(mLock);
     messages.clear();
     SqliteStatement stmt(mDatabase, _sqlGetInstLogMessages);
-    if (stmt.isValid())
+    if (stmt.is_valid())
     {
-        stmt.bindUint64(0, static_cast<uint64_t>(instId));
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        stmt.bind_uint64(0, static_cast<uint64_t>(instId));
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             SharedBuffer buf;
-            _copyLogMessage(stmt, buf);
+            _copy_log_message(stmt, buf);
             messages.push_back(buf);
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<uint32_t>(messages.size()));
+    ASSERT(stmt.row_pos() == static_cast<uint32_t>(messages.size()));
 }
 
-std::vector<SharedBuffer> LogSqliteDatabase::getLogScopeMessages(uint32_t IN scopeId)
+std::vector<SharedBuffer> LogSqliteDatabase::log_scope_messages(uint32_t scopeId)
 {
     std::vector<SharedBuffer> result;
-    getLogScopeMessages(result, scopeId);
+    log_scope_messages(result, scopeId);
     return result;
 }
 
-void LogSqliteDatabase::getLogScopeMessages(std::vector<SharedBuffer>& OUT messages, uint32_t IN scopeId)
+void LogSqliteDatabase::log_scope_messages(std::vector<SharedBuffer>& messages, uint32_t scopeId)
 {
     if (scopeId == 0)
     {
-        getLogMessages(messages);
+        log_messages(messages);
         return;
     }
 
     Lock lock(mLock);
     messages.clear();
     SqliteStatement stmt(mDatabase, _sqlGetScopeLogMessages);
-    if (stmt.isValid())
+    if (stmt.is_valid())
     {
-        stmt.bindUint32(0, static_cast<uint32_t>(scopeId));
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        stmt.bind_uint32(0, static_cast<uint32_t>(scopeId));
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             SharedBuffer buf;
-            _copyLogMessage(stmt, buf);
+            _copy_log_message(stmt, buf);
             messages.push_back(buf);
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<uint32_t>(messages.size()));
+    ASSERT(stmt.row_pos() == static_cast<uint32_t>(messages.size()));
 }
 
-std::vector<SharedBuffer> LogSqliteDatabase::getLogMessages(ITEM_ID IN instId, uint32_t IN scopeId)
+std::vector<SharedBuffer> LogSqliteDatabase::log_messages(ITEM_ID instId, uint32_t scopeId)
 {
-    if (instId == NEService::COOKIE_ANY)
+    if (instId == areg::COOKIE_ANY)
     {
-        return (scopeId == 0 ? getLogMessages() : getLogScopeMessages(scopeId));
+        return (scopeId == 0 ? log_messages() : log_scope_messages(scopeId));
     }
     else if (scopeId == 0)
     {
-        return getLogInstMessages(instId);
+        return log_inst_messages(instId);
     }
 
     Lock lock(mLock);
     std::vector<SharedBuffer> result;
     SqliteStatement stmt(mDatabase, _sqlGetInstScopeLogMessages);
-    if (stmt.isValid())
+    if (stmt.is_valid())
     {
-        stmt.bindUint32(0, static_cast<uint32_t>(scopeId));
-        stmt.bindUint64(1, static_cast<uint64_t>(instId));
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        stmt.bind_uint32(0, static_cast<uint32_t>(scopeId));
+        stmt.bind_uint64(1, static_cast<uint64_t>(instId));
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             SharedBuffer buf;
-            _copyLogMessage(stmt, buf);
+            _copy_log_message(stmt, buf);
             result.push_back(buf);
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<uint32_t>(result.size()));
+    ASSERT(stmt.row_pos() == static_cast<uint32_t>(result.size()));
     return result;
 }
 
-void LogSqliteDatabase::getLogMessages(std::vector<SharedBuffer>& OUT messages, ITEM_ID IN instId, uint32_t IN scopeId)
+void LogSqliteDatabase::log_messages(std::vector<SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId)
 {
-    if (instId == NEService::COOKIE_ANY)
+    if (instId == areg::COOKIE_ANY)
     {
         if (scopeId == 0)
-            getLogMessages(messages);
+            log_messages(messages);
         else
-            getLogScopeMessages(messages, scopeId);
+            log_scope_messages(messages, scopeId);
         return;
     }
     else if (scopeId == 0)
     {
-        getLogInstMessages(messages, instId);
+        log_inst_messages(messages, instId);
         return;
     }
 
     Lock lock(mLock);
     messages.clear();
     SqliteStatement stmt(mDatabase, _sqlGetInstScopeLogMessages);
-    if (stmt.isValid())
+    if (stmt.is_valid())
     {
-        stmt.bindUint32(0, static_cast<uint32_t>(scopeId));
-        stmt.bindUint64(1, static_cast<uint64_t>(instId));
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        stmt.bind_uint32(0, static_cast<uint32_t>(scopeId));
+        stmt.bind_uint64(1, static_cast<uint64_t>(instId));
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             SharedBuffer buf;
-            _copyLogMessage(stmt, buf);
+            _copy_log_message(stmt, buf);
             messages.push_back(buf);
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<uint32_t>(messages.size()));
+    ASSERT(stmt.row_pos() == static_cast<uint32_t>(messages.size()));
 }
 
-int LogSqliteDatabase::getLogInstScopes(std::vector<NELogging::sScopeInfo>& OUT scopes, SqliteStatement& IN stmt, int IN maxEntries /*= -1*/)
+int32_t LogSqliteDatabase::log_inst_scopes(std::vector<areg::ScopeEntry>& scopes, SqliteStatement& stmt, int32_t maxEntries /*= -1*/)
 {
-    int result{ 0 };
-    if (stmt.isValid())
+    int32_t result{ 0 };
+    if (stmt.is_valid())
     {
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
-            NELogging::sScopeInfo scope;
-            _copyLogScopes(stmt, scope);
+            areg::ScopeEntry scope;
+            _copy_log_scopes(stmt, scope);
             scopes.push_back(scope);
             ++ result;
             if ((maxEntries > 0) && (result >= maxEntries))
@@ -1118,15 +1119,15 @@ int LogSqliteDatabase::getLogInstScopes(std::vector<NELogging::sScopeInfo>& OUT 
     return result;
 }
 
-int LogSqliteDatabase::getLogMessages(std::vector<SharedBuffer>& OUT logs, SqliteStatement& IN stmt, int IN maxEntries /*= -1*/)
+int32_t LogSqliteDatabase::log_messages(std::vector<SharedBuffer>& logs, SqliteStatement& stmt, int32_t maxEntries /*= -1*/)
 {
-    int result{ 0 };
-    if (stmt.isValid())
+    int32_t result{ 0 };
+    if (stmt.is_valid())
     {
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             SharedBuffer log;
-            _copyLogMessage(stmt, log);
+            _copy_log_message(stmt, log);
             logs.push_back(log);
             ++ result;
             if ((maxEntries > 0) && (result >= maxEntries))
@@ -1137,16 +1138,16 @@ int LogSqliteDatabase::getLogMessages(std::vector<SharedBuffer>& OUT logs, Sqlit
     return result;
 }
 
-int LogSqliteDatabase::fillLogInstances(std::vector<NEService::sServiceConnectedInstance>& IN OUT infos, SqliteStatement& IN stmt)
+int32_t LogSqliteDatabase::fill_log_instances(std::vector<areg::ConnectedInstance>& infos, SqliteStatement& stmt)
 {
-    int result{ 0 };
-    if ((static_cast<uint32_t>(infos.size()) != 0) && stmt.isValid())
+    int32_t result{ 0 };
+    if ((static_cast<uint32_t>(infos.size()) != 0) && stmt.is_valid())
     {
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             ASSERT(static_cast<uint32_t>(infos.size()) > static_cast<uint32_t>(result));
-            NEService::sServiceConnectedInstance& inst{ infos[result] };
-            _copyLogInstances(stmt, inst);
+            areg::ConnectedInstance& inst{ infos[static_cast<size_t>(result)] };
+            _copy_log_instances(stmt, inst);
             ++result;
         }
     }
@@ -1154,16 +1155,16 @@ int LogSqliteDatabase::fillLogInstances(std::vector<NEService::sServiceConnected
     return result;
 }
 
-int LogSqliteDatabase::fillInstScopes(std::vector<NELogging::sScopeInfo>& IN OUT scopes, SqliteStatement& IN stmt, uint32_t IN startAt, int IN maxEntries)
+int32_t LogSqliteDatabase::fill_inst_scopes(std::vector<areg::ScopeEntry>& scopes, SqliteStatement& stmt, uint32_t startAt, int32_t maxEntries)
 {
-    int result{ 0 };
-    if ((static_cast<uint32_t>(scopes.size()) > startAt) && stmt.isValid())
+    int32_t result{ 0 };
+    if ((static_cast<uint32_t>(scopes.size()) > startAt) && stmt.is_valid())
     {
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             ASSERT(static_cast<uint32_t>(scopes.size()) > (startAt + static_cast<uint32_t>(result)));
-            NELogging::sScopeInfo& scope{ scopes[startAt + static_cast<uint32_t>(result)] };
-            _copyLogScopes(stmt, scope);
+            areg::ScopeEntry& scope{ scopes[startAt + static_cast<uint32_t>(result)] };
+            _copy_log_scopes(stmt, scope);
             ++result;
             if ((maxEntries > 0) && (result >= maxEntries))
                 break;
@@ -1173,16 +1174,16 @@ int LogSqliteDatabase::fillInstScopes(std::vector<NELogging::sScopeInfo>& IN OUT
     return result;
 }
 
-int LogSqliteDatabase::fillLogMessages(std::vector<SharedBuffer>& IN OUT logs, SqliteStatement& IN stmt, uint32_t IN startAt, int IN maxEntries)
+int32_t LogSqliteDatabase::fill_log_messages(std::vector<SharedBuffer>& logs, SqliteStatement& stmt, uint32_t startAt, int32_t maxEntries)
 {
-    int result{ 0 };
-    if ((static_cast<uint32_t>(logs.size()) > startAt) && stmt.isValid())
+    int32_t result{ 0 };
+    if ((static_cast<uint32_t>(logs.size()) > startAt) && stmt.is_valid())
     {
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             ASSERT(static_cast<uint32_t>(logs.size()) > (startAt + static_cast<uint32_t>(result)));
             SharedBuffer& log{ logs[startAt + static_cast<uint32_t>(result)] };
-            _copyLogMessage(stmt, log);
+            _copy_log_message(stmt, log);
             ++result;
             if ((maxEntries > 0) && (result >= maxEntries))
                 break;
@@ -1192,41 +1193,41 @@ int LogSqliteDatabase::fillLogMessages(std::vector<SharedBuffer>& IN OUT logs, S
     return result;
 }
 
-uint32_t LogSqliteDatabase::setupStatementReadScopes(SqliteStatement& IN OUT stmt, ITEM_ID IN instId)
+uint32_t LogSqliteDatabase::setup_statement_read_scopes(SqliteStatement& stmt, ITEM_ID instId)
 {
     stmt.reset();
-    if (instId == NEService::TARGET_ALL)
+    if (instId == areg::TARGET_ALL)
     {
-        return (stmt.prepare(_sqlGetAllLogScopes) ? countScopeEntries(instId) : 0u);
+        return (stmt.prepare(_sqlGetAllLogScopes) ? count_scope_entries(instId) : 0u);
     }
     else
     {
-        return (stmt.prepare(_sqlGetLogScopes) && stmt.bindInt64(0, instId) ? countScopeEntries(instId) : 0u);
+        return (stmt.prepare(_sqlGetLogScopes) && stmt.bind_uint64(0, static_cast<uint64_t>(instId)) ? count_scope_entries(instId) : 0u);
     }
 }
 
-uint32_t LogSqliteDatabase::setupStatementReadLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId)
+uint32_t LogSqliteDatabase::setup_statement_read_logs(SqliteStatement& stmt, ITEM_ID instId)
 {
     stmt.reset();
-    if (instId == NEService::TARGET_ALL)
+    if (instId == areg::TARGET_ALL)
     {
-        return (stmt.prepare(_sqlGetAllLogMessages) ? countLogEntries(instId) : 0u);
+        return (stmt.prepare(_sqlGetAllLogMessages) ? count_log_entries(instId) : 0u);
     }
     else
     {
-        return (stmt.prepare(_sqlGetInstLogMessages) && stmt.bindInt64(0, instId) ? countLogEntries(instId) : 0u        );
+        return (stmt.prepare(_sqlGetInstLogMessages) && stmt.bind_uint64(0, static_cast<uint64_t>(instId)) ? count_log_entries(instId) : 0u);
     }
 }
 
-uint32_t LogSqliteDatabase::setupFilterLogs(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter)
+uint32_t LogSqliteDatabase::setup_filter_logs(ITEM_ID instId, const ArrayList<ScopeFilter>& filter)
 {
     Lock lock(mLock);
-    if (mDatabase.isOperable() == false)
+    if (mDatabase.is_operable() == false)
         return 0u;
-    else if (tableExists("scopes", _master) == false)
+    else if (table_exists("scopes", _master) == false)
         return 0u;
 
-    if (tableExists("filter_rules", _temp) == false)
+    if (table_exists("filter_rules", _temp) == false)
     {
         mDatabase.begin();
         SqliteStatement stmt(mDatabase, _sqlCreateTempScopes);
@@ -1253,52 +1254,52 @@ uint32_t LogSqliteDatabase::setupFilterLogs(ITEM_ID IN instId, const TEArrayList
         commit(true);
     }
 
-    return _updaeFilterLogScopes(instId, filter);
+    return _update_filter_log_scopes(instId, filter);
 }
 
-uint32_t LogSqliteDatabase::setupStatementReadFilterLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId)
+uint32_t LogSqliteDatabase::setup_statement_read_filter_logs(SqliteStatement& stmt, ITEM_ID instId)
 {
     Lock lock(mLock);
     stmt.reset();
-    if (mDatabase.isOperable() == false)
+    if (mDatabase.is_operable() == false)
         return 0u;
-    else if (tableExists("scopes", _master) == false)
+    else if (table_exists("scopes", _master) == false)
         return 0u;
-    else if (tableExists("filter_rules", _temp) == false)
+    else if (table_exists("filter_rules", _temp) == false)
         return 0u;
 
-    uint32_t result = countFilterLogs(instId);
+    uint32_t result = count_filter_logs(instId);
     if (result > 0)
     {
-        if (instId == NEService::TARGET_ALL)
+        if (instId == areg::TARGET_ALL)
         {
             VERIFY(stmt.prepare(_sqlFilterScopeLogsAll));
         }
         else if (stmt.prepare(_sqlFilterScopeLogsInst))
         {
-            stmt.bindInt64(0, instId);
+            stmt.bind_uint64(0, static_cast<uint64_t>(instId));
         }
     }
 
     return result;
 }
 
-uint32_t LogSqliteDatabase::_updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter)
+uint32_t LogSqliteDatabase::_update_filter_log_scopes(ITEM_ID instId, const ArrayList<ScopeFilter>& filter)
 {
-    if (filter.isEmpty() == false)
+    if (filter.is_empty() == false)
     {
         String sql;
-        if (instId == NEService::TARGET_ALL)
+        if (instId == areg::TARGET_ALL)
             sql = _sqlUpdateFilterRuleAll;
         else
             sql.format(_sqlUpdateFilterRuleInst.data(), instId);
 
         mDatabase.begin();
         SqliteStatement stmt(mDatabase, sql);
-        for (const auto& scope : filter.getData())
+        for (const auto& scope : filter.data())
         {
-            stmt.bindUint32(0, scope.scopePrio);
-            stmt.bindUint32(1, scope.scopeId);
+            stmt.bind_uint32(0, scope.scopePrio);
+            stmt.bind_uint32(1, scope.scopeId);
             if (stmt.execute() == false)
             {
                 commit(false);
@@ -1306,143 +1307,143 @@ uint32_t LogSqliteDatabase::_updaeFilterLogScopes(ITEM_ID IN instId, const TEArr
             }
 
             stmt.reset();
-            stmt.clearBindings();
+            stmt.clear_bindings();
         }
 
         commit(true);
     }
-    else if (resetFilterMask(instId) == false)
+    else if (reset(instId) == false)
     {
         return 0u;
     }
 
-    return countFilterLogs(instId);
+    return count_filter_logs(instId);
 }
 
-uint32_t LogSqliteDatabase::countLogEntries(ITEM_ID instId)
+uint32_t LogSqliteDatabase::count_log_entries(ITEM_ID instId)
 {
     Lock lock(mLock);
-    if (mDatabase.isOperable() == false)
+    if (mDatabase.is_operable() == false)
         return 0u;
 
     SqliteStatement stmt(mDatabase);
-    if (instId == NEService::TARGET_ALL)
+    if (instId == areg::TARGET_ALL)
     {
         VERIFY(stmt.prepare(_sqlCountAllLogs));
     }
     else if (stmt.prepare(_sqlCountInstanceLogs))
     {
-        stmt.bindInt64(0, instId);
+        stmt.bind_uint64(0, static_cast<uint64_t>(instId));
     }
 
-    return (stmt.next() != SqliteStatement::eQueryResult::Failed ? stmt.getUint32(0) : 0);
+    return (stmt.next() != SqliteStatement::QueryResult::Failed ? stmt.as_uint32(0) : 0);
 }
 
-uint32_t LogSqliteDatabase::countScopeEntries(ITEM_ID instId)
+uint32_t LogSqliteDatabase::count_scope_entries(ITEM_ID instId)
 {
     Lock lock(mLock);
-    if (mDatabase.isOperable() == false)
+    if (mDatabase.is_operable() == false)
         return 0;
 
     SqliteStatement stmt(mDatabase);
-    if (instId == NEService::TARGET_ALL)
+    if (instId == areg::TARGET_ALL)
     {
         VERIFY(stmt.prepare(_sqlCountAllScopes));
     }
     else if (stmt.prepare(_sqlCountInstanceScopes))
     {
-        stmt.bindInt64(0, instId);
+        stmt.bind_uint64(0, static_cast<uint64_t>(instId));
     }
 
-    return (stmt.next() != SqliteStatement::eQueryResult::Failed ? stmt.getUint32(0) : 0);
+    return (stmt.next() != SqliteStatement::QueryResult::Failed ? stmt.as_uint32(0) : 0);
 }
 
-uint32_t LogSqliteDatabase::countLogInstances(void)
+uint32_t LogSqliteDatabase::count_log_instances()
 {
     Lock lock(mLock);
-    if (mDatabase.isOperable() == false)
+    if (mDatabase.is_operable() == false)
         return 0;
 
     SqliteStatement stmt(mDatabase, _sqlCountInstances);
-    return (stmt.next() != SqliteStatement::eQueryResult::Failed ? stmt.getUint32(0) : 0);
+    return (stmt.next() != SqliteStatement::QueryResult::Failed ? stmt.as_uint32(0) : 0);
 }
 
-uint32_t LogSqliteDatabase::countFilterLogs(ITEM_ID instId)
+uint32_t LogSqliteDatabase::count_filter_logs(ITEM_ID instId)
 {
     Lock lock(mLock);
-    if (mDatabase.isOperable() == false)
+    if (mDatabase.is_operable() == false)
         return 0;
 
     SqliteStatement stmt(mDatabase);
-    if (instId == NEService::TARGET_ALL)
+    if (instId == areg::TARGET_ALL)
     {
         VERIFY(stmt.prepare(_sqlFilterScopeLogsCountAll));
     }
     else if (stmt.prepare(_sqlFilterScopeLogsCount))
     {
-        stmt.bindInt64(0, instId);
+        stmt.bind_uint64(0, static_cast<uint64_t>(instId));
     }
 
-    return (stmt.next() != SqliteStatement::eQueryResult::Failed ? stmt.getUint32(0) : 0);
+    return (stmt.next() != SqliteStatement::QueryResult::Failed ? stmt.as_uint32(0) : 0);
 }
 
-bool LogSqliteDatabase::resetFilterMask(ITEM_ID instId /*= NEService::TARGET_ALL*/)
+bool LogSqliteDatabase::reset(ITEM_ID instId /*= areg::TARGET_ALL*/)
 {
-    if (tableExists("filter_rules", _temp) == false)
+    if (table_exists("filter_rules", _temp) == false)
         return false;
 
     SqliteStatement stmt(mDatabase);
-    if (instId == NEService::TARGET_ALL)
+    if (instId == areg::TARGET_ALL)
     {
         VERIFY(stmt.prepare(_sqlResetFilterScopesAll));
     }
     else
     {
         VERIFY(stmt.prepare(_sqlResetFilterScopes));
-        stmt.bindUint64(0, instId);
+        stmt.bind_uint64(0, instId);
     }
 
     return stmt.execute();
 }
 
-bool LogSqliteDatabase::disableFilterMask(ITEM_ID instId)
+bool LogSqliteDatabase::disable_filter_mask(ITEM_ID instId)
 {
-    if (tableExists("filter_rules", _temp) == false)
+    if (table_exists("filter_rules", _temp) == false)
         return false;
 
     SqliteStatement stmt(mDatabase);
-    if (instId == NEService::TARGET_ALL)
+    if (instId == areg::TARGET_ALL)
     {
         VERIFY(stmt.prepare(_sqlDisableFilterScopesAll));
     }
     else
     {
         VERIFY(stmt.prepare(_sqlDisableFilterScopes));
-        stmt.bindUint64(0, instId);
+        stmt.bind_uint64(0, instId);
     }
 
     return stmt.execute();
 }
 
-bool LogSqliteDatabase::tableExists(const char* table, const char* master /*= nullptr*/)
+bool LogSqliteDatabase::table_exists(const char* table, const char* master /*= nullptr*/)
 {
     bool result{ false };
-    master = NEString::isEmpty<char>(master) ? "sqlite_master" : master;
-    if (isOperable() && (NEString::isEmpty<char>(master) == false) && (NEString::isEmpty<char>(table) == false))
+    master = areg::is_empty<char>(master) ? "sqlite_master" : master;
+    if (is_operable() && (areg::is_empty<char>(master) == false) && (areg::is_empty<char>(table) == false))
     {
         String sql;
         sql.format(_sqlCheckTable.data(), master, table);
         SqliteStatement stmt(mDatabase, sql);
-        result = (SqliteStatement::eQueryResult::HasMore == stmt.next());
+        result = (SqliteStatement::QueryResult::HasMore == stmt.next());
     }
 
     return result;
 
 }
 
-bool LogSqliteDatabase::dropTable(const char* table)
+bool LogSqliteDatabase::drop_table(const char* table)
 {
-    if (NEString::isEmpty<char>(table))
+    if (areg::is_empty<char>(table))
         return false;
 
     String sql;
@@ -1452,3 +1453,5 @@ bool LogSqliteDatabase::dropTable(const char* table)
     stmt.finalize();
     return result;
 }
+
+} // namespace areg::ext

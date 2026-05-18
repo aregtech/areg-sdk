@@ -1,28 +1,18 @@
 # Adding sources
 macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
-    areg/base/private/BufferPosition.cpp
-	areg/base/private/BufferStreamBase.cpp
+	areg/base/private/areg_global.cpp
+	areg/base/private/CommonDefs.cpp
 	areg/base/private/Containers.cpp
+	areg/base/private/Cursor.cpp
 	areg/base/private/DateTime.cpp
+	areg/base/private/DebugDefs.cpp
 	areg/base/private/File.cpp
 	areg/base/private/FileBase.cpp
 	areg/base/private/FileBuffer.cpp
-	areg/base/private/GEGlobal.cpp
 	areg/base/private/Identifier.cpp
-	areg/base/private/IEByteBuffer.cpp
-	areg/base/private/IECursorPosition.cpp
-	areg/base/private/IEGenericObject.cpp
-	areg/base/private/IEIOStream.cpp
-	areg/base/private/IESyncObject.cpp
-	areg/base/private/IEThreadConsumer.cpp
-	areg/base/private/NECommon.cpp
-	areg/base/private/NEDebug.cpp
-	areg/base/private/NEMath.cpp
-	areg/base/private/NEMemory.cpp
-	areg/base/private/NESocket.cpp
-	areg/base/private/NEString.cpp
-	areg/base/private/NEUtilities.cpp
-	areg/base/private/Object.cpp
+	areg/base/private/IOStream.cpp
+	areg/base/private/MathDefs.cpp
+	areg/base/private/MemoryDefs.cpp
 	areg/base/private/Process.cpp
 	areg/base/private/ReadConverter.cpp
 	areg/base/private/RemoteMessage.cpp
@@ -33,12 +23,18 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/base/private/Socket.cpp
 	areg/base/private/SocketAccepted.cpp
 	areg/base/private/SocketClient.cpp
+	areg/base/private/SocketDefs.cpp
+	areg/base/private/SocketMultiplexer.cpp
 	areg/base/private/SocketServer.cpp
 	areg/base/private/String.cpp
-	areg/base/private/SyncObjects.cpp
+	areg/base/private/StringDefs.cpp
+	areg/base/private/SyncObject.cpp
+	areg/base/private/SyncPrimitives.cpp
 	areg/base/private/Thread.cpp
 	areg/base/private/ThreadAddress.cpp
+	areg/base/private/ThreadConsumer.cpp
 	areg/base/private/ThreadLocalStorage.cpp
+	areg/base/private/UtilityDefs.cpp
 	areg/base/private/Version.cpp
 	areg/base/private/WideString.cpp
 	areg/base/private/WriteConverter.cpp
@@ -46,3 +42,5 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 
 include("${AREG_FRAMEWORK}/areg/base/private/win32/CMakeLists.txt")
 include("${AREG_FRAMEWORK}/areg/base/private/posix/CMakeLists.txt")
+include("${AREG_FRAMEWORK}/areg/base/private/linux/CMakeLists.txt")
+include("${AREG_FRAMEWORK}/areg/base/private/macos/CMakeLists.txt")

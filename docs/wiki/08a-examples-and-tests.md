@@ -66,8 +66,8 @@ To exclude specific components, use the following CMake options:
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `AREG_BUILD_TESTS` | Controls inclusion of unit tests | `ON` |
-| `AREG_BUILD_EXAMPLES` | Controls inclusion of examples | `ON` |
+| `AREG_TESTS` | Controls inclusion of unit tests | `ON` |
+| `AREG_EXAMPLES` | Controls inclusion of examples | `ON` |
 
 Set these options to `OFF` to exclude them from the build process.
 
@@ -75,8 +75,8 @@ Set these options to `OFF` to exclude them from the build process.
 
 ```bash
 cmake -B ./build \
-  -DAREG_BUILD_TESTS=OFF \
-  -DAREG_BUILD_EXAMPLES=OFF
+  -DAREG_TESTS=OFF \
+  -DAREG_EXAMPLES=OFF
 
 cmake --build ./build -j
 ```
@@ -85,8 +85,8 @@ cmake --build ./build -j
 
 ```bash
 cmake -B ./build \
-  -DAREG_BUILD_TESTS=OFF \
-  -DAREG_BUILD_EXAMPLES=ON
+  -DAREG_TESTS=OFF \
+  -DAREG_EXAMPLES=ON
 
 cmake --build ./build -j
 ```
@@ -95,8 +95,8 @@ cmake --build ./build -j
 
 ```bash
 cmake -B ./build \
-  -DAREG_BUILD_TESTS=ON \
-  -DAREG_BUILD_EXAMPLES=OFF
+  -DAREG_TESTS=ON \
+  -DAREG_EXAMPLES=OFF
 
 cmake --build ./build -j
 ```
@@ -132,8 +132,8 @@ Run the `cmake` command with appropriate options.
 ```bash
 cmake -B ./build \
   -DAREG_COMPILER_FAMILY=llvm \
-  -DAREG_BUILD_TESTS=OFF \
-  -DAREG_BUILD_EXAMPLES=ON
+  -DAREG_TESTS=OFF \
+  -DAREG_EXAMPLES=ON
 ```
 
 **Example: Build with GCC in Release Mode**
@@ -141,8 +141,8 @@ cmake -B ./build \
 ```bash
 cmake -B ./build \
   -DCMAKE_BUILD_TYPE=Release \
-  -DAREG_BUILD_TESTS=ON \
-  -DAREG_BUILD_EXAMPLES=ON
+  -DAREG_TESTS=ON \
+  -DAREG_EXAMPLES=ON
 ```
 
 ### Step 2: Build the Project
@@ -536,7 +536,7 @@ This guide covered building and running Areg SDK examples and unit tests:
 ### Key Points
 
 - ✅ **Default Build**: Examples and unit tests included by default
-- ✅ **Configurable**: Use `AREG_BUILD_TESTS` and `AREG_BUILD_EXAMPLES` to control inclusion
+- ✅ **Configurable**: Use `AREG_TESTS` and `AREG_EXAMPLES` to control inclusion
 - ✅ **Multiple Test Methods**: Direct execution, Google Test filters, or CTest
 - ✅ **IPC Examples**: Require `mtrouter` service to be running
 - ✅ **Platform Support**: Cross-platform with some platform-specific examples
@@ -546,9 +546,9 @@ This guide covered building and running Areg SDK examples and unit tests:
 | Configuration | Command | Use Case |
 |---------------|---------|----------|
 | **Full Build** | `cmake -B ./build` | Development and testing |
-| **Core Only** | `cmake -B ./build -DAREG_BUILD_TESTS=OFF -DAREG_BUILD_EXAMPLES=OFF` | Production deployment |
-| **Examples Only** | `cmake -B ./build -DAREG_BUILD_TESTS=OFF` | Learning and demonstrations |
-| **Tests Only** | `cmake -B ./build -DAREG_BUILD_EXAMPLES=OFF` | CI/CD testing pipelines |
+| **Core Only** | `cmake -B ./build -DAREG_TESTS=OFF -DAREG_EXAMPLES=OFF` | Production deployment |
+| **Examples Only** | `cmake -B ./build -DAREG_TESTS=OFF` | Learning and demonstrations |
+| **Tests Only** | `cmake -B ./build -DAREG_EXAMPLES=OFF` | CI/CD testing pipelines |
 
 ### Testing Options
 

@@ -18,8 +18,8 @@
 //               events are powerful and useful objects.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/areg_global.h"
+#include "areg/base/SyncPrimitives.hpp"
 
 #include <iostream>
 #include <string>
@@ -39,28 +39,30 @@
  *          URL: https://en.cppreference.com/w/cpp/thread/condition_variable.html
  *          Compare the version of STL and Areg. Both do the same.
  **/
-SyncEvent   ready(true, true);      //!< non-signaled, auto-reset event
-SyncEvent   processed(true, false); //!< non-signaled, manual-reset event
-std::string data{};                 //!< A text to output
+namespace {
+    areg::SyncEvent   ready(true, true);      //!< non-signaled, auto-reset event
+    areg::SyncEvent   processed(true, false); //!< non-signaled, manual-reset event
+    std::string data{};                 //!< A text to output
+}
 
-void workerThread()
+void worker_thread()
 {
-    Lock lock(ready);
+    areg::Lock lock(ready);
 
     // after the wait, we own the lock
     std::cout << "Worker thread is processing data\n";
     data += " after processing";
     std::cout << "Worker thread signals data processing completed\n";
-    processed.setEvent();  // manual set event
+    processed.set_signaled();  // manual set event
 }
 
 int main()
 {
     data = "Example data";
-    std::thread worker(workerThread);
+    std::thread worker(worker_thread);
 
     std::cout << "main() signals data ready for processing\n";
-    ready.setEvent();   // signal the worker thread
+    ready.set_signaled();   // signal the worker thread
 
     processed.lock();   // wait for worker thread to signal
     std::cout << "Back in main(), data = " << data << '\n';

@@ -12,56 +12,56 @@
 
 
 HardwareWorkerConsumer::HardwareWorkerConsumer(const char * consumerName)
-    : IEWorkerThreadConsumer    ( consumerName )
+    : areg::WorkerThreadConsumer    ( consumerName )
     , IEPatientInfoEventConsumer( )
 {
 }
 
-inline HardwareWorkerConsumer & HardwareWorkerConsumer::self(void)
+inline HardwareWorkerConsumer & HardwareWorkerConsumer::self()
 {
     return (*this);
 }
 
-void HardwareWorkerConsumer::registerEventConsumers(WorkerThread & workThread, ComponentThread & /* masterThread */ )
+void HardwareWorkerConsumer::register_event_consumers(areg::WorkerThread & workThread, areg::ComponentThread & /* masterThread */ )
 {
-    PatientInfoEvent::addListener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<DispatcherThread &>(workThread) );
+    PatientInfoEvent::add_listener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<areg::DispatcherThread &>(workThread) );
 
     printf("Example Hardware is initialized .....\n\n");
 }
 
-void HardwareWorkerConsumer::unregisterEventConsumers(WorkerThread & workThread)
+void HardwareWorkerConsumer::unregister_event_consumers(areg::WorkerThread & workThread)
 {
-    PatientInfoEvent::removeListener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<DispatcherThread &>(workThread) );
+    PatientInfoEvent::remove_listener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<areg::DispatcherThread &>(workThread) );
 
     printf("Example Hardware is uninitialized .....\n\n");
 }
 
-void HardwareWorkerConsumer::processEvent(const PatientInfoEventData & data)
+void HardwareWorkerConsumer::process_event(const PatientInfoEventData & data)
 {
-    const SharedBuffer & buf = data.getData();
-    PatientInfoEventData::eUpdateCommands cmd = PatientInfoEventData::CMD_Undefined;
+    const areg::SharedBuffer & buf = data.data();
+    PatientInfoEventData::UpdateCommands cmd = PatientInfoEventData::UpdateCommands::CMD_Undefined;
     buf >> cmd;
 
     switch (cmd)
     {
-    case PatientInfoEventData::CMD_PatientInfo:
-        updateInfoPatient(buf);
+    case PatientInfoEventData::UpdateCommands::CMD_PatientInfo:
+        update_info_patient(buf);
         break;
 
-    case PatientInfoEventData::CMD_Undefined:
+    case PatientInfoEventData::UpdateCommands::CMD_Undefined:
     default:
         break;
     }
 }
 
-void HardwareWorkerConsumer::updateInfoPatient(const SharedBuffer & data)
+void HardwareWorkerConsumer::update_info_patient(const areg::SharedBuffer & data)
 {
-    NEPatientInformation::PatientInfo infoPatient;
+    PatientInformation::PatientInfo infoPatient;
     data >> infoPatient;
 
     printf("Update patient info ...\n");
-    printf("\tFirst Name ......: %s\n", infoPatient.firstName.getString());
-    printf("\tLast Name .......: %s\n", infoPatient.lastName.getString());
+    printf("\tFirst Name ......: %s\n", infoPatient.firstName.as_string());
+    printf("\tLast Name .......: %s\n", infoPatient.lastName.as_string());
     printf("\tPatient weight ..: %.02f kg\n", static_cast<double>(infoPatient.weight));
     printf("\tPatient age .....: %u y.\n", infoPatient.age);
     printf("-----------------------------\n\n");

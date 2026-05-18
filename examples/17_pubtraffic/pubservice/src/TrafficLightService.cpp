@@ -17,26 +17,26 @@
 // TrafficLightService::TrafficSwitchConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
 
-void TrafficLightService::TrafficSwitchConsumer::processEvent(const TrafficSwitchData &data)
+void TrafficLightService::TrafficSwitchConsumer::process_event(const TrafficSwitchData &data)
 {
-    if (data.getData( ))
+    if (data.data( ))
     {
-        mService.onTrafficLightSwitchedOn();
+        mService.on_traffic_light_switched_on();
     }
     else
     {
-        mService.onTrafficLightSwitchedOff();
+        mService.on_traffic_light_switched_off();
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
-// TrafficLightService::TimerConsumer class implementation
+// TrafficLightService::TrafficLightTimerConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
-void TrafficLightService::TimerConsumer::processTimer( Timer & timer )
+void TrafficLightService::TrafficLightTimerConsumer::process_timer( areg::Timer & timer )
 {
     if (&timer == &mService.mTimer)
     {
-        mService.onTimerExpired();
+        mService.on_timer_expired();
     }
 }
 
@@ -44,93 +44,93 @@ void TrafficLightService::TimerConsumer::processTimer( Timer & timer )
 // TrafficLightService class implementation
 //////////////////////////////////////////////////////////////////////////
 
-TrafficLightService::TrafficLightService(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component                 ( entry, owner )
-    , SimpleTrafficLightStub    ( static_cast<Component &>(self()) )
+TrafficLightService::TrafficLightService(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    : areg::Component                 ( entry, owner )
+    , SimpleTrafficLightProviderBase    ( static_cast<areg::Component &>(self()) )
 
-    , mTimer                    ( static_cast<IETimerConsumer &>(mTimerConsumer), "SimpleTrafficTimer")
-    , mPrevState                ( NESimpleTrafficLight::eTrafficLight::LightOff )
+    , mTimer                    ( static_cast<areg::TimerConsumer &>(mTimerConsumer), "SimpleTrafficTimer")
+    , mPrevState                ( SimpleTrafficLight::TrafficLight::LightOff )
     , mEventConsumer            ( self() )
     , mTimerConsumer            ( self() )
 {
-    setSouthNorth(NESimpleTrafficLight::eTrafficLight::LightOff);
-    setEastWest(NESimpleTrafficLight::eTrafficLight::LightOff);
+    set_south_north(SimpleTrafficLight::TrafficLight::LightOff);
+    set_east_west(SimpleTrafficLight::TrafficLight::LightOff);
 }
 
-void TrafficLightService::onTrafficLightSwitchedOn( void )
+void TrafficLightService::on_traffic_light_switched_on()
 {
-    if ( getSouthNorth( ) == NESimpleTrafficLight::eTrafficLight::LightOff )
+    if ( south_north( ) == SimpleTrafficLight::TrafficLight::LightOff )
     {
-        setSouthNorth( NESimpleTrafficLight::eTrafficLight::LightYellow );
-        setEastWest( NESimpleTrafficLight::eTrafficLight::LightYellow );
-        mTimer.startTimer( NESimpleTrafficLight::TimeoutYellow, 1 );
+        set_south_north( SimpleTrafficLight::TrafficLight::LightYellow );
+        set_east_west( SimpleTrafficLight::TrafficLight::LightYellow );
+        mTimer.start_timer( SimpleTrafficLight::TimeoutYellow, 1 );
     }
 }
 
-void TrafficLightService::onTrafficLightSwitchedOff( void )
+void TrafficLightService::on_traffic_light_switched_off()
 {
-    if ( getSouthNorth( ) != NESimpleTrafficLight::eTrafficLight::LightOff )
+    if ( south_north( ) != SimpleTrafficLight::TrafficLight::LightOff )
     {
-        mTimer.stopTimer( );
+        mTimer.stop_timer( );
 
-        mPrevState = NESimpleTrafficLight::eTrafficLight::LightOff;
-        setSouthNorth( NESimpleTrafficLight::eTrafficLight::LightOff );
-        setEastWest( NESimpleTrafficLight::eTrafficLight::LightOff );
+        mPrevState = SimpleTrafficLight::TrafficLight::LightOff;
+        set_south_north( SimpleTrafficLight::TrafficLight::LightOff );
+        set_east_west( SimpleTrafficLight::TrafficLight::LightOff );
     }
 }
 
-void TrafficLightService::onTimerExpired( void )
+void TrafficLightService::on_timer_expired()
 {
-    switch (getSouthNorth())
+    switch (south_north())
     {
-    case NESimpleTrafficLight::eTrafficLight::LightRed:
-        mPrevState  = NESimpleTrafficLight::eTrafficLight::LightRed;
-        setSouthNorth(NESimpleTrafficLight::eTrafficLight::LightYellow);
-        setEastWest(NESimpleTrafficLight::eTrafficLight::LightYellow);
-        mTimer.startTimer(NESimpleTrafficLight::TimeoutYellow, 1);
+    case SimpleTrafficLight::TrafficLight::LightRed:
+        mPrevState  = SimpleTrafficLight::TrafficLight::LightRed;
+        set_south_north(SimpleTrafficLight::TrafficLight::LightYellow);
+        set_east_west(SimpleTrafficLight::TrafficLight::LightYellow);
+        mTimer.start_timer(SimpleTrafficLight::TimeoutYellow, 1);
         break;
 
-    case NESimpleTrafficLight::eTrafficLight::LightYellow:
-        if ((mPrevState == NESimpleTrafficLight::eTrafficLight::LightRed) || (mPrevState == NESimpleTrafficLight::eTrafficLight::LightOff))
+    case SimpleTrafficLight::TrafficLight::LightYellow:
+        if ((mPrevState == SimpleTrafficLight::TrafficLight::LightRed) || (mPrevState == SimpleTrafficLight::TrafficLight::LightOff))
         {
-            setSouthNorth(NESimpleTrafficLight::eTrafficLight::LightGreen);
-            setEastWest(NESimpleTrafficLight::eTrafficLight::LightRed);
-            mTimer.startTimer(NESimpleTrafficLight::TimeoutGreen);
+            set_south_north(SimpleTrafficLight::TrafficLight::LightGreen);
+            set_east_west(SimpleTrafficLight::TrafficLight::LightRed);
+            mTimer.start_timer(SimpleTrafficLight::TimeoutGreen);
         }
         else
         {
-            setSouthNorth(NESimpleTrafficLight::eTrafficLight::LightRed);
-            setEastWest(NESimpleTrafficLight::eTrafficLight::LightGreen);
-            mTimer.startTimer(NESimpleTrafficLight::TimeoutRed);
+            set_south_north(SimpleTrafficLight::TrafficLight::LightRed);
+            set_east_west(SimpleTrafficLight::TrafficLight::LightGreen);
+            mTimer.start_timer(SimpleTrafficLight::TimeoutRed);
         }
 
-        mPrevState  = NESimpleTrafficLight::eTrafficLight::LightYellow;
+        mPrevState  = SimpleTrafficLight::TrafficLight::LightYellow;
         break;
 
-    case NESimpleTrafficLight::eTrafficLight::LightGreen:
-        mPrevState  = NESimpleTrafficLight::eTrafficLight::LightGreen;
-        setSouthNorth(NESimpleTrafficLight::eTrafficLight::LightYellow);
-        setEastWest(NESimpleTrafficLight::eTrafficLight::LightYellow);
-        mTimer.startTimer(NESimpleTrafficLight::TimeoutYellow, 1);
+    case SimpleTrafficLight::TrafficLight::LightGreen:
+        mPrevState  = SimpleTrafficLight::TrafficLight::LightGreen;
+        set_south_north(SimpleTrafficLight::TrafficLight::LightYellow);
+        set_east_west(SimpleTrafficLight::TrafficLight::LightYellow);
+        mTimer.start_timer(SimpleTrafficLight::TimeoutYellow, 1);
         break;
 
-    case NESimpleTrafficLight::eTrafficLight::LightOff:
+    case SimpleTrafficLight::TrafficLight::LightOff:
     default:
-        mPrevState  = NESimpleTrafficLight::eTrafficLight::LightOff;
-        setSouthNorth(NESimpleTrafficLight::eTrafficLight::LightOff);
-        setEastWest(NESimpleTrafficLight::eTrafficLight::LightOff);
+        mPrevState  = SimpleTrafficLight::TrafficLight::LightOff;
+        set_south_north(SimpleTrafficLight::TrafficLight::LightOff);
+        set_east_west(SimpleTrafficLight::TrafficLight::LightOff);
         break;
     }
 }
 
-void TrafficLightService::startupServiceInterface(Component & holder)
+void TrafficLightService::startup_service_interface(areg::Component & holder)
 {
-    SimpleTrafficLightStub::startupServiceInterface(holder);
-    TrafficSwitchEvent::addListener( static_cast<IETrafficSwitchConsumer &>(mEventConsumer), holder.getMasterThread() );
+    SimpleTrafficLightProviderBase::startup_service_interface(holder);
+    TrafficSwitchEvent::add_listener( static_cast<IETrafficSwitchConsumer &>(mEventConsumer), holder.master_thread() );
 }
 
-void TrafficLightService::shutdownServiceInterface(Component & holder)
+void TrafficLightService::shutdown_service_interface(areg::Component & holder) noexcept
 {
-    SimpleTrafficLightStub::shutdownServiceInterface(holder);
-    TrafficSwitchEvent::removeListener( static_cast<IETrafficSwitchConsumer &>(mEventConsumer), holder.getMasterThread() );
+    SimpleTrafficLightProviderBase::shutdown_service_interface(holder);
+    TrafficSwitchEvent::remove_listener( static_cast<IETrafficSwitchConsumer &>(mEventConsumer), holder.master_thread() );
 }

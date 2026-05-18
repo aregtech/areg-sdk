@@ -10,79 +10,79 @@
  * Include files.
  ************************************************************************/
 #include "pubclient/src/ServiceClient.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/appbase/Application.hpp"
 
-DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient_serviceConnected);
-DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient_broadcastReachedMaximum);
-DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient_responseHelloWorld);
-DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient_processTimer);
+DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient, service_connected);
+DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient, broadcast_reached_maximum);
+DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient, response_hello_world);
+DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient, process_timer);
 
-ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component             ( NEUtilities::generateName(entry.mRoleName), owner )
-    , HelloWorldClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
-    , IETimerConsumer       ( )
+ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    : areg::Component             ( areg::generate_name(entry.mRoleName), owner )
+    , HelloWorldConsumerBase  ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
+    , areg::TimerConsumer       ( )
 
-    , mTimer                (static_cast<IETimerConsumer &>(self()), entry.mRoleName)
+    , mTimer                (static_cast<areg::TimerConsumer &>(self()), entry.mRoleName)
     , mID                   ( 0 )
 {
 }
 
-bool ServiceClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
+bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
-    LOG_SCOPE( examples_15_pubclient_ServiceClient_serviceConnected );
-    bool result = HelloWorldClientBase::serviceConnected( status, proxy );
+    LOG_SCOPE( examples_15_pubclient_ServiceClient, service_connected );
+    bool result = HelloWorldConsumerBase::service_connected( status, proxy );
 
     // subscribe when service connected and un-subscribe when disconnected.
-    notifyOnBroadcastReachedMaximum( isConnected( ) );
-    if ( isConnected( ) )
+    notify_on_broadcast_reached_maximum( is_connected( ) );
+    if ( is_connected( ) )
     {
-        mTimer.startTimer( ServiceClient::TIMEOUT_VALUE );
+        mTimer.start_timer( ServiceClient::TIMEOUT_VALUE );
     }
-    else if ( NEService::isServiceConnectionLost( status ) )
+    else if (is_connection_lost( status ) )
     {
         LOG_WARN( "The connection is lost! Waiting for connection recovery!" );
-        mTimer.stopTimer( );
+        mTimer.stop_timer( );
     }
     else
     {
         LOG_WARN("Shutting down application!");
-        mTimer.stopTimer( );
-        Application::signalAppQuit();
+        mTimer.stop_timer( );
+        areg::Application::signal_quit();
     }
 
     return result;
 }
 
-void ServiceClient::responseHelloWorld(const NEHelloWorld::sConnectedClient & clientInfo)
+void ServiceClient::response_hello_world(const HelloWorld::sConnectedClient & clientInfo)
 {
-    LOG_SCOPE(examples_15_pubclient_ServiceClient_responseHelloWorld);
-    LOG_DBG("Greetings from [ %s ] output on console, client ID [ %d ]", clientInfo.ccName.getString(), clientInfo.ccID);
-    ASSERT(clientInfo.ccName == getRoleName());
+    LOG_SCOPE( examples_15_pubclient_ServiceClient, response_hello_world );
+    LOG_DBG("Greetings from [ %s ] output on console, client ID [ %d ]", clientInfo.ccName.as_string(), clientInfo.ccID);
+    ASSERT(clientInfo.ccName == role_name());
     mID = clientInfo.ccID;
 }
 
-#if AREG_LOGS
-void ServiceClient::broadcastReachedMaximum( int maxNumber )
+#if AREG_LOGGING
+void ServiceClient::broadcast_reached_maximum( int32_t maxNumber )
 {
-    LOG_SCOPE(examples_15_pubclient_ServiceClient_broadcastReachedMaximum);
+    LOG_SCOPE( examples_15_pubclient_ServiceClient, broadcast_reached_maximum );
     LOG_WARN("Service notify reached maximum number of requests [ %d ], starting shutdown procedure", maxNumber );
-    requestShutdownService(mID, getRoleName());
+    request_shutdown_service(mID, role_name());
     mID = 0;
 }
-#else   // AREG_LOGS
-void ServiceClient::broadcastReachedMaximum( int /*maxNumber*/ )
+#else   // AREG_LOGGING
+void ServiceClient::broadcast_reached_maximum( int32_t /*maxNumber*/ )
 {
-    requestShutdownService(mID, getRoleName());
+    request_shutdown_service(mID, role_name());
     mID = 0;
 }
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 
-void ServiceClient::processTimer(Timer & timer)
+void ServiceClient::process_timer(areg::Timer & timer)
 {
-    LOG_SCOPE(examples_15_pubclient_ServiceClient_processTimer);
+    LOG_SCOPE( examples_15_pubclient_ServiceClient, process_timer );
     ASSERT(&timer == &mTimer);
 
-    LOG_DBG("Timer [ %s ] expired, send request to output message.", timer.getName().getString());
-    requestHelloWorld(getRoleName());
+    LOG_DBG("Timer [ %s ] expired, send request to output message.", timer.name().as_string());
+    request_hello_world(role_name());
 }

@@ -12,11 +12,11 @@
 //               instances differ by name and run in different threads.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "src/ServicingComponent.hpp"
 
 #ifdef  _MSC_VER
@@ -42,7 +42,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "TestService1", ServicingComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
-            REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion )
+            REGISTER_IMPLEMENT_SERVICE( areg::EmptyServiceName, areg::EmptyServiceVersion )
         // end of component description
         END_REGISTER_COMPONENT( "TestService1" )
     // end of thread description
@@ -63,7 +63,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "TestService2", ServicingComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
-            REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion )
+            REGISTER_IMPLEMENT_SERVICE( areg::EmptyServiceName, areg::EmptyServiceVersion )
         // end of component description
         END_REGISTER_COMPONENT( "TestService2" )
     // end of thread description
@@ -72,33 +72,33 @@ BEGIN_MODEL(_modelName)
 // end of model description
 END_MODEL(_modelName)
 
-DEF_LOG_SCOPE( examples_12_svcmulti_main);
+DEF_LOG_SCOPE(examples_12_svcmulti, main);
 //! A Demo of loading and starting an multiple instances of the same service with no functionalities
 int main()
 {
     std::cout << "A Demo of loading and starting an multiple instances of the same service with no functionalities ..." << std::endl;
 
     // force to start logging with default settings
-    LOGGING_CONFIGURE_AND_START( nullptr );
-    Application::initApplication(true, true, false, true, true, nullptr);
+    LOGGING_CONFIGURE_AND_START( nullptr, false );
+    areg::Application::setup(true, true, false, true, true, nullptr);
 
     do 
     {
-        LOG_SCOPE(examples_12_svcmulti_main);
+        LOG_SCOPE( examples_12_svcmulti, main );
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
-        ASSERT( Application::findModel( _modelName ).isValid( ) );
+        ASSERT( areg::Application::find_model( _modelName ).is_valid( ) );
 
-        Application::loadModel(_modelName);
+        areg::Application::load_model(_modelName);
         std::cout << "Service model is loaded. Waiting to quit application signal." << std::endl;
-        Application::waitAppQuit( NECommon::WAIT_INFINITE ); // wait for quit signal to complete application.
-        Application::unloadModel(_modelName);                // stop and unload components
+        areg::Application::wait_quit( areg::WAIT_INFINITE ); // wait for quit signal to complete application.
+        areg::Application::unload_model(_modelName);                // stop and unload components
         
         std::cout
-            << (Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI)
+            << (areg::Application::find_model( _modelName ).alive_duration( ) / areg::DURATION_1_MILLI)
             << " ms passed. Model is unloaded, releasing resources to exit application ..."
             << std::endl;
 
-        Application::releaseApplication();      // release and cleanup resources of application.
+        areg::Application::release();      // release and cleanup resources of application.
 
     } while (false);
 
