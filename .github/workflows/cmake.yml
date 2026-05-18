@@ -465,10 +465,16 @@ jobs:
             mkdir product
 
       - name: Configure CMake by selecting compiler family
-        if: matrix.config.extend == 'ON'
+        if: matrix.config.extend == 'ON' && matrix.config.family != 'cygwin'
         working-directory: ${{github.workspace}}
         run: |
           cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
+
+      - name: Configure CMake by selecting compiler family
+        if: matrix.config.extend == 'ON' && matrix.config.family == 'cygwin'
+        working-directory: ${{github.workspace}}
+        run: |
+          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DCMAKE_BUILD_TYPE=Debug -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
 
       - name: Configure CMake by selecting compiler name
         if: matrix.config.extend == 'OFF'
@@ -479,7 +485,7 @@ jobs:
       - name: Build with CMake
         working-directory: ${{github.workspace}}
         # Build your program with the given configuration
-        run: cmake --build ${{env.CACHE_DEST}} --config Release -j 16
+        run: cmake --build ${{env.CACHE_DEST}} -j16
 
       - name: Install with CMake
         working-directory: ${{github.workspace}}
