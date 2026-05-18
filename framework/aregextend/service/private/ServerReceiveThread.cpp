@@ -183,7 +183,7 @@ bool ServerReceiveThread::run_dispatcher()
                     // msgReceived.invalidate();
 
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-                    int32_t drainCount{ 0 };
+                    uint32_t drainCount{ 0 };
 #endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
                     for (uint32_t drain = 0; drain < areg::THREAD_DRAIN_LIMIT; ++drain)
                     {

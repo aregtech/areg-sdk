@@ -1556,7 +1556,7 @@ inline Wait::Duration Wait::until_now(const Wait::SteadyTime& passed)
 
 inline Wait::WaitResolution Wait::wait(uint32_t ms) const
 {
-    return _os_wait_for(Wait::Duration{ ms * Wait::ONE_MS });
+    return _os_wait_for(Wait::Duration{ ms * areg::DURATION_1_MILLI });
 }
 
 inline Wait::WaitResolution Wait::wait_for(Wait::Duration timeout) const
