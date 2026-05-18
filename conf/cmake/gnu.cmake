@@ -58,8 +58,11 @@ else()
     endif()
 
     if(${CMAKE_BUILD_TYPE} MATCHES "Release")
-        list(APPEND AREG_COMPILER_OPTIONS -O3 -ffunction-sections -fdata-sections -fvisibility=hidden "$<$<COMPILE_LANGUAGE:CXX>:-fvisibility-inlines-hidden>")
-        if (NOT CMAKE_CROSSCOMPILING)
+        list(APPEND AREG_COMPILER_OPTIONS -O3 -ffunction-sections -fdata-sections)
+        if (NOT CYGWIN)
+            list(APPEND AREG_COMPILER_OPTIONS -fvisibility=hidden "$<$<COMPILE_LANGUAGE:CXX>:-fvisibility-inlines-hidden>")
+        endif()
+        if (NOT CMAKE_CROSSCOMPILING AND NOT CYGWIN)
             list(APPEND AREG_COMPILER_OPTIONS -march=native -mtune=native)
         endif()
         # LTO is disabled on Cygwin.

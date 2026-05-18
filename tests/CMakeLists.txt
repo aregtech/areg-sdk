@@ -10,8 +10,10 @@ option(AREG_GTEST_FOUND  "GTest package found flag"   FALSE)
 
 if (AREG_TESTS)
 
-    # Disable unit tests post-build for ARM processor
-    if (${AREG_ARCH} STREQUAL ${_proc_arm32} OR ${AREG_ARCH} STREQUAL ${_proc_arm64})
+    # Disable unit tests post-build for ARM processor and Cygwin.
+    # On Cygwin the binary may crash at startup in Release due to PE/COFF + visibility
+    # interactions; PRE_TEST defers discovery to ctest so the build is not blocked.
+    if (${AREG_ARCH} STREQUAL ${_proc_arm32} OR ${AREG_ARCH} STREQUAL ${_proc_arm64} OR CYGWIN)
         set(CMAKE_GTEST_DISCOVER_TESTS_DISCOVERY_MODE PRE_TEST)
     endif()
 
@@ -34,9 +36,13 @@ if (AREG_TESTS)
         set(AREG_SYSTEM_GTEST OFF)
         include(FetchContent)
         # Fetch the latest sources from googletest repository.
+        # Pin to a stable release tag. Using "main" pulls in-development code that
+        # may use C++20 attributes (e.g. [[nodiscard]] on abstract base classes) in
+        # C++17 mode, causing GCC to generate subtly wrong code for template-heavy
+        # parameterized test registration, which crashes on Cygwin Release builds.
         FetchContent_Declare( googletest
                               GIT_REPOSITORY https://github.com/google/googletest.git
-                              GIT_TAG        "main")
+                              GIT_TAG        "v1.15.2")
 
         # For Windows: Prevent overriding the parent project's compiler/linker settings
         set(gtest_force_shared_crt ON CACHE BOOL "For Windows: Prevent overriding the parent project\'s compiler/linker settings" FORCE)
@@ -60,6 +66,17 @@ if (AREG_TESTS)
 
         target_compile_options(gmock PRIVATE "${AREG_OPT_DISABLE_WARN_THIRDPARTY}")
         target_compile_options(gmock_main PRIVATE "${AREG_OPT_DISABLE_WARN_THIRDPARTY}")
+
+        # On Cygwin Release, add_compile_options() propagates -O3 to GTest targets.
+        # GTest's template-heavy parameterized test registration code crashes under -O3
+        # on Cygwin because the optimizer makes unsafe assumptions about temporary
+        # lifetimes at PE/DLL call boundaries. Override with -O1 for GTest targets only.
+        if (CYGWIN AND CMAKE_BUILD_TYPE MATCHES "Release")
+            target_compile_options(gtest      PRIVATE -O1)
+            target_compile_options(gtest_main PRIVATE -O1)
+            target_compile_options(gmock      PRIVATE -O1)
+            target_compile_options(gmock_main PRIVATE -O1)
+        endif()
 
         # compile gtest from source like imported interface to use to create unit tests.
         add_library(GTest::GTest INTERFACE IMPORTED)

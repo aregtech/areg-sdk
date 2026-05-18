@@ -7,14 +7,34 @@ message(STATUS "Areg: >>> Preparing settings for CLang compiler under \'${AREG_O
 
 if (AREG_PLATFORM_WINDOWS)
 
-    if(${CMAKE_BUILD_TYPE} MATCHES "Release")
-        list(APPEND AREG_COMPILER_OPTIONS -O3 -ffunction-sections -fdata-sections)
+    get_property(_areg_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+    if (_areg_multi_config)
+        # Multi-config generator (Visual Studio + ClangCL): scope flags per-configuration.
+        list(APPEND AREG_COMPILER_OPTIONS
+            $<$<CONFIG:Release>:-O3>
+            $<$<CONFIG:Release>:-ffunction-sections>
+            $<$<CONFIG:Release>:-fdata-sections>
+            $<$<NOT:$<CONFIG:Release>>:-Od>
+            $<$<NOT:$<CONFIG:Release>>:-RTC1>
+        )
         if (NOT CMAKE_CROSSCOMPILING)
-            list(APPEND AREG_COMPILER_OPTIONS -march=native -mtune=native)
+            list(APPEND AREG_COMPILER_OPTIONS
+                $<$<CONFIG:Release>:-march=native>
+                $<$<CONFIG:Release>:-mtune=native>
+            )
         endif()
-        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
     else()
-        list(APPEND AREG_COMPILER_OPTIONS -Od -RTC1 -c)
+        # Single-config generator: CMAKE_BUILD_TYPE is reliable.
+        if(${CMAKE_BUILD_TYPE} MATCHES "Release")
+            list(APPEND AREG_COMPILER_OPTIONS -O3 -ffunction-sections -fdata-sections)
+            if (NOT CMAKE_CROSSCOMPILING)
+                list(APPEND AREG_COMPILER_OPTIONS -march=native -mtune=native)
+            endif()
+            set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+        else()
+            list(APPEND AREG_COMPILER_OPTIONS -Od -RTC1 -c)
+        endif()
     endif()
 
     # Win32 API

@@ -25,7 +25,18 @@ macro(macro_add_unit_test test_project)
 
     list(APPEND _libs "GTest::gtest_main" "GTest::gtest")
     addExecutableEx(${test_project} "" "${_tests}" "${_libs}")
-    gtest_discover_tests(${test_project} DISCOVERY_TIMEOUT 60)
+
+    # Fix of Cygwin unit test compilation.
+    if (CYGWIN AND CMAKE_BUILD_TYPE MATCHES "Release")
+        target_compile_options(${test_project} PRIVATE -O1)
+    endif()
+
+    # Fix of Cygwin unit test compilation.
+    if (CYGWIN OR ${AREG_ARCH} STREQUAL ${_proc_arm32} OR ${AREG_ARCH} STREQUAL ${_proc_arm64})
+        gtest_discover_tests(${test_project} DISCOVERY_TIMEOUT 60 DISCOVERY_MODE PRE_TEST)
+    else()
+        gtest_discover_tests(${test_project} DISCOVERY_TIMEOUT 60)
+    endif()
 
     unset(_tests)
     unset(_list)
