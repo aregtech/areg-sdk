@@ -35,7 +35,7 @@ without a dedicated networking library underneath.
 | Windows 11           | Intel i7-13700H   | DDR4      | ~3 KB   | 450 – 520K   | msg/s | measured  |
 | WSL2 (on Win11) ¹    | Intel i7-13700H   | DDR4      | ~3 KB   | 330 – 375K   | msg/s | measured  |
 | macOS native         | Apple M3 Pro      | LPDDR5    | ~3 KB   | 700K – 1.0M  | msg/s | measured  |
-| Linux bare-metal     | x86-64            | DDR4/DDR5 | ~3 KB   | 600 – 800K   | msg/s | estimated |
+| Linux bare-metal     | x86-64            | DDR4/DDR5 | ~3 KB   | 500 – 600K   | msg/s | estimated |
 
 ---
 
@@ -46,7 +46,7 @@ without a dedicated networking library underneath.
 | Windows 11           | Intel i7-13700H   | DDR4      | ~0.5 KB  | 1.0 – 1.2M   | msg/s | measured  |
 | WSL2 (on Win11) ¹    | Intel i7-13700H   | DDR4      | ~0.5 KB  | 450 – 520K   | msg/s | measured  |
 | macOS native         | Apple M3 Pro      | LPDDR5    | ~0.5 KB  | 2.5 – 3.0M   | msg/s | measured  |
-| Linux bare-metal     | x86-64            | DDR4/DDR5 | ~0.5 KB  | 2.0 – 2.5M   | msg/s | estimated |
+| Linux bare-metal     | x86-64            | DDR4/DDR5 | ~0.5 KB  | —            | msg/s | needed    |
 
 ¹ Requires [network tuning](../../docs/wiki/07d-troubleshooting-network-tunning.md).
 Default WSL2 settings yield approximately 60–70% of the values shown.
@@ -58,7 +58,9 @@ Default WSL2 settings yield approximately 60–70% of the values shown.
 - Reported ranges reflect the most frequently observed values; occasional peak readings may exceed the upper bound.
 - Bare-metal Linux values estimated from WSL2 measurements.
 
-These numbers reflect the full framework stack — message routing, event dispatching, and multithreading — none of which is stripped away for the benchmark. **What you measure here is what your production system gets.**
+These numbers come from a full-stack, service-oriented pipeline — location-transparent
+service discovery, type-safe IPC, automatic reconnection — none of which is stripped
+away for the benchmark. **What you measure here is what your production system gets.**
 
 ---
 
@@ -95,11 +97,14 @@ These numbers reflect the full framework stack — message routing, event dispat
 
 ## Concepts Shown
 
-- **Real-Time Data Rate Monitoring** — Measure and display throughput between provider and consumer at the network layer and application level simultaneously.
-- **Message Routing** — Demonstrates `mtrouter` relaying raw buffers between processes without re-serialization.
-- **Event Dispatching** — Shows the consumer thread model: socket pump receives buffers, dispatch thread deserializes and executes RPC calls.
-- **Multithreading Under Load** — Exposes the dispatch thread ceiling and how it separates from transport capacity under sustained high message rates.
-- **Efficient Large Data Transfer** — Sends and receives continuous multi-megabyte bitmap streams over IPC.
+- **Real-Time Data Rate Monitoring** — Measure and display network throughput for
+  communications between provider and consumers.
+- **Service Interface Automation** — Uses the Areg SDK code generator to automate
+  **Object RPC** message creation and dispatching.
+- **Efficient Large Data Transfer** — Demonstrates sending and receiving bitmap
+  images over IPC using the full service stack.
+- **Fault-Tolerant Communication** — Ensures reliable delivery of messages even
+  under process restart or network interruption.
 
 ---
 
@@ -120,7 +125,7 @@ These numbers reflect the full framework stack — message routing, event dispat
       |                          |                        |
       |-- TCP send() ----------->|                        |
       |   (raw buffer, no        |-- TCP send() --------->|
-      |    re-serialization)     |   (path serialization) |
+      |    re-serialization)     |   (same raw buffer)    |
       |                          |                        |
       |<-- scope control --------|<-- connect/subscribe --|
 ```
@@ -204,6 +209,14 @@ Start the provider in its own terminal. Configure parameters first, then type `-
 .\23_pubservice.exe
 ```
 
+> [!WARNING]
+> **At high throughput rates, `23_pubclient` will exhaust memory and be killed by the OS.**
+> This is expected — it defines the hardware ceiling. Before this happens:
+> - Type **`-p`** in the `23_pubservice` console to **pause** the stream, or
+> - Type **`-q`** to **quit** the provider entirely.
+> Stop the stream before `23_pubclient` runs out of memory, especially when scaling
+> channels (`-c`) beyond the stable dispatch ceiling.
+
 ---
 
 ### Provider Command Reference
@@ -248,6 +261,13 @@ jitter and socket buffer behavior.
 ---
 
 ### Benchmark Recipes
+
+> [!IMPORTANT]
+> **Monitor `23_pubclient` memory usage during high-rate tests.** When message rate
+> exceeds the stable dispatch ceiling (~300–400K msg/s on Windows, ~500–600K on macOS),
+> the consumer queue grows unbounded and memory climbs until the OS terminates the process.
+> **Before this happens, type `-p` (pause) or `-q` (quit) in the `23_pubservice` console.**
+> Read `mtrouter` output just before stopping — that is your hardware's throughput ceiling.
 
 Enter the parameters in the `23_pubservice` console, then type `-s` to start.
 
@@ -330,11 +350,12 @@ Each block is `128 × 1 × 3 = 384 bytes` (~0.5KB message is `image data` + `mes
 
 Tune the message rate by changing number of channels and pixel time:
 
-| `-c` | `-t` | 128 x 128 (~0.5MB) |
+| `-c` | `-t` | 128 x 128 (~0.5 KB) |
 |------|------|--------------------|
 | 1    |  25  | ~312K msg/s        |
 | 2    |  31  | ~504K msg/s        |
 | 4    |  26  | ~1.2M msg/s        |
+
 > [!NOTE]
 > The `23_pubservice` application prints the computed rates whenever you change
 > parameters. Example output for `-w=128 -h=128 -l=1 -c=4 -t=26`:
@@ -433,7 +454,7 @@ separate timestamped test.
 | Windows 11 (i7-13700H, DDR4) | 2.4–2.6 GB/s | 450–520K msg/s | 1.0–1.2M msg/s |
 | WSL2 Ubuntu (i7-13700H, DDR4) | 5.0–5.6 GB/s | 330–375K msg/s | 450–520K msg/s |
 | macOS (M3 Pro, LPDDR5) | 6.5–7.0 GB/s | 700K–1.0M msg/s | 2.5–3.0M msg/s |
-| Linux bare-metal (x86-64, est.) | 6.0–7.5 GB/s | 600–800K msg/s | 2.0–2.5M msg/s |
+| Linux bare-metal (x86-64, est.) | 6.0–7.5 GB/s | 500–600K msg/s | — |
 
 **Stable end-to-end consumer dispatch:**
 
