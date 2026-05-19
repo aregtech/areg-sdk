@@ -52,6 +52,7 @@
 - [Areg SDK vs. Alternatives](#areg-sdk-vs-alternatives)
 - [Getting Started](#getting-started)
 - [Architecture](#architecture)
+- [Network Deployment Model](#network-deployment-model)
 - [Use Cases](#use-cases)
 - [Roadmap](#roadmap)
 - [Documentation](#documentation)
@@ -112,6 +113,10 @@ device — the framework resolves the location at runtime with no API changes.
 └─────────────────────────────────────────────────────────┘
 ```
 
+Consumers reference services by **name**, not by network address or endpoint.
+The framework connects a consumer to the named service wherever it runs —
+whether in the same process, on the same machine, or on a remote node.
+
 **What the framework handles automatically:**
 - Thread lifecycle and synchronization
 - Service discovery and registration
@@ -127,8 +132,13 @@ The code generator produces all RPC infrastructure — serialization, proxies, e
 
 ### Service Interface and Code Generation
 
-A `.siml` file defines the communication contract: data types, attributes (pub/sub),
-requests, responses, broadcasts, and constants. The workflow is:
+A **service interface** defines the API contract: data types, attributes (pub/sub),
+requests, responses, broadcasts, and constants. A **service** is a named component
+instance that implements one or more interfaces. Consumers declare which named service
+they depend on — the framework connects them automatically when that service becomes
+available anywhere on the network.
+
+The workflow from interface definition to running code:
 
 ```
 MyService.siml  ──►  codegen.jar  ──►  MyServiceProviderBase.hpp
@@ -168,7 +178,7 @@ data serialization, event dispatching, and multithreading — not raw socket thr
 > | macOS native ³  | M3 Pro (LPDDR5)  | 6.5–7.0 GB/s | 700K–1.0M msg/s  | 2.5–3.0M msg/s  |
 > | Linux native ⁴  | x86_64 (DDR4)    | 6.0–6.5 GB/s | 600–800K msg/s   | 2.2–2.8M msg/s  |
 >
-> ¹ On Windows, stable end-to-end consumer dispatch reaches 300–400K msg/s; above that the RPC dispatch thread becomes the bottleneck. macOS stable dispatch measured at 500-600K msg/s. See [23_pubdatarate README](examples/23_pubdatarate/ReadMe.md) for details.  
+> ¹ On Windows, stable end-to-end consumer dispatch reaches 300–400K msg/s; above that the RPC dispatch thread becomes the bottleneck. macOS stable dispatch measured at 500–600K msg/s. See [23_pubdatarate README](examples/23_pubdatarate/ReadMe.md) for details.  
 > ² Requires [network tuning](./docs/wiki/07d-troubleshooting-network-tunning.md); default WSL2 settings yield ~3.5 GB/s and ~500K msg/s.  
 > ³ Measured without network tuning. Numbers are transport-layer ceiling; current optimization level. M4 Pro results pending re-measurement.  
 > ⁴ Estimated from WSL2 baseline. Bare-metal Linux measurements pending.
@@ -178,6 +188,7 @@ data serialization, event dispatching, and multithreading — not raw socket thr
 > **Real-world fit:** covers the software pipeline layer of scientific imaging (laser microscopy, X-ray, electron microscopy) and industrial machine vision on a standard laptop.
 >
 > 📊 Measure your own hardware: run [`23_pubdatarate`](examples/23_pubdatarate/) — see the [README](examples/23_pubdatarate/ReadMe.md) for benchmark recipes and results.
+
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
@@ -189,9 +200,9 @@ data serialization, event dispatching, and multithreading — not raw socket thr
 | **Setup Complexity**      | ✅ Automated, zero boilerplate | ⚠️ Manual configuration, [verbose setup](https://www.innoq.com/en/blog/2024/06/grpc/#whataresomechallengesofworkingwithgrpc)                                                                                                                               |
 | **Threading**             | ✅ Automated threading         | ⚠️ Manual threading and synchronization                                                                                                                                                                                                                    |
 | **Code Generation**       | ✅ Full ORPC automation        | ⚠️ [Stubs only](https://grpc.io/docs/what-is-grpc/introduction/#overview), manual dispatch                                                                                                                                                                 |
-| **Service Discovery**     | ✅ Built-in mesh management    | ✅ DDS: [native](https://opendds.readthedocs.io/en/latest-release/devguide/introduction_to_dds.html#discovery-matching-and-association), ⚠️ gRPC/ZeroMQ: [external](https://stackoverflow.com/questions/59398556/grpc-equivalent-of-wcf-service-discovery) |
+| **Service Discovery**     | ✅ Name-based, automatic       | ✅ DDS: [native](https://opendds.readthedocs.io/en/latest-release/devguide/introduction_to_dds.html#discovery-matching-and-association), ⚠️ gRPC/ZeroMQ: [external](https://stackoverflow.com/questions/59398556/grpc-equivalent-of-wcf-service-discovery) |
 | **Fault Recovery**        | ✅ Watchdog auto-restart       | ✅ DDS: [QoS policies](https://opendds.readthedocs.io/en/latest-release/devguide/quality_of_service.html), ⚠️ gRPC/ZeroMQ: [manual](https://grpc.io/docs/guides/retry/)                                                                                    |
-| **Request-Reply**         | ✅ Native Object RPC           | ✅ gRPC: [RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#overview), ⚠️ DDS/ZeroMQ: [topic/pattern](https://zguide.zeromq.org/docs/chapter3/)                                                                                                  |
+| **Request-Reply**         | ✅ Native Object RPC           | ✅ gRPC: [RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#overview), ⚠️ DDS/ZeroMQ: [topic/pattern](https://zguide.zeromq.org/docs/chapter3/)                                                                                                        |
 | **Pub/Sub**               | ✅ Native Attributes           | ✅ DDS: [topics](https://opendds.readthedocs.io/en/latest-release/devguide/built_in_topics.html), ⚠️ gRPC/ZeroMQ: add-ons                                                                                                                                  |
 | **Location Transparency** | ✅ One API for threads and IPC | ⚠️ Different APIs for local vs. remote                                                                                                                                                                                                                      |
 | **Logging System**        | ✅ Distributed logs + viewer   | ⚠️ [Vendor-specific](https://community.rti.com/static/documentation/connext-dds/current/doc/manuals/addon_products/observability/telemetry_data/logs.html) or external tools                                                                               |
@@ -200,7 +211,7 @@ data serialization, event dispatching, and multithreading — not raw socket thr
 🔹 **Key Differentiators:**
 - **Complete automation** — Not just transport, but threading, dispatch, and lifecycle
 - **True location transparency** — Same interface whether thread, process, or network
-- **Zero configuration** — Services auto-discover, no manual registry setup
+- **Name-based service discovery** — consumers declare the service name they need; the framework connects them automatically and routes messages
 - **Integrated stack** — Framework + Router + Tools + Logging in one cohesive SDK
 - **High-throughput transport** — Full service stack, not stripped-down benchmark conditions
 
@@ -300,7 +311,7 @@ cmake --build build -j20
 1. **[01_minimalrpc](examples/01_minimalrpc/)** — Multithreading: service provider and consumer in separate threads, one process, no `mtrouter`
 2. **[02_minimalipc](examples/02_minimalipc/)** — IPC: the same components from `01_minimalrpc` running in separate processes via `mtrouter`
 3. **[03_helloservice](examples/03_helloservice/)** — Extended progression: three projects showing the same service and consumer in one thread → separate threads → separate processes
-4. **[16_pubmesh](examples/16_pubmesh/)** — Service mesh: multiple local and public services discovering each other automatically.
+4. **[16_pubmesh](examples/16_pubmesh/)** — Service mesh: multiple local and public services discovering each other automatically
 5. **[23_pubdatarate](examples/23_pubdatarate/)** — Platform-dependent high-throughput benchmark: 2.2–7 GB/s and 1M+ msg/s on `localhost`
 6. **[More Examples](examples/README.md)** — Advanced patterns and features
 
@@ -312,7 +323,7 @@ cmake --build build -j20
 
 ### Component Model
 
-Areg SDK uses an **Object RPC (ORPC)** model. Services expose interfaces; Consumers
+Areg SDK uses an **Object RPC (ORPC)** model. Services expose typed interfaces; consumers
 communicate through generated proxies. The framework routes all communication — whether
 the target is a thread, a process, or a remote device.
 
@@ -324,11 +335,28 @@ the target is a thread, a process, or a remote device.
 │       │                     Consumer Proxy (call methods)        │
 │       │                                                          │
 │       └─ Framework ────────► Service Registry                    │
-│                               Thread Manager                     │
-│                               Message Dispatcher                 │
-│                               Watchdog                           │
+│                              Thread Manager                      │
+│                              Message Dispatcher                  │
+│                              Watchdog                            │
 └──────────────────────────────────────────────────────────────────┘
 ```
+
+### Service Identity Model
+
+A **service interface** is the API contract — data types, requests, responses, broadcasts,
+and constants defined in a `.siml` file. A **service** is a named component instance that
+implements one or more interfaces. The same interface can be implemented by many services
+playing different roles.
+
+| Concept               | Description                                                                      | Example                                                              |
+|-----------------------|----------------------------------------------------------------------------------|----------------------------------------------------------------------|
+| **Service Interface** | API contract — the typed communication definition                                | `PrinterDevice` interface                                            |
+| **Service**           | Named component instance implementing one or more interfaces                     | `HP-Lab1` (implements `ScannerDevice` and `PrinterDevice`), `Canon-Floor3` (implements `PrinterDevice`) |
+| **Consumer**          | Declares which named service it depends on; receives `connected` when it appears | Consumer of `HP-Lab1`                                          |
+
+A consumer claims a specific service by name — "I need `HP-Lab1`." The framework
+connects them when that named service becomes available anywhere on the network, and
+notifies the consumer immediately. No polling. No manual connection management.
 
 ### Module Overview
 
@@ -361,6 +389,36 @@ machines with only configuration and build script changes.
 
 ---
 
+## Network Deployment Model[![](./docs/img/pin.svg)](#network-deployment-model)
+
+Areg SDK is designed for **controlled private networks** — deployments where nodes
+are known, the network is trusted, and communication patterns are defined at design
+time.
+
+<div align="center"><a href="./docs/img/mist-network.png"><img src="./docs/img/mist-network.png" alt="IoT Mist-to-Cloud network diagram" style="width:70%;height:70%"/></a></div>
+
+**Mist layer** — Device clusters: sensors, actuators, and controllers form a local
+service mesh, resolving each other by name automatically without a central broker.
+
+**Edge layer** — Gateway nodes: aggregate data from mist clusters, run local
+inference or control logic, and expose services to private infrastructure.
+
+**Private infrastructure** — Servers and workstations: process edge data,
+coordinate distributed workloads, and host operator tools.
+
+The same service interfaces, generated code, and operational model work at every
+layer — a **vertically consistent architecture** from device cluster to data center.
+
+> [!NOTE]
+> Areg SDK is not designed for internet-facing communication — not a web server,
+> REST endpoint, or public MQTT broker. It operates in trusted, controlled
+> networks: industrial automation, scientific instrumentation, private distributed
+> computing. This is where it performs without compromise.
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
 ## Use Cases[![](./docs/img/pin.svg)](#use-cases)
 
 The answer to **_"why Areg SDK and not something else"_** is different for each domain,
@@ -385,9 +443,8 @@ reach this throughput with full service semantics active.
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="./docs/img/interface-centric.png" alt="Interface-centric communication diagram" style="width:50%;height:50%"/></a></div>
 
 **What this means in practice:** Replace custom shared-memory hacks and platform-specific
-IPC with a typed, auto-discovered services. Pipeline stages can be rearranged
-from threads to separate processes to separate machines with only configuration and
-build script changes.
+IPC with typed, named service interfaces. Pipeline stages can be rearranged from threads
+to separate processes to separate machines with only configuration and build script changes.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -417,14 +474,14 @@ Scale to distributed nodes. Only configuration and build script changes at each 
 **Why Areg SDK:** Kernel-mode driver development is months of specialized work, requires
 OS-specific expertise, and produces code that is dangerous to debug and expensive to
 maintain. Areg SDK enables a driverless architecture: the device application exposes its
-functionality as a service. Any host application calls the device API through a
+functionality as a named service. Any host application calls the device API through a
 generated proxy — no driver installation, no kernel-mode code, no special permissions.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/driverless-solution.png"><img src="./docs/img/driverless-solution.png" alt="Service-enabled driverless device architecture" style="width:70%;height:70%"/></a></div>
 
 **What this means in practice:** External hardware (measurement instruments, industrial
-sensors, embedded controllers) runs autonomous software that registers services via
-`mtrouter`. Host applications discover and call device APIs exactly as they would call
+sensors, embedded controllers) registers as a named service via `mtrouter`. Host
+applications connect to that specific device by name — exactly as they would connect to
 any local service. Development time drops from months to days. The device is debuggable,
 testable, and upgradeable like any user-mode application.
 
@@ -436,16 +493,16 @@ testable, and upgradeable like any user-mode application.
 
 **Why Areg SDK:** Industrial control systems fail in ways that are hard to predict and
 expensive to recover from manually. Areg SDK's built-in watchdog restart, automatic
-service rediscovery, and fault-tolerant reconnection handle the failure cases that break
-hand-written IPC code. Components restart and reconnect without operator intervention —
-and without changing a line of application logic.
+service re-registration, and fault-tolerant reconnection handle the failure cases that
+break hand-written IPC code. Components restart their threads and reconnect without
+operator intervention — and without changing a line of application logic.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-services.png"><img src="./docs/img/areg-services.png" alt="Service types and message flow" style="width:70%;height:70%"/></a></div>
 
 **What this means in practice:** Sensor fusion nodes, PLC replacement controllers, and
-robot arm coordinators communicate through typed service interfaces. When a node restarts
-after a fault, it rediscovers its dependencies automatically. No supervisory restart
-scripts, no manual reconnection logic.
+robot arm coordinators communicate through typed service interfaces. When a node's thread
+restarts after a fault, it re-registers and consumers reconnect automatically. No
+supervisory restart scripts, no manual reconnection logic.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -456,13 +513,14 @@ scripts, no manual reconnection logic.
 **Why Areg SDK:** A digital twin requires bidirectional real-time synchronization between
 a physical device and its software representation. Areg SDK's event-driven architecture
 delivers state changes from hardware to software and commands from software to hardware
-with no additional middleware layers. The same service interface represents the physical
-device and its twin — they are interchangeable from the application's perspective.
+with no additional middleware layers. The same service interface defines both the physical
+device and its digital twin — providing an identical API whether connecting to real
+hardware or its virtual counterpart.
 
 **What this means in practice:** Replace polling loops and custom TCP protocols with
-pub/sub attribute broadcasting and request/reply RPC. The physical device and its
-simulation expose identical service interfaces. Switch between them with configuration,
-not code changes.
+pub/sub attribute broadcasting and request/reply RPC. The digital twin can mirror,
+simulate, or proxy the real device — all sharing the same service interface. Consumers
+require no code changes when switching between real hardware and its twin.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -471,10 +529,11 @@ not code changes.
 ### Simulation and Hardware-in-the-Loop Testing
 
 **Why Areg SDK:** Testing against real hardware is slow, expensive, and unavailable
-during early development. Because Areg SDK services are discovered by name and interface,
-a simulated service is indistinguishable from a real one to the application under test.
-Swap the real hardware service for a deterministic simulation with a single configuration
-change. No test-specific code paths, no mocking frameworks, no conditional compilation.
+during early development. Because Areg SDK services are discovered by name, a simulated
+service registered under the same name is indistinguishable from the real hardware
+service. Swap the real hardware service for a simulation that registers under the same
+service name — the rest of the application never notices the difference. No test-specific
+code paths, no mocking frameworks, no conditional compilation.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/software-layers.png"><img src="./docs/img/software-layers.png" alt="Software layer architecture with simulated Data Layer" style="width:70%;height:70%"/></a></div>
 
@@ -511,6 +570,7 @@ in embedded deployments works in backend deployments.
 - Enhanced serialization throughput (targeting 500K+ stable msg/s consumer dispatch)
 - Python-based code generator (replaces Java dependency)
 - Shared memory transport (zero-copy for same-machine IPC)
+- Secure communication (optional TLS for `mtrouter` connections)
 - Extended networking protocols
 
 **Considering for community input:**
