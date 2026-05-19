@@ -84,6 +84,7 @@ away for the benchmark. **What you measure here is what your production system g
 - [Concepts Shown](#concepts-shown)
 - [Sub-Projects](#sub-projects)
 - [How It Works](#how-it-works)
+- [Building the project](#building-the-project)
 - [Running the Benchmark](#running-the-benchmark)
   - [Step 1: Start mtrouter](#step-1-start-mtrouter)
   - [Step 2: Start the Consumer](#step-2-start-the-consumer)
@@ -141,6 +142,16 @@ most accurate throughput signal, because it uses a high-precision timer and sees
 both directions at the socket boundary.
 
 The Areg Framework handles reconnection after process restart and thread dispatch on the consumer side automatically.
+
+---
+
+## Building the Project
+
+For best benchmark results, build in `Release` configuration with no logging:
+```bash
+cmake -B ./build -DCMAKE_BUILD_TYPE=Release -DAREG_COMPILER_FAMILY=gnu -DAREG_LOGGING=OFF -DAREG_TESTS=OFF
+cmake --build ./build --parallel
+```
 
 ---
 
