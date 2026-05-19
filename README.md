@@ -211,7 +211,7 @@ data serialization, event dispatching, and multithreading — not raw socket thr
 🔹 **Key Differentiators:**
 - **Complete automation** — Not just transport, but threading, dispatch, and lifecycle
 - **True location transparency** — Same interface whether thread, process, or network
-- **Name-based service discovery** — consumers declare the service name they need; the framework connects them automatically and routes messages
+- **Service Discovery** — automatically connects service consumers and providers by name, and routes messages
 - **Integrated stack** — Framework + Router + Tools + Logging in one cohesive SDK
 - **High-throughput transport** — Full service stack, not stripped-down benchmark conditions
 
