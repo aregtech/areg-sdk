@@ -120,7 +120,9 @@ At 1.0–1.2M messages per second transport throughput on mobile-class hardware,
 
 Digital twin implementations typically introduce a broker layer — MQTT, OPC-UA, or a custom message bus — between the physical device and its software representation. That broker adds latency, becomes a single point of failure, requires separate operational management, and forces a translation layer between the physical device's interface and what the twin exposes. State synchronization based on polling misses rapid transitions.
 
-Areg SDK eliminates the broker entirely. The physical device and its digital twin expose **identical service interfaces**. `mtrouter` routes communication directly between providers and consumers. Pub/sub attribute broadcasts push state changes on occurrence — no polling, no batching, no delay. Switching between the real device and its simulation is a configuration change; the monitoring application code does not change.
+Areg SDK eliminates the broker entirely. The same service interface defines both the physical device and its digital twin — providing an identical API whether connecting to real hardware or its virtual counterpart. `mtrouter` routes communication directly between providers and consumers. Pub/sub attribute broadcasts push state changes on occurrence — no polling, no batching, no delay.
+
+The digital twin can mirror, simulate, or proxy the real device — all sharing the same service interface. Consumers require no code changes when switching between real hardware and its twin.
 
 When a physical device goes offline, `serviceDisconnected()` fires immediately. When it returns, communication resumes automatically. This is the behavior that emergency response, security monitoring, and safety-critical systems require — not polling on a timer.
 
@@ -140,7 +142,7 @@ Testing C++ application logic against simulated hardware forces a choice between
 
 <div align="center"><a href="./img/software-layers.png"><img src="./img/software-layers.png" alt="Software layers with simulated Data Layer" style="width:70%;height:70%"/></a></div>
 
-Areg SDK services are discovered by name and interface version. A simulated service and a real hardware service are indistinguishable to the application — the framework routes requests to whichever is currently registered. The testing progression is: all components in one process for fast iteration and CI, separate processes with simulated services for IPC path coverage, hardware-in-the-loop with real devices replacing simulation one interface at a time, and finally full production deployment. The application code does not change at any step. Only configuration changes.
+Areg SDK services are discovered by name and interface version. A simulated service and a real hardware service are indistinguishable to the application — the framework routes requests to whichever is currently registered. The testing progression is: all components in one process for fast iteration and CI, separate processes with simulated services for IPC path coverage, hardware-in-the-loop with real devices replacing simulation one interface at a time, and finally full production deployment. The application code does not change at any step. Only configuration changes — or none at all, if the simulated service registers under the same service name as the real hardware service.
 
 **Where it applies:** Embedded systems developed before hardware exists, medical and safety-critical software requiring reproducible test environments, automotive ADAS tested against sensor simulators, industrial robots programmed in virtual environments.
 
@@ -272,6 +274,7 @@ In Areg SDK, shutdown is built into the service model. `unload_model()` stops se
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
+
 ## Summary
 
 ### Use Cases and Core Advantages
@@ -294,7 +297,7 @@ In Areg SDK, shutdown is built into the service model. `unload_model()` stops se
 
 ### The Common Thread
 
-Across all seven use cases, Areg SDK does the same thing: it moves a class of problems from application code to framework infrastructure, or eliminates the problem entirely through architectural design. Threading, discovery, fault recovery, topology management, test-production parity — none of these belong in application code. Areg SDK is the argument that they never needed to be.
+Across all thirteen use cases, Areg SDK does the same thing: it moves a class of problems from application code to framework infrastructure, or eliminates the problem entirely through architectural design. Threading, discovery, fault recovery, topology management, test-production parity — none of these belong in application code. Areg SDK is the argument that they never needed to be.
 
 The same programming model scales from a single multithreaded process on an embedded board to a distributed system across multiple machines, with only configuration and build script changes between deployments.
 
