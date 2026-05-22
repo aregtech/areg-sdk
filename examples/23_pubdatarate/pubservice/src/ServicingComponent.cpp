@@ -527,11 +527,6 @@ void ServicingComponent::_run_image_thread()
 
         auto send_block_row = [&](uint32_t frame_id, uint32_t block_index)
             {
-#if 0
-                areg::SharedBuffer buf;
-                buf << mSendList[0];
-                broadcast_image_block_acquired(buf);
-#else
                 constexpr uint32_t offset{ 2u * sizeof(uint32_t) };
                 const uint32_t generation = frame_id % depth;
                 const uint32_t base_index = (generation * blocks_per_frame + block_index) * channel_count;
@@ -551,7 +546,6 @@ void ServicingComponent::_run_image_thread()
 
                     statBlockSent += channel_count;
                 }
-#endif
             };
 
         uint64_t sent_blocks_total{ 0u };

@@ -19,76 +19,150 @@
 #include "areg/base/String.hpp"
 #include "areg/base/WideString.hpp"
 #include "areg/base/CommonDefs.hpp"
+#include "areg/base/MemoryDefs.hpp"
 
 #include <chrono>
 #include <string>
 #include <time.h>
 
+namespace {
+
+/**
+ * \brief   Platform-safe wrapper for gmtime. Converts seconds since Unix epoch to broken-down UTC time.
+ * \param[in]   secs    Seconds since Unix epoch to convert.
+ * \param[out]  result  Broken-down UTC time structure.
+ * \return  Returns true if conversion succeeded; otherwise false.
+ **/
+inline bool _safe_gmtime(time_t secs, struct tm & result) noexcept
+{
+#ifdef _WIN32
+    return ::gmtime_s(&result, &secs) == 0;
+#else
+    return ::gmtime_r(&secs, &result) != nullptr;
+#endif
+}
+
+/**
+ * \brief   Platform-safe wrapper for localtime. Converts seconds since Unix epoch to broken-down local time.
+ * \param[in]   secs    Seconds since Unix epoch to convert.
+ * \param[out]  result  Broken-down local time structure.
+ * \return  Returns true if conversion succeeded; otherwise false.
+ **/
+inline bool _safe_localtime(time_t secs, struct tm & result) noexcept
+{
+#ifdef _WIN32
+    return ::localtime_s(&result, &secs) == 0;
+#else
+    return ::localtime_r(&secs, &result) != nullptr;
+#endif
+}
+
+} // namespace
+
 namespace areg::os {
-    /************************************************************************/
-    // Declaration of OS specific methods
-    /************************************************************************/
 
     /**
-     * \brief   Returns value as milliseconds that have elapsed since the system was started.
-     **/
-    extern uint64_t _os_tick_count();
-
-    /**
-     * \brief   Returns value of the current date and time in microseconds passed since Unix epoch (1 January 1970).
-     *          The time is in UTC.
+     * \brief   Returns current date and time in UTC as microseconds since Unix epoch (1 January 1970).
      **/
     extern TIME64 _os_system_time_now();
 
     /**
-     * \brief   Set the current date and time in the struct pointed to by the `sysTime` argument.
-     * \param[out]  sysTime     The structure to break the current date and time.
-     * \param[in]   localTime   The flag, indicating whether the time should be local or in UTC.
+     * \brief   Fills the calendar time structure with the current system date and time.
+     * \param[out]  sysTime     The structure to receive broken-down current date and time.
+     * \param[in]   localTime   If true, fills sysTime with local time; if false, fills with UTC time.
      **/
-    extern void _os_system_time_now(CalendarTime& sysTime, bool localTime);
+    extern void _os_system_time_now(CalendarTime & sysTime, bool localTime);
 
     /**
-     * \brief   Converts the UTC time broken in the structure of `tm` to the local time.
-     * \param[in,out]   utcTime     The broken time in UTC to convert to the local time.
+     * \brief   Returns milliseconds elapsed since an unspecified fixed point (monotonic clock).
      **/
-    extern void _os_make_tm_local(struct tm& utcTime);
+    uint64_t _os_tick_count()
+    {
+        return static_cast<uint64_t>(
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::steady_clock::now().time_since_epoch()
+            ).count()
+        );
+    }
 
     /**
-     * \brief   Converts the given time in microseconds passed since Unix epoch (1 January 1970) to the local time
-     *          broken in the structure of `localTime` parameter.
-     * \param[in]   utcTime     The UTC time in microseconds since Unix epoch (1 January 1970) to convert to local time.
-     * \param[out]  localTime   The broken time structure. On output this contains structured calendar structure.
-     * \return  Returns true if operation succeeded. Otherwise, returns false.
+     * \brief   Converts a broken-down UTC time structure to local time in-place.
+     * \param[in,out]   utcTime     On input contains broken-down UTC time; on output contains local time.
      **/
-    extern bool _os_to_local_time(const TIME64& utcTime, CalendarTime& localTime);
+    void _os_make_tm_local(struct tm & utcTime)
+    {
+        mem_set(&utcTime, sizeof(struct tm), 0);
+        time_t timer = mktime(&utcTime);
+        _safe_localtime(timer, utcTime);
+    }
 
     /**
-     * \brief   Converts the given time in microseconds passed since Unix epoch (1 January 1970) to the local time
-     *          broken in the structure of `localTm` parameter.
-     * \param[in]   utcTime     The UTC time in microseconds since Unix epoch (1 January 1970) to convert to local time.
-     * \param[out]  localTm     The broken time structure. On output this contains structured calendar structure without
-     *                          milliseconds and microseconds.
-     * \return  Returns true if operation succeeded. Otherwise, returns false.
+     * \brief   Converts UTC time in microseconds since Unix epoch to broken-down local calendar time.
+     * \param[in]   utcTime     UTC time in microseconds since Unix epoch (1 January 1970).
+     * \param[out]  localTime   Receives the broken-down local calendar time including milliseconds and microseconds.
+     * \return  Returns true if conversion succeeded; otherwise false.
      **/
-    extern bool _os_to_local_tm(const TIME64& utcTime, struct tm& localTm);
+    bool _os_to_local_time(const TIME64 & utcTime, CalendarTime & localTime)
+    {
+        time_t secs;
+        uint16_t milli, micro;
+        conv_microsecs(utcTime, secs, milli, micro);
+
+        struct tm tmLocal {};
+        if (_safe_localtime(secs, tmLocal))
+        {
+            to_system_time(tmLocal, localTime);
+            localTime.stMillisecs = milli;
+            localTime.stMicrosecs = micro;
+            return true;
+        }
+
+        return false;
+    }
 
     /**
-     * \brief   Converts the given time in microseconds passed since Unix epoch (1 January 1970) to the time
-     *          broken in the structure of `sysTime` parameter.
-     * \param[in]   timeValue   The UTC time in microseconds since Unix epoch (1 January 1970) to break.
-     * \param[out]  sysTime     The broken time structure. On output this contains structured calendar structure,
-     *                          including milliseconds and microseconds.
+     * \brief   Converts UTC time in microseconds since Unix epoch to broken-down local tm structure.
+     * \param[in]   utcTime     UTC time in microseconds since Unix epoch (1 January 1970).
+     * \param[out]  localTm     Receives the broken-down local time without milliseconds and microseconds.
+     * \return  Returns true if conversion succeeded; otherwise false.
      **/
-    extern void _osto_system_time(const TIME64& timeValue, areg::CalendarTime& sysTime);
+    bool _os_to_local_tm(const TIME64 & utcTime, struct tm & localTm)
+    {
+        const time_t secs = static_cast<time_t>(utcTime / SEC_TO_MICROSECS);
+        return _safe_localtime(secs, localTm);
+    }
 
     /**
-     * \brief   Converts the given time in microseconds passed since Unix epoch (1 January 1970) to the time
-     *          broken in the tm structure.
-     * \param[in]   timeValue   The UTC time in microseconds since Unix epoch (1 January 1970) to break.
-     * \param[out]  time        The broken time structure. On output this contains structured calendar structure
-     *                          without milliseconds and microseconds.
+     * \brief   Converts UTC time in microseconds since Unix epoch to broken-down calendar time structure.
+     * \param[in]   timeValue   UTC time in microseconds since Unix epoch (1 January 1970).
+     * \param[out]  sysTime     Receives the broken-down calendar time including milliseconds and microseconds.
      **/
-    extern void _os_to_tm(const TIME64& timeValue, struct tm& time);
+    void _os_to_system_time(const TIME64 & timeValue, CalendarTime & sysTime)
+    {
+        time_t secs;
+        uint16_t milli{ 0u };
+        uint16_t micro{ 0u };
+        conv_microsecs(timeValue, secs, milli, micro);
+
+        struct tm gmt {};
+        if (_safe_gmtime(secs, gmt))
+        {
+            to_system_time(gmt, sysTime);
+            sysTime.stMillisecs = milli;
+            sysTime.stMicrosecs = micro;
+        }
+    }
+
+    /**
+     * \brief   Converts UTC time in microseconds since Unix epoch to broken-down tm structure.
+     * \param[in]   timeValue   UTC time in microseconds since Unix epoch (1 January 1970).
+     * \param[out]  time        Receives the broken-down UTC time without milliseconds and microseconds.
+     **/
+    void _os_to_tm(const TIME64 & timeValue, struct tm & time)
+    {
+        const time_t secs = static_cast<time_t>(timeValue / SEC_TO_MICROSECS);
+        _safe_gmtime(secs, time);
+    }
 
 } // namespace areg::os
 
@@ -201,7 +275,7 @@ AREG_API_IMPL TIME64 areg::system_time_now() noexcept
 
 AREG_API_IMPL void areg::to_system_time( const TIME64 & timeValue, areg::CalendarTime & sysTime ) noexcept
 {
-    areg::os::_osto_system_time(timeValue, sysTime);
+    areg::os::_os_to_system_time(timeValue, sysTime);
 }
 
 AREG_API_IMPL areg::DataLiteral areg::conv_data_size( uint64_t dataSize )

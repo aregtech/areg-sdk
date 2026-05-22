@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="system\areg_platform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="mtrouter\resources\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>

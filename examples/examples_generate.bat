@@ -87,4 +87,8 @@ call java -jar %AREG_SDK_ROOT%/tools/codegen.jar --root=%AREG_PRODUCT% --doc=%EX
 @echo "Generating service interface files of 27_pubsubmulti example"
 call java -jar %AREG_SDK_ROOT%/tools/codegen.jar --root=%AREG_PRODUCT% --doc=%EXAMPLE_ROOT%\27_pubsubmulti\services\PubSub.siml --target=examples\27_pubsubmulti\services
 
+:: Generate codes for example 30_publatency
+@echo "Generating service interface files of 30_publatencyexample"
+call java -jar %AREG_SDK_ROOT%/tools/codegen.jar --root=%AREG_PRODUCT% --doc=%EXAMPLE_ROOT%\30_publatency\services\Latency.siml --target=examples\30_publatency\services
+
 @echo Completed to generate files...
