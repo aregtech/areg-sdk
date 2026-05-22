@@ -1,0 +1,794 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="51" Name="Latency" Version="1.0.0" Category="Public">
+        <Description>A Service Interface for the latency benchmark</Description>
+    </Overview>
+    <DataTypeList>
+        <DataType ID="52" Name="LatencyMode" Type="Enumeration" Values="uint16">
+            <Description>Latency modes</Description>
+            <FieldList>
+                <EnumEntry ID="53" Name="Stop">
+                    <Value>0</Value>
+                    <Description>Stop latency test.</Description>
+                </EnumEntry>
+                <EnumEntry ID="54" Name="Broadcast0">
+                    <Description>Send broadcasts with id and timestamp, no extra data</Description>
+                </EnumEntry>
+                <EnumEntry ID="55" Name="Broadcast8">
+                    <Description>Send broadcasts with id and timestamp, and 8 bytes extra data</Description>
+                </EnumEntry>
+                <EnumEntry ID="56" Name="Broadcast16">
+                    <Description>Send broadcasts with id and timestamp, and 16 bytes extra data</Description>
+                </EnumEntry>
+                <EnumEntry ID="57" Name="Broadcast32">
+                    <Description>Send broadcasts with id and timestamp, and 32 bytes extra data</Description>
+                </EnumEntry>
+                <EnumEntry ID="58" Name="Broadcast64">
+                    <Description>Send broadcasts with id and timestamp, and 64 bytes extra data</Description>
+                </EnumEntry>
+                <EnumEntry ID="59" Name="Broadcast128">
+                    <Description>Send broadcasts with id and timestamp, and 128 bytes extra data</Description>
+                </EnumEntry>
+                <EnumEntry ID="60" Name="Broadcast256">
+                    <Description/>
+                </EnumEntry>
+                <EnumEntry ID="61" Name="Broadcast512">
+                    <Description>Send broadcasts with id and timestamp, and 512 bytes extra data</Description>
+                </EnumEntry>
+                <EnumEntry ID="62" Name="Broadcast1024">
+                    <Description>Send broadcasts with id and timestamp, and 1024 bytes extra data</Description>
+                </EnumEntry>
+                <EnumEntry ID="63" Name="Broadcast4096">
+                    <Description>Send broadcasts with id and timestamp, and 4096 bytes extra data</Description>
+                </EnumEntry>
+                <EnumEntry ID="64" Name="Broadcast65536">
+                    <Description>Send broadcasts with id and timestamp, and 65536 bytes extra data</Description>
+                </EnumEntry>
+                <EnumEntry ID="65" Name="Request0">
+                    <Description>Request/reply (ping-pong) with id and timestamp, and no extra data</Description>
+                </EnumEntry>
+                <EnumEntry ID="66" Name="Request8">
+                    <Description>Request/reply (ping-pong) with id and timestamp, and 8 bytes extra data</Description>
+                </EnumEntry>
+                <EnumEntry ID="67" Name="Request16">
+                    <Description>Request/reply (ping-pong) with id and timestamp, and 16 bytes extra data</Description>
+                </EnumEntry>
+                <EnumEntry ID="68" Name="Request32">
+                    <Description>Request/reply (ping-pong) with id and timestamp, and 32 bytes extra data</Description>
+                </EnumEntry>
+                <EnumEntry ID="69" Name="Request64">
+                    <Description>Request/reply (ping-pong) with id and timestamp, and 64 bytes extra data</Description>
+                </EnumEntry>
+                <EnumEntry ID="70" Name="Request128">
+                    <Description>Request/reply (ping-pong) with id and timestamp, and 128 bytes extra data</Description>
+                </EnumEntry>
+                <EnumEntry ID="71" Name="Request256">
+                    <Description>Request/reply (ping-pong) with id and timestamp, and 256 bytes extra data</Description>
+                </EnumEntry>
+                <EnumEntry ID="72" Name="Request512">
+                    <Description>Request/reply (ping-pong) with id and timestamp, and 512 bytes extra data</Description>
+                </EnumEntry>
+                <EnumEntry ID="73" Name="Request1024">
+                    <Description>Request/reply (ping-pong) with id and timestamp, and 1024 bytes extra data</Description>
+                </EnumEntry>
+                <EnumEntry ID="74" Name="Request4096">
+                    <Description>Request/reply (ping-pong) with id and timestamp, and 4096 bytes extra data</Description>
+                </EnumEntry>
+                <EnumEntry ID="75" Name="Request65536">
+                    <Description>Request/reply (ping-pong) with id and timestamp, and 65536 bytes extra data</Description>
+                </EnumEntry>
+                <EnumEntry ID="163" Name="QuitApp">
+                    <Description>Quit and close all benchmark apps</Description>
+                </EnumEntry>
+                <EnumEntry ID="304" Name="Undefined">
+                    <Description>Undefined mode.</Description>
+                </EnumEntry>
+            </FieldList>
+        </DataType>
+        <DataType ID="77" Name="Data8" Type="Structure">
+            <Description>Extra 8 bytes data to use in broadcast and request/response ping-pong calls</Description>
+            <FieldList>
+                <Field ID="78" Name="data_1_4" DataType="uint32">
+                    <Value IsDefault="true">14</Value>
+                    <Description>4 bytes</Description>
+                </Field>
+                <Field ID="82" Name="data_5_8" DataType="uint32">
+                    <Value IsDefault="true">58</Value>
+                    <Description>4 bytes</Description>
+                </Field>
+            </FieldList>
+        </DataType>
+        <DataType ID="80" Name="Data16" Type="Structure">
+            <Description>Extra 16 bytes data to use in broadcast and request/response ping-pong calls</Description>
+            <FieldList>
+                <Field ID="81" Name="data_1_4" DataType="uint32">
+                    <Value IsDefault="true">14</Value>
+                    <Description/>
+                </Field>
+                <Field ID="83" Name="data_5_8" DataType="uint32">
+                    <Value IsDefault="true">58</Value>
+                    <Description/>
+                </Field>
+                <Field ID="84" Name="data_9_12" DataType="uint32">
+                    <Value IsDefault="true">912</Value>
+                    <Description/>
+                </Field>
+                <Field ID="85" Name="data_13_16" DataType="uint32">
+                    <Value IsDefault="true">1316</Value>
+                    <Description/>
+                </Field>
+            </FieldList>
+        </DataType>
+        <DataType ID="86" Name="Data32" Type="Structure">
+            <Description>Extra 32 bytes data to use in broadcast and request/response ping-pong calls</Description>
+            <FieldList>
+                <Field ID="87" Name="data_1_4" DataType="uint32">
+                    <Value IsDefault="true">14</Value>
+                    <Description/>
+                </Field>
+                <Field ID="88" Name="data_5_8" DataType="uint32">
+                    <Value IsDefault="true">58</Value>
+                    <Description/>
+                </Field>
+                <Field ID="89" Name="data_9_12" DataType="uint32">
+                    <Value IsDefault="true">912</Value>
+                    <Description/>
+                </Field>
+                <Field ID="90" Name="data_13_16" DataType="uint32">
+                    <Value IsDefault="true">1316</Value>
+                    <Description/>
+                </Field>
+                <Field ID="91" Name="data_17_24" DataType="uint64">
+                    <Value IsDefault="true">1724</Value>
+                    <Description/>
+                </Field>
+                <Field ID="92" Name="data_25_32" DataType="uint64">
+                    <Value IsDefault="true">2532</Value>
+                    <Description/>
+                </Field>
+            </FieldList>
+        </DataType>
+        <DataType ID="93" Name="Data64" Type="Structure">
+            <Description>Extra 64 bytes data to use in broadcast and request/response ping-pong calls</Description>
+            <FieldList>
+                <Field ID="94" Name="data1" DataType="Data32">
+                    <Description/>
+                </Field>
+                <Field ID="96" Name="data_33_40" DataType="uint64">
+                    <Value IsDefault="true">3340</Value>
+                    <Description/>
+                </Field>
+                <Field ID="97" Name="data_41_48" DataType="uint64">
+                    <Value IsDefault="true">4148</Value>
+                    <Description/>
+                </Field>
+                <Field ID="98" Name="data_49_56" DataType="uint64">
+                    <Value IsDefault="true">4956</Value>
+                    <Description/>
+                </Field>
+                <Field ID="99" Name="data_57_64" DataType="uint64">
+                    <Value IsDefault="true">5764</Value>
+                    <Description/>
+                </Field>
+            </FieldList>
+        </DataType>
+        <DataType ID="101" Name="Data128" Type="Structure">
+            <Description>Extra 128 bytes data to use in broadcast and request/response ping-pong calls</Description>
+            <FieldList>
+                <Field ID="102" Name="data1" DataType="Data64">
+                    <Description/>
+                </Field>
+                <Field ID="103" Name="data128" DataType="String">
+                    <Value IsDefault="true">&quot;123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456&quot;</Value>
+                    <Description/>
+                </Field>
+            </FieldList>
+        </DataType>
+        <DataType ID="104" Name="Data256" Type="Structure">
+            <Description>Extra 256 bytes data to use in broadcast and request/response ping-pong calls</Description>
+            <FieldList>
+                <Field ID="105" Name="data1" DataType="Data128">
+                    <Description/>
+                </Field>
+                <Field ID="106" Name="data2" DataType="Data128">
+                    <Description/>
+                </Field>
+            </FieldList>
+        </DataType>
+        <DataType ID="107" Name="Data512" Type="Structure">
+            <Description>Extra 512 bytes data to use in broadcast and request/response ping-pong calls</Description>
+            <FieldList>
+                <Field ID="108" Name="data1" DataType="Data256">
+                    <Description/>
+                </Field>
+                <Field ID="109" Name="data2" DataType="Data256">
+                    <Description/>
+                </Field>
+            </FieldList>
+        </DataType>
+        <DataType ID="110" Name="Data1024" Type="Structure">
+            <Description>Extra 1024 bytes data to use in broadcast and request/response ping-pong calls</Description>
+            <FieldList>
+                <Field ID="111" Name="data_64" DataType="Data64">
+                    <Description/>
+                </Field>
+                <Field ID="112" Name="data_128" DataType="Data128">
+                    <Description/>
+                </Field>
+                <Field ID="113" Name="data_rest" DataType="BinaryBuffer">
+                    <Value IsDefault="true">1024-128-64</Value>
+                    <Description/>
+                </Field>
+            </FieldList>
+        </DataType>
+        <DataType ID="114" Name="Data4096" Type="Structure">
+            <Description>Extra 4096 bytes data to use in broadcast and request/response ping-pong calls</Description>
+            <FieldList>
+                <Field ID="115" Name="data_64" DataType="Data64">
+                    <Description/>
+                </Field>
+                <Field ID="116" Name="data_128" DataType="Data128">
+                    <Description/>
+                </Field>
+                <Field ID="117" Name="data_rest" DataType="BinaryBuffer">
+                    <Value IsDefault="true">4096-128-64</Value>
+                    <Description/>
+                </Field>
+            </FieldList>
+        </DataType>
+        <DataType ID="118" Name="Data65536" Type="Structure">
+            <Description>Extra 65536 bytes data to use in broadcast and request/response ping-pong calls</Description>
+            <FieldList>
+                <Field ID="119" Name="data_64" DataType="uint64">
+                    <Description/>
+                </Field>
+                <Field ID="120" Name="data_128" DataType="Data128">
+                    <Description/>
+                </Field>
+                <Field ID="121" Name="data_rest" DataType="BinaryBuffer">
+                    <Value IsDefault="true">65536-128-64</Value>
+                    <Description/>
+                </Field>
+            </FieldList>
+        </DataType>
+        <DataType ID="416" Name="LantencySetup" Type="Structure">
+            <Description>Latency test setup structure.</Description>
+            <FieldList>
+                <Field ID="417" Name="mode" DataType="LatencyMode">
+                    <Value IsDefault="true">Latency::LatencyMode::Stop</Value>
+                    <Description>The latency benchmark mode.</Description>
+                </Field>
+                <Field ID="418" Name="duration" DataType="uint32">
+                    <Value IsDefault="true">0u</Value>
+                    <Description>Duration of test in seconds.</Description>
+                </Field>
+                <Field ID="419" Name="warmup" DataType="uint32">
+                    <Value IsDefault="true">0u</Value>
+                    <Description>Number of elements to warmup. Value 0 means no warmup.</Description>
+                </Field>
+                <Field ID="531" Name="count" DataType="uint32">
+                    <Value IsDefault="true">0</Value>
+                    <Description>Broadcast: number of messages per second. Request-response: number of requests to expect,</Description>
+                </Field>
+            </FieldList>
+        </DataType>
+    </DataTypeList>
+    <AttributeList>
+        <Attribute ID="122" Name="latency_setup" DataType="LantencySetup" Notify="OnChange">
+            <Description>Current latency benchmark setup</Description>
+        </Attribute>
+    </AttributeList>
+    <MethodList>
+        <Method ID="123" Name="start_mode" MethodType="Request" Response="start_mode">
+            <Description>Call to start or stop the latency benchmark test depending on the mode flag</Description>
+            <ParamList>
+                <Parameter ID="420" Name="mode" DataType="LatencyMode">
+                    <Description>Latency benchmark test mode to start or prepare.</Description>
+                </Parameter>
+                <Parameter ID="421" Name="duration" DataType="uint32">
+                    <Description>Duration of the test in seconds</Description>
+                </Parameter>
+                <Parameter ID="422" Name="warmup" DataType="uint32">
+                    <Description>The number of elements to warmup. Value 0 means no warm up.</Description>
+                </Parameter>
+                <Parameter ID="532" Name="count" DataType="uint32">
+                    <Description>Broadcast: number of messages per second. Request-response: number of requests to expect, plus warmup value.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="127" Name="start_mode" MethodType="Response">
+            <Description>Response of latency benchmark test request</Description>
+            <ParamList>
+                <Parameter ID="423" Name="mode" DataType="LantencySetup">
+                    <Description>The latency test mode that was setup</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="131" Name="message_0" MethodType="Broadcast">
+            <Description>Broadcast message with id and timestamp without extra data</Description>
+            <ParamList>
+                <Parameter ID="424" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="425" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="134" Name="message_8" MethodType="Broadcast">
+            <Description>Broadcast message with id and timestamp with extra 8 Bytes data</Description>
+            <ParamList>
+                <Parameter ID="426" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="427" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="428" Name="data8" DataType="Data8">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="138" Name="message_16" MethodType="Broadcast">
+            <Description>Broadcast message with id and timestamp with extra 16 Bytes data</Description>
+            <ParamList>
+                <Parameter ID="429" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="430" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="431" Name="data16" DataType="Data16">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="142" Name="message_32" MethodType="Broadcast">
+            <Description>Broadcast message with id and timestamp with extra 32 Bytes data</Description>
+            <ParamList>
+                <Parameter ID="432" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="433" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="434" Name="data32" DataType="Data32">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="146" Name="message_64" MethodType="Broadcast">
+            <Description>Broadcast message with id and timestamp with extra 64 Bytes data</Description>
+            <ParamList>
+                <Parameter ID="435" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="436" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="437" Name="data64" DataType="Data64">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="147" Name="message_128" MethodType="Broadcast">
+            <Description>Broadcast message with id and timestamp with extra 128 Bytes data</Description>
+            <ParamList>
+                <Parameter ID="438" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="439" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="440" Name="data128" DataType="Data128">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="154" Name="message_256" MethodType="Broadcast">
+            <Description>Broadcast message with id and timestamp with extra 256 Bytes data</Description>
+            <ParamList>
+                <Parameter ID="441" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="442" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="443" Name="data256" DataType="Data256">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="158" Name="message_512" MethodType="Broadcast">
+            <Description>Broadcast message with id and timestamp with extra 512 Bytes data</Description>
+            <ParamList>
+                <Parameter ID="444" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="445" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="446" Name="data512" DataType="Data512">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="191" Name="message_1024" MethodType="Broadcast">
+            <Description>Broadcast message with id and timestamp with extra 1024 Bytes data</Description>
+            <ParamList>
+                <Parameter ID="447" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="448" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="449" Name="data1024" DataType="Data1024">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="195" Name="message_4096" MethodType="Broadcast">
+            <Description>Broadcast message with id and timestamp with extra 4096 Bytes data</Description>
+            <ParamList>
+                <Parameter ID="450" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="451" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="452" Name="data4096" DataType="Data4096">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="199" Name="message_65536" MethodType="Broadcast">
+            <Description>Broadcast message with id and timestamp with extra 655336 Bytes data</Description>
+            <ParamList>
+                <Parameter ID="453" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="454" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="455" Name="data65536" DataType="Data65536">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="203" Name="ping_pong_0" MethodType="Request" Response="ping_pong_0">
+            <Description>Request with id and timestamp, and without extra data</Description>
+            <ParamList>
+                <Parameter ID="456" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="457" Name="start" DataType="uint64">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="208" Name="ping_pong_0" MethodType="Response">
+            <Description>Response with id and timestamp, and without extra data</Description>
+            <ParamList>
+                <Parameter ID="458" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="459" Name="start" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="460" Name="replied" DataType="uint64">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="212" Name="ping_pong_8" MethodType="Request" Response="ping_pong_8">
+            <Description>Request with id and timestamp, and with 8 Bytes extra data</Description>
+            <ParamList>
+                <Parameter ID="461" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="462" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="463" Name="data8" DataType="Data8">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="216" Name="ping_pong_8" MethodType="Response">
+            <Description>Response with id and timestamp, and with 8 Bytes extra data</Description>
+            <ParamList>
+                <Parameter ID="464" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="465" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="466" Name="replied" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="467" Name="data8" DataType="Data8">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="221" Name="ping_pong_16" MethodType="Request" Response="ping_pong_16">
+            <Description>Request with id and timestamp, and with 16 Bytes extra data</Description>
+            <ParamList>
+                <Parameter ID="468" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="469" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="470" Name="data16" DataType="Data16">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="222" Name="ping_pong_16" MethodType="Response">
+            <Description>Response with id and timestamp, and with 16 Bytes extra data</Description>
+            <ParamList>
+                <Parameter ID="471" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="472" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="473" Name="replied" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="474" Name="data16" DataType="Data16">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="230" Name="ping_pong_32" MethodType="Request" Response="ping_pong_32">
+            <Description>Request with id and timestamp, and with 32 Bytes extra data</Description>
+            <ParamList>
+                <Parameter ID="475" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="476" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="477" Name="data32" DataType="Data32">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="234" Name="ping_pong_32" MethodType="Response">
+            <Description>Response with id and timestamp, and with 32 Bytes extra data</Description>
+            <ParamList>
+                <Parameter ID="478" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="479" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="480" Name="replied" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="481" Name="data32" DataType="Data32">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="239" Name="ping_pong_64" MethodType="Request" Response="ping_pong_64">
+            <Description>Request with id and timestamp, and with 64 Bytes extra data</Description>
+            <ParamList>
+                <Parameter ID="482" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="483" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="484" Name="data64" DataType="Data64">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="243" Name="ping_pong_64" MethodType="Response">
+            <Description>Response with id and timestamp, and with 64 Bytes extra data</Description>
+            <ParamList>
+                <Parameter ID="485" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="486" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="487" Name="replied" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="488" Name="data64" DataType="Data64">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="249" Name="ping_pong_128" MethodType="Request" Response="ping_pong_128">
+            <Description>Request with id and timestamp, and with 128 Bytes extra data</Description>
+            <ParamList>
+                <Parameter ID="489" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="490" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="491" Name="data128" DataType="Data128">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="254" Name="ping_pong_128" MethodType="Response">
+            <Description>Response with id and timestamp, and with 128 Bytes extra data</Description>
+            <ParamList>
+                <Parameter ID="492" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="493" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="494" Name="replied" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="495" Name="data128" DataType="Data128">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="259" Name="ping_pong_256" MethodType="Request" Response="ping_pong_256">
+            <Description>Request with id and timestamp, and with 256 Bytes extra data</Description>
+            <ParamList>
+                <Parameter ID="496" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="497" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="498" Name="data256" DataType="Data256">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="263" Name="ping_pong_256" MethodType="Response">
+            <Description>Response with id and timestamp, and with 256 Bytes extra data</Description>
+            <ParamList>
+                <Parameter ID="499" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="500" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="501" Name="replied" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="502" Name="data256" DataType="Data256">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="268" Name="ping_pong_512" MethodType="Request" Response="ping_pong_512">
+            <Description>Request with id and timestamp, and with 512 Bytes extra data</Description>
+            <ParamList>
+                <Parameter ID="503" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="504" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="505" Name="data512" DataType="Data256">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="272" Name="ping_pong_512" MethodType="Response">
+            <Description>Response with id and timestamp, and with 512 Bytes extra data</Description>
+            <ParamList>
+                <Parameter ID="506" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="507" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="508" Name="newParam1" DataType="bool">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="509" Name="replied" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="510" Name="data512" DataType="Data512">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="278" Name="ping_pong_1024" MethodType="Request" Response="ping_pong_1024">
+            <Description>Request with id and timestamp, and with 1024 Bytes extra data</Description>
+            <ParamList>
+                <Parameter ID="511" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="512" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="513" Name="data1024" DataType="Data1024">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="282" Name="ping_pong_1024" MethodType="Response">
+            <Description>Response with id and timestamp, and with 1024 Bytes extra data</Description>
+            <ParamList>
+                <Parameter ID="514" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="515" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="516" Name="replied" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="517" Name="data1024" DataType="Data1024">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="287" Name="ping_pong_4096" MethodType="Request" Response="ping_pong_4096">
+            <Description>Request with id and timestamp, and with 4096 Bytes extra data</Description>
+            <ParamList>
+                <Parameter ID="518" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="519" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="520" Name="data4096" DataType="Data4096">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="291" Name="ping_pong_4096" MethodType="Response">
+            <Description>Response with id and timestamp, and with 4096 Bytes extra data</Description>
+            <ParamList>
+                <Parameter ID="521" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="522" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="523" Name="replied" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="524" Name="data4096" DataType="Data4096">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="296" Name="ping_pong_65536" MethodType="Request" Response="ping_pong_65536">
+            <Description>Request with id and timestamp, and with 65536 Bytes extra data</Description>
+            <ParamList>
+                <Parameter ID="525" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="526" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="527" Name="data65536" DataType="Data65536">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="300" Name="ping_pong_65536" MethodType="Response">
+            <Description>Response with id and timestamp, and with 65536 Bytes extra data</Description>
+            <ParamList>
+                <Parameter ID="528" Name="id" DataType="uint32">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="529" Name="begin" DataType="uint64">
+                    <Description/>
+                </Parameter>
+                <Parameter ID="530" Name="data65536" DataType="Data65536">
+                    <Description/>
+                </Parameter>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>

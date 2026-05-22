@@ -322,6 +322,18 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
+     * \brief   Broken-down date components for shared use by calendar extraction methods.
+     **/
+    struct DateParts { uint32_t years; uint32_t month; uint32_t day; };
+
+    /**
+     * \brief   Decomposes the stored microsecond value into broken-down date components.
+     * \return  DateParts with approximate years since Unix epoch, month (1-12) and day of month (1-31).
+     **/
+    [[nodiscard]]
+    inline constexpr DateParts _decompose() const noexcept;
+
+    /**
      * \brief   Date and time in microseconds passed since Unix epoch (January 1, 1970).
      **/
     TIME64  mDateTime;
@@ -457,44 +469,30 @@ inline constexpr uint32_t DateTime::year() const noexcept
     return static_cast<uint32_t>(static_cast<double>(secs) / _secsInYear) + _unixEpoch;
 }
 
-inline constexpr uint32_t DateTime::month() const noexcept
+inline constexpr DateTime::DateParts DateTime::_decompose() const noexcept
 {
     constexpr uint32_t _DAYS_IN_MONTH[]{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-    uint32_t month{ 1u };
-
-    uint32_t days{ static_cast<uint32_t>(mDateTime / areg::DAY_TO_MICROSECS) };
-    uint32_t years = days / 365;
-    uint32_t remainDays = days % 365;
-    uint32_t leapYears = (years + 1) / 4;
-    remainDays -= leapYears;
-
-    while (remainDays >= _DAYS_IN_MONTH[month - 1])
+    uint32_t days       = static_cast<uint32_t>(mDateTime / areg::DAY_TO_MICROSECS);
+    uint32_t years      = days / 365u;
+    uint32_t remainDays = (days % 365u) - ((years + 1u) / 4u);
+    uint32_t month      = 1u;
+    while (remainDays >= _DAYS_IN_MONTH[month - 1u])
     {
-        remainDays -= _DAYS_IN_MONTH[month - 1];
+        remainDays -= _DAYS_IN_MONTH[month - 1u];
         ++month;
     }
 
-    return month;
+    return { years, month, remainDays + 1u };
+}
+
+inline constexpr uint32_t DateTime::month() const noexcept
+{
+    return _decompose().month;
 }
 
 inline constexpr uint32_t DateTime::day() const noexcept
 {
-    constexpr uint32_t _DAYS_IN_MONTH[]{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-
-    uint32_t days{ static_cast<uint32_t>(mDateTime / areg::DAY_TO_MICROSECS) };
-    uint32_t years = days / 365;
-    uint32_t remainDays = days % 365;
-    uint32_t leapYears = (years + 1) / 4;
-    remainDays -= leapYears;
-
-    uint32_t curMonth{ 1u };
-    while (remainDays >= _DAYS_IN_MONTH[curMonth - 1])
-    {
-        remainDays -= _DAYS_IN_MONTH[curMonth - 1];
-        ++curMonth;
-    }
-
-    return (remainDays + 1);
+    return _decompose().day;
 }
 
 inline constexpr uint32_t DateTime::hours() const noexcept
@@ -531,50 +529,20 @@ inline constexpr uint32_t DateTime::microseconds() const noexcept
 inline constexpr uint32_t DateTime::day_of_year() const noexcept
 {
     constexpr uint32_t _DAYS_IN_MONTH[]{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-
-    uint32_t days{ static_cast<uint32_t>(mDateTime / areg::DAY_TO_MICROSECS) };
-    uint32_t years = days / 365;
-    uint32_t remainDays = days % 365;
-    uint32_t leapYears = (years + 1) / 4;
-    remainDays -= leapYears;
-
-    uint32_t curMonth{ 1u };
-    while (remainDays >= _DAYS_IN_MONTH[curMonth - 1])
-    {
-        remainDays -= _DAYS_IN_MONTH[curMonth - 1];
-        ++curMonth;
-    }
-
-    uint32_t curDay = (remainDays + 1);
-    uint32_t dayOfYear = 0;
-    for (uint32_t i = 0; i < curMonth - 1; ++i)
-    {
+    const DateParts p = _decompose();
+    uint32_t dayOfYear = 0u;
+    for (uint32_t i = 0u; i < p.month - 1u; ++i)
         dayOfYear += _DAYS_IN_MONTH[i];
-    }
 
-    return (dayOfYear + curDay);
+    return (dayOfYear + p.day);
 }
 
 inline constexpr uint32_t DateTime::day_of_week() const noexcept
 {
-    constexpr uint32_t _DAYS_IN_MONTH[]{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-
-    uint32_t days{ static_cast<uint32_t>(mDateTime / areg::DAY_TO_MICROSECS) };
-    uint32_t years = days / 365;
-    uint32_t remainDays = days % 365;
-    uint32_t leapYears = (years + 1) / 4;
-    remainDays -= leapYears;
-
-    uint32_t curMonth{ 1u };
-    while (remainDays >= _DAYS_IN_MONTH[curMonth - 1])
-    {
-        remainDays -= _DAYS_IN_MONTH[curMonth - 1];
-        ++curMonth;
-    }
-
-    uint32_t curDay = (remainDays + 1);
-    uint32_t dayOfWeek = (curDay + ((13 * (curMonth + 1)) / 5) + years + (years / 4) - (years / 100) + (years / 400)) % 7;
-    return ((dayOfWeek + 6) % 7);
+    const DateParts p   = _decompose();
+    const uint32_t  dow = (p.day + ((13u * (p.month + 1u)) / 5u) + p.years
+                        + (p.years / 4u) - (p.years / 100u) + (p.years / 400u)) % 7u;
+    return (dow + 6u) % 7u;
 }
 
 inline void DateTime::date_time(areg::CalendarTime& sysTime) noexcept
