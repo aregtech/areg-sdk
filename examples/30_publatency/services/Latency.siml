@@ -255,6 +255,7 @@
             <Description>Latency test setup structure.</Description>
             <FieldList>
                 <Field ID="417" Name="mode" DataType="LatencyMode">
+                    <Value IsDefault="true">Latency::LatencyMode::Stop</Value>
                     <Description>The latency benchmark mode.</Description>
                 </Field>
                 <Field ID="418" Name="duration" DataType="uint32">
