@@ -20,6 +20,7 @@
  * Includes
  ************************************************************************/
 #include "areg/base/UtilityDefs.hpp"
+#include "areg/base/CommonDefs.hpp"
 #include "areg/base/areg_macros.h"
 
 #include <time.h>
