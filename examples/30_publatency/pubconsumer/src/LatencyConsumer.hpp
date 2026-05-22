@@ -229,7 +229,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
     void startup_component(areg::ComponentThread & comThread) final;
-    void shutdown_component(areg::ComponentThread & comThread) noexcept override;
+    void shutdown_component(areg::ComponentThread & comThread) noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // LatencyConsumerBase overrides
@@ -292,7 +292,7 @@ protected:
      *          This call is automatically triggered on every appropriate request call.
      * \see     request_ping_pong_32
      **/
-    void response_ping_pong_32(uint32_t id, uint64_t begin, uint64_t replied, const Latency::Data32& data32);
+    void response_ping_pong_32(uint32_t id, uint64_t begin, uint64_t replied, const Latency::Data32& data32) final;
 
     /**
      * \brief   Response callback.
@@ -363,7 +363,7 @@ protected:
      *          Override this method to handle the Broadcast call from the service provider.
      *          This call is automatically triggered on every appropriate broadcast event.
      **/
-    void broadcast_message_0(uint32_t id, uint64_t begin);
+    void broadcast_message_0(uint32_t id, uint64_t begin) final;
 
     /**
      * \brief   Service provider broadcast.
