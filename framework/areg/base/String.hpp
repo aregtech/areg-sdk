@@ -684,7 +684,6 @@ inline String::String(uint32_t count)
 inline String::operator uint32_t() const
 {
     return areg::crc32_calculate(mData.c_str());
-    // return static_cast<uint32_t>(std::hash<std::string>{}(mData));
 }
 
 inline String& String::operator = (const wchar_t* src)
@@ -1071,6 +1070,36 @@ inline String & String::append(const char ch)
     return (*this);
 }
 
+template<>
+struct required_size <areg::String>
+{
+    [[nodiscard]]
+    inline uint32_t operator ()(const areg::String& str) const noexcept
+    {
+        return static_cast<uint32_t>(sizeof(uint32_t) + sizeof(uint32_t) + (sizeof(char) * (str.length() + 1)));
+    }
+};
+
+template<>
+struct required_size <std::string>
+{
+    [[nodiscard]]
+    inline uint32_t operator ()(const std::string& str) const noexcept
+    {
+        return static_cast<uint32_t>(sizeof(uint32_t) + sizeof(uint32_t) + (sizeof(char) * (str.length() + 1)));
+    }
+};
+
+template<>
+struct required_size <std::string_view>
+{
+    [[nodiscard]]
+    inline uint32_t operator ()(const std::string_view str) const noexcept
+    {
+        return static_cast<uint32_t>(sizeof(uint32_t) + sizeof(uint32_t) + (sizeof(char) * (str.length() + 1)));
+    }
+};
+
 } // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
@@ -1086,7 +1115,8 @@ namespace std {
         //! An operator to convert String object to uint32_t.
         inline uint32_t operator()(const areg::String& key) const
         {
-            return static_cast<uint32_t>(std::hash<std::string>{}(key.data()));
+            return static_cast<uint32_t>(key);
+            // return static_cast<uint32_t>(std::hash<std::string>{}(key.data()));
         }
     };
 } // namespace std

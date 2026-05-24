@@ -42,9 +42,10 @@ LatencyConsumer::LatencyConsumer(const areg::ComponentEntry & entry, areg::Compo
     , areg::ThreadConsumer  ( )
 
     , mInputThread  ( static_cast<areg::ThreadConsumer &>(*this), THREAD_INPUT )
-    , mTimer        ( static_cast<areg::TimerConsumer &>(*this),  TIMER_STATS  )
     , mQuit         ( false )
     , mCmdConsumer  ( *this )
+    , mDisplayConsumer( *this )
+    , mDisplayThread( static_cast<areg::ThreadConsumer &>(mDisplayConsumer), THREAD_DISPLAY )
 
     , mMode         ( Latency::LatencyMode::Request0 )
     , mCount        ( DEFAULT_COUNT )
@@ -56,6 +57,7 @@ LatencyConsumer::LatencyConsumer(const areg::ComponentEntry & entry, areg::Compo
     , mTestRunning  ( false )
     , mTotalRuns    ( 0u )
     , mSamples      ( )
+    , mSampleCount  ( 0u )
 
     , mRunMin       ( INT64_MAX )
     , mRunMax       ( 0 )
@@ -81,9 +83,10 @@ void LatencyConsumer::startup_component(areg::ComponentThread & /* comThread */)
     for (uint32_t i = 0u; i < MAX_RESULT_ROWS; ++i)
         mResults[i] = ResultEntry {};
 
+    mSampleCount.store(0u, std::memory_order_relaxed);
     areg::ext::Console::instance().enable_console_input(true);
     _redraw_layout();
-    mTimer.start_timer(1000u, areg::Timer::CONTINUOUSLY);
+    mDisplayThread.start(areg::WAIT_INFINITE);
     mInputThread.start(areg::WAIT_INFINITE);
 }
 
@@ -91,9 +94,9 @@ void LatencyConsumer::shutdown_component(areg::ComponentThread & /* comThread */
 {
     mTestRunning = false;
     mQuit.store(true, std::memory_order_relaxed);
-    mTimer.stop_timer();
     areg::ext::Console::instance().enable_console_input(false);
-    mInputThread.shutdown(500u);
+    mInputThread.shutdown(areg::WAIT_INFINITE);
+    mDisplayThread.shutdown(areg::WAIT_INFINITE);
 }
 
 bool LatencyConsumer::service_connected(areg::ServiceConnectionState status, areg::ProxyBase & proxy)
@@ -151,134 +154,112 @@ void LatencyConsumer::response_start_mode(const Latency::LantencySetup & setup)
 
 void LatencyConsumer::response_ping_pong_0(uint32_t /* id */, uint64_t start, uint64_t replied)
 {
-    if (mTestRunning)
-        _record_sample(start, replied, Latency::now_ns());
+    _record_sample(start, replied, Latency::now_ns());
 }
 
 void LatencyConsumer::response_ping_pong_8(uint32_t /* id */, uint64_t begin, uint64_t replied, const Latency::Data8 & /* data8 */)
 {
-    if (mTestRunning)
-        _record_sample(begin, replied, Latency::now_ns());
+    _record_sample(begin, replied, Latency::now_ns());
 }
 
 void LatencyConsumer::response_ping_pong_16(uint32_t /* id */, uint64_t begin, uint64_t replied, const Latency::Data16 & /* data16 */)
 {
-    if (mTestRunning)
-        _record_sample(begin, replied, Latency::now_ns());
+    _record_sample(begin, replied, Latency::now_ns());
 }
 
 void LatencyConsumer::response_ping_pong_32(uint32_t /* id */, uint64_t begin, uint64_t replied, const Latency::Data32 & /* data32 */)
 {
-    if (mTestRunning)
-        _record_sample(begin, replied, Latency::now_ns());
+    _record_sample(begin, replied, Latency::now_ns());
 }
 
 void LatencyConsumer::response_ping_pong_64(uint32_t /* id */, uint64_t begin, uint64_t replied, const Latency::Data64 & /* data64 */)
 {
-    if (mTestRunning)
-        _record_sample(begin, replied, Latency::now_ns());
+    _record_sample(begin, replied, Latency::now_ns());
 }
 
 void LatencyConsumer::response_ping_pong_128(uint32_t /* id */, uint64_t begin, uint64_t replied, const Latency::Data128 & /* data128 */)
 {
-    if (mTestRunning)
-        _record_sample(begin, replied, Latency::now_ns());
+    _record_sample(begin, replied, Latency::now_ns());
 }
 
 void LatencyConsumer::response_ping_pong_256(uint32_t /* id */, uint64_t begin, uint64_t replied, const Latency::Data256 & /* data256 */)
 {
-    if (mTestRunning)
-        _record_sample(begin, replied, Latency::now_ns());
+    _record_sample(begin, replied, Latency::now_ns());
 }
 
-void LatencyConsumer::response_ping_pong_512(uint32_t /* id */, uint64_t begin, bool /* newParam1 */, uint64_t replied, const Latency::Data512 & /* data512 */)
+void LatencyConsumer::response_ping_pong_512(uint32_t /* id */, uint64_t begin, uint64_t replied, const Latency::Data512 & /* data512 */)
 {
-    if (mTestRunning)
-        _record_sample(begin, replied, Latency::now_ns());
+    _record_sample(begin, replied, Latency::now_ns());
 }
 
 void LatencyConsumer::response_ping_pong_1024(uint32_t /* id */, uint64_t begin, uint64_t replied, const Latency::Data1024 & /* data1024 */)
 {
-    if (mTestRunning)
-        _record_sample(begin, replied, Latency::now_ns());
+    _record_sample(begin, replied, Latency::now_ns());
 }
 
 void LatencyConsumer::response_ping_pong_4096(uint32_t /* id */, uint64_t begin, uint64_t replied, const Latency::Data4096 & /* data4096 */)
 {
-    if (mTestRunning)
-        _record_sample(begin, replied, Latency::now_ns());
+    _record_sample(begin, replied, Latency::now_ns());
 }
 
-void LatencyConsumer::response_ping_pong_65536(uint32_t /* id */, uint64_t begin, const Latency::Data65536 & /* data65536 */)
+void LatencyConsumer::response_ping_pong_65536(uint32_t /* id */, uint64_t begin, uint64_t replied, const Latency::Data65536 & /* data65536 */)
 {
-    if (mTestRunning)
-        _record_sample(begin, 0u, Latency::now_ns());
+    _record_sample(begin, replied, Latency::now_ns());
 }
 
 void LatencyConsumer::broadcast_message_0(uint32_t /* id */, uint64_t begin)
 {
-    if (mTestRunning)
-        _record_sample(begin, 0u, Latency::now_ns());
+    _record_sample(begin, 0u, Latency::now_ns());
 }
 
 void LatencyConsumer::broadcast_message_8(uint32_t /* id */, uint64_t begin, const Latency::Data8 & /* data8 */)
 {
-    if (mTestRunning)
-        _record_sample(begin, 0u, Latency::now_ns());
+    _record_sample(begin, 0u, Latency::now_ns());
 }
 
 void LatencyConsumer::broadcast_message_16(uint32_t /* id */, uint64_t begin, const Latency::Data16 & /* data16 */)
 {
-    if (mTestRunning)
-        _record_sample(begin, 0u, Latency::now_ns());
+    _record_sample(begin, 0u, Latency::now_ns());
 }
 
 void LatencyConsumer::broadcast_message_32(uint32_t /* id */, uint64_t begin, const Latency::Data32 & /* data32 */)
 {
-    if (mTestRunning)
-        _record_sample(begin, 0u, Latency::now_ns());
+    _record_sample(begin, 0u, Latency::now_ns());
 }
 
 void LatencyConsumer::broadcast_message_64(uint32_t /* id */, uint64_t begin, const Latency::Data64 & /* data64 */)
 {
-    if (mTestRunning)
-        _record_sample(begin, 0u, Latency::now_ns());
+    _record_sample(begin, 0u, Latency::now_ns());
 }
 
 void LatencyConsumer::broadcast_message_128(uint32_t /* id */, uint64_t begin, const Latency::Data128 & /* data128 */)
 {
-    if (mTestRunning)
-        _record_sample(begin, 0u, Latency::now_ns());
+    _record_sample(begin, 0u, Latency::now_ns());
 }
 
 void LatencyConsumer::broadcast_message_256(uint32_t /* id */, uint64_t begin, const Latency::Data256 & /* data256 */)
 {
-    if (mTestRunning)
-        _record_sample(begin, 0u, Latency::now_ns());
+    _record_sample(begin, 0u, Latency::now_ns());
 }
 
 void LatencyConsumer::broadcast_message_512(uint32_t /* id */, uint64_t begin, const Latency::Data512 & /* data512 */)
 {
-    if (mTestRunning)
-        _record_sample(begin, 0u, Latency::now_ns());
+    _record_sample(begin, 0u, Latency::now_ns());
 }
 
 void LatencyConsumer::broadcast_message_1024(uint32_t /* id */, uint64_t begin, const Latency::Data1024 & /* data1024 */)
 {
-    if (mTestRunning)
-        _record_sample(begin, 0u, Latency::now_ns());
+    _record_sample(begin, 0u, Latency::now_ns());
 }
 
 void LatencyConsumer::broadcast_message_4096(uint32_t /* id */, uint64_t begin, const Latency::Data4096 & /* data4096 */)
 {
-    if (mTestRunning)
-        _record_sample(begin, 0u, Latency::now_ns());
+    _record_sample(begin, 0u, Latency::now_ns());
 }
 
 void LatencyConsumer::broadcast_message_65536(uint32_t /* id */, uint64_t begin, const Latency::Data65536 & /* data65536 */)
 {
-    if (mTestRunning)
-        _record_sample(begin, 0u, Latency::now_ns());
+    _record_sample(begin, 0u, Latency::now_ns());
 }
 
 void LatencyConsumer::on_latency_setup_update(const Latency::LantencySetup & setup, areg::DataState /* state */)
@@ -289,18 +270,20 @@ void LatencyConsumer::on_latency_setup_update(const Latency::LantencySetup & set
         areg::Application::signal_quit();
         return;
     }
-
-    _update_settings();
 }
 
 void LatencyConsumer::process_timer(areg::Timer & /* timer */)
 {
-    _update_live();
 }
 
 void LatencyConsumer::on_run()
 {
     _run_input_thread();
+}
+
+void LatencyConsumer::DisplayConsumer::on_run()
+{
+    mOwner._run_display_thread();
 }
 
 void LatencyConsumer::_redraw_layout()
@@ -333,7 +316,7 @@ void LatencyConsumer::_redraw_layout()
 
 void LatencyConsumer::_update_live()
 {
-    const uint32_t samples = mSamples.size();
+    const uint32_t samples = mSampleCount.load(std::memory_order_relaxed);
     const uint32_t delta   = (samples >= mLastRateCount) ? (samples - mLastRateCount) : 0u;
     mLastRateCount          = samples;
 
@@ -611,6 +594,7 @@ void LatencyConsumer::_start_test()
 
     mSamples.clear();
     mSamples.reserve(mCount);
+    mSampleCount.store(0u, std::memory_order_relaxed);
     mCurrentSeq     = 0u;
     mTestRunning    = false;    // will be set to true when provider confirms in response_start_mode
     mRunMin         = INT64_MAX;
@@ -661,42 +645,40 @@ void LatencyConsumer::_send_next_ping()
     if (!is_connected() || !mTestRunning)
         return;
 
-    const uint64_t t1 = Latency::now_ns();
-
     switch (mMode)
     {
     case Latency::LatencyMode::Request0:
-        request_ping_pong_0(mCurrentSeq, t1);
+        request_ping_pong_0(mCurrentSeq, Latency::now_ns());
         break;
     case Latency::LatencyMode::Request8:
-        { Latency::Data8   d {}; request_ping_pong_8(mCurrentSeq, t1, d); }
+        { Latency::Data8   d {}; request_ping_pong_8(mCurrentSeq, Latency::now_ns(), d); }
         break;
     case Latency::LatencyMode::Request16:
-        { Latency::Data16  d {}; request_ping_pong_16(mCurrentSeq, t1, d); }
+        { Latency::Data16  d {}; request_ping_pong_16(mCurrentSeq, Latency::now_ns(), d); }
         break;
     case Latency::LatencyMode::Request32:
-        { Latency::Data32  d {}; request_ping_pong_32(mCurrentSeq, t1, d); }
+        { Latency::Data32  d {}; request_ping_pong_32(mCurrentSeq, Latency::now_ns(), d); }
         break;
     case Latency::LatencyMode::Request64:
-        { Latency::Data64  d {}; request_ping_pong_64(mCurrentSeq, t1, d); }
+        { Latency::Data64  d {}; request_ping_pong_64(mCurrentSeq, Latency::now_ns(), d); }
         break;
     case Latency::LatencyMode::Request128:
-        { Latency::Data128 d {}; request_ping_pong_128(mCurrentSeq, t1, d); }
+        { Latency::Data128 d {}; request_ping_pong_128(mCurrentSeq, Latency::now_ns(), d); }
         break;
     case Latency::LatencyMode::Request256:
-        { Latency::Data256 d {}; request_ping_pong_256(mCurrentSeq, t1, d); }
+        { Latency::Data256 d {}; request_ping_pong_256(mCurrentSeq, Latency::now_ns(), d); }
         break;
     case Latency::LatencyMode::Request512:
-        { Latency::Data256 d {}; request_ping_pong_512(mCurrentSeq, t1, d); }
+        { Latency::Data512 d {}; request_ping_pong_512(mCurrentSeq, Latency::now_ns(), d); }
         break;
     case Latency::LatencyMode::Request1024:
-        { Latency::Data1024 d {}; request_ping_pong_1024(mCurrentSeq, t1, d); }
+        { Latency::Data1024 d {}; d.data_rest.set_size_used(1024 - 128 - 64); request_ping_pong_1024(mCurrentSeq, Latency::now_ns(), d); }
         break;
     case Latency::LatencyMode::Request4096:
-        { Latency::Data4096 d {}; request_ping_pong_4096(mCurrentSeq, t1, d); }
+    { Latency::Data4096 d{}; d.data_rest.set_size_used(4096 - 128 - 64); request_ping_pong_4096(mCurrentSeq, Latency::now_ns(), d); }
         break;
     case Latency::LatencyMode::Request65536:
-        { Latency::Data65536 d {}; request_ping_pong_65536(mCurrentSeq, t1, d); }
+        { Latency::Data65536 d {}; d.data_rest.set_size_used(65536 - 128 - 64); request_ping_pong_65536(mCurrentSeq, Latency::now_ns(), d); }
         break;
     default:
         break;
@@ -705,8 +687,10 @@ void LatencyConsumer::_send_next_ping()
 
 void LatencyConsumer::_record_sample(uint64_t t1, uint64_t t2, uint64_t t4)
 {
-    ++mCurrentSeq;
+    if (!mTestRunning)
+        return;
 
+    ++mCurrentSeq;
     const int64_t rtt = static_cast<int64_t>(t4) - static_cast<int64_t>(t1);
 
     if (mCurrentSeq <= mWarmup)
@@ -724,6 +708,7 @@ void LatencyConsumer::_record_sample(uint64_t t1, uint64_t t2, uint64_t t4)
     s.t4_ns  = t4;
     s.rtt_ns = rtt;
     mSamples.add(s);
+    mSampleCount.fetch_add(1u, std::memory_order_relaxed);
 
     if (rtt < mRunMin) mRunMin = rtt;
     if (rtt > mRunMax) mRunMax = rtt;
@@ -941,4 +926,17 @@ void LatencyConsumer::_save_csv(const ResultEntry & result) const
     console.output_msg(COORD_SETTINGS, " Saved: %s%-40s", output_path.as_string(), "");
     console.restore_cursor_position();
     console.refresh_screen();
+}
+
+void LatencyConsumer::_run_display_thread()
+{
+    while (!mQuit.load(std::memory_order_relaxed))
+    {
+        areg::Thread::sleep(1000u);
+        if (mQuit.load(std::memory_order_relaxed))
+            break;
+
+        _update_live();
+        _update_settings();
+    }
 }

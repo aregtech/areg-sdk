@@ -484,6 +484,16 @@ void File::flush() noexcept
     }
 }
 
+bool File::ensure_size(uint32_t addSize)
+{
+    if (!is_opened() || !can_write())
+        return false;
+
+    const uint32_t curPos = _os_file_position();
+    const uint32_t newSize{ curPos + addSize };
+    return (newSize > length() ? reserve(newSize) == newSize : true);
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Static methods
 //////////////////////////////////////////////////////////////////////////

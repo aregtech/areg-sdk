@@ -23,7 +23,13 @@
     #pragma comment(lib, "areg")
     #pragma comment(lib, "aregextend")
     #pragma comment(lib, "30_generated")
+    #pragma comment(lib, "winmm")
 #endif // _MSC_VER
+
+#if defined(_WIN32)
+    #include <windows.h>
+    #include <timeapi.h>
+#endif // _WIN32
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -59,6 +65,10 @@ DEF_LOG_SCOPE(examples_30_pubprovider_main, main);
 int main(int argc, char* argv[])
 {
     printf("Testing latency service provider component, run as a ultra-small service provider...\n");
+
+#if defined(_WIN32)
+    timeBeginPeriod(1u);    // raise Windows timer resolution to 1 ms for the benchmark duration
+#endif // _WIN32
 
     // Parse command-line arguments so the benchmark can start unattended.
     // Example: 23_pubservice -t=0 -l=1 -c=10 -s
@@ -109,6 +119,10 @@ int main(int argc, char* argv[])
     // appears at the right position (just below the last output row), not mid-screen.
     areg::ext::Console::instance().uninitialize();
     printf("Completed testing latency service provider component. Check the logs...\n");
+
+#if defined(_WIN32)
+    timeEndPeriod(1u);
+#endif // _WIN32
 
 	return 0;
 }

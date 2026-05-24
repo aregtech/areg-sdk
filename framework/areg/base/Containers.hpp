@@ -28,7 +28,9 @@
 #include "areg/base/SortedLinkedList.hpp"
 
 #include "areg/base/String.hpp"
+#include "areg/base/WideString.hpp"
 #include "areg/base/MathDefs.hpp"
+
 namespace areg {
 
 /************************************************************************

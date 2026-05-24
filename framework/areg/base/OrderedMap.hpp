@@ -1014,6 +1014,33 @@ inline areg::OutStream & operator << (areg::OutStream & stream, const areg::Orde
     return (stream << output.mValueList);
 }
 
+template<typename KEY, typename VALUE>
+struct required_size <std::map<KEY, VALUE>>
+{
+    [[nodiscard]]
+    inline uint32_t operator ()(const std::map<KEY, VALUE>& map) const noexcept
+    {
+        uint32_t result{ static_cast<uint32_t>(sizeof(uint32_t)) };
+        for (const auto& entry : map)
+        {
+            result += required_size<KEY>{}(entry.first);
+            result += required_size<VALUE>{}(entry.second);
+        }
+
+        return result;
+    }
+};
+
+template<typename KEY, typename VALUE>
+struct required_size <areg::OrderedMap<KEY, VALUE>>
+{
+    [[nodiscard]]
+    inline uint32_t operator ()(const areg::OrderedMap<KEY, VALUE>& map) const noexcept
+    {
+        return required_size<std::map<KEY, VALUE>>{}(map.data());
+    }
+};
+
 } // namespace areg
 
 #endif  // AREG_BASE_TEMAP_HPP

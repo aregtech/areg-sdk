@@ -146,7 +146,7 @@ public:
     /**
      * \brief   Resets cursor pointer and moves to the begin of data.
      **/
-    void reset() const noexcept final;
+    inline void reset() const noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -164,7 +164,7 @@ protected:
      * \param   size        The size in bytes of available buffer
      * \return  Returns the size in bytes of copied data.
      **/
-    uint32_t read( uint8_t* buffer, uint32_t size ) const noexcept final;
+    inline uint32_t read( uint8_t* buffer, uint32_t size ) const noexcept final;
 
     /**
      * \brief   Reads data from input stream object, copies into given Byte Buffer object and
@@ -182,7 +182,7 @@ protected:
      * \param   ascii       The buffer of ASCII String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    uint32_t read( String & ascii ) const final;
+    inline uint32_t read( String & ascii ) const final;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given Wide String.
@@ -190,21 +190,20 @@ protected:
      * \param   wide    The buffer of Wide String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    uint32_t read( WideString & wide ) const final;
+    inline uint32_t read( WideString & wide ) const final;
 
 /************************************************************************/
 // OutStream interface overrides
 /************************************************************************/
 
     /**
-     * \brief   Writes data to output stream object from given buffer and returns the size of
-     *          written data.
+     * \brief   Writes data to output stream object from given buffer and returns the size of written data.
      *
      * \param   buffer      The pointer to buffer to read data and copy to output stream object
      * \param   size        The size in bytes of data buffer
      * \return  Returns the size in bytes of written data.
      **/
-    uint32_t write( const uint8_t* buffer, uint32_t size ) final;
+    inline uint32_t write( const uint8_t* buffer, uint32_t size ) final;
 
     /**
      * \brief   Writes Binary data from Byte Buffer object to Output Stream object and returns the
@@ -222,7 +221,7 @@ protected:
      * \param   ascii       The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    uint32_t write( const String & ascii ) final;
+    inline uint32_t write( const String & ascii ) final;
 
     /**
      * \brief   Writes string data from given wide-char String object to output stream object.
@@ -230,12 +229,21 @@ protected:
      * \param   wide    The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    uint32_t write( const WideString & wide ) final;
+    inline uint32_t write( const WideString & wide ) final;
 
     /**
      * \brief   Flushes cached data to output stream object.
      **/
-    void flush() noexcept final;
+    inline void flush() noexcept final;
+
+    /**
+     * \brief   Reserve and ensure additional size to the existing. If the free space of the stream to write
+     *          is enough, no changes should be done. If the size of the stream is not enough, it should allocate
+     *          additional space and should not loose existing data.
+     * \param   addSize     The size to add if required.
+     * \return  Returns true if the stream has enough space to write the data.
+     **/
+    inline bool ensure_size(uint32_t addSize) final;
 
 protected:
     /**
@@ -245,7 +253,7 @@ protected:
      *          stream, the available readable size is 'n - x'.
      **/
     [[nodiscard]]
-    uint32_t size_readable() const noexcept final;
+    inline uint32_t size_readable() const noexcept final;
 
     /**
      * \brief   Returns size in bytes of available space that can be written, i.e. remaining
@@ -254,7 +262,7 @@ protected:
      *          to stream, the available writable size is 'n - x'.
      **/
     [[nodiscard]]
-    uint32_t size_writable() const noexcept final;
+    inline uint32_t size_writable() const noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -308,9 +316,65 @@ inline const InStream & EventDataStream::stream_for_read() const noexcept
     return static_cast<const InStream &>(*this);
 }
 
+inline uint32_t EventDataStream::read(uint8_t* buffer, uint32_t size) const noexcept
+{
+    return mDataBuffer.read(buffer, size);
+}
+
+inline uint32_t EventDataStream::read(String& ascii) const
+{
+    return mDataBuffer.read(ascii);
+}
+
+inline uint32_t EventDataStream::read(WideString& wide) const
+{
+    return mDataBuffer.read(wide);
+}
+
+inline void EventDataStream::reset() const noexcept
+{
+    mDataBuffer.move_to_begin();
+}
+
+inline uint32_t EventDataStream::write(const uint8_t* buffer, uint32_t size)
+{
+    return mDataBuffer.write(buffer, size);
+}
+
 inline OutStream & EventDataStream::stream_for_write() noexcept
 {
     return static_cast<OutStream &>(*this);
+}
+
+inline uint32_t EventDataStream::write(const String& ascii)
+{
+    return mDataBuffer.write(ascii);
+}
+
+inline uint32_t EventDataStream::write(const WideString& wide)
+{
+    return mDataBuffer.write(wide);
+}
+
+inline void EventDataStream::flush() noexcept
+{
+}
+
+inline bool EventDataStream::ensure_size(uint32_t addSize)
+{
+    return mDataBuffer.ensure_size(addSize);
+}
+
+inline uint32_t EventDataStream::size_readable() const noexcept
+{
+    ASSERT(false);
+    return 0;
+}
+
+inline uint32_t EventDataStream::size_writable() const noexcept
+{
+    ASSERT(false);
+    return 0;
 }
 
 inline const InStream & operator >> ( const InStream & stream, EventDataStream & input )

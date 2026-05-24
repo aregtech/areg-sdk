@@ -18,15 +18,21 @@
 #include "aregextend/console/Console.hpp"
 
 #include "pubconsumer/src/LatencyConsumer.hpp"
-#include "common/latency_common.hpp"  
+#include "common/latency_common.hpp"
 
 #ifdef _MSC_VER
 
     #pragma comment(lib, "areg")
     #pragma comment(lib, "aregextend")
     #pragma comment(lib, "30_generated")
+    #pragma comment(lib, "winmm")
 
 #endif // _MSC_VER
+
+#if defined(_WIN32)
+    #include <windows.h>
+    #include <timeapi.h>
+#endif // _WIN32
 
 constexpr char const _modelName[]   = { "Latency" };  //!< The name of model
 const areg::String   _serviceClient = areg::generate_name("ServiceConsumer"); //!< Generated name of service client component
@@ -64,6 +70,11 @@ DEF_LOG_SCOPE(examples_30_consumerlatency_main, main);
 int main()
 {
     printf("Testing remote latency ultra-small consumer...\n");
+
+#if defined(_WIN32)
+    timeBeginPeriod(1u);    // raise Windows timer resolution to 1 ms for the benchmark duration
+#endif // _WIN32
+
     // force to start logging with default settings
     LOGGING_CONFIGURE_AND_START( nullptr, false );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
@@ -95,6 +106,10 @@ int main()
     // appears at the right position (just below the last output row), not mid-screen.
     areg::ext::Console::instance().uninitialize();
     printf("Completed testing remote latency consumer, check the logs...\n");
+
+#if defined(_WIN32)
+    timeEndPeriod(1u);
+#endif // _WIN32
 
 	return 0;
 }

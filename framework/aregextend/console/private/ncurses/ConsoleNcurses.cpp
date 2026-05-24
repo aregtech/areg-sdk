@@ -167,6 +167,14 @@ bool Console::_os_wait_input_string(char* buffer, uint32_t size)
     return (areg::is_empty<char>(buffer) == false);
 }
 
+void Console::_os_interrupt_input() noexcept
+{
+    if (mContext != 0)
+    {
+        ::ungetch('\n');
+    }
+}
+
 void Console::_os_refresh_screen() const noexcept
 {
     if (mContext != 0)

@@ -21,6 +21,7 @@
 #include "areg/base/Process.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/component/Channel.hpp"
+#include "areg/component/ComponentThread.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/ProxyBase.hpp"
 #include "areg/component/StubBase.hpp"
@@ -66,9 +67,7 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
                     eventRequest->set_target_channel(chTarget);
                     eventRequest->set_source_channel(chSource);
 
-                    Thread * thread = Thread::find_by_name(addrStub.thread());
-                    ASSERT((thread == nullptr) || (AREG_RUNTIME_CAST(thread, DispatcherThread) != nullptr));
-                    eventRequest->register_for_thread(static_cast<DispatcherThread *>(thread));
+                    eventRequest->register_for_thread(&stub->component_thread());
 
                     DEBUG_LOG_DBG("Created areg::EventType::EventRemoteServiceRequest for target stub [ %s ] from source proxy [ %s ]."
                                     , StubAddress::to_path(eventRequest->target_stub()).as_string()
@@ -101,9 +100,7 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
                     eventNotify->set_target_channel(chTarget);
                     eventNotify->set_source_channel(chSource);
 
-                    Thread * thread = Thread::find_by_name(addrStub.thread());
-                    ASSERT((thread == nullptr) || (AREG_RUNTIME_CAST(thread, DispatcherThread) != nullptr));
-                    eventNotify->register_for_thread(static_cast<DispatcherThread *>(thread));
+                    eventNotify->register_for_thread(&stub->component_thread());
 
                     DEBUG_LOG_DBG("Created areg::EventType::EventRemoteNotifyRequest for target stub [ %s ] from source proxy [ %s ]."
                                     , StubAddress::to_path(eventNotify->target_stub()).as_string()
@@ -133,9 +130,7 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
                 {
                     eventResponse->set_target_channel(chTarget);
 
-                    Thread * thread = Thread::find_by_name(addrProxy.thread());
-                    ASSERT((thread == nullptr) || (AREG_RUNTIME_CAST(thread, DispatcherThread) != nullptr));
-                    eventResponse->register_for_thread(static_cast<DispatcherThread *>(thread));
+                    eventResponse->register_for_thread(&proxy->proxy_dispatcher_thread());
 
                     DEBUG_LOG_DBG("Created areg::EventType::EventRemoteServiceResponse for target proxy [ %s ]."
                                     , ProxyAddress::to_path(eventResponse->target_proxy()).as_string());

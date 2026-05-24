@@ -577,5 +577,27 @@ inline OutStream & operator << ( OutStream & stream, const DateTime & output )
     return stream;
 }
 
+template<>
+struct required_size<areg::DateTime>
+{
+    [[nodiscard]]
+    inline constexpr uint32_t operator()() const noexcept
+    {
+        return static_cast<uint32_t>(sizeof(TIME64));
+    }
+
+    [[nodiscard]]
+    inline constexpr uint32_t operator()(const areg::DateTime& /*dt*/) const noexcept
+    {
+        return static_cast<uint32_t>(sizeof(TIME64));
+    }
+
+    [[nodiscard]]
+    inline constexpr operator uint32_t () const noexcept
+    {
+        return static_cast<uint32_t>(sizeof(TIME64));
+    }
+};
+
 } // namespace areg
 #endif  // AREG_BASE_DATETIME_HPP

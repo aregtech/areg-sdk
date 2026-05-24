@@ -134,37 +134,37 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************/
-// InStream interface data read overrides
+// InStream convenience read helpers (non-virtual, inline)
 /************************************************************************/
     /**
      * \brief   Reads and returns an 8-bit value from the stream.
      **/
-    virtual uint8_t read8_bits() const noexcept;
+    inline uint8_t read8_bits() const noexcept;
 
     /**
      * \brief   Reads and returns a 16-bit value from the stream.
      **/
-    virtual uint16_t read16_bits() const noexcept;
+    inline uint16_t read16_bits() const noexcept;
 
     /**
      * \brief   Reads and returns a 32-bit value from the stream.
      **/
-    virtual uint32_t read32_bits() const noexcept;
+    inline uint32_t read32_bits() const noexcept;
 
     /**
      * \brief   Reads and returns a 64-bit value from the stream.
      **/
-    virtual uint64_t read64_bits() const noexcept;
+    inline uint64_t read64_bits() const noexcept;
 
     /**
-     * \brief   Reads 32-bit value with floating point.
+     * \brief   Reads a 32-bit floating-point value from the stream.
      **/
-    virtual float read32_real() const noexcept;
+    inline float read32_real() const noexcept;
 
     /**
-     * \brief   Reads 64-bit value with floating point.
+     * \brief   Reads a 64-bit floating-point value from the stream.
      **/
-    virtual double read64_real() const noexcept;
+    inline double read64_real() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -249,38 +249,37 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************/
-// OutStream interface data write overrides
+// OutStream convenience write helpers (non-virtual, inline)
 /************************************************************************/
     /**
      * \brief   Writes an 8-bit value to the stream. Returns true if successful.
      **/
-    virtual bool write8_bits( uint8_t value );
+    inline bool write8_bits( uint8_t value );
 
     /**
      * \brief   Writes a 16-bit value to the stream. Returns true if successful.
      **/
-    virtual bool write16_bits( uint16_t value );
+    inline bool write16_bits( uint16_t value );
 
     /**
      * \brief   Writes a 32-bit value to the stream. Returns true if successful.
      **/
-    virtual bool write32_bits( uint32_t value );
+    inline bool write32_bits( uint32_t value );
 
     /**
      * \brief   Writes a 64-bit value to the stream. Returns true if successful.
      **/
-    virtual bool write64_bits( uint64_t value );
+    inline bool write64_bits( uint64_t value );
 
     /**
-     * \brief   Writes a 32-bit digit with floating point to the stream. Returns true if successful.
+     * \brief   Writes a 32-bit floating-point value to the stream. Returns true if successful.
      **/
-    virtual bool write32_real( float value );
+    inline bool write32_real( float value );
 
     /**
-     * \brief   Writes a 64-bit digit with floating point to the stream. Returns true if successful.
+     * \brief   Writes a 64-bit floating-point value to the stream. Returns true if successful.
      **/
-    virtual bool write64_real(double value);
-
+    inline bool write64_real( double value );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -327,6 +326,15 @@ public:
      * \brief   Flushes cached data to the output stream.
      **/
     virtual void flush() noexcept = 0;
+
+    /**
+     * \brief   Reserve and ensure additional size to the existing. If the free space of the stream to write
+     *          is enough, no changes should be done. If the size of the stream is not enough, it should allocate
+     *          additional space and should not loose existing data.
+     * \param   addSize     The size to add if required.
+     * \return  Returns true if the stream has enough space to write the data.
+     **/
+    virtual bool ensure_size(uint32_t addSize) = 0;
 
 protected:
     /**
@@ -464,6 +472,86 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
+ * \brief   InStream convenience helpers — inline implementations
+ ************************************************************************/
+
+inline uint8_t areg::InStream::read8_bits() const noexcept
+{
+    uint8_t result{ 0u };
+    read(reinterpret_cast<uint8_t*>(&result), sizeof(uint8_t));
+    return result;
+}
+
+inline uint16_t areg::InStream::read16_bits() const noexcept
+{
+    uint16_t result{ 0u };
+    read(reinterpret_cast<uint8_t*>(&result), sizeof(uint16_t));
+    return result;
+}
+
+inline uint32_t areg::InStream::read32_bits() const noexcept
+{
+    uint32_t result{ 0u };
+    read(reinterpret_cast<uint8_t*>(&result), sizeof(uint32_t));
+    return result;
+}
+
+inline uint64_t areg::InStream::read64_bits() const noexcept
+{
+    uint64_t result{ 0u };
+    read(reinterpret_cast<uint8_t*>(&result), sizeof(uint64_t));
+    return result;
+}
+
+inline float areg::InStream::read32_real() const noexcept
+{
+    float result{ 0.0f };
+    read(reinterpret_cast<uint8_t*>(&result), sizeof(float));
+    return result;
+}
+
+inline double areg::InStream::read64_real() const noexcept
+{
+    double result{ 0.0 };
+    read(reinterpret_cast<uint8_t*>(&result), sizeof(double));
+    return result;
+}
+
+/************************************************************************
+ * \brief   OutStream convenience helpers — inline implementations
+ ************************************************************************/
+
+inline bool areg::OutStream::write8_bits( uint8_t value )
+{
+    return write(reinterpret_cast<const uint8_t*>(&value), sizeof(uint8_t)) == sizeof(uint8_t);
+}
+
+inline bool areg::OutStream::write16_bits( uint16_t value )
+{
+    return write(reinterpret_cast<const uint8_t*>(&value), sizeof(uint16_t)) == sizeof(uint16_t);
+}
+
+inline bool areg::OutStream::write32_bits( uint32_t value )
+{
+    return write(reinterpret_cast<const uint8_t*>(&value), sizeof(uint32_t)) == sizeof(uint32_t);
+}
+
+inline bool areg::OutStream::write64_bits( uint64_t value )
+{
+    return write(reinterpret_cast<const uint8_t*>(&value), sizeof(uint64_t)) == sizeof(uint64_t);
+}
+
+inline bool areg::OutStream::write32_real( float value )
+{
+    return write(reinterpret_cast<const uint8_t*>(&value), sizeof(float)) == sizeof(float);
+}
+
+inline bool areg::OutStream::write64_real( double value )
+{
+    return write(reinterpret_cast<const uint8_t*>(&value), sizeof(double)) == sizeof(double);
+}
+
+/************************************************************************
  * \brief   Support streaming of primitives
  ************************************************************************/
 
@@ -531,7 +619,11 @@ template<typename CharType>
 inline areg::OutStream& operator << (areg::OutStream& stream, const std::basic_string_view<CharType>& output)
 {
     constexpr uint32_t single = static_cast<uint32_t>(sizeof(CharType));
-    stream.write(reinterpret_cast<const uint8_t*>(output.data()), static_cast<uint32_t>(output.length() + 1) * single);
+    // string_view does not guarantee a NUL at data()[length()], so write the payload
+    // and then a separate NUL terminator to preserve the NUL-terminated wire format.
+    stream.write(reinterpret_cast<const uint8_t*>(output.data()), static_cast<uint32_t>(output.length()) * single);
+    const CharType terminator = static_cast<CharType>('\0');
+    stream.write(reinterpret_cast<const uint8_t*>(&terminator), single);
     return stream;
 }
 

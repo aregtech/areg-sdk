@@ -45,6 +45,20 @@ Console::~Console() noexcept
     _os_release();
 }
 
+bool Console::enable_console_input(bool enable) noexcept
+{
+    if (enable)
+    {
+        mInterrupted.store(false, std::memory_order_relaxed);
+        return mIsReady && mEnable.set_signaled();
+    }
+
+    const bool result = (mIsReady == false) || mEnable.reset();
+    mInterrupted.store(true, std::memory_order_relaxed);
+    _os_interrupt_input();
+    return result;
+}
+
 String Console::wait_for_input(Console::CallBack callback) const
 {
     String result;
@@ -53,6 +67,7 @@ String Console::wait_for_input(Console::CallBack callback) const
 
     if (mIsReady)
     {
+        mInterrupted.store(false, std::memory_order_relaxed);
         do
         {
             result.clear();
@@ -65,6 +80,10 @@ String Console::wait_for_input(Console::CallBack callback) const
                 {
                     break;
                 }
+            }
+            else if (mInterrupted.load(std::memory_order_relaxed))
+            {
+                break;
             }
         } while (true);
     }

@@ -111,6 +111,7 @@ class LatencyConsumer final : public    areg::Component
 {
     friend class areg::Component;
     friend class CmdConsumer;
+    friend class DisplayConsumer;
 
 //////////////////////////////////////////////////////////////////////////
 // Nested command consumer — forwards events to the component thread
@@ -133,6 +134,27 @@ class LatencyConsumer final : public    areg::Component
         AREG_NOCOPY_NOMOVE(CmdConsumer);
     };
 
+//////////////////////////////////////////////////////////////////////////
+// Nested display consumer — drives the 1-second console refresh thread
+//////////////////////////////////////////////////////////////////////////
+    class DisplayConsumer : public areg::ThreadConsumer
+    {
+    public:
+        explicit DisplayConsumer(LatencyConsumer & owner)
+            : areg::ThreadConsumer( )
+            , mOwner              ( owner )
+        { }
+
+        virtual ~DisplayConsumer() = default;
+
+    private:
+        void on_run() final;
+
+    private:
+        LatencyConsumer & mOwner;
+        AREG_NOCOPY_NOMOVE(DisplayConsumer);
+    };
+
     enum class ConsumerCmd : int32_t
     {
           Quit     = 1
@@ -153,8 +175,8 @@ class LatencyConsumer final : public    areg::Component
 private:
     static constexpr uint32_t MAX_RESULT_ROWS { 8u };
 
-    static constexpr std::string_view THREAD_INPUT  { "LatencyConsumerInputThread" };
-    static constexpr std::string_view TIMER_STATS   { "LatencyStatsTimer" };
+    static constexpr std::string_view THREAD_INPUT   { "LatencyConsumerInputThread" };
+    static constexpr std::string_view THREAD_DISPLAY { "LatencyConsumerDisplayThread" };
     static constexpr uint32_t DEFAULT_COUNT         { 1000u };
     static constexpr uint32_t DEFAULT_WARMUP        { 10u };
     static constexpr uint32_t DEFAULT_DURATION      { 0u };
@@ -328,7 +350,7 @@ protected:
      *          This call is automatically triggered on every appropriate request call.
      * \see     request_ping_pong_512
      **/
-    void response_ping_pong_512(uint32_t id, uint64_t begin, bool newParam1, uint64_t replied, const Latency::Data512& data512) final;
+    void response_ping_pong_512(uint32_t id, uint64_t begin, uint64_t replied, const Latency::Data512& data512) final;
 
     /**
      * \brief   Response callback.
@@ -355,7 +377,7 @@ protected:
      *          This call is automatically triggered on every appropriate request call.
      * \see     request_ping_pong_65536
      **/
-    void response_ping_pong_65536(uint32_t id, uint64_t begin, const Latency::Data65536& data65536) final;
+    void response_ping_pong_65536(uint32_t id, uint64_t begin, uint64_t replied, const Latency::Data65536& data65536) final;
 
     /**
      * \brief   Service provider broadcast.
@@ -476,6 +498,7 @@ private:
     void _update_live();
     void _update_settings() const;
     void _run_input_thread();
+    void _run_display_thread();
     void _on_cmd_event(const CmdData & data);
     void _start_test();
     void _stop_test();
@@ -506,9 +529,10 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     areg::Thread            mInputThread;   //!< Console input thread
-    areg::Timer             mTimer;         //!< 1-second live-stats refresh timer
-    std::atomic_bool        mQuit;          //!< Set to true to stop input thread
+    std::atomic_bool        mQuit;          //!< Set to true to stop input and display threads
     CmdConsumer             mCmdConsumer;   //!< Receives EventCommand on component thread
+    DisplayConsumer         mDisplayConsumer;   //!< Must be declared before mDisplayThread
+    areg::Thread            mDisplayThread;     //!< 1-second console refresh thread
 
     Latency::LatencyMode    mMode;
     uint32_t                mCount;
@@ -521,6 +545,7 @@ private:
     uint32_t                mTotalRuns;     //!< Completed test runs since startup
 
     areg::ArrayList<LatencySample>  mSamples;
+    std::atomic<uint32_t>   mSampleCount;   //!< Atomic count of mSamples; safe to read from display thread
 
     int64_t                 mRunMin;
     int64_t                 mRunMax;

@@ -24,6 +24,7 @@
 #include "areg/base/SyncPrimitives.hpp"
 
 #include <functional>
+#include <atomic>
 
 namespace areg::ext {
 
@@ -151,7 +152,7 @@ public:
      *          blocked by waiting for the user input. This is used to synchronize input and output
      *          procedures in the multithreading environment.
      **/
-    inline bool enable_console_input(bool enable) noexcept;
+    bool enable_console_input(bool enable) noexcept;
 
     /**
      * \brief   Outputs the text message at the given coordinate.
@@ -407,6 +408,12 @@ private:
      **/
     static bool _os_wait_input_string(char * buffer, uint32_t size);
 
+    /**
+     * \brief   Injects a synthetic newline into the OS console input buffer to unblock
+     *          a blocking _os_wait_input_string() call in progress. OS specific implementation.
+     **/
+    void _os_interrupt_input() noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
@@ -432,6 +439,17 @@ private:
      *          to position the terminal cursor below the last output row on exit.
      **/
     mutable int32_t     mMaxUsedRow { 0 };
+    /**
+     * \brief   Set to true by enable_console_input(false) to signal wait_for_input
+     *          to exit its retry loop after an interrupted OS read.
+     **/
+    mutable std::atomic<bool>   mInterrupted    { false };
+    /**
+     * \brief   POSIX self-pipe used to unblock _os_wait_input_string().
+     *          [0] = read end (polled alongside STDIN), [1] = write end (written by _os_interrupt_input).
+     *          Both are -1 on Windows or before _os_setup() is called.
+     **/
+    int                         mInterruptPipe[2]   { -1, -1 };
     /**
      * \brief   An object used to block the user input procedure to use in multithreading environment.
      **/
@@ -461,13 +479,7 @@ inline bool Console::is_ready() const noexcept
     return mIsReady;
 }
 
-inline bool Console::enable_console_input( bool enable ) noexcept
-{
-    return enable ? (mIsReady && mEnable.set_signaled()) : (mIsReady == false) || (mEnable.reset( ));
-}
-
-inline void Console::output_str( Console::Coord pos, const String & text ) const noexcept
-{
+inline void Console::output_str( Console::Coord pos, const String & text ) const noexcept{
     _os_output_text( pos, text );
 }
 

@@ -226,6 +226,27 @@ bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 #endif  // !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
 }
 
+void Console::_os_interrupt_input() noexcept
+{
+    HANDLE hIn = ::GetStdHandle(STD_INPUT_HANDLE);
+    if ((hIn == INVALID_HANDLE_VALUE) || (hIn == nullptr))
+        return;
+
+    INPUT_RECORD ir[2]{};
+    ir[0].EventType                        = KEY_EVENT;
+    ir[0].Event.KeyEvent.bKeyDown          = TRUE;
+    ir[0].Event.KeyEvent.wRepeatCount      = 1;
+    ir[0].Event.KeyEvent.wVirtualKeyCode   = VK_RETURN;
+    ir[0].Event.KeyEvent.wVirtualScanCode  = 0x1Cu;
+    ir[0].Event.KeyEvent.uChar.AsciiChar   = '\r';
+    ir[0].Event.KeyEvent.dwControlKeyState = 0;
+    ir[1]                                  = ir[0];
+    ir[1].Event.KeyEvent.bKeyDown          = FALSE;
+
+    DWORD written{ 0u };
+    ::WriteConsoleInputA(hIn, ir, 2, &written);
+}
+
 void Console::_os_refresh_screen() const noexcept
 {
     // no-op
