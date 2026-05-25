@@ -308,9 +308,9 @@ int32_t SyncLockAndWaitPosix::_wait_any_new(WaitablePosix** listWaitables, int32
     {
         // Register in the WaitAny map so notify_async_signal() can reach us.
         MapWaitAnyIDResource& mapAny{ SyncLockAndWaitPosix::_map_wait_any_ids() };
-        mapAny.register_resource_object(static_cast<ptr_type>(self), &firedWord);
+        mapAny.register_resource_object(to_num<ptr_type>(self), &firedWord);
         const uint32_t woken{ _wait_any_sleep(firedWord, msTimeout) };
-        mapAny.unregister_resource_object(static_cast<ptr_type>(self));
+        mapAny.unregister_resource_object(to_num<ptr_type>(self));
 
         if (woken == FIRE_INVALID)
         {
