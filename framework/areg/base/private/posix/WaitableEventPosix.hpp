@@ -41,8 +41,7 @@ class WaitableEventPosix final  : public WaitablePosix
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes the synchronization event object, sets the type and initial signaled
-     *          state.
+     * \brief   Initializes the synchronization event object, sets the type and initial signaled state
      *
      * \param   isInitSignaled      If true, the event is initially in signaled state. If false, it
      *                              is initially in non-signaled state.
@@ -95,8 +94,7 @@ public:
     /**
      * \brief   Returns true if the event is signaled; false otherwise.
      *
-     * \param   contextThread       The thread ID where the lock and wait happened. Not used for
-     *                              waitable events.
+     * \param   contextThread       The thread ID where the lock and wait happened. Not used for waitable events.
      * \return  Returns true if the object is signaled; false otherwise.
      **/
     bool check_signaled( pthread_t contextThread ) const final;
@@ -116,8 +114,7 @@ public:
     bool can_signal_threads() const noexcept final;
 
     /**
-     * \brief   Notifies the event of how many threads were released when the event was in signaled
-     *          state.
+     * \brief   Notifies the event of how many threads were released when the event was in signaled state
      *
      * \param   numThreads      The number of threads released when the event was signaled. Zero
      *                          means no thread was released.
@@ -135,7 +132,7 @@ private:
     /**
      * \brief   Flag that indicates the signaled state of the event.
      **/
-    mutable bool                mIsSignaled;
+    std::atomic<bool>           mIsSignaled;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

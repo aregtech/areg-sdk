@@ -62,7 +62,6 @@
     <ClCompile Include="areg\base\private\posix\WaitableSemaphorePosix.cpp" />
     <ClCompile Include="areg\base\private\posix\WaitableTimerPosix.cpp" />
     <ClCompile Include="areg\base\private\posix\SyncPrimitivesPosix.cpp" />
-    <ClCompile Include="areg\base\private\posix\SpinSyncEventPosix.cpp" />
     <ClCompile Include="areg\base\private\posix\SyncObjectPosix.cpp" />
     <ClCompile Include="areg\base\private\posix\WaitablePosix.cpp" />
     <ClCompile Include="areg\base\private\posix\DebugDefsPosix.cpp" />
@@ -76,7 +75,6 @@
     <ClCompile Include="areg\base\private\win32\SpinLockWin32.cpp" />
     <ClCompile Include="areg\base\private\win32\ThreadWin32.cpp" />
     <ClCompile Include="areg\base\private\win32\SyncPrimitivesWin32.cpp" />
-    <ClCompile Include="areg\base\private\win32\SpinSyncEventWin32.cpp" />
     <ClCompile Include="areg\base\private\win32\SocketDefsWin32.cpp" />
     <ClCompile Include="areg\base\private\win32\UtilityDefsWin32.cpp" />
     <ClCompile Include="areg\base\private\areg_global.cpp" />
@@ -104,7 +102,6 @@
     <ClCompile Include="areg\base\private\SocketServer.cpp" />
     <ClCompile Include="areg\base\private\Containers.cpp" />
     <ClCompile Include="areg\base\private\SyncPrimitives.cpp" />
-    <ClCompile Include="areg\base\private\SpinSyncEvent.cpp" />
     <ClCompile Include="areg\base\private\SyncObject.cpp" />
     <ClCompile Include="areg\base\private\Cursor.cpp" />
     <ClCompile Include="areg\base\private\IOStream.cpp" />
@@ -246,7 +243,6 @@
     <ClInclude Include="areg\base\OrderedMap.hpp" />
     <ClInclude Include="areg\base\SharedPrimitive.hpp" />
     <ClInclude Include="areg\base\SocketMultiplexer.hpp" />
-    <ClInclude Include="areg\base\SyncEventAlias.hpp" />
     <ClInclude Include="areg\base\TableDefs.hpp" />
     <ClInclude Include="areg\base\TemplateBase.hpp" />
     <ClInclude Include="areg\base\SyncObject.hpp" />
@@ -328,7 +324,6 @@
     <ClInclude Include="areg\component\StubAddress.hpp" />
     <ClInclude Include="areg\component\StubBase.hpp" />
     <ClInclude Include="areg\base\SyncPrimitives.hpp" />
-    <ClInclude Include="areg\base\SpinSyncEvent.hpp" />
     <ClInclude Include="areg\base\Thread.hpp" />
     <ClInclude Include="areg\base\ThreadLocalStorage.hpp" />
     <ClInclude Include="areg\component\Timer.hpp" />

@@ -130,6 +130,18 @@ void SyncEvent::_os_pulse_event() noexcept
     reinterpret_cast<areg::os::WaitableEventPosix *>(mSyncObject)->pulse_event();
 }
 
+int32_t SyncEvent::_os_wait_any( SyncEvent** events, int32_t count, uint32_t timeout ) noexcept
+{
+    areg::os::WaitablePosix* handles[areg::MAXIMUM_WAITING_OBJECTS];
+    for ( int32_t i = 0; i < count; ++i )
+    {
+        handles[i] = reinterpret_cast<areg::os::WaitablePosix*>(events[i]->handle());
+    }
+
+    int32_t result = areg::os::SyncLockAndWaitPosix::wait_multiple(handles, count, false, timeout);
+    return ((result >= 0) && (result < count)) ? result : SyncEvent::WAIT_ANY_TIMEOUT;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Semaphore class implementation
 //////////////////////////////////////////////////////////////////////////

@@ -43,12 +43,7 @@ bool ClientReceiveThread::run_dispatcher()
 
     ready_for_events( true );
 
-#ifdef USE_FAST_EVENT
-    SpinSyncEvent* events[2] { &mEventExit, &mEventQueue };
-#else
-    SyncObject* syncObjects[2] {&mEventExit, &mEventQueue};
-    MultiLock multiLock(syncObjects, 2, false);
-#endif  // USE_FAST_EVENT
+    SyncEvent* events[2] { &mEventExit, &mEventQueue };
     RemoteMessage msgReceived;
     int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
 
@@ -57,13 +52,8 @@ bool ClientReceiveThread::run_dispatcher()
 
     do
     {
-#ifdef USE_FAST_EVENT
-        whichEvent = drainCount == 0u ? SpinSyncEvent::wait_any(events, 2, areg::DO_NOT_WAIT) : SpinSyncEvent::WAIT_INDEX_TIMEOUT;
-        if ( whichEvent == SpinSyncEvent::WAIT_INDEX_TIMEOUT )
-#else
-        whichEvent = drainCount == 0u ? multiLock.lock(areg::DO_NOT_WAIT, false) : MultiLock::LOCK_INDEX_TIMEOUT;
-        if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
-#endif  // USE_FAST_EVENT
+        whichEvent = drainCount == 0u ? SyncEvent::wait_any(events, 2, areg::DO_NOT_WAIT) : SyncEvent::WAIT_ANY_TIMEOUT;
+        if ( whichEvent == SyncEvent::WAIT_ANY_TIMEOUT )
         {
             whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue); // escape quit
             int32_t sizeReceive = mConnection.receive_message( msgReceived );

@@ -49,8 +49,7 @@ class SyncLockAndWaitPosix;
 /**
  * \brief   POSIX-based synchronization object for locking and waiting on single or multiple
  *          waitable objects. Supports waiting criteria based on flags, with a maximum of
- *          areg::MAXIMUM_WAITING_OBJECTS. Use static methods for waiting; internal methods are
- *          hidden.
+ *          areg::MAXIMUM_WAITING_OBJECTS. Use static methods for waiting; internal methods are Shidden.
  **/
 class SyncLockAndWaitPosix
 {
@@ -115,21 +114,23 @@ class SyncLockAndWaitPosix
     using SyncResourceMapIX = ConcurrentResourceListMap<WaitablePosix *, SyncLockAndWaitPosix *, ListLockAndWait, MapLockAndWait, ImplResourceListMap>;
 
 //////////////////////////////////////////////////////////////////////////
-// The resource map for timer.
+// Resource maps keyed by thread ID (for notify_async_signal)
 //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   The resource map of waitable, where keys are id_type and the values are WaitAndLock objects
+     * \brief   Map for WaitAll path
      **/
-    using MapWaitID         = IdHashMap<SyncLockAndWaitPosix *>;
+    using MapWaitID          = IdHashMap<SyncLockAndWaitPosix *>;
+    using ImplWaitIDResource = ResourceMapImpl<ptr_type, SyncLockAndWaitPosix *>;
+    using MapWaitIDResource  = ConcurrentResourceMap<ptr_type, SyncLockAndWaitPosix *, MapWaitID, ImplWaitIDResource>;
+
+#if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
     /**
-     * \brief   Helper object for resource map basic method implementations
+     * \brief   Map for WaitAny path
      **/
-    using ImplWaitIDResource= ResourceMapImpl<ptr_type, SyncLockAndWaitPosix *>;
-    /**
-     * \brief   Resource map of waitable where the keys are pthread_t (thread ID) and the values are
-     *          LockAndWait objects. It is used in the timer.
-     **/
-    using MapWaitIDResource = ConcurrentResourceMap<ptr_type, SyncLockAndWaitPosix *, MapWaitID, ImplWaitIDResource>;
+    using MapWaitAnyID          = IdHashMap<std::atomic<uint32_t>*>;
+    using ImplWaitAnyIDResource = ResourceMapImpl<ptr_type, std::atomic<uint32_t>*>;
+    using MapWaitAnyIDResource  = ConcurrentResourceMap<ptr_type, std::atomic<uint32_t>*, MapWaitAnyID, ImplWaitAnyIDResource>;
+#endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
 
 //////////////////////////////////////////////////////////////////////////
 // Friend classes
@@ -251,12 +252,9 @@ private:
     /**
      * \brief   Initializes the object, sets flags, and checks signaled state of waitables.
      *
-     * \param   listWaitables       The list of waitables. Maximum areg::MAXIMUM_WAITING_OBJECTS
-     *                              entries.
-     * \param   count               The number of waitables in the list. Maximum
-     *                              areg::MAXIMUM_WAITING_OBJECTS.
-     * \param   matchCondition      Specifies wait criteria: exact match (all signaled) or any one
-     *                              signaled.
+     * \param   listWaitables       The list of waitables. Maximum areg::MAXIMUM_WAITING_OBJECTS entries
+     * \param   count               The number of waitables in the list. Maximum areg::MAXIMUM_WAITING_OBJECTS
+     * \param   matchCondition      Specifies wait criteria: exact match (all signaled) or any one signaled
      * \param   msTimeout           Timeout in milliseconds to wait.
      **/
     SyncLockAndWaitPosix( WaitablePosix ** listWaitables, int32_t count, areg::os::WaitCondition matchCondition, uint32_t msTimeout );
@@ -268,12 +266,31 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Returns static map of waitables keyed by id_type.
+     * \brief   Returns static map of thread-ID.
      **/
     static SyncLockAndWaitPosix::MapWaitIDResource& _map_wait_ids() noexcept;
 
+#if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
     /**
-     * \brief   Returns static instance of synchronization resource map.
+     * \brief   Returns static map of thread-ID -> fire-word pointer (WaitAny path).
+     **/
+    static SyncLockAndWaitPosix::MapWaitAnyIDResource& _map_wait_any_ids() noexcept;
+
+    /**
+     * \brief   WaitAny implementation: stack-allocates WaiterNodes, registers them in each
+     *          waitable's intrusive list, sleeps on a per-call fire word via the platform
+     *          primitive (futex / __ulock / WaitOnAddress), and returns the fired result code.
+     *
+     * \param   listWaitables   Array of waitables to watch.
+     * \param   count           Number of entries in listWaitables.
+     * \param   msTimeout       Timeout in milliseconds; areg::WAIT_INFINITE to wait forever.
+     * \return  Returns the value stored in firedWord on wakeup (fired index, timeout code, etc.).
+     **/
+    static int32_t _wait_any_new( WaitablePosix** listWaitables, int32_t count, uint32_t msTimeout ) noexcept;
+#endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
+
+    /**
+     * \brief   Returns static instance of synchronization resource map (WaitAll).
      **/
     static SyncResourceMapIX& _map_sync_resources() noexcept;
 
@@ -283,8 +300,7 @@ private:
     inline bool _no_event_fired() const noexcept;
 
     /**
-     * \brief   Returns true if object is valid (TLS sync objects initialized and waiting list not
-     *          empty).
+     * \brief   Returns true if object is valid (TLS sync objects initialized and waiting list not empty)
      **/
     [[nodiscard]]
     inline bool _is_valid() const noexcept;

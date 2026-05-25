@@ -22,7 +22,7 @@
 #include "areg/appbase/AppDefs.hpp"
 
 #include "areg/base/String.hpp"
-#include "areg/base/SyncEventAlias.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/persist/ConfigManager.hpp"
 
 /************************************************************************
@@ -460,7 +460,7 @@ private:
     /**
      * \brief   Exit application event.
      **/
-    AREG_SYNC_EVENT mAppQuit;
+    SyncEvent       mAppQuit;
     /**
      * \brief   Synchronization object
      **/

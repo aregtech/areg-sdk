@@ -38,37 +38,13 @@ WaitableEventPosix::WaitableEventPosix( bool isInitSignaled, bool is_auto_reset,
 
 bool WaitableEventPosix::set_signaled() noexcept
 {
-    bool result     = false;
-    bool sendSignal = false;
-
-    do 
-    {
-        ObjectLockPosix lock(*this);
-
-        if (is_valid())
-        {
-            result = true;
-            if ( mIsSignaled == false)
-            {
-                mIsSignaled = true;
-                sendSignal  = true;
-            }
-#ifdef DEBUG
-            else
-            {
-                // AREG_OUTPUT_DBG("The waitable event [ %s ] was already in signal state. Ignoring call to set event", name());
-            }
-#endif // DEBUG
-
-        }
-    } while (false);
-
-    if (sendSignal)
+    // Lock-free fast path
+    if (!mIsSignaled.exchange(true, std::memory_order_acq_rel))
     {
         SyncLockAndWaitPosix::event_signaled(*this);
     }
 
-    return result;
+    return true;
 }
 
 bool WaitableEventPosix::reset() noexcept
@@ -78,7 +54,7 @@ bool WaitableEventPosix::reset() noexcept
     if ( is_valid() )
     {
 #ifdef DEBUG
-        if (mIsSignaled)
+        if (mIsSignaled.load(std::memory_order_relaxed))
         {
             if (areg::os::ResetMode::Automatic == mEventReset)
             {
@@ -91,8 +67,8 @@ bool WaitableEventPosix::reset() noexcept
         }
 #endif // DEBUG
 
-        mIsSignaled = false;
-        result      = true;
+        mIsSignaled.store(false, std::memory_order_release);
+        result = true;
     }
 
     return result;
@@ -101,31 +77,24 @@ bool WaitableEventPosix::reset() noexcept
 
 void WaitableEventPosix::pulse_event() noexcept
 {
-    do 
+    ObjectLockPosix lock(*this);
+    if (is_valid() && !mIsSignaled.load(std::memory_order_relaxed))
     {
-        ObjectLockPosix lock(*this);
-        if (is_valid())
-        {
-            if (mIsSignaled == false)
-            {
-                AREG_OUTPUT_DBG("Pulsing event [ %s ]", name().as_string( ));
+        AREG_OUTPUT_DBG("Pulsing event [ %s ]", name().as_string( ));
 
-                mIsSignaled = true;
-                lock.unlock();
+        mIsSignaled.store(true, std::memory_order_release);
+        lock.unlock();
 
-                SyncLockAndWaitPosix::event_signaled(*this);
+        SyncLockAndWaitPosix::event_signaled(*this);
 
-                lock.lock();
-                mIsSignaled = false;
-            }
-        }
-    } while (false);
+        lock.lock();
+        mIsSignaled.store(false, std::memory_order_relaxed);
+    }
 }
 
 bool WaitableEventPosix::check_signaled(pthread_t /*contextThread*/) const
 {
-    ObjectLockPosix lock(*this);
-    return mIsSignaled;
+    return mIsSignaled.load(std::memory_order_acquire);
 }
 
 bool WaitableEventPosix::notify_request_ownership( pthread_t /* ownerThread */ )
@@ -140,12 +109,10 @@ bool WaitableEventPosix::can_signal_threads() const noexcept
 
 void WaitableEventPosix::notify_released_threads(int32_t numThreads)
 {
-    ObjectLockPosix lock(*this);
-
     if ((mEventReset == areg::os::ResetMode::Automatic) && (numThreads > 0))
     {
         AREG_OUTPUT_DBG("There were [ %d ] released threads, automatically resetting waitable event [ %p ].", numThreads, this);
-        mIsSignaled = false;
+        mIsSignaled.store(false, std::memory_order_release);
     }
 }
 

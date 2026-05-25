@@ -130,6 +130,11 @@ namespace areg::os {
      **/
     inline constexpr void conv_timeout( timespec & out_result, uint32_t msTimeout ) noexcept;
 
+#if defined(__APPLE__)
+    //! __ulock operation code for compare-and-wait on macOS (equal to UL_COMPARE_AND_WAIT).
+    constexpr uint32_t APPLE_ULOCK_COMPARE_AND_WAIT { 1u };
+#endif  // defined(__APPLE__)
+
 } // namespace areg::os
 
 //////////////////////////////////////////////////////////////////////////

@@ -338,7 +338,7 @@ bool Console::_os_wait_input_string(char* buffer, uint32_t size)
             {
                 // Interrupt pipe triggered — drain it and abort the read.
                 char dummy{ 0 };
-                (void)::read(pipeReadFd, &dummy, 1);
+                [[maybe_unused]] ssize_t ignored = ::read(pipeReadFd, &dummy, 1);
                 len = 0;
                 break;
             }
@@ -445,7 +445,7 @@ void Console::_os_interrupt_input() noexcept
     if (mInterruptPipe[1] >= 0)
     {
         const char wake{ '\n' };
-        (void)::write(mInterruptPipe[1], &wake, 1);
+        [[maybe_unused]] ssize_t ignored = ::write(mInterruptPipe[1], &wake, 1);
     }
 #endif  // _WIN32
 }

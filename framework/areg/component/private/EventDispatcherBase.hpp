@@ -35,7 +35,6 @@
 #include "areg/component/private/EventQueue.hpp"
 #include "areg/component/private/MpscEventQueue.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/SyncEventAlias.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 
 #include <atomic>
@@ -334,21 +333,13 @@ protected:
      * \brief   Exit Synchronization Event.
      *          Signaled when dispatcher should be stopped.
      **/
-#ifdef USE_FAST_EVENT
-    SpinSyncEvent       mEventExit;
-#else
     SyncEvent           mEventExit;
-#endif  // USE_FAST_EVENT
 
     /**
      * \brief   Queue Synchronization Event.
      *          Signaled when new event is pushed; reset when queue is empty.
      **/
-#ifdef USE_FAST_EVENT
-    SpinSyncEvent       mEventQueue;
-#else
     SyncEvent           mEventQueue;
-#endif  // USE_FAST_EVENT
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls.

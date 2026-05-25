@@ -86,6 +86,16 @@ SyncEvent::~SyncEvent()
     _os_unlock_event( mSyncObject );
 }
 
+int32_t SyncEvent::wait_any( SyncEvent** events, int32_t count, uint32_t timeout /* = areg::WAIT_INFINITE */ ) noexcept
+{
+    if ( (events == nullptr) || (count <= 0) )
+    {
+        return SyncEvent::WAIT_ANY_TIMEOUT;
+    }
+
+    return _os_wait_any( events, std::min(count, areg::MAXIMUM_WAITING_OBJECTS), timeout );
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Semaphore class implementation
 //////////////////////////////////////////////////////////////////////////
