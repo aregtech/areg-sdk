@@ -15,7 +15,6 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/base/Containers.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/component/ComponentThread.hpp"
 
@@ -292,167 +291,90 @@ void LatencyProvider::_run_broadcast_burst()
     if (count == 0u)
         return;
 
-    areg::Wait waiter;
-    const uint64_t interval_ns = 1'000'000'000ULL / static_cast<uint64_t>(count);
-
     switch (mode)
     {
     case Latency::LatencyMode::Broadcast0:
+        for (uint32_t i = 0u; i < count; ++i)
         {
-            uint32_t i { 0u };
-            uint64_t target = Latency::now_ns();
-            do
-            {
-                broadcast_message_0(mMsgId++, Latency::now_ns());
-                mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-                target += interval_ns;
-                const int64_t delta = static_cast<int64_t>(target - Latency::now_ns());
-                if (delta > COARSE_SLEEP_NS)
-                {
-                    waiter.wait_for(areg::Wait::Duration{ delta });
-                    target = Latency::now_ns();
-                }
-            } while (++i < count);
+            broadcast_message_0(mMsgId++, Latency::now_ns());
+            mTotalServed.fetch_add(1u, std::memory_order_relaxed);
         }
         break;
 
     case Latency::LatencyMode::Broadcast8:
         {
             Latency::Data8 d {};
-            uint32_t i { 0u };
-            uint64_t target = Latency::now_ns();
-            do
+            for (uint32_t i = 0u; i < count; ++i)
             {
                 broadcast_message_8(mMsgId++, Latency::now_ns(), d);
                 mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-                target += interval_ns;
-                const int64_t delta = static_cast<int64_t>(target - Latency::now_ns());
-                if (delta > COARSE_SLEEP_NS)
-                {
-                    waiter.wait_for(areg::Wait::Duration{ delta });
-                    target = Latency::now_ns();
-                }
-            } while (++i < count);
+            }
         }
         break;
 
     case Latency::LatencyMode::Broadcast16:
         {
             Latency::Data16 d {};
-            uint32_t i { 0u };
-            uint64_t target = Latency::now_ns();
-            do
+            for (uint32_t i = 0u; i < count; ++i)
             {
                 broadcast_message_16(mMsgId++, Latency::now_ns(), d);
                 mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-                target += interval_ns;
-                const int64_t delta = static_cast<int64_t>(target - Latency::now_ns());
-                if (delta > COARSE_SLEEP_NS)
-                {
-                    waiter.wait_for(areg::Wait::Duration{ delta });
-                    target = Latency::now_ns();
-                }
-            } while (++i < count);
+            }
         }
         break;
 
     case Latency::LatencyMode::Broadcast32:
         {
             Latency::Data32 d {};
-            uint32_t i { 0u };
-            uint64_t target = Latency::now_ns();
-            do
+            for (uint32_t i = 0u; i < count; ++i)
             {
                 broadcast_message_32(mMsgId++, Latency::now_ns(), d);
                 mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-                target += interval_ns;
-                const int64_t delta = static_cast<int64_t>(target - Latency::now_ns());
-                if (delta > COARSE_SLEEP_NS)
-                {
-                    waiter.wait_for(areg::Wait::Duration{ delta });
-                    target = Latency::now_ns();
-                }
-            } while (++i < count);
+            }
         }
         break;
 
     case Latency::LatencyMode::Broadcast64:
         {
             Latency::Data64 d {};
-            uint32_t i { 0u };
-            uint64_t target = Latency::now_ns();
-            do
+            for (uint32_t i = 0u; i < count; ++i)
             {
                 broadcast_message_64(mMsgId++, Latency::now_ns(), d);
                 mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-                target += interval_ns;
-                const int64_t delta = static_cast<int64_t>(target - Latency::now_ns());
-                if (delta > COARSE_SLEEP_NS)
-                {
-                    waiter.wait_for(areg::Wait::Duration{ delta });
-                    target = Latency::now_ns();
-                }
-            } while (++i < count);
+            }
         }
         break;
 
     case Latency::LatencyMode::Broadcast128:
         {
             Latency::Data128 d {};
-            uint32_t i { 0u };
-            uint64_t target = Latency::now_ns();
-            do
+            for (uint32_t i = 0u; i < count; ++i)
             {
                 broadcast_message_128(mMsgId++, Latency::now_ns(), d);
                 mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-                target += interval_ns;
-                const int64_t delta = static_cast<int64_t>(target - Latency::now_ns());
-                if (delta > COARSE_SLEEP_NS)
-                {
-                    waiter.wait_for(areg::Wait::Duration{ delta });
-                    target = Latency::now_ns();
-                }
-            } while (++i < count);
+            }
         }
         break;
 
     case Latency::LatencyMode::Broadcast256:
         {
             Latency::Data256 d {};
-            uint32_t i { 0u };
-            uint64_t target = Latency::now_ns();
-            do
+            for (uint32_t i = 0u; i < count; ++i)
             {
                 broadcast_message_256(mMsgId++, Latency::now_ns(), d);
                 mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-                target += interval_ns;
-                const int64_t delta = static_cast<int64_t>(target - Latency::now_ns());
-                if (delta > COARSE_SLEEP_NS)
-                {
-                    waiter.wait_for(areg::Wait::Duration{ delta });
-                    target = Latency::now_ns();
-                }
-            } while (++i < count);
+            }
         }
         break;
 
     case Latency::LatencyMode::Broadcast512:
         {
             Latency::Data512 d {};
-            uint32_t i { 0u };
-            uint64_t target = Latency::now_ns();
-            do
+            for (uint32_t i = 0u; i < count; ++i)
             {
                 broadcast_message_512(mMsgId++, Latency::now_ns(), d);
                 mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-                target += interval_ns;
-                const int64_t delta = static_cast<int64_t>(target - Latency::now_ns());
-                if (delta > COARSE_SLEEP_NS)
-                {
-                    waiter.wait_for(areg::Wait::Duration{ delta });
-                    target = Latency::now_ns();
-                }
-            } while (++i < count);
+            }
         }
         break;
 
@@ -460,20 +382,11 @@ void LatencyProvider::_run_broadcast_burst()
         {
             Latency::Data1024 d {};
             d.data_rest.set_size_used(1024 - 128 - 64);
-            uint32_t i { 0u };
-            uint64_t target = Latency::now_ns();
-            do
+            for (uint32_t i = 0u; i < count; ++i)
             {
                 broadcast_message_1024(mMsgId++, Latency::now_ns(), d);
                 mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-                target += interval_ns;
-                const int64_t delta = static_cast<int64_t>(target - Latency::now_ns());
-                if (delta > COARSE_SLEEP_NS)
-                {
-                    waiter.wait_for(areg::Wait::Duration{ delta });
-                    target = Latency::now_ns();
-                }
-            } while (++i < count);
+            }
         }
         break;
 
@@ -481,20 +394,11 @@ void LatencyProvider::_run_broadcast_burst()
         {
             Latency::Data4096 d {};
             d.data_rest.set_size_used(4096 - 128 - 64);
-            uint32_t i { 0u };
-            uint64_t target = Latency::now_ns();
-            do
+            for (uint32_t i = 0u; i < count; ++i)
             {
                 broadcast_message_4096(mMsgId++, Latency::now_ns(), d);
                 mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-                target += interval_ns;
-                const int64_t delta = static_cast<int64_t>(target - Latency::now_ns());
-                if (delta > COARSE_SLEEP_NS)
-                {
-                    waiter.wait_for(areg::Wait::Duration{ delta });
-                    target = Latency::now_ns();
-                }
-            } while (++i < count);
+            }
         }
         break;
 
@@ -502,20 +406,11 @@ void LatencyProvider::_run_broadcast_burst()
         {
             Latency::Data65536 d {};
             d.data_rest.set_size_used(65536 - 128 - 64);
-            uint32_t i { 0u };
-            uint64_t target = Latency::now_ns();
-            do
+            for (uint32_t i = 0u; i < count; ++i)
             {
                 broadcast_message_65536(mMsgId++, Latency::now_ns(), d);
                 mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-                target += interval_ns;
-                const int64_t delta = static_cast<int64_t>(target - Latency::now_ns());
-                if (delta > COARSE_SLEEP_NS)
-                {
-                    waiter.wait_for(areg::Wait::Duration{ delta });
-                    target = Latency::now_ns();
-                }
-            } while (++i < count);
+            }
         }
         break;
 

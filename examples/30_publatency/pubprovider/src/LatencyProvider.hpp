@@ -144,16 +144,6 @@ private:
     static constexpr std::string_view THREAD_INPUT       { "LatencyProviderInputThread" };
     static constexpr std::string_view TIMER_BROADCAST    { "LatencyProviderBroadcastTimer" };
 
-    //!< Use a coarse sleep chunk and a busy loop for the final gap. This keeps the long-run
-    //!< rate locked to the absolute block schedule while avoiding sub-millisecond sleeps.
-#if defined(_WIN32)
-    static constexpr int64_t COARSE_SLEEP_NS{ 2'500'000LL };      //  0.5 ms (was 15 ms; timeBeginPeriod(1) enables 1 ms resolution)
-#elif defined(__APPLE__)
-    static constexpr int64_t COARSE_SLEEP_NS{ 2'000'000LL };    //  2 ms
-#else
-    static constexpr int64_t COARSE_SLEEP_NS{ 500'000LL };      //  0.5 ms (was 4 ms)
-#endif
-
     //!< Last computed one-way stats; shown persistently between timer ticks in request mode:
     struct LatencyStats
     {

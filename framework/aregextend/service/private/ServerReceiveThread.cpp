@@ -141,16 +141,25 @@ bool ServerReceiveThread::run_dispatcher()
     int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
     if ( mConnection.server_listen( areg::MAXIMUM_LISTEN_QUEUE_SIZE) )
     {
+#ifdef USE_FAST_EVENT
+        SpinSyncEvent* events[2] { &mEventExit, &mEventQueue };
+#else
         SyncObject* syncObjects[2] = {&mEventExit, &mEventQueue};
         MultiLock multiLock(syncObjects, 2, false);
+#endif  // USE_FAST_EVENT
 
         RemoteMessage msgReceived;
         areg::SocketAddress addrDrain;
         uint32_t retryCount = 0;
         do
         {
+#ifdef USE_FAST_EVENT
+            whichEvent = SpinSyncEvent::wait_any(events, 2, areg::DO_NOT_WAIT);
+            if ( whichEvent == SpinSyncEvent::WAIT_INDEX_TIMEOUT )
+#else
             whichEvent = multiLock.lock(areg::DO_NOT_WAIT, false);
             if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
+#endif  // USE_FAST_EVENT
             {
                 whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue); // escape quit
                 areg::SocketAddress addrAccepted;
