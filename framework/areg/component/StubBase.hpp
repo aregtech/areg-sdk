@@ -158,12 +158,19 @@ protected:
     };
 
     //////////////////////////////////////////////////////////////////////////
-    // StubBase::StubListenerList class declaration
+    // StubBase::StubListenerList and StubListenerMap declarations
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   StubBase::StubListenerList class defines list of pending listeners.
+     * \brief   Flat list of listeners for a single message ID. Backed by contiguous vector for
+     *          cache-friendly traversal.
      **/
-    using StubListenerList  = LinkedList<StubBase::Listener>;
+    using StubListenerList  = ArrayList<StubBase::Listener>;
+
+    /**
+     * \brief   HashMap keyed by message ID mapping to its listener list. Provides O(1) average
+     *          lookup, replacing the O(n) linked-list scan.
+     **/
+    using StubListenerMap   = HashMap<uint32_t, StubListenerList>;
 
     //////////////////////////////////////////////////////////////////////////
     // StubBase session tracking
@@ -176,15 +183,15 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     // StubBase resource tracking
     //////////////////////////////////////////////////////////////////////////
-    using MapProvider = HashMap<StubAddress, StubBase *>;
+    using MapProvider = HashMap<uint32_t, StubBase *>;
     /**
      * \brief   Stub resource helper definition.
      **/
-    using ImplProviderResource  = ResourceMapImpl<StubAddress, StubBase *>;
+    using ImplProviderResource  = ResourceMapImpl<uint32_t, StubBase *>;
     /**
      * \brief   Resource Map definition.
      **/
-    using MapProviderResource   = ConcurrentResourceMap<StubAddress, StubBase *, MapProvider, ImplProviderResource>;
+    using MapProviderResource   = ConcurrentResourceMap<uint32_t, StubBase *, MapProvider, ImplProviderResource>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -361,8 +368,7 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Processes a service request event. Must be overridden by derived classes to handle
-     *          specific requests.
+     * \brief   Processes a service request event. Must be overridden by derived classes to handle specific requests.
      *
      * \param   eventElem       The request event containing the request ID and serialized
      *                          parameters.
@@ -370,8 +376,7 @@ protected:
     void process_request_event( areg::ServiceRequestEvent & eventElem ) override = 0;
     
     /**
-     * \brief   Processes a request to get or subscribe to attribute updates. Must be overridden by
-     *          derived classes.
+     * \brief   Processes a request to get or subscribe to attribute updates. Must be overridden by derived classes.
      *
      * \param   eventElem       The event containing the attribute ID and subscription request.
      **/
@@ -478,8 +483,7 @@ protected:
     uint32_t find_listeners(uint32_t reqId, StubListenerList & out_listners) const;
 
     /**
-     * \brief   Returns true if a notification listener with the specified message ID and proxy
-     *          address exists.
+     * \brief   Returns true if a notification listener with the specified message ID and proxy address exists.
      *
      * \param   msgId           The notification message ID (attribute or response).
      * \param   notifySource    The address of the subscribing proxy.
@@ -523,29 +527,39 @@ protected:
     void clear_all_listeners(const ProxyAddress & whichProxy) noexcept;
 
     /**
-     * \brief   Sends an attribute update notification to all specified proxy clients.
+     * \brief   Dispatches a response event to all specified listeners. For the first listener the
+     *          master event is sent directly (no clone), eliminating one heap allocation per
+     *          dispatch. Clones are created for remaining listeners before the master is sent.
+     *          Ownership of masterEvent is transferred to the dispatcher; callers must NOT call
+     *          destroy() on it after this returns.
      *
      * \param   whichListeners      The list of listeners containing target proxy addresses.
-     * \param   masterEvent         The event containing the attribute ID and updated value.
+     * \param   masterEvent         The event to dispatch; targeted at whichListeners[0] by the
+     *                              caller. Ownership is transferred to the dispatcher.
      **/
-    void send_response_notification( const StubBase::StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent );
+    void send_response_notification( const StubBase::StubListenerList & whichListeners, ServiceResponseEvent & masterEvent );
 
     /**
      * \brief   Sends an error response for a failed attribute request to specified listeners.
+     *          The master event is cloned for each listener; the caller retains ownership and must
+     *          call destroy() on masterEvent after this returns.
      *
      * \param   whichListeners      The list of listeners to receive the error notification.
-     * \param   masterEvent         The event containing the error type and attribute ID.
+     * \param   masterEvent         The template event; cloned per listener. Caller destroys it.
      **/
     void send_error_notification( const StubBase::StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent );
 
     /**
-     * \brief   Sends an attribute update notification to all specified listeners.
+     * \brief   Broadcasts an attribute update to all specified listeners. For the first listener
+     *          the master event is sent directly; subsequent listeners receive clones.
+     *          Ownership of masterEvent is transferred to the dispatcher; callers must NOT call
+     *          destroy() on it after this returns.
      *
      * \param   whichListeners      The list of listeners containing proxy addresses.
-     * \param   masterEvent         The event containing the attribute ID, update type, and new
-     *                              value.
+     * \param   masterEvent         The event to broadcast. Ownership is transferred to the
+     *                              dispatcher.
      **/
-    void send_update_notification( const StubBase::StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent ) const;
+    void send_update_notification( const StubBase::StubListenerList & whichListeners, ServiceResponseEvent & masterEvent ) const;
 
     /**
      * \brief   Sends a service response event to trigger response handlers on client side.
@@ -633,6 +647,15 @@ private:
     [[nodiscard]]
     inline static MapProviderResource& map_providers() noexcept;
 
+    /**
+     * \brief   Removes one listener matching toRemove from the sub-vector for msgId using
+     *          swap-and-pop. No-op if msgId or the matching listener is not found.
+     *
+     * \param   msgId       The message ID whose sub-vector is searched.
+     * \param   toRemove    The listener to find and remove (matched via Listener::operator==).
+     **/
+    void remove_from_map( uint32_t msgId, const StubBase::Listener & toRemove ) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -662,15 +685,22 @@ protected:
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     /**
-     * \brief   The list of listeners
+     * \brief   Per-message-ID listener map. Each sub-vector holds all listeners registered for a specific message ID.
      **/
-    StubBase::StubListenerList      mListListener;
+    StubBase::StubListenerMap       mListenerMap;
 
 private:
     /**
-     * \brief   The position of current listener, which is processing. When canceled, it sets nullptr.
+     * \brief   Message ID of the listener currently being processed inside process_request_event().
+     *          Set to INVALID_MESSAGE_ID when no request is active or after cancel/unblock.
      **/
-    StubListenerList::LISTPOS       mCurrListener;
+    uint32_t                        mCurrMsgId;
+
+    /**
+     * \brief   Index of the current listener within mListenerMap[mCurrMsgId]. Valid only when
+     *          mCurrMsgId != INVALID_MESSAGE_ID.
+     **/
+    uint32_t                        mCurrIndex;
 
     /**
      * \brief   Session map object, contains list of unblock requests

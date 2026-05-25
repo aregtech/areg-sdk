@@ -847,6 +847,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "toolchains", "toolchains", 
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "30_publatency", "30_publatency", "{F8205CA0-E4C7-4043-A35E-7A137B11A6E9}"
+	ProjectSection(SolutionItems) = preProject
+		examples\30_publatency\CMakeLists.txt = examples\30_publatency\CMakeLists.txt
+		examples\30_publatency\ReadMe.md = examples\30_publatency\ReadMe.md
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "30_generated", "examples\30_publatency\30_generated.vcxproj", "{79F26804-27E3-40AE-BBD9-34A708B4BFD5}"
 	ProjectSection(ProjectDependencies) = postProject

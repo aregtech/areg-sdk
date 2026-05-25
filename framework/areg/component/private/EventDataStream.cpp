@@ -108,11 +108,6 @@ EventDataStream & EventDataStream::operator = ( EventDataStream && src ) noexcep
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class, Methods
 //////////////////////////////////////////////////////////////////////////
-uint32_t EventDataStream::read( uint8_t* buffer, uint32_t size ) const noexcept
-{
-    return mDataBuffer.read(buffer, size);
-}
-
 uint32_t EventDataStream::read(SharedBuffer& buffer ) const
 {
     uint32_t result = 0;
@@ -129,26 +124,6 @@ uint32_t EventDataStream::read(SharedBuffer& buffer ) const
     return result;
 }
 
-uint32_t EventDataStream::read( String & ascii ) const
-{
-    return mDataBuffer.read(ascii);
-}
-
-uint32_t EventDataStream::read( WideString & wide ) const
-{
-    return mDataBuffer.read(wide);
-}
-
-void EventDataStream::reset() const noexcept
-{
-    mDataBuffer.move_to_begin();
-}
-
-uint32_t EventDataStream::write( const uint8_t* buffer, uint32_t size )
-{
-    return mDataBuffer.write(buffer, size);
-}
-
 uint32_t EventDataStream::write( const SharedBuffer& buffer )
 {
     uint32_t result = 0;
@@ -163,32 +138,6 @@ uint32_t EventDataStream::write( const SharedBuffer& buffer )
     }
 
     return result;
-}
-
-uint32_t EventDataStream::write( const String & ascii )
-{
-    return mDataBuffer.write(ascii);
-}
-
-uint32_t EventDataStream::write( const WideString & wide )
-{
-    return mDataBuffer.write(wide);
-}
-
-void EventDataStream::flush() noexcept
-{
-}
-
-uint32_t EventDataStream::size_readable() const noexcept
-{
-    ASSERT(false);
-    return 0;
-}
-
-uint32_t EventDataStream::size_writable() const noexcept
-{
-    ASSERT(false);
-    return 0;
 }
 
 } // namespace areg

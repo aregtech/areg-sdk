@@ -38,6 +38,8 @@
     // POSIX raw-mode terminal control for character-by-character input.
     #include <termios.h>
     #include <unistd.h>
+    #include <fcntl.h>
+    #include <poll.h>
 
 #endif // _WIN32
 
@@ -100,6 +102,19 @@ bool Console::_os_setup() noexcept
     mIsReady = true;
     printf("%s", CMD_CLEAR_SCREEN.data());
     ::fflush(stdout);
+#ifndef _WIN32
+    if (mInterruptPipe[0] == -1)
+    {
+        if (::pipe(mInterruptPipe) == 0)
+        {
+            const int flags = ::fcntl(mInterruptPipe[1], F_GETFL);
+            if (flags >= 0)
+            {
+                ::fcntl(mInterruptPipe[1], F_SETFL, flags | O_NONBLOCK);
+            }
+        }
+    }
+#endif  // !_WIN32
     return mIsReady;
 }
 
@@ -111,6 +126,10 @@ void Console::_os_release() noexcept
         const int32_t finalRow = static_cast<int>(mMaxUsedRow + 2);
         printf("%s\x1B[%d;1H\n", CMD_CURSOR_SHOW.data(), finalRow);
         ::fflush(stdout);
+#ifndef _WIN32
+        if (mInterruptPipe[0] != -1) { ::close(mInterruptPipe[0]); mInterruptPipe[0] = -1; }
+        if (mInterruptPipe[1] != -1) { ::close(mInterruptPipe[1]); mInterruptPipe[1] = -1; }
+#endif  // !_WIN32
     }
 }
 
@@ -297,6 +316,37 @@ bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 
     while (len < (size - 1u))
     {
+        const int pipeReadFd = console.mInterruptPipe[0];
+        if (pipeReadFd >= 0)
+        {
+            struct pollfd fds[2]{};
+            fds[0].fd     = STDIN_FILENO;
+            fds[0].events = POLLIN;
+            fds[1].fd     = pipeReadFd;
+            fds[1].events = POLLIN;
+
+            const int r = ::poll(fds, 2, -1);
+            if (r < 0)
+            {
+                if (errno == EINTR)
+                    continue;
+
+                break;
+            }
+
+            if ((fds[1].revents & POLLIN) != 0)
+            {
+                // Interrupt pipe triggered — drain it and abort the read.
+                char dummy{ 0 };
+                (void)::read(pipeReadFd, &dummy, 1);
+                len = 0;
+                break;
+            }
+
+            if ((fds[0].revents & POLLIN) == 0)
+                continue;
+        }
+
         char ch{ 0 };
         const ssize_t n = read(STDIN_FILENO, &ch, 1);
         if (n <= 0)
@@ -369,6 +419,35 @@ bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 
     areg::trim_all<char>(buffer);
     return (areg::is_empty(buffer) == false);
+}
+
+void Console::_os_interrupt_input() noexcept
+{
+#ifdef _WIN32
+    HANDLE hIn = ::GetStdHandle(STD_INPUT_HANDLE);
+    if ((hIn == INVALID_HANDLE_VALUE) || (hIn == nullptr))
+        return;
+
+    INPUT_RECORD ir[2]{};
+    ir[0].EventType                        = KEY_EVENT;
+    ir[0].Event.KeyEvent.bKeyDown          = TRUE;
+    ir[0].Event.KeyEvent.wRepeatCount      = 1;
+    ir[0].Event.KeyEvent.wVirtualKeyCode   = VK_RETURN;
+    ir[0].Event.KeyEvent.wVirtualScanCode  = 0x1Cu;
+    ir[0].Event.KeyEvent.uChar.AsciiChar   = '\r';
+    ir[0].Event.KeyEvent.dwControlKeyState = 0;
+    ir[1]                                  = ir[0];
+    ir[1].Event.KeyEvent.bKeyDown          = FALSE;
+
+    DWORD written{ 0u };
+    ::WriteConsoleInputA(hIn, ir, 2, &written);
+#else
+    if (mInterruptPipe[1] >= 0)
+    {
+        const char wake{ '\n' };
+        (void)::write(mInterruptPipe[1], &wake, 1);
+    }
+#endif  // _WIN32
 }
 
 void Console::_os_refresh_screen() const noexcept

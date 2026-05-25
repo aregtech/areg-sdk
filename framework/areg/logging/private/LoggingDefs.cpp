@@ -320,7 +320,7 @@ AREG_API_IMPL void areg::finalize_log_message(areg::RemoteMessage& msg, areg::Lo
     else
     {
         const String& moduleName{ Process::instance().app_name() };
-        const String threadName{ Thread::thread_name(log->logThreadId) };
+        const String threadName{ Thread::thread_name(static_cast<id_type>(log->logThreadId)) };
 
         msg.set_source(srcCookie);
         log->logCookie    = srcCookie;

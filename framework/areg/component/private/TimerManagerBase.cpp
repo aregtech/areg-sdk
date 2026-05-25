@@ -47,13 +47,24 @@ bool TimerManagerBase::run_dispatcher()
 {
     ready_for_events(true);
 
+#ifdef USE_FAST_EVENT
+    SpinSyncEvent* events[2] { &mEventExit, &mEventQueue };
+#else
     SyncObject* syncObjects[] = { &mEventExit, &mEventQueue };
     MultiLock multiLock(syncObjects, 2, false);
+#endif  // USE_FAST_EVENT
     int32_t whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
     const ExitEvent& exitEvent = ExitEvent::exit_event();
 
     do
     {
+#ifdef USE_FAST_EVENT
+        whichEvent = SpinSyncEvent::wait_any(events, 2, areg::WAIT_INFINITE);
+        if (whichEvent != static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue))
+        {
+            break;
+        }
+#else
         whichEvent = multiLock.lock(areg::WAIT_INFINITE, false, true);
 
         // Accept both Queue
@@ -63,6 +74,7 @@ bool TimerManagerBase::run_dispatcher()
         {
             break;
         }
+#endif  // USE_FAST_EVENT
 
         // process all queued timer events without
         // re-entering the kernel wait between consecutive events.

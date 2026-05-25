@@ -46,12 +46,6 @@
     <ClInclude Include="common\latency_common.hpp" />
     <ClInclude Include="pubprovider\src\LatencyProvider.hpp" />
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="CMakeLists.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ReadMe.md" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

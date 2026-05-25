@@ -1065,6 +1065,33 @@ inline areg::OutStream & operator << (areg::OutStream & stream, const areg::Hash
     return (stream << output.mValueList);
 }
 
+template<typename KEY, typename VALUE>
+struct required_size <std::unordered_map<KEY, VALUE>>
+{
+    [[nodiscard]]
+    inline uint32_t operator ()(const std::unordered_map<KEY, VALUE>& map) const noexcept
+    {
+        uint32_t result{ static_cast<uint32_t>(sizeof(uint32_t)) };
+        for (const auto& entry : map)
+        {
+            result += required_size<KEY>{}(entry.first);
+            result += required_size<VALUE>{}(entry.second);
+        }
+
+        return result;
+    }
+};
+
+template<typename KEY, typename VALUE>
+struct required_size <areg::HashMap<KEY, VALUE>>
+{
+    [[nodiscard]]
+    inline uint32_t operator ()(const areg::HashMap<KEY, VALUE>& map) const noexcept
+    {
+        return required_size<std::unordered_map<KEY, VALUE>>{}(map.data());
+    }
+};
+
 } // namespace areg
 
 #endif  // AREG_BASE_HASHMAP_HPP

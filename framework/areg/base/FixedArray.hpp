@@ -605,5 +605,23 @@ OutStream & operator << ( OutStream & stream, const FixedArray<V> & output )
     return stream;
 }
 
+template<typename VALUE>
+struct required_size <areg::FixedArray<VALUE>>
+{
+    [[nodiscard]]
+    inline uint32_t operator ()(const areg::FixedArray<VALUE>& list) const noexcept
+    {
+        uint32_t result{ static_cast<uint32_t>(sizeof(uint32_t)) };
+        const VALUE* const arr  = list.values();
+        const uint32_t     count= list.size();
+        for (uint32_t i = 0; i < count; ++i)
+        {
+            result += required_size<VALUE>{}(arr[i]);
+        }
+
+        return result;
+    }
+};
+
 } // namespace areg
 #endif  // AREG_BASE_FIXEDARRAY_HPP

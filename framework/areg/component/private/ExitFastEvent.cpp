@@ -7,10 +7,32 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/base/private/IOStream.cpp
- * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
+ * \file        areg/component/private/ExitFastEvent.cpp
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Areg Platform, Input / Output stream interfaces
+ * \brief       Areg Platform, fast exit event implementation.
  *
  ************************************************************************/
-#include "areg/base/IOStream.hpp"
+#include "areg/component/ExitFastEvent.hpp"
+
+namespace areg {
+
+AREG_IMPLEMENT_RUNTIME_EVENT(ExitFastEvent, Event)
+
+ExitFastEvent::ExitFastEvent()
+    : Event ( areg::EventType::EventExternal )
+{
+    mEventPrio = areg::EventPriority::ExitPrio;
+}
+
+ExitFastEvent & ExitFastEvent::exit_event() noexcept
+{
+    static ExitFastEvent _exitFastEvent;
+    return _exitFastEvent;
+}
+
+void ExitFastEvent::destroy()
+{
+}
+
+} // namespace areg

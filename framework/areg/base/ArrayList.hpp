@@ -1158,5 +1158,32 @@ inline areg::OutStream & operator << (areg::OutStream& stream, const areg::Array
     return (stream << output.mValueList);
 }
 
+
+template<typename VALUE>
+struct required_size <std::vector<VALUE>>
+{
+    [[nodiscard]]
+    inline uint32_t operator ()(const std::vector<VALUE>& list) const noexcept
+    {
+        uint32_t result{ static_cast<uint32_t>(sizeof(uint32_t)) };
+        for (const VALUE& entry : list)
+        {
+            result += required_size<VALUE>{}(entry);
+        }
+
+        return result;
+    }
+};
+
+template<typename Type>
+struct required_size <areg::ArrayList<Type>>
+{
+    [[nodiscard]]
+    inline uint32_t operator ()(const areg::ArrayList<Type>& list) const noexcept
+    {
+        return required_size<std::vector<Type>>{}(list.data());
+    }
+};
+
 } // namespace areg
 #endif  // AREG_BASE_ARRAYLIST_HPP

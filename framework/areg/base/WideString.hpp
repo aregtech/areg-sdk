@@ -683,7 +683,7 @@ inline WideString::WideString(uint32_t count)
 
 inline WideString::operator uint32_t() const
 {
-    return static_cast<uint32_t>(std::hash<std::wstring>{}(mData));
+    return areg::crc32_calculate(mData.c_str());
 }
 
 inline WideString& WideString::operator = (const char* src)
@@ -1070,6 +1070,36 @@ inline WideString & WideString::append(const wchar_t ch)
     return (*this);
 }
 
+template<>
+struct required_size <areg::WideString>
+{
+    [[nodiscard]]
+    inline uint32_t operator ()(const areg::WideString& str) const noexcept
+    {
+        return static_cast<uint32_t>(sizeof(uint32_t) + sizeof(uint32_t) + (sizeof(wchar_t) * (str.length() + 1)));
+    }
+};
+
+template<>
+struct required_size <std::wstring>
+{
+    [[nodiscard]]
+    inline uint32_t operator ()(const std::wstring& str) const noexcept
+    {
+        return static_cast<uint32_t>(sizeof(uint32_t) + sizeof(uint32_t) + (sizeof(wchar_t) * (str.length() + 1)));
+    }
+};
+
+template<>
+struct required_size <std::wstring_view>
+{
+    [[nodiscard]]
+    inline uint32_t operator ()(const std::wstring_view str) const noexcept
+    {
+        return static_cast<uint32_t>(sizeof(uint32_t) + sizeof(uint32_t) + (sizeof(wchar_t) * (str.length() + 1)));
+    }
+};
+
 } // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
@@ -1085,7 +1115,8 @@ namespace std {
         //! An operator to convert String object to uint32_t.
         inline uint32_t operator()(const areg::WideString& key) const
         {
-            return static_cast<uint32_t>(std::hash<std::wstring>{}(key.data()));
+            return static_cast<uint32_t>(key);
+            // return static_cast<uint32_t>(std::hash<std::wstring>{}(key.data()));
         }
     };
 } // namespace std

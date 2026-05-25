@@ -208,6 +208,11 @@ bool FileBuffer::truncate()
     return result;
 }
 
+bool FileBuffer::ensure_size(uint32_t addSize)
+{
+    return (is_opened() ? mSharedBuffer.ensure_size(addSize) : false);
+}
+
 uint32_t FileBuffer::set_position( int32_t offset, Cursor::SeekOrigin startAt ) const noexcept
 {
     return (is_opened() ? mSharedBuffer.set_position(offset, startAt) : Cursor::INVALID_CURSOR_POSITION);

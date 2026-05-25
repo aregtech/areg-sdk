@@ -63,6 +63,7 @@ class LatencyProvider final : public    areg::Component
                             , protected areg::ThreadConsumer
 {
     friend class areg::Component;
+    friend class DisplayConsumer;
 
 //////////////////////////////////////////////////////////////////////////
 // Nested command consumer — delivers ProviderCmdData on the component thread
@@ -84,6 +85,28 @@ class LatencyProvider final : public    areg::Component
     private:
         LatencyProvider & mOwner;
         AREG_NOCOPY_NOMOVE(ProviderCmdConsumer);
+    };
+
+//////////////////////////////////////////////////////////////////////////
+// Nested display consumer — drives the 1-second console refresh thread
+//////////////////////////////////////////////////////////////////////////
+    class DisplayConsumer : public areg::ThreadConsumer
+    {
+    public:
+        explicit DisplayConsumer(LatencyProvider & owner)
+            : areg::ThreadConsumer( )
+            , mOwner              ( owner )
+        {
+        }
+
+        virtual ~DisplayConsumer() = default;
+
+    private:
+        void on_run() final;
+
+    private:
+        LatencyProvider & mOwner;
+        AREG_NOCOPY_NOMOVE(DisplayConsumer);
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -117,20 +140,9 @@ private:
 // Internal constants
 //////////////////////////////////////////////////////////////////////////
 private:
-    static constexpr std::string_view THREAD_BROADCAST   { "LatencyBroadcastThread" };
+    static constexpr std::string_view THREAD_DISPLAY    { "LatencyProviderDisplayThread" };
     static constexpr std::string_view THREAD_INPUT       { "LatencyProviderInputThread" };
-    static constexpr std::string_view TIMER_STATS        { "LatencyProviderStatsTimer" };
     static constexpr std::string_view TIMER_BROADCAST    { "LatencyProviderBroadcastTimer" };
-
-    //!< Use a coarse sleep chunk and a busy loop for the final gap. This keeps the long-run
-    //!< rate locked to the absolute block schedule while avoiding sub-millisecond sleeps.
-#if defined(_WIN32)
-    static constexpr int64_t COARSE_SLEEP_NS{ 15'000'000LL };   // 15 ms
-#elif defined(__APPLE__)
-    static constexpr int64_t COARSE_SLEEP_NS{ 2'000'000LL };    //  2 ms
-#else
-    static constexpr int64_t COARSE_SLEEP_NS{ 500'000LL };      //  0.5 ms (was 4 ms)
-#endif
 
     //!< Last computed one-way stats; shown persistently between timer ticks in request mode:
     struct LatencyStats
@@ -221,7 +233,7 @@ protected:
      *          Request with id and timestamp, and with 512 Bytes extra data
      * \see     response_ping_pong_512
      **/
-    void request_ping_pong_512(uint32_t id, uint64_t begin, const Latency::Data256& data512) final;
+    void request_ping_pong_512(uint32_t id, uint64_t begin, const Latency::Data512& data512) final;
 
     /**
      * \brief   Request call.
@@ -293,6 +305,7 @@ protected:
 private:
     void _run_broadcast_burst();
     void _run_input_thread();
+    void _run_display_thread();
     void _on_provider_cmd(const ProviderCmdData & data);
     void _redraw_layout();
     void _update_live();
@@ -304,7 +317,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     areg::Thread                        mInputThread;
-    areg::Timer                         mTimer;         //!< 1-second stats display timer
     areg::Timer                         mBroadcastTimer;//!< 1-second broadcast burst timer
     std::atomic_bool                    mQuit;
     std::atomic_bool                    mQuitInput;
@@ -312,6 +324,8 @@ private:
     std::atomic<uint32_t>               mBroadcastCount;
     std::atomic<Latency::LatencyMode>   mBroadcastMode;
     ProviderCmdConsumer                 mProviderCmdConsumer;
+    DisplayConsumer                     mDisplayConsumer;   //!< Must be declared before mDisplayThread
+    areg::Thread                        mDisplayThread;     //!< 1-second console refresh thread
 
     //!< These are accessed only on the component thread (timer + consumer_connected):
     uint32_t                            mClientCount;           //!< Number of connected consumers

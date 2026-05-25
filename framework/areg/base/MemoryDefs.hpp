@@ -40,547 +40,563 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 // Internal types used for alignment
 //////////////////////////////////////////////////////////////////////////
-    
-    class _EmptyClass;                                  //!< Dummy class declaration
-    typedef void   (*EmptyMethod)();                    //!< Dummy pointer to global function declaration
-    typedef void   (_EmptyClass::*_EmptyClassMethod)(); //!< Dummy pointer to class function declaration
-    typedef int32_t _EmptyClass::*_EmptyClassMember;    //!< Dummy pointer to class variable declaration
 
-    /**
-     * \brief   areg::BufferData
-     **/
-    using BufferData = uint8_t;
+class _EmptyClass;                                  //!< Dummy class declaration
+typedef void   (*EmptyMethod)();                    //!< Dummy pointer to global function declaration
+typedef void   (_EmptyClass::*_EmptyClassMethod)(); //!< Dummy pointer to class function declaration
+typedef int32_t _EmptyClass::*_EmptyClassMember;    //!< Dummy pointer to class variable declaration
 
-    /**
-     * \brief   Align structure template
-     *          defining single element used in Align union.
-     * \tparam  ELEM_TYPE   Any type.
-     **/
-    template <class ELEM_TYPE>
-    struct Align
+/**
+ * \brief   areg::BufferData
+ **/
+using BufferData = uint8_t;
+
+/**
+ * \brief   Align structure template
+ *          defining single element used in Align union.
+ * \tparam  ELEM_TYPE   Any type.
+ **/
+template <class ELEM_TYPE>
+struct Align
+{
+    ELEM_TYPE   mElement;
+};
+
+//////////////////////////////////////////////////////////////////////////
+// areg::Primitive union declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   areg::Primitive
+ *          Union of all C++ primitive types, sized to the largest member.
+ *          Used as the alignment unit for buffer allocation and as a
+ *          container for storing or serializing a single primitive value.
+ *
+ * \note    Do not serialize pointer-to-function or pointer-to-member members.
+ **/
+union Primitive
+{
+    Align<bool>                     valBool;    //!< boolean value
+    Align<char>                     valChar;    //!< char value
+    Align<uint8_t>                  valUChar;   //!< uint8_t value
+    Align<wchar_t>                  valWChar;   //!< wide char value
+    Align<int16_t>                  valShort;   //!< int16_t value
+    Align<uint16_t>                 valUShort;  //!< uint16_t value
+    Align<int32_t>                  valInt;     //!< int32_t value
+    Align<uint32_t>                 valUInt;    //!< uint32_t value
+    Align<long double>              valLDouble; //!< long double value
+    Align<long>                     valLong;    //!< long value
+    Align<unsigned long>            valULong;   //!< unsigned long value
+    Align<int64_t>                  valInt64;   //!< 64-bit integer value
+    Align<uint64_t>                 valUInt64;  //!< 64-bit unsigned integer value
+    Align<float>                    valFloat;   //!< float value
+    Align<double>                   valDouble;  //!< double
+    Align<void *>                   valPtr;     //!< pointer value
+    Align<void (*)()>               valFunc;    //!< pointer to function value
+    Align<_EmptyClass *>            valClsPtr;  //!< pointer to class value
+    Align<void (_EmptyClass::*)()>  valClsFunc; //!< pointer to class function value
+    Align<int32_t _EmptyClass::*>   valClsVar;  //!< pointer to class variable value
+};
+
+/**
+ * \brief   Message communication results
+ **/
+enum class MessageResult : int32_t
+{
+      UnknownError          = -1    //!< Error, unknown type
+    , Succeed               =  0    //!< No error
+    , NoConnection          =  1    //!< Error, there is no connection
+    , ProviderUnavailable           //!< Error, service is unavailable
+    , ConsumerRejected              //!< Error, service is rejected
+    , TargetUnavailable             //!< Error, the target object is unavailable
+};
+
+/**
+ * \brief   Converts areg::MessageResult enumeration to string representation for logging and output.
+ *
+ * \param   msgResult       MessageResult value to convert.
+ **/
+[[nodiscard]]
+inline constexpr const char * as_string( areg::MessageResult msgResult ) noexcept;
+
+/**
+ * \brief   Types of data buffer
+ **/
+enum class BufferType : int32_t
+{
+      Unknown   = -1    //!< Unknown buffer type, not used
+    , Internal  =  0    //!< Buffer type for internal communication
+    , Remote    =  2    //!< Buffer type for remote communication
+};
+/**
+ * \brief   Returns string representation of areg::BufferType enumeration value.
+ *
+ * \param   val     BufferType value to convert.
+ **/
+[[nodiscard]]
+inline constexpr const char * as_string( areg::BufferType val ) noexcept;
+
+/**
+ * \brief   Constant. Defines the minimum size of Byte Buffer data
+ *          Also defines the size to align buffer allocation.
+ **/
+constexpr uint32_t      BLOCK_SIZE      { sizeof( uint64_t ) * 8 };
+/**
+ * \brief   Defines the message result success.
+ **/
+constexpr uint32_t      MESSAGE_SUCCESS { static_cast<uint32_t>(areg::MessageResult::Succeed) };
+
+/**
+ * \brief   Predefined Invalid Element value. Used to defined invalid element.
+ *          For example, it is used in thread local storage object (ThreadLocalStorage)
+ *          in case if there is no element found in local storage by given name.
+ **/
+constexpr  areg::Primitive  InvalidElement{{0}};
+
+/**
+ * \brief   Returns true if two Primitive elements are equal.
+ *
+ * \param   lsh     Left-hand Primitive operand.
+ * \param   rhs     Right-hand Primitive operand.
+ * \return  Returns true if both Primitive elements are equal; false otherwise.
+ **/
+[[nodiscard]]
+inline bool operator == (const areg::Primitive & lsh, const areg::Primitive & rhs) noexcept;
+
+/**
+ * \brief   Returns true if two Primitive elements are not equal.
+ *
+ * \param   lsh     Left-hand Primitive operand.
+ * \param   rhs     Right-hand Primitive operand.
+ * \return  Returns true if Primitive elements differ; false otherwise.
+ **/
+[[nodiscard]]
+inline bool operator != (const areg::Primitive & lsh, const areg::Primitive & rhs) noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// areg::BufferHeader structure declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   areg::BufferHeader
+ *          Structure of Binary Buffer object data header info.
+ *          Used in all binary buffers. It stores basic information 
+ *          buffer, it's type, allocated and used sizes.
+ **/
+struct BufferHeader
+{
+    constexpr BufferHeader() = default;
+    constexpr BufferHeader(const BufferHeader& src) = default;
+    constexpr BufferHeader(uint32_t length, uint32_t offset, BufferType bufType, uint32_t used)
+        : biLength{length}, biOffset{offset}, biBufType{bufType}, biUsed{used}
     {
-        ELEM_TYPE   mElement;
-    };
+    }
 
-    //////////////////////////////////////////////////////////////////////////
-    // areg::Primitive union declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   areg::Primitive
-     *          Union of all C++ primitive types, sized to the largest member.
-     *          Used as the alignment unit for buffer allocation and as a
-     *          container for storing or serializing a single primitive value.
-     *
-     * \note    Do not serialize pointer-to-function or pointer-to-member members.
-     **/
-    union Primitive
+    constexpr BufferHeader(uint32_t length, uint32_t offset, BufferType bufType)
+        : biLength{ length }, biOffset{ offset }, biBufType{ bufType }, biUsed{ 0u }
     {
-        Align<bool>                     valBool;    //!< boolean value
-        Align<char>                     valChar;    //!< char value
-        Align<uint8_t>                  valUChar;   //!< uint8_t value
-        Align<wchar_t>                  valWChar;   //!< wide char value
-        Align<int16_t>                  valShort;   //!< int16_t value
-        Align<uint16_t>                 valUShort;  //!< uint16_t value
-        Align<int32_t>                  valInt;     //!< int32_t value
-        Align<uint32_t>                 valUInt;    //!< uint32_t value
-        Align<long double>              valLDouble; //!< long double value
-        Align<long>                     valLong;    //!< long value
-        Align<unsigned long>            valULong;   //!< unsigned long value
-        Align<int64_t>                  valInt64;   //!< 64-bit integer value
-        Align<uint64_t>                 valUInt64;  //!< 64-bit unsigned integer value
-        Align<float>                    valFloat;   //!< float value
-        Align<double>                   valDouble;  //!< double
-        Align<void *>                   valPtr;     //!< pointer value
-        Align<void (*)()>               valFunc;    //!< pointer to function value
-        Align<_EmptyClass *>            valClsPtr;  //!< pointer to class value
-        Align<void (_EmptyClass::*)()>  valClsFunc; //!< pointer to class function value
-        Align<int32_t _EmptyClass::*>   valClsVar;  //!< pointer to class variable value
-    };
+    }
+
+    constexpr BufferHeader& operator = (const BufferHeader& src) = default;
 
     /**
-     * \brief   Message communication results
+     * \brief   The length in bytes of totally allocated buffer.
      **/
-    enum class MessageResult : int32_t
+    uint32_t    biLength    { 0 };
+    /**
+     * \brief   The size of buffer header. The buffer data should start after header size offset
+     **/
+    uint32_t    biOffset    { 0 };
+    /**
+     * \brief   The type of buffer. For RPC communication this should be external type.
+     **/
+    BufferType  biBufType   { areg::BufferType::Unknown };
+    /**
+     * \brief   The length in bytes of used space in buffer. Cannot be more than biLength value.
+     **/
+    uint32_t    biUsed      { 0 };
+};
+
+//////////////////////////////////////////////////////////////////////////
+// areg::sRemoteBuferHeader structure declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Structure of binary buffer for Remote data transfer.
+ *          It is extended type of BufferHeader with additions
+ *          of message ID, message sequence number, cookie and checksum.
+ **/
+struct MessageHeader
+{
+    constexpr MessageHeader(uint32_t length, uint32_t offset, BufferType bufType, uint32_t used, ITEM_ID target, uint32_t checksum, ITEM_ID source, uint32_t  msgId, uint32_t result, SequenceNumber seq)
+        : rbhBufHeader{length, offset, bufType, used}, rbhTarget{target}, rbhChecksum{checksum}, rbhSource{source}, rbhMessageId{msgId}, rbhResult{result}, rbhSequenceNr{seq}
     {
-          UnknownError          = -1    //!< Error, unknown type
-        , Succeed               =  0    //!< No error
-        , NoConnection          =  1    //!< Error, there is no connection
-        , ProviderUnavailable           //!< Error, service is unavailable
-        , ConsumerRejected              //!< Error, service is rejected
-        , TargetUnavailable             //!< Error, the target object is unavailable
-    };
+    }
 
-    /**
-     * \brief   Converts areg::MessageResult enumeration to string representation for logging and output.
-     *
-     * \param   msgResult       MessageResult value to convert.
-     **/
-    [[nodiscard]]
-    inline constexpr const char * as_string( areg::MessageResult msgResult ) noexcept;
-
-    /**
-     * \brief   Types of data buffer
-     **/
-    enum class BufferType : int32_t
+    constexpr MessageHeader(uint32_t length, uint32_t offset, BufferType bufType, ITEM_ID target, ITEM_ID source, uint32_t  msgId)
+        : rbhBufHeader{ length, offset, bufType}, rbhTarget{ target }, rbhChecksum{ areg::CHECKSUM_INVALID}, rbhSource{ source }, rbhMessageId{ msgId }, rbhResult{ 0u }, rbhSequenceNr{ 0u }
     {
-          Unknown   = -1    //!< Unknown buffer type, not used
-        , Internal  =  0    //!< Buffer type for internal communication
-        , Remote    =  2    //!< Buffer type for remote communication
-    };
-    /**
-     * \brief   Returns string representation of areg::BufferType enumeration value.
-     *
-     * \param   val     BufferType value to convert.
-     **/
-    [[nodiscard]]
-    inline constexpr const char * as_string( areg::BufferType val ) noexcept;
+    }
 
-    /**
-     * \brief   Constant. Defines the minimum size of Byte Buffer data
-     *          Also defines the size to align buffer allocation.
-     **/
-    constexpr uint32_t      BLOCK_SIZE      { sizeof( uint64_t ) * 8 };
-    /**
-     * \brief   Defines the message result success.
-     **/
-    constexpr uint32_t      MESSAGE_SUCCESS { static_cast<uint32_t>(areg::MessageResult::Succeed) };
-
-    /**
-     * \brief   Predefined Invalid Element value. Used to defined invalid element.
-     *          For example, it is used in thread local storage object (ThreadLocalStorage)
-     *          in case if there is no element found in local storage by given name.
-     **/
-    constexpr  areg::Primitive  InvalidElement{{0}};
-
-    /**
-     * \brief   Returns true if two Primitive elements are equal.
-     *
-     * \param   lsh     Left-hand Primitive operand.
-     * \param   rhs     Right-hand Primitive operand.
-     * \return  Returns true if both Primitive elements are equal; false otherwise.
-     **/
-    [[nodiscard]]
-    inline bool operator == (const areg::Primitive & lsh, const areg::Primitive & rhs) noexcept;
-
-    /**
-     * \brief   Returns true if two Primitive elements are not equal.
-     *
-     * \param   lsh     Left-hand Primitive operand.
-     * \param   rhs     Right-hand Primitive operand.
-     * \return  Returns true if Primitive elements differ; false otherwise.
-     **/
-    [[nodiscard]]
-    inline bool operator != (const areg::Primitive & lsh, const areg::Primitive & rhs) noexcept;
-
-    //////////////////////////////////////////////////////////////////////////
-    // areg::BufferHeader structure declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   areg::BufferHeader
-     *          Structure of Binary Buffer object data header info.
-     *          Used in all binary buffers. It stores basic information 
-     *          buffer, it's type, allocated and used sizes.
-     **/
-    struct BufferHeader
+    constexpr MessageHeader( const BufferHeader & bufHdr
+                           , ITEM_ID              target
+                           , uint32_t             checksum
+                           , ITEM_ID              source
+                           , uint32_t             msgId
+                           , uint32_t             result
+                           , SequenceNumber       seq) noexcept
+        : rbhBufHeader  { bufHdr }
+        , rbhTarget     { target }
+        , rbhChecksum   { checksum }
+        , rbhSource     { source }
+        , rbhMessageId  { msgId }
+        , rbhResult     { result }
+        , rbhSequenceNr { seq }
     {
-        constexpr BufferHeader() = default;
-        constexpr BufferHeader(const BufferHeader& src) = default;
-        constexpr BufferHeader(uint32_t length, uint32_t offset, BufferType bufType, uint32_t used)
-            : biLength{length}, biOffset{offset}, biBufType{bufType}, biUsed{used}
-        {
-        }
+    }
 
-        constexpr BufferHeader(uint32_t length, uint32_t offset, BufferType bufType)
-            : biLength{ length }, biOffset{ offset }, biBufType{ bufType }, biUsed{ 0u }
-        {
-        }
+    constexpr MessageHeader() = default;
+    constexpr MessageHeader(const MessageHeader& src) = default;
+    constexpr MessageHeader& operator = (const MessageHeader& src) = default;
 
-        constexpr BufferHeader& operator = (const BufferHeader& src) = default;
-
-        /**
-         * \brief   The length in bytes of totally allocated buffer.
-         **/
-        uint32_t    biLength    { 0 };
-        /**
-         * \brief   The size of buffer header. The buffer data should start after header size offset
-         **/
-        uint32_t    biOffset    { 0 };
-        /**
-         * \brief   The type of buffer. For RPC communication this should be external type.
-         **/
-        BufferType  biBufType   { areg::BufferType::Unknown };
-        /**
-         * \brief   The length in bytes of used space in buffer. Cannot be more than biLength value.
-         **/
-        uint32_t    biUsed      { 0 };
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // areg::sRemoteBuferHeader structure declaration
-    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Structure of binary buffer for Remote data transfer.
-     *          It is extended type of BufferHeader with additions
-     *          of message ID, message sequence number, cookie and checksum.
+     * \brief   The common buffer header information
      **/
-    struct MessageHeader
+    BufferHeader    rbhBufHeader{ };
+    /**
+     * \brief   An ID of target object, receiving message.
+     *          In remote messaging, this is Cookie of target
+     **/
+    ITEM_ID         rbhTarget   { 0 };
+    /**
+     * \brief   Data checksum value for validation check-up.
+     *          Should be ignored if value is areg::IGNORE_CHECKSUM
+     **/
+    uint32_t        rbhChecksum{ areg::CHECKSUM_INVALID };
+    /**
+     * \brief   An ID of source object, sending message.
+     *          In remote messaging, this is Cookie of source
+     **/
+    ITEM_ID         rbhSource{ 0 };
+    /**
+     * \brief   The Remote message ID registered in the system
+     **/
+    uint32_t        rbhMessageId{ 0 };
+    /**
+     * \brief   The result of processing message.
+     **/
+    uint32_t        rbhResult{ 0 };
+    /**
+     * \brief   The Remote message sequence number set during messaging
+     **/
+    SequenceNumber  rbhSequenceNr{ 0 };
+};
+
+//////////////////////////////////////////////////////////////////////////
+// areg::RawBuffer structure declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Specify the Byte Buffer object.
+ *          Contains the size of complete object,
+ *          buffer information and elements followed Byte Buffer object.
+ **/
+struct RawBuffer
+{
+    /**
+     * \brief   Byte Buffer information
+     **/
+    BufferHeader    bufHeader   { };
+    /**
+     * \brief   Byte Buffer Data followed after structure.
+     *          This is referring to the first element in the data buffer.
+     **/
+    BufferData      bufData[4]  { 0 };
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+// areg::sRpcMessageBuffer structure declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Specify the Byte Buffer object.
+ *          Contains the size of complete object,
+ *          buffer information and elements followed Byte Buffer object.
+ **/
+struct RawMessage
+{
+    constexpr RawMessage() = default;
+    constexpr RawMessage(const RawMessage& src) = default;
+    constexpr RawMessage(uint32_t length, uint32_t offset, BufferType bufType, uint32_t used, ITEM_ID target, uint32_t checksum, ITEM_ID source, uint32_t  msgId, uint32_t result, SequenceNumber seq)
+        : rbHeader{ length, offset, bufType, used, target, checksum, source, msgId, result, seq }, rbData{0}
     {
-        constexpr MessageHeader(uint32_t length, uint32_t offset, BufferType bufType, uint32_t used, ITEM_ID target, uint32_t checksum, ITEM_ID source, uint32_t  msgId, uint32_t result, SequenceNumber seq)
-            : rbhBufHeader{length, offset, bufType, used}, rbhTarget{target}, rbhChecksum{checksum}, rbhSource{source}, rbhMessageId{msgId}, rbhResult{result}, rbhSequenceNr{seq}
-        {
-        }
+    }
 
-        constexpr MessageHeader(uint32_t length, uint32_t offset, BufferType bufType, ITEM_ID target, ITEM_ID source, uint32_t  msgId)
-            : rbhBufHeader{ length, offset, bufType}, rbhTarget{ target }, rbhChecksum{ areg::CHECKSUM_INVALID}, rbhSource{ source }, rbhMessageId{ msgId }, rbhResult{ 0u }, rbhSequenceNr{ 0u }
-        {
-        }
-
-        constexpr MessageHeader( const BufferHeader & bufHdr
-                               , ITEM_ID              target
-                               , uint32_t             checksum
-                               , ITEM_ID              source
-                               , uint32_t             msgId
-                               , uint32_t             result
-                               , SequenceNumber       seq) noexcept
-            : rbhBufHeader  { bufHdr }
-            , rbhTarget     { target }
-            , rbhChecksum   { checksum }
-            , rbhSource     { source }
-            , rbhMessageId  { msgId }
-            , rbhResult     { result }
-            , rbhSequenceNr { seq }
-        {
-        }
-
-        constexpr MessageHeader() = default;
-        constexpr MessageHeader(const MessageHeader& src) = default;
-        constexpr MessageHeader& operator = (const MessageHeader& src) = default;
-
-        /**
-         * \brief   The common buffer header information
-         **/
-        BufferHeader    rbhBufHeader{ };
-        /**
-         * \brief   An ID of target object, receiving message.
-         *          In remote messaging, this is Cookie of target
-         **/
-        ITEM_ID         rbhTarget   { 0 };
-        /**
-         * \brief   Data checksum value for validation check-up.
-         *          Should be ignored if value is areg::IGNORE_CHECKSUM
-         **/
-        uint32_t        rbhChecksum{ areg::CHECKSUM_INVALID };
-        /**
-         * \brief   An ID of source object, sending message.
-         *          In remote messaging, this is Cookie of source
-         **/
-        ITEM_ID         rbhSource{ 0 };
-        /**
-         * \brief   The Remote message ID registered in the system
-         **/
-        uint32_t        rbhMessageId{ 0 };
-        /**
-         * \brief   The result of processing message.
-         **/
-        uint32_t        rbhResult{ 0 };
-        /**
-         * \brief   The Remote message sequence number set during messaging
-         **/
-        SequenceNumber  rbhSequenceNr{ 0 };
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // areg::RawBuffer structure declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   Specify the Byte Buffer object.
-     *          Contains the size of complete object,
-     *          buffer information and elements followed Byte Buffer object.
-     **/
-    struct RawBuffer
+    constexpr RawMessage(uint32_t length, uint32_t offset, BufferType bufType, ITEM_ID target, ITEM_ID source, uint32_t  msgId)
+        : rbHeader{ length, offset, bufType, target, source, msgId}, rbData{ 0 }
     {
-        /**
-         * \brief   Byte Buffer information
-         **/
-        BufferHeader    bufHeader   { };
-        /**
-         * \brief   Byte Buffer Data followed after structure.
-         *          This is referring to the first element in the data buffer.
-         **/
-        BufferData      bufData[4]  { 0 };
-    };
+    }
 
+    constexpr RawMessage& operator = (const RawMessage& src) = default;
 
-    //////////////////////////////////////////////////////////////////////////
-    // areg::sRpcMessageBuffer structure declaration
-    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Specify the Byte Buffer object.
-     *          Contains the size of complete object,
-     *          buffer information and elements followed Byte Buffer object.
+     * \brief   Byte Buffer information
      **/
-    struct RawMessage
+    MessageHeader    rbHeader{ };
+    /**
+     * \brief   Byte Buffer Data followed after structure.
+     *          This is referring to the first element in the data buffer.
+     **/
+    BufferData      rbData[4]{ 0 };
+};
+
+/**
+ * \brief   Returns writable pointer to data buffer, or nullptr if buffer pointer is invalid.
+ *
+ * \param   byteBuffer      Byte-buffer object pointer.
+ * \return  Writable data buffer pointer, or nullptr if invalid.
+ **/
+[[nodiscard]]
+inline uint8_t * buffer_data_write( RawBuffer * byteBuffer ) noexcept;
+
+/**
+ * \brief   Returns read-only pointer to data buffer, or nullptr if buffer pointer is invalid.
+ *
+ * \param   byteBuffer      Byte-buffer object pointer.
+ * \return  Read-only data buffer pointer, or nullptr if invalid.
+ **/
+[[nodiscard]]
+inline const uint8_t * buffer_data_read( const RawBuffer * byteBuffer ) noexcept;
+
+/**
+ * \brief   Constructs elements in allocated buffer by calling the default constructor for each element.
+ *
+ * \param   begin           Pointer to heap-allocated buffer.
+ * \param   elemCount       Number of elements to construct. If zero, no elements are constructed.
+ * \return  Pointer to first constructed element in array.
+ * \note    ELEM_TYPE must have a public default constructor.
+ **/
+template <typename ELEM_TYPE>
+inline ELEM_TYPE * construct_elems(void *begin, uint32_t elemCount);
+
+/**
+ * \brief   Constructs elements in allocated buffer by calling the constructor with an argument
+ *          for each element.
+ *
+ * \param   begin           Pointer to heap-allocated buffer.
+ * \param   elemCount       Number of elements to construct. If zero, no elements are initialized.
+ * \param   arg             Argument value to pass to constructor.
+ * \return  Pointer to first constructed element in array.
+ * \note    ELEM_TYPE must have a public constructor accepting ARGUMENT_TYPE.
+ **/
+template <typename ELEM_TYPE, typename ARGUMENT_TYPE>
+[[nodiscard]]
+inline ELEM_TYPE * construct_with_arg(void *begin, uint32_t elemCount, ARGUMENT_TYPE arg);
+
+/**
+ * \brief   Constructs a single element of type T at the given memory location,
+ *          forwarding the provided arguments to T's constructor.
+ *          Use this overload to initialize the object immediately with values
+ *          or via the copy / move constructor.
+ *
+ * \tparam  T       The type to construct.
+ * \tparam  Args    Constructor argument types.
+ * \param   ptr     Pointer to raw memory where the object is constructed.
+ * \param   args    Arguments forwarded to T's constructor.
+ * \return  Pointer to the constructed T object.
+ **/
+template<typename T, typename... Args>
+[[nodiscard]]
+inline T* construct_elem(void* ptr, Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)));
+
+/**
+ * \brief   Destroys previously constructed elements in heap by calling the destructor for each.
+ *
+ * \param   begin           Pointer to buffer with allocated elements.
+ * \param   elemCount       Number of elements to destroy.
+ * \note    ELEM_TYPE must have a public destructor.
+ **/
+template <typename ELEM_TYPE>
+inline void destroy_elems(ELEM_TYPE *begin, uint32_t elemCount);
+
+/**
+ * \brief   Copies elements from source to destination buffer using assignment operator.
+ *
+ * \param[out] destination     Pre-allocated destination buffer with at least elemCount elements capacity.
+ * \param   source          The source buffer containing elements to copy.
+ * \param   elemCount       Number of elements to copy. Both buffers must have at least elemCount elements.
+ * \note    If ELEM_DST and ELEM_SRC differ: ELEM_SRC must be convertible to ELEM_DST (via
+ *          static_cast), and ELEM_DST must support operator=.
+ **/
+template <typename ELEM_DST, typename ELEM_SRC = ELEM_DST>
+inline void copy_elems(ELEM_DST *destination, const ELEM_SRC *source, uint32_t elemCount);
+
+/**
+ * \brief   Moves elements from source to destination within the same allocated memory block,
+ *          handling overlapping regions.
+ *
+ * \param[out] destination     The destination pointer within same memory block.
+ * \param   source          The source pointer within same memory block.
+ * \param   elemCount       Number of elements to move.
+ * \note    Source and destination must refer to the same allocated memory chunk. Do not use if
+ *          buffers are in different memory spaces. ELEM_TYPE must support operator=.
+ **/
+template <typename ELEM_TYPE>
+void move_elems(ELEM_TYPE * destination, const ELEM_TYPE * source, uint32_t elemCount);
+
+/**
+ * \brief   Sets every element in buffer to the specified value using assignment operator.
+ *
+ * \param   begin           Pointer to allocated element buffer.
+ * \param   elemValue       Value to assign to every element.
+ * \param   elemCount       Number of elements in buffer.
+ * \note    ELEM must support operator= that accepts ELEM_TYPE.
+ **/
+template <typename ELEM, typename ELEM_TYPE = ELEM>
+inline void set_memory(ELEM * begin, ELEM_TYPE elemValue, uint32_t elemCount);
+
+/**
+ * \brief   Compares two buffers of same element type, returning true if all elements match.
+ *
+ * \param   lhs         Left-hand buffer of elements.
+ * \param   rhs         Right-hand buffer of elements.
+ * \param   count       Number of elements to compare.
+ * \return  Returns true if all elements in both buffers are equal; false otherwise.
+ * \note    ELEM must support operator== for element-by-element comparison. For
+ *          structures/classes without operator==, use areg::mem_equal instead.
+ **/
+template <typename ELEM>
+[[nodiscard]]
+bool equal_elements(const ELEM * lhs, const ELEM * rhs, uint32_t count);
+
+/**
+ * \brief   Compares two buffers of different element types, returning true if all elements
+ *          match after conversion.
+ *
+ * \param   lhs         Left-hand buffer.
+ * \param   rhs         Right-hand buffer.
+ * \param   count       Number of elements to compare.
+ * \return  Returns true if all elements are equal after conversion; false otherwise.
+ * \note    ELEM_RIGHT must be convertible to ELEM_LEFT (via static_cast), and ELEM_LEFT must
+ *          support operator==.
+ **/
+template <typename ELEM_LEFT, typename ELEM_RIGHT = ELEM_LEFT>
+[[nodiscard]]
+bool equal_elements(const ELEM_LEFT * lhs, const ELEM_RIGHT * rhs, uint32_t count);
+
+/**
+ * \brief   Sets all bytes of a single element to zero, typically used for structures.
+ *
+ * \param   elem    Element to zero.
+ **/
+template<typename ELEM>
+inline void zero_element( ELEM & elem );
+
+/**
+ * \brief   Sets all elements in a list to zero using byte-wise clearing.
+ *
+ * \param   elemList        List of elements to zero.
+ * \param   elemCount       Number of elements in list.
+ **/
+template<typename ELEM>
+inline void zero_elements( ELEM * elemList, uint32_t elemCount );
+
+/**
+ * \brief   Fills buffer with the specified byte value.
+ *
+ * \param   buffer      Buffer to fill.
+ * \param   length      Buffer length in bytes.
+ * \param   symbol      Byte value to fill buffer with.
+ **/
+inline void mem_set( void * buffer, uint32_t length, uint8_t symbol ) noexcept;
+
+/**
+ * \brief   Sets all bytes in buffer to zero.
+ *
+ * \param   buffer      Buffer to clear.
+ * \param   length      Buffer length in bytes.
+ **/
+inline void mem_zero( void * buffer, uint32_t length ) noexcept;
+
+/**
+ * \brief   Moves bytes from source to destination within the same allocated memory, handling
+ *          overlapping regions.
+ *
+ * \param[out] memDst      Destination pointer within same memory block.
+ * \param   memSrc      Source pointer within same memory block.
+ * \param   count       Number of bytes to move.
+ **/
+inline void mem_move(void * memDst, const void * memSrc, uint32_t count) noexcept;
+
+/**
+ * \brief   Copies data from source to destination, respecting destination buffer capacity.
+ *
+ * \param[out] memDst   Destination buffer with minimum size dstSpace.
+ * \param   dstSpace    Available space in destination buffer in bytes.
+ * \param   memSrc      Source buffer containing data to copy.
+ * \param   count       Desired number of bytes to copy.
+ * \return  Number of bytes actually copied (limited by dstSpace if it is smaller than count).
+ **/
+inline uint32_t mem_copy( void * memDst, uint32_t dstSpace, const void * memSrc, uint32_t count) noexcept;
+
+/**
+ * \brief   Compares two memory blocks byte-by-byte, returning areg::Ordering result.
+ *
+ * \param   memLeft     Left-hand memory buffer to compare.
+ * \param   memRight    Right-hand memory buffer to compare.
+ * \param   count       Number of bytes to compare.
+ * \return  areg::Smaller if memLeft < memRight, Equal if identical, Bigger if memLeft >
+ *          memRight.
+ **/
+[[nodiscard]]
+inline areg::Ordering mem_compare( const void * memLeft, const void * memRight, uint32_t count) noexcept;
+
+/**
+ * \brief   Returns true if two memory blocks contain identical data.
+ *
+ * \param   memLeft     Left-hand memory buffer.
+ * \param   memRight    Right-hand memory buffer.
+ * \param   count       Number of bytes to compare.
+ * \return  Returns true if both memory chunks are identical; false otherwise.
+ **/
+[[nodiscard]]
+inline bool mem_equal( const void * memLeft, const void * memRight, uint32_t count) noexcept;
+
+/**
+ * \brief   Functor for custom buffer allocation.
+ **/
+template<typename BufType>
+struct BufferAllocator
+{
+    /**
+     * \brief   Allocates a buffer of the specified size.
+     **/
+    BufType* operator ( ) (uint32_t space);
+};
+
+/**
+ * \brief   Functor for custom buffer deallocation.
+ **/
+template<typename BufType>
+struct BufferDeleter
+{
+    /**
+     * \brief   De-allocates a buffer.
+     **/
+    void operator ( ) (void * buffer);
+};
+
+template<typename Type>
+struct required_size
+{
+    [[nodiscard]]
+    inline constexpr uint32_t operator()() const noexcept
     {
-        constexpr RawMessage() = default;
-        constexpr RawMessage(const RawMessage& src) = default;
-        constexpr RawMessage(uint32_t length, uint32_t offset, BufferType bufType, uint32_t used, ITEM_ID target, uint32_t checksum, ITEM_ID source, uint32_t  msgId, uint32_t result, SequenceNumber seq)
-            : rbHeader{ length, offset, bufType, used, target, checksum, source, msgId, result, seq }, rbData{0}
-        {
-        }
+        return sizeof(Type);
+    }
 
-        constexpr RawMessage(uint32_t length, uint32_t offset, BufferType bufType, ITEM_ID target, ITEM_ID source, uint32_t  msgId)
-            : rbHeader{ length, offset, bufType, target, source, msgId}, rbData{ 0 }
-        {
-        }
-
-        constexpr RawMessage& operator = (const RawMessage& src) = default;
-
-        /**
-         * \brief   Byte Buffer information
-         **/
-        MessageHeader    rbHeader{ };
-        /**
-         * \brief   Byte Buffer Data followed after structure.
-         *          This is referring to the first element in the data buffer.
-         **/
-        BufferData      rbData[4]{ 0 };
-    };
-
-    /**
-     * \brief   Returns writable pointer to data buffer, or nullptr if buffer pointer is invalid.
-     *
-     * \param   byteBuffer      Byte-buffer object pointer.
-     * \return  Writable data buffer pointer, or nullptr if invalid.
-     **/
     [[nodiscard]]
-    inline uint8_t * buffer_data_write( RawBuffer * byteBuffer ) noexcept;
-
-    /**
-     * \brief   Returns read-only pointer to data buffer, or nullptr if buffer pointer is invalid.
-     *
-     * \param   byteBuffer      Byte-buffer object pointer.
-     * \return  Read-only data buffer pointer, or nullptr if invalid.
-     **/
-    [[nodiscard]]
-    inline const uint8_t * buffer_data_read( const RawBuffer * byteBuffer ) noexcept;
-
-    /**
-     * \brief   Constructs elements in allocated buffer by calling the default constructor for each element.
-     *
-     * \param   begin           Pointer to heap-allocated buffer.
-     * \param   elemCount       Number of elements to construct. If zero, no elements are constructed.
-     * \return  Pointer to first constructed element in array.
-     * \note    ELEM_TYPE must have a public default constructor.
-     **/
-    template <typename ELEM_TYPE>
-    inline ELEM_TYPE * construct_elems(void *begin, uint32_t elemCount);
-
-    /**
-     * \brief   Constructs elements in allocated buffer by calling the constructor with an argument
-     *          for each element.
-     *
-     * \param   begin           Pointer to heap-allocated buffer.
-     * \param   elemCount       Number of elements to construct. If zero, no elements are initialized.
-     * \param   arg             Argument value to pass to constructor.
-     * \return  Pointer to first constructed element in array.
-     * \note    ELEM_TYPE must have a public constructor accepting ARGUMENT_TYPE.
-     **/
-    template <typename ELEM_TYPE, typename ARGUMENT_TYPE>
-    [[nodiscard]]
-    inline ELEM_TYPE * construct_with_arg(void *begin, uint32_t elemCount, ARGUMENT_TYPE arg);
-
-    /**
-     * \brief   Constructs a single element of type T at the given memory location,
-     *          forwarding the provided arguments to T's constructor.
-     *          Use this overload to initialize the object immediately with values
-     *          or via the copy / move constructor.
-     *
-     * \tparam  T       The type to construct.
-     * \tparam  Args    Constructor argument types.
-     * \param   ptr     Pointer to raw memory where the object is constructed.
-     * \param   args    Arguments forwarded to T's constructor.
-     * \return  Pointer to the constructed T object.
-     **/
-    template<typename T, typename... Args>
-    [[nodiscard]]
-    inline T* construct_elem(void* ptr, Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)));
-
-    /**
-     * \brief   Destroys previously constructed elements in heap by calling the destructor for each.
-     *
-     * \param   begin           Pointer to buffer with allocated elements.
-     * \param   elemCount       Number of elements to destroy.
-     * \note    ELEM_TYPE must have a public destructor.
-     **/
-    template <typename ELEM_TYPE>
-    inline void destroy_elems(ELEM_TYPE *begin, uint32_t elemCount);
-
-    /**
-     * \brief   Copies elements from source to destination buffer using assignment operator.
-     *
-     * \param[out] destination     Pre-allocated destination buffer with at least elemCount elements capacity.
-     * \param   source          The source buffer containing elements to copy.
-     * \param   elemCount       Number of elements to copy. Both buffers must have at least elemCount elements.
-     * \note    If ELEM_DST and ELEM_SRC differ: ELEM_SRC must be convertible to ELEM_DST (via
-     *          static_cast), and ELEM_DST must support operator=.
-     **/
-    template <typename ELEM_DST, typename ELEM_SRC = ELEM_DST>
-    inline void copy_elems(ELEM_DST *destination, const ELEM_SRC *source, uint32_t elemCount);
-
-    /**
-     * \brief   Moves elements from source to destination within the same allocated memory block,
-     *          handling overlapping regions.
-     *
-     * \param[out] destination     The destination pointer within same memory block.
-     * \param   source          The source pointer within same memory block.
-     * \param   elemCount       Number of elements to move.
-     * \note    Source and destination must refer to the same allocated memory chunk. Do not use if
-     *          buffers are in different memory spaces. ELEM_TYPE must support operator=.
-     **/
-    template <typename ELEM_TYPE>
-    void move_elems(ELEM_TYPE * destination, const ELEM_TYPE * source, uint32_t elemCount);
-
-    /**
-     * \brief   Sets every element in buffer to the specified value using assignment operator.
-     *
-     * \param   begin           Pointer to allocated element buffer.
-     * \param   elemValue       Value to assign to every element.
-     * \param   elemCount       Number of elements in buffer.
-     * \note    ELEM must support operator= that accepts ELEM_TYPE.
-     **/
-    template <typename ELEM, typename ELEM_TYPE = ELEM>
-    inline void set_memory(ELEM * begin, ELEM_TYPE elemValue, uint32_t elemCount);
-
-    /**
-     * \brief   Compares two buffers of same element type, returning true if all elements match.
-     *
-     * \param   lhs         Left-hand buffer of elements.
-     * \param   rhs         Right-hand buffer of elements.
-     * \param   count       Number of elements to compare.
-     * \return  Returns true if all elements in both buffers are equal; false otherwise.
-     * \note    ELEM must support operator== for element-by-element comparison. For
-     *          structures/classes without operator==, use areg::mem_equal instead.
-     **/
-    template <typename ELEM>
-    [[nodiscard]]
-    bool equal_elements(const ELEM * lhs, const ELEM * rhs, uint32_t count);
-
-    /**
-     * \brief   Compares two buffers of different element types, returning true if all elements
-     *          match after conversion.
-     *
-     * \param   lhs         Left-hand buffer.
-     * \param   rhs         Right-hand buffer.
-     * \param   count       Number of elements to compare.
-     * \return  Returns true if all elements are equal after conversion; false otherwise.
-     * \note    ELEM_RIGHT must be convertible to ELEM_LEFT (via static_cast), and ELEM_LEFT must
-     *          support operator==.
-     **/
-    template <typename ELEM_LEFT, typename ELEM_RIGHT = ELEM_LEFT>
-    [[nodiscard]]
-    bool equal_elements(const ELEM_LEFT * lhs, const ELEM_RIGHT * rhs, uint32_t count);
-
-    /**
-     * \brief   Sets all bytes of a single element to zero, typically used for structures.
-     *
-     * \param   elem    Element to zero.
-     **/
-    template<typename ELEM>
-    inline void zero_element( ELEM & elem );
-
-    /**
-     * \brief   Sets all elements in a list to zero using byte-wise clearing.
-     *
-     * \param   elemList        List of elements to zero.
-     * \param   elemCount       Number of elements in list.
-     **/
-    template<typename ELEM>
-    inline void zero_elements( ELEM * elemList, uint32_t elemCount );
-
-    /**
-     * \brief   Fills buffer with the specified byte value.
-     *
-     * \param   buffer      Buffer to fill.
-     * \param   length      Buffer length in bytes.
-     * \param   symbol      Byte value to fill buffer with.
-     **/
-    inline void mem_set( void * buffer, uint32_t length, uint8_t symbol ) noexcept;
-
-    /**
-     * \brief   Sets all bytes in buffer to zero.
-     *
-     * \param   buffer      Buffer to clear.
-     * \param   length      Buffer length in bytes.
-     **/
-    inline void mem_zero( void * buffer, uint32_t length ) noexcept;
-
-    /**
-     * \brief   Moves bytes from source to destination within the same allocated memory, handling
-     *          overlapping regions.
-     *
-     * \param[out] memDst      Destination pointer within same memory block.
-     * \param   memSrc      Source pointer within same memory block.
-     * \param   count       Number of bytes to move.
-     **/
-    inline void mem_move(void * memDst, const void * memSrc, uint32_t count) noexcept;
-
-    /**
-     * \brief   Copies data from source to destination, respecting destination buffer capacity.
-     *
-     * \param[out] memDst   Destination buffer with minimum size dstSpace.
-     * \param   dstSpace    Available space in destination buffer in bytes.
-     * \param   memSrc      Source buffer containing data to copy.
-     * \param   count       Desired number of bytes to copy.
-     * \return  Number of bytes actually copied (limited by dstSpace if it is smaller than count).
-     **/
-    inline uint32_t mem_copy( void * memDst, uint32_t dstSpace, const void * memSrc, uint32_t count) noexcept;
-
-    /**
-     * \brief   Compares two memory blocks byte-by-byte, returning areg::Ordering result.
-     *
-     * \param   memLeft     Left-hand memory buffer to compare.
-     * \param   memRight    Right-hand memory buffer to compare.
-     * \param   count       Number of bytes to compare.
-     * \return  areg::Smaller if memLeft < memRight, Equal if identical, Bigger if memLeft >
-     *          memRight.
-     **/
-    [[nodiscard]]
-    inline areg::Ordering mem_compare( const void * memLeft, const void * memRight, uint32_t count) noexcept;
-
-    /**
-     * \brief   Returns true if two memory blocks contain identical data.
-     *
-     * \param   memLeft     Left-hand memory buffer.
-     * \param   memRight    Right-hand memory buffer.
-     * \param   count       Number of bytes to compare.
-     * \return  Returns true if both memory chunks are identical; false otherwise.
-     **/
-    [[nodiscard]]
-    inline bool mem_equal( const void * memLeft, const void * memRight, uint32_t count) noexcept;
-
-    /**
-     * \brief   Functor for custom buffer allocation.
-     **/
-    template<typename BufType>
-    struct BufferAllocator
+    inline constexpr operator uint32_t() const noexcept
     {
-        /**
-         * \brief   Allocates a buffer of the specified size.
-         **/
-        BufType* operator ( ) (uint32_t space);
-    };
-
-    /**
-     * \brief   Functor for custom buffer deallocation.
-     **/
-    template<typename BufType>
-    struct BufferDeleter
-    {
-        /**
-         * \brief   De-allocates a buffer.
-         **/
-        void operator ( ) (void * buffer);
-    };
+        return sizeof(Type);
+    }
+};
 
 /************************************************************************
  * \brief   Streaming of areg::Primitive

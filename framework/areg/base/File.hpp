@@ -294,6 +294,15 @@ public:
      **/
     void flush() noexcept override;
 
+    /**
+     * \brief   Reserve and ensure additional size to the existing. If the free space of the stream to write
+     *          is enough, no changes should be done. If the size of the stream is not enough, it should allocate
+     *          additional space and should not loose existing data.
+     * \param   addSize     The size to add if required.
+     * \return  Returns true if the stream has enough space to write the data.
+     **/
+    bool ensure_size(uint32_t addSize) override;
+
 protected:
 /************************************************************************/
 // InStream interface overrides

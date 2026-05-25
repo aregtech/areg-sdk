@@ -271,7 +271,7 @@ protected:
      *          When Dispatcher is started, this event is signaled.
      *          Otherwise it is not signaled.
      **/
-    SyncEvent    mEventStarted;
+    AREG_SYNC_EVENT mEventStarted;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls.

@@ -397,6 +397,29 @@ inline constexpr bool operator != ( uint32_t lhs, const RuntimeClassID & rhs ) n
     return (rhs.mMagicNum != lhs);
 }
 
+template<>
+struct required_size<areg::RuntimeClassID>
+{
+    [[nodiscard]]
+    inline constexpr uint32_t operator()() const noexcept
+    {
+        return static_cast<uint32_t>(sizeof(uint32_t));
+    }
+
+    [[nodiscard]]
+    inline constexpr uint32_t operator()(const areg::RuntimeClassID& /*classId*/) const noexcept
+    {
+        return static_cast<uint32_t>(sizeof(uint32_t));
+    }
+
+    [[nodiscard]]
+    inline constexpr operator uint32_t() const noexcept
+    {
+        return static_cast<uint32_t>(sizeof(uint32_t));
+    }
+};
+
+
 } // namespace areg
 
 //////////////////////////////////////////////////////////////////////////

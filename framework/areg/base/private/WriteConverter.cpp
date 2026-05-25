@@ -106,7 +106,7 @@ bool WriteConverter::set_string( const char * in_value )
 bool WriteConverter::set_string( const wchar_t * in_value )
 {
     const uint32_t size = in_value != nullptr ? (static_cast<uint32_t>(areg::string_length<wchar_t>(in_value)) + 1u) * sizeof(wchar_t) : 0u;
-    return (size != 0 ? mWriteStream.write(reinterpret_cast<const uint8_t *>(&in_value), size) == size : false);
+    return (size != 0 ? mWriteStream.write(reinterpret_cast<const uint8_t *>(in_value), size) == size : false);
 }
 
 bool WriteConverter::append_string( const char * in_value )

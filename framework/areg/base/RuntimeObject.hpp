@@ -381,6 +381,28 @@ inline const RuntimeObject * runtime_cast( const RuntimeObject * ptr, uint32_t c
     return (ptr != nullptr ? ptr->runtime_cast(classNumber) : nullptr);
 }
 
+template<>
+struct required_size<areg::RuntimeObject>
+{
+    [[nodiscard]]
+    inline constexpr uint32_t operator()() const noexcept
+    {
+        return static_cast<uint32_t>(sizeof(uint32_t));
+    }
+
+    [[nodiscard]]
+    inline constexpr uint32_t operator()(const areg::RuntimeObject& /*rto*/) const noexcept
+    {
+        return static_cast<uint32_t>(sizeof(uint32_t));
+    }
+
+    [[nodiscard]]
+    inline constexpr operator uint32_t () const noexcept
+    {
+        return static_cast<uint32_t>(sizeof(uint32_t));
+    }
+};
+
 } // namespace areg
 
 #endif  // AREG_BASE_RUNTIMEOBJECT_HPP

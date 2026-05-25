@@ -233,6 +233,15 @@ public:
     /** No-op for in-memory buffers. **/
     inline void flush() noexcept final;
 
+    /**
+     * \brief   Reserve and ensure additional size to the existing. If the free space of the stream to write
+     *          is enough, no changes should be done. If the size of the stream is not enough, it should allocate
+     *          additional space and should not loose existing data.
+     * \param   addSize     The size to add if required.
+     * \return  Returns true if the stream has enough space to write the data.
+     **/
+    inline bool ensure_size(uint32_t addSize) final;
+
 //////////////////////////////////////////////////////////////////////////
 // InStream interface overrides
 //////////////////////////////////////////////////////////////////////////
@@ -468,6 +477,26 @@ public:
     template <typename T>
     inline uint32_t write_array(const T* data, uint32_t count) noexcept;
 
+public:
+
+    /** Write char string: uint32_t(byte_count) + raw bytes (no NUL on wire). **/
+    inline uint32_t write_string_bin(const char* data, uint32_t len) noexcept;
+
+    /** Write wide-char string: uint32_t(byte_count) + raw bytes (no NUL on wire). **/
+    inline uint32_t write_string_bin(const wchar_t* data, uint32_t len) noexcept;
+
+    /** Write areg::String in binary format: uint32_t(byte_count) + raw bytes (no NUL). **/
+    inline uint32_t write_string_bin(const String& str) noexcept;
+
+    /** Write areg::WideString in binary format: uint32_t(byte_count) + raw bytes (no NUL). **/
+    inline uint32_t write_string_bin(const WideString& str) noexcept;
+
+    /** Read binary-format char string. Returns total bytes consumed (header + payload), 0 on failure. **/
+    uint32_t read_string_bin(String& str) const noexcept;
+
+    /** Read binary-format wide-char string. Returns total bytes consumed (header + payload), 0 on failure. **/
+    uint32_t read_string_bin(WideString& str) const noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // IOStream protected overrides
 //////////////////////////////////////////////////////////////////////////
@@ -679,6 +708,12 @@ inline uint32_t SharedBuffer::write(const WideString& wide)
 inline void SharedBuffer::flush() noexcept
 {
     // No-op: in-memory buffer, nothing to flush.
+}
+
+inline bool SharedBuffer::ensure_size(uint32_t addSize)
+{
+    uint32_t newSize = size_used() + addSize;
+    return (reserve(newSize, true) == newSize);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -929,5 +964,111 @@ inline uint32_t SharedBuffer::write_array(const T* data, uint32_t count) noexcep
     return write_data(reinterpret_cast<const uint8_t*>(data), static_cast<uint32_t>(sizeof(T)) * count);
 }
 
+inline uint32_t SharedBuffer::write_string_bin(const char* data, uint32_t len) noexcept
+{
+    const uint32_t byte_count = len;
+    if (write_data(reinterpret_cast<const uint8_t*>(&byte_count), sizeof(uint32_t)) != sizeof(uint32_t))
+        return 0u;
+    if ((byte_count == 0u) || (data == nullptr))
+        return sizeof(uint32_t);
+    const uint32_t written = write_data(reinterpret_cast<const uint8_t*>(data), byte_count);
+    return sizeof(uint32_t) + written;
+}
+
+inline uint32_t SharedBuffer::write_string_bin(const wchar_t* data, uint32_t len) noexcept
+{
+    const uint32_t byte_count = len * static_cast<uint32_t>(sizeof(wchar_t));
+    if (write_data(reinterpret_cast<const uint8_t*>(&byte_count), sizeof(uint32_t)) != sizeof(uint32_t))
+        return 0u;
+    if ((byte_count == 0u) || (data == nullptr))
+        return sizeof(uint32_t);
+    const uint32_t written = write_data(reinterpret_cast<const uint8_t*>(data), byte_count);
+    return sizeof(uint32_t) + written;
+}
+
+inline uint32_t SharedBuffer::write_string_bin(const String& str) noexcept
+{
+    const uint32_t len = (str.length() > 0) ? static_cast<uint32_t>(str.length()) : 0u;
+    return write_string_bin(str.as_string(), len);
+}
+
+inline uint32_t SharedBuffer::write_string_bin(const WideString& str) noexcept
+{
+    const uint32_t len = (str.length() > 0) ? static_cast<uint32_t>(str.length()) : 0u;
+    return write_string_bin(str.as_string(), len);
+}
+
+template<typename T>
+inline std::enable_if_t<std::is_arithmetic_v<T>, SharedBuffer&>
+operator << (SharedBuffer& stream, const T& value)
+{
+    stream.write_pod(value);
+    return stream;
+}
+
+template<typename T>
+inline std::enable_if_t<std::is_arithmetic_v<T>, const SharedBuffer&>
+operator >> (const SharedBuffer& stream, T& value)
+{
+    stream.read(reinterpret_cast<uint8_t*>(&value), sizeof(T));
+    return stream;
+}
+
+template<typename CharType>
+inline const SharedBuffer& operator >> (const SharedBuffer& stream, std::basic_string<CharType>& input)
+{
+    input.clear();
+
+    const uint32_t pos  = stream.position();
+    const uint32_t used = stream.size_used();
+    if (pos >= used)
+        return stream;
+
+    const uint32_t avail     = used - pos;
+    const uint32_t max_chars = avail / static_cast<uint32_t>(sizeof(CharType));
+    if (max_chars == 0u)
+        return stream;
+
+    const CharType* const src = reinterpret_cast<const CharType*>(stream.buffer() + pos);
+
+    uint32_t len = 0u;
+    if constexpr (std::is_same_v<CharType, char>)
+    {
+        const void* nul = ::memchr(src, '\0', max_chars);
+        len = (nul != nullptr)
+            ? static_cast<uint32_t>(static_cast<const char*>(nul) - src)
+            : max_chars;
+    }
+    else if constexpr (std::is_same_v<CharType, wchar_t>)
+    {
+        const wchar_t* nul = static_cast<const wchar_t*>(std::wmemchr(src, L'\0', max_chars));
+        len = (nul != nullptr) ? static_cast<uint32_t>(nul - src) : max_chars;
+    }
+    else
+    {
+        while ((len < max_chars) && (src[len] != static_cast<CharType>('\0')))
+            ++len;
+    }
+
+    if (len > 0u)
+        input.assign(src, len);
+
+    // Advance past the characters read + the NUL terminator (if present).
+    const bool has_nul    = (len < max_chars);
+    const uint32_t advance = (has_nul ? (len + 1u) : len) * static_cast<uint32_t>(sizeof(CharType));
+    stream.set_position(static_cast<int32_t>(advance), Cursor::SeekOrigin::Current);
+
+    return stream;
+}
+
+template<>
+struct required_size<areg::SharedBuffer>
+{
+    [[nodiscard]]
+    inline uint32_t operator()(const areg::SharedBuffer& buf) const noexcept
+    {
+        return static_cast<uint32_t>(sizeof(uint32_t)) + buf.size_used();
+    }
+};
 } // namespace areg
 #endif  // AREG_BASE_SHAREDBUFFER_HPP

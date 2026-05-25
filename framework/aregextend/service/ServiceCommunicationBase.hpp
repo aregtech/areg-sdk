@@ -29,7 +29,7 @@
 
 #include "areg/base/HashMap.hpp"
 #include "areg/base/OrderedMap.hpp"
-#include "areg/base/SyncPrimitives.hpp"
+#include "areg/base/SyncEventAlias.hpp"
 #include "areg/component/Timer.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "aregextend/service/ServerConnection.hpp"
@@ -653,7 +653,7 @@ protected:
     ServiceServerConsumer           mEventConsumer;     //!< The custom event consumer object
     ReconnectTimerConsumer          mTimerConsumer;     //!< The timer consumer object.
     areg::MapInstances              mInstanceMap;       //!< The map of connected instance.
-    SyncEvent                       mEventSendStop;     //!< The event set when cannot send and receive data anymore.
+    AREG_SYNC_EVENT                 mEventSendStop;     //!< The event set when cannot send and receive data anymore.
     mutable ResourceLock            mLock;              //!< The synchronization object to be accessed from different threads.
 
     SendCopyFn      mSendFn;        //!< Routes const-ref send to shared or pool path; set in constructor.
