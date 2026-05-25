@@ -80,6 +80,9 @@ namespace areg {
 class AREG_API ProxyBase  : public    ProxyEventConsumer
 {
     friend class RemoteEventFactory;
+
+    static constexpr uint32_t CONNECTION_ID{ static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection) };
+
 //////////////////////////////////////////////////////////////////////////
 // Internal classes, types and constants
 //////////////////////////////////////////////////////////////////////////
@@ -106,19 +109,14 @@ private:
         ~Listener() = default;
 
         /**
-         * \brief   Initializes listener with the specified message ID.
-         **/
-        inline explicit constexpr Listener( uint32_t msgId ) noexcept;
-
-        /**
          * \brief   Initializes listener with message ID and sequence number.
          **/
-        inline constexpr Listener( uint32_t msgId, const SequenceNumber & seqNr ) noexcept;
+        inline constexpr Listener( const SequenceNumber & seqNr ) noexcept;
 
         /**
          * \brief   Initializes listener with message ID, sequence number, and client callback.
          **/
-        inline constexpr Listener(uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer * caller) noexcept;
+        inline constexpr Listener(const SequenceNumber & seqNr, NotificationConsumer * caller) noexcept;
 
     // ProxyBase::Listener class, Basic operators
     //////////////////////////////////////////////////////////////////////////
@@ -139,10 +137,6 @@ private:
     //////////////////////////////////////////////////////////////////////////
     public:
         /**
-         * \brief   Message ID
-         **/
-        uint32_t                mMessageId{ static_cast<uint32_t>(areg::FuncIdRange::EmptyFunctionId) };
-        /**
          * \brief   Sequence number of listener. Attribute update listeners should have zero sequence number
          **/
         SequenceNumber          mSequenceNr{ areg::SEQUENCE_NUMBER_NOTIFY };
@@ -153,11 +147,10 @@ private:
     };
 
     //////////////////////////////////////////////////////////////////////////
-    // ProxyBase::ProxyListenerList definition
+    // ProxyBase::ProxyListenerList and ProxyListenerMap definitions
     //////////////////////////////////////////////////////////////////////////
     /************************************************************************
-     * \brief   Proxy Listener List class to save list of listener objects.
-     *          Every Proxy class has list of listeners.
+     * \brief   Flat list of listeners for a single message ID.
      ************************************************************************/
     using ProxyListenerList = ArrayList<ProxyBase::Listener>;
 
@@ -169,6 +162,13 @@ private:
      *          disconnect service.
      ************************************************************************/
     using ProxyConnectList  = ArrayList<ProxyListener *>;
+
+    /************************************************************************
+     * \brief   HashMap keyed by message ID mapping to per-ID listener lists.
+     *          Provides O(1) average lookup in prepare_listeners(), replacing
+     *          the O(n) flat-scan across all registered listeners.
+     ************************************************************************/
+    using ProxyListenerMap  = HashMap<uint32_t, ProxyListenerList>;
 
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ProxyMap class declaration.
@@ -182,11 +182,11 @@ private:
     /**
      * \brief   Proxy hash map
      **/
-    using MapProxy          = HashMap<ProxyAddress, std::shared_ptr<ProxyBase>>;
+    using MapProxy          = HashMap<uint32_t, std::shared_ptr<ProxyBase>>;
     /**
      * \brief   Proxy resource map helper.
      **/
-    using ImplProxyResource = ResourceMapImpl<ProxyAddress, std::shared_ptr<ProxyBase>>;
+    using ImplProxyResource = ResourceMapImpl<uint32_t, std::shared_ptr<ProxyBase>>;
 
     /**
      * \brief   ProxyBase::MapProxyResource
@@ -195,7 +195,7 @@ private:
      *          ProxyBase     The Values are pointers of Proxy object.
      *          ProxyMap      The type of Hash Mapping object used as container
      **/
-    using MapProxyResource  = ConcurrentResourceMap<ProxyAddress, std::shared_ptr<ProxyBase>, MapProxy, ImplProxyResource>;
+    using MapProxyResource  = ConcurrentResourceMap<uint32_t, std::shared_ptr<ProxyBase>, MapProxy, ImplProxyResource>;
 
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ThreadProxyList internal class declaration
@@ -211,13 +211,13 @@ private:
     /**
      * \brief   Helper class for managing maps of thread-local proxy lists.
      **/
-    class ImplThreadProxyMap : public ResourceListMapImpl<String, std::shared_ptr<ProxyBase>, ThreadProxyList>
+    class ImplThreadProxyMap : public ResourceListMapImpl<uint32_t, std::shared_ptr<ProxyBase>, ThreadProxyList>
     {
     public:
         /**
          * \brief   Called when all resources are removed from the map.
          **/
-        inline void impl_clean_list( const String & /* Key */, ThreadProxyList & /* List */ ) noexcept
+        inline void impl_clean_list( const uint32_t & /* Key */, ThreadProxyList & /* List */ ) noexcept
         {
         }
 
@@ -249,16 +249,14 @@ private:
     };
 
     /**
-     * \brief   ProxyBase::MapThreadProxy
-     *          The string hash map which values are list of proxies.
+     * \brief   The integer hash map which values are list of proxies.
      **/
-    using MapThreadProxy    = StringHashMap<ThreadProxyList>;
+    using MapThreadProxy    = IntegerHashMap<ThreadProxyList>;
 
     /**
-     * \brief   ProxyBase::MapThreadProxyList
-     *          The Map of the list, where the key is a string and values are list of proxies.
+     * \brief   The Map of the list, where the key is a magic number and values are list of proxies.
      **/
-    using MapThreadProxyList= ConcurrentResourceListMap<String, std::shared_ptr<ProxyBase>, ThreadProxyList, MapThreadProxy, ImplThreadProxyMap>;
+    using MapThreadProxyList= ConcurrentResourceListMap<uint32_t, std::shared_ptr<ProxyBase>, ThreadProxyList, MapThreadProxy, ImplThreadProxyMap>;
 
 protected:
     //////////////////////////////////////////////////////////////////////////
@@ -282,7 +280,7 @@ protected:
      * \brief   Event sent to notify a client when a service becomes available, even if instantiated
      *          in a different thread.
      **/
-    class AREG_API ServiceAvailableEvent    : public Event
+    class AREG_API ServiceAvailableEvent : public Event
     {
     //////////////////////////////////////////////////////////////////////////
     // Runtime internals
@@ -907,9 +905,10 @@ protected:
 #endif  // _MSC_VER
 
     /**
-     * \brief   The list of notification listeners.
+     * \brief   Per-message-ID listener map. O(1) average lookup replaces the former O(n) flat scan.
+     *          Each sub-vector holds all listeners registered for a specific message ID.
      **/
-    ProxyListenerList       mListenerList;
+    ProxyListenerMap        mListenerMap;
 
     /**
      * \brief   The list of connected clients of the proxy.
@@ -997,23 +996,14 @@ private:
 // ProxyBase::Listener class implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline constexpr ProxyBase::Listener::Listener(uint32_t msgId) noexcept
-    : mMessageId(msgId)
-    , mSequenceNr(areg::SEQUENCE_NUMBER_NOTIFY)
+inline constexpr ProxyBase::Listener::Listener(const SequenceNumber& seqNr) noexcept
+    : mSequenceNr(seqNr)
     , mListener(nullptr)
 {
 }
 
-inline constexpr ProxyBase::Listener::Listener(uint32_t msgId, const SequenceNumber& seqNr) noexcept
-    : mMessageId(msgId)
-    , mSequenceNr(seqNr)
-    , mListener(nullptr)
-{
-}
-
-inline constexpr ProxyBase::Listener::Listener(uint32_t msgId, const SequenceNumber& seqNr, NotificationConsumer* caller) noexcept
-    : mMessageId(msgId)
-    , mSequenceNr(seqNr)
+inline constexpr ProxyBase::Listener::Listener(const SequenceNumber& seqNr, NotificationConsumer* caller) noexcept
+    : mSequenceNr(seqNr)
     , mListener(caller)
 {
 }
@@ -1022,9 +1012,6 @@ inline constexpr bool ProxyBase::Listener::operator == (const ProxyBase::Listene
 {
     if (this == &other)
         return true;
-
-    if (other.mMessageId != mMessageId)
-        return false;
 
     if (other.mSequenceNr == areg::SEQUENCE_NUMBER_ANY)
         return true;
@@ -1116,12 +1103,23 @@ inline areg::ServiceConnectionState ProxyBase::connection_status() const noexcep
 
 inline bool ProxyBase::has_any_listener(uint32_t msgId) const noexcept
 {
-    return mListenerList.contains(ProxyBase::Listener(msgId, areg::SEQUENCE_NUMBER_ANY));
+    ProxyListenerMap::MAPPOS pos = mListenerMap.find(msgId);
+    return mListenerMap.is_valid_position(pos) && (pos->second.size() != 0u);
 }
 
 inline bool ProxyBase::has_notification_listener(uint32_t msgId) const noexcept
 {
-    return mListenerList.contains(ProxyBase::Listener(msgId, areg::SEQUENCE_NUMBER_NOTIFY));
+    ProxyListenerMap::MAPPOS pos = mListenerMap.find(msgId);
+    if (!mListenerMap.is_valid_position(pos))
+        return false;
+
+    const ProxyListenerList & subVec = pos->second;
+    for (uint32_t i = 0; i < subVec.size(); ++i)
+    {
+        if (subVec.value_at(i).mSequenceNr == areg::SEQUENCE_NUMBER_NOTIFY)
+            return true;
+    }
+    return false;
 }
 
 inline void ProxyBase::start_notification( uint32_t msgId )
@@ -1168,21 +1166,24 @@ inline areg::ProxyData & ProxyBase::proxy_data() noexcept
 
 inline bool ProxyBase::add_listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer* caller, bool unique)
 {
-    ProxyBase::Listener listener( msgId, seqNr, caller );
+    ProxyBase::Listener listener{ seqNr, caller };
+    ProxyListenerList & subVec = mListenerMap[msgId];
     if (unique)
     {
-        return mListenerList.add_if_unique(listener);
+        return subVec.add_if_unique(listener);
     }
     else
     {
-        mListenerList.add(listener);
+        subVec.add(listener);
         return true;
     }
 }
 
 inline void ProxyBase::remove_listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer* caller ) noexcept
 {
-    static_cast<void>(mListenerList.remove_elem( ProxyBase::Listener( msgId, seqNr, caller ) ));
+    ProxyListenerMap::MAPPOS pos = mListenerMap.find(msgId);
+    if (mListenerMap.is_valid_position(pos))
+        static_cast<void>(pos->second.remove_elem(ProxyBase::Listener{ seqNr, caller }));
 }
 
 
@@ -1210,7 +1211,10 @@ inline DispatcherThread & ProxyBase::proxy_dispatcher_thread() const noexcept
 
 inline uint32_t ProxyBase::listener_count() const noexcept
 {
-    return mListenerList.size();
+    uint32_t total = 0;
+    for (ProxyListenerMap::MAPPOS pos = mListenerMap.first_position(); mListenerMap.is_valid_position(pos); pos = mListenerMap.next_position(pos))
+        total += pos->second.size();
+    return total;
 }
 
 #endif // DEBUG
