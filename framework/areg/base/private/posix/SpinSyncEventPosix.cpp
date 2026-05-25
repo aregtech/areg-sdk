@@ -53,6 +53,20 @@ namespace
 }  // namespace
 
 // --------------------------------------------------------------------------
+// Cygwin: WaitOnAddress / WakeByAddress (runs on Windows)
+// --------------------------------------------------------------------------
+#elif defined(__CYGWIN__)
+
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif  // !NOMINMAX
+#include <windows.h>
+// WaitOnAddress / WakeByAddress are in synchapi.h (included via windows.h).
+// Link with -lsynchronization (added via CMake for Cygwin/GCC builds).
+
+#include <climits>
+
+// --------------------------------------------------------------------------
 // Linux: futex syscall
 // --------------------------------------------------------------------------
 #else  // Linux
@@ -175,9 +189,98 @@ void SpinSyncEvent::_os_wake_on(std::atomic<uint32_t>* word) noexcept
 }
 
 // --------------------------------------------------------------------------
+// Cygwin implementation — WaitOnAddress / WakeByAddress
+// --------------------------------------------------------------------------
+#elif defined(__CYGWIN__)
+
+bool SpinSyncEvent::_os_wait(uint32_t timeout_ms) noexcept
+{
+    if (timeout_ms == areg::DO_NOT_WAIT)
+        return _try_consume();
+
+    const bool      infinite { timeout_ms == areg::WAIT_INFINITE };
+    const ULONGLONG deadline { infinite ? ULLONG_MAX : GetTickCount64() + static_cast<ULONGLONG>(timeout_ms) };
+
+    for (;;)
+    {
+        if (_try_consume())
+            return true;
+
+        DWORD remaining { INFINITE };
+        if (!infinite)
+        {
+            const ULONGLONG now { GetTickCount64() };
+            if (now >= deadline)
+                return false;
+
+            remaining = static_cast<DWORD>(
+                std::min<ULONGLONG>(deadline - now, static_cast<ULONGLONG>(INFINITE - 1u)));
+        }
+
+        uint32_t expected { 0u };
+        if (!WaitOnAddress(&mState, &expected, sizeof(expected), remaining))
+        {
+            if (GetLastError() == ERROR_TIMEOUT)
+                return false;
+        }
+    }
+}
+
+void SpinSyncEvent::_os_wake() noexcept
+{
+    if (mAutoReset)
+        WakeByAddressSingle(&mState);
+    else
+        WakeByAddressAll(&mState);
+}
+
+void SpinSyncEvent::_os_wake_all() noexcept
+{
+    WakeByAddressAll(&mState);
+}
+
+bool SpinSyncEvent::_os_wait_on(std::atomic<uint32_t>* word, uint32_t timeout_ms) noexcept
+{
+    if (timeout_ms == areg::DO_NOT_WAIT)
+        return (word->load(std::memory_order_acquire) != 0u);
+
+    const bool      infinite { timeout_ms == areg::WAIT_INFINITE };
+    const ULONGLONG deadline { infinite ? ULLONG_MAX : GetTickCount64() + static_cast<ULONGLONG>(timeout_ms) };
+
+    for (;;)
+    {
+        if (word->load(std::memory_order_acquire) != 0u)
+            return true;
+
+        DWORD remaining { INFINITE };
+        if (!infinite)
+        {
+            const ULONGLONG now { GetTickCount64() };
+            if (now >= deadline)
+                return false;
+
+            remaining = static_cast<DWORD>(
+                std::min<ULONGLONG>(deadline - now, static_cast<ULONGLONG>(INFINITE - 1u)));
+        }
+
+        uint32_t expected { 0u };
+        if (!WaitOnAddress(word, &expected, sizeof(expected), remaining))
+        {
+            if (GetLastError() == ERROR_TIMEOUT)
+                return false;
+        }
+    }
+}
+
+void SpinSyncEvent::_os_wake_on(std::atomic<uint32_t>* word) noexcept
+{
+    WakeByAddressAll(word);
+}
+
+// --------------------------------------------------------------------------
 // Linux futex implementation
 // --------------------------------------------------------------------------
-#else  // !defined(__APPLE__)
+#else  // !defined(__APPLE__) && !defined(__CYGWIN__)
 
 namespace
 {
@@ -284,7 +387,7 @@ void SpinSyncEvent::_os_wake_on(std::atomic<uint32_t>* word) noexcept
     _futex(word, FUTEX_WAKE_PRIVATE, static_cast<uint32_t>(INT_MAX), nullptr);
 }
 
-#endif  // defined(__APPLE__)
+#endif  // defined(__APPLE__) / defined(__CYGWIN__) / Linux
 
 } // namespace areg
 

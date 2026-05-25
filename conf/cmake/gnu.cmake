@@ -110,6 +110,12 @@ else()
             set(AREG_LDFLAGS_STR "-lstdc++ -lm -lpthread -lrt")
         endif()
 
+        # Cygwin: WaitOnAddress / WakeByAddress live in synchronization.dll
+        if (CYGWIN)
+            list(APPEND AREG_LDFLAGS synchronization)
+            string(APPEND AREG_LDFLAGS_STR " -lsynchronization")
+        endif()
+
         # GCC on x86-64 does not inline 16-byte (128-bit) atomics
         # Detect this at configure time
         include(CheckCXXSourceCompiles)
