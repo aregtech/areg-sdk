@@ -48,8 +48,9 @@ void WaitableTimerPosix::_posix_timer_routine(signal_value si)
     }
 }
 
-WaitableTimerPosix::WaitableTimerPosix(bool is_auto_reset /*= false*/, const char * name /*= nullptr*/)
-    : WaitablePosix  ( areg::os::SyncKind::SoWaitTimer, false, name )
+WaitableTimerPosix::WaitableTimerPosix(bool is_auto_reset /*= false*/)
+    : WaitablePosix  ( areg::os::SyncKind::SoWaitTimer )
+    , mObjectLock    ( areg::os::SyncKind::SoMutex, false )
     , mResetInfo     ( is_auto_reset ? areg::os::ResetMode::Automatic : areg::os::ResetMode::Manual )
     , mTimerId       ( static_cast<timer_t>(0) )
     , mTimeout       ( 0 )
@@ -74,7 +75,7 @@ WaitableTimerPosix::WaitableTimerPosix(bool is_auto_reset /*= false*/, const cha
 bool WaitableTimerPosix::set_timer(uint32_t msTimeout, bool is_periodic)
 {
     bool result = false;
-    ObjectLockPosix lock(*this);
+    ObjectLockPosix lock(mObjectLock);
 
     _stop_timer();
 
@@ -108,7 +109,7 @@ bool WaitableTimerPosix::set_timer(uint32_t msTimeout, bool is_periodic)
 
 bool WaitableTimerPosix::is_valid() const noexcept
 {
-    ObjectLockPosix lock(*this);
+    ObjectLockPosix lock(mObjectLock);
     return (mTimerId != static_cast<timer_t>(0));
 }
 
@@ -147,7 +148,7 @@ void WaitableTimerPosix::_timer_expired() noexcept
 
     do
     {
-        ObjectLockPosix lock(*this);
+        ObjectLockPosix lock(mObjectLock);
 
         if (mTimerId != static_cast<timer_t>(0))
         {
@@ -186,7 +187,7 @@ bool WaitableTimerPosix::stop_timer() noexcept
     bool sendSignal = false;
     do
     {
-        ObjectLockPosix lock(*this);
+        ObjectLockPosix lock(mObjectLock);
         sendSignal  = (mIsSignaled == false);
         _stop_timer();
         mIsSignaled = true;
@@ -205,7 +206,7 @@ bool WaitableTimerPosix::cancel_timer() noexcept
     bool sendSignal = false;
     do
     {
-        ObjectLockPosix lock(*this);
+        ObjectLockPosix lock(mObjectLock);
         sendSignal  = (mIsSignaled == false);
         _reset_timer();
         mIsSignaled = true;
@@ -221,7 +222,7 @@ bool WaitableTimerPosix::cancel_timer() noexcept
 
 bool WaitableTimerPosix::check_signaled(pthread_t /*contextThread*/) const
 {
-    ObjectLockPosix lock(*this);
+    ObjectLockPosix lock(mObjectLock);
     return mIsSignaled;
 }
 
@@ -237,7 +238,7 @@ bool WaitableTimerPosix::can_signal_threads() const noexcept
 
 void WaitableTimerPosix::notify_released_threads(int32_t /* numThreads */)
 {
-    ObjectLockPosix lock(*this);
+    ObjectLockPosix lock(mObjectLock);
     if (mResetInfo == areg::os::ResetMode::Automatic)
     {
         mIsSignaled = false;

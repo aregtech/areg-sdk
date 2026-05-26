@@ -239,6 +239,7 @@
   <ItemGroup>
     <ClInclude Include="areg\base\DateTime.hpp" />
     <ClInclude Include="areg\base\private\posix\SpinLockPosix.hpp" />
+    <ClInclude Include="areg\base\private\posix\WaitAnyRegistry.hpp" />
     <ClInclude Include="areg\base\private\win32\SpinLockWin32.hpp" />
     <ClInclude Include="areg\base\OrderedMap.hpp" />
     <ClInclude Include="areg\base\SharedPrimitive.hpp" />

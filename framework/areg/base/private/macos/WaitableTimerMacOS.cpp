@@ -23,16 +23,17 @@
 
 namespace areg::os {
 
-WaitableTimerPosix::WaitableTimerPosix(bool is_auto_reset /*= false*/, const char * name /*= nullptr*/)
-    : WaitablePosix  ( areg::os::SyncKind::SoWaitTimer, false, name )
-    , mResetInfo     ( is_auto_reset ? areg::os::ResetMode::Automatic : areg::os::ResetMode::Manual )
-    , mTimerSource   ( nullptr )
-    , mTimerQueue    ( nullptr )
-    , mTimeout       ( 0 )
-    , mIsSignaled    ( false )
-    , mFiredCount    ( 0 )
-    , mDueTime       ( {0, 0} )
-    , mThreadId      ( Thread::INVALID_THREAD_ID )
+WaitableTimerPosix::WaitableTimerPosix(bool is_auto_reset /*= false*/)
+    : WaitablePosix ( areg::os::SyncKind::SoWaitTimer )
+    , mObjectLock   ( areg::os::SyncKind::SoMutex, false )
+    , mResetInfo    ( is_auto_reset ? areg::os::ResetMode::Automatic : areg::os::ResetMode::Manual )
+    , mTimerSource  ( nullptr )
+    , mTimerQueue   ( nullptr )
+    , mTimeout      ( 0 )
+    , mIsSignaled   ( false )
+    , mFiredCount   ( 0 )
+    , mDueTime      ( {0, 0} )
+    , mThreadId(Thread::INVALID_THREAD_ID)
 {
     mTimerQueue = dispatch_queue_create("areg.waitable.timer", DISPATCH_QUEUE_SERIAL);
 }
@@ -40,7 +41,7 @@ WaitableTimerPosix::WaitableTimerPosix(bool is_auto_reset /*= false*/, const cha
 bool WaitableTimerPosix::set_timer(uint32_t msTimeout, bool is_periodic)
 {
     bool result = false;
-    ObjectLockPosix lock(*this);
+    ObjectLockPosix lock(mObjectLock);
 
     _stop_timer();
 
@@ -114,7 +115,7 @@ void WaitableTimerPosix::_timer_expired() noexcept
 
     do
     {
-        ObjectLockPosix lock(*this);
+        ObjectLockPosix lock(mObjectLock);
 
         if (mTimerSource != nullptr)
         {

@@ -28,17 +28,18 @@ namespace areg::os {
 // WaitableEventPosix class implementation
 //////////////////////////////////////////////////////////////////////////
 
-WaitableEventPosix::WaitableEventPosix( bool isInitSignaled, bool is_auto_reset, const char * asciiName /* = nullptr */ )
-    : WaitablePosix  ( areg::os::SyncKind::SoWaitEvent, true, asciiName )
-
-    , mEventReset       ( is_auto_reset ? areg::os::ResetMode::Automatic : areg::os::ResetMode::Manual )
-    , mIsSignaled       ( isInitSignaled )
+WaitableEventPosix::WaitableEventPosix( bool isInitSignaled, bool isAutoReset )
+    : WaitablePosix  ( areg::os::SyncKind::SoWaitEvent )
+    , mEventReset    ( isAutoReset ? areg::os::ResetMode::Automatic : areg::os::ResetMode::Manual )
+    , mIsSignaled    ( isInitSignaled )
 {
 }
 
 bool WaitableEventPosix::set_signaled() noexcept
 {
-    // Lock-free fast path
+    if (!is_valid())
+        return false;
+
     if (!mIsSignaled.exchange(true, std::memory_order_acq_rel))
     {
         SyncLockAndWaitPosix::event_signaled(*this);
@@ -47,71 +48,16 @@ bool WaitableEventPosix::set_signaled() noexcept
     return true;
 }
 
-bool WaitableEventPosix::reset() noexcept
-{
-    bool result = false;
-    ObjectLockPosix lock(*this);
-    if ( is_valid() )
-    {
-#ifdef DEBUG
-        if (mIsSignaled.load(std::memory_order_relaxed))
-        {
-            if (areg::os::ResetMode::Automatic == mEventReset)
-            {
-                AREG_OUTPUT_WARN("Manually reseting auto-reset waitable event [ %s ].", name().as_string());
-            }
-            else
-            {
-                AREG_OUTPUT_DBG("Manually reseting event [ %s ]", name().as_string());
-            }
-        }
-#endif // DEBUG
-
-        mIsSignaled.store(false, std::memory_order_release);
-        result = true;
-    }
-
-    return result;
-}
-
-
 void WaitableEventPosix::pulse_event() noexcept
 {
-    ObjectLockPosix lock(*this);
-    if (is_valid() && !mIsSignaled.load(std::memory_order_relaxed))
+    if (!is_valid())
+        return;
+
+    bool expected{ false };
+    if (mIsSignaled.compare_exchange_strong(expected, true, std::memory_order_acq_rel, std::memory_order_relaxed))
     {
-        AREG_OUTPUT_DBG("Pulsing event [ %s ]", name().as_string( ));
-
-        mIsSignaled.store(true, std::memory_order_release);
-        lock.unlock();
-
+        AREG_OUTPUT_DBG("Pulsing event [ %s ]", name().as_string());
         SyncLockAndWaitPosix::event_signaled(*this);
-
-        lock.lock();
-        mIsSignaled.store(false, std::memory_order_relaxed);
-    }
-}
-
-bool WaitableEventPosix::check_signaled(pthread_t /*contextThread*/) const
-{
-    return mIsSignaled.load(std::memory_order_acquire);
-}
-
-bool WaitableEventPosix::notify_request_ownership( pthread_t /* ownerThread */ )
-{
-    return true;
-}
-
-bool WaitableEventPosix::can_signal_threads() const noexcept
-{
-    return true;
-}
-
-void WaitableEventPosix::notify_released_threads(int32_t numThreads)
-{
-    if ((mEventReset == areg::os::ResetMode::Automatic) && (numThreads > 0))
-    {
-        AREG_OUTPUT_DBG("There were [ %d ] released threads, automatically resetting waitable event [ %p ].", numThreads, this);
         mIsSignaled.store(false, std::memory_order_release);
     }
 }

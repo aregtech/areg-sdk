@@ -33,6 +33,7 @@
 #include "areg/base/FixedArray.hpp"
 #include "areg/base/ResourceMap.hpp"
 #include "areg/base/ResourceListMap.hpp"
+#include "areg/base/private/posix/WaitAnyRegistry.hpp"
 
 #include <pthread.h>
 namespace areg::os {
@@ -49,7 +50,7 @@ class SyncLockAndWaitPosix;
 /**
  * \brief   POSIX-based synchronization object for locking and waiting on single or multiple
  *          waitable objects. Supports waiting criteria based on flags, with a maximum of
- *          areg::MAXIMUM_WAITING_OBJECTS. Use static methods for waiting; internal methods are Shidden.
+ *          areg::MAXIMUM_WAITING_OBJECTS. Use static methods for waiting; internal methods are hidden.
  **/
 class SyncLockAndWaitPosix
 {
@@ -125,11 +126,10 @@ class SyncLockAndWaitPosix
 
 #if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
     /**
-     * \brief   Map for WaitAny path
+     * \brief   Lock-free registry for the WaitAny path: maps sleeping thread IDs to their
+     *          per-call firedWord pointers.
      **/
-    using MapWaitAnyID          = IdHashMap<std::atomic<uint32_t>*>;
-    using ImplWaitAnyIDResource = ResourceMapImpl<ptr_type, std::atomic<uint32_t>*>;
-    using MapWaitAnyIDResource  = ConcurrentResourceMap<ptr_type, std::atomic<uint32_t>*, MapWaitAnyID, ImplWaitAnyIDResource>;
+    using WaitAnyRegistryMap = WaitAnyRegistry<256>;
 #endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
 
 //////////////////////////////////////////////////////////////////////////
@@ -150,7 +150,6 @@ private:
     {
           Single    //!< Waits a single object
         , Multiple  //!< Waits for multiple object
-
     };
 
     /**
@@ -162,7 +161,6 @@ private:
           None  //!< No event has been fired.
         , One   //!< Fired one event.
         , All   //!< All waiting events are fired.
-
     };
     /**
      * \brief   The fixed array of waitable. The maximum size of array is areg::MAXIMUM_WAITING_OBJECTS
@@ -234,7 +232,7 @@ public:
      * \return  Returns true if waitable is registered.
      **/
     [[nodiscard]]
-    static bool is_waitable_registered( WaitablePosix & syncWaitable ) noexcept;
+    static inline bool is_waitable_registered( WaitablePosix & syncWaitable ) noexcept;
 
     /**
      * \brief   Breaks waiting in a locked thread to process asynchronous execution. Thread can lock
@@ -272,9 +270,9 @@ private:
 
 #if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
     /**
-     * \brief   Returns static map of thread-ID -> fire-word pointer (WaitAny path).
+     * \brief   Returns static lock-free WaitAny registry (thread-ID -> firedWord pointer).
      **/
-    static SyncLockAndWaitPosix::MapWaitAnyIDResource& _map_wait_any_ids() noexcept;
+    static SyncLockAndWaitPosix::WaitAnyRegistryMap& _map_wait_any_ids() noexcept;
 
     /**
      * \brief   WaitAny implementation: stack-allocates WaiterNodes, registers them in each
@@ -419,6 +417,12 @@ private:
     SyncLockAndWaitPosix() = delete;
     AREG_NOCOPY_NOMOVE( SyncLockAndWaitPosix );
 };
+
+inline bool SyncLockAndWaitPosix::is_waitable_registered(WaitablePosix& syncWaitable) noexcept
+{
+    SyncResourceMapIX& mapResources{ SyncLockAndWaitPosix::_map_sync_resources() };
+    return mapResources.exist(&syncWaitable);
+}
 
 } // namespace areg::os
 

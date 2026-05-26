@@ -45,13 +45,12 @@ public:
      *
      * \param   isInitSignaled      If true, the event is initially in signaled state. If false, it
      *                              is initially in non-signaled state.
-     * \param   is_auto_reset       If true, the event is auto-reset; otherwise, it is manual-reset.
+     * \param   isAutoReset         If true, the event is auto-reset; otherwise, it is manual-reset.
      *                              Auto-reset events automatically reset to non-signaled after a
      *                              waiting thread is released. Manual-reset events remain signaled
      *                              until explicitly reset.
-     * \param   asciiName           The name of the synchronization event.
      **/
-    WaitableEventPosix(bool isInitSignaled, bool is_auto_reset, const char * asciiName = nullptr);
+    WaitableEventPosix(bool isInitSignaled, bool isAutoReset);
 
     virtual ~WaitableEventPosix() = default;
 
@@ -65,6 +64,14 @@ public:
     inline areg::os::ResetMode  reset_info() const noexcept;
 
     /**
+     * \brief   Resets the event to non-signaled state. Only manual-reset events can be manually
+     *          reset; calls on auto-reset events are ignored.
+     *
+     * \return  Returns true if operation succeeded; false if the event is auto-reset.
+     **/
+    inline bool reset() noexcept;
+
+    /**
      * \brief   Sets the event to signaled state. If the event is auto-reset, it automatically
      *          resets after waiting threads are released. If manual-reset, it remains signaled
      *          until explicitly reset.
@@ -72,14 +79,6 @@ public:
      * \return  Returns true if operation succeeded.
      **/
     bool set_signaled() noexcept;
-
-    /**
-     * \brief   Resets the event to non-signaled state. Only manual-reset events can be manually
-     *          reset; calls on auto-reset events are ignored.
-     *
-     * \return  Returns true if operation succeeded; false if the event is auto-reset.
-     **/
-    bool reset() noexcept;
 
     /**
      * \brief   Pulses the event: briefly signals it and immediately resets to non-signaled,
@@ -97,7 +96,7 @@ public:
      * \param   contextThread       The thread ID where the lock and wait happened. Not used for waitable events.
      * \return  Returns true if the object is signaled; false otherwise.
      **/
-    bool check_signaled( pthread_t contextThread ) const final;
+    inline bool check_signaled( pthread_t contextThread ) const final;
 
     /**
      * \brief   Callback triggered when a waiting thread is released to continue. Waitable events
@@ -106,12 +105,12 @@ public:
      * \param   ownerThread     The POSIX thread ID that completed the wait.
      * \return  Always returns true.
      **/
-    bool notify_request_ownership( pthread_t ownerThread ) final;
+    inline bool notify_request_ownership( pthread_t ownerThread ) final;
 
     /**
      * \brief   Returns true to indicate that the event can signal multiple threads simultaneously.
      **/
-    bool can_signal_threads() const noexcept final;
+    inline bool can_signal_threads() const noexcept final;
 
     /**
      * \brief   Notifies the event of how many threads were released when the event was in signaled state
@@ -119,7 +118,7 @@ public:
      * \param   numThreads      The number of threads released when the event was signaled. Zero
      *                          means no thread was released.
      **/
-    void notify_released_threads( int32_t numThreads ) final;
+    inline void notify_released_threads( int32_t numThreads ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -149,6 +148,58 @@ private:
 inline areg::os::ResetMode WaitableEventPosix::reset_info() const noexcept
 {
     return mEventReset;
+}
+
+inline bool WaitableEventPosix::reset() noexcept
+{
+    if (!is_valid())
+        return false;
+
+#ifdef DEBUG
+    if (mIsSignaled.load(std::memory_order_relaxed))
+    {
+        if (areg::os::ResetMode::Automatic == mEventReset)
+        {
+            AREG_OUTPUT_WARN("Manually reseting auto-reset waitable event [ %s ].", name().as_string());
+        }
+        else
+        {
+            AREG_OUTPUT_DBG("Manually reseting event [ %s ]", name().as_string());
+        }
+    }
+#endif // DEBUG
+
+    mIsSignaled.store(false, std::memory_order_release);
+    return true;
+}
+
+inline bool WaitableEventPosix::check_signaled(pthread_t /*contextThread*/) const
+{
+    return mIsSignaled.load(std::memory_order_acquire);
+}
+
+inline bool WaitableEventPosix::notify_request_ownership(pthread_t /* ownerThread */)
+{
+    if (mEventReset == areg::os::ResetMode::Automatic)
+    {
+        // Atomically take ownership
+        bool expected{ true };
+        return mIsSignaled.compare_exchange_strong(expected, false, std::memory_order_acq_rel, std::memory_order_relaxed);
+    }
+
+    return true;
+}
+
+inline bool WaitableEventPosix::can_signal_threads() const noexcept
+{
+    return true;
+}
+
+inline void WaitableEventPosix::notify_released_threads(int32_t numThreads)
+{
+    // Auto-reset is handled atomically in notify_request_ownership() via CAS.
+    // Resetting here is no longer needed; keeping the debug trace only.
+    AREG_OUTPUT_DBG("There were [ %d ] released threads from waitable event [ %p ].", numThreads, this);
 }
 
 } // namespace areg::os

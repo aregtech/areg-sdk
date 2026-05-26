@@ -127,16 +127,10 @@ thread_local WaitState tls_wait_state;
 
 #if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
 
-// FIRE_INVALID: waiter sleeps while firedWord holds this value.
-// Equals (uint32_t)(int32_t)SyncSignal::Invalid = 0xFFFFFFFF.
-static constexpr uint32_t FIRE_INVALID {
-    static_cast<uint32_t>(areg::os::SyncSignal::Invalid)
-};
-
 namespace {
 
-// Sleep until firedWord != FIRE_INVALID, or until the deadline expires.
-// Returns FIRE_INVALID on timeout; otherwise firedWord's post-wake value.
+// Sleep until firedWord != SYNC_FIRE_INVALID, or until the deadline expires.
+// Returns SYNC_FIRE_INVALID on timeout; otherwise firedWord's post-wake value.
 #if defined(__linux__)
 
 inline uint32_t _wait_any_sleep(std::atomic<uint32_t>& firedWord, uint32_t msTimeout) noexcept
@@ -151,7 +145,7 @@ inline uint32_t _wait_any_sleep(std::atomic<uint32_t>& firedWord, uint32_t msTim
     for (;;)
     {
         uint32_t cur{ firedWord.load(std::memory_order_acquire) };
-        if (cur != FIRE_INVALID)
+        if (cur != SYNC_FIRE_INVALID)
             return cur;
 
         struct timespec ts {};
@@ -160,7 +154,7 @@ inline uint32_t _wait_any_sleep(std::atomic<uint32_t>& firedWord, uint32_t msTim
         {
             const auto now  { Clock::now() };
             if (now >= deadline)
-                return FIRE_INVALID;
+                return SYNC_FIRE_INVALID;
 
             const auto rem { std::chrono::duration_cast<Ns>(deadline - now) };
             ts.tv_sec  = static_cast<time_t>(rem.count() / 1'000'000'000LL);
@@ -170,10 +164,10 @@ inline uint32_t _wait_any_sleep(std::atomic<uint32_t>& firedWord, uint32_t msTim
 
         const int rc { static_cast<int>(
             ::syscall(SYS_futex, &firedWord, FUTEX_WAIT_PRIVATE,
-                      FIRE_INVALID, pts, nullptr, 0)) };
+                      SYNC_FIRE_INVALID, pts, nullptr, 0)) };
         (void)rc;
         // On return: re-check firedWord in the loop.
-        // ETIMEDOUT -> firedWord still FIRE_INVALID -> next iteration returns FIRE_INVALID.
+        // ETIMEDOUT -> firedWord still SYNC_FIRE_INVALID -> next iteration returns SYNC_FIRE_INVALID.
         // EAGAIN    -> *addr changed before sleep -> next iteration reads new value.
         // EINTR     -> signal interrupted; retry.
     }
@@ -193,7 +187,7 @@ inline uint32_t _wait_any_sleep(std::atomic<uint32_t>& firedWord, uint32_t msTim
     for (;;)
     {
         uint32_t cur{ firedWord.load(std::memory_order_acquire) };
-        if (cur != FIRE_INVALID)
+        if (cur != SYNC_FIRE_INVALID)
             return cur;
 
         uint32_t timeout_us { 0u };  // 0 = infinite for __ulock_wait
@@ -201,7 +195,7 @@ inline uint32_t _wait_any_sleep(std::atomic<uint32_t>& firedWord, uint32_t msTim
         {
             const auto now { Clock::now() };
             if (now >= deadline)
-                return FIRE_INVALID;
+                return SYNC_FIRE_INVALID;
 
             const auto rem { std::chrono::duration_cast<Us>(deadline - now) };
             timeout_us = static_cast<uint32_t>(
@@ -211,9 +205,9 @@ inline uint32_t _wait_any_sleep(std::atomic<uint32_t>& firedWord, uint32_t msTim
         }
 
         const int rc { ::__ulock_wait(areg::os::APPLE_ULOCK_COMPARE_AND_WAIT, &firedWord,
-                                      static_cast<uint64_t>(FIRE_INVALID), timeout_us) };
+                                      static_cast<uint64_t>(SYNC_FIRE_INVALID), timeout_us) };
         if (errno == ETIMEDOUT)
-            return FIRE_INVALID;
+            return SYNC_FIRE_INVALID;
         (void)rc;
     }
 }
@@ -228,7 +222,7 @@ inline uint32_t _wait_any_sleep(std::atomic<uint32_t>& firedWord, uint32_t msTim
     for (;;)
     {
         uint32_t cur{ firedWord.load(std::memory_order_acquire) };
-        if (cur != FIRE_INVALID)
+        if (cur != SYNC_FIRE_INVALID)
             return cur;
 
         DWORD remaining { INFINITE };
@@ -236,17 +230,17 @@ inline uint32_t _wait_any_sleep(std::atomic<uint32_t>& firedWord, uint32_t msTim
         {
             const ULONGLONG now { GetTickCount64() };
             if (now >= deadline)
-                return FIRE_INVALID;
+                return SYNC_FIRE_INVALID;
 
             remaining = static_cast<DWORD>(
                 std::min<ULONGLONG>(deadline - now, static_cast<ULONGLONG>(INFINITE - 1u)));
         }
 
-        uint32_t expected { FIRE_INVALID };
+        uint32_t expected { SYNC_FIRE_INVALID };
         if (!::WaitOnAddress(&firedWord, &expected, sizeof(expected), remaining))
         {
             if (::GetLastError() == ERROR_TIMEOUT)
-                return FIRE_INVALID;
+                return SYNC_FIRE_INVALID;
         }
     }
 }
@@ -261,7 +255,7 @@ int32_t SyncLockAndWaitPosix::_wait_any_new(WaitablePosix** listWaitables, int32
     const pthread_t self{ ::pthread_self() };
 
     // Stack-allocated fire word and waiter nodes.
-    alignas(64) std::atomic<uint32_t> firedWord{ FIRE_INVALID };
+    alignas(64) std::atomic<uint32_t> firedWord{ SYNC_FIRE_INVALID };
     WaiterNode nodes[areg::MAXIMUM_WAITING_OBJECTS];
 
     // Registration:
@@ -270,8 +264,6 @@ int32_t SyncLockAndWaitPosix::_wait_any_new(WaitablePosix** listWaitables, int32
     {
         nodes[i].mFiredWord  = &firedWord;
         nodes[i].mFiredValue = static_cast<uint32_t>(i);
-        nodes[i].mContext    = self;
-        nodes[i].mNext       = nullptr;
         listWaitables[i]->register_waiter(&nodes[i]);
     }
 
@@ -282,7 +274,7 @@ int32_t SyncLockAndWaitPosix::_wait_any_new(WaitablePosix** listWaitables, int32
         WaitablePosix* w{ listWaitables[i] };
         if (w->check_signaled(self) && w->notify_request_ownership(self))
         {
-            uint32_t expected{ FIRE_INVALID };
+            uint32_t expected{ SYNC_FIRE_INVALID };
             if (firedWord.compare_exchange_strong(
                     expected, static_cast<uint32_t>(i),
                     std::memory_order_acq_rel, std::memory_order_relaxed))
@@ -296,18 +288,18 @@ int32_t SyncLockAndWaitPosix::_wait_any_new(WaitablePosix** listWaitables, int32
     }
 
     // Sleep if not already fired:
-    if (firedWord.load(std::memory_order_acquire) == FIRE_INVALID)
+    if (firedWord.load(std::memory_order_acquire) == SYNC_FIRE_INVALID)
     {
-        // Register in the WaitAny map so notify_async_signal() can reach us.
-        MapWaitAnyIDResource& mapAny{ SyncLockAndWaitPosix::_map_wait_any_ids() };
+        // Register in the WaitAny registry so notify_async_signal() can reach us.
+        WaitAnyRegistryMap& mapAny{ SyncLockAndWaitPosix::_map_wait_any_ids() };
         mapAny.register_resource_object(to_num<ptr_type>(self), &firedWord);
         const uint32_t woken{ _wait_any_sleep(firedWord, msTimeout) };
         mapAny.unregister_resource_object(to_num<ptr_type>(self));
 
-        if (woken == FIRE_INVALID)
+        if (woken == SYNC_FIRE_INVALID)
         {
             // Claim timeout code atomically; if a concurrent signal already fired, the CAS fails — use that result.
-            uint32_t expected{ FIRE_INVALID };
+            uint32_t expected{ SYNC_FIRE_INVALID };
             firedWord.compare_exchange_strong(
                 expected,
                 static_cast<uint32_t>(areg::os::SyncSignal::Timeout),
@@ -349,9 +341,9 @@ SyncLockAndWaitPosix::MapWaitIDResource & SyncLockAndWaitPosix::_map_wait_ids() 
 
 #if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
 
-SyncLockAndWaitPosix::MapWaitAnyIDResource & SyncLockAndWaitPosix::_map_wait_any_ids() noexcept
+SyncLockAndWaitPosix::WaitAnyRegistryMap & SyncLockAndWaitPosix::_map_wait_any_ids() noexcept
 {
-    static SyncLockAndWaitPosix::MapWaitAnyIDResource _mapWaitAnyIds;
+    static SyncLockAndWaitPosix::WaitAnyRegistryMap _mapWaitAnyIds;
     return _mapWaitAnyIds;
 }
 
@@ -366,7 +358,11 @@ SyncLockAndWaitPosix::SyncResourceMapIX & SyncLockAndWaitPosix::_map_sync_resour
 int32_t SyncLockAndWaitPosix::wait_single( WaitablePosix & syncWait, uint32_t msTimeout /* = areg::WAIT_INFINITE */ )
 {
     WaitablePosix * list[] = { &syncWait };
+#if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
+    return _wait_any_new(list, 1, msTimeout);
+#else
     return wait_multiple(list, 1, true, msTimeout);
+#endif
 }
 
 int32_t SyncLockAndWaitPosix::wait_multiple( WaitablePosix ** listWaitables, int32_t count, bool waitAll /* = false */, uint32_t msTimeout /* = areg::WAIT_INFINITE */ )
@@ -476,8 +472,7 @@ int32_t SyncLockAndWaitPosix::event_signaled( WaitablePosix & syncWaitable ) noe
         }
     }
 
-    AREG_OUTPUT_DBG("Waitable [ %s ] ID [ %p ] releasing [ %d ] thread(s).",
-                    syncWaitable.name().as_string(), &syncWaitable, result);
+    AREG_OUTPUT_DBG("Waitable [ %s ] ID [ %p ] releasing [ %d ] thread(s).", syncWaitable.name().as_string(), &syncWaitable, result);
     syncWaitable.notify_released_threads(result);
 
     return result;
@@ -544,28 +539,18 @@ void SyncLockAndWaitPosix::event_failed( WaitablePosix & syncWaitable ) noexcept
     }
 }
 
-bool SyncLockAndWaitPosix::is_waitable_registered( WaitablePosix & syncWaitable ) noexcept
-{
-    SyncResourceMapIX & mapResources { SyncLockAndWaitPosix::_map_sync_resources() };
-    return mapResources.exist(&syncWaitable);
-}
-
 bool SyncLockAndWaitPosix::notify_async_signal( id_type threadId ) noexcept
 {
     const ptr_type key{ static_cast<ptr_type>(threadId) };
 
 #if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
-    // Check WaitAny map first
+    // Check lock-free WaitAny registry first (no mutex needed).
     {
-        MapWaitAnyIDResource & mapAny{ SyncLockAndWaitPosix::_map_wait_any_ids() };
-        Lock waitAny(mapAny.lockable());
-
-        std::atomic<uint32_t>* firedWord{
-            mapAny.find_resource_object(key)
-        };
+        WaitAnyRegistryMap& mapAny{ SyncLockAndWaitPosix::_map_wait_any_ids() };
+        std::atomic<uint32_t>* firedWord{ mapAny.find_resource_object(key) };
         if (firedWord != nullptr)
         {
-            uint32_t expected{ FIRE_INVALID };
+            uint32_t expected{ SYNC_FIRE_INVALID };
             if (firedWord->compare_exchange_strong(
                     expected,
                     static_cast<uint32_t>(areg::os::SyncSignal::AsyncSignal),
@@ -573,15 +558,15 @@ bool SyncLockAndWaitPosix::notify_async_signal( id_type threadId ) noexcept
                     std::memory_order_relaxed))
             {
                 // Wake the sleeping thread.
-#  if defined(__linux__)
+#if defined(__linux__)
                 ::syscall(SYS_futex, firedWord, FUTEX_WAKE_PRIVATE, 1, nullptr, nullptr, 0);
-#  elif defined(__APPLE__)
+#elif defined(__APPLE__)
                 ::__ulock_wake(areg::os::APPLE_ULOCK_COMPARE_AND_WAIT, firedWord, 0u);
-#  else  // Cygwin
+#else  // Cygwin
                 ::WakeByAddressSingle(firedWord);
-#  endif
+#endif
             }
-            return true;  // thread was registered in WaitAny map
+            return true;  // thread was registered in WaitAny registry
         }
     }
 #endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)

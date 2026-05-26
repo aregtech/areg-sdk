@@ -29,7 +29,7 @@ namespace areg::os {
 // CriticalSectionPosix class implementation.
 //////////////////////////////////////////////////////////////////////////
 CriticalSectionPosix::CriticalSectionPosix( bool initLock /*= false*/ )
-    : SyncObjectPosix   ( areg::os::SyncKind::SoSpinLock, "CriticalSection" )
+    : SyncObjectPosix   ( areg::os::SyncKind::SoSpinLock )
 
     , mSpinLock         ( )
 {

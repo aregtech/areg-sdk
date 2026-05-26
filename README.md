@@ -174,12 +174,12 @@ data serialization, event dispatching, and multithreading — not raw socket thr
 > | Platform        | CPU Type         | ~3 MB data   | ~3 KB msg/s      | ~0.5 KB msg/s   |
 > |-----------------|------------------|--------------|------------------|-----------------|
 > | Windows 11 ¹    | i7-13700H (DDR4) | 2.4–2.6 GB/s | 450–520K msg/s   | 1.0–1.2M msg/s  |
-> | WSL2 Ubuntu ²   | i7-13700H (DDR4) | 5.0–5.6 GB/s | 330–375K msg/s   | 450–520K msg/s  |
+> | WSL2 Ubuntu ²   | i7-13700H (DDR4) | 5.5–6.0 GB/s | 330–375K msg/s   | 650–700K msg/s  |
 > | macOS native ³  | M3 Pro (LPDDR5)  | 6.5–7.0 GB/s | 700K–1.0M msg/s  | 2.5–3.0M msg/s  |
 > | Linux native ⁴  | x86_64 (DDR4)    | 6.0–6.5 GB/s | 600–800K msg/s   | 2.2–2.8M msg/s  |
 >
 > ¹ On Windows, stable end-to-end consumer dispatch reaches 300–400K msg/s; above that the RPC dispatch thread becomes the bottleneck. macOS stable dispatch measured at 500–600K msg/s. See [23_pubdatarate README](examples/23_pubdatarate/ReadMe.md) for details.  
-> ² Requires [network tuning](./docs/wiki/07d-troubleshooting-network-tunning.md); default WSL2 settings yield ~3.5 GB/s and ~500K msg/s.  
+> ² Requires [network tuning](./docs/wiki/07d-troubleshooting-network-tunning.md); default WSL2 settings yield ~4.5 GB/s and ~700K msg/s.  
 > ³ Measured without network tuning. Numbers are transport-layer ceiling; current optimization level. M4 Pro results pending re-measurement.  
 > ⁴ Estimated from WSL2 baseline. Bare-metal Linux measurements pending.
 >

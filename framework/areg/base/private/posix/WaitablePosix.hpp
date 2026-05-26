@@ -23,7 +23,7 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/MutexPosix.hpp"
+#include "areg/base/private/posix/SyncObjectPosix.hpp"
 #include <atomic>
 #include <pthread.h>
 namespace areg::os {
@@ -46,8 +46,6 @@ struct WaiterNode
     std::atomic<uint32_t>*  mFiredWord;
     //! Value to CAS into mFiredWord when this waitable fires (waitable index).
     uint32_t                mFiredValue;
-    //! Waiting thread; used to verify signaled state per-context.
-    pthread_t               mContext;
     //! Intrusive list linkage (per-waitable LIFO list).
     WaiterNode*             mNext;
 };
@@ -61,16 +59,16 @@ struct WaiterNode
  * \brief   Base class for POSIX waitable synchronization objects. Supports single or group waiting.
  *          Cannot be instantiated directly; use derived classes.
  **/
-class WaitablePosix : public MutexPosix
+class WaitablePosix : public SyncObjectPosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Protected constructor. Sets synchronization type, recursive flag, and name.
+     * \brief   Protected constructor. Sets synchronization type and name.
      **/
-    WaitablePosix( areg::os::SyncKind syncType, bool isRecursive, const char* asciiName = nullptr );
+    WaitablePosix( areg::os::SyncKind syncType);
 
 public:
     virtual ~WaitablePosix();
@@ -109,6 +107,12 @@ public:
      * \param   numThreads      The number of released threads; 0 if none.
      **/
     virtual void notify_released_threads( int32_t numThreads ) = 0;
+
+    /**
+     * \brief   Returns true if the synchronization object is valid.
+     **/
+    [[nodiscard]]
+    inline bool is_valid() const noexcept override;
 
     /**
      * \brief   Called before deletion. Releases all waiting threads with failure code.
@@ -159,7 +163,7 @@ public:
     /**
      * \brief   Walks the intrusive waiter list and fires each eligible WaitAny waiter.
      *
-     *          For each node: CAS mFiredWord from FIRE_INVALID to mFiredValue, then
+     *          For each node: CAS mFiredWord from SYNC_FIRE_INVALID to mFiredValue, then
      *          wakes the sleeping thread via the platform primitive.  For objects
      *          where can_signal_threads() is false (Mutex), only the first successfully
      *          CAS'd node is woken.
@@ -190,8 +194,10 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
+    //! Set to false by free_resources() to signal the object is no longer usable.
+    std::atomic<bool>        mValid;
     //! Number of active WaitAll (SyncLockAndWaitPosix) registrations.
-    std::atomic<uint32_t>   mWaitAllCount;
+    std::atomic<uint32_t>    mWaitAllCount;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -211,6 +217,11 @@ inline void WaitablePosix::remove_wait_all_registration() noexcept
 inline bool WaitablePosix::has_wait_all_waiters() const noexcept
 {
     return mWaitAllCount.load(std::memory_order_relaxed) > 0u;
+}
+
+inline bool WaitablePosix::is_valid() const noexcept
+{
+    return mValid.load(std::memory_order_relaxed);
 }
 
 } // namespace areg::os

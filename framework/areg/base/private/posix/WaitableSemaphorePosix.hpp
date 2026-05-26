@@ -24,6 +24,7 @@
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/WaitablePosix.hpp"
+#include "areg/base/private/posix/MutexPosix.hpp"
 namespace areg::os {
 
 //////////////////////////////////////////////////////////////////////////
@@ -48,9 +49,8 @@ public:
      *
      * \param   maxCount        Maximum count; must be greater than zero.
      * \param   initCount       Initial count; must not exceed maximum.
-     * \param   asciiName       Semaphore name (optional).
      **/
-    explicit WaitableSemaphorePosix( int32_t maxCount, int32_t initCount = 0, const char * asciiName = nullptr );
+    explicit WaitableSemaphorePosix( int32_t maxCount, int32_t initCount = 0 );
 
     virtual ~WaitableSemaphorePosix() = default;
 
@@ -112,10 +112,19 @@ public:
      **/
     void notify_released_threads( int32_t numThreads ) final;
 
+    /**
+     * \brief   Returns true if the internal object lock is valid.
+     **/
+    [[nodiscard]]
+    bool is_valid() const noexcept final;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
 private:
+    //! Internal mutex protecting mCurCount.
+    MutexPosix      mObjectLock;
+
     /**
      * \brief   Maximum count number. After setting cannot be changed.
      **/
@@ -148,7 +157,7 @@ inline int32_t WaitableSemaphorePosix::maximum_count() const noexcept
 
 inline int32_t WaitableSemaphorePosix::current_count() const noexcept
 {
-    ObjectLockPosix lock(*this);
+    ObjectLockPosix lock(mObjectLock);
     return mCurCount;
 }
 

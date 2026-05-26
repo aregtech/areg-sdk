@@ -1169,6 +1169,9 @@
     <ClInclude Include="areg\ipc\DataRateStats.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="areg\base\private\posix\WaitAnyRegistry.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="areg\resources\areg.rc">

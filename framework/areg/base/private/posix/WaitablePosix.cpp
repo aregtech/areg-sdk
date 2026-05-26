@@ -53,12 +53,13 @@ namespace areg::os {
 // SyncWaitable class implementation
 //////////////////////////////////////////////////////////////////////////
 
-WaitablePosix::WaitablePosix( areg::os::SyncKind syncType, bool isRecursive, const char* asciiName /* = nullptr */ )
-    : MutexPosix    ( syncType, isRecursive, asciiName )
+WaitablePosix::WaitablePosix( areg::os::SyncKind syncType )
+    : SyncObjectPosix ( syncType )
 #if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
-    , mWaiters      { nullptr }
+    , mWaiters        { nullptr }
 #endif
-    , mWaitAllCount { 0u }
+    , mValid          { true }
+    , mWaitAllCount   { 0u }
 {
 #if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
     mWaitersLock.clear(std::memory_order_relaxed);
@@ -72,6 +73,7 @@ WaitablePosix::~WaitablePosix()
 
 void WaitablePosix::free_resources()
 {
+    mValid.store(false, std::memory_order_relaxed);
     SyncLockAndWaitPosix::event_remove(*this);
 }
 
@@ -135,13 +137,11 @@ void WaitablePosix::unregister_waiter( WaiterNode* node ) noexcept
 
 int32_t WaitablePosix::notify_any_waiters() noexcept
 {
-    // FIRE_INVALID sentinel: a waiter sleeps while mFiredWord holds this value.
-    // It corresponds to SyncSignal::Invalid cast to uint32_t (0xFFFFFFFF).
-    static constexpr uint32_t FIRE_INVALID {
-        static_cast<uint32_t>(areg::os::SyncSignal::Invalid)
-    };
-
-    int32_t woken{ 0 };
+    // Collect wake targets while holding the spinlock, then issue wake syscalls
+    // outside. This prevents unregister_waiter() from spinning on mWaitersLock
+    // for the entire duration of each kernel wake syscall (~100-500 ns each).
+    std::atomic<uint32_t>* toWake[areg::MAXIMUM_WAITING_OBJECTS];
+    int32_t wakeCount{ 0 };
 
     while (mWaitersLock.test_and_set(std::memory_order_acquire)) {}
 
@@ -151,14 +151,13 @@ int32_t WaitablePosix::notify_any_waiters() noexcept
         WaiterNode* const next{ node->mNext };
 
         // If the CAS fails, the waiter already received a signal or timed out, skip it
-        uint32_t expected{ FIRE_INVALID };
+        uint32_t expected{ SYNC_FIRE_INVALID };
         if (node->mFiredWord->compare_exchange_strong(
                 expected, node->mFiredValue,
                 std::memory_order_acq_rel,
                 std::memory_order_relaxed))
         {
-            _wake_one_waiter(node->mFiredWord);
-            ++woken;
+            toWake[wakeCount++] = node->mFiredWord;
 
             // For objects that allow only one concurrent owner (e.g., Mutex), wake only one waiter per signal.
             if (!can_signal_threads())
@@ -170,8 +169,16 @@ int32_t WaitablePosix::notify_any_waiters() noexcept
         node = next;
     }
 
+    // Release spinlock BEFORE wake syscalls: the woken thread calls unregister_waiter()
+    // immediately on resume; it must not spin waiting for us to finish kernel calls.
     mWaitersLock.clear(std::memory_order_release);
-    return woken;
+
+    for (int32_t i{ 0 }; i < wakeCount; ++i)
+    {
+        _wake_one_waiter(toWake[i]);
+    }
+
+    return wakeCount;
 }
 
 #endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
