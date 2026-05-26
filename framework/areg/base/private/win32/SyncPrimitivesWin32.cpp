@@ -133,6 +133,24 @@ void SyncEvent::_os_pulse_event() noexcept
     ::PulseEvent(static_cast<HANDLE>(mSyncObject));
 }
 
+int32_t SyncEvent::_os_wait_any( SyncEvent** events, int32_t count, uint32_t timeout ) noexcept
+{
+    HANDLE handles[areg::MAXIMUM_WAITING_OBJECTS];
+    for ( int32_t i = 0; i < count; ++i )
+    {
+        handles[i] = static_cast<HANDLE>(events[i]->handle());
+    }
+
+    DWORD dwTimeout = (timeout == areg::WAIT_INFINITE) ? INFINITE : static_cast<DWORD>(timeout);
+    DWORD result = ::WaitForMultipleObjects(static_cast<DWORD>(count), handles, FALSE, dwTimeout);
+    if ( (result >= WAIT_OBJECT_0) && (result < WAIT_OBJECT_0 + static_cast<DWORD>(count)) )
+    {
+        return static_cast<int32_t>(result - WAIT_OBJECT_0);
+    }
+
+    return SyncEvent::WAIT_ANY_TIMEOUT;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Semaphore class implementation
 //////////////////////////////////////////////////////////////////////////

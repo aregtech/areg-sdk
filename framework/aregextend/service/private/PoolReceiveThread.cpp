@@ -111,24 +111,14 @@ bool PoolReceiveThread::run_dispatcher()
 
     areg::RemoteMessage msgReceived;
     int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) };
-#ifdef USE_FAST_EVENT
-    SpinSyncEvent* events[2] { &mEventExit, &mEventQueue };
-#else
-    SyncObject* syncObjs[2] = { &mEventExit, &mEventQueue };
-    MultiLock multiLock(syncObjs, 2, false);
-#endif  // USE_FAST_EVENT
+    SyncEvent* events[2] { &mEventExit, &mEventQueue };
 
     do
     {
         _process_pending_sockets();
 
-#ifdef USE_FAST_EVENT
-        whichEvent = SpinSyncEvent::wait_any(events, 2, areg::DO_NOT_WAIT);
-        if ( whichEvent != SpinSyncEvent::WAIT_INDEX_TIMEOUT )
-#else
-        whichEvent = multiLock.lock(areg::DO_NOT_WAIT, false);
-        if ( whichEvent != MultiLock::LOCK_INDEX_TIMEOUT )
-#endif  // USE_FAST_EVENT
+        whichEvent = SyncEvent::wait_any(events, 2, areg::DO_NOT_WAIT);
+        if ( whichEvent != SyncEvent::WAIT_ANY_TIMEOUT )
         {
             Event * eventElem = ( whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ) ? pick_event() : nullptr;
             whichEvent = is_exit_event(eventElem) ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) : whichEvent;

@@ -64,7 +64,7 @@ void SyncObject::_os_destroy()
 
 void Mutex::_os_create_mutex( bool initLock )
 {
-    mSyncObject = DEBUG_NEW areg::os::WaitableMutexPosix(initLock, "POSIX_Mutex");
+    mSyncObject = DEBUG_NEW areg::os::WaitableMutexPosix(initLock);
 }
 
 bool Mutex::_os_lock_mutex( uint32_t timeout )
@@ -101,7 +101,7 @@ bool Mutex::_os_unlock_mutex()
 
 void SyncEvent::_os_create_event( bool initLock )
 {
-    mSyncObject    = static_cast<void *>( DEBUG_NEW areg::os::WaitableEventPosix(!initLock, mAutoReset, "POSIX_Event") );
+    mSyncObject    = static_cast<void *>( DEBUG_NEW areg::os::WaitableEventPosix(!initLock, mAutoReset) );
 }
 
 bool SyncEvent::_os_unlock_event( void * eventHandle ) noexcept
@@ -130,13 +130,25 @@ void SyncEvent::_os_pulse_event() noexcept
     reinterpret_cast<areg::os::WaitableEventPosix *>(mSyncObject)->pulse_event();
 }
 
+int32_t SyncEvent::_os_wait_any( SyncEvent** events, int32_t count, uint32_t timeout ) noexcept
+{
+    areg::os::WaitablePosix* handles[areg::MAXIMUM_WAITING_OBJECTS];
+    for ( int32_t i = 0; i < count; ++i )
+    {
+        handles[i] = reinterpret_cast<areg::os::WaitablePosix*>(events[i]->handle());
+    }
+
+    int32_t result = areg::os::SyncLockAndWaitPosix::wait_multiple(handles, count, false, timeout);
+    return ((result >= 0) && (result < count)) ? result : SyncEvent::WAIT_ANY_TIMEOUT;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Semaphore class implementation
 //////////////////////////////////////////////////////////////////////////
 
 void Semaphore::_os_create_semaphore( )
 {
-    mSyncObject = DEBUG_NEW areg::os::WaitableSemaphorePosix(static_cast<int32_t>(mMaxCount), static_cast<int32_t>(mCurrCount.load()), "POSIX_Semaphore");
+    mSyncObject = DEBUG_NEW areg::os::WaitableSemaphorePosix(static_cast<int32_t>(mMaxCount), static_cast<int32_t>(mCurrCount.load()));
 }
 
 void Semaphore::_os_release_semaphore()
@@ -191,7 +203,7 @@ bool CriticalSection::_os_try_lock()
 
 void SyncTimer::_os_create_timer( bool /* isSteady */ )
 {
-    mSyncObject= static_cast<void *>(DEBUG_NEW areg::os::WaitableTimerPosix( mIsAutoReset, "POSIX_WaitableTimer" ));
+    mSyncObject= static_cast<void *>(DEBUG_NEW areg::os::WaitableTimerPosix( mIsAutoReset ));
 }
 
 void SyncTimer::_os_release_time()

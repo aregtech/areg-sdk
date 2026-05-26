@@ -66,9 +66,8 @@ protected:
      *          name.
      *
      * \param   syncType        The type of synchronization object.
-     * \param   asciiName       Optional name of the synchronization object.
      **/
-    SyncObjectPosix( areg::os::SyncKind syncType, const char* asciiName = nullptr );
+    SyncObjectPosix( areg::os::SyncKind syncType );
 
 //////////////////////////////////////////////////////////////////////////
 // Public destructor.
@@ -89,12 +88,6 @@ public:
      **/
     [[nodiscard]]
     inline areg::os::SyncKind sync_type() const noexcept;
-
-    /**
-     * \brief   Returns the name of the synchronization object.
-     **/
-    [[nodiscard]]
-    inline const String & name() const noexcept;
 
 /************************************************************************/
 // SyncObjectPosix overrides.
@@ -123,11 +116,6 @@ protected:
      **/
     const areg::os::SyncKind  mSyncType;
 
-    /**
-     * \brief   The name of synchronization object.
-     **/
-    String  mSyncName;
-
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
@@ -143,11 +131,6 @@ private:
 inline areg::os::SyncKind SyncObjectPosix::sync_type() const noexcept
 {
     return mSyncType;
-}
-
-inline const String & SyncObjectPosix::name() const noexcept
-{
-    return mSyncName;
 }
 
 } // namespace areg::os

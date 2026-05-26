@@ -30,7 +30,7 @@
 #include "areg/base/Containers.hpp"
 #include "areg/base/ResourceMap.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/SyncEventAlias.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 
 #include <string_view>
 #include <limits>
@@ -496,11 +496,11 @@ protected:
     /**
      * \brief   Synchronization Event object, signaled when new created thread starts running
      **/
-    AREG_SYNC_EVENT         mWaitForRun;
+    SyncEvent               mWaitForRun;
     /**
      * \brief   Synchronization Event object, signaled when thread completes running and going to exist
      **/
-    AREG_SYNC_EVENT         mWaitForExit;
+    SyncEvent               mWaitForExit;
 
 //////////////////////////////////////////////////////////////////////////
 // Private / Hidden types, variables and methods

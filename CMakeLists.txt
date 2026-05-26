@@ -31,14 +31,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)# The 'common.cmake' file should be included after 'project' call
 include(${AREG_CMAKE_CONFIG_DIR}/common.cmake)
 
-# add a custom command to create output build folders if they are not existing.
-# create a dummy project to add as a dependency in all other projects.
-# this ensures that the commands to create directories are called first.
-add_custom_target(areg-dummy ALL COMMAND ${CMAKE_COMMAND} VERBATIM)
-add_custom_command( TARGET areg-dummy PRE_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
-                    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}"
-                    VERBATIM)
+# Create output build directories at configure time so they exist before any
+# compiler or archiver rule runs
+file(MAKE_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+file(MAKE_DIRECTORY "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
+
+# Dummy target used purely as a dependency anchor
+add_custom_target(areg-dummy ALL)
 
 include_directories(${AREG_FRAMEWORK})
 include_directories(${AREG_THIRDPARTY})

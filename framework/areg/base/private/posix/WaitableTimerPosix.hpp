@@ -24,6 +24,7 @@
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/WaitablePosix.hpp"
+#include "areg/base/private/posix/MutexPosix.hpp"
 #include <time.h>
 
 #ifdef __APPLE__
@@ -63,10 +64,9 @@ public:
     /**
      * \brief   Initializes the waitable timer as manual-reset or auto-reset.
      *
-     * \param   is_auto_reset       If true, the timer is auto-reset; otherwise, it is manual-reset.
-     * \param   name                The name of the timer. Has no effect on POSIX timers.
+     * \param   isAutoReset     If true, the timer is auto-reset; otherwise, it is manual-reset.
      **/
-    explicit WaitableTimerPosix( bool is_auto_reset = false, const char * name = nullptr);
+    explicit WaitableTimerPosix( bool isAutoReset = false );
     virtual ~WaitableTimerPosix();
 
 //////////////////////////////////////////////////////////////////////////
@@ -103,7 +103,7 @@ public:
     /**
      * \brief   Returns true if the synchronization timer object is valid.
      **/
-    bool is_valid() const noexcept final;
+    inline bool is_valid() const noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected calls
@@ -146,10 +146,13 @@ protected:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 protected:
+    //! Internal mutex protecting timer state fields.
+    MutexPosix                  mObjectLock;
+
     /**
      * \brief   Waitable timer reset information. Either manual- or auto-reset.
      **/
-    const areg::os::ResetMode mResetInfo;
+    const areg::os::ResetMode   mResetInfo;
 #ifdef __APPLE__
     /**
      * \brief   GCD dispatch timer source for macOS.

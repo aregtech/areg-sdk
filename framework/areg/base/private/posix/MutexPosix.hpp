@@ -34,7 +34,7 @@ namespace areg::os {
  * \brief   Synchronization mutex wrapper for POSIX mutexes. Optionally recursive. Used to protect
  *          shared resources and as a base class for other waitable synchronization objects.
  **/
-class MutexPosix   : public SyncObjectPosix
+class MutexPosix final  : public SyncObjectPosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -44,25 +44,22 @@ public:
      * \brief   Initializes a recursive POSIX mutex. If initLocked is true, the mutex is owned by
      *          the calling thread.
      *
-     * \param   initLocked      If true, the mutex is initially locked and owned by the calling
-     *                          thread. Other threads are blocked from acquiring it.
-     * \param   asciiName       The name of the synchronization object.
+     * \param   initLocked      If true, the mutex is initially locked and owned by the calling thread.
+     *                          Other threads are blocked from acquiring it.
      **/
-    explicit MutexPosix(bool initLocked = false, const char* asciiName = nullptr);
+    explicit MutexPosix(bool initLocked = false);
 
     virtual ~MutexPosix();
 
-protected:
+public:
     /**
-     * \brief   Protected constructor for derived classes. Sets the synchronization type, recursion
-     *          flag, and name.
+     * \brief   Constructor. Sets the synchronization type, recursion flag, and name.
      *
      * \param   syncType        The type of synchronization object.
      * \param   isRecursive     If true, the owning thread can lock the object multiple times
      *                          without deadlock. If false, recursive locks block the thread.
-     * \param   asciiName       The name of the synchronization object.
      **/
-    MutexPosix( areg::os::SyncKind syncType, bool isRecursive, const char * asciiName = nullptr );
+    MutexPosix( areg::os::SyncKind syncType, bool isRecursive );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -78,24 +75,21 @@ public:
      *
      * \param   msTimeout       The timeout in milliseconds. Use areg::DO_NOT_WAIT for
      *                          non-blocking lock, or areg::WAIT_INFINITE to wait indefinitely.
-     * \return  Returns true if successfully locked. Returns false if timeout expired or lock
-     *          failed.
+     * \return  Returns true if successfully locked. Returns false if timeout expired or lock failed.
      **/
     bool lock(uint32_t msTimeout = areg::WAIT_INFINITE) const noexcept;
 
     /**
-     * \brief   Attempts to lock the mutex without blocking. Returns immediately regardless of
-     *          success.
+     * \brief   Attempts to lock the mutex without blocking. Returns immediately regardless of success.
      *
      * \return  Returns true if successfully acquired the lock; false otherwise.
      **/
-    bool try_lock() const noexcept;
+    inline bool try_lock() const noexcept;
 
     /**
-     * \brief   Releases the mutex. Only the owning thread can unlock. Calls from other threads are
-     *          ignored.
+     * \brief   Releases the mutex. Only the owning thread can unlock. Calls from other threads are ignored.
      **/
-    void unlock() const noexcept;
+    inline void unlock() const noexcept;
 
 /************************************************************************/
 // SyncObjectPosix overrides.
@@ -104,13 +98,12 @@ public:
      * \brief   Returns true if the synchronization object is valid.
      **/
     [[nodiscard]]
-    bool is_valid() const noexcept override;
+    inline bool is_valid() const noexcept final;
 
     /**
-     * \brief   Releases all resources held by the synchronization object. Called when the object is
-     *          being destroyed.
+     * \brief   Releases all resources held by the synchronization object. Called when the object is being destroyed.
      **/
-    void free_resources() override;
+    inline void free_resources() final;
 
 //////////////////////////////////////////////////////////////////////////
 // MutexPosix class implementation
@@ -215,6 +208,29 @@ private:
     ObjectLockPosix() = delete;
     AREG_NOCOPY_NOMOVE( ObjectLockPosix );
 };
+
+//////////////////////////////////////////////////////////////////////////
+// MutexPosix inline functions implementation
+//////////////////////////////////////////////////////////////////////////
+inline bool MutexPosix::try_lock() const noexcept
+{
+    return (areg::RETURNED_OK == ::pthread_mutex_trylock(&mPosixMutex));
+}
+
+inline void MutexPosix::unlock() const noexcept
+{
+    pthread_mutex_unlock(&mPosixMutex);
+}
+
+inline bool MutexPosix::is_valid() const noexcept
+{
+    return (mMutexValid && mMutexAttrValid);
+}
+
+inline void MutexPosix::free_resources()
+{
+    pthread_mutex_unlock(&mPosixMutex);
+}
 
 //////////////////////////////////////////////////////////////////////////
 // ObjectLockPosix inline functions implementation

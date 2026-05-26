@@ -606,15 +606,6 @@
     <ClCompile Include="areg\ipc\private\DataRateStats.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\SpinSyncEventPosix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\base\private\win32\SpinSyncEventWin32.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\base\private\SpinSyncEvent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="areg\system\windows\areg_windows.h">
@@ -1178,10 +1169,7 @@
     <ClInclude Include="areg\ipc\DataRateStats.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\SpinSyncEvent.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\base\SyncEventAlias.hpp">
+    <ClInclude Include="areg\base\private\posix\WaitAnyRegistry.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

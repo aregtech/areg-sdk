@@ -24,6 +24,7 @@
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/WaitablePosix.hpp"
+#include "areg/base/private/posix/MutexPosix.hpp"
 
 namespace areg::os {
 
@@ -47,11 +48,9 @@ public:
      *
      * \param   initOwned       If true, the mutex is initially owned by the current thread. The
      *                          mutex is recursive, so the owning thread can lock it multiple times
-     *                          without deadlock. Other threads are blocked until the owner releases
-     *                          it.
-     * \param   asciiName       The name of the synchronization mutex.
+     *                          without deadlock. Other threads are blocked until the owner releases it.
      **/
-    explicit WaitableMutexPosix(bool initOwned = false, const char * asciiName = nullptr);
+    explicit WaitableMutexPosix(bool initOwned = false);
 
     virtual ~WaitableMutexPosix() = default;
 
@@ -111,10 +110,19 @@ public:
      **/
     void notify_released_threads( int32_t numThreads ) final;
 
+    /**
+     * \brief   Returns true if the internal object lock is valid.
+     **/
+    [[nodiscard]]
+    bool is_valid() const noexcept final;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
 private:
+    //! Internal mutex protecting mOwnerThread and mLockCount.
+    MutexPosix  mObjectLock;
+
     /**
      * \brief   The owner thread. The waitable Mutex is released thread ID is invalid.
      **/
@@ -136,9 +144,36 @@ private:
 // WaitableMutexPosix class inline functions
 //////////////////////////////////////////////////////////////////////////
 
+inline bool WaitableMutexPosix::can_signal_threads() const noexcept
+{
+    return false;
+}
+
+#ifdef  DEBUG
+inline void WaitableMutexPosix::notify_released_threads(int32_t numThreads)
+{
+    ASSERT((numThreads == 1) || (numThreads == 0));
+}
+#else   // DEBUG
+inline void WaitableMutexPosix::notify_released_threads(int32_t /*numThreads*/)
+{
+}
+#endif  // DEBUG
+
+inline bool WaitableMutexPosix::check_signaled(pthread_t contextThread) const
+{
+    ObjectLockPosix lock(mObjectLock);
+    return (mOwnerThread == static_cast<pthread_t>(0)) || (mOwnerThread == contextThread);
+}
+
+inline bool WaitableMutexPosix::is_valid() const noexcept
+{
+    return mObjectLock.is_valid();
+}
+
 inline pthread_t WaitableMutexPosix::owning_thread_id() const noexcept
 {
-    ObjectLockPosix lock(*this);
+    ObjectLockPosix lock(mObjectLock);
     return mOwnerThread;
 }
 

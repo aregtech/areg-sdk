@@ -31,9 +31,8 @@ namespace areg::os {
 // SyncObjectPosix class implementation
 //////////////////////////////////////////////////////////////////////////
 
-SyncObjectPosix::SyncObjectPosix( areg::os::SyncKind syncType, const char* asciiName /* = nullptr */ )
+SyncObjectPosix::SyncObjectPosix( areg::os::SyncKind syncType )
     : mSyncType ( syncType )
-    , mSyncName ( asciiName != nullptr ? asciiName : areg::EmptyStringA )
 {
 }
 

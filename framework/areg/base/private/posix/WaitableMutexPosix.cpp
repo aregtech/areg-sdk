@@ -31,11 +31,11 @@ namespace areg::os {
 // WaitableMutexPosix class implementation.
 //////////////////////////////////////////////////////////////////////////
 
-WaitableMutexPosix::WaitableMutexPosix(bool initOwned /*= false*/, const char * asciiName /*= nullptr*/)
-    : WaitablePosix  ( areg::os::SyncKind::SoWaitMutex, true, asciiName             )
-
-    , mOwnerThread      ( initOwned ? pthread_self() : static_cast<pthread_t>(0) )
-    , mLockCount        ( initOwned ? 1 : 0                                      )
+WaitableMutexPosix::WaitableMutexPosix(bool initOwned /*= false*/)
+    : WaitablePosix  ( areg::os::SyncKind::SoWaitMutex )
+    , mObjectLock    ( areg::os::SyncKind::SoMutex, true )
+    , mOwnerThread   ( initOwned ? pthread_self() : static_cast<pthread_t>(0) )
+    , mLockCount     ( initOwned ? 1 : 0 )
 {
 }
 
@@ -46,7 +46,7 @@ bool WaitableMutexPosix::release_mutex() noexcept
 
     do 
     {
-        ObjectLockPosix lock(*this);
+        ObjectLockPosix lock(mObjectLock);
         if (mOwnerThread == pthread_self())
         {
             ASSERT(mLockCount > 0);
@@ -86,19 +86,12 @@ bool WaitableMutexPosix::release_mutex() noexcept
     return result;
 }
 
-
-bool WaitableMutexPosix::check_signaled(pthread_t contextThread) const
-{
-    ObjectLockPosix lock(*this);
-    return (mOwnerThread == static_cast<pthread_t>(0)) || (mOwnerThread == contextThread);
-}
-
 bool WaitableMutexPosix::notify_request_ownership(pthread_t ownerThread)
 {
     bool result = false;
     if (ownerThread != static_cast<pthread_t>(0))
     {
-        ObjectLockPosix lock(*this);
+        ObjectLockPosix lock(mObjectLock);
         if (mOwnerThread == static_cast<pthread_t>(0))
         {
             ASSERT(mLockCount == 0);
@@ -120,26 +113,6 @@ bool WaitableMutexPosix::notify_request_ownership(pthread_t ownerThread)
 
     return result;
 }
-
-bool WaitableMutexPosix::can_signal_threads() const noexcept
-{
-    return false;
-}
-
-#ifdef  DEBUG
-
-void WaitableMutexPosix::notify_released_threads(int32_t numThreads)
-{
-    ASSERT((numThreads == 1) || (numThreads == 0));
-}
-
-#else   // DEBUG
-
-void WaitableMutexPosix::notify_released_threads(int32_t /*numThreads*/)
-{
-}
-
-#endif  // DEBUG
 
 } // namespace areg::os
 #endif  // defined(_POSIX) || defined(POSIX)

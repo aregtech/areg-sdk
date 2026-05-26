@@ -130,6 +130,23 @@ namespace areg::os {
      **/
     inline constexpr void conv_timeout( timespec & out_result, uint32_t msTimeout ) noexcept;
 
+#if defined(__APPLE__)
+    //! __ulock operation code for compare-and-wait on macOS (equal to UL_COMPARE_AND_WAIT).
+    constexpr uint32_t APPLE_ULOCK_COMPARE_AND_WAIT { 1u };
+#endif  // defined(__APPLE__)
+
+#if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
+    /**
+     * \brief   Sentinel value stored in a WaitAny firedWord while no waitable has fired.
+     *          Equals SyncSignal::Invalid cast to uint32_t (0xFFFF'FFFF). A waiter sleeps
+     *          as long as firedWord holds this value; a non-FIRE_INVALID value means a
+     *          waitable fired or a timeout/async-signal code was written.
+     **/
+    inline constexpr uint32_t SYNC_FIRE_INVALID {
+        static_cast<uint32_t>(areg::os::SyncSignal::Invalid)
+    };
+#endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
+
 } // namespace areg::os
 
 //////////////////////////////////////////////////////////////////////////

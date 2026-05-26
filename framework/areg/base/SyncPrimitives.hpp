@@ -309,6 +309,36 @@ public:
     [[nodiscard]]
     inline bool is_auto_reset() const noexcept;
 
+    /**
+     * \brief   Return value of wait_any() when the operation timed out or was interrupted.
+     **/
+    static constexpr int32_t WAIT_ANY_TIMEOUT { -1 };
+
+    /**
+     * \brief   Waits for any one of the specified events to be signaled. Returns immediately if any
+     *          event is already signaled. Maximum areg::MAXIMUM_WAITING_OBJECTS events.
+     *
+     * \param   events      Array of SyncEvent pointers to wait on.
+     * \param   count       Number of events. Must be > 0 and <= areg::MAXIMUM_WAITING_OBJECTS.
+     * \param   timeout     Timeout in milliseconds. areg::WAIT_INFINITE waits forever.
+     *                      areg::DO_NOT_WAIT checks state without blocking.
+     * \return  Returns the zero-based index of the first signaled event, or WAIT_ANY_TIMEOUT if the
+     *          operation timed out or was interrupted.
+     **/
+    static int32_t wait_any( SyncEvent** events, int32_t count, uint32_t timeout = areg::WAIT_INFINITE ) noexcept;
+
+    /**
+     * \brief   Waits for either of two events to be signaled. Typed convenience overload for the
+     *          common dispatcher pattern (queue event + exit event) — avoids stack array allocation
+     *          at the call site. Returns 0 if ev0 fired, 1 if ev1 fired, or WAIT_ANY_TIMEOUT.
+     *
+     * \param   ev0         First event (index 0).
+     * \param   ev1         Second event (index 1).
+     * \param   timeout     Timeout in milliseconds. areg::WAIT_INFINITE waits forever.
+     * \return  0, 1, or WAIT_ANY_TIMEOUT.
+     **/
+    static inline int32_t wait_any( SyncEvent& ev0, SyncEvent& ev1, uint32_t timeout = areg::WAIT_INFINITE ) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden or OS specific implementations
 //////////////////////////////////////////////////////////////////////////
@@ -359,6 +389,16 @@ private:
      **/
     void _os_pulse_event() noexcept;
 
+    /**
+     * \brief   OS-specific implementation to wait for any one event to be signaled.
+     *
+     * \param   events      Array of SyncEvent pointers.
+     * \param   count       Number of events in the array.
+     * \param   timeout     Timeout in milliseconds.
+     * \return  Returns the index of the signaled event, or WAIT_ANY_TIMEOUT on failure/timeout.
+     **/
+    static int32_t _os_wait_any( SyncEvent** events, int32_t count, uint32_t timeout ) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -396,8 +436,7 @@ public:
     /**
      * \brief   Creates a semaphore with the specified maximum count and initial count.
      *
-     * \param   maxCount        The maximum number of threads allowed to acquire the semaphore
-     *                          simultaneously.
+     * \param   maxCount        The maximum number of threads allowed to acquire the semaphore simultaneously.
      * \param   initCount       The initial count. Must be between 0 and maxCount. A count of 0
      *                          means the semaphore is initially locked. Default is 0.
      **/
@@ -413,8 +452,7 @@ public:
      * \brief   Acquires the semaphore by decrementing its count. Blocks if count is zero until it
      *          is incremented or timeout expires.
      *
-     * \param   timeout     The timeout in milliseconds. Use areg::WAIT_INFINITE to wait
-     *                      indefinitely.
+     * \param   timeout     The timeout in milliseconds. Use areg::WAIT_INFINITE to wait indefinitely.
      * \return  Returns true if successfully acquired; false if timeout expired.
      **/
     inline bool lock( uint32_t timeout = areg::WAIT_INFINITE ) final;
@@ -474,8 +512,7 @@ private:
     bool _os_lock( uint32_t timeout );
 
     /**
-     * \brief   OS-specific implementation to release the semaphore. Allows waiting threads to
-     *          acquire it.
+     * \brief   OS-specific implementation to release the semaphore. Allows waiting threads to acquire it.
      *
      * \return  Returns true if successfully released.
      **/
@@ -1356,6 +1393,12 @@ inline id_type Mutex::owner_thread_id() const noexcept
 inline bool SyncEvent::is_auto_reset() const noexcept
 {
     return mAutoReset;
+}
+
+inline int32_t SyncEvent::wait_any( SyncEvent& ev0, SyncEvent& ev1, uint32_t timeout ) noexcept
+{
+    SyncEvent* events[2]{ &ev0, &ev1 };
+    return wait_any(events, 2, timeout);
 }
 
 inline bool SyncEvent::unlock()

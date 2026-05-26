@@ -67,7 +67,6 @@ String Console::wait_for_input(Console::CallBack callback) const
 
     if (mIsReady)
     {
-        mInterrupted.store(false, std::memory_order_relaxed);
         do
         {
             result.clear();

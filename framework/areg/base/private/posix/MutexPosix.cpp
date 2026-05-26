@@ -30,8 +30,8 @@ namespace areg::os {
 // MutexPosix class implementation
 //////////////////////////////////////////////////////////////////////////
 
-MutexPosix::MutexPosix( bool initLocked /*= false*/, const char * asciiName /* = nullptr */)
-    : SyncObjectPosix( areg::os::SyncKind::SoMutex, asciiName)
+MutexPosix::MutexPosix( bool initLocked /*= false*/ )
+    : SyncObjectPosix( areg::os::SyncKind::SoMutex )
 
     , mPosixMutex       ( )
     , mMutexValid       ( false )
@@ -45,8 +45,8 @@ MutexPosix::MutexPosix( bool initLocked /*= false*/, const char * asciiName /* =
     }
 }
 
-MutexPosix::MutexPosix( areg::os::SyncKind syncType, bool isRecursive, const char * asciiName /* = nullptr */ )
-    : SyncObjectPosix( syncType, asciiName )
+MutexPosix::MutexPosix( areg::os::SyncKind syncType, bool isRecursive )
+    : SyncObjectPosix( syncType )
 
     , mPosixMutex       ( )
     , mMutexValid       ( false )
@@ -147,26 +147,6 @@ bool MutexPosix::lock( uint32_t msTimeout /*= areg::WAIT_INFINITE*/ ) const noex
     }
 
     return result;
-}
-
-bool MutexPosix::try_lock() const noexcept
-{
-    return (areg::RETURNED_OK == ::pthread_mutex_trylock( &mPosixMutex ) );
-}
-
-void MutexPosix::unlock() const noexcept
-{
-    pthread_mutex_unlock( &mPosixMutex );
-}
-
-bool MutexPosix::is_valid() const noexcept
-{
-    return (mMutexValid && mMutexAttrValid);
-}
-
-void MutexPosix::free_resources()
-{
-    pthread_mutex_unlock( &mPosixMutex );
 }
 
 } // namespace areg::os

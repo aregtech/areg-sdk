@@ -23,7 +23,7 @@
 #include "areg/logging/private/LoggingEvent.hpp"
 
 #include "areg/base/String.hpp"
-#include "areg/base/SyncEventAlias.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/logging/LogConfiguration.hpp"
 #include "areg/logging/LoggingDefs.hpp"
 #include "areg/logging/private/ScopeController.hpp"
@@ -466,7 +466,7 @@ private:
     /**
      * \brief   An event, indicating that the logging has been started.
      */
-    AREG_SYNC_EVENT     mLogStarted;
+    SyncEvent           mLogStarted;
     /**
      * \brief   Synchronization object used to synchronize data access.
      **/
