@@ -135,14 +135,6 @@ static constexpr uint32_t FIRE_INVALID {
 
 namespace {
 
-// Compute an absolute CLOCK_REALTIME timespec from a millisecond offset.
-// Returns true on success; false if clock_gettime failed.
-inline bool _deadline_from_now(timespec& ts, uint32_t msTimeout) noexcept
-{
-    return (areg::os::POSIX_SUCCESS == ::clock_gettime(CLOCK_REALTIME, &ts))
-        && (areg::os::conv_timeout(ts, msTimeout), true);
-}
-
 // Sleep until firedWord != FIRE_INVALID, or until the deadline expires.
 // Returns FIRE_INVALID on timeout; otherwise firedWord's post-wake value.
 #if defined(__linux__)
