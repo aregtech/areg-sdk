@@ -103,7 +103,7 @@ public:
     /**
      * \brief   Returns true if the synchronization timer object is valid.
      **/
-    inline bool is_valid() const noexcept final;
+    bool is_valid() const noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected calls

@@ -76,7 +76,7 @@ bool WaitableTimerPosix::set_timer(uint32_t msTimeout, bool is_periodic)
 
 bool WaitableTimerPosix::is_valid() const noexcept
 {
-    ObjectLockPosix lock(*this);
+    ObjectLockPosix lock(mObjectLock);
     return (mTimerQueue != nullptr);
 }
 
