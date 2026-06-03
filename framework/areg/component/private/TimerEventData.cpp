@@ -8,12 +8,13 @@
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/component/private/TimerEventData.cpp
- * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, Timer Event Data class.
  *
  ************************************************************************/
 #include "areg/component/private/TimerEventData.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/component/Timer.hpp"
 #include "areg/component/TimerConsumer.hpp"
 #include "areg/component/DispatcherThread.hpp"
@@ -24,54 +25,28 @@ namespace areg {
 // TimerEvent class implementation
 //////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////
-// TimerEvent class, implement Runtime
-//////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_RUNTIME(TimerEvent, areg::Event)
+AREG_IMPLEMENT_RUNTIME_EVENT(TimerEvent, Event)
 
 //////////////////////////////////////////////////////////////////////////
-// TimerEvent class, constructor / destructor
+// TimerEvent constructors / destructor
 //////////////////////////////////////////////////////////////////////////
-TimerEvent::TimerEvent( const TimerEventData & data, areg::EventPriority prio /*= areg::DefaultPriority*/ )
-    : areg::Event(areg::EventType::EventCustomExternal, prio)
-    , mData(data)
-{
-    if (mData.mTimer != nullptr)
-    {
-        mData.mTimer->_queue_timer();
-    }
-}
-
-TimerEvent::TimerEvent( Timer & timer, areg::EventPriority prio /*= areg::DefaultPriority*/ )
-    : areg::Event(areg::EventType::EventCustomExternal, prio)
-    , mData(timer)
-{
-    timer._queue_timer();
-}
 
 TimerEvent::TimerEvent(Timer & timer, DispatcherThread & target, areg::EventPriority prio /*= areg::DefaultPriority*/)
-    : areg::Event(areg::EventType::EventCustomExternal, prio)
-    , mData(timer)
+    : Event(areg::EventType::EventCustomExternal, static_cast<uint32_t>(sizeof(void*)), prio)
 {
     ASSERT(target.is_running());
-
-    set_event_consumer(static_cast<EventConsumer *>(&timer.consumer()));
-    register_for_thread(&target);
+    set_event_id( TimerEvent::CLASS_ID );
+    // Store Timer* at payload_ptr() (LOCAL-ONLY, same-process only, never serialized).
+    *reinterpret_cast<Timer**>(payload_ptr()) = &timer;
+    set_event_consumer( static_cast<EventConsumer*>( &timer.consumer() ) );
+    register_for_thread( &target );
     timer._queue_timer();
 }
 
-TimerEvent::~TimerEvent()
-{
-    if (mData.mTimer != nullptr)
-    {
-        mData.mTimer->_unqueue_timer();
-        mData.mTimer = nullptr;
-    }
-}
+//////////////////////////////////////////////////////////////////////////
+// TimerEvent static methods
+//////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////
-// TimerEvent class, static methods
-//////////////////////////////////////////////////////////////////////////
 bool TimerEvent::send_event( Timer & timer, id_type dispatchThreadId )
 {
     return TimerEvent::send_event(timer, DispatcherThread::dispatcher_thread(dispatchThreadId));
@@ -81,19 +56,33 @@ bool TimerEvent::send_event(Timer & timer, DispatcherThread & dispatchThread, ar
 {
     if (!dispatchThread.is_running())
         return false;
-    
-    TimerEvent* timerEvent = DEBUG_NEW TimerEvent(timer, dispatchThread, prio);
-    if (timerEvent == nullptr)
-        return false;
 
-    Event & event = static_cast<Event &>(*timerEvent);
-    const bool result = dispatchThread.event_dispatcher().post_event(event);
+    TimerEvent timerEvent(timer, dispatchThread, prio);
+    const bool result = dispatchThread.event_dispatcher().post_event(timerEvent);
     if (!result)
     {
-        event.destroy();
+        // post_event did not move the event. 
+        // _queue_timer was called in constructor, the event is not queued,
+        // so _unqueue_timer must be called here to balance.
+        timer._unqueue_timer();
     }
 
     return result;
+}
+
+Timer * TimerEvent::timer_from_event( const Event & evt ) noexcept
+{
+    if (evt.event_id() != TimerEvent::CLASS_ID)
+        return nullptr;
+
+    // Timer* is at payload_ptr(). Cast to TimerEvent to access the protected method.
+    const uint8_t* data{ static_cast<const TimerEvent&>(evt).payload_ptr() };
+    return (data != nullptr) ? *reinterpret_cast<Timer* const*>(data) : nullptr;
+}
+
+void TimerEvent::unqueue_timer( Timer & timer ) noexcept
+{
+    timer._unqueue_timer();
 }
 
 } // namespace areg

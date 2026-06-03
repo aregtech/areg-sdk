@@ -96,7 +96,7 @@ typedef int64_t         SignedSequence;
 /**
  * \brief   The type defines an item ID.
  **/
-typedef uint64_t        ITEM_ID;
+typedef uint32_t        ITEM_ID;
 
 /**
  * \brief   Type definition of socket descriptor. Differs in on different platforms
@@ -146,5 +146,10 @@ typedef uint64_t        TIME64;
  * \brief   The message ID type.
  **/
 typedef uint32_t        MSG_ID;
+
+/**
+ * \brief   Unique CRC32 number
+ **/
+typedef uint32_t        UniqueNumber;
 
 #endif  // AREG_BASE_AREG_TYPES_H

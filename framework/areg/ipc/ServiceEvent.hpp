@@ -19,8 +19,8 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
+#include "areg/base/EventEnvelope.hpp"
 #include "areg/component/EventTemplate.hpp"
-#include "areg/base/RemoteMessage.hpp"
 
 namespace areg {
 
@@ -72,11 +72,11 @@ public:
      * \brief   Initializes with service command and message data.
      *
      * \param   cmdService      Command to set in event data.
-     * \param   msgService      Message data buffer to initialize.
+     * \param   msgService      Message envelope to initialize (O(1) shared copy).
      **/
-    inline ServiceEventData(ServiceEventData::ServiceCommand cmdService, const RemoteMessage& msgService);
+    inline ServiceEventData(ServiceEventData::ServiceCommand cmdService, const EventEnvelope& msgService);
 
-    inline ServiceEventData(ServiceEventData::ServiceCommand cmdService, RemoteMessage&& msgService) noexcept;
+    inline ServiceEventData(ServiceEventData::ServiceCommand cmdService, EventEnvelope&& msgService) noexcept;
 
     ServiceEventData( const ServiceEventData & source ) = default;
 
@@ -100,10 +100,10 @@ public:
     inline ServiceEventData::ServiceCommand command() const noexcept;
 
     /**
-     * \brief   Returns the message data buffer saved in event data.
+     * \brief   Returns the message envelope saved in event data.
      **/
     [[nodiscard]]
-    inline const RemoteMessage & message() const noexcept;
+    inline const EventEnvelope & message() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -115,9 +115,9 @@ private:
     ServiceEventData::ServiceCommand    mServiceCommand;
 
     /**
-     * \brief   The message data buffer saved in service event.
+     * \brief   The message envelope saved in service event (O(1) copy via shared_ptr).
      **/
-    mutable RemoteMessage               mMessageData;
+    mutable EventEnvelope               mMessageData;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -147,13 +147,13 @@ inline ServiceEventData::ServiceEventData( ServiceEventData::ServiceCommand cmdS
 {
 }
 
-inline ServiceEventData::ServiceEventData(ServiceEventData::ServiceCommand cmdService, const RemoteMessage& msgService)
+inline ServiceEventData::ServiceEventData(ServiceEventData::ServiceCommand cmdService, const EventEnvelope& msgService)
     : mServiceCommand   ( cmdService )
     , mMessageData      ( msgService )
 {
 }
 
-inline ServiceEventData::ServiceEventData(ServiceEventData::ServiceCommand cmdService, RemoteMessage&& msgService) noexcept
+inline ServiceEventData::ServiceEventData(ServiceEventData::ServiceCommand cmdService, EventEnvelope&& msgService) noexcept
     : mServiceCommand   ( cmdService )
     , mMessageData      ( std::move(msgService) )
 {
@@ -164,7 +164,7 @@ inline ServiceEventData::ServiceCommand ServiceEventData::command() const noexce
     return mServiceCommand;
 }
 
-inline const RemoteMessage& ServiceEventData::message() const noexcept
+inline const EventEnvelope& ServiceEventData::message() const noexcept
 {
     return mMessageData;
 }

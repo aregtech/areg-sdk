@@ -12,7 +12,6 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/ipc/private/ConnectionDefs.cpp
 	areg/ipc/private/RemoteServiceDefs.cpp
 	areg/ipc/private/RouterClient.cpp
-	areg/ipc/private/SendMessageEvent.cpp
 	areg/ipc/private/ServerConnectionBase.cpp
 	areg/ipc/private/ServiceClientConnectionBase.cpp
 	areg/ipc/private/ServiceEvent.cpp

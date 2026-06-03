@@ -73,7 +73,7 @@ ServiceClientConnectionBase::~ServiceClientConnectionBase()
 {
 }
 
-void ServiceClientConnectionBase::service_connection_event(const RemoteMessage& msgReceived)
+void ServiceClientConnectionBase::service_connection_event(const EventEnvelope& msgReceived)
 {
     LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, service_connection_event );
 
@@ -92,7 +92,7 @@ void ServiceClientConnectionBase::service_connection_event(const RemoteMessage& 
         if (msgReceived.result() == areg::MESSAGE_SUCCESS)
         {
             Lock lock(mLock);
-            ASSERT(cookie == msgReceived.target());
+            ASSERT(cookie == static_cast<ITEM_ID>(msgReceived.target()));
             mClientConnection.set_cookie(cookie);
             on_channel_connected(cookie);
             send_command(ServiceEventData::ServiceCommand::CMD_ServiceStarted);
@@ -206,12 +206,12 @@ bool ServiceClientConnectionBase::is_host_setup() const
     return mClientConnection.address().is_valid();
 }
 
-RemoteMessage ServiceClientConnectionBase::connect_message(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const
+EventEnvelope ServiceClientConnectionBase::connect_message(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const
 {
     return areg::create_connect_request(source, target, msgSource);
 }
 
-RemoteMessage ServiceClientConnectionBase::disconnect_message(const ITEM_ID & source, const ITEM_ID & target) const
+EventEnvelope ServiceClientConnectionBase::disconnect_message(const ITEM_ID & source, const ITEM_ID & target) const
 {
     return areg::create_disconnect_request(source, target);
 }
@@ -264,10 +264,8 @@ void ServiceClientConnectionBase::on_service_stop()
         send_message(disconnect_message(channel.cookie(), mTarget));
     }
 
-    disconnect_service( areg::EventPriority::NormalPrio );
-
+    mThreadSend.trigger_exit();
     mClientConnection.close_socket( );
-    mThreadSend.trigger_exit( );
 
     mThreadSend.wait_completion( areg::WAIT_INFINITE );
     mThreadSend.shutdown( areg::DO_NOT_WAIT );
@@ -293,7 +291,7 @@ void ServiceClientConnectionBase::on_connection_started()
         LOG_DBG("Succeeded to start router service client, cookie [ %llu ]", mClientConnection.cookie());
 
         mChannel.set_cookie( mClientConnection.cookie() );
-        mChannel.set_source( mMessageDispatcher.id());
+        mChannel.set_source( static_cast<uint32_t>(mMessageDispatcher.id()) );
         mChannel.set_target( mTarget );
         set_connection_state(ConnectionPhase::ConnectionStarted);
         mConnectionConsumer.on_service_channel_connected(mChannel);
@@ -355,11 +353,11 @@ void ServiceClientConnectionBase::on_service_exit()
     on_service_stop( );
 }
 
-void ServiceClientConnectionBase::on_message_received( const RemoteMessage & /* msgReceived */ )
+void ServiceClientConnectionBase::on_message_received( const EventEnvelope & /* msgReceived */ )
 {
 }
 
-void ServiceClientConnectionBase::on_message_send( const RemoteMessage & /* msgSend */ )
+void ServiceClientConnectionBase::on_message_send( const EventEnvelope & /* msgSend */ )
 {
 }
 
@@ -376,7 +374,7 @@ void ServiceClientConnectionBase::on_channel_connected(const ITEM_ID& cookie)
     }
 
     mChannel.set_cookie(cookie);
-    mChannel.set_source(mMessageDispatcher.id());
+    mChannel.set_source( static_cast<uint32_t>(mMessageDispatcher.id()) );
     mChannel.set_target(mTarget);
     LOG_DBG("Connected remote channel [ source = %llu, target = %llu, cookie = %llu ]", mChannel.source(), mChannel.target(), mChannel.cookie());
 }

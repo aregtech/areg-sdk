@@ -26,7 +26,7 @@
  * Dependencies
  ************************************************************************/
 namespace areg {
-    class RemoteMessage;
+    class EventEnvelope;
 } // namespace areg
 
 namespace areg {
@@ -51,51 +51,6 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Sends message data via socket after validating checksum. Blocking operation.
-     *
-     * \param[in]   message     Buffer to send; checksum will be validated before sending.
-     * \param       socket      A socket for communication (client or server-side accepted socket).
-     * \return  Returns bytes sent on success; zero if checksum invalid or buffer empty; negative on socket error.
-     **/
-    inline int32_t send_message( const RemoteMessage & message, const Socket & socket ) const;
-
-    /**
-     * \brief   Sends multiple messages to the same socket in a single syscall using
-     *          scatter/gather I/O (writev on POSIX, WSASend on Windows). All messages
-     *          must target the same socket.
-     *
-     *          buffer_completion_fix() is called on each message before sending.
-     *          Messages that are not valid (is_valid() returns false) are skipped.
-     *
-     * \param   messages    Array of pointers to messages to send.
-     * \param   count       Number of entries in the array.
-     * \param   socket      Target socket; must be valid.
-     * \return  Total bytes sent on success; negative if the syscall fails.
-     **/
-    inline int32_t send_messages_batch( const RemoteMessage* const* messages, uint32_t count, const Socket & socket ) const;
-
-    /**
-     * \brief   Sends message data using a raw socket handle. Avoids constructing a Socket wrapper
-     *          in the hot path. Semantically equivalent to send_message(message, Socket(hSocket)).
-     *
-     * \param   message     Buffer to send; checksum will be validated before sending.
-     * \param   hSocket     Raw OS socket handle; must be valid.
-     * \return  Returns bytes sent on success; zero if checksum invalid or buffer empty; negative on error.
-     **/
-    int32_t send_message( const RemoteMessage & message, SOCKETHANDLE hSocket ) const;
-
-    /**
-     * \brief   Sends multiple messages to the same socket handle in a single syscall.
-     *          Semantically equivalent to send_messages_batch(messages, count, Socket(hSocket)).
-     *
-     * \param   messages    Array of pointers to messages to send.
-     * \param   count       Number of entries in the array.
-     * \param   hSocket     Raw OS socket handle; must be valid.
-     * \return  Total bytes sent on success; negative if the syscall fails.
-     **/
-    int32_t send_messages_batch( const RemoteMessage* const* messages, uint32_t count, SOCKETHANDLE hSocket ) const;
-
-    /**
      * \brief   Sends multiple messages to the same socket handle in a single syscall.
      *
      * \param   ioBuffer    Array of pointers to the buffers to send.
@@ -119,13 +74,13 @@ protected:
     inline int32_t send_messages_batch(const areg::IoBuffer* const ioBuffer, uint32_t count, SOCKETHANDLE hSocket, uint32_t totalSize = 0) const;
 
     /**
-     * \brief   Receives message data via socket and validates checksum. Blocking operation.
+     * \brief   Receives a message by reading EventHeader first, then payload.
      *
-     * \param[out]  message     Buffer to receive data; checksum validated after receiving.
+     * \param[out]  message     EventEnvelope to populate; checksum validated after receiving.
      * \param       socket      A socket for communication (client or server-side accepted socket). Must be valid.
      * \return  Returns bytes received on success; zero if checksum invalid or buffer empty; negative on socket error.
      **/
-    int32_t receive_message( RemoteMessage & message, const Socket & socket ) const;
+    int32_t receive_message( EventEnvelope & message, const Socket & socket ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -133,11 +88,6 @@ protected:
 private:
     AREG_NOCOPY_NOMOVE( SocketConnectionBase );
 };
-
-inline int32_t SocketConnectionBase::send_message(const RemoteMessage& message, const Socket& socket) const
-{
-    return send_message(message, socket.handle());
-}
 
 inline int32_t SocketConnectionBase::send_messages_batch(const areg::IoBuffer* const ioBuffer, uint32_t count, SOCKETHANDLE hSocket, uint32_t totalSize) const
 {
@@ -147,11 +97,6 @@ inline int32_t SocketConnectionBase::send_messages_batch(const areg::IoBuffer* c
 inline int32_t SocketConnectionBase::send_messages_batch(const areg::IoBuffer* const ioBuffer, uint32_t count, const Socket& socket, uint32_t totalSize /*= 0*/) const
 {
     return areg::send_data_v(socket.handle(), ioBuffer, count, totalSize);
-}
-
-inline int32_t SocketConnectionBase::send_messages_batch(const RemoteMessage* const* messages, uint32_t count, const Socket& socket) const
-{
-    return send_messages_batch(messages, count, socket.handle());
 }
 
 } // namespace areg

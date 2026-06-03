@@ -15,7 +15,7 @@
 
 #include "areg/ipc/SocketConnectionBase.hpp"
 #include "areg/base/Socket.hpp"
-#include "areg/base/RemoteMessage.hpp"
+#include "areg/base/EventEnvelope.hpp"
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
@@ -28,73 +28,21 @@ SocketConnectionBase::SocketConnectionBase() noexcept
 {
 }
 
-int32_t SocketConnectionBase::send_message(const RemoteMessage & message, SOCKETHANDLE hSocket) const
+int32_t SocketConnectionBase::receive_message(EventEnvelope & message, const Socket & socket) const
 {
-    int32_t result{ -1 };
-    const areg::MessageHeader* header = message.header();
-    if ((header != nullptr) && areg::is_valid_socket(hSocket))
-    {
-        message.buffer_completion_fix();
-        ASSERT(header->rbhBufHeader.biLength >= header->rbhBufHeader.biUsed);
-        const int32_t totalLen = static_cast<int32_t>(sizeof(areg::MessageHeader) + header->rbhBufHeader.biUsed);
-        result = areg::send_data(hSocket, reinterpret_cast<const uint8_t *>(header), totalLen);
-    }
-
-    return result;
-}
-
-int32_t SocketConnectionBase::send_messages_batch(const RemoteMessage* const* messages, uint32_t count, SOCKETHANDLE hSocket) const
-{
-    if ((messages == nullptr) || (count == 0u) || !areg::is_valid_socket(hSocket))
+    areg::EventHeader evtHeader{};
+    int32_t result = socket.receive(reinterpret_cast<uint8_t *>(&evtHeader), sizeof(areg::EventHeader));
+    if (result != static_cast<int32_t>(sizeof(areg::EventHeader)))
         return 0;
 
-    // Build IoBuffer array on the stack; capped at the same bound as THREAD_BATCH_LIMIT.
-    const uint32_t batchCount{ (count < areg::THREAD_BATCH_LIMIT) ? count : areg::THREAD_BATCH_LIMIT };
-    areg::IoBuffer ioBuffer[areg::THREAD_BATCH_LIMIT];
-    uint32_t bufCount { 0u };
-    uint32_t totalSize{ 0u };
-
-    for (uint32_t i = 0u; i < batchCount; ++i)
-    {
-        const RemoteMessage* msg{ messages[i] };
-        const areg::MessageHeader* hdr = msg != nullptr ? msg->header() : nullptr;
-        if (hdr == nullptr)
-            continue;
-
-        msg->buffer_completion_fix();
-        ASSERT(hdr->rbhBufHeader.biLength >= hdr->rbhBufHeader.biUsed);
-        uint32_t bufSize = static_cast<uint32_t>(sizeof(areg::MessageHeader)) + hdr->rbhBufHeader.biUsed;
-        ioBuffer[bufCount++] = { reinterpret_cast<const uint8_t*>(hdr), bufSize };
-        totalSize += bufSize;
-    }
-
-    int32_t result = send_messages_batch(ioBuffer, bufCount, hSocket, totalSize);
-    if (count > areg::THREAD_BATCH_LIMIT)
-    {
-        result += send_messages_batch(messages + batchCount, count - batchCount, hSocket);
-    }
-
-    return result;
-}
-
-int32_t SocketConnectionBase::receive_message(RemoteMessage & message, const Socket & socket) const
-{
-    areg::MessageHeader msgHeader{};
-    int32_t result = socket.receive(reinterpret_cast<uint8_t *>(&msgHeader), sizeof(areg::MessageHeader));
-    if (result != sizeof(areg::MessageHeader))
+    if (evtHeader.bufHeader.biUsed > areg::MAX_MESSAGE_DATA_SIZE)
         return 0;
 
-    if (msgHeader.rbhBufHeader.biUsed > areg::MAX_MESSAGE_DATA_SIZE)
-        return 0;
-
-    uint8_t * buffer = message.init_message( msgHeader);
-    if ((msgHeader.rbhBufHeader.biUsed != 0) && (buffer != nullptr))
+    uint8_t * buffer = message.init_envelope(evtHeader, evtHeader.bufHeader.biUsed);
+    if ((evtHeader.bufHeader.biUsed != 0u) && (buffer != nullptr))
     {
-        ASSERT(msgHeader.rbhBufHeader.biLength >= msgHeader.rbhBufHeader.biUsed);
-
-        // receive aligned length of data.
-        const int32_t rest = socket.receive(buffer, static_cast<int32_t>(msgHeader.rbhBufHeader.biUsed));
-        message.set_size_used(msgHeader.rbhBufHeader.biUsed);
+        const int32_t rest = socket.receive(buffer, static_cast<int32_t>(evtHeader.bufHeader.biUsed));
+        message.set_size_used(evtHeader.bufHeader.biUsed);
         result = rest > 0 ? (result + rest) : 0;
     }
 

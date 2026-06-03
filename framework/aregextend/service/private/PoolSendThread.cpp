@@ -27,17 +27,17 @@
 
 namespace areg::ext {
 
-DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_PoolSendThread, process_event);
+DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_PoolSendThread, start_event_processing);
 
 PoolSendThread::PoolSendThread( ClientConnectionPair & owner
-                                  , areg::RemoteMessageHandler & remoteService
-                                  , ServerConnection & connection
-                                  , ServerSendThread & globalStats
-                                  , std::string_view threadName )
-    : DispatcherThread          ( String(threadName), areg::SYSTEM_THREAD_STACK_BIG, areg::SEND_THREAD_QUEUE_LIMIT )
-    , SendMessageEventConsumer  ( )
+                                , areg::RemoteMessageHandler & remoteService
+                                , ServerConnection & connection
+                                , ServerSendThread & globalStats
+                                , std::string_view threadName )
+    : DispatcherThread  ( String(threadName), areg::SYSTEM_THREAD_STACK_BIG, areg::SEND_THREAD_QUEUE_LIMIT )
+    , EventConsumer     ( )
 
-    , mOwner            (owner)
+    , mOwner            ( owner )
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
     , mGlobalStats      ( globalStats )
@@ -50,125 +50,119 @@ void PoolSendThread::ready_for_events( bool is_ready )
     if ( is_ready )
     {
         areg::set_receive_mode(areg::ReceiveMode::MonoCache);
-        SendMessageEvent::add_listener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
         DispatcherThread::ready_for_events( true );
     }
     else
     {
         DispatcherThread::ready_for_events( false );
-        SendMessageEvent::remove_listener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
     }
 }
 
-void PoolSendThread::process_event(const SendMessageEventData& data)
+void PoolSendThread::start_event_processing( areg::Event & eventElem )
 {
-    DEBUG_LOG_SCOPE(areg_aregextend_service_PoolSendThread, process_event);
+    DEBUG_LOG_SCOPE(areg_aregextend_service_PoolSendThread, start_event_processing);
 
-    if (data.is_exit_message())
+    if ( eventElem.is_exit_prio() )
     {
-        DEBUG_LOG_DBG("Pool send thread: received exit message, shutting down");
+        DEBUG_LOG_DBG("Going to quit pool send message thread");
         trigger_exit();
         return;
     }
 
-    if (!data.is_forward_message())
-        return;
-
-    const ExitEvent& exitEvent{ ExitEvent::exit_event() };
-    const RemoteMessage& trigMsg{ data.remote_message() };
+    // Zero local-only routing fields before wire transmission.
+    areg::EventHeader * hdr0{ eventElem.header() };
+    ASSERT( hdr0 != nullptr );
+    hdr0->internal1 = 0u;
+    hdr0->internal2 = 0u;
+    hdr0->custom    = 0u;
 
     ITEM_ID  targets[areg::THREAD_DRAIN_LIMIT];
     uint32_t batchCount{ 0u };
 
-    targets[batchCount]  = trigMsg.target();
-    mBatch[batchCount++] = { areg::InvalidSocketHandle, &trigMsg, nullptr };
+    targets[batchCount] = static_cast<ITEM_ID>(hdr0->target);
+    mBatch[batchCount].socket = areg::InvalidSocketHandle;
+    mBatch[batchCount].msg    = eventElem.envelope();  // O(1) shared_ptr copy; fields already zeroed
+    ++batchCount;
 
-    // Phase 1: drain additional events -- no socket lookup, no lock
-    Event* events[areg::THREAD_DRAIN_LIMIT - 1u];
-    uint32_t evtCount = pop_events(events, areg::THREAD_DRAIN_LIMIT - 1u);
-    if (evtCount != 0)
+    // Phase 1: drain additional events — no socket lookup, no lock.
+    // ZEPHYR-INCOMPATIBLE: ~4KB stack array for batch send draining.
+    areg::Event ptrs[areg::THREAD_DRAIN_LIMIT];
+    uint32_t evtCount{ pop_events(ptrs, areg::THREAD_DRAIN_LIMIT - 1u) };
+    if ( evtCount != 0u )
     {
-        for (uint32_t e = 0; e < evtCount; ++e)
+        for ( uint32_t e{ 0u }; e < evtCount; ++e )
         {
-            Event* evt = events[e];
-            ASSERT(evt != nullptr);
-            if (static_cast<const Event*>(evt) == static_cast<const Event*>(&exitEvent))
+            areg::Event & evt{ ptrs[e] };
+
+            if ( evt.is_exit_prio() )
             {
                 DEBUG_LOG_DBG("Received exit event during batch-drain, stopping pool send thread");
-                for (uint32_t i = 0u; i < evtCount; ++i)
-                    events[i]->destroy();
+                for ( uint32_t i{ 0u }; i < evtCount; ++i )
+                    ptrs[i].destroy_event();
 
                 trigger_exit();
                 return;
             }
 
-            ASSERT(AREG_RUNTIME_CAST(evt, SendMessageEvent) != nullptr);
-            SendMessageEvent* sendEvt = static_cast<SendMessageEvent*>(evt);
-            const SendMessageEventData& evtData = sendEvt->data();
-            if (evtData.is_exit_message())
-            {
-                DEBUG_LOG_DBG("Going to quit pool send message thread");
-                for (uint32_t i = 0u; i < evtCount; ++i)
-                    events[i]->destroy();
+            areg::EventHeader * hdr{ evt.header() };
+            ASSERT( hdr != nullptr );
+            hdr->internal1 = 0u;
+            hdr->internal2 = 0u;
+            hdr->custom    = 0u;
 
-                trigger_exit();
-                return;
-            }
-
-            const RemoteMessage& msg{ evtData.remote_message() };
-            targets[batchCount] = msg.target();
-            mBatch[batchCount++] = { areg::InvalidSocketHandle, &msg, sendEvt };
+            targets[batchCount]       = static_cast<ITEM_ID>(hdr->target);
+            mBatch[batchCount].socket = areg::InvalidSocketHandle;
+            mBatch[batchCount].msg    = evt.envelope();  // O(1) shared_ptr copy
+            ++batchCount;
         }
     }
 
-    // Phase 2: resolve all cookies in ONE lock window
+    // Phase 2: resolve all cookies in one lock window.
     SOCKETHANDLE sockets[areg::THREAD_DRAIN_LIMIT];
     mOwner.batch_sockets_by_cookies(targets, sockets, batchCount);
 
     // Phase 3: compact + insertion-sort by socket handle in one pass.
-    // On exit: mBatch[0..validCount) is sorted ascending by socket handle.
     uint32_t validCount{ 0u };
-    for (uint32_t i{ 0u }; i < batchCount; ++i)
+    for ( uint32_t i{ 0u }; i < batchCount; ++i )
     {
-        if (!areg::is_valid_socket(sockets[i]))
+        if ( !areg::is_valid_socket(sockets[i]) )
         {
             DEBUG_LOG_WARN("Discarding message (ID = [ %u ]) for disconnected target [ %u ]"
-                            , static_cast<uint32_t>(mBatch[i].msg->message_id())
+                            , mBatch[i].msg.message_id()
                             , static_cast<uint32_t>(targets[i]));
             continue;
         }
 
-        areg::PendingSend entry{ sockets[i], mBatch[i].msg, mBatch[i].sendEvt };
+        areg::ext::PendingSend entry{ sockets[i], std::move(mBatch[i].msg) };
         uint32_t lo{ 0u }, hi{ validCount };
-        while (lo < hi)
+        while ( lo < hi )
         {
             const uint32_t mid{ lo + ((hi - lo) >> 1) };
             mBatch[mid].socket <= entry.socket ? lo = mid + 1u : hi = mid;
         }
 
-        if (lo < validCount)
-        {
-            ::memmove(&mBatch[lo + 1], &mBatch[lo], (validCount - lo) * sizeof(areg::PendingSend));
-        }
+        // Shift right using move-assignment (PendingSend has EventEnvelope — memmove is unsafe).
+        for ( uint32_t j{ validCount }; j > lo; --j )
+            mBatch[j] = std::move(mBatch[j - 1]);
 
         mBatch[lo] = std::move(entry);
         ++validCount;
     }
 
-    if (validCount != 0u)
+    if ( validCount != 0u )
     {
-        // Phase 4: batch is already sorted -- send groups directly
+        // Phase 4: batch is already sorted — send groups directly.
         areg::ext::send_pending_groups(mBatch.data(), validCount, mConnection, mRemoteService,
             [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_sent(bytes, msgs); });
     }
 
-    for (uint32_t i = 0u; i < evtCount; ++i)
-        events[i]->destroy();
+    for ( uint32_t i{ 0u }; i < evtCount; ++i )
+        ptrs[i].destroy_event();
 }
 
 bool PoolSendThread::post_event( Event & eventElem )
 {
-    return (AREG_RUNTIME_CAST(&eventElem, SendMessageEvent) != nullptr) && EventDispatcher::post_event(eventElem);
+    return EventDispatcher::post_event( eventElem );
 }
 
 } // namespace areg::ext

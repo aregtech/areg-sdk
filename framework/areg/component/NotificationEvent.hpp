@@ -201,11 +201,22 @@ private:
 class AREG_API NotificationEvent   : public Event
 {
 //////////////////////////////////////////////////////////////////////////
-// NotificationEvent class, Declare Runtime Event
+// Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-    AREG_DECLARE_RUNTIME_EVENT(NotificationEvent)
+public:
 
-//////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   Initializes the notification event with the given data.
+     *
+     * \param   data    The notification event data to set.
+     **/
+    explicit NotificationEvent(const NotificationEventData& data);
+
+    NotificationEvent(const NotificationEvent& /*src*/) = default;
+    NotificationEvent(NotificationEvent&& /*src*/) noexcept = default;
+    ~NotificationEvent() override = default;
+
+    //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, static methods
 //////////////////////////////////////////////////////////////////////////
 public:
@@ -217,20 +228,6 @@ public:
      * \param   caller      The notification consumer to notify, or null to broadcast.
      **/
     static void send_event(const NotificationEventData & data, NotificationConsumer * caller = nullptr);
-
-//////////////////////////////////////////////////////////////////////////
-// Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
-protected:
-
-    /**
-     * \brief   Initializes the notification event with the given data.
-     *
-     * \param   data    The notification event data to set.
-     **/
-    explicit NotificationEvent( const NotificationEventData & data );
-
-    virtual ~NotificationEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.
@@ -254,23 +251,13 @@ private:
     /**
      * \brief   Sets the current thread as the target thread for event delivery.
      **/
-    void set_target_thread();
-
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Notification event data
-     **/
-    NotificationEventData mData;
+    void current_target_thread();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
     NotificationEvent() = delete;
-    AREG_NOCOPY_NOMOVE( NotificationEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -320,7 +307,7 @@ private:
      *
      * \param   eventElem       The event being processed.
      **/
-    void start_event_processing( Event & eventElem ) override;
+    void start_event_processing( Event & eventElem ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls
@@ -382,12 +369,16 @@ inline void NotificationEventData::set_sequence(const SequenceNumber & seqNr ) n
 //////////////////////////////////////////////////////////////////////////
 inline const NotificationEventData & NotificationEvent::data() const noexcept
 {
-    return mData;
+    ASSERT(is_valid());
+    const NotificationEventData* data = reinterpret_cast<const NotificationEventData*>(payload_ptr());
+    return (*data);
 }
 
 inline NotificationEventData & NotificationEvent::data() noexcept
 {
-    return mData;
+    ASSERT(is_valid());
+    NotificationEventData* data = reinterpret_cast<NotificationEventData*>(payload_ptr());
+    return (*data);
 }
 
 } // namespace areg

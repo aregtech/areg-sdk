@@ -20,6 +20,8 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/component/DispatcherThread.hpp"
+#include "areg/component/Event.hpp"
+#include "areg/component/EventConsumer.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/ipc/ConnectionConsumer.hpp"
 #include "areg/ipc/ConnectionProvider.hpp"
@@ -79,8 +81,8 @@ private:
 
     // Dispatch functions assigned by update_dispatch_mode() based on mNumPairs.
     // Initially set in the constructor; may be re-assigned by setup_connection_data() if config overrides mNumPairs.
-    using SendCopyFn = std::function<bool(const RemoteMessage &, areg::EventPriority)>;
-    using SendMoveFn = std::function<bool(RemoteMessage &&,       areg::EventPriority)>;
+    using SendCopyFn = std::function<bool(const areg::EventEnvelope &, areg::EventPriority)>;
+    using SendMoveFn = std::function<bool(areg::EventEnvelope &&,     areg::EventPriority)>;
     using AcceptFn   = std::function<bool(areg::SocketAccepted &)>;
     using LostFn     = std::function<void(ITEM_ID)>;
 
@@ -201,7 +203,7 @@ public:
      * \param   data            The data of the message.
      * \param   eventPrio       The priority of the message to set.
      **/
-    bool send_message(const RemoteMessage & data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
+    bool send_message(const areg::EventEnvelope & data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
     /**
      * \brief   Queues the message for sending (move variant).
@@ -213,7 +215,7 @@ public:
      * \param   data            The data of the message (moved from).
      * \param   eventPrio       The priority of the message to set.
      **/
-    bool send_message(RemoteMessage && data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
+    bool send_message(areg::EventEnvelope && data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
     /**
      * \brief   Returns the instance of data rate helper object to use when computing data rate.
@@ -276,7 +278,7 @@ public:
      * \param   msgFailed       The message, which failed to send.
      * \param   whichTarget     The target socket to send message.
      **/
-    void failed_send_message( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
+    void failed_send_message( const areg::EventEnvelope & msgFailed, Socket & whichTarget ) override;
 
     /**
      * \brief   Triggered, when failed to receive message.
@@ -291,7 +293,7 @@ public:
      * \param   msgReceived     Received message to process.
      * \param   whichSource     The source socket, which received message.
      **/
-    void process_received_message( RemoteMessage & msgReceived, Socket & whichSource ) override;
+    void process_received_message( areg::EventEnvelope & msgReceived, Socket & whichSource ) override;
 
 /************************************************************************/
 // ConnectionConsumer
@@ -394,7 +396,7 @@ public:
      * \return  Returns the created message for remote communication.
      **/
     [[nodiscard]]
-    RemoteMessage connect_message( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const override;
+    areg::EventEnvelope connect_message( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const override;
 
     /**
      * \brief   Creates the service disconnect request message, sets the message target and the
@@ -405,7 +407,7 @@ public:
      * \return  Returns the created message for remote communication.
      **/
     [[nodiscard]]
-    RemoteMessage disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const override;
+    areg::EventEnvelope disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const override;
 
 /************************************************************************/
 // ServiceEventConsumer overrides
@@ -538,15 +540,7 @@ public:
      * \param   msg     The message to forward.
      * \return  Returns true if succeeded to send the command.
      **/
-    inline bool send_communication_message(ServiceEventData::ServiceCommand cmd, const RemoteMessage & msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
-
-    /**
-     * \brief   Call to send the disconnect event to the global send thread.
-     *          Pool send threads are stopped explicitly by stop_connection().
-     *
-     * \param   eventPrio       The priority of set to the event.
-     **/
-    inline void disconnect_service( areg::EventPriority eventPrio );
+    inline bool send_communication_message(ServiceEventData::ServiceCommand cmd, const areg::EventEnvelope & msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -589,15 +583,15 @@ private:
      * \brief   Send implementation for the legacy shared-thread path (mNumPairs == 0).
      *          Both overloads are bound to mSendFn / mSendMoveFn in the constructor.
      **/
-    bool do_send_shared(const RemoteMessage & data, areg::EventPriority prio);
-    bool do_send_shared(RemoteMessage && data, areg::EventPriority prio);
+    bool do_send_shared(const areg::EventEnvelope & data, areg::EventPriority prio);
+    bool do_send_shared(areg::EventEnvelope && data, areg::EventPriority prio);
 
     /**
      * \brief   Send implementation for the pool path (mNumPairs > 0).
      *          Both overloads are bound to mSendFn / mSendMoveFn in the constructor.
      **/
-    bool do_send_pool(const RemoteMessage & data, areg::EventPriority prio);
-    bool do_send_pool(RemoteMessage && data, areg::EventPriority prio);
+    bool do_send_pool(const areg::EventEnvelope & data, areg::EventPriority prio);
+    bool do_send_pool(areg::EventEnvelope && data, areg::EventPriority prio);
 
     /**
      * \brief   New-client-accepted implementation for shared-thread path.
@@ -735,7 +729,7 @@ inline bool ServiceCommunicationBase::send_command( ServiceEventData::ServiceCom
 }
 
 inline bool ServiceCommunicationBase::send_communication_message( ServiceEventData::ServiceCommand cmd
-                                                                , const RemoteMessage & msg
+                                                                , const areg::EventEnvelope & msg
                                                                 , areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
     return ServiceServerEvent::send_event( ServiceEventData( cmd, msg )
@@ -764,14 +758,6 @@ inline void ServiceCommunicationBase::query_data_received(uint64_t& sizeRecv, ui
 inline bool ServiceCommunicationBase::is_data_rate_enabled() const noexcept
 {
     return mThreadSend.is_data_rate_enabled() && mThreadReceive.is_data_rate_enabled();
-}
-
-inline void ServiceCommunicationBase::disconnect_service( areg::EventPriority eventPrio )
-{
-    SendMessageEvent::send_event( SendMessageEventData( )
-                                 , static_cast<SendMessageEventConsumer &>(mThreadSend)
-                                 , static_cast<DispatcherThread &>(mThreadSend)
-                                 , eventPrio );
 }
 
 } // namespace areg::ext

@@ -14,7 +14,7 @@
  ************************************************************************/
 #include "areg/ipc/private/ClientReceiveThread.hpp"
 
-#include "areg/base/RemoteMessage.hpp"
+#include "areg/base/EventEnvelope.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/ipc/ClientConnection.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
@@ -44,7 +44,7 @@ bool ClientReceiveThread::run_dispatcher()
     ready_for_events( true );
 
     SyncEvent* events[2] { &mEventExit, &mEventQueue };
-    RemoteMessage msgReceived;
+    EventEnvelope msgReceived;
     int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
 
     constexpr uint32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
@@ -72,8 +72,12 @@ bool ClientReceiveThread::run_dispatcher()
         }
         else
         {
-            Event * eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pick_event() : nullptr;
-            whichEvent = is_exit_event(eventElem) ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) : whichEvent;
+            if (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue))
+            {
+                Event eventElem{ pick_event() };
+                if (eventElem.is_exit_prio())
+                    whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
+            }
             drainCount = 0;
         }
 

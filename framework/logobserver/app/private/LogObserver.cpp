@@ -527,7 +527,7 @@ bool LogObserver::_process_save_config(const areg::ext::OptionParser::InputOptio
             }
             else if (elem.is_numeric())
             {
-                listTargets.add(elem.to_uint64());
+                listTargets.add(elem.to_uint32());
             }
         }
     }
@@ -681,7 +681,7 @@ bool LogObserver::_process_query_scopes(const areg::ext::OptionParser::InputOpti
             }
             else if (elem.is_numeric())
             {
-                listTargets.add(elem.to_uint64());
+                listTargets.add(elem.to_uint32());
             }
         }
     }

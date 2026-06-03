@@ -57,7 +57,7 @@ private:
      * \brief   The Hash Map object to save information of threads
      *          saved in specified Component Info object.
      **/
-    using _WorkerThreadMap  = OrderedMap<ThreadAddress, WorkerThread *>;
+    using _WorkerThreadMap  = OrderedMap<uint32_t, WorkerThread *>;
 
     /**
      * \brief   Resource mapping object type. 
@@ -65,7 +65,7 @@ private:
      *          As a value, it saves pointers of Worker Thread object
      *          As a Hash Map used ComponentInfo::_WorkerThreadMap object
      **/
-    using MapWorkerThread   = ConcurrentResourceMap<ThreadAddress, WorkerThread *, _WorkerThreadMap, ResourceMapImpl<ThreadAddress, WorkerThread>>;
+    using MapWorkerThread   = ConcurrentResourceMap<uint32_t, WorkerThread *, _WorkerThreadMap, ResourceMapImpl<uint32_t, WorkerThread>>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -184,14 +184,14 @@ public:
      *          nullptr if not found.
      **/
     [[nodiscard]]
-    DispatcherThread * find_event_consumer( const RuntimeClassID & whichClass ) const noexcept;
+    DispatcherThread * find_event_consumer( uint32_t whichClass ) const noexcept;
 
     /**
      * \brief   Returns a pointer to the first worker thread and sets the thread address on output.
      * \param[out] threadAddress       On output, contains the address of the first worker thread,
      **/
     [[nodiscard]]
-    inline WorkerThread * first_worker_thread( ThreadAddress & threadAddress ) noexcept;
+    WorkerThread * first_worker_thread( ThreadAddress & threadAddress ) noexcept;
 
     /**
      * \brief   Returns a pointer to the next worker thread and updates the thread address on output.
@@ -200,14 +200,14 @@ public:
      *                                    thread, or an invalid address if at the end.
      **/
     [[nodiscard]]
-    inline WorkerThread * next_worker_thread( ThreadAddress & threadAddress ) noexcept;
+    WorkerThread * next_worker_thread( ThreadAddress & threadAddress ) noexcept;
 
     /**
      * \brief   Removes and returns the first worker thread from the list.
      * \param[out] threadAddress       On output, contains the address of the removed worker thread.
      **/
     [[nodiscard]]
-    inline WorkerThread * remove_worker_thread( ThreadAddress & threadAddress ) noexcept;
+    WorkerThread * remove_worker_thread( ThreadAddress & threadAddress ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -264,17 +264,17 @@ inline const String& ComponentInfo::role_name() const noexcept
 
 inline bool ComponentInfo::is_worker_thread( const ThreadAddress& threadAddress ) const noexcept
 {
-    return mWorkerThreadMap.exist(threadAddress);
+    return mWorkerThreadMap.exist(static_cast<uint32_t>(threadAddress));
 }
 
 inline WorkerThread* ComponentInfo::find_worker_thread( const ThreadAddress& threadAddress ) const noexcept
 {
-    return mWorkerThreadMap.find_resource_object(threadAddress);
+    return mWorkerThreadMap.find_resource_object(static_cast<uint32_t>(threadAddress));
 }
 
 inline WorkerThread* ComponentInfo::find_worker_thread( const String & threadName ) const noexcept
 {
-    Thread* targetThread = Thread::find_by_name(threadName);
+    Thread* targetThread = Thread::find_by_number(static_cast<uint32_t>(threadName));
     return (targetThread != nullptr ? find_worker_thread(targetThread->address()) : nullptr);
 }
 
@@ -282,28 +282,6 @@ inline WorkerThread* ComponentInfo::find_thread( const String & componentPath ) 
 {
     ComponentAddress componentAddress = ComponentAddress::from_path(componentPath);
     return find_worker_thread(componentAddress.thread_address());
-}
-
-inline WorkerThread* ComponentInfo::first_worker_thread( ThreadAddress & threadAddress ) noexcept
-{
-    return mWorkerThreadMap.resource_first_key(threadAddress);
-}
-
-inline WorkerThread* ComponentInfo::next_worker_thread( ThreadAddress & threadAddress ) noexcept
-{
-    return mWorkerThreadMap.resource_next_key(threadAddress);
-}
-
-inline WorkerThread* ComponentInfo::remove_worker_thread(ThreadAddress& threadAddress) noexcept
-{
-    std::pair<ThreadAddress, WorkerThread*> elem{ThreadAddress::invalid_thread_address(), nullptr};
-    if (!mWorkerThreadMap.is_empty())
-    {
-        mWorkerThreadMap.remove_first_element(elem);
-    }
-
-    threadAddress = elem.first;
-    return elem.second;
 }
 
 inline bool ComponentInfo::has_worker_threads() const noexcept

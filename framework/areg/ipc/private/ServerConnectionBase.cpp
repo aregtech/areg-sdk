@@ -121,6 +121,9 @@ void ServerConnectionBase::interrupt_connections() noexcept
         {
             areg::socket_interrupt(mAcceptedConnections.value_at(pos).handle());
         }
+
+        // Unblock the receive thread from WSAPoll/epoll/kqueue
+        mMultiplexer.wakeup();
     }
 
     mIsInterrupted.store(true, std::memory_order_release);

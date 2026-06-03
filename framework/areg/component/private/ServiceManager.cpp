@@ -94,7 +94,7 @@ void ServiceManager::enable_data_rate(bool enable) noexcept
     ServiceManager::instance().mServiceClient.enable_data_rate(enable);
 }
 
-bool ServiceManager::send_raw_message(const RemoteMessage& msg) noexcept
+bool ServiceManager::send_raw_message(const EventEnvelope& msg) noexcept
 {
     return ServiceManager::instance().mServiceClient.send_raw_message(msg);
 }
@@ -261,7 +261,7 @@ void ServiceManager::process_event( const ServiceManagerEventData & data )
 
 bool ServiceManager::post_event(Event & eventElem)
 {
-    return (AREG_RUNTIME_CAST(&eventElem, ServiceManagerEvent) != nullptr) && EventDispatcher::post_event(eventElem);
+    return (eventElem.event_id() == ServiceManagerEvent::CLASS_ID) && EventDispatcher::post_event(eventElem);
 }
 
 void ServiceManager::ready_for_events( bool is_ready )

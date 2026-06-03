@@ -25,6 +25,7 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 WorkerThreadConsumer::WorkerThreadConsumer(const String & consumerName)
     : mConsumerName (consumerName)
+    , mMagicNum     (consumerName.is_empty() ? areg::CHECKSUM_IGNORE : areg::crc32_calculate(consumerName.as_string()))
 {
 }
 

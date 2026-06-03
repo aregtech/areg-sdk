@@ -26,9 +26,7 @@ namespace areg {
  **/
 class AREG_API ExitEvent final : public Event
 {
-//////////////////////////////////////////////////////////////////////////
-// Declare Event runtime information.
-//////////////////////////////////////////////////////////////////////////
+
     AREG_DECLARE_RUNTIME_EVENT(ExitEvent)
 
 //////////////////////////////////////////////////////////////////////////
@@ -39,7 +37,7 @@ public:
      * \brief   Returns the singleton exit event instance.
      **/
     [[nodiscard]]
-    static ExitEvent & exit_event() noexcept;
+    static const ExitEvent & exit_event() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -57,7 +55,7 @@ private:
     /**
      * \brief   Destroys the event object. Override to perform cleanup before destruction.
      **/
-    void destroy() final;
+    void destroy_event() noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

@@ -124,7 +124,7 @@ public:
      *                              listener.
      * \return  Return true if consumer has been registered with success.
      **/
-    virtual bool register_event_consumer(const RuntimeClassID& whichClass, EventConsumer& whichConsumer);
+    virtual bool register_event_consumer(const uint32_t whichClass, EventConsumer& whichConsumer);
 
     /**
      * \brief   Call to unregister specified event consumer previously registered for specified
@@ -134,7 +134,7 @@ public:
      * \param   whichConsumer       Reference to consumer that should be unregistered.
      * \return  Returns true if successfully unregistered event consumer.
      **/
-    virtual bool unregister_event_consumer(const RuntimeClassID& whichClass, EventConsumer& whichConsumer);
+    virtual bool unregister_event_consumer(const uint32_t whichClass, EventConsumer& whichConsumer);
 
     /**
      * \brief   Call to remove specified consumer for all registered event class types.
@@ -151,7 +151,7 @@ public:
      * \return  Returns true if dispatcher has at least one registered consumer.
      **/
     [[nodiscard]]
-    virtual bool has_registered_consumer(const RuntimeClassID& whichClass) const;
+    virtual bool has_registered_consumer(const uint32_t whichClass) const;
 
     /**
      * \brief   Call to queue event object in the event queue of dispatcher. The passed event
@@ -165,37 +165,34 @@ public:
     bool queue_event(Event& eventElem);
 
     /**
-     * \brief   Push list of events at once with one lock. The events are pushed by priorities.
-     *          On output, the `eventElems` contains the list of removed events from the queue and
-     *          returned value indicates the number of removed elements in the list.
-     *          Returns 0 if no event is removed from the queue.
+     * \brief   Pushes a batch of events (by move) with a single priority-lane lock acquisition.
+     *          Events that cannot be enqueued due to capacity overflow remain in their slots and
+     *          the overflow count is returned.
      *
-     * \param[in,out]   eventElems  On input this contains the list of events to queue. The events are queued by priority.
-     *                              On output, this contains the list of removed events from queue.
-     *                              If returned value is 0, no event was removed.
-     * \param           count       The size of array of events in the list.
-     * \return  Returns number of removed events, the return value cannot be bigger than `count`. Returns 0 if no event was removed.
+     * \param[in,out]   listEvents  Array of Event values sorted by priority. Overflow events are
+     *                              compacted to the front on output.
+     * \param           count       Number of events in \a listEvents.
+     * \return  Number of events NOT enqueued due to capacity overflow. 0 = all enqueued.
      **/
-    uint32_t queue_events(Event** listEvents, uint32_t count);
+    uint32_t queue_events(Event* listEvents, uint32_t count);
 
     /**
-     * \brief   Pops events from the event list with one lock. On output, the `eventElems` array contains list of removed events.
-     *          The events are popped by priority. First element has the highest priority in queue to execute.
-     *          Returned value indicated the number of elements filled in array.
+     * \brief   Pops up to \a count events into the caller-supplied array (by move).
+     *          Returns the number of events actually dequeued.
      *
-     * \param[out]      eventElems  On input, the list should be empty. On output this contains the list or events picked from the queue.
-     *                              First element should be executed first.
-     * \param           count       The size of array to fill popped events.
-     * \return  Returns the number of events filled in the `eventElems` array. The returned value cannot be bigger than `count`.
-     *          Returns 0 if no event was filled.
+     * \param[out]  listEvents  Caller array receiving dequeued events; highest priority first.
+     * \param       count       Array capacity.
+     * \return  Number of events filled.
      **/
-    uint32_t pop_events(Event** listEvents, uint32_t count) noexcept;
+    uint32_t pop_events(Event* listEvents, uint32_t count) noexcept;
 
     /**
-     * \brief   Picks up single Event element from the external event queue.
+     * \brief   Picks up a single Event from the external queue.
+     *          Returns an invalid Event (is_valid() == false) when the queue is empty.
+     *          The ExitEvent is returned as a value copy (check with is_exit_prio()).
      **/
     [[nodiscard]]
-    Event * pick_event() noexcept;
+    Event pick_event() noexcept;
 
     /**
      * \brief   Sets exit event in the dispatcher without blocking.
@@ -228,7 +225,7 @@ public:
      *
      * \param   eventClassId    The class ID of external event objects to remove.
      **/
-    inline void remove_event_type(const RuntimeClassID & eventClassId) noexcept;
+    inline void remove_event_type(const uint32_t eventClassId) noexcept;
 
     /**
      * \brief   Returns true if the specified event object is a special reserved exit event.
@@ -266,12 +263,13 @@ protected:
     /**
      * \brief   Called before dispatching. Returns false to drop the event.
      **/
-    virtual bool prepare_dispatch_event( Event * eventElem ) noexcept;
+    virtual bool prepare_dispatch_event( Event & eventElem ) noexcept;
 
     /**
-     * \brief   Called after dispatching. Performs cleanup.
+     * \brief   Called after dispatching. Releases the event's buffer (no pointer delete needed
+     *          since Event is now a value type returned from pick_event()).
      **/
-    virtual void post_dispatch_event( Event * eventElem );
+    virtual void post_dispatch_event( Event & eventElem );
 
     /**
      * \brief   Runs the main dispatching loop.
@@ -360,12 +358,12 @@ private:
 // EventDispatcherBase class inline implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t EventDispatcherBase::queue_events(Event** listEvents, uint32_t count)
+inline uint32_t EventDispatcherBase::queue_events(Event* listEvents, uint32_t count)
 {
     return mExternalEvents.push_events(listEvents, count);
 }
 
-inline uint32_t EventDispatcherBase::pop_events(Event** listEvents, uint32_t count) noexcept
+inline uint32_t EventDispatcherBase::pop_events(Event* listEvents, uint32_t count) noexcept
 {
     return mExternalEvents.pop_events(listEvents, count);
 }
@@ -399,7 +397,7 @@ inline void EventDispatcherBase::remove_all_events() noexcept
     mExternalEvents.unlock_queue();
 }
 
-inline void EventDispatcherBase::remove_event_type( const RuntimeClassID & eventClassId ) noexcept
+inline void EventDispatcherBase::remove_event_type( const uint32_t eventClassId ) noexcept
 {
     mExternalEvents.remove_events(eventClassId);
 }

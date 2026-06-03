@@ -177,7 +177,7 @@ AREG_API_IMPL const areg::InterfaceData & areg::empty_interface() noexcept
     return _InterfaceData;
 }
 
-AREG_API_IMPL bool areg::send_raw_message(const areg::RemoteMessage& msg) noexcept
+AREG_API_IMPL bool areg::send_raw_message(const areg::EventEnvelope& msg) noexcept
 {
     return ServiceManager::send_raw_message(msg);
 }

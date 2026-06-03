@@ -10,10 +10,13 @@ option(AREG_GTEST_FOUND  "GTest package found flag"   FALSE)
 
 if (AREG_TESTS)
 
-    # Disable unit tests post-build for ARM processor and Cygwin.
+    # Disable unit tests post-build for ARM processor, Cygwin, and macOS.
     # On Cygwin the binary may crash at startup in Release due to PE/COFF + visibility
-    # interactions; PRE_TEST defers discovery to ctest so the build is not blocked.
-    if (${AREG_ARCH} STREQUAL ${_proc_arm32} OR ${AREG_ARCH} STREQUAL ${_proc_arm64} OR CYGWIN)
+    # interactions. On macOS with system GTest (AREG_SYSTEM_GTEST=ON), the test binary
+    # references a Homebrew dylib via @rpath; running it immediately after linking fails
+    # because the Homebrew lib dir is not in the default RPATH. PRE_TEST defers discovery
+    # to ctest so the build is not blocked.
+    if (${AREG_ARCH} STREQUAL ${_proc_arm32} OR ${AREG_ARCH} STREQUAL ${_proc_arm64} OR CYGWIN OR APPLE)
         set(CMAKE_GTEST_DISCOVER_TESTS_DISCOVERY_MODE PRE_TEST)
     endif()
 
@@ -29,6 +32,28 @@ if (AREG_TESTS)
         message(STATUS "Areg: >>> Will use existing in the system googletest package")
         if (NOT "${AREG_GTEST_INCLUDES}" STREQUAL "")
             include_directories("${AREG_GTEST_INCLUDES}")
+        endif()
+        # On macOS, system GTest (e.g. Homebrew) is a shared library.  The test binary
+        # references it via @rpath.  Without the Homebrew lib directory in CMAKE_BUILD_RPATH
+        # the dyld loader cannot find the dylib at ctest time.  Derive the directory from
+        # the first library in AREG_GTEST_LIBRARY and append it so every test target built
+        # in this directory picks it up automatically.
+        if (APPLE AND NOT "${AREG_GTEST_LIBRARY}" STREQUAL "")
+            set(_gtest_lib_path)
+            list(GET AREG_GTEST_LIBRARY 0 _gtest_lib_path)
+            if (NOT EXISTS "${_gtest_lib_path}")
+                get_target_property(_gtest_lib_path GTest::gtest IMPORTED_LOCATION)
+            endif()
+            if (NOT EXISTS "${_gtest_lib_path}")
+                get_target_property(_gtest_lib_path GTest::GTest IMPORTED_LOCATION)
+            endif()
+            if (_gtest_lib_path AND EXISTS "${_gtest_lib_path}")
+                get_filename_component(_gtest_dir "${_gtest_lib_path}" DIRECTORY)
+                list(APPEND CMAKE_BUILD_RPATH "${_gtest_dir}")
+                message(STATUS "Areg: >>> Added GTest directory to CMAKE_BUILD_RPATH: '${_gtest_dir}'")
+            endif()
+            unset(_gtest_lib_path)
+            unset(_gtest_dir)
         endif()
     else()
         message(STATUS "Areg: >>> Fetching \'googletest\' sources to compile \'gtest\' libraries")

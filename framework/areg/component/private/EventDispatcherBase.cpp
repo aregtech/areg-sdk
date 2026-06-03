@@ -52,7 +52,7 @@ EventDispatcherBase::~EventDispatcherBase()
 
 bool EventDispatcherBase::is_exit_event( const Event * anEvent ) const
 {
-    return (anEvent == static_cast<const Event *>(&ExitEvent::exit_event( )));
+    return (anEvent != nullptr) && anEvent->is_exit_prio();
 }
 
 bool EventDispatcherBase::start_dispatcher()
@@ -66,7 +66,8 @@ void EventDispatcherBase::stop_dispatcher() noexcept
     mExternalEvents.lock_queue( );
     if ( mHasStarted )
     {
-        mExternalEvents.push_event( ExitEvent::exit_event( ), nullptr );
+        Event exit{ ExitEvent::exit_event() };
+        mExternalEvents.push_event(exit);
     }
 
     mEventExit.set_signaled();
@@ -93,7 +94,9 @@ bool EventDispatcherBase::queue_event( Event& eventElem )
     {
         if (areg::is_external(eventType))
         {
-            mExternalEvents.push_event(eventElem, nullptr);
+            // MOVE the event into the queue (O(1) shared_ptr transfer).
+            // After this call, eventElem is in a moved-from (empty) state.
+            mExternalEvents.push_event(eventElem);
             return true;
         }
 
@@ -107,52 +110,28 @@ bool EventDispatcherBase::queue_event( Event& eventElem )
     return false;
 }
 
-bool EventDispatcherBase::register_event_consumer( const RuntimeClassID& whichClass, EventConsumer& whichConsumer )
+bool EventDispatcherBase::register_event_consumer( const uint32_t whichClass, EventConsumer& whichConsumer )
 {
     mConsumerMap.lock();
-
     bool result = false;
-    EventConsumerList* listConsumers = mConsumerMap.find_resource_object(whichClass);
-    if (listConsumers == nullptr)
+    EventConsumerList* listConsumers = mConsumerMap.find_resource(whichClass);
+    if (listConsumers == nullptr || !listConsumers->exist(whichConsumer))
     {
-        listConsumers   = DEBUG_NEW EventConsumerList();
-        if (listConsumers != nullptr)
-            mConsumerMap.register_resource_object(whichClass, listConsumers);
+        mConsumerMap.register_resource_object(whichClass, &whichConsumer);
+        result = true;
     }
-
-    if ( (listConsumers != nullptr) && (listConsumers->exist(whichConsumer) == false) )
-    {
-        result = listConsumers->add_consumer(whichConsumer);
-    }
-
     mConsumerMap.unlock();
     return result;
 }
 
-bool EventDispatcherBase::unregister_event_consumer( const RuntimeClassID & whichClass, EventConsumer & whichConsumer )
+bool EventDispatcherBase::unregister_event_consumer( const uint32_t whichClass, EventConsumer & whichConsumer )
 {
     mConsumerMap.lock();
-
-    bool result = false;
-    EventConsumerList* listConsumers = mConsumerMap.find_resource_object(whichClass);
-    if (listConsumers != nullptr)
+    bool result = mConsumerMap.exist(whichClass);
+    if (result)
     {
-        result = listConsumers->remove_consumer(whichConsumer);
-        if (listConsumers->is_empty())
-        {
-            mConsumerMap.unregister_resource_object(whichClass);
-            delete listConsumers;
-        }
+        mConsumerMap.unregister_resource_object(whichClass, &whichConsumer, true);
     }
-    else
-    {
-        // AAvetyan:    The reason why it does not find, because it is cleaned in _clean() function.
-        //              This is mainly happening in component, which has server interface implementation.
-        //              To make graceful shutdown, in _clean() method should be set filtering.
-        //              But the consumer map indeed at this point is empty and the consumer is unregistered.
-        mConsumerMap.unregister_resource_object(whichClass);
-    }
-
     mConsumerMap.unlock();
     return result;
 }
@@ -163,29 +142,23 @@ int32_t EventDispatcherBase::remove_consumer( EventConsumer & whichConsumer )
     mConsumerMap.lock();
 
     int32_t result = 0;
-    LinkedList<RuntimeClassID> removedList;
-    RuntimeClassID     Key(RuntimeClassID::empty_id());
-    EventConsumerList* Value = nullptr;
+    std::vector<uint32_t> toRemove;
 
-    Value = mConsumerMap.resource_first_key(Key);
-    while (Value != nullptr)
+    for (const auto & entry : mConsumerMap.data())
     {
-        ASSERT(Value->is_empty() == false);
-        result += Value->remove_consumer(whichConsumer) ? 1 : 0;
-        if (Value->is_empty())
+        EventConsumerList & list = const_cast<EventConsumerList &>(entry.second);
+        ASSERT(list.is_empty() == false);
+        result += list.remove_consumer(whichConsumer) ? 1 : 0;
+        if (list.is_empty())
         {
-            removedList.push_first(Key);
+            toRemove.push_back(entry.first);
         }
-
-        Value = mConsumerMap.resource_next_key(Key);
     }
 
-    while (removedList.remove_last(Key))
+    for (uint32_t key : toRemove)
     {
-        Value   = mConsumerMap.unregister_resource_object(Key);
-        ASSERT(Value != nullptr);
-        delete Value;
-        Value = nullptr;
+        EventConsumerList removed = mConsumerMap.unregister_resource(key);
+        removed.remove_all_consumers();
     }
 
     mConsumerMap.unlock();
@@ -197,8 +170,7 @@ bool EventDispatcherBase::run_dispatcher()
     ready_for_events( true );
 
     SyncEvent* events[2] { &mEventExit, &mEventQueue };
-    int32_t whichEvent      = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
-    const ExitEvent& exitEvent = ExitEvent::exit_event();
+    int32_t whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
 
     do
     {
@@ -213,37 +185,33 @@ bool EventDispatcherBase::run_dispatcher()
         // Tight drain loop: process all available events before returning to wait.
         for (;;)
         {
-            Event* eventElem = pick_event();
+            Event eventElem = pick_event();  // returns Event by value; invalid if queue empty
 
-            if ( static_cast<const Event*>(eventElem) == static_cast<const Event*>(&exitEvent) )
+            if (eventElem.is_exit_prio())
             {
                 whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
                 break;
             }
 
-            if (eventElem == nullptr)
+            if (!eventElem.is_valid())
             {
                 break;
             }
 
             if ( prepare_dispatch_event(eventElem) )
             {
-                dispatch_event(*eventElem);
+                dispatch_event(eventElem);
             }
 
             post_dispatch_event(eventElem);
 
             // Drain internal events generated by the dispatch above
-            Event* intEvent = mInternalEvents.is_empty() ? nullptr : mInternalEvents.pop_event();
-            while (intEvent != nullptr)
+            while (!mInternalEvents.is_empty())
             {
-                if ( prepare_dispatch_event(intEvent) )
-                {
-                    dispatch_event(*intEvent);
-                }
-
-                post_dispatch_event(intEvent);
-                intEvent = mInternalEvents.is_empty() ? nullptr : mInternalEvents.pop_event();
+                Event intEvent{ mInternalEvents.pop_event() };
+                if (prepare_dispatch_event(intEvent))
+                    dispatch_event(intEvent);
+                // destructor releases intEvent at end of loop body
             }
         }
 
@@ -263,22 +231,21 @@ void EventDispatcherBase::ready_for_events( bool is_ready )
     mExternalEvents.unlock_queue( );
 }
 
-Event* EventDispatcherBase::pick_event() noexcept
+Event EventDispatcherBase::pick_event() noexcept
 {
     return mExternalEvents.pop_event();
 }
 
-bool EventDispatcherBase::prepare_dispatch_event( Event* eventElem ) noexcept
+bool EventDispatcherBase::prepare_dispatch_event( Event& eventElem ) noexcept
 {
-    return (eventElem != nullptr);
+    return eventElem.is_valid();
 }
 
-void EventDispatcherBase::post_dispatch_event( Event* eventElem )
+void EventDispatcherBase::post_dispatch_event( Event& eventElem )
 {
-    if (eventElem != nullptr)
-    {
-        eventElem->destroy();
-    }
+    // Event is now a value type — just release its buffer.
+    // ExitEvent copies are also released (their destroy_event() is a no-op in the base).
+    eventElem.destroy_event();
 }
 
 bool EventDispatcherBase::dispatch_event( Event& eventElem )
@@ -291,7 +258,7 @@ bool EventDispatcherBase::dispatch_event( Event& eventElem )
     }
     else
     {
-        EventConsumerList* listConsumers = mConsumerMap.find_resource_object(eventElem.class_id());
+        EventConsumerList* listConsumers = mConsumerMap.find_resource(eventElem.event_id());
         if (listConsumers != nullptr)
         {
             for (auto entry : listConsumers->data())
@@ -306,7 +273,7 @@ bool EventDispatcherBase::dispatch_event( Event& eventElem )
     return false;
 }
 
-bool EventDispatcherBase::has_registered_consumer( const RuntimeClassID& whichClass ) const
+bool EventDispatcherBase::has_registered_consumer( uint32_t whichClass ) const
 {
     return mConsumerMap.exist(whichClass);
 }
@@ -315,13 +282,11 @@ inline void EventDispatcherBase::_clean() noexcept
 {
     mConsumerMap.lock();
 
-    RuntimeClassID     Key(RuntimeClassID::empty_id());
-    while (mConsumerMap.is_empty() == false)
+    while (!mConsumerMap.is_empty())
     {
-        mConsumerMap.resource_first_key(Key);
-        EventConsumerList* Value =  mConsumerMap.unregister_resource_object(Key);
-        Value->remove_all_consumers();
-        delete Value;
+        uint32_t key = mConsumerMap.data().begin()->first;
+        EventConsumerList removed = mConsumerMap.unregister_resource(key);
+        removed.remove_all_consumers();
     }
 
     mConsumerMap.unlock();

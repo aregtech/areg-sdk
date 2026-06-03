@@ -25,12 +25,12 @@ LogCollectorMessageProcessor::LogCollectorMessageProcessor(LogCollectorServerSer
 {
 }
 
-void LogCollectorMessageProcessor::query_connected_instances(const areg::RemoteMessage & msgReceived) const
+void LogCollectorMessageProcessor::query_connected_instances(const areg::EventEnvelope & msgReceived) const
 {
     ASSERT(msgReceived.message_id() == static_cast<uint32_t>(areg::FuncIdRange::SystemServiceQueryInstances));
 
-    const ITEM_ID & source{ msgReceived.source() };
-    const ITEM_ID& target{ msgReceived.target() };
+    const ITEM_ID source{ static_cast<ITEM_ID>(msgReceived.source()) };
+    const ITEM_ID target{ static_cast<ITEM_ID>(msgReceived.target()) };
     if ((source >= areg::COOKIE_REMOTE_SERVICE) && (target == areg::COOKIE_LOGGER))
     {
         const areg::MapInstances& observers = mLoggerService.observers();
@@ -52,10 +52,11 @@ void LogCollectorMessageProcessor::notify_connected_instances(const areg::MapIns
     if (observers.is_empty())
         return;
 
-    areg::RemoteMessage msgInstances;
+    areg::EventEnvelope msgInstances;
     ASSERT((target == areg::TARGET_ALL) || (instances.contains(target) && is_log_observer(instances.value_at(target).ciSource)));
 
-    if (msgInstances.init_message(areg::message_notify_instances().rbHeader) != nullptr)
+    static constexpr areg::EventHeader HDR_NOTIFY{ areg::message_notify_instances() };
+    if (msgInstances.init_envelope(HDR_NOTIFY) != nullptr)
     {
         msgInstances << areg::RemoteConnectionState::Connected;
         uint32_t count{ 0 };
@@ -81,14 +82,16 @@ void LogCollectorMessageProcessor::notify_connected_instances(const areg::MapIns
         {
             for (const auto& observer : observers.data())
             {
-                areg::RemoteMessage msg{ msgInstances.clone(areg::COOKIE_LOGGER, observer.first) };
+                areg::EventEnvelope msg{ msgInstances.clone() };
+                msg.set_source(static_cast<uint32_t>(areg::COOKIE_LOGGER));
+                msg.set_target(static_cast<uint32_t>(observer.first));
                 mLoggerService.send_message(msg);
             }
         }
         else
         {
-            msgInstances.set_source(areg::COOKIE_LOGGER);
-            msgInstances.set_target(target);
+            msgInstances.set_source(static_cast<uint32_t>(areg::COOKIE_LOGGER));
+            msgInstances.set_target(static_cast<uint32_t>(target));
             mLoggerService.send_message(msgInstances);
         }
     }
@@ -100,8 +103,9 @@ void LogCollectorMessageProcessor::notify_disconnected_instances(const areg::Arr
     if (observers.is_empty())
         return;
 
-    areg::RemoteMessage msgInstances;
-    if (msgInstances.init_message(areg::message_notify_instances().rbHeader) != nullptr)
+    areg::EventEnvelope msgInstances;
+    static constexpr areg::EventHeader HDR_NOTIFY{ areg::message_notify_instances() };
+    if (msgInstances.init_envelope(HDR_NOTIFY) != nullptr)
     {
         msgInstances << areg::RemoteConnectionState::Disconnected;
         msgInstances << listIds;
@@ -109,20 +113,22 @@ void LogCollectorMessageProcessor::notify_disconnected_instances(const areg::Arr
         {
             for (const auto& observer : observers.data())
             {
-                areg::RemoteMessage msg{ msgInstances.clone(areg::COOKIE_LOGGER, observer.first) };
+                areg::EventEnvelope msg{ msgInstances.clone() };
+                msg.set_source(static_cast<uint32_t>(areg::COOKIE_LOGGER));
+                msg.set_target(static_cast<uint32_t>(observer.first));
                 mLoggerService.send_message(msg);
             }
         }
         else
         {
-            msgInstances.set_source(areg::COOKIE_LOGGER);
-            msgInstances.set_target(target);
+            msgInstances.set_source(static_cast<uint32_t>(areg::COOKIE_LOGGER));
+            msgInstances.set_target(static_cast<uint32_t>(target));
             mLoggerService.send_message(msgInstances);
         }
     }
 }
 
-void LogCollectorMessageProcessor::register_scopes_at_observer(const areg::RemoteMessage & msgReceived) const
+void LogCollectorMessageProcessor::register_scopes_at_observer(const areg::EventEnvelope & msgReceived) const
 {
     ASSERT(msgReceived.message_id() == static_cast<uint32_t>(areg::FuncIdRange::ServiceLogRegisterScopes));
     msgReceived.move_to_begin();
@@ -138,19 +144,19 @@ void LogCollectorMessageProcessor::register_scopes_at_observer(const areg::Remot
     _forward_message_to_observers(msgReceived);
 }
 
-void LogCollectorMessageProcessor::update_log_source_scopes(const areg::RemoteMessage & msgReceived) const
+void LogCollectorMessageProcessor::update_log_source_scopes(const areg::EventEnvelope & msgReceived) const
 {
     ASSERT(msgReceived.message_id() == static_cast<uint32_t>(areg::FuncIdRange::ServiceLogUpdateScopes));
     _forward_message_to_log_sources(msgReceived);
 }
 
-void LogCollectorMessageProcessor::query_log_source_scopes(const areg::RemoteMessage & msgReceived) const
+void LogCollectorMessageProcessor::query_log_source_scopes(const areg::EventEnvelope & msgReceived) const
 {
     ASSERT(msgReceived.message_id() == static_cast<uint32_t>(areg::FuncIdRange::ServiceLogQueryScopes));
     _forward_message_to_log_sources(msgReceived);
 }
 
-void LogCollectorMessageProcessor::save_log_source_configuration(const areg::RemoteMessage & msgReceived)
+void LogCollectorMessageProcessor::save_log_source_configuration(const areg::EventEnvelope & msgReceived)
 {
     ASSERT(msgReceived.message_id() == static_cast<uint32_t>(areg::FuncIdRange::ServiceSaveLogConfiguration));
 
@@ -178,20 +184,20 @@ void LogCollectorMessageProcessor::save_log_source_configuration(const areg::Rem
     }
 }
 
-void LogCollectorMessageProcessor::log_source_scopes_updated(const areg::RemoteMessage& msgReceived)
+void LogCollectorMessageProcessor::log_source_scopes_updated(const areg::EventEnvelope& msgReceived)
 {
     ASSERT(msgReceived.message_id() == static_cast<uint32_t>(areg::FuncIdRange::ServiceLogScopesUpdated));
     _forward_message_to_observers(msgReceived);
 }
 
 #ifdef      DEBUG
-void LogCollectorMessageProcessor::log_source_configuration_saved(const areg::RemoteMessage& msgReceived)
+void LogCollectorMessageProcessor::log_source_configuration_saved(const areg::EventEnvelope& msgReceived)
 {
     ASSERT(msgReceived.message_id() == static_cast<uint32_t>(areg::FuncIdRange::ServiceLogConfigurationSaved));
     process_next_save_config();
 }
 #else   // DEBUG
-void LogCollectorMessageProcessor::log_source_configuration_saved(const areg::RemoteMessage& /*msgReceived*/)
+void LogCollectorMessageProcessor::log_source_configuration_saved(const areg::EventEnvelope& /*msgReceived*/)
 {
     process_next_save_config();
 }
@@ -218,7 +224,7 @@ void LogCollectorMessageProcessor::client_disconnected(const ITEM_ID& cookie)
     }
 }
 
-void LogCollectorMessageProcessor::log_message(const areg::RemoteMessage & msgReceived) const
+void LogCollectorMessageProcessor::log_message(const areg::EventEnvelope & msgReceived) const
 {
     ASSERT(msgReceived.message_id() == static_cast<uint32_t>(areg::FuncIdRange::ServiceLogMessage));
     ASSERT(areg::LogDataType::Remote == reinterpret_cast<const areg::LogEntry *>(msgReceived.buffer())->logDataType);
@@ -247,14 +253,14 @@ bool LogCollectorMessageProcessor::is_log_observer(areg::MessageSource msgSource
     return ((static_cast<uint32_t>(areg::MessageSource::SourceObserver) & static_cast<uint32_t>(msgSource)) != 0);
 }
 
-inline void LogCollectorMessageProcessor::_forward_message_to_log_sources(const areg::RemoteMessage& msgReceived) const
+inline void LogCollectorMessageProcessor::_forward_message_to_log_sources(const areg::EventEnvelope& msgReceived) const
 {
     const auto& instances = mLoggerService.instances();
     if (instances.is_empty())
         return;
 
-    ITEM_ID source{ msgReceived.source() };
-    ITEM_ID target{ msgReceived.target() != areg::COOKIE_LOGGER ? msgReceived.target() : areg::TARGET_ALL };
+    ITEM_ID source{ static_cast<ITEM_ID>(msgReceived.source()) };
+    ITEM_ID target{ static_cast<ITEM_ID>(msgReceived.target()) != areg::COOKIE_LOGGER ? static_cast<ITEM_ID>(msgReceived.target()) : areg::TARGET_ALL };
 
     auto srcPos = source != areg::COOKIE_LOGGER ? instances.find(source) : instances.invalid_position();
     if ((source == areg::COOKIE_LOGGER) || (instances.is_valid_position(srcPos) && is_log_observer(instances.value_at(srcPos).ciSource)))
@@ -270,7 +276,9 @@ inline void LogCollectorMessageProcessor::_forward_message_to_log_sources(const 
             {
                 if (is_log_source(instance.second.ciSource))
                 {
-                    areg::RemoteMessage msg{ msgReceived.clone(source, instance.first) };
+                    areg::EventEnvelope msg{ msgReceived.clone() };
+                    msg.set_source(static_cast<uint32_t>(source));
+                    msg.set_target(static_cast<uint32_t>(instance.first));
                     mLoggerService.send_message(msg);
                 }
             }
@@ -278,14 +286,14 @@ inline void LogCollectorMessageProcessor::_forward_message_to_log_sources(const 
     }
 }
 
-inline void LogCollectorMessageProcessor::_forward_message_to_observers(const areg::RemoteMessage& msgReceived) const
+inline void LogCollectorMessageProcessor::_forward_message_to_observers(const areg::EventEnvelope& msgReceived) const
 {
     const auto& observers = mLoggerService.observers();
     if (observers.is_empty())
         return;
 
-    ITEM_ID source{ msgReceived.source() };
-    ITEM_ID target{ msgReceived.target() != areg::COOKIE_LOGGER ? msgReceived.target() : areg::TARGET_ALL };
+    ITEM_ID source{ static_cast<ITEM_ID>(msgReceived.source()) };
+    ITEM_ID target{ static_cast<ITEM_ID>(msgReceived.target()) != areg::COOKIE_LOGGER ? static_cast<ITEM_ID>(msgReceived.target()) : areg::TARGET_ALL };
     const areg::MapInstances& instances = mLoggerService.instances();
 
     auto srcPos = instances.find(source);
@@ -301,7 +309,9 @@ inline void LogCollectorMessageProcessor::_forward_message_to_observers(const ar
             for (const auto& observer : observers.data())
             {
                 ASSERT(is_log_observer(observer.second.ciSource));
-                areg::RemoteMessage msg{ msgReceived.clone(source, observer.first) };
+                areg::EventEnvelope msg{ msgReceived.clone() };
+                msg.set_source(static_cast<uint32_t>(source));
+                msg.set_target(static_cast<uint32_t>(observer.first));
                 mLoggerService.send_message(msg);
             }
         }

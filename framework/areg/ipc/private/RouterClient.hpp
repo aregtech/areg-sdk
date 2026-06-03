@@ -70,20 +70,18 @@ public:
 public:
 
     /**
-     * \brief   Sends a pre-serialized RemoteMessage directly to the send thread,
+     * \brief   Sends a pre-serialized EventEnvelope directly to the send thread,
      *          bypassing all event creation and serialization overhead.
-     *          Use only with messages built via RemoteEventFactory::stream_from_event()
-     *          while the connection was established and the target cookie is still valid.
      *
-     * \param   msg     The pre-built message to send.
+     * \param   msg     The pre-built envelope to send.
      * \return  Returns true if the message was accepted by the send thread.
      **/
-    inline bool send_raw_message(const RemoteMessage& msg);
+    inline bool send_raw_message(const EventEnvelope& msg);
 
     /**
      * \brief   Returns the active IPC connection channel.
-     *          The channel carries the router cookie stamped in every outgoing
-     *          RemoteMessage.  Valid only after the connection handshake completes
+     *          The channel carries the router cookie stamped in every outgoing message
+     *          Valid only after the connection handshake completes
      *          (i.e. when is_connection_started() returns true).
      *
      * \return  Const reference to the active Channel object.
@@ -132,7 +130,7 @@ protected:
      * \param   msgFailed       The message, which failed to send.
      * \param   whichTarget     The target socket to send message.
      **/
-    void failed_send_message( const RemoteMessage & msgFailed, Socket & whichTarget ) final;
+    void failed_send_message( const EventEnvelope & msgFailed, Socket & whichTarget ) final;
 
     /**
      * \brief   Called when message receiving fails.
@@ -147,7 +145,7 @@ protected:
      *
      * \param   msgUnprocessed      Unprocessed message data.
      **/
-    void failed_process_message( const RemoteMessage & msgUnprocessed ) final;
+    void failed_process_message( const EventEnvelope & msgUnprocessed ) final;
 
     /**
      * \brief   Called to process a received message from specified source socket.
@@ -155,7 +153,7 @@ protected:
      * \param   msgReceived     Received message to process.
      * \param   whichSource     The source socket, which received message.
      **/
-    void process_received_message( RemoteMessage & msgReceived, Socket & whichSource ) final;
+    void process_received_message( EventEnvelope & msgReceived, Socket & whichSource ) final;
 
 /************************************************************************/
 // RegistrationProvider interface overrides
@@ -257,7 +255,7 @@ protected:
      *
      * \param   msgReceived     The received communication message.
      **/
-    void on_message_received(const RemoteMessage& msgReceived) final;
+    void on_message_received(const EventEnvelope& msgReceived) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations and attributes
@@ -276,8 +274,8 @@ private:
      * \param   msg     The message to forward.
      * \return  Returns true if succeeded to send the command.
      **/
-    inline void forward_executable_message(const RemoteMessage & msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
-    inline void forward_executable_message(RemoteMessage&& msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio);
+    inline void forward_executable_message(const EventEnvelope & msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
+    inline void forward_executable_message(EventEnvelope&& msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -305,17 +303,17 @@ inline RouterClient & RouterClient::self() noexcept
     return (*this);
 }
 
-inline void RouterClient::forward_executable_message(const RemoteMessage& msg, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/)
+inline void RouterClient::forward_executable_message(const EventEnvelope& msg, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/)
 {
     ServiceClientEvent::send_event(ServiceEventData(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msg), mEventConsumer, static_cast<DispatcherThread&>(self()), eventPrio);
 }
 
-inline void RouterClient::forward_executable_message(RemoteMessage&& msg, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/)
+inline void RouterClient::forward_executable_message(EventEnvelope&& msg, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/)
 {
     ServiceClientEvent::send_event(ServiceEventData(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, std::move(msg)), mEventConsumer, static_cast<DispatcherThread&>(self()), eventPrio);
 }
 
-inline bool RouterClient::send_raw_message(const RemoteMessage& msg)
+inline bool RouterClient::send_raw_message(const EventEnvelope& msg)
 {
     return send_message(msg);
 }
@@ -325,13 +323,13 @@ inline const areg::Channel& RouterClient::connection_channel() const noexcept
     return mChannel;
 }
 
-inline void RouterClient::on_message_received(const RemoteMessage& msgReceived)
+inline void RouterClient::on_message_received(const EventEnvelope& msgReceived)
 {
     ASSERT(areg::is_executable_id(static_cast<uint32_t>(msgReceived.message_id())));
-    StreamableEvent* eventRemote = RemoteEventFactory::event_from_stream(msgReceived, mChannel);
-    if (eventRemote != nullptr)
+    Event evtRemote = RemoteEventFactory::event_from_stream(msgReceived, mChannel);
+    if (evtRemote.is_valid())
     {
-        eventRemote->deliver_event();
+        evtRemote.deliver_event();
     }
     else
     {

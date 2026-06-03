@@ -117,7 +117,7 @@ public:
      * \return  Pointer to the component if found; null otherwise.
      **/
     [[nodiscard]]
-    static Component * find_by_name(const String & roleName) noexcept;
+    static inline Component * find_by_name(const String & roleName) noexcept;
 
     /**
      * \brief   Finds a component by its hash value.
@@ -126,16 +126,7 @@ public:
      * \return  Pointer to the component if found; null otherwise.
      **/
     [[nodiscard]]
-    static Component * find_by_number(uint32_t magicNum) noexcept;
-
-    /**
-     * \brief   Returns true if a component with the specified role name exists.
-     *
-     * \param   roleName    The role name to check.
-     * \return  True if the component exists; false otherwise.
-     **/
-    [[nodiscard]]
-    static bool exist(const String & roleName) noexcept;
+    static inline Component * find_by_number(uint32_t magicNum) noexcept;
 
     /**
      * \brief   Finds a component by its address.
@@ -144,7 +135,16 @@ public:
      * \return  Pointer to the component if found; null otherwise.
      **/
     [[nodiscard]]
-    static Component * find_by_address(const ComponentAddress & comAddress) noexcept;
+    static inline Component * find_by_address(const ComponentAddress & comAddress) noexcept;
+
+    /**
+     * \brief   Returns true if a component with the specified role name exists.
+     *
+     * \param   roleName    The role name to check.
+     * \return  True if the component exists; false otherwise.
+     **/
+    [[nodiscard]]
+    static inline bool exist(const String & roleName) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor.
@@ -288,7 +288,7 @@ public:
      * \return  Pointer to the dispatcher thread if found; null otherwise.
      **/
     [[nodiscard]]
-    inline DispatcherThread * find_event_consumer( const RuntimeClassID & whichClass ) const noexcept;
+    inline DispatcherThread * find_event_consumer( uint32_t whichClass ) const noexcept;
 
     /**
      * \brief   Returns the master thread that owns this component.
@@ -315,28 +315,9 @@ public:
     inline const ListServers & extract_service_addresses() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
-// Hidden members
+// Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-/************************************************************************/
-// Hidden member variables
-/************************************************************************/
-
-    /**
-     * \brief   Component informations object, which contains
-     *          component address and registered worker thread list.
-     **/
-    ComponentInfo         mComponentInfo;
-
-    /**
-     * \brief   The calculated number of component.
-     **/
-    uint32_t        mMagicNum;
-
-private:
-/************************************************************************/
-// Private methods
-/************************************************************************/
 
     [[nodiscard]]
     inline Component & self() noexcept;
@@ -366,6 +347,25 @@ private:
     [[nodiscard]]
     static Component::MapComponentResource& resource_map() noexcept;
 
+//////////////////////////////////////////////////////////////////////////
+// Hidden members
+//////////////////////////////////////////////////////////////////////////
+private:
+/************************************************************************/
+// Hidden member variables
+/************************************************************************/
+
+    /**
+     * \brief   Component information object, which contains
+     *          component address and registered worker thread list.
+     **/
+    ComponentInfo   mComponentInfo;
+
+    /**
+     * \brief   The calculated number of component.
+     **/
+    uint32_t        mMagicNum;
+
 private:
 /************************************************************************/
 // Private member variables
@@ -392,6 +392,29 @@ private:
 // Component class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
+inline Component* Component::find_by_name(const String& roleName) noexcept
+{
+    return (roleName.is_empty() ? nullptr : Component::find_by_number(areg::crc32_calculate(roleName.as_string())));
+}
+
+inline Component* Component::find_by_number(uint32_t magicNum) noexcept
+{
+    ASSERT(magicNum != areg::CHECKSUM_IGNORE);
+    return Component::resource_map().find_resource_object(magicNum);
+}
+
+inline Component* Component::find_by_address(const ComponentAddress& comAddress) noexcept
+{
+    Component* result = Component::resource_map().find_resource_object(static_cast<uint32_t>(comAddress.role_name()));
+    return (result != nullptr && result->address() == comAddress ? result : nullptr);
+}
+
+inline bool Component::exist(const String& roleName) noexcept
+{
+    ASSERT(roleName.is_empty() == false);
+    return Component::resource_map().exist(areg::crc32_calculate(roleName.as_string()));
+}
+
 inline void Component::register_service_provider(StubBase& server)
 {
     mServerList.push_last(&server);
@@ -402,7 +425,7 @@ inline ComponentThread & Component::master_thread() noexcept
     return mComponentInfo.master_thread();
 }
 
-inline DispatcherThread * Component::find_event_consumer( const RuntimeClassID& whichClass ) const noexcept
+inline DispatcherThread * Component::find_event_consumer( uint32_t whichClass ) const noexcept
 {
     return mComponentInfo.find_event_consumer(whichClass);
 }

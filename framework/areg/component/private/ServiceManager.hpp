@@ -38,7 +38,7 @@ class StubAddress;
 class ProxyAddress;
 class ServiceRequestEvent;
 class ServiceResponseEvent;
-class RemoteMessage;
+class EventEnvelope;
 class Channel;
 
 //////////////////////////////////////////////////////////////////////////
@@ -142,7 +142,7 @@ public:
     static void enable_data_rate(bool enable) noexcept;
 
     /**
-     * \brief   Sends a pre-serialized RemoteMessage directly to the IPC send thread,
+     * \brief   Sends a pre-serialized EventEnvelope directly to the IPC send thread,
      *          bypassing all event dispatch and serialization overhead.
      *          The caller is responsible for ensuring the message was built while the
      *          connection was valid and the target cookie is still active.
@@ -150,7 +150,7 @@ public:
      * \param   msg     The pre-built message to send.
      * \return  Returns true if the message was accepted by the send thread.
      **/
-    static bool send_raw_message(const RemoteMessage& msg) noexcept;
+    static bool send_raw_message(const EventEnvelope& msg) noexcept;
 
     /**
      * \brief   Returns the active IPC connection channel used to route messages

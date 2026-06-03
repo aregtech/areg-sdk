@@ -35,6 +35,70 @@ namespace areg {
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
+// ServiceRole class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Contains the role name (service name) and the service unique number.
+ **/
+class AREG_API ServiceRole
+{
+public:
+    ServiceRole();
+    explicit ServiceRole(const String& roleName);
+    explicit ServiceRole(const UniqueNumber roleNum);
+    explicit ServiceRole(const String& roleName, const UniqueNumber roleNum);
+    ServiceRole(const ServiceRole& src);
+    ServiceRole(ServiceRole&& src) noexcept;
+    ~ServiceRole() = default;
+
+public:
+    inline ServiceRole& operator = (const ServiceRole& src);
+    inline ServiceRole& operator = (ServiceRole&& src) noexcept;
+
+    [[nodiscard]]
+    inline bool operator == (const ServiceRole& other) const noexcept;
+
+    [[nodiscard]]
+    inline bool operator != (const ServiceRole& other) const noexcept;
+
+    [[nodiscard]]
+    inline explicit operator uint32_t() const noexcept;
+
+    inline explicit operator const areg::String& () const noexcept;
+
+public:
+
+    [[nodiscard]]
+    inline const String& role_name() const noexcept;
+
+    inline void set_role_name(const String& roleName);
+
+    inline UniqueNumber number() const noexcept;
+
+    inline void set_number(const UniqueNumber roleNum) noexcept;
+
+    [[nodiscard]]
+    inline const char* as_string() const noexcept;
+
+    inline void clear();
+
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
+
+    [[nodiscard]]
+    inline bool is_empty() const noexcept;
+
+    [[nodiscard]]
+    inline bool is_numeric() const noexcept;
+
+private:
+
+    mutable String  mRoleName;
+
+    UniqueNumber    mMagicNum;
+};
+
+//////////////////////////////////////////////////////////////////////////
 // ServiceAddress class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
@@ -74,18 +138,24 @@ public:
     ServiceAddress();
 
     /**
-     * \brief   Creates a service address with the specified name, version, type, and component role
-     *          name.
+     * \brief   Creates a service address with the specified name, version, type, and component role name.
      *
      * \param   serviceName         The service name.
      * \param   serviceVersion      The service version.
      * \param   serviceType         The service type.
      * \param   roleName            The role name of the component owning the service.
      **/
-    ServiceAddress( const String & serviceName
-                  , const Version & serviceVersion
-                  , areg::ServiceType serviceType
-                  , const String & roleName );
+    ServiceAddress( const String & serviceName , const Version & serviceVersion , areg::ServiceType serviceType , const String & roleName );
+
+    /**
+     * \brief   Creates a service address with the specified service number, version, type, and component role name.
+     *
+     * \param   serviceNum          The service number.
+     * \param   serviceVersion      The service version.
+     * \param   serviceType         The service type.
+     * \param   roleNum             The role name of the component owning the service.
+     **/
+    ServiceAddress(const UniqueNumber serviceNum, const Version& serviceVersion, areg::ServiceType serviceType, const UniqueNumber roleNum);
 
     /**
      * \brief   Creates a service address from a service item and component role name.
@@ -94,6 +164,14 @@ public:
      * \param   roleName        The role name of the component owning the service.
      **/
     ServiceAddress( const ServiceItem  & serviceItem, const String & roleName );
+
+    /**
+     * \brief   Creates a service address from a service item and component role name.
+     *
+     * \param   serviceItem     The service item containing name, version, and type.
+     * \param   roleNum         The role name of the component owning the service.
+     **/
+    ServiceAddress(const ServiceItem& serviceItem, const UniqueNumber roleNum);
 
     /**
      * \brief   Creates a service address from a stub address.
@@ -110,11 +188,12 @@ public:
     explicit ServiceAddress( const ProxyAddress & addrProxy );
 
     /**
-     * \brief   Initializes a service address by reading from a stream.
+     * \brief   Deserializes service address from shared service identity and endpoint fields.
      *
-     * \param   stream      The stream containing serialized service address data.
+     * \param   rawService  Shared service interface identity (role/service hash, type).
+     * \param   endPoint    Endpoint carrying version and routing fields.
      **/
-    ServiceAddress( const InStream & stream );
+    ServiceAddress(const areg::RawService& rawService, const areg::Endpoint& endPoint);
 
     ServiceAddress( ServiceAddress && source ) noexcept;
 
@@ -144,30 +223,16 @@ public:
     [[nodiscard]]
     inline explicit operator uint32_t () const noexcept;
 
-/************************************************************************/
-// Friend global operators for streaming
-/************************************************************************/
-
-    /**
-     * \brief   Reads and initializes a service address from a stream.
-     *
-     * \param   stream      The stream to read data from.
-     * \param   input       The service address object to initialize.
-     **/
-    friend inline const InStream & operator >> ( const InStream & stream, ServiceAddress & input );
-
-    /**
-     * \brief   Writes a service address into a stream.
-     *
-     * \param   stream      The stream to write data to.
-     * \param   output      The service address to serialize.
-     **/
-    friend inline OutStream & operator << ( OutStream & stream, const ServiceAddress & output);
-
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
+
+    /**
+     * \brief   Returns true if service address is valid.
+     **/
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Returns the role name of the component owning the service.
@@ -203,12 +268,35 @@ public:
      **/
     void from_string( const char * pathService, const char** nextPart = nullptr );
 
-protected:
     /**
-     * \brief   Returns true if the service address contains valid data.
+     * \brief   Initialize service address data from shared service identity and endpoint fields.
+     *
+     * \param   rawService  Shared service interface identity (role/service hash, type).
+     * \param   endPoint    Endpoint carrying version fields.
      **/
-    [[nodiscard]]
-    inline bool is_validated() const noexcept;
+    inline void from_endpoint(const areg::RawService& rawService, const areg::Endpoint& endPoint) noexcept;
+
+    /**
+     * \brief   Write service address data into shared service identity and endpoint fields.
+     *
+     * \param   rawService  Receives role/service hash and type.
+     * \param   endPoint    Receives version fields.
+     **/
+    inline void to_endpoint(areg::RawService& rawService, areg::Endpoint& endPoint) const noexcept;
+
+    /**
+     * \brief   Reads ServiceAddress data from an input stream.
+     *
+     * \param   stream      The input stream to read from.
+     **/
+    inline const InStream& from_stream(const InStream& stream);
+
+    /**
+     * \brief   Writes ServiceAddress data to an output stream.
+     *
+     * \param   stream      The output stream to write to.
+     **/
+    inline OutStream& to_stream(OutStream& stream) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -229,7 +317,7 @@ protected:
     /**
      * \brief   The role name of service address.
      **/
-    String          mRoleName;
+    String  mRoleName;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -240,6 +328,102 @@ private:
      **/
     uint32_t    mMagicNum;
 };
+
+//////////////////////////////////////////////////////////////////////////
+// ServiceRole class inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline ServiceRole& ServiceRole::operator = (const ServiceRole& src)
+{
+    if (this != &src)
+    {
+        mRoleName = src.mRoleName;
+        mMagicNum = src.mMagicNum;
+    }
+
+    return (*this);
+}
+
+inline ServiceRole& ServiceRole::operator = (ServiceRole&& src) noexcept
+{
+    if (this != &src)
+    {
+        mRoleName = std::move(src.mRoleName);
+        mMagicNum = src.mMagicNum;
+        src.mMagicNum = areg::CHECKSUM_IGNORE;
+    }
+
+    return (*this);
+}
+
+inline bool ServiceRole::operator == (const ServiceRole& other) const noexcept
+{
+    return (mMagicNum == other.mMagicNum);
+}
+
+inline bool ServiceRole::operator != (const ServiceRole& other) const noexcept
+{
+    return (mMagicNum != other.mMagicNum);
+}
+
+inline ServiceRole::operator uint32_t() const noexcept
+{
+    return mMagicNum;
+}
+
+inline ServiceRole::operator const areg::String& () const noexcept
+{
+    return mRoleName;
+}
+
+inline const String& ServiceRole::role_name() const noexcept
+{
+    return mRoleName;
+}
+
+inline void ServiceRole::set_role_name(const String& roleName)
+{
+    mRoleName = roleName;
+    mMagicNum = roleName.is_numeric() ? roleName.to_uint32() : areg::crc32_calculate(roleName.as_string());
+}
+
+inline const char* ServiceRole::as_string() const noexcept
+{
+    return mRoleName.as_string();
+}
+
+inline void ServiceRole::clear()
+{
+    mRoleName.clear();
+    mMagicNum = areg::CHECKSUM_IGNORE;
+}
+
+inline bool ServiceRole::is_valid() const noexcept
+{
+    return (mMagicNum != areg::CHECKSUM_IGNORE);
+}
+
+inline bool ServiceRole::is_empty() const noexcept
+{
+    if (mRoleName.is_empty())
+        mRoleName = String::make_string(mMagicNum);
+    return mRoleName.is_empty();
+}
+
+inline bool ServiceRole::is_numeric() const noexcept
+{
+    return mRoleName.is_numeric();
+}
+
+inline UniqueNumber ServiceRole::number() const noexcept
+{
+    return mMagicNum;
+}
+
+inline void ServiceRole::set_number(const UniqueNumber roleNum) noexcept
+{
+    mMagicNum = roleNum;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceAddress class inline methods
@@ -264,6 +448,7 @@ inline ServiceAddress & ServiceAddress::operator = ( ServiceAddress && source ) 
         static_cast<ServiceItem &>(*this) = static_cast<ServiceItem &&>(source);
         mRoleName   = std::move(source.mRoleName);
         mMagicNum   = source.mMagicNum;
+        source.mMagicNum = areg::CHECKSUM_IGNORE;
     }
 
     return (*this);
@@ -284,6 +469,11 @@ inline ServiceAddress::operator uint32_t () const noexcept
     return mMagicNum;
 }
 
+inline bool ServiceAddress::is_valid() const noexcept
+{
+    return areg::crc32_valid(mMagicNum);
+}
+
 inline const String & ServiceAddress::role_name() const noexcept
 {
     return mRoleName;
@@ -292,8 +482,7 @@ inline const String & ServiceAddress::role_name() const noexcept
 inline void ServiceAddress::set_role_name(const String & roleName)
 {
     mRoleName = roleName;
-    mRoleName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
-    mMagicNum = ServiceAddress::_magic_number(*this);
+    mMagicNum = roleName.is_numeric() ? roleName.to_uint32() : ServiceAddress::_magic_number(*this);
 }
 
 inline const ServiceItem & ServiceAddress::service() const noexcept
@@ -301,28 +490,29 @@ inline const ServiceItem & ServiceAddress::service() const noexcept
     return static_cast<const ServiceItem &>(*this);
 }
 
-inline bool ServiceAddress::is_validated() const noexcept
+inline void ServiceAddress::to_endpoint(areg::RawService& rawService, areg::Endpoint& endPoint) const noexcept
 {
-    return ServiceItem::is_validated() && (mRoleName.is_empty() == false);
+    ServiceItem::to_endpoint(rawService, endPoint);
+    rawService.role = mMagicNum;
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Global serialization operators
-//////////////////////////////////////////////////////////////////////////
-
-inline const InStream & operator >> ( const InStream & stream, ServiceAddress & input )
+inline void ServiceAddress::from_endpoint(const areg::RawService& rawService, const areg::Endpoint& endPoint) noexcept
 {
-    stream >> static_cast<ServiceItem &>(input); 
-    stream >> input.mRoleName; 
-    input.mMagicNum = ServiceAddress::_magic_number(input);
+    ServiceItem::from_endpoint(rawService, endPoint);
+    mMagicNum = rawService.role;
+}
 
+inline const InStream& ServiceAddress::from_stream(const InStream& stream)
+{
+    ServiceItem::from_stream(stream);
+    stream >> mMagicNum;
     return stream;
 }
 
-inline OutStream & operator << ( OutStream & stream, const ServiceAddress & output)
+inline OutStream& ServiceAddress::to_stream(OutStream& stream) const
 {
-    stream << static_cast<const ServiceItem &>(output);
-    stream << output.mRoleName;
+    ServiceItem::to_stream(stream);
+    stream << mMagicNum;
     return stream;
 }
 

@@ -24,14 +24,13 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
-#include "areg/base/RemoteMessage.hpp"
+#include "areg/base/EventEnvelope.hpp"
+#include "areg/base/MemoryDefs.hpp"
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
-#include "areg/ipc/SendMessageEvent.hpp"
 #include "aregextend/service/ServerConnection.hpp"
-
-#include <cstring>
+#include "aregextend/service/SystemServiceDefs.hpp"
 
 namespace areg::ext {
 
@@ -39,36 +38,37 @@ namespace areg::ext {
  * \brief   Phase 2 of the send batch pipeline: sort \a batch in-place by
  *          socket handle using binary insertion sort.
  *
+ *          Uses move-assignment (not memmove) because PendingSend contains
+ *          an EventEnvelope whose shared_ptr makes memmove undefined behavior.
+ *
  * \param   batch   Batch array to sort.
  * \param   count   Number of valid entries in \a batch.
  **/
-inline void sort_pending_sends(areg::PendingSend * batch, uint32_t count) noexcept
+inline void sort_pending_sends(areg::ext::PendingSend * batch, uint32_t count) noexcept
 {
-    for (uint32_t i = 1; i < count; ++i)
+    for ( uint32_t i{ 1u }; i < count; ++i )
     {
-        if (batch[i].socket >= batch[i - 1].socket)
+        if ( batch[i].socket >= batch[i - 1].socket )
             continue;
 
-        const areg::PendingSend key{ batch[i] };
-        uint32_t lo{ 0 }, hi{ i };
-        while (lo < hi)
+        areg::ext::PendingSend key{ std::move(batch[i]) };
+        uint32_t lo{ 0u }, hi{ i };
+        while ( lo < hi )
         {
             const uint32_t mid{ lo + ((hi - lo) >> 1) };
-            (batch[mid].socket <= key.socket) ? lo = mid + 1 : hi = mid;
+            (batch[mid].socket <= key.socket) ? lo = mid + 1u : hi = mid;
         }
 
-        ::memmove( &batch[lo + 1], &batch[lo], static_cast<size_t>(i - lo) * sizeof(areg::PendingSend) );
-        batch[lo] = key;
+        for ( uint32_t j{ i }; j > lo; --j )
+            batch[j] = std::move(batch[j - 1]);
+
+        batch[lo] = std::move(key);
     }
 }
 
 /**
  * \brief   Phase 3 of the send batch pipeline: send each same-socket group
  *          with a single syscall and accumulate stats.
- *
- *          Entries whose sendEvt is nullptr (the triggering message, owned
- *          by the dispatch chain) are never destroyed. All other entries are
- *          destroyed before the function returns.
  *
  * \param   batch   Sorted ascending by socket handle batch.
  * \param   count   Number of valid entries in \a batch.
@@ -78,63 +78,54 @@ inline void sort_pending_sends(areg::PendingSend * batch, uint32_t count) noexce
  *                  each successful send to accumulate stats.
  **/
 template<typename AccumFn>
-inline void send_pending_groups( areg::PendingSend * batch
+inline void send_pending_groups( areg::ext::PendingSend * batch
                                , uint32_t count
                                , ServerConnection & conn
                                , areg::RemoteMessageHandler & handler
                                , AccumFn && accum )
 {
-    for (uint32_t i = 0u; i < count; )
+    for ( uint32_t i{ 0u }; i < count; )
     {
         const SOCKETHANDLE hSocket{ batch[i].socket };
-        uint32_t j = i + 1u;
-        while ((j < count) && (batch[j].socket == hSocket))
+        uint32_t j{ i + 1u };
+        while ( (j < count) && (batch[j].socket == hSocket) )
             ++j;
 
-        const uint32_t groupSize = j - i;
-        if (groupSize == 1u)
+        const uint32_t groupSize{ j - i };
+
+        areg::IoBuffer ioBuffer[areg::THREAD_DRAIN_LIMIT];
+        uint32_t bufCount  { 0u };
+        uint32_t totalSize { 0u };
+
+        for ( uint32_t k{ 0u }; k < groupSize; ++k )
         {
-            const areg::RemoteMessage & message{ *batch[i].msg };
-            const int32_t sent{ conn.send_message(message, hSocket) };
-            if (sent > 0)
-            {
-                accum(static_cast<uint64_t>(sent), 1u);
-            }
-            else if (!conn.is_interrupted())
-            {
-                areg::SocketAccepted client{ conn.client_by_handle(hSocket) };
-                handler.failed_send_message(message, client);
-            }
+            // PendingSend::msg is the wire-ready IPC envelope; header + payload sent verbatim.
+            // internal1/internal2/custom were zeroed by the send thread before storage here.
+            const areg::EventEnvelope & env{ batch[i + k].msg };
+            const areg::EventHeader* ipcHdr{ env.header() };
+            if (ipcHdr == nullptr)
+                continue;
+
+            const uint32_t wireSize{ sizeof(areg::EventHeader) + ipcHdr->bufHeader.biUsed };
+            ioBuffer[bufCount++] = { reinterpret_cast<const uint8_t*>(ipcHdr), wireSize };
+            totalSize += wireSize;
         }
-        else
+
+        if ( bufCount == 0u )
         {
-            areg::IoBuffer ioBuffer[areg::THREAD_DRAIN_LIMIT];
-            uint32_t bufCount  { 0u };
-            uint32_t totalSize { 0u };
+            i = j;
+            continue;
+        }
 
-            for (uint32_t k{ 0u }; k < groupSize; ++k)
-            {
-                const areg::RemoteMessage* msg{ batch[i + k].msg };
-                const areg::MessageHeader* hdr{ msg->header() };
-                if (hdr != nullptr)
-                {
-                    msg->buffer_completion_fix();
-                    const uint32_t bufSize = sizeof(areg::MessageHeader) + hdr->rbhBufHeader.biUsed;
-                    ioBuffer[bufCount++] = { reinterpret_cast<const uint8_t *>(hdr), bufSize };
-                    totalSize += bufSize;
-                }
-            }
-
-            const int32_t sent = conn.send_messages_batch(ioBuffer, bufCount, hSocket, totalSize);
-            if (sent > 0)
-            {
-                accum(static_cast<uint64_t>(totalSize), groupSize);
-            }
-            else if (!conn.is_interrupted())
-            {
-                areg::SocketAccepted client{ conn.client_by_handle(hSocket) };
-                handler.failed_send_message(*batch[i].msg, client);
-            }
+        const int32_t sent{ conn.send_messages_batch(ioBuffer, bufCount, hSocket, totalSize) };
+        if ( sent > 0 )
+        {
+            accum(static_cast<uint64_t>(sent), groupSize);
+        }
+        else if ( !conn.is_interrupted() )
+        {
+            areg::SocketAccepted client{ conn.client_by_handle(hSocket) };
+            handler.failed_send_message(batch[i].msg, client);
         }
 
         i = j;
@@ -169,14 +160,14 @@ inline bool drain_recv_cache( ServerConnection & conn
                             , areg::RemoteMessageHandler & handler
                             , uint32_t maxDrain
                             , areg::SocketAccepted & clientSocket
-                            , areg::RemoteMessage & msgReceived
+                            , areg::EventEnvelope & msgReceived
                             , AccumFn && accum )
 {
     uint32_t drain{ 0u };
-    while ((areg::recv_data_available(clientSocket.handle()) != 0u) && (drain < maxDrain))
+    while ( (areg::recv_data_available(clientSocket.handle()) != 0u) && (drain < maxDrain) )
     {
-        const int32_t cached = conn.receive_message(msgReceived, clientSocket);
-        if (cached <= 0)
+        const int32_t cached{ conn.receive_message(msgReceived, clientSocket) };
+        if ( cached <= 0 )
             return false;
 
         handler.process_received_message(msgReceived, clientSocket);

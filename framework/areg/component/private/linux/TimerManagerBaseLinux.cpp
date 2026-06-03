@@ -30,7 +30,7 @@ namespace areg {
 
 bool TimerManagerBase::post_event(Event& eventElem)
 {
-    bool result = (AREG_RUNTIME_CAST(&eventElem, TimerManagerEvent) != nullptr) && EventDispatcher::post_event(eventElem);
+    bool result = (eventElem.event_id() == TimerManagerEvent::CLASS_ID) && EventDispatcher::post_event(eventElem);
 
     // Wake the epoll loop in run_dispatcher() so it can drain the event queue.
     if (result && (mCommandFd >= 0))
@@ -71,7 +71,6 @@ bool TimerManagerBase::run_dispatcher()
 
     ready_for_events(true);
 
-    const ExitEvent& exitEvent = ExitEvent::exit_event();
     bool exitRequested = false;
 
     while (!exitRequested)
@@ -102,10 +101,13 @@ bool TimerManagerBase::run_dispatcher()
                 uint64_t counter { 0u };
                 [[maybe_unused]] ssize_t drained = ::read(mCommandFd, &counter, sizeof(uint64_t));
 
-                Event* evt{ nullptr };
-                while ((evt = pick_event()) != nullptr)
+                for (;;)
                 {
-                    if (static_cast<const Event*>(evt) == static_cast<const Event*>(&exitEvent))
+                    Event evt{ pick_event() };
+                    if (!evt.is_valid())
+                        break;
+
+                    if (evt.is_exit_prio())
                     {
                         exitRequested = true;
                         break;
@@ -113,7 +115,7 @@ bool TimerManagerBase::run_dispatcher()
 
                     if (prepare_dispatch_event(evt))
                     {
-                        dispatch_event(*evt);
+                        dispatch_event(evt);
                     }
 
                     post_dispatch_event(evt);

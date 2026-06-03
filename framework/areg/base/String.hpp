@@ -611,14 +611,14 @@ protected:
      *
      * \param   stream      The input stream to read string data from.
      **/
-    void read_stream(const InStream & stream);
+    void from_stream(const InStream & stream);
 
     /**
      * \brief   Writes string data to a stream object.
      *
      * \param[in,out] stream      The output stream to write string data to.
      **/
-    void write_stream(OutStream & stream) const;
+    void to_stream(OutStream & stream) const;
 };
 #if defined(_MSC_VER)
     #pragma warning(pop)
@@ -923,13 +923,13 @@ inline String operator + (const wchar_t* lhs, const String& rhs)
 
 inline const InStream& operator >> (const InStream& stream, String& input)
 {
-    input.read_stream(stream);
+    input.from_stream(stream);
     return stream;
 }
 
 inline OutStream& operator << (OutStream& stream, const String& output)
 {
-    output.write_stream(stream);
+    output.to_stream(stream);
     return stream;
 }
 

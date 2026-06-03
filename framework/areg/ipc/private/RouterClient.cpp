@@ -18,7 +18,7 @@
 #include "areg/ipc/private/ConnectionDefs.hpp"
 
 #include "areg/component/RemoteEventFactory.hpp"
-#include "areg/component/StreamableEvent.hpp"
+#include "areg/component/Event.hpp"
 #include "areg/component/ResponseEvents.hpp"
 #include "areg/component/RequestEvents.hpp"
 #include "areg/component/ServiceDefs.hpp"
@@ -66,7 +66,7 @@ RouterClient::RouterClient(ConnectionConsumer& connectionConsumer, RegistrationC
 bool RouterClient::connect_service_host()
 {
     bool result{ true };
-    if (is_running() == false)
+    if (!is_running())
     {
         if (start(areg::WAIT_INFINITE) && wait_start(areg::WAIT_INFINITE))
         {
@@ -77,7 +77,7 @@ bool RouterClient::connect_service_host()
             shutdown(areg::WAIT_INFINITE);
         }
     }
-    else if (mClientConnection.is_valid() == false)
+    else if (!mClientConnection.is_valid())
     {
         result = ServiceClientConnectionBase::connect_service_host();
     }
@@ -175,7 +175,7 @@ void RouterClient::unregister_service_consumer(const ProxyAddress & proxyService
     }
 }
 
-void RouterClient::failed_send_message(const RemoteMessage & msgFailed, Socket & whichTarget )
+void RouterClient::failed_send_message(const EventEnvelope & msgFailed, Socket & whichTarget )
 {
     LOG_SCOPE( areg_ipc_private_RouterClient, failed_send_message );
 
@@ -184,7 +184,7 @@ void RouterClient::failed_send_message(const RemoteMessage & msgFailed, Socket &
         uint32_t msgId{ msgFailed.message_id() };
         if ( areg::is_executable_id(msgId) || areg::is_connect_id(msgId) )
         {
-            LOG_WARN("Failed to send message [ %u ] to target [ %llu ], source is [ %llu ], the target socket [ %u ] is [ %s : %s ]"
+            LOG_WARN("Failed to send message [ %u ] to target [ %u ], source is [ %u ], the target socket [ %u ] is [ %s : %s ]"
                        , msgId
                        , msgFailed.target()
                        , msgFailed.source()
@@ -193,11 +193,11 @@ void RouterClient::failed_send_message(const RemoteMessage & msgFailed, Socket &
                        , whichTarget.is_alive() ? "ALIVE" : "DEAD");
 
             msgFailed.move_to_begin();
-            StreamableEvent * eventError = RemoteEventFactory::request_failed_event(msgFailed, mChannel);
-            if ( eventError != nullptr )
+            Event evtError = RemoteEventFactory::request_failed_event(msgFailed, mChannel);
+            if ( evtError.is_valid() )
             {
-                LOG_DBG("Replying with failure event [ %s ]", eventError->class_string());
-                eventError->deliver_event();
+                LOG_DBG("Replying with failure event [ %u ]", evtError.event_id());
+                evtError.deliver_event();
             }
 
             if ( whichTarget.is_valid() && (whichTarget.is_alive() == false))
@@ -244,7 +244,7 @@ void RouterClient::failed_receive_message( Socket & whichSource )
     }
 }
 
-void RouterClient::failed_process_message( const RemoteMessage & msgUnprocessed )
+void RouterClient::failed_process_message( const EventEnvelope & msgUnprocessed )
 {
     LOG_SCOPE( areg_ipc_private_RouterClient, failed_process_message );
 
@@ -253,17 +253,17 @@ void RouterClient::failed_process_message( const RemoteMessage & msgUnprocessed 
         uint32_t msgId{ msgUnprocessed.message_id() };
         if ( areg::is_executable_id(msgId) )
         {
-            LOG_DBG("The message [ %u ] for target [ %llu ] and from source [ %llu ] is unprocessed, replying with failed message"
+            LOG_DBG("The message [ %u ] for target [ %u ] and from source [ %u ] is unprocessed, replying with failed message"
                       , msgId
                       , msgUnprocessed.target()
                       , msgUnprocessed.source());
 
             msgUnprocessed.move_to_begin();
-            StreamableEvent * eventError = RemoteEventFactory::request_failed_event(msgUnprocessed, mChannel);
-            if ( eventError != nullptr )
+            Event evtError = RemoteEventFactory::request_failed_event(msgUnprocessed, mChannel);
+            if ( evtError.is_valid() )
             {
-                RemoteMessage data;
-                if ( RemoteEventFactory::stream_from_event( data, *eventError, mChannel) )
+                EventEnvelope data;
+                if ( RemoteEventFactory::stream_from_event( data, evtError, mChannel) )
                 {
                     send_message(data);
                 }
@@ -280,7 +280,7 @@ void RouterClient::failed_process_message( const RemoteMessage & msgUnprocessed 
     }
 }
 
-void RouterClient::process_received_message( RemoteMessage & msgReceived, Socket & whichSource )
+void RouterClient::process_received_message( EventEnvelope & msgReceived, Socket & whichSource )
 {
     DEBUG_LOG_SCOPE( areg_ipc_private_RouterClient, process_received_message );
     if (!msgReceived.is_valid() || !whichSource.is_valid())
@@ -302,51 +302,32 @@ void RouterClient::process_received_message( RemoteMessage & msgReceived, Socket
 
     case areg::FuncIdRange::SystemServiceNotifyRegister:
     {
-        ASSERT( mClientConnection.cookie() == msgReceived.target() );
-        areg::MessageResult result{ static_cast<areg::MessageResult>(msgReceived.result()) };
-        areg::RegistrationAction reqType;
-        msgReceived >> reqType;
+        ASSERT( static_cast<uint32_t>(mClientConnection.cookie()) == msgReceived.target() );
+        const areg::RegistrationAction reqType{ static_cast<areg::RegistrationAction>(msgReceived.call_type()) };
+        const areg::DisconnectReason reason{ static_cast<areg::DisconnectReason>(msgReceived.result()) };
         DEBUG_LOG_DBG("Remote routing service registration notification of type [ %s ]", areg::as_string(reqType));
 
         switch ( reqType )
         {
         case areg::RegistrationAction::RegisterConsumer:
         {
-            ProxyAddress proxy{ msgReceived };
-            areg::DisconnectReason reason { areg::DisconnectReason::UndefinedReason };
-            msgReceived >> reason;
+            ProxyAddress proxy(*msgReceived.header());
             proxy.set_source( mChannel.source() );
-            if ( result == areg::MessageResult::Succeed )
-            {
-                mRegisterConsumer.on_consumer_registered(proxy);
-            }
-            else
-            {
-                mRegisterConsumer.on_consumer_unregistered(proxy, reason, areg::COOKIE_ANY);
-            }
+            mRegisterConsumer.on_consumer_registered(proxy);
         }
         break;
 
         case areg::RegistrationAction::RegisterProvider:
         {
-            StubAddress stub(msgReceived);
+            StubAddress stub(*msgReceived.header());
             stub.set_source( mChannel.source() );
-            if ( result == areg::MessageResult::Succeed )
-            {
-                mRegisterConsumer.on_provider_registered( stub );
-            }
-            else
-            {
-                mRegisterConsumer.on_provider_unregistered( stub, areg::DisconnectReason::UndefinedReason, areg::COOKIE_ANY );
-            }
+            mRegisterConsumer.on_provider_registered( stub );
         }
         break;
 
         case areg::RegistrationAction::UnregisterConsumer:
         {
-            ProxyAddress proxy{ msgReceived };
-            areg::DisconnectReason reason { areg::DisconnectReason::UndefinedReason };
-            msgReceived >> reason;
+            ProxyAddress proxy(*msgReceived.header());
             proxy.set_source( mChannel.source() );
             mRegisterConsumer.on_consumer_unregistered(proxy, reason, areg::COOKIE_ANY);
         }
@@ -354,9 +335,7 @@ void RouterClient::process_received_message( RemoteMessage & msgReceived, Socket
 
         case areg::RegistrationAction::UnregisterProvider:
         {
-            StubAddress stub(msgReceived);
-            areg::DisconnectReason reason{areg::DisconnectReason::UndefinedReason};
-            msgReceived >> reason;
+            StubAddress stub(*msgReceived.header());
             stub.set_source( mChannel.source() );
             mRegisterConsumer.on_provider_unregistered(stub, reason, areg::COOKIE_ANY);
         }
@@ -422,11 +401,11 @@ void RouterClient::process_request_event( RemoteRequestEvent & reqEvent)
 
     if ( reqEvent.is_remote() )
     {
-        RemoteMessage data;
+        EventEnvelope data;
         if ( RemoteEventFactory::stream_from_event( data, reqEvent, mChannel) )
         {
-            LOG_DBG("Sending [ %s ] event: remote message [ %u ] from source [ %llu ] to target [ %llu ]"
-                      , reqEvent.class_string()
+            LOG_DBG("Sending [ %u ] event: remote message [ %u ] from source [ %u ] to target [ %u ]"
+                      , reqEvent.event_id()
                       , data.message_id()
                       , data.source()
                       , data.target());
@@ -450,11 +429,11 @@ void RouterClient::process_notify_request( RemoteNotifyRequestEvent & reqNotifyE
 
     if ( reqNotifyEvent.is_remote() )
     {
-        RemoteMessage data;
+        EventEnvelope data;
         if ( RemoteEventFactory::stream_from_event( data, reqNotifyEvent, mChannel) )
         {
-            LOG_DBG("Send [ %s ] event: remote message [ %u ] from source [ %llu ] to target [ %llu ]"
-                      , reqNotifyEvent.class_string()
+            LOG_DBG("Send [ %u ] event: remote message [ %u ] from source [ %u ] to target [ %u ]"
+                      , reqNotifyEvent.event_id()
                       , data.message_id()
                       , data.source()
                       , data.target());
@@ -479,11 +458,11 @@ void RouterClient::process_response_event(RemoteResponseEvent & respEvent)
 
     if ( respEvent.is_remote() )
     {
-        RemoteMessage data;
+        EventEnvelope data;
         if ( RemoteEventFactory::stream_from_event( data, respEvent, mChannel) )
         {
-            LOG_DBG("Forwarding [ %s ] message [ %u ] from source [ %llu ] to target [ %llu ]"
-                      , respEvent.class_string()
+            LOG_DBG("Forwarding [ %u ] message [ %u ] from source [ %u ] to target [ %u ]"
+                      , respEvent.event_id()
                       , data.message_id()
                       , data.source()
                       , data.target());
@@ -507,12 +486,8 @@ bool RouterClient::post_event(Event & eventElem)
     {
         if ( is_connection_started() )
         {
-            ASSERT(AREG_RUNTIME_CAST(&eventElem, StreamableEvent) != nullptr);
-            RemoteMessage data;
-            bool result = RemoteEventFactory::stream_from_event(data, static_cast<const StreamableEvent&>(eventElem), mChannel) && send_message(std::move(data));
-            ASSERT(result);
-            eventElem.destroy();
-            return result;
+            EventEnvelope data;
+            return RemoteEventFactory::stream_from_event(data, eventElem, mChannel) && send_message(std::move(data));
         }
 
         eventElem.set_event_consumer( static_cast<RemoteEventConsumer *>(this) );

@@ -54,10 +54,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg {
-    class Event;
-    class RuntimeClassID;
-} // namespace areg
+#include "areg/component/Event.hpp"
 
 namespace areg {
 
@@ -111,7 +108,7 @@ private:
     struct Node
     {
         std::atomic<Node*>  next    { nullptr };
-        Event*              event   { nullptr };    //!< nullptr on the stub node.
+        Event               event   {         };    //!< default (empty) on the stub node.
     };
 
     /**
@@ -195,22 +192,23 @@ public:
     bool is_empty() const noexcept;
 
     /**
-     * \brief   Queues an event.
+     * \brief   Queues an event by moving it into the queue. The event's shared buffer is
+     *          transferred (O(1) — no data copy). The caller's event is left in a moved-from
+     *          (empty/invalid) state after a successful push. On capacity overflow or node
+     *          allocation failure the event is NOT queued and remains in eventElem.
      *
-     * \param   eventElem       Event to queue. Must not be nullptr.
-     * \param[out] removedEvent Receives the dropped event when the queue is
-     *                          full and this is not nullptr; otherwise the
-     *                          dropped event is destroyed immediately.
+     * \param   eventElem       Event to queue (moved in on success).
+     * \param[out] removedEvent If non-null, receives the event on overflow/failure instead of
+     *                          discarding it. Pass nullptr to discard automatically.
      **/
-    void push_event(Event& eventElem, Event** removedEvent);
+    void push_event(Event& eventElem, Event* removedEvent = nullptr);
 
     /**
      * \brief   Dequeues the next event. Priority lane is always drained first.
-     *
-     * \return  Next event pointer, or nullptr when both lanes are empty.
+     *          Returns an invalid Event (is_valid() == false) when both lanes are empty.
      **/
     [[nodiscard]]
-    Event* pop_event() noexcept;
+    Event pop_event() noexcept;
 
     /**
      * \brief   Destroys all non-Exit events in both lanes.
@@ -223,7 +221,7 @@ public:
      *          \a eventClassId (except ExitPrio) in both lanes.
      *          Must not be called concurrently with push_event().
      **/
-    void remove_events(const RuntimeClassID& eventClassId) noexcept;
+    void remove_events(const uint32_t eventClassId) noexcept;
 
     /**
      * \brief   Destroys every event in both lanes.
@@ -233,40 +231,30 @@ public:
 
     /**
      * \brief   Enqueues up to \a count events with a single priority-lane lock acquisition.
-     *          Each event is routed by its priority: ExitPrio events are placed at the front of
-     *          the priority lane; events with HighPrio or above (but not ExitPrio) are inserted
-     *          in priority order after any existing higher-priority entries; events below HighPrio
-     *          go to the lock-free fast lane. Normal-priority events that exceed the queue capacity
-     *          are NOT enqueued and are returned to the caller via \a eventElems. The events in
-     *          \a eventElems list should be already sorted by priorities.
+     *          Each event is moved into the queue. On capacity overflow the event remains in its
+     *          original slot (not moved) and that slot index is compacted into the front of
+     *          \a eventElems, with the overflow count returned.
      *
-     * \param[in,out]   eventElems  On input: sorted by priority array of \a count event pointers to enqueue.
-     *                              On output: \a eventElems[0..<returnValue>) contains the events
-     *                              that could not be enqueued (Normal-priority capacity overflow).
-     *                              The remainder of the array is undefined. Must not be nullptr.
-     * \param           count       Number of valid pointers in \a eventElems.
-     * \return  Number of events that were NOT enqueued due to capacity overflow.
-     *          Returns 0 if all events were enqueued successfully.
-     *          The returned value is always <= \a count.
+     * \param[in,out]   eventElems  Array of Event values sorted by priority. Events that could
+     *                              not be enqueued due to capacity overflow are moved to the front
+     *                              of the array. Must not be nullptr.
+     * \param           count       Number of valid Events in \a eventElems.
+     * \return  Number of events NOT enqueued (capacity overflow). 0 = all enqueued.
      **/
-    uint32_t push_events(Event** eventElems, uint32_t count);
+    uint32_t push_events(Event* eventElems, uint32_t count);
 
     /**
-     * \brief   Dequeues up to \a count events with a single priority-lane lock acquisition.
-     *          The priority lane (ExitPrio first, then higher-priority events) is always drained
-     *          before the lock-free fast lane. The first element in \a eventElems has the highest
-     *          priority among all dequeued events; remaining elements follow in priority order.
+     * \brief   Dequeues up to \a count events into the caller-supplied Event array.
+     *          Priority lane is always drained before the fast lane.
      *
-     * \param[out]      eventElems  Caller-supplied array of at least \a count pointers.
-     *                              On output, \a eventElems[0..<returnValue>) contains the
-     *                              dequeued events, ordered highest-priority-first.
+     * \param[out]      eventElems  Caller-supplied array of at least \a count Event objects.
+     *                              On output, \a eventElems[0..<returnValue>) hold the dequeued
+     *                              events (moved in), highest-priority first.
      *                              Must not be nullptr.
-     * \param           count       Maximum number of events to dequeue; size of \a eventElems.
-     * \return  Number of events dequeued and written to \a eventElems.
-     *          Returns 0 if both lanes are empty.
-     *          The returned value is always <= \a count.
+     * \param           count       Maximum number of events to dequeue.
+     * \return  Number of events dequeued. 0 if both lanes are empty.
      **/
-    uint32_t pop_events(Event** eventElems, uint32_t count);
+    uint32_t pop_events(Event* eventElems, uint32_t count);
 
 //////////////////////////////////////////////////////////////////////////
 // Private helpers
@@ -288,19 +276,17 @@ private:
     inline Node* _mpsc_pop() noexcept;
 
     /**
-     * \brief   Drains the entire fast lane into \a out.
-     *          Reserves space using mFastCount before draining.
+     * \brief   Drains the entire fast lane into \a out (Events moved by value).
      *          Safe only when no producers are active (control path).
      **/
-    void _mpsc_drain_to(std::vector<Event*>& out) noexcept;
+    void _mpsc_drain_to(std::vector<Event>& out) noexcept;
 
     /**
-     * \brief   Drains the entire fast lane into \a out, ignoring any event whose
-     *          runtime class does not matches \a classId.
-     *          Reserves space using mFastCount before draining.
+     * \brief   Drains the entire fast lane into \a out, keeping only events whose class
+     *          ID does NOT match \a classId (matching events are destroyed immediately).
      *          Safe only when no producers are active (control path).
      **/
-    void _mpsc_drain_to(std::vector<Event*>& out, const RuntimeClassID& classId) noexcept;
+    void _mpsc_drain_to(std::vector<Event>& out, const uint32_t classId) noexcept;
 
     /**
      * \brief   Returns a Node from the lock-free pool, or allocates a new one if the pool is empty.
@@ -346,7 +332,7 @@ private:
 
     //!< Priority lane - ExitPrio at front, then descending priority order.
     SpinLock                mPrioLock;  //!< Recursive guard for mPrioQueue
-    std::deque<Event*>      mPrioQueue; //!< [Exit-][Critical-][High-] ordered
+    std::deque<Event>       mPrioQueue; //!< [Exit-][Critical-][High-] ordered (stored by value)
     std::atomic_uint32_t    mPrioCount; //!< The number of elements in mPrioQueue
 
     //!< Queue listener to signal and reset on push and pop.

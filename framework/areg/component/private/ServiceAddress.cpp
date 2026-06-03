@@ -25,6 +25,53 @@
 #include <utility>
 namespace areg {
 
+//////////////////////////////////////////////////////////////////////////
+// ServiceRole class implementation
+//////////////////////////////////////////////////////////////////////////
+
+ServiceRole::ServiceRole()
+    : mRoleName ()
+    , mMagicNum (areg::CHECKSUM_IGNORE)
+{
+}
+
+ServiceRole::ServiceRole(const String& roleName)
+    : mRoleName (roleName)
+    , mMagicNum (areg::CHECKSUM_IGNORE)
+{
+    mRoleName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
+    mMagicNum = areg::crc32_calculate(roleName.as_string());
+}
+
+ServiceRole::ServiceRole(const UniqueNumber roleNum)
+    : mRoleName ()
+    , mMagicNum (roleNum)
+{
+}
+
+ServiceRole::ServiceRole(const String& roleName, const UniqueNumber roleNum)
+    : mRoleName (roleName)
+    , mMagicNum (roleNum)
+{
+}
+
+ServiceRole::ServiceRole(const ServiceRole& src)
+    : mRoleName (src.mRoleName)
+    , mMagicNum (src.mMagicNum)
+{
+}
+
+ServiceRole::ServiceRole(ServiceRole&& src) noexcept
+    : mRoleName (std::move(src.mRoleName))
+    , mMagicNum (src.mMagicNum)
+{
+    src.mMagicNum = areg::CHECKSUM_IGNORE;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ServiceAddress class implementation
+//////////////////////////////////////////////////////////////////////////
+
 String ServiceAddress::to_path( const ServiceAddress & addService )
 {
     return addService.to_string();
@@ -44,16 +91,19 @@ ServiceAddress::ServiceAddress()
 {
 }
 
-ServiceAddress::ServiceAddress( const String & serviceName
-                              , const Version & serviceVersion
-                              , areg::ServiceType serviceType
-                              , const String & roleName )
+ServiceAddress::ServiceAddress( const String & serviceName, const Version & serviceVersion, areg::ServiceType serviceType, const String & roleName )
     : ServiceItem   ( serviceName, serviceVersion, serviceType )
     , mRoleName     ( roleName )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    mRoleName.truncate( areg::ITEM_NAMES_MAX_LENGTH );
     mMagicNum = ServiceAddress::_magic_number(*this);
+}
+
+ServiceAddress::ServiceAddress(const UniqueNumber serviceNum, const Version& serviceVersion, areg::ServiceType serviceType, const UniqueNumber roleNum)
+    : ServiceItem   (serviceNum, serviceVersion, serviceType)
+    , mRoleName     ( )
+    , mMagicNum     (roleNum)
+{
 }
 
 ServiceAddress::ServiceAddress( const ServiceItem & serviceItem, const String & roleName )
@@ -61,32 +111,35 @@ ServiceAddress::ServiceAddress( const ServiceItem & serviceItem, const String & 
     , mRoleName     ( roleName )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    mRoleName.truncate( areg::ITEM_NAMES_MAX_LENGTH );
-    mMagicNum = ServiceAddress::_magic_number(*this);
+    mMagicNum = roleName.is_numeric() ? roleName.to_uint32() : ServiceAddress::_magic_number(*this);
+}
+
+ServiceAddress::ServiceAddress(const ServiceItem& serviceItem, const UniqueNumber roleNum)
+    : ServiceItem   ( serviceItem )
+    , mRoleName     ( )
+    , mMagicNum     ( roleNum )
+{
 }
 
 ServiceAddress::ServiceAddress( const StubAddress & addrStub )
     : ServiceItem   ( static_cast<const ServiceItem &>(addrStub) )
     , mRoleName     ( addrStub.role_name() )
-    , mMagicNum     ( areg::CHECKSUM_IGNORE )
+    , mMagicNum     ( static_cast<uint32_t>(static_cast<const ServiceAddress&>(addrStub)) )
 {
-    mMagicNum = ServiceAddress::_magic_number(*this);
 }
 
 ServiceAddress::ServiceAddress( const ProxyAddress & addrProxy )
     : ServiceItem   ( static_cast<const ServiceItem &>(addrProxy) )
     , mRoleName     ( addrProxy.role_name() )
-    , mMagicNum     ( areg::CHECKSUM_IGNORE )
+    , mMagicNum     ( static_cast<uint32_t>(static_cast<const ServiceAddress&>(addrProxy)) )
 {
-    mMagicNum = ServiceAddress::_magic_number(*this);
 }
 
-ServiceAddress::ServiceAddress( const InStream & stream )
-    : ServiceItem   ( stream )
-    , mRoleName     ( stream )
-    , mMagicNum     ( areg::CHECKSUM_IGNORE )
+ServiceAddress::ServiceAddress(const areg::RawService& rawService, const areg::Endpoint& endPoint)
+    : ServiceItem   ( rawService, endPoint )
+    , mRoleName     ( )
+    , mMagicNum     ( rawService.role )
 {
-    mMagicNum = ServiceAddress::_magic_number(*this);
 }
 
 ServiceAddress::ServiceAddress( ServiceAddress && source ) noexcept
@@ -94,13 +147,14 @@ ServiceAddress::ServiceAddress( ServiceAddress && source ) noexcept
     , mRoleName     ( std::move(source.mRoleName) )
     , mMagicNum     ( source.mMagicNum )
 {
+    source.mMagicNum = areg::CHECKSUM_IGNORE;
 }
 
 String ServiceAddress::to_string() const
 {
     return ServiceItem::to_string()
                         .append(areg::COMPONENT_PATH_SEPARATOR)
-                        .append(mRoleName);
+                        .append(mRoleName.is_empty() ? String::make_string(mMagicNum) : mRoleName);
 }
 
 void ServiceAddress::from_string(const char * pathService, const char** nextPart /*= nullptr */)
@@ -108,7 +162,7 @@ void ServiceAddress::from_string(const char * pathService, const char** nextPart
     const char* strSource   = pathService;
     ServiceItem::from_string(pathService, &strSource);
     mRoleName   = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
-    mMagicNum   = ServiceAddress::_magic_number(*this);
+    mMagicNum   = mRoleName.is_numeric() ? static_cast<uint32_t>(mRoleName) : ServiceAddress::_magic_number(*this);
 
     if (nextPart != nullptr)
         *nextPart = strSource;
@@ -117,7 +171,8 @@ void ServiceAddress::from_string(const char * pathService, const char** nextPart
 uint32_t ServiceAddress::_magic_number(const ServiceAddress addrService) noexcept
 {
     uint32_t result{ areg::CHECKSUM_IGNORE };
-    if ( addrService.is_validated() )
+    if (!addrService.mServiceName.is_empty() && (addrService.mServiceName != ServiceItem::INVALID_SERVICE.data()) &&
+        !addrService.mRoleName.is_empty()    && (addrService.mServiceType != areg::ServiceType::Invalid))
     {
         result = areg::crc32_init();
         result = areg::crc32_start( result, addrService.mServiceName.as_string() );

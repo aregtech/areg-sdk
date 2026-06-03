@@ -28,7 +28,7 @@
  * Dependencies
  ************************************************************************/
 namespace areg {
-    class StreamableEvent;
+    class Event;
     class Channel;
 } // namespace areg
 

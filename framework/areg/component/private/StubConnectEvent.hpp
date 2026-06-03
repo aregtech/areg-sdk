@@ -25,20 +25,31 @@ namespace areg {
 
 /**
  * \brief   Event sent by Service Manager to Stub to notify client Proxy connection status.
+ *          All data lives in EventHeader; no extra member variables.
+ *
+ *          EventHeader layout:
+ *            - provider endpoint : StubAddress  (target stub)
+ *            - consumer endpoint : ProxyAddress (connecting proxy; invalid for ServiceConnection)
+ *            - messageId         : FuncIdRange::ResponseServiceProviderConnection
+ *            - result            : ServiceConnectionState
+ *
+ *          ServiceConnection vs ClientConnection is distinguished by consumer (proxy) validity:
+ *            - consumer invalid → ServiceConnection (stub registered with service manager)
+ *            - consumer valid   → ClientConnection  (proxy client connecting/disconnecting)
  **/
-class StubConnectEvent  : public    ServiceRequestEvent
+class StubConnectEvent final  : public    ServiceRequestEvent
 {
 //////////////////////////////////////////////////////////////////////////
-// Declare Runtime Event
+// Declare Event Runtime
 //////////////////////////////////////////////////////////////////////////
-    AREG_DECLARE_RUNTIME_EVENT(StubConnectEvent)   //!< Runtime data to identify event.
+    AREG_DECLARE_RUNTIME_EVENT(StubConnectEvent)
 
 //////////////////////////////////////////////////////////////////////////
-// Declare Runtime Event
+// Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Creates Event to set the address of Stub and connection status.
+     * \brief   Creates event to notify stub about its own registration status.
      *
      * \param   stubTarget          The target Stub address
      * \param   connectStatus       The connection status of Stub
@@ -46,78 +57,44 @@ public:
     StubConnectEvent( const StubAddress & stubTarget, areg::ServiceConnectionState connectStatus );
 
     /**
-     * \brief   Creates event to trigger request to set Proxy connection.
+     * \brief   Creates event to notify stub that a proxy client is connecting or disconnecting.
      *
-     * \param   proxyClient         The client Proxy address, which requests to establish connection
-     * \param   stubTarget          The target Stub address, which receives request
+     * \param   proxyClient         The client Proxy address
+     * \param   stubTarget          The target Stub address
      * \param   connectStatus       The connection status to notify.
      **/
     StubConnectEvent( const ProxyAddress & proxyClient, const StubAddress & stubTarget, areg::ServiceConnectionState connectStatus );
 
-    /**
-     * \brief   Reads data from streaming object.
-     *
-     * \param   stream      The instance of streaming object, which contains information.
-     **/
-    StubConnectEvent( const InStream & stream );
+    StubConnectEvent(const StubConnectEvent& /*src*/) = default;
 
-    virtual ~StubConnectEvent() = default;
+    StubConnectEvent(StubConnectEvent&& /*src*/) noexcept = default;
 
+    ~StubConnectEvent() override = default;
 
 //////////////////////////////////////////////////////////////////////////
-// Operations
+// Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
 
     /**
-     * \brief   Returns current connection status of client Proxy.
+     * \brief   Returns current connection status, read from EventHeader result field.
      **/
-    inline areg::ServiceConnectionState connection_status() const;
-
-//////////////////////////////////////////////////////////////////////////
-// Operations
-//////////////////////////////////////////////////////////////////////////
-protected:
-/************************************************************************/
-// StreamableEvent overrides
-/************************************************************************/
-    /**
-     * \brief   Reads and initializes event data from streaming object.
-     *
-     * \param   stream      The streaming object to read out event data
-     * \return  Returns streaming object to read out data.
-     **/
-    const InStream & read_stream( const InStream & stream ) override;
-
-    /**
-     * \brief   Writes event data to streaming object.
-     *
-     * \param   stream      The streaming object to write event data.
-     * \return  Returns streaming object to write event data.
-     **/
-    OutStream & write_stream( OutStream & stream ) const override;
-
-private:
-    /**
-     * \brief   The connection status set in event.
-     **/
-    areg::ServiceConnectionState   mConnectionStatus;
+    inline areg::ServiceConnectionState connection_status() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
     StubConnectEvent() = delete;
-    AREG_NOCOPY_NOMOVE( StubConnectEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // StubConnectEvent class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline areg::ServiceConnectionState StubConnectEvent::connection_status() const
+inline areg::ServiceConnectionState StubConnectEvent::connection_status() const noexcept
 {
-    return mConnectionStatus;
+    return static_cast<areg::ServiceConnectionState>(result());
 }
 
 } // namespace areg

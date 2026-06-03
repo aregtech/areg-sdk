@@ -20,7 +20,7 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/component/EventConsumer.hpp"
-#include "areg/component/StreamableEvent.hpp"
+#include "areg/component/Event.hpp"
 namespace areg {
 
 /************************************************************************

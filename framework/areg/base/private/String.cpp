@@ -181,7 +181,7 @@ String::String(const WideString & source)
 String::String( const InStream & stream )
     : StringBase<char>( )
 {
-    read_stream(stream);
+    from_stream(stream);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -629,12 +629,12 @@ String& String::append(const wchar_t* source, areg::CharCount count /*= areg::CO
     return (*this);
 }
 
-void String::read_stream(const InStream& stream)
+void String::from_stream(const InStream& stream)
 {
     stream.read(*this);
 }
 
-void String::write_stream(OutStream& stream) const
+void String::to_stream(OutStream& stream) const
 {
     stream.write(*this);
 }

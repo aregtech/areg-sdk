@@ -20,29 +20,19 @@ namespace areg {
 
 void RemoteEventConsumer::start_event_processing(Event & eventElem)
 {
-    if (areg::is_remote(eventElem.event_type()) )
+    switch (eventElem.event_type())
     {
-        RemoteRequestEvent * reqEvent = AREG_RUNTIME_CAST(&eventElem, RemoteRequestEvent);
-        if ( reqEvent != nullptr )
-        {
-            process_request_event(*reqEvent);
-        }
-        else
-        {
-            RemoteResponseEvent * respEvent = AREG_RUNTIME_CAST(&eventElem, RemoteResponseEvent);
-            if ( respEvent != nullptr )
-            {
-                process_response_event(*respEvent);
-            }
-            else
-            {
-                RemoteNotifyRequestEvent * reqNotify = AREG_RUNTIME_CAST(&eventElem, RemoteNotifyRequestEvent);
-                if (reqNotify != nullptr)
-                {
-                    process_notify_request(*reqNotify);
-                }
-            }
-        }
+    case areg::EventType::EventRemoteRequest:
+        process_request_event(static_cast<RemoteRequestEvent&>(eventElem));
+        break;
+    case areg::EventType::EventRemoteResponse:
+        process_response_event(static_cast<RemoteResponseEvent&>(eventElem));
+        break;
+    case areg::EventType::EventRemoteNotifyRequest:
+        process_notify_request(static_cast<RemoteNotifyRequestEvent&>(eventElem));
+        break;
+    default:
+        break;
     }
 }
 

@@ -26,7 +26,7 @@
  * Dependencies
  ************************************************************************/
 namespace areg {
-    class RemoteMessage;
+    class EventEnvelope;
     class RemoteMessageHandler;
     class SocketAddress;
 } // namespace areg
@@ -136,7 +136,7 @@ private:
      * \param   msgReceived     Reusable message buffer. Caller must call invalidate()
      *                          after this method returns.
      **/
-    void _process_connection_event(SOCKETHANDLE hSocket, const areg::SocketAddress & addrAccepted, areg::RemoteMessage & msgReceived);
+    void _process_connection_event(SOCKETHANDLE hSocket, const areg::SocketAddress & addrAccepted, areg::EventEnvelope & msgReceived);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

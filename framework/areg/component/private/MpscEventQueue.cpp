@@ -89,14 +89,14 @@ bool MpscEventQueue::is_empty() const noexcept
 // MpscEventQueue - push_event
 //////////////////////////////////////////////////////////////////////////
 
-void MpscEventQueue::push_event(Event& eventElem, Event** removedEvent)
+void MpscEventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullptr*/)
 {
     const areg::EventPriority prio{ eventElem.event_priority() };
 
     if (prio == areg::EventPriority::ExitPrio)
     {
         Lock lock(mPrioLock);
-        mPrioQueue.push_front(&eventElem);
+        mPrioQueue.push_front(std::move(eventElem));
         mPrioCount.store(static_cast<uint32_t>(mPrioQueue.size()), std::memory_order_relaxed);
         mListener.signal_event(1u);
         return;
@@ -106,10 +106,10 @@ void MpscEventQueue::push_event(Event& eventElem, Event** removedEvent)
     {
         Lock lock(mPrioLock);
         auto it = mPrioQueue.begin();
-        while (it != mPrioQueue.end() && (*it)->event_priority() > prio)
+        while (it != mPrioQueue.end() && it->event_priority() > prio)
             ++it;
 
-        mPrioQueue.insert(it, &eventElem);
+        mPrioQueue.insert(it, std::move(eventElem));
         mPrioCount.store(static_cast<uint32_t>(mPrioQueue.size()), std::memory_order_relaxed);
         mListener.signal_event(1u);
         return;
@@ -120,10 +120,8 @@ void MpscEventQueue::push_event(Event& eventElem, Event** removedEvent)
     if (prev >= mCapacity)
     {
         if (removedEvent != nullptr)
-            *removedEvent = &eventElem;
-        else
-            eventElem.destroy();
-
+            *removedEvent = std::move(eventElem);
+        // else: eventElem stays unmodified (capacity overflow — caller decides)
         return;
     }
 
@@ -131,14 +129,11 @@ void MpscEventQueue::push_event(Event& eventElem, Event** removedEvent)
     if (node == nullptr)
     {
         if (removedEvent != nullptr)
-            *removedEvent = &eventElem;
-        else
-            eventElem.destroy();
-
+            *removedEvent = std::move(eventElem);
         return;
     }
 
-    node->event = &eventElem;
+    node->event = std::move(eventElem);
     node->next.store(nullptr, std::memory_order_relaxed);
     _mpsc_push(node);
     mFastCount.fetch_add(1u, std::memory_order_relaxed);
@@ -149,77 +144,78 @@ void MpscEventQueue::push_event(Event& eventElem, Event** removedEvent)
 // MpscEventQueue - pop_event
 //////////////////////////////////////////////////////////////////////////
 
-Event* MpscEventQueue::pop_event() noexcept
+Event MpscEventQueue::pop_event() noexcept
 {
     // Priority lane: always drained before the fast lane.
     if (mPrioCount.load(std::memory_order_relaxed) != 0u)
     {
         Lock lock(mPrioLock);
 
-        ASSERT(!mPrioQueue.empty());
-        Event* result{ mPrioQueue.front() };
-        mPrioQueue.pop_front();
-        const uint32_t prioRemaining{ static_cast<uint32_t>(mPrioQueue.size()) };
-        mPrioCount.store(prioRemaining, std::memory_order_relaxed);
-        mListener.signal_event(prioRemaining + mFastCount.load(std::memory_order_acquire));
-
-        return result;
+        if (!mPrioQueue.empty())
+        {
+            Event result{ std::move(mPrioQueue.front()) };
+            mPrioQueue.pop_front();
+            const uint32_t prioRemaining{ static_cast<uint32_t>(mPrioQueue.size()) };
+            mPrioCount.store(prioRemaining, std::memory_order_relaxed);
+            mListener.signal_event(prioRemaining + mFastCount.load(std::memory_order_acquire));
+            return result;
+        }
     }
-
 
     // Fast lane (consumer thread only).
     Node* node{ _mpsc_pop() };
     if (node != nullptr)
     {
-        Event* result{ node->event };
+        Event result{ std::move(node->event) };
         _free_node(node);
         const uint32_t remaining{ mFastCount.fetch_sub(1u, std::memory_order_relaxed) - 1u };
         mListener.signal_event(remaining);
         return result;
     }
 
-    return nullptr;
+    return Event{};  // invalid (empty) sentinel — is_valid() == false
 }
 
 void MpscEventQueue::remove_events() noexcept
 {
     mPrioLock.lock();
-    Event* exit{ nullptr };
     uint32_t prioCount{ 0u };
-    for (Event* evt : mPrioQueue)
+    // Preserve at most one ExitPrio event; destroy the rest.
+    Event exitEvt{};
+    for (Event& evt : mPrioQueue)
     {
-        if (evt->event_priority() == areg::EventPriority::ExitPrio)
+        if (evt.is_exit_prio())
         {
-            if (exit != nullptr)
-                exit->destroy();    // no-op for ExitEvent
-            exit = evt;
+            if (exitEvt.is_valid())
+                exitEvt.destroy_event();  // discard duplicate exit
+            exitEvt = std::move(evt);
         }
         else
         {
-            evt->destroy();
+            evt.destroy_event();
         }
     }
 
     mPrioQueue.clear();
-    if (exit != nullptr)
+    if (exitEvt.is_valid())
     {
-        mPrioQueue.push_back(exit);
+        mPrioQueue.push_back(std::move(exitEvt));
         prioCount = 1u;
     }
 
-    mPrioCount.store(static_cast<uint32_t>(mPrioQueue.size()), std::memory_order_relaxed);
+    mPrioCount.store(prioCount, std::memory_order_relaxed);
     mPrioLock.unlock();
 
-    std::vector<Event*> drained;
+    std::vector<Event> drained;
     _mpsc_drain_to(drained);
-    for (Event* evt : drained)
-        evt->destroy();
+    for (Event& evt : drained)
+        evt.destroy_event();
 
     mFastCount.store(0u, std::memory_order_relaxed);
     mListener.signal_event(prioCount);
 }
 
-void MpscEventQueue::remove_events(const RuntimeClassID& eventClassId) noexcept
+void MpscEventQueue::remove_events(const uint32_t eventClassId) noexcept
 {
     if (mPrioCount.load(std::memory_order_relaxed) != 0)
     {
@@ -227,10 +223,9 @@ void MpscEventQueue::remove_events(const RuntimeClassID& eventClassId) noexcept
         auto it = mPrioQueue.begin();
         while (it != mPrioQueue.end())
         {
-            Event* evt{ *it };
-            if ((evt->event_priority() != areg::EventPriority::ExitPrio) && (eventClassId == evt->class_id()))
+            if ((!it->is_exit_prio()) && (eventClassId == it->event_id()))
             {
-                evt->destroy();
+                it->destroy_event();
                 it = mPrioQueue.erase(it);
             }
             else
@@ -242,24 +237,24 @@ void MpscEventQueue::remove_events(const RuntimeClassID& eventClassId) noexcept
         mPrioCount.store(static_cast<uint32_t>(mPrioQueue.size()));
     }
 
-    // Drain fast lane: matching events destroyed inside; non-matching collected.
-    std::vector<Event*> kept;
+    // Drain fast lane: matching events destroyed inside; non-matching collected and re-pushed.
+    std::vector<Event> kept;
     _mpsc_drain_to(kept, eventClassId);
 
     uint32_t re_pushed{ 0u };
-    for (Event* evt : kept)
+    for (Event& evt : kept)
     {
         Node* node{ _alloc_node() };
         if (node != nullptr)
         {
-            node->event = evt;
+            node->event = std::move(evt);
             node->next.store(nullptr, std::memory_order_relaxed);
             _mpsc_push(node);
             ++re_pushed;
         }
         else
         {
-            evt->destroy();
+            evt.destroy_event();
         }
     }
 
@@ -272,23 +267,23 @@ void MpscEventQueue::remove_all_events() noexcept
     if (mPrioCount.load(std::memory_order_relaxed))
     {
         Lock lock(mPrioLock);
-        for (Event* evt : mPrioQueue)
-            evt->destroy();
+        for (Event& evt : mPrioQueue)
+            evt.destroy_event();
 
         mPrioQueue.clear();
         mPrioCount.store(0u, std::memory_order_relaxed);
     }
 
-    std::vector<Event*> drained;
+    std::vector<Event> drained;
     _mpsc_drain_to(drained);
-    for (Event* evt : drained)
-        evt->destroy();
+    for (Event& evt : drained)
+        evt.destroy_event();
 
     mFastCount.store(0u, std::memory_order_relaxed);
     mListener.signal_event(0u);
 }
 
-uint32_t MpscEventQueue::push_events(Event** eventElems, uint32_t count)
+uint32_t MpscEventQueue::push_events(Event* eventElems, uint32_t count)
 {
     if ((eventElems == nullptr) || (count == 0u))
         return 0u;
@@ -296,31 +291,28 @@ uint32_t MpscEventQueue::push_events(Event** eventElems, uint32_t count)
     uint32_t signalCount{ 0u };
 
     // Phase 1: insert all priority-lane events in ONE mPrioLock acquisition.
-    Event* evt{ eventElems[0] };
-    if ((evt != nullptr) && (evt->event_priority() > areg::EventPriority::NormalPrio))
+    if (eventElems[0].event_priority() > areg::EventPriority::NormalPrio)
     {
         Lock lock(mPrioLock);
         for (uint32_t i = 0u; i < count; ++i)
         {
-            evt = eventElems[i];
-            if (evt == nullptr)
+            Event& evt = eventElems[i];
+            if (!evt.is_valid())
                 break;
 
-            const areg::EventPriority prio{ evt->event_priority() };
+            const areg::EventPriority prio{ evt.event_priority() };
             if (prio == areg::EventPriority::ExitPrio)
             {
-                mPrioQueue.push_front(evt);
-                eventElems[i] = nullptr;
+                mPrioQueue.push_front(std::move(evt));
                 ++signalCount;
             }
             else if (prio >= areg::EventPriority::HighPrio)
             {
                 auto it = mPrioQueue.begin();
-                while (it != mPrioQueue.end() && (*it)->event_priority() > prio)
+                while (it != mPrioQueue.end() && it->event_priority() > prio)
                     ++it;
 
-                mPrioQueue.insert(it, evt);
-                eventElems[i] = nullptr;
+                mPrioQueue.insert(it, std::move(evt));
                 ++signalCount;
             }
             else
@@ -332,44 +324,47 @@ uint32_t MpscEventQueue::push_events(Event** eventElems, uint32_t count)
         mPrioCount.store(static_cast<uint32_t>(mPrioQueue.size()), std::memory_order_relaxed);
     }
 
-    // Phase 2: insert below-HighPrio events into the lock-free fast lane.
+    // Phase 2: insert NormalPrio events into the lock-free fast lane.
     uint32_t removedCount{ 0u };
     for (uint32_t i = signalCount; i < count; ++i)
     {
-        evt = eventElems[i];
-        if (evt == nullptr)
+        Event& evt = eventElems[i];
+        if (!evt.is_valid())
             continue;
 
         const uint32_t prev{ mFastCount.fetch_add(1u, std::memory_order_relaxed) };
         if (prev >= mCapacity)
         {
-            eventElems[removedCount++] = evt;
+            if (removedCount < i)
+                eventElems[removedCount] = std::move(evt);
+            ++removedCount;
+            mFastCount.fetch_sub(1u, std::memory_order_relaxed);
             continue;
         }
 
         Node* node{ _alloc_node() };
         if (node == nullptr)
         {
-            eventElems[removedCount++] = evt;
+            if (removedCount < i)
+                eventElems[removedCount] = std::move(evt);
+            ++removedCount;
+            mFastCount.fetch_sub(1u, std::memory_order_relaxed);
             continue;
         }
 
-        node->event = evt;
+        node->event = std::move(evt);
         node->next.store(nullptr, std::memory_order_relaxed);
         _mpsc_push(node);
         ++signalCount;
     }
 
     if (signalCount != 0u)
-    {
-        mFastCount.fetch_sub(signalCount, std::memory_order_relaxed);
         mListener.signal_event(signalCount);
-    }
 
     return removedCount;
 }
 
-uint32_t MpscEventQueue::pop_events(Event** eventElems, uint32_t count)
+uint32_t MpscEventQueue::pop_events(Event* eventElems, uint32_t count)
 {
     if ((eventElems == nullptr) || (count == 0u))
         return 0u;
@@ -382,7 +377,7 @@ uint32_t MpscEventQueue::pop_events(Event** eventElems, uint32_t count)
         Lock lock(mPrioLock);
         while (!mPrioQueue.empty() && (popped < count))
         {
-            eventElems[popped++] = mPrioQueue.front();
+            eventElems[popped++] = std::move(mPrioQueue.front());
             mPrioQueue.pop_front();
         }
 
@@ -396,7 +391,7 @@ uint32_t MpscEventQueue::pop_events(Event** eventElems, uint32_t count)
         if (node == nullptr)
             break;
 
-        eventElems[popped++] = node->event;
+        eventElems[popped++] = std::move(node->event);
         _free_node(node);
         mFastCount.fetch_sub(1u, std::memory_order_relaxed);
     }
@@ -426,8 +421,8 @@ inline MpscEventQueue::Node* MpscEventQueue::_mpsc_pop() noexcept
     if (next != nullptr)
     {
         Node* head = mHead;
-        head->event = next->event;
-        next->event = nullptr;
+        head->event = std::move(next->event);  // move Event value into sentinel
+        // next->event is now empty (moved-from)
         mHead = next;
         return head;
     }
@@ -435,7 +430,7 @@ inline MpscEventQueue::Node* MpscEventQueue::_mpsc_pop() noexcept
     return nullptr;
 }
 
-void MpscEventQueue::_mpsc_drain_to(std::vector<Event*>& out) noexcept
+void MpscEventQueue::_mpsc_drain_to(std::vector<Event>& out) noexcept
 {
     out.reserve(mFastCount.load(std::memory_order_relaxed));
     for (;;)
@@ -444,15 +439,14 @@ void MpscEventQueue::_mpsc_drain_to(std::vector<Event*>& out) noexcept
         if (node == nullptr)
             break;
 
-        out.push_back(node->event);
+        out.push_back(std::move(node->event));
         _free_node(node);
     }
 }
 
-void MpscEventQueue::_mpsc_drain_to(std::vector<Event*>& out, const RuntimeClassID& classId) noexcept
+void MpscEventQueue::_mpsc_drain_to(std::vector<Event>& out, const uint32_t classId) noexcept
 {
-    const uint32_t id{ static_cast<uint32_t>(classId) };
-    if (id == 0)
+    if (classId == 0u)
     {
         _mpsc_drain_to(out);
     }
@@ -465,12 +459,12 @@ void MpscEventQueue::_mpsc_drain_to(std::vector<Event*>& out, const RuntimeClass
             if (node == nullptr)
                 break;
 
-            Event* evt{ node->event };
-            _free_node(node);
-            if (static_cast<uint32_t>(evt->class_id()) == id)
-                evt->destroy();
+            if (node->event.event_id() == classId)
+                node->event.destroy_event();  // discard matching events
             else
-                out.push_back(evt);
+                out.push_back(std::move(node->event));
+
+            _free_node(node);
         }
     }
 }
@@ -489,7 +483,7 @@ inline MpscEventQueue::Node* MpscEventQueue::_alloc_node() noexcept
         {
             mPoolSize.fetch_sub(1u, std::memory_order_relaxed);
             cur.head->next.store(nullptr, std::memory_order_relaxed);
-            cur.head->event = nullptr;
+            cur.head->event.destroy_event();  // reset the Event value to empty
             return cur.head;
         }
     }
@@ -499,7 +493,7 @@ inline MpscEventQueue::Node* MpscEventQueue::_alloc_node() noexcept
 
 inline void MpscEventQueue::_free_node(Node* node) noexcept
 {
-    node->event = nullptr;
+    node->event.destroy_event();  // reset the Event value to empty before pooling
 
     const uint32_t oldSize{ mPoolSize.fetch_add(1u, std::memory_order_relaxed) };
     if (oldSize >= NODE_POOL_MAX)
@@ -525,13 +519,14 @@ inline uint32_t MpscEventQueue::_prio_count() noexcept
 inline void MpscEventQueue::_delete_nodes() noexcept
 {
     mPrioLock.lock();
-    for (Event* evt : mPrioQueue)
-        evt->destroy();
+    for (Event& evt : mPrioQueue)
+        evt.destroy_event();  // release payload; Event destructor handles the rest
 
     mPrioQueue.clear();
     mPrioCount.store(0u, std::memory_order_relaxed);
     mPrioLock.unlock();
 
+    // Drain fast lane — Event values in nodes go out of scope when node is deleted.
     for (;;)
     {
         Node* next = mHead->next.load(std::memory_order_acquire);
@@ -539,11 +534,9 @@ inline void MpscEventQueue::_delete_nodes() noexcept
             break;
 
         Node* head = mHead;
-        head->event = next->event;
-        next->event = nullptr;
+        head->event = std::move(next->event);  // move Event into head (sentinel)
         mHead = next;
-        head->event->destroy();
-        head->event = nullptr;
+        head->event.destroy_event();
         delete head;
     }
 

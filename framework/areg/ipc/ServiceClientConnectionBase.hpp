@@ -22,6 +22,9 @@
 #include "areg/ipc/ConnectionProvider.hpp"
 #include "areg/ipc/ServiceEventConsumer.hpp"
 
+#include "areg/component/Event.hpp"
+#include "areg/component/EventConsumer.hpp"
+#include "areg/component/ExitEvent.hpp"
 #include "areg/ipc/ClientConnection.hpp"
 #include "areg/ipc/private/ClientReceiveThread.hpp"
 #include "areg/ipc/private/ClientSendThread.hpp"
@@ -30,6 +33,7 @@
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/String.hpp"
 
+#include <cstring>
 #include <utility>
 namespace areg {
 
@@ -193,7 +197,7 @@ protected:
      *
      * \param   msgReceived     The message sent by service to the client.
      **/
-    virtual void service_connection_event(const RemoteMessage& msgReceived);
+    virtual void service_connection_event(const EventEnvelope& msgReceived);
 
 /************************************************************************/
 // ConnectionProvider interface overrides
@@ -263,7 +267,7 @@ protected:
      * \param   msgSource       The message source type of the connected client.
      * \return  Returns the created message for remote communication.
      **/
-    RemoteMessage connect_message( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const override;
+    EventEnvelope connect_message( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const override;
 
     /**
      * \brief   Creates a service disconnection request message with specified source and target.
@@ -272,7 +276,7 @@ protected:
      * \param   target      The ID of the target to send the disconnection message request.
      * \return  Returns the created message for remote communication.
      **/
-    RemoteMessage disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const override;
+    EventEnvelope disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -327,14 +331,14 @@ protected:
      *
      * \param   msgReceived     The received communication message.
      **/
-    void on_message_received(const RemoteMessage& msgReceived) override;
+    void on_message_received(const EventEnvelope& msgReceived) override;
 
     /**
      * \brief   Called when communication message needs to be sent.
      *
      * \param   msgSend     The communication message to send.
      **/
-    void on_message_send(const RemoteMessage& msgSend) override;
+    void on_message_send(const EventEnvelope& msgSend) override;
 
     /**
      * \brief   Called to notify that a channel connection is established.
@@ -367,17 +371,16 @@ protected:
      * \param   data            The data of the message.
      * \param   eventPrio       The priority of the message to set.
      **/
-    inline bool send_message(const RemoteMessage & data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
+    inline bool send_message(const EventEnvelope & data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
     /**
      * \brief   Queues a message for sending with optional priority (move).
      *          Transfers payload ownership to the send queue without copying the message buffer.
-     *          Use when the caller has no further use for the message, e.g. after stream_from_event().
      *
-     * \param   data            Remote message to move into the send queue.
+     * \param   data            Envelope to move into the send queue.
      * \param   eventPrio       The priority of the message to set.
      **/
-    inline bool send_message(RemoteMessage && data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio ) noexcept;
+    inline bool send_message(EventEnvelope && data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
     /**
      * \brief   Starts client socket connection.
@@ -403,13 +406,6 @@ protected:
      **/
     [[nodiscard]]
     inline ServiceClientConnectionBase::ConnectionPhase connection_state() const noexcept;
-
-    /**
-     * \brief   Queues a disconnect event to close socket and exit thread.
-     *
-     * \param   eventPrio       The priority of the event.
-     **/
-    inline void disconnect_service( areg::EventPriority eventPrio );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations and attributes
@@ -627,28 +623,20 @@ inline void ServiceClientConnectionBase::send_command( ServiceEventData::Service
                                  , eventPrio );
 }
 
-inline bool ServiceClientConnectionBase::send_message(const RemoteMessage & data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
+inline bool ServiceClientConnectionBase::send_message(const EventEnvelope & data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
-    return SendMessageEvent::send_event( SendMessageEventData(data)
-                                      , static_cast<SendMessageEventConsumer &>(mThreadSend)
-                                      , static_cast<DispatcherThread &>(mThreadSend)
-                                      , eventPrio);
+    EventEnvelope copy{ data };
+    return send_message(std::move(copy), eventPrio);
 }
 
-inline bool ServiceClientConnectionBase::send_message(RemoteMessage && data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ ) noexcept
+inline bool ServiceClientConnectionBase::send_message(EventEnvelope && data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
-    return SendMessageEvent::send_event( SendMessageEventData(std::move(data))
-                                      , static_cast<SendMessageEventConsumer &>(mThreadSend)
-                                      , static_cast<DispatcherThread &>(mThreadSend)
-                                      , eventPrio);
-}
-
-inline void ServiceClientConnectionBase::disconnect_service( areg::EventPriority eventPrio )
-{
-    SendMessageEvent::send_event( SendMessageEventData()
-                               , static_cast<SendMessageEventConsumer &>(mThreadSend)
-                               , static_cast<DispatcherThread &>(mThreadSend)
-                               , eventPrio );
+    areg::Event evt(std::move(data));
+    evt.set_event_priority(eventPrio);
+    evt.set_event_consumer(static_cast<areg::EventConsumer *>(&mThreadSend));
+    evt.set_target_dispatcher(static_cast<areg::DispatcherThread *>(&mThreadSend));
+    evt.deliver_event();
+    return true;
 }
 
 } // namespace areg

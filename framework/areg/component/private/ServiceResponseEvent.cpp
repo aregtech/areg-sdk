@@ -16,62 +16,40 @@
 #include "areg/component/ServiceResponseEvent.hpp"
 namespace areg {
 
-
-AREG_IMPLEMENT_RUNTIME_EVENT(ServiceResponseEvent, ProxyEvent)
-
 ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress & target
                                           , areg::ResultType result
                                           , uint32_t respId
                                           , areg::EventType eventType
                                           , const SequenceNumber & seqNr    /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
     : ProxyEvent    (target, eventType)
-    , mResponseId   (respId)
-    , mResult       (result)
-    , mSequenceNr   (seqNr)
+{
+    areg::EventHeader* hdr{ header() };
+    if (hdr != nullptr)
+    {
+        hdr->messageId  = respId;
+        hdr->result     = static_cast<uint32_t>(result);
+        hdr->sequenceNr = seqNr;
+    }
+}
+
+ServiceResponseEvent::ServiceResponseEvent( const EventEnvelope & envelope ) noexcept
+    : ProxyEvent    (envelope)
 {
 }
 
 ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress& target, const ServiceResponseEvent& src )
-    : ProxyEvent    (target, src.event_type())
-    , mResponseId   (src.mResponseId)
-    , mResult       (src.mResult)
-    , mSequenceNr   (src.mSequenceNr)
+    : ProxyEvent    (target, src.envelope().clone())
 {
 }
 
-ServiceResponseEvent::ServiceResponseEvent(const InStream & stream)
-    : ProxyEvent    ( stream )
-    , mResponseId   ( areg::INVALID_MESSAGE_ID )
-    , mResult       ( areg::ResultType::Undefined )
-    , mSequenceNr   ( areg::SEQUENCE_NUMBER_ANY )
+ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress& target, EventEnvelope&& env )
+    : ProxyEvent    (target, std::move(env))
 {
-    stream >> mResponseId;
-    stream >> mResult;
-    stream >> mSequenceNr;
 }
 
-
-ServiceResponseEvent* ServiceResponseEvent::clone_for_target( const ProxyAddress & target ) const
+ServiceResponseEvent ServiceResponseEvent::clone_for_target( const ProxyAddress & target ) const
 {
-    return DEBUG_NEW ServiceResponseEvent(target, *this);
-}
-
-const InStream & ServiceResponseEvent::read_stream( const InStream & stream )
-{
-    ProxyEvent::read_stream(stream);
-    stream >> mResponseId;
-    stream >> mResult;
-    stream >> mSequenceNr;
-    return stream;
-}
-
-OutStream & ServiceResponseEvent::write_stream( OutStream & stream ) const
-{
-    ProxyEvent::write_stream(stream);
-    stream << mResponseId;
-    stream << mResult;
-    stream << mSequenceNr;
-    return stream;
+    return ServiceResponseEvent(target, envelope().clone());
 }
 
 } // namespace areg

@@ -126,6 +126,7 @@ enum class BufferType : int32_t
       Unknown   = -1    //!< Unknown buffer type, not used
     , Internal  =  0    //!< Buffer type for internal communication
     , Remote    =  2    //!< Buffer type for remote communication
+    , Custom    =  3
 };
 /**
  * \brief   Returns string representation of areg::BufferType enumeration value.
@@ -345,6 +346,137 @@ struct RawMessage
      **/
     BufferData      rbData[4]{ 0 };
 };
+
+
+//////////////////////////////////////////////////////////////////////////
+// areg::Endpoint structure declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   areg::Endpoint
+ *          Numeric identity of one communication endpoint (consumer or provider).
+ *          20 bytes, no padding, 4-byte aligned. Safe for memcpy on all platforms.
+ *
+ *  Field    Offset  Size  Description
+ *  id            0     4  process identity cookie
+ *  number        4     4  service instance identity: CRC32(service_name|type|role|thread)
+ *  thread        8     4  thread routing key: CRC32(thread_name)
+ *  major        12     2  service interface version: major
+ *  minor        14     2  service interface version: minor
+ *  patch        16     2  service interface version: patch
+ *  type         18     2  ServiceType: Local=0x0040, Public=0x0080, Internet=0x0100
+ *              20
+ **/
+struct Endpoint
+{
+    uint32_t    id      { 0 };  //!< process identity (COOKIE_UNKNOWN=0, COOKIE_LOCAL=1, or IPC cookie)
+    uint32_t    number  { 0 };  //!< service instance identity: CRC32(service_name|type|role|thread)
+    uint32_t    thread  { 0 };  //!< thread routing key: CRC32(thread_name)
+    uint16_t    major   { 0 };  //!< service interface version: major
+    uint16_t    minor   { 0 };  //!< service interface version: minor
+    uint16_t    patch   { 0 };  //!< service interface version: patch
+    uint16_t    type    { 0 };  //!< ServiceType value
+};                              //!< 20 bytes, no padding
+
+/**
+ * \brief   areg::RawService
+ *          Shared service interface identity, common to both consumer and provider endpoints.
+ *          8 bytes, no padding, 4-byte aligned.
+ *
+ *  Field    Offset  Size  Description
+ *  service       0     4  CRC32(service_name|service_type) = ServiceItem magic number
+ *  role          4     4  CRC32(role_name)
+ *               8
+ **/
+struct RawService
+{
+    uint32_t    service { 0 };  //!< service item hash: CRC32(service_name|service_type)
+    uint32_t    role    { 0 };  //!< role name hash: CRC32(role_name)
+};                              //!< 8 bytes, no padding
+
+//////////////////////////////////////////////////////////////////////////
+// areg::EventHeader structure declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   areg::EventHeader
+ *          Flat binary header for all event types: local, IPC, and custom.
+ *          128 bytes, no implicit padding, 8-byte aligned. Layout identical on
+ *          x86, x86_64, arm32, aarch64, 32-bit and 64-bit. Safe for direct memcpy.
+ *
+ *  Field        Offset  Size  Description
+ *  bufHeader         0    16  BufferHeader: type, capacity, offset, used
+ *  target           16     4  routing destination cookie (mtrouter reads at fixed offset 16)
+ *  source           20     4  routing source cookie
+ *  provider         24    20  Endpoint: stub side (always, regardless of direction)
+ *  consumer         44    20  Endpoint: proxy side (always, regardless of direction)
+ *  rawService       64     8  RawService: shared service interface identity
+ *  channel          72     4  routing thread magic (0=local, CRC32(RC_thread)=IPC)
+ *  messageId        76     4  service message or attribute ID
+ *  sequenceNr       80     8  per-proxy sequence number
+ *  result           88     4  ResultType / ServiceConnectionState / eRequestType
+ *  eventType        92     2  EventType flags
+ *  callType         94     1  EventCallType (0..5)
+ *  priority         95     1  EventPriority
+ *  checksum         96     4  CRC32 of payload; 0=skip validation
+ *  classId         100     4  class ID assigned by the final event class
+ *  internal1       104     8  LOCAL-ONLY: DispatcherThread*  — zeroed on IPC wire
+ *  internal2       112     8  LOCAL-ONLY: EventConsumer*     — zeroed on IPC wire
+ *  custom          120     8  LOCAL-ONLY: DATA_CLASS cleanup hook — zeroed on IPC wire.
+ *                             For AREG_DECLARE_EVENT custom events: stores void(*)(void*)
+ *                             noexcept pointing to the DATA_CLASS destructor. The
+ *                             EventEnvelopeDeleter calls this hook when the buffer
+ *                             refcount drops to zero. MUST NOT be used for any other purpose.
+ *                  128
+ **/
+struct EventHeader
+{
+    areg::BufferHeader  bufHeader   {   };  //!< [0..15]    allocation metadata
+    uint32_t            target      { 0 };  //!< [16..19]   routing destination cookie
+    uint32_t            source      { 0 };  //!< [20..23]   routing source cookie
+    areg::Endpoint      provider    {   };  //!< [24..43]   stub endpoint (always)
+    areg::Endpoint      consumer    {   };  //!< [44..63]   proxy endpoint (always)
+    areg::RawService    rawService  {   };  //!< [64..71]   service interface identity
+    uint32_t            channel     { 0 };  //!< [72..75]   routing thread magic (0=local)
+    uint32_t            messageId   { 0 };  //!< [76..79]   function or attribute ID
+    SequenceNumber      sequenceNr  { 0 };  //!< [80..87]   per-proxy sequence number
+    uint32_t            result      { 0 };  //!< [88..91]   ResultType / ServiceConnectionState
+    uint16_t            eventType   { 0 };  //!< [92..93]   EventType flags
+    uint8_t             callType    { 0 };  //!< [94]       Event actions, depends on EventType (0..5)
+    uint8_t             priority    { 0 };  //!< [95]       EventPriority
+    uint32_t            checksum    { 0 };  //!< [96..99]   CRC32 of payload; 0=skip
+    uint32_t            eventId     { 0 };  //!< [100..103] class ID of the final event class
+    uint64_t            internal1   { 0 };  //!< [104..111] LOCAL-ONLY: DispatcherThread* — zeroed on IPC wire
+    uint64_t            internal2   { 0 };  //!< [112..119] LOCAL-ONLY: EventConsumer*    — zeroed on IPC wire
+    uint64_t            custom      { 0 };  //!< [120..127] LOCAL-ONLY: DATA_CLASS cleanup hook — zeroed on IPC wire; see struct docs
+};                                          //!< 128 bytes
+
+//////////////////////////////////////////////////////////////////////////
+// areg::RawEnvelope structure declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   areg::RawEnvelope
+ *          Heap layout type for EventEnvelope.
+ *          envData[8] marks the first bytes of the payload area;
+ *          the actual payload continues in the heap allocation past this struct.
+ **/
+struct RawEnvelope
+{
+    constexpr RawEnvelope() = default;
+    constexpr RawEnvelope(const RawEnvelope& src) = default;
+    constexpr RawEnvelope& operator = (const RawEnvelope& src) = default;
+
+    areg::EventHeader   envHeader { };      //!< event header at start of allocation
+    areg::BufferData    envData[8]{ 0 };    //!< first bytes of payload area
+};
+
+static_assert(sizeof(areg::Endpoint)    == 20               , "Endpoint must be exactly 20 bytes");
+static_assert(sizeof(areg::RawService)  ==  8               , "RawService must be exactly 8 bytes");
+static_assert(sizeof(areg::EventHeader) == 128              , "EventHeader must be exactly 128 bytes");
+static_assert(sizeof(areg::RawEnvelope) == 136              , "RawEnvelope must be exactly 136 bytes");
+static_assert(offsetof(areg::EventHeader, target)    == 16  , "EventHeader.target must be at offset 16");
+static_assert(offsetof(areg::EventHeader, provider)  == 24  , "EventHeader.provider must be at offset 24");
+static_assert(offsetof(areg::EventHeader, consumer)  == 44  , "EventHeader.consumer must be at offset 44");
+static_assert(offsetof(areg::EventHeader, rawService)== 64  , "EventHeader.rawService must be at offset 64");
+static_assert(offsetof(areg::EventHeader, channel)   == 72  , "EventHeader.channel must be at offset 72");
 
 /**
  * \brief   Returns writable pointer to data buffer, or nullptr if buffer pointer is invalid.

@@ -364,6 +364,13 @@ public:
     inline bool is_shared() const noexcept;
 
     /**
+     * \brief   Returns true when this instance is the sole owner of the underlying block
+     *          (use_count == 1). Use to guard placement-new'd payload destructors.
+     **/
+    [[nodiscard]]
+    inline bool is_unique() const noexcept;
+
+    /**
      * \brief   Returns true when this instance owns the full backing allocation
      *          (i.e. is not a zero-copy view).  Equivalent to mViewEnd == 0.
      *          Only owner buffers can grow, resize, or write freely.
@@ -538,12 +545,19 @@ protected:
     [[nodiscard]]
     virtual uint32_t data_offset() const noexcept;
 
-//////////////////////////////////////////////////////////////////////////
-// Hot-path helpers -- protected so derived classes (e.g. RemoteMessage) can
-// call them directly without going through the virtual OutStream/InStream
-// dispatch.  Non-virtual; the compiler can inline all three within a TU.
-//////////////////////////////////////////////////////////////////////////
 protected:
+
+    /**
+     * \brief   Sets dst to be a zero-copy read-only view into this buffer's data area.
+     *          Call from derived-class operators that need to expose a sub-range of
+     *          this buffer to a plain SharedBuffer without an intermediate copy.
+     *
+     * \param[out] dst       Target buffer that will receive the view.
+     * \param   viewStart    First byte of the view (data-area offset; 0 = payload start).
+     * \param   viewEnd      One-past-last byte of the view. Must be > 0; use size_used()
+     *                       to expose the entire payload.
+     **/
+    inline void share_as_view(SharedBuffer& dst, uint32_t viewStart, uint32_t viewEnd) const noexcept;
 
     /**
      * \brief   Returns the default block size from application configuration,
@@ -554,10 +568,7 @@ protected:
 
     /**
      * \brief   Core write: writes exactly \a size bytes at the current cursor
-     *          position (mPosition), then advances mPosition by \a size.  Extends
-     *          biUsed when writing beyond the existing end.  Grows the buffer if
-     *          needed using the
-     *          doubling strategy in SharedBuffer::reserve().
+     *          position (mPosition), then advances mPosition by \a size
      *
      * \return  Bytes actually written.
      **/
@@ -743,6 +754,11 @@ inline bool SharedBuffer::is_shared() const noexcept
     return is_valid() && (mByteBuffer.use_count() > 1);
 }
 
+inline bool SharedBuffer::is_unique() const noexcept
+{
+    return is_valid() && (mByteBuffer.use_count() == 1);
+}
+
 inline bool SharedBuffer::is_owner() const noexcept
 {
     return (mViewEnd == 0u);
@@ -856,6 +872,14 @@ inline const areg::RawBuffer* SharedBuffer::byte_buffer() const noexcept
 inline areg::RawBuffer* SharedBuffer::byte_buffer() noexcept
 {
     return mByteBuffer.get();
+}
+
+inline void SharedBuffer::share_as_view(SharedBuffer& dst, uint32_t viewStart, uint32_t viewEnd) const noexcept
+{
+    dst.mByteBuffer = mByteBuffer;
+    dst.mViewStart  = viewStart;
+    dst.mViewEnd    = viewEnd;
+    dst.mPosition   = viewStart;
 }
 
 inline const uint8_t* SharedBuffer::buffer_to_read() const noexcept

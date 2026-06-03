@@ -66,7 +66,7 @@ class NetTcpLogger final    : public    LoggerBase
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The ring buffer of logging message to queue if logging service is not available.
-    using PendingQueue = RingStack<RemoteMessage>;
+    using PendingQueue = RingStack<EventEnvelope>;
 
     //!< A prefix to add in front of thread and timer names.
     static constexpr std::string_view   PREFIX_THREAD{ "logger_" };
@@ -122,22 +122,18 @@ public:
     void log_message( const areg::LogEntry & logMessage) final;
 
     /**
-     * \brief   Forwards a pre-built remote message to the log collector without re-constructing it.
-     *          Used when the RemoteMessage was pre-built on the calling thread to avoid
-     *          allocating and copying on the LogManager thread.
+     * \brief   Forwards a pre-built event envelope to the log collector without re-constructing it.
      *
-     * \param   msg     Pre-built remote message; must have is_valid() == true.
+     * \param   msg     Pre-built event envelope; must have is_valid() == true.
      **/
-    void forward_message( const areg::RemoteMessage & msg );
+    void forward_message( const areg::EventEnvelope & msg );
 
     /**
-     * \brief   Forwards a pre-built remote message to the log collector without re-constructing it.
-     *          Used when the RemoteMessage was pre-built on the calling thread to avoid
-     *          allocating and copying on the LogManager thread.
+     * \brief   Forwards a pre-built event envelope to the log collector without re-constructing it.
      *
-     * \param   msg     Pre-built remote message; must have is_valid() == true.
+     * \param   msg     Pre-built event envelope; must have is_valid() == true.
      **/
-    void forward_message(areg::RemoteMessage&& msg);
+    void forward_message(areg::EventEnvelope&& msg);
 
     /**
      * \brief   Returns true if logger is initialized (opened).
@@ -187,7 +183,7 @@ private:
      * \param   msgFailed       The message, which failed to send.
      * \param   whichTarget     The target socket to send message.
      **/
-    void failed_send_message( const RemoteMessage & msgFailed, Socket & whichTarget ) final;
+    void failed_send_message( const EventEnvelope & msgFailed, Socket & whichTarget ) final;
 
     /**
      * \brief   Triggered when failed to receive message.
@@ -203,7 +199,7 @@ private:
      *
      * \param   msgUnprocessed      Unprocessed message data.
      **/
-    void failed_process_message( const RemoteMessage & msgUnprocessed ) final;
+    void failed_process_message( const EventEnvelope & msgUnprocessed ) final;
 
     /**
      * \brief   Triggered when need to process received message.
@@ -211,7 +207,7 @@ private:
      * \param   msgReceived     Received message to process.
      * \param   whichSource     The source socket, which received message.
      **/
-    void process_received_message( RemoteMessage & msgReceived, Socket & whichSource ) final;
+    void process_received_message( EventEnvelope & msgReceived, Socket & whichSource ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

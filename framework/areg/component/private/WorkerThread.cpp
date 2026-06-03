@@ -71,7 +71,7 @@ void WorkerThread::ready_for_events( bool is_ready )
     DispatcherThread::ready_for_events(is_ready);
 }
 
-DispatcherThread* WorkerThread::event_consumer_thread( const RuntimeClassID& whichClass )
+DispatcherThread* WorkerThread::event_consumer_thread( const uint32_t whichClass ) noexcept
 {
     return (has_registered_consumer(whichClass) ? static_cast<DispatcherThread *>(this) : binding_component().find_event_consumer(whichClass));
 }

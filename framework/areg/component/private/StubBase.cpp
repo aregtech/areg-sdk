@@ -17,7 +17,8 @@
 
 #include "areg/component/ServiceResponseEvent.hpp"
 #include "areg/component/ResponseEvents.hpp"
-#include "areg/component/EventDataStream.hpp"
+#include "areg/component/RequestEvents.hpp"
+#include "areg/base/SharedBuffer.hpp"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/private/StubConnectEvent.hpp"
@@ -256,21 +257,21 @@ void StubBase::send_response_notification( const StubListenerList & whichListene
     for (uint32_t i = 1; i < count; ++i)
     {
         const StubBase::Listener & listener = whichListeners.value_at(i);
-        ServiceResponseEvent * eventClone = masterEvent.clone_for_target(listener.mProxy);
-        if (eventClone != nullptr)
+        ServiceResponseEvent eventClone = masterEvent.clone_for_target(listener.mProxy);
+        if (eventClone.is_valid())
         {
             if (static_cast<int32_t>(listener.mSequenceNr) >= 0)
             {
-                eventClone->set_sequence_number(listener.mSequenceNr);
+                eventClone.set_sequence_number(listener.mSequenceNr);
                 if (listener.mSequenceNr != 0)
                     remove_from_map(respId, listener);
             }
             else
             {
-                eventClone->set_sequence_number(static_cast<SequenceNumber>(-1 * static_cast<SignedSequence>(listener.mSequenceNr)));
+                eventClone.set_sequence_number(static_cast<SequenceNumber>(-1 * static_cast<SignedSequence>(listener.mSequenceNr)));
                 remove_from_map(respId, StubBase::Listener(respId, 0, listener.mProxy));
             }
-            send_service_response(*eventClone);
+            send_service_response(eventClone);
         }
     }
 
@@ -300,21 +301,21 @@ void StubBase::send_error_notification( const StubListenerList & whichListeners,
     for (uint32_t i = 0; i < whichListeners.size(); ++i)
     {
         const StubBase::Listener & listener = whichListeners.value_at(i);
-        ServiceResponseEvent * eventError = masterEvent.clone_for_target(listener.mProxy);
-        if (eventError != nullptr)
+        ServiceResponseEvent eventError = masterEvent.clone_for_target(listener.mProxy);
+        if (eventError.is_valid())
         {
             if (static_cast<int32_t>(listener.mSequenceNr) >= 0)
             {
-                eventError->set_sequence_number(listener.mSequenceNr);
+                eventError.set_sequence_number(listener.mSequenceNr);
                 if (listener.mSequenceNr != 0)
                     remove_from_map(respId, listener);
             }
             else
             {
-                eventError->set_sequence_number(static_cast<SequenceNumber>(-1 * static_cast<SignedSequence>(listener.mSequenceNr)));
+                eventError.set_sequence_number(static_cast<SequenceNumber>(-1 * static_cast<SignedSequence>(listener.mSequenceNr)));
             }
 
-            send_service_response(*eventError);
+            send_service_response(eventError);
         }
     }
 }
@@ -329,10 +330,10 @@ void StubBase::send_update_notification( const StubListenerList & whichListeners
     for (uint32_t i = 1; i < count; ++i)
     {
         const StubBase::Listener & listener = whichListeners.value_at(i);
-        ServiceResponseEvent * eventClone = masterEvent.clone_for_target(listener.mProxy);
-        if (eventClone != nullptr)
+        ServiceResponseEvent eventClone = masterEvent.clone_for_target(listener.mProxy);
+        if (eventClone.is_valid())
         {
-            send_service_response(*eventClone);
+            send_service_response(eventClone);
         }
     }
 
@@ -342,7 +343,7 @@ void StubBase::send_update_notification( const StubListenerList & whichListeners
 
 void StubBase::send_service_response( ServiceResponseEvent & eventElem ) const
 {
-    eventElem.target_proxy().deliver_service_event(eventElem);
+    eventElem.deliver_event();
 }
 
 void StubBase::cancel_current_request() noexcept
@@ -425,7 +426,7 @@ void StubBase::invalidate_attribute( uint32_t attrId )
         error_request(attrId, false);
 }
 
-void StubBase::send_update_event( uint32_t msgId, const EventDataStream & data, areg::ResultType result ) const
+void StubBase::send_update_event( uint32_t msgId, const SharedBuffer & data, areg::ResultType result ) const
 {
     LOG_SCOPE( areg_component_StubBase, send_update_event );
     StubBase::StubListenerList listeners;
@@ -434,34 +435,32 @@ void StubBase::send_update_event( uint32_t msgId, const EventDataStream & data, 
         const ProxyAddress & proxy = listeners.first_entry().mProxy;
         LOG_WARN( "Sends busy message to proxy [ %s ] for the request [ %u ]", ProxyAddress::to_path( proxy).as_string(), msgId);
 
-        ResponseEvent * eventElem = create_response(proxy, msgId, result, data);
-        if (eventElem != nullptr)
+        ServiceResponseEvent eventElem = create_response(proxy, msgId, result, data);
+        if (eventElem.is_valid())
         {
-            send_update_notification(listeners, *eventElem);
-            // ownership of eventElem transferred to dispatcher via send_update_notification
+            send_update_notification(listeners, eventElem);
         }
     }
 }
 
-void StubBase::send_notify_once( const ProxyAddress & target, uint32_t msgId, const EventDataStream & data, areg::ResultType result ) const
+void StubBase::send_notify_once( const ProxyAddress & target, uint32_t msgId, const SharedBuffer & data, areg::ResultType result ) const
 {
-    ResponseEvent * eventElem = create_response( target, msgId, result, data );
-    if ( eventElem != nullptr )
+    ServiceResponseEvent eventElem = create_response( target, msgId, result, data );
+    if ( eventElem.is_valid() )
     {
-        send_service_response( *eventElem );
+        send_service_response( eventElem );
     }
 }
 
-void StubBase::send_response_event( uint32_t respId, const EventDataStream & data )
+void StubBase::send_response_event( uint32_t respId, const SharedBuffer & data )
 {
     StubBase::StubListenerList listeners;
     if (find_listeners(respId, listeners) > 0)
     {
-        ResponseEvent * eventElem = create_response(listeners.first_entry().mProxy, respId, areg::ResultType::RequestOK, data);
-        if (eventElem != nullptr)
+        ServiceResponseEvent eventElem = create_response(listeners.first_entry().mProxy, respId, areg::ResultType::RequestOK, data);
+        if (eventElem.is_valid())
         {
-            send_response_notification(listeners, *eventElem);
-            // ownership of eventElem transferred to dispatcher via send_response_notification
+            send_response_notification(listeners, eventElem);
         }
     }
 }
@@ -469,8 +468,8 @@ void StubBase::send_response_event( uint32_t respId, const EventDataStream & dat
 void StubBase::send_busy_response( const Listener & whichListener )
 {
     LOG_SCOPE( areg_component_StubBase, send_busy_response );
-    ResponseEvent* eventElem = create_response(whichListener.mProxy, whichListener.mMessageId, areg::ResultType::RequestBusy, EventDataStream::empty_data());
-    if (eventElem != nullptr)
+    ServiceResponseEvent eventElem = create_response(whichListener.mProxy, whichListener.mMessageId, areg::ResultType::RequestBusy, SharedBuffer{});
+    if (eventElem.is_valid())
     {
         LOG_WARN("Sending busy response for request message [ %p ] from source [ %p ] to target [ %p ], sequence [ %llu ]"
                     , whichListener.mMessageId
@@ -478,8 +477,8 @@ void StubBase::send_busy_response( const Listener & whichListener )
                     , whichListener.mProxy.source()
                     , whichListener.mSequenceNr);
 
-        eventElem->set_sequence_number(whichListener.mSequenceNr);
-        send_service_response(*eventElem);
+        eventElem.set_sequence_number(whichListener.mSequenceNr);
+        send_service_response(eventElem);
     }
 }
 
@@ -659,22 +658,22 @@ const uint32_t * StubBase::attribute_ids() const noexcept
     return mInterface.idAttributeList;
 }
 
-ResponseEvent * StubBase::create_response( const ProxyAddress &     /* proxy  */
-                                         , uint32_t                 /* msgId  */
-                                         , areg::ResultType         /* result */
-                                         , const EventDataStream &  /* data   */ ) const
+ServiceResponseEvent StubBase::create_response( const ProxyAddress &    /* proxy  */
+                                              , uint32_t               /* msgId  */
+                                              , areg::ResultType       /* result */
+                                              , const SharedBuffer &   /* data   */ ) const
 {
-    return nullptr;
+    return ServiceResponseEvent(EventEnvelope{});  // invalid; derived stubs override to produce real events
 }
 
-RemoteRequestEvent * StubBase::create_remote_request( const InStream & /* stream */ ) const
+RemoteRequestEvent StubBase::create_remote_request( const EventEnvelope & envelope ) const
 {
-    return nullptr;
+    return RemoteRequestEvent( envelope );
 }
 
-RemoteNotifyRequestEvent * StubBase::create_notify_request( const InStream & /* stream */ ) const
+RemoteNotifyRequestEvent StubBase::create_notify_request( const EventEnvelope & envelope ) const
 {
-    return nullptr;
+    return RemoteNotifyRequestEvent( envelope );
 }
 
 void StubBase::process_stub_event( StubEvent & /* eventElem */ )

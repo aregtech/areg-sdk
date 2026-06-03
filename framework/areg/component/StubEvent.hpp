@@ -31,8 +31,8 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/base/RuntimeObject.hpp"
+#include "areg/component/Event.hpp"
 #include "areg/component/EventConsumer.hpp"
-#include "areg/component/StreamableEvent.hpp"
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/component/StubAddress.hpp"
 namespace areg {
@@ -40,7 +40,6 @@ namespace areg {
 /************************************************************************
  * List of declared classes
  ************************************************************************/
-// class StreamableEvent
     class StubEvent;
 // class EventConsumer
     class StubEventConsumer;
@@ -69,17 +68,12 @@ class StubConnectEvent;
  * \brief   Base class for request events processed on the stub side. Cannot be used directly;
  *          marked as internal for service manager communication.
  **/
-class AREG_API StubEvent  : public StreamableEvent
+class AREG_API StubEvent  : public Event
 {
 /************************************************************************/
 // Friend classes
 /************************************************************************/
     friend class StubEventConsumer;
-
-//////////////////////////////////////////////////////////////////////////
-// Declare as runtime event object
-//////////////////////////////////////////////////////////////////////////
-    AREG_DECLARE_RUNTIME_EVENT(StubEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -90,12 +84,15 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Initializes the event by deserializing data from the given input stream.
-     *
-     * \param   stream      The input stream containing serialized event data.
+     * \brief   Constructs from an existing envelope (IPC receive path). Shares the buffer.
      **/
-    StubEvent( const InStream & stream );
-    
+    explicit StubEvent(const EventEnvelope& envelope) noexcept;
+
+    /**
+     * \brief   Constructs from a moved envelope (IPC receive path). Takes ownership.
+     **/
+    explicit StubEvent(EventEnvelope&& envelope) noexcept;
+
     /**
      * \brief   Initializes the event with the target stub address and event type.
      *
@@ -104,68 +101,26 @@ protected:
      **/
     StubEvent(const StubAddress & toTarget, areg::EventType eventType );
 
-    virtual ~StubEvent() = default;
-
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
 public:
-/************************************************************************/
-// Event class overrides
-/************************************************************************/
-    /**
-     * \brief   Sends the event to the target thread. If the target thread is null, searches for the
-     *          target thread in the system.
-     **/
-    void deliver_event() override;
 
-//////////////////////////////////////////////////////////////////////////
-// Attributes
-//////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   Returns the address of the target stub.
-     **/
-    inline const StubAddress & target_stub() const;
+    StubEvent(const StubEvent& src) noexcept = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Operations
-//////////////////////////////////////////////////////////////////////////
-protected:
-/************************************************************************/
-// StreamableEvent overrides
-/************************************************************************/
+    StubEvent(StubEvent&& src) noexcept = default;
+
+    ~StubEvent() override = default;
+
+public:
 
     /**
-     * \brief   Deserializes the stub address from the input stream.
-     *
-     * \param   stream      The input stream to read from.
-     * \return  The input stream for method chaining.
+     * \brief   Returns the address of the target stub, reconstructed from the EventHeader provider endpoint.
      **/
-    const InStream & read_stream( const InStream & stream ) override;
-
-    /**
-     * \brief   Serializes the stub address to the output stream.
-     *
-     * \param   stream      The output stream to write to.
-     * \return  The output stream for method chaining.
-     **/
-    OutStream & write_stream( OutStream & stream ) const override;
-
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   Event target Stub address
-     **/
-    StubAddress   mTargetStubAddress;
+    inline uint32_t target_stub() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
     StubEvent() = delete;
-    AREG_NOCOPY_NOMOVE( StubEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -231,8 +186,7 @@ protected:
     virtual void process_generic_event( Event & eventElem ) = 0;
 
     /**
-     * \brief   Pure virtual; processes a notification that the stub has been registered with the
-     *          service.
+     * \brief   Pure virtual; processes a notification that the stub has been registered with the service.
      *
      * \param   stubTarget      Address of the registered service provider.
      * \param   status          Connection status (Connected on success).
@@ -240,8 +194,7 @@ protected:
     virtual void process_registered_event( const StubAddress & stubTarget, areg::ServiceConnectionState status ) = 0;
 
     /**
-     * \brief   Pure virtual; processes a notification that a client is requesting connection or
-     *          disconnection.
+     * \brief   Pure virtual; processes a notification that a client is requesting connection or disconnection.
      *
      * \param   proxyAddress    Address of the service consumer proxy.
      * \param   status          Service consumer connection status.
@@ -310,9 +263,10 @@ private:
 // StubEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const StubAddress & StubEvent::target_stub() const
+inline uint32_t StubEvent::target_stub() const
 {
-    return mTargetStubAddress;
+    ASSERT(is_valid());
+    return provider().number;
 }
 
 inline const Event* StubEventConsumer::current_event() const

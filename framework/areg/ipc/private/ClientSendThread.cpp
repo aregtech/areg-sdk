@@ -15,16 +15,16 @@
 #include "areg/ipc/private/ClientSendThread.hpp"
 
 #include "areg/component/ServiceDefs.hpp"
-#include "areg/component/ExitEvent.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/ipc/ClientConnection.hpp"
+#include "areg/base/EventEnvelope.hpp"
 
 namespace areg {
 
 ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String& namePrefix )
-    : DispatcherThread        ( namePrefix + areg::CLIENT_SEND_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_BIG, areg::SEND_THREAD_QUEUE_LIMIT )
-    , SendMessageEventConsumer( )
+    : DispatcherThread  ( namePrefix + areg::CLIENT_SEND_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_BIG, areg::SEND_THREAD_QUEUE_LIMIT )
+    , EventConsumer     ( )
 
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
@@ -37,110 +37,96 @@ void ClientSendThread::ready_for_events( bool is_ready )
     if ( is_ready )
     {
         areg::set_receive_mode(areg::ReceiveMode::MonoCache);
-        SendMessageEvent::add_listener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
         DispatcherThread::ready_for_events( true );
     }
     else
     {
         DispatcherThread::ready_for_events( false );
-        SendMessageEvent::remove_listener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
         mConnection.close_socket( );
     }
 }
 
-void ClientSendThread::process_event( const SendMessageEventData & data )
+void ClientSendThread::start_event_processing( Event & eventElem )
 {
-    if ( data.is_forward_message() )
+    if ( eventElem.is_exit_prio() )
     {
-        const ExitEvent& exitEvent = ExitEvent::exit_event();
-
-        // evtPtrs[0] is nullptr: the triggering event is owned by the dispatch chain,
-        // never call destroy() on it.  Drained events (indices 1..N) must be destroyed
-        SendMessageEvent* evtPtrs[areg::THREAD_DRAIN_LIMIT];
-        areg::IoBuffer    ioBuffer[areg::THREAD_DRAIN_LIMIT];
-        uint32_t batchCount { 0u };
-        uint32_t totalSize  { 0u };
-        uint32_t bufCount   { 0u };
-
-        evtPtrs[batchCount++] = nullptr;
-        const RemoteMessage& msg1 = data.remote_message();
-        const areg::MessageHeader* hdr = msg1.header();
-        if (hdr != nullptr)
-        {
-            msg1.buffer_completion_fix();
-            const uint32_t bufSize = sizeof(areg::MessageHeader) + hdr->rbhBufHeader.biUsed;
-            ioBuffer[bufCount ++]  = { reinterpret_cast<const uint8_t*>(hdr), bufSize };
-            totalSize += bufSize;
-        }
-
-        // Phase 1: drain additional messages
-        for (uint32_t count{ batchCount }; count < areg::THREAD_DRAIN_LIMIT; ++count)
-        {
-            Event * evt = pick_event();
-            if ( evt == nullptr )
-                break;
-
-            if ( static_cast<const Event *>( evt ) == static_cast<const Event *>( &exitEvent ) )
-            {
-                for ( uint32_t i = 1; i < batchCount; ++i )
-                    evtPtrs[i]->destroy(); //  no need to destroy ExitEvent
-
-                mConnection.close_socket();
-                trigger_exit();
-                return;
-            }
-
-            ASSERT(AREG_RUNTIME_CAST(evt, SendMessageEvent) != nullptr);
-            SendMessageEvent* sendEvt = static_cast<SendMessageEvent *>(evt);
-            const SendMessageEventData & evtData = sendEvt->data();
-            if ( evtData.is_exit_message() )
-            {
-                sendEvt->destroy();
-                for ( uint32_t i = 1; i < batchCount; ++i )
-                    evtPtrs[i]->destroy();
-
-                mConnection.close_socket();
-                trigger_exit();
-                return;
-            }
-
-            evtPtrs[batchCount++] = sendEvt;
-            const RemoteMessage& msg = evtData.remote_message();
-            hdr = msg.header();
-            if (hdr != nullptr)
-            {
-                msg.buffer_completion_fix();
-                const uint32_t bufSize = sizeof(areg::MessageHeader) + hdr->rbhBufHeader.biUsed;
-                ioBuffer[bufCount++] = { reinterpret_cast<const uint8_t*>(hdr), bufSize };
-                totalSize += bufSize;
-            }
-        }
-
-        // Phase 2: send the collected batch
-        const int32_t sentBytes = mConnection.send_messages_batch(ioBuffer, bufCount, totalSize);
-
-        for (uint32_t i = 1; i < batchCount; ++i)
-            evtPtrs[i]->destroy();
-
-        if (sentBytes > 0)
-        {
-            accumulate_sent(static_cast<uint64_t>(sentBytes), bufCount);
-        }
-        else
-        {
-            mRemoteService.failed_send_message(msg1, mConnection.socket());
-        }
+        mConnection.close_socket();
+        trigger_exit();
+        return;
     }
-    else if ( data.is_exit_message() )
+
+    // Zero local-only routing fields before wire transmission.
+    areg::EventHeader * hdr0{ eventElem.header() };
+    ASSERT( hdr0 != nullptr );
+    hdr0->internal1 = 0u;
+    hdr0->internal2 = 0u;
+    hdr0->custom    = 0u;
+
+    areg::IoBuffer  ioBuffer[areg::THREAD_DRAIN_LIMIT];
+    uint32_t batchCount{ 0u };
+    uint32_t totalSize { 0u };
+    uint32_t bufCount  { 0u };
+
     {
-        mConnection.close_socket( );
-        trigger_exit( );
+        const uint32_t wireSize{ sizeof(areg::EventHeader) + hdr0->bufHeader.biUsed };
+        ioBuffer[bufCount++] = { reinterpret_cast<const uint8_t*>(hdr0), wireSize };
+        totalSize += wireSize;
+        ++batchCount;
+    }
+
+    // Phase 1: drain additional events from the queue.
+    // ZEPHYR-INCOMPATIBLE: ~4KB stack array for batch send draining.
+    Event ptrs[areg::THREAD_DRAIN_LIMIT];
+    uint32_t evtCount{ 0u };
+
+    for ( ; batchCount < areg::THREAD_DRAIN_LIMIT; ++batchCount )
+    {
+        Event evt{ pick_event() };
+        if ( !evt.is_valid() )
+            break;
+
+        if ( evt.is_exit_prio() )
+        {
+            for ( uint32_t i{ 0u }; i < evtCount; ++i )
+                ptrs[i].destroy_event();
+
+            mConnection.close_socket();
+            trigger_exit();
+            return;
+        }
+
+        areg::EventHeader * hdr{ evt.header() };
+        ASSERT( hdr != nullptr );
+        hdr->internal1 = 0u;
+        hdr->internal2 = 0u;
+        hdr->custom    = 0u;
+
+        const uint32_t wireSize{ sizeof(areg::EventHeader) + hdr->bufHeader.biUsed };
+        ioBuffer[bufCount++] = { reinterpret_cast<const uint8_t*>(hdr), wireSize };
+        totalSize += wireSize;
+
+        ptrs[evtCount++] = std::move(evt);
+    }
+
+    // Phase 2: send collected batch as a single writev/scatter-gather call.
+    const int32_t sentBytes{ mConnection.send_messages_batch(ioBuffer, bufCount, totalSize) };
+
+    for ( uint32_t i{ 0u }; i < evtCount; ++i )
+        ptrs[i].destroy_event();
+
+    if ( sentBytes > 0 )
+    {
+        accumulate_sent( static_cast<uint64_t>(sentBytes), bufCount );
+    }
+    else
+    {
+        mRemoteService.failed_send_message( eventElem.envelope(), mConnection.socket() );
     }
 }
 
-bool ClientSendThread::post_event(Event & eventElem)
+bool ClientSendThread::post_event( Event & eventElem )
 {
-    return (AREG_RUNTIME_CAST(&eventElem, SendMessageEvent) != nullptr) && EventDispatcher::post_event(eventElem);
+    return EventDispatcher::post_event( eventElem );
 }
 
 } // namespace areg

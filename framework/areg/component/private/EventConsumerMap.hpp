@@ -22,7 +22,7 @@
  ************************************************************************/
 #include "areg/base/RuntimeResourceMap.hpp"
 #include "areg/base/Containers.hpp"
-#include "areg/base/ResourceMap.hpp"
+#include "areg/base/ResourceListMap.hpp"
 
 /************************************************************************
  * Dependencies
@@ -32,11 +32,6 @@ namespace areg {
 } // namespace areg
 
 namespace areg {
-
-/************************************************************************
- * Declared classes
- ************************************************************************/
-class EventConsumerList;
 
 /************************************************************************
  * \brief   In this file are declared Event Consumer contain classes:
@@ -49,7 +44,7 @@ class EventConsumerList;
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerList class declaration
 //////////////////////////////////////////////////////////////////////////
-using EventConsumerListBase	= LinkedList<EventConsumer *>;
+using EventConsumerListBase	= ArrayList<EventConsumer *>;
 
 /**
  * \brief   Helper class containing Event Consumer objects. Used in Dispatcher when collecting list
@@ -122,32 +117,58 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// EventConsumerMap class declaration
+// ImplConsumerMap internal class declaration
 //////////////////////////////////////////////////////////////////////////
-
 /**
- * \brief   Helper class for managing maps of event consumer lists.
+ * \brief   Helper class for managing maps of thread-local proxy lists.
  **/
-class ImplEventConsumerMap	: public ResourceMapImpl<RuntimeClassID, EventConsumerList *>
+class ImplConsumerMap : public ResourceListMapImpl<uint32_t, EventConsumer*, EventConsumerList>
 {
 public:
     /**
      * \brief   Called when all resources are removed from the map.
-     *
-     * \param   Key         The key associated with the resource being removed.
-     * \param   Resource    The event consumer list to clean.
      **/
-    void impl_clean_resource( RuntimeClassID & Key, EventConsumerList * Resource );
+    inline void impl_clean_list(const uint32_t& /* Key */, EventConsumerList& List) noexcept
+    {
+        List.remove_all_consumers();
+    }
+
+    /**
+     * \brief   Adds a proxy object to the given list.
+     *
+     * \param   List        The list of proxy objects to add to.
+     * \param   Resource    The proxy object to add.
+     **/
+    inline void impl_add_resource(EventConsumerList& List, EventConsumer* Resource)
+    {
+        if (Resource != nullptr)
+        {
+            List.add_consumer(*Resource);
+        }
+    }
+
+    /**
+     * \brief   Removes a proxy object from the given list.
+     *
+     * \param   List        The list of proxy objects to remove from.
+     * \param   Resource    The proxy object to remove.
+     * \return  True if the resource was found and removed; false otherwise.
+     **/
+    inline bool impl_remove_resource(EventConsumerList& List, EventConsumer* Resource) noexcept
+    {
+        return (Resource != nullptr ? List.remove_consumer(*Resource) : false);
+    }
 };
+
 /**
- * \brief   Event Consumer Map is a helper class containing 
- *          Event Consumer List objects registered for certain Events,
- *          which are Runtime type of objects. The Key value of the map
- *          is Runtime object and the Values are Consumer Event List objects.
- *          It is used in Dispatcher, when a Consumer is registered for Event.
- *          For use, see implementation of EventDispatcherBase class
+ * \brief   The integer hash map which values are list of proxies.
  **/
-using EventConsumerMap  = ConcurrentRuntimeResourceMap<EventConsumerList *, ImplEventConsumerMap>;
+using MapConsumer = IntegerHashMap<EventConsumerList>;
+
+/**
+ * \brief   The Map of the list, where the key is a magic number and values are list of proxies.
+ **/
+using EventConsumerMap = ConcurrentResourceListMap<uint32_t, EventConsumer*, EventConsumerList, MapConsumer, ImplConsumerMap>;
 
 //////////////////////////////////////////////////////////////////////////
 // Inline functions implementation

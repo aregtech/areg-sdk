@@ -246,6 +246,12 @@ public:
     inline const ThreadAddress & address() const noexcept;
 
     /**
+     * \brief   Returns the unique CRC32 number of the thread.
+     **/
+    [[nodiscard]]
+    inline uint32_t number() const noexcept;
+
+    /**
      * \brief   Sets the thread priority level and returns the old priority. Returns
      *          UndefinedPriority if thread is not created or destroyed. Returns current priority if
      *          newPriority is UndefinedPriority.
@@ -275,13 +281,13 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Searches for thread by name and returns its pointer. Returns nullptr if not found.
+     * \brief   Searches for thread by CRC32 number and returns its pointer. Returns nullptr if not found.
      *
-     * \param   threadName      The unique name of thread to search.
+     * \param   threadNumber    The unique CRC32 number of the thread to search.
      * \return  Pointer to the thread object if found; nullptr otherwise.
      **/
     [[nodiscard]]
-    inline static Thread * find_by_name( const String & threadName) noexcept;
+    inline static Thread* find_by_number(const UniqueNumber threadNumber) noexcept;
 
     /**
      * \brief   Searches for thread by ID and returns its pointer. Returns nullptr if not found.
@@ -290,7 +296,7 @@ public:
      * \return  Pointer to the thread object if found; nullptr otherwise.
      **/
     [[nodiscard]]
-    inline static Thread * find_by_id( id_type threadId ) noexcept;
+    inline static Thread * find_by_id( const id_type threadId ) noexcept;
 
     /**
      * \brief   Searches for thread by address and returns its pointer. Returns nullptr if not
@@ -310,17 +316,16 @@ public:
      * \return  Valid thread address if found; invalid address otherwise.
      **/
     [[nodiscard]]
-    inline static const ThreadAddress & find_address( id_type threadId ) noexcept;
+    inline static const ThreadAddress & address_by_id(const id_type threadId ) noexcept;
 
     /**
-     * \brief   Searches for thread by name and returns its address containing process and thread
-     *          IDs.
+     * \brief   Searches for thread by unique CRC32 number and returns its address containing process and thread IDs.
      *
-     * \param   threadName      The name of thread to get address.
+     * \param   threadNumber      The CRC32 number of thread to get address.
      * \return  Valid thread address if found; invalid address otherwise.
      **/
     [[nodiscard]]
-    inline static const ThreadAddress & find_address( const String & threadName ) noexcept;
+    inline static const ThreadAddress & address_by_number( const UniqueNumber threadNumber ) noexcept;
 
     /**
      * \brief   Suspends the current thread in sleep mode for the specified duration in
@@ -690,8 +695,8 @@ private:
      *          The unique thread name can be used to access thread object.
      **/
     using   MapThreadName           = IntegerMap<Thread *>;
-    using   ImplThreadNameResource  = ResourceMapImpl<uint32_t, Thread *>;
-    using   MapThreadNameResource   = ConcurrentResourceMap<uint32_t, Thread *, MapThreadName, ImplThreadNameResource>;
+    using   ImplThreadNameResource  = ResourceMapImpl<UniqueNumber, Thread *>;
+    using   MapThreadNameResource   = ConcurrentResourceMap<UniqueNumber, Thread *, MapThreadName, ImplThreadNameResource>;
 
 /************************************************************************/
 // Resource controlling and mapping variables
@@ -770,30 +775,35 @@ inline const ThreadAddress & Thread::address() const noexcept
     return mThreadAddress;
 }
 
-inline Thread* Thread::find_by_name(const String & threadName) noexcept
+inline uint32_t Thread::number() const noexcept
 {
-    return (!threadName.is_empty() ? Thread::_map_thread_name().find_resource_object(static_cast<uint32_t>(threadName)) : nullptr);
+    return static_cast<uint32_t>(mThreadAddress);
 }
 
-inline Thread* Thread::find_by_id( id_type threadId) noexcept
+inline Thread* Thread::find_by_number(const UniqueNumber threadNumber) noexcept
+{
+    return Thread::_map_thread_name().find_resource_object(threadNumber);
+}
+
+inline Thread* Thread::find_by_id(const id_type threadId) noexcept
 {
     return Thread::_map_thread_id().find_resource_object(threadId);
 }
 
 inline Thread* Thread::find_by_address(const ThreadAddress& threadAddress) noexcept
 {
-    return Thread::find_by_name(threadAddress.name());
+    return Thread::find_by_number(static_cast<uint32_t>(threadAddress));
 }
 
-inline const ThreadAddress & Thread::find_address( id_type threadId) noexcept
+inline const ThreadAddress & Thread::address_by_id(const id_type threadId) noexcept
 {
     Thread* threadObj = Thread::find_by_id(threadId);
     return (threadObj != nullptr ? threadObj->address() : ThreadAddress::invalid_thread_address());
 }
 
-inline const ThreadAddress& Thread::find_address(const String & threadName) noexcept
+inline const ThreadAddress& Thread::address_by_number(const UniqueNumber threadNumber) noexcept
 {
-    Thread* threadObj = Thread::find_by_name(threadName);
+    Thread* threadObj = Thread::find_by_number(threadNumber);
     return (threadObj != nullptr ? threadObj->address() : ThreadAddress::invalid_thread_address());
 }
 

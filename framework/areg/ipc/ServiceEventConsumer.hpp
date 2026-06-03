@@ -19,6 +19,7 @@
   * Include files.
   ************************************************************************/
 #include "areg/base/areg_global.h"
+#include "areg/base/EventEnvelope.hpp"
 #include "areg/component/TimerConsumer.hpp"
 #include "areg/ipc/ServiceEvent.hpp"
 
@@ -33,11 +34,6 @@ namespace areg {
 } // namespace areg
 
 namespace areg {
-
-/************************************************************************
- * Dependencies.
- ************************************************************************/
-class RemoteMessage;
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceEventConsumer class declaration
@@ -102,14 +98,14 @@ public:
      *
      * \param   msgReceived     The received communication message.
      **/
-    virtual void on_message_received(const RemoteMessage& msgReceived) = 0;
+    virtual void on_message_received(const EventEnvelope& msgReceived) = 0;
 
     /**
      * \brief   Triggered to send a communication message.
      *
      * \param   msgSend     The communication message to send.
      **/
-    virtual void on_message_send(const RemoteMessage& msgSend) = 0;
+    virtual void on_message_send(const EventEnvelope& msgSend) = 0;
 
     /**
      * \brief   Triggered to inform of channel connection.

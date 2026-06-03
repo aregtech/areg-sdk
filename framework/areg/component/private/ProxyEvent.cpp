@@ -27,61 +27,40 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// ProxyEvent class, runtime implementation
-//////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_RUNTIME_EVENT(ProxyEvent, StreamableEvent)
-
-//////////////////////////////////////////////////////////////////////////
 // ProxyEvent class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-ProxyEvent::ProxyEvent( const ProxyAddress & targetProxy, areg::EventType eventType )
-    : StreamableEvent       (eventType)
-    , mTargetProxyAddress   (targetProxy)
+ProxyEvent::ProxyEvent( const ProxyAddress & toTarget, areg::EventType eventType )
+    : Event (eventType)
+{
+    areg::EventHeader* hdr{ header() };
+    if (hdr != nullptr)
+        toTarget.to_event(*hdr);
+}
+
+ProxyEvent::ProxyEvent(const ProxyAddress& toTarget, const EventEnvelope& src)
+    : Event (src)
+{
+    areg::EventHeader* hdr{ header() };
+    if (hdr != nullptr)
+        toTarget.to_event(*hdr);
+}
+
+ProxyEvent::ProxyEvent(const ProxyAddress& toTarget, EventEnvelope&& src)
+    : Event(std::move(src))
+{
+    areg::EventHeader* hdr{ header() };
+    if (hdr != nullptr)
+        toTarget.to_event(*hdr);
+}
+
+ProxyEvent::ProxyEvent(const EventEnvelope& envelope)
+    : Event(envelope)
 {
 }
 
-ProxyEvent::ProxyEvent( const InStream & stream )
-    : StreamableEvent       ( stream )
-    , mTargetProxyAddress   ( stream )
+ProxyEvent::ProxyEvent(EventEnvelope&& envelope) noexcept
+    : Event(std::move(envelope))
 {
-}
-
-//////////////////////////////////////////////////////////////////////////
-// ProxyEvent class, Methods
-//////////////////////////////////////////////////////////////////////////
-void ProxyEvent::deliver_event()
-{
-    if ( mTargetThread == nullptr )
-    {
-        Thread * thread = Thread::find_by_name(mTargetProxyAddress.thread());
-        register_for_thread( thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr );
-    }
-
-    if ( mTargetThread != nullptr )
-    {
-        if (!mTargetThread->event_dispatcher().post_event(*this))
-        {
-            destroy();
-        }
-    }
-    else
-    {
-        this->destroy();
-    }
-}
-
-const InStream & ProxyEvent::read_stream( const InStream & stream )
-{
-    StreamableEvent::read_stream(stream);
-    stream >> mTargetProxyAddress;
-    return stream;
-}
-
-OutStream & ProxyEvent::write_stream( OutStream & stream ) const
-{
-    StreamableEvent::write_stream(stream);
-    stream << mTargetProxyAddress;
-    return stream;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -92,91 +71,97 @@ OutStream & ProxyEvent::write_stream( OutStream & stream ) const
 // ProxyEventConsumer class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 ProxyEventConsumer::ProxyEventConsumer( const ProxyAddress & proxy )
-    : EventConsumer   ( )
-    , mProxyAddress     ( proxy )
+    : EventConsumer ( )
+    , mProxyAddress ( proxy )
 {
 }
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyEventConsumer class, methods
 //////////////////////////////////////////////////////////////////////////
-inline void ProxyEventConsumer::_local_response(ResponseEvent & eventResponse)
-{
-    switch (eventResponse.data_type() )
-    {
-    case areg::MessageDataType::RequestData:      // fall through
-    case areg::MessageDataType::ResponseData:
-        process_response_event(eventResponse);
-        break;
-
-    case areg::MessageDataType::AttributeData:
-        process_attribute_event(eventResponse);
-        break;
-
-    case areg::MessageDataType::ServiceData:      // fall through
-    case areg::MessageDataType::UndefinedData:
-        ASSERT(false);
-        break;
-
-    default:
-        break;
-    }
-}
-
-inline void ProxyEventConsumer::_local_connect( ProxyConnectEvent & eventConnect )
-{
-    if ( eventConnect.response_id() == static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection) )
-    {
-        service_connection_updated( eventConnect.stub_address(), eventConnect.target_proxy().channel(), eventConnect.connection_status() );
-    }
-    else
-    {
-        ASSERT(false); // unknown  message
-    }
-}
 
 void ProxyEventConsumer::start_event_processing( Event & eventElem )
 {
-    ProxyEvent * proxyEvent = AREG_RUNTIME_CAST(&eventElem, ProxyEvent);
-    if ( proxyEvent != nullptr )
+    const areg::EventType eventType{ eventElem.event_type() };
+    const EventEnvelope& envelope{ eventElem.envelope() };
+    ASSERT(envelope.is_valid());
+
+    switch (eventType)
     {
-        const ProxyAddress & addrProxy = proxyEvent->target_proxy();
-        if ( static_cast<const ServiceAddress &>(addrProxy) == static_cast<const ServiceAddress &>(mProxyAddress) )
+    case areg::EventType::EventLocalConsumerConnect:
+    case areg::EventType::EventRemoteConsumerConnect:
+    {
+        const areg::EventHeader* hdr{ envelope.header() };
+        ASSERT(hdr != nullptr);
+
+        // Option A: local events route directly to the stub thread; remote events route
+        // via the RouterClient thread (hdr->channel) so the proxy's Channel.mTarget is set
+        // correctly for both cases, satisfying ProxyBase::service_connection_updated assertion.
+        const uint32_t chTarget{ areg::is_local(eventType) ? hdr->provider.thread : hdr->channel };
+        Channel ch{ hdr->consumer.thread, chTarget, hdr->consumer.id };
+        areg::ServiceConnectionState status{ static_cast<areg::ServiceConnectionState>(hdr->result) };
+        StubAddress prov(*hdr);
+        service_connection_updated(prov, ch, status);
+    }
+    break;
+
+    case areg::EventType::EventLocalResponse:
+    case areg::EventType::EventRemoteResponse:
+    {
+        // consumer.number == static_cast<uint32_t>(ProxyAddress) is the correct identity
+        // check: consumer.number = CRC32(service+type+role+thread) = ProxyAddress magic number.
+        if (envelope.consumer_number() == static_cast<uint32_t>(mProxyAddress))
         {
-            ProxyConnectEvent * eventConnect  = AREG_RUNTIME_CAST(&eventElem, ProxyConnectEvent);
-            if ( eventConnect != nullptr )
-            {
-                _local_connect(*eventConnect);
-            }
-            else if ( addrProxy.channel() == mProxyAddress.channel() )
-            {
-                ResponseEvent * eventResponse = AREG_RUNTIME_CAST(&eventElem, ResponseEvent);
-                if ( eventResponse != nullptr )
-                {
-                    _local_response(*eventResponse);
-                }
-                else
-                {
-                    ServiceResponseEvent* eventServiceResponse = AREG_RUNTIME_CAST(&eventElem, ServiceResponseEvent);
-                    if ( eventServiceResponse != nullptr )
-                    {
-                        process_response_event(*eventServiceResponse);
-                    }
-                    else
-                    {
-                            process_proxy_event(*proxyEvent);
-                    }
-                }
-            }
-        }
-        else
-        {
-            // ignore, not relevant for target proxy event
+            process_response_event(static_cast<ServiceResponseEvent&>(eventElem));
         }
     }
-    else
+    break;
+
+    case areg::EventType::EventLocalBroadcast:
+    case areg::EventType::EventRemoteBroadcast:
     {
-        process_generic_event(eventElem);
+        if (envelope.consumer_number() == static_cast<uint32_t>(mProxyAddress))
+        {
+            process_broadcast_event(static_cast<ServiceResponseEvent&>(eventElem));
+        }
+    }
+    break;
+
+    case areg::EventType::EventLocalAttribute:
+    case areg::EventType::EventRemoteAttribute:
+    {
+        if (envelope.consumer_number() == static_cast<uint32_t>(mProxyAddress))
+        {
+            process_attribute_event(static_cast<ServiceResponseEvent&>(eventElem));
+        }
+    }
+    break;
+
+    case areg::EventType::EventLocalRequestFailed:
+    case areg::EventType::EventRemoteRequestFailed:
+    {
+        if (envelope.consumer_number() == static_cast<uint32_t>(mProxyAddress))
+        {
+            process_request_failed_event(static_cast<ServiceResponseEvent&>(eventElem));
+        }
+    }
+    break;
+
+    case areg::EventType::EventCustomExternal:
+    case areg::EventType::EventCustomInternal:
+    {
+        process_custom_event(eventElem);
+    }
+    break;
+
+    default:
+    {
+        if (is_to_consumer(eventType))
+            process_proxy_event(static_cast<ProxyEvent&>(eventElem));
+        else
+            process_generic_event(eventElem);
+    }
+    break;
     }
 }
 

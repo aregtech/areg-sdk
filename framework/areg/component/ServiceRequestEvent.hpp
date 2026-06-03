@@ -10,7 +10,7 @@
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/component/ServiceRequestEvent.hpp
- * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, Service Request Event.
  *              Base Service Request event class to send events to Stub
@@ -23,6 +23,7 @@
 #include "areg/base/areg_global.h"
 #include "areg/component/StubEvent.hpp"
 
+#include "areg/component/ProxyAddress.hpp"
 #include "areg/component/ServiceDefs.hpp"
 namespace areg {
 
@@ -30,29 +31,30 @@ namespace areg {
  * Dependencies.
  ************************************************************************/
 class StubAddress;
-class ProxyAddress;
 class ComponentAddress;
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceRequestEvent class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Base class for all requests sent from Proxy to Stub. Instances of StubEvent.
+ * \brief   Base class for all requests sent from Proxy to Stub. All data lives in
+ *          the EventHeader; no extra member variables are stored.
+ *
+ *          EventHeader layout used by this class:
+ *            - provider  endpoint : StubAddress  (via StubAddress::to_event)
+ *            - consumer  endpoint : ProxyAddress (via ProxyAddress::to_event)
+ *            - messageId          : request message ID
+ *            - result             : RequestType (cast from/to areg::RequestType)
+ *            - sequenceNr         : sequence number
  **/
 class AREG_API ServiceRequestEvent : public StubEvent
 {
 //////////////////////////////////////////////////////////////////////////
-// Declare as runtime event class
-//////////////////////////////////////////////////////////////////////////
-    AREG_DECLARE_RUNTIME_EVENT(ServiceRequestEvent)
-
-//////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-protected:
+public:
     /**
-     * \brief   Creates Service Event object and sets source Proxy address, target Stub Address, and
-     *          event info.
+     * \brief   Creates Service Event object and stores all fields in EventHeader.
      *
      * \param   proxyAddress    The source Proxy Address, which sent event.
      * \param   target          The target Stub Address, which should process event
@@ -67,143 +69,87 @@ protected:
                        , areg::EventType eventType );
 
     /**
-     * \brief   Creates event from streaming object and initializes data.
-     *
-     * \param   stream      The streaming object to read data
+     * \brief   Constructs from a received EventEnvelope (IPC receive path). Shares the buffer (O(1)).
+     *          All routing data is read from EventHeader fields; payload contains serialized params.
      **/
-    ServiceRequestEvent(const InStream & stream);
+    explicit ServiceRequestEvent( const EventEnvelope & envelope ) noexcept;
 
-    virtual ~ServiceRequestEvent() = default;
+    ServiceRequestEvent(const ServiceRequestEvent& /*src*/) = default;
+
+    ServiceRequestEvent(ServiceRequestEvent&& /*src*/) noexcept = default;
+
+    ~ServiceRequestEvent() override = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Returns the address of Proxy event source.
+     * \brief   Returns the address of Proxy event source, reconstructed from consumer endpoint.
      **/
     [[nodiscard]]
-    inline const ProxyAddress & event_source() const noexcept;
+    inline ProxyAddress event_source() const noexcept;
 
     /**
-     * \brief   Sets the address of Proxy event source.
-     *
-     * \param   addrProxySource     The address of Proxy of source
-     **/
-    inline void set_event_source( const ProxyAddress &  addrProxySource );
-
-    /**
-     * \brief   Returns request message ID.
+     * \brief   Returns request message ID from EventHeader.
      **/
     [[nodiscard]]
     inline uint32_t request_id() const noexcept;
 
     /**
-     * \brief   Returns request type.
+     * \brief   Returns request type from EventHeader result field.
      **/
     [[nodiscard]]
     inline areg::RequestType request_type() const noexcept;
 
     /**
-     * \brief   Returns sequence number set in info.
+     * \brief   Returns sequence number from EventHeader.
      **/
     [[nodiscard]]
     inline const SequenceNumber & sequence_number() const noexcept;
 
     /**
-     * \brief   Sets new sequence number.
+     * \brief   Sets new sequence number in EventHeader.
      *
      * \param   newSeqNr    The new sequence number to set.
      **/
     inline void set_sequence_number(const SequenceNumber & newSeqNr) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
-// Operations
-//////////////////////////////////////////////////////////////////////////
-protected:
-/************************************************************************/
-// StreamableEvent overrides
-/************************************************************************/
-    /**
-     * \brief   Reads and initializes event data from streaming object.
-     *
-     * \param   stream      The streaming object to read out event data
-     * \return  Returns streaming object to read out data.
-     **/
-    const InStream & read_stream( const InStream & stream ) override;
-
-    /**
-     * \brief   Writes event data to streaming object.
-     *
-     * \param   stream      The streaming object to write event data.
-     * \return  Returns streaming object to write event data.
-     **/
-    OutStream & write_stream( OutStream & stream ) const override;
-
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   Event source Proxy address
-     **/
-    ProxyAddress        mProxySource;
-
-    /**
-     * \brief   Request message ID to trigger service call.
-     **/
-    uint32_t            mMessageId;
-
-    /**
-     * \brief   Request type. Normally, either notification or request call.
-     **/
-    areg::RequestType   mRequestType;
-
-    /**
-     * \brief   Sequence number.
-     **/
-    SequenceNumber      mSequenceNr;
-
-//////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
     ServiceRequestEvent() = delete;
-    AREG_NOCOPY_NOMOVE( ServiceRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceRequestEvent class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const ProxyAddress & ServiceRequestEvent::event_source() const noexcept
+inline ProxyAddress ServiceRequestEvent::event_source() const noexcept
 {
-    return mProxySource;
-}
-
-inline void ServiceRequestEvent::set_event_source(const ProxyAddress& addrProxySource)
-{
-    mProxySource = addrProxySource;
+    const areg::EventHeader* hdr{ header() };
+    return (hdr != nullptr ? ProxyAddress(*hdr) : ProxyAddress::invalid_proxy_address());
 }
 
 inline uint32_t ServiceRequestEvent::request_id() const noexcept
 {
-    return mMessageId;
+    return message_id();
 }
 
 inline areg::RequestType ServiceRequestEvent::request_type() const noexcept
 {
-    return mRequestType;
+    return static_cast<areg::RequestType>(result());
 }
 
 inline const SequenceNumber & ServiceRequestEvent::sequence_number() const noexcept
 {
-    return mSequenceNr;
+    return sequence();
 }
 
 inline void ServiceRequestEvent::set_sequence_number(const SequenceNumber & newSeqNr ) noexcept
 {
-    mSequenceNr = newSeqNr;
+    set_sequence(newSeqNr);
 }
 
 } // namespace areg

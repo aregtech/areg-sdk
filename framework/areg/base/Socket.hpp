@@ -26,11 +26,6 @@
 #include "areg/base/SocketDefs.hpp"
 namespace areg {
 
-/************************************************************************
- * Dependencies
- ************************************************************************/
-class RemoteMessage;
-
 /**
  * \brief   Base class for client, server and accepted socket connections.
  *          The object cannot be directly instantiated. Instead, instantiate

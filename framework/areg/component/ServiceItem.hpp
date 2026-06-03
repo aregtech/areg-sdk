@@ -19,13 +19,14 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 
-#include "areg/base/IOStream.hpp"
+#include "areg/base/MemoryDefs.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/Version.hpp"
 #include "areg/base/UtilityDefs.hpp"
+#include "areg/base/Version.hpp"
 #include "areg/component/ServiceDefs.hpp"
 
 #include <string_view>
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -96,6 +97,11 @@ public:
     explicit ServiceItem( const String & serviceName );
 
     /**
+     * \brief   Initializes with service number.
+     **/
+    explicit ServiceItem(const UniqueNumber serviceNum);
+
+    /**
      * \brief   Initializes with service name, version, and type.
      *
      * \param   serviceName         The service name.
@@ -105,9 +111,18 @@ public:
     ServiceItem( const String & serviceName, const Version & serviceVersion, areg::ServiceType serviceType );
 
     /**
-     * \brief   Deserializes service item from stream.
+     * \brief   Initializes with service unique number, version, and type.
+     *
+     * \param   serviceNum          The service name.
+     * \param   serviceVersion      The service version.
+     * \param   serviceType         The service type.
      **/
-    ServiceItem( const InStream & stream );
+    ServiceItem(const UniqueNumber serviceNum, const Version& serviceVersion, areg::ServiceType serviceType);
+
+    /**
+     * \brief   Deserializes service item from event envelope element.
+     **/
+    ServiceItem( const areg::RawService& rawService, const areg::Endpoint & endPoint );
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -129,25 +144,6 @@ public:
      **/
     [[nodiscard]]
     inline explicit operator uint32_t () const noexcept;
-
-/************************************************************************/
-// Friend global operators for streaming
-/************************************************************************/
-    /**
-     * \brief   Deserializes service item from stream.
-     *
-     * \param   stream      The stream to read.
-     * \param[out] input       The service item to initialize.
-     **/
-    friend inline const InStream & operator >> ( const InStream & stream, ServiceItem & input);
-
-    /**
-     * \brief   Serializes service item to stream.
-     *
-     * \param[out] stream      The stream to write.
-     * \param   output      The service item to serialize.
-     **/
-    friend inline OutStream & operator << ( OutStream & stream, const ServiceItem & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -228,13 +224,37 @@ public:
      **/
     void from_string(  const char* pathService, const char** nextPart = nullptr );
 
-protected:
+
     /**
-     * \brief   Returns true if service item has valid data.
+     * \brief   Initialize service item data from shared service identity and endpoint fields.
+     *
+     * \param   rawService  Shared service interface identity (service hash, type).
+     * \param   endPoint    Endpoint carrying version fields.
      **/
-    [[nodiscard]]
-    inline bool is_validated() const noexcept;
-   
+    inline void from_endpoint(const areg::RawService& rawService, const areg::Endpoint& endPoint) noexcept;
+
+    /**
+     * \brief   Write service item data into shared service identity and endpoint fields.
+     *
+     * \param   rawService  Receives service hash and type.
+     * \param   endPoint    Receives version fields.
+     **/
+    inline void to_endpoint(areg::RawService& rawService, areg::Endpoint& endPoint) const noexcept;
+
+    /**
+     * \brief   Reads ServiceItem data from an input stream.
+     *
+     * \param   stream      The input stream to read from.
+     **/
+    inline const InStream& from_stream(const InStream& stream);
+
+    /**
+     * \brief   Writes ServiceItem data to an output stream.
+     *
+     * \param   stream      The output stream to write to.
+     **/
+    inline OutStream& to_stream(OutStream& stream) const;
+
 private:
 
     /**
@@ -317,15 +337,7 @@ inline bool ServiceItem::is_service_public() const noexcept
 
 inline bool ServiceItem::is_valid() const noexcept
 {
-    return ( mMagicNum != areg::CHECKSUM_IGNORE );
-}
-
-inline bool ServiceItem::is_validated() const noexcept
-{
-    return (mServiceName.is_empty()  == false                                    ) && 
-           (mServiceName            != ServiceItem::INVALID_SERVICE.data()      ) && 
-           (mServiceVersion         != Version::invalid_version()             ) && 
-           (mServiceType            != areg::ServiceType::Invalid  );
+    return areg::crc32_valid(mMagicNum);
 }
 
 inline ServiceItem & ServiceItem::operator = ( const ServiceItem & source )
@@ -374,22 +386,36 @@ inline bool ServiceItem::is_service_compatible( const ServiceItem & other ) cons
     return ((mMagicNum == other.mMagicNum) && mServiceVersion.is_compatible(other.mServiceVersion));
 }
 
-inline const InStream & operator >> ( const InStream & stream, ServiceItem & input )
+inline void ServiceItem::to_endpoint(areg::RawService& rawService, areg::Endpoint& endPoint) const noexcept
 {
-    stream >> input.mServiceName;
-    stream >> input.mServiceVersion;
-    stream >> input.mServiceType;
-    
-    input.mMagicNum = ServiceItem::_magic_number(input);
+    endPoint.major      = static_cast<uint16_t>(mServiceVersion.major());
+    endPoint.minor      = static_cast<uint16_t>(mServiceVersion.minor());
+    endPoint.patch      = static_cast<uint16_t>(mServiceVersion.patch());
+    endPoint.type       = static_cast<uint16_t>(mServiceType);
+    rawService.service  = mMagicNum;
+}
 
+inline void ServiceItem::from_endpoint(const areg::RawService& rawService, const areg::Endpoint& endPoint) noexcept
+{
+    mServiceVersion.set_version(endPoint.major, endPoint.minor, endPoint.patch);
+    mMagicNum    = rawService.service;
+    mServiceType = static_cast<areg::ServiceType>(endPoint.type);
+    mServiceName.clear();
+}
+
+inline const InStream& ServiceItem::from_stream(const InStream& stream)
+{
+    stream >> mMagicNum;
+    stream >> mServiceVersion;
+    stream >> mServiceType;
     return stream;
 }
 
-inline OutStream & operator << ( OutStream & stream, const ServiceItem & output )
+inline OutStream& ServiceItem::to_stream(OutStream& stream) const
 {
-    stream << output.mServiceName;
-    stream << output.mServiceVersion;
-    stream << output.mServiceType;
+    stream << mMagicNum;
+    stream << mServiceVersion;
+    stream << mServiceType;
     return stream;
 }
 

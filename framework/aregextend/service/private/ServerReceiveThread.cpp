@@ -14,7 +14,7 @@
  ************************************************************************/
 #include "aregextend/service/private/ServerReceiveThread.hpp"
 
-#include "areg/base/RemoteMessage.hpp"
+#include "areg/base/EventEnvelope.hpp"
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/component/ExitEvent.hpp"
@@ -40,7 +40,7 @@ ServerReceiveThread::ServerReceiveThread( ConnectionHandler & connectHandler, Re
 {
 }
 
-void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const areg::SocketAddress & addrAccepted, areg::RemoteMessage & msgReceived)
+void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const areg::SocketAddress & addrAccepted, areg::EventEnvelope & msgReceived)
 {
     DEBUG_LOG_SCOPE( areg_aregextend_service_ServerReceiveThread, _process_connection_event );
     SocketAccepted clientSocket;
@@ -142,7 +142,7 @@ bool ServerReceiveThread::run_dispatcher()
     if ( mConnection.server_listen( areg::MAXIMUM_LISTEN_QUEUE_SIZE) )
     {
         SyncEvent* events[2] { &mEventExit, &mEventQueue };
-        RemoteMessage msgReceived;
+        areg::EventEnvelope msgReceived;
         areg::SocketAddress addrDrain;
         uint32_t retryCount = 0;
         do
@@ -208,8 +208,12 @@ bool ServerReceiveThread::run_dispatcher()
             }
             else
             {
-                Event * eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pick_event() : nullptr;
-                whichEvent = is_exit_event(eventElem) ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) : whichEvent;
+                if (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue))
+                {
+                    Event eventElem{ pick_event() };
+                    if (eventElem.is_exit_prio())
+                        whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
+                }
             }
 
         } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue));

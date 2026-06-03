@@ -117,25 +117,25 @@ public:
     inline const areg::LogEntry* log_entry() const noexcept;
 
     /**
-     * \brief   Returns a mutable reference to the pre-built remote message.
+     * \brief   Returns a mutable reference to the pre-built event envelope.
      *          Valid (is_valid() == true) only for LogMessage events.
      **/
     [[nodiscard]]
-    inline areg::RemoteMessage & message() noexcept;
+    inline areg::EventEnvelope & message() noexcept;
 
     /**
-     * \brief   Returns the pre-built remote message for forwarding to NetTcpLogger.
+     * \brief   Returns the pre-built event envelope for forwarding to NetTcpLogger.
      *          Valid (is_valid() == true) only for LogMessage events.
      **/
     [[nodiscard]]
-    inline const areg::RemoteMessage & message() const noexcept;
+    inline const areg::EventEnvelope & message() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
     LoggingEventData::LogAction     mAction;    //!< The action to perform.
-    areg::RemoteMessage             mMessage;   //!< Pre-built log message; invalid (null buffer) for non-LogMessage events.
+    areg::EventEnvelope             mMessage;   //!< Pre-built log message; invalid (null buffer) for non-LogMessage events.
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -167,12 +167,12 @@ inline const areg::LogEntry* LoggingEventData::log_entry() const noexcept
     return mMessage.is_valid() ? reinterpret_cast<const areg::LogEntry*>(mMessage.buffer()) : nullptr;
 }
 
-inline areg::RemoteMessage & LoggingEventData::message() noexcept
+inline areg::EventEnvelope & LoggingEventData::message() noexcept
 {
     return mMessage;
 }
 
-inline const areg::RemoteMessage & LoggingEventData::message() const noexcept
+inline const areg::EventEnvelope & LoggingEventData::message() const noexcept
 {
     return mMessage;
 }

@@ -20,8 +20,8 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 
+#include "areg/base/EventEnvelope.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/RemoteMessage.hpp"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 
@@ -118,7 +118,7 @@ public:
      * \return  Returns the created message for remote communication.
      **/
     [[nodiscard]]
-    virtual RemoteMessage connect_message( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const = 0;
+    virtual EventEnvelope connect_message( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const = 0;
 
     /**
      * \brief   Creates service disconnect request message with specified source and target.
@@ -128,7 +128,7 @@ public:
      * \return  Returns the created message for remote communication.
      **/
     [[nodiscard]]
-    virtual RemoteMessage disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const = 0;
+    virtual EventEnvelope disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

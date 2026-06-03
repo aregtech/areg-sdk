@@ -10,8 +10,6 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/component/private/DispatcherThread.cpp
 	areg/component/private/Event.cpp
 	areg/component/private/EventConsumerMap.cpp
-	areg/component/private/EventData.cpp
-	areg/component/private/EventDataStream.cpp
 	areg/component/private/EventDispatcher.cpp
 	areg/component/private/EventDispatcherBase.cpp
 	areg/component/private/EventQueue.cpp
@@ -44,7 +42,6 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/component/private/ServiceManagerEvents.cpp
 	areg/component/private/ServiceRequestEvent.cpp
 	areg/component/private/ServiceResponseEvent.cpp
-	areg/component/private/StreamableEvent.cpp
 	areg/component/private/SortedEventStack.cpp
 	areg/component/private/StubAddress.cpp
 	areg/component/private/StubBase.cpp

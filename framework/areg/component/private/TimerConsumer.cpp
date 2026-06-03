@@ -14,6 +14,8 @@
  *
  ************************************************************************/
 #include "areg/component/TimerConsumer.hpp"
+#include "areg/component/Timer.hpp"
+#include "areg/component/private/TimerEventData.hpp"
 #include "areg/component/DispatcherThread.hpp"
 namespace areg {
 
@@ -23,11 +25,14 @@ namespace areg {
 
 void TimerConsumer::start_event_processing( Event& eventElem )
 {
-    TimerEvent* timerEvent = static_cast<TimerEvent *>( AREG_RUNTIME_CAST(&eventElem, TimerEvent) );
-    Timer *timer = timerEvent != nullptr ? timerEvent->data().timer() : nullptr;
-    if (timer != nullptr )
+    // Read Timer* from TimerEvent payload area via timer_from_event().
+    Timer* timer{ TimerEvent::timer_from_event(eventElem) };
+    if (timer != nullptr)
     {
         process_timer(*timer);
+        // Balance _queue_timer() called in TimerEvent constructor.
+        // TimerEvent::unqueue_timer() has friend access to Timer::_unqueue_timer().
+        TimerEvent::unqueue_timer(*timer);
     }
 }
 

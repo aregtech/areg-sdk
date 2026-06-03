@@ -34,7 +34,6 @@ using areg::ArrayList;
 using areg::ConfigManager;
 using areg::Property;
 using areg::PropertyKey;
-using areg::RemoteMessage;
 using areg::String;
 using areg::ext::Console;
 using areg::ext::DataRateHelper;
@@ -662,7 +661,7 @@ void LogCollector::_clean_help()
 void LogCollector::_process_update_scopes(const OptionParser::InputOption& optScope)
 {
     LogCollector& logger{ LogCollector::instance() };
-    ArrayList<areg::RemoteMessage> msgList;
+    ArrayList<areg::EventEnvelope> msgList;
     _create_scope_message(optScope, msgList);
     for (uint32_t i = 0; i < msgList.size(); ++ i)
     {
@@ -690,7 +689,7 @@ void LogCollector::_process_query_scopes(const OptionParser::InputOption& optSco
             }
             else if (elem.is_numeric())
             {
-                listTargets.add(elem.to_uint64());
+                listTargets.add(elem.to_uint32());
             }
         }
     }
@@ -701,7 +700,7 @@ void LogCollector::_process_query_scopes(const OptionParser::InputOption& optSco
     }
 }
 
-void LogCollector::_create_scope_message(const OptionParser::InputOption& optScope, ArrayList<areg::RemoteMessage>& msgList)
+void LogCollector::_create_scope_message(const OptionParser::InputOption& optScope, ArrayList<areg::EventEnvelope>& msgList)
 {
     ASSERT(optScope.inCommand == static_cast<int32_t>(LoggerOption::CMD_LogUpdateScope));
     ASSERT(optScope.inString.empty() == false);
@@ -712,7 +711,7 @@ void LogCollector::_create_scope_message(const OptionParser::InputOption& optSco
     {
         if (entry == areg::SYNTAX_END_COMMAND)
         {
-            areg::RemoteMessage msg{ LogCollector::_create_scope_update_message(scope) };
+            areg::EventEnvelope msg{ LogCollector::_create_scope_update_message(scope) };
             scope.clear();
             if (msg.is_valid() == false)
             {
@@ -732,7 +731,7 @@ void LogCollector::_create_scope_message(const OptionParser::InputOption& optSco
 
     if (scope.is_empty() == false)
     {
-        areg::RemoteMessage msg{ LogCollector::_create_scope_update_message(scope) };
+        areg::EventEnvelope msg{ LogCollector::_create_scope_update_message(scope) };
         if (msg.is_valid() == false)
         {
             msgList.clear();
@@ -787,9 +786,9 @@ String LogCollector::_normalize_scope_property(const String & scope)
     return result;
 }
 
-areg::RemoteMessage LogCollector::_create_scope_update_message(const String& scope)
+areg::EventEnvelope LogCollector::_create_scope_update_message(const String& scope)
 {
-    areg::RemoteMessage result;
+    areg::EventEnvelope result;
 
     if (scope.is_empty() == false)
     {
@@ -803,7 +802,7 @@ areg::RemoteMessage LogCollector::_create_scope_update_message(const String& sco
                 String scopeName{ key.position() };
                 uint32_t scopePrio{ prop.value().identifier(areg::LogScopePriorityIndentifiers) };
                 result = areg::message_update_scope(areg::COOKIE_LOGGER, target, scopeName, areg::LOG_SCOPE_ID_NONE, scopePrio);
-                result.set_target(target);
+                result.set_target(static_cast<uint32_t>(target));
             }
         }
     }

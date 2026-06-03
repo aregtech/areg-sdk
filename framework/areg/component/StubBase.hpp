@@ -38,7 +38,7 @@ namespace areg {
     class ServiceResponseEvent;
     class RemoteRequestEvent;
     class ComponentThread;
-    class EventDataStream;
+    class SharedBuffer;
     class ResponseEvent;
     class Component;
 } // namespace areg
@@ -334,34 +334,37 @@ public:
 protected:
 
     /**
-     * \brief   Creates a response event to send to a client. Must be overridden by derived classes.
+     * \brief   Creates a response event to send to a client. Override in derived stubs.
+     *          Base returns an invalid ServiceResponseEvent (is_valid() == false).
      *
      * \param   proxy       The address of the client proxy to receive the response.
      * \param   msgId       The message ID of the response.
      * \param   result      The result code of the response.
      * \param   data        The serialized response data. Can be an empty/invalid buffer.
-     * \return  Returns a valid pointer to the created response event.
+     * \return  A ServiceResponseEvent value; check is_valid() before use.
      **/
     [[nodiscard]]
-    virtual ResponseEvent * create_response( const areg::ProxyAddress & proxy, uint32_t msgId, areg::ResultType result, const areg::EventDataStream & data ) const;
+    virtual ServiceResponseEvent create_response( const areg::ProxyAddress & proxy, uint32_t msgId, areg::ResultType result, const areg::SharedBuffer & data ) const;
 
     /**
-     * \brief   Creates a request event from a data stream for stub processing. Must be overridden by derived classes.
+     * \brief   Creates a request event from a received envelope (IPC receive path). Shares the buffer (O(1)).
+     *          Default implementation wraps the envelope in a RemoteRequestEvent.
      *
-     * \param   stream      The stream containing serialized request data.
-     * \return  Returns a valid request event pointer on success; otherwise nullptr.
+     * \param   envelope    The received event envelope with header and serialized payload.
+     * \return  A RemoteRequestEvent value; check is_valid() before use.
      **/
     [[nodiscard]]
-    virtual RemoteRequestEvent * create_remote_request( const areg::InStream & stream ) const;
+    virtual RemoteRequestEvent create_remote_request( const areg::EventEnvelope & envelope ) const;
 
     /**
-     * \brief   Creates a notification request event from a data stream. Must be overridden by derived classes.
+     * \brief   Creates a notification request event from a received envelope (IPC receive path).
+     *          Default implementation wraps the envelope in a RemoteNotifyRequestEvent.
      *
-     * \param   stream      The stream containing serialized notification request data.
-     * \return  Returns a valid notification request event pointer on success; otherwise nullptr.
+     * \param   envelope    The received event envelope with header and serialized payload.
+     * \return  A RemoteNotifyRequestEvent value; check is_valid() before use.
      **/
     [[nodiscard]]
-    virtual RemoteNotifyRequestEvent * create_notify_request( const areg::InStream & stream ) const;
+    virtual RemoteNotifyRequestEvent create_notify_request( const areg::EventEnvelope & envelope ) const;
 
 /************************************************************************/
 // StubEventConsumer interface overrides.
@@ -590,7 +593,7 @@ protected:
      * \param   data        The serialized update data. Can be an empty/invalid buffer.
      * \param   result      The result code of the update.
      **/
-    void send_update_event(uint32_t msgId, const EventDataStream & data, areg::ResultType result) const;
+    void send_update_event(uint32_t msgId, const areg::SharedBuffer & data, areg::ResultType result) const;
 
     /**
      * \brief   Sends an update notification to a single target proxy.
@@ -600,7 +603,7 @@ protected:
      * \param   data        The serialized update data. Can be an empty/invalid buffer.
      * \param   result      The result code of the update.
      **/
-    void send_notify_once( const ProxyAddress & target, uint32_t msgId, const EventDataStream & data, areg::ResultType result ) const;
+    void send_notify_once( const ProxyAddress & target, uint32_t msgId, const areg::SharedBuffer & data, areg::ResultType result ) const;
 
     /**
      * \brief   Sends a response event to proxy clients subscribed to the specified response ID.
@@ -608,7 +611,7 @@ protected:
      * \param   respId      The ID of the response.
      * \param   data        The serialized response data (response call arguments).
      **/
-    void send_response_event(uint32_t respId, const EventDataStream & data);
+    void send_response_event(uint32_t respId, const areg::SharedBuffer & data);
 
     /**
      * \brief   Sends a busy response to indicate that a request is already being processed.

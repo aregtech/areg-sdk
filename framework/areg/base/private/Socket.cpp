@@ -16,7 +16,6 @@
 
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/base/SyncPrimitives.hpp"
-#include "areg/base/RemoteMessage.hpp"
 
 namespace areg {
 

@@ -14,7 +14,7 @@
  ************************************************************************/
 #include "aregextend/service/private/PoolReceiveThread.hpp"
 
-#include "areg/base/RemoteMessage.hpp"
+#include "areg/base/EventEnvelope.hpp"
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/base/SyncPrimitives.hpp"
@@ -109,7 +109,7 @@ bool PoolReceiveThread::run_dispatcher()
     areg::set_receive_mode(areg::ReceiveMode::MultiCache);
     ready_for_events(true);
 
-    areg::RemoteMessage msgReceived;
+    areg::EventEnvelope msgReceived;
     int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) };
     SyncEvent* events[2] { &mEventExit, &mEventQueue };
 
@@ -120,8 +120,12 @@ bool PoolReceiveThread::run_dispatcher()
         whichEvent = SyncEvent::wait_any(events, 2, areg::DO_NOT_WAIT);
         if ( whichEvent != SyncEvent::WAIT_ANY_TIMEOUT )
         {
-            Event * eventElem = ( whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ) ? pick_event() : nullptr;
-            whichEvent = is_exit_event(eventElem) ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) : whichEvent;
+            if (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue))
+            {
+                Event eventElem{ pick_event() };
+                if (eventElem.is_exit_prio())
+                    whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
+            }
             continue;
         }
 

@@ -171,7 +171,7 @@ void ComponentThread::shutdown_components()
     _shutdown_components();
 }
 
-DispatcherThread* ComponentThread::event_consumer_thread( const RuntimeClassID& whichClass )
+DispatcherThread* ComponentThread::event_consumer_thread( const uint32_t whichClass ) noexcept
 {
     DispatcherThread* result = has_registered_consumer(whichClass) ? static_cast<DispatcherThread *>(this) : nullptr;
     if (result != nullptr)

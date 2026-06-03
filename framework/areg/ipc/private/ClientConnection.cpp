@@ -14,7 +14,6 @@
  ************************************************************************/
 #include "areg/ipc/ClientConnection.hpp"
 
-#include "areg/base/RemoteMessage.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/component/ServiceDefs.hpp"
 

@@ -21,7 +21,7 @@
 #include "areg/base/areg_global.h"
 #include "areg/component/ServiceResponseEvent.hpp"
 
-#include "areg/component/EventData.hpp"
+#include "areg/base/SharedBuffer.hpp"
 namespace areg {
 
 /************************************************************************
@@ -54,14 +54,9 @@ namespace areg {
 class AREG_API ResponseEvent   : public ServiceResponseEvent
 {
 //////////////////////////////////////////////////////////////////////////
-// Declare event as runtime to support runtime casting.
-//////////////////////////////////////////////////////////////////////////
-    AREG_DECLARE_RUNTIME_EVENT(ResponseEvent)
-
-//////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-protected:
+public:
     /**
      * \brief   Initializes a response event with target address, result type, and response ID.
      *
@@ -87,7 +82,7 @@ protected:
      * \param   eventType       Event type.
      * \param   seqNr           Sequence number for ordering.
      **/
-    ResponseEvent( const EventDataStream & args
+    ResponseEvent( const SharedBuffer & args
                  , const ProxyAddress & proxyTarget
                  , areg::ResultType result
                  , uint32_t respId
@@ -103,87 +98,21 @@ protected:
     ResponseEvent( const ProxyAddress & proxyTarget, const ResponseEvent & src );
 
     /**
-     * \brief   Initializes the event from a stream.
-     *
-     * \param   stream      Input stream to read data.
+     * \brief   Constructs from a received EventEnvelope (IPC receive path). Shares the buffer (O(1)).
      **/
-    ResponseEvent( const InStream & stream );
+    explicit ResponseEvent( const EventEnvelope & envelope ) noexcept;
 
-    virtual ~ResponseEvent() = default;
+    ResponseEvent(const ResponseEvent& /*src*/) = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Attributes.
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Returns the event data object.
-     **/
-    [[nodiscard]]
-    inline const EventData & data() const noexcept;
+    ResponseEvent(ResponseEvent&& /*src*/) noexcept = default;
 
-    /**
-     * \brief   Returns the data type of the response.
-     **/
-    [[nodiscard]]
-    inline areg::MessageDataType data_type() const noexcept;
-
-    /**
-     * \brief   Returns the input stream for deserializing response parameters.
-     **/
-    [[nodiscard]]
-    inline const InStream & read_stream() const noexcept;
-
-    /**
-     * \brief   Returns the output stream for serializing response parameters.
-     **/
-    [[nodiscard]]
-    inline OutStream & write_stream() noexcept;
-
-protected:
-    /**
-     * \brief   Returns the event data object for modification.
-     **/
-    [[nodiscard]]
-    inline EventData & data() noexcept;
-
-//////////////////////////////////////////////////////////////////////////
-// Operations
-//////////////////////////////////////////////////////////////////////////
-
-/************************************************************************/
-// StreamableEvent overrides
-/************************************************************************/
-    /**
-     * \brief   Reads and initializes event data from a stream.
-     *
-     * \param   stream      Input stream to read data.
-     * \return  The input stream.
-     **/
-    const InStream & read_stream( const InStream & stream ) override;
-
-    /**
-     * \brief   Writes event data to a stream.
-     *
-     * \param   stream      Output stream to write data.
-     * \return  The output stream.
-     **/
-    OutStream & write_stream( OutStream & stream ) const override;
-
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Event data object.
-     **/
-    EventData     mData;
+    ~ResponseEvent() override = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
     ResponseEvent() = delete;
-    AREG_NOCOPY_NOMOVE( ResponseEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -199,14 +128,9 @@ private:
 class AREG_API LocalResponseEvent : public    ResponseEvent
 {
 //////////////////////////////////////////////////////////////////////////
-// Declare event as runtime to support runtime casting.
-//////////////////////////////////////////////////////////////////////////
-    AREG_DECLARE_RUNTIME_EVENT(LocalResponseEvent)
-
-//////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-protected:
+public:
     /**
      * \brief   Initializes local event with target address, result type, and response ID.
      *
@@ -232,7 +156,7 @@ protected:
      * \param   respId          The ID of response. Can also be update ID.
      * \param   seqNr           The call sequence number.
      **/
-    LocalResponseEvent( const EventDataStream & args
+    LocalResponseEvent( const SharedBuffer & args
                       , const ProxyAddress & proxyTarget
                       , areg::ResultType result
                       , uint32_t respId
@@ -247,21 +171,17 @@ protected:
      **/
     LocalResponseEvent(const ProxyAddress & proxyTarget, const LocalResponseEvent & src);
 
-    /**
-     * \brief   Creates event from streaming object and initializes data.
-     *
-     * \param   stream      The streaming object to read data
-     **/
-    LocalResponseEvent(const InStream & stream);
+    LocalResponseEvent(const LocalResponseEvent& /*src*/) = default;
 
-    virtual ~LocalResponseEvent() = default;
+    LocalResponseEvent(LocalResponseEvent&& /*src*/) noexcept = default;
+
+    ~LocalResponseEvent() override = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
     LocalResponseEvent() = delete;
-    AREG_NOCOPY_NOMOVE( LocalResponseEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -277,15 +197,11 @@ private:
 class AREG_API RemoteResponseEvent: public    ResponseEvent
 {
     friend class RemoteEventFactory;
-//////////////////////////////////////////////////////////////////////////
-// Declare event as runtime to support runtime casting.
-//////////////////////////////////////////////////////////////////////////
-    AREG_DECLARE_RUNTIME_EVENT(RemoteResponseEvent)
-
+    friend class ProxyBase;   // needs new RemoteResponseEvent(envelope) on IPC receive path
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-protected:
+public:
     /**
      * \brief   Initializes remote event with target address, result type, and response ID.
      *
@@ -311,7 +227,7 @@ protected:
      * \param   respId          The ID of response. Can also be update ID.
      * \param   seqNr           The call sequence number.
      **/
-    RemoteResponseEvent( const EventDataStream & args
+    RemoteResponseEvent( const SharedBuffer & args
                        , const ProxyAddress & proxyTarget
                        , areg::ResultType result
                        , uint32_t respId
@@ -327,13 +243,15 @@ protected:
     RemoteResponseEvent(const ProxyAddress & proxyTarget, const RemoteResponseEvent & src);
 
     /**
-     * \brief   Creates event from streaming object and initializes data.
-     *
-     * \param   stream      The streaming object to read data
+     * \brief   Constructs from a received EventEnvelope (IPC receive path). Shares the buffer (O(1)).
      **/
-    RemoteResponseEvent(const InStream & stream);
+    explicit RemoteResponseEvent( const EventEnvelope & envelope ) noexcept;
 
-    virtual ~RemoteResponseEvent() = default;
+    RemoteResponseEvent(const RemoteResponseEvent& /*src*/) = default;
+
+    RemoteResponseEvent(RemoteResponseEvent&& /*src*/) noexcept = default;
+
+    ~RemoteResponseEvent() override = default;
 
 //////////////////////////////////////////////////////////////////////////////
 // Protected operations
@@ -350,44 +268,14 @@ protected:
     /**
      * \brief   Returns the event communication channel object.
      **/
-    inline const Channel & target_channel() const noexcept;
+    inline Channel target_channel() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
     RemoteResponseEvent() = delete;
-    AREG_NOCOPY_NOMOVE( RemoteResponseEvent );
 };
-
-//////////////////////////////////////////////////////////////////////////
-// ResponseEvent class inline function implementation
-//////////////////////////////////////////////////////////////////////////
-
-inline const EventData & ResponseEvent::data() const noexcept
-{
-    return mData;
-}
-
-inline areg::MessageDataType ResponseEvent::data_type() const noexcept
-{
-    return mData.data_type();
-}
-
-inline EventData & ResponseEvent::data() noexcept
-{
-    return mData;
-}
-
-inline const InStream & ResponseEvent::read_stream() const noexcept
-{
-    return mData.read_stream();
-}
-
-inline OutStream & ResponseEvent::write_stream() noexcept
-{
-    return mData.write_stream();
-}
 
 //////////////////////////////////////////////////////////////////////////
 // RemoteResponseEvent class inline function implementation
@@ -395,12 +283,19 @@ inline OutStream & ResponseEvent::write_stream() noexcept
 
 inline void RemoteResponseEvent::set_target_channel(const Channel & channel) noexcept
 {
-    mTargetProxyAddress.set_channel(channel);
+    areg::EventHeader* hdr{ header() };
+    ASSERT(hdr != nullptr);
+    hdr->target         = channel.cookie();
+    hdr->channel        = channel.target();
+    hdr->consumer.id    = channel.cookie();
+    hdr->consumer.thread= channel.source();
 }
 
-inline const Channel & RemoteResponseEvent::target_channel() const noexcept
+inline Channel RemoteResponseEvent::target_channel() const noexcept
 {
-    return mTargetProxyAddress.channel();
+    const areg::EventHeader* hdr{ header() };
+    ASSERT(hdr != nullptr);
+    return Channel(hdr->consumer.thread, hdr->channel, hdr->consumer.id);
 }
 
 } // namespace areg

@@ -317,11 +317,10 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     areg::Thread                        mInputThread;
-    areg::Timer                         mBroadcastTimer;//!< 1-second broadcast burst timer
+    areg::Timer                         mBroadcastTimer;//!< 50ms broadcast burst timer
     std::atomic_bool                    mQuit;
     std::atomic_bool                    mQuitInput;
     std::atomic<uint32_t>               mDurationSec;
-    std::atomic<uint32_t>               mBroadcastCount;
     std::atomic<Latency::LatencyMode>   mBroadcastMode;
     ProviderCmdConsumer                 mProviderCmdConsumer;
     DisplayConsumer                     mDisplayConsumer;   //!< Must be declared before mDisplayThread
@@ -330,8 +329,9 @@ private:
     //!< These are accessed only on the component thread (timer + consumer_connected):
     uint32_t                            mClientCount;           //!< Number of connected consumers
     uint32_t                            mLastRateCount;         //!< Served count at last stats tick
-    uint32_t                            mBroadcastCyclesLeft;   //!< Remaining 1-second broadcast cycles (0 = infinite)
+    uint32_t                            mBroadcastCyclesLeft;   //!< Remaining 50ms broadcast ticks (0xFFFFFFFFu = run indefinitely)
     uint32_t                            mMsgId;                 //!< Running broadcast message sequence number
+    uint32_t                            mBroadcastBulk;         //!< Messages sent per 50ms timer tick
 
     //!< Incremented from both the component thread (ping-pong) and broadcast thread:
     std::atomic<uint32_t>               mTotalServed;

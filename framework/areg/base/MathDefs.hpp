@@ -347,6 +347,18 @@ inline constexpr uint32_t crc32_start( uint32_t crcInit, const uint8_t * data, i
 inline constexpr uint32_t crc32_start( uint32_t crcInit, const char * data ) noexcept;
 
 /**
+ * \brief   Continues 32-bit CRC calculation on a null-terminated string for incremental processing.
+ *          Usable at compile time when all arguments are constexpr.
+ *
+ * \param   crcInit     Seed value: use crc32_init() on the first call, or the value
+ *                      returned by a previous crc32_start() call.
+ * \param   data        String view. Returns crcInit unchanged when nullptr or empty.
+ * \return  Intermediate CRC value -- pass to the next crc32_start() call or to crc32_finish().
+ **/
+[[nodiscard]]
+inline constexpr uint32_t crc32_start(uint32_t crcInit, std::string_view data) noexcept;
+
+/**
  * \brief   Continues 32-bit CRC calculation on a single byte for incremental processing.
  *          Usable at compile time when all arguments are constexpr.
  *
@@ -395,6 +407,12 @@ inline constexpr uint32_t crc32_finish( uint32_t crc ) noexcept;
  **/
 [[nodiscard]]
 inline constexpr uint32_t crc32_hardware(const uint8_t* data, int32_t size) noexcept;
+
+/**
+ * \brief   Return true if CRC32 number is valid, i.e. it is neither 0x00000000, nor 0xFFFFFFFF.
+ **/
+[[nodiscard]]
+inline constexpr bool crc32_valid(const uint32_t crc32Number) noexcept;
 
 /**
  * \brief   Returns the rounded nearest integer value.
@@ -512,6 +530,15 @@ inline constexpr uint32_t hi_dword(uint64_t value) noexcept;
 template <typename T>
 [[nodiscard]]
 inline constexpr T swap_bytes(T value) noexcept;
+
+/**
+ * \brief   Composes a 16-bit value from two 8-bit values (high and low parts).
+ *
+ * \param   hi      High 8 bits.
+ * \param   lo      Low 8 bits.
+ **/
+[[nodiscard]]
+inline constexpr uint16_t make16(uint8_t hi, uint8_t lo) noexcept;
 
 /**
  * \brief   Composes a 32-bit value from two 16-bit values (high and low parts).
@@ -642,7 +669,7 @@ inline constexpr uint32_t crc32_calculate( const wchar_t * strData ) noexcept
 inline constexpr uint32_t crc32_start( uint32_t crcInit, const uint8_t * data, int32_t size ) noexcept
 {
     uint32_t crc { crcInit };
-    if ( data != nullptr && size > 0 )
+    if ( data != nullptr )
     {
         for (; size > 0; --size, ++data)
         {
@@ -655,15 +682,26 @@ inline constexpr uint32_t crc32_start( uint32_t crcInit, const uint8_t * data, i
 inline constexpr uint32_t crc32_start( uint32_t crcInit, const char * data ) noexcept
 {
     uint32_t crc { crcInit };
-    if ( data != nullptr && *data != '\0' )
+    if ( data != nullptr )
     {
         for (; *data != '\0'; ++data)
         {
-            // static_cast<uint8_t> required: plain char may be signed on some platforms,
-            // causing a negative array index and undefined behavior without the cast.
             crc = (crc >> 8) ^ areg::CRC32_TABLE[static_cast<uint8_t>(*data) ^ static_cast<uint8_t>(crc & 0xFFu)];
         }
     }
+
+    return crc;
+}
+
+inline constexpr uint32_t crc32_start(uint32_t crcInit, std::string_view data) noexcept
+{
+    uint32_t crc{ crcInit };
+    uint32_t len{ static_cast<uint32_t>(data.length()) };
+    for (uint32_t i{ 0u }; i < len; ++i)
+    {
+        crc = (crc >> 8) ^ areg::CRC32_TABLE[static_cast<uint8_t>(data[i]) ^ static_cast<uint8_t>(crc & 0xFFu)];
+    }
+
     return crc;
 }
 
@@ -720,6 +758,11 @@ inline constexpr uint32_t crc32_hardware(const uint8_t* data, int32_t size) noex
 #endif
 }
 
+constexpr bool crc32_valid(const uint32_t crc32Number) noexcept
+{
+    return (crc32Number != areg::CHECKSUM_INVALID) && (crc32Number != areg::CHECKSUM_IGNORE);
+}
+
 /************************************************************************/
 // Compile-time CRC32C collision detection
 /************************************************************************/
@@ -734,8 +777,7 @@ inline constexpr uint32_t crc32_hardware(const uint8_t* data, int32_t size) noex
  * \return  Index of the first colliding name, or N if all hashes are unique.
  **/
 template<std::size_t N>
-[[nodiscard]] constexpr std::size_t crc32_first_collision(
-    const std::string_view (&names)[N]) noexcept
+[[nodiscard]] constexpr std::size_t crc32_first_collision(const std::string_view (&names)[N]) noexcept
 {
     for (std::size_t i = 0u; i < N; ++i)
     {
@@ -948,6 +990,11 @@ inline constexpr T swap_bytes(T value) noexcept
                               ((n & 0x00FF0000u) >>  8) |
                               ((n & 0xFF000000u) >> 24));
     }
+}
+
+inline constexpr uint16_t make16(uint8_t hi, uint8_t lo) noexcept
+{
+    return (static_cast<uint16_t>(hi) << 8) | static_cast<uint16_t>(lo);
 }
 
 inline constexpr uint32_t make32(uint16_t hi, uint16_t lo) noexcept

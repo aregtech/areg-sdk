@@ -241,7 +241,7 @@ public:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceManagerCommand mCommand;   //!< Service Manager event data command
+    ServiceManagerCommand   mCommand;   //!< Service Manager event data command
     SharedBuffer            mStream;    //!< Service Manager event data streaming object to write and read data.
 
 //////////////////////////////////////////////////////////////////////////

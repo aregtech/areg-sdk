@@ -6,6 +6,7 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/base/private/Cursor.cpp
 	areg/base/private/DateTime.cpp
 	areg/base/private/DebugDefs.cpp
+	areg/base/private/EventEnvelope.cpp
 	areg/base/private/File.cpp
 	areg/base/private/FileBase.cpp
 	areg/base/private/FileBuffer.cpp
@@ -15,7 +16,6 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/base/private/MemoryDefs.cpp
 	areg/base/private/Process.cpp
 	areg/base/private/ReadConverter.cpp
-	areg/base/private/RemoteMessage.cpp
 	areg/base/private/RuntimeBase.cpp
 	areg/base/private/RuntimeClassID.cpp
 	areg/base/private/RuntimeObject.cpp

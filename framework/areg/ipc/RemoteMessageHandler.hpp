@@ -24,7 +24,7 @@
  * Dependencies
  ************************************************************************/
 namespace areg {
-    class RemoteMessage;
+    class EventEnvelope;
     class Socket;
 }
 
@@ -58,10 +58,10 @@ public:
     /**
      * \brief   Triggered when message send fails.
      *
-     * \param   msgFailed       The message that failed to send.
+     * \param   msgFailed       The envelope that failed to send.
      * \param   whichTarget     The target socket.
      **/
-    virtual void failed_send_message( const RemoteMessage & msgFailed, Socket & whichTarget ) = 0;
+    virtual void failed_send_message( const EventEnvelope & msgFailed, Socket & whichTarget ) = 0;
 
     /**
      * \brief   Triggered when message receive fails.
@@ -74,9 +74,9 @@ public:
      * \brief   Triggered when message processing fails because target is not found. For request
      *          messages, source receives error notification.
      *
-     * \param   msgUnprocessed      The unprocessed message.
+     * \param   msgUnprocessed      The unprocessed envelope.
      **/
-    virtual void failed_process_message( const RemoteMessage & msgUnprocessed ) = 0;
+    virtual void failed_process_message( const EventEnvelope & msgUnprocessed ) = 0;
 
     /**
      * \brief   Triggered to process a received message.
@@ -84,10 +84,10 @@ public:
      *          payload to another thread (e.g. the send thread), avoiding an
      *          unnecessary shared-buffer reference-count round-trip.
      *
-     * \param   msgReceived     The received message to process.
+     * \param   msgReceived     The received envelope to process.
      * \param   whichSource     The source socket from which message was received.
      **/
-    virtual void process_received_message( RemoteMessage & msgReceived, Socket & whichSource ) = 0;
+    virtual void process_received_message( EventEnvelope & msgReceived, Socket & whichSource ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

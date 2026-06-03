@@ -92,14 +92,14 @@ public:
      *
      * \param   msg     A pre-built message from make_log_message(); moved into the event.
      **/
-    static void log_message( areg::RemoteMessage && msg );
+    static void log_message( areg::EventEnvelope && msg );
 
     /**
      * \brief   Triggers an event to log a remote message.
      *
-     * \param   logData     The remote message buffer containing a log message from another process.
+     * \param   logData     The event envelope containing a log message from another process.
      **/
-    static void log_message( const RemoteMessage& logData );
+    static void log_message( const areg::EventEnvelope& logData );
 
     /**
      * \brief   Reads logging configuration from a file.

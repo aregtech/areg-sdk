@@ -13,7 +13,7 @@
 #include "pubservice/src/ServicingComponent.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "areg/component/EventDataStream.hpp"
+// EventDataStream removed — no longer part of the wire protocol
 #include "areg/component/RemoteEventFactory.hpp"
 #include "areg/component/ResponseEvents.hpp"
 #include "areg/logging/areg_log.h"
@@ -427,13 +427,13 @@ uint32_t ServicingComponent::_build_prebuilt_messages()
                     buf << entry;
                     data << buf;
 
-                    message << areg::EventType::EventRemoteServiceResponse;
+                    message << areg::EventType::EventRemoteResponse;
                     message << proxy;
                     message << message_id;
                     message << areg::ResultType::RequestOK;
                     message << areg::SEQUENCE_NUMBER_NOTIFY;
                     message << areg::MessageDataType::ResponseData;
-                    message << areg::EventDataStream::EventDataKind::External;
+                    // EventDataStream::EventDataKind removed from wire protocol
                     remote.offset = message.position();
                     message << data;
 

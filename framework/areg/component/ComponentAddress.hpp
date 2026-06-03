@@ -116,12 +116,6 @@ public:
      **/
     ComponentAddress( const String & roleName, const String & nameThread );
 
-    /**
-     * \brief   Deserializes component address from stream.
-     * \param   stream      The stream to read.
-     **/
-    ComponentAddress(const InStream& stream);
-
     ComponentAddress( ComponentAddress && src ) noexcept;
 
     ComponentAddress(const ComponentAddress& src) = default;
@@ -151,26 +145,6 @@ public:
      **/
     [[nodiscard]]
     inline explicit operator uint32_t () const noexcept;
-
-/************************************************************************/
-// Friend global operators to support streaming.
-/************************************************************************/
-
-    /**
-     * \brief   Deserializes component address from stream.
-     *
-     * \param       stream  The stream to read.
-     * \param[out]  input   The address to initialize.
-     **/
-    friend inline const InStream & operator >> ( const InStream & stream, ComponentAddress & input );
-
-    /**
-     * \brief   Serializes component address to stream.
-     *
-     * \param[out]  stream  The stream to write.
-     * \param       output  The address to serialize.
-     **/
-    friend inline OutStream & operator << ( OutStream & stream, const ComponentAddress & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -257,12 +231,12 @@ inline ComponentAddress & ComponentAddress::operator = ( ComponentAddress && src
 
 inline bool ComponentAddress::operator == ( const ComponentAddress & other ) const noexcept
 {
-    return (mThreadAddress == other.mThreadAddress) && (mRoleName == other.mRoleName);
+    return (mMagicNum == other.mMagicNum);
 }
 
 inline bool ComponentAddress::operator != ( const ComponentAddress& other ) const noexcept
 {
-    return (mThreadAddress != other.mThreadAddress) || (mRoleName != other.mRoleName);
+    return (mMagicNum != other.mMagicNum);
 }
 
 inline ComponentAddress::operator uint32_t () const noexcept
@@ -283,22 +257,6 @@ inline const ThreadAddress& ComponentAddress::thread_address() const noexcept
 inline const String& ComponentAddress::role_name() const noexcept
 {
     return mRoleName;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Friend global operators to support streaming
-//////////////////////////////////////////////////////////////////////////
-inline const InStream & operator >> (const InStream & stream, ComponentAddress & input)
-{
-    stream >> input.mRoleName;
-    stream >> input.mThreadAddress; 
-    return stream;                                   }
-
-inline OutStream & operator << (OutStream & stream, const ComponentAddress & output)
-{
-    stream << output.mRoleName;
-    stream << output.mThreadAddress;
-    return stream;
 }
 
 } // namespace areg

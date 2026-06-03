@@ -234,6 +234,9 @@
     <ClCompile Include="areg\base\private\ReadConverter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="areg\base\private\EventEnvelope.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="areg\base\private\RemoteMessage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -264,9 +267,6 @@
     <ClCompile Include="areg\component\private\ServerInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\StreamableEvent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\component\private\StubAddress.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -292,12 +292,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\ClientInfo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\component\private\EventData.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\component\private\EventDataStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\EventDispatcher.cpp">
@@ -400,9 +394,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\ipc\private\SocketConnectionBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\SendMessageEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\persist\private\Property.cpp">
@@ -836,6 +827,9 @@
     <ClInclude Include="areg\base\ThreadLocalStorage.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="areg\base\EventEnvelope.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="areg\base\RemoteMessage.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -929,12 +923,6 @@
     <ClInclude Include="areg\component\Event.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\component\EventData.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\component\EventDataStream.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="areg\component\EventDispatcher.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -960,9 +948,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\ServiceResponseEvent.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\component\StreamableEvent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\StubAddress.hpp">
@@ -1041,9 +1026,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\ipc\RemoteMessageHandler.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\ipc\SendMessageEvent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\ipc\ServerConnectionBase.hpp">

@@ -16,23 +16,26 @@
  *
  ************************************************************************/
 #include "areg/component/ExitEvent.hpp"
+#include "areg/base/RuntimeClassID.hpp"
+
 namespace areg {
+
 
 AREG_IMPLEMENT_RUNTIME_EVENT(ExitEvent, Event)
 
 ExitEvent::ExitEvent()
-    : Event   ( areg::EventType::EventExternal )
+    : Event   ( areg::EventType::EventCustomExternal, areg::EventPriority::ExitPrio )
 {
-    mEventPrio = areg::EventPriority::ExitPrio;
+    set_event_id(ExitEvent::CLASS_ID);
 }
 
-ExitEvent & ExitEvent::exit_event()  noexcept
+const ExitEvent & ExitEvent::exit_event() noexcept
 {
     static ExitEvent  _exitEvent;
     return _exitEvent;
 }
 
-void ExitEvent::destroy()
+void ExitEvent::destroy_event() noexcept
 {
 }
 

@@ -8,7 +8,7 @@
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ProxyConnectEvent.cpp
- * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, Proxy Connection event class implementation.
  *
@@ -28,45 +28,38 @@ AREG_IMPLEMENT_RUNTIME_EVENT(ProxyConnectEvent, ServiceResponseEvent)
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const StubAddress & implAddress, areg::ServiceConnectionState connectStatus )
+ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target
+                                    , const StubAddress & server
+                                    , areg::ServiceConnectionState connectStatus )
     : ServiceResponseEvent  ( target
                             , areg::ResultType::DataOK
                             , static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
-                            , areg::EventType::EventLocalProxyConnect )
-    , mStubAddress          ( implAddress )
-    , mConnectionStatus     ( connectStatus )
+                            , areg::EventType::EventLocalConsumerConnect )
 {
+    areg::EventHeader* hdr{ header() };
+    if (hdr != nullptr)
+    {
+        hdr->eventId = ProxyConnectEvent::CLASS_ID;
+        // Overwrite DataOK with the actual connection status; result() reads this back.
+        hdr->result = static_cast<uint32_t>(connectStatus);
+        // Store stub address in the provider endpoint so stub_address() can reconstruct it.
+        server.to_event(*hdr);
+    }
 }
 
 ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const ProxyConnectEvent & src )
-    : ServiceResponseEvent  ( target, static_cast<const ServiceResponseEvent &>(src) )
-    , mStubAddress          ( src.mStubAddress )
-    , mConnectionStatus     ( src.mConnectionStatus )
+    : ServiceResponseEvent  ( target, src.envelope().clone() )
 {
 }
 
-ProxyConnectEvent::ProxyConnectEvent(const InStream & stream)
-    : ServiceResponseEvent  ( stream )
-    , mStubAddress          ( stream )
-    , mConnectionStatus     ( areg::ServiceConnectionState::Unknown )
-{
-     stream >> mConnectionStatus;
-}
+//////////////////////////////////////////////////////////////////////////
+// Attributes
+//////////////////////////////////////////////////////////////////////////
 
-const InStream & ProxyConnectEvent::read_stream(const InStream & stream)
+StubAddress ProxyConnectEvent::stub_address() const
 {
-    ServiceResponseEvent::read_stream(stream);
-    stream >> mStubAddress;
-    stream >> mConnectionStatus;
-    return stream;
-}
-
-OutStream & ProxyConnectEvent::write_stream(OutStream & stream) const
-{
-    ServiceResponseEvent::write_stream(stream);
-    stream << mStubAddress;
-    stream << mConnectionStatus;
-    return stream;
+    const areg::EventHeader* hdr{ header() };
+    return (hdr != nullptr ? StubAddress(*hdr) : StubAddress::invalid_stub_address());
 }
 
 } // namespace areg

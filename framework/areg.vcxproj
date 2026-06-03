@@ -94,6 +94,7 @@
     <ClCompile Include="areg\base\private\ThreadLocalStorage.cpp" />
     <ClCompile Include="areg\base\private\Version.cpp" />
     <ClCompile Include="areg\base\private\WriteConverter.cpp" />
+    <ClCompile Include="areg\base\private\EventEnvelope.cpp" />
     <ClCompile Include="areg\base\private\RemoteMessage.cpp" />
     <ClCompile Include="areg\base\private\SocketAccepted.cpp" />
     <ClCompile Include="areg\base\private\ThreadAddress.cpp" />
@@ -142,7 +143,6 @@
     <ClCompile Include="areg\component\private\ClientList.cpp" />
     <ClCompile Include="areg\component\private\Component.cpp" />
     <ClCompile Include="areg\component\private\ComponentAddress.cpp" />
-    <ClCompile Include="areg\component\private\EventData.cpp" />
     <ClCompile Include="areg\component\private\RemoteEventFactory.cpp" />
     <ClCompile Include="areg\component\private\RequestEvents.cpp" />
     <ClCompile Include="areg\component\private\ResponseEvents.cpp" />
@@ -154,7 +154,6 @@
     <ClCompile Include="areg\component\private\ComponentLoader.cpp" />
     <ClCompile Include="areg\component\private\ComponentThread.cpp" />
     <ClCompile Include="areg\component\private\DispatcherThread.cpp" />
-    <ClCompile Include="areg\component\private\EventDataStream.cpp" />
     <ClCompile Include="areg\component\private\Event.cpp" />
     <ClCompile Include="areg\component\private\EventConsumerMap.cpp" />
     <ClCompile Include="areg\component\private\EventDispatcher.cpp" />
@@ -172,7 +171,6 @@
     <ClCompile Include="areg\component\private\ServiceManagerEvents.cpp" />
     <ClCompile Include="areg\component\private\ServiceRequestEvent.cpp" />
     <ClCompile Include="areg\component\private\ServiceResponseEvent.cpp" />
-    <ClCompile Include="areg\component\private\StreamableEvent.cpp" />
     <ClCompile Include="areg\component\private\StubAddress.cpp" />
     <ClCompile Include="areg\component\private\StubBase.cpp" />
     <ClCompile Include="areg\component\private\Channel.cpp" />
@@ -197,7 +195,6 @@
     <ClCompile Include="areg\ipc\private\ServiceClientConnectionBase.cpp" />
     <ClCompile Include="areg\ipc\private\ClientReceiveThread.cpp" />
     <ClCompile Include="areg\ipc\private\ConnectionConfiguration.cpp" />
-    <ClCompile Include="areg\ipc\private\SendMessageEvent.cpp" />
     <ClCompile Include="areg\ipc\private\ClientSendThread.cpp" />
     <ClCompile Include="areg\ipc\private\ServerConnectionBase.cpp" />
     <ClCompile Include="areg\ipc\private\ServiceEvent.cpp" />
@@ -277,7 +274,6 @@
     <ClInclude Include="areg\component\ComponentAddress.hpp" />
     <ClInclude Include="areg\appbase\Application.hpp" />
     <ClInclude Include="areg\appbase\AppDefs.hpp" />
-    <ClInclude Include="areg\component\EventData.hpp" />
     <ClInclude Include="areg\component\private\ServiceManagerEventProcessor.hpp" />
     <ClInclude Include="areg\component\private\SortedEventStack.hpp" />
     <ClInclude Include="areg\component\private\TimerManagerBase.hpp" />
@@ -293,7 +289,6 @@
     <ClInclude Include="areg\component\ComponentThread.hpp" />
     <ClInclude Include="areg\base\Containers.hpp" />
     <ClInclude Include="areg\component\DispatcherThread.hpp" />
-    <ClInclude Include="areg\component\EventDataStream.hpp" />
     <ClInclude Include="areg\component\Event.hpp" />
     <ClInclude Include="areg\component\private\EventConsumerMap.hpp" />
     <ClInclude Include="areg\component\EventDispatcher.hpp" />
@@ -320,7 +315,6 @@
     <ClInclude Include="areg\component\ServiceRequestEvent.hpp" />
     <ClInclude Include="areg\component\ServiceResponseEvent.hpp" />
     <ClInclude Include="areg\base\SharedBuffer.hpp" />
-    <ClInclude Include="areg\component\StreamableEvent.hpp" />
     <ClInclude Include="areg\base\String.hpp" />
     <ClInclude Include="areg\component\StubAddress.hpp" />
     <ClInclude Include="areg\component\StubBase.hpp" />
@@ -362,6 +356,7 @@
     <ClInclude Include="areg\base\RuntimeResourceMap.hpp" />
     <ClInclude Include="areg\base\Stack.hpp" />
     <ClInclude Include="areg\base\SocketAccepted.hpp" />
+    <ClInclude Include="areg\base\EventEnvelope.hpp" />
     <ClInclude Include="areg\base\RemoteMessage.hpp" />
     <ClInclude Include="areg\base\ThreadAddress.hpp" />
     <ClInclude Include="areg\base\areg_types.h" />
@@ -385,7 +380,6 @@
     <ClInclude Include="areg\ipc\private\ClientReceiveThread.hpp" />
     <ClInclude Include="areg\ipc\ConnectionConfiguration.hpp" />
     <ClInclude Include="areg\ipc\private\ClientSendThread.hpp" />
-    <ClInclude Include="areg\ipc\SendMessageEvent.hpp" />
     <ClInclude Include="areg\ipc\ServerConnectionBase.hpp" />
     <ClInclude Include="areg\ipc\ServiceEvent.hpp" />
     <ClInclude Include="areg\ipc\ServiceEventConsumer.hpp" />

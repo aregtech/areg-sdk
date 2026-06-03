@@ -34,7 +34,7 @@ ScopeMessage::ScopeMessage( const LogScope & logScope )
 {
     if ( is_scope_enabled() )
     {
-        RemoteMessage msg = areg::make_log_message( areg::LogMessageType::ScopeEnter
+        areg::EventEnvelope msg = areg::make_log_message( areg::LogMessageType::ScopeEnter
                                                   , logScope.mScopeId
                                                   , mSessionId
                                                   , 0u
@@ -49,7 +49,7 @@ ScopeMessage::~ScopeMessage()
 {
     if ( is_scope_enabled() )
     {
-        RemoteMessage msg = areg::make_log_message( areg::LogMessageType::ScopeExit
+        areg::EventEnvelope msg = areg::make_log_message( areg::LogMessageType::ScopeExit
                                                   , mScope.mScopeId
                                                   , mSessionId
                                                   , mTimestamp
@@ -136,7 +136,7 @@ void ScopeMessage::log( areg::LogPriority logPrio, const char * format, ... )
 
 inline void ScopeMessage::_send_log( uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const char * format, va_list args )
 {
-    RemoteMessage msg = areg::make_log_message(areg::LogMessageType::MessageText, scopeId, sessionId, scopeStamp, msgPrio, nullptr, 0u);
+    areg::EventEnvelope msg = areg::make_log_message(areg::LogMessageType::MessageText, scopeId, sessionId, scopeStamp, msgPrio, nullptr, 0u);
     if (!msg.is_valid())
         return;
 

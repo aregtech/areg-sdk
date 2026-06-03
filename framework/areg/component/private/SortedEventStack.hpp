@@ -76,7 +76,7 @@ public:
      * \param   eventClassId    The class ID of events to keep.
      * \return  Returns the number of remaining events in the stack.
      **/
-    uint32_t delete_except_class(const RuntimeClassID& eventClassId);
+    uint32_t delete_except_class(uint32_t eventClassId);
 
     /**
      * \brief   Deletes all events with the specified priority, except Exit events.
@@ -92,7 +92,7 @@ public:
      * \param   eventClassId    The class ID of events to delete.
      * \return  Returns the number of remaining events in the stack.
      **/
-    uint32_t delete_matching_class(const RuntimeClassID& eventClassId);
+    uint32_t delete_matching_class(uint32_t eventClassId);
 
     /**
      * \brief   Pushes an event onto the stack in priority order.

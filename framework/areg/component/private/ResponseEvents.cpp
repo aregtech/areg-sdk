@@ -22,11 +22,6 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// ResponseEvent class runtime function implementation
-//////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_RUNTIME_EVENT(ResponseEvent, ServiceResponseEvent)
-
-//////////////////////////////////////////////////////////////////////////
 // ResponseEvent class Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 ResponseEvent::ResponseEvent( const ProxyAddress & proxyTarget
@@ -35,55 +30,34 @@ ResponseEvent::ResponseEvent( const ProxyAddress & proxyTarget
                             , areg::EventType eventType
                             , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/ )
     : ServiceResponseEvent(proxyTarget, result, respId, eventType, seqNr)
-    , mData (respId, areg::is_external(eventType) ? EventDataStream::EventDataKind::External : EventDataStream::EventDataKind::Internal)
 {
 }
 
-ResponseEvent::ResponseEvent( const EventDataStream & args
+ResponseEvent::ResponseEvent( const SharedBuffer & args
                             , const ProxyAddress & proxyTarget
                             , areg::ResultType result
                             , uint32_t respId
                             , areg::EventType eventType
                             , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
     : ServiceResponseEvent(proxyTarget, result, respId, eventType, seqNr)
-    , mData (respId, args)
 {
+    if (args.is_valid())
+        write_data(args.buffer(), args.size_used());
 }
 
 ResponseEvent::ResponseEvent( const ProxyAddress& proxyTarget, const ResponseEvent& src )
     : ServiceResponseEvent(proxyTarget, static_cast<const ServiceResponseEvent &>(src))
-    , mData (src.mData)
 {
 }
 
-ResponseEvent::ResponseEvent(const InStream & stream)
-    : ServiceResponseEvent(stream)
-    , mData (stream)
+ResponseEvent::ResponseEvent( const EventEnvelope & envelope ) noexcept
+    : ServiceResponseEvent( envelope )
 {
-}
-
-const InStream & ResponseEvent::read_stream(const InStream & stream)
-{
-    ServiceResponseEvent::read_stream(stream);
-    stream >> mData;
-    return stream;
-}
-
-OutStream & ResponseEvent::write_stream(OutStream & stream) const
-{
-    ServiceResponseEvent::write_stream(stream);
-    stream << mData;
-    return stream;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // LocalResponseEvent class implementation
 //////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// LocalResponseEvent class runtime function implementation
-//////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_RUNTIME_EVENT(LocalResponseEvent, ResponseEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // LocalResponseEvent class Constructors / Destructor
@@ -92,16 +66,16 @@ LocalResponseEvent::LocalResponseEvent( const ProxyAddress & proxyTarget
                                       , areg::ResultType result
                                       , uint32_t respId
                                       , const SequenceNumber & seqNr    /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
-    : ResponseEvent(proxyTarget, result, respId, areg::EventType::EventLocalServiceResponse, seqNr)
+    : ResponseEvent(proxyTarget, result, respId, areg::EventType::EventLocalResponse, seqNr)
 {
 }
 
-LocalResponseEvent::LocalResponseEvent( const EventDataStream & args
+LocalResponseEvent::LocalResponseEvent( const SharedBuffer & args
                                       , const ProxyAddress & proxyTarget
                                       , areg::ResultType result
                                       , uint32_t respId
                                       , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
-    : ResponseEvent(args, proxyTarget, result, respId, areg::EventType::EventLocalServiceResponse, seqNr)
+    : ResponseEvent(args, proxyTarget, result, respId, areg::EventType::EventLocalResponse, seqNr)
 {
 }
 
@@ -110,19 +84,9 @@ LocalResponseEvent::LocalResponseEvent( const ProxyAddress& proxyTarget, const L
 {
 }
 
-LocalResponseEvent::LocalResponseEvent( const InStream & stream )
-    : ResponseEvent(stream)
-{
-}
-
 //////////////////////////////////////////////////////////////////////////
 // RemoteResponseEvent class implementation
 //////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// RemoteResponseEvent class runtime function implementation
-//////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_RUNTIME_EVENT(RemoteResponseEvent, ResponseEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // RemoteResponseEvent class Constructors / Destructor
@@ -131,31 +95,27 @@ RemoteResponseEvent::RemoteResponseEvent( const ProxyAddress & proxyTarget
                                         , areg::ResultType result
                                         , uint32_t respId
                                         , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
-    : ResponseEvent(proxyTarget, result, respId, areg::EventType::EventRemoteServiceResponse, seqNr)
+    : ResponseEvent(proxyTarget, result, respId, areg::EventType::EventRemoteResponse, seqNr)
 {
-    ASSERT(data().data_stream().is_external_stream());
 }
 
-RemoteResponseEvent::RemoteResponseEvent( const EventDataStream & args
+RemoteResponseEvent::RemoteResponseEvent( const SharedBuffer & args
                                         , const ProxyAddress & proxyTarget
                                         , areg::ResultType result
                                         , uint32_t respId
                                         , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
-    : ResponseEvent(args, proxyTarget, result, respId, areg::EventType::EventRemoteServiceResponse, seqNr)
+    : ResponseEvent(args, proxyTarget, result, respId, areg::EventType::EventRemoteResponse, seqNr)
 {
-    ASSERT(data().data_stream().is_external_stream());
 }
 
 RemoteResponseEvent::RemoteResponseEvent( const ProxyAddress& proxyTarget, const RemoteResponseEvent & src )
     : ResponseEvent(proxyTarget, static_cast<const ResponseEvent &>(src))
 {
-    ASSERT(data().data_stream().is_external_stream());
 }
 
-RemoteResponseEvent::RemoteResponseEvent( const InStream & stream )
-    : ResponseEvent(stream)
+RemoteResponseEvent::RemoteResponseEvent( const EventEnvelope & envelope ) noexcept
+    : ResponseEvent( envelope )
 {
-    ASSERT(data().data_stream().is_external_stream());
 }
 
 } // namespace areg

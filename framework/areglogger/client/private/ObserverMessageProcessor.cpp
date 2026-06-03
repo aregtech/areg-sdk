@@ -20,7 +20,7 @@
 #include "areglogger/client/private/ObserverMessageProcessor.hpp"
 
 #include "areg/base/DateTime.hpp"
-#include "areg/base/RemoteMessage.hpp"
+#include "areg/base/EventEnvelope.hpp"
 #include "areg/base/ArrayList.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/component/ServiceDefs.hpp"
@@ -36,7 +36,7 @@ ObserverMessageProcessor::ObserverMessageProcessor(LoggerClient& loggerClient)
 {
 }
 
-void ObserverMessageProcessor::notify_service_connection(const RemoteMessage& msgReceived)
+void ObserverMessageProcessor::notify_service_connection(const areg::EventEnvelope& msgReceived)
 {
     ITEM_ID cookie{ areg::COOKIE_UNKNOWN };
     areg::ServiceConnectionState connection{ areg::ServiceConnectionState::Unknown };
@@ -75,11 +75,11 @@ void ObserverMessageProcessor::notify_service_connection(const RemoteMessage& ms
         break;
     }
 
-    RemoteMessage msgLog = areg::create_log_message(log, areg::LogDataType::Local, cookie);
+    areg::EventEnvelope msgLog = areg::create_log_message(log, areg::LogDataType::Local, cookie);
     notify_log_message(msgLog);
 }
 
-void ObserverMessageProcessor::notify_connected_clients(const RemoteMessage& msgReceived)
+void ObserverMessageProcessor::notify_connected_clients(const areg::EventEnvelope& msgReceived)
 {
     areg::RemoteConnectionState remConnect{ areg::RemoteConnectionState::Disconnected };
 
@@ -99,7 +99,7 @@ void ObserverMessageProcessor::notify_connected_clients(const RemoteMessage& msg
     } while (false);
 }
 
-void ObserverMessageProcessor::notify_log_register_scopes(const RemoteMessage& msgReceived)
+void ObserverMessageProcessor::notify_log_register_scopes(const areg::EventEnvelope& msgReceived)
 {
     FuncLogRegisterScopes callback{ nullptr };
     ITEM_ID cookie{ msgReceived.source() };
@@ -139,7 +139,7 @@ void ObserverMessageProcessor::notify_log_register_scopes(const RemoteMessage& m
                                                     , "Log observer registered %u scopes of instance %llu."
                                                     , count
                                                     , static_cast<uint64_t>(cookie)));
-        RemoteMessage msgLog = areg::create_log_message(log, areg::LogDataType::Local, areg::COOKIE_LOGGER);
+        areg::EventEnvelope msgLog = areg::create_log_message(log, areg::LogDataType::Local, areg::COOKIE_LOGGER);
         notify_log_message(msgLog);
 
         mLoggerClient.mLogDatabase.commit(true);
@@ -161,7 +161,7 @@ void ObserverMessageProcessor::notify_log_register_scopes(const RemoteMessage& m
     }
 }
 
-void ObserverMessageProcessor::notify_log_update_scopes(const RemoteMessage& msgReceived)
+void ObserverMessageProcessor::notify_log_update_scopes(const areg::EventEnvelope& msgReceived)
 {
     FuncLogUpdateScopes callback{ nullptr };
     ITEM_ID cookie{ msgReceived.source() };
@@ -213,7 +213,7 @@ void ObserverMessageProcessor::notify_log_update_scopes(const RemoteMessage& msg
     }
 }
 
-void ObserverMessageProcessor::notify_log_message(const RemoteMessage& msgReceived)
+void ObserverMessageProcessor::notify_log_message(const areg::EventEnvelope& msgReceived)
 {
     FuncLogMessage callback{ nullptr };
     FuncLogMessageEx callbackEx{ nullptr };
@@ -278,7 +278,7 @@ void ObserverMessageProcessor::notify_log_message(const RemoteMessage& msgReceiv
     }
 }
 
-void ObserverMessageProcessor::_clients_connected(const RemoteMessage& msgReceived)
+void ObserverMessageProcessor::_clients_connected(const areg::EventEnvelope& msgReceived)
 {
     ArrayList< areg::ConnectedInstance > listConnected;
     msgReceived >> listConnected;
@@ -312,7 +312,7 @@ void ObserverMessageProcessor::_clients_connected(const RemoteMessage& msgReceiv
                                                             , static_cast<uint32_t>(client.ciBitness)
                                                             , client.ciInstance.c_str()
                                                             , static_cast<uint64_t>(client.ciCookie)));
-                    RemoteMessage msgLog = areg::create_log_message(log, areg::LogDataType::Local, areg::COOKIE_LOGGER);
+                    areg::EventEnvelope msgLog = areg::create_log_message(log, areg::LogDataType::Local, areg::COOKIE_LOGGER);
                     notify_log_message(msgLog);
                 }
             }
@@ -340,7 +340,7 @@ void ObserverMessageProcessor::_clients_connected(const RemoteMessage& msgReceiv
                                                              , static_cast<uint32_t>(client.ciBitness)
                                                              , client.ciInstance.c_str()
                                                              , static_cast<uint64_t>(client.ciCookie)));
-                    RemoteMessage msgLog = areg::create_log_message(log, areg::LogDataType::Local, areg::COOKIE_LOGGER);
+                    areg::EventEnvelope msgLog = areg::create_log_message(log, areg::LogDataType::Local, areg::COOKIE_LOGGER);
                     notify_log_message(msgLog);
                 }
 
@@ -375,7 +375,7 @@ void ObserverMessageProcessor::_clients_connected(const RemoteMessage& msgReceiv
     }
 }
 
-void ObserverMessageProcessor::_clients_disconnected(const RemoteMessage& msgReceived)
+void ObserverMessageProcessor::_clients_disconnected(const areg::EventEnvelope& msgReceived)
 {
     ArrayList<ITEM_ID> listClients;
     ArrayList< areg::ConnectedInstance > listDisconnected;

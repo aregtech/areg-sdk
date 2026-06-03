@@ -21,8 +21,9 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/component/EventConsumer.hpp"
-#include "areg/component/StreamableEvent.hpp"
+#include "areg/component/Event.hpp"
 #include "areg/component/ProxyAddress.hpp"
+
 namespace areg {
 
 /************************************************************************
@@ -59,13 +60,8 @@ class ProxyConnectEvent;
  * \brief   Base class for service response events sent by a stub to the target proxy upon
  *          completing a request.
  **/
-class AREG_API ProxyEvent  : public StreamableEvent
+class AREG_API ProxyEvent  : public Event
 {
-//////////////////////////////////////////////////////////////////////////
-// Declare as a Runtime event class
-//////////////////////////////////////////////////////////////////////////
-    AREG_DECLARE_RUNTIME_EVENT(ProxyEvent)
-
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -73,79 +69,50 @@ protected:
     /**
      * \brief   Initializes the proxy event and sets the target proxy address.
      *
-     * \param   targetProxy     The address of the target proxy to receive the event.
-     * \param   eventType       The type of event.
+     * \param   toTarget    The address of the target proxy to receive the event.
+     * \param   eventType   The type of event.
      **/
-    ProxyEvent( const ProxyAddress & targetProxy, areg::EventType eventType );
+    ProxyEvent(const ProxyAddress & toTarget, areg::EventType eventType );
 
-    /**
-     * \brief   Initializes the event by deserializing data from the given input stream.
-     *
-     * \param   stream      The input stream containing serialized event data.
-     **/
-    ProxyEvent( const InStream & stream );
+    ProxyEvent(const ProxyAddress& toTarget, const EventEnvelope& src);
 
-    virtual ~ProxyEvent() = default;
+    ProxyEvent(const ProxyAddress& toTarget, EventEnvelope&& src);
 
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
+    ProxyEvent(const EventEnvelope& envelope);
+
+    ProxyEvent(EventEnvelope&& envelope) noexcept;
+
 public:
-/************************************************************************/
-// Event class overrides
-/************************************************************************/
-    /**
-     * \brief   Sends the event to the target thread. If the target thread is null, searches for the
-     *          target thread in the system.
-     **/
-    void deliver_event() override;
+
+    ProxyEvent(const ProxyEvent& /*src*/) = default;
+
+    ProxyEvent(ProxyEvent&& /*src*/) noexcept = default;
+
+    ~ProxyEvent() override = default;
 
 //////////////////////////////////////////////////////////////////////////
-// Attributes
+// Operators
 //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   Returns the target proxy address.
-     **/
-    inline const ProxyAddress & target_proxy() const;
+protected:
+    ProxyEvent& operator = (const ProxyEvent& /*src*/) = default;
+
+    ProxyEvent& operator = (ProxyEvent&& /*src*/) noexcept = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
-protected:
-/************************************************************************/
-// StreamableEvent overrides
-/************************************************************************/
-    /**
-     * \brief   Deserializes event data from the given input stream.
-     *
-     * \param   stream      The input stream to read from.
-     * \return  The input stream for method chaining.
-     **/
-    const InStream & read_stream( const InStream & stream ) override;
+public:
 
     /**
-     * \brief   Serializes event data to the given output stream.
-     *
-     * \param   stream      The output stream to write to.
-     * \return  The output stream for method chaining.
+     * \brief   Returns the target proxy address.
      **/
-    OutStream & write_stream( OutStream & stream ) const override;
-
-//////////////////////////////////////////////////////////////////////////
-// Member variable
-//////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   The address of target Proxy, which should receive event.
-     **/
-    ProxyAddress  mTargetProxyAddress;
+    inline const uint32_t target_proxy() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
     ProxyEvent() = delete;
-    AREG_NOCOPY_NOMOVE( ProxyEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -186,6 +153,13 @@ protected:
     virtual void process_response_event( ServiceResponseEvent & eventElem ) = 0;
 
     /**
+     * \brief   Processes Broadcast Event sent by Stub.
+     *
+     * \param   eventElem       The response event to process.
+     **/
+    virtual void process_broadcast_event(ServiceResponseEvent& eventElem) = 0;
+
+    /**
      * \brief   Processes Attribute update event sent by Stub.
      *
      * \param   eventElem       The attribute update event to process.
@@ -193,11 +167,25 @@ protected:
     virtual void process_attribute_event( ServiceResponseEvent & eventElem ) = 0;
 
     /**
+     * \brief   Processes Request failed Event sent by Stub.
+     *
+     * \param   eventElem       The response event to process.
+     **/
+    virtual void process_request_failed_event(ServiceResponseEvent& eventElem) = 0;
+
+    /**
      * \brief   Processes generic Proxy Event.
      *
      * \param   eventElem       The proxy event to process.
      **/
     virtual void process_proxy_event( ProxyEvent & eventElem ) = 0;
+
+    /**
+     * \brief   Processes custom Event.
+     *
+     * \param   eventElem       The event to process.
+     **/
+    virtual void process_custom_event(Event& eventElem) = 0;
 
     /**
      * \brief   Processes generic event.
@@ -231,26 +219,7 @@ private:
      *
      * \param   eventElem       The generic Event object to process.
      **/
-    void start_event_processing( Event & eventElem ) override;
-
-//////////////////////////////////////////////////////////////////////////
-// Hidden operations
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Processes response event.
-     *
-     * \param   eventResponse       Response event to process
-     **/
-    void _local_response( ResponseEvent & eventResponse);
-
-    /**
-     * \brief   Processes connection event. Triggered when client connects or disconnects from
-     *          service.
-     *
-     * \param   eventConnect    The connection event to process.
-     **/
-    void _local_connect( ProxyConnectEvent & eventConnect );
+    void start_event_processing( Event & eventElem ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -276,9 +245,10 @@ private:
 // ProxyEvent class inline functions implementations
 //////////////////////////////////////////////////////////////////////////
 
-inline const ProxyAddress & ProxyEvent::target_proxy() const
+inline const uint32_t ProxyEvent::target_proxy() const
 {
-    return mTargetProxyAddress;
+    ASSERT(is_valid());
+    return consumer().number;
 }
 
 } // namespace areg

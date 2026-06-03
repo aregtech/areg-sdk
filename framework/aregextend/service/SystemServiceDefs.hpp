@@ -20,6 +20,7 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 
+#include "areg/base/EventEnvelope.hpp"
 #include "areg/base/StringDefs.hpp"
 #include "aregextend/console/Console.hpp"
 #include "aregextend/console/OptionParser.hpp"
@@ -27,14 +28,22 @@
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-namespace areg {
-    class RemoteMessage;
-}
 
-/**
+ /**
  * \brief   The system service common data.
  **/
 namespace areg::ext {
+
+    /**
+     * \brief   Batch-send entry used by server-side send threads.
+     *          EventEnvelope msg holds the wire-ready IPC message (O(1) shared_ptr copy).
+     *          internal1/2/custom are zeroed before the envelope is stored here.
+     **/
+    struct PendingSend
+    {
+        SOCKETHANDLE    socket; //!< Resolved socket handle for this message.
+        EventEnvelope   msg;    //!< Wire-ready IPC envelope; header + payload sent verbatim.
+    };
 
     /**
      * \brief   areg::ext::ServiceOption

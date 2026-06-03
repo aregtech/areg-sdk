@@ -25,9 +25,9 @@ namespace areg {
 /************************************************************************
  * Dependencies
  ************************************************************************/
+class Event;
+class EventEnvelope;
 class RemoteResponseEvent;
-class StreamableEvent;
-class RemoteMessage;
 class Channel;
 
 //////////////////////////////////////////////////////////////////////////
@@ -45,40 +45,37 @@ class AREG_API RemoteEventFactory
 public:
 
     /**
-     * \brief   Creates event from streaming object. Returns event object of appropriate type.
-     *          Automatically deleted by dispatcher after processing.
+     * \brief   Creates an Event from a received wire envelope. Returns an invalid Event on
+     *          unrecognised or unsupported event types.
      *
-     * \param   stream          The streaming object containing event data.
-     * \param   comChannel      The communication channel object to send event.
-     * \return  Returns valid pointer to remote event object if successful, or nullptr if streaming
-     *          data contains wrong or unsupported event types.
+     * \param   stream          The received wire envelope.
+     * \param   comChannel      The communication channel for routing correction.
+     * \return  An Event value; check is_valid() before delivering.
      **/
     [[nodiscard]]
-    static StreamableEvent * event_from_stream( const RemoteMessage & stream, const Channel & comChannel );
+    static Event event_from_stream( const EventEnvelope & stream, const Channel & comChannel );
 
     /**
-     * \brief   Serializes remote event object to streaming object. The specified event must be
-     *          remote type.
+     * \brief   Serializes a remote event into a wire-ready EventEnvelope with routing fields set.
+     *          The event must be a remote type; local and custom types are rejected (ASSERT).
      *
-     * \param   stream              The streaming object to serialize data.
-     * \param   eventStreamable     The event object, must be remote event type. Otherwise,
-     *                              serialization is ignored.
-     * \param   comChannel          The communication channel object to send event.
-     * \return  Returns true if successfully recognized remote object and serialized to stream.
-     *          Otherwise returns false.
+     * \param   stream          Output envelope to fill.
+     * \param   eventElem       Source event (must be remote type).
+     * \param   comChannel      Communication channel providing source/target cookies.
+     * \return  Returns true if the event was recognised and serialized; false otherwise.
      **/
-    static bool stream_from_event( RemoteMessage & stream, const StreamableEvent & eventStreamable, const Channel & comChannel );
+    static bool stream_from_event( EventEnvelope & stream, const Event & eventElem, const Channel & comChannel );
 
     /**
-     * \brief   Creates request failure remote event. Called when system fails to process request.
+     * \brief   Creates a request-failure response Event from an undeliverable wire envelope.
+     *          Returns an invalid Event when the proxy cannot be located.
      *
-     * \param   stream          The remote messaging streaming object to serialize failure
-     *                          information.
-     * \param   comChannel      The communication channel object to send event.
-     * \return  Returns streamable event object to send to target object.
+     * \param   stream          The original wire envelope that could not be processed.
+     * \param   comChannel      The communication channel for routing correction.
+     * \return  An Event value; check is_valid() before delivering.
      **/
     [[nodiscard]]
-    static StreamableEvent * request_failed_event( const RemoteMessage & stream, const Channel & comChannel );
+    static Event request_failed_event( const EventEnvelope & stream, const Channel & comChannel );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Hidden

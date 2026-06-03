@@ -15,7 +15,7 @@
  ************************************************************************/
 #include "areg/component/RemoteEventFactory.hpp"
 
-#include "areg/base/RemoteMessage.hpp"
+#include "areg/base/EventEnvelope.hpp"
 #include "areg/component/RequestEvents.hpp"
 #include "areg/component/ResponseEvents.hpp"
 #include "areg/base/Process.hpp"
@@ -34,141 +34,116 @@ DEBUG_DEF_LOG_SCOPE(areg_component_RemoteEventFactory, event_from_stream);
 DEBUG_DEF_LOG_SCOPE(areg_component_RemoteEventFactory, stream_from_event);
 DEBUG_DEF_LOG_SCOPE(areg_component_RemoteEventFactory, request_failed_event);
 
-StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & stream, const Channel & comChannel )
+Event RemoteEventFactory::event_from_stream( const EventEnvelope & stream, const Channel & comChannel )
 {
     DEBUG_LOG_SCOPE( areg_component_RemoteEventFactory, event_from_stream);
 
-    StreamableEvent * result = nullptr;
-    areg::EventType eventType;
-    stream >> eventType;
+    Event result;
+
+    areg::EventHeader hdr{ };
+    stream.read(reinterpret_cast<uint8_t*>(&hdr), sizeof(areg::EventHeader));
+    const areg::EventType eventType{ static_cast<areg::EventType>(hdr.eventType) };
 
     DEBUG_LOG_DBG("Going to create event [ %s ] from remote message object", areg::as_string(eventType));
 
     switch ( eventType )
     {
-    case areg::EventType::EventRemoteServiceRequest:
+    case areg::EventType::EventRemoteRequest:
         {
-            StubAddress addrStub;
-            stream >> addrStub;
+            StubAddress addrStub(hdr);
             if ( comChannel.cookie() == addrStub.cookie() )
-            {
                 addrStub.set_cookie( areg::COOKIE_LOCAL );
-            }
 
             const StubBase * stub = StubBase::find_stub(addrStub);
             if ( stub != nullptr )
             {
-                stream.move_to_begin();
                 Channel chTarget(stub->address().channel());
                 Channel chSource(comChannel.source(), chTarget.source(), stream.source());
-                RemoteRequestEvent * eventRequest = stub->create_remote_request(stream);
-                if ( eventRequest != nullptr )
+                RemoteRequestEvent evtRequest = stub->create_remote_request(stream);
+                if ( evtRequest.is_valid() )
                 {
-                    eventRequest->set_target_channel(chTarget);
-                    eventRequest->set_source_channel(chSource);
+                    evtRequest.set_target_channel(chTarget);
+                    evtRequest.set_source_channel(chSource);
+                    evtRequest.register_for_thread(&stub->component_thread());
 
-                    eventRequest->register_for_thread(&stub->component_thread());
-
-                    DEBUG_LOG_DBG("Created areg::EventType::EventRemoteServiceRequest for target stub [ %s ] from source proxy [ %s ]."
-                                    , StubAddress::to_path(eventRequest->target_stub()).as_string()
-                                    , ProxyAddress::to_path(eventRequest->event_source()).as_string());
+                    DEBUG_LOG_DBG("Created areg::EventType::EventRemoteRequest for target stub [ %s ] from source proxy [ %s ]."
+                                    , StubAddress::to_path(stub->address()).as_string()
+                                    , ProxyAddress::to_path(evtRequest.event_source()).as_string());
+                    result = evtRequest;
                 }
-
-                result = static_cast<StreamableEvent *>(eventRequest);
             }
         }
         break;
 
     case areg::EventType::EventRemoteNotifyRequest:
         {
-            StubAddress addrStub;
-            stream >> addrStub;
+            StubAddress addrStub(hdr);
             if ( comChannel.cookie() == addrStub.cookie() )
-            {
                 addrStub.set_cookie( areg::COOKIE_LOCAL );
-            }
 
             const StubBase * stub = StubBase::find_stub(addrStub);
             if ( stub != nullptr )
             {
-                stream.move_to_begin();
                 Channel chTarget(stub->address().channel());
                 Channel chSource(comChannel.source(), chTarget.source(), stream.source());
-                RemoteNotifyRequestEvent * eventNotify = stub->create_notify_request(stream);
-                if ( eventNotify != nullptr )
+                RemoteNotifyRequestEvent evtNotify = stub->create_notify_request(stream);
+                if ( evtNotify.is_valid() )
                 {
-                    eventNotify->set_target_channel(chTarget);
-                    eventNotify->set_source_channel(chSource);
-
-                    eventNotify->register_for_thread(&stub->component_thread());
+                    evtNotify.set_target_channel(chTarget);
+                    evtNotify.set_source_channel(chSource);
+                    evtNotify.register_for_thread(&stub->component_thread());
 
                     DEBUG_LOG_DBG("Created areg::EventType::EventRemoteNotifyRequest for target stub [ %s ] from source proxy [ %s ]."
-                                    , StubAddress::to_path(eventNotify->target_stub()).as_string()
-                                    , ProxyAddress::to_path(eventNotify->event_source()).as_string());
+                                    , StubAddress::to_path(stub->address()).as_string()
+                                    , ProxyAddress::to_path(evtNotify.event_source()).as_string());
+                    result = evtNotify;
                 }
-
-                result = static_cast<StreamableEvent *>(eventNotify);
             }
         }
         break;
 
-    case areg::EventType::EventRemoteServiceResponse:
+    case areg::EventType::EventRemoteResponse:
         {
-            ProxyAddress addrProxy;
-            stream >> addrProxy;
+            ProxyAddress addrProxy(hdr);
             if ( comChannel.cookie() == addrProxy.cookie() )
                 addrProxy.set_cookie( areg::COOKIE_LOCAL );
 
             std::shared_ptr<ProxyBase> proxy = ProxyBase::find_proxy(addrProxy);
             if ( proxy != nullptr )
             {
-                // AAvetyan: Heavy deserialization runs outside the global proxy lock. must optimize this
-                stream.move_to_begin();
                 Channel chTarget(proxy->proxy_address().channel());
-                RemoteResponseEvent * eventResponse = proxy->create_remote_response(stream);
-                if ( eventResponse != nullptr )
+                RemoteResponseEvent evtResponse = proxy->create_remote_response(stream);
+                if ( evtResponse.is_valid() )
                 {
-                    eventResponse->set_target_channel(chTarget);
+                    evtResponse.set_target_channel(chTarget);
+                    evtResponse.register_for_thread(&proxy->proxy_dispatcher_thread());
 
-                    eventResponse->register_for_thread(&proxy->proxy_dispatcher_thread());
-
-                    DEBUG_LOG_DBG("Created areg::EventType::EventRemoteServiceResponse for target proxy [ %s ]."
-                                    , ProxyAddress::to_path(eventResponse->target_proxy()).as_string());
+                    DEBUG_LOG_DBG("Created areg::EventType::EventRemoteResponse for target proxy [ %s ]."
+                                    , ProxyAddress::to_path(addrProxy).as_string());
+                    result = evtResponse;
                 }
-
-                result = static_cast<StreamableEvent *>(eventResponse);
             }
         }
         break;
 
     case areg::EventType::EventRemoteProviderConnect: // fall through
-    case areg::EventType::EventRemoteProxyConnect:
+    case areg::EventType::EventRemoteConsumerConnect:
         break;
 
     case areg::EventType::EventLocalProviderConnect:  // fall through
-    case areg::EventType::EventLocalProxyConnect:     // fall through
-    case areg::EventType::EventLocalServiceRequest:   // fall through
+    case areg::EventType::EventLocalConsumerConnect:  // fall through
+    case areg::EventType::EventLocalRequest:          // fall through
     case areg::EventType::EventLocalNotifyRequest:    // fall through
-    case areg::EventType::EventLocalServiceResponse:
+    case areg::EventType::EventLocalResponse:
         ASSERT(false);  // unexpected streaming for remote events
         break;
 
     case areg::EventType::EventUnknown:
-        result = nullptr;
         break;
 
-    case areg::EventType::EventCustom:                // fall through
     case areg::EventType::EventCustomInternal:        // fall through
     case areg::EventType::EventCustomExternal:        // fall through
-    case areg::EventType::EventNotifyClient:          // fall through
-    case areg::EventType::EventConnect:               // fall through
-    case areg::EventType::EventToProxy:               // fall through
-    case areg::EventType::EventToProvider:            // fall through
-    case areg::EventType::EventNotify:                // fall through
-    case areg::EventType::EventRemote:                // fall through
-    case areg::EventType::EventLocal:                 // fall through
-    case areg::EventType::EventExternal:              // fall through
-    case areg::EventType::EventInternal:              // fall through
+    case areg::EventType::EventNotifyClient:
         ASSERT(false);  // unexpected for remote event
         break;
 
@@ -178,101 +153,79 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
         break;
     }
 
-    ASSERT((result == nullptr) || (result->event_type() == eventType));
+    ASSERT(!result.is_valid() || (static_cast<areg::EventType>(result.event_type()) == eventType));
     return result;
 }
 
-bool RemoteEventFactory::stream_from_event( RemoteMessage & stream, const StreamableEvent & eventStreamable, const Channel & comChannel )
+bool RemoteEventFactory::stream_from_event( EventEnvelope & stream, const Event & eventStreamable, const Channel & comChannel )
 {
     bool result = false;
-    // stream.invalidate();
 
-    switch ( eventStreamable.event_type() )
+    switch ( static_cast<areg::EventType>(eventStreamable.event_type()) )
     {
-    case areg::EventType::EventRemoteServiceRequest:
+    case areg::EventType::EventRemoteRequest:
         {
-            const ServiceRequestEvent * stubEvent = AREG_RUNTIME_CONST_CAST(&eventStreamable, ServiceRequestEvent);
-            if ( stubEvent != nullptr )
+            const ServiceRequestEvent & reqEvent = static_cast<const ServiceRequestEvent&>(eventStreamable);
+            stream = static_cast<const EventEnvelope&>(eventStreamable);  // O(1) shared-ptr copy
+            if (stream.is_valid())
             {
-                eventStreamable.write_stream(stream);
-                if (stream.is_valid())
-                {
-                    result = true;
-                    stream.set_source( comChannel.cookie() );
-                    stream.set_target( stubEvent->target_stub().cookie() );
-                    stream.set_message_id( stubEvent->request_id() );
-                    stream.set_result( areg::MESSAGE_SUCCESS );
-                    stream.set_sequence( stubEvent->sequence_number() );
-                }
+                result = true;
+                stream.set_source( comChannel.cookie() );
+                stream.set_target( eventStreamable.header()->provider.id );  // stub's process cookie
+                stream.set_message_id( reqEvent.request_id() );
+                stream.set_result( areg::MESSAGE_SUCCESS );
+                stream.set_sequence( reqEvent.sequence_number() );
             }
-            // else, ignore, invalid event
-    }
+        }
         break;
 
     case areg::EventType::EventRemoteNotifyRequest:
         {
-            const ServiceRequestEvent * stubEvent = AREG_RUNTIME_CONST_CAST(&eventStreamable, ServiceRequestEvent);
-            if ( stubEvent != nullptr )
+            const ServiceRequestEvent & stubEvent = static_cast<const ServiceRequestEvent&>(eventStreamable);
+            stream = static_cast<const EventEnvelope&>(eventStreamable);  // O(1) shared-ptr copy
+            if (stream.is_valid())
             {
-                eventStreamable.write_stream(stream);
-                if (stream.is_valid())
-                {
-                    result = true;
-                    stream.set_source( comChannel.cookie() );
-                    stream.set_target( stubEvent->target_stub().cookie() );
-                    stream.set_message_id( stubEvent->request_id() );
-                    stream.set_result( areg::MESSAGE_SUCCESS );
-                    stream.set_sequence( stubEvent->sequence_number() );
-                }
+                result = true;
+                stream.set_source( comChannel.cookie() );
+                stream.set_target( eventStreamable.header()->provider.id );  // stub's process cookie
+                stream.set_message_id( stubEvent.request_id() );
+                stream.set_result( areg::MESSAGE_SUCCESS );
+                stream.set_sequence( stubEvent.sequence_number() );
             }
-            // else, ignore, invalid event
         }
         break;
 
-    case areg::EventType::EventRemoteServiceResponse:
+    case areg::EventType::EventRemoteResponse:
         {
-            const ServiceResponseEvent * proxyEvent = AREG_RUNTIME_CONST_CAST(&eventStreamable, ServiceResponseEvent);
-            if ( proxyEvent != nullptr )
+            const ServiceResponseEvent & respEvent = static_cast<const ServiceResponseEvent&>(eventStreamable);
+            stream = static_cast<const EventEnvelope&>(eventStreamable);  // O(1) shared-ptr copy
+            if ( stream.is_valid() )
             {
-                eventStreamable.write_stream(stream);
-                if ( stream.is_valid() )
-                {
-                    result = true;
-                    stream.set_source( comChannel.cookie() );
-                    stream.set_target( proxyEvent->target_proxy().cookie() );
-                    stream.set_message_id( proxyEvent->response_id() );
-                    stream.set_result( areg::MESSAGE_SUCCESS );
-                    stream.set_sequence( proxyEvent->sequence_number() );
-                }
+                result = true;
+                stream.set_source( comChannel.cookie() );
+                stream.set_target( respEvent.target_cookie() );
+                stream.set_message_id( respEvent.response_id() );
+                stream.set_result( areg::MESSAGE_SUCCESS );
+                stream.set_sequence( respEvent.sequence_number() );
             }
-            // else, ignore, invalid event
         }
         break;
 
     case areg::EventType::EventRemoteProviderConnect:   // fall through
-    case areg::EventType::EventRemoteProxyConnect:
+    case areg::EventType::EventRemoteConsumerConnect:
         break;
 
     case areg::EventType::EventLocalProviderConnect:    // fall through
-    case areg::EventType::EventLocalProxyConnect:       // fall through
-    case areg::EventType::EventLocalServiceRequest:     // fall through
+    case areg::EventType::EventLocalConsumerConnect:    // fall through
+    case areg::EventType::EventLocalRequest:            // fall through
     case areg::EventType::EventLocalNotifyRequest:      // fall through
-    case areg::EventType::EventLocalServiceResponse:
+    case areg::EventType::EventLocalResponse:
         ASSERT(false);  // unexpected streaming for remote events
         break;
 
-    case areg::EventType::EventCustom:                  // fall through
     case areg::EventType::EventCustomInternal:          // fall through
     case areg::EventType::EventCustomExternal:          // fall through
     case areg::EventType::EventNotifyClient:            // fall through
-    case areg::EventType::EventConnect:                 // fall through
-    case areg::EventType::EventToProxy:                 // fall through
-    case areg::EventType::EventToProvider:              // fall through
-    case areg::EventType::EventNotify:                  // fall through
-    case areg::EventType::EventRemote:                  // fall through
-    case areg::EventType::EventLocal:                   // fall through
-    case areg::EventType::EventExternal:                // fall through
-    case areg::EventType::EventInternal:                // fall through
     case areg::EventType::EventUnknown:
         ASSERT(false);  // unexpected for remote event
         break;
@@ -289,69 +242,59 @@ bool RemoteEventFactory::stream_from_event( RemoteMessage & stream, const Stream
     return result;
 }
 
-StreamableEvent * RemoteEventFactory::request_failed_event( const RemoteMessage & stream, const Channel & /* comChannel */ )
+Event RemoteEventFactory::request_failed_event( const EventEnvelope & stream, const Channel & /* comChannel */ )
 {
     DEBUG_LOG_SCOPE( areg_component_RemoteEventFactory, request_failed_event);
 
-    StreamableEvent * result = nullptr;
-    areg::EventType eventType;
-    stream >> eventType;
+    Event result;
+    areg::EventHeader hdr{ };
+    stream.read(reinterpret_cast<uint8_t*>(&hdr), sizeof(areg::EventHeader));
+    const areg::EventType eventType{ static_cast<areg::EventType>(hdr.eventType) };
 
     DEBUG_LOG_DBG("Creating request failed event of type [ %s ] from remote message stream", areg::as_string(eventType));
 
     switch ( eventType )
     {
-    case areg::EventType::EventRemoteServiceRequest:
+    case areg::EventType::EventRemoteRequest:
         {
             stream.move_to_begin();
-            RemoteRequestEvent eventRequest(stream);
-            const ProxyAddress & addrProxy = eventRequest.event_source();
-            result = static_cast<StreamableEvent *>( ProxyBase::request_failure_event( addrProxy
-                                                                                     , eventRequest.request_id()
-                                                                                     , areg::ResultType::MessageUndelivered
-                                                                                     , eventRequest.sequence_number()) );
+            RemoteRequestEvent evtRequest(stream);
+            result = ProxyBase::request_failure_event( evtRequest.event_source()
+                                                     , evtRequest.request_id()
+                                                     , areg::ResultType::MessageUndelivered
+                                                     , evtRequest.sequence_number() );
         }
         break;
 
     case areg::EventType::EventRemoteNotifyRequest:
         {
             stream.move_to_begin();
-            RemoteNotifyRequestEvent eventNotify(stream);
-            const ProxyAddress & addrProxy = eventNotify.event_source();
-            result = static_cast<StreamableEvent *>( ProxyBase::request_failure_event( addrProxy
-                                                                                         , eventNotify.request_id()
-                                                                                         , areg::ResultType::MessageUndelivered
-                                                                                         , eventNotify.sequence_number()) );
+            RemoteNotifyRequestEvent evtNotify(stream);
+            result = ProxyBase::request_failure_event( evtNotify.event_source()
+                                                     , evtNotify.request_id()
+                                                     , areg::ResultType::MessageUndelivered
+                                                     , evtNotify.sequence_number() );
         }
         break;
 
-    case areg::EventType::EventRemoteServiceResponse:
+    case areg::EventType::EventRemoteResponse:
         break;  // not required
 
     case areg::EventType::EventRemoteProviderConnect:   // fall through
-    case areg::EventType::EventRemoteProxyConnect:
+    case areg::EventType::EventRemoteConsumerConnect:
         break;
 
-    case areg::EventType::EventLocalServiceRequest:     // fall through
+    case areg::EventType::EventLocalRequest:            // fall through
     case areg::EventType::EventLocalNotifyRequest:      // fall through
-    case areg::EventType::EventLocalServiceResponse:    // fall through
+    case areg::EventType::EventLocalResponse:           // fall through
     case areg::EventType::EventLocalProviderConnect:    // fall through
-    case areg::EventType::EventLocalProxyConnect:
+    case areg::EventType::EventLocalConsumerConnect:
         ASSERT(false);
         break;
 
-    case areg::EventType::EventCustom:                  // fall through
     case areg::EventType::EventCustomInternal:          // fall through
     case areg::EventType::EventCustomExternal:          // fall through
     case areg::EventType::EventNotifyClient:            // fall through
-    case areg::EventType::EventConnect:                 // fall through
-    case areg::EventType::EventToProxy:                 // fall through
-    case areg::EventType::EventToProvider:              // fall through
-    case areg::EventType::EventNotify:                  // fall through
-    case areg::EventType::EventRemote:                  // fall through
-    case areg::EventType::EventLocal:                   // fall through
-    case areg::EventType::EventExternal:                // fall through
-    case areg::EventType::EventInternal:                // fall through
     case areg::EventType::EventUnknown:
         ASSERT(false);  // unexpected for remote event
         break;
