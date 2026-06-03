@@ -63,7 +63,7 @@
 
 ## Why Areg SDK[![](./docs/img/pin.svg)](#why-areg-sdk)
 
-### Ask yourself these questions:
+### Ask yourself these questions
 
 - Do threading and synchronization issues slow your development velocity?
 - Is your IPC integration fragile, hard to test, or hard to extend?
@@ -178,7 +178,7 @@ data serialization, event dispatching, and multithreading — not raw socket thr
 > | macOS native ³  | M3 Pro (LPDDR5)  | 6.5–7.0 GB/s | 700K–1.0M msg/s  | 2.5–3.0M msg/s  |
 > | Linux native ⁴  | x86_64 (DDR4)    | 6.0–6.5 GB/s | 600–800K msg/s   | 2.2–2.8M msg/s  |
 >
-> ¹ On Windows, stable end-to-end consumer dispatch reaches 300–400K msg/s; above that the RPC dispatch thread becomes the bottleneck. macOS stable dispatch measured at 500–600K msg/s. See [23_pubdatarate README](examples/23_pubdatarate/ReadMe.md) for details.  
+> ¹ On Windows, stable end-to-end consumer dispatch reaches 300–400K msg/s. Above that, the RPC dispatch thread becomes the bottleneck. macOS stable dispatch measured at 500–600K msg/s. See [23_pubdatarate README](examples/23_pubdatarate/ReadMe.md) for details.  
 > ² Requires [network tuning](./docs/wiki/07d-troubleshooting-network-tunning.md); default WSL2 settings yield ~4.5 GB/s and ~700K msg/s.  
 > ³ Measured without network tuning. Numbers are transport-layer ceiling; current optimization level. M4 Pro results pending re-measurement.  
 > ⁴ Estimated from WSL2 baseline. Bare-metal Linux measurements pending.
@@ -354,7 +354,7 @@ playing different roles.
 | **Service**           | Named component instance implementing one or more interfaces                     | `HP-Lab1` (implements `ScannerDevice` and `PrinterDevice`), `Canon-Floor3` (implements `PrinterDevice`) |
 | **Consumer**          | Declares which named service it depends on; receives `connected` when it appears | Consumer of `HP-Lab1`                                          |
 
-A consumer claims a specific service by name — "I need `HP-Lab1`." The framework
+A consumer claims a specific service by name — for example, "I need HP-Lab1". The framework
 connects them when that named service becomes available anywhere on the network, and
 notifies the consumer immediately. No polling. No manual connection management.
 
