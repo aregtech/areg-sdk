@@ -7,11 +7,10 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/component/RemoteEventFactory.hpp
+ * \file        areg/component/private/RemoteEventFactory.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Areg Platform, Event Factory class. Creates event
- *              from stream and converts event to stream.
+ * \brief       Areg Platform, Remote Event Factory implementation.
  ************************************************************************/
 #include "areg/component/RemoteEventFactory.hpp"
 
@@ -21,13 +20,17 @@
 #include "areg/component/Channel.hpp"
 #include "areg/component/ProxyBase.hpp"
 #include "areg/component/ProxyAddress.hpp"
+#include "areg/component/StubBase.hpp"
+#include "areg/component/StubAddress.hpp"
+#include "areg/component/ComponentThread.hpp"
 
 #include "areg/logging/areg_log.h"
 namespace areg {
-DEBUG_DEF_LOG_SCOPE(areg_component_RemoteEventFactory, stream_from_event);
-DEBUG_DEF_LOG_SCOPE(areg_component_RemoteEventFactory, request_failed_event);
+DEBUG_DEF_LOG_SCOPE(areg_component_RemoteEventFactory, route_outgoing_message);
+DEBUG_DEF_LOG_SCOPE(areg_component_RemoteEventFactory, route_incoming_message);
+DEBUG_DEF_LOG_SCOPE(areg_component_RemoteEventFactory, create_request_failed_event);
 
-bool RemoteEventFactory::stream_from_event( EventEnvelope & stream, const Event & eventStreamable, const Channel & comChannel )
+bool RemoteEventFactory::route_outgoing_message( EventEnvelope & stream, const Event & eventStreamable, const Channel & comChannel )
 {
     bool result = false;
 
@@ -75,7 +78,7 @@ bool RemoteEventFactory::stream_from_event( EventEnvelope & stream, const Event 
                 stream.set_source( comChannel.cookie() );
                 stream.set_target( respEvent.target_cookie() );
                 stream.set_message_id( respEvent.response_id() );
-                // result field carries ResultType (RequestOK, DataOK, etc.) — preserve it from the copy.
+                // result field carries ResultType — preserve from copy.
                 stream.set_sequence( respEvent.sequence_number() );
             }
         }
@@ -90,21 +93,21 @@ bool RemoteEventFactory::stream_from_event( EventEnvelope & stream, const Event 
     case areg::EventType::EventLocalRequest:            // fall through
     case areg::EventType::EventLocalNotifyRequest:      // fall through
     case areg::EventType::EventLocalResponse:
-        ASSERT(false);  // unexpected streaming for remote events
+        ASSERT(false);  // local events must not be serialized for remote transmission
         break;
 
     case areg::EventType::EventCustomInternal:          // fall through
     case areg::EventType::EventCustomExternal:          // fall through
     case areg::EventType::EventNotifyClient:            // fall through
     case areg::EventType::EventUnknown:
-        ASSERT(false);  // unexpected for remote event
+        ASSERT(false);  // unexpected for remote event serialization
         break;
 
     default:
         {
-            DEBUG_LOG_SCOPE( areg_component_RemoteEventFactory, stream_from_event);
+            DEBUG_LOG_SCOPE( areg_component_RemoteEventFactory, route_outgoing_message);
             DEBUG_LOG_ERR( "Unexpected event value [ %d ]", static_cast<int32_t>(eventStreamable.event_type( )) );
-            ASSERT( false );  // unsupported remote streaming events
+            ASSERT( false );
         }
         break;
     }
@@ -112,9 +115,83 @@ bool RemoteEventFactory::stream_from_event( EventEnvelope & stream, const Event 
     return result;
 }
 
-Event RemoteEventFactory::request_failed_event( const EventEnvelope & stream, const Channel & /* comChannel */ )
+bool RemoteEventFactory::route_incoming_message( const EventEnvelope & src, const Channel & comChannel )
 {
-    DEBUG_LOG_SCOPE( areg_component_RemoteEventFactory, request_failed_event);
+    const areg::EventHeader * hdrPtr = src.header();
+    if ((hdrPtr == nullptr) || !src.is_valid())
+        return false;
+
+    const areg::EventType eventType{ static_cast<areg::EventType>(hdrPtr->eventType) };
+
+    switch ( eventType )
+    {
+    case areg::EventType::EventRemoteRequest:       // fall through
+    case areg::EventType::EventRemoteNotifyRequest:
+        {
+            StubAddress addrStub(*hdrPtr);
+            const StubBase * stub = StubBase::find_stub(addrStub);
+            if ( stub == nullptr )
+                return false;
+
+            const Channel chTarget(stub->address().channel());
+            // chSource encodes the response routing path back through this RouterClient
+            const Channel chSource(comChannel.source(), chTarget.source(), src.source());
+
+            Event evt(src);
+            areg::EventHeader * hdr = evt.header();
+            ASSERT(hdr != nullptr);
+            // Route to stub's local thread
+            hdr->target          = chTarget.cookie();
+            hdr->channel         = chTarget.target();
+            hdr->provider.id     = chTarget.cookie();
+            hdr->provider.thread = chTarget.source();
+            // Response routing key back through RouterClient
+            hdr->source          = chSource.target();
+            hdr->consumer.id     = chSource.cookie();
+            hdr->consumer.thread = chSource.source();
+            hdr->internal2       = 0;
+
+            evt.register_for_thread(&stub->component_thread());
+            evt.deliver_event();
+            return true;
+        }
+
+    case areg::EventType::EventRemoteResponse:
+        {
+            ProxyAddress addrProxy(*hdrPtr);
+            const std::shared_ptr<ProxyBase> proxy = ProxyBase::find_proxy(addrProxy);
+            if ( !proxy )
+                return false;
+
+            const Channel chTarget(proxy->proxy_address().channel());
+
+            Event evt(src);
+            areg::EventHeader * hdr = evt.header();
+            ASSERT(hdr != nullptr);
+            // Route response to proxy's local thread
+            hdr->target          = chTarget.cookie();
+            hdr->channel         = chTarget.target();
+            hdr->consumer.id     = chTarget.cookie();
+            hdr->consumer.thread = chTarget.source();
+            hdr->internal2       = 0;
+
+            evt.register_for_thread(&proxy->proxy_dispatcher_thread());
+            evt.deliver_event();
+            return true;
+        }
+
+    case areg::EventType::EventRemoteProviderConnect:   // fall through
+    case areg::EventType::EventRemoteConsumerConnect:
+        return true;    // handled by service_connection_event, not the executable path
+
+    default:
+        return false;
+    }
+}
+
+Event RemoteEventFactory::create_request_failed_event( const EventEnvelope & stream, const Channel & /* comChannel */ )
+{
+    DEBUG_LOG_SCOPE( areg_component_RemoteEventFactory, create_request_failed_event);
 
     const areg::EventHeader* hdr = stream.header();
     if (hdr == nullptr)

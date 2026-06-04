@@ -268,15 +268,6 @@ private:
     [[nodiscard]]
     inline RouterClient & self() noexcept;
 
-    /**
-     * \brief   Routes a received wire envelope to the correct local stub or proxy.
-     *          Sets up IPC routing channels in the event header and delivers.
-     *          Returns false when the target stub/proxy is not found.
-     *
-     * \param   src     Received wire envelope (EventHeader + payload in-place).
-     **/
-    bool _route_incoming_event(const EventEnvelope & src);
-
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -316,7 +307,7 @@ inline const areg::Channel& RouterClient::connection_channel() const noexcept
 inline void RouterClient::on_message_received(const EventEnvelope& msgReceived)
 {
     ASSERT(areg::is_executable_id(static_cast<uint32_t>(msgReceived.message_id())));
-    if (!_route_incoming_event(msgReceived))
+    if (!RemoteEventFactory::route_incoming_message(msgReceived, mChannel))
     {
         failed_process_message(msgReceived);
     }

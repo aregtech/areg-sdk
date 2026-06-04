@@ -22,11 +22,8 @@
 #include "areg/component/ResponseEvents.hpp"
 #include "areg/component/RequestEvents.hpp"
 #include "areg/component/Channel.hpp"
-#include "areg/component/ProxyBase.hpp"
 #include "areg/component/ProxyAddress.hpp"
-#include "areg/component/StubBase.hpp"
 #include "areg/component/StubAddress.hpp"
-#include "areg/component/ComponentThread.hpp"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/Process.hpp"
@@ -199,7 +196,7 @@ void RouterClient::failed_send_message(const EventEnvelope & msgFailed, Socket &
                        , whichTarget.is_alive() ? "ALIVE" : "DEAD");
 
             msgFailed.move_to_begin();
-            Event evtError = RemoteEventFactory::request_failed_event(msgFailed, mChannel);
+            Event evtError = RemoteEventFactory::create_request_failed_event(msgFailed, mChannel);
             if ( evtError.is_valid() )
             {
                 LOG_DBG("Replying with failure event [ %u ]", evtError.event_id());
@@ -259,11 +256,11 @@ void RouterClient::failed_process_message( const EventEnvelope & msgUnprocessed 
                       , msgUnprocessed.source());
 
             msgUnprocessed.move_to_begin();
-            Event evtError = RemoteEventFactory::request_failed_event(msgUnprocessed, mChannel);
+            Event evtError = RemoteEventFactory::create_request_failed_event(msgUnprocessed, mChannel);
             if ( evtError.is_valid() )
             {
                 EventEnvelope data;
-                if ( RemoteEventFactory::stream_from_event( data, evtError, mChannel) )
+                if ( RemoteEventFactory::route_outgoing_message( data, evtError, mChannel) )
                 {
                     send_message(data);
                 }
@@ -380,8 +377,8 @@ void RouterClient::process_received_message( EventEnvelope & msgReceived, Socket
     {
         if ( areg::is_executable_id(static_cast<uint32_t>(msgId)) )
         {
-            // Route directly on the receive thread to the target stub/proxy.
-            if ( !_route_incoming_event(msgReceived) )
+            // Route directly on the receive thread
+            if ( !RemoteEventFactory::route_incoming_message(msgReceived, mChannel) )
             {
                 failed_process_message(msgReceived);
             }
@@ -402,7 +399,7 @@ void RouterClient::process_request_event( RemoteRequestEvent & reqEvent)
     if ( reqEvent.is_remote() )
     {
         EventEnvelope data;
-        if ( RemoteEventFactory::stream_from_event( data, reqEvent, mChannel) )
+        if ( RemoteEventFactory::route_outgoing_message( data, reqEvent, mChannel) )
         {
             LOG_DBG("Sending [ %u ] event: remote message [ %u ] from source [ %u ] to target [ %u ]"
                       , reqEvent.event_id()
@@ -430,7 +427,7 @@ void RouterClient::process_notify_request( RemoteNotifyRequestEvent & reqNotifyE
     if ( reqNotifyEvent.is_remote() )
     {
         EventEnvelope data;
-        if ( RemoteEventFactory::stream_from_event( data, reqNotifyEvent, mChannel) )
+        if ( RemoteEventFactory::route_outgoing_message( data, reqNotifyEvent, mChannel) )
         {
             LOG_DBG("Send [ %u ] event: remote message [ %u ] from source [ %u ] to target [ %u ]"
                       , reqNotifyEvent.event_id()
@@ -459,7 +456,7 @@ void RouterClient::process_response_event(RemoteResponseEvent & respEvent)
     if ( respEvent.is_remote() )
     {
         EventEnvelope data;
-        if ( RemoteEventFactory::stream_from_event( data, respEvent, mChannel) )
+        if ( RemoteEventFactory::route_outgoing_message( data, respEvent, mChannel) )
         {
             LOG_DBG("Forwarding [ %u ] message [ %u ] from source [ %u ] to target [ %u ]"
                       , respEvent.event_id()
@@ -480,87 +477,6 @@ void RouterClient::process_response_event(RemoteResponseEvent & respEvent)
     }
 }
 
-bool RouterClient::_route_incoming_event(const EventEnvelope & src)
-{
-    const areg::EventHeader * hdrPtr = src.header();
-    if ((hdrPtr == nullptr) || !src.is_valid())
-        return false;
-
-    const areg::EventType eventType{ static_cast<areg::EventType>(hdrPtr->eventType) };
-
-    switch ( eventType )
-    {
-    case areg::EventType::EventRemoteRequest:       // fall through
-    case areg::EventType::EventRemoteNotifyRequest:
-        {
-            StubAddress addrStub(*hdrPtr);
-            if ( mChannel.cookie() == addrStub.cookie() )
-                addrStub.set_cookie( areg::COOKIE_LOCAL );
-
-            const StubBase * stub = StubBase::find_stub(addrStub);
-            if ( stub == nullptr )
-                return false;
-
-            const Channel chTarget(stub->address().channel());
-            const Channel chSource(mChannel.source(), chTarget.source(), src.source());
-
-            Event evt(src);
-            areg::EventHeader * hdr = evt.header();
-            ASSERT(hdr != nullptr);
-            // Encode target channel: routes event to stub's local thread
-            hdr->target          = chTarget.cookie();
-            hdr->channel         = chTarget.target();
-            hdr->provider.id     = chTarget.cookie();
-            hdr->provider.thread = chTarget.source();
-            // Encode source channel: response routing key back through RouterClient
-            hdr->source          = chSource.target();
-            hdr->consumer.id     = chSource.cookie();
-            hdr->consumer.thread = chSource.source();
-            // Clear internals
-            hdr->internal2       = 0;
-
-            evt.register_for_thread(&stub->component_thread());
-            evt.deliver_event();
-            return true;
-        }
-
-    case areg::EventType::EventRemoteResponse:
-        {
-            ProxyAddress addrProxy(*hdrPtr);
-            if ( mChannel.cookie() == addrProxy.cookie() )
-                addrProxy.set_cookie( areg::COOKIE_LOCAL );
-
-            const std::shared_ptr<ProxyBase> proxy = ProxyBase::find_proxy(addrProxy);
-            if ( !proxy )
-                return false;
-
-            const Channel chTarget(proxy->proxy_address().channel());
-
-            Event evt(src);
-            areg::EventHeader * hdr = evt.header();
-            ASSERT(hdr != nullptr);
-            // Encode target channel: routes response to proxy's local thread
-            hdr->target          = chTarget.cookie();
-            hdr->channel         = chTarget.target();
-            hdr->consumer.id     = chTarget.cookie();
-            hdr->consumer.thread = chTarget.source();
-            // Clear internals
-            hdr->internal2       = 0;
-
-            evt.register_for_thread(&proxy->proxy_dispatcher_thread());
-            evt.deliver_event();
-            return true;
-        }
-
-    case areg::EventType::EventRemoteProviderConnect:   // fall through
-    case areg::EventType::EventRemoteConsumerConnect:
-        return true;    // handled by service_connection_event, not the executable path
-
-    default:
-        return false;
-    }
-}
-
 bool RouterClient::post_event(Event & eventElem)
 {
     if ( eventElem.is_remote() )
@@ -568,7 +484,7 @@ bool RouterClient::post_event(Event & eventElem)
         if ( is_connection_started() )
         {
             EventEnvelope data;
-            return RemoteEventFactory::stream_from_event(data, eventElem, mChannel) && send_message(std::move(data));
+            return RemoteEventFactory::route_outgoing_message(data, eventElem, mChannel) && send_message(std::move(data));
         }
 
         eventElem.set_event_consumer( static_cast<RemoteEventConsumer *>(this) );

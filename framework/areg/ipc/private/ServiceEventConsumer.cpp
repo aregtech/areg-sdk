@@ -77,14 +77,6 @@ void ServiceClientConsumer::process_event(const ServiceEventData& data)
         mServiceEventConsumer.on_service_exit();
         break;
 
-    case ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg:
-        mServiceEventConsumer.on_message_received(data.message());
-        break;
-
-    case ServiceEventData::ServiceCommand::CMD_ServiceSendMsg:
-        mServiceEventConsumer.on_message_send(data.message());
-        break;
-
     default:
         ASSERT(false);
         break;
@@ -131,14 +123,6 @@ void ServiceServerConsumer::process_event(const ServiceEventData& data)
 
     case ServiceEventData::ServiceCommand::CMD_ServiceExit:
         mServiceEventConsumer.on_service_exit();
-        break;
-
-    case ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg:
-        mServiceEventConsumer.on_message_received(data.message());
-        break;
-
-    case ServiceEventData::ServiceCommand::CMD_ServiceSendMsg:
-        mServiceEventConsumer.on_message_send(data.message());
         break;
 
     default:

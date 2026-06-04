@@ -534,15 +534,6 @@ public:
     inline bool send_command(ServiceEventData::ServiceCommand cmd, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio);
 
     /**
-     * \brief   Call to send the event to process.
-     *
-     * \param   cmd     The command to send and process.
-     * \param   msg     The message to forward.
-     * \return  Returns true if succeeded to send the command.
-     **/
-    inline bool send_communication_message(ServiceEventData::ServiceCommand cmd, const areg::EventEnvelope & msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
-
-    /**
      * \brief   Posts a received data envelope directly to the dispatcher, bypassing the
      *          ServiceEventData wrapper
      *
@@ -734,16 +725,6 @@ inline void ServiceCommunicationBase::wait_to_complete( )
 inline bool ServiceCommunicationBase::send_command( ServiceEventData::ServiceCommand cmd, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
     return ServiceServerEvent::send_event( ServiceEventData( cmd )
-                                          , static_cast<ServiceServerEventConsumer &>(mEventConsumer)
-                                          , static_cast<DispatcherThread &>(self( ))
-                                          , eventPrio );
-}
-
-inline bool ServiceCommunicationBase::send_communication_message( ServiceEventData::ServiceCommand cmd
-                                                                , const areg::EventEnvelope & msg
-                                                                , areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
-{
-    return ServiceServerEvent::send_event( ServiceEventData( cmd, msg )
                                           , static_cast<ServiceServerEventConsumer &>(mEventConsumer)
                                           , static_cast<DispatcherThread &>(self( ))
                                           , eventPrio );

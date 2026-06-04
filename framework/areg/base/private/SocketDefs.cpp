@@ -580,8 +580,6 @@ AREG_API_IMPL SOCKETHANDLE areg::client_connect(const SocketAddress & peerAddr)
         if ( result != areg::InvalidSocketHandle )
         {
             areg::socket_configure(result);
-
-            constexpr uint32_t SOCKET_CONNECT_TIMEOUT_MS { 1'000u };
             if (!areg::os::_os_connect_socket(result, &remoteAddr, sizeof(sockaddr_in), SOCKET_CONNECT_TIMEOUT_MS))
             {
                 LOG_ERR("Client failed to connect to remote host [ %s ] and port number [ %u ]. Closing socket [ %u ]"
