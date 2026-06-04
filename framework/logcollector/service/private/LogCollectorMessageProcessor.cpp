@@ -56,7 +56,7 @@ void LogCollectorMessageProcessor::notify_connected_instances(const areg::MapIns
     ASSERT((target == areg::TARGET_ALL) || (instances.contains(target) && is_log_observer(instances.value_at(target).ciSource)));
 
     static constexpr areg::EventHeader HDR_NOTIFY{ areg::message_notify_instances() };
-    if (msgInstances.init_envelope(HDR_NOTIFY) != nullptr)
+    if (msgInstances.init_envelope(HDR_NOTIFY, sizeof(areg::RemoteConnectionState) + sizeof(uint32_t)) != nullptr)
     {
         msgInstances << areg::RemoteConnectionState::Connected;
         uint32_t count{ 0 };
@@ -105,7 +105,7 @@ void LogCollectorMessageProcessor::notify_disconnected_instances(const areg::Arr
 
     areg::EventEnvelope msgInstances;
     static constexpr areg::EventHeader HDR_NOTIFY{ areg::message_notify_instances() };
-    if (msgInstances.init_envelope(HDR_NOTIFY) != nullptr)
+    if (msgInstances.init_envelope(HDR_NOTIFY, sizeof(areg::RemoteConnectionState) + sizeof(uint32_t)) != nullptr)
     {
         msgInstances << areg::RemoteConnectionState::Disconnected;
         msgInstances << listIds;

@@ -45,17 +45,6 @@ class AREG_API RemoteEventFactory
 public:
 
     /**
-     * \brief   Creates an Event from a received wire envelope. Returns an invalid Event on
-     *          unrecognised or unsupported event types.
-     *
-     * \param   stream          The received wire envelope.
-     * \param   comChannel      The communication channel for routing correction.
-     * \return  An Event value; check is_valid() before delivering.
-     **/
-    [[nodiscard]]
-    static Event event_from_stream( const EventEnvelope & stream, const Channel & comChannel );
-
-    /**
      * \brief   Serializes a remote event into a wire-ready EventEnvelope with routing fields set.
      *          The event must be a remote type; local and custom types are rejected (ASSERT).
      *

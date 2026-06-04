@@ -31,19 +31,19 @@ SocketConnectionBase::SocketConnectionBase() noexcept
 int32_t SocketConnectionBase::receive_message(EventEnvelope & message, const Socket & socket) const
 {
     areg::EventHeader evtHeader{};
-    int32_t result = socket.receive(reinterpret_cast<uint8_t *>(&evtHeader), sizeof(areg::EventHeader));
-    if (result != static_cast<int32_t>(sizeof(areg::EventHeader)))
+    if (socket.receive(reinterpret_cast<uint8_t*>(&evtHeader), sizeof(areg::EventHeader)) != static_cast<int32_t>(sizeof(areg::EventHeader)))
         return 0;
 
     if (evtHeader.bufHeader.biUsed > areg::MAX_MESSAGE_DATA_SIZE)
         return 0;
 
     uint8_t * buffer = message.init_envelope(evtHeader, evtHeader.bufHeader.biUsed);
-    if ((evtHeader.bufHeader.biUsed != 0u) && (buffer != nullptr))
+    int32_t result{ buffer != nullptr ? static_cast<int32_t>(sizeof(areg::EventHeader)) : 0 };
+    if ((evtHeader.bufHeader.biUsed != 0u) && (result != 0))
     {
         const int32_t rest = socket.receive(buffer, static_cast<int32_t>(evtHeader.bufHeader.biUsed));
         message.set_size_used(evtHeader.bufHeader.biUsed);
-        result = rest > 0 ? (result + rest) : 0;
+        result = rest > 0 ? (static_cast<int32_t>(sizeof(areg::EventHeader)) + rest) : 0;
     }
 
     message.move_to_begin();

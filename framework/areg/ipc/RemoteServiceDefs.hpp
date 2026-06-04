@@ -23,6 +23,7 @@
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/component/ServiceDefs.hpp"
+#include "areg/component/EventDefs.hpp"
 
 #include <string_view>
 
@@ -332,8 +333,9 @@ constexpr areg::EventHeader areg::message_hello_server() noexcept
     hdr.checksum  = areg::CHECKSUM_INVALID;
     hdr.target    = static_cast<uint32_t>(areg::COOKIE_ROUTER);
     hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceConnect);
+    hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
     hdr.result    = areg::MESSAGE_SUCCESS;
-    hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
+    hdr.sequenceNr= areg::SEQUENCE_NUMBER_NOTIFY;
     return hdr;
 }
 
@@ -343,6 +345,7 @@ constexpr areg::EventHeader areg::message_bye_server() noexcept
     hdr.checksum  = areg::CHECKSUM_INVALID;
     hdr.target    = static_cast<uint32_t>(areg::COOKIE_ROUTER);
     hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceDisconnect);
+    hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
     hdr.result    = areg::MESSAGE_SUCCESS;
     hdr.sequenceNr = areg::SEQUENCE_NUMBER_ANY;
     return hdr;
@@ -354,6 +357,7 @@ constexpr areg::EventHeader areg::notify_client_connection() noexcept
     hdr.checksum  = areg::CHECKSUM_INVALID;
     hdr.source    = static_cast<uint32_t>(areg::COOKIE_ROUTER);
     hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyConnection);
+    hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
     hdr.result    = areg::MESSAGE_SUCCESS;
     hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
     return hdr;
@@ -365,6 +369,7 @@ constexpr areg::EventHeader areg::message_register_service() noexcept
     hdr.checksum  = areg::CHECKSUM_INVALID;
     hdr.target    = static_cast<uint32_t>(areg::COOKIE_ROUTER);
     hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceRequestRegister);
+    hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
     hdr.result    = areg::MESSAGE_SUCCESS;
     hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
     return hdr;
@@ -374,7 +379,9 @@ constexpr areg::EventHeader areg::message_query_instances() noexcept
 {
     areg::EventHeader hdr{};
     hdr.checksum  = areg::CHECKSUM_INVALID;
+    hdr.target = static_cast<uint32_t>(areg::COOKIE_ROUTER);
     hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceQueryInstances);
+    hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
     hdr.result    = areg::MESSAGE_SUCCESS;
     hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
     return hdr;
@@ -386,6 +393,7 @@ constexpr areg::EventHeader areg::message_notify_instances() noexcept
     hdr.checksum  = areg::CHECKSUM_INVALID;
     hdr.target    = static_cast<uint32_t>(areg::COOKIE_ROUTER);
     hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyInstances);
+    hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
     hdr.result    = areg::MESSAGE_SUCCESS;
     hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
     return hdr;
@@ -397,6 +405,7 @@ constexpr areg::EventHeader areg::message_register_notify() noexcept
     hdr.checksum  = areg::CHECKSUM_INVALID;
     hdr.source    = static_cast<uint32_t>(areg::COOKIE_ROUTER);
     hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyRegister);
+    hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
     hdr.result    = areg::MESSAGE_SUCCESS;
     hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
     return hdr;

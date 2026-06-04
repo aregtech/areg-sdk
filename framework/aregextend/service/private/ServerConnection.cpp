@@ -52,10 +52,10 @@ void ServerConnection::reject_connection(SocketAccepted & clientConnection)
 
 void ServerConnection::close_all_connections()
 {
+    static constexpr areg::EventHeader HDR{ areg::notify_client_connection() };
     std::unique_lock<std::shared_mutex> lock( mLock );
     areg::EventEnvelope msgByeClient;
-    static constexpr areg::EventHeader HDR{ areg::notify_client_connection() };
-    if ( msgByeClient.init_envelope(HDR) != nullptr )
+    if ( msgByeClient.init_envelope(HDR, 2 * sizeof(ITEM_ID)) != nullptr )
     {
         msgByeClient.set_sequence( areg::SEQUENCE_NUMBER_ANY );
         msgByeClient.set_source( static_cast<uint32_t>(mChannelId) );

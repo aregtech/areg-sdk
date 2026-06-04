@@ -21,6 +21,12 @@
 #include "areg/component/Event.hpp"
 #include "areg/component/ResponseEvents.hpp"
 #include "areg/component/RequestEvents.hpp"
+#include "areg/component/Channel.hpp"
+#include "areg/component/ProxyBase.hpp"
+#include "areg/component/ProxyAddress.hpp"
+#include "areg/component/StubBase.hpp"
+#include "areg/component/StubAddress.hpp"
+#include "areg/component/ComponentThread.hpp"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/Process.hpp"
@@ -380,11 +386,7 @@ void RouterClient::process_received_message( EventEnvelope & msgReceived, Socket
     {
         if ( areg::is_executable_id(static_cast<uint32_t>(msgId)) )
         {
-#if 0
-            on_message_received(msgReceived);
-#else
             forward_executable_message(std::move(msgReceived));
-#endif
         }
         else
         {
@@ -477,6 +479,83 @@ void RouterClient::process_response_event(RemoteResponseEvent & respEvent)
     else
     {
         LOG_WARN("Response event with message [ %u ] is not remote, ignoring", respEvent.response_id());
+    }
+}
+
+bool RouterClient::_route_incoming_event(const EventEnvelope & src)
+{
+    const areg::EventHeader * hdrPtr = src.header();
+    if ((hdrPtr == nullptr) || !src.is_valid())
+        return false;
+
+    const areg::EventType eventType{ static_cast<areg::EventType>(hdrPtr->eventType) };
+
+    switch ( eventType )
+    {
+    case areg::EventType::EventRemoteRequest:       // fall through
+    case areg::EventType::EventRemoteNotifyRequest:
+        {
+            StubAddress addrStub(*hdrPtr);
+            if ( mChannel.cookie() == addrStub.cookie() )
+                addrStub.set_cookie( areg::COOKIE_LOCAL );
+
+            const StubBase * stub = StubBase::find_stub(addrStub);
+            if ( stub == nullptr )
+                return false;
+
+            const Channel chTarget(stub->address().channel());
+            const Channel chSource(mChannel.source(), chTarget.source(), src.source());
+
+            Event evt(src);  // O(1) shared-ptr copy; eventId already correct from sender
+            areg::EventHeader * hdr = evt.header();
+            ASSERT(hdr != nullptr);
+            // Encode target channel: routes event to stub's local thread
+            hdr->target          = chTarget.cookie();
+            hdr->channel         = chTarget.target();
+            hdr->provider.id     = chTarget.cookie();
+            hdr->provider.thread = chTarget.source();
+            // Encode source channel: response routing key back through RouterClient
+            hdr->source          = chSource.target();
+            hdr->consumer.id     = chSource.cookie();
+            hdr->consumer.thread = chSource.source();
+
+            evt.register_for_thread(&stub->component_thread());
+            evt.deliver_event();
+            return true;
+        }
+
+    case areg::EventType::EventRemoteResponse:
+        {
+            ProxyAddress addrProxy(*hdrPtr);
+            if ( mChannel.cookie() == addrProxy.cookie() )
+                addrProxy.set_cookie( areg::COOKIE_LOCAL );
+
+            const std::shared_ptr<ProxyBase> proxy = ProxyBase::find_proxy(addrProxy);
+            if ( !proxy )
+                return false;
+
+            const Channel chTarget(proxy->proxy_address().channel());
+
+            Event evt(src);
+            areg::EventHeader * hdr = evt.header();
+            ASSERT(hdr != nullptr);
+            // Encode target channel: routes response to proxy's local thread
+            hdr->target          = chTarget.cookie();
+            hdr->channel         = chTarget.target();
+            hdr->consumer.id     = chTarget.cookie();
+            hdr->consumer.thread = chTarget.source();
+
+            evt.register_for_thread(&proxy->proxy_dispatcher_thread());
+            evt.deliver_event();
+            return true;
+        }
+
+    case areg::EventType::EventRemoteProviderConnect:   // fall through
+    case areg::EventType::EventRemoteConsumerConnect:
+        return true;    // handled by service_connection_event, not the executable path
+
+    default:
+        return false;
     }
 }
 

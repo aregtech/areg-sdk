@@ -99,6 +99,9 @@ enum class EventType : uint32_t
     , EventLocalConsumerConnect = 12326 /*0x3026*/  //!< Local Proxy Connection.        Bit set: 0011 0000 0010 0110 -> (EventExternalMask | EventLocalMask  | EventToConsumerMask | EventNotifyMask | EventConnectMask)
     , EventRemoteConsumerConnect= 12330 /*0x302A*/  //!< Remote Proxy Connection.       Bit set: 0011 0000 0010 1010 -> (EventExternalMask | EventRemoteMask | EventToConsumerMask | EventNotifyMask | EventConnectMask)
 
+    , EventLocalConnection      = 12406 /*0x3076*/  //!< Local Proxy Connection.        Bit set: 0011 0000 0111 0110 -> (EventExternalMask | EventLocalMask  | EventToConsumerMask | EventToProviderMask | EventToServiceMask | EventNotifyMask | EventConnectMask)
+    , EventRemoteConnection     = 12410 /*0x307A*/  //!< Remote Proxy Connection.       Bit set: 0011 0000 0111 1010 -> (EventExternalMask | EventRemoteMask | EventToConsumerMask | EventToProviderMask | EventToServiceMask | EventNotifyMask | EventConnectMask)
+
     , EventCustomInternal       = 16389 /*0x4005*/  //!< Custom Notification.           Bit set: 0100 0000 0000 0101 -> (EventInternalMask | EventLocalMask  | EventCustomMask)
     , EventCustomExternal       = 16390 /*0x4006*/  //!< Custom Thread event.           Bit set: 0100 0000 0000 0110 -> (EventExternalMask | EventLocalMask  | EventCustomMask)
 

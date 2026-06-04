@@ -38,7 +38,6 @@ namespace {
         addr.to_endpoint(hdr.rawService, hdr.provider);
         hdr.callType   = static_cast<uint8_t>(reqType);
         hdr.result     = static_cast<uint32_t>(reason);
-        hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
         out.init_envelope(hdr);
     }
 
@@ -52,7 +51,6 @@ namespace {
         addr.to_endpoint(hdr.rawService, hdr.consumer);
         hdr.callType   = static_cast<uint8_t>(reqType);
         hdr.result     = static_cast<uint32_t>(reason);
-        hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
         out.init_envelope(hdr);
     }
 
@@ -66,7 +64,6 @@ namespace {
         addr.to_endpoint(hdr.rawService, hdr.provider);
         hdr.callType   = static_cast<uint8_t>(reqType);
         hdr.result     = static_cast<uint32_t>(reason);
-        hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
         out.init_envelope(hdr);
     }
 
@@ -80,7 +77,6 @@ namespace {
         addr.to_endpoint(hdr.rawService, hdr.consumer);
         hdr.callType   = static_cast<uint8_t>(reqType);
         hdr.result     = static_cast<uint32_t>(reason);
-        hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
         out.init_envelope(hdr);
     }
 
@@ -241,13 +237,12 @@ AREG_API_IMPL areg::EventEnvelope areg::client_unregistered_event(const ProxyAdd
 
 AREG_API_IMPL areg::EventEnvelope areg::create_connect_request(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource)
 {
-    areg::EventEnvelope msgHelloServer;
     static constexpr areg::EventHeader HDR{ areg::message_hello_server() };
+    areg::EventEnvelope msgHelloServer;
     areg::EventHeader hdr{ HDR };
     hdr.target    = static_cast<uint32_t>(target);
     hdr.source    = static_cast<uint32_t>(areg::SOURCE_UNKNOWN);
-    hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
-    if (msgHelloServer.init_envelope(hdr) != nullptr)
+    if (msgHelloServer.init_envelope(hdr, sizeof(areg::ConnectedInstance)) != nullptr)
     {
         areg::ConnectedInstance instance{ };
         instance.ciSource   = msgSource;
@@ -265,13 +260,12 @@ AREG_API_IMPL areg::EventEnvelope areg::create_connect_request(const ITEM_ID & s
 
 AREG_API_IMPL areg::EventEnvelope areg::create_disconnect_request(const ITEM_ID & source, const ITEM_ID & target)
 {
-    areg::EventEnvelope msgByeServer;
     static constexpr areg::EventHeader HDR{ areg::message_bye_server() };
+    areg::EventEnvelope msgByeServer;
     areg::EventHeader hdr{ HDR };
     hdr.target    = static_cast<uint32_t>(target);
     hdr.source    = static_cast<uint32_t>(source);
-    hdr.sequenceNr = areg::SEQUENCE_NUMBER_ANY;
-    if (msgByeServer.init_envelope(hdr) != nullptr)
+    if (msgByeServer.init_envelope(hdr, sizeof(ITEM_ID)) != nullptr)
     {
         msgByeServer << source;
     }
@@ -281,13 +275,12 @@ AREG_API_IMPL areg::EventEnvelope areg::create_disconnect_request(const ITEM_ID 
 
 AREG_API_IMPL areg::EventEnvelope areg::create_connect_notify( const ITEM_ID & source, const ITEM_ID & target )
 {
-    areg::EventEnvelope msgNotifyConnect;
     static constexpr areg::EventHeader HDR{ areg::notify_client_connection() };
+    areg::EventEnvelope msgNotifyConnect;
     areg::EventHeader hdr{ HDR };
     hdr.source    = static_cast<uint32_t>(source);
     hdr.target    = static_cast<uint32_t>(target);
-    hdr.sequenceNr = areg::SEQUENCE_NUMBER_ANY;
-    if (msgNotifyConnect.init_envelope(hdr) != nullptr)
+    if (msgNotifyConnect.init_envelope(hdr, sizeof(ITEM_ID) + sizeof(areg::ServiceConnectionState)) != nullptr)
     {
         msgNotifyConnect << target;
         msgNotifyConnect << areg::ServiceConnectionState::Connected;
@@ -298,13 +291,12 @@ AREG_API_IMPL areg::EventEnvelope areg::create_connect_notify( const ITEM_ID & s
 
 AREG_API_IMPL areg::EventEnvelope areg::create_disconnect_notify(const ITEM_ID & source, const ITEM_ID & target)
 {
-    areg::EventEnvelope msgNotifyDisconnect;
     static constexpr areg::EventHeader HDR{ areg::notify_client_connection() };
+    areg::EventEnvelope msgNotifyDisconnect;
     areg::EventHeader hdr{ HDR };
     hdr.source    = static_cast<uint32_t>(source);
     hdr.target    = static_cast<uint32_t>(target);
-    hdr.sequenceNr = areg::SEQUENCE_NUMBER_ANY;
-    if (msgNotifyDisconnect.init_envelope(hdr) != nullptr)
+    if (msgNotifyDisconnect.init_envelope(hdr, sizeof(ITEM_ID) + sizeof(areg::ServiceConnectionState)) != nullptr)
     {
         msgNotifyDisconnect << target;
         msgNotifyDisconnect << areg::ServiceConnectionState::Disconnected;
@@ -315,13 +307,12 @@ AREG_API_IMPL areg::EventEnvelope areg::create_disconnect_notify(const ITEM_ID &
 
 AREG_API_IMPL areg::EventEnvelope areg::create_reject_notify(const ITEM_ID & source, const ITEM_ID & target)
 {
-    areg::EventEnvelope msgNotifyReject;
     static constexpr areg::EventHeader HDR{ areg::notify_client_connection() };
+    areg::EventEnvelope msgNotifyReject;
     areg::EventHeader hdr{ HDR };
     hdr.source    = static_cast<uint32_t>(source);
     hdr.target    = static_cast<uint32_t>(target);
-    hdr.sequenceNr = areg::SEQUENCE_NUMBER_ANY;
-    if (msgNotifyReject.init_envelope(hdr) != nullptr)
+    if (msgNotifyReject.init_envelope(hdr, sizeof(ITEM_ID) + sizeof(areg::ServiceConnectionState)) != nullptr)
     {
         msgNotifyReject << target;
         msgNotifyReject << areg::ServiceConnectionState::Rejected;

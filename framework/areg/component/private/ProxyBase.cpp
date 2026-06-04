@@ -287,9 +287,11 @@ void ProxyBase::service_connection_updated( const StubAddress & server, const Ch
                 , StubAddress::to_path(server).as_string());
  
     // Local: channel.target = stub's thread CRC32 = server.source(). Must match when connected.
-    // IPC: channel.target = RouterClient CRC32; cookie != COOKIE_LOCAL distinguishes this case.
+    // IPC: server.is_local_address() is false; server.source() reconstructed from the event header
+    // carries the remote stub's thread CRC32 (not the RouterClient CRC32 stamped by RouterClient::set_source),
+    // so the target-vs-source equality check does not apply.
     ASSERT(channel.target() == server.source()
-        || channel.cookie() != areg::COOKIE_LOCAL
+        || !server.is_local_address()
         || status != areg::ServiceConnectionState::Connected);
     mProxyAddress.set_channel(channel);
     set_connection_status( status );
@@ -576,11 +578,6 @@ void ProxyBase::process_available_event( NotificationConsumer & consumer, uint32
 
         static_cast<ProxyListener&>(consumer).service_connected(connection_status(), self());
     }
-}
-
-RemoteResponseEvent ProxyBase::create_remote_response( const EventEnvelope & envelope ) const
-{
-    return RemoteResponseEvent( envelope );
 }
 
 RemoteResponseEvent ProxyBase::create_request_failed( const ProxyAddress &  /* addrProxy */

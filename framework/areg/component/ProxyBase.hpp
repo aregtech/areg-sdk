@@ -646,16 +646,6 @@ protected:
     virtual ServiceRequestEvent create_notification_request( uint32_t msgId, areg::RequestType reqType ) = 0;
 
     /**
-     * \brief   Creates a response event from a received envelope (IPC receive path). Shares buffer (O(1)).
-     *          Default wraps the envelope in a RemoteResponseEvent.
-     *
-     * \param   envelope    The received event envelope with header and serialized payload.
-     * \return  A RemoteResponseEvent value; check is_valid() before use.
-     **/
-    [[nodiscard]]
-    virtual RemoteResponseEvent create_remote_response( const areg::EventEnvelope & envelope ) const;
-
-    /**
      * \brief   Creates an error response event when a remote request fails to reach the target.
      *          Base returns an invalid RemoteResponseEvent. Override in generated proxies.
      *

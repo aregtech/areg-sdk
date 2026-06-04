@@ -36,6 +36,7 @@ namespace {
         areg::EventHeader hdr{};
         hdr.checksum   = areg::CHECKSUM_INVALID;
         hdr.target     = static_cast<uint32_t>(areg::COOKIE_LOGGER);
+        hdr.eventType  = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
         hdr.result     = areg::MESSAGE_SUCCESS;
         hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
         return hdr;
@@ -47,6 +48,7 @@ namespace {
         hdr.checksum   = areg::CHECKSUM_INVALID;
         hdr.target     = static_cast<uint32_t>(areg::COOKIE_LOGGER);
         hdr.messageId  = static_cast<uint32_t>(areg::FuncIdRange::ServiceLogMessage);
+        hdr.eventType  = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
         hdr.result     = areg::MESSAGE_SUCCESS;
         hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
         return hdr;

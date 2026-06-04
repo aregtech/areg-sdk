@@ -36,7 +36,7 @@ ServiceStub::ServiceStub( areg::StubAddress && addrStub ) noexcept
 }
 
 ServiceStub::ServiceStub( const areg::ProxyAddress & addrProxy )
-    : mStubAddress  ( static_cast<const areg::ServiceItem &>(addrProxy), addrProxy.role_name(), "" )
+    : mStubAddress  ( static_cast<const areg::ServiceAddress&>(addrProxy), areg::CHECKSUM_IGNORE )
     , mConnectStatus( addrProxy.is_valid() ? areg::ServiceConnectionState::Pending : areg::ServiceConnectionState::Unknown )
 {
 }

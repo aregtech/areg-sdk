@@ -352,7 +352,7 @@ public:
     /**
      * \brief   Marks the communication channel as invalid.
      **/
-    inline void invalidate_channel() noexcept;
+    inline void invalidate_channel() noexcept { mChannel.invalidate(); }
 
     /**
      * \brief   Returns true if the specified proxy address is compatible with this stub.

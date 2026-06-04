@@ -61,6 +61,7 @@ void ClientSendThread::start_event_processing( Event & eventElem )
     hdr0->internal1 = 0u;
     hdr0->internal2 = 0u;
     hdr0->custom    = 0u;
+    eventElem.envelope().buffer_completion_fix(); // compute checksum now; zeroed fields are not covered by checksum
 
     areg::IoBuffer  ioBuffer[areg::THREAD_DRAIN_LIMIT];
     uint32_t batchCount{ 0u };
@@ -68,7 +69,7 @@ void ClientSendThread::start_event_processing( Event & eventElem )
     uint32_t bufCount  { 0u };
 
     {
-        const uint32_t wireSize{ sizeof(areg::EventHeader) + hdr0->bufHeader.biUsed };
+        const uint32_t wireSize{ static_cast<uint32_t>(sizeof(areg::EventHeader)) + hdr0->bufHeader.biUsed };
         ioBuffer[bufCount++] = { reinterpret_cast<const uint8_t*>(hdr0), wireSize };
         totalSize += wireSize;
         ++batchCount;
@@ -100,12 +101,13 @@ void ClientSendThread::start_event_processing( Event & eventElem )
         hdr->internal1 = 0u;
         hdr->internal2 = 0u;
         hdr->custom    = 0u;
+        evt.envelope().buffer_completion_fix(); // compute checksum now; zeroed fields are not covered by checksum
 
-        const uint32_t wireSize{ sizeof(areg::EventHeader) + hdr->bufHeader.biUsed };
+        const uint32_t wireSize{ static_cast<uint32_t>(sizeof(areg::EventHeader)) + hdr->bufHeader.biUsed };
         ioBuffer[bufCount++] = { reinterpret_cast<const uint8_t*>(hdr), wireSize };
         totalSize += wireSize;
 
-        ptrs[evtCount++] = std::move(evt);
+        ptrs[evtCount++] = std::move(evt); // buffer stays alive in ptrs[]; raw pointer hdr remains valid
     }
 
     // Phase 2: send collected batch as a single writev/scatter-gather call.

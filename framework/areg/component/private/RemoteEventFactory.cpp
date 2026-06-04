@@ -18,144 +18,14 @@
 #include "areg/base/EventEnvelope.hpp"
 #include "areg/component/RequestEvents.hpp"
 #include "areg/component/ResponseEvents.hpp"
-#include "areg/base/Process.hpp"
-#include "areg/base/Thread.hpp"
 #include "areg/component/Channel.hpp"
-#include "areg/component/ComponentThread.hpp"
-#include "areg/component/DispatcherThread.hpp"
 #include "areg/component/ProxyBase.hpp"
-#include "areg/component/StubBase.hpp"
-#include "areg/component/private/ProxyConnectEvent.hpp"
-#include "areg/component/private/StubConnectEvent.hpp"
+#include "areg/component/ProxyAddress.hpp"
 
 #include "areg/logging/areg_log.h"
 namespace areg {
-DEBUG_DEF_LOG_SCOPE(areg_component_RemoteEventFactory, event_from_stream);
 DEBUG_DEF_LOG_SCOPE(areg_component_RemoteEventFactory, stream_from_event);
 DEBUG_DEF_LOG_SCOPE(areg_component_RemoteEventFactory, request_failed_event);
-
-Event RemoteEventFactory::event_from_stream( const EventEnvelope & stream, const Channel & comChannel )
-{
-    DEBUG_LOG_SCOPE( areg_component_RemoteEventFactory, event_from_stream);
-
-    Event result;
-
-    areg::EventHeader hdr{ };
-    stream.read(reinterpret_cast<uint8_t*>(&hdr), sizeof(areg::EventHeader));
-    const areg::EventType eventType{ static_cast<areg::EventType>(hdr.eventType) };
-
-    DEBUG_LOG_DBG("Going to create event [ %s ] from remote message object", areg::as_string(eventType));
-
-    switch ( eventType )
-    {
-    case areg::EventType::EventRemoteRequest:
-        {
-            StubAddress addrStub(hdr);
-            if ( comChannel.cookie() == addrStub.cookie() )
-                addrStub.set_cookie( areg::COOKIE_LOCAL );
-
-            const StubBase * stub = StubBase::find_stub(addrStub);
-            if ( stub != nullptr )
-            {
-                Channel chTarget(stub->address().channel());
-                Channel chSource(comChannel.source(), chTarget.source(), stream.source());
-                RemoteRequestEvent evtRequest = stub->create_remote_request(stream);
-                if ( evtRequest.is_valid() )
-                {
-                    evtRequest.set_target_channel(chTarget);
-                    evtRequest.set_source_channel(chSource);
-                    evtRequest.register_for_thread(&stub->component_thread());
-
-                    DEBUG_LOG_DBG("Created areg::EventType::EventRemoteRequest for target stub [ %s ] from source proxy [ %s ]."
-                                    , StubAddress::to_path(stub->address()).as_string()
-                                    , ProxyAddress::to_path(evtRequest.event_source()).as_string());
-                    result = evtRequest;
-                }
-            }
-        }
-        break;
-
-    case areg::EventType::EventRemoteNotifyRequest:
-        {
-            StubAddress addrStub(hdr);
-            if ( comChannel.cookie() == addrStub.cookie() )
-                addrStub.set_cookie( areg::COOKIE_LOCAL );
-
-            const StubBase * stub = StubBase::find_stub(addrStub);
-            if ( stub != nullptr )
-            {
-                Channel chTarget(stub->address().channel());
-                Channel chSource(comChannel.source(), chTarget.source(), stream.source());
-                RemoteNotifyRequestEvent evtNotify = stub->create_notify_request(stream);
-                if ( evtNotify.is_valid() )
-                {
-                    evtNotify.set_target_channel(chTarget);
-                    evtNotify.set_source_channel(chSource);
-                    evtNotify.register_for_thread(&stub->component_thread());
-
-                    DEBUG_LOG_DBG("Created areg::EventType::EventRemoteNotifyRequest for target stub [ %s ] from source proxy [ %s ]."
-                                    , StubAddress::to_path(stub->address()).as_string()
-                                    , ProxyAddress::to_path(evtNotify.event_source()).as_string());
-                    result = evtNotify;
-                }
-            }
-        }
-        break;
-
-    case areg::EventType::EventRemoteResponse:
-        {
-            ProxyAddress addrProxy(hdr);
-            if ( comChannel.cookie() == addrProxy.cookie() )
-                addrProxy.set_cookie( areg::COOKIE_LOCAL );
-
-            std::shared_ptr<ProxyBase> proxy = ProxyBase::find_proxy(addrProxy);
-            if ( proxy != nullptr )
-            {
-                Channel chTarget(proxy->proxy_address().channel());
-                RemoteResponseEvent evtResponse = proxy->create_remote_response(stream);
-                if ( evtResponse.is_valid() )
-                {
-                    evtResponse.set_target_channel(chTarget);
-                    evtResponse.register_for_thread(&proxy->proxy_dispatcher_thread());
-
-                    DEBUG_LOG_DBG("Created areg::EventType::EventRemoteResponse for target proxy [ %s ]."
-                                    , ProxyAddress::to_path(addrProxy).as_string());
-                    result = evtResponse;
-                }
-            }
-        }
-        break;
-
-    case areg::EventType::EventRemoteProviderConnect: // fall through
-    case areg::EventType::EventRemoteConsumerConnect:
-        break;
-
-    case areg::EventType::EventLocalProviderConnect:  // fall through
-    case areg::EventType::EventLocalConsumerConnect:  // fall through
-    case areg::EventType::EventLocalRequest:          // fall through
-    case areg::EventType::EventLocalNotifyRequest:    // fall through
-    case areg::EventType::EventLocalResponse:
-        ASSERT(false);  // unexpected streaming for remote events
-        break;
-
-    case areg::EventType::EventUnknown:
-        break;
-
-    case areg::EventType::EventCustomInternal:        // fall through
-    case areg::EventType::EventCustomExternal:        // fall through
-    case areg::EventType::EventNotifyClient:
-        ASSERT(false);  // unexpected for remote event
-        break;
-
-    default:
-        DEBUG_LOG_ERR("Unexpected event value [ %d ]", static_cast<int32_t>(eventType));
-        ASSERT(false);  // unsupported remote streaming events
-        break;
-    }
-
-    ASSERT(!result.is_valid() || (static_cast<areg::EventType>(result.event_type()) == eventType));
-    return result;
-}
 
 bool RemoteEventFactory::stream_from_event( EventEnvelope & stream, const Event & eventStreamable, const Channel & comChannel )
 {
@@ -205,7 +75,7 @@ bool RemoteEventFactory::stream_from_event( EventEnvelope & stream, const Event 
                 stream.set_source( comChannel.cookie() );
                 stream.set_target( respEvent.target_cookie() );
                 stream.set_message_id( respEvent.response_id() );
-                stream.set_result( areg::MESSAGE_SUCCESS );
+                // result field carries ResultType (RequestOK, DataOK, etc.) — preserve it from the copy.
                 stream.set_sequence( respEvent.sequence_number() );
             }
         }
@@ -246,66 +116,35 @@ Event RemoteEventFactory::request_failed_event( const EventEnvelope & stream, co
 {
     DEBUG_LOG_SCOPE( areg_component_RemoteEventFactory, request_failed_event);
 
-    Event result;
-    areg::EventHeader hdr{ };
-    stream.read(reinterpret_cast<uint8_t*>(&hdr), sizeof(areg::EventHeader));
-    const areg::EventType eventType{ static_cast<areg::EventType>(hdr.eventType) };
+    const areg::EventHeader* hdr = stream.header();
+    if (hdr == nullptr)
+        return Event{};
+
+    const areg::EventType eventType{ static_cast<areg::EventType>(hdr->eventType) };
 
     DEBUG_LOG_DBG("Creating request failed event of type [ %s ] from remote message stream", areg::as_string(eventType));
 
     switch ( eventType )
     {
-    case areg::EventType::EventRemoteRequest:
-        {
-            stream.move_to_begin();
-            RemoteRequestEvent evtRequest(stream);
-            result = ProxyBase::request_failure_event( evtRequest.event_source()
-                                                     , evtRequest.request_id()
-                                                     , areg::ResultType::MessageUndelivered
-                                                     , evtRequest.sequence_number() );
-        }
-        break;
-
+    case areg::EventType::EventRemoteRequest:       // fall through
     case areg::EventType::EventRemoteNotifyRequest:
-        {
-            stream.move_to_begin();
-            RemoteNotifyRequestEvent evtNotify(stream);
-            result = ProxyBase::request_failure_event( evtNotify.event_source()
-                                                     , evtNotify.request_id()
-                                                     , areg::ResultType::MessageUndelivered
-                                                     , evtNotify.sequence_number() );
-        }
-        break;
+        return ProxyBase::request_failure_event( ProxyAddress(*hdr)
+                                               , hdr->messageId
+                                               , areg::ResultType::MessageUndelivered
+                                               , hdr->sequenceNr );
 
-    case areg::EventType::EventRemoteResponse:
-        break;  // not required
-
-    case areg::EventType::EventRemoteProviderConnect:   // fall through
+    case areg::EventType::EventRemoteResponse:      // fall through
+    case areg::EventType::EventRemoteProviderConnect:// fall through
     case areg::EventType::EventRemoteConsumerConnect:
-        break;
-
-    case areg::EventType::EventLocalRequest:            // fall through
-    case areg::EventType::EventLocalNotifyRequest:      // fall through
-    case areg::EventType::EventLocalResponse:           // fall through
-    case areg::EventType::EventLocalProviderConnect:    // fall through
-    case areg::EventType::EventLocalConsumerConnect:
-        ASSERT(false);
-        break;
-
-    case areg::EventType::EventCustomInternal:          // fall through
-    case areg::EventType::EventCustomExternal:          // fall through
-    case areg::EventType::EventNotifyClient:            // fall through
-    case areg::EventType::EventUnknown:
-        ASSERT(false);  // unexpected for remote event
         break;
 
     default:
         DEBUG_LOG_ERR("Unexpected event value [ %d ]", static_cast<int32_t>(eventType));
-        ASSERT(false);  // unsupported remote streaming events
+        ASSERT(false);
         break;
     }
 
-    return result;
+    return Event{};
 }
 
 } // namespace areg

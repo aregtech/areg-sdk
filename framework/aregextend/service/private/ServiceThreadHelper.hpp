@@ -102,6 +102,7 @@ inline void send_pending_groups( areg::ext::PendingSend * batch
             // PendingSend::msg is the wire-ready IPC envelope; header + payload sent verbatim.
             // internal1/internal2/custom were zeroed by the send thread before storage here.
             const areg::EventEnvelope & env{ batch[i + k].msg };
+            env.buffer_completion_fix(); // compute checksum if still CHECKSUM_INVALID (e.g. connect/register messages)
             const areg::EventHeader* ipcHdr{ env.header() };
             if (ipcHdr == nullptr)
                 continue;

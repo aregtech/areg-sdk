@@ -291,7 +291,7 @@ void ServiceClientConnectionBase::on_connection_started()
         LOG_DBG("Succeeded to start router service client, cookie [ %llu ]", mClientConnection.cookie());
 
         mChannel.set_cookie( mClientConnection.cookie() );
-        mChannel.set_source( static_cast<uint32_t>(mMessageDispatcher.id()) );
+        mChannel.set_source( mMessageDispatcher.number() );
         mChannel.set_target( mTarget );
         set_connection_state(ConnectionPhase::ConnectionStarted);
         mConnectionConsumer.on_service_channel_connected(mChannel);
@@ -374,9 +374,9 @@ void ServiceClientConnectionBase::on_channel_connected(const ITEM_ID& cookie)
     }
 
     mChannel.set_cookie(cookie);
-    mChannel.set_source( static_cast<uint32_t>(mMessageDispatcher.id()) );
+    mChannel.set_source( mMessageDispatcher.number() );
     mChannel.set_target(mTarget);
-    LOG_DBG("Connected remote channel [ source = %llu, target = %llu, cookie = %llu ]", mChannel.source(), mChannel.target(), mChannel.cookie());
+    LOG_DBG("Connected remote channel [ source = %u, target = %u, cookie = %u ]", mChannel.source(), mChannel.target(), mChannel.cookie());
 }
 
 bool ServiceClientConnectionBase::start_connection()
@@ -404,9 +404,9 @@ bool ServiceClientConnectionBase::start_connection()
 
     if (!result)
     {
-        LOG_WARN("Client service failed to start connection, going to repeat connection in [ %u ] ms on thread [ %llu : %s ] "
+        LOG_WARN("Client service failed to start connection, going to repeat connection in [ %u ] ms on thread [ %u : %s ] "
                 , areg::DEFAULT_RETRY_CONNECT_TIMEOUT
-                , static_cast<uint64_t>(mMessageDispatcher.id())
+                , mMessageDispatcher.number()
                 , mMessageDispatcher.name().as_string());
 
         mThreadSend.shutdown( areg::DO_NOT_WAIT );

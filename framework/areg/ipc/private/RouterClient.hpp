@@ -269,10 +269,16 @@ private:
     inline RouterClient & self() noexcept;
 
     /**
-     * \brief   Call to send the executable message to process. It triggers event with command ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg
+     * \brief   Routes a received wire envelope to the correct local stub or proxy.
+     *          Sets up IPC routing channels in the event header and delivers.
+     *          Returns false when the target stub/proxy is not found.
      *
-     * \param   msg     The message to forward.
-     * \return  Returns true if succeeded to send the command.
+     * \param   src     Received wire envelope (EventHeader + payload in-place).
+     **/
+    bool _route_incoming_event(const EventEnvelope & src);
+
+    /**
+     * \brief   Wraps the received envelope in a ServiceClientEvent for thread-safe processing.
      **/
     inline void forward_executable_message(const EventEnvelope & msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
     inline void forward_executable_message(EventEnvelope&& msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio);
@@ -326,12 +332,7 @@ inline const areg::Channel& RouterClient::connection_channel() const noexcept
 inline void RouterClient::on_message_received(const EventEnvelope& msgReceived)
 {
     ASSERT(areg::is_executable_id(static_cast<uint32_t>(msgReceived.message_id())));
-    Event evtRemote = RemoteEventFactory::event_from_stream(msgReceived, mChannel);
-    if (evtRemote.is_valid())
-    {
-        evtRemote.deliver_event();
-    }
-    else
+    if (!_route_incoming_event(msgReceived))
     {
         failed_process_message(msgReceived);
     }

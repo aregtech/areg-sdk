@@ -142,19 +142,6 @@ public:
     EventEnvelope& operator = (EventEnvelope&& src) noexcept = default;
 
     /**
-     * \brief   Reads an EventEnvelope from an InStream: reads the header first,
-     *          then the payload.
-     **/
-    friend inline const InStream& operator >> (const InStream& stream, EventEnvelope& input);
-
-    /**
-     * \brief   Writes an EventEnvelope to an OutStream: writes the header first,
-     *          then the payload. The internal1, internal2, and custom fields are
-     *          zeroed on the wire — they are LOCAL-ONLY and must never be transmitted.
-     **/
-    friend inline OutStream& operator << (OutStream& stream, const EventEnvelope& output);
-
-    /**
      * \brief   Copy-serialises src into the EventEnvelope payload.
      *          Appends src.size_used() raw bytes to the envelope's current write
      *          position. No length prefix is written. The envelope owns its own
@@ -1208,58 +1195,6 @@ inline const EventEnvelope& operator >> (const EventEnvelope& env, SharedBuffer&
     }
 
     return env;
-}
-
-/************************************************************************/
-// Friend streaming operators
-/************************************************************************/
-
-inline const InStream& operator >> (const InStream& stream, EventEnvelope& input)
-{
-    if (static_cast<const InStream*>(&stream) == static_cast<const InStream*>(&input))
-        return stream;
-
-    areg::EventHeader evtHdr{ };
-    if (stream.read(reinterpret_cast<uint8_t*>(&evtHdr), sizeof(areg::EventHeader)) != sizeof(areg::EventHeader))
-        return stream;
-
-    evtHdr.internal1 = 0u;
-    evtHdr.internal2 = 0u;
-    evtHdr.custom    = 0u;
-
-    uint8_t* dst{ input.init_envelope(evtHdr) };
-    if (dst != nullptr)
-    {
-        uint32_t read{ stream.read(dst, evtHdr.bufHeader.biUsed) };
-        input.set_size_used(read);
-        input.move_to_begin();
-    }
-
-    return stream;
-}
-
-inline OutStream& operator << (OutStream& stream, const EventEnvelope& output)
-{
-    if (static_cast<const OutStream*>(&stream) == static_cast<const OutStream*>(&output))
-        return stream;
-
-    const areg::RawEnvelope* env{ reinterpret_cast<const areg::RawEnvelope*>(output.mByteBuffer.get()) };
-    if (env != nullptr)
-    {
-        areg::EventHeader wireHdr{ env->envHeader };
-        wireHdr.internal1 = 0u;  // LOCAL-ONLY: never transmit DispatcherThread*
-        wireHdr.internal2 = 0u;  // LOCAL-ONLY: never transmit EventConsumer*
-        wireHdr.custom    = 0u;  // LOCAL-ONLY: never transmit DATA_CLASS cleanup hook
-        stream.write(reinterpret_cast<const uint8_t*>(&wireHdr), sizeof(areg::EventHeader));
-        stream.write(env->envData, env->envHeader.bufHeader.biUsed);
-    }
-    else
-    {
-        areg::EventHeader hdr{ };
-        stream.write(reinterpret_cast<const uint8_t*>(&hdr), sizeof(areg::EventHeader));
-    }
-
-    return stream;
 }
 
 } // namespace areg

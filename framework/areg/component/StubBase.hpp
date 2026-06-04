@@ -346,26 +346,6 @@ protected:
     [[nodiscard]]
     virtual ServiceResponseEvent create_response( const areg::ProxyAddress & proxy, uint32_t msgId, areg::ResultType result, const areg::SharedBuffer & data ) const;
 
-    /**
-     * \brief   Creates a request event from a received envelope (IPC receive path). Shares the buffer (O(1)).
-     *          Default implementation wraps the envelope in a RemoteRequestEvent.
-     *
-     * \param   envelope    The received event envelope with header and serialized payload.
-     * \return  A RemoteRequestEvent value; check is_valid() before use.
-     **/
-    [[nodiscard]]
-    virtual RemoteRequestEvent create_remote_request( const areg::EventEnvelope & envelope ) const;
-
-    /**
-     * \brief   Creates a notification request event from a received envelope (IPC receive path).
-     *          Default implementation wraps the envelope in a RemoteNotifyRequestEvent.
-     *
-     * \param   envelope    The received event envelope with header and serialized payload.
-     * \return  A RemoteNotifyRequestEvent value; check is_valid() before use.
-     **/
-    [[nodiscard]]
-    virtual RemoteNotifyRequestEvent create_notify_request( const areg::EventEnvelope & envelope ) const;
-
 /************************************************************************/
 // StubEventConsumer interface overrides.
 /************************************************************************/

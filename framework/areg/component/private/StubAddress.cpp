@@ -225,11 +225,6 @@ bool StubAddress::deliver_service_event( ServiceRequestEvent & serviceEvent ) co
     return false;
 }
 
-void StubAddress::invalidate_channel() noexcept
-{
-    mChannel.invalidate();
-}
-
 String StubAddress::to_string() const
 {
     String result(static_cast<uint32_t>(0xFF));

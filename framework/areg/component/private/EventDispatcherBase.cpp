@@ -90,6 +90,7 @@ void EventDispatcherBase::shutdown_dispatcher() noexcept
 bool EventDispatcherBase::queue_event( Event& eventElem )
 {
     areg::EventType eventType = eventElem.event_type();
+    ASSERT(areg::is_valid(eventType)); // eventType == 0 means event was never properly initialized
     if (mHasStarted.load(std::memory_order_relaxed))
     {
         if (areg::is_external(eventType))

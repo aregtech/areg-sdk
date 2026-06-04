@@ -65,13 +65,6 @@ public:
     explicit ServiceProxy(const areg::StubAddress & addrStub);
 
     /**
-     * \brief   Extracts relevant data from given Stub address and initializes Proxy service object.
-     *
-     * \param   addrStub    The Stub address to extract information.
-     **/
-    explicit ServiceProxy(areg::StubAddress && addrStub) noexcept;
-
-    /**
      * \brief   Copies data from given source.
      *
      * \param   serviceProxy    The source object to copy data.

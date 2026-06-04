@@ -666,16 +666,6 @@ ServiceResponseEvent StubBase::create_response( const ProxyAddress &    /* proxy
     return ServiceResponseEvent(EventEnvelope{});  // invalid; derived stubs override to produce real events
 }
 
-RemoteRequestEvent StubBase::create_remote_request( const EventEnvelope & envelope ) const
-{
-    return RemoteRequestEvent( envelope );
-}
-
-RemoteNotifyRequestEvent StubBase::create_notify_request( const EventEnvelope & envelope ) const
-{
-    return RemoteNotifyRequestEvent( envelope );
-}
-
 void StubBase::process_stub_event( StubEvent & /* eventElem */ )
 {
 }
