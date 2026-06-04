@@ -254,7 +254,16 @@ public:
      * \return  Returns a pointer to the stub if found; otherwise nullptr.
      **/
     [[nodiscard]]
-    static StubBase * find_stub(const StubAddress& address) noexcept;
+    static inline StubBase * find_stub(const StubAddress& address) noexcept;
+
+    /**
+     * \brief   Searches for and returns the stub object at the specified unique stub ID.
+     *
+     * \param   stubId  The unique ID of the stub to find.
+     * \return  Returns a pointer to the stub if found; otherwise nullptr.
+     **/
+    [[nodiscard]]
+    static inline StubBase * find_stub( const UniqueNumber stubId ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -628,7 +637,7 @@ private:
      * \brief   Returns the global registry of all stub service implementations in the system.
      **/
     [[nodiscard]]
-    inline static MapProviderResource& map_providers() noexcept;
+    static MapProviderResource& map_providers() noexcept;
 
     /**
      * \brief   Removes one listener matching toRemove from the sub-vector for msgId using
@@ -788,6 +797,16 @@ inline StubBase::Listener& StubBase::Listener::operator = ( StubBase::Listener &
 //////////////////////////////////////////////////////////////////////////
 // StubBase class inline function implementation
 //////////////////////////////////////////////////////////////////////////
+
+inline StubBase* StubBase::find_stub(const StubAddress& address) noexcept
+{
+    return map_providers().find_resource_object(static_cast<uint32_t>(address));
+}
+
+inline StubBase* StubBase::find_stub(const UniqueNumber stubId) noexcept
+{
+    return map_providers().find_resource_object(static_cast<uint32_t>(stubId));
+}
 
 inline StubBase & StubBase::self() noexcept
 {

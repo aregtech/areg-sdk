@@ -82,7 +82,6 @@ ProxyBase::MapThreadProxyList& ProxyBase::thread_proxies() noexcept
     return _threadProxies;
 }
 
-
 std::shared_ptr<ProxyBase> ProxyBase::acquire_proxy( const String & roleName
                                                    , const areg::InterfaceData & serviceIfData
                                                    , ProxyListener & connect
@@ -491,11 +490,6 @@ void ProxyBase::process_generic_event( Event& eventElem )
         if (consumer != nullptr)
             process_available_event(*consumer, delay);
     }
-}
-
-std::shared_ptr<ProxyBase> ProxyBase::find_proxy( const ProxyAddress& proxyAddress )
-{
-    return map_proxies().find_resource_object(static_cast<uint32_t>(proxyAddress));
 }
 
 void ProxyBase::send_request_event( uint32_t reqId, const SharedBuffer& args, NotificationConsumer *caller )

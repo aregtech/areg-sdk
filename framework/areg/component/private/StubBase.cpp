@@ -65,7 +65,7 @@ bool StubBase::Listener::operator == ( const StubBase::Listener & other ) const 
 // StubBase implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline StubBase::MapProviderResource& StubBase::map_providers() noexcept
+StubBase::MapProviderResource& StubBase::map_providers() noexcept
 {
     static StubBase::MapProviderResource   _mapProviders;
     return _mapProviders;
@@ -354,11 +354,6 @@ void StubBase::cancel_current_request() noexcept
 ComponentThread & StubBase::component_thread() const noexcept
 {
     return mComponent.master_thread();
-}
-
-StubBase* StubBase::find_stub( const StubAddress& address ) noexcept
-{
-    return map_providers().find_resource_object(static_cast<uint32_t>(address));
 }
 
 void StubBase::startup_service_interface( Component&  holder )

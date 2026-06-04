@@ -408,7 +408,16 @@ public:
      * \return  Returns a shared pointer to the proxy object if found; otherwise returns nullptr.
      **/
     [[nodiscard]]
-    static std::shared_ptr<ProxyBase> find_proxy( const ProxyAddress & proxyAddress );
+    static inline std::shared_ptr<ProxyBase> find_proxy( const ProxyAddress & proxyAddress );
+
+    /**
+     * \brief   Searches the proxy registry and returns the proxy object at the specified unique proxy number.
+     *
+     * \param   proxyId    The unique ID of the proxy object to find.
+     * \return  Returns a shared pointer to the proxy object if found; otherwise returns nullptr.
+     **/
+    [[nodiscard]]
+    static inline std::shared_ptr<ProxyBase> find_proxy( const UniqueNumber proxyId );
 
     /**
      * \brief   Populates the output list with all proxy objects registered in the specified thread.
@@ -1059,6 +1068,16 @@ inline bool ProxyBase::ServiceAvailableEvent::should_delay_event() const noexcep
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class inline function implementation
 //////////////////////////////////////////////////////////////////////////
+
+inline std::shared_ptr<ProxyBase> ProxyBase::find_proxy(const ProxyAddress& proxyAddress)
+{
+    return map_proxies().find_resource_object(static_cast<uint32_t>(proxyAddress));
+}
+
+inline std::shared_ptr<ProxyBase> ProxyBase::find_proxy(const UniqueNumber proxyId)
+{
+    return map_proxies().find_resource_object(static_cast<uint32_t>(proxyId));
+}
 
 inline void ProxyBase::clear_all_notifications(NotificationConsumer & listener)
 {

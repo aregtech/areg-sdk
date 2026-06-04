@@ -237,9 +237,6 @@
     <ClCompile Include="areg\base\private\EventEnvelope.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\RemoteMessage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\base\private\SyncPrimitives.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -825,9 +822,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\EventEnvelope.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\base\RemoteMessage.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\RuntimeClassID.hpp">

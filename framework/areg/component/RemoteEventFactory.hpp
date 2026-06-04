@@ -53,16 +53,18 @@ class AREG_API RemoteEventFactory
 public:
 
     /**
-     * \brief   Serializes a local remote event into a wire-ready EventEnvelope.
-     *          Sets routing fields (source/target/messageId/sequence) from the event and channel.
-     *          The event must be a remote type; local and custom types trigger ASSERT.
+     * \brief   Stamps the wire routing fields (source/target) on a local remote event in place,
+     *          making it ready for transmission. The event payload already carries the serialized
+     *          data and the message/sequence fields; this only rewrites the process-routing cookies.
      *
-     * \param   wire        Output envelope to fill
-     * \param   src         Source event, must have EventRemote.
-     * \param   comChannel  Communication channel providing the sender's process cookie.
-     * \return  true if serialized; false for unrecognised event type.
+     *          Single in-out parameter by design: the source event and the wire envelope are the
+     *          same RawEnvelope allocation. The event must be a type; local and custom types trigger ASSERT.
+     *
+     * \param[in,ou]    srcWire     In-out remote event; its header is rewritten to wire form.
+     * \param           comChannel  Communication channel providing the sender's process cookie.
+     * \return  true if stamped; false for unrecognised event type or empty buffer.
      **/
-    static bool route_outgoing_message( EventEnvelope & wire, const Event & src, const Channel & comChannel );
+    static bool route_outgoing_message( Event & srcWire, const Channel & comChannel );
 
     /**
      * \brief   Translates an inbound wire envelope and delivers it to the target stub or proxy thread.

@@ -384,7 +384,6 @@ void ServicingComponent::_init_block_list()
 uint32_t ServicingComponent::_build_prebuilt_messages()
 {
     constexpr uint32_t message_id{ static_cast<uint32_t>(LargeData::MessageIDs::MsgId_broadcast_image_block_acquired) };
-    const areg::String message_str(LargeData::as_string(LargeData::MessageIDs::MsgId_broadcast_image_block_acquired));
 
     const uint32_t channels { mOptions.mChannels };
     const uint64_t frame_ns { mOptions.nsPerImage() };
@@ -421,28 +420,19 @@ uint32_t ServicingComponent::_build_prebuilt_messages()
                 {
                     areg::SharedBuffer buf, data;
                     Remote& remote = pool.messages[shift + block_index * channels + ch];
-                    areg::RemoteMessage& message = remote.message;
-                    message.invalidate();
                     entry.set_ids(ch, 0u);
                     buf << entry;
                     data << buf;
 
-                    message << areg::EventType::EventRemoteResponse;
-                    message << proxy;
-                    message << message_id;
-                    message << areg::ResultType::RequestOK;
-                    message << areg::SEQUENCE_NUMBER_NOTIFY;
-                    message << areg::MessageDataType::ResponseData;
-                    // EventDataStream::EventDataKind removed from wire protocol
-                    remote.offset = message.position();
-                    message << data;
-
-                    message.set_source(channel.cookie());
-                    message.set_target(proxy.cookie());
-                    message.set_message_id(message_id);
-                    message.set_result(areg::MESSAGE_SUCCESS);
-                    message.set_sequence(areg::SEQUENCE_NUMBER_NOTIFY);
-                    message.move_to_begin();
+                    // Pre-build the wire envelope exactly as a normal broadcast would: create the
+                    // response event (sets consumer endpoint, message id, class id), then stamp the
+                    // wire routing cookies (source = this process, target = proxy). The payload is a
+                    // raw copy of `data`, i.e. [uint32 length][serialized ImageBlock]; the patchable
+                    // RawImageBlock starts right after the length prefix.
+                    areg::ServiceResponseEvent respEvent{ create_response(proxy, message_id, areg::ResultType::RequestOK, data) };
+                    areg::RemoteEventFactory::route_outgoing_message(respEvent, channel);
+                    remote.message = respEvent.envelope();
+                    remote.offset  = static_cast<uint32_t>(sizeof(uint32_t));
                 }
 
                 ASSERT(index == shift + (block_index + 1) * channels);
@@ -527,7 +517,6 @@ void ServicingComponent::_run_image_thread()
 
         auto send_block_row = [&](uint32_t frame_id, uint32_t block_index)
             {
-                constexpr uint32_t offset{ 2u * sizeof(uint32_t) };
                 const uint32_t generation = frame_id % depth;
                 const uint32_t base_index = (generation * blocks_per_frame + block_index) * channel_count;
 
@@ -536,10 +525,10 @@ void ServicingComponent::_run_image_thread()
                     for (uint32_t ch = 0u; ch < channel_count; ++ch)
                     {
                         Remote& remote = pool.messages[base_index + ch];
-                        areg::RemoteMessage& message = remote.message;
+                        areg::EventEnvelope& message = remote.message;
                         uint8_t* buffer = message.buffer();
                         ASSERT(buffer != nullptr);
-                        RawImageBlock* block = reinterpret_cast<RawImageBlock*>(buffer + offset + remote.offset);
+                        RawImageBlock* block = reinterpret_cast<RawImageBlock*>(buffer + remote.offset);
                         block->frameSeqId = frame_id;
                         statDataSent += areg::send_raw_message(message) ? message.size_used() : 0;
                     }

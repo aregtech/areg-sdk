@@ -257,13 +257,9 @@ void RouterClient::failed_process_message( const EventEnvelope & msgUnprocessed 
 
             msgUnprocessed.move_to_begin();
             Event evtError = RemoteEventFactory::create_request_failed_event(msgUnprocessed, mChannel);
-            if ( evtError.is_valid() )
+            if ( evtError.is_valid() && RemoteEventFactory::route_outgoing_message( evtError, mChannel) )
             {
-                EventEnvelope data;
-                if ( RemoteEventFactory::route_outgoing_message( data, evtError, mChannel) )
-                {
-                    send_message(data);
-                }
+                send_message(evtError.envelope());
             }
         }
         else
@@ -398,16 +394,15 @@ void RouterClient::process_request_event( RemoteRequestEvent & reqEvent)
 
     if ( reqEvent.is_remote() )
     {
-        EventEnvelope data;
-        if ( RemoteEventFactory::route_outgoing_message( data, reqEvent, mChannel) )
+        if ( RemoteEventFactory::route_outgoing_message( reqEvent, mChannel) )
         {
             LOG_DBG("Sending [ %u ] event: remote message [ %u ] from source [ %u ] to target [ %u ]"
                       , reqEvent.event_id()
-                      , data.message_id()
-                      , data.source()
-                      , data.target());
+                      , reqEvent.message_id()
+                      , reqEvent.header()->source
+                      , reqEvent.header()->target);
 
-            send_message(std::move(data));
+            send_message(reqEvent.envelope());
         }
         else
         {
@@ -426,16 +421,15 @@ void RouterClient::process_notify_request( RemoteNotifyRequestEvent & reqNotifyE
 
     if ( reqNotifyEvent.is_remote() )
     {
-        EventEnvelope data;
-        if ( RemoteEventFactory::route_outgoing_message( data, reqNotifyEvent, mChannel) )
+        if ( RemoteEventFactory::route_outgoing_message( reqNotifyEvent, mChannel) )
         {
             LOG_DBG("Send [ %u ] event: remote message [ %u ] from source [ %u ] to target [ %u ]"
                       , reqNotifyEvent.event_id()
-                      , data.message_id()
-                      , data.source()
-                      , data.target());
+                      , reqNotifyEvent.message_id()
+                      , reqNotifyEvent.header()->source
+                      , reqNotifyEvent.header()->target);
 
-            send_message(std::move(data));
+            send_message(reqNotifyEvent.envelope());
         }
         else
         {
@@ -455,16 +449,15 @@ void RouterClient::process_response_event(RemoteResponseEvent & respEvent)
 
     if ( respEvent.is_remote() )
     {
-        EventEnvelope data;
-        if ( RemoteEventFactory::route_outgoing_message( data, respEvent, mChannel) )
+        if ( RemoteEventFactory::route_outgoing_message( respEvent, mChannel) )
         {
             LOG_DBG("Forwarding [ %u ] message [ %u ] from source [ %u ] to target [ %u ]"
                       , respEvent.event_id()
-                      , data.message_id()
-                      , data.source()
-                      , data.target());
+                      , respEvent.message_id()
+                      , respEvent.header()->source
+                      , respEvent.header()->target);
 
-            send_message(std::move(data));
+            send_message(respEvent.envelope());
         }
         else
         {
@@ -483,8 +476,7 @@ bool RouterClient::post_event(Event & eventElem)
     {
         if ( is_connection_started() )
         {
-            EventEnvelope data;
-            return RemoteEventFactory::route_outgoing_message(data, eventElem, mChannel) && send_message(std::move(data));
+            return RemoteEventFactory::route_outgoing_message(eventElem, mChannel) && send_message(eventElem.envelope());
         }
 
         eventElem.set_event_consumer( static_cast<RemoteEventConsumer *>(this) );

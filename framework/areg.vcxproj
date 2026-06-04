@@ -95,7 +95,6 @@
     <ClCompile Include="areg\base\private\Version.cpp" />
     <ClCompile Include="areg\base\private\WriteConverter.cpp" />
     <ClCompile Include="areg\base\private\EventEnvelope.cpp" />
-    <ClCompile Include="areg\base\private\RemoteMessage.cpp" />
     <ClCompile Include="areg\base\private\SocketAccepted.cpp" />
     <ClCompile Include="areg\base\private\ThreadAddress.cpp" />
     <ClCompile Include="areg\base\private\Socket.cpp" />
@@ -355,7 +354,6 @@
     <ClInclude Include="areg\base\Stack.hpp" />
     <ClInclude Include="areg\base\SocketAccepted.hpp" />
     <ClInclude Include="areg\base\EventEnvelope.hpp" />
-    <ClInclude Include="areg\base\RemoteMessage.hpp" />
     <ClInclude Include="areg\base\ThreadAddress.hpp" />
     <ClInclude Include="areg\base\areg_types.h" />
     <ClInclude Include="areg\base\SortedLinkedList.hpp" />
