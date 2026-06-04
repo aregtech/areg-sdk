@@ -542,6 +542,16 @@ public:
      **/
     inline bool send_communication_message(ServiceEventData::ServiceCommand cmd, const areg::EventEnvelope & msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
+    /**
+     * \brief   Posts a received data envelope directly to the dispatcher, bypassing the
+     *          ServiceEventData wrapper
+     *
+     * \param   msg         The received message envelope
+     * \param   eventPrio   Event priority
+     **/
+    inline bool send_received_message(const areg::EventEnvelope & msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio);
+    inline bool send_received_message(areg::EventEnvelope && msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio);
+
 /************************************************************************/
 // DispatcherThread overrides
 /************************************************************************/
@@ -645,6 +655,7 @@ protected:
     StringArray                     mWhiteList;         //!< The list of enabled fixed client hosts.
     StringArray                     mBlackList;         //!< The list of disabled fixes client hosts.
     ServiceServerConsumer           mEventConsumer;     //!< The custom event consumer object
+    areg::RemoteMessageConsumer     mMessageConsumer;   //!< Direct data-message consumer (hot-path optimization)
     ReconnectTimerConsumer          mTimerConsumer;     //!< The timer consumer object.
     areg::MapInstances              mInstanceMap;       //!< The map of connected instance.
     areg::SyncEvent                 mEventSendStop;     //!< The event set when cannot send and receive data anymore.
@@ -736,6 +747,24 @@ inline bool ServiceCommunicationBase::send_communication_message( ServiceEventDa
                                           , static_cast<ServiceServerEventConsumer &>(mEventConsumer)
                                           , static_cast<DispatcherThread &>(self( ))
                                           , eventPrio );
+}
+
+inline bool ServiceCommunicationBase::send_received_message( const areg::EventEnvelope & msg
+                                                           , areg::EventPriority eventPrio /*= areg::EventPriority::HighPrio*/ )
+{
+    areg::EventEnvelope copy{ msg };
+    return send_received_message(std::move(copy), eventPrio);
+}
+
+inline bool ServiceCommunicationBase::send_received_message( areg::EventEnvelope && msg
+                                                           , areg::EventPriority eventPrio /*= areg::EventPriority::HighPrio*/ )
+{
+    areg::Event evt(std::move(msg));
+    evt.set_event_priority(eventPrio);
+    evt.set_event_consumer(static_cast<areg::EventConsumer *>(&mMessageConsumer));
+    evt.set_target_dispatcher(static_cast<areg::DispatcherThread *>(this));
+    evt.deliver_event();
+    return true;
 }
 
 inline DataRateHelper& ServiceCommunicationBase::data_rate_helper() const noexcept

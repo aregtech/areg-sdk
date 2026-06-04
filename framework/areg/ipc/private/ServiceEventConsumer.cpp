@@ -14,6 +14,7 @@
  ************************************************************************/
 
 #include "areg/ipc/ServiceEventConsumer.hpp"
+#include "areg/component/Event.hpp"
 #include "areg/logging/areg_log.h"
 
 
@@ -144,6 +145,16 @@ void ServiceServerConsumer::process_event(const ServiceEventData& data)
         ASSERT(false);
         break;
     }
+}
+
+//////////////////////////////////////////////////////////////////////////
+// RemoteMessageConsumer class implementation
+//////////////////////////////////////////////////////////////////////////
+
+RemoteMessageConsumer::RemoteMessageConsumer(ServiceEventConsumer& eventConsumer)
+    : areg::EventConsumer   ( )
+    , mServiceEventConsumer ( eventConsumer )
+{
 }
 
 } // namespace areg

@@ -84,6 +84,7 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
     , mWhiteList        ( )
     , mBlackList        ( )
     , mEventConsumer    ( self() )
+    , mMessageConsumer  ( self() )
     , mTimerConsumer    ( self() )
     , mInstanceMap      (  )
     , mEventSendStop    ( false, false )
@@ -282,7 +283,7 @@ void ServiceCommunicationBase::connection_lost( SocketAccepted & clientSocket )
         mLostFn(cookie);
         remove_instance(cookie);
         areg::EventEnvelope msgDisconnect{ areg::create_disconnect_request(cookie, channel) };
-        send_communication_message(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgDisconnect, areg::EventPriority::HighPrio);
+        send_received_message(std::move(msgDisconnect), areg::EventPriority::HighPrio);
     }
 
     mServerConnection.close_connection(clientSocket);
@@ -739,7 +740,7 @@ void ServiceCommunicationBase::process_received_message(areg::EventEnvelope & ms
             mServerConnection.close_connection( cookie );
         }
 
-        send_communication_message( ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgReceived, areg::EventPriority::HighPrio );
+        send_received_message( std::move(msgReceived), areg::EventPriority::HighPrio );
     }
     else if ( (source == static_cast<uint32_t>(areg::SOURCE_UNKNOWN)) && (msgId == areg::FuncIdRange::SystemServiceConnect) )
     {

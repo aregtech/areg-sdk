@@ -131,6 +131,23 @@ public:
     bool create_socket();
 
     /**
+     * \brief   Creates a socket file descriptor without connecting. Sets socket buffer sizes and send
+     *          timeout from stored configuration. Use connect_socket() to establish the TCP connection
+     *          from a separate I/O thread.
+     *
+     * \return  Returns true if socket descriptor was created.
+     **/
+    bool create_socket_fd();
+
+    /**
+     * \brief   Blocking TCP connect using the socket FD created by create_socket_fd(). On failure
+     *          the socket is closed and the cookie is reset to COOKIE_UNKNOWN.
+     *
+     * \return  Returns true if connection succeeded.
+     **/
+    inline bool connect_socket();
+
+    /**
      * \brief   Closes the socket and disconnects from remote server.
      **/
     void close_socket();
@@ -291,6 +308,17 @@ inline int32_t ClientConnection::send_messages_batch(const areg::IoBuffer* ioBuf
 inline int32_t ClientConnection::receive_message(EventEnvelope & out_message) const
 {
     return SocketConnectionBase::receive_message(out_message, mClientSocket);
+}
+
+inline bool ClientConnection::connect_socket()
+{
+    if ( !mClientSocket.connect_to() )
+    {
+        set_cookie(areg::COOKIE_UNKNOWN);
+        return false;
+    }
+
+    return true;
 }
 
 inline int32_t ClientConnection::send_message(const EventEnvelope & env) const

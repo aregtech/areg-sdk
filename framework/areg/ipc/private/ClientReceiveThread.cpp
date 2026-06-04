@@ -43,6 +43,23 @@ bool ClientReceiveThread::run_dispatcher()
 
     ready_for_events( true );
 
+    // Blocking TCP connect — runs on this thread, never on the dispatcher.
+    if ( !mConnection.connect_socket() )
+    {
+        LOG_WARN("Client receive thread failed to connect. Notifying handler.");
+        mRemoteService.failed_receive_message( mConnection.socket() );
+        ready_for_events( false );
+        remove_all_events();
+        return false;
+    }
+
+    // Send connect handshake
+    if ( mHandshakeMsg.is_valid() )
+    {
+        mConnection.send_message( mHandshakeMsg );
+        mHandshakeMsg.invalidate();
+    }
+
     SyncEvent* events[2] { &mEventExit, &mEventQueue };
     EventEnvelope msgReceived;
     int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };

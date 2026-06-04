@@ -60,6 +60,7 @@ ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
     , mChannel              ( )
     , mConnectionState      ( ConnectionPhase::ConnectionStopped )
     , mEventConsumer        ( static_cast<ServiceEventConsumer &>(self()) )
+    , mMessageConsumer      ( static_cast<ServiceEventConsumer &>(self()) )
     , mLock                 ( )
 
     , mTimerConnect         ( static_cast<TimerConsumer &>(self()), prefixName + areg::CLIENT_CONNECT_TIMER_NAME, areg::INVALID_TIMEOUT, Timer::IGNORE_TIMER_QUEUE, areg::EventPriority::HighPrio )
@@ -185,7 +186,7 @@ bool ServiceClientConnectionBase::reconnect_service_host()
 
 void ServiceClientConnectionBase::disconnect_service_host()
 {
-    send_command(ServiceEventData::ServiceCommand::CMD_ServiceExit, areg::EventPriority::ExitPrio);
+    send_command(ServiceEventData::ServiceCommand::CMD_ServiceExit, areg::EventPriority::CriticalPrio);
 }
 
 bool ServiceClientConnectionBase::is_host_connected() const
@@ -227,10 +228,9 @@ void ServiceClientConnectionBase::on_service_start()
 {
     LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, on_service_start );
 
-    // If shutdown was already requested, ignore stale start
-    if (connection_state() == ConnectionPhase::ConnectionStopping)
+    if (connection_state() == ConnectionPhase::ConnectionStopping || !Application::is_servicing_ready())
     {
-        LOG_WARN("Ignoring start event: connection is already stopping.");
+        LOG_WARN("Ignoring start event: connection is stopping or application is releasing.");
         return;
     }
 
@@ -390,21 +390,38 @@ bool ServiceClientConnectionBase::start_connection()
 
     mTimerConnect.stop_timer();
 
-    bool result{ mClientConnection.create_socket() &&
-                 mThreadReceive.start(areg::WAIT_INFINITE) &&
+    if ( !mClientConnection.create_socket_fd() )
+    {
+        LOG_WARN("Client service failed to create socket FD, going to repeat in [ %u ] ms on thread [ %u : %s ]"
+                , areg::DEFAULT_RETRY_CONNECT_TIMEOUT
+                , mMessageDispatcher.number()
+                , mMessageDispatcher.name().as_string());
+
+        if (!mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1))
+        {
+            LOG_WARN("Failed to start reconnect timer, retrying connection immediately.");
+            if (Application::is_servicing_ready())
+                send_command(ServiceEventData::ServiceCommand::CMD_StartService);
+        }
+
+        return false;
+    }
+
+    // Store handshake in the receive thread before starting it.
+    mThreadReceive.set_handshake(connect_message(areg::COOKIE_UNKNOWN, mTarget, mMessageSource));
+
+    bool result{ mThreadReceive.start(areg::WAIT_INFINITE) &&
                  mThreadSend.start(areg::WAIT_INFINITE) };
 
     if (result)
     {
         VERIFY( mThreadReceive.wait_start( areg::WAIT_INFINITE ) );
         VERIFY( mThreadSend.wait_start( areg::WAIT_INFINITE ) );
-        LOG_DBG("Client service starting connection with remote routing service.");
-        result = mClientConnection.send_message(connect_message(areg::COOKIE_UNKNOWN, mTarget, mMessageSource));
+        LOG_DBG("Client service threads started; receive thread will connect asynchronously.");
     }
-
-    if (!result)
+    else
     {
-        LOG_WARN("Client service failed to start connection, going to repeat connection in [ %u ] ms on thread [ %u : %s ] "
+        LOG_WARN("Client service failed to start I/O threads, going to repeat in [ %u ] ms on thread [ %u : %s ]"
                 , areg::DEFAULT_RETRY_CONNECT_TIMEOUT
                 , mMessageDispatcher.number()
                 , mMessageDispatcher.name().as_string());
@@ -415,9 +432,8 @@ bool ServiceClientConnectionBase::start_connection()
         if (!mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1))
         {
             LOG_WARN("Failed to start reconnect timer, retrying connection immediately.");
-            // Timer manager not running yet (startup race); post an immediate retry so the
-            // reconnect is not silently lost when init_logging() races Application::setup()
-            send_command(ServiceEventData::ServiceCommand::CMD_StartService);
+            if (Application::is_servicing_ready())
+                send_command(ServiceEventData::ServiceCommand::CMD_StartService);
         }
     }
 

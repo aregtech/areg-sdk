@@ -20,6 +20,7 @@
   ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/base/EventEnvelope.hpp"
+#include "areg/component/EventConsumer.hpp"
 #include "areg/component/TimerConsumer.hpp"
 #include "areg/ipc/ServiceEvent.hpp"
 
@@ -266,6 +267,56 @@ private:
     ServiceServerConsumer() = delete;
     AREG_NOCOPY_NOMOVE(ServiceServerConsumer);
 };
+
+//////////////////////////////////////////////////////////////////////////
+// RemoteMessageConsumer class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Receives an Event that carries the IPC EventEnvelope 
+ **/
+class AREG_API RemoteMessageConsumer : public areg::EventConsumer
+{
+public:
+    /**
+     * \brief   Initializes with the service event consumer that receives the envelope.
+     *
+     * \param   eventConsumer   Callback target for on_message_received().
+     **/
+    RemoteMessageConsumer(ServiceEventConsumer& eventConsumer);
+
+    virtual ~RemoteMessageConsumer() = default;
+
+private:
+/************************************************************************/
+// EventConsumer interface override.
+/************************************************************************/
+    /**
+     * \brief   Casts the event back to EventEnvelope
+     * \param   eventElem   The event carrying the IPC envelope.
+     **/
+    inline void start_event_processing(areg::Event& eventElem) final;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    ServiceEventConsumer& mServiceEventConsumer;
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+    RemoteMessageConsumer() = delete;
+    AREG_NOCOPY_NOMOVE(RemoteMessageConsumer);
+};
+
+//////////////////////////////////////////////////////////////////////////
+// RemoteMessageConsumer inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline void RemoteMessageConsumer::start_event_processing(areg::Event& eventElem)
+{
+    mServiceEventConsumer.on_message_received(eventElem.envelope());
+}
 
 } // namespace areg
 #endif // AREG_IPC_SERVICEEVENTCONSUMER_HPP

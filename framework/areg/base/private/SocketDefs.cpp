@@ -581,7 +581,7 @@ AREG_API_IMPL SOCKETHANDLE areg::client_connect(const SocketAddress & peerAddr)
         {
             areg::socket_configure(result);
 
-            constexpr uint32_t SOCKET_CONNECT_TIMEOUT_MS { 5'000u };
+            constexpr uint32_t SOCKET_CONNECT_TIMEOUT_MS { 1'000u };
             if (!areg::os::_os_connect_socket(result, &remoteAddr, sizeof(sockaddr_in), SOCKET_CONNECT_TIMEOUT_MS))
             {
                 LOG_ERR("Client failed to connect to remote host [ %s ] and port number [ %u ]. Closing socket [ %u ]"
@@ -615,6 +615,22 @@ AREG_API_IMPL SOCKETHANDLE areg::client_connect(const SocketAddress & peerAddr)
     }
 
     return result;
+}
+
+AREG_API_IMPL bool areg::client_connect_fd(SOCKETHANDLE hSocket, const SocketAddress& peerAddr)
+{
+    if (!areg::is_valid_socket(hSocket) || !peerAddr.is_valid())
+        return false;
+
+    sockaddr_in remoteAddr;
+    if (!peerAddr.to_sockaddr(remoteAddr))
+        return false;
+
+    if (!areg::os::_os_connect_socket(hSocket, &remoteAddr, sizeof(sockaddr_in), SOCKET_CONNECT_TIMEOUT_MS))
+        return false;
+
+    areg::socket_set_no_delay(hSocket);
+    return true;
 }
 
 AREG_API_IMPL SOCKETHANDLE areg::server_connect(const areg::String& hostName, uint16_t portNr, areg::SocketAddress * socketAddr /*= nullptr */)

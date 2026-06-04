@@ -78,6 +78,19 @@ bool ClientConnection::create_socket()
     return mClientSocket.is_valid();
 }
 
+bool ClientConnection::create_socket_fd()
+{
+    set_cookie( mClientSocket.create_fd() ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
+    if (mClientSocket.is_valid())
+    {
+        areg::set_send_size(mClientSocket.handle(), mSockSendBuf);
+        areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
+        areg::set_send_timeout(mClientSocket.handle(), mSockSendTimeoutMs);
+    }
+
+    return mClientSocket.is_valid();
+}
+
 void ClientConnection::close_socket()
 {
     set_cookie(areg::COOKIE_UNKNOWN);

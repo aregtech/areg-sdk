@@ -230,19 +230,13 @@ void RouterClient::failed_receive_message( Socket & whichSource )
 
     if (Application::is_servicing_ready())
     {
-        if (whichSource.is_valid())
-        {
-            LOG_WARN("Failed to receive message from socket [ %lu ], which [ %s : %s ], going to reconnect"
-                       , static_cast<uint32_t>(whichSource.handle())
-                       , whichSource.is_valid() ? "VALID" : "INVALID"
-                       , whichSource.is_alive() ? "ALIVE" : "DEAD");
-            cancel_connection();
-            send_command(ServiceEventData::ServiceCommand::CMD_ServiceLost, areg::EventPriority::NormalPrio);
-        }
-        else
-        {
-            LOG_WARN("Ignoring sending reconnect event, the socket is invalid");
-        }
+        // Triggered by either a connect failure (socket already closed) or a receive error.
+        LOG_WARN("Failed to receive/connect on socket [ %lu ] [ %s : %s ], going to reconnect"
+                   , static_cast<uint32_t>(whichSource.handle())
+                   , whichSource.is_valid() ? "VALID" : "INVALID"
+                   , whichSource.is_alive() ? "ALIVE" : "DEAD");
+        cancel_connection();
+        send_command(ServiceEventData::ServiceCommand::CMD_ServiceLost, areg::EventPriority::NormalPrio);
     }
     else
     {
@@ -386,7 +380,11 @@ void RouterClient::process_received_message( EventEnvelope & msgReceived, Socket
     {
         if ( areg::is_executable_id(static_cast<uint32_t>(msgId)) )
         {
-            forward_executable_message(std::move(msgReceived));
+            // Route directly on the receive thread to the target stub/proxy.
+            if ( !_route_incoming_event(msgReceived) )
+            {
+                failed_process_message(msgReceived);
+            }
         }
         else
         {
@@ -506,7 +504,7 @@ bool RouterClient::_route_incoming_event(const EventEnvelope & src)
             const Channel chTarget(stub->address().channel());
             const Channel chSource(mChannel.source(), chTarget.source(), src.source());
 
-            Event evt(src);  // O(1) shared-ptr copy; eventId already correct from sender
+            Event evt(src);
             areg::EventHeader * hdr = evt.header();
             ASSERT(hdr != nullptr);
             // Encode target channel: routes event to stub's local thread
@@ -518,6 +516,8 @@ bool RouterClient::_route_incoming_event(const EventEnvelope & src)
             hdr->source          = chSource.target();
             hdr->consumer.id     = chSource.cookie();
             hdr->consumer.thread = chSource.source();
+            // Clear internals
+            hdr->internal2       = 0;
 
             evt.register_for_thread(&stub->component_thread());
             evt.deliver_event();
@@ -544,6 +544,8 @@ bool RouterClient::_route_incoming_event(const EventEnvelope & src)
             hdr->channel         = chTarget.target();
             hdr->consumer.id     = chTarget.cookie();
             hdr->consumer.thread = chTarget.source();
+            // Clear internals
+            hdr->internal2       = 0;
 
             evt.register_for_thread(&proxy->proxy_dispatcher_thread());
             evt.deliver_event();

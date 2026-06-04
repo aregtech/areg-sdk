@@ -62,4 +62,38 @@ bool SocketClient::create()
     return is_valid();
 }
 
+bool SocketClient::create_fd()
+{
+    decrease_lock();
+
+    if ( mAddress.is_valid() )
+    {
+        const SOCKETHANDLE hSocket = areg::socket_create();
+        if ( hSocket != areg::InvalidSocketHandle )
+        {
+            mSocket   = SocketHandle(hSocket);
+            mSendSize = areg::max_send_size(hSocket);
+            mRecvSize = areg::max_receive_size(hSocket);
+        }
+    }
+
+    return is_valid();
+}
+
+bool SocketClient::connect_to()
+{
+    if ( !is_valid() || !mAddress.is_valid() )
+        return false;
+
+    if ( !areg::client_connect_fd(handle(), mAddress) )
+    {
+        close();
+        return false;
+    }
+
+    mSendSize = areg::max_send_size(handle());
+    mRecvSize = areg::max_receive_size(handle());
+    return true;
+}
+
 } // namespace areg

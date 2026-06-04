@@ -277,12 +277,6 @@ private:
      **/
     bool _route_incoming_event(const EventEnvelope & src);
 
-    /**
-     * \brief   Wraps the received envelope in a ServiceClientEvent for thread-safe processing.
-     **/
-    inline void forward_executable_message(const EventEnvelope & msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
-    inline void forward_executable_message(EventEnvelope&& msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio);
-
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -307,16 +301,6 @@ private:
 inline RouterClient & RouterClient::self() noexcept
 {
     return (*this);
-}
-
-inline void RouterClient::forward_executable_message(const EventEnvelope& msg, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/)
-{
-    ServiceClientEvent::send_event(ServiceEventData(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msg), mEventConsumer, static_cast<DispatcherThread&>(self()), eventPrio);
-}
-
-inline void RouterClient::forward_executable_message(EventEnvelope&& msg, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/)
-{
-    ServiceClientEvent::send_event(ServiceEventData(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, std::move(msg)), mEventConsumer, static_cast<DispatcherThread&>(self()), eventPrio);
 }
 
 inline bool RouterClient::send_raw_message(const EventEnvelope& msg)

@@ -281,6 +281,9 @@ constexpr uint16_t      DEFAULT_LOGGER_PORT     { 8282 };
 //!< Buffer size required to hold any IPv4 address string (e.g. "255.255.255.255\0").
 constexpr uint32_t      IP_ADDRESS_SIZE         { 16u };
 
+//!< Socket connection timeout
+constexpr uint32_t      SOCKET_CONNECT_TIMEOUT_MS   { 1'000u };
+
 //!< Maximum payload size in bytes for a single send or receive operation.
 constexpr uint32_t      PACKET_MAX_SIZE         { 65536u };
 
@@ -293,8 +296,7 @@ constexpr uint32_t      PACKET_DEFAULT_SIZE     { PACKET_MAX_SIZE };
 //!< Sentinel indicating an invalid or uninitialized packet size.
 constexpr uint32_t      PACKET_INVALID_SIZE     { 0u };
 
-//!< Compile-time default for SO_SNDBUF applied to every new socket.
-//!< Applied on all platforms including Windows.
+//!< Compile-time default for SO_SNDBUF applied to every new socket. Applied on all platforms.
 //!< Override at runtime via `net::SERVICE::TRANSPORT::sndbuf` in areg.init (value in KB).
 constexpr uint32_t      SOCKET_SEND_BUFFER_SIZE { 4u * areg::ONE_MEGABYTE };
 
@@ -305,10 +307,10 @@ constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE { 4u * areg::ONE_MEGABYTE };
 //!< Maximum milliseconds a single send() call may block waiting for TCP send-window space.
 constexpr uint32_t      SOCKET_SEND_TIMEOUT_MS  { 2500u };
 
-//!< Floor applied to any caller-supplied max -- prevents degenerate limits.
+//!< Floor applied to any caller-supplied max, prevents degenerate limits.
 constexpr uint32_t      MIN_CONNECTIONS         { 32u };
 
-//!< Ceiling applied to any caller-supplied max -- mtrouter is not a web server.
+//!< Ceiling applied to any caller-supplied max, mtrouter is not a web server.
 constexpr uint32_t      MAX_CONNECTIONS         { 10000u };
 
 //!< Default socket capacity: initial mSockets.reserve() size and the stack-allocation
@@ -343,7 +345,7 @@ constexpr uint32_t      DEFAULT_BATCH_SIZE          { BATCH_SIZE };
 constexpr uint32_t      DEFAULT_POOL_PAIRS          { 0u };
 
 //!< Default thread-local receive-cache size in KB.
-constexpr const uint32_t    DEFAULT_THREAD_CACHE_KB{ 256 };
+constexpr const uint32_t    DEFAULT_THREAD_CACHE_KB { 256 };
 
 //!< Maximum biUsed value accepted in any received MessageHeader.
 constexpr uint32_t          MAX_MESSAGE_DATA_SIZE   { 64u * areg::ONE_MEGABYTE };
@@ -527,6 +529,17 @@ AREG_API SOCKETHANDLE client_connect(const SocketAddress& peerAddr);
 AREG_API SOCKETHANDLE client_connect(const String& hostName, uint16_t portNr, SocketAddress* socketAddr = nullptr);
 
 /**
+ * \brief   Connects an already-created socket FD to \a peerAddr (blocking, 1-second timeout).
+ *          On success applies TCP_NODELAY.  On failure the socket is NOT closed by this function;
+ *          the caller is responsible for calling socket_close() if needed.
+ *
+ * \param   hSocket     A valid, unconnected socket handle.
+ * \param   peerAddr    Remote peer address to connect to.
+ * \return  Returns true if the connection was established within the timeout.
+ **/
+AREG_API bool client_connect_fd(SOCKETHANDLE hSocket, const SocketAddress& peerAddr);
+
+/**
  * \brief   Creates a TCP/IP server socket and binds to \a peerAddr.
  *          Call server_listen() before accepting connections.
  *
@@ -551,8 +564,7 @@ AREG_API SOCKETHANDLE server_connect(const String& hostName, uint16_t portNr, So
  * \brief   Places \a serverSocket into listening mode.
  *
  * \param   serverSocket    Bound server socket descriptor.
- * \param   maxQueueSize    Maximum number of pending connections the OS will
- *                          queue (default: MAXIMUM_LISTEN_QUEUE_SIZE).
+ * \param   maxQueueSize    Maximum number of pending connections the OS will queue (default: MAXIMUM_LISTEN_QUEUE_SIZE).
  * \return  true if the socket is now listening; false otherwise.
  **/
 AREG_API bool server_listen(SOCKETHANDLE serverSocket, int32_t maxQueueSize = areg::MAXIMUM_LISTEN_QUEUE_SIZE) noexcept;
@@ -754,15 +766,13 @@ AREG_API uint32_t pending_read(SOCKETHANDLE hSocket) noexcept;
 AREG_API const String& hostname() noexcept;
 
 /**
- * \brief   Returns true if \a address is a loopback address
- *          ("localhost" or "127.0.0.1").
+ * \brief   Returns true if \a address is a loopback address ("localhost" or "127.0.0.1").
  **/
 [[nodiscard]]
 inline bool is_local_address(const String& address) noexcept;
 
 /**
- * \brief   Returns true if \a address is a well-formed IPv4 dotted-decimal
- *          string (e.g. "192.168.0.1").
+ * \brief   Returns true if \a address is a well-formed IPv4 dotted-decimal string (e.g. "192.168.0.1").
  **/
 [[nodiscard]]
 AREG_API bool is_ip_address(const String& address) noexcept;
