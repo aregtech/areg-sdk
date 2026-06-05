@@ -68,14 +68,20 @@ public:
 
     /**
      * \brief   Translates an inbound wire envelope and delivers it to the target stub or proxy thread.
-     *          Must be called directly on the receive thread
+     *          Must be called directly on the receive thread.
      *
-     * \param   wire        Received wire envelope
+     *          The envelope is passed by non-const reference and moved into the delivered Event on the
+     *          success path: the receive buffer's shared_ptr is transferred (no extra refcount bump) and
+     *          the header is rewritten to local-routing form in place. On the false-return path (target
+     *          stub/proxy not found) the envelope is left untouched, so the caller may reuse it for the
+     *          failure response.
+     *
+     * \param   wire        Received wire envelope; consumed (moved-from) only when this returns true.
      * \param   comChannel  Communication channel of the receiving RouterClient.
      * \return  true if delivered;
-     *          false when the target stub/proxy is not found.
+     *          false when the target stub/proxy is not found (wire left intact).
      **/
-    static bool route_incoming_message( const EventEnvelope & wire, const Channel & comChannel );
+    static bool route_incoming_message( EventEnvelope & wire, const Channel & comChannel );
 
     /**
      * \brief   Creates a request-failure response Event for an undeliverable request.

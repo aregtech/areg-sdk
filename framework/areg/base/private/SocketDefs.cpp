@@ -940,12 +940,12 @@ AREG_API_IMPL uint32_t areg::recv_data_available(SOCKETHANDLE hSocket) noexcept
     if (tc.unread == 0u)
         return 0u;
 
-    if (tc.unread < static_cast<uint32_t>(sizeof(areg::MessageHeader)))
+    if (tc.unread < static_cast<uint32_t>(sizeof(areg::EventHeader)))
         return 0u;
 
-    const areg::MessageHeader* hdr{ reinterpret_cast<const areg::MessageHeader*>(tc.buffer.get() + tc.head) };
+    const areg::EventHeader* hdr{ reinterpret_cast<const areg::EventHeader*>(tc.buffer.get() + tc.head) };
     ASSERT(hdr != nullptr);
-    const uint32_t msg_total = static_cast<uint32_t>(sizeof(areg::MessageHeader)) + hdr->rbhBufHeader.biUsed;
+    const uint32_t msg_total = static_cast<uint32_t>(sizeof(areg::EventHeader)) + hdr->bufHeader.biUsed;
     return (tc.unread >= msg_total) ? tc.unread : 0u;
 }
 

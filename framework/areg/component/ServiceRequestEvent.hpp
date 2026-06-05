@@ -61,12 +61,15 @@ public:
      * \param   reqId           The request message ID to process.
      * \param   reqType         The request type.
      * \param   eventType       The type of event.
+     * \param   initSize        Payload bytes to reserve after the header for the serialized request
+     *                          parameters. 0 keeps the default block size.
      **/
     ServiceRequestEvent( const ProxyAddress & proxyAddress
                        , const StubAddress & target
                        , uint32_t reqId
                        , areg::RequestType reqType
-                       , areg::EventType eventType );
+                       , areg::EventType eventType
+                       , uint32_t initSize = 0u );
 
     /**
      * \brief   Constructs from a received EventEnvelope (IPC receive path). Shares the buffer (O(1)).

@@ -260,7 +260,7 @@ void StubBase::send_response_notification( const StubListenerList & whichListene
         ServiceResponseEvent eventClone = masterEvent.clone_for_target(listener.mProxy);
         if (eventClone.is_valid())
         {
-            if (static_cast<int32_t>(listener.mSequenceNr) >= 0)
+            if (static_cast<SignedSequence>(listener.mSequenceNr) >= 0)
             {
                 eventClone.set_sequence_number(listener.mSequenceNr);
                 if (listener.mSequenceNr != 0)
@@ -659,6 +659,22 @@ ServiceResponseEvent StubBase::create_response( const ProxyAddress &    /* proxy
                                               , const SharedBuffer &   /* data   */ ) const
 {
     return ServiceResponseEvent(EventEnvelope{});  // invalid; derived stubs override to produce real events
+}
+
+ServiceResponseEvent StubBase::create_response_event( const ProxyAddress &    /* proxy  */
+                                                    , uint32_t               /* msgId  */
+                                                    , areg::ResultType       /* result */
+                                                    , uint32_t               /* reserve */ ) const
+{
+    return ServiceResponseEvent(EventEnvelope{});  // invalid; derived stubs override to produce real events
+}
+
+ServiceResponseEvent StubBase::prepare_response_event( uint32_t respId, areg::ResultType result, uint32_t reserve, StubBase::StubListenerList & out_listeners )
+{
+    if (find_listeners(respId, out_listeners) > 0)
+        return create_response_event(out_listeners.first_entry().mProxy, respId, result, reserve);
+
+    return ServiceResponseEvent(EventEnvelope{});  // no listeners: invalid event
 }
 
 void StubBase::process_stub_event( StubEvent & /* eventElem */ )

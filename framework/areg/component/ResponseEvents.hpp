@@ -65,12 +65,14 @@ public:
      * \param   respId          Response or update ID.
      * \param   eventType       Event type.
      * \param   seqNr           Sequence number for ordering.
+     * \param   initSize        Payload bytes to reserve after the header for serialized parameters.
      **/
     ResponseEvent( const ProxyAddress & proxyTarget
                  , const areg::ResultType result
                  , uint32_t respId
                  , areg::EventType eventType
-                 , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY );
+                 , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
+                 , uint32_t initSize = 0u );
 
     /**
      * \brief   Initializes a response event with serialized data.
@@ -210,11 +212,13 @@ public:
      *                          event, as well as to specify message validation flag.
      * \param   respId          The ID of response. Can also be update ID.
      * \param   seqNr           The call sequence number.
+     * \param   initSize        Payload bytes to reserve after the header for serialized parameters.
      **/
     RemoteResponseEvent( const ProxyAddress & proxyTarget
                        , areg::ResultType result
                        , uint32_t respId
-                       , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY );
+                       , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
+                       , uint32_t initSize = 0u );
 
     /**
      * \brief   Initializes remote event with serialized arguments, target address, result type, and

@@ -46,7 +46,10 @@ bool RemoteEventFactory::route_outgoing_message( Event & srcWire, const Channel 
     case areg::EventType::EventRemoteNotifyRequest:
         hdr->source = comChannel.cookie();
         hdr->target = hdr->provider.id;     // stub's process cookie
-        hdr->result = areg::MESSAGE_SUCCESS;
+        // NOTE: do NOT touch hdr->result here. On the request path the `result` field carries the
+        // RequestType (CallFunction / StartNotify / StopNotify / RemoveAllNotify) — see
+        // ServiceRequestEvent::request_type(). Overwriting it broke IPC notify subscriptions
+        // (StartNotify decoded as 0 on the stub side), so broadcasts/attribute updates were never sent.
         result = true;
         break;
 
@@ -87,7 +90,7 @@ bool RemoteEventFactory::route_outgoing_message( Event & srcWire, const Channel 
     return result;
 }
 
-bool RemoteEventFactory::route_incoming_message( const EventEnvelope & src, const Channel & comChannel )
+bool RemoteEventFactory::route_incoming_message( EventEnvelope & src, const Channel & comChannel )
 {
     const areg::EventHeader * hdrPtr = src.header();
     if ((hdrPtr == nullptr) || !src.is_valid())
@@ -109,7 +112,9 @@ bool RemoteEventFactory::route_incoming_message( const EventEnvelope & src, cons
         // chSource encodes the response routing path back through this RouterClient
         const Channel chSource(comChannel.source(), chTarget.source(), src.source());
 
-        Event evt(src);
+        // Move the receive buffer into the delivered event (no shared_ptr refcount bump); all reads
+        // from src/hdrPtr above are complete, so src may be consumed here.
+        Event evt(std::move(src));
         areg::EventHeader * hdr = evt.header();
         ASSERT(hdr != nullptr);
         // Route to stub's local thread
@@ -137,7 +142,9 @@ bool RemoteEventFactory::route_incoming_message( const EventEnvelope & src, cons
 
         const Channel chTarget(proxy->proxy_address().channel());
 
-        Event evt(src);
+        // Move the receive buffer into the delivered event (no shared_ptr refcount bump); all reads
+        // from src/hdrPtr above are complete, so src may be consumed here.
+        Event evt(std::move(src));
         areg::EventHeader * hdr = evt.header();
         ASSERT(hdr != nullptr);
         // Route response to proxy's local thread

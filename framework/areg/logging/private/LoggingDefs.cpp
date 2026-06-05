@@ -70,22 +70,22 @@ namespace {
 
 
 areg::LogEntry::LogEntry(areg::LogMessageType msgType)
-    : logDataType   { LogDataType::Local }
+    : logTimestamp  { DateTime::INVALID_TIME }
+    , logReceived   { DateTime::INVALID_TIME }
     , logMsgType    { msgType }
     , logMessagePrio{ areg::LogPriority::PrioNotset }
-    , logSource     { areg::COOKIE_LOCAL }
-    , logTarget     { areg::COOKIE_LOGGER }
-    , logCookie     { areg::COOKIE_LOCAL }
+    , logDataType   { LogDataType::Local }
+    , logScopeId    { areg::LOG_SCOPE_ID_NONE }
+    , logMessageLen { 0 }
+    , logDuration   ( 0u )
+    , logSessionId  { 0u }
     , logModuleId   { Process::CURRENT_PROCESS }
     , logThreadId   { Thread::INVALID_THREAD_ID }
-    , logTimestamp  { DateTime::INVALID_TIME }
-    , logReceived   { DateTime::INVALID_TIME }
-    , logDuration   ( 0u )
-    , logScopeId    { areg::LOG_SCOPE_ID_NONE }
-    , logSessionId  { 0u }
-    , logMessageLen { 0 }
+    , logSource     { areg::COOKIE_LOCAL }
     , logThreadLen  { 0 }
     , logModuleLen  { 0 }
+    , logTarget     { areg::COOKIE_LOGGER }
+    , logCookie     { areg::COOKIE_LOCAL }
     , logMessage    { '\0' }
     , logThread     { '\0' }
     , logModule     { '\0' }
@@ -94,22 +94,22 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType)
 
 #if AREG_LOGGING
 areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const char * message, uint32_t msgLen)
-    : logDataType   { areg::LogDataType::Local }
+    : logTimestamp  { DateTime::now() }
+    , logReceived   { DateTime::INVALID_TIME }
     , logMsgType    { msgType }
     , logMessagePrio{ msgPrio }
-    , logSource     { areg::COOKIE_LOCAL }
-    , logTarget     { areg::COOKIE_LOGGER }
-    , logCookie     { LogManager::connection_cookie() }
+    , logDataType   { areg::LogDataType::Local }
+    , logScopeId    { scopeId }
+    , logMessageLen { msgLen }
+    , logDuration   { scopeStamp != 0u ? static_cast<uint32_t>(logTimestamp - scopeStamp) : 0u }
+    , logSessionId  { sessionId }
     , logModuleId   { static_cast<ITEM_ID>(Process::instance().id()) }
     , logThreadId   { static_cast<ITEM_ID>(Thread::current_thread_id()) }
-    , logTimestamp  { DateTime::now() }
-    , logReceived   { DateTime::INVALID_TIME }
-    , logDuration   { scopeStamp != 0u ? static_cast<uint32_t>(logTimestamp - scopeStamp) : 0u }
-    , logScopeId    { scopeId }
-    , logSessionId  { sessionId }
-    , logMessageLen { msgLen }
+    , logSource     { areg::COOKIE_LOCAL }
     , logThreadLen  { 0 }
     , logModuleLen  { 0 }
+    , logTarget     { areg::COOKIE_LOGGER }
+    , logCookie     { LogManager::connection_cookie() }
     , logMessage    { '\0' }
     , logThread     { '\0' }
     , logModule     { '\0' }
@@ -119,22 +119,22 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t scopeId, uint32_
 }
 #else   // AREG_LOGGING
 areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t /*scopeId*/, uint32_t /*sessionId*/, TIME64 /*scopeStamp*/, areg::LogPriority /*msgPrio*/, const char* /*message*/, uint32_t /*msgLen*/)
-    : logDataType   { areg::LogDataType::Local }
+    : logTimestamp  { DateTime::INVALID_TIME }
+    , logReceived   { DateTime::INVALID_TIME }
     , logMsgType    { msgType }
     , logMessagePrio{ areg::LogPriority::PrioNotset }
-    , logSource     { areg::COOKIE_LOCAL }
-    , logTarget     { areg::COOKIE_LOGGER }
-    , logCookie     { areg::COOKIE_LOCAL }
+    , logDataType   { areg::LogDataType::Local }
+    , logScopeId    { areg::LOG_SCOPE_ID_NONE }
+    , logMessageLen { 0u }
+    , logDuration   { 0u }
+    , logSessionId  { 0u }
     , logModuleId   { Process::CURRENT_PROCESS }
     , logThreadId   { Thread::INVALID_THREAD_ID }
-    , logTimestamp  { DateTime::INVALID_TIME }
-    , logReceived   { DateTime::INVALID_TIME }
-    , logDuration   ( 0u )
-    , logScopeId    { areg::LOG_SCOPE_ID_NONE }
-    , logSessionId  { 0u }
-    , logMessageLen { 0 }
+    , logSource     { areg::COOKIE_LOCAL }
     , logThreadLen  { 0 }
     , logModuleLen  { 0 }
+    , logTarget     { areg::COOKIE_LOGGER }
+    , logCookie     { areg::COOKIE_LOCAL }
     , logMessage    { '\0' }
     , logThread     { '\0' }
     , logModule     { '\0' }
@@ -143,22 +143,22 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t /*scopeId*/, uin
 #endif  // AREG_LOGGING
 
 areg::LogEntry::LogEntry(const areg::LogEntry & src)
-    : logDataType   { }
+    : logTimestamp  { }
+    , logReceived   { }
     , logMsgType    { }
     , logMessagePrio{ }
-    , logSource     { }
-    , logTarget     { }
-    , logCookie     { }
+    , logDataType   { }
+    , logScopeId    { }
+    , logMessageLen { }
+    , logDuration   { }
+    , logSessionId  { }
     , logModuleId   { }
     , logThreadId   { }
-    , logTimestamp  { }
-    , logReceived   { }
-    , logDuration   { }
-    , logScopeId    { }
-    , logSessionId  { }
-    , logMessageLen { }
+    , logSource     { }
     , logThreadLen  { }
     , logModuleLen  { }
+    , logTarget     { }
+    , logCookie     { }
     , logMessage    { }
     , logThread     { }
     , logModule     { }

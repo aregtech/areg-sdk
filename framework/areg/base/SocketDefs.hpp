@@ -347,7 +347,7 @@ constexpr uint32_t      DEFAULT_POOL_PAIRS          { 0u };
 //!< Default thread-local receive-cache size in KB.
 constexpr const uint32_t    DEFAULT_THREAD_CACHE_KB { 256 };
 
-//!< Maximum biUsed value accepted in any received MessageHeader.
+//!< Maximum biUsed value accepted in any received EventHeader.
 constexpr uint32_t          MAX_MESSAGE_DATA_SIZE   { 64u * areg::ONE_MEGABYTE };
 
 /**

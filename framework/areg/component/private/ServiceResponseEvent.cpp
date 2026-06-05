@@ -20,8 +20,9 @@ ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress & target
                                           , areg::ResultType result
                                           , uint32_t respId
                                           , areg::EventType eventType
-                                          , const SequenceNumber & seqNr    /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
-    : ProxyEvent    (target, eventType)
+                                          , const SequenceNumber & seqNr    /*= areg::SEQUENCE_NUMBER_NOTIFY*/
+                                          , uint32_t initSize               /*= 0u*/ )
+    : ProxyEvent    (target, eventType, initSize)
 {
     areg::EventHeader* hdr{ header() };
     if (hdr != nullptr)

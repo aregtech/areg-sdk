@@ -29,8 +29,9 @@ namespace areg {
 RequestEvent::RequestEvent( const ProxyAddress & fromSource
                           , const StubAddress & toTarget
                           , uint32_t reqId
-                          , areg::EventType eventType )
-    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, eventType)
+                          , areg::EventType eventType
+                          , uint32_t initSize /*= 0u*/ )
+    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, eventType, initSize)
 {
 }
 
@@ -77,8 +78,8 @@ LocalRequestEvent::LocalRequestEvent( const SharedBuffer & args
 //////////////////////////////////////////////////////////////////////////
 // RequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-RemoteRequestEvent::RemoteRequestEvent( const ProxyAddress & fromSource, const StubAddress & toTarget, uint32_t reqId )
-    : RequestEvent(fromSource, toTarget, reqId, areg::EventType::EventRemoteRequest)
+RemoteRequestEvent::RemoteRequestEvent( const ProxyAddress & fromSource, const StubAddress & toTarget, uint32_t reqId, uint32_t initSize /*= 0u*/ )
+    : RequestEvent(fromSource, toTarget, reqId, areg::EventType::EventRemoteRequest, initSize)
 {
 }
 

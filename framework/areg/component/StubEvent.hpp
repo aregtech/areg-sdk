@@ -94,12 +94,15 @@ protected:
     explicit StubEvent(EventEnvelope&& envelope) noexcept;
 
     /**
-     * \brief   Initializes the event with the target stub address and event type.
+     * \brief   Initializes the event with the target stub address and event type, allocating the
+     *          event buffer with the header plus \a initSize reserved payload bytes.
      *
      * \param   toTarget        The address of the target stub.
      * \param   eventType       The type of event.
+     * \param   initSize        Payload bytes to reserve after the header so that serialization does
+     *                          not reallocate. 0 keeps the default block size.
      **/
-    StubEvent(const StubAddress & toTarget, areg::EventType eventType );
+    StubEvent(const StubAddress & toTarget, areg::EventType eventType, uint32_t initSize = 0u );
 
 public:
 

@@ -158,11 +158,27 @@ void LatencyProvider::request_start_mode(Latency::LatencyMode mode, uint32_t dur
 
     if (is_broadcast && (count != 0u))
     {
-        const uint32_t total         = count + warmup;
-        mBroadcastBulk               = std::max(1u, total / 20u);
-        const uint32_t ticks_per_run = total / mBroadcastBulk;
-        mMsgId               = 0u;
-        mBroadcastCyclesLeft = duration != 0u ? duration * ticks_per_run : 0xFFFFFFFFu;
+        // One timer tick fires every 50 ms => 20 ticks per second.
+        constexpr uint32_t TICKS_PER_SEC = 1000u / 50u;
+        const uint32_t     total         = count + warmup;
+        mMsgId = 0u;
+
+        if (duration == 0u)
+        {
+            // No duration limit: emit one message per tick; the consumer stops the test once it
+            // has collected `count` samples (request_start_mode(Stop)).
+            mBroadcastBulk       = 1u;
+            mBroadcastCyclesLeft = 0xFFFFFFFFu;
+        }
+        else
+        {
+            // Spread `total` messages evenly over `duration` seconds: count / (duration / timeout)
+            // messages per tick (minimum 1), running for duration * 20 ticks.
+            const uint32_t totalTicks = duration * TICKS_PER_SEC;
+            mBroadcastBulk       = std::max(1u, total / totalTicks);
+            mBroadcastCyclesLeft = totalTicks;
+        }
+
         _update_live();
         mBroadcastTimer.start_timer(50u, component_thread(), areg::Timer::CONTINUOUSLY);
     }

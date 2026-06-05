@@ -27,8 +27,9 @@ ServiceRequestEvent::ServiceRequestEvent( const ProxyAddress & proxyAddress
                                         , const StubAddress  & target
                                         , uint32_t reqId
                                         , areg::RequestType reqType
-                                        , areg::EventType eventType)
-    : StubEvent (target, eventType)
+                                        , areg::EventType eventType
+                                        , uint32_t initSize /*= 0u*/ )
+    : StubEvent (target, eventType, initSize)
 {
     areg::EventHeader* hdr{ header() };
     if (hdr != nullptr)

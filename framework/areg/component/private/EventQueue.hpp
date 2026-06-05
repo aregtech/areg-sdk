@@ -75,10 +75,10 @@ public:
     inline bool is_empty() const noexcept;
 
     /**
-     * \brief   Pushes an event into the queue and notifies the listener. If the queue is full
-     *          and an event is evicted, it is either returned via removedEvent or destroyed.
+     * \brief   Moves an event into the queue (O(1) shared_ptr transfer; no payload copy) and
+     *          notifies the listener. The caller's event is left in a moved-from (empty) state.
      *
-     * \param   eventElem       The event to enqueue.
+     * \param   eventElem       The event to enqueue; moved in.
      **/
     inline void push_event(Event& eventElem);
 

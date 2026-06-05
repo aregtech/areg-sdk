@@ -95,8 +95,6 @@ bool EventDispatcherBase::queue_event( Event& eventElem )
     {
         if (areg::is_external(eventType))
         {
-            // MOVE the event into the queue (O(1) shared_ptr transfer).
-            // After this call, eventElem is in a moved-from (empty) state.
             mExternalEvents.push_event(eventElem);
             return true;
         }

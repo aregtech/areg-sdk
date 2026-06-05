@@ -355,6 +355,23 @@ protected:
     [[nodiscard]]
     virtual ServiceResponseEvent create_response( const areg::ProxyAddress & proxy, uint32_t msgId, areg::ResultType result, const areg::SharedBuffer & data ) const;
 
+    /**
+     * \brief   Creates an empty (no-payload) response event of the stub's concrete type, with the
+     *          buffer allocated for the header plus \a reserve payload bytes. The caller serializes the
+     *          response parameters directly into the event via write_stream(), so the response is built
+     *          in a single heap allocation (no intermediate SharedBuffer + copy). Base returns an
+     *          invalid event; generated stubs override it. Pair with prepare_response_event() +
+     *          send_response_notification().
+     *
+     * \param   proxy       The address of the client proxy to receive the response.
+     * \param   msgId       The message ID of the response.
+     * \param   result      The result code of the response.
+     * \param   reserve     Payload bytes to reserve after the header for the serialized parameters.
+     * \return  A typed empty ServiceResponseEvent; check is_valid() before use.
+     **/
+    [[nodiscard]]
+    virtual ServiceResponseEvent create_response_event( const areg::ProxyAddress & proxy, uint32_t msgId, areg::ResultType result, uint32_t reserve ) const;
+
 /************************************************************************/
 // StubEventConsumer interface overrides.
 /************************************************************************/
@@ -473,6 +490,23 @@ protected:
      * \return  Returns the number of listeners found.
      **/
     uint32_t find_listeners(uint32_t reqId, StubListenerList & out_listners) const;
+
+    /**
+     * \brief   Finds the listeners subscribed to \a respId and, if any, builds an empty typed response
+     *          event (sized for the header plus \a reserve payload bytes) targeted at the first
+     *          listener. The caller serializes the response parameters into the returned event via
+     *          write_stream() and then dispatches it with send_response_notification(out_listeners, ...),
+     *          which clones it for the remaining listeners. This builds the response in a single heap
+     *          allocation (no intermediate SharedBuffer + copy).
+     *
+     * \param   respId          The response / broadcast message ID.
+     * \param   result          The result code to stamp into the response.
+     * \param   reserve         Payload bytes to reserve after the header for serialized parameters.
+     * \param[out] out_listeners Receives the listeners subscribed to respId (empty if none).
+     * \return  A typed response event; invalid (is_valid()==false) when there are no listeners.
+     **/
+    [[nodiscard]]
+    ServiceResponseEvent prepare_response_event( uint32_t respId, areg::ResultType result, uint32_t reserve, StubBase::StubListenerList & out_listeners );
 
     /**
      * \brief   Returns true if a notification listener with the specified message ID and proxy address exists.

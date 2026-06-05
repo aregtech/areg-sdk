@@ -29,8 +29,8 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 // ProxyEvent class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-ProxyEvent::ProxyEvent( const ProxyAddress & toTarget, areg::EventType eventType )
-    : Event (eventType)
+ProxyEvent::ProxyEvent( const ProxyAddress & toTarget, areg::EventType eventType, uint32_t initSize /*= 0u*/ )
+    : Event (eventType, initSize)
 {
     areg::EventHeader* hdr{ header() };
     if (hdr != nullptr)

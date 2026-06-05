@@ -386,25 +386,25 @@ namespace areg {
          **/
         LogEntry & operator = (const LogEntry & src);
 
-        areg::LogDataType    logDataType    { areg::LogDataType::Local };          //!< The type of log message data.
-        areg::LogMessageType logMsgType     { areg::LogMessageType::Undefined };    //!< The type of the logging message.
-        areg::LogPriority    logMessagePrio { areg::LogPriority::PrioInvalid }; //!< The log message priority
-        ITEM_ID              logSource      { 0 };  //!< The ID of the source that generated logging message.
-        ITEM_ID              logTarget      { 0 };  //!< The ID of the target to send logging message, valid only in case of TCP/IP logging.
-        ITEM_ID              logCookie      { 0 };  //!< The cookie set by the networking service, i.e. the log collector. Valid only in case of TCP/IP logging.
-        ITEM_ID              logModuleId    { 0 };  //!< The ID of the process in the local machine.
-        ITEM_ID              logThreadId    { 0 };  //!< The ID the thread in the local process.
-        TIME64               logTimestamp   { 0 };  //!< The timestamp of generated log.
-        TIME64               logReceived    { 0 };  //!< The timestamp when the log message is updated.
-        uint32_t             logDuration    { 0 };  //!< The duration in microseconds after scope message is instantiated in the method call.
-        uint32_t             logScopeId     { 0 };  //!< The ID of log scope that generated log message
-        uint32_t             logSessionId   { 0 };  //!< The session ID of the logging message, valid only in case of remote logging.
-        uint32_t             logMessageLen  { 0 };  //!< The actual length of the log message
-        uint32_t             logThreadLen   { 0 };  //!< The length of the thread name;
-        uint32_t             logModuleLen   { 0 };  //!< The length of the module name.
-        char                 logMessage[LOG_MSG_SIZE]{ 0 }; //!< The message text to output, with maximum LOG_MSG_SIZE characters.
-        char                 logThread[LOG_NAME_SIZE]{ 0 }; //!< The name of the thread that generated the log. Valid only for remote logging
-        char                 logModule[LOG_NAME_SIZE]{ 0 }; //!< The name of the module that generated the log. Valid only for remote logging.
+        TIME64               logTimestamp   { 0 };  //!< [0..7]   The timestamp of generated log. HOT
+        TIME64               logReceived    { 0 };  //!< [8..15]  The timestamp when the log message is updated. HOT
+        areg::LogMessageType logMsgType     { areg::LogMessageType::Undefined };    //!< [16..19] The type of the logging message. HOT
+        areg::LogPriority    logMessagePrio { areg::LogPriority::PrioInvalid };     //!< [20..23] The log message priority. HOT
+        areg::LogDataType    logDataType    { areg::LogDataType::Local };           //!< [24..27] The type of log message data. HOT
+        uint32_t             logScopeId     { 0 };  //!< [28..31] The ID of log scope that generated log message. HOT
+        uint32_t             logMessageLen  { 0 };  //!< [32..35] The actual length of the log message. HOT
+        uint32_t             logDuration    { 0 };  //!< [36..39] The duration in microseconds after scope message is instantiated. WARM
+        uint32_t             logSessionId   { 0 };  //!< [40..43] The session ID of the logging message, valid only in case of remote logging. WARM
+        ITEM_ID              logModuleId    { 0 };  //!< [44..47] The ID of the process in the local machine. WARM
+        ITEM_ID              logThreadId    { 0 };  //!< [48..51] The ID the thread in the local process. WARM
+        ITEM_ID              logSource      { 0 };  //!< [52..55] The ID of the source that generated logging message. WARM
+        uint32_t             logThreadLen   { 0 };  //!< [56..59] The length of the thread name. WARM
+        uint32_t             logModuleLen   { 0 };  //!< [60..63] The length of the module name. WARM
+        ITEM_ID              logTarget      { 0 };  //!< [64..67] The ID of the target to send logging message, valid only in case of TCP/IP logging. COLD
+        ITEM_ID              logCookie      { 0 };  //!< [68..71] The cookie set by the networking service, i.e. the log collector. Valid only in case of TCP/IP logging. COLD
+        char                 logMessage[LOG_MSG_SIZE]{ 0 }; //!< [72..583]  The message text to output, with maximum LOG_MSG_SIZE characters.
+        char                 logThread[LOG_NAME_SIZE]{ 0 }; //!< [584..647] The name of the thread that generated the log. Valid only for remote logging
+        char                 logModule[LOG_NAME_SIZE]{ 0 }; //!< [648..711] The name of the module that generated the log. Valid only for remote logging.
     };
 
     /**
@@ -744,20 +744,24 @@ inline OutStream& operator << (OutStream& stream, const areg::ScopeEntry & outpu
 // areg namespace inline methods
 //////////////////////////////////////////////////////////////////////////////
 
+#if AREG_LOGGING
 inline constexpr uint32_t areg::make_id(const char* scopeName) noexcept
 {
-#if AREG_LOGGING
     return  areg::crc32_calculate(scopeName);
 #else
+inline constexpr uint32_t areg::make_id(const char* /*scopeName*/) noexcept
+{
     return 0;
 #endif // AREG_LOGGING
 }
 
+#if AREG_LOGGING
 inline constexpr uint32_t areg::make_scope_id_ex(const char* scopeName) noexcept
 {
-#if AREG_LOGGING
     return  (areg::string_ends_with<char>(scopeName, areg::LOG_SYNTAX_GROUP, true) ? areg::CHECKSUM_IGNORE : areg::make_id(scopeName));
 #else
+inline constexpr uint32_t areg::make_scope_id_ex(const char* /*scopeName*/) noexcept
+{
     return 0;
 #endif // AREG_LOGGING
 }

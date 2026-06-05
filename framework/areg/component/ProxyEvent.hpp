@@ -71,8 +71,10 @@ protected:
      *
      * \param   toTarget    The address of the target proxy to receive the event.
      * \param   eventType   The type of event.
+     * \param   initSize    Payload bytes to reserve after the header so that serialization does not
+     *                      reallocate. 0 keeps the default block size.
      **/
-    ProxyEvent(const ProxyAddress & toTarget, areg::EventType eventType );
+    ProxyEvent(const ProxyAddress & toTarget, areg::EventType eventType, uint32_t initSize = 0u );
 
     ProxyEvent(const ProxyAddress& toTarget, const EventEnvelope& src);
 

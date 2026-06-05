@@ -28,8 +28,9 @@ ResponseEvent::ResponseEvent( const ProxyAddress & proxyTarget
                             , areg::ResultType result
                             , uint32_t respId
                             , areg::EventType eventType
-                            , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/ )
-    : ServiceResponseEvent(proxyTarget, result, respId, eventType, seqNr)
+                            , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/
+                            , uint32_t initSize             /*= 0u*/ )
+    : ServiceResponseEvent(proxyTarget, result, respId, eventType, seqNr, initSize)
 {
 }
 
@@ -94,8 +95,9 @@ LocalResponseEvent::LocalResponseEvent( const ProxyAddress& proxyTarget, const L
 RemoteResponseEvent::RemoteResponseEvent( const ProxyAddress & proxyTarget
                                         , areg::ResultType result
                                         , uint32_t respId
-                                        , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
-    : ResponseEvent(proxyTarget, result, respId, areg::EventType::EventRemoteResponse, seqNr)
+                                        , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/
+                                        , uint32_t initSize             /*= 0u*/ )
+    : ResponseEvent(proxyTarget, result, respId, areg::EventType::EventRemoteResponse, seqNr, initSize)
 {
 }
 

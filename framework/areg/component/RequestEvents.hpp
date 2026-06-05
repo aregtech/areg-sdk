@@ -74,11 +74,13 @@ public:
      * \param   toTarget        Target stub address.
      * \param   reqId           Request ID.
      * \param   eventType       Event type (local or remote request).
+     * \param   initSize        Payload bytes to reserve after the header for serialized parameters.
      **/
     RequestEvent( const ProxyAddress & fromSource
                 , const StubAddress & toTarget
                 , uint32_t reqId
-                , areg::EventType eventType);
+                , areg::EventType eventType
+                , uint32_t initSize = 0u );
 
     /**
      * \brief   Initializes a request event with serialized parameters copied into the event payload.
@@ -191,8 +193,9 @@ public:
      * \param   fromSource      The address of source Proxy.
      * \param   toTarget        The address of Stub target
      * \param   reqId           The ID of request.
+     * \param   initSize        Payload bytes to reserve after the header for serialized parameters.
      **/
-    RemoteRequestEvent(const ProxyAddress & fromSource, const StubAddress & toTarget, uint32_t reqId);
+    RemoteRequestEvent(const ProxyAddress & fromSource, const StubAddress & toTarget, uint32_t reqId, uint32_t initSize = 0u);
 
     /**
      * \brief   Creates event with data. Initializes event source, target information, and message

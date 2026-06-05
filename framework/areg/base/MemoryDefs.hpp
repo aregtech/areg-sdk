@@ -182,7 +182,7 @@ inline bool operator != (const areg::Primitive & lsh, const areg::Primitive & rh
  *          Used in all binary buffers. It stores basic information 
  *          buffer, it's type, allocated and used sizes.
  **/
-struct BufferHeader
+struct alignas(16) BufferHeader
 {
     constexpr BufferHeader() = default;
     constexpr BufferHeader(const BufferHeader& src) = default;
@@ -217,80 +217,6 @@ struct BufferHeader
 };
 
 //////////////////////////////////////////////////////////////////////////
-// areg::sRemoteBuferHeader structure declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Structure of binary buffer for Remote data transfer.
- *          It is extended type of BufferHeader with additions
- *          of message ID, message sequence number, cookie and checksum.
- **/
-struct MessageHeader
-{
-    constexpr MessageHeader(uint32_t length, uint32_t offset, BufferType bufType, uint32_t used, ITEM_ID target, uint32_t checksum, ITEM_ID source, uint32_t  msgId, uint32_t result, SequenceNumber seq)
-        : rbhBufHeader{length, offset, bufType, used}, rbhTarget{target}, rbhChecksum{checksum}, rbhSource{source}, rbhMessageId{msgId}, rbhResult{result}, rbhSequenceNr{seq}
-    {
-    }
-
-    constexpr MessageHeader(uint32_t length, uint32_t offset, BufferType bufType, ITEM_ID target, ITEM_ID source, uint32_t  msgId)
-        : rbhBufHeader{ length, offset, bufType}, rbhTarget{ target }, rbhChecksum{ areg::CHECKSUM_INVALID}, rbhSource{ source }, rbhMessageId{ msgId }, rbhResult{ 0u }, rbhSequenceNr{ 0u }
-    {
-    }
-
-    constexpr MessageHeader( const BufferHeader & bufHdr
-                           , ITEM_ID              target
-                           , uint32_t             checksum
-                           , ITEM_ID              source
-                           , uint32_t             msgId
-                           , uint32_t             result
-                           , SequenceNumber       seq) noexcept
-        : rbhBufHeader  { bufHdr }
-        , rbhTarget     { target }
-        , rbhChecksum   { checksum }
-        , rbhSource     { source }
-        , rbhMessageId  { msgId }
-        , rbhResult     { result }
-        , rbhSequenceNr { seq }
-    {
-    }
-
-    constexpr MessageHeader() = default;
-    constexpr MessageHeader(const MessageHeader& src) = default;
-    constexpr MessageHeader& operator = (const MessageHeader& src) = default;
-
-    /**
-     * \brief   The common buffer header information
-     **/
-    BufferHeader    rbhBufHeader{ };
-    /**
-     * \brief   An ID of target object, receiving message.
-     *          In remote messaging, this is Cookie of target
-     **/
-    ITEM_ID         rbhTarget   { 0 };
-    /**
-     * \brief   Data checksum value for validation check-up.
-     *          Should be ignored if value is areg::IGNORE_CHECKSUM
-     **/
-    uint32_t        rbhChecksum{ areg::CHECKSUM_INVALID };
-    /**
-     * \brief   An ID of source object, sending message.
-     *          In remote messaging, this is Cookie of source
-     **/
-    ITEM_ID         rbhSource{ 0 };
-    /**
-     * \brief   The Remote message ID registered in the system
-     **/
-    uint32_t        rbhMessageId{ 0 };
-    /**
-     * \brief   The result of processing message.
-     **/
-    uint32_t        rbhResult{ 0 };
-    /**
-     * \brief   The Remote message sequence number set during messaging
-     **/
-    SequenceNumber  rbhSequenceNr{ 0 };
-};
-
-//////////////////////////////////////////////////////////////////////////
 // areg::RawBuffer structure declaration
 //////////////////////////////////////////////////////////////////////////
 /**
@@ -308,45 +234,8 @@ struct RawBuffer
      * \brief   Byte Buffer Data followed after structure.
      *          This is referring to the first element in the data buffer.
      **/
-    BufferData      bufData[4]  { 0 };
+    BufferData      bufData[areg::BLOCK_SIZE]  { 0 };
 };
-
-
-//////////////////////////////////////////////////////////////////////////
-// areg::sRpcMessageBuffer structure declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Specify the Byte Buffer object.
- *          Contains the size of complete object,
- *          buffer information and elements followed Byte Buffer object.
- **/
-struct RawMessage
-{
-    constexpr RawMessage() = default;
-    constexpr RawMessage(const RawMessage& src) = default;
-    constexpr RawMessage(uint32_t length, uint32_t offset, BufferType bufType, uint32_t used, ITEM_ID target, uint32_t checksum, ITEM_ID source, uint32_t  msgId, uint32_t result, SequenceNumber seq)
-        : rbHeader{ length, offset, bufType, used, target, checksum, source, msgId, result, seq }, rbData{0}
-    {
-    }
-
-    constexpr RawMessage(uint32_t length, uint32_t offset, BufferType bufType, ITEM_ID target, ITEM_ID source, uint32_t  msgId)
-        : rbHeader{ length, offset, bufType, target, source, msgId}, rbData{ 0 }
-    {
-    }
-
-    constexpr RawMessage& operator = (const RawMessage& src) = default;
-
-    /**
-     * \brief   Byte Buffer information
-     **/
-    MessageHeader    rbHeader{ };
-    /**
-     * \brief   Byte Buffer Data followed after structure.
-     *          This is referring to the first element in the data buffer.
-     **/
-    BufferData      rbData[4]{ 0 };
-};
-
 
 //////////////////////////////////////////////////////////////////////////
 // areg::Endpoint structure declaration
@@ -427,7 +316,7 @@ struct RawService
  *                             refcount drops to zero. MUST NOT be used for any other purpose.
  *                  128
  **/
-struct EventHeader
+struct alignas(areg::BLOCK_SIZE) EventHeader
 {
     areg::BufferHeader  bufHeader   {   };  //!< [0..15]    allocation metadata
     uint32_t            target      { 0 };  //!< [16..19]   routing destination cookie
@@ -465,13 +354,13 @@ struct RawEnvelope
     constexpr RawEnvelope& operator = (const RawEnvelope& src) = default;
 
     areg::EventHeader   envHeader { };      //!< event header at start of allocation
-    areg::BufferData    envData[8]{ 0 };    //!< first bytes of payload area
+    areg::BufferData    envData[areg::BLOCK_SIZE];
 };
 
 static_assert(sizeof(areg::Endpoint)    == 20               , "Endpoint must be exactly 20 bytes");
 static_assert(sizeof(areg::RawService)  ==  8               , "RawService must be exactly 8 bytes");
 static_assert(sizeof(areg::EventHeader) == 128              , "EventHeader must be exactly 128 bytes");
-static_assert(sizeof(areg::RawEnvelope) == 136              , "RawEnvelope must be exactly 136 bytes");
+static_assert(sizeof(areg::RawEnvelope) == 128 + areg::BLOCK_SIZE, "RawEnvelope must be exactly 136 bytes");
 static_assert(offsetof(areg::EventHeader, target)    == 16  , "EventHeader.target must be at offset 16");
 static_assert(offsetof(areg::EventHeader, provider)  == 24  , "EventHeader.provider must be at offset 24");
 static_assert(offsetof(areg::EventHeader, consumer)  == 44  , "EventHeader.consumer must be at offset 44");

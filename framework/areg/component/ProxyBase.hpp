@@ -643,6 +643,21 @@ protected:
     virtual ServiceRequestEvent create_request( const areg::SharedBuffer & args, uint32_t reqId ) = 0;
 
     /**
+     * \brief   Creates an empty (no-payload) request event of the proxy's concrete type, with the
+     *          buffer allocated for the header plus \a reserve payload bytes. The caller serializes
+     *          parameters directly into the event via write_stream(), so the request is built in a
+     *          single heap allocation (no intermediate SharedBuffer + copy, no reallocation).
+     *          The base returns an invalid event; generated proxies override it. Used by
+     *          create_request_event(); pair it with send_request_event(ServiceRequestEvent&, caller).
+     *
+     * \param   reqId       The ID of the request call.
+     * \param   reserve     Payload bytes to reserve after the header for the serialized parameters.
+     * \return  A typed empty request event; check is_valid() before use.
+     **/
+    [[nodiscard]]
+    virtual ServiceRequestEvent create_request( uint32_t reqId, uint32_t reserve );
+
+    /**
      * \brief   Creates a request event to start or stop receiving update notifications. Must be
      *          overridden by derived classes.
      *
@@ -870,6 +885,22 @@ protected:
     void send_request_event( uint32_t reqId, const areg::SharedBuffer & args, NotificationConsumer * caller );
 
     void send_request_event(ServiceRequestEvent& reqEvent, NotificationConsumer* caller);
+
+    /**
+     * \brief   Builds an empty, ready-to-fill request event in a single heap allocation. Generated
+     *          proxies write the request parameters straight into the returned event's write_stream()
+     *          and then pass it to send_request_event(ServiceRequestEvent&, caller). This replaces the
+     *          old "serialize into a SharedBuffer, then copy it into the event" path (two allocations
+     *          plus a copy) with one allocation and no copy.
+     *
+     * \param   reqId       The ID of the request call.
+     * \param   reserve     Payload bytes to pre-reserve so serialization never reallocates. 0 (default)
+     *                      reserves nothing — fine for small requests that fit the initial block; pass
+     *                      the expected payload size for large requests (e.g. ping_pong_4096/65536).
+     * \return  A typed request event; check is_valid() before serializing into it.
+     **/
+    [[nodiscard]]
+    ServiceRequestEvent create_request_event( uint32_t reqId, uint32_t reserve = 0u );
 
     /**
      * \brief   Sends a request to the stub to start or stop sending update notifications.

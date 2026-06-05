@@ -150,17 +150,6 @@ enum class EventCallType : uint8_t
 [[nodiscard]]
 static inline constexpr const char* as_string(areg::EventCallType callType) noexcept;
 
-/************************************************************************
- * areg::RawEvent
- * Cache-line-aligned in-process event overlay (alignas(64)).
- * Payload bytes follow the header at PAYLOAD_OFFSET in the allocation.
- ************************************************************************/
-struct RawEvent
-{
-    areg::EventHeader   evtHeader { };
-    static constexpr uint32_t PAYLOAD_OFFSET { sizeof(areg::EventHeader) };
-};
-
 /**
  * \brief   Returns true if the event type is matching any bit set of the give event.
  **/

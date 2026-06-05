@@ -70,12 +70,14 @@ public:
      * \param   respId      The response message ID
      * \param   eventType       The type of event.
      * \param   seqNr           The sequence number of call.
+     * \param   initSize        Payload bytes to reserve after the header for serialized parameters.
      **/
     ServiceResponseEvent( const ProxyAddress & target
                         , areg::ResultType result
                         , uint32_t respId
                         , areg::EventType eventType
-                        , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY );
+                        , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
+                        , uint32_t initSize = 0u );
 
     /**
      * \brief   Constructs from a received EventEnvelope (IPC receive path). Shares the buffer (O(1)).

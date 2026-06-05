@@ -172,7 +172,7 @@ RemoteResponseEvent ProxyBase::request_failure_event(const ProxyAddress & target
 {
     LOG_SCOPE( areg_component_ProxyBase, request_failure_event);
 
-    std::shared_ptr<ProxyBase> proxy = ProxyBase::find_proxy(target);
+    std::shared_ptr<ProxyBase> proxy = ProxyBase::find_proxy(static_cast<uint32_t>(target));
     return (proxy.get() != nullptr ? proxy->create_request_failed(target, msgId, errCode, seqNr) : RemoteResponseEvent(EventEnvelope{}));
 }
 
@@ -456,7 +456,8 @@ void ProxyBase::notify_listeners( uint32_t respId, areg::ResultType result, cons
     for (uint32_t i = 0; i < listenerList.size(); ++ i)
     {
         const ProxyBase::Listener & elem = listenerList.value_at(i);
-        send_notification_event(respId, result, seqNrToSearch, elem.mListener);
+        // send_notification_event(respId, result, seqNrToSearch, elem.mListener);
+        elem.mListener->process_notification(respId, result, seqNrToSearch);
     }
 }
 
@@ -465,6 +466,13 @@ void ProxyBase::send_notification_event( uint32_t msgId, areg::ResultType resTyp
     NotificationEventData data(self(), resType, msgId, seqNr);
     NotificationEvent eventElem{ create_client_notification(data) };
     eventElem.set_event_consumer(static_cast<EventConsumer*>(caller));
+    // NOTE (Task 4): the notification is intentionally POSTED to the proxy's own dispatcher queue,
+    // not dispatched synchronously here. Posting decouples the client callback from the stack of the
+    // event currently being processed: a synchronous dispatch_self() lets a callback that triggers
+    // teardown/quit (or re-enters the proxy) run re-entrantly inside the dispatcher loop, which breaks
+    // the single-threaded mode (verified: 03_onethread aborts on shutdown with
+    // EventDispatcher::on_run mDispatcherThread!=nullptr). The deferred queue hop is the framework's
+    // re-entrancy-safety guarantee and must be preserved. See product/tasks/2026-06-04-3-performance.md.
     if (!mDispatcherThread.event_dispatcher().post_event(eventElem))
         eventElem.destroy_event();
 }
@@ -490,6 +498,17 @@ void ProxyBase::process_generic_event( Event& eventElem )
         if (consumer != nullptr)
             process_available_event(*consumer, delay);
     }
+}
+
+ServiceRequestEvent ProxyBase::create_request( uint32_t /*reqId*/, uint32_t /*reserve*/ )
+{
+    // Base returns an invalid event; generated proxies override to return their concrete request event.
+    return ServiceRequestEvent(EventEnvelope{});
+}
+
+ServiceRequestEvent ProxyBase::create_request_event( uint32_t reqId, uint32_t reserve /*= 0u*/ )
+{
+    return create_request(reqId, reserve);
 }
 
 void ProxyBase::send_request_event( uint32_t reqId, const SharedBuffer& args, NotificationConsumer *caller )

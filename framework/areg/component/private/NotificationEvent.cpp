@@ -133,4 +133,9 @@ void NotificationConsumer::start_event_processing( Event& eventElem )
     }
 }
 
+void NotificationConsumer::process_notification(uint32_t /*msdId*/, areg::ResultType /*result*/, SequenceNumber /*seqNr*/)
+{
+
+}
+
 } // namespace areg

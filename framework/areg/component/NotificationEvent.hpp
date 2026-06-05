@@ -293,6 +293,8 @@ public:
      **/
     virtual void process_notification_event( NotificationEvent & eventElem ) = 0;
 
+    virtual void process_notification(uint32_t msdId, areg::ResultType result, SequenceNumber seqNr);
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////

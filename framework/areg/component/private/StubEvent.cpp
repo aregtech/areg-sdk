@@ -37,8 +37,8 @@ StubEvent::StubEvent(EventEnvelope&& envelope) noexcept
 {
 }
 
-StubEvent::StubEvent( const StubAddress& toTarget, areg::EventType eventType )
-    : Event (eventType)
+StubEvent::StubEvent( const StubAddress& toTarget, areg::EventType eventType, uint32_t initSize /*= 0u*/ )
+    : Event (eventType, initSize)
 {
     areg::EventHeader* hdr{ header() };
     if (hdr != nullptr)

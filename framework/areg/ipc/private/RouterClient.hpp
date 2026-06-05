@@ -307,7 +307,11 @@ inline const areg::Channel& RouterClient::connection_channel() const noexcept
 inline void RouterClient::on_message_received(const EventEnvelope& msgReceived)
 {
     ASSERT(areg::is_executable_id(static_cast<uint32_t>(msgReceived.message_id())));
-    if (!RemoteEventFactory::route_incoming_message(msgReceived, mChannel))
+    // Non-hot, event-dispatched entry (executables route directly via process_received_message).
+    // route_incoming_message consumes its argument, so route a local envelope view (O(1) shared_ptr
+    // copy) and keep the const-correct delivery chain (Event::envelope()) intact.
+    EventEnvelope routable{ msgReceived };
+    if (!RemoteEventFactory::route_incoming_message(routable, mChannel))
     {
         failed_process_message(msgReceived);
     }

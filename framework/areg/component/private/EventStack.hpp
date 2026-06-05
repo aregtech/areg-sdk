@@ -98,12 +98,13 @@ public:
     uint32_t delete_except(uint32_t eventClassId) noexcept;
 
     /**
-     * \brief   Pushes an event onto the queue by value (copy or move).
+     * \brief   Pushes an event onto the queue by moving it in (O(1) shared_ptr transfer; no payload copy).
+     *          The caller's event is left in a moved-from (empty/invalid) state after the push.
      *
-     * \param   event   The event to push.
+     * \param   event   The event to push; moved in.
      * \return  Number of events in the queue after the push.
      **/
-    inline uint32_t push_event(Event event) noexcept;
+    inline uint32_t push_event(Event& event) noexcept;
 
     /**
      * \brief   Removes and returns the first event by move (FIFO order).
@@ -151,7 +152,7 @@ inline uint32_t EventStack::count() const noexcept
     return static_cast<uint32_t>(mValueList.size());
 }
 
-inline uint32_t EventStack::push_event(Event event) noexcept
+inline uint32_t EventStack::push_event(Event& event) noexcept
 {
     mValueList.push_back(std::move(event));
     return static_cast<uint32_t>(mValueList.size());
