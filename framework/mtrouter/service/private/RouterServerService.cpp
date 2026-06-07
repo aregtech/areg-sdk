@@ -78,7 +78,7 @@ void RouterServerService::unregister_service_consumer(const areg::ProxyAddress &
     LOG_ERR("Method is not implemented, this should not be called");
 }
 
-void RouterServerService::on_message_received(const areg::EventEnvelope &msgReceived)
+void RouterServerService::on_message_received(const areg::MessageEnvelope &msgReceived)
 {
     LOG_SCOPE( mtrouter_service_RouterServerService, on_message_received );
 
@@ -226,7 +226,7 @@ void RouterServerService::on_message_received(const areg::EventEnvelope &msgRece
     }
 }
 
-void RouterServerService::on_message_send(const areg::EventEnvelope &msgSend)
+void RouterServerService::on_message_send(const areg::MessageEnvelope &msgSend)
 {
     LOG_SCOPE( mtrouter_service_RouterServerService, on_message_send );
 
@@ -300,7 +300,7 @@ void RouterServerService::on_provider_registered(const areg::StubAddress & stub)
                 const areg::ProxyAddress & addrProxy    = proxyService.service_address();
                 if ( (proxyService.service_status() == areg::ServiceConnectionState::Connected) && (addrProxy.source() != stub.source()) )
                 {
-                    areg::EventEnvelope msgRegisterProxy{ areg::client_registered_event(addrProxy, mServerConnection.channel_id(), stub.source()) };
+                    areg::MessageEnvelope msgRegisterProxy{ areg::client_registered_event(addrProxy, mServerConnection.channel_id(), stub.source()) };
                     send_message(msgRegisterProxy);
 
                     LOG_DBG("Send to stub [ %s ] the proxy [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
@@ -313,7 +313,7 @@ void RouterServerService::on_provider_registered(const areg::StubAddress & stub)
 
                     if ( sendList.add_if_unique(addrProxy.source()) )
                     {
-                        areg::EventEnvelope msgRegisterProvider{ areg::service_registered_event(stub, mServerConnection.channel_id(), addrProxy.source()) };
+                        areg::MessageEnvelope msgRegisterProvider{ areg::service_registered_event(stub, mServerConnection.channel_id(), addrProxy.source()) };
                         send_message(msgRegisterProvider);
 
                         LOG_DBG("Send to proxy [ %s ] the provider [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
@@ -370,7 +370,7 @@ void RouterServerService::on_consumer_registered(const areg::ProxyAddress & prox
 
         if ( (proxyService.service_status() == areg::ServiceConnectionState::Connected) && (proxy.source() != addrStub.source()) )
         {
-            areg::EventEnvelope msgRegisterProxy{ areg::client_registered_event(proxy, mServerConnection.channel_id(), addrStub.source()) };
+            areg::MessageEnvelope msgRegisterProxy{ areg::client_registered_event(proxy, mServerConnection.channel_id(), addrStub.source()) };
             send_message(msgRegisterProxy);
 
             LOG_DBG("Send to stub [ %s ] the proxy [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
@@ -381,7 +381,7 @@ void RouterServerService::on_consumer_registered(const areg::ProxyAddress & prox
                         , msgRegisterProxy.source()
                         , msgRegisterProxy.target());
 
-            areg::EventEnvelope msgRegisterProvider{ areg::service_registered_event(addrStub, mServerConnection.channel_id(), proxy.source()) };
+            areg::MessageEnvelope msgRegisterProvider{ areg::service_registered_event(addrStub, mServerConnection.channel_id(), proxy.source()) };
             send_message(msgRegisterProvider);
 
             LOG_DBG("Send to proxy [ %s ] the provider [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
@@ -465,7 +465,7 @@ void RouterServerService::on_consumer_unregistered(const areg::ProxyAddress & pr
                     , areg::ProxyAddress::to_path(proxy).as_string()
                     , static_cast<uint32_t>(cookie));
 
-    areg::EventEnvelope msgRegisterProxy;
+    areg::MessageEnvelope msgRegisterProxy;
     ServiceProxy svcProxy;
     const ServiceStub * svcStub     = nullptr;
 
@@ -506,7 +506,7 @@ void RouterServerService::on_service_channel_lost(const areg::Channel & /* chann
 {
 }
 
-void RouterServerService::failed_process_message(const areg::EventEnvelope & /* msgUnprocessed */)
+void RouterServerService::failed_process_message(const areg::MessageEnvelope & /* msgUnprocessed */)
 {
 }
 

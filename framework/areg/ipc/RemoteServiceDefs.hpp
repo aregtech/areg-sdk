@@ -19,7 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
-#include "areg/base/EventEnvelope.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/component/ServiceDefs.hpp"
@@ -148,7 +148,7 @@ constexpr areg::EventHeader message_register_notify() noexcept;
  * \return  Returns initialized connection request message.
  **/
 [[nodiscard]]
-AREG_API EventEnvelope create_connect_request(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource);
+AREG_API MessageEnvelope create_connect_request(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource);
 
 /**
  * \brief   Creates a disconnection request message with specified source and target.
@@ -158,7 +158,7 @@ AREG_API EventEnvelope create_connect_request(const ITEM_ID & source, const ITEM
  * \return  Returns initialized disconnection request message.
  **/
 [[nodiscard]]
-AREG_API EventEnvelope create_disconnect_request( const ITEM_ID & source, const ITEM_ID & target );
+AREG_API MessageEnvelope create_disconnect_request( const ITEM_ID & source, const ITEM_ID & target );
 
 /**
  * \brief   Creates a connection available notification message.
@@ -168,7 +168,7 @@ AREG_API EventEnvelope create_disconnect_request( const ITEM_ID & source, const 
  * \return  Returns initialized connection available notification message.
  **/
 [[nodiscard]]
-AREG_API EventEnvelope create_connect_notify( const ITEM_ID & source, const ITEM_ID & target );
+AREG_API MessageEnvelope create_connect_notify( const ITEM_ID & source, const ITEM_ID & target );
 
 /**
  * \brief   Creates a connection rejection notification message.
@@ -178,7 +178,7 @@ AREG_API EventEnvelope create_connect_notify( const ITEM_ID & source, const ITEM
  * \return  Returns initialized connection rejection notification message.
  **/
 [[nodiscard]]
-AREG_API EventEnvelope create_reject_notify( const ITEM_ID & source, const ITEM_ID & target );
+AREG_API MessageEnvelope create_reject_notify( const ITEM_ID & source, const ITEM_ID & target );
 
 /**
  * \brief   Creates a disconnection notification message sent by server to clients.
@@ -188,7 +188,7 @@ AREG_API EventEnvelope create_reject_notify( const ITEM_ID & source, const ITEM_
  * \return  Returns initialized disconnection notification message.
  **/
 [[nodiscard]]
-AREG_API EventEnvelope create_disconnect_notify( const ITEM_ID & source, const ITEM_ID & target );
+AREG_API MessageEnvelope create_disconnect_notify( const ITEM_ID & source, const ITEM_ID & target );
 
 /**
  * \brief   Creates a message to register a Stub at the router.
@@ -199,7 +199,7 @@ AREG_API EventEnvelope create_disconnect_notify( const ITEM_ID & source, const I
  * \return  Returns initialized Stub registration message.
  **/
 [[nodiscard]]
-AREG_API EventEnvelope router_register_service( const StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target);
+AREG_API MessageEnvelope router_register_service( const StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target);
 
 /**
  * \brief   Creates a message to unregister a Stub from the router.
@@ -211,7 +211,7 @@ AREG_API EventEnvelope router_register_service( const StubAddress & stub, const 
  * \return  Returns initialized Stub unregistration message.
  **/
 [[nodiscard]]
-AREG_API EventEnvelope router_unregister_service( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+AREG_API MessageEnvelope router_unregister_service( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
 /**
  * \brief   Creates a message to register a Proxy at the router.
@@ -222,7 +222,7 @@ AREG_API EventEnvelope router_unregister_service( const StubAddress & stub, areg
  * \return  Returns initialized Proxy registration message.
  **/
 [[nodiscard]]
-AREG_API EventEnvelope router_register_consumer( const ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target );
+AREG_API MessageEnvelope router_register_consumer( const ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target );
 
 /**
  * \brief   Creates a message to unregister a Proxy from the router.
@@ -234,7 +234,7 @@ AREG_API EventEnvelope router_register_consumer( const ProxyAddress & proxy, con
  * \return  Returns initialized Proxy unregistration message.
  **/
 [[nodiscard]]
-AREG_API EventEnvelope router_unregister_consumer( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+AREG_API MessageEnvelope router_unregister_consumer( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
 /**
  * \brief   Creates a Stub availability notification message to broadcast.
@@ -245,7 +245,7 @@ AREG_API EventEnvelope router_unregister_consumer( const ProxyAddress & proxy, a
  * \return  Returns initialized Stub availability notification message.
  **/
 [[nodiscard]]
-AREG_API EventEnvelope service_registered_event( const StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target );
+AREG_API MessageEnvelope service_registered_event( const StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target );
 
 /**
  * \brief   Creates a Stub unavailability notification message to broadcast.
@@ -257,7 +257,7 @@ AREG_API EventEnvelope service_registered_event( const StubAddress & stub, const
  * \return  Returns initialized Stub unavailability notification message.
  **/
 [[nodiscard]]
-AREG_API EventEnvelope service_unregistered_event( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+AREG_API MessageEnvelope service_unregistered_event( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
 /**
  * \brief   Creates a Proxy availability notification message to broadcast.
@@ -268,7 +268,7 @@ AREG_API EventEnvelope service_unregistered_event( const StubAddress & stub, are
  * \return  Returns initialized Proxy availability notification message.
  **/
 [[nodiscard]]
-AREG_API EventEnvelope client_registered_event( const ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target);
+AREG_API MessageEnvelope client_registered_event( const ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target);
 
 /**
  * \brief   Creates a Proxy unavailability notification message to broadcast.
@@ -280,7 +280,7 @@ AREG_API EventEnvelope client_registered_event( const ProxyAddress & proxy, cons
  * \return  Returns initialized Proxy unavailability notification message.
  **/
 [[nodiscard]]
-AREG_API EventEnvelope client_unregistered_event( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+AREG_API MessageEnvelope client_unregistered_event( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
 /**
  * \brief   Checks whether specified message is a connect request.
@@ -289,7 +289,7 @@ AREG_API EventEnvelope client_unregistered_event( const ProxyAddress & proxy, ar
  * \return  Returns true if the message is a connect request.
  **/
 [[nodiscard]]
-AREG_API bool is_server_hello( const EventEnvelope & msg );
+AREG_API bool is_server_hello( const MessageEnvelope & msg );
 
 /**
  * \brief   Checks whether specified message is a disconnect request.
@@ -298,7 +298,7 @@ AREG_API bool is_server_hello( const EventEnvelope & msg );
  * \return  Returns true if the message is a disconnect request.
  **/
 [[nodiscard]]
-AREG_API bool is_server_bye( const EventEnvelope & msg );
+AREG_API bool is_server_bye( const MessageEnvelope & msg );
 
 /**
  * \brief   Checks whether specified message is a client notification request.
@@ -307,7 +307,7 @@ AREG_API bool is_server_bye( const EventEnvelope & msg );
  * \return  Returns true if the message is a client notification request.
  **/
 [[nodiscard]]
-AREG_API bool is_notify_client( const EventEnvelope & msg );
+AREG_API bool is_notify_client( const MessageEnvelope & msg );
 
 /**
  * \brief   Checks whether specified message is a service registration request.
@@ -316,7 +316,7 @@ AREG_API bool is_notify_client( const EventEnvelope & msg );
  * \return  Returns true if the message is a service registration request.
  **/
 [[nodiscard]]
-AREG_API bool is_register_message( const EventEnvelope & msg );
+AREG_API bool is_register_message( const MessageEnvelope & msg );
 
 //////////////////////////////////////////////////////////////////////////
 // Make RemoteServiceKind and ConnectionType streamable

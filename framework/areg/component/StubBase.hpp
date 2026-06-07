@@ -717,14 +717,12 @@ protected:
 
 private:
     /**
-     * \brief   Message ID of the listener currently being processed inside process_request_event().
-     *          Set to INVALID_MESSAGE_ID when no request is active or after cancel/unblock.
+     * \brief   Message ID of the listener currently being processed.
      **/
     uint32_t                        mCurrMsgId;
 
     /**
-     * \brief   Index of the current listener within mListenerMap[mCurrMsgId]. Valid only when
-     *          mCurrMsgId != INVALID_MESSAGE_ID.
+     * \brief   Index of the current listener.
      **/
     uint32_t                        mCurrIndex;
 

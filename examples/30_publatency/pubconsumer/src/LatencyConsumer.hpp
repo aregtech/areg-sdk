@@ -226,7 +226,7 @@ private:
     static constexpr std::string_view MSG_EX1       { "   -s (or `start`" };
     static constexpr std::string_view MSG_EX2       { "   -s -m=pp0 -c=1000 -w=50           (or `start mode=pp0 count=1000 warmup=50`)" };
     static constexpr std::string_view MSG_EX3       { "   -s -m=pp8 -c=5000 -w=100          (or `start mode=pp8 count=5000 warmup=100`)" };
-    static constexpr std::string_view MSG_EX4       { "   -s -m=bc0 -c=2000 -d=5            (or `start mode=bc0 count=2000 dur=5`)" };
+    static constexpr std::string_view MSG_EX4       { "   -s -m=bc64 -c=5000 -w=500         (or `start mode=bc64 count=5000 warmup=500`)" };
     static constexpr std::string_view MSG_EX5       { "   -s -m=bc8 -c=1000 -o=results.csv  (or `start mode=bc8 count=1000 out=results.csv`)" };
     static constexpr std::string_view MSG_EX6       { " PP Modes: pp0 | pp8 | pp16 | pp32 | pp64 | pp128 | pp512 | pp1024 | pp4096 | pp65536" };
     static constexpr std::string_view MSG_EX7       { " BC Modes: bc0 | bc8 | bc16 | bc32 | bc64 | bc128 | bc512 | bc1024 | bc4096 | bc65536" };
@@ -503,6 +503,7 @@ private:
     void _start_test();
     void _stop_test();
     void _send_next_ping();
+    void _send_next_oneway();   //!< Broadcast/one-way: pull the next message from the provider.
     void _record_sample(uint64_t t1, uint64_t t2, uint64_t t4);
 
     /**

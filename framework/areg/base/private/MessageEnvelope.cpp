@@ -7,14 +7,14 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/base/private/EventEnvelope.cpp
+ * \file        areg/base/private/MessageEnvelope.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Event transport buffer. Extends SharedBuffer with EventHeader
  *              at the start of the allocation and a variable payload stream.
  *
  ************************************************************************/
-#include "areg/base/EventEnvelope.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/MathDefs.hpp"
@@ -26,31 +26,18 @@
 
 namespace areg {
 
-// EventEnvelopeDeleter is used for buffers allocated by init_envelope() and the
-// EventHeader-based constructor (IPC receive path only).
-// IPC buffers always arrive with internal1/internal2/custom zeroed, so there is
-// never a DATA_CLASS cleanup hook to call here. DATA_CLASS destruction for local
-// custom events is owned exclusively by Event::~Event() and destroy_event(), which
-// run on the Event owner before the shared_ptr refcount ever reaches zero.
-// This deleter just frees the raw bytes.
-namespace
-{
+// Ownership of the heap block is handled by areg::RawBufferPtr (intrusive refcount in
+// BufferHeader::biRefCount): one allocation per envelope, freed with delete[] when the last
+// owner drops its reference. DATA_CLASS destruction for local custom events is owned exclusively
+// by Event::~Event() and destroy_event(), which run on the Event owner while it is the sole owner
+// (before the refcount reaches zero). IPC buffers always arrive with internal1/internal2/custom
+// zeroed, so there is never a DATA_CLASS cleanup hook on the receive path.
 
-struct EventEnvelopeDeleter
-{
-    void operator()(areg::RawBuffer* p) const noexcept
-    {
-        delete[] reinterpret_cast<uint8_t*>(p);
-    }
-};
+const SequenceNumber MessageEnvelope::_INVALID_SEQUENCE{ areg::SEQUENCE_NUMBER_ANY };
+const areg::Endpoint MessageEnvelope::_INVALID_ENDPOINT{ };
+const areg::RawService MessageEnvelope::_INVALID_SERVICE{ };
 
-} // anonymous namespace
-
-const SequenceNumber EventEnvelope::_INVALID_SEQUENCE{ areg::SEQUENCE_NUMBER_ANY };
-const areg::Endpoint EventEnvelope::_INVALID_ENDPOINT{ };
-const areg::RawService EventEnvelope::_INVALID_SERVICE{ };
-
-uint32_t EventEnvelope::_checksum_calculate(const areg::RawEnvelope& env) noexcept
+uint32_t MessageEnvelope::_checksum_calculate(const areg::RawEnvelope& env) noexcept
 {
     const areg::EventHeader& hdr{ env.envHeader };
     const uint32_t buffer[] =
@@ -74,46 +61,8 @@ uint32_t EventEnvelope::_checksum_calculate(const areg::RawEnvelope& env) noexce
     return areg::crc32_calculate(reinterpret_cast<const uint8_t*>(buffer), static_cast<int32_t>(sizeof(buffer)));
 }
 
-EventEnvelope::EventEnvelope(uint16_t eventType, uint8_t prio, uint32_t reserveSize /*= 0*/, uint32_t blockSize /*= areg::BLOCK_SIZE*/)
-    : SharedBuffer(blockSize)
-{
-    if (eventType != 0)
-    {
-        reserve(static_cast<uint32_t>(sizeof(areg::EventHeader)) + reserveSize, false);
-        set_event_type(eventType);
-        set_priority(prio);
-    }
-}
-
-EventEnvelope::EventEnvelope(uint32_t blockSize /*= areg::BLOCK_SIZE*/)
-    : SharedBuffer(blockSize)
-{
-}
-
-EventEnvelope::EventEnvelope(bool init, uint32_t blockSize /*= areg::BLOCK_SIZE*/)
-    : SharedBuffer(blockSize)
-{
-    if (init)
-    {
-        reserve(blockSize == 0u ? 1u : blockSize, false);
-    }
-}
-
-EventEnvelope::EventEnvelope(uint32_t reserveSize, uint32_t blockSize)
-    : SharedBuffer(blockSize)
-{
-    reserve(reserveSize, false);
-}
-
-EventEnvelope::EventEnvelope(const uint8_t* buffer, uint32_t size, uint32_t blockSize /*= areg::BLOCK_SIZE*/)
-    : SharedBuffer(blockSize)
-{
-    reserve(size, false);
-    write_data(buffer, size);
-}
-
-EventEnvelope::EventEnvelope(const areg::EventHeader& evtHeader, uint32_t reserve, uint32_t blockSize)
-    : SharedBuffer(blockSize)
+MessageEnvelope::MessageEnvelope(const areg::EventHeader& evtHeader, uint32_t reserve, uint32_t blockSize)
+    : BufferBase(blockSize)
 {
     uint32_t sizeUsed{ std::max(evtHeader.bufHeader.biUsed, reserve != 0u ? reserve : 1u) };
     sizeUsed = areg::align_size(sizeUsed, block_size());
@@ -128,11 +77,11 @@ EventEnvelope::EventEnvelope(const areg::EventHeader& evtHeader, uint32_t reserv
         hdr.bufHeader.biLength = sizeUsed;
         hdr.bufHeader.biOffset = sizeof(areg::EventHeader);
         hdr.bufHeader.biUsed   = 0u;
-        mByteBuffer = std::shared_ptr<areg::RawBuffer>(reinterpret_cast<areg::RawBuffer*>(env), EventEnvelopeDeleter());
+        mByteBuffer = areg::RawBufferPtr(reinterpret_cast<areg::RawBuffer*>(env));   // adopt: sets biRefCount = 1
     }
 }
 
-uint32_t EventEnvelope::init_buffer(uint8_t* newBuffer, uint32_t bufLength, bool makeCopy) const noexcept
+uint32_t MessageEnvelope::init_buffer(uint8_t* newBuffer, uint32_t bufLength, bool makeCopy) const noexcept
 {
     if (newBuffer == nullptr)
         return Cursor::INVALID_CURSOR_POSITION;
@@ -166,7 +115,7 @@ uint32_t EventEnvelope::init_buffer(uint8_t* newBuffer, uint32_t bufLength, bool
     return hdrDst.bufHeader.biUsed;
 }
 
-void EventEnvelope::buffer_completion_fix() const
+void MessageEnvelope::buffer_completion_fix() const
 {
     const areg::EventHeader* hdr{ header() };
     if (hdr == nullptr)
@@ -175,10 +124,10 @@ void EventEnvelope::buffer_completion_fix() const
     if (hdr->checksum != areg::CHECKSUM_INVALID)
         return;
 
-    const_cast<areg::EventHeader*>(hdr)->checksum = EventEnvelope::_checksum_calculate(reinterpret_cast<const areg::RawEnvelope&>(*hdr));
+    const_cast<areg::EventHeader*>(hdr)->checksum = MessageEnvelope::_checksum_calculate(reinterpret_cast<const areg::RawEnvelope&>(*hdr));
 }
 
-uint8_t* EventEnvelope::init_envelope(const areg::EventHeader& evtHeader, uint32_t reserve /*= 0*/)
+uint8_t* MessageEnvelope::init_envelope(const areg::EventHeader& evtHeader, uint32_t reserve /*= 0*/)
 {
     uint32_t sizeUsed{ std::max(evtHeader.bufHeader.biUsed, reserve != 0u ? reserve : 1u) };
     sizeUsed = areg::align_size(sizeUsed, block_size());
@@ -193,13 +142,12 @@ uint8_t* EventEnvelope::init_envelope(const areg::EventHeader& evtHeader, uint32
 
             areg::mem_copy(&env->envHeader, sizeof(areg::EventHeader), &evtHeader, sizeof(areg::EventHeader));
 
-            env->envHeader.bufHeader.biLength = biLength;
-            env->envHeader.bufHeader.biOffset = biOffset;
-            env->envHeader.bufHeader.biUsed   = std::min(evtHeader.bufHeader.biUsed, biLength);
+            env->envHeader.bufHeader.biLength   = biLength;
+            env->envHeader.bufHeader.biOffset   = biOffset;
+            env->envHeader.bufHeader.biRefCount = 1u;   // restore: the memcpy above clobbered the live refcount (sole owner)
+            env->envHeader.bufHeader.biUsed     = std::min(evtHeader.bufHeader.biUsed, biLength);
 
             mPosition  = 0u;
-            mViewStart = 0u;
-            mViewEnd   = 0u;
             return env->envData;
         }
     }
@@ -218,16 +166,15 @@ uint8_t* EventEnvelope::init_envelope(const areg::EventHeader& evtHeader, uint32
     hdr.bufHeader.biLength = sizeUsed;
     hdr.bufHeader.biOffset = sizeof(areg::EventHeader);
     hdr.bufHeader.biUsed   = 0u;
-    mByteBuffer = std::shared_ptr<areg::RawBuffer>(
-        reinterpret_cast<areg::RawBuffer*>(env), EventEnvelopeDeleter());
+    mByteBuffer = areg::RawBufferPtr(reinterpret_cast<areg::RawBuffer*>(env));   // adopt: sets biRefCount = 1
 
     return env->envData;
 }
 
-EventEnvelope EventEnvelope::clone(const areg::Endpoint* consumer /*= nullptr*/,
+MessageEnvelope MessageEnvelope::clone(const areg::Endpoint* consumer /*= nullptr*/,
                                    const areg::Endpoint* provider /*= nullptr*/) const
 {
-    EventEnvelope result;
+    MessageEnvelope result;
     const areg::RawEnvelope* env{ raw_envelope() };
     if (env == nullptr)
         return result;
@@ -256,7 +203,7 @@ EventEnvelope EventEnvelope::clone(const areg::Endpoint* consumer /*= nullptr*/,
     return result;
 }
 
-void EventEnvelope::destroy_event() noexcept
+void MessageEnvelope::destroy_event() noexcept
 {
     if (is_unique())
     {

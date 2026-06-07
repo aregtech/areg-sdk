@@ -14,7 +14,7 @@
  ************************************************************************/
 #include "aregextend/service/private/ServerReceiveThread.hpp"
 
-#include "areg/base/EventEnvelope.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/component/ExitEvent.hpp"
@@ -25,6 +25,8 @@
 #include "aregextend/service/ConnectionHandler.hpp"
 #include "aregextend/service/ServerConnection.hpp"
 #include "aregextend/service/private/ServiceThreadHelper.hpp"
+
+#include "areg/base/private/DebugDefs.hpp"
 
 namespace areg::ext {
 
@@ -40,7 +42,7 @@ ServerReceiveThread::ServerReceiveThread( ConnectionHandler & connectHandler, Re
 {
 }
 
-void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const areg::SocketAddress & addrAccepted, areg::EventEnvelope & msgReceived)
+void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const areg::SocketAddress & addrAccepted, areg::MessageEnvelope & msgReceived)
 {
     DEBUG_LOG_SCOPE( areg_aregextend_service_ServerReceiveThread, _process_connection_event );
     SocketAccepted clientSocket;
@@ -111,7 +113,10 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
                     , addSocket.host_port()
                     , msgReceived.size_used());
 
-        mRemoteService.process_received_message(msgReceived, clientSocket);
+        {
+            AREG_LT_SCOPE(areg::LtStage::RecvNode);  // router inline route+forward
+            mRemoteService.process_received_message(msgReceived, clientSocket);
+        }
         if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, areg::THREAD_DRAIN_LIMIT - 1u, clientSocket,
                 msgReceived, [this](uint64_t bytes, uint32_t msgs) { accumulate_received(bytes, msgs); }))
         {
@@ -142,7 +147,7 @@ bool ServerReceiveThread::run_dispatcher()
     if ( mConnection.server_listen( areg::MAXIMUM_LISTEN_QUEUE_SIZE) )
     {
         SyncEvent* events[2] { &mEventExit, &mEventQueue };
-        areg::EventEnvelope msgReceived;
+        areg::MessageEnvelope msgReceived;
         areg::SocketAddress addrDrain;
         uint32_t retryCount = 0;
         do

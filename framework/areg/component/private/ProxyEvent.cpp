@@ -23,47 +23,6 @@
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
-// ProxyEvent class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// ProxyEvent class, Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-ProxyEvent::ProxyEvent( const ProxyAddress & toTarget, areg::EventType eventType, uint32_t initSize /*= 0u*/ )
-    : Event (eventType, initSize)
-{
-    areg::EventHeader* hdr{ header() };
-    if (hdr != nullptr)
-        toTarget.to_event(*hdr);
-}
-
-ProxyEvent::ProxyEvent(const ProxyAddress& toTarget, const EventEnvelope& src)
-    : Event (src)
-{
-    areg::EventHeader* hdr{ header() };
-    if (hdr != nullptr)
-        toTarget.to_event(*hdr);
-}
-
-ProxyEvent::ProxyEvent(const ProxyAddress& toTarget, EventEnvelope&& src)
-    : Event(std::move(src))
-{
-    areg::EventHeader* hdr{ header() };
-    if (hdr != nullptr)
-        toTarget.to_event(*hdr);
-}
-
-ProxyEvent::ProxyEvent(const EventEnvelope& envelope)
-    : Event(envelope)
-{
-}
-
-ProxyEvent::ProxyEvent(EventEnvelope&& envelope) noexcept
-    : Event(std::move(envelope))
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
 // ProxyEventConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
 
@@ -83,7 +42,7 @@ ProxyEventConsumer::ProxyEventConsumer( const ProxyAddress & proxy )
 void ProxyEventConsumer::start_event_processing( Event & eventElem )
 {
     const areg::EventType eventType{ eventElem.event_type() };
-    const EventEnvelope& envelope{ eventElem.envelope() };
+    const MessageEnvelope& envelope{ eventElem.envelope() };
     ASSERT(envelope.is_valid());
 
     switch (eventType)

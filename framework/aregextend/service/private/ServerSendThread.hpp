@@ -164,6 +164,9 @@ private:
      * \brief   Pre-allocated batch work list reused across every drain cycle.
      **/
     BatchEntries                    mBatch;
+    //!< Reused scratch: per-slot target cookies and resolved socket handles (POD; off the stack).
+    std::array<ITEM_ID, areg::THREAD_BATCH_LIMIT>       mTargets;
+    std::array<SOCKETHANDLE, areg::THREAD_BATCH_LIMIT>  mSockets;
     /**
      * \brief   Atomic stats (bytes + messages sent + enabled flag).
      **/

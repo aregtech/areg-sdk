@@ -19,6 +19,8 @@
 #include "areg/component/EventConsumer.hpp"
 #include "areg/component/ExitEvent.hpp"
 
+#include "areg/base/private/DebugDefs.hpp"
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -199,7 +201,13 @@ bool EventDispatcherBase::run_dispatcher()
 
             if ( prepare_dispatch_event(eventElem) )
             {
+#if defined(AREG_LATENCY_TRACE) && (AREG_LATENCY_TRACE)
+                const uint64_t _ltDisp{ AREG_LT_NOW() };
                 dispatch_event(eventElem);
+                AREG_LT_SAMPLE(areg::LtStage::CompDispatch, AREG_LT_NOW() - _ltDisp);
+#else   // defined(AREG_LATENCY_TRACE) && (AREG_LATENCY_TRACE)
+                dispatch_event(eventElem);
+#endif  // defined(AREG_LATENCY_TRACE) && (AREG_LATENCY_TRACE)
             }
 
             post_dispatch_event(eventElem);

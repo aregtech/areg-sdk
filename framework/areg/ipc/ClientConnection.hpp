@@ -21,7 +21,7 @@
 #include "areg/base/areg_global.h"
 #include "areg/ipc/SocketConnectionBase.hpp"
 
-#include "areg/base/EventEnvelope.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/SocketClient.hpp"
 namespace areg {
 
@@ -168,20 +168,20 @@ public:
      * \brief   Receives message data via socket connection. Validates checksum after receiving.
      *          Returns bytes received, zero if invalid checksum, or negative on failure.
      *
-     * \param[in,out] out_message     EventEnvelope to receive into; checksum validated after receiving.
+     * \param[in,out] out_message     MessageEnvelope to receive into; checksum validated after receiving.
      * \return  Returns length in bytes of data received; zero if checksum invalid or buffer empty;
      *          negative if socket invalid or receive failed.
      **/
-    inline int32_t receive_message( EventEnvelope & out_message ) const;
+    inline int32_t receive_message( MessageEnvelope & out_message ) const;
 
     /**
-     * \brief   Sends an EventEnvelope over the socket connection via scatter/gather I/O.
+     * \brief   Sends an MessageEnvelope over the socket connection via scatter/gather I/O.
      *          Calls buffer_completion_fix() before sending to ensure checksum is computed.
      *
      * \param   env     The envelope to send.
      * \return  Returns bytes sent on success, or 0 / negative on failure.
      **/
-    inline int32_t send_message( const EventEnvelope & env ) const;
+    inline int32_t send_message( const MessageEnvelope & env ) const;
 
     /**
      * \brief   Configures the socket-buffer sizes applied when create_socket() succeeds.
@@ -305,7 +305,7 @@ inline int32_t ClientConnection::send_messages_batch(const areg::IoBuffer* ioBuf
     return SocketConnectionBase::send_messages_batch(ioBuffer, count, mClientSocket, totalSize);
 }
 
-inline int32_t ClientConnection::receive_message(EventEnvelope & out_message) const
+inline int32_t ClientConnection::receive_message(MessageEnvelope & out_message) const
 {
     return SocketConnectionBase::receive_message(out_message, mClientSocket);
 }
@@ -321,7 +321,7 @@ inline bool ClientConnection::connect_socket()
     return true;
 }
 
-inline int32_t ClientConnection::send_message(const EventEnvelope & env) const
+inline int32_t ClientConnection::send_message(const MessageEnvelope & env) const
 {
     const areg::EventHeader * hdr{ env.header() };
     if (hdr == nullptr)

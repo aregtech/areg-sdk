@@ -27,6 +27,10 @@
 #include <new>
 #include <string.h>
 
+#if defined(_MSC_VER)
+    #include <intrin.h>     // _InterlockedIncrement16 / _InterlockedDecrement16 for the intrusive refcount
+#endif  // _MSC_VER
+
 /**
  * \brief   Memory specifies basic functions and types for objects located in memory
  *          In this namespace are defined such types like Byte Buffer structure and 
@@ -121,7 +125,7 @@ inline constexpr const char * as_string( areg::MessageResult msgResult ) noexcep
 /**
  * \brief   Types of data buffer
  **/
-enum class BufferType : int32_t
+enum class BufferType : int16_t
 {
       Unknown   = -1    //!< Unknown buffer type, not used
     , Internal  =  0    //!< Buffer type for internal communication
@@ -211,10 +215,16 @@ struct alignas(16) BufferHeader
      **/
     BufferType  biBufType   { areg::BufferType::Unknown };
     /**
+     * \brief   Intrusive owner reference count of the heap block, managed by areg::RawBufferPtr.
+     **/
+    uint16_t    biRefCount  { 0 };
+    /**
      * \brief   The length in bytes of used space in buffer. Cannot be more than biLength value.
      **/
     uint32_t    biUsed      { 0 };
 };
+
+static_assert(sizeof(areg::BufferHeader) == 16u, "BufferHeader must remain exactly 16 bytes (EventHeader layout depends on it)");
 
 //////////////////////////////////////////////////////////////////////////
 // areg::RawBuffer structure declaration
@@ -235,6 +245,204 @@ struct RawBuffer
      *          This is referring to the first element in the data buffer.
      **/
     BufferData      bufData[areg::BLOCK_SIZE]  { 0 };
+};
+
+//////////////////////////////////////////////////////////////////////////
+// Intrusive reference-count atomics (BufferHeader::biRefCount)
+//////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief   Atomically increments a 16-bit reference counter and returns the new value.
+ *          Relaxed ordering: a new owner already has a happens-before relationship through
+ *          the reference it copied from, so no additional synchronisation is required.
+ **/
+inline uint16_t atomic_inc16(uint16_t & ref) noexcept
+{
+#if defined(_MSC_VER)
+    return static_cast<uint16_t>(_InterlockedIncrement16(reinterpret_cast<volatile short *>(&ref)));
+#else   // !_MSC_VER
+    return __atomic_add_fetch(&ref, 1, __ATOMIC_RELAXED);
+#endif  // _MSC_VER
+}
+
+/**
+ * \brief   Atomically decrements a 16-bit reference counter and returns the new value.
+ *          Acquire-release ordering: guarantees that all writes by other owners are visible
+ *          before the final owner (the one observing 0) frees the block.
+ **/
+inline uint16_t atomic_dec16(uint16_t & ref) noexcept
+{
+#if defined(_MSC_VER)
+    return static_cast<uint16_t>(_InterlockedDecrement16(reinterpret_cast<volatile short *>(&ref)));
+#else   // !_MSC_VER
+    return __atomic_sub_fetch(&ref, 1, __ATOMIC_ACQ_REL);
+#endif  // _MSC_VER
+}
+
+/**
+ * \brief   Atomically loads a 16-bit reference counter (relaxed). Returns an approximate
+ *          snapshot, matching std::shared_ptr::use_count() semantics.
+ **/
+inline uint16_t atomic_load16(const uint16_t & ref) noexcept
+{
+#if defined(_MSC_VER)
+    return static_cast<uint16_t>(*reinterpret_cast<const volatile short *>(&ref));
+#else   // !_MSC_VER
+    return __atomic_load_n(&ref, __ATOMIC_RELAXED);
+#endif  // _MSC_VER
+}
+
+//////////////////////////////////////////////////////////////////////////
+// areg::RawBufferPtr class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   areg::RawBufferPtr
+ *          Intrusive reference-counted owning pointer to a heap-allocated RawBuffer
+ *          (or RawEnvelope -- both start with a BufferHeader at offset 0, so the count is
+ *          always at the same location). The reference count lives inside the managed block
+ *          (BufferHeader::biRefCount), so a fresh event costs exactly ONE heap allocation:
+ *          the data block. This replaces the std::shared_ptr<RawBuffer> ownership, which
+ *          needed a SECOND allocation for its separate control block.
+ *
+ *          Copy semantics mirror std::shared_ptr exactly: copy = atomic increment, destroy /
+ *          reset = atomic decrement, free (delete[]) when the count reaches 0. Move transfers
+ *          ownership without touching the count.
+ *
+ * \note    The block must have been allocated as `new uint8_t[]` and reinterpreted as
+ *          RawBuffer* / RawEnvelope*; release frees it with the matching `delete[]`.
+ *          ThreadSafe for the reference count only; the pointed-to buffer is not thread-safe.
+ **/
+class RawBufferPtr
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructors / destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Constructs an empty (null) owner.
+     **/
+    RawBufferPtr() noexcept = default;
+
+    /**
+     * \brief   Adopts a freshly-allocated raw block and initialises its reference count to 1.
+     *          The block is not yet visible to any other thread, so the count is set with a
+     *          plain store (no atomic needed).
+     *
+     * \param   adopt   Pointer to a `new uint8_t[]` block reinterpreted as RawBuffer*, or nullptr.
+     **/
+    explicit RawBufferPtr(RawBuffer * adopt) noexcept
+        : mBuffer(adopt)
+    {
+        if (mBuffer != nullptr)
+            mBuffer->bufHeader.biRefCount = 1u;
+    }
+
+    RawBufferPtr(const RawBufferPtr & src) noexcept
+        : mBuffer(src.mBuffer)
+    {
+        if (mBuffer != nullptr)
+            areg::atomic_inc16(mBuffer->bufHeader.biRefCount);
+    }
+
+    RawBufferPtr(RawBufferPtr && src) noexcept
+        : mBuffer(src.mBuffer)
+    {
+        src.mBuffer = nullptr;
+    }
+
+    ~RawBufferPtr() noexcept
+    {
+        _release();
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
+    RawBufferPtr & operator = (const RawBufferPtr & src) noexcept
+    {
+        if (mBuffer != src.mBuffer)
+        {
+            if (src.mBuffer != nullptr)
+                areg::atomic_inc16(src.mBuffer->bufHeader.biRefCount);
+
+            _release();
+            mBuffer = src.mBuffer;
+        }
+
+        return (*this);
+    }
+
+    RawBufferPtr & operator = (RawBufferPtr && src) noexcept
+    {
+        if (this != &src)
+        {
+            _release();
+            mBuffer     = src.mBuffer;
+            src.mBuffer = nullptr;
+        }
+
+        return (*this);
+    }
+
+    [[nodiscard]]
+    inline RawBuffer * operator -> () const noexcept
+    {
+        return mBuffer;
+    }
+
+    [[nodiscard]]
+    explicit inline operator bool() const noexcept
+    {
+        return (mBuffer != nullptr);
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// Attributes / operations
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Returns the managed raw pointer, or nullptr.
+     **/
+    [[nodiscard]]
+    inline RawBuffer * get() const noexcept
+    {
+        return mBuffer;
+    }
+
+    /**
+     * \brief   Releases this owner's reference (freeing the block if it was the last) and
+     *          becomes null.
+     **/
+    inline void reset() noexcept
+    {
+        _release();
+        mBuffer = nullptr;
+    }
+
+    /**
+     * \brief   Returns an approximate snapshot of the owner count (relaxed atomic load),
+     *          matching std::shared_ptr::use_count() semantics. Returns 0 when null.
+     **/
+    [[nodiscard]]
+    inline uint32_t use_count() const noexcept
+    {
+        return (mBuffer != nullptr ? static_cast<uint32_t>(areg::atomic_load16(mBuffer->bufHeader.biRefCount)) : 0u);
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden members
+//////////////////////////////////////////////////////////////////////////
+private:
+    inline void _release() noexcept
+    {
+        if ((mBuffer != nullptr) && (areg::atomic_dec16(mBuffer->bufHeader.biRefCount) == 0u))
+        {
+            delete [] reinterpret_cast<uint8_t *>(mBuffer);
+        }
+    }
+
+    RawBuffer * mBuffer { nullptr };
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -311,9 +519,10 @@ struct RawService
  *  internal2       112     8  LOCAL-ONLY: EventConsumer*     — zeroed on IPC wire
  *  custom          120     8  LOCAL-ONLY: DATA_CLASS cleanup hook — zeroed on IPC wire.
  *                             For AREG_DECLARE_EVENT custom events: stores void(*)(void*)
- *                             noexcept pointing to the DATA_CLASS destructor. The
- *                             EventEnvelopeDeleter calls this hook when the buffer
- *                             refcount drops to zero. MUST NOT be used for any other purpose.
+ *                             noexcept pointing to the DATA_CLASS destructor, invoked by
+ *                             MessageEnvelope::destroy_event() / Event::~Event() while this is
+ *                             the sole owner (before the refcount reaches zero). MUST NOT be
+ *                             used for any other purpose.
  *                  128
  **/
 struct alignas(areg::BLOCK_SIZE) EventHeader
@@ -343,13 +552,13 @@ struct alignas(areg::BLOCK_SIZE) EventHeader
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   areg::RawEnvelope
- *          Heap layout type for EventEnvelope.
+ *          Heap layout type for MessageEnvelope.
  *          envData[8] marks the first bytes of the payload area;
  *          the actual payload continues in the heap allocation past this struct.
  **/
 struct RawEnvelope
 {
-    constexpr RawEnvelope() = default;
+    RawEnvelope() = default;
     constexpr RawEnvelope(const RawEnvelope& src) = default;
     constexpr RawEnvelope& operator = (const RawEnvelope& src) = default;
 

@@ -56,9 +56,7 @@ void ServiceHelloWorld::request_hello_world( const areg::String & roleName )
     }
 }
 
-#if AREG_LOGGING
-
-void ServiceHelloWorld::request_shutdown_service( uint32_t clientID, const areg::String & roleName )
+void ServiceHelloWorld::request_shutdown_service( [[maybe_unused]] uint32_t clientID, [[maybe_unused]] const areg::String & roleName )
 {
     LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld, request_shutdown_service );
     LOG_DBG( "A client [ %s ] with ID [ %u ] notified shutdown.", roleName.as_string( ), clientID );
@@ -69,15 +67,3 @@ void ServiceHelloWorld::request_shutdown_service( uint32_t clientID, const areg:
         areg::Application::signal_quit( );
     }
 }
-
-#else  // AREG_LOGGING
-
-void ServiceHelloWorld::request_shutdown_service( uint32_t /*clientID*/, const areg::String & /*roleName*/ )
-{
-    if ( mIsMain )
-    {
-        areg::Application::signal_quit( );
-    }
-}
-
-#endif  // AREG_LOGGING

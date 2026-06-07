@@ -108,9 +108,9 @@ std::shared_ptr<ProxyBase> ProxyBase::acquire_proxy( const String & roleName
     if (!ownerThread.is_valid())
         return proxy;
 
-    
+    MapProxyResource& mapProxies{ map_proxies() };
     ProxyAddress Key(serviceIfData, roleName, ownerThread.name() );
-    proxy = map_proxies().find_resource_object(static_cast<uint32_t>(Key));
+    proxy = mapProxies.find_resource_object(static_cast<uint32_t>(Key));
     if (proxy.get() == nullptr)
     {
         LOG_DBG("No proxy [ %s ] found, creating one in thread [ %u ]", ProxyAddress::to_path(Key).as_string(), ownerThread.id());
@@ -118,7 +118,7 @@ std::shared_ptr<ProxyBase> ProxyBase::acquire_proxy( const String & roleName
         if ( newProxy.get() != nullptr )
         {
             proxy.swap( newProxy );
-            map_proxies().register_resource_object( static_cast<uint32_t>(proxy->mProxyAddress), proxy );
+            mapProxies.register_resource_object( static_cast<uint32_t>(proxy->mProxyAddress), proxy );
             thread_proxies().register_resource_object( static_cast<uint32_t>(proxy->mDispatcherThread.address()), proxy);
         }
     }
@@ -168,12 +168,12 @@ int32_t ProxyBase::find_thread_proxies(DispatcherThread & ownerThread, ArrayList
     return result;
 }
 
-RemoteResponseEvent ProxyBase::request_failure_event(const ProxyAddress & target, uint32_t msgId, areg::ResultType errCode, const SequenceNumber & seqNr)
+ServiceResponseEvent ProxyBase::request_failure_event(const ProxyAddress & target, uint32_t msgId, areg::ResultType errCode, const SequenceNumber & seqNr)
 {
     LOG_SCOPE( areg_component_ProxyBase, request_failure_event);
 
     std::shared_ptr<ProxyBase> proxy = ProxyBase::find_proxy(static_cast<uint32_t>(target));
-    return (proxy.get() != nullptr ? proxy->create_request_failed(target, msgId, errCode, seqNr) : RemoteResponseEvent(EventEnvelope{}));
+    return (proxy.get() != nullptr ? proxy->create_request_failed(target, msgId, errCode, seqNr) : ResponseEvent(MessageEnvelope{}));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -224,8 +224,8 @@ void ProxyBase::free_proxy( ProxyListener & connect )
     }
 
     remove_listener( static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
-                  , areg::SEQUENCE_NUMBER_NOTIFY
-                  , static_cast<NotificationConsumer *>(&connect));
+                   , areg::SEQUENCE_NUMBER_NOTIFY
+                   , static_cast<NotificationConsumer *>(&connect));
 
     std::shared_ptr<ProxyBase> proxy = ProxyBase::find_proxy( mProxyAddress );
 
@@ -286,12 +286,7 @@ void ProxyBase::service_connection_updated( const StubAddress & server, const Ch
                 , StubAddress::to_path(server).as_string());
  
     // Local: channel.target = stub's thread CRC32 = server.source(). Must match when connected.
-    // IPC: server.is_local_address() is false; server.source() reconstructed from the event header
-    // carries the remote stub's thread CRC32 (not the RouterClient CRC32 stamped by RouterClient::set_source),
-    // so the target-vs-source equality check does not apply.
-    ASSERT(channel.target() == server.source()
-        || !server.is_local_address()
-        || status != areg::ServiceConnectionState::Connected);
+    ASSERT(channel.target() == server.source() || !server.is_local_address() || status != areg::ServiceConnectionState::Connected);
     mProxyAddress.set_channel(channel);
     set_connection_status( status );
     bool proxyConnected{ is_connected() };
@@ -456,7 +451,6 @@ void ProxyBase::notify_listeners( uint32_t respId, areg::ResultType result, cons
     for (uint32_t i = 0; i < listenerList.size(); ++ i)
     {
         const ProxyBase::Listener & elem = listenerList.value_at(i);
-        // send_notification_event(respId, result, seqNrToSearch, elem.mListener);
         elem.mListener->process_notification(respId, result, seqNrToSearch);
     }
 }
@@ -466,13 +460,6 @@ void ProxyBase::send_notification_event( uint32_t msgId, areg::ResultType resTyp
     NotificationEventData data(self(), resType, msgId, seqNr);
     NotificationEvent eventElem{ create_client_notification(data) };
     eventElem.set_event_consumer(static_cast<EventConsumer*>(caller));
-    // NOTE (Task 4): the notification is intentionally POSTED to the proxy's own dispatcher queue,
-    // not dispatched synchronously here. Posting decouples the client callback from the stack of the
-    // event currently being processed: a synchronous dispatch_self() lets a callback that triggers
-    // teardown/quit (or re-enters the proxy) run re-entrantly inside the dispatcher loop, which breaks
-    // the single-threaded mode (verified: 03_onethread aborts on shutdown with
-    // EventDispatcher::on_run mDispatcherThread!=nullptr). The deferred queue hop is the framework's
-    // re-entrancy-safety guarantee and must be preserved. See product/tasks/2026-06-04-3-performance.md.
     if (!mDispatcherThread.event_dispatcher().post_event(eventElem))
         eventElem.destroy_event();
 }
@@ -498,23 +485,6 @@ void ProxyBase::process_generic_event( Event& eventElem )
         if (consumer != nullptr)
             process_available_event(*consumer, delay);
     }
-}
-
-ServiceRequestEvent ProxyBase::create_request( uint32_t /*reqId*/, uint32_t /*reserve*/ )
-{
-    // Base returns an invalid event; generated proxies override to return their concrete request event.
-    return ServiceRequestEvent(EventEnvelope{});
-}
-
-ServiceRequestEvent ProxyBase::create_request_event( uint32_t reqId, uint32_t reserve /*= 0u*/ )
-{
-    return create_request(reqId, reserve);
-}
-
-void ProxyBase::send_request_event( uint32_t reqId, const SharedBuffer& args, NotificationConsumer *caller )
-{
-    ServiceRequestEvent reqEvent{ create_request(args, reqId) };
-    send_request_event(reqEvent, caller);
 }
 
 void ProxyBase::send_request_event(ServiceRequestEvent& reqEvent, NotificationConsumer* caller)
@@ -591,14 +561,6 @@ void ProxyBase::process_available_event( NotificationConsumer & consumer, uint32
 
         static_cast<ProxyListener&>(consumer).service_connected(connection_status(), self());
     }
-}
-
-RemoteResponseEvent ProxyBase::create_request_failed( const ProxyAddress &  /* addrProxy */
-                                                    , uint32_t              /* msgId */
-                                                    , areg::ResultType      /* reason */
-                                                    , const SequenceNumber &/* seqNr */ ) const
-{
-    return RemoteResponseEvent(EventEnvelope{});  // invalid; generated proxies override to produce real events
 }
 
 void ProxyBase::stop_proxy()

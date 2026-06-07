@@ -62,9 +62,9 @@ namespace areg::os {
  *          Registration is a two-step publish: first CAS the key, then release-store
  *          the value. Because the CAS winner is the only writer of the value, there
  *          is no overwrite hazard. A concurrent find() that observes the key but
- *          sees a null value spins briefly (bounded spin, typically 0–1 iterations)
+ *          sees a null value spins briefly (bounded spin, typically 0-1 iterations)
  *          until the value store is visible or the key is tombstoned. In practice
- *          this window is 2–4 CPU instructions, closed before the thread reaches
+ *          this window is 2-4 CPU instructions, closed before the thread reaches
  *          the OS wait call.
  *
  *          Unregistration reverses the order: clear the value first (release), then
@@ -243,12 +243,12 @@ public:
      *          Called from notify_async_signal() by any thread. Lock-free.
      *
      *          There is a narrow window in which a valid key is observed but the value
-     *          has not yet been stored (the 2–4 instruction gap between CAS(key) and
+     *          has not yet been stored (the 2-4 instruction gap between CAS(key) and
      *          store(value) in register_resource_object). This function resolves the
      *          window with a bounded spin: it re-reads the key and value until either
      *          the value appears or the key changes (indicating unregistration).
      *
-     *          In practice the spin exits after 0–1 iterations because the window
+     *          In practice the spin exits after 0-1 iterations because the window
      *          is closed before the registering thread reaches the OS wait call.
      *
      * \param   key     Thread ID to locate.

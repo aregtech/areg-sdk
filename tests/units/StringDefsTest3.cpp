@@ -129,21 +129,21 @@ TEST(StringDefsTest3, utf8_char_def_ground_truth)
  **/
 TEST(StringDefsTest3, is_lower_is_upper_sweep)
 {
-    // Lowercase a–z: each must be lower, not upper
+    // Lowercase a-z: each must be lower, not upper
     for (char c = 'a'; c <= 'z'; ++c)
     {
         EXPECT_TRUE (areg::is_lower<char>(c)) << "Expected lower for '" << c << "'";
         EXPECT_FALSE(areg::is_upper<char>(c)) << "Expected NOT upper for '" << c << "'";
     }
 
-    // Uppercase A–Z: each must be upper, not lower
+    // Uppercase A-Z: each must be upper, not lower
     for (char c = 'A'; c <= 'Z'; ++c)
     {
         EXPECT_TRUE (areg::is_upper<char>(c)) << "Expected upper for '" << c << "'";
         EXPECT_FALSE(areg::is_lower<char>(c)) << "Expected NOT lower for '" << c << "'";
     }
 
-    // Digits 0–9 must be neither
+    // Digits 0-9 must be neither
     for (char c = '0'; c <= '9'; ++c)
     {
         EXPECT_FALSE(areg::is_lower<char>(c)) << "Digit '" << c << "' should not be lower";
@@ -616,7 +616,7 @@ TEST(StringDefsTest3, find_first_next_param)
         areg::CharPos pos = areg::find_first<char>("Xb", src, areg::START_POS, true, &next);
         EXPECT_EQ(pos, 1);    // "Xb" starts at index 1
         ASSERT_NE(next, nullptr);
-        // "aXbXcX": "Xb" occupies indices 1–2, so after it is src[3]='X'
+        // "aXbXcX": "Xb" occupies indices 1-2, so after it is src[3]='X'
         EXPECT_EQ(*next, 'X');
     }
 

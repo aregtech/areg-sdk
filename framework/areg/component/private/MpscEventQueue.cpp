@@ -16,6 +16,7 @@
 
 #include "areg/base/RuntimeClassID.hpp"
 #include "areg/component/Event.hpp"
+#include "areg/base/private/DebugDefs.hpp"
 
 #include <algorithm>
 
@@ -135,6 +136,9 @@ void MpscEventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullpt
 
     node->event = std::move(eventElem);
     node->next.store(nullptr, std::memory_order_relaxed);
+#ifdef AREG_LATENCY_TRACE
+    node->lt_ns = AREG_LT_NOW();    // stamp before publishing; visible to consumer via the release in _mpsc_push
+#endif
     _mpsc_push(node);
     mFastCount.fetch_add(1u, std::memory_order_relaxed);
     mListener.signal_event(1u);
@@ -167,6 +171,9 @@ Event MpscEventQueue::pop_event() noexcept
     if (node != nullptr)
     {
         Event result{ std::move(node->event) };
+#ifdef AREG_LATENCY_TRACE
+        AREG_LT_SAMPLE(areg::LtStage::MpscHandoff, AREG_LT_NOW() - node->lt_ns);
+#endif
         _free_node(node);
         const uint32_t remaining{ mFastCount.fetch_sub(1u, std::memory_order_relaxed) - 1u };
         mListener.signal_event(remaining);
@@ -422,6 +429,9 @@ inline MpscEventQueue::Node* MpscEventQueue::_mpsc_pop() noexcept
     {
         Node* head = mHead;
         head->event = std::move(next->event);  // move Event value into sentinel
+#ifdef AREG_LATENCY_TRACE
+        head->lt_ns = next->lt_ns;             // carry enqueue stamp onto the returned node
+#endif
         // next->event is now empty (moved-from)
         mHead = next;
         return head;

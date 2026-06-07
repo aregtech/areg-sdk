@@ -25,6 +25,8 @@
 #include "aregextend/service/private/ClientConnectionPair.hpp"
 #include "aregextend/service/private/ServiceThreadHelper.hpp"
 
+#include "areg/base/private/DebugDefs.hpp"
+
 namespace areg::ext {
 
 DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_PoolSendThread, start_event_processing);
@@ -76,64 +78,60 @@ void PoolSendThread::start_event_processing( areg::Event & eventElem )
     hdr0->internal2 = 0u;
     hdr0->custom    = 0u;
 
-    ITEM_ID  targets[areg::THREAD_DRAIN_LIMIT];
     uint32_t batchCount{ 0u };
 
-    targets[batchCount] = static_cast<ITEM_ID>(hdr0->target);
+    mTargets[batchCount]      = static_cast<ITEM_ID>(hdr0->target);
     mBatch[batchCount].socket = areg::InvalidSocketHandle;
     mBatch[batchCount].msg    = eventElem.envelope();  // O(1) shared_ptr copy; fields already zeroed
     ++batchCount;
 
-    // Phase 1: drain additional events — no socket lookup, no lock.
-    // ZEPHYR-INCOMPATIBLE: ~4KB stack array for batch send draining.
-    areg::Event ptrs[areg::THREAD_DRAIN_LIMIT];
-    uint32_t evtCount{ pop_events(ptrs, areg::THREAD_DRAIN_LIMIT - 1u) };
-    if ( evtCount != 0u )
+    // Phase 1: drain additional queued events straight into mBatch (the persistent batch list retains
+    // each buffer). No Event array — one transient Event per popped message. The common single-message
+    // relay finds the queue empty and skips the loop.
+    while ( batchCount < areg::THREAD_BATCH_LIMIT )
     {
-        for ( uint32_t e{ 0u }; e < evtCount; ++e )
+        areg::Event evt{ pick_event() };
+        if ( !evt.is_valid() )
+            break;
+
+        if ( evt.is_exit_prio() )
         {
-            areg::Event & evt{ ptrs[e] };
+            DEBUG_LOG_DBG("Received exit event during batch-drain, stopping pool send thread");
+            for ( uint32_t i{ 0u }; i < batchCount; ++i )
+                mBatch[i].msg.destroy_event();
 
-            if ( evt.is_exit_prio() )
-            {
-                DEBUG_LOG_DBG("Received exit event during batch-drain, stopping pool send thread");
-                for ( uint32_t i{ 0u }; i < evtCount; ++i )
-                    ptrs[i].destroy_event();
-
-                trigger_exit();
-                return;
-            }
-
-            areg::EventHeader * hdr{ evt.header() };
-            ASSERT( hdr != nullptr );
-            hdr->internal1 = 0u;
-            hdr->internal2 = 0u;
-            hdr->custom    = 0u;
-
-            targets[batchCount]       = static_cast<ITEM_ID>(hdr->target);
-            mBatch[batchCount].socket = areg::InvalidSocketHandle;
-            mBatch[batchCount].msg    = evt.envelope();  // O(1) shared_ptr copy
-            ++batchCount;
+            trigger_exit();
+            return;
         }
+
+        areg::EventHeader * hdr{ evt.header() };
+        ASSERT( hdr != nullptr );
+        hdr->internal1 = 0u;
+        hdr->internal2 = 0u;
+        hdr->custom    = 0u;
+
+        mTargets[batchCount]      = static_cast<ITEM_ID>(hdr->target);
+        mBatch[batchCount].socket = areg::InvalidSocketHandle;
+        mBatch[batchCount].msg    = evt.envelope();  // O(1) shared_ptr copy; mBatch keeps the buffer alive
+        ++batchCount;
     }
 
     // Phase 2: resolve all cookies in one lock window.
-    SOCKETHANDLE sockets[areg::THREAD_DRAIN_LIMIT];
-    mOwner.batch_sockets_by_cookies(targets, sockets, batchCount);
+    mOwner.batch_sockets_by_cookies(mTargets.data(), mSockets.data(), batchCount);
 
     // Phase 3: compact + insertion-sort by socket handle in one pass.
     uint32_t validCount{ 0u };
     for ( uint32_t i{ 0u }; i < batchCount; ++i )
     {
-        if ( !areg::is_valid_socket(sockets[i]) )
+        if ( !areg::is_valid_socket(mSockets[i]) )
         {
             DEBUG_LOG_WARN("Discarding message (ID = [ %u ]) for disconnected target [ %u ]"
                             , mBatch[i].msg.message_id()
-                            , static_cast<uint32_t>(targets[i]));
+                            , static_cast<uint32_t>(mTargets[i]));
             continue;
         }
 
-        areg::ext::PendingSend entry{ sockets[i], std::move(mBatch[i].msg) };
+        areg::ext::PendingSend entry{ mSockets[i], std::move(mBatch[i].msg) };
         uint32_t lo{ 0u }, hi{ validCount };
         while ( lo < hi )
         {
@@ -141,7 +139,7 @@ void PoolSendThread::start_event_processing( areg::Event & eventElem )
             mBatch[mid].socket <= entry.socket ? lo = mid + 1u : hi = mid;
         }
 
-        // Shift right using move-assignment (PendingSend has EventEnvelope — memmove is unsafe).
+        // Shift right using move-assignment (PendingSend has MessageEnvelope — memmove is unsafe).
         for ( uint32_t j{ validCount }; j > lo; --j )
             mBatch[j] = std::move(mBatch[j - 1]);
 
@@ -152,12 +150,10 @@ void PoolSendThread::start_event_processing( areg::Event & eventElem )
     if ( validCount != 0u )
     {
         // Phase 4: batch is already sorted — send groups directly.
+        AREG_LT_SCOPE(areg::LtStage::SendSyscall);  // isolate the ::send() from resolve+sort
         areg::ext::send_pending_groups(mBatch.data(), validCount, mConnection, mRemoteService,
             [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_sent(bytes, msgs); });
     }
-
-    for ( uint32_t i{ 0u }; i < evtCount; ++i )
-        ptrs[i].destroy_event();
 }
 
 bool PoolSendThread::post_event( Event & eventElem )

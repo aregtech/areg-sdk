@@ -210,7 +210,7 @@ public:
      *
      * \param   data    The notification event data to set.
      **/
-    explicit NotificationEvent(const NotificationEventData& data);
+    explicit inline NotificationEvent(const NotificationEventData& data);
 
     NotificationEvent(const NotificationEvent& /*src*/) = default;
     NotificationEvent(NotificationEvent&& /*src*/) noexcept = default;
@@ -286,14 +286,22 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Processes a notification event. Override to handle attribute updates, broadcasts,
-     *          and response notifications.
+     * \brief   Processes a notification event.
+     *          Override to handle attribute updates, broadcasts, and response notifications.
      *
      * \param   eventElem       The notification event object to process.
      **/
     virtual void process_notification_event( NotificationEvent & eventElem ) = 0;
 
-    virtual void process_notification(uint32_t msdId, areg::ResultType result, SequenceNumber seqNr);
+    /**
+     * \brief   Processes a notification.
+     *          Override to handle attribute updates, broadcasts, and response notifications.
+     *
+     * \param   msgId       The notification message ID to process
+     * \param   result      The result of the processed request
+     * \param   seqNr       The sequence number of the call
+     **/
+    virtual void process_notification(uint32_t msgId, areg::ResultType result, SequenceNumber seqNr) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

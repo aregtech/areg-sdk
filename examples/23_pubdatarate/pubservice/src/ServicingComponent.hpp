@@ -20,7 +20,7 @@
 #include "areg/component/ProxyAddress.hpp"
 #include "examples/23_pubdatarate/services/LargeDataProviderBase.hpp"
 
-#include "areg/base/EventEnvelope.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/component/Timer.hpp"
@@ -205,7 +205,7 @@ class ServicingComponent final  : public    areg::Component
 
     struct Remote
     {
-        areg::EventEnvelope message{};
+        areg::MessageEnvelope message{};
         uint32_t            offset{0u};
     };
 

@@ -24,7 +24,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
-#include "areg/base/EventEnvelope.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/base/SocketDefs.hpp"
@@ -39,7 +39,7 @@ namespace areg::ext {
  *          socket handle using binary insertion sort.
  *
  *          Uses move-assignment (not memmove) because PendingSend contains
- *          an EventEnvelope whose shared_ptr makes memmove undefined behavior.
+ *          an MessageEnvelope whose shared_ptr makes memmove undefined behavior.
  *
  * \param   batch   Batch array to sort.
  * \param   count   Number of valid entries in \a batch.
@@ -101,7 +101,7 @@ inline void send_pending_groups( areg::ext::PendingSend * batch
         {
             // PendingSend::msg is the wire-ready IPC envelope; header + payload sent verbatim.
             // internal1/internal2/custom were zeroed by the send thread before storage here.
-            const areg::EventEnvelope & env{ batch[i + k].msg };
+            const areg::MessageEnvelope & env{ batch[i + k].msg };
             env.buffer_completion_fix(); // compute checksum if still CHECKSUM_INVALID (e.g. connect/register messages)
             const areg::EventHeader* ipcHdr{ env.header() };
             if (ipcHdr == nullptr)
@@ -161,7 +161,7 @@ inline bool drain_recv_cache( ServerConnection & conn
                             , areg::RemoteMessageHandler & handler
                             , uint32_t maxDrain
                             , areg::SocketAccepted & clientSocket
-                            , areg::EventEnvelope & msgReceived
+                            , areg::MessageEnvelope & msgReceived
                             , AccumFn && accum )
 {
     uint32_t drain{ 0u };

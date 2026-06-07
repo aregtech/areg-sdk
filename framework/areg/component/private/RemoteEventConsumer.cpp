@@ -23,13 +23,13 @@ void RemoteEventConsumer::start_event_processing(Event & eventElem)
     switch (eventElem.event_type())
     {
     case areg::EventType::EventRemoteRequest:
-        process_request_event(static_cast<RemoteRequestEvent&>(eventElem));
+        process_request_event(static_cast<ServiceRequestEvent&>(eventElem));
         break;
     case areg::EventType::EventRemoteResponse:
-        process_response_event(static_cast<RemoteResponseEvent&>(eventElem));
+        process_response_event(static_cast<ServiceResponseEvent&>(eventElem));
         break;
     case areg::EventType::EventRemoteNotifyRequest:
-        process_notify_request(static_cast<RemoteNotifyRequestEvent&>(eventElem));
+        process_notify_request(static_cast<NotifyRequestEvent&>(eventElem));
         break;
     default:
         break;

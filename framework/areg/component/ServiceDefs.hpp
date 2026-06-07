@@ -36,7 +36,7 @@
  ************************************************************************/
 
 namespace areg {
-    class EventEnvelope;
+    class MessageEnvelope;
     class Channel;
 }
 
@@ -963,7 +963,7 @@ struct ConnectedInstance
 };
 
 /**
- * \brief   Sends a pre-serialized EventEnvelope directly to the IPC send thread,
+ * \brief   Sends a pre-serialized MessageEnvelope directly to the IPC send thread,
  *          bypassing all event dispatch and serialization overhead.
  *          The caller is responsible for ensuring the message was built while the
  *          connection was valid and the target cookie is still active.
@@ -971,7 +971,7 @@ struct ConnectedInstance
  * \param   msg     The pre-built message to send.
  * \return  Returns true if the message was accepted by the send thread.
  **/
-AREG_API bool send_raw_message(const areg::EventEnvelope& msg) noexcept;
+AREG_API bool send_raw_message(const areg::MessageEnvelope& msg) noexcept;
 
 /**
  * \brief   Returns the active IPC connection channel used to route messages

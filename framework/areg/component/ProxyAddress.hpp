@@ -201,6 +201,22 @@ public:
     [[nodiscard]]
     inline explicit operator uint32_t () const noexcept;
 
+    /**
+     * \brief   Deserializes date and time value from stream.
+     *
+     * \param   stream      Streaming object containing serialized date and time.
+     * \param[out] input    ProxyAddress object initialized from deserialized stream data.
+     **/
+    friend inline const InStream & operator >> ( const InStream & stream, ProxyAddress & input );
+
+    /**
+     * \brief   Serializes date and time value to stream.
+     *
+     * \param[out] stream   Streaming object where date and time will be serialized.
+     * \param   output      ProxyAddress object to serialize.
+     **/
+    friend inline OutStream & operator << ( OutStream & stream, const ProxyAddress& output );
+
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////

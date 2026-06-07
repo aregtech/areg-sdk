@@ -68,7 +68,7 @@ public:
      *
      * \param   msgForward      The message to dispatch and forward.
      **/
-    void dispatch_and_forward_logger_message(const areg::EventEnvelope& msgForward);
+    void dispatch_and_forward_logger_message(const areg::MessageEnvelope& msgForward);
 
 public:
 /************************************************************************/
@@ -133,7 +133,7 @@ protected:
      *
      * \param   msgUnprocessed      Unprocessed message data.
      **/
-    void failed_process_message( const areg::EventEnvelope & msgUnprocessed ) final;
+    void failed_process_message( const areg::MessageEnvelope & msgUnprocessed ) final;
 
 /************************************************************************/
 // ServiceEventConsumer overrides
@@ -159,14 +159,14 @@ protected:
      *
      * \param   msgReceived     The received communication message.
      **/
-    void on_message_received(const areg::EventEnvelope & msgReceived) final;
+    void on_message_received(const areg::MessageEnvelope & msgReceived) final;
 
     /**
      * \brief   Triggered when a communication message needs to be sent.
      *
      * \param   msgSend     The communication message to send.
      **/
-    void on_message_send(const areg::EventEnvelope & msgSend) final;
+    void on_message_send(const areg::MessageEnvelope & msgSend) final;
 
 /************************************************************************/
 // TimerConsumer interface overrides.

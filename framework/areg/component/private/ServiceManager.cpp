@@ -94,7 +94,7 @@ void ServiceManager::enable_data_rate(bool enable) noexcept
     ServiceManager::instance().mServiceClient.enable_data_rate(enable);
 }
 
-bool ServiceManager::send_raw_message(const EventEnvelope& msg) noexcept
+bool ServiceManager::send_raw_message(const MessageEnvelope& msg) noexcept
 {
     return ServiceManager::instance().mServiceClient.send_raw_message(msg);
 }

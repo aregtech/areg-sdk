@@ -242,6 +242,22 @@ public:
     [[nodiscard]]
     inline explicit operator uint32_t () const noexcept;
 
+    /**
+     * \brief   Deserializes date and time value from stream.
+     *
+     * \param   stream      Streaming object containing serialized date and time.
+     * \param[out] input    StubAddress object initialized from deserialized stream data.
+     **/
+    friend inline const InStream & operator >> ( const InStream & stream, StubAddress& input );
+
+    /**
+     * \brief   Serializes date and time value to stream.
+     *
+     * \param[out] stream   Streaming object where date and time will be serialized.
+     * \param   output      StubAddress object to serialize.
+     **/
+    friend inline OutStream & operator << ( OutStream & stream, const StubAddress& output );
+
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
 //////////////////////////////////////////////////////////////////////////

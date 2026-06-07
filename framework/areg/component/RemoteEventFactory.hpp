@@ -25,9 +25,10 @@ namespace areg {
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Event;
-class EventEnvelope;
 class Channel;
+class Event;
+class MessageEnvelope;
+class ServiceResponseEvent;
 
 //////////////////////////////////////////////////////////////////////////
 // RemoteEventFactory class declaration
@@ -36,12 +37,9 @@ class Channel;
  * \brief   Single chokepoint for remote (IPC) event serialization and delivery.
  *
  *          Three directional methods cover the entire IPC data plane:
- *            - route_outgoing_message : event  → wire  (serialize for transmission)
- *            - route_incoming_message : wire   → local (translate and deliver to stub/proxy)
- *            - create_request_failed_event : wire → failure response (undeliverable request)
- *
- *          All three are stateless. The communication Channel is passed as a parameter.
- *          Control-plane builders (connect/disconnect/register) remain in RemoteServiceDefs.hpp.
+ *            - route_outgoing_message      : event -> wire  (serialize for transmission)
+ *            - route_incoming_message      : wire  -> local (translate and deliver to stub/proxy)
+ *            - create_request_failed_event : wire  -> failure response (undeliverable request)
  *
  * \note    ThreadSafe: all methods are stateless static functions.
  **/
@@ -55,10 +53,7 @@ public:
     /**
      * \brief   Stamps the wire routing fields (source/target) on a local remote event in place,
      *          making it ready for transmission. The event payload already carries the serialized
-     *          data and the message/sequence fields; this only rewrites the process-routing cookies.
-     *
-     *          Single in-out parameter by design: the source event and the wire envelope are the
-     *          same RawEnvelope allocation. The event must be a type; local and custom types trigger ASSERT.
+     *          data and the message/sequence fields. Rewrites the process-routing cookies.
      *
      * \param[in,ou]    srcWire     In-out remote event; its header is rewritten to wire form.
      * \param           comChannel  Communication channel providing the sender's process cookie.
@@ -70,18 +65,12 @@ public:
      * \brief   Translates an inbound wire envelope and delivers it to the target stub or proxy thread.
      *          Must be called directly on the receive thread.
      *
-     *          The envelope is passed by non-const reference and moved into the delivered Event on the
-     *          success path: the receive buffer's shared_ptr is transferred (no extra refcount bump) and
-     *          the header is rewritten to local-routing form in place. On the false-return path (target
-     *          stub/proxy not found) the envelope is left untouched, so the caller may reuse it for the
-     *          failure response.
-     *
      * \param   wire        Received wire envelope; consumed (moved-from) only when this returns true.
-     * \param   comChannel  Communication channel of the receiving RouterClient.
+     * \param   comChannel  Communication channel of the receiving Router Client thread.
      * \return  true if delivered;
      *          false when the target stub/proxy is not found (wire left intact).
      **/
-    static bool route_incoming_message( EventEnvelope & wire, const Channel & comChannel );
+    static bool route_incoming_message( MessageEnvelope & wire, const Channel & comChannel );
 
     /**
      * \brief   Creates a request-failure response Event for an undeliverable request.
@@ -92,7 +81,7 @@ public:
      * \return  An Event value; check is_valid() before delivering.
      **/
     [[nodiscard]]
-    static Event create_request_failed_event( const EventEnvelope & wire, const Channel & comChannel );
+    static ServiceResponseEvent create_request_failed_event( const MessageEnvelope & wire, const Channel & comChannel );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Hidden

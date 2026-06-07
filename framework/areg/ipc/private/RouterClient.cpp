@@ -178,7 +178,7 @@ void RouterClient::unregister_service_consumer(const ProxyAddress & proxyService
     }
 }
 
-void RouterClient::failed_send_message(const EventEnvelope & msgFailed, Socket & whichTarget )
+void RouterClient::failed_send_message(const MessageEnvelope & msgFailed, Socket & whichTarget )
 {
     LOG_SCOPE( areg_ipc_private_RouterClient, failed_send_message );
 
@@ -196,7 +196,7 @@ void RouterClient::failed_send_message(const EventEnvelope & msgFailed, Socket &
                        , whichTarget.is_alive() ? "ALIVE" : "DEAD");
 
             msgFailed.move_to_begin();
-            Event evtError = RemoteEventFactory::create_request_failed_event(msgFailed, mChannel);
+            ServiceResponseEvent evtError{ RemoteEventFactory::create_request_failed_event(msgFailed, mChannel) };
             if ( evtError.is_valid() )
             {
                 LOG_DBG("Replying with failure event [ %u ]", evtError.event_id());
@@ -221,7 +221,7 @@ void RouterClient::failed_send_message(const EventEnvelope & msgFailed, Socket &
     }
 }
 
-void RouterClient::failed_receive_message( Socket & whichSource )
+void RouterClient::failed_receive_message( [[maybe_unused]] Socket & whichSource )
 {
     LOG_SCOPE( areg_ipc_private_RouterClient, failed_receive_message );
 
@@ -241,7 +241,7 @@ void RouterClient::failed_receive_message( Socket & whichSource )
     }
 }
 
-void RouterClient::failed_process_message( const EventEnvelope & msgUnprocessed )
+void RouterClient::failed_process_message( const MessageEnvelope & msgUnprocessed )
 {
     LOG_SCOPE( areg_ipc_private_RouterClient, failed_process_message );
 
@@ -256,7 +256,7 @@ void RouterClient::failed_process_message( const EventEnvelope & msgUnprocessed 
                       , msgUnprocessed.source());
 
             msgUnprocessed.move_to_begin();
-            Event evtError = RemoteEventFactory::create_request_failed_event(msgUnprocessed, mChannel);
+            ServiceResponseEvent evtError{ RemoteEventFactory::create_request_failed_event(msgUnprocessed, mChannel) };
             if ( evtError.is_valid() && RemoteEventFactory::route_outgoing_message( evtError, mChannel) )
             {
                 send_message(evtError.envelope());
@@ -273,7 +273,7 @@ void RouterClient::failed_process_message( const EventEnvelope & msgUnprocessed 
     }
 }
 
-void RouterClient::process_received_message( EventEnvelope & msgReceived, Socket & whichSource )
+void RouterClient::process_received_message( MessageEnvelope & msgReceived, Socket & whichSource )
 {
     DEBUG_LOG_SCOPE( areg_ipc_private_RouterClient, process_received_message );
     if (!msgReceived.is_valid() || !whichSource.is_valid())
@@ -388,7 +388,7 @@ void RouterClient::process_received_message( EventEnvelope & msgReceived, Socket
     }
 }
 
-void RouterClient::process_request_event( RemoteRequestEvent & reqEvent)
+void RouterClient::process_request_event(ServiceRequestEvent& reqEvent)
 {
     LOG_SCOPE( areg_ipc_private_RouterClient, process_request_event );
 
@@ -415,7 +415,7 @@ void RouterClient::process_request_event( RemoteRequestEvent & reqEvent)
     }
 }
 
-void RouterClient::process_notify_request( RemoteNotifyRequestEvent & reqNotifyEvent )
+void RouterClient::process_notify_request(NotifyRequestEvent& reqNotifyEvent )
 {
     LOG_SCOPE( areg_ipc_private_RouterClient, process_notify_request );
 
@@ -443,7 +443,7 @@ void RouterClient::process_notify_request( RemoteNotifyRequestEvent & reqNotifyE
 }
 
 
-void RouterClient::process_response_event(RemoteResponseEvent & respEvent)
+void RouterClient::process_response_event(ServiceResponseEvent& respEvent)
 {
     LOG_SCOPE( areg_ipc_private_RouterClient, process_response_event );
 

@@ -233,7 +233,7 @@ TrafficLightFSM::~TrafficLightFSM()
 /**
  * Start processing trigger
  **/
-inline bool TrafficLightFSM::start_processing( const char* const triggerName )
+inline bool TrafficLightFSM::start_processing( [[maybe_unused]] const char* const triggerName )
 {
     bool result = false;
     if (mState == TrafficLightFSM::FsmState::UNDEFINED)

@@ -74,17 +74,15 @@ protected:
      * \param   initSize    Payload bytes to reserve after the header so that serialization does not
      *                      reallocate. 0 keeps the default block size.
      **/
-    ProxyEvent(const ProxyAddress & toTarget, areg::EventType eventType, uint32_t initSize = 0u );
+    inline ProxyEvent(const ProxyAddress & toTarget, areg::EventType eventType, uint32_t initSize = 0u );
 
-    ProxyEvent(const ProxyAddress& toTarget, const EventEnvelope& src);
+    inline ProxyEvent(const ProxyAddress& toTarget, const MessageEnvelope& src);
 
-    ProxyEvent(const ProxyAddress& toTarget, EventEnvelope&& src);
+    inline ProxyEvent(const ProxyAddress& toTarget, MessageEnvelope&& src);
 
-    ProxyEvent(const EventEnvelope& envelope);
+    inline ProxyEvent(const MessageEnvelope& envelope);
 
-    ProxyEvent(EventEnvelope&& envelope) noexcept;
-
-public:
+    inline ProxyEvent(MessageEnvelope&& envelope) noexcept;
 
     ProxyEvent(const ProxyEvent& /*src*/) = default;
 
@@ -140,6 +138,31 @@ protected:
     virtual ~ProxyEventConsumer() = default;
 
 //////////////////////////////////////////////////////////////////////////
+// Inline  methods
+//////////////////////////////////////////////////////////////////////////
+protected:
+    /**
+     * \brief   Processes Broadcast Event sent by Stub.
+     *
+     * \param   eventElem       The response event to process.
+     **/
+    inline void process_broadcast_event(ServiceResponseEvent& eventElem);
+
+    /**
+     * \brief   Processes Attribute update event sent by Stub.
+     *
+     * \param   eventElem       The attribute update event to process.
+     **/
+    inline void process_attribute_event( ServiceResponseEvent & eventElem );
+
+    /**
+     * \brief   Processes Request failed Event sent by Stub.
+     *
+     * \param   eventElem       The response event to process.
+     **/
+    inline void process_request_failed_event(ServiceResponseEvent& eventElem);
+
+//////////////////////////////////////////////////////////////////////////
 // Overrides. Should be implemented
 //////////////////////////////////////////////////////////////////////////
 protected:
@@ -153,27 +176,6 @@ protected:
      * \param   eventElem       The response event to process.
      **/
     virtual void process_response_event( ServiceResponseEvent & eventElem ) = 0;
-
-    /**
-     * \brief   Processes Broadcast Event sent by Stub.
-     *
-     * \param   eventElem       The response event to process.
-     **/
-    virtual void process_broadcast_event(ServiceResponseEvent& eventElem) = 0;
-
-    /**
-     * \brief   Processes Attribute update event sent by Stub.
-     *
-     * \param   eventElem       The attribute update event to process.
-     **/
-    virtual void process_attribute_event( ServiceResponseEvent & eventElem ) = 0;
-
-    /**
-     * \brief   Processes Request failed Event sent by Stub.
-     *
-     * \param   eventElem       The response event to process.
-     **/
-    virtual void process_request_failed_event(ServiceResponseEvent& eventElem) = 0;
 
     /**
      * \brief   Processes generic Proxy Event.
@@ -243,6 +245,44 @@ private:
 /************************************************************************
  * Inline function implementations
  ************************************************************************/
+
+//////////////////////////////////////////////////////////////////////////
+// ProxyEvent class, Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+inline ProxyEvent::ProxyEvent(const ProxyAddress& toTarget, areg::EventType eventType, uint32_t initSize /*= 0u*/)
+    : Event(eventType, initSize)
+{
+    areg::EventHeader* hdr{ header() };
+    if (hdr != nullptr)
+        toTarget.to_event(*hdr);
+}
+
+inline ProxyEvent::ProxyEvent(const ProxyAddress& toTarget, const MessageEnvelope& src)
+    : Event(src)
+{
+    areg::EventHeader* hdr{ header() };
+    if (hdr != nullptr)
+        toTarget.to_event(*hdr);
+}
+
+inline ProxyEvent::ProxyEvent(const ProxyAddress& toTarget, MessageEnvelope&& src)
+    : Event(std::move(src))
+{
+    areg::EventHeader* hdr{ header() };
+    if (hdr != nullptr)
+        toTarget.to_event(*hdr);
+}
+
+inline ProxyEvent::ProxyEvent(const MessageEnvelope& envelope)
+    : Event(envelope)
+{
+}
+
+inline ProxyEvent::ProxyEvent(MessageEnvelope&& envelope) noexcept
+    : Event(std::move(envelope))
+{
+}
+
 //////////////////////////////////////////////////////////////////////////
 // ProxyEvent class inline functions implementations
 //////////////////////////////////////////////////////////////////////////
@@ -251,6 +291,21 @@ inline const uint32_t ProxyEvent::target_proxy() const
 {
     ASSERT(is_valid());
     return consumer().number;
+}
+
+inline void ProxyEventConsumer::process_broadcast_event(ServiceResponseEvent& eventElem)
+{
+    process_response_event(eventElem);
+}
+
+inline void ProxyEventConsumer::process_request_failed_event(ServiceResponseEvent& eventElem)
+{
+    process_response_event(eventElem);
+}
+
+inline void ProxyEventConsumer::process_attribute_event(ServiceResponseEvent& eventElem)
+{
+    process_response_event(eventElem);
 }
 
 } // namespace areg

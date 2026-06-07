@@ -26,7 +26,7 @@
  * Dependencies
  ************************************************************************/
 namespace areg {
-    class EventEnvelope;
+    class MessageEnvelope;
 } // namespace areg
 
 namespace areg {
@@ -76,11 +76,11 @@ protected:
     /**
      * \brief   Receives a message by reading EventHeader first, then payload.
      *
-     * \param[out]  message     EventEnvelope to populate; checksum validated after receiving.
+     * \param[out]  message     MessageEnvelope to populate; checksum validated after receiving.
      * \param       socket      A socket for communication (client or server-side accepted socket). Must be valid.
      * \return  Returns bytes received on success; zero if checksum invalid or buffer empty; negative on socket error.
      **/
-    int32_t receive_message( EventEnvelope & message, const Socket & socket ) const;
+    int32_t receive_message( MessageEnvelope & message, const Socket & socket ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

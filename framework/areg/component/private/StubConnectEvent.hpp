@@ -34,8 +34,8 @@ namespace areg {
  *            - result            : ServiceConnectionState
  *
  *          ServiceConnection vs ClientConnection is distinguished by consumer (proxy) validity:
- *            - consumer invalid → ServiceConnection (stub registered with service manager)
- *            - consumer valid   → ClientConnection  (proxy client connecting/disconnecting)
+ *            - consumer invalid: ServiceConnection (stub registered with service manager)
+ *            - consumer valid  : ClientConnection  (proxy client connecting/disconnecting)
  **/
 class StubConnectEvent final  : public    ServiceRequestEvent
 {

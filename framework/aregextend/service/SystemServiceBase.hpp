@@ -188,7 +188,7 @@ public:
      * \param   message     The message to send to the target. The message contains information of
      *                      the source and target.
      **/
-    virtual void send_message_to_target(const areg::EventEnvelope& message);
+    virtual void send_message_to_target(const areg::MessageEnvelope& message);
 
     /**
      * \brief   Triggered to initialize the service application.

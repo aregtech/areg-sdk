@@ -44,7 +44,7 @@ LogManager & LogManager::instance()
 
 void LogManager::log_message(const areg::LogEntry& logData)
 {
-    areg::EventEnvelope msg{ areg::make_log_message( logData.logMsgType
+    areg::MessageEnvelope msg{ areg::make_log_message( logData.logMsgType
                                                    , logData.logScopeId
                                                    , logData.logSessionId
                                                    , 0u
@@ -61,7 +61,7 @@ void LogManager::log_message(const areg::LogEntry& logData)
     LoggingEvent::send_event(ev, static_cast<LoggingEventConsumer&>(mgr), static_cast<DispatcherThread&>(mgr));
 }
 
-void LogManager::log_message(areg::EventEnvelope&& msg)
+void LogManager::log_message(areg::MessageEnvelope&& msg)
 {
     LogManager& mgr = LogManager::instance();
     LoggingEvent ev;
@@ -71,7 +71,7 @@ void LogManager::log_message(areg::EventEnvelope&& msg)
     LoggingEvent::send_event(ev, static_cast<LoggingEventConsumer&>(mgr), static_cast<DispatcherThread&>(mgr));
 }
 
-void LogManager::log_message(const areg::EventEnvelope& logData)
+void LogManager::log_message(const areg::MessageEnvelope& logData)
 {
     LogManager& mgr = LogManager::instance();
     LoggingEvent ev;
@@ -376,7 +376,7 @@ void LogManager::stop_logs()
 
 void LogManager::write_log_message( const LoggingEventData & data )
 {
-    areg::EventEnvelope& msg = const_cast<LoggingEventData &>(data).message();
+    areg::MessageEnvelope& msg = const_cast<LoggingEventData &>(data).message();
     const areg::LogEntry* logEntry = data.log_entry();
     ASSERT(logEntry != nullptr);
 

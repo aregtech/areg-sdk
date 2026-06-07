@@ -111,7 +111,10 @@ void ConnectionController::request_connect( const areg::String & nickName, const
     }
 }
 
-void ConnectionController::request_register_connection( const areg::String & nickName, uint32_t cookie, uint32_t connectCookie, const areg::DateTime & dateRegister )
+void ConnectionController::request_register_connection( const areg::String & nickName
+                                                      , [[maybe_unused]] uint32_t cookie
+                                                      , uint32_t connectCookie
+                                                      , const areg::DateTime & dateRegister )
 {
     LOG_SCOPE( centralapp_ConnectionController, request_register_connection );
     LOG_DBG( "Received registration request from client [ %s ] with cookie [ %u ] sent at time [ %s ]", static_cast<const char *>(nickName), cookie, static_cast<const char *>(dateRegister.format_time( )) );

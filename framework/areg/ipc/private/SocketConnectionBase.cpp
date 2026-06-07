@@ -15,7 +15,7 @@
 
 #include "areg/ipc/SocketConnectionBase.hpp"
 #include "areg/base/Socket.hpp"
-#include "areg/base/EventEnvelope.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
@@ -28,7 +28,7 @@ SocketConnectionBase::SocketConnectionBase() noexcept
 {
 }
 
-int32_t SocketConnectionBase::receive_message(EventEnvelope & message, const Socket & socket) const
+int32_t SocketConnectionBase::receive_message(MessageEnvelope & message, const Socket & socket) const
 {
     areg::EventHeader evtHeader{};
     if (socket.receive(reinterpret_cast<uint8_t*>(&evtHeader), sizeof(areg::EventHeader)) != static_cast<int32_t>(sizeof(areg::EventHeader)))

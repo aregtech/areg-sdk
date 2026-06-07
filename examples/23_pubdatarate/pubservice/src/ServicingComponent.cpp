@@ -525,7 +525,7 @@ void ServicingComponent::_run_image_thread()
                     for (uint32_t ch = 0u; ch < channel_count; ++ch)
                     {
                         Remote& remote = pool.messages[base_index + ch];
-                        areg::EventEnvelope& message = remote.message;
+                        areg::MessageEnvelope& message = remote.message;
                         uint8_t* buffer = message.buffer();
                         ASSERT(buffer != nullptr);
                         RawImageBlock* block = reinterpret_cast<RawImageBlock*>(buffer + remote.offset);

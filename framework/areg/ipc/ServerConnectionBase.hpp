@@ -21,7 +21,7 @@
 #include "areg/base/areg_global.h"
 
 #include "areg/base/Containers.hpp"
-#include "areg/base/EventEnvelope.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/base/SocketMultiplexer.hpp"
@@ -223,10 +223,10 @@ public:
     inline bool handle_exist(SOCKETHANDLE clientSocket) const noexcept;
 
     [[nodiscard]]
-    inline SocketAccepted target_client(const EventEnvelope & message) const;
+    inline SocketAccepted target_client(const MessageEnvelope & message) const;
 
     [[nodiscard]]
-    inline SocketAccepted source_client(const EventEnvelope& message) const;
+    inline SocketAccepted source_client(const MessageEnvelope& message) const;
 
     /**
      * \brief   Returns true if interrupt_connections() has been called and the shutdown
@@ -574,12 +574,12 @@ inline bool ServerConnectionBase::handle_exist(SOCKETHANDLE clientSocket) const 
     return mAcceptedConnections.contains(clientSocket);
 }
 
-inline SocketAccepted ServerConnectionBase::target_client(const EventEnvelope& message) const
+inline SocketAccepted ServerConnectionBase::target_client(const MessageEnvelope& message) const
 {
     return client_by_cookie(static_cast<ITEM_ID>(message.target()));
 }
 
-inline SocketAccepted ServerConnectionBase::source_client(const EventEnvelope& message) const
+inline SocketAccepted ServerConnectionBase::source_client(const MessageEnvelope& message) const
 {
     return client_by_cookie(static_cast<ITEM_ID>(message.source()));
 }

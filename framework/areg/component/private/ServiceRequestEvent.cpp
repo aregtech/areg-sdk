@@ -14,35 +14,3 @@
  *
  ************************************************************************/
 #include "areg/component/ServiceRequestEvent.hpp"
-
-#include "areg/component/ProxyAddress.hpp"
-#include "areg/component/StubAddress.hpp"
-namespace areg {
-
-//////////////////////////////////////////////////////////////////////////
-// ServiceRequestEvent class implementation
-//////////////////////////////////////////////////////////////////////////
-
-ServiceRequestEvent::ServiceRequestEvent( const ProxyAddress & proxyAddress
-                                        , const StubAddress  & target
-                                        , uint32_t reqId
-                                        , areg::RequestType reqType
-                                        , areg::EventType eventType
-                                        , uint32_t initSize /*= 0u*/ )
-    : StubEvent (target, eventType, initSize)
-{
-    areg::EventHeader* hdr{ header() };
-    if (hdr != nullptr)
-    {
-        proxyAddress.to_event(*hdr);
-        hdr->messageId = reqId;
-        hdr->result    = static_cast<uint32_t>(reqType);
-    }
-}
-
-ServiceRequestEvent::ServiceRequestEvent( const EventEnvelope & envelope ) noexcept
-    : StubEvent (envelope)
-{
-}
-
-} // namespace areg

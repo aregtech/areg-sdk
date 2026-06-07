@@ -15,7 +15,7 @@
 #include "areg/ipc/RemoteServiceDefs.hpp"
 
 #include "areg/base/DateTime.hpp"
-#include "areg/base/EventEnvelope.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/component/StubAddress.hpp"
@@ -28,7 +28,7 @@ namespace {
         return ((client != areg::COOKIE_UNKNOWN) && client != (areg::COOKIE_LOCAL));
     }
 
-    inline static void _create_register_request( areg::EventEnvelope & out
+    inline static void _create_register_request( areg::MessageEnvelope & out
                                                , areg::RegistrationAction reqType
                                                , areg::DisconnectReason reason
                                                , const areg::StubAddress & addr)
@@ -41,7 +41,7 @@ namespace {
         out.init_envelope(hdr);
     }
 
-    inline static void _create_register_request( areg::EventEnvelope & out
+    inline static void _create_register_request( areg::MessageEnvelope & out
                                                , areg::RegistrationAction reqType
                                                , areg::DisconnectReason reason
                                                , const areg::ProxyAddress & addr)
@@ -54,7 +54,7 @@ namespace {
         out.init_envelope(hdr);
     }
 
-    inline static void _create_register_notify( areg::EventEnvelope & out
+    inline static void _create_register_notify( areg::MessageEnvelope & out
                                               , areg::RegistrationAction reqType
                                               , areg::DisconnectReason reason
                                               , const areg::StubAddress & addr)
@@ -67,7 +67,7 @@ namespace {
         out.init_envelope(hdr);
     }
 
-    inline static void _create_register_notify( areg::EventEnvelope & out
+    inline static void _create_register_notify( areg::MessageEnvelope & out
                                               , areg::RegistrationAction reqType
                                               , areg::DisconnectReason reason
                                               , const areg::ProxyAddress & addr)
@@ -82,9 +82,9 @@ namespace {
 
 } // namespace
 
-AREG_API_IMPL areg::EventEnvelope areg::router_register_service( const areg::StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::MessageEnvelope areg::router_register_service( const areg::StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target)
 {
-    areg::EventEnvelope msgResult;
+    areg::MessageEnvelope msgResult;
     if ( stub.is_service_public() && _isValidSource(source) )
     {
         _create_register_request(msgResult, areg::RegistrationAction::RegisterProvider, areg::DisconnectReason::UndefinedReason, stub);
@@ -95,9 +95,9 @@ AREG_API_IMPL areg::EventEnvelope areg::router_register_service( const areg::Stu
     return msgResult;
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::router_register_consumer( const areg::ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target )
+AREG_API_IMPL areg::MessageEnvelope areg::router_register_consumer( const areg::ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target )
 {
-    areg::EventEnvelope msgResult;
+    areg::MessageEnvelope msgResult;
     if ( proxy.is_service_public() && _isValidSource(source) )
     {
         _create_register_request(msgResult, areg::RegistrationAction::RegisterConsumer, areg::DisconnectReason::UndefinedReason, proxy);
@@ -108,9 +108,9 @@ AREG_API_IMPL areg::EventEnvelope areg::router_register_consumer( const areg::Pr
     return msgResult;
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::router_unregister_service( const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::MessageEnvelope areg::router_unregister_service( const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
 {
-    areg::EventEnvelope msgResult;
+    areg::MessageEnvelope msgResult;
     if ( stub.is_service_public() && _isValidSource(source) )
     {
         _create_register_request(msgResult, areg::RegistrationAction::UnregisterProvider, reason, stub);
@@ -121,9 +121,9 @@ AREG_API_IMPL areg::EventEnvelope areg::router_unregister_service( const areg::S
     return msgResult;
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::router_unregister_consumer( const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::MessageEnvelope areg::router_unregister_consumer( const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
 {
-    areg::EventEnvelope msgResult;
+    areg::MessageEnvelope msgResult;
     if ( proxy.is_service_public() && _isValidSource(source) )
     {
         _create_register_request(msgResult, areg::RegistrationAction::UnregisterConsumer, reason, proxy);
@@ -134,7 +134,7 @@ AREG_API_IMPL areg::EventEnvelope areg::router_unregister_consumer( const areg::
     return msgResult;
 }
 
-AREG_API_IMPL bool areg::is_server_hello(const areg::EventEnvelope & msg)
+AREG_API_IMPL bool areg::is_server_hello(const areg::MessageEnvelope & msg)
 {
     bool result = false;
     if ( msg.is_checksum_valid() )
@@ -146,7 +146,7 @@ AREG_API_IMPL bool areg::is_server_hello(const areg::EventEnvelope & msg)
     return result;
 }
 
-AREG_API_IMPL bool areg::is_server_bye(const areg::EventEnvelope & msg)
+AREG_API_IMPL bool areg::is_server_bye(const areg::MessageEnvelope & msg)
 {
     bool result = false;
     if ( msg.is_checksum_valid() )
@@ -158,7 +158,7 @@ AREG_API_IMPL bool areg::is_server_bye(const areg::EventEnvelope & msg)
     return result;
 }
 
-AREG_API_IMPL bool areg::is_notify_client(const areg::EventEnvelope & msg)
+AREG_API_IMPL bool areg::is_notify_client(const areg::MessageEnvelope & msg)
 {
     bool result = false;
     if ( msg.is_checksum_valid() )
@@ -170,7 +170,7 @@ AREG_API_IMPL bool areg::is_notify_client(const areg::EventEnvelope & msg)
     return result;
 }
 
-AREG_API_IMPL bool areg::is_register_message(const areg::EventEnvelope & msg)
+AREG_API_IMPL bool areg::is_register_message(const areg::MessageEnvelope & msg)
 {
     bool result = false;
     if ( msg.is_checksum_valid() )
@@ -183,9 +183,9 @@ AREG_API_IMPL bool areg::is_register_message(const areg::EventEnvelope & msg)
     return result;
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::service_registered_event(const StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::MessageEnvelope areg::service_registered_event(const StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target)
 {
-    areg::EventEnvelope msgResult;
+    areg::MessageEnvelope msgResult;
     if ( stub.is_service_public() && _isValidSource(target) )
     {
         _create_register_notify(msgResult, areg::RegistrationAction::RegisterProvider, areg::DisconnectReason::UndefinedReason, stub);
@@ -196,9 +196,9 @@ AREG_API_IMPL areg::EventEnvelope areg::service_registered_event(const StubAddre
     return msgResult;
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::client_registered_event(const ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::MessageEnvelope areg::client_registered_event(const ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target)
 {
-    areg::EventEnvelope msgResult;
+    areg::MessageEnvelope msgResult;
     if ( proxy.is_service_public() && _isValidSource(target) )
     {
         _create_register_notify(msgResult, areg::RegistrationAction::RegisterConsumer, areg::DisconnectReason::UndefinedReason, proxy);
@@ -209,9 +209,9 @@ AREG_API_IMPL areg::EventEnvelope areg::client_registered_event(const ProxyAddre
     return msgResult;
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::service_unregistered_event(const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::MessageEnvelope areg::service_unregistered_event(const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
 {
-    areg::EventEnvelope msgResult;
+    areg::MessageEnvelope msgResult;
     if ( stub.is_service_public() && _isValidSource(target) )
     {
         _create_register_notify(msgResult, areg::RegistrationAction::UnregisterProvider, reason, stub);
@@ -222,9 +222,9 @@ AREG_API_IMPL areg::EventEnvelope areg::service_unregistered_event(const StubAdd
     return msgResult;
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::client_unregistered_event(const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::MessageEnvelope areg::client_unregistered_event(const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
 {
-    areg::EventEnvelope msgResult;
+    areg::MessageEnvelope msgResult;
     if ( proxy.is_service_public() && _isValidSource(target) )
     {
         _create_register_notify(msgResult, areg::RegistrationAction::UnregisterConsumer, reason, proxy);
@@ -235,10 +235,10 @@ AREG_API_IMPL areg::EventEnvelope areg::client_unregistered_event(const ProxyAdd
     return msgResult;
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::create_connect_request(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource)
+AREG_API_IMPL areg::MessageEnvelope areg::create_connect_request(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource)
 {
     static constexpr areg::EventHeader HDR{ areg::message_hello_server() };
-    areg::EventEnvelope msgHelloServer;
+    areg::MessageEnvelope msgHelloServer;
     areg::EventHeader hdr{ HDR };
     hdr.target    = static_cast<uint32_t>(target);
     hdr.source    = static_cast<uint32_t>(areg::SOURCE_UNKNOWN);
@@ -258,10 +258,10 @@ AREG_API_IMPL areg::EventEnvelope areg::create_connect_request(const ITEM_ID & s
     return msgHelloServer;
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::create_disconnect_request(const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::MessageEnvelope areg::create_disconnect_request(const ITEM_ID & source, const ITEM_ID & target)
 {
     static constexpr areg::EventHeader HDR{ areg::message_bye_server() };
-    areg::EventEnvelope msgByeServer;
+    areg::MessageEnvelope msgByeServer;
     areg::EventHeader hdr{ HDR };
     hdr.target    = static_cast<uint32_t>(target);
     hdr.source    = static_cast<uint32_t>(source);
@@ -273,10 +273,10 @@ AREG_API_IMPL areg::EventEnvelope areg::create_disconnect_request(const ITEM_ID 
     return msgByeServer;
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::create_connect_notify( const ITEM_ID & source, const ITEM_ID & target )
+AREG_API_IMPL areg::MessageEnvelope areg::create_connect_notify( const ITEM_ID & source, const ITEM_ID & target )
 {
     static constexpr areg::EventHeader HDR{ areg::notify_client_connection() };
-    areg::EventEnvelope msgNotifyConnect;
+    areg::MessageEnvelope msgNotifyConnect;
     areg::EventHeader hdr{ HDR };
     hdr.source    = static_cast<uint32_t>(source);
     hdr.target    = static_cast<uint32_t>(target);
@@ -289,10 +289,10 @@ AREG_API_IMPL areg::EventEnvelope areg::create_connect_notify( const ITEM_ID & s
     return msgNotifyConnect;
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::create_disconnect_notify(const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::MessageEnvelope areg::create_disconnect_notify(const ITEM_ID & source, const ITEM_ID & target)
 {
     static constexpr areg::EventHeader HDR{ areg::notify_client_connection() };
-    areg::EventEnvelope msgNotifyDisconnect;
+    areg::MessageEnvelope msgNotifyDisconnect;
     areg::EventHeader hdr{ HDR };
     hdr.source    = static_cast<uint32_t>(source);
     hdr.target    = static_cast<uint32_t>(target);
@@ -305,10 +305,10 @@ AREG_API_IMPL areg::EventEnvelope areg::create_disconnect_notify(const ITEM_ID &
     return msgNotifyDisconnect;
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::create_reject_notify(const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::MessageEnvelope areg::create_reject_notify(const ITEM_ID & source, const ITEM_ID & target)
 {
     static constexpr areg::EventHeader HDR{ areg::notify_client_connection() };
-    areg::EventEnvelope msgNotifyReject;
+    areg::MessageEnvelope msgNotifyReject;
     areg::EventHeader hdr{ HDR };
     hdr.source    = static_cast<uint32_t>(source);
     hdr.target    = static_cast<uint32_t>(target);

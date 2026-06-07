@@ -86,12 +86,12 @@ protected:
     /**
      * \brief   Constructs from an existing envelope (IPC receive path). Shares the buffer.
      **/
-    explicit StubEvent(const EventEnvelope& envelope) noexcept;
+    explicit inline StubEvent(const MessageEnvelope& envelope) noexcept;
 
     /**
      * \brief   Constructs from a moved envelope (IPC receive path). Takes ownership.
      **/
-    explicit StubEvent(EventEnvelope&& envelope) noexcept;
+    explicit inline StubEvent(MessageEnvelope&& envelope) noexcept;
 
     /**
      * \brief   Initializes the event with the target stub address and event type, allocating the
@@ -102,9 +102,7 @@ protected:
      * \param   initSize        Payload bytes to reserve after the header so that serialization does
      *                          not reallocate. 0 keeps the default block size.
      **/
-    StubEvent(const StubAddress & toTarget, areg::EventType eventType, uint32_t initSize = 0u );
-
-public:
+    inline StubEvent(const StubAddress & toTarget, areg::EventType eventType, uint32_t initSize = 0u );
 
     StubEvent(const StubEvent& src) noexcept = default;
 
@@ -162,8 +160,7 @@ protected:
     /**
      * \brief   Pure virtual; processes a request to invoke a service function.
      *
-     * \param   eventElem       Service request event containing the request ID and serialized
-     *                          parameters.
+     * \param   eventElem       Service request event containing the request ID and serialized parameters.
      **/
     virtual void process_request_event( ServiceRequestEvent & eventElem ) = 0;
 
@@ -261,6 +258,28 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Inline functions implementation
 //////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// StubEvent class implementation
+//////////////////////////////////////////////////////////////////////////
+
+inline StubEvent::StubEvent(const MessageEnvelope& envelope) noexcept
+    : Event(envelope)
+{
+}
+
+inline StubEvent::StubEvent(MessageEnvelope&& envelope) noexcept
+    : Event(std::move(envelope))
+{
+}
+
+inline StubEvent::StubEvent(const StubAddress& toTarget, areg::EventType eventType, uint32_t initSize /*= 0u*/)
+    : Event(eventType, initSize)
+{
+    areg::EventHeader* hdr{ header() };
+    if (hdr != nullptr)
+        toTarget.to_event(*hdr);
+}
 
 //////////////////////////////////////////////////////////////////////////
 // StubEvent class inline function implementation

@@ -130,6 +130,9 @@ private:
     ServerConnection &          mConnection;    //!< Server connection (socket lookup + send API).
     ServerSendThread &          mGlobalStats;   //!< Global counters accumulated here.
     BatchEntries                mBatch;         //!< Pre-allocated batch work list reused each drain cycle.
+    //!< Reused scratch: per-slot target cookies and resolved socket handles (POD; off the stack).
+    std::array<ITEM_ID, areg::THREAD_BATCH_LIMIT>       mTargets;
+    std::array<SOCKETHANDLE, areg::THREAD_BATCH_LIMIT>  mSockets;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

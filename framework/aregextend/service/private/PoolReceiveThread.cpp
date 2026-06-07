@@ -14,7 +14,7 @@
  ************************************************************************/
 #include "aregextend/service/private/PoolReceiveThread.hpp"
 
-#include "areg/base/EventEnvelope.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/base/SyncPrimitives.hpp"
@@ -29,6 +29,8 @@
 #include "aregextend/service/private/ServerReceiveThread.hpp"
 #include "aregextend/service/private/ClientConnectionPair.hpp"
 #include "aregextend/service/private/ServiceThreadHelper.hpp"
+
+#include "areg/base/private/DebugDefs.hpp"
 
 namespace areg::ext {
 
@@ -109,7 +111,7 @@ bool PoolReceiveThread::run_dispatcher()
     areg::set_receive_mode(areg::ReceiveMode::MultiCache);
     ready_for_events(true);
 
-    areg::EventEnvelope msgReceived;
+    areg::MessageEnvelope msgReceived;
     int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) };
     SyncEvent* events[2] { &mEventExit, &mEventQueue };
 
@@ -154,7 +156,10 @@ bool PoolReceiveThread::run_dispatcher()
             if ( received > 0 )
             {
                 mGlobalStats.accumulate_received(static_cast<uint64_t>(received), 1u);
-                mRemoteService.process_received_message(msgReceived, clientSocket);
+                {
+                    AREG_LT_SCOPE(areg::LtStage::RecvNode);  // router inline route+forward
+                    mRemoteService.process_received_message(msgReceived, clientSocket);
+                }
 
                 // Drain bytes cached by _os_recv_data read-ahead.
                 if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, areg::THREAD_DRAIN_LIMIT - 1u, clientSocket,

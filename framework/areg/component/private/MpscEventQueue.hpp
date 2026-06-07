@@ -109,6 +109,9 @@ private:
     {
         std::atomic<Node*>  next    { nullptr };
         Event               event   {         };    //!< default (empty) on the stub node.
+#ifdef AREG_LATENCY_TRACE
+        uint64_t            lt_ns   { 0u };          //!< Phase-0 latency trace: enqueue timestamp (ns). Carried to dequeue.
+#endif
     };
 
     /**

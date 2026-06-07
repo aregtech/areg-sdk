@@ -76,11 +76,11 @@ public:
      * \param   eventType       Event type (local or remote request).
      * \param   initSize        Payload bytes to reserve after the header for serialized parameters.
      **/
-    RequestEvent( const ProxyAddress & fromSource
-                , const StubAddress & toTarget
-                , uint32_t reqId
-                , areg::EventType eventType
-                , uint32_t initSize = 0u );
+    inline RequestEvent( const ProxyAddress & fromSource
+                       , const StubAddress & toTarget
+                       , uint32_t reqId
+                       , areg::EventType eventType
+                       , uint32_t initSize = 0u );
 
     /**
      * \brief   Initializes a request event with serialized parameters copied into the event payload.
@@ -91,18 +91,18 @@ public:
      * \param   reqId           Request ID.
      * \param   eventType       Event type (local or remote request).
      **/
-    RequestEvent( const SharedBuffer & args
-                , const ProxyAddress & fromSource
-                , const StubAddress & toTarget
-                , uint32_t reqId
-                , areg::EventType eventType);
+    inline RequestEvent( const SharedBuffer & args
+                       , const ProxyAddress & fromSource
+                       , const StubAddress & toTarget
+                       , uint32_t reqId
+                       , areg::EventType eventType);
 
     /**
-     * \brief   Constructs from a received EventEnvelope (IPC receive path). Shares the buffer (O(1)).
+     * \brief   Constructs from a received MessageEnvelope.
      *
      * \param   envelope    Received event envelope with header and payload.
      **/
-    explicit RequestEvent( const EventEnvelope & envelope ) noexcept;
+    explicit inline RequestEvent( const MessageEnvelope & envelope ) noexcept;
 
     RequestEvent(const RequestEvent& /*src*/) = default;
 
@@ -138,8 +138,9 @@ public:
      * \param   fromSource      The address of the source proxy.
      * \param   toTarget        The address of the target stub.
      * \param   reqId           The ID of the request.
+     * \param   initSize        The payload initial size to reserve. If zero, nothing is reserved.
      **/
-    LocalRequestEvent(const ProxyAddress & fromSource, const StubAddress & toTarget, uint32_t reqId);
+    inline LocalRequestEvent(const ProxyAddress & fromSource, const StubAddress & toTarget, uint32_t reqId, uint32_t initSize = 0);
 
     /**
      * \brief   Initializes a request event with data. Use when the request has parameters.
@@ -149,10 +150,17 @@ public:
      * \param   toTarget        The address of the target stub.
      * \param   reqId           The ID of the request.
      **/
-    LocalRequestEvent( const SharedBuffer & args
-                     , const ProxyAddress & fromSource
-                     , const StubAddress & toTarget
-                     , uint32_t reqId);
+    inline LocalRequestEvent( const SharedBuffer & args
+                            , const ProxyAddress & fromSource
+                            , const StubAddress & toTarget
+                            , uint32_t reqId);
+
+    /**
+     * \brief   Constructs from a received MessageEnvelope
+     *
+     * \param   envelope    The received event envelope containing header and payload.
+     **/
+    explicit inline LocalRequestEvent(const MessageEnvelope& envelope) noexcept;
 
     LocalRequestEvent(const LocalRequestEvent& /*src*/) = default;
 
@@ -195,7 +203,7 @@ public:
      * \param   reqId           The ID of request.
      * \param   initSize        Payload bytes to reserve after the header for serialized parameters.
      **/
-    RemoteRequestEvent(const ProxyAddress & fromSource, const StubAddress & toTarget, uint32_t reqId, uint32_t initSize = 0u);
+    inline RemoteRequestEvent(const ProxyAddress & fromSource, const StubAddress & toTarget, uint32_t reqId, uint32_t initSize = 0u);
 
     /**
      * \brief   Creates event with data. Initializes event source, target information, and message
@@ -206,16 +214,15 @@ public:
      * \param   toTarget        The address of Stub target.
      * \param   reqId           The ID of request.
      **/
-    RemoteRequestEvent( const SharedBuffer & args
-                      , const ProxyAddress & fromSource
-                      , const StubAddress & toTarget
-                      , uint32_t reqId);
-
+    inline RemoteRequestEvent( const SharedBuffer & args
+                             , const ProxyAddress & fromSource
+                             , const StubAddress & toTarget
+                             , uint32_t reqId);
 
     /**
-     * \brief   Constructs from a received EventEnvelope (IPC receive path). Shares the buffer (O(1)).
+     * \brief   Constructs from a received MessageEnvelope.
      **/
-    explicit RemoteRequestEvent( const EventEnvelope & envelope ) noexcept;
+    explicit inline RemoteRequestEvent( const MessageEnvelope & envelope ) noexcept;
 
     RemoteRequestEvent(const RemoteRequestEvent& /*src*/) = default;
 
@@ -282,16 +289,16 @@ public:
      * \param   reqType         The request type (subscribe or unsubscribe).
      * \param   eventType       The type of event (local or remote request).
      **/
-    NotifyRequestEvent( const ProxyAddress & fromProxy
-                      , const StubAddress & toStub
-                      , uint32_t msgId
-                      , areg::RequestType reqType
-                      , areg::EventType eventType );
+    inline NotifyRequestEvent( const ProxyAddress & fromProxy
+                             , const StubAddress & toStub
+                             , uint32_t msgId
+                             , areg::RequestType reqType
+                             , areg::EventType eventType );
 
     /**
-     * \brief   Constructs from a received EventEnvelope (IPC receive path). Shares the buffer (O(1)).
+     * \brief   Constructs from a received MessageEnvelope.
      **/
-    explicit NotifyRequestEvent( const EventEnvelope & envelope ) noexcept;
+    explicit inline NotifyRequestEvent( const MessageEnvelope & envelope ) noexcept;
 
     NotifyRequestEvent(const NotifyRequestEvent& /*src*/) = default;
 
@@ -330,17 +337,15 @@ public:
      *                          IDs cannot be notified.
      * \param   reqType         The request type (subscribe or unsubscribe).
      **/
-    LocalNotifyRequestEvent( const ProxyAddress & fromProxy
-                           , const StubAddress & toStub
-                           , uint32_t msgId
-                           , areg::RequestType reqType );
+    inline LocalNotifyRequestEvent( const ProxyAddress & fromProxy
+                                  , const StubAddress & toStub
+                                  , uint32_t msgId
+                                  , areg::RequestType reqType );
 
     /**
-     * \brief   Initializes the event by deserializing data from the given input stream.
-     *
-     * \param   stream      The input stream containing serialized event data.
+     * \brief   Constructs from a received MessageEnvelope.
      **/
-    LocalNotifyRequestEvent( const InStream & stream );
+    explicit inline LocalNotifyRequestEvent(const MessageEnvelope& envelope) noexcept;
 
     LocalNotifyRequestEvent(const LocalNotifyRequestEvent& /*src*/) = default;
 
@@ -382,15 +387,15 @@ public:
      *                          IDs cannot be notified.
      * \param   reqType         The request type (subscribe or unsubscribe).
      **/
-    RemoteNotifyRequestEvent( const ProxyAddress & fromProxy
-                            , const StubAddress & toStub
-                            , uint32_t msgId
-                            , areg::RequestType reqType );
+    inline RemoteNotifyRequestEvent( const ProxyAddress & fromProxy
+                                   , const StubAddress & toStub
+                                   , uint32_t msgId
+                                   , areg::RequestType reqType );
 
     /**
-     * \brief   Constructs from a received EventEnvelope (IPC receive path). Shares the buffer (O(1)).
+     * \brief   Constructs from a received MessageEnvelope.
      **/
-    explicit RemoteNotifyRequestEvent( const EventEnvelope & envelope ) noexcept;
+    explicit inline RemoteNotifyRequestEvent( const MessageEnvelope & envelope ) noexcept;
 
     RemoteNotifyRequestEvent(const RemoteNotifyRequestEvent& /*src*/) = default;
 
@@ -435,6 +440,76 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// RequestEvent class, Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+inline RequestEvent::RequestEvent( const ProxyAddress & fromSource
+                                  , const StubAddress & toTarget
+                                  , uint32_t reqId
+                                  , areg::EventType eventType
+                                  , uint32_t initSize /*= 0u*/ )
+    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, eventType, initSize)
+{
+}
+
+inline RequestEvent::RequestEvent( const SharedBuffer & args
+                                  , const ProxyAddress & fromSource
+                                  , const StubAddress& toTarget
+                                  , uint32_t reqId
+                                  , areg::EventType eventType)
+    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, eventType)
+{
+    if (args.is_valid())
+        write_data(args.buffer(), args.size_used());
+}
+
+inline RequestEvent::RequestEvent( const MessageEnvelope & envelope ) noexcept
+    : ServiceRequestEvent( envelope )
+{
+}
+
+//////////////////////////////////////////////////////////////////////////
+// RequestEvent class, Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+inline LocalRequestEvent::LocalRequestEvent(const ProxyAddress& fromSource, const StubAddress& toTarget, uint32_t reqId, uint32_t initSize /*= 0*/)
+    : RequestEvent(fromSource, toTarget, reqId, areg::EventType::EventLocalRequest, initSize)
+{
+}
+
+inline LocalRequestEvent::LocalRequestEvent( const SharedBuffer& args
+                                           , const ProxyAddress& fromSource
+                                           , const StubAddress& toTarget
+                                           , uint32_t reqId)
+    : RequestEvent(args, fromSource, toTarget, reqId, areg::EventType::EventLocalRequest)
+{
+}
+
+inline LocalRequestEvent::LocalRequestEvent(const MessageEnvelope& envelope) noexcept
+    : RequestEvent(envelope)
+{
+}
+
+//////////////////////////////////////////////////////////////////////////
+// RequestEvent class, Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+inline RemoteRequestEvent::RemoteRequestEvent( const ProxyAddress & fromSource, const StubAddress & toTarget, uint32_t reqId, uint32_t initSize /*= 0u*/ )
+    : RequestEvent(fromSource, toTarget, reqId, areg::EventType::EventRemoteRequest, initSize)
+{
+}
+
+inline RemoteRequestEvent::RemoteRequestEvent( const SharedBuffer & args
+                                             , const ProxyAddress & fromSource
+                                             , const StubAddress & toTarget
+                                             , uint32_t reqId)
+    : RequestEvent(args, fromSource, toTarget, reqId, areg::EventType::EventRemoteRequest)
+{
+}
+
+inline RemoteRequestEvent::RemoteRequestEvent( const MessageEnvelope & envelope ) noexcept
+    : RequestEvent( envelope )
+{
+}
+
+//////////////////////////////////////////////////////////////////////////
 // RemoteRequestEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
@@ -469,6 +544,55 @@ inline Channel RemoteRequestEvent::source_channel() const noexcept
     const areg::EventHeader* hdr{ header() };
     ASSERT(hdr != nullptr);
     return Channel(hdr->consumer.thread, hdr->source, hdr->consumer.id);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// NotifyRequestEvent class, Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+inline NotifyRequestEvent::NotifyRequestEvent( const ProxyAddress & fromProxy
+                                             , const StubAddress & toStub
+                                             , uint32_t msgId
+                                             , areg::RequestType reqType
+                                             , areg::EventType eventType)
+    : ServiceRequestEvent ( fromProxy, toStub, msgId, reqType, eventType)
+{
+}
+
+inline NotifyRequestEvent::NotifyRequestEvent( const MessageEnvelope & envelope ) noexcept
+    : ServiceRequestEvent( envelope )
+{
+}
+
+//////////////////////////////////////////////////////////////////////////
+// NotifyRequestEvent class, Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+inline LocalNotifyRequestEvent::LocalNotifyRequestEvent( const ProxyAddress& fromProxy
+                                                       , const StubAddress& toStub
+                                                       , uint32_t msgId
+                                                       , areg::RequestType reqType)
+    : NotifyRequestEvent(fromProxy, toStub, msgId, reqType, areg::EventType::EventLocalNotifyRequest)
+{
+}
+
+inline LocalNotifyRequestEvent::LocalNotifyRequestEvent(const MessageEnvelope& envelope) noexcept
+    : NotifyRequestEvent(envelope)
+{
+}
+
+//////////////////////////////////////////////////////////////////////////
+// NotifyRequestEvent class, Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+inline RemoteNotifyRequestEvent::RemoteNotifyRequestEvent( const ProxyAddress& fromProxy
+                                                         , const StubAddress& toStub
+                                                         , uint32_t msgId
+                                                         , areg::RequestType reqType)
+    : NotifyRequestEvent(fromProxy, toStub, msgId, reqType, areg::EventType::EventRemoteNotifyRequest)
+{
+}
+
+inline RemoteNotifyRequestEvent::RemoteNotifyRequestEvent(const MessageEnvelope& envelope) noexcept
+    : NotifyRequestEvent(envelope)
+{
 }
 
 //////////////////////////////////////////////////////////////////////////

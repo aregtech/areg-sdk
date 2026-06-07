@@ -19,7 +19,7 @@
   * Include files.
   ************************************************************************/
 #include "areg/base/areg_global.h"
-#include "areg/base/EventEnvelope.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/component/EventConsumer.hpp"
 #include "areg/component/TimerConsumer.hpp"
 #include "areg/ipc/ServiceEvent.hpp"
@@ -99,14 +99,14 @@ public:
      *
      * \param   msgReceived     The received communication message.
      **/
-    virtual void on_message_received(const EventEnvelope& msgReceived) = 0;
+    virtual void on_message_received(const MessageEnvelope& msgReceived) = 0;
 
     /**
      * \brief   Triggered to send a communication message.
      *
      * \param   msgSend     The communication message to send.
      **/
-    virtual void on_message_send(const EventEnvelope& msgSend) = 0;
+    virtual void on_message_send(const MessageEnvelope& msgSend) = 0;
 
     /**
      * \brief   Triggered to inform of channel connection.
@@ -272,7 +272,7 @@ private:
 // RemoteMessageConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Receives an Event that carries the IPC EventEnvelope 
+ * \brief   Receives an Event that carries the IPC MessageEnvelope 
  **/
 class AREG_API RemoteMessageConsumer : public areg::EventConsumer
 {
@@ -291,7 +291,7 @@ private:
 // EventConsumer interface override.
 /************************************************************************/
     /**
-     * \brief   Casts the event back to EventEnvelope
+     * \brief   Casts the event back to MessageEnvelope
      * \param   eventElem   The event carrying the IPC envelope.
      **/
     inline void start_event_processing(areg::Event& eventElem) final;

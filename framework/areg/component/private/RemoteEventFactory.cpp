@@ -14,7 +14,7 @@
  ************************************************************************/
 #include "areg/component/RemoteEventFactory.hpp"
 
-#include "areg/base/EventEnvelope.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/component/RequestEvents.hpp"
 #include "areg/component/ResponseEvents.hpp"
 #include "areg/component/Channel.hpp"
@@ -32,8 +32,6 @@ DEBUG_DEF_LOG_SCOPE(areg_component_RemoteEventFactory, create_request_failed_eve
 
 bool RemoteEventFactory::route_outgoing_message( Event & srcWire, const Channel & comChannel )
 {
-    // carry request_id()/response_id() and sequence_number(). Only the process-routing
-    // cookies need to be stamped, in place, on the event's own buffer.
     areg::EventHeader * hdr = srcWire.header();
     if ( hdr == nullptr )
         return false;
@@ -46,10 +44,6 @@ bool RemoteEventFactory::route_outgoing_message( Event & srcWire, const Channel 
     case areg::EventType::EventRemoteNotifyRequest:
         hdr->source = comChannel.cookie();
         hdr->target = hdr->provider.id;     // stub's process cookie
-        // NOTE: do NOT touch hdr->result here. On the request path the `result` field carries the
-        // RequestType (CallFunction / StartNotify / StopNotify / RemoveAllNotify) — see
-        // ServiceRequestEvent::request_type(). Overwriting it broke IPC notify subscriptions
-        // (StartNotify decoded as 0 on the stub side), so broadcasts/attribute updates were never sent.
         result = true;
         break;
 
@@ -90,7 +84,7 @@ bool RemoteEventFactory::route_outgoing_message( Event & srcWire, const Channel 
     return result;
 }
 
-bool RemoteEventFactory::route_incoming_message( EventEnvelope & src, const Channel & comChannel )
+bool RemoteEventFactory::route_incoming_message( MessageEnvelope & src, const Channel & comChannel )
 {
     const areg::EventHeader * hdrPtr = src.header();
     if ((hdrPtr == nullptr) || !src.is_valid())
@@ -109,12 +103,9 @@ bool RemoteEventFactory::route_incoming_message( EventEnvelope & src, const Chan
             return false;
 
         const Channel chTarget(stub->address().channel());
-        // chSource encodes the response routing path back through this RouterClient
         const Channel chSource(comChannel.source(), chTarget.source(), src.source());
 
-        // Move the receive buffer into the delivered event (no shared_ptr refcount bump); all reads
-        // from src/hdrPtr above are complete, so src may be consumed here.
-        Event evt(std::move(src));
+        ResponseEvent evt(std::move(src));
         areg::EventHeader * hdr = evt.header();
         ASSERT(hdr != nullptr);
         // Route to stub's local thread
@@ -142,8 +133,6 @@ bool RemoteEventFactory::route_incoming_message( EventEnvelope & src, const Chan
 
         const Channel chTarget(proxy->proxy_address().channel());
 
-        // Move the receive buffer into the delivered event (no shared_ptr refcount bump); all reads
-        // from src/hdrPtr above are complete, so src may be consumed here.
         Event evt(std::move(src));
         areg::EventHeader * hdr = evt.header();
         ASSERT(hdr != nullptr);
@@ -168,13 +157,13 @@ bool RemoteEventFactory::route_incoming_message( EventEnvelope & src, const Chan
     }
 }
 
-Event RemoteEventFactory::create_request_failed_event( const EventEnvelope & stream, const Channel & /* comChannel */ )
+ServiceResponseEvent RemoteEventFactory::create_request_failed_event( const MessageEnvelope & stream, const Channel & /* comChannel */ )
 {
     DEBUG_LOG_SCOPE( areg_component_RemoteEventFactory, create_request_failed_event);
 
     const areg::EventHeader* hdr = stream.header();
     if (hdr == nullptr)
-        return Event{};
+        return ServiceResponseEvent(MessageEnvelope{});
 
     const areg::EventType eventType{ static_cast<areg::EventType>(hdr->eventType) };
 
@@ -184,10 +173,7 @@ Event RemoteEventFactory::create_request_failed_event( const EventEnvelope & str
     {
     case areg::EventType::EventRemoteRequest:       // fall through
     case areg::EventType::EventRemoteNotifyRequest:
-        return ProxyBase::request_failure_event( ProxyAddress(*hdr)
-                                               , hdr->messageId
-                                               , areg::ResultType::MessageUndelivered
-                                               , hdr->sequenceNr );
+        return ProxyBase::request_failure_event( ProxyAddress(*hdr), hdr->messageId, areg::ResultType::MessageUndelivered, hdr->sequenceNr );
 
     case areg::EventType::EventRemoteResponse:      // fall through
     case areg::EventType::EventRemoteProviderConnect:// fall through
@@ -200,7 +186,7 @@ Event RemoteEventFactory::create_request_failed_event( const EventEnvelope & str
         break;
     }
 
-    return Event{};
+    return ServiceResponseEvent(MessageEnvelope{});
 }
 
 } // namespace areg

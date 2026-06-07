@@ -148,8 +148,12 @@ void LatencyConsumer::response_start_mode(const Latency::LantencySetup & setup)
     const uint16_t val       = static_cast<uint16_t>(mode);
     const bool     is_request = (val >= static_cast<uint16_t>(Latency::LatencyMode::Request0));
 
+    // Kick the loop. Request (ping-pong) sends the first request; broadcast (one-way) pulls the
+    // first message. Both keep exactly one message in flight, so the pipeline stays warm.
     if (is_request)
         _send_next_ping();
+    else
+        _send_next_oneway();
 }
 
 void LatencyConsumer::response_ping_pong_0(uint32_t /* id */, uint64_t start, uint64_t replied)
@@ -612,7 +616,9 @@ void LatencyConsumer::_start_test()
     }
     else
     {
-        // Broadcast mode: provider needs duration (seconds) and count for rate control.
+        // Broadcast (one-way) mode: count-bounded and pull-driven (warm, 1-in-flight), exactly
+        // like ping-pong. `duration` is no longer used for pacing (kept only as CSV metadata);
+        // the run stops as soon as `count` samples are collected, so it can never run endlessly.
         request_start_mode(mMode, mDurationSec, mWarmup, mCount);
     }
 
@@ -685,6 +691,19 @@ void LatencyConsumer::_send_next_ping()
     }
 }
 
+void LatencyConsumer::_send_next_oneway()
+{
+    // Pull the next one-way broadcast from the provider. Sent once per received broadcast (and
+    // through warmup), this keeps exactly one message in flight: the provider's send thread is
+    // idle when it stamps the timestamp, so the measured now_ns() - begin is a true one-way
+    // delivery latency rather than a queuing delay. The provider stamps its own running id; the
+    // value we pass is only for drop detection.
+    if (!is_connected() || !mTestRunning)
+        return;
+
+    request_message_next(mCurrentSeq);
+}
+
 void LatencyConsumer::_record_sample(uint64_t t1, uint64_t t2, uint64_t t4)
 {
     if (!mTestRunning)
@@ -698,6 +717,8 @@ void LatencyConsumer::_record_sample(uint64_t t1, uint64_t t2, uint64_t t4)
         const uint16_t val = static_cast<uint16_t>(mMode);
         if (val >= static_cast<uint16_t>(Latency::LatencyMode::Request0))
             _send_next_ping();
+        else
+            _send_next_oneway();    // keep the one-way loop alive through warmup
         return;
     }
 
@@ -730,6 +751,10 @@ void LatencyConsumer::_record_sample(uint64_t t1, uint64_t t2, uint64_t t4)
     else if (is_request_mode)
     {
         _send_next_ping();
+    }
+    else
+    {
+        _send_next_oneway();    // pull the next one-way message
     }
 }
 

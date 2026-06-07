@@ -661,7 +661,7 @@ void LogCollector::_clean_help()
 void LogCollector::_process_update_scopes(const OptionParser::InputOption& optScope)
 {
     LogCollector& logger{ LogCollector::instance() };
-    ArrayList<areg::EventEnvelope> msgList;
+    ArrayList<areg::MessageEnvelope> msgList;
     _create_scope_message(optScope, msgList);
     for (uint32_t i = 0; i < msgList.size(); ++ i)
     {
@@ -700,7 +700,7 @@ void LogCollector::_process_query_scopes(const OptionParser::InputOption& optSco
     }
 }
 
-void LogCollector::_create_scope_message(const OptionParser::InputOption& optScope, ArrayList<areg::EventEnvelope>& msgList)
+void LogCollector::_create_scope_message(const OptionParser::InputOption& optScope, ArrayList<areg::MessageEnvelope>& msgList)
 {
     ASSERT(optScope.inCommand == static_cast<int32_t>(LoggerOption::CMD_LogUpdateScope));
     ASSERT(optScope.inString.empty() == false);
@@ -711,7 +711,7 @@ void LogCollector::_create_scope_message(const OptionParser::InputOption& optSco
     {
         if (entry == areg::SYNTAX_END_COMMAND)
         {
-            areg::EventEnvelope msg{ LogCollector::_create_scope_update_message(scope) };
+            areg::MessageEnvelope msg{ LogCollector::_create_scope_update_message(scope) };
             scope.clear();
             if (msg.is_valid() == false)
             {
@@ -731,7 +731,7 @@ void LogCollector::_create_scope_message(const OptionParser::InputOption& optSco
 
     if (scope.is_empty() == false)
     {
-        areg::EventEnvelope msg{ LogCollector::_create_scope_update_message(scope) };
+        areg::MessageEnvelope msg{ LogCollector::_create_scope_update_message(scope) };
         if (msg.is_valid() == false)
         {
             msgList.clear();
@@ -786,9 +786,9 @@ String LogCollector::_normalize_scope_property(const String & scope)
     return result;
 }
 
-areg::EventEnvelope LogCollector::_create_scope_update_message(const String& scope)
+areg::MessageEnvelope LogCollector::_create_scope_update_message(const String& scope)
 {
-    areg::EventEnvelope result;
+    areg::MessageEnvelope result;
 
     if (scope.is_empty() == false)
     {

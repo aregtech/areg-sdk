@@ -40,7 +40,6 @@ LatencyProvider::LatencyProvider(const areg::ComponentEntry & entry, areg::Compo
     , areg::ThreadConsumer  ( )
 
     , mInputThread          ( static_cast<areg::ThreadConsumer &>(*this), THREAD_INPUT )
-    , mBroadcastTimer       ( static_cast<areg::TimerConsumer &>(*this),  TIMER_BROADCAST  )
     , mQuit                 ( false )
     , mQuitInput            ( false )
     , mDurationSec          ( 0u )
@@ -50,9 +49,7 @@ LatencyProvider::LatencyProvider(const areg::ComponentEntry & entry, areg::Compo
     , mDisplayThread        ( static_cast<areg::ThreadConsumer &>(mDisplayConsumer), THREAD_DISPLAY )
     , mClientCount          ( 0u )
     , mLastRateCount        ( 0u )
-    , mBroadcastCyclesLeft  ( 0u )
     , mMsgId                ( 0u )
-    , mBroadcastBulk        ( 0u )
     , mTotalServed          ( 0u )
     , mRunMin               ( INT64_MAX )
     , mRunMax               ( 0 )
@@ -67,12 +64,10 @@ void LatencyProvider::startup_service_interface(areg::Component & holder)
     mQuit.store(false, std::memory_order_relaxed);
     mQuitInput.store(false, std::memory_order_relaxed);
     mDurationSec.store(0u, std::memory_order_relaxed);
-    mBroadcastBulk        = 0u;
     mBroadcastMode.store(Latency::LatencyMode::Stop, std::memory_order_relaxed);
     mTotalServed.store(0u, std::memory_order_relaxed);
     mClientCount          = 0u;
     mLastRateCount        = 0u;
-    mBroadcastCyclesLeft  = 0u;
     mMsgId                = 0u;
 
     set_latency_setup(Latency::LantencySetup{Latency::LatencyMode::Stop, 0u, 0u, 0u});
@@ -98,7 +93,6 @@ void LatencyProvider::shutdown_service_interface(areg::Component & holder) noexc
     mQuitInput.store(true, std::memory_order_relaxed);
     mBroadcastMode.store(Latency::LatencyMode::Stop, std::memory_order_relaxed);
 
-    mBroadcastTimer.stop_timer();
     areg::ext::Console::instance().enable_console_input(false);
 
     mInputThread.shutdown(areg::WAIT_INFINITE);
@@ -125,9 +119,6 @@ bool LatencyProvider::consumer_connected(const areg::ProxyAddress & client, areg
 
 void LatencyProvider::request_start_mode(Latency::LatencyMode mode, uint32_t duration, uint32_t warmup, uint32_t count)
 {
-    mBroadcastTimer.stop_timer();
-    mBroadcastCyclesLeft = 0u;
-
     if (mode == Latency::LatencyMode::QuitApp)
     {
         mBroadcastMode.store(Latency::LatencyMode::Stop, std::memory_order_relaxed);
@@ -137,8 +128,8 @@ void LatencyProvider::request_start_mode(Latency::LatencyMode mode, uint32_t dur
         return;
     }
 
-    const bool is_request  = (mode >= Latency::LatencyMode::Request0) && (mode <= Latency::LatencyMode::Request65536);;
-    const bool is_broadcast= (mode >= Latency::LatencyMode::Broadcast0) && (mode <= Latency::LatencyMode::Broadcast65536);
+    const bool is_request   = (mode >= Latency::LatencyMode::Request0) && (mode <= Latency::LatencyMode::Request65536);
+    const bool is_broadcast = (mode >= Latency::LatencyMode::Broadcast0) && (mode <= Latency::LatencyMode::Broadcast65536);
 
     if (is_request)
     {
@@ -152,35 +143,14 @@ void LatencyProvider::request_start_mode(Latency::LatencyMode mode, uint32_t dur
 
     mDurationSec.store(duration, std::memory_order_relaxed);
     mBroadcastMode.store(mode, std::memory_order_relaxed);
+    mMsgId = 0u;
 
     set_latency_setup(Latency::LantencySetup{ mode, duration, warmup, count });
     response_start_mode(static_cast<const Latency::LantencySetup &>(latency_setup()));
 
-    if (is_broadcast && (count != 0u))
+    if (is_broadcast)
     {
-        // One timer tick fires every 50 ms => 20 ticks per second.
-        constexpr uint32_t TICKS_PER_SEC = 1000u / 50u;
-        const uint32_t     total         = count + warmup;
-        mMsgId = 0u;
-
-        if (duration == 0u)
-        {
-            // No duration limit: emit one message per tick; the consumer stops the test once it
-            // has collected `count` samples (request_start_mode(Stop)).
-            mBroadcastBulk       = 1u;
-            mBroadcastCyclesLeft = 0xFFFFFFFFu;
-        }
-        else
-        {
-            // Spread `total` messages evenly over `duration` seconds: count / (duration / timeout)
-            // messages per tick (minimum 1), running for duration * 20 ticks.
-            const uint32_t totalTicks = duration * TICKS_PER_SEC;
-            mBroadcastBulk       = std::max(1u, total / totalTicks);
-            mBroadcastCyclesLeft = totalTicks;
-        }
-
         _update_live();
-        mBroadcastTimer.start_timer(50u, component_thread(), areg::Timer::CONTINUOUSLY);
     }
 }
 
@@ -261,17 +231,13 @@ void LatencyProvider::request_ping_pong_65536(uint32_t id, uint64_t begin, const
     response_ping_pong_65536(id, begin, Latency::now_ns(), data65536);
 }
 
-void LatencyProvider::process_timer(areg::Timer & timer)
+void LatencyProvider::request_message_next(uint32_t /* id */)
 {
-    if (&timer != &mBroadcastTimer)
-        return;
+    _send_one_broadcast();
+}
 
-    _run_broadcast_burst();
-    if (--mBroadcastCyclesLeft == 0u)
-    {
-        mBroadcastTimer.stop_timer();
-        mBroadcastMode.store(Latency::LatencyMode::Stop, std::memory_order_relaxed);
-    }
+void LatencyProvider::process_timer(areg::Timer & /* timer */)
+{
 }
 
 void LatencyProvider::on_run()
@@ -297,140 +263,64 @@ void LatencyProvider::_run_display_thread()
     }
 }
 
-void LatencyProvider::_run_broadcast_burst()
+void LatencyProvider::_send_one_broadcast()
 {
-    const uint32_t             bulk = mBroadcastBulk;
+    // Emit exactly one broadcast of the currently active mode, stamping the send timestamp
+    // (the consumer measures now_ns() - begin as the one-way latency). The size-specific Data
+    // payload mirrors the request/ping-pong sizes so bcN is directly comparable with ppN.
     const Latency::LatencyMode mode = mBroadcastMode.load(std::memory_order_relaxed);
-
-    if (bulk == 0u)
-        return;
 
     switch (mode)
     {
     case Latency::LatencyMode::Broadcast0:
-        for (uint32_t i = 0u; i < bulk; ++i)
-        {
-            broadcast_message_0(mMsgId++, Latency::now_ns());
-            mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-        }
+        broadcast_message_0(mMsgId++, Latency::now_ns());
         break;
 
     case Latency::LatencyMode::Broadcast8:
-        {
-            Latency::Data8 d {};
-            for (uint32_t i = 0u; i < bulk; ++i)
-            {
-                broadcast_message_8(mMsgId++, Latency::now_ns(), d);
-                mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-            }
-        }
+        { Latency::Data8 d {};   broadcast_message_8(mMsgId++, Latency::now_ns(), d); }
         break;
 
     case Latency::LatencyMode::Broadcast16:
-        {
-            Latency::Data16 d {};
-            for (uint32_t i = 0u; i < bulk; ++i)
-            {
-                broadcast_message_16(mMsgId++, Latency::now_ns(), d);
-                mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-            }
-        }
+        { Latency::Data16 d {};  broadcast_message_16(mMsgId++, Latency::now_ns(), d); }
         break;
 
     case Latency::LatencyMode::Broadcast32:
-        {
-            Latency::Data32 d {};
-            for (uint32_t i = 0u; i < bulk; ++i)
-            {
-                broadcast_message_32(mMsgId++, Latency::now_ns(), d);
-                mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-            }
-        }
+        { Latency::Data32 d {};  broadcast_message_32(mMsgId++, Latency::now_ns(), d); }
         break;
 
     case Latency::LatencyMode::Broadcast64:
-        {
-            Latency::Data64 d {};
-            for (uint32_t i = 0u; i < bulk; ++i)
-            {
-                broadcast_message_64(mMsgId++, Latency::now_ns(), d);
-                mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-            }
-        }
+        { Latency::Data64 d {};  broadcast_message_64(mMsgId++, Latency::now_ns(), d); }
         break;
 
     case Latency::LatencyMode::Broadcast128:
-        {
-            Latency::Data128 d {};
-            for (uint32_t i = 0u; i < bulk; ++i)
-            {
-                broadcast_message_128(mMsgId++, Latency::now_ns(), d);
-                mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-            }
-        }
+        { Latency::Data128 d {}; broadcast_message_128(mMsgId++, Latency::now_ns(), d); }
         break;
 
     case Latency::LatencyMode::Broadcast256:
-        {
-            Latency::Data256 d {};
-            for (uint32_t i = 0u; i < bulk; ++i)
-            {
-                broadcast_message_256(mMsgId++, Latency::now_ns(), d);
-                mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-            }
-        }
+        { Latency::Data256 d {}; broadcast_message_256(mMsgId++, Latency::now_ns(), d); }
         break;
 
     case Latency::LatencyMode::Broadcast512:
-        {
-            Latency::Data512 d {};
-            for (uint32_t i = 0u; i < bulk; ++i)
-            {
-                broadcast_message_512(mMsgId++, Latency::now_ns(), d);
-                mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-            }
-        }
+        { Latency::Data512 d {}; broadcast_message_512(mMsgId++, Latency::now_ns(), d); }
         break;
 
     case Latency::LatencyMode::Broadcast1024:
-        {
-            Latency::Data1024 d {};
-            d.data_rest.set_size_used(1024 - 128 - 64);
-            for (uint32_t i = 0u; i < bulk; ++i)
-            {
-                broadcast_message_1024(mMsgId++, Latency::now_ns(), d);
-                mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-            }
-        }
+        { Latency::Data1024 d {}; d.data_rest.set_size_used(1024 - 128 - 64); broadcast_message_1024(mMsgId++, Latency::now_ns(), d); }
         break;
 
     case Latency::LatencyMode::Broadcast4096:
-        {
-            Latency::Data4096 d {};
-            d.data_rest.set_size_used(4096 - 128 - 64);
-            for (uint32_t i = 0u; i < bulk; ++i)
-            {
-                broadcast_message_4096(mMsgId++, Latency::now_ns(), d);
-                mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-            }
-        }
+        { Latency::Data4096 d {}; d.data_rest.set_size_used(4096 - 128 - 64); broadcast_message_4096(mMsgId++, Latency::now_ns(), d); }
         break;
 
     case Latency::LatencyMode::Broadcast65536:
-        {
-            Latency::Data65536 d {};
-            d.data_rest.set_size_used(65536 - 128 - 64);
-            for (uint32_t i = 0u; i < bulk; ++i)
-            {
-                broadcast_message_65536(mMsgId++, Latency::now_ns(), d);
-                mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-            }
-        }
+        { Latency::Data65536 d {}; d.data_rest.set_size_used(65536 - 128 - 64); broadcast_message_65536(mMsgId++, Latency::now_ns(), d); }
         break;
 
     default:
-        break;
+        return;     // Stop/unknown — nothing to send (e.g. a stray pull after the test ended).
     }
+
+    mTotalServed.fetch_add(1u, std::memory_order_relaxed);
 }
 
 void LatencyProvider::_run_input_thread()
@@ -508,7 +398,6 @@ void LatencyProvider::_on_provider_cmd(const ProviderCmdData & data)
         mQuitInput.store(true, std::memory_order_relaxed);
         set_latency_setup(Latency::LantencySetup{Latency::LatencyMode::QuitApp, 0u, 0u, 0u});
         mBroadcastMode.store(Latency::LatencyMode::Stop, std::memory_order_relaxed);
-        mBroadcastTimer.stop_timer();
         areg::Application::signal_quit();
     }
     else if (data.has_help())

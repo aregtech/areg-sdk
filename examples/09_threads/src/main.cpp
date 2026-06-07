@@ -117,7 +117,7 @@ protected:
         LOG_DBG("Received event [%s], custom dispatching here", eventElem.class_string());
 
         areg::Lock lock(gSync);
-        std::cout << "Received event [" << eventElem.class_string() << "], custom dispatching here" << std::endl;
+        std::cout << "Received event [" << eventElem.event_id() << "], custom dispatching here" << std::endl;
         return true; // prevent process_timer()
     }
 

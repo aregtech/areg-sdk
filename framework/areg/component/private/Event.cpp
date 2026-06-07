@@ -62,37 +62,13 @@ bool Event::remove_listener(const uint32_t classId, EventConsumer& eventConsumer
 //////////////////////////////////////////////////////////////////////////
 // Event class, Constructors
 //////////////////////////////////////////////////////////////////////////
-Event::Event()
-    : EventEnvelope(false)  // no allocation; is_valid() == false; used as queue-empty sentinel
-{
-}
-
-Event::Event( areg::EventType eventType, areg::EventPriority prio /*= areg::DefaultPriority*/ ) noexcept
-    : EventEnvelope ( static_cast<uint16_t>(eventType), static_cast<uint8_t>(prio), 0u )
-{
-}
-
-Event::Event( areg::EventType eventType, uint32_t reserve, areg::EventPriority prio /*= areg::DefaultPriority*/ ) noexcept
-    : EventEnvelope ( static_cast<uint16_t>(eventType), static_cast<uint8_t>(prio), reserve )
-{
-}
-
-Event::Event(const EventEnvelope& envelope) noexcept
-    : EventEnvelope ( envelope )
-{
-}
-
-Event::Event(EventEnvelope&& envelope) noexcept
-    : EventEnvelope ( std::move(envelope) )
-{
-}
 
 Event::~Event()
 {
     if (!is_unique())
         return;
 
-    areg::EventHeader* hdr{ EventEnvelope::header() };
+    areg::EventHeader* hdr{ MessageEnvelope::header() };
     if ((hdr != nullptr) && (hdr->custom != 0u))
     {
         using CleanupFn = void(*)(void*) noexcept;

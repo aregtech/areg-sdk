@@ -35,13 +35,13 @@ PowerControllerClient::PowerControllerClient(const char* roleName, areg::Compone
 {
 }
 
-void PowerControllerClient::response_start_traffic_light(bool Success)
+void PowerControllerClient::response_start_traffic_light([[maybe_unused]] bool Success)
 {
     LOG_SCOPE( 19_pubfsm_pubservice_src_PowerControllerClient, response_start_traffic_light );
     LOG_DBG("[ %s ] to start the traffic light controller", Success ? "SUCCEEDED" : "FAILED");
 }
 
-void PowerControllerClient::response_stop_traffic_light(bool Success)
+void PowerControllerClient::response_stop_traffic_light([[maybe_unused]] bool Success)
 {
     LOG_SCOPE( 19_pubfsm_pubservice_src_PowerControllerClient, response_stop_traffic_light );
     LOG_DBG("[ %s ] to stop the traffic light controller", Success ? "SUCCEEDED" : "FAILED");

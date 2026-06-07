@@ -70,13 +70,13 @@ public:
 public:
 
     /**
-     * \brief   Sends a pre-serialized EventEnvelope directly to the send thread,
+     * \brief   Sends a pre-serialized MessageEnvelope directly to the send thread,
      *          bypassing all event creation and serialization overhead.
      *
      * \param   msg     The pre-built envelope to send.
      * \return  Returns true if the message was accepted by the send thread.
      **/
-    inline bool send_raw_message(const EventEnvelope& msg);
+    inline bool send_raw_message(const MessageEnvelope& msg);
 
     /**
      * \brief   Returns the active IPC connection channel.
@@ -130,7 +130,7 @@ protected:
      * \param   msgFailed       The message, which failed to send.
      * \param   whichTarget     The target socket to send message.
      **/
-    void failed_send_message( const EventEnvelope & msgFailed, Socket & whichTarget ) final;
+    void failed_send_message( const MessageEnvelope & msgFailed, Socket & whichTarget ) final;
 
     /**
      * \brief   Called when message receiving fails.
@@ -145,7 +145,7 @@ protected:
      *
      * \param   msgUnprocessed      Unprocessed message data.
      **/
-    void failed_process_message( const EventEnvelope & msgUnprocessed ) final;
+    void failed_process_message( const MessageEnvelope & msgUnprocessed ) final;
 
     /**
      * \brief   Called to process a received message from specified source socket.
@@ -153,7 +153,7 @@ protected:
      * \param   msgReceived     Received message to process.
      * \param   whichSource     The source socket, which received message.
      **/
-    void process_received_message( EventEnvelope & msgReceived, Socket & whichSource ) final;
+    void process_received_message( MessageEnvelope & msgReceived, Socket & whichSource ) final;
 
 /************************************************************************/
 // RegistrationProvider interface overrides
@@ -218,7 +218,7 @@ protected:
      *
      * \param   reqEvent    The remote request event to be processed.
      **/
-    void process_request_event( RemoteRequestEvent & reqEvent ) final;
+    void process_request_event( ServiceRequestEvent & reqEvent ) final;
 
     /**
      * \brief   Called when Stub receives a remote notification subscription request (start/stop
@@ -226,14 +226,14 @@ protected:
      *
      * \param   reqNotifyEvent      The remote notification request event to be processed.
      **/
-    void process_notify_request( RemoteNotifyRequestEvent & reqNotifyEvent ) final;
+    void process_notify_request(NotifyRequestEvent& reqNotifyEvent ) final;
 
     /**
      * \brief   Called when Stub receives a remote response subscription request.
      *
      * \param   respEvent       The remote response event sent on processed request.
      **/
-    void process_response_event( RemoteResponseEvent & respEvent ) final;
+    void process_response_event(ServiceResponseEvent& respEvent ) final;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -255,7 +255,7 @@ protected:
      *
      * \param   msgReceived     The received communication message.
      **/
-    void on_message_received(const EventEnvelope& msgReceived) final;
+    void on_message_received(const MessageEnvelope& msgReceived) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations and attributes
@@ -294,7 +294,7 @@ inline RouterClient & RouterClient::self() noexcept
     return (*this);
 }
 
-inline bool RouterClient::send_raw_message(const EventEnvelope& msg)
+inline bool RouterClient::send_raw_message(const MessageEnvelope& msg)
 {
     return send_message(msg);
 }
@@ -304,13 +304,13 @@ inline const areg::Channel& RouterClient::connection_channel() const noexcept
     return mChannel;
 }
 
-inline void RouterClient::on_message_received(const EventEnvelope& msgReceived)
+inline void RouterClient::on_message_received(const MessageEnvelope& msgReceived)
 {
     ASSERT(areg::is_executable_id(static_cast<uint32_t>(msgReceived.message_id())));
     // Non-hot, event-dispatched entry (executables route directly via process_received_message).
     // route_incoming_message consumes its argument, so route a local envelope view (O(1) shared_ptr
     // copy) and keep the const-correct delivery chain (Event::envelope()) intact.
-    EventEnvelope routable{ msgReceived };
+    MessageEnvelope routable{ msgReceived };
     if (!RemoteEventFactory::route_incoming_message(routable, mChannel))
     {
         failed_process_message(msgReceived);

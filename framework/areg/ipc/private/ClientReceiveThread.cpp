@@ -14,13 +14,16 @@
  ************************************************************************/
 #include "areg/ipc/private/ClientReceiveThread.hpp"
 
-#include "areg/base/EventEnvelope.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/ipc/ClientConnection.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
 
+#include "areg/base/private/DebugDefs.hpp"
+
 #include "areg/logging/areg_log.h"
+
 namespace areg {
 
 DEF_LOG_SCOPE(areg_ipc_private_ClientReceiveThread, run_dispatcher);
@@ -61,7 +64,7 @@ bool ClientReceiveThread::run_dispatcher()
     }
 
     SyncEvent* events[2] { &mEventExit, &mEventQueue };
-    EventEnvelope msgReceived;
+    MessageEnvelope msgReceived;
     int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
 
     constexpr uint32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
@@ -82,9 +85,17 @@ bool ClientReceiveThread::run_dispatcher()
             }
             else
             {
+#if defined(AREG_LATENCY_TRACE) && (AREG_LATENCY_TRACE)
                 accumulate_received(static_cast<uint64_t>(sizeReceive), 1);
+                const uint64_t _ltRecv{ AREG_LT_NOW() };
                 mRemoteService.process_received_message( msgReceived, mConnection.socket( ) );
+                AREG_LT_SAMPLE(areg::LtStage::RecvNode, AREG_LT_NOW() - _ltRecv);
                 drainCount = (drainCount + 1) % DRAIN_LIMIT;
+#else   // defined(AREG_LATENCY_TRACE) && (AREG_LATENCY_TRACE)
+                accumulate_received(static_cast<uint64_t>(sizeReceive), 1);
+                mRemoteService.process_received_message(msgReceived, mConnection.socket());
+                drainCount = (drainCount + 1) % DRAIN_LIMIT;
+#endif  // defined(AREG_LATENCY_TRACE) && (AREG_LATENCY_TRACE)
             }
         }
         else

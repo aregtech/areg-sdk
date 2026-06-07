@@ -310,8 +310,8 @@ inline constexpr uint32_t crc32_calculate( const char * strData ) noexcept;
 
 /**
  * \brief   Calculates 32-bit CRC of a null-terminated wide string using IEEE 802.3 standard.
- *          Characters in the Basic Multilingual Plane (U+0000–U+00FF) are processed as a
- *          single byte each; characters in U+0100–U+FFFF are processed as two bytes (low then
+ *          Characters in the Basic Multilingual Plane (U+0000-U+00FF) are processed as a
+ *          single byte each; characters in U+0100-U+FFFF are processed as two bytes (low then
  *          high). Characters above U+FFFF are represented with their lower 16 bits only.
  *          Usable at compile time when strData is a wide string literal or constexpr pointer.
  *

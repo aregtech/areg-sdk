@@ -71,16 +71,9 @@ void ServicingComponent::request_hello_world(const areg::String & roleName)
     }
 }
 
-#if AREG_LOGGING
-void ServicingComponent::request_shutdown_service(uint32_t clientID, const areg::String & roleName)
+void ServicingComponent::request_shutdown_service([[maybe_unused]] uint32_t clientID, [[maybe_unused]] const areg::String & roleName)
 {
     LOG_SCOPE( examples_15_pubservice_ServicingComponent, request_shutdown_service );
     LOG_DBG("A client [ %s ] with ID [ %u ] requests to shut down.", roleName.as_string(), clientID);
     areg::Application::signal_quit( );
 }
-#else   // AREG_LOGGING
-void ServicingComponent::request_shutdown_service(uint32_t /*clientID*/, const areg::String & /*roleName*/)
-{
-    areg::Application::signal_quit( );
-}
-#endif  // AREG_LOGGING

@@ -43,12 +43,14 @@
     <ClCompile Include="areg\appbase\private\configure.cpp" />
     <ClCompile Include="areg\appbase\private\Application.cpp" />
     <ClCompile Include="areg\appbase\private\AppDefs.cpp" />
+    <ClCompile Include="areg\base\private\BufferBase.cpp" />
     <ClCompile Include="areg\base\private\linux\ProcessLinux.cpp" />
     <ClCompile Include="areg\base\private\linux\SocketMultiplexerLinux.cpp" />
     <ClCompile Include="areg\base\private\macos\ProcessMacOS.cpp" />
     <ClCompile Include="areg\base\private\macos\SocketMultiplexerMacOS.cpp" />
     <ClCompile Include="areg\base\private\macos\SpinLockMacOS.cpp" />
     <ClCompile Include="areg\base\private\macos\WaitableTimerMacOS.cpp" />
+    <ClCompile Include="areg\base\private\MessageEnvelope.cpp" />
     <ClCompile Include="areg\base\private\posix\CriticalSectionPosix.cpp" />
     <ClCompile Include="areg\base\private\posix\FilePosix.cpp" />
     <ClCompile Include="areg\base\private\posix\MutexPosix.cpp" />
@@ -94,7 +96,6 @@
     <ClCompile Include="areg\base\private\ThreadLocalStorage.cpp" />
     <ClCompile Include="areg\base\private\Version.cpp" />
     <ClCompile Include="areg\base\private\WriteConverter.cpp" />
-    <ClCompile Include="areg\base\private\EventEnvelope.cpp" />
     <ClCompile Include="areg\base\private\SocketAccepted.cpp" />
     <ClCompile Include="areg\base\private\ThreadAddress.cpp" />
     <ClCompile Include="areg\base\private\Socket.cpp" />
@@ -232,7 +233,9 @@
     <ClCompile Include="areg\persist\private\ConfigListener.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="areg\base\BufferBase.hpp" />
     <ClInclude Include="areg\base\DateTime.hpp" />
+    <ClInclude Include="areg\base\MessageEnvelope.hpp" />
     <ClInclude Include="areg\base\private\posix\SpinLockPosix.hpp" />
     <ClInclude Include="areg\base\private\posix\WaitAnyRegistry.hpp" />
     <ClInclude Include="areg\base\private\win32\SpinLockWin32.hpp" />
@@ -353,7 +356,6 @@
     <ClInclude Include="areg\base\RuntimeResourceMap.hpp" />
     <ClInclude Include="areg\base\Stack.hpp" />
     <ClInclude Include="areg\base\SocketAccepted.hpp" />
-    <ClInclude Include="areg\base\EventEnvelope.hpp" />
     <ClInclude Include="areg\base\ThreadAddress.hpp" />
     <ClInclude Include="areg\base\areg_types.h" />
     <ClInclude Include="areg\base\SortedLinkedList.hpp" />

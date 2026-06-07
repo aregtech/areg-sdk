@@ -658,7 +658,7 @@ ServiceResponseEvent StubBase::create_response( const ProxyAddress &    /* proxy
                                               , areg::ResultType       /* result */
                                               , const SharedBuffer &   /* data   */ ) const
 {
-    return ServiceResponseEvent(EventEnvelope{});  // invalid; derived stubs override to produce real events
+    return ServiceResponseEvent(MessageEnvelope{});  // invalid; derived stubs override to produce real events
 }
 
 ServiceResponseEvent StubBase::create_response_event( const ProxyAddress &    /* proxy  */
@@ -666,7 +666,7 @@ ServiceResponseEvent StubBase::create_response_event( const ProxyAddress &    /*
                                                     , areg::ResultType       /* result */
                                                     , uint32_t               /* reserve */ ) const
 {
-    return ServiceResponseEvent(EventEnvelope{});  // invalid; derived stubs override to produce real events
+    return ServiceResponseEvent(MessageEnvelope{});  // invalid; derived stubs override to produce real events
 }
 
 ServiceResponseEvent StubBase::prepare_response_event( uint32_t respId, areg::ResultType result, uint32_t reserve, StubBase::StubListenerList & out_listeners )
@@ -674,7 +674,7 @@ ServiceResponseEvent StubBase::prepare_response_event( uint32_t respId, areg::Re
     if (find_listeners(respId, out_listeners) > 0)
         return create_response_event(out_listeners.first_entry().mProxy, respId, result, reserve);
 
-    return ServiceResponseEvent(EventEnvelope{});  // no listeners: invalid event
+    return ServiceResponseEvent(MessageEnvelope{});  // no listeners: invalid event
 }
 
 void StubBase::process_stub_event( StubEvent & /* eventElem */ )

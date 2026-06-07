@@ -599,7 +599,7 @@ void LoggerClient::on_service_channel_lost(const Channel& /* channel */)
     }
 }
 
-void LoggerClient::failed_send_message(const EventEnvelope& /* msgFailed */, Socket& /* whichTarget */)
+void LoggerClient::failed_send_message(const MessageEnvelope& /* msgFailed */, Socket& /* whichTarget */)
 {
     FuncMessagingFailed callback{ nullptr };
     do
@@ -637,11 +637,11 @@ void LoggerClient::failed_receive_message(Socket& /* whichSource */)
     }
 }
 
-void LoggerClient::failed_process_message(const EventEnvelope& /* msgUnprocessed */)
+void LoggerClient::failed_process_message(const MessageEnvelope& /* msgUnprocessed */)
 {
 }
 
-void LoggerClient::process_received_message(EventEnvelope& msgReceived, Socket& whichSource)
+void LoggerClient::process_received_message(MessageEnvelope& msgReceived, Socket& whichSource)
 {
     if (msgReceived.is_valid() && whichSource.is_valid())
     {

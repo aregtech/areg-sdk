@@ -36,7 +36,7 @@ namespace areg {
 // RuntimeClassID class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Compile-time–constructible runtime class identifier.
+ * \brief   Compile-time-constructible runtime class identifier.
  *
  *          Each runtime class owns a static constexpr RuntimeClassID created
  *          from its string-literal class name via AREG_IMPLEMENT_RUNTIME.

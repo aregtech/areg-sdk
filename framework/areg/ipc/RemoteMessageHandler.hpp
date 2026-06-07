@@ -24,7 +24,7 @@
  * Dependencies
  ************************************************************************/
 namespace areg {
-    class EventEnvelope;
+    class MessageEnvelope;
     class Socket;
 }
 
@@ -61,7 +61,7 @@ public:
      * \param   msgFailed       The envelope that failed to send.
      * \param   whichTarget     The target socket.
      **/
-    virtual void failed_send_message( const EventEnvelope & msgFailed, Socket & whichTarget ) = 0;
+    virtual void failed_send_message( const MessageEnvelope & msgFailed, Socket & whichTarget ) = 0;
 
     /**
      * \brief   Triggered when message receive fails.
@@ -76,7 +76,7 @@ public:
      *
      * \param   msgUnprocessed      The unprocessed envelope.
      **/
-    virtual void failed_process_message( const EventEnvelope & msgUnprocessed ) = 0;
+    virtual void failed_process_message( const MessageEnvelope & msgUnprocessed ) = 0;
 
     /**
      * \brief   Triggered to process a received message.
@@ -87,7 +87,7 @@ public:
      * \param   msgReceived     The received envelope to process.
      * \param   whichSource     The source socket from which message was received.
      **/
-    virtual void process_received_message( EventEnvelope & msgReceived, Socket & whichSource ) = 0;
+    virtual void process_received_message( MessageEnvelope & msgReceived, Socket & whichSource ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

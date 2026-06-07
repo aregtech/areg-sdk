@@ -31,6 +31,10 @@
 
 #include "areg/system/areg_platform.h"
 
+#ifndef AREG_LATENCY_TRACE
+    #define AREG_LATENCY_TRACE 0
+#endif // AREG_LATENCY_TRACE
+
 #define OUTPUT_DEBUG_LEVEL_DEBUG    4
 #define OUTPUT_DEBUG_LEVEL_INFO     3
 #define OUTPUT_DEBUG_LEVEL_WARN     2

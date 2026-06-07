@@ -81,8 +81,8 @@ private:
 
     // Dispatch functions assigned by update_dispatch_mode() based on mNumPairs.
     // Initially set in the constructor; may be re-assigned by setup_connection_data() if config overrides mNumPairs.
-    using SendCopyFn = std::function<bool(const areg::EventEnvelope &, areg::EventPriority)>;
-    using SendMoveFn = std::function<bool(areg::EventEnvelope &&,     areg::EventPriority)>;
+    using SendCopyFn = std::function<bool(const areg::MessageEnvelope &, areg::EventPriority)>;
+    using SendMoveFn = std::function<bool(areg::MessageEnvelope &&,     areg::EventPriority)>;
     using AcceptFn   = std::function<bool(areg::SocketAccepted &)>;
     using LostFn     = std::function<void(ITEM_ID)>;
 
@@ -203,7 +203,7 @@ public:
      * \param   data            The data of the message.
      * \param   eventPrio       The priority of the message to set.
      **/
-    bool send_message(const areg::EventEnvelope & data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
+    bool send_message(const areg::MessageEnvelope & data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
     /**
      * \brief   Queues the message for sending (move variant).
@@ -215,7 +215,7 @@ public:
      * \param   data            The data of the message (moved from).
      * \param   eventPrio       The priority of the message to set.
      **/
-    bool send_message(areg::EventEnvelope && data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
+    bool send_message(areg::MessageEnvelope && data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
     /**
      * \brief   Returns the instance of data rate helper object to use when computing data rate.
@@ -278,7 +278,7 @@ public:
      * \param   msgFailed       The message, which failed to send.
      * \param   whichTarget     The target socket to send message.
      **/
-    void failed_send_message( const areg::EventEnvelope & msgFailed, Socket & whichTarget ) override;
+    void failed_send_message( const areg::MessageEnvelope & msgFailed, Socket & whichTarget ) override;
 
     /**
      * \brief   Triggered, when failed to receive message.
@@ -293,7 +293,7 @@ public:
      * \param   msgReceived     Received message to process.
      * \param   whichSource     The source socket, which received message.
      **/
-    void process_received_message( areg::EventEnvelope & msgReceived, Socket & whichSource ) override;
+    void process_received_message( areg::MessageEnvelope & msgReceived, Socket & whichSource ) override;
 
 /************************************************************************/
 // ConnectionConsumer
@@ -396,7 +396,7 @@ public:
      * \return  Returns the created message for remote communication.
      **/
     [[nodiscard]]
-    areg::EventEnvelope connect_message( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const override;
+    areg::MessageEnvelope connect_message( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const override;
 
     /**
      * \brief   Creates the service disconnect request message, sets the message target and the
@@ -407,7 +407,7 @@ public:
      * \return  Returns the created message for remote communication.
      **/
     [[nodiscard]]
-    areg::EventEnvelope disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const override;
+    areg::MessageEnvelope disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const override;
 
 /************************************************************************/
 // ServiceEventConsumer overrides
@@ -540,8 +540,8 @@ public:
      * \param   msg         The received message envelope
      * \param   eventPrio   Event priority
      **/
-    inline bool send_received_message(const areg::EventEnvelope & msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio);
-    inline bool send_received_message(areg::EventEnvelope && msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio);
+    inline bool send_received_message(const areg::MessageEnvelope & msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio);
+    inline bool send_received_message(areg::MessageEnvelope && msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio);
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -584,15 +584,15 @@ private:
      * \brief   Send implementation for the legacy shared-thread path (mNumPairs == 0).
      *          Both overloads are bound to mSendFn / mSendMoveFn in the constructor.
      **/
-    bool do_send_shared(const areg::EventEnvelope & data, areg::EventPriority prio);
-    bool do_send_shared(areg::EventEnvelope && data, areg::EventPriority prio);
+    bool do_send_shared(const areg::MessageEnvelope & data, areg::EventPriority prio);
+    bool do_send_shared(areg::MessageEnvelope && data, areg::EventPriority prio);
 
     /**
      * \brief   Send implementation for the pool path (mNumPairs > 0).
      *          Both overloads are bound to mSendFn / mSendMoveFn in the constructor.
      **/
-    bool do_send_pool(const areg::EventEnvelope & data, areg::EventPriority prio);
-    bool do_send_pool(areg::EventEnvelope && data, areg::EventPriority prio);
+    bool do_send_pool(const areg::MessageEnvelope & data, areg::EventPriority prio);
+    bool do_send_pool(areg::MessageEnvelope && data, areg::EventPriority prio);
 
     /**
      * \brief   New-client-accepted implementation for shared-thread path.
@@ -730,14 +730,14 @@ inline bool ServiceCommunicationBase::send_command( ServiceEventData::ServiceCom
                                           , eventPrio );
 }
 
-inline bool ServiceCommunicationBase::send_received_message( const areg::EventEnvelope & msg
+inline bool ServiceCommunicationBase::send_received_message( const areg::MessageEnvelope & msg
                                                            , areg::EventPriority eventPrio /*= areg::EventPriority::HighPrio*/ )
 {
-    areg::EventEnvelope copy{ msg };
+    areg::MessageEnvelope copy{ msg };
     return send_received_message(std::move(copy), eventPrio);
 }
 
-inline bool ServiceCommunicationBase::send_received_message( areg::EventEnvelope && msg
+inline bool ServiceCommunicationBase::send_received_message( areg::MessageEnvelope && msg
                                                            , areg::EventPriority eventPrio /*= areg::EventPriority::HighPrio*/ )
 {
     areg::Event evt(std::move(msg));

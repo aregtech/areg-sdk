@@ -72,17 +72,17 @@ public:
      * \param   seqNr           The sequence number of call.
      * \param   initSize        Payload bytes to reserve after the header for serialized parameters.
      **/
-    ServiceResponseEvent( const ProxyAddress & target
-                        , areg::ResultType result
-                        , uint32_t respId
-                        , areg::EventType eventType
-                        , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
-                        , uint32_t initSize = 0u );
+    inline ServiceResponseEvent( const ProxyAddress & target
+                               , areg::ResultType result
+                               , uint32_t respId
+                               , areg::EventType eventType
+                               , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
+                               , uint32_t initSize = 0u );
 
     /**
-     * \brief   Constructs from a received EventEnvelope (IPC receive path). Shares the buffer (O(1)).
+     * \brief   Constructs from a received MessageEnvelope.
      **/
-    explicit ServiceResponseEvent( const EventEnvelope & envelope ) noexcept;
+    explicit inline ServiceResponseEvent( const MessageEnvelope & envelope ) noexcept;
 
     /**
      * \brief   Copies all data from given source, except the target proxy address. This is used if
@@ -91,16 +91,16 @@ public:
      * \param   target      The target proxy address
      * \param   src         The service response source to copy data.
      **/
-    ServiceResponseEvent(const ProxyAddress & target, const ServiceResponseEvent & src );
+    inline ServiceResponseEvent(const ProxyAddress & target, const ServiceResponseEvent & src );
 
     /**
-     * \brief   Constructs from a cloned EventEnvelope and redirects the consumer endpoint to target.
+     * \brief   Constructs from a cloned MessageEnvelope and redirects the consumer endpoint to target.
      *          Used by clone_for_target() to create a lightweight copy sharing EventHeader data.
      *
      * \param   target  The new consumer proxy address (written into the cloned header).
-     * \param   env     A deep-copied EventEnvelope; its consumer endpoint is updated to target.
+     * \param   env     A deep-copied MessageEnvelope; its consumer endpoint is updated to target.
      **/
-    ServiceResponseEvent(const ProxyAddress & target, EventEnvelope && env);
+    inline ServiceResponseEvent(const ProxyAddress & target, MessageEnvelope && env);
 
     ServiceResponseEvent(const ServiceResponseEvent& /*src*/) = default;
 
@@ -144,7 +144,7 @@ public:
      * \return  A new ServiceResponseEvent value with an independent buffer and updated consumer.
      **/
     [[nodiscard]]
-    ServiceResponseEvent clone_for_target(const ProxyAddress & target) const;
+    inline ServiceResponseEvent clone_for_target(const ProxyAddress & target) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -156,6 +156,43 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // ServiceResponseEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
+
+inline ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress & target
+                                                 , areg::ResultType result
+                                                 , uint32_t respId
+                                                 , areg::EventType eventType
+                                                 , const SequenceNumber & seqNr    /*= areg::SEQUENCE_NUMBER_NOTIFY*/
+                                                 , uint32_t initSize               /*= 0u*/ )
+    : ProxyEvent    (target, eventType, initSize)
+{
+    areg::EventHeader* hdr{ header() };
+    if (hdr != nullptr)
+    {
+        hdr->messageId  = respId;
+        hdr->result     = static_cast<uint32_t>(result);
+        hdr->sequenceNr = seqNr;
+    }
+}
+
+inline ServiceResponseEvent::ServiceResponseEvent( const MessageEnvelope & envelope ) noexcept
+    : ProxyEvent    (envelope)
+{
+}
+
+inline ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress& target, const ServiceResponseEvent& src )
+    : ProxyEvent    (target, src.envelope().clone())
+{
+}
+
+inline ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress& target, MessageEnvelope&& env )
+    : ProxyEvent    (target, std::move(env))
+{
+}
+
+inline ServiceResponseEvent ServiceResponseEvent::clone_for_target( const ProxyAddress & target ) const
+{
+    return ServiceResponseEvent(target, envelope().clone());
+}
 
 inline uint32_t ServiceResponseEvent::response_id() const noexcept
 {

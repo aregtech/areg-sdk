@@ -197,7 +197,7 @@ protected:
      *
      * \param   msgReceived     The message sent by service to the client.
      **/
-    virtual void service_connection_event(const EventEnvelope& msgReceived);
+    virtual void service_connection_event(const MessageEnvelope& msgReceived);
 
 /************************************************************************/
 // ConnectionProvider interface overrides
@@ -267,7 +267,7 @@ protected:
      * \param   msgSource       The message source type of the connected client.
      * \return  Returns the created message for remote communication.
      **/
-    EventEnvelope connect_message( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const override;
+    MessageEnvelope connect_message( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const override;
 
     /**
      * \brief   Creates a service disconnection request message with specified source and target.
@@ -276,7 +276,7 @@ protected:
      * \param   target      The ID of the target to send the disconnection message request.
      * \return  Returns the created message for remote communication.
      **/
-    EventEnvelope disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const override;
+    MessageEnvelope disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -331,14 +331,14 @@ protected:
      *
      * \param   msgReceived     The received communication message.
      **/
-    void on_message_received(const EventEnvelope& msgReceived) override;
+    void on_message_received(const MessageEnvelope& msgReceived) override;
 
     /**
      * \brief   Called when communication message needs to be sent.
      *
      * \param   msgSend     The communication message to send.
      **/
-    void on_message_send(const EventEnvelope& msgSend) override;
+    void on_message_send(const MessageEnvelope& msgSend) override;
 
     /**
      * \brief   Called to notify that a channel connection is established.
@@ -373,8 +373,8 @@ protected:
      * \param   msg         The received message envelope.
      * \param   eventPrio   Event priority (default: HighPrio for received messages).
      **/
-    inline bool send_received_message(const areg::EventEnvelope& msg, areg::EventPriority eventPrio = areg::EventPriority::HighPrio);
-    inline bool send_received_message(areg::EventEnvelope&& msg, areg::EventPriority eventPrio = areg::EventPriority::HighPrio);
+    inline bool send_received_message(const areg::MessageEnvelope& msg, areg::EventPriority eventPrio = areg::EventPriority::HighPrio);
+    inline bool send_received_message(areg::MessageEnvelope&& msg, areg::EventPriority eventPrio = areg::EventPriority::HighPrio);
 
     /**
      * \brief   Queues a message for sending with optional priority (copy).
@@ -382,7 +382,7 @@ protected:
      * \param   data            The data of the message.
      * \param   eventPrio       The priority of the message to set.
      **/
-    inline bool send_message(const EventEnvelope & data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
+    inline bool send_message(const MessageEnvelope & data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
     /**
      * \brief   Queues a message for sending with optional priority (move).
@@ -391,7 +391,7 @@ protected:
      * \param   data            Envelope to move into the send queue.
      * \param   eventPrio       The priority of the message to set.
      **/
-    inline bool send_message(EventEnvelope && data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
+    inline bool send_message(MessageEnvelope && data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
     /**
      * \brief   Starts client socket connection.
@@ -639,14 +639,14 @@ inline void ServiceClientConnectionBase::send_command( ServiceEventData::Service
                                  , eventPrio );
 }
 
-inline bool ServiceClientConnectionBase::send_received_message( const areg::EventEnvelope & msg
+inline bool ServiceClientConnectionBase::send_received_message( const areg::MessageEnvelope & msg
                                                               , areg::EventPriority eventPrio /*= areg::EventPriority::HighPrio*/ )
 {
-    areg::EventEnvelope copy{ msg };
+    areg::MessageEnvelope copy{ msg };
     return send_received_message(std::move(copy), eventPrio);
 }
 
-inline bool ServiceClientConnectionBase::send_received_message( areg::EventEnvelope && msg
+inline bool ServiceClientConnectionBase::send_received_message( areg::MessageEnvelope && msg
                                                               , areg::EventPriority eventPrio /*= areg::EventPriority::HighPrio*/ )
 {
     areg::Event evt(std::move(msg));
@@ -657,13 +657,13 @@ inline bool ServiceClientConnectionBase::send_received_message( areg::EventEnvel
     return true;
 }
 
-inline bool ServiceClientConnectionBase::send_message(const EventEnvelope & data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
+inline bool ServiceClientConnectionBase::send_message(const MessageEnvelope & data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
-    EventEnvelope copy{ data };
+    MessageEnvelope copy{ data };
     return send_message(std::move(copy), eventPrio);
 }
 
-inline bool ServiceClientConnectionBase::send_message(EventEnvelope && data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
+inline bool ServiceClientConnectionBase::send_message(MessageEnvelope && data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
     areg::Event evt(std::move(data));
     evt.set_event_priority(eventPrio);

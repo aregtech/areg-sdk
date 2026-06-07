@@ -33,6 +33,7 @@
 
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/component/StubAddress.hpp"
+#include "areg/component/ServiceRequestEvent.hpp"
 
 #include <atomic>
 #include <functional>
@@ -46,11 +47,11 @@ namespace areg {
     class NotificationEventData;
     class ServiceResponseEvent;
     class RemoteResponseEvent;
-    class ServiceRequestEvent;
     class NotificationEvent;
     class DispatcherThread;
-    class SharedBuffer;
     class ProxyListener;
+    class ResponseEvent;
+    class SharedBuffer;
     class ProxyEvent;
     class ProxyBase;
     class Version;
@@ -436,10 +437,10 @@ public:
      * \param   msgId       The message ID of the failed request.
      * \param   errCode     The error code indicating the failure reason.
      * \param   seqNr       The sequence number associated with the request.
-     * \return  A RemoteResponseEvent value; check is_valid() before use.
+     * \return  A ResponseEvent value; check is_valid() before use.
      **/
     [[nodiscard]]
-    static RemoteResponseEvent request_failure_event(const ProxyAddress & target, uint32_t msgId, areg::ResultType errCode, const SequenceNumber & seqNr);
+    static ServiceResponseEvent request_failure_event(const ProxyAddress & target, uint32_t msgId, areg::ResultType errCode, const SequenceNumber & seqNr);
 
     /**
      * \brief   Acquires a lock on proxy resources for thread-safe access to the proxy registry.
@@ -511,8 +512,7 @@ public:
      * \brief   Returns true if at least one listener is registered for attribute update
      *          notifications of the specified message ID.
      *
-     * \param   msgId       The attribute or response message ID to check for notification
-     *                      listeners.
+     * \param   msgId       The attribute or response message ID to check for notification listeners.
      * \return  Returns true if notification listeners are assigned for the message ID; false
      *          otherwise.
      **/
@@ -556,15 +556,13 @@ public:
     void stop_proxy();
 
     /**
-     * \brief   Forces immediate termination of the proxy. The proxy becomes inoperable after this
-     *          call.
+     * \brief   Forces immediate termination of the proxy. The proxy becomes inoperable after this call.
      **/
     void terminate_self();
 
     /**
-     * \brief   Registers or updates a notification listener. Requests the stub to start
-     *          notifications if this is the first listener, or sends an immediate update if
-     *          listeners already exist.
+     * \brief   Registers or updates a notification listener. Requests the stub to start notifications
+     *          if this is the first listener, or sends an immediate update if listeners already exist.
      *
      * \param   msgId           The notification message ID (attribute or response).
      * \param   caller          The notification consumer to register.
@@ -593,29 +591,19 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Processes a response event received from the stub. Must be overridden by derived
-     *          classes.
+     * \brief   Processes a response event received from the stub. Must be overridden by derived classes.
      *
-     * \param   eventElem       The service response event containing response data and metadata
-     *                          from the stub.
+     * \param   eventElem       The service response event containing response data and metadata from the stub.
      **/
-    void process_response_event(ServiceResponseEvent & eventElem) override = 0;
-
-    /**
-     * \brief   Processes an attribute update event from the stub. Must be overridden by derived
-     *          classes.
-     *
-     * \param   eventElem       The service response event containing the updated attribute value.
-     **/
-    void process_attribute_event(ServiceResponseEvent & eventElem) override = 0;
+    void process_response_event(ServiceResponseEvent& eventElem) override = 0;
 
 /************************************************************************/
 // ProxyBase overrides. Should be implemented.
 /************************************************************************/
 
     /**
-     * \brief   Creates a service availability event for a new client. Must be overridden by derived
-     *          classes.
+     * \brief   Creates a service availability event for a new client.
+     *          Must be overridden by derived classes.
      *
      * \param   consumer    The consumer to receive the service availability event.
      * \return  Returns a valid pointer to the created event; otherwise nullptr.
@@ -624,7 +612,8 @@ protected:
     virtual ProxyBase::ServiceAvailableEvent create_service_available( NotificationConsumer & consumer ) = 0;
 
     /**
-     * \brief   Creates a notification event to deliver to client objects. Must be overridden by derived classes.
+     * \brief   Creates a notification event to deliver to client objects.
+     *          Must be overridden by derived classes.
      *
      * \param   data    The notification event data containing client notification information.
      * \return  Returns the newly created notification event object.
@@ -633,7 +622,8 @@ protected:
     virtual NotificationEvent create_client_notification( const NotificationEventData & data ) const = 0;
 
     /**
-     * \brief   Creates a request event to send to the stub. Must be overridden by derived classes.
+     * \brief   Creates a request event to send to the stub.
+     *          Must be overridden by derived classes.
      *
      * \param   args        The buffer containing serialized request arguments.
      * \param   reqId       The ID of the request call.
@@ -643,23 +633,19 @@ protected:
     virtual ServiceRequestEvent create_request( const areg::SharedBuffer & args, uint32_t reqId ) = 0;
 
     /**
-     * \brief   Creates an empty (no-payload) request event of the proxy's concrete type, with the
-     *          buffer allocated for the header plus \a reserve payload bytes. The caller serializes
-     *          parameters directly into the event via write_stream(), so the request is built in a
-     *          single heap allocation (no intermediate SharedBuffer + copy, no reallocation).
-     *          The base returns an invalid event; generated proxies override it. Used by
-     *          create_request_event(); pair it with send_request_event(ServiceRequestEvent&, caller).
+     * \brief   Creates a request event with pre-allocate space to serialize data send to the stub.
+     *          Must be overridden by derived classes.
      *
      * \param   reqId       The ID of the request call.
      * \param   reserve     Payload bytes to reserve after the header for the serialized parameters.
      * \return  A typed empty request event; check is_valid() before use.
      **/
     [[nodiscard]]
-    virtual ServiceRequestEvent create_request( uint32_t reqId, uint32_t reserve );
+    virtual ServiceRequestEvent create_request( uint32_t reqId, uint32_t reserve ) = 0;
 
     /**
-     * \brief   Creates a request event to start or stop receiving update notifications. Must be
-     *          overridden by derived classes.
+     * \brief   Creates a request event to start or stop receiving update notifications.
+     *          Must be overridden by derived classes.
      *
      * \param   msgId       The message ID to subscribe or unsubscribe. Should be an attribute or
      *                      response ID.
@@ -671,16 +657,16 @@ protected:
 
     /**
      * \brief   Creates an error response event when a remote request fails to reach the target.
-     *          Base returns an invalid RemoteResponseEvent. Override in generated proxies.
+     *          Base returns an invalid ResponseEvent. Override in generated proxies.
      *
      * \param   addrProxy       The address of the proxy that sent the failed request.
      * \param   msgId           The message ID of the failed request.
      * \param   reason          The failure reason code.
      * \param   seqNr           The sequence number of the failed request.
-     * \return  A RemoteResponseEvent value; check is_valid() before use.
+     * \return  A ResponseEvent value; check is_valid() before use.
      **/
     [[nodiscard]]
-    virtual RemoteResponseEvent create_request_failed( const ProxyAddress & addrProxy, uint32_t msgId, areg::ResultType reason, const SequenceNumber & seqNr ) const;
+    virtual ServiceResponseEvent create_request_failed( const ProxyAddress & addrProxy, uint32_t msgId, areg::ResultType reason, const SequenceNumber & seqNr ) const = 0;
 
 /************************************************************************/
 // ProxyEventConsumer interface overrides.
@@ -873,8 +859,7 @@ protected:
     uint32_t prepare_listeners( ProxyBase::ProxyListenerList & out_listenerList, uint32_t msgId, const SequenceNumber & seqNrToSearch );
 
     /**
-     * \brief   Sends a request event to the stub with serialized arguments and an optional response
-     *          listener.
+     * \brief   Sends a request event to the stub with serialized arguments and an optional response listener.
      *
      * \param   reqId       The ID of the request.
      * \param   args        The buffer containing serialized request arguments. Can be empty if the
@@ -882,25 +867,26 @@ protected:
      * \param   caller      The consumer to receive the response. Must be non-null if the request
      *                      has a response; can be null if the request is one-way.
      **/
-    void send_request_event( uint32_t reqId, const areg::SharedBuffer & args, NotificationConsumer * caller );
+    inline void send_request_event( uint32_t reqId, const areg::SharedBuffer & args, NotificationConsumer * caller );
 
+    /**
+     * \brief   Sends a request event to the stub with serialized arguments and an optional response listener.
+     *
+     * \param   reqEvent    The prepared request event to send.
+     * \param   caller      The consumer to receive the response. Must be non-null if the request
+     *                      has a response; can be null if the request is one-way.
+     **/
     void send_request_event(ServiceRequestEvent& reqEvent, NotificationConsumer* caller);
 
     /**
-     * \brief   Builds an empty, ready-to-fill request event in a single heap allocation. Generated
-     *          proxies write the request parameters straight into the returned event's write_stream()
-     *          and then pass it to send_request_event(ServiceRequestEvent&, caller). This replaces the
-     *          old "serialize into a SharedBuffer, then copy it into the event" path (two allocations
-     *          plus a copy) with one allocation and no copy.
+     * \brief   Builds an empty, ready-to-fill request event in a single heap allocation
      *
      * \param   reqId       The ID of the request call.
-     * \param   reserve     Payload bytes to pre-reserve so serialization never reallocates. 0 (default)
-     *                      reserves nothing — fine for small requests that fit the initial block; pass
-     *                      the expected payload size for large requests (e.g. ping_pong_4096/65536).
+     * \param   reserve     Payload bytes to pre-reserve to serialize
      * \return  A typed request event; check is_valid() before serializing into it.
      **/
     [[nodiscard]]
-    ServiceRequestEvent create_request_event( uint32_t reqId, uint32_t reserve = 0u );
+    inline ServiceRequestEvent create_request_event( uint32_t reqId, uint32_t reserve = 0u );
 
     /**
      * \brief   Sends a request to the stub to start or stop sending update notifications.
@@ -910,6 +896,9 @@ protected:
      **/
     void send_notify_request( uint32_t msgId, areg::RequestType reqType );
 
+    /**
+     * \brief   Sends a request to the stub to start or stop sending update notifications.
+     **/
     void send_notify_request(ServiceRequestEvent& notifyEvent);
 
     /**
@@ -1260,6 +1249,17 @@ inline void ProxyBase::set_state( uint32_t msgId, areg::DataState newState ) noe
 inline DispatcherThread & ProxyBase::proxy_dispatcher_thread() const noexcept
 {
     return mDispatcherThread;
+}
+
+inline ServiceRequestEvent ProxyBase::create_request_event(uint32_t reqId, uint32_t reserve /*= 0u*/)
+{
+    return create_request(reqId, reserve);
+}
+
+inline void ProxyBase::send_request_event(uint32_t reqId, const SharedBuffer& args, NotificationConsumer* caller)
+{
+    ServiceRequestEvent reqEvent{ create_request(args, reqId) };
+    send_request_event(reqEvent, caller);
 }
 
 #ifdef DEBUG

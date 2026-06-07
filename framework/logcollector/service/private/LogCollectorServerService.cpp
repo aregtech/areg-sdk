@@ -126,7 +126,7 @@ void LogCollectorServerService::remove_all_instances()
     mObservers.clear();
 }
 
-void LogCollectorServerService::dispatch_and_forward_logger_message(const areg::EventEnvelope& msgForward)
+void LogCollectorServerService::dispatch_and_forward_logger_message(const areg::MessageEnvelope& msgForward)
 {
     areg::Lock lock(mLock);
 
@@ -178,7 +178,7 @@ void LogCollectorServerService::dispatch_and_forward_logger_message(const areg::
     }
 }
 
-void LogCollectorServerService::on_message_received(const areg::EventEnvelope &msgReceived)
+void LogCollectorServerService::on_message_received(const areg::MessageEnvelope &msgReceived)
 {
     LOG_SCOPE( logcollector_service_LogCollectorServerService, on_message_received );
 
@@ -261,7 +261,7 @@ void LogCollectorServerService::process_timer(areg::Timer& /* timer */ )
 {
 }
 
-void LogCollectorServerService::on_message_send(const areg::EventEnvelope &msgSend)
+void LogCollectorServerService::on_message_send(const areg::MessageEnvelope &msgSend)
 {
     LOG_SCOPE( logcollector_service_LogCollectorServerService, on_message_send );
 
@@ -300,7 +300,7 @@ void LogCollectorServerService::on_service_channel_lost(const areg::Channel & /*
 {
 }
 
-void LogCollectorServerService::failed_process_message(const areg::EventEnvelope & /* msgUnprocessed */)
+void LogCollectorServerService::failed_process_message(const areg::MessageEnvelope & /* msgUnprocessed */)
 {
 }
 

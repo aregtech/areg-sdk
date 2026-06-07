@@ -65,7 +65,7 @@ int main()
 
     // The components are initialized. Find the service component thread.
     // It is used to send custom event.
-    areg::Thread * thread = areg::Thread::find_by_name(_threadName);
+    areg::Thread * thread = areg::Thread::find_by_number(areg::crc32_calculate(_threadName));
     ASSERT(thread != nullptr );
     ASSERT(thread->is_runtime("DispatcherThread"));
 

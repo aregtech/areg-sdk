@@ -18,7 +18,9 @@
 #include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/ipc/ClientConnection.hpp"
-#include "areg/base/EventEnvelope.hpp"
+#include "areg/base/MessageEnvelope.hpp"
+
+#include "areg/base/private/DebugDefs.hpp"
 
 namespace areg {
 
@@ -48,6 +50,8 @@ void ClientSendThread::ready_for_events( bool is_ready )
 
 void ClientSendThread::start_event_processing( Event & eventElem )
 {
+    AREG_LT_SCOPE(areg::LtStage::SendNode);     // serialize routing fields + batch + writev
+
     if ( eventElem.is_exit_prio() )
     {
         mConnection.close_socket();
@@ -63,8 +67,12 @@ void ClientSendThread::start_event_processing( Event & eventElem )
     hdr0->custom    = 0u;
     eventElem.envelope().buffer_completion_fix(); // compute checksum now; zeroed fields are not covered by checksum
 
-    areg::IoBuffer  ioBuffer[areg::THREAD_DRAIN_LIMIT];
-    uint32_t batchCount{ 0u };
+    // Drained buffers are retained in mDrain[] (a reused member array) so the raw header pointers held
+    // in ioBuffer stay valid through the writev. We retain only the shared_ptr (one atomic increment),
+    // never a full Event. mDrain is reset, not reconstructed, each call. Slot 0 is the triggering event
+    // (kept alive by the caller); drained events occupy slots [1 .. bufCount).
+    // ZEPHYR-INCOMPATIBLE: ~4 KB stack IoBuffer array for batch send draining.
+    areg::IoBuffer ioBuffer[areg::THREAD_DRAIN_LIMIT];
     uint32_t totalSize { 0u };
     uint32_t bufCount  { 0u };
 
@@ -72,15 +80,11 @@ void ClientSendThread::start_event_processing( Event & eventElem )
         const uint32_t wireSize{ static_cast<uint32_t>(sizeof(areg::EventHeader)) + hdr0->bufHeader.biUsed };
         ioBuffer[bufCount++] = { reinterpret_cast<const uint8_t*>(hdr0), wireSize };
         totalSize += wireSize;
-        ++batchCount;
     }
 
-    // Phase 1: drain additional events from the queue.
-    // ZEPHYR-INCOMPATIBLE: ~4KB stack array for batch send draining.
-    Event ptrs[areg::THREAD_DRAIN_LIMIT];
-    uint32_t evtCount{ 0u };
-
-    for ( ; batchCount < areg::THREAD_DRAIN_LIMIT; ++batchCount )
+    // Drain further queued events into the same batch (one OS send). The single-message ping-pong case
+    // finds the queue empty and skips the loop, touching no mDrain slot.
+    for ( ; bufCount < areg::THREAD_DRAIN_LIMIT; ++bufCount )
     {
         Event evt{ pick_event() };
         if ( !evt.is_valid() )
@@ -88,8 +92,8 @@ void ClientSendThread::start_event_processing( Event & eventElem )
 
         if ( evt.is_exit_prio() )
         {
-            for ( uint32_t i{ 0u }; i < evtCount; ++i )
-                ptrs[i].destroy_event();
+            for ( uint32_t i{ 1u }; i < bufCount; ++i )
+                mDrain[i].reset();
 
             mConnection.close_socket();
             trigger_exit();
@@ -104,26 +108,25 @@ void ClientSendThread::start_event_processing( Event & eventElem )
         evt.envelope().buffer_completion_fix(); // compute checksum now; zeroed fields are not covered by checksum
 
         const uint32_t wireSize{ static_cast<uint32_t>(sizeof(areg::EventHeader)) + hdr->bufHeader.biUsed };
-        ioBuffer[bufCount++] = { reinterpret_cast<const uint8_t*>(hdr), wireSize };
+        ioBuffer[bufCount] = { reinterpret_cast<const uint8_t*>(hdr), wireSize };
         totalSize += wireSize;
-
-        ptrs[evtCount++] = std::move(evt); // buffer stays alive in ptrs[]; raw pointer hdr remains valid
+        mDrain[bufCount] = evt.envelope().share_buffer();  // retain buffer; raw pointer hdr stays valid through writev
     }
 
-    // Phase 2: send collected batch as a single writev/scatter-gather call.
-    const int32_t sentBytes{ mConnection.send_messages_batch(ioBuffer, bufCount, totalSize) };
-
-    for ( uint32_t i{ 0u }; i < evtCount; ++i )
-        ptrs[i].destroy_event();
+    int32_t sentBytes{ 0 };
+    {
+        AREG_LT_SCOPE(areg::LtStage::SendSyscall);  // isolates the raw send()/writev syscall cost
+        sentBytes = mConnection.send_messages_batch(ioBuffer, bufCount, totalSize);
+    }
 
     if ( sentBytes > 0 )
-    {
         accumulate_sent( static_cast<uint64_t>(sentBytes), bufCount );
-    }
     else
-    {
         mRemoteService.failed_send_message( eventElem.envelope(), mConnection.socket() );
-    }
+
+    // Release retained drained buffers (slot 0 is owned by the caller). Keeps mDrain allocated for reuse.
+    for ( uint32_t i{ 1u }; i < bufCount; ++i )
+        mDrain[i].reset();
 }
 
 bool ClientSendThread::post_event( Event & eventElem )

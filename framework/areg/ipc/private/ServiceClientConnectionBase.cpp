@@ -74,7 +74,7 @@ ServiceClientConnectionBase::~ServiceClientConnectionBase()
 {
 }
 
-void ServiceClientConnectionBase::service_connection_event(const EventEnvelope& msgReceived)
+void ServiceClientConnectionBase::service_connection_event(const MessageEnvelope& msgReceived)
 {
     LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, service_connection_event );
 
@@ -207,12 +207,12 @@ bool ServiceClientConnectionBase::is_host_setup() const
     return mClientConnection.address().is_valid();
 }
 
-EventEnvelope ServiceClientConnectionBase::connect_message(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const
+MessageEnvelope ServiceClientConnectionBase::connect_message(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const
 {
     return areg::create_connect_request(source, target, msgSource);
 }
 
-EventEnvelope ServiceClientConnectionBase::disconnect_message(const ITEM_ID & source, const ITEM_ID & target) const
+MessageEnvelope ServiceClientConnectionBase::disconnect_message(const ITEM_ID & source, const ITEM_ID & target) const
 {
     return areg::create_disconnect_request(source, target);
 }
@@ -353,11 +353,11 @@ void ServiceClientConnectionBase::on_service_exit()
     on_service_stop( );
 }
 
-void ServiceClientConnectionBase::on_message_received( const EventEnvelope & /* msgReceived */ )
+void ServiceClientConnectionBase::on_message_received( const MessageEnvelope & /* msgReceived */ )
 {
 }
 
-void ServiceClientConnectionBase::on_message_send( const EventEnvelope & /* msgSend */ )
+void ServiceClientConnectionBase::on_message_send( const MessageEnvelope & /* msgSend */ )
 {
 }
 

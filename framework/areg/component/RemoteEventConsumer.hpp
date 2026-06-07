@@ -26,9 +26,9 @@ namespace areg {
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-class RemoteRequestEvent;
-class RemoteNotifyRequestEvent;
-class RemoteResponseEvent;
+class ServiceRequestEvent;
+class NotifyRequestEvent;
+class ServiceResponseEvent;
 
 //////////////////////////////////////////////////////////////////////////
 // RemoteEventConsumer class declaration
@@ -54,7 +54,7 @@ public:
      *
      * \param   reqEvent    The remote request event to process.
      **/
-    virtual void process_request_event( RemoteRequestEvent & reqEvent ) = 0;
+    virtual void process_request_event(ServiceRequestEvent& reqEvent ) = 0;
 
     /**
      * \brief   Processes a remote notification request event received by the stub (e.g., to start
@@ -62,7 +62,7 @@ public:
      *
      * \param   reqNotifyEvent      The remote notification request event to process.
      **/
-    virtual void process_notify_request( RemoteNotifyRequestEvent & reqNotifyEvent ) = 0;
+    virtual void process_notify_request(NotifyRequestEvent& reqNotifyEvent ) = 0;
 
     /**
      * \brief   Processes a remote response event received by the stub (e.g., to subscribe or
@@ -70,7 +70,7 @@ public:
      *
      * \param   respEvent       The remote response event to process.
      **/
-    virtual void process_response_event( RemoteResponseEvent & respEvent ) = 0;
+    virtual void process_response_event(ServiceResponseEvent& respEvent ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations

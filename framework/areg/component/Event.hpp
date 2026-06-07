@@ -13,7 +13,7 @@
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, Event Base class declaration.
- *              Event IS an EventEnvelope: the binary header and payload live in
+ *              Event IS an MessageEnvelope: the binary header and payload live in
  *              the same allocation. Local custom events carry a DataClass via
  *              placement-new in the payload tail. IPC events carry serialized bytes.
  *
@@ -22,7 +22,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
-#include "areg/base/EventEnvelope.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/RuntimeClassID.hpp"
 #include "areg/component/EventDefs.hpp"
 #include "areg/base/UtilityDefs.hpp"
@@ -134,13 +134,13 @@ namespace areg {
 // Event class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Base class for all events. Event IS an EventEnvelope: a single heap allocation
+ * \brief   Base class for all events. Event IS an MessageEnvelope: a single heap allocation
  *          carries the 128-byte EventHeader followed by an optional payload.
  *
  *          Heap-allocated events are freed via `delete`; destroy() invalidates the buffer only.
  *          Internal events stored by value in EventStack are cleaned up automatically by the destructor.
  **/
-class AREG_API Event   : protected EventEnvelope
+class AREG_API Event   : protected MessageEnvelope
 {
 //////////////////////////////////////////////////////////////////////////
 // Defines and constants.
@@ -192,15 +192,15 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    Event();
+    inline Event();
 
     /**
-     * \brief   Creates an event of the specified type with no payload. Allocates the EventEnvelope.
+     * \brief   Creates an event of the specified type with no payload. Allocates the MessageEnvelope.
      *
      * \param   eventType   The event type to store in the header.
      * \param   prio        The event priority to store in the header.
      **/
-    explicit Event( areg::EventType eventType, areg::EventPriority prio = areg::DefaultPriority ) noexcept;
+    explicit inline Event( areg::EventType eventType, areg::EventPriority prio = areg::DefaultPriority ) noexcept;
 
     /**
      * \brief   Creates an event of the specified type and reserves payload space for a DataClass.
@@ -210,17 +210,17 @@ public:
      * \param   reserve     Bytes to reserve after the 128-byte header for the DataClass.
      * \param   prio        The event priority to store in the header.
      **/
-    explicit Event( areg::EventType eventType, uint32_t reserve, areg::EventPriority prio = areg::DefaultPriority ) noexcept;
+    explicit inline Event( areg::EventType eventType, uint32_t reserve, areg::EventPriority prio = areg::DefaultPriority ) noexcept;
 
     /**
      * \brief   Constructs from an existing envelope (IPC receive path). Shares the buffer.
      **/
-    Event(const EventEnvelope& envelope) noexcept;
+    inline Event(const MessageEnvelope& envelope) noexcept;
 
     /**
      * \brief   Constructs from a moved envelope (IPC receive path). Takes ownership.
      **/
-    Event(EventEnvelope&& envelope) noexcept;
+    inline Event(MessageEnvelope&& envelope) noexcept;
 
     Event(const Event& src) = default;
 
@@ -434,7 +434,7 @@ public:
     inline OutStream & write_stream( ) const noexcept;
 
     [[nodiscard]]
-    inline const EventEnvelope& envelope() const noexcept;
+    inline const MessageEnvelope& envelope() const noexcept;
 
     /**
      * \brief   Returns the class ID stored in the EventHeader (set by final-class constructor).
@@ -482,6 +482,34 @@ protected:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// Event class, Constructors
+//////////////////////////////////////////////////////////////////////////
+inline Event::Event()
+    : MessageEnvelope(false)  // no allocation; is_valid() == false; used as queue-empty sentinel
+{
+}
+
+inline Event::Event(areg::EventType eventType, areg::EventPriority prio /*= areg::DefaultPriority*/) noexcept
+    : MessageEnvelope(static_cast<uint16_t>(eventType), static_cast<uint8_t>(prio), 0u)
+{
+}
+
+inline Event::Event(areg::EventType eventType, uint32_t reserve, areg::EventPriority prio /*= areg::DefaultPriority*/) noexcept
+    : MessageEnvelope(static_cast<uint16_t>(eventType), static_cast<uint8_t>(prio), reserve)
+{
+}
+
+inline Event::Event(const MessageEnvelope& envelope) noexcept
+    : MessageEnvelope(envelope)
+{
+}
+
+inline Event::Event(MessageEnvelope&& envelope) noexcept
+    : MessageEnvelope(std::move(envelope))
+{
+}
+
+//////////////////////////////////////////////////////////////////////////
 // Event class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
@@ -497,46 +525,46 @@ inline bool Event::operator != (const Event& other) const noexcept
 
 inline areg::EventType Event::event_type() const noexcept
 {
-    return static_cast<areg::EventType>(EventEnvelope::event_type());
+    return static_cast<areg::EventType>(MessageEnvelope::event_type());
 }
 
 inline void Event::set_event_type( areg::EventType eventType ) noexcept
 {
-    EventEnvelope::set_event_type(static_cast<uint16_t>(eventType));
+    MessageEnvelope::set_event_type(static_cast<uint16_t>(eventType));
 }
 
 inline areg::EventPriority Event::event_priority() const noexcept
 {
-    return static_cast<areg::EventPriority>(EventEnvelope::priority());
+    return static_cast<areg::EventPriority>(MessageEnvelope::priority());
 }
 
 inline void Event::set_event_priority( areg::EventPriority eventPrio ) noexcept
 {
-    EventEnvelope::set_priority(static_cast<uint8_t>(eventPrio));
+    MessageEnvelope::set_priority(static_cast<uint8_t>(eventPrio));
 }
 
 inline EventConsumer * Event::event_consumer() const noexcept
 {
-    const areg::EventHeader* hdr{ EventEnvelope::header() };
+    const areg::EventHeader* hdr{ MessageEnvelope::header() };
     return (hdr != nullptr ? areg::to_ptr<EventConsumer*, uint64_t>(hdr->internal2) : nullptr);
 }
 
 inline void Event::set_event_consumer( EventConsumer * consumer ) noexcept
 {
-    areg::EventHeader* hdr{ EventEnvelope::header() };
+    areg::EventHeader* hdr{ MessageEnvelope::header() };
     if (hdr != nullptr)
         hdr->internal2 = areg::to_num<uint64_t, EventConsumer*>(consumer);
 }
 
 inline DispatcherThread * Event::target_dispatcher() const noexcept
 {
-    const areg::EventHeader* hdr{ EventEnvelope::header() };
+    const areg::EventHeader* hdr{ MessageEnvelope::header() };
     return (hdr != nullptr ? areg::to_ptr<DispatcherThread*, uint64_t>(hdr->internal1) : nullptr);
 }
 
 inline void Event::set_target_dispatcher( DispatcherThread * thread ) noexcept
 {
-    areg::EventHeader* hdr{ EventEnvelope::header() };
+    areg::EventHeader* hdr{ MessageEnvelope::header() };
     if (hdr != nullptr)
         hdr->internal1 = areg::to_num<uint64_t, DispatcherThread*>(thread);
 }
@@ -576,35 +604,35 @@ inline OutStream& Event::write_stream() const noexcept
     return static_cast<OutStream&>(const_cast<Event&>(*this));
 }
 
-inline const EventEnvelope& Event::envelope() const noexcept
+inline const MessageEnvelope& Event::envelope() const noexcept
 {
-    static const EventEnvelope _envelope{};
-    return (is_valid() ? static_cast<const EventEnvelope&>(*this) : _envelope);
+    static const MessageEnvelope _envelope{};
+    return (is_valid() ? static_cast<const MessageEnvelope&>(*this) : _envelope);
 }
 
 inline uint32_t Event::event_id() const noexcept
 {
-    return EventEnvelope::event_id();
+    return MessageEnvelope::event_id();
 }
 
 inline bool Event::is_valid() const noexcept
 {
-    return EventEnvelope::is_valid();
+    return MessageEnvelope::is_valid();
 }
 
 inline areg::EventHeader* Event::header() noexcept
 {
-    return EventEnvelope::header();
+    return MessageEnvelope::header();
 }
 
 inline const areg::EventHeader* Event::header() const noexcept
 {
-    return EventEnvelope::header();
+    return MessageEnvelope::header();
 }
 
 inline void Event::destroy_event() noexcept
 {
-    EventEnvelope::destroy_event();
+    MessageEnvelope::destroy_event();
 }
 
 inline bool Event::is_exit_prio() const noexcept

@@ -10,7 +10,7 @@
  * \file        units/EventEnvelopeTest.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Areg Platform, unit tests for EventEnvelope.
+ * \brief       Areg Platform, unit tests for MessageEnvelope.
  *              Covers: initialization, header bulk access, consumer/provider
  *              endpoint fields, shared service fields, event routing fields,
  *              operations, streaming, copy/move semantics.
@@ -20,7 +20,7 @@
  * Include files.
  ************************************************************************/
 #include "units/GUnitTest.hpp"
-#include "areg/base/EventEnvelope.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/MemoryDefs.hpp"
@@ -32,20 +32,20 @@
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   Default-constructed EventEnvelope is not initialized.
+ * \brief   Default-constructed MessageEnvelope is not initialized.
  **/
 TEST(EventEnvelopeTest, default_construction)
 {
-    areg::EventEnvelope env;
+    areg::MessageEnvelope env;
     EXPECT_EQ(env.header(), nullptr);
 }
 
 /**
- * \brief   EventEnvelope constructed with init=true has an allocated header.
+ * \brief   MessageEnvelope constructed with init=true has an allocated header.
  **/
 TEST(EventEnvelopeTest, init_construction)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     ASSERT_NE(env.header(), nullptr);
     
     // All header fields should be zeroed
@@ -58,24 +58,24 @@ TEST(EventEnvelopeTest, init_construction)
 }
 
 /**
- * \brief   EventEnvelope constructed with reserve size allocates correct buffer.
+ * \brief   MessageEnvelope constructed with reserve size allocates correct buffer.
  **/
 TEST(EventEnvelopeTest, reserve_construction)
 {
     constexpr uint32_t reserve_bytes { 256u };
-    areg::EventEnvelope env(reserve_bytes, areg::BLOCK_SIZE);
+    areg::MessageEnvelope env(reserve_bytes, areg::BLOCK_SIZE);
     
     ASSERT_NE(env.header(), nullptr);
     EXPECT_GE(env.size_available(), reserve_bytes);
 }
 
 /**
- * \brief   EventEnvelope constructed from raw bytes preserves data.
+ * \brief   MessageEnvelope constructed from raw bytes preserves data.
  **/
 TEST(EventEnvelopeTest, raw_bytes_construction)
 {
     // Create reference envelope
-    areg::EventEnvelope ref(true);
+    areg::MessageEnvelope ref(true);
     ref.set_target(111u);
     ref.set_source(222u);
     ref.set_message_id(333u);
@@ -86,7 +86,7 @@ TEST(EventEnvelopeTest, raw_bytes_construction)
     ASSERT_GT(size, 0u);
     
     // Reconstruct from raw bytes
-    areg::EventEnvelope rebuilt(raw, size);
+    areg::MessageEnvelope rebuilt(raw, size);
     ASSERT_NE(rebuilt.header(), nullptr);
     EXPECT_EQ(rebuilt.target(), 111u);
     EXPECT_EQ(rebuilt.source(), 222u);
@@ -94,7 +94,7 @@ TEST(EventEnvelopeTest, raw_bytes_construction)
 }
 
 /**
- * \brief   EventEnvelope constructed from EventHeader preserves header fields.
+ * \brief   MessageEnvelope constructed from EventHeader preserves header fields.
  **/
 TEST(EventEnvelopeTest, event_header_construction)
 {
@@ -103,7 +103,7 @@ TEST(EventEnvelopeTest, event_header_construction)
     hdr.source = 99u;
     hdr.messageId = 777u;
     
-    areg::EventEnvelope env(hdr, 128u);
+    areg::MessageEnvelope env(hdr, 128u);
     ASSERT_NE(env.header(), nullptr);
     EXPECT_EQ(env.target(), 42u);
     EXPECT_EQ(env.source(), 99u);
@@ -111,14 +111,14 @@ TEST(EventEnvelopeTest, event_header_construction)
 }
 
 /**
- * \brief   EventEnvelope constructed with eventType and priority stores correct values.
+ * \brief   MessageEnvelope constructed with eventType and priority stores correct values.
  **/
 TEST(EventEnvelopeTest, event_type_priority_construction)
 {
     constexpr uint16_t event_type { 5u };
     constexpr uint8_t  priority   { 3u };
     
-    areg::EventEnvelope env(event_type, priority, 64u);
+    areg::MessageEnvelope env(event_type, priority, 64u);
     ASSERT_NE(env.header(), nullptr);
     EXPECT_EQ(env.event_type(), event_type);
     EXPECT_EQ(env.priority(), priority);
@@ -133,7 +133,7 @@ TEST(EventEnvelopeTest, event_type_priority_construction)
  **/
 TEST(EventEnvelopeTest, raw_envelope_access)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     const areg::RawEnvelope* raw = env.raw_envelope();
     ASSERT_NE(raw, nullptr);
 }
@@ -143,7 +143,7 @@ TEST(EventEnvelopeTest, raw_envelope_access)
  **/
 TEST(EventEnvelopeTest, consumer_bulk_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     
     areg::Endpoint ep{};
     ep.id      = 100u;
@@ -171,7 +171,7 @@ TEST(EventEnvelopeTest, consumer_bulk_roundtrip)
  **/
 TEST(EventEnvelopeTest, provider_bulk_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     
     areg::Endpoint ep{};
     ep.id      = 500u;
@@ -199,7 +199,7 @@ TEST(EventEnvelopeTest, provider_bulk_roundtrip)
  **/
 TEST(EventEnvelopeTest, raw_service_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     
     areg::RawService svc{};
     svc.role    = 0xABCDu;
@@ -221,7 +221,7 @@ TEST(EventEnvelopeTest, raw_service_roundtrip)
  **/
 TEST(EventEnvelopeTest, consumer_id_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint32_t id { 0x12345678u };
     env.set_consumer_id(id);
     EXPECT_EQ(env.consumer_id(), id);
@@ -232,7 +232,7 @@ TEST(EventEnvelopeTest, consumer_id_roundtrip)
  **/
 TEST(EventEnvelopeTest, consumer_number_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint32_t num { 0xABCDEF00u };
     env.set_consumer_number(num);
     EXPECT_EQ(env.consumer_number(), num);
@@ -243,7 +243,7 @@ TEST(EventEnvelopeTest, consumer_number_roundtrip)
  **/
 TEST(EventEnvelopeTest, consumer_thread_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint32_t thread { 0x99887766u };
     env.set_consumer_thread(thread);
     EXPECT_EQ(env.consumer_thread(), thread);
@@ -254,7 +254,7 @@ TEST(EventEnvelopeTest, consumer_thread_roundtrip)
  **/
 TEST(EventEnvelopeTest, consumer_version_major_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint16_t ver { 10u };
     env.set_consumer_version_major(ver);
     EXPECT_EQ(env.consumer_version_major(), ver);
@@ -265,7 +265,7 @@ TEST(EventEnvelopeTest, consumer_version_major_roundtrip)
  **/
 TEST(EventEnvelopeTest, consumer_version_minor_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint16_t ver { 20u };
     env.set_consumer_version_minor(ver);
     EXPECT_EQ(env.consumer_version_minor(), ver);
@@ -276,7 +276,7 @@ TEST(EventEnvelopeTest, consumer_version_minor_roundtrip)
  **/
 TEST(EventEnvelopeTest, consumer_version_patch_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint16_t ver { 30u };
     env.set_consumer_version_patch(ver);
     EXPECT_EQ(env.consumer_version_patch(), ver);
@@ -287,7 +287,7 @@ TEST(EventEnvelopeTest, consumer_version_patch_roundtrip)
  **/
 TEST(EventEnvelopeTest, consumer_type_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint16_t type { 7u };
     env.set_consumer_type(type);
     EXPECT_EQ(env.consumer_type(), type);
@@ -302,7 +302,7 @@ TEST(EventEnvelopeTest, consumer_type_roundtrip)
  **/
 TEST(EventEnvelopeTest, provider_id_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint32_t id { 0xFEDCBA98u };
     env.set_provider_id(id);
     EXPECT_EQ(env.provider_id(), id);
@@ -313,7 +313,7 @@ TEST(EventEnvelopeTest, provider_id_roundtrip)
  **/
 TEST(EventEnvelopeTest, provider_number_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint32_t num { 0x55555555u };
     env.set_provider_number(num);
     EXPECT_EQ(env.provider_number(), num);
@@ -324,7 +324,7 @@ TEST(EventEnvelopeTest, provider_number_roundtrip)
  **/
 TEST(EventEnvelopeTest, provider_thread_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint32_t thread { 0x11223344u };
     env.set_provider_thread(thread);
     EXPECT_EQ(env.provider_thread(), thread);
@@ -335,7 +335,7 @@ TEST(EventEnvelopeTest, provider_thread_roundtrip)
  **/
 TEST(EventEnvelopeTest, provider_version_major_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint16_t ver { 100u };
     env.set_provider_version_major(ver);
     EXPECT_EQ(env.provider_version_major(), ver);
@@ -346,7 +346,7 @@ TEST(EventEnvelopeTest, provider_version_major_roundtrip)
  **/
 TEST(EventEnvelopeTest, provider_version_minor_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint16_t ver { 200u };
     env.set_provider_version_minor(ver);
     EXPECT_EQ(env.provider_version_minor(), ver);
@@ -357,7 +357,7 @@ TEST(EventEnvelopeTest, provider_version_minor_roundtrip)
  **/
 TEST(EventEnvelopeTest, provider_version_patch_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint16_t ver { 300u };
     env.set_provider_version_patch(ver);
     EXPECT_EQ(env.provider_version_patch(), ver);
@@ -368,7 +368,7 @@ TEST(EventEnvelopeTest, provider_version_patch_roundtrip)
  **/
 TEST(EventEnvelopeTest, provider_type_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint16_t type { 9u };
     env.set_provider_type(type);
     EXPECT_EQ(env.provider_type(), type);
@@ -383,7 +383,7 @@ TEST(EventEnvelopeTest, provider_type_roundtrip)
  **/
 TEST(EventEnvelopeTest, service_role_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint32_t role { 0xDEADBEEFu };
     env.set_service_role(role);
     EXPECT_EQ(env.service_role(), role);
@@ -394,7 +394,7 @@ TEST(EventEnvelopeTest, service_role_roundtrip)
  **/
 TEST(EventEnvelopeTest, service_item_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint32_t item { 0xCAFEBABEu };
     env.set_service_item(item);
     EXPECT_EQ(env.service_item(), item);
@@ -409,7 +409,7 @@ TEST(EventEnvelopeTest, service_item_roundtrip)
  **/
 TEST(EventEnvelopeTest, target_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint32_t tgt { 0x11111111u };
     env.set_target(tgt);
     EXPECT_EQ(env.target(), tgt);
@@ -420,7 +420,7 @@ TEST(EventEnvelopeTest, target_roundtrip)
  **/
 TEST(EventEnvelopeTest, source_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint32_t src { 0x22222222u };
     env.set_source(src);
     EXPECT_EQ(env.source(), src);
@@ -431,7 +431,7 @@ TEST(EventEnvelopeTest, source_roundtrip)
  **/
 TEST(EventEnvelopeTest, channel_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint32_t ch { 0x33333333u };
     env.set_channel(ch);
     EXPECT_EQ(env.channel(), ch);
@@ -442,7 +442,7 @@ TEST(EventEnvelopeTest, channel_roundtrip)
  **/
 TEST(EventEnvelopeTest, message_id_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint32_t mid { 0x44444444u };
     env.set_message_id(mid);
     EXPECT_EQ(env.message_id(), mid);
@@ -453,7 +453,7 @@ TEST(EventEnvelopeTest, message_id_roundtrip)
  **/
 TEST(EventEnvelopeTest, sequence_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint64_t seq { 0xDEADBEEFu };
     env.set_sequence(seq);
     EXPECT_EQ(env.sequence(), seq);
@@ -464,7 +464,7 @@ TEST(EventEnvelopeTest, sequence_roundtrip)
  **/
 TEST(EventEnvelopeTest, result_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint32_t res { 0xABCDu };
     env.set_result(res);
     EXPECT_EQ(env.result(), res);
@@ -475,7 +475,7 @@ TEST(EventEnvelopeTest, result_roundtrip)
  **/
 TEST(EventEnvelopeTest, event_type_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint16_t evt { 7u };
     env.set_event_type(evt);
     EXPECT_EQ(env.event_type(), evt);
@@ -486,7 +486,7 @@ TEST(EventEnvelopeTest, event_type_roundtrip)
  **/
 TEST(EventEnvelopeTest, call_type_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint8_t ct { 3u };
     env.set_call_type(ct);
     EXPECT_EQ(env.call_type(), ct);
@@ -497,7 +497,7 @@ TEST(EventEnvelopeTest, call_type_roundtrip)
  **/
 TEST(EventEnvelopeTest, priority_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint8_t prio { 5u };
     env.set_priority(prio);
     EXPECT_EQ(env.priority(), prio);
@@ -508,7 +508,7 @@ TEST(EventEnvelopeTest, priority_roundtrip)
  **/
 TEST(EventEnvelopeTest, event_id_roundtrip)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     constexpr uint32_t cid { 0x99999999u };
     env.set_event_id(cid);
     EXPECT_EQ(env.event_id(), cid);
@@ -519,7 +519,7 @@ TEST(EventEnvelopeTest, event_id_roundtrip)
  **/
 TEST(EventEnvelopeTest, checksum_after_completion)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     env.set_message_id(100u);
     env.set_target(200u);
     
@@ -532,7 +532,7 @@ TEST(EventEnvelopeTest, checksum_after_completion)
  **/
 TEST(EventEnvelopeTest, checksum_ignore_flag)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     // Default constructed should have CHECKSUM_INVALID
     EXPECT_FALSE(env.is_checksum_ignore());
     
@@ -550,12 +550,12 @@ TEST(EventEnvelopeTest, checksum_ignore_flag)
  **/
 TEST(EventEnvelopeTest, clone_independent)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     env.set_target(111u);
     env.set_source(222u);
     env.set_message_id(333u);
     
-    areg::EventEnvelope cloned = env.clone();
+    areg::MessageEnvelope cloned = env.clone();
     
     ASSERT_NE(cloned.header(), nullptr);
     EXPECT_EQ(cloned.target(), 111u);
@@ -569,13 +569,13 @@ TEST(EventEnvelopeTest, clone_independent)
  **/
 TEST(EventEnvelopeTest, clone_with_consumer_override)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     env.set_consumer_id(100u);
     
     areg::Endpoint new_consumer{};
     new_consumer.id = 999u;
     
-    areg::EventEnvelope cloned = env.clone(&new_consumer, nullptr);
+    areg::MessageEnvelope cloned = env.clone(&new_consumer, nullptr);
     EXPECT_EQ(cloned.consumer_id(), 999u);
 }
 
@@ -584,13 +584,13 @@ TEST(EventEnvelopeTest, clone_with_consumer_override)
  **/
 TEST(EventEnvelopeTest, clone_with_provider_override)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     env.set_provider_id(200u);
     
     areg::Endpoint new_provider{};
     new_provider.id = 888u;
     
-    areg::EventEnvelope cloned = env.clone(nullptr, &new_provider);
+    areg::MessageEnvelope cloned = env.clone(nullptr, &new_provider);
     EXPECT_EQ(cloned.provider_id(), 888u);
 }
 
@@ -599,7 +599,7 @@ TEST(EventEnvelopeTest, clone_with_provider_override)
  **/
 TEST(EventEnvelopeTest, init_envelope_reuse)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     env.set_target(100u);
     
     areg::EventHeader new_hdr{};
@@ -617,7 +617,7 @@ TEST(EventEnvelopeTest, init_envelope_reuse)
  **/
 TEST(EventEnvelopeTest, payload_ptr_access)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     uint8_t* payload = env.payload_ptr();
     ASSERT_NE(payload, nullptr);
     
@@ -639,10 +639,10 @@ TEST(EventEnvelopeTest, payload_ptr_access)
  **/
 TEST(EventEnvelopeTest, copy_constructor_shares)
 {
-    areg::EventEnvelope env1(true);
+    areg::MessageEnvelope env1(true);
     env1.set_target(42u);
     
-    areg::EventEnvelope env2(env1);
+    areg::MessageEnvelope env2(env1);
     EXPECT_TRUE(env1.is_shared());
     EXPECT_TRUE(env2.is_shared());
     EXPECT_EQ(env2.target(), 42u);
@@ -653,11 +653,11 @@ TEST(EventEnvelopeTest, copy_constructor_shares)
  **/
 TEST(EventEnvelopeTest, move_constructor_transfers)
 {
-    areg::EventEnvelope env1(true);
+    areg::MessageEnvelope env1(true);
     env1.set_target(99u);
     EXPECT_FALSE(env1.is_shared());
     
-    areg::EventEnvelope env2(std::move(env1));
+    areg::MessageEnvelope env2(std::move(env1));
     EXPECT_EQ(env2.target(), 99u);
     EXPECT_FALSE(env2.is_shared());
 }
@@ -667,10 +667,10 @@ TEST(EventEnvelopeTest, move_constructor_transfers)
  **/
 TEST(EventEnvelopeTest, copy_assignment_shares)
 {
-    areg::EventEnvelope env1(true);
+    areg::MessageEnvelope env1(true);
     env1.set_target(111u);
     
-    areg::EventEnvelope env2(true);
+    areg::MessageEnvelope env2(true);
     env2 = env1;
     
     EXPECT_TRUE(env1.is_shared());
@@ -683,10 +683,10 @@ TEST(EventEnvelopeTest, copy_assignment_shares)
  **/
 TEST(EventEnvelopeTest, move_assignment_transfers)
 {
-    areg::EventEnvelope env1(true);
+    areg::MessageEnvelope env1(true);
     env1.set_target(222u);
     
-    areg::EventEnvelope env2(true);
+    areg::MessageEnvelope env2(true);
     env2 = std::move(env1);
     
     EXPECT_EQ(env2.target(), 222u);
@@ -702,7 +702,7 @@ TEST(EventEnvelopeTest, move_assignment_transfers)
  **/
 TEST(EventEnvelopeTest, all_fields_survive_clone)
 {
-    areg::EventEnvelope env(true);
+    areg::MessageEnvelope env(true);
     
     // Set all routing fields
     env.set_target(10u);
@@ -739,7 +739,7 @@ TEST(EventEnvelopeTest, all_fields_survive_clone)
     env.set_service_item(0x1234u);
     
     // Clone and verify all fields
-    areg::EventEnvelope cloned = env.clone();
+    areg::MessageEnvelope cloned = env.clone();
     
     EXPECT_EQ(cloned.target(),      10u);
     EXPECT_EQ(cloned.source(),      20u);

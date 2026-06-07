@@ -19,7 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
-#include "areg/base/EventEnvelope.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/ipc/ServerConnectionBase.hpp"
 #include "areg/ipc/SocketConnectionBase.hpp"
 
@@ -107,36 +107,36 @@ public:
     void close_all_connections();
 
     /**
-     * \brief   Sends an EventEnvelope to an accepted client socket via scatter/gather I/O.
+     * \brief   Sends an MessageEnvelope to an accepted client socket via scatter/gather I/O.
      *
      * \param   in_message      The envelope to send.
      * \param   clientSocket    The accepted socket object.
      * \return  Bytes sent on success; zero on invalid checksum; negative on error.
      **/
-    inline int32_t send_message( const EventEnvelope & in_message, const SocketAccepted & clientSocket ) const;
+    inline int32_t send_message( const MessageEnvelope & in_message, const SocketAccepted & clientSocket ) const;
 
     /**
-     * \brief   Sends an EventEnvelope directly using a raw socket handle.
+     * \brief   Sends an MessageEnvelope directly using a raw socket handle.
      *
      * \param   in_message  The envelope to send.
      * \param   hSocket     Raw OS socket handle of the target client.
      * \return  Bytes sent on success; zero on invalid checksum; negative on error.
      **/
-    inline int32_t send_message( const EventEnvelope & in_message, SOCKETHANDLE hSocket ) const;
+    inline int32_t send_message( const MessageEnvelope & in_message, SOCKETHANDLE hSocket ) const;
 
     inline int32_t send_messages_batch(const areg::IoBuffer* messages, uint32_t count, const SocketAccepted& clientSocket, uint32_t totalSize = 0) const;
 
     inline int32_t send_messages_batch(const areg::IoBuffer* messages, uint32_t count, SOCKETHANDLE hSocket, uint32_t totalSize = 0) const;
 
     /**
-     * \brief   Receives message data via socket connection into an EventEnvelope.
+     * \brief   Receives message data via socket connection into an MessageEnvelope.
      *          Returns bytes received, zero if invalid checksum, or negative on failure.
      *
-     * \param[in,out] out_message     EventEnvelope to receive into.
+     * \param[in,out] out_message     MessageEnvelope to receive into.
      * \param   clientSocket          The accepted socket object.
      * \return  Returns length in bytes of data received; zero if checksum invalid; negative on failure.
      **/
-    inline int32_t receive_message( EventEnvelope & out_message, const SocketAccepted & clientSocket ) const;
+    inline int32_t receive_message( MessageEnvelope & out_message, const SocketAccepted & clientSocket ) const;
 
     /**
      * \brief   Removes the specified socket handle from the multiplexer watch set.
@@ -174,12 +174,12 @@ inline const ITEM_ID & ServerConnection::channel_id() const
     return mChannelId;
 }
 
-inline int32_t ServerConnection::send_message(const EventEnvelope & in_message, const SocketAccepted & clientSocket) const
+inline int32_t ServerConnection::send_message(const MessageEnvelope & in_message, const SocketAccepted & clientSocket) const
 {
     return ServerConnection::send_message(in_message, clientSocket.handle());
 }
 
-inline int32_t ServerConnection::send_message(const EventEnvelope & in_message, SOCKETHANDLE hSocket) const
+inline int32_t ServerConnection::send_message(const MessageEnvelope & in_message, SOCKETHANDLE hSocket) const
 {
     const areg::EventHeader* hdr{ in_message.header() };
     if (hdr == nullptr)
@@ -201,7 +201,7 @@ inline int32_t ServerConnection::send_messages_batch(const areg::IoBuffer* messa
     return SocketConnectionBase::send_messages_batch(messages, count, hSocket, totalSize);
 }
 
-inline int32_t ServerConnection::receive_message(EventEnvelope & out_message, const SocketAccepted & clientSocket) const
+inline int32_t ServerConnection::receive_message(MessageEnvelope & out_message, const SocketAccepted & clientSocket) const
 {
     return SocketConnectionBase::receive_message(out_message, clientSocket);
 }

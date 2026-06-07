@@ -64,18 +64,18 @@ public:
      * \param   initSize        Payload bytes to reserve after the header for the serialized request
      *                          parameters. 0 keeps the default block size.
      **/
-    ServiceRequestEvent( const ProxyAddress & proxyAddress
-                       , const StubAddress & target
-                       , uint32_t reqId
-                       , areg::RequestType reqType
-                       , areg::EventType eventType
-                       , uint32_t initSize = 0u );
+    inline ServiceRequestEvent( const ProxyAddress & proxyAddress
+                              , const StubAddress & target
+                              , uint32_t reqId
+                              , areg::RequestType reqType
+                              , areg::EventType eventType
+                              , uint32_t initSize = 0u );
 
     /**
-     * \brief   Constructs from a received EventEnvelope (IPC receive path). Shares the buffer (O(1)).
+     * \brief   Constructs from a received MessageEnvelope.
      *          All routing data is read from EventHeader fields; payload contains serialized params.
      **/
-    explicit ServiceRequestEvent( const EventEnvelope & envelope ) noexcept;
+    explicit inline ServiceRequestEvent( const MessageEnvelope & envelope ) noexcept;
 
     ServiceRequestEvent(const ServiceRequestEvent& /*src*/) = default;
 
@@ -124,6 +124,32 @@ public:
 private:
     ServiceRequestEvent() = delete;
 };
+
+//////////////////////////////////////////////////////////////////////////
+// ServiceRequestEvent class implementation
+//////////////////////////////////////////////////////////////////////////
+
+inline ServiceRequestEvent::ServiceRequestEvent( const ProxyAddress & proxyAddress
+                                               , const StubAddress  & target
+                                               , uint32_t reqId
+                                               , areg::RequestType reqType
+                                               , areg::EventType eventType
+                                               , uint32_t initSize /*= 0u*/ )
+    : StubEvent (target, eventType, initSize)
+{
+    areg::EventHeader* hdr{ header() };
+    if (hdr != nullptr)
+    {
+        proxyAddress.to_event(*hdr);
+        hdr->messageId = reqId;
+        hdr->result    = static_cast<uint32_t>(reqType);
+    }
+}
+
+inline ServiceRequestEvent::ServiceRequestEvent( const MessageEnvelope & envelope ) noexcept
+    : StubEvent (envelope)
+{
+}
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceRequestEvent class inline functions implementation

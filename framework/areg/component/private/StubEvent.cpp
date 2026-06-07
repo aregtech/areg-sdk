@@ -22,36 +22,10 @@
 #include "areg/component/private/StubConnectEvent.hpp"
 namespace areg {
 
-
 //////////////////////////////////////////////////////////////////////////
-// StubEvent class implementation
-//////////////////////////////////////////////////////////////////////////
-
-StubEvent::StubEvent(const EventEnvelope& envelope) noexcept
-    : Event (envelope)
-{
-}
-
-StubEvent::StubEvent(EventEnvelope&& envelope) noexcept
-    : Event (std::move(envelope))
-{
-}
-
-StubEvent::StubEvent( const StubAddress& toTarget, areg::EventType eventType, uint32_t initSize /*= 0u*/ )
-    : Event (eventType, initSize)
-{
-    areg::EventHeader* hdr{ header() };
-    if (hdr != nullptr)
-        toTarget.to_event(*hdr);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// StubEventConsumer class implementation
+// StubEventConsumer class, methods
 //////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////
-// StubEventConsumer class, constructor / destructor
-//////////////////////////////////////////////////////////////////////////
 StubEventConsumer::StubEventConsumer( const StubAddress & stubAddress )
     : EventConsumer ( )
     , mStubAddress  ( stubAddress )
@@ -65,7 +39,7 @@ inline void StubEventConsumer::_local_request( RequestEvent & reqEvent )
     ComponentThread::set_current_component(curComponent);
 
     if (areg::is_request_id(reqEvent.request_id()))
-        process_request_event(reqEvent);
+        process_request_event(static_cast<ServiceRequestEvent&>(reqEvent));
     else
         process_stub_event(static_cast<StubEvent&>(reqEvent));
 
@@ -102,13 +76,10 @@ inline void StubEventConsumer::_local_connect( StubConnectEvent & notifyConnect 
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
-// StubEventConsumer class, methods
-//////////////////////////////////////////////////////////////////////////
 void StubEventConsumer::start_event_processing( Event & eventElem )
 {
     const areg::EventType eventType{ eventElem.event_type() };
-    const EventEnvelope& envelope{ eventElem.envelope() };
+    const MessageEnvelope& envelope{ eventElem.envelope() };
 
     if (!areg::is_to_provider(eventType))
     {

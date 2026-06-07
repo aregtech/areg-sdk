@@ -148,6 +148,11 @@ private:
      * \brief   Atomic stats (bytes + messages sent + enabled flag).
      **/
     DataRateStats                   mSendStats;
+    /**
+     * \brief   Reusable holder keeping drained message buffers alive until the writev completes.
+     *          Constructed once; slots are reset (not reconstructed) per send. ClientSendThread context only.
+     **/
+    areg::RawBufferPtr              mDrain[areg::THREAD_DRAIN_LIMIT];
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

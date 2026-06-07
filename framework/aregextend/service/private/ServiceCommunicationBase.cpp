@@ -15,7 +15,7 @@
 #include "aregextend/service/ServiceCommunicationBase.hpp"
 
 #include "areg/base/DateTime.hpp"
-#include "areg/base/EventEnvelope.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/component/Event.hpp"
 #include "areg/component/EventConsumer.hpp"
 #include "areg/component/ExitEvent.hpp"
@@ -101,15 +101,15 @@ void ServiceCommunicationBase::update_dispatch_mode()
 {
     if (mNumPairs == 0)
     {
-        mSendFn     = [this](const areg::EventEnvelope & d, areg::EventPriority p)  { return do_send_shared(d, p); };
-        mSendMoveFn = [this](areg::EventEnvelope && d,     areg::EventPriority p)  { return do_send_shared(std::move(d), p); };
+        mSendFn     = [this](const areg::MessageEnvelope & d, areg::EventPriority p)  { return do_send_shared(d, p); };
+        mSendMoveFn = [this](areg::MessageEnvelope && d,     areg::EventPriority p)  { return do_send_shared(std::move(d), p); };
         mAcceptFn   = [this](areg::SocketAccepted & s)                             { return do_accept_client_shared(s); };
         mLostFn     = [this](ITEM_ID c)                                            { do_client_lost_shared(c); };
     }
     else
     {
-        mSendFn     = [this](const areg::EventEnvelope & d, areg::EventPriority p)  { return do_send_pool(d, p); };
-        mSendMoveFn = [this](areg::EventEnvelope && d,     areg::EventPriority p)   { return do_send_pool(std::move(d), p); };
+        mSendFn     = [this](const areg::MessageEnvelope & d, areg::EventPriority p)  { return do_send_pool(d, p); };
+        mSendMoveFn = [this](areg::MessageEnvelope && d,     areg::EventPriority p)   { return do_send_pool(std::move(d), p); };
         mAcceptFn   = [this](areg::SocketAccepted & s)                        { return do_accept_client_pool(s); };
         mLostFn     = [this](ITEM_ID c)                                       { do_client_lost_pool(c); };
     }
@@ -282,7 +282,7 @@ void ServiceCommunicationBase::connection_lost( SocketAccepted & clientSocket )
     {
         mLostFn(cookie);
         remove_instance(cookie);
-        areg::EventEnvelope msgDisconnect{ areg::create_disconnect_request(cookie, channel) };
+        areg::MessageEnvelope msgDisconnect{ areg::create_disconnect_request(cookie, channel) };
         send_received_message(std::move(msgDisconnect), areg::EventPriority::HighPrio);
     }
 
@@ -570,13 +570,13 @@ void ServiceCommunicationBase::do_client_lost_pool( ITEM_ID cookie )
     mClientPairs[idx]->remove_socket(cookie);
 }
 
-bool ServiceCommunicationBase::do_send_shared( const areg::EventEnvelope & data, areg::EventPriority prio )
+bool ServiceCommunicationBase::do_send_shared( const areg::MessageEnvelope & data, areg::EventPriority prio )
 {
-    areg::EventEnvelope copy{ data };
+    areg::MessageEnvelope copy{ data };
     return do_send_shared(std::move(copy), prio);
 }
 
-bool ServiceCommunicationBase::do_send_shared( areg::EventEnvelope && data, areg::EventPriority prio )
+bool ServiceCommunicationBase::do_send_shared( areg::MessageEnvelope && data, areg::EventPriority prio )
 {
     areg::Event evt(std::move(data));
     evt.set_event_priority(prio);
@@ -586,16 +586,16 @@ bool ServiceCommunicationBase::do_send_shared( areg::EventEnvelope && data, areg
     return true;
 }
 
-bool ServiceCommunicationBase::do_send_pool( const areg::EventEnvelope & data, areg::EventPriority prio )
+bool ServiceCommunicationBase::do_send_pool( const areg::MessageEnvelope & data, areg::EventPriority prio )
 {
     if ( mClientPairs.empty() )
         return do_send_shared(data, prio);
 
-    areg::EventEnvelope copy{ data };
+    areg::MessageEnvelope copy{ data };
     return do_send_pool(std::move(copy), prio);
 }
 
-bool ServiceCommunicationBase::do_send_pool( areg::EventEnvelope && data, areg::EventPriority prio )
+bool ServiceCommunicationBase::do_send_pool( areg::MessageEnvelope && data, areg::EventPriority prio )
 {
     if ( mClientPairs.empty() )
         return do_send_shared(std::move(data), prio);
@@ -629,20 +629,20 @@ bool ServiceCommunicationBase::start_receive_thread()
            mThreadReceive.wait_start( areg::WAIT_INFINITE );
 }
 
-bool ServiceCommunicationBase::send_message( const areg::EventEnvelope & data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
+bool ServiceCommunicationBase::send_message( const areg::MessageEnvelope & data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
     return mSendFn(data, eventPrio);
 }
 
-bool ServiceCommunicationBase::send_message( areg::EventEnvelope && data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
+bool ServiceCommunicationBase::send_message( areg::MessageEnvelope && data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
     return mSendMoveFn(std::move(data), eventPrio);
 }
 
 #ifdef DEBUG
-void ServiceCommunicationBase::failed_send_message(const areg::EventEnvelope & msgFailed, Socket & whichTarget )
+void ServiceCommunicationBase::failed_send_message(const areg::MessageEnvelope & msgFailed, Socket & whichTarget )
 #else  // DEBUG
-void ServiceCommunicationBase::failed_send_message(const areg::EventEnvelope& /*msgFailed*/, Socket& whichTarget)
+void ServiceCommunicationBase::failed_send_message(const areg::MessageEnvelope& /*msgFailed*/, Socket& whichTarget)
 #endif // DEBUG
 {
     LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, failed_send_message );
@@ -680,7 +680,7 @@ void ServiceCommunicationBase::failed_receive_message(Socket & whichSource)
     }
 }
 
-void ServiceCommunicationBase::process_received_message(areg::EventEnvelope & msgReceived, Socket & whichSource)
+void ServiceCommunicationBase::process_received_message(areg::MessageEnvelope & msgReceived, Socket & whichSource)
 {
     DEBUG_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, process_received_message);
 
@@ -749,7 +749,7 @@ void ServiceCommunicationBase::process_received_message(areg::EventEnvelope & ms
         instance.ciTimestamp = static_cast<TIME64>(DateTime::now());
         instance.ciCookie = cookie;
         add_instance(cookie, instance);
-        areg::EventEnvelope msgConnect{ connect_message(mServerConnection.channel_id(), cookie, areg::MessageSource::SourceService) };
+        areg::MessageEnvelope msgConnect{ connect_message(mServerConnection.channel_id(), cookie, areg::MessageSource::SourceService) };
         DEBUG_LOG_DBG("Received request connect message, sending response [ %s ] of id [ %u ], to new target [ %u ], connection socket [ %u ], checksum [ %u ]"
                     , areg::as_string( static_cast<areg::FuncIdRange>(msgConnect.message_id()))
                     , msgConnect.message_id()
@@ -787,15 +787,15 @@ bool ServiceCommunicationBase::post_event( Event & eventElem )
     return EventDispatcher::post_event( eventElem );
 }
 
-areg::EventEnvelope ServiceCommunicationBase::connect_message(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const
+areg::MessageEnvelope ServiceCommunicationBase::connect_message(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const
 {
-    areg::EventEnvelope result{ areg::create_connect_notify(source, target) };
+    areg::MessageEnvelope result{ areg::create_connect_notify(source, target) };
     result.move_to_end();
     result << msgSource;
     return result;
 }
 
-areg::EventEnvelope ServiceCommunicationBase::disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const
+areg::MessageEnvelope ServiceCommunicationBase::disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const
 {
     return areg::create_disconnect_notify(source, target);
 }

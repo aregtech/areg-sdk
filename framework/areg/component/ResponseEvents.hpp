@@ -67,12 +67,12 @@ public:
      * \param   seqNr           Sequence number for ordering.
      * \param   initSize        Payload bytes to reserve after the header for serialized parameters.
      **/
-    ResponseEvent( const ProxyAddress & proxyTarget
-                 , const areg::ResultType result
-                 , uint32_t respId
-                 , areg::EventType eventType
-                 , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
-                 , uint32_t initSize = 0u );
+    inline ResponseEvent( const ProxyAddress & proxyTarget
+                        , const areg::ResultType result
+                        , uint32_t respId
+                        , areg::EventType eventType
+                        , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
+                        , uint32_t initSize = 0u );
 
     /**
      * \brief   Initializes a response event with serialized data.
@@ -84,12 +84,12 @@ public:
      * \param   eventType       Event type.
      * \param   seqNr           Sequence number for ordering.
      **/
-    ResponseEvent( const SharedBuffer & args
-                 , const ProxyAddress & proxyTarget
-                 , areg::ResultType result
-                 , uint32_t respId
-                 , areg::EventType eventType
-                 , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY);
+    inline ResponseEvent( const SharedBuffer & args
+                        , const ProxyAddress & proxyTarget
+                        , areg::ResultType result
+                        , uint32_t respId
+                        , areg::EventType eventType
+                        , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY);
 
     /**
      * \brief   Clones an existing response but changes the target proxy address.
@@ -97,12 +97,12 @@ public:
      * \param   proxyTarget     New target proxy address.
      * \param   src             Source event to clone.
      **/
-    ResponseEvent( const ProxyAddress & proxyTarget, const ResponseEvent & src );
+    inline ResponseEvent( const ProxyAddress & proxyTarget, const ResponseEvent & src );
 
     /**
-     * \brief   Constructs from a received EventEnvelope (IPC receive path). Shares the buffer (O(1)).
+     * \brief   Constructs from a received MessageEnvelope.
      **/
-    explicit ResponseEvent( const EventEnvelope & envelope ) noexcept;
+    explicit inline ResponseEvent( const MessageEnvelope & envelope ) noexcept;
 
     ResponseEvent(const ResponseEvent& /*src*/) = default;
 
@@ -141,11 +141,13 @@ public:
      *                          event, as well as to specify message validation flag.
      * \param   respId          The ID of response. Can also be update ID.
      * \param   seqNr           The call sequence number.
+     * \param   initSize        Payload bytes to reserve after the header for serialized parameters.
      **/
-    LocalResponseEvent( const ProxyAddress & proxyTarget
-                      , areg::ResultType result
-                      , uint32_t respId
-                      , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY);
+    inline LocalResponseEvent( const ProxyAddress & proxyTarget
+                             , areg::ResultType result
+                             , uint32_t respId
+                             , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
+                             , uint32_t initSize = 0);
 
     /**
      * \brief   Initializes local event with serialized arguments, target address, result type, and
@@ -158,11 +160,11 @@ public:
      * \param   respId          The ID of response. Can also be update ID.
      * \param   seqNr           The call sequence number.
      **/
-    LocalResponseEvent( const SharedBuffer & args
-                      , const ProxyAddress & proxyTarget
-                      , areg::ResultType result
-                      , uint32_t respId
-                      , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY);
+    inline LocalResponseEvent( const SharedBuffer & args
+                             , const ProxyAddress & proxyTarget
+                             , areg::ResultType result
+                             , uint32_t respId
+                             , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY);
 
     /**
      * \brief   Clones existing information, except target Proxy address to send same message to
@@ -171,7 +173,12 @@ public:
      * \param   proxyTarget     The address of target Proxy
      * \param   src             The Event source to copy data.
      **/
-    LocalResponseEvent(const ProxyAddress & proxyTarget, const LocalResponseEvent & src);
+    inline LocalResponseEvent(const ProxyAddress & proxyTarget, const LocalResponseEvent & src);
+
+    /**
+     * \brief   Constructs from a received MessageEnvelope.
+     **/
+    explicit inline LocalResponseEvent(const MessageEnvelope& envelope) noexcept;
 
     LocalResponseEvent(const LocalResponseEvent& /*src*/) = default;
 
@@ -214,11 +221,11 @@ public:
      * \param   seqNr           The call sequence number.
      * \param   initSize        Payload bytes to reserve after the header for serialized parameters.
      **/
-    RemoteResponseEvent( const ProxyAddress & proxyTarget
-                       , areg::ResultType result
-                       , uint32_t respId
-                       , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
-                       , uint32_t initSize = 0u );
+    inline RemoteResponseEvent( const ProxyAddress & proxyTarget
+                              , areg::ResultType result
+                              , uint32_t respId
+                              , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
+                              , uint32_t initSize = 0u );
 
     /**
      * \brief   Initializes remote event with serialized arguments, target address, result type, and
@@ -231,11 +238,11 @@ public:
      * \param   respId          The ID of response. Can also be update ID.
      * \param   seqNr           The call sequence number.
      **/
-    RemoteResponseEvent( const SharedBuffer & args
-                       , const ProxyAddress & proxyTarget
-                       , areg::ResultType result
-                       , uint32_t respId
-                       , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY);
+    inline RemoteResponseEvent( const SharedBuffer & args
+                              , const ProxyAddress & proxyTarget
+                              , areg::ResultType result
+                              , uint32_t respId
+                              , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY);
 
     /**
      * \brief   Clones existing information, except target Proxy address to send same message to
@@ -244,12 +251,12 @@ public:
      * \param   proxyTarget     The address of target Proxy
      * \param   src             The Event source to copy data.
      **/
-    RemoteResponseEvent(const ProxyAddress & proxyTarget, const RemoteResponseEvent & src);
+    inline RemoteResponseEvent(const ProxyAddress & proxyTarget, const RemoteResponseEvent & src);
 
     /**
-     * \brief   Constructs from a received EventEnvelope (IPC receive path). Shares the buffer (O(1)).
+     * \brief   Constructs from a received MessageEnvelope.
      **/
-    explicit RemoteResponseEvent( const EventEnvelope & envelope ) noexcept;
+    explicit inline RemoteResponseEvent( const MessageEnvelope & envelope ) noexcept;
 
     RemoteResponseEvent(const RemoteResponseEvent& /*src*/) = default;
 
@@ -280,6 +287,103 @@ protected:
 private:
     RemoteResponseEvent() = delete;
 };
+
+//////////////////////////////////////////////////////////////////////////
+// ResponseEvent class Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+inline ResponseEvent::ResponseEvent( const ProxyAddress & proxyTarget
+                                   , areg::ResultType result
+                                   , uint32_t respId
+                                   , areg::EventType eventType
+                                   , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/
+                                   , uint32_t initSize             /*= 0u*/ )
+    : ServiceResponseEvent(proxyTarget, result, respId, eventType, seqNr, initSize)
+{
+}
+
+inline ResponseEvent::ResponseEvent( const SharedBuffer & args
+                                   , const ProxyAddress & proxyTarget
+                                   , areg::ResultType result
+                                   , uint32_t respId
+                                   , areg::EventType eventType
+                                   , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
+    : ServiceResponseEvent(proxyTarget, result, respId, eventType, seqNr)
+{
+    if (args.is_valid())
+        write_data(args.buffer(), args.size_used());
+}
+
+inline ResponseEvent::ResponseEvent( const ProxyAddress& proxyTarget, const ResponseEvent& src )
+    : ServiceResponseEvent(proxyTarget, static_cast<const ServiceResponseEvent &>(src))
+{
+}
+
+inline ResponseEvent::ResponseEvent( const MessageEnvelope & envelope ) noexcept
+    : ServiceResponseEvent( envelope )
+{
+}
+
+//////////////////////////////////////////////////////////////////////////
+// LocalResponseEvent class Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+inline LocalResponseEvent::LocalResponseEvent( const ProxyAddress & proxyTarget
+                                             , areg::ResultType result
+                                             , uint32_t respId
+                                             , const SequenceNumber & seqNr    /*= areg::SEQUENCE_NUMBER_NOTIFY*/
+                                             , uint32_t initSize /*= 0*/)
+    : ResponseEvent(proxyTarget, result, respId, areg::EventType::EventLocalResponse, seqNr, initSize)
+{
+}
+
+inline LocalResponseEvent::LocalResponseEvent( const SharedBuffer & args
+                                             , const ProxyAddress & proxyTarget
+                                             , areg::ResultType result
+                                             , uint32_t respId
+                                             , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
+    : ResponseEvent(args, proxyTarget, result, respId, areg::EventType::EventLocalResponse, seqNr)
+{
+}
+
+inline LocalResponseEvent::LocalResponseEvent( const ProxyAddress& proxyTarget, const LocalResponseEvent & src )
+    : ResponseEvent(proxyTarget, static_cast<const ResponseEvent &>(src))
+{
+}
+
+inline LocalResponseEvent::LocalResponseEvent(const MessageEnvelope& envelope) noexcept
+    : ResponseEvent(envelope)
+{
+}
+
+//////////////////////////////////////////////////////////////////////////
+// RemoteResponseEvent class Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+inline RemoteResponseEvent::RemoteResponseEvent( const ProxyAddress & proxyTarget
+                                               , areg::ResultType result
+                                               , uint32_t respId
+                                               , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/
+                                               , uint32_t initSize             /*= 0u*/ )
+    : ResponseEvent(proxyTarget, result, respId, areg::EventType::EventRemoteResponse, seqNr, initSize)
+{
+}
+
+inline RemoteResponseEvent::RemoteResponseEvent( const SharedBuffer & args
+                                               , const ProxyAddress & proxyTarget
+                                               , areg::ResultType result
+                                               , uint32_t respId
+                                               , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
+    : ResponseEvent(args, proxyTarget, result, respId, areg::EventType::EventRemoteResponse, seqNr)
+{
+}
+
+inline RemoteResponseEvent::RemoteResponseEvent( const ProxyAddress& proxyTarget, const RemoteResponseEvent & src )
+    : ResponseEvent(proxyTarget, static_cast<const ResponseEvent &>(src))
+{
+}
+
+inline RemoteResponseEvent::RemoteResponseEvent( const MessageEnvelope & envelope ) noexcept
+    : ResponseEvent( envelope )
+{
+}
 
 //////////////////////////////////////////////////////////////////////////
 // RemoteResponseEvent class inline function implementation

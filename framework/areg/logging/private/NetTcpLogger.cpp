@@ -20,7 +20,7 @@
 #include "areg/logging/private/NetTcpLogger.hpp"
 
 #include "areg/appbase/Application.hpp"
-#include "areg/base/EventEnvelope.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/persist/ConfigManager.hpp"
 #include "areg/logging/private/LogManager.hpp"
@@ -99,7 +99,7 @@ void NetTcpLogger::log_message(const areg::LogEntry& logMessage)
     }
 }
 
-void NetTcpLogger::forward_message(const areg::EventEnvelope& msg)
+void NetTcpLogger::forward_message(const areg::MessageEnvelope& msg)
 {
     if (!mIsEnabled)
         return;
@@ -114,7 +114,7 @@ void NetTcpLogger::forward_message(const areg::EventEnvelope& msg)
     }
 }
 
-void NetTcpLogger::forward_message(areg::EventEnvelope&& msg)
+void NetTcpLogger::forward_message(areg::MessageEnvelope&& msg)
 {
     if (!mIsEnabled)
         return;
@@ -145,7 +145,7 @@ void NetTcpLogger::on_service_channel_connected(const Channel & channel)
     const ITEM_ID& cookie = channel.cookie();
     while (mRingStack.is_empty() == false)
     {
-        areg::EventEnvelope msgLog{ mRingStack.pop() };
+        areg::MessageEnvelope msgLog{ mRingStack.pop() };
         msgLog.set_source(static_cast<uint32_t>(cookie));
         reinterpret_cast<areg::LogEntry*>(msgLog.buffer())->logCookie = cookie;
         send_message(std::move(msgLog), areg::EventPriority::NormalPrio);
@@ -165,7 +165,7 @@ void NetTcpLogger::on_service_channel_lost(const Channel & /* channel */)
     mClientConnection.set_cookie(areg::COOKIE_UNKNOWN);
 }
 
-void NetTcpLogger::failed_send_message(const EventEnvelope & msgFailed, Socket & /* whichTarget */)
+void NetTcpLogger::failed_send_message(const MessageEnvelope & msgFailed, Socket & /* whichTarget */)
 {
     ASSERT(mIsEnabled);
     if (mLogConfiguration.stack_size() > 0)
@@ -181,11 +181,11 @@ void NetTcpLogger::failed_receive_message(Socket & /* whichSource */)
     send_command(ServiceEventData::ServiceCommand::CMD_ServiceLost);
 }
 
-void NetTcpLogger::failed_process_message(const EventEnvelope & /* msgUnprocessed */)
+void NetTcpLogger::failed_process_message(const MessageEnvelope & /* msgUnprocessed */)
 {
 }
 
-void NetTcpLogger::process_received_message(EventEnvelope & msgReceived, Socket & whichSource)
+void NetTcpLogger::process_received_message(MessageEnvelope & msgReceived, Socket & whichSource)
 {
     if (!msgReceived.is_valid() || !whichSource.is_valid())
         return;

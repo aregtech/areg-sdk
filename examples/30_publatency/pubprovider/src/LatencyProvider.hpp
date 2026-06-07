@@ -142,7 +142,6 @@ private:
 private:
     static constexpr std::string_view THREAD_DISPLAY    { "LatencyProviderDisplayThread" };
     static constexpr std::string_view THREAD_INPUT       { "LatencyProviderInputThread" };
-    static constexpr std::string_view TIMER_BROADCAST    { "LatencyProviderBroadcastTimer" };
 
     //!< Last computed one-way stats; shown persistently between timer ticks in request mode:
     struct LatencyStats
@@ -162,6 +161,15 @@ private:
 public:
     LatencyProvider(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
     ~LatencyProvider() = default;
+
+    /**
+     * \brief   Request call (one-way pull token, no response).
+     *          Emits exactly one broadcast of the currently active broadcast mode, stamped
+     *          with the send timestamp. The consumer calls this once per received broadcast,
+     *          giving a warm, 1-in-flight one-way latency loop bounded by the requested count.
+     * \param   id  Consumer's expected sequence number (debug/drop-detection only).
+     **/
+    void request_message_next(uint32_t id);
 
 //////////////////////////////////////////////////////////////////////////
 // LatencyProviderBase overrides
@@ -303,7 +311,7 @@ protected:
 // Private methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    void _run_broadcast_burst();
+    void _send_one_broadcast();     //!< Emits one broadcast of the active mode (one-way pull).
     void _run_input_thread();
     void _run_display_thread();
     void _on_provider_cmd(const ProviderCmdData & data);
@@ -317,7 +325,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     areg::Thread                        mInputThread;
-    areg::Timer                         mBroadcastTimer;//!< 50ms broadcast burst timer
     std::atomic_bool                    mQuit;
     std::atomic_bool                    mQuitInput;
     std::atomic<uint32_t>               mDurationSec;
@@ -326,14 +333,12 @@ private:
     DisplayConsumer                     mDisplayConsumer;   //!< Must be declared before mDisplayThread
     areg::Thread                        mDisplayThread;     //!< 1-second console refresh thread
 
-    //!< These are accessed only on the component thread (timer + consumer_connected):
+    //!< These are accessed only on the component thread (request handlers + consumer_connected):
     uint32_t                            mClientCount;           //!< Number of connected consumers
     uint32_t                            mLastRateCount;         //!< Served count at last stats tick
-    uint32_t                            mBroadcastCyclesLeft;   //!< Remaining 50ms broadcast ticks (0xFFFFFFFFu = run indefinitely)
     uint32_t                            mMsgId;                 //!< Running broadcast message sequence number
-    uint32_t                            mBroadcastBulk;         //!< Messages sent per 50ms timer tick
 
-    //!< Incremented from both the component thread (ping-pong) and broadcast thread:
+    //!< Incremented on the component thread (ping-pong responses and one-way pulls):
     std::atomic<uint32_t>               mTotalServed;
 
     LatencyStats                        mLastStats;

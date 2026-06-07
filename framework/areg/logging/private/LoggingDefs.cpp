@@ -54,7 +54,7 @@ namespace {
         return hdr;
     }
 
-    void _store_scope_list(areg::EventEnvelope& msgEnv, const areg::ScopeList& scopeList)
+    void _store_scope_list(areg::MessageEnvelope& msgEnv, const areg::ScopeList& scopeList)
     {
         msgEnv << static_cast<uint32_t>(scopeList.size());
         const auto& list{ scopeList.data() };
@@ -72,11 +72,11 @@ namespace {
 areg::LogEntry::LogEntry(areg::LogMessageType msgType)
     : logTimestamp  { DateTime::INVALID_TIME }
     , logReceived   { DateTime::INVALID_TIME }
-    , logMsgType    { msgType }
-    , logMessagePrio{ areg::LogPriority::PrioNotset }
-    , logDataType   { LogDataType::Local }
     , logScopeId    { areg::LOG_SCOPE_ID_NONE }
     , logMessageLen { 0 }
+    , logMessagePrio{ areg::LogPriority::PrioNotset }
+    , logMsgType    { msgType }
+    , logDataType   { LogDataType::Local }
     , logDuration   ( 0u )
     , logSessionId  { 0u }
     , logModuleId   { Process::CURRENT_PROCESS }
@@ -96,11 +96,11 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType)
 areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const char * message, uint32_t msgLen)
     : logTimestamp  { DateTime::now() }
     , logReceived   { DateTime::INVALID_TIME }
-    , logMsgType    { msgType }
-    , logMessagePrio{ msgPrio }
-    , logDataType   { areg::LogDataType::Local }
     , logScopeId    { scopeId }
     , logMessageLen { msgLen }
+    , logMessagePrio{ msgPrio }
+    , logMsgType    { msgType }
+    , logDataType   { areg::LogDataType::Local }
     , logDuration   { scopeStamp != 0u ? static_cast<uint32_t>(logTimestamp - scopeStamp) : 0u }
     , logSessionId  { sessionId }
     , logModuleId   { static_cast<ITEM_ID>(Process::instance().id()) }
@@ -121,11 +121,11 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t scopeId, uint32_
 areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t /*scopeId*/, uint32_t /*sessionId*/, TIME64 /*scopeStamp*/, areg::LogPriority /*msgPrio*/, const char* /*message*/, uint32_t /*msgLen*/)
     : logTimestamp  { DateTime::INVALID_TIME }
     , logReceived   { DateTime::INVALID_TIME }
-    , logMsgType    { msgType }
-    , logMessagePrio{ areg::LogPriority::PrioNotset }
-    , logDataType   { areg::LogDataType::Local }
     , logScopeId    { areg::LOG_SCOPE_ID_NONE }
     , logMessageLen { 0u }
+    , logMessagePrio{ areg::LogPriority::PrioNotset }
+    , logMsgType    { msgType }
+    , logDataType   { areg::LogDataType::Local }
     , logDuration   { 0u }
     , logSessionId  { 0u }
     , logModuleId   { Process::CURRENT_PROCESS }
@@ -145,11 +145,11 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t /*scopeId*/, uin
 areg::LogEntry::LogEntry(const areg::LogEntry & src)
     : logTimestamp  { }
     , logReceived   { }
-    , logMsgType    { }
-    , logMessagePrio{ }
-    , logDataType   { }
     , logScopeId    { }
     , logMessageLen { }
+    , logMessagePrio{ }
+    , logMsgType    { }
+    , logDataType   { }
     , logDuration   { }
     , logSessionId  { }
     , logModuleId   { }
@@ -235,7 +235,7 @@ AREG_API_IMPL uint32_t areg::scope_priority( const char * scopeName )
     return LogManager::scope_priority( scopeName );
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::make_log_message( areg::LogMessageType msgType
+AREG_API_IMPL areg::MessageEnvelope areg::make_log_message( areg::LogMessageType msgType
                                                         , uint32_t scopeId
                                                         , uint32_t sessionId
                                                         , TIME64 scopeStamp
@@ -243,7 +243,7 @@ AREG_API_IMPL areg::EventEnvelope areg::make_log_message( areg::LogMessageType m
                                                         , const char* message
                                                         , uint32_t msgLen)
 {
-    EventEnvelope msg;
+    MessageEnvelope msg;
     areg::LogEntry* log = reinterpret_cast<areg::LogEntry*>(msg.init_envelope(_log_message_header(), sizeof(areg::LogEntry)));
     if (log != nullptr)
     {
@@ -276,7 +276,7 @@ AREG_API_IMPL areg::EventEnvelope areg::make_log_message( areg::LogMessageType m
     return msg;
 }
 
-AREG_API_IMPL void areg::finalize_log_message(areg::EventEnvelope& msg, areg::LogDataType dataType, const ITEM_ID& srcCookie)
+AREG_API_IMPL void areg::finalize_log_message(areg::MessageEnvelope& msg, areg::LogDataType dataType, const ITEM_ID& srcCookie)
 {
     if (!msg.is_valid())
         return;
@@ -310,9 +310,9 @@ AREG_API_IMPL void areg::finalize_log_message(areg::EventEnvelope& msg, areg::Lo
     }
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::create_log_message(const areg::LogEntry& logMessage, areg::LogDataType dataType, const ITEM_ID& srcCookie)
+AREG_API_IMPL areg::MessageEnvelope areg::create_log_message(const areg::LogEntry& logMessage, areg::LogDataType dataType, const ITEM_ID& srcCookie)
 {
-    EventEnvelope msgLog;
+    MessageEnvelope msgLog;
     areg::LogEntry* log = reinterpret_cast<areg::LogEntry*>(msgLog.init_envelope(_log_message_header(), sizeof(areg::LogEntry)));
     if (log != nullptr)
     {
@@ -349,14 +349,14 @@ AREG_API_IMPL areg::EventEnvelope areg::create_log_message(const areg::LogEntry&
     return msgLog;
 }
 
-AREG_API_IMPL void areg::log_message(const EventEnvelope& message)
+AREG_API_IMPL void areg::log_message(const MessageEnvelope& message)
 {
     return LogManager::log_message(message);
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::message_register_scopes(const ITEM_ID & source, const ITEM_ID & target, const areg::ScopeList & scopeList)
+AREG_API_IMPL areg::MessageEnvelope areg::message_register_scopes(const ITEM_ID & source, const ITEM_ID & target, const areg::ScopeList & scopeList)
 {
-    EventEnvelope msgScope;
+    MessageEnvelope msgScope;
     if (msgScope.init_envelope(_log_empty_header()) != nullptr)
     {
         msgScope.set_message_id(static_cast<uint32_t>(areg::FuncIdRange::ServiceLogRegisterScopes));
@@ -374,9 +374,9 @@ AREG_API_IMPL void areg::log_local(const areg::LogEntry& logMessage)
     LogManager::log_message(logMessage);
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::message_update_scopes(const ITEM_ID& source, const ITEM_ID& target, const areg::ScopeNames& scopeNames)
+AREG_API_IMPL areg::MessageEnvelope areg::message_update_scopes(const ITEM_ID& source, const ITEM_ID& target, const areg::ScopeNames& scopeNames)
 {
-    EventEnvelope msgScope;
+    MessageEnvelope msgScope;
     if ((source != areg::COOKIE_UNKNOWN) &&
         (target != areg::COOKIE_UNKNOWN) &&
         (msgScope.init_envelope(_log_empty_header()) != nullptr))
@@ -400,9 +400,9 @@ AREG_API_IMPL void areg::log_any_message(const areg::LogEntry& logMessage)
     LogManager::log_message(logMessage);
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::message_update_scope(const ITEM_ID& source, const ITEM_ID& target, const String& scopeName, uint32_t scopeId, uint32_t scopePrio)
+AREG_API_IMPL areg::MessageEnvelope areg::message_update_scope(const ITEM_ID& source, const ITEM_ID& target, const String& scopeName, uint32_t scopeId, uint32_t scopePrio)
 {
-    EventEnvelope msgScope;
+    MessageEnvelope msgScope;
     if ((source != areg::COOKIE_UNKNOWN) &&
         (target != areg::COOKIE_UNKNOWN) &&
         (msgScope.init_envelope(_log_empty_header()) != nullptr))
@@ -417,9 +417,9 @@ AREG_API_IMPL areg::EventEnvelope areg::message_update_scope(const ITEM_ID& sour
     return msgScope;
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::message_query_instances(const ITEM_ID& source, const ITEM_ID& target)
+AREG_API_IMPL areg::MessageEnvelope areg::message_query_instances(const ITEM_ID& source, const ITEM_ID& target)
 {
-    EventEnvelope msgQuery;
+    MessageEnvelope msgQuery;
     if ((source != areg::COOKIE_UNKNOWN) &&
         (target != areg::COOKIE_UNKNOWN) &&
         (msgQuery.init_envelope(_log_empty_header()) != nullptr))
@@ -433,9 +433,9 @@ AREG_API_IMPL areg::EventEnvelope areg::message_query_instances(const ITEM_ID& s
     return msgQuery;
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::message_query_scopes(const ITEM_ID& source, const ITEM_ID& target)
+AREG_API_IMPL areg::MessageEnvelope areg::message_query_scopes(const ITEM_ID& source, const ITEM_ID& target)
 {
-    EventEnvelope msgQuery;
+    MessageEnvelope msgQuery;
     if ((source != areg::COOKIE_UNKNOWN) &&
         (target != areg::COOKIE_UNKNOWN) &&
         (msgQuery.init_envelope(_log_empty_header()) != nullptr))
@@ -449,9 +449,9 @@ AREG_API_IMPL areg::EventEnvelope areg::message_query_scopes(const ITEM_ID& sour
     return msgQuery;
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::message_scopes_updated(const ITEM_ID& source, const ITEM_ID& target, const areg::ScopeList& scopeList)
+AREG_API_IMPL areg::MessageEnvelope areg::message_scopes_updated(const ITEM_ID& source, const ITEM_ID& target, const areg::ScopeList& scopeList)
 {
-    EventEnvelope msgScope;
+    MessageEnvelope msgScope;
     if (msgScope.init_envelope(_log_empty_header()) != nullptr)
     {
         msgScope.set_message_id(static_cast<uint32_t>(areg::FuncIdRange::ServiceLogScopesUpdated));
@@ -464,9 +464,9 @@ AREG_API_IMPL areg::EventEnvelope areg::message_scopes_updated(const ITEM_ID& so
     return msgScope;
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::message_save_configuration(const ITEM_ID& source, const ITEM_ID& target)
+AREG_API_IMPL areg::MessageEnvelope areg::message_save_configuration(const ITEM_ID& source, const ITEM_ID& target)
 {
-    EventEnvelope msgRequest;
+    MessageEnvelope msgRequest;
     if ((source != areg::COOKIE_UNKNOWN) &&
         (target != areg::COOKIE_UNKNOWN) &&
         (msgRequest.init_envelope(_log_empty_header()) != nullptr))
@@ -480,9 +480,9 @@ AREG_API_IMPL areg::EventEnvelope areg::message_save_configuration(const ITEM_ID
     return msgRequest;
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::message_configuration_saved()
+AREG_API_IMPL areg::MessageEnvelope areg::message_configuration_saved()
 {
-    EventEnvelope msgScope;
+    MessageEnvelope msgScope;
     if (msgScope.init_envelope(_log_empty_header()) != nullptr)
     {
         msgScope.set_message_id(static_cast<uint32_t>(areg::FuncIdRange::ServiceLogConfigurationSaved));
@@ -593,70 +593,70 @@ AREG_API_IMPL uint32_t areg::scope_priority( const char * /*scopeName*/ )
     return static_cast<uint32_t>(areg::LogPriority::PrioInvalid);
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::make_log_message(areg::LogMessageType, uint32_t, uint32_t, TIME64, areg::LogPriority, const char*, uint32_t)
+AREG_API_IMPL areg::MessageEnvelope areg::make_log_message(areg::LogMessageType, uint32_t, uint32_t, TIME64, areg::LogPriority, const char*, uint32_t)
 {
-    return areg::EventEnvelope{};
+    return areg::MessageEnvelope{};
 }
 
-AREG_API_IMPL void areg::finalize_log_message(areg::EventEnvelope&, areg::LogDataType, const ITEM_ID&)
-{
-}
-
-AREG_API_IMPL areg::EventEnvelope areg::create_log_message(const areg::LogEntry & /*logMessage*/, areg::LogDataType /*dataType*/, const ITEM_ID & /*srcCookie*/)
-{
-    return areg::EventEnvelope{};
-}
-
-AREG_API_IMPL void areg::log_message(const areg::EventEnvelope& /*message*/)
+AREG_API_IMPL void areg::finalize_log_message(areg::MessageEnvelope&, areg::LogDataType, const ITEM_ID&)
 {
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::message_register_scopes(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const areg::ScopeList & /*scopeList*/)
+AREG_API_IMPL areg::MessageEnvelope areg::create_log_message(const areg::LogEntry & /*logMessage*/, areg::LogDataType /*dataType*/, const ITEM_ID & /*srcCookie*/)
 {
-    return areg::EventEnvelope{};
+    return areg::MessageEnvelope{};
+}
+
+AREG_API_IMPL void areg::log_message(const areg::MessageEnvelope& /*message*/)
+{
+}
+
+AREG_API_IMPL areg::MessageEnvelope areg::message_register_scopes(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const areg::ScopeList & /*scopeList*/)
+{
+    return areg::MessageEnvelope{};
 }
 
 AREG_API_IMPL void areg::log_local(const areg::LogEntry & /*logMessage*/)
 {
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::message_update_scopes(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const areg::ScopeNames & /*scopeNames*/)
+AREG_API_IMPL areg::MessageEnvelope areg::message_update_scopes(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const areg::ScopeNames & /*scopeNames*/)
 {
-    return areg::EventEnvelope{};
+    return areg::MessageEnvelope{};
 }
 
 AREG_API_IMPL void areg::log_any_message(const areg::LogEntry & /*logMessage*/)
 {
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::message_update_scope(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const String & /*scopeName*/, uint32_t /*scopeId*/, uint32_t /*scopePrio*/)
+AREG_API_IMPL areg::MessageEnvelope areg::message_update_scope(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const String & /*scopeName*/, uint32_t /*scopeId*/, uint32_t /*scopePrio*/)
 {
-    return areg::EventEnvelope{};
+    return areg::MessageEnvelope{};
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::message_query_instances(const ITEM_ID& /*source*/, const ITEM_ID & /*target*/)
+AREG_API_IMPL areg::MessageEnvelope areg::message_query_instances(const ITEM_ID& /*source*/, const ITEM_ID & /*target*/)
 {
-    return areg::EventEnvelope{};
+    return areg::MessageEnvelope{};
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::message_query_scopes(const ITEM_ID& /*source*/, const ITEM_ID & /*target*/)
+AREG_API_IMPL areg::MessageEnvelope areg::message_query_scopes(const ITEM_ID& /*source*/, const ITEM_ID & /*target*/)
 {
-    return areg::EventEnvelope{};
+    return areg::MessageEnvelope{};
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::message_scopes_updated(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const areg::ScopeList & /*scopeList*/)
+AREG_API_IMPL areg::MessageEnvelope areg::message_scopes_updated(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const areg::ScopeList & /*scopeList*/)
 {
-    return areg::EventEnvelope{};
+    return areg::MessageEnvelope{};
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::message_save_configuration(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/)
+AREG_API_IMPL areg::MessageEnvelope areg::message_save_configuration(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/)
 {
-    return areg::EventEnvelope{};
+    return areg::MessageEnvelope{};
 }
 
-AREG_API_IMPL areg::EventEnvelope areg::message_configuration_saved()
+AREG_API_IMPL areg::MessageEnvelope areg::message_configuration_saved()
 {
-    return areg::EventEnvelope{};
+    return areg::MessageEnvelope{};
 }
 
 AREG_API_IMPL void areg::set_db_engine(areg::LogDatabaseEngine * /*dbEngine*/)

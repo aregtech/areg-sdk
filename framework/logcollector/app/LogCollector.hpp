@@ -306,7 +306,7 @@ private:
      * \param[out] msgList     On output, contains the list of messages to send to targets
      *                         (areg::TARGET_ALL if addressed to all clients).
      **/
-    static void _create_scope_message(const areg::ext::OptionParser::InputOption& optScope, areg::ArrayList<areg::EventEnvelope> & msgList);
+    static void _create_scope_message(const areg::ext::OptionParser::InputOption& optScope, areg::ArrayList<areg::MessageEnvelope> & msgList);
 
     /**
      * \brief   Returns a normalized scope string suitable for generating a property object with key
@@ -324,7 +324,7 @@ private:
      * \param   scope       The scope priority string to parse and create the message from.
      * \return  Returns the message to send to the remote target client.
      **/
-    static areg::EventEnvelope _create_scope_update_message(const areg::String& scope);
+    static areg::MessageEnvelope _create_scope_update_message(const areg::String& scope);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

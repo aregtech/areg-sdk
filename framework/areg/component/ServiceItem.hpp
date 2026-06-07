@@ -145,6 +145,22 @@ public:
     [[nodiscard]]
     inline explicit operator uint32_t () const noexcept;
 
+    /**
+     * \brief   Deserializes date and time value from stream.
+     *
+     * \param   stream      Streaming object containing serialized date and time.
+     * \param[out] input    ServiceItem object initialized from deserialized stream data.
+     **/
+    friend inline const InStream & operator >> ( const InStream & stream, ServiceItem & input );
+
+    /**
+     * \brief   Serializes date and time value to stream.
+     *
+     * \param[out] stream   Streaming object where date and time will be serialized.
+     * \param   output      ServiceItem object to serialize.
+     **/
+    friend inline OutStream & operator << ( OutStream & stream, const ServiceItem & output );
+
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
@@ -417,6 +433,16 @@ inline OutStream& ServiceItem::to_stream(OutStream& stream) const
     stream << mServiceVersion;
     stream << mServiceType;
     return stream;
+}
+
+inline const InStream& operator >> (const InStream& stream, ServiceItem& input)
+{
+    return input.from_stream(stream);
+}
+
+inline OutStream& operator << (OutStream& stream, const ServiceItem& output)
+{
+    return output.to_stream(stream);
 }
 
 } // namespace areg

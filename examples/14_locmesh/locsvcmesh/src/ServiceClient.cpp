@@ -55,7 +55,7 @@ bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg
     return result;
 }
 
-void ServiceClient::response_hello_world( const areg::String & clientName, uint32_t clientId )
+void ServiceClient::response_hello_world( [[maybe_unused]] const areg::String & clientName, uint32_t clientId )
 {
     LOG_SCOPE( examples_14_locsvcmesh_ServiceClient, response_hello_world );
     LOG_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]", service_name().as_string(), clientName.as_string(), clientId);
