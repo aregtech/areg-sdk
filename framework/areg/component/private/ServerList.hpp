@@ -79,8 +79,8 @@ public:
     /**
      * \brief   Unregisters a client and returns the client info and remaining client count.
      *
-     * \param   whichClient     The proxy address of the client to unregister.
-     * \param[out] out_client      On output, contains the unregistered client information.
+     * \param   whichClient         The proxy address of the client to unregister.
+     * \param[out] out_client       On output, contains the unregistered client information.
      * \return  Returns the number of remaining clients; -1 if client was not registered or server
      *          is in Undefined state with no clients.
      **/
@@ -89,10 +89,8 @@ public:
     /**
      * \brief   Registers a service provider and returns the list of waiting clients.
      *
-     * \param   addrStub            The stub address to register; valid address sets server to
-     *                              Connected.
-     * \param[out] out_clinetList      On output, contains the list of clients waiting for the
-     *                                 server connection.
+     * \param   addrStub            The stub address to register; valid address sets server to Connected.
+     * \param[out] out_clinetList   On output, contains the list of clients waiting for the server connection.
      * \return  Returns the registered server info.
      **/
     const ServerInfo & register_provider( const StubAddress & addrStub, ClientList & out_clinetList );
@@ -101,8 +99,7 @@ public:
      * \brief   Unregisters a service provider and returns the list of its connected clients.
      *
      * \param   whichServer         The stub address of the server to unregister.
-     * \param[out] out_clinetList      On output, contains the list of clients previously connected
-     *                                 to the server.
+     * \param[out] out_clinetList   On output, contains the list of clients previously connected to the server.
      * \return  Returns the server info being unregistered.
      **/
     ServerInfo unregister_provider( const StubAddress & whichServer, ClientList & out_clinetList );

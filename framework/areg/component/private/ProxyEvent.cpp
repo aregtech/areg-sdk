@@ -53,9 +53,6 @@ void ProxyEventConsumer::start_event_processing( Event & eventElem )
         const areg::EventHeader* hdr{ envelope.header() };
         ASSERT(hdr != nullptr);
 
-        // Option A: local events route directly to the stub thread; remote events route
-        // via the RouterClient thread (hdr->channel) so the proxy's Channel.mTarget is set
-        // correctly for both cases, satisfying ProxyBase::service_connection_updated assertion.
         const uint32_t chTarget{ areg::is_local(eventType) ? hdr->provider.thread : hdr->channel };
         Channel ch{ hdr->consumer.thread, chTarget, hdr->consumer.id };
         areg::ServiceConnectionState status{ static_cast<areg::ServiceConnectionState>(hdr->result) };
@@ -67,8 +64,6 @@ void ProxyEventConsumer::start_event_processing( Event & eventElem )
     case areg::EventType::EventLocalResponse:
     case areg::EventType::EventRemoteResponse:
     {
-        // consumer.number == static_cast<uint32_t>(ProxyAddress) is the correct identity
-        // check: consumer.number = CRC32(service+type+role+thread) = ProxyAddress magic number.
         if (envelope.consumer_number() == static_cast<uint32_t>(mProxyAddress))
         {
             process_response_event(static_cast<ServiceResponseEvent&>(eventElem));

@@ -166,8 +166,7 @@ public:
     /**
      * \brief   Writes to the stream the values of linked list. The values will be written to the
      *          stream starting from first entry. There should be possibility to stream values and
-     *          if VALUE is not a primitive, but an object, it should have implemented streaming
-     *          operator.
+     *          if VALUE is not a primitive, but an object, it should have implemented streaming operator.
      *
      * \param   stream      The stream to write values.
      * \param   output      The linked list object containing value to stream.
@@ -239,8 +238,7 @@ public:
     inline bool is_valid_position(const LISTPOS pos) const noexcept;
 
     /**
-     * \brief   Returns true if the position points to a valid entry in the list; may be slower due
-     *          to traversal.
+     * \brief   Returns true if the position points to a valid entry in the list; may be slower due to traversal.
      *
      * \param   pos     The position to verify.
      **/
@@ -309,33 +307,28 @@ public:
     inline const VALUE& last_entry() const noexcept;
 
     /**
-     * \brief   Returns the value of the tail element in the linked list. The linked list must not
-     *          be empty.
+     * \brief   Returns the value of the tail element in the linked list. The linked list must not be empty.
      * \note    Non-const overload. Allows modification of the returned value.
      **/
     [[nodiscard]]
     inline VALUE& last_entry() noexcept;
 
     /**
-     * \brief   Returns the value at the given position of the linked list and on output advances
-     *          the position to the next entry in the linked list or to the invalid position if no
-     *          more elements exist.
+     * \brief   Returns the value at the given position of the linked list and on output advances the position
+     *          to the next entry in the linked list or to the invalid position if no more elements exist.
      *
-     * \param[in,out] nextPos     On input, this should be valid position of the element in the
-     *                            Linked List. On output, this contains position of the next entry
-     *                            in the Linked List or invalid position if reached end of the
-     *                            linked list.
+     * \param[in,out] nextPos   On input, this should be valid position of the element in the Linked List.
+     *                          On output, this contains position of the next entry in the Linked List or
+     *                          invalid position if reached end of the linked list.
      **/
     inline const VALUE& next( LISTPOS& nextPos ) const noexcept;
     /**
-     * \brief   Returns the value at the given position of the linked list and on output advances
-     *          the position to the next entry in the linked list or to the invalid position if no
-     *          more elements exist.
+     * \brief   Returns the value at the given position of the linked list and on output advances the position
+     *          to the next entry in the linked list or to the invalid position if no more elements exist.
      *
-     * \param[in,out] nextPos     On input, this should be valid position of the element in the
-     *                            Linked List. On output, this contains position of the next entry
-     *                            in the Linked List or invalid position if reached end of the
-     *                            linked list.
+     * \param[in,out] nextPos   On input, this should be valid position of the element in the Linked List.
+     *                          On output, this contains position of the next entry in the Linked List or
+     *                          invalid position if reached end of the linked list.
      * \note    Non-const overload. Allows modification of the returned value.
      **/
     inline VALUE& next(LISTPOS& nextPos) noexcept;
@@ -421,12 +414,11 @@ public:
     /**
      * \brief   Extracts the next position and value of the element following the given position.
      *
-     * \param[in,out] nextPos         On input this indicates the valid position of the entry in the
-     *                                linked list. On output, this parameter points either next
-     *                                valid entry in the linked list or invalid entry if no more
-     *                                entry is following.
-     * \param[out] nextValue       On output, this contains value of the next entry in the linked
-     *                             list.
+     * \param[in,out] nextPos   On input this indicates the valid position of the entry in the
+     *                          linked list. On output, this parameter points either next
+     *                          valid entry in the linked list or invalid entry if no more
+     *                          entry is following.
+     * \param[out] nextValue    On output, this contains value of the next entry in the linked list.
      * \return  Returns true if there is a next element and the output value is valid.
      **/
     inline bool next_entry( LISTPOS& nextPos, VALUE& nextValue ) const;
@@ -434,12 +426,11 @@ public:
     /**
      * \brief   Extracts the previous position and value of the element preceding the given position.
      *
-     * \param[in,out] prevPos         On input this indicates the valid position of the entry in the
-     *                                linked list. On output, this parameter points either previous
-     *                                valid entry in the linked list or invalid entry if has no
-     *                                previous entry, i.e. indicates first entry.
-     * \param[out] prevValue       On output, this contains value of the previous entry in the
-     *                             linked list.
+     * \param[in,out] prevPos   On input this indicates the valid position of the entry in the
+     *                          linked list. On output, this parameter points either previous
+     *                          valid entry in the linked list or invalid entry if has no
+     *                          previous entry, i.e. indicates first entry.
+     * \param[out] prevValue    On output, this contains value of the previous entry in the linked list.
      * \return  Returns true if there is a previous element and the output value is valid.
      **/
     inline bool prev_entry( LISTPOS& prevPos, VALUE& prevValue ) const;
@@ -541,8 +532,7 @@ public:
      * \param   newElement          The element to add at the tail of linked list.
      * \param   updateExisting      If true, updates the existing element. If, for example, 2
      *                              objects are compared by the name and not by absolute values, by
-     *                              setting this parameter true, you can replace the existing
-     *                              object.
+     *                              setting this parameter true, you can replace the existing object.
      * \return  Returns true if inserted new entry at the tail of the linked list. Otherwise,
      *          returns false.
      **/
@@ -556,8 +546,7 @@ public:
      * \param   newElement          The element to add at the tail of linked list.
      * \param   updateExisting      If true, updates the existing element. If, for example, 2
      *                              objects are compared by the name and not by absolute values, by
-     *                              setting this parameter true, you can replace the existing
-     *                              object.
+     *                              setting this parameter true, you can replace the existing object.
      * \return  Returns true if inserted new entry at the tail of the linked list. Otherwise,
      *          returns false.
      * \note    Move overload. Takes ownership of the element.
@@ -578,9 +567,8 @@ public:
      * \brief   Inserts new element before given position. If given position is head element, it
      *          adds new head element.
      *
-     * \param   beforePosition      The Linked List element valid position before new element should
-     *                              be inserted.
-     * \param   newElement          Value of new element to insert
+     * \param   beforePosition  The Linked List element valid position before new element should be inserted.
+     * \param   newElement      Value of new element to insert
      * \return  Returns position of new inserted element.
      **/
     inline LISTPOS insert_before( LISTPOS beforePosition, const VALUE & newElement );
@@ -589,9 +577,8 @@ public:
      * \brief   Inserts new element before given position. If given position is head element, it
      *          adds new head element.
      *
-     * \param   beforePosition      The Linked List element valid position before new element should
-     *                              be inserted.
-     * \param   newElement          Value of new element to insert
+     * \param   beforePosition  The Linked List element valid position before new element should be inserted.
+     * \param   newElement      Value of new element to insert
      * \return  Returns position of new inserted element.
      * \note    Move overload. Takes ownership of the element.
      **/
@@ -601,9 +588,8 @@ public:
      * \brief   Inserts new element after given position. If given position is tail element, it adds
      *          new tail element.
      *
-     * \param   afterPosition       The Linked List element position after new element should be
-     *                              inserted
-     * \param   newElement          Value of new element to insert
+     * \param   afterPosition   The Linked List element position after new element should be inserted
+     * \param   newElement      Value of new element to insert
      * \return  Returns position of new inserted element.
      **/
     inline LISTPOS insert_after(LISTPOS afterPosition, const VALUE & newElement);
@@ -612,9 +598,8 @@ public:
      * \brief   Inserts new element after given position. If given position is tail element, it adds
      *          new tail element.
      *
-     * \param   afterPosition       The Linked List element position after new element should be
-     *                              inserted
-     * \param   newElement          Value of new element to insert
+     * \param   afterPosition   The Linked List element position after new element should be inserted
+     * \param   newElement      Value of new element to insert
      * \return  Returns position of new inserted element.
      * \note    Move overload. Takes ownership of the element.
      **/
@@ -643,7 +628,7 @@ public:
      *          linked list. Returns invalid position if tail entry is removed.
      *
      * \param   atPosition      Position of the element to remove from Linked List.
-     * \param[out] Value           On output, it contains value of removed element
+     * \param[out] Value        On output, it contains value of removed element
      * \return  Returns the position of the next entry in the linked-list. If the tail entry is
      *          removed, returns invalid position.
      **/
@@ -653,15 +638,14 @@ public:
      * \brief   Searches and removes first match of entry, which value is equal to the given
      *          element. Returns true if found and removed entry with success.
      *
-     * \param   removeElement       Element to search and remove from Linked List
+     * \param   removeElement   Element to search and remove from Linked List
      * \return  Returns true if found and removed entry.
      **/
     inline bool remove_entry( const VALUE& removeElement ) noexcept;
 
     /**
-     * \brief   Searches and removes first match of entry, which value is equal to the given
-     *          element, starting from the given position. Returns true if found and removed entry
-     *          with success.
+     * \brief   Searches and removes first match of entry, which value is equal to the given element, 
+     *          starting from the given position. Returns true if found and removed entry with success.
      *
      * \param   removeElement       Element to search and remove from Linked List
      * \param   searchAfter         The valid position in the linked list to start searching.
@@ -746,9 +730,8 @@ public:
      *          `elemCount` elements are copied. Otherwise, all elements in the linked list are
      *          copied. No elements are copied if `elemCount` is 0.
      *
-     * \param[in,out] list            A pre-allocated buffer where the linked list elements will be
-     *                                copied. Must be large enough to hold at least `elemCount`
-     *                                elements.
+     * \param[in,out] list      A pre-allocated buffer where the linked list elements will be
+     *                          copied. Must be large enough to hold at least `elemCount` elements.
      * \param   elemCount       The maximum number of elements to copy into the `list` buffer. If
      *                          set to 0, no elements are copied.
      * \return  The number of elements successfully copied into the `list` buffer.

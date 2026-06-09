@@ -141,21 +141,17 @@ public:
     bool as_string(WideString & Value) const;
 
     /**
-     * \brief   Reads a single line from the stream as an ASCII string, excluding the newline
-     *          character.
+     * \brief   Reads a single line from the stream as an ASCII string, excluding the newline character.
      *
-     * \param[out] Value       On return, contains a single line of ASCII string without the newline
-     *                         character.
+     * \param[out] Value       On return, contains a single line of ASCII string without the newline character.
      * \return  Returns true if reading succeeded; false otherwise.
      **/
     bool read_line(String & Value) const;
 
     /**
-     * \brief   Reads a single line from the stream as a wide-character string, excluding the
-     *          newline character.
+     * \brief   Reads a single line from the stream as a wide-character string, excluding the newline character.
      *
-     * \param[out] Value       On return, contains a single line of wide-character string without
-     *                         the newline character.
+     * \param[out] Value       On return, contains a single line of wide-character string without the newline character.
      * \return  Returns true if reading succeeded; false otherwise.
      **/
     bool read_line(WideString & Value) const;

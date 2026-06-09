@@ -85,8 +85,7 @@ private:
      * \param   hostName    Host name or IP address to set. If a name is specified, it will be
      *                      resolved to an IP address.
      * \param   portNr      Valid port number for the socket connection.
-     * \param   isServer    Flag indicating whether the name should be resolved for a server or
-     *                      client.
+     * \param   isServer    Flag indicating whether the name should be resolved for a server or client.
      * \return  Returns true if the address was successfully resolved and set.
      **/
     bool set_address( const char * hostName, uint16_t portNr, bool isServer );

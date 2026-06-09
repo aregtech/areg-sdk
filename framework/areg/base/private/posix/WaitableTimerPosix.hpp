@@ -103,7 +103,7 @@ public:
     /**
      * \brief   Returns true if the synchronization timer object is valid.
      **/
-    inline bool is_valid() const noexcept final;
+    bool is_valid() const noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected calls
@@ -146,47 +146,33 @@ protected:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 protected:
-    //! Internal mutex protecting timer state fields.
+    //!< Internal mutex protecting timer state fields.
     MutexPosix                  mObjectLock;
 
-    /**
-     * \brief   Waitable timer reset information. Either manual- or auto-reset.
-     **/
+    //!< Waitable timer reset information. Either manual- or auto-reset.
     const areg::os::ResetMode   mResetInfo;
+
 #ifdef __APPLE__
-    /**
-     * \brief   GCD dispatch timer source for macOS.
-     **/
+
+    //!< GCD dispatch timer source for macOS.
     dispatch_source_t   mTimerSource;
-    /**
-     * \brief   GCD dispatch queue for timer.
-     **/
+    //!< GCD dispatch queue for timer.
     dispatch_queue_t    mTimerQueue;
 #else   // !__APPLE__
-    /**
-     * \brief   POSIX timer ID.
-     **/
+
+    //!< POSIX timer ID.
     timer_t         mTimerId;
 #endif  // __APPLE__
-    /**
-     * \brief   Timeout is milliseconds to run.
-     **/
-    uint32_t    mTimeout;
-    /**
-     * \brief   Flag, indicates whether timer is in signaled or non-signaled state.
-     **/
+
+    //!< Timeout is milliseconds to run.
+    uint32_t        mTimeout;
+    //!< Flag, indicates whether timer is in signaled or non-signaled state.
     bool            mIsSignaled;
-    /**
-     * \brief   Counts how many times the timer was fired. Used by periodic timers.
-     **/
-    uint32_t    mFiredCount;
-    /**
-     * \brief   POSIX timer structure.
-     **/
+    //!< Counts how many times the timer was fired. Used by periodic timers.
+    uint32_t        mFiredCount;
+    //!< POSIX timer structure.
     struct timespec mDueTime;
-    /**
-     * \brief   The ID of thread that triggered the timer. Used to notify the asynchronous call when waitable timer expired.
-     **/
+    //!< The ID of thread that triggered the timer. Used to notify the asynchronous call when waitable timer expired.
     id_type         mThreadId;
 
 //////////////////////////////////////////////////////////////////////////

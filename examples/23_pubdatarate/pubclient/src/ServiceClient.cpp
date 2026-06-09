@@ -28,6 +28,8 @@ ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::Component
     , areg::TimerConsumer   ( )
 
     , mTimer                    ( static_cast<areg::TimerConsumer&>(self()), TIMER_NAME )
+    , mReceivedBlocks           ( 0u )
+    , mLastReceivedBlocks       ( 0u )
     , mCompleteFrames           ( 0u )
     , mIncompleteFrames         ( 0u )
     , mLastIncompleteFrames     ( 0u )
@@ -48,10 +50,11 @@ void ServiceClient::startup_component(areg::ComponentThread& /* comThread */)
     console.output_txt(COORD_TITLE,      MSG_APP_TITLE);
     console.output_txt(COORD_SEP1,       MSG_SEPARATOR);
     console.output_msg(COORD_DATA_RATE,  MSG_NET_RATE_SENT.data(), dataRate.first, dataRate.second.data(), 0u);
+    console.output_msg(COORD_RECV_COUNT, MSG_RECV_COUNT.data(), 0u, 0u);
 #if DO_STATS
     console.output_msg(COORD_DATA_STAT,  MSG_STATS_RATE.data(), 0u, 0u);
 #ifdef DEBUG
-    console.output_msg(COORD_MISS_DETAIL, MSG_MISS_DETAIL.data(), 0u, 0u, 0u, 0u);
+    console.output_msg(COORD_MISS_DETAIL, MSG_MISS_DETAIL.data(), 0u, 0u);
 #endif // DEBUG
 #endif // DO_STATS
     console.output_txt(COORD_SEP2,       MSG_SEPARATOR);
@@ -63,169 +66,97 @@ void ServiceClient::startup_component(areg::ComponentThread& /* comThread */)
     mMissStats.clear();
 }
 
-#if DO_STATS
 DEBUG_DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient, broadcast_image_block_acquired);
 void ServiceClient::broadcast_image_block_acquired(const areg::SharedBuffer& imageBlock)
 {
+    // Always count every delivered block, independent of DO_STATS. A non-zero per-second rate
+    // here proves the wire envelope is correctly addressed and the broadcast callback fires.
+    ++mReceivedBlocks;
+
+#if DO_STATS
     DEBUG_LOG_SCOPE(examples_23_clientdatarate_ServiceClient, broadcast_image_block_acquired);
 
     const uint8_t* raw = imageBlock.buffer();
-    const uint32_t imgSize = imageBlock.size_used();  // equals blockSize
-    if (raw == nullptr || imgSize < sizeof(LargeData::RawImageBlock))
+    if ((raw == nullptr) || (imageBlock.size_used() < sizeof(LargeData::RawImageBlock)) || mFrameStats.empty())
     {
-        DEBUG_LOG_ERR("Invalid buffer data");
-        ++mIncompleteFrames;
-        return;
-    }
-
-    if (mFrameStats.empty())
-    {
-        DEBUG_LOG_ERR("The frame statistics is not initialized, cannot continue");
-        ++mIncompleteFrames;
+        DEBUG_LOG_ERR("Discarding block: invalid buffer or uninitialized statistics");
         return;
     }
 
     const LargeData::RawImageBlock* block = reinterpret_cast<const LargeData::RawImageBlock*>(raw);
-    if (block->channelId >= static_cast<uint32_t>(mFrameStats.size()))
+    if (block->channelId >= mFrameStats.size())
     {
-        DEBUG_LOG_ERR("Invalid channel ID [ %u ], it cannot be bigger than [ %u ]", block->channelId, static_cast<uint32_t>(mFrameStats.size() - 1));
-        ++mIncompleteFrames;
+        DEBUG_LOG_ERR("Invalid channel ID [ %u ], max allowed [ %zu ]", block->channelId, mFrameStats.size() - 1u);
         return;
     }
 
-    bool ok{ true };
     FrameStats& stat = mFrameStats[block->channelId];
-    if (stat.height != static_cast<int32_t>(block->frameHeight))
+    const uint32_t seq  { block->frameSeqId };
+    const uint32_t posY { static_cast<uint32_t>(block->imageData.imgStartPos.posY) };
+    const uint32_t hgt  { block->imageData.imgHeight };
+
+    // The frame geometry must match the announced ImageGenSetting; otherwise resynchronise.
+    if (block->frameHeight != stat.height)
     {
-        ok = false;
-        DEBUG_LOG_ERR("ch=%u height: exp=%d got=%u", block->channelId, stat.height, block->frameHeight);
+        ++mMissStats.seqErrors;
+        DEBUG_LOG_ERR("ch=%u height: exp=%u got=%u", block->channelId, stat.height, block->frameHeight);
+        stat.started = false;
         return;
     }
 
-    switch (stat.state)
+    if (!stat.started)
     {
-    case Complete:              // fall through
-        // Mirror the server's frame_id = (frame_id + 1) % height cycling.
-        {
-#if AREG_LOG_DEBUG
-            const uint32_t wrap = static_cast<uint32_t>(stat.height > 0 ? stat.height : 1);
-#endif // AREG_LOG_DEBUG
-            stat.seqNr = stat.seqNr + 1u;
-        }
-        stat.line   = 0;
-        stat.state  = Pending;
-    case Pending:               // fall through
-    case Missing:
-        if (stat.seqNr != block->frameSeqId)
-        {
-            ++mMissStats.seqMismatch;
-            if (stat.line > 0 && stat.line < stat.height)
-            {
-                // Previous frame abandoned mid-way; count it as incomplete.
-                ++mIncompleteFrames;
-                ++mMissStats.abandoned;
-                DEBUG_LOG_ERR("ch=%u aband: seqNr=%u at=%u/%u -> new=%u posY=%u"
-                                , block->channelId
-                                , stat.seqNr
-                                , static_cast<uint32_t>(stat.line)
-                                , static_cast<uint32_t>(stat.height)
-                                , block->frameSeqId
-                                , static_cast<uint32_t>(block->imageData.imgStartPos.posY));
-            }
-            else
-#if AREG_LOG_DEBUG
-            {
-                const int32_t gap = static_cast<int32_t>(block->frameSeqId) - static_cast<int32_t>(stat.seqNr);
-                DEBUG_LOG_ERR("ch=%u seqN: exp=%u got=%u gap=%+d line=%u/%u"
-                                , block->channelId
-                                , stat.seqNr
-                                , block->frameSeqId
-                                , gap
-                                , static_cast<uint32_t>(stat.line)
-                                , static_cast<uint32_t>(stat.height));
-            }
-#endif // AREG_LOG_DEBUG
+        // Lock onto the first clean frame start (posY == 0); skip a leading partial frame.
+        if (posY != 0u)
+            return;
 
-            stat.seqNr = block->frameSeqId;
-            stat.line  = 0;
-            // The new frame is clean only when its first block starts at the top.
-            if (block->imageData.imgStartPos.posY != 0)
-            {
-                ok = false;
-            }
-
-            stat.state = ok ? Pending : Missing;
-        }
-        else if (stat.line != block->imageData.imgStartPos.posY)
-        {
-            ok = false;
-            ++mMissStats.lineMismatch;
-            DEBUG_LOG_ERR("ch=%u line: exp=%u got=%u seqNr=%u"
-                                , block->channelId
-                                , static_cast<uint32_t>(stat.line)
-                                , static_cast<uint32_t>(block->imageData.imgStartPos.posY)
-                                , block->frameSeqId);
-        }
-
-        stat.line = block->imageData.imgStartPos.posY + block->imageData.imgHeight;
-        if (stat.line > stat.height)
-        {
-            ok = false;
-            DEBUG_LOG_ERR("ch=%u overflow: line=%u>%u seqNr=%u"
-                                , block->channelId
-                                , static_cast<uint32_t>(stat.line)
-                                , static_cast<uint32_t>(stat.height)
-                                , block->frameSeqId);
-            stat.line = stat.height;
-        }
-        break;
-
-    case Initial:
-        stat.state  = Pending;
-        stat.seqNr  = block->frameSeqId;
-        // First block is mid-frame: we already missed blocks, so the frame is incomplete.
-        if (block->imageData.imgStartPos.posY != 0)
-        {
-            ok = false;
-            ++mMissStats.initialMid;
-            DEBUG_LOG_ERR("ch=%u init: posY=%u seqNr=%u", block->channelId, static_cast<uint32_t>(block->imageData.imgStartPos.posY), block->frameSeqId);
-        }
-        stat.line = block->imageData.imgStartPos.posY + block->imageData.imgHeight;
-        if (stat.line > stat.height)
-        {
-            ok = false;
-            DEBUG_LOG_ERR("ch=%u overflow: line=%u>%u seqNr=%u", block->channelId, static_cast<uint32_t>(stat.line), static_cast<uint32_t>(stat.height), block->frameSeqId);
-            stat.line = stat.height;
-        }
-        break;
-
-    default:
-        ASSERT(false);
-        DEBUG_LOG_ERR("Undefined State [ %u ]", static_cast<uint32_t>(stat.state));
-        ok = false;
+        stat.started = true;
+        stat.curSeq  = seq;
+        stat.nextY   = hgt;
     }
-
-    stat.state = ok ? stat.state : Missing;
-    if (stat.line == stat.height)
+    else if (posY == 0u)
     {
-        if (stat.state == Pending)
+        // A new frame begins: judge the frame that just ended.
+        if (stat.nextY == stat.height)
         {
             ++mCompleteFrames;
         }
-        else if (stat.state == Missing)
+        else
         {
-            DEBUG_LOG_ERR("ch=%u seqNr=%u: frame complete with missing or corrupted blocks", block->channelId, block->frameSeqId);
             ++mIncompleteFrames;
+            DEBUG_LOG_ERR("ch=%u seqNr=%u: frame incomplete, assembled %u of %u lines", block->channelId, stat.curSeq, stat.nextY, stat.height);
         }
 
-        stat.state = Complete;
+        // frameSeqId must increase by exactly one from one frame to the next.
+        if (seq != stat.curSeq + 1u)
+        {
+            ++mMissStats.seqErrors;
+            DEBUG_LOG_ERR("ch=%u seqN: exp=%u got=%u", block->channelId, stat.curSeq + 1u, seq);
+        }
+
+        stat.curSeq = seq;
+        stat.nextY  = hgt;
     }
+    else
+    {
+        // Continuation block of the current frame.
+        if (seq != stat.curSeq)
+        {
+            ++mMissStats.seqErrors;     // frame id changed without a posY == 0 start
+            DEBUG_LOG_ERR("ch=%u seqN mid-frame: exp=%u got=%u", block->channelId, stat.curSeq, seq);
+            stat.curSeq = seq;
+        }
+
+        if (posY != stat.nextY)
+        {
+            ++mMissStats.lineErrors;    // gap, overlap or out-of-order block
+            DEBUG_LOG_ERR("ch=%u line: exp=%u got=%u seqNr=%u", block->channelId, stat.nextY, posY, seq);
+        }
+
+        stat.nextY = posY + hgt;        // resync to the actual position to avoid cascading errors
+    }
+#endif  // DO_STATS
 }
-#else   // !DO_STATS
-void ServiceClient::broadcast_image_block_acquired(const areg::SharedBuffer& /*imageBlock*/)
-{
-}
-#endif  // !DO_STATS
 
 void ServiceClient::broadcast_service_stopping()
 {
@@ -262,10 +193,11 @@ void ServiceClient::on_image_gen_setting_update(const LargeData::ImageGenerator&
     mFrameStats.resize(ImageGenSetting.channels);
     for (uint32_t i = 0; i < ImageGenSetting.channels; ++i)
     {
-        FrameStats entry{ static_cast<int32_t>(i), Initial, static_cast<int32_t>(ImageGenSetting.height), 0, 0u };
-        mFrameStats[i] = entry;
+        mFrameStats[i] = FrameStats{ ImageGenSetting.height, 0u, 0u, false };
     }
 
+    mReceivedBlocks         = 0u;
+    mLastReceivedBlocks     = 0u;
     mCompleteFrames         = 0u;
     mIncompleteFrames       = 0u;
     mLastIncompleteFrames   = 0u;
@@ -288,6 +220,8 @@ bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg
 
     if (is_connected())
     {
+        mReceivedBlocks         = 0u;
+        mLastReceivedBlocks     = 0u;
         mCompleteFrames         = 0u;
         mIncompleteFrames       = 0u;
         mLastIncompleteFrames   = 0u;
@@ -308,9 +242,13 @@ DEBUG_DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient, process_timer);
 void ServiceClient::process_timer(areg::Timer& /* timer */)
 {
     DEBUG_LOG_SCOPE(examples_23_clientdatarate_ServiceClient, process_timer);
+
+    // Snapshot the always-on received-block counter and derive the per-second rate.
+    const uint32_t totalRecv = mReceivedBlocks;
+    const uint32_t deltaRecv = totalRecv - mLastReceivedBlocks;
+    mLastReceivedBlocks = totalRecv;
+
 #if DO_STATS
-    // Snapshot and log BEFORE activating any log scope so these messages are
-    // never filtered out by scope configuration regardless of the log settings.
     const uint32_t snapOk   = mCompleteFrames;
     const uint32_t snapMiss = mIncompleteFrames;
     const MissStats snapMs  = mMissStats;
@@ -319,13 +257,11 @@ void ServiceClient::process_timer(areg::Timer& /* timer */)
     mLastIncompleteFrames = snapMiss;
     mMissStats.clear();
 
-    if (deltaMiss > 0u || snapMs.seqMismatch > 0u || snapMs.lineMismatch > 0u ||
-        snapMs.abandoned > 0u || snapMs.initialMid > 0u)
+    if ((deltaMiss > 0u) || (snapMs.seqErrors > 0u) || (snapMs.lineErrors > 0u))
     {
-        DEBUG_LOG_WARN("Stats/sec: OK=%u MISS=%u (new=%u) | seqN=%u line=%u aband=%u init=%u",
+        DEBUG_LOG_WARN("Frame stats/sec: complete=%u incomplete=%u (new=%u) | seqErr=%u lineErr=%u",
                             snapOk, snapMiss, deltaMiss,
-                            snapMs.seqMismatch, snapMs.lineMismatch,
-                            snapMs.abandoned,   snapMs.initialMid);
+                            snapMs.seqErrors, snapMs.lineErrors);
     }
 #endif  // DO_STATS
 
@@ -338,10 +274,11 @@ void ServiceClient::process_timer(areg::Timer& /* timer */)
 
     console.save_cursor_position();
     console.output_msg(COORD_DATA_RATE,   MSG_NET_RATE_SENT.data(), dataRate.first, dataRate.second.data(), msgRecv);
+    console.output_msg(COORD_RECV_COUNT,  MSG_RECV_COUNT.data(), totalRecv, deltaRecv);
 #if DO_STATS
     console.output_msg(COORD_DATA_STAT,   MSG_STATS_RATE.data(),   snapOk, snapMiss);
 #ifdef DEBUG
-    console.output_msg(COORD_MISS_DETAIL, MSG_MISS_DETAIL.data(), snapMs.seqMismatch, snapMs.lineMismatch, snapMs.abandoned,   snapMs.initialMid);
+    console.output_msg(COORD_MISS_DETAIL, MSG_MISS_DETAIL.data(), snapMs.seqErrors, snapMs.lineErrors);
 #endif // DEBUG
 #endif  // DO_STATS
     console.restore_cursor_position();

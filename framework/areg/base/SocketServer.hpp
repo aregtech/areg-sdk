@@ -92,8 +92,7 @@ public:
     bool create() override;
 
     /**
-     * \brief   Places the server socket in listening mode. Incoming connections are queued up to
-     *          maxQueueSize.
+     * \brief   Places the server socket in listening mode. Incoming connections are queued up to maxQueueSize.
      *
      * \param   maxQueueSize    The maximum number of pending connections to queue. If not positive,
      *                          uses areg::MAXIMUM_LISTEN_QUEUE_SIZE.

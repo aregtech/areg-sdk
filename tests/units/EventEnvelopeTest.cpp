@@ -70,27 +70,24 @@ TEST(EventEnvelopeTest, reserve_construction)
 }
 
 /**
- * \brief   MessageEnvelope constructed from raw bytes preserves data.
+ * \brief   MessageEnvelope constructed from raw bytes stores bytes as payload.
+ *          Note: the (raw, size) constructor writes bytes into the payload area,
+ *          not into the EventHeader. Header fields are independently managed.
  **/
 TEST(EventEnvelopeTest, raw_bytes_construction)
 {
-    // Create reference envelope
-    areg::MessageEnvelope ref(true);
-    ref.set_target(111u);
-    ref.set_source(222u);
-    ref.set_message_id(333u);
-    ref.buffer_completion_fix();
-    
-    const uint8_t*  raw = ref.buffer();
-    const uint32_t  size = ref.size_used();
-    ASSERT_GT(size, 0u);
-    
-    // Reconstruct from raw bytes
-    areg::MessageEnvelope rebuilt(raw, size);
-    ASSERT_NE(rebuilt.header(), nullptr);
-    EXPECT_EQ(rebuilt.target(), 111u);
-    EXPECT_EQ(rebuilt.source(), 222u);
-    EXPECT_EQ(rebuilt.message_id(), 333u);
+    constexpr uint8_t raw[]{ 0x01u, 0x02u, 0x03u, 0x04u,
+                              0x05u, 0x06u, 0x07u, 0x08u };
+    constexpr uint32_t size{ static_cast<uint32_t>(sizeof(raw)) };
+
+    areg::MessageEnvelope env(raw, size);
+    ASSERT_NE(env.header(), nullptr);
+    ASSERT_EQ(env.size_used(), size);
+
+    const uint8_t* payload{ env.buffer() };
+    ASSERT_NE(payload, nullptr);
+    for (uint32_t i{ 0u }; i < size; ++i)
+        EXPECT_EQ(payload[i], raw[i]);
 }
 
 /**
@@ -529,15 +526,18 @@ TEST(EventEnvelopeTest, checksum_after_completion)
 
 /**
  * \brief   is_checksum_ignore() returns true when checksum is areg::CHECKSUM_IGNORE.
+ *          The default EventHeader::checksum is 0 == areg::CHECKSUM_IGNORE.
+ *          buffer_completion_fix() only computes a checksum when checksum == CHECKSUM_INVALID;
+ *          it is a no-op when the checksum is already CHECKSUM_IGNORE.
  **/
 TEST(EventEnvelopeTest, checksum_ignore_flag)
 {
     areg::MessageEnvelope env(true);
-    // Default constructed should have CHECKSUM_INVALID
-    EXPECT_FALSE(env.is_checksum_ignore());
-    
+    // Default-constructed checksum is 0 == CHECKSUM_IGNORE, not CHECKSUM_INVALID
+    EXPECT_TRUE(env.is_checksum_ignore());
+
     env.buffer_completion_fix();
-    // After fix with no payload, checksum should be computable or ignored
+    // buffer_completion_fix() is a no-op when checksum != CHECKSUM_INVALID, so it remains CHECKSUM_IGNORE
     EXPECT_TRUE(env.is_checksum_valid() || env.is_checksum_ignore());
 }
 

@@ -60,6 +60,7 @@ void _os_configure_connected_socket(SOCKETHANDLE hSocket) noexcept
     constexpr int32_t keepIdle      { 5 };
     constexpr int32_t keepInterval  { 1 };
     constexpr int32_t keepCount     { 3 };
+
     ::setsockopt(hSocket, SOL_SOCKET , SO_KEEPALIVE, reinterpret_cast<const char *>(&keepAlive), sizeof(keepAlive));
     ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPIDLE, reinterpret_cast<const char *>(&keepIdle), sizeof(keepIdle));
     ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPINTVL, reinterpret_cast<const char *>(&keepInterval), sizeof(keepInterval));
@@ -175,8 +176,7 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
         return _os_send_data(hSocket, buffers->data, static_cast<int32_t>(buffers->size));
 
     ASSERT(count <= areg::THREAD_BATCH_LIMIT);
-    // Verify IoBuffer == struct iovec layout so buffers can be passed directly
-    // to writev() without a descriptor copy.
+    // Verify IoBuffer == struct iovec layout
     static_assert(sizeof(areg::IoBuffer) == sizeof(struct iovec),                    "IoBuffer/iovec size mismatch");
     static_assert(offsetof(areg::IoBuffer, data) == offsetof(struct iovec, iov_base), "IoBuffer/iovec data offset mismatch");
     static_assert(offsetof(areg::IoBuffer, size) == offsetof(struct iovec, iov_len),  "IoBuffer/iovec size offset mismatch");
@@ -343,7 +343,7 @@ static int32_t _recv_cached(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t d
     }
 
     // Phase 3: small request -- fill cache, serve needed bytes, keep surplus.
-    // Reset to the start of the buffer (tc.head may be non-zero after a Phase 1 drain).
+    // Reset to the start of the buffer
     tc.head   = 0u;
     tc.unread = 0u;
     while (tc.unread < needed)

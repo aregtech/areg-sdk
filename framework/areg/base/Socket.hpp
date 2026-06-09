@@ -42,8 +42,7 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Base class for client, server, and accepted socket connections. The object cannot be
- *          directly instantiated; instantiate a child class instead. Supports TCP/IP connections
- *          only.
+ *          directly instantiated; instantiate a child class instead. Supports TCP/IP connections only.
  **/
 class AREG_API Socket
 {
@@ -118,8 +117,7 @@ public:
     virtual bool create() = 0;
 
     /**
-     * \brief   Closes existing socket. Note: The socket is closed only when reference count reaches
-     *          zero.
+     * \brief   Closes existing socket. Note: The socket is closed only when reference count reaches zero.
      **/
     virtual void close();
 
@@ -138,8 +136,8 @@ public:
      * \brief   Receives data using existing socket connection. Returns number of bytes received, or
      *          negative on failure. Call is blocking.
      *
-     * \param[in,out] buffer      The buffer to fill with received data from remote target.
-     * \param   length      The length in bytes of allocated space in buffer.
+     * \param[in,out] buffer    The buffer to fill with received data from remote target.
+     * \param   length          The length in bytes of allocated space in buffer.
      * \return  Returns number of bytes received from remote target. Returns negative number if
      *          socket is invalid or failed to receive data.
      **/
@@ -164,8 +162,6 @@ public:
 
     /**
      * \brief   Returns true if socket is alive and not closed.
-     *
-     * \return  Returns true if socket is alive and is not closed.
      **/
     [[nodiscard]]
     inline bool is_alive() const noexcept;
@@ -275,10 +271,8 @@ protected:
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     /**
-     * \brief   Reference-counted socket handle. Stores the OS descriptor directly in the
-     *          object (no heap allocation for the handle). A single atomic<int32_t> is
-     *          allocated on the heap as the shared reference counter. _close_handle() is
-     *          called automatically when the last copy is destroyed.
+     * \brief   Reference-counted socket handle. Stores the OS descriptor directly in the object.
+     *          A single atomic<int32_t> is allocated on the heap as the shared reference counter.
      **/
     SocketHandle        mSocket;
 #if defined(_MSC_VER)

@@ -887,9 +887,8 @@ public:
      *          Automatically determines whether the ID is an attribute or response and converts
      *          it to an index.
      *
-     * \param   msgId       A function ID in the areg::FuncIdRange (attribute or response
-     *                      ID). Invalid IDs are ignored. areg::ATTRIBUTE_SI_VERSION is
-     *                      handled specially.
+     * \param   msgId       A function ID in the areg::FuncIdRange (attribute or response ID).
+     *                      Invalid IDs are ignored. areg::ATTRIBUTE_SI_VERSION is handled specially.
      * \param   newState    The state to set. For response IDs, the state is set for all
      *                      response parameters.
      **/

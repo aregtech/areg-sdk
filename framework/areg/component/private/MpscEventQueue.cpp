@@ -180,7 +180,7 @@ Event MpscEventQueue::pop_event() noexcept
         return result;
     }
 
-    return Event{};  // invalid (empty) sentinel — is_valid() == false
+    return Event{};
 }
 
 void MpscEventQueue::remove_events() noexcept
@@ -193,8 +193,6 @@ void MpscEventQueue::remove_events() noexcept
     {
         if (evt.is_exit_prio())
         {
-            if (exitEvt.is_valid())
-                exitEvt.destroy_event();  // discard duplicate exit
             exitEvt = std::move(evt);
         }
         else

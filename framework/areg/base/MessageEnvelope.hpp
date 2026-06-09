@@ -30,14 +30,13 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Zero-copy event transport buffer. The underlying heap block is
- *          shared across copies (O(1) copy cost via shared_ptr). The binary
- *          layout in the heap allocation is:
+ *          shared across copies. The binary layout in the heap allocation is:
  *
- *              [EventHeader 120B][envData 4B][payload...]
+ *          [EventHeader 128B][envData 4B][payload...]
  *
  *          EventHeader is always at byte offset 0. The payload stream begins at
- *          data_offset() = offsetof(RawEnvelope, envData) = 120.
- *          header_size() = sizeof(RawEnvelope) = 124.
+ *          data_offset() = offsetof(RawEnvelope, envData) = 128.
+ *          header_size() = sizeof(RawEnvelope) = 128 + 16.
  *
  *          The class exposes typed accessors grouped as follows:
  *            - Bulk endpoint access  : consumer(), provider(), raw_service()
@@ -103,12 +102,10 @@ public:
 
     /**
      * \brief   Constructs an envelope, allocates header + payload space, and writes raw
-     *          eventType and priority values into the EventHeader. Used by Event subclasses
-     *          that carry a placement-new'd DataClass payload in the tail after the 120-byte
-     *          header. Raw types avoid a dependency on areg/component/EventDefs.hpp.
+     *          eventType and priority values into the EventHeader.
      *
-     * \param   eventType       Raw EventType value (uint16_t) to store in the header.
-     * \param   prio            Raw EventPriority value (uint8_t) to store in the header.
+     * \param   eventType       Raw EventType value to store in the header.
+     * \param   prio            Raw EventPriority value to store in the header.
      * \param   reserveSize     Extra bytes to reserve after the header for the DataClass payload.
      * \param   blockSize       Allocation increment, rounded up to areg::BLOCK_SIZE.
      **/
@@ -143,8 +140,8 @@ public:
 
     /**
      * \brief   Copy-serialises src into the MessageEnvelope payload.
-     *          Appends src.size_used() raw bytes to the envelope's current write
-     *          position. No length prefix is written. The envelope owns its own
+     *          Appends raw bytes to the envelope's current write position.
+     *          No length prefix is written. The envelope owns its own
      *          independent copy of the payload bytes.
      *
      * \param   env     The destination envelope (mutable: payload grows).
@@ -1215,31 +1212,33 @@ inline uint32_t MessageEnvelope::header_size() const noexcept
 // SharedBuffer interop operators
 /************************************************************************/
 
-inline MessageEnvelope& operator << (MessageEnvelope& env, const SharedBuffer& src) noexcept
-{
-    const uint32_t len{ src.size_used() };
-    if (len > 0u)
-    {
-        env.write_data(src.buffer(), len);
-    }
 
-    return env;
-}
+  inline MessageEnvelope& operator << (MessageEnvelope& env, const SharedBuffer& src) noexcept
+  {
+      const uint32_t len{ src.size_used() };
+      env.write_data(reinterpret_cast<const uint8_t*>(&len), sizeof(uint32_t));
+      if (len > 0u)
+      {
+          env.write_data(src.buffer(), len);
+      }
 
-inline const MessageEnvelope& operator >> (const MessageEnvelope& env, SharedBuffer& dst) noexcept
-{
-    const uint32_t len{ env.size_used() };
-    if (len > 0u)
-    {
-        // MessageEnvelope is never a view; copy the payload bytes into the destination buffer.
-        dst.reserve(len, false);
-        areg::mem_copy(dst.buffer(), len, env.buffer(), len);
-        dst.set_size_used(len);
-        dst.move_to_begin();
-    }
+      return env;
+  }
 
-    return env;
-}
+  inline const MessageEnvelope& operator >> (const MessageEnvelope& env, SharedBuffer& dst) noexcept
+  {
+      uint32_t len{ 0u };
+      uint32_t copied{ 0u };
+      if ((env.read_data(reinterpret_cast<uint8_t*>(&len), sizeof(uint32_t)) == sizeof(uint32_t)) && (len != 0u))
+      {
+          dst.reserve(len, false);
+          copied = env.read_data(dst.buffer(), len);
+      }
+
+      dst.set_size_used(copied);
+      dst.move_to_begin();
+      return env;
+  }
 
 } // namespace areg
 

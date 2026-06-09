@@ -1,9 +1,5 @@
 # Adding sources
 macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
-	areg/base/private/areg_global.cpp
-	areg/base/private/CommonDefs.cpp
-	areg/base/private/Containers.cpp
-	areg/base/private/Cursor.cpp
 	areg/base/private/DateTime.cpp
 	areg/base/private/DebugDefs.cpp
 	areg/base/private/MessageEnvelope.cpp
@@ -11,14 +7,10 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/base/private/FileBase.cpp
 	areg/base/private/FileBuffer.cpp
 	areg/base/private/Identifier.cpp
-	areg/base/private/IOStream.cpp
-	areg/base/private/MathDefs.cpp
-	areg/base/private/MemoryDefs.cpp
 	areg/base/private/Process.cpp
 	areg/base/private/BufferBase.cpp
 	areg/base/private/ReadConverter.cpp
 	areg/base/private/RuntimeBase.cpp
-	areg/base/private/RuntimeClassID.cpp
 	areg/base/private/RuntimeObject.cpp
 	areg/base/private/SharedBuffer.cpp
 	areg/base/private/Socket.cpp
@@ -28,7 +20,6 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/base/private/SocketMultiplexer.cpp
 	areg/base/private/SocketServer.cpp
 	areg/base/private/String.cpp
-	areg/base/private/StringDefs.cpp
 	areg/base/private/SyncObject.cpp
 	areg/base/private/SyncPrimitives.cpp
 	areg/base/private/Thread.cpp

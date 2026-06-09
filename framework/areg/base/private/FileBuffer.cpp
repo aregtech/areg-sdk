@@ -90,11 +90,9 @@ bool FileBuffer::open()
                     mSharedBuffer.reserve(mSharedBuffer.block_size(), false);
                 }
             }
-            // else BitExist: do not allocate; succeed only if the buffer is already valid.
         }
         else
         {
-            // Non-owner (shared view): buffer must already be valid.
             ASSERT(is_valid());
         }
 

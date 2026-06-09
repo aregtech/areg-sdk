@@ -40,12 +40,8 @@ namespace areg {
 
 /**
  * \brief   Base class for event queues. Wraps a EventStack and a QueueListener and
- *          provides push/pop/remove operations. The base class performs no locking -- derived
- *          classes are responsible for thread safety.
- *
- * \note    push_event() and pop_event() are non-virtual. ExternalEventQueue hides them with
- *          locked versions. All callers in EventDispatcherBase use the concrete derived types
- *          directly, so no virtual dispatch is required on the hot path.
+ *          provides push/pop/remove operations. The base class performs no locking,
+ *          derived classes are responsible for thread safety.
  **/
 class AREG_API EventQueue
 {

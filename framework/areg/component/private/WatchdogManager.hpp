@@ -84,8 +84,7 @@ public:
     /**
      * \brief   Stops the watchdog manager and cancels all timers.
      *
-     * \param   waitComplete    If true, waits for completion; if false, triggers exit and returns
-     *                          immediately.
+     * \param   waitComplete    If true, waits for completion; if false, triggers exit and returns mmediately.
      **/
     static void stop_watchdog_manager( bool waitComplete);
 
@@ -258,7 +257,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     AREG_NOCOPY_NOMOVE( WatchdogManager );
-
 };
 
 } // namespace areg

@@ -117,7 +117,7 @@ bool RemoteEventFactory::route_incoming_message( MessageEnvelope & src, const Ch
         hdr->source          = chSource.target();
         hdr->consumer.id     = chSource.cookie();
         hdr->consumer.thread = chSource.source();
-        hdr->internal2       = 0;
+        evt.set_event_consumer(static_cast<areg::EventConsumer *>(const_cast<areg::StubBase *>(stub)));
 
         evt.register_for_thread(&stub->component_thread());
         evt.deliver_event();
@@ -141,7 +141,7 @@ bool RemoteEventFactory::route_incoming_message( MessageEnvelope & src, const Ch
         hdr->channel         = chTarget.target();
         hdr->consumer.id     = chTarget.cookie();
         hdr->consumer.thread = chTarget.source();
-        hdr->internal2       = 0;
+        evt.set_event_consumer(static_cast<areg::EventConsumer *>(proxy.get()));
 
         evt.register_for_thread(&proxy->proxy_dispatcher_thread());
         evt.deliver_event();

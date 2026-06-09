@@ -61,18 +61,14 @@ void WatchdogManager::_os_timer_stop(TIMERHANDLE handle)
 
 bool WatchdogManager::_os_timer_start(Watchdog & watchdog)
 {
-    bool result = false;
     areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(watchdog.handle());
     if (posixTimer != nullptr)
     {
         const Watchdog::WATCHDOG_ID watchdog_id = watchdog.watchdog_id();
-        if (posixTimer->start_timer(watchdog, watchdog_id, &WatchdogManager::_posix_watchdog_expired))
-        {
-            result = true;
-        }
+        return posixTimer->start_timer(watchdog, watchdog_id, &WatchdogManager::_posix_watchdog_expired);
     }
 
-    return result;
+    return false;
 }
 
 } // namespace areg

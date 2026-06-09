@@ -26,15 +26,12 @@
 
 namespace areg {
 
-// Ownership of the heap block is handled by areg::RawBufferPtr (intrusive refcount in
-// BufferHeader::biRefCount): one allocation per envelope, freed with delete[] when the last
-// owner drops its reference. DATA_CLASS destruction for local custom events is owned exclusively
+// Ownership of the heap block is handled by areg::RawBufferPtr.
+// DATA_CLASS destruction for local custom events is owned exclusively
 // by Event::~Event() and destroy_event(), which run on the Event owner while it is the sole owner
-// (before the refcount reaches zero). IPC buffers always arrive with internal1/internal2/custom
-// zeroed, so there is never a DATA_CLASS cleanup hook on the receive path.
 
-const SequenceNumber MessageEnvelope::_INVALID_SEQUENCE{ areg::SEQUENCE_NUMBER_ANY };
-const areg::Endpoint MessageEnvelope::_INVALID_ENDPOINT{ };
+const SequenceNumber MessageEnvelope::_INVALID_SEQUENCE { areg::SEQUENCE_NUMBER_ANY };
+const areg::Endpoint MessageEnvelope::_INVALID_ENDPOINT { };
 const areg::RawService MessageEnvelope::_INVALID_SERVICE{ };
 
 uint32_t MessageEnvelope::_checksum_calculate(const areg::RawEnvelope& env) noexcept
@@ -83,7 +80,10 @@ MessageEnvelope::MessageEnvelope(const areg::EventHeader& evtHeader, uint32_t re
 
 uint32_t MessageEnvelope::init_buffer(uint8_t* newBuffer, uint32_t bufLength, bool makeCopy) const noexcept
 {
-    if (newBuffer == nullptr)
+    static_assert(sizeof(areg::EventHeader) == 128u, "EventHeader size changed; update init_buffer");
+    constexpr uint32_t BUF_HDR_SIZE{ static_cast<uint32_t>(sizeof(areg::BufferHeader)) };
+
+    if ((newBuffer == nullptr) || (bufLength < BUF_HDR_SIZE))
         return Cursor::INVALID_CURSOR_POSITION;
 
     const uint32_t dataLength{ bufLength - static_cast<uint32_t>(sizeof(areg::EventHeader)) };
@@ -102,10 +102,6 @@ uint32_t MessageEnvelope::init_buffer(uint8_t* newBuffer, uint32_t bufLength, bo
     const areg::EventHeader& hdrSrc{ envSrc->envHeader };
     const uint32_t srcCount        { std::min(hdrSrc.bufHeader.biUsed, dataLength) };
 
-    // Copy all header fields past bufHeader in one shot: target, source, endpoints, routing,
-    // and local-only fields (internal1/2, custom). bufHeader was already initialized above.
-    static_assert(sizeof(areg::EventHeader) == 128u, "EventHeader size changed; update init_buffer");
-    constexpr uint32_t BUF_HDR_SIZE{ static_cast<uint32_t>(sizeof(areg::BufferHeader)) };
     std::memcpy(reinterpret_cast<uint8_t*>(&hdrDst) + BUF_HDR_SIZE,
                 reinterpret_cast<const uint8_t*>(&hdrSrc) + BUF_HDR_SIZE,
                 sizeof(areg::EventHeader) - BUF_HDR_SIZE);
@@ -144,7 +140,7 @@ uint8_t* MessageEnvelope::init_envelope(const areg::EventHeader& evtHeader, uint
 
             env->envHeader.bufHeader.biLength   = biLength;
             env->envHeader.bufHeader.biOffset   = biOffset;
-            env->envHeader.bufHeader.biRefCount = 1u;   // restore: the memcpy above clobbered the live refcount (sole owner)
+            env->envHeader.bufHeader.biRefCount = 1u;
             env->envHeader.bufHeader.biUsed     = std::min(evtHeader.bufHeader.biUsed, biLength);
 
             mPosition  = 0u;
@@ -152,7 +148,7 @@ uint8_t* MessageEnvelope::init_envelope(const areg::EventHeader& evtHeader, uint
         }
     }
 
-    // Slow path: allocate a new block.
+    // allocate a new block.
     invalidate();
 
     const uint32_t sizeBuffer{ sizeUsed + static_cast<uint32_t>(sizeof(areg::EventHeader)) };
@@ -171,8 +167,8 @@ uint8_t* MessageEnvelope::init_envelope(const areg::EventHeader& evtHeader, uint
     return env->envData;
 }
 
-MessageEnvelope MessageEnvelope::clone(const areg::Endpoint* consumer /*= nullptr*/,
-                                   const areg::Endpoint* provider /*= nullptr*/) const
+MessageEnvelope MessageEnvelope::clone( const areg::Endpoint* consumer /*= nullptr*/
+                                      , const areg::Endpoint* provider /*= nullptr*/ ) const
 {
     MessageEnvelope result;
     const areg::RawEnvelope* env{ raw_envelope() };

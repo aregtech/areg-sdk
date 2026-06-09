@@ -36,8 +36,8 @@ class OutStream;
 // Version class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Represents a version with major, minor, and patch numbers; supports serialization and
- *          comparison.
+ * \brief   Represents a version with major, minor, and patch numbers;
+ *          supports serialization and comparison.
  **/
 class AREG_API Version
 {

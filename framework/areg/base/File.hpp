@@ -28,16 +28,12 @@
 #include <filesystem>
 namespace areg {
 
-
-/**
- * \brief   File class to work with files on File System. Supports data streaming
- *          functionalities.
- **/
 //////////////////////////////////////////////////////////////////////////
 // File class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Represents a file object supporting sequential reading and writing operations, with
+ * \brief   File class to work with files on File System. Supports data streaming functionalities.
+ *          Represents a file object supporting sequential reading and writing operations, with
  *          streaming interfaces. Handles both file system files and memory-buffered file objects.
  **/
 class AREG_API File : public FileBase
@@ -230,27 +226,24 @@ public:
     uint32_t read( SharedBuffer & buffer ) const override;
 
     /**
-     * \brief   Reads text data from the file into an ASCII string and returns the number of bytes
-     *          read.
+     * \brief   Reads text data from the file into an ASCII string and returns the number of bytes read.
      *
      * \param[in,out] ascii       The ASCII string to receive file data.
      **/
     uint32_t read( String & ascii ) const override;
 
     /**
-     * \brief   Reads text data from the file into a wide-character string and returns the number of
-     *          bytes read.
+     * \brief   Reads text data from the file into a wide-character string and returns the number of bytes read.
      *
-     * \param[in,out] wide    The wide-character string to receive file data.
+     * \param[in,out] wide      The wide-character string to receive file data.
      **/
     uint32_t read( WideString & wide ) const override;
 
     /**
-     * \brief   Reads up to size bytes from the file into the buffer and returns the number of bytes
-     *          read.
+     * \brief   Reads up to size bytes from the file into the buffer and returns the number of bytes read.
      *
-     * \param[in,out] buffer      The byte buffer to receive data.
-     * \param   size        The capacity of the buffer in bytes.
+     * \param[in,out] buffer    The byte buffer to receive data.
+     * \param   size            The capacity of the buffer in bytes.
      **/
     uint32_t read( uint8_t * buffer, uint32_t size ) const noexcept override;
 
@@ -258,8 +251,7 @@ public:
 // OutStream interface overrides
 /************************************************************************/
     /**
-     * \brief   Writes binary data from the buffer to the file and returns the number of bytes
-     *          written.
+     * \brief   Writes binary data from the buffer to the file and returns the number of bytes written.
      *
      * \param   buffer      The buffer containing data to write.
      **/
@@ -273,16 +265,14 @@ public:
     uint32_t write( const String & ascii ) override;
 
     /**
-     * \brief   Writes wide-character string data to the file and returns the number of bytes
-     *          written.
+     * \brief   Writes wide-character string data to the file and returns the number of bytes written.
      *
      * \param   wide    The wide-character string to write.
      **/
     uint32_t write( const WideString & wide ) override;
 
     /**
-     * \brief   Writes size bytes from the buffer to the file and returns the number of bytes
-     *          written.
+     * \brief   Writes size bytes from the buffer to the file and returns the number of bytes written.
      *
      * \param   buffer      The byte buffer containing data to write.
      * \param   size        The number of bytes to write.
@@ -414,8 +404,7 @@ public:
     [[nodiscard]]
     static String temp_name(const String& prefix, bool unique, bool inTempFolder);
     /**
-     * \brief   Generates a unique temporary file name in the system temp folder with default
-     *          prefix.
+     * \brief   Generates a unique temporary file name in the system temp folder with default prefix.
      **/
     [[nodiscard]]
     static String temp_name();
@@ -471,8 +460,7 @@ public:
     static String normalize_path( const String& fileName );
 
     /**
-     * \brief   Creates nested directories as needed; returns true if successful or directories
-     *          already exist.
+     * \brief   Creates nested directories as needed; returns true if successful or directories already exist.
      *
      * \param   dirPath     Absolute or relative path of nested directories to create.
      **/
@@ -485,8 +473,7 @@ public:
     static const String & executable_dir() noexcept;
 
     /**
-     * \brief   Returns the path of a system special directory; returns empty string if not
-     *          available.
+     * \brief   Returns the path of a system special directory; returns empty string if not available.
      *
      * \param   specialFolder       Enumeration specifying the type of special folder to retrieve.
      **/
@@ -506,10 +493,8 @@ public:
      * \brief   Finds the parent directory name within the path; returns true if found.
      *
      * \param   filePath    Path to search for parent directory name.
-     * \param[out] nextPos     On return, if not nullptr, points to the end of the parent directory
-     *                         name in the string.
-     * \param   lastPos     If not nullptr, search begins at this position; if nullptr, searches
-     *                      from the end.
+     * \param[out] nextPos  On return, if not nullptr, points to the end of the parent  name in the string.
+     * \param   lastPos     If not nullptr, search begins at this position; if nullptr, searches from the end.
      **/
     static bool find_parent( const char * filePath, const char ** nextPos, const char * lastPos = nullptr ) noexcept;
 
@@ -517,9 +502,9 @@ public:
      * \brief   Splits the file path into components and appends them to the list; returns the
      *          number of components added.
      *
-     * \param   filePath        File path to split (full, relative, or with special names).
-     * \param[in,out] in_out_List     List to receive path components (without separators);
-     *                                components are appended, not replaced.
+     * \param   filePath            File path to split (full, relative, or with special names).
+     * \param[in,out] in_out_List   List to receive path components (without separators);
+     *                              components are appended, not replaced.
      **/
     static int32_t split_path(const String& filePath, StringList & in_out_List);
 
@@ -542,23 +527,20 @@ private:
     void _os_close_file() noexcept;
     
     /**
-     * \brief   OS-specific implementation to open the file for reading and/or writing; returns true
-     *          if successful.
+     * \brief   OS-specific implementation to open the file for reading and/or writing; returns true if successful.
      **/
     bool _os_open_file() noexcept;
 
     /**
-     * \brief   OS-specific implementation to read bytes from the file; returns the number of bytes
-     *          read.
+     * \brief   OS-specific implementation to read bytes from the file; returns the number of bytes read.
      *
-     * \param[out] buffer      Buffer to receive data.
+     * \param[out] buffer   Buffer to receive data.
      * \param   size        Capacity of the buffer in bytes.
      **/
     uint32_t _os_read_file(uint8_t* buffer, uint32_t size) const noexcept;
 
     /**
-     * \brief   OS-specific implementation to write bytes to the file; returns the number of bytes
-     *          written.
+     * \brief   OS-specific implementation to write bytes to the file; returns the number of bytes written.
      *
      * \param   buffer      Buffer containing data to write.
      * \param   size        Number of bytes to write.
@@ -613,8 +595,8 @@ private:
      * \brief   OS-specific implementation to generate a temporary file name; returns the length of
      *          the name written to buffer.
      *
-     * \param[out] buffer      Buffer to receive the generated temp file name (max
-     *                         File::MAXIMUM_PATH chars including null terminator).
+     * \param[out] buffer   Buffer to receive the generated temp file name (max
+     *                      File::MAXIMUM_PATH chars including null terminator).
      * \param   folder      Directory path where temp file should be located.
      * \param   prefix      Prefix string to prepend to the generated file name.
      * \param   unique      If non-zero, generates a system-guaranteed unique name.

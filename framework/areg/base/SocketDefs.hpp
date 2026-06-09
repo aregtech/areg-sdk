@@ -313,9 +313,7 @@ constexpr uint32_t      MIN_CONNECTIONS         { 32u };
 //!< Ceiling applied to any caller-supplied max, mtrouter is not a web server.
 constexpr uint32_t      MAX_CONNECTIONS         { 10000u };
 
-//!< Default socket capacity: initial mSockets.reserve() size and the stack-allocation
-//!< threshold for the WSAPOLLFD / pollfd array in SocketMultiplexer::wait().
-//!< Must be >= BATCH_SIZE.
+//!< Default socket capacity. Must be >= BATCH_SIZE.
 constexpr uint32_t      DEFAULT_CONNECTIONS     { 128u };
 
 //!< Number of socket events fetched from the OS in a single epoll_wait / kevent / syscall.
@@ -329,7 +327,7 @@ constexpr uint32_t      THREAD_DRAIN_LIMIT      { BATCH_SIZE };
 
 //!< Size of the IoBuffer / iovec stack array used for scatter-gather send (writev / WSASend).
 //!< Equals THREAD_DRAIN_LIMIT: slot 0 holds the triggering message.
-//!< Total batch is exactly THREAD_DRAIN_LIMIT entries.  128 × sizeof(iovec) = 2 KB -- L1-friendly.
+//!< Total batch is exactly THREAD_DRAIN_LIMIT entries.  128 × sizeof(iovec) = 2 KB -> L1-friendly.
 constexpr uint32_t      THREAD_BATCH_LIMIT      { THREAD_DRAIN_LIMIT };
 
 //!< Maximum number of events queued in any send thread (ServerSendThread, PoolSendThread, areg::ClientSendThread).
@@ -656,8 +654,7 @@ AREG_API int32_t send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, uint
  * \param   hSocket     Valid connected socket descriptor.
  * \param   buffers     Array of IoBuffer descriptors; must contain \a count entries.
  * \param   count       Number of buffers in the array.
- * \return  Total bytes sent on success; negative on error; 0 on invalid socket
- *          or empty list.
+ * \return  Total bytes sent on success; negative on error; 0 on invalid socket or empty list.
  **/
 AREG_API int32_t send_data_v(SOCKETHANDLE hSocket, const IoBuffer* buffers, uint32_t count, uint32_t totalSize = 0) noexcept;
 

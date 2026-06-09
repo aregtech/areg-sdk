@@ -316,7 +316,6 @@ uint32_t BufferBase::read(SharedBuffer& buf) const noexcept
         return 0u;
     }
 
-    // BufferBase has no view window, so copy the slice into the destination buffer.
     if (buf.reserve(length, false) < length)
     {
         mPosition -= sizeof(uint32_t);
@@ -343,7 +342,6 @@ uint32_t BufferBase::read(String& ascii) const
     if (mPosition >= limit)
         return 0u;
 
-    // Bounded scan: find NUL within the view/buffer window to prevent overrun.
     const char* const src   = reinterpret_cast<const char*>(areg::buffer_data_read(raw) + mPosition);
     const uint32_t    avail = limit - mPosition;
     const char* const nul   = static_cast<const char*>(::memchr(src, '\0', avail));
@@ -374,7 +372,6 @@ uint32_t BufferBase::read(WideString& wide) const
     if (max_chars == 0u)
         return 0u;
 
-    // Bounded scan: find NUL within the view/buffer window to prevent overrun.
     const wchar_t* const src = reinterpret_cast<const wchar_t*>(areg::buffer_data_read(raw) + mPosition);
     const wchar_t* const nul = static_cast<const wchar_t*>(std::wmemchr(src, L'\0', max_chars));
     const uint32_t       len = (nul != nullptr) ? static_cast<uint32_t>(nul - src) : max_chars;
@@ -474,6 +471,11 @@ uint32_t BufferBase::header_size() const noexcept
     return sizeof(areg::RawBuffer);
 }
 
+bool BufferBase::can_write() const noexcept
+{
+    return true;
+}
+
 uint32_t BufferBase::default_block_size() noexcept
 {
     static std::atomic_uint32_t cached{ 0u };
@@ -497,7 +499,7 @@ uint32_t BufferBase::write_data(const uint8_t* buf, uint32_t size) noexcept
     if ((size == 0u) || (buf == nullptr))
         return 0u;
 
-    if (!can_write())   // false only while a SharedBuffer is a read-only view
+    if (!can_write())
         return 0u;
 
     areg::RawBuffer* const raw  = mByteBuffer.get();
@@ -546,8 +548,6 @@ uint32_t BufferBase::read_data(uint8_t* buf, uint32_t size) const noexcept
     mPosition += result;
     return result;
 }
-
-// Rec 5: Binary string format reads — uint32_t(byte_count) + raw bytes, no NUL terminator on wire.
 
 uint32_t BufferBase::read_string_bin(String& str) const noexcept
 {

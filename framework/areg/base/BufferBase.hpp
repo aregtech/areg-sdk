@@ -14,20 +14,6 @@
  * \author      Artak Avetyan
  * \brief       Areg Platform, Shared Buffer with integrated streaming.
  *
- * \details     Flat, high-performance in-memory streaming buffer that shares its
- *              underlying heap allocation across copies via std::shared_ptr reference
- *              counting. The buffer is zero-virtual-dispatch on the hot path:
- *
- *              - A single unified cursor (mPosition) serves as BOTH the read and
- *                write position.  Writes land at mPosition and advance it by the
- *                number of bytes written.  When writing within already-written data
- *                (mPosition < biUsed) bytes are overwritten in-place.  When writing
- *                beyond the current end (mPosition >= biUsed) biUsed is extended.
- *                The Cursor interface (position / set_position) moves mPosition for
- *                both reads and writes.
- *              - write_data() and read_data() access buffer fields directly; no
- *                virtual calls occur inside either function.
- *
  * \note        BufferBase is NOT thread-safe. Use external synchronization when
  *              a single buffer is accessed concurrently.
  *
@@ -38,7 +24,7 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/base/Cursor.hpp"
-#include "areg/base/IOStream.hpp"       // InStream, OutStream, IOStream
+#include "areg/base/IOStream.hpp"
 
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/String.hpp"
@@ -48,27 +34,20 @@
 
 namespace areg {
 
-class SharedBuffer;   // read(SharedBuffer&)/write(const SharedBuffer&) are the InStream/OutStream interface
+class SharedBuffer;
 
 //////////////////////////////////////////////////////////////////////////
 // BufferBase class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Reference-counted, streaming, in-memory byte buffer.
- *
- *          Copying a BufferBase shares the underlying heap block (no data
- *          copy); the block is freed when the last owner is destroyed.
+ *          Copying a BufferBase shares the underlying heap block (no data copy);
+ *          the block is freed when the last owner is destroyed.
  *          Any write operation enlarges the block with an amortised doubling strategy.
- *
  *          A single cursor (mPosition) is shared by both reads and writes.
- *          Writes land at the current cursor position: data inside biUsed is
- *          overwritten in-place; data beyond biUsed extends the buffer.
- *          To append after existing content call move_to_end() first; to
- *          rewind for reading call move_to_begin() / reset().
  *
- * \note    Writing to a buffer that is shared (use_count > 1) is silently
- *          rejected when it would require reallocation, matching the semantics
- *          of reserve(). Callers should clone() before writing to a shared buffer.
+ * \note    BufferBase is NOT thread-safe. Use external synchronization when
+ *          a single buffer is accessed concurrently.
  **/
 class AREG_API BufferBase   : public  IOStream
                             , public  Cursor
@@ -174,18 +153,6 @@ public:
     BufferBase& operator = (const BufferBase& src) noexcept;
     BufferBase& operator = (BufferBase&& src) noexcept;
 
-/************************************************************************/
-// Friend global streaming operators
-/************************************************************************/
-
-    /**
-     * \brief   Deserialises data from stream into this buffer and rewinds read cursor.
-     **/
-
-    /**
-     * \brief   Serialises this buffer's data into stream and rewinds the output read cursor.
-     **/
-
 //////////////////////////////////////////////////////////////////////////
 // Cursor interface overrides
 //////////////////////////////////////////////////////////////////////////
@@ -213,16 +180,24 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    /** Serialises a BufferBase (length prefix + data) into this buffer. **/
+    /**
+     * \brief   Serialises a BufferBase (length prefix + data) into this buffer.
+     **/
     uint32_t write(const SharedBuffer& buf) override;
 
-    /** Appends raw bytes at the end of written data. **/
+    /**
+     * \brief   Appends raw bytes at the end of written data.
+     **/
     inline uint32_t write(const uint8_t* buf, uint32_t size) override;
 
-    /** Appends a null-terminated ASCII string (includes NUL terminator). **/
+    /**
+     * \brief   Appends a null-terminated ASCII string (includes NUL terminator).
+     **/
     inline uint32_t write(const String& ascii) override;
 
-    /** Appends a null-terminated wide string (includes NUL terminator). **/
+    /**
+     * \brief   Appends a null-terminated wide string (includes NUL terminator).
+     **/
     inline uint32_t write(const WideString& wide) override;
 
     /** No-op for in-memory buffers. **/
@@ -242,19 +217,29 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    /** Deserialises a length-prefixed byte sequence into a BufferBase. **/
+    /**
+     * \brief   Deserialises a length-prefixed byte sequence into a BufferBase.
+     **/
     uint32_t read(SharedBuffer& buf) const noexcept override;
 
-    /** Reads a null-terminated ASCII string from the current read position. **/
+    /**
+     * \brief   Reads a null-terminated ASCII string from the current read position.
+     **/
     uint32_t read(String& ascii) const override;
 
-    /** Reads a null-terminated wide string from the current read position. **/
+    /**
+     * \brief   Reads a null-terminated wide string from the current read position.
+     **/
     uint32_t read(WideString& wide) const override;
 
-    /** Copies bytes from the current read position into buf. **/
+    /**
+     * \brief   Copies bytes from the current read position into buf.
+     **/
     inline uint32_t read(uint8_t* buf, uint32_t size) const noexcept override;
 
-    /** Resets the read cursor to the beginning of the buffer. **/
+    /**
+     * \brief   Resets the read cursor to the beginning of the buffer.
+     **/
     inline void reset() const noexcept override;
 
 //////////////////////////////////////////////////////////////////////////
@@ -263,14 +248,12 @@ public:
 public:
 
     /**
-     * \brief   Ensures capacity for at least \a size bytes, optionally preserving
-     *          existing content.
+     * \brief   Ensures capacity for at least \a size bytes, optionally preserving existing content.
      *
      * \param   size    Total bytes required (not an increment).
      * \param   copy    If true, existing written bytes are copied into the new block
      *                  and mPosition is left after them (at biUsed).
-     *                  If false, mPosition and biUsed are both reset to 0 -- any
-     *                  in-progress write position is silently discarded.
+     *                  If false, size and position are reset to 0
      * \return  Available writable bytes after the operation; 0 on failure.
      **/
     uint32_t reserve(uint32_t size, bool copy);
@@ -303,13 +286,13 @@ public:
      * \brief   Returns a read-only pointer to the data buffer.
      **/
     [[nodiscard]]
-    inline const uint8_t* buffer() const;
+    inline const uint8_t* buffer() const noexcept;
 
     /**
      * \brief   Returns a pointer to the data buffer.
      **/
     [[nodiscard]]
-    inline uint8_t* buffer();
+    inline uint8_t* buffer() noexcept;
 
     /**
      * \brief   Returns a read-only pointer to the underlying raw buffer.
@@ -358,7 +341,7 @@ public:
 
     /**
      * \brief   Returns true when this instance is the sole owner of the underlying block
-     *          (use_count == 1). Use to guard placement-new'd payload destructors.
+     *          Use to guard placement-new'd payload destructors.
      **/
     [[nodiscard]]
     inline bool is_unique() const noexcept;
@@ -405,8 +388,8 @@ public:
 //  BufferBase (or a subclass) and maximum throughput is required.
 //
 //  read_ptr<T>  / read_array<T> : return a typed pointer DIRECTLY INTO
-//  the buffer memory -- no copy, O(1) regardless of sizeof(T).  The caller
-//  must not use the pointer after any write that causes buffer reallocation.
+//  the buffer memory -- no copy.  The caller must not use the pointer 
+//  after any write that causes buffer reallocation.
 //
 //  write_pod<T> / write_array<T>: append bytes without going through the
 //  virtual write(uint8_t*,uint32_t) dispatch.
@@ -440,7 +423,7 @@ public:
 
     /**
      * \brief   Direct write of a trivially-copyable value, bypassing virtual IOStream dispatch.
-     *          Equivalent to write(reinterpret_cast<const uint8_t*>(&value), sizeof(T)) but
+     *          Equivalent to write(reinterpret_cast<const uint8_t *>(&value), sizeof(T)) but
      *          avoids the virtual call.
      *
      * \tparam  T       Trivially-copyable type.
@@ -464,22 +447,34 @@ public:
 
 public:
 
-    /** Write char string: uint32_t(byte_count) + raw bytes (no NUL on wire). **/
+    /**
+     * \brief   Write char string: uint32_t(byte_count) + raw bytes (no NUL on wire).
+     **/
     inline uint32_t write_string_bin(const char* data, uint32_t len) noexcept;
 
-    /** Write wide-char string: uint32_t(byte_count) + raw bytes (no NUL on wire). **/
+    /**
+     * \brief   Write wide-char string: uint32_t(byte_count) + raw bytes (no NUL on wire).
+     **/
     inline uint32_t write_string_bin(const wchar_t* data, uint32_t len) noexcept;
 
-    /** Write areg::String in binary format: uint32_t(byte_count) + raw bytes (no NUL). **/
+    /**
+     * \brief   Write areg::String in binary format: uint32_t(byte_count) + raw bytes (no NUL).
+     **/
     inline uint32_t write_string_bin(const String& str) noexcept;
 
-    /** Write areg::WideString in binary format: uint32_t(byte_count) + raw bytes (no NUL). **/
+    /**
+     * \brief   Write areg::WideString in binary format: uint32_t(byte_count) + raw bytes (no NUL).
+     **/
     inline uint32_t write_string_bin(const WideString& str) noexcept;
 
-    /** Read binary-format char string. Returns total bytes consumed (header + payload), 0 on failure. **/
+    /**
+     * \brief   Read binary-format char string. Returns total bytes consumed (header + payload), 0 on failure.
+     **/
     uint32_t read_string_bin(String& str) const noexcept;
 
-    /** Read binary-format wide-char string. Returns total bytes consumed (header + payload), 0 on failure. **/
+    /**
+     * \brief   Read binary-format wide-char string. Returns total bytes consumed (header + payload), 0 on failure.
+     **/
     uint32_t read_string_bin(WideString& str) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
@@ -487,11 +482,15 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
 
-    /** Returns bytes available to read from the current read position. **/
+    /**
+     * \brief   Returns bytes available to read from the current read position.
+     **/
     [[nodiscard]]
     inline uint32_t size_readable() const noexcept override;
 
-    /** Returns bytes available to write (capacity minus written data). **/
+    /**
+     * \brief   Returns bytes available to write (capacity minus written data).
+     **/
     [[nodiscard]]
     inline uint32_t size_writable() const noexcept override;
 
@@ -503,11 +502,11 @@ protected:
     /**
      * \brief   Initializes a buffer and optionally copies existing data.
      *
-     * \param[out]  newBuffer   The buffer to initialize; if nullptr, the internal buffer is used.
+     * \param[out]  newBuffer   The buffer to initialize
      * \param       bufLength   The total length of the buffer.
      * \param       makeCopy    If true, copies existing data to the new buffer.
-     * \return  Returns the current writing position in the initialized buffer; returns
-     *          INVALID_CURSOR_POSITION if the buffer is invalid.
+     * \return  Returns the current writing position in the initialized buffer;
+     *          returns INVALID_CURSOR_POSITION if the buffer is invalid.
      **/
     virtual uint32_t init_buffer(uint8_t* newBuffer, uint32_t bufLength, bool makeCopy) const noexcept;
 
@@ -518,12 +517,19 @@ protected:
     virtual uint32_t header_size() const noexcept;
 
     /**
-     * \brief   Returns sizeof(areg::BufferHeader): the data payload begins at this offset.
+     * \brief   Returned value is the data payload begins at this offset.
      **/
     [[nodiscard]]
     virtual uint32_t data_offset() const noexcept;
 
 protected:
+
+    /**
+     * \brief   Returns true if the buffer accepts writes. BufferBase is always writable;
+     *          SharedBuffer overrides this to return false while it is a read-only view.
+     **/
+    [[nodiscard]]
+    virtual bool can_write() const noexcept;
 
     /**
      * \brief   Returns the default block size from application configuration,
@@ -533,15 +539,7 @@ protected:
     static uint32_t default_block_size() noexcept;
 
     /**
-     * \brief   Returns true if the buffer accepts writes. BufferBase is always writable;
-     *          SharedBuffer overrides this to return false while it is a read-only view.
-     **/
-    [[nodiscard]]
-    virtual bool can_write() const noexcept { return true; }
-
-    /**
-     * \brief   Core write: writes exactly \a size bytes at the current cursor
-     *          position (mPosition), then advances mPosition by \a size
+     * \brief   Core write: writes exactly \a size bytes at the current cursor position.
      *
      * \return  Bytes actually written.
      **/
@@ -625,10 +623,7 @@ protected:
 #endif  // _MSC_VER
 
     /**
-     * \brief   Unified read/write cursor: absolute byte offset from the start of
-     *          the data area (buffer_data_read base).  Both read_data() and
-     *          write_data() operate at this position and advance it.
-     *          Writing within biUsed overwrites in-place; beyond biUsed extends it.
+     * \brief   Unified read/write cursor, absolute byte offset from the start of the data.
      **/
     mutable uint32_t    mPosition;
 };
@@ -727,13 +722,13 @@ inline uint32_t BufferBase::size_used() const noexcept
     return mByteBuffer->bufHeader.biUsed;
 }
 
-inline const uint8_t* BufferBase::buffer() const
+inline const uint8_t* BufferBase::buffer() const noexcept
 {
     const areg::RawBuffer* const raw = mByteBuffer.get();
     return (raw != nullptr ? areg::buffer_data_read(raw) : nullptr);
 }
 
-inline uint8_t* BufferBase::buffer()
+inline uint8_t* BufferBase::buffer() noexcept
 {
     areg::RawBuffer* const raw = mByteBuffer.get();
     return (raw != nullptr ? areg::buffer_data_write(raw) : nullptr);
@@ -839,7 +834,8 @@ inline uint8_t* BufferBase::buffer_to_write() noexcept
 
 inline uint32_t BufferBase::size_readable() const noexcept
 {
-    if (!is_valid()) return 0u;
+    if (!is_valid())
+        return 0u;
     const uint32_t limit = mByteBuffer->bufHeader.biUsed;
     return (mPosition < limit ? limit - mPosition : 0u);
 }
@@ -937,4 +933,5 @@ inline uint32_t BufferBase::write_string_bin(const WideString& str) noexcept
 }
 
 } // namespace areg
+
 #endif  // AREG_BASE_BUFFERBASE_HPP

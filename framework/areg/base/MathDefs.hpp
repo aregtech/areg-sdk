@@ -724,7 +724,7 @@ inline constexpr uint32_t crc32_calculate( std::string_view str ) noexcept
 #if defined(__SSE4_2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_IX86)))
     #include <nmmintrin.h>
     // HW intrinsics cannot be evaluated at compile time, not `constexpr` method.
-    // Computes CRC32C (Castagnoli) — same polynomial as CRC32_TABLE, so SW and HW results are identical.
+    // Computes CRC32C (Castagnoli) - same polynomial as CRC32_TABLE, so SW and HW results are identical.
     inline uint32_t _crc32_hardware(const uint8_t* data, int32_t size) noexcept
     {
         uint32_t crc = crc32_init();

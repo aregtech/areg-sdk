@@ -64,8 +64,6 @@ namespace areg {
 
 #if defined(_MSC_VER)
     #pragma warning(push)
-    // C4324: structure padded due to alignas - intentional for cache-line separation.
-    // C4251: STL/atomic private members need dll-interface - safe to suppress for private members.
     #pragma warning(disable: 4324 4251)
 #endif  // _MSC_VER
 
@@ -120,7 +118,6 @@ private:
      *          Requires 16-byte native CAS (x86-64 cmpxchg16b / ARM64 CASP).
      **/
 #if defined(_WIN64) || defined(__LP64__) || defined(__aarch64__)
-     // 64-bit: 128-bit DCAS (cmpxchg16b / CASP)
     struct alignas(16) PoolTop
     {
         Node* head{ nullptr };

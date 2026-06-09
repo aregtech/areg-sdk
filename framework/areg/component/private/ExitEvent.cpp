@@ -35,8 +35,4 @@ const ExitEvent & ExitEvent::exit_event() noexcept
     return _exitEvent;
 }
 
-void ExitEvent::destroy_event() noexcept
-{
-}
-
 } // namespace areg

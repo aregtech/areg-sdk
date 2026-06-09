@@ -81,7 +81,7 @@ private:
      *
      * \param   eventElem       The timer event being processed. Ignored if not a TimerEvent.
      **/
-    void start_event_processing( Event & eventElem) final;
+    inline void start_event_processing( Event & eventElem) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -89,6 +89,19 @@ private:
 private:
     AREG_NOCOPY_NOMOVE( TimerConsumer );
 };
+
+//////////////////////////////////////////////////////////////////////////
+// TimerConsumer inline methods
+//////////////////////////////////////////////////////////////////////////
+inline void TimerConsumer::start_event_processing(Event& eventElem)
+{
+    Timer* timer{ TimerEvent::timer_from_event(eventElem) };
+    if (timer != nullptr)
+    {
+        process_timer(*timer);
+        TimerEvent::unqueue_timer(*timer);
+    }
+}
 
 } // namespace areg
 #endif  // AREG_COMPONENT_TIMERCONSUMER_HPP

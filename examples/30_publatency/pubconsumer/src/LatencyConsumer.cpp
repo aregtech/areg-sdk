@@ -51,6 +51,7 @@ LatencyConsumer::LatencyConsumer(const areg::ComponentEntry & entry, areg::Compo
     , mCount        ( DEFAULT_COUNT )
     , mWarmup       ( DEFAULT_WARMUP )
     , mDurationSec  ( DEFAULT_DURATION )
+    , mCsvEnabled   ( false )
     , mCsvPath      ( )
 
     , mCurrentSeq   ( 0u )
@@ -72,6 +73,7 @@ void LatencyConsumer::startup_component(areg::ComponentThread & /* comThread */)
 {
     mQuit.store(false, std::memory_order_relaxed);
     mTestRunning    = false;
+    mCsvEnabled     = false;
     mCurrentSeq     = 0u;
     mTotalRuns      = 0u;
     mSamples.clear();
@@ -352,7 +354,9 @@ void LatencyConsumer::_update_live()
 void LatencyConsumer::_update_settings() const
 {
     areg::ext::Console & console = areg::ext::Console::instance();
-    const areg::String path = mCsvPath.is_empty() ? areg::String("auto") : mCsvPath;
+    const areg::String path = !mCsvEnabled ? areg::String("off")
+                            : mCsvPath.is_empty() ? areg::String("auto")
+                            : mCsvPath;
     console.save_cursor_position();
     console.output_msg(COORD_SETTINGS, MSG_SETTINGS.data()
                      , Latency::mode_as_str(mMode)
@@ -380,6 +384,7 @@ void LatencyConsumer::_run_input_thread()
         , { "-w", "warmup", static_cast<int32_t>(ConsumerCmd::Warmup),   areg::ext::OptionParser::INTEGER_NO_RANGE, {}, {}, {} }
         , { "-d", "dur",    static_cast<int32_t>(ConsumerCmd::Duration), areg::ext::OptionParser::INTEGER_NO_RANGE, {}, {}, {} }
         , { "-o", "out",    static_cast<int32_t>(ConsumerCmd::Output),   areg::ext::OptionParser::FREESTYLE_DATA,   {}, {}, {} }
+        , { "-f", "file",   static_cast<int32_t>(ConsumerCmd::File),     areg::ext::OptionParser::FREESTYLE_DATA,   {}, {}, {} }
     };
 
     areg::ext::OptionParser parser(opts, static_cast<uint32_t>(sizeof(opts) / sizeof(opts[0])));
@@ -501,6 +506,12 @@ void LatencyConsumer::_run_input_thread()
                 else { data.error = true; }
                 break;
 
+            case ConsumerCmd::File:
+                data.enable_file = true;
+                if (!opt.inString.empty())
+                    data.csv_file = opt.inString[0];
+                break;
+
             default:
                 data.error = true;
                 break;
@@ -512,7 +523,8 @@ void LatencyConsumer::_run_input_thread()
 
         const bool has_any = data.quit || data.quit_local || data.help || data.info
                            || data.start || data.stop || data.set_mode || data.set_count
-                           || data.set_warmup || data.set_duration || data.set_output || data.error;
+                           || data.set_warmup || data.set_duration || data.set_output
+                           || data.enable_file || data.error;
 
         if (has_any)
         {
@@ -538,6 +550,12 @@ void LatencyConsumer::_on_cmd_event(const CmdData & data)
     if (data.set_warmup)   mWarmup      = data.warmup;
     if (data.set_duration) mDurationSec = data.duration_sec;
     if (data.set_output)   mCsvPath     = data.csv_path;
+    if (data.enable_file)
+    {
+        mCsvEnabled = true;
+        if (!data.csv_file.is_empty())
+            mCsvPath = data.csv_file;
+    }
 
     if (data.quit)
     {
@@ -821,7 +839,8 @@ void LatencyConsumer::_finish_test()
     r.valid   = true;
 
     _draw_result_row(slot);
-    _save_csv(r);
+    if (mCsvEnabled)
+        _save_csv(r);
 }
 
 void LatencyConsumer::_draw_result_row(uint32_t slot) const

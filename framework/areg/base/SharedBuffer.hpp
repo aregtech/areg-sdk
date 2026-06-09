@@ -15,8 +15,8 @@
  * \brief       Areg Platform, Shared Buffer with integrated streaming.
  *
  * \details     Flat, high-performance in-memory streaming buffer that shares its
- *              underlying heap allocation across copies via std::shared_ptr reference
- *              counting. The buffer is zero-virtual-dispatch on the hot path:
+ *              underlying heap allocation across copies via reference counting.
+ *              The buffer is zero-virtual-dispatch on the hot path:
  *
  *              - A single unified cursor (mPosition) serves as BOTH the read and
  *                write position.  Writes land at mPosition and advance it by the
@@ -37,9 +37,9 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
-#include "areg/base/BufferBase.hpp"     // common buffer/stream core (view-free)
+#include "areg/base/BufferBase.hpp"
 #include "areg/base/Cursor.hpp"
-#include "areg/base/IOStream.hpp"       // InStream, OutStream, IOStream
+#include "areg/base/IOStream.hpp"
 
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/String.hpp"
@@ -55,8 +55,8 @@ namespace areg {
 /**
  * \brief   Reference-counted, streaming, in-memory byte buffer.
  *
- *          Copying a SharedBuffer shares the underlying heap block (no data
- *          copy); the block is freed when the last owner is destroyed.
+ *          Copying a SharedBuffer shares the underlying heap block (no data copy);
+ *          the block is freed when the last owner is destroyed.
  *          Any write operation enlarges the block with an amortised doubling strategy.
  *
  *          A single cursor (mPosition) is shared by both reads and writes.
@@ -72,7 +72,7 @@ namespace areg {
 class AREG_API SharedBuffer : public  BufferBase
 {
     friend class FileBuffer;
-    friend class BufferBase;    // BufferBase::read(SharedBuffer&) copies into a SharedBuffer dst
+    friend class BufferBase;
 
 //////////////////////////////////////////////////////////////////////////
 // Defined static constants and types

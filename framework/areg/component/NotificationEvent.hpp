@@ -210,19 +210,18 @@ public:
      *
      * \param   data    The notification event data to set.
      **/
-    explicit inline NotificationEvent(const NotificationEventData& data);
+    explicit NotificationEvent(const NotificationEventData& data);
 
     NotificationEvent(const NotificationEvent& /*src*/) = default;
     NotificationEvent(NotificationEvent&& /*src*/) noexcept = default;
     ~NotificationEvent() override = default;
 
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, static methods
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Creates and sends a notification event to the specified consumer with the given
-     *          notification data.
+     * \brief   Creates and sends a notification event to the specified consumer with the given notification data.
      *
      * \param   data        The notification data to forward.
      * \param   caller      The notification consumer to notify, or null to broadcast.
@@ -264,8 +263,7 @@ private:
 // NotificationConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Base class for all client objects that consume and process notification events from
- *          proxies.
+ * \brief   Base class for all client objects that consume and process notification events from proxies.
  **/
 class AREG_API NotificationConsumer  : public EventConsumer
 {

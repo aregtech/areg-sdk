@@ -55,8 +55,8 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Triggered by the dispatcher when starting to process an event. Overwrite to handle
-     *          event processing.
+     * \brief   Triggered by the dispatcher when starting to process an event.
+     *          Overwrite to handle event processing.
      *
      * \param   eventElem       The event object being processed by the dispatcher.
      **/
@@ -70,8 +70,8 @@ public:
     virtual void consumer_registered( bool isRegistered );
 
     /**
-     * \brief   Called before the event is processed. Return true to proceed with processing; false
-     *          to drop the event.
+     * \brief   Called before the event is processed. Return true to proceed with processing;
+     *          false to drop the event.
      *
      * \param   eventElem       The event object about to be processed.
      * \return  Return true to allow event processing; false to drop the event.

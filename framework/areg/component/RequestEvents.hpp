@@ -195,8 +195,8 @@ class AREG_API RemoteRequestEvent : public    RequestEvent
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Creates event with no data. Initializes event source, target address, and message
-     *          ID. Use if request has no parameters.
+     * \brief   Creates event with no data. Initializes event source, target address, and message ID.
+     *          Use if request has no parameters.
      *
      * \param   fromSource      The address of source Proxy.
      * \param   toTarget        The address of Stub target
@@ -206,8 +206,8 @@ public:
     inline RemoteRequestEvent(const ProxyAddress & fromSource, const StubAddress & toTarget, uint32_t reqId, uint32_t initSize = 0u);
 
     /**
-     * \brief   Creates event with data. Initializes event source, target information, and message
-     *          ID. Use if request with parameters should be sent.
+     * \brief   Creates event with data. Initializes event source, target information, and message ID.
+     *          Use if request with parameters should be sent.
      *
      * \param   args            Serialized request parameters (SharedBuffer payload, copied in).
      * \param   fromSource      The address of Proxy source.
@@ -269,8 +269,7 @@ private:
 // NotifyRequestEvent class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Event for sending notification subscription/unsubscription requests from a proxy to a
- *          stub.
+ * \brief   Event for sending notification subscription/unsubscription requests from a proxy to a stub.
  **/
 class AREG_API NotifyRequestEvent : public ServiceRequestEvent
 {
@@ -281,13 +280,11 @@ public:
     /**
      * \brief   Initializes a notification request event for starting or stopping notifications.
      *
-     * \param   fromProxy       The address of the source proxy requesting notifications.
-     * \param   toStub          The address of the target stub to start or stop sending
-     *                          notifications.
-     * \param   msgId           The ID of the message (attribute, broadcast, or response). Request
-     *                          IDs cannot be notified.
-     * \param   reqType         The request type (subscribe or unsubscribe).
-     * \param   eventType       The type of event (local or remote request).
+     * \param   fromProxy   The address of the source proxy requesting notifications.
+     * \param   toStub      The address of the target stub to start or stop sending notifications.
+     * \param   msgId       The ID of the message (attribute, broadcast, or response). Request IDs cannot be notified.
+     * \param   reqType     The request type (subscribe or unsubscribe).
+     * \param   eventType   The type of event (local or remote request).
      **/
     inline NotifyRequestEvent( const ProxyAddress & fromProxy
                              , const StubAddress & toStub
@@ -330,12 +327,10 @@ public:
      * \brief   Initializes a notification request event for starting or stopping notifications
      *          within the same process.
      *
-     * \param   fromProxy       The address of the source proxy requesting notifications.
-     * \param   toStub          The address of the target stub to start or stop sending
-     *                          notifications.
-     * \param   msgId           The ID of the message (attribute, broadcast, or response). Request
-     *                          IDs cannot be notified.
-     * \param   reqType         The request type (subscribe or unsubscribe).
+     * \param   fromProxy   The address of the source proxy requesting notifications.
+     * \param   toStub      The address of the target stub to start or stop sending notifications.
+     * \param   msgId       The ID of the message (attribute, broadcast, or response). Request IDs cannot be notified.
+     * \param   reqType     The request type (subscribe or unsubscribe).
      **/
     inline LocalNotifyRequestEvent( const ProxyAddress & fromProxy
                                   , const StubAddress & toStub
@@ -381,10 +376,8 @@ public:
      *          between the specified proxy and stub (cross-process).
      *
      * \param   fromProxy       The address of the source proxy requesting notifications.
-     * \param   toStub          The address of the target stub to start or stop sending
-     *                          notifications.
-     * \param   msgId           The ID of the message (attribute, broadcast, or response). Request
-     *                          IDs cannot be notified.
+     * \param   toStub          The address of the target stub to start or stop sending notifications.
+     * \param   msgId           The ID of the message (attribute, broadcast, or response). Request IDs cannot be notified.
      * \param   reqType         The request type (subscribe or unsubscribe).
      **/
     inline RemoteNotifyRequestEvent( const ProxyAddress & fromProxy

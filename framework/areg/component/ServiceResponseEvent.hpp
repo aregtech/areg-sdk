@@ -65,12 +65,12 @@ public:
     /**
      * \brief   Creates service response event and sets parameters.
      *
-     * \param   target          The event target proxy address
-     * \param   result          The response result
+     * \param   target      The event target proxy address
+     * \param   result      The response result
      * \param   respId      The response message ID
-     * \param   eventType       The type of event.
-     * \param   seqNr           The sequence number of call.
-     * \param   initSize        Payload bytes to reserve after the header for serialized parameters.
+     * \param   eventType   The type of event.
+     * \param   seqNr       The sequence number of call.
+     * \param   initSize    Payload bytes to reserve after the header for serialized parameters.
      **/
     inline ServiceResponseEvent( const ProxyAddress & target
                                , areg::ResultType result

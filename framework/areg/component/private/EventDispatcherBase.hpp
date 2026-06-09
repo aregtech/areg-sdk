@@ -227,14 +227,6 @@ public:
      **/
     inline void remove_event_type(const uint32_t eventClassId) noexcept;
 
-    /**
-     * \brief   Returns true if the specified event object is a special reserved exit event.
-     *
-     * \param   anEvent     A pointer to the event object to check.
-     **/
-    [[nodiscard]]
-    bool is_exit_event( const Event * anEvent ) const;
-
 //////////////////////////////////////////////////////////////////////////
 // Protected overrides
 //////////////////////////////////////////////////////////////////////////
@@ -250,6 +242,14 @@ protected:
      * \param   eventCount      The number of event elements currently in the queue.
      **/
     inline void signal_event(uint32_t eventCount) final;
+
+    /**
+     * \brief   Requests dispatcher shutdown without blocking. Sets the exit flag and signals BOTH
+     *          sync events: mEventQueue wakes the base single-object run_dispatcher() wait, and
+     *          mEventExit wakes subclass loops (receive/timer threads) that still wait on it.
+     *          Replaces bare mEventExit.set_signaled() at every shutdown site.
+     **/
+    inline void signal_exit_event() noexcept;
 
 /************************************************************************/
 // EventDispatcherBase overrides
@@ -319,6 +319,11 @@ protected:
     std::atomic<bool>   mHasStarted;
 
     /**
+     * \brief   Exit requested flag.
+     **/
+    std::atomic<bool>   mExitRequested;
+
+    /**
      * \brief   Map of registered consumers.
      **/
     EventConsumerMap    mConsumerMap;
@@ -328,14 +333,12 @@ protected:
 #endif  // _MSC_VER
 
     /**
-     * \brief   Exit Synchronization Event.
-     *          Signaled when dispatcher should be stopped.
+     * \brief   Exit Synchronization Event. Signaled when dispatcher should be stopped.
      **/
     SyncEvent           mEventExit;
 
     /**
-     * \brief   Queue Synchronization Event.
-     *          Signaled when new event is pushed; reset when queue is empty.
+     * \brief   Queue Synchronization Event. Signaled when new event is pushed; reset when queue is empty.
      **/
     SyncEvent           mEventQueue;
 
@@ -374,6 +377,13 @@ inline void EventDispatcherBase::signal_event(uint32_t eventCount)
         mEventQueue.set_signaled();
     else if (eventCount == 0)
         mEventQueue.reset();
+}
+
+inline void EventDispatcherBase::signal_exit_event() noexcept
+{
+    mExitRequested.store(true, std::memory_order_release);
+    mEventExit.set_signaled();
+    mEventQueue.set_signaled();
 }
 
 inline bool EventDispatcherBase::is_ready() const noexcept

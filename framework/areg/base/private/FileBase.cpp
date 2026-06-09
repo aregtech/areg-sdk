@@ -199,7 +199,7 @@ uint32_t _searchText( const FileBase&   file
         return areg::compare_strings<CharType, CharType>(candidate, text, static_cast<areg::CharCount>(length), sensitive) == areg::Ordering::Equal;
     };
 
-    uint32_t inBuf = 0u;  // valid chars currently in buffer
+    uint32_t inBuf = 0u;
     while (true)
     {
         // Slide window: keep the back half for overlap between chunks

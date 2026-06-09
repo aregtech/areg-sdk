@@ -177,8 +177,7 @@ public:
      * \brief   Acquires the mutex. Returns immediately if successful, or after the timeout expires.
      *
      * \param   msTimeout       Timeout in milliseconds. WAIT_INFINITE waits indefinitely.
-     * \return  Returns true if mutex ownership was acquired; false if timeout expired or error
-     *          occurred.
+     * \return  Returns true if mutex ownership was acquired; false if timeout expired or error occurred.
      **/
     inline bool lock( uint32_t msTimeout = areg::WAIT_INFINITE ) const;
 

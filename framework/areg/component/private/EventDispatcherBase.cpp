@@ -37,6 +37,7 @@ EventDispatcherBase::EventDispatcherBase(const String & name, uint32_t maxQeueue
     , mExternalEvents( static_cast<QueueListener &>(self()), maxQeueue)
     , mInternalEvents( )
     , mHasStarted    ( false )
+    , mExitRequested ( false )
     , mConsumerMap   ( )
     , mEventExit     ( false, false )
     , mEventQueue    ( true, false )
@@ -52,13 +53,9 @@ EventDispatcherBase::~EventDispatcherBase()
 // EventDispatcherBase class, methods
 //////////////////////////////////////////////////////////////////////////
 
-bool EventDispatcherBase::is_exit_event( const Event * anEvent ) const
-{
-    return (anEvent != nullptr) && anEvent->is_exit_prio();
-}
-
 bool EventDispatcherBase::start_dispatcher()
 {
+    mExitRequested.store(false, std::memory_order_relaxed);
     mEventExit.reset( );
     return run_dispatcher( );
 }
@@ -72,7 +69,7 @@ void EventDispatcherBase::stop_dispatcher() noexcept
         mExternalEvents.push_event(exit);
     }
 
-    mEventExit.set_signaled();
+    signal_exit_event();
     mExternalEvents.unlock_queue( );
 }
 
@@ -81,7 +78,7 @@ void EventDispatcherBase::exit_dispatcher() noexcept
     mInternalEvents.remove_all_events();
     mExternalEvents.remove_all_events();
 
-    mEventExit.set_signaled();
+    signal_exit_event();
 }
 
 void EventDispatcherBase::shutdown_dispatcher() noexcept
@@ -170,18 +167,14 @@ bool EventDispatcherBase::run_dispatcher()
 {
     ready_for_events( true );
 
-    SyncEvent* events[2] { &mEventExit, &mEventQueue };
     int32_t whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
 
     do
     {
-        whichEvent = SyncEvent::wait_any(events, 2, areg::WAIT_INFINITE);
-
-        if (    whichEvent != static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit)
-             && whichEvent != static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) )
-        {
-            continue;
-        }
+        const bool signaled = mEventQueue.lock(areg::WAIT_INFINITE);
+        whichEvent = (signaled && !mExitRequested.load(std::memory_order_acquire))
+                   ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue)
+                   : static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
 
         // Tight drain loop: process all available events before returning to wait.
         for (;;)
@@ -218,9 +211,11 @@ bool EventDispatcherBase::run_dispatcher()
                 Event intEvent{ mInternalEvents.pop_event() };
                 if (prepare_dispatch_event(intEvent))
                     dispatch_event(intEvent);
-                // destructor releases intEvent at end of loop body
             }
         }
+
+        if (mExitRequested.load(std::memory_order_acquire))
+            whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
 
     } while (whichEvent != static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
 
@@ -250,8 +245,6 @@ bool EventDispatcherBase::prepare_dispatch_event( Event& eventElem ) noexcept
 
 void EventDispatcherBase::post_dispatch_event( Event& eventElem )
 {
-    // Event is now a value type — just release its buffer.
-    // ExitEvent copies are also released (their destroy_event() is a no-op in the base).
     eventElem.destroy_event();
 }
 
@@ -301,7 +294,8 @@ inline void EventDispatcherBase::_clean() noexcept
 
 bool EventDispatcherBase::pulse_exit()
 {
-    return mEventExit.set_signaled();
+    signal_exit_event();
+    return true;
 }
 
 } // namespace areg

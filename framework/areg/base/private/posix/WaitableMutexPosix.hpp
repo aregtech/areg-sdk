@@ -69,8 +69,7 @@ public:
     bool release_mutex() noexcept;
 
     /**
-     * \brief   Returns the POSIX thread ID that currently owns the mutex, or null if no thread owns
-     *          it.
+     * \brief   Returns the POSIX thread ID that currently owns the mutex, or null if no thread owns it.
      **/
     [[nodiscard]]
     inline pthread_t owning_thread_id() const noexcept;
@@ -103,8 +102,7 @@ public:
     bool can_signal_threads() const noexcept final;
 
     /**
-     * \brief   Notifies the mutex that one or zero threads were released when it was in signaled
-     *          state.
+     * \brief   Notifies the mutex that one or zero threads were released when it was in signaled state.
      *
      * \param   numThreads      The number of threads released. Always 0 or 1 for mutex.
      **/
@@ -120,17 +118,13 @@ public:
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
 private:
-    //! Internal mutex protecting mOwnerThread and mLockCount.
+    //!< Internal mutex protecting mOwnerThread and mLockCount.
     MutexPosix  mObjectLock;
 
-    /**
-     * \brief   The owner thread. The waitable Mutex is released thread ID is invalid.
-     **/
+    //!< The owner thread. The waitable Mutex is released thread ID is invalid.
     pthread_t   mOwnerThread;
 
-    /**
-     * \brief   The number of locks recursively called.
-     **/
+    //!< The number of locks recursively called.
     int32_t     mLockCount;
 
 //////////////////////////////////////////////////////////////////////////

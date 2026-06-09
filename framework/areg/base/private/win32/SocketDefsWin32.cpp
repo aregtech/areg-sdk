@@ -264,7 +264,6 @@ static inline int32_t _recv_cached(SOCKETHANDLE hSocket, uint8_t* dataBuffer, in
         needed -= take;
     }
 
-    // tc.unread == 0: cache is empty (drained by Phase 1 or was already empty).
     // Phase 2: large request, bypass cache, read directly into the caller's buffer.
     if (needed >= static_cast<uint32_t>(tc.space))
     {

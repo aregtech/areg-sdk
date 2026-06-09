@@ -43,7 +43,6 @@ namespace areg {
 /**
  * \brief   Collection of helper functions and constants.
  *          For details see description of constants and functions.
- *
  **/
 namespace areg {
 /************************************************************************/

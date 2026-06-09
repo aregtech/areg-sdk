@@ -183,10 +183,10 @@ inline bool operator != (const areg::Primitive & lsh, const areg::Primitive & rh
 /**
  * \brief   areg::BufferHeader
  *          Structure of Binary Buffer object data header info.
- *          Used in all binary buffers. It stores basic information 
+ *          Used in all binary buffers. It stores basic information
  *          buffer, it's type, allocated and used sizes.
  **/
-struct alignas(16) BufferHeader
+struct BufferHeader
 {
     constexpr BufferHeader() = default;
     constexpr BufferHeader(const BufferHeader& src) = default;
@@ -461,7 +461,7 @@ private:
  *  minor        14     2  service interface version: minor
  *  patch        16     2  service interface version: patch
  *  type         18     2  ServiceType: Local=0x0040, Public=0x0080, Internet=0x0100
- *              20
+ *               20
  **/
 struct Endpoint
 {
@@ -482,7 +482,7 @@ struct Endpoint
  *  Field    Offset  Size  Description
  *  service       0     4  CRC32(service_name|service_type) = ServiceItem magic number
  *  role          4     4  CRC32(role_name)
- *               8
+ *                8
  **/
 struct RawService
 {
@@ -496,8 +496,10 @@ struct RawService
 /**
  * \brief   areg::EventHeader
  *          Flat binary header for all event types: local, IPC, and custom.
- *          128 bytes, no implicit padding, 8-byte aligned. Layout identical on
- *          x86, x86_64, arm32, aarch64, 32-bit and 64-bit. Safe for direct memcpy.
+ *          128 bytes, no implicit padding, naturally aligned (8 bytes, from its uint64_t
+ *          members). Layout is identical on x86, x86_64, arm32, aarch64, 32-bit and
+ *          64-bit, and is pinned by the offset/size static_asserts below,
+ *          so it stays safe for direct memcpy across the IPC wire.
  *
  *  Field        Offset  Size  Description
  *  bufHeader         0    16  BufferHeader: type, capacity, offset, used
@@ -525,7 +527,7 @@ struct RawService
  *                             used for any other purpose.
  *                  128
  **/
-struct alignas(areg::BLOCK_SIZE) EventHeader
+struct EventHeader
 {
     areg::BufferHeader  bufHeader   {   };  //!< [0..15]    allocation metadata
     uint32_t            target      { 0 };  //!< [16..19]   routing destination cookie
@@ -563,18 +565,25 @@ struct RawEnvelope
     constexpr RawEnvelope& operator = (const RawEnvelope& src) = default;
 
     areg::EventHeader   envHeader { };      //!< event header at start of allocation
-    areg::BufferData    envData[areg::BLOCK_SIZE];
+    areg::BufferData    envData[16];
 };
 
 static_assert(sizeof(areg::Endpoint)    == 20               , "Endpoint must be exactly 20 bytes");
 static_assert(sizeof(areg::RawService)  ==  8               , "RawService must be exactly 8 bytes");
 static_assert(sizeof(areg::EventHeader) == 128              , "EventHeader must be exactly 128 bytes");
-static_assert(sizeof(areg::RawEnvelope) == 128 + areg::BLOCK_SIZE, "RawEnvelope must be exactly 136 bytes");
+static_assert(sizeof(areg::RawEnvelope) == 128 + 16         , "RawEnvelope must be exactly 136 bytes");
 static_assert(offsetof(areg::EventHeader, target)    == 16  , "EventHeader.target must be at offset 16");
 static_assert(offsetof(areg::EventHeader, provider)  == 24  , "EventHeader.provider must be at offset 24");
 static_assert(offsetof(areg::EventHeader, consumer)  == 44  , "EventHeader.consumer must be at offset 44");
 static_assert(offsetof(areg::EventHeader, rawService)== 64  , "EventHeader.rawService must be at offset 64");
 static_assert(offsetof(areg::EventHeader, channel)   == 72  , "EventHeader.channel must be at offset 72");
+
+// Portability guard: BufferHeader, RawBuffer, EventHeader and RawEnvelope are all
+// placement-constructed into plain `new uint8_t[]` heap blocks.
+static_assert(alignof(areg::BufferHeader) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__, "BufferHeader is over-aligned vs the new uint8_t[] block it is constructed into (would fault on 32-bit)");
+static_assert(alignof(areg::RawBuffer)    <= __STDCPP_DEFAULT_NEW_ALIGNMENT__, "RawBuffer is over-aligned vs the new uint8_t[] block it is constructed into (would fault on 32-bit)");
+static_assert(alignof(areg::EventHeader)  <= __STDCPP_DEFAULT_NEW_ALIGNMENT__, "EventHeader is over-aligned vs the new uint8_t[] block it is constructed into (would fault on 32-bit)");
+static_assert(alignof(areg::RawEnvelope)  <= __STDCPP_DEFAULT_NEW_ALIGNMENT__, "RawEnvelope is over-aligned vs the new uint8_t[] block it is constructed into (would fault on 32-bit)");
 
 /**
  * \brief   Returns writable pointer to data buffer, or nullptr if buffer pointer is invalid.
@@ -648,7 +657,7 @@ inline void destroy_elems(ELEM_TYPE *begin, uint32_t elemCount);
 /**
  * \brief   Copies elements from source to destination buffer using assignment operator.
  *
- * \param[out] destination     Pre-allocated destination buffer with at least elemCount elements capacity.
+ * \param[out] destination  Pre-allocated destination buffer with at least elemCount elements capacity.
  * \param   source          The source buffer containing elements to copy.
  * \param   elemCount       Number of elements to copy. Both buffers must have at least elemCount elements.
  * \note    If ELEM_DST and ELEM_SRC differ: ELEM_SRC must be convertible to ELEM_DST (via
@@ -661,7 +670,7 @@ inline void copy_elems(ELEM_DST *destination, const ELEM_SRC *source, uint32_t e
  * \brief   Moves elements from source to destination within the same allocated memory block,
  *          handling overlapping regions.
  *
- * \param[out] destination     The destination pointer within same memory block.
+ * \param[out] destination  The destination pointer within same memory block.
  * \param   source          The source pointer within same memory block.
  * \param   elemCount       Number of elements to move.
  * \note    Source and destination must refer to the same allocated memory chunk. Do not use if
@@ -748,7 +757,7 @@ inline void mem_zero( void * buffer, uint32_t length ) noexcept;
  * \brief   Moves bytes from source to destination within the same allocated memory, handling
  *          overlapping regions.
  *
- * \param[out] memDst      Destination pointer within same memory block.
+ * \param[out] memDst   Destination pointer within same memory block.
  * \param   memSrc      Source pointer within same memory block.
  * \param   count       Number of bytes to move.
  **/
@@ -771,8 +780,7 @@ inline uint32_t mem_copy( void * memDst, uint32_t dstSpace, const void * memSrc,
  * \param   memLeft     Left-hand memory buffer to compare.
  * \param   memRight    Right-hand memory buffer to compare.
  * \param   count       Number of bytes to compare.
- * \return  areg::Smaller if memLeft < memRight, Equal if identical, Bigger if memLeft >
- *          memRight.
+ * \return  areg::Smaller if memLeft < memRight, Equal if identical, Bigger if memLeft > memRight.
  **/
 [[nodiscard]]
 inline areg::Ordering mem_compare( const void * memLeft, const void * memRight, uint32_t count) noexcept;

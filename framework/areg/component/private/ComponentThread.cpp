@@ -192,7 +192,7 @@ void ComponentThread::terminate_self()
 {
     mHasStarted = false;
     remove_all_events();
-    mEventExit.set_signaled();
+    signal_exit_event();
 
     _shutdown_proxies();
 

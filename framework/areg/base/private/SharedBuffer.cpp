@@ -161,9 +161,7 @@ uint32_t SharedBuffer::set_position(int32_t offset, Cursor::SeekOrigin startAt) 
         break;
 
     case Cursor::SeekOrigin::Current:
-        offset = offset < 0
-               ? std::max(offset, -curPos)
-               : std::min(offset, rangeSize - curPos);
+        offset = offset < 0 ? std::max(offset, -curPos) : std::min(offset, rangeSize - curPos);
         break;
 
     case Cursor::SeekOrigin::End:
@@ -420,8 +418,6 @@ uint32_t SharedBuffer::read_data(uint8_t* buf, uint32_t size) const noexcept
     mPosition += result;
     return result;
 }
-
-// Rec 5: Binary string format reads — uint32_t(byte_count) + raw bytes, no NUL terminator on wire.
 
 uint32_t SharedBuffer::read_string_bin(String& str) const noexcept
 {

@@ -44,18 +44,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
     ExitEvent();
-
     ~ExitEvent() override = default;
-
-private:
-/************************************************************************/
-// Event class overrides. Hidden. Cannot be directly called.
-/************************************************************************/
-
-    /**
-     * \brief   Destroys the event object. Override to perform cleanup before destruction.
-     **/
-    void destroy_event() noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

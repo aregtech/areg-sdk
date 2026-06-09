@@ -57,12 +57,12 @@ namespace areg {
  **/
 enum class LtStage : uint32_t
 {
-      SendNode      = 0   //!< ClientSendThread: whole start_event_processing (drain + serialize + writev)
-    , SendSyscall           //!< ClientSendThread: ONLY the send_messages_batch (writev/send) syscall
-    , RecvNode              //!< Receive thread: process_received_message (deserialize + route + deliver-enqueue)
-    , CompDispatch          //!< EventDispatcherBase: dispatch_event to the registered consumer (component node work)
-    , MpscHandoff           //!< External MPSC queue: enqueue -> dequeue latency (cross-thread wakeup cost)
-    , Count                 //!< Number of stages — keep last.
+      SendNode      = 0 //!< ClientSendThread: whole start_event_processing (drain + serialize + writev)
+    , SendSyscall       //!< ClientSendThread: ONLY the send_messages_batch (writev/send) syscall
+    , RecvNode          //!< Receive thread: process_received_message (deserialize + route + deliver-enqueue)
+    , CompDispatch      //!< EventDispatcherBase: dispatch_event to the registered consumer (component node work)
+    , MpscHandoff       //!< External MPSC queue: enqueue -> dequeue latency (cross-thread wakeup cost)
+    , Count             //!< Number of stages, keep last.
 };
 
 //////////////////////////////////////////////////////////////////////////

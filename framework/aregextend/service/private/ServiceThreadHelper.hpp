@@ -107,7 +107,7 @@ inline void send_pending_groups( areg::ext::PendingSend * batch
             if (ipcHdr == nullptr)
                 continue;
 
-            const uint32_t wireSize{ sizeof(areg::EventHeader) + ipcHdr->bufHeader.biUsed };
+            const uint32_t wireSize{ static_cast<uint32_t>(sizeof(areg::EventHeader)) + ipcHdr->bufHeader.biUsed };
             ioBuffer[bufCount++] = { reinterpret_cast<const uint8_t*>(ipcHdr), wireSize };
             totalSize += wireSize;
         }

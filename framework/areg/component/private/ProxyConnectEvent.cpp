@@ -42,12 +42,7 @@ ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target
     {
         hdr->eventId = ProxyConnectEvent::CLASS_ID;
         hdr->result  = static_cast<uint32_t>(connectStatus);
-        // Store stub address in the provider endpoint so stub_address() can reconstruct it.
         server.to_event(*hdr);
-        // IPC stubs: hdr->channel carries the RouterClient routing key (server.source() after
-        // ServiceManager stamps the stub with mChannel.source()). ProxyEvent extracts this as
-        // chTarget for EventRemoteConsumerConnect so the proxy routes via RouterClient, not
-        // directly to the stub's thread in the remote process.
         if (!server.is_local_address())
             hdr->channel = server.source();
     }

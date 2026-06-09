@@ -94,7 +94,7 @@ void WorkerThread::terminate_self()
 {
     mHasStarted = false;
     remove_all_events();
-    mEventExit.set_signaled();
+    signal_exit_event();
     Thread::shutdown(areg::TIMEOUT_10_MS);
 
     delete this;

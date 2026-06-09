@@ -114,8 +114,7 @@ namespace areg::os {
     /**
      * \brief   Calculates the absolute timeout starting from the current time.
      *
-     * \param[out] out_result   The timespec structure that receives the timeout value in
-     *                          nanosecond range.
+     * \param[out] out_result   The timespec structure that receives the timeout value in nanosecond range.
      * \param   msTimeout       The relative timeout in milliseconds to be converted.
      * \return  Returns true if the calculation succeeded; false if current time could not be
      *          obtained.
@@ -138,13 +137,8 @@ namespace areg::os {
 #if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
     /**
      * \brief   Sentinel value stored in a WaitAny firedWord while no waitable has fired.
-     *          Equals SyncSignal::Invalid cast to uint32_t (0xFFFF'FFFF). A waiter sleeps
-     *          as long as firedWord holds this value; a non-FIRE_INVALID value means a
-     *          waitable fired or a timeout/async-signal code was written.
      **/
-    inline constexpr uint32_t SYNC_FIRE_INVALID {
-        static_cast<uint32_t>(areg::os::SyncSignal::Invalid)
-    };
+    inline constexpr uint32_t SYNC_FIRE_INVALID     { static_cast<uint32_t>(areg::os::SyncSignal::Invalid) };
 #endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
 
 } // namespace areg::os

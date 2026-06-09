@@ -58,7 +58,7 @@ ProxyBase::ServiceAvailableEvent::ServiceAvailableEvent( NotificationConsumer & 
     : Event ( areg::EventType::EventCustomExternal )
 {
     set_event_consumer(&consumer);
-    set_call_type( 0u );    // EventHeader.callType used for delay (0 = no delay).
+    set_call_type( 0u );
 }
 
 
@@ -464,16 +464,10 @@ void ProxyBase::send_notification_event( uint32_t msgId, areg::ResultType resTyp
         eventElem.destroy_event();
 }
 
-#ifdef  DEBUG
-void ProxyBase::process_proxy_event( ProxyEvent& eventElem )
+void ProxyBase::process_proxy_event( [[maybe_unused]] ProxyEvent& eventElem )
 {
     ASSERT(eventElem.target_proxy() == static_cast<uint32_t>(proxy_address()));
 }
-#else   // !DEBUG
-void ProxyBase::process_proxy_event( ProxyEvent& /*eventElem*/ )
-{
-}
-#endif  // DEBUG
 
 void ProxyBase::process_generic_event( Event& eventElem )
 {

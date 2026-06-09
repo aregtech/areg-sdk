@@ -217,8 +217,8 @@ public:
      *
      * \param   src             The source string buffer to search.
      * \param   strPhrase       The phrase to search for in the string.
-     * \param[out] out_next        If not nullptr, receives pointer to the position after the phrase
-     *                             in the source string, or nullptr if phrase not found.
+     * \param[out] out_next     If not nullptr, receives pointer to the position after the phrase
+     *                          in the source string, or nullptr if phrase not found.
      * \return  Returns the substring up to the matched phrase.
      *
      * \example substr
@@ -243,8 +243,7 @@ public:
      *
      * \param   strDigit    The string with digits. Can contain optional negative or positive sign.
      * \param   radix       The base for conversion.
-     * \param[out] end         If not nullptr, receives pointer to the next character after the
-     *                         numerical value.
+     * \param[out] end      If not nullptr, receives pointer to the next character after the numerical value.
      * \return  Returns the 32-bit signed integer.
      **/
     static int32_t make_int32( const char * strDigit, areg::Radix radix = areg::Radix::Decimal, const char ** end = nullptr );
@@ -253,8 +252,7 @@ public:
      *
      * \param   strDigit    The string with digits.
      * \param   radix       The base for conversion.
-     * \param[out] end         If not nullptr, receives pointer to the next character after the
-     *                         numerical value.
+     * \param[out] end      If not nullptr, receives pointer to the next character after the numerical value.
      * \return  Returns the 32-bit unsigned integer.
      **/
     static uint32_t make_uint32( const char * strDigit, areg::Radix radix = areg::Radix::Decimal, const char ** end = nullptr );
@@ -263,8 +261,7 @@ public:
      *
      * \param   strDigit    The string with digits. Can contain optional negative or positive sign.
      * \param   radix       The base for conversion.
-     * \param[out] end         If not nullptr, receives pointer to the next character after the
-     *                         numerical value.
+     * \param[out] end      If not nullptr, receives pointer to the next character after the numerical value.
      * \return  Returns the 64-bit signed integer.
      **/
     static int64_t make_int64( const char * strDigit, areg::Radix radix = areg::Radix::Decimal, const char ** end = nullptr );
@@ -273,8 +270,7 @@ public:
      *
      * \param   strDigit    The string with digits.
      * \param   radix       The base for conversion.
-     * \param[out] end         If not nullptr, receives pointer to the next character after the
-     *                         numerical value.
+     * \param[out] end      If not nullptr, receives pointer to the next character after the numerical value.
      * \return  Returns the 64-bit unsigned integer.
      **/
     static uint64_t make_uint64( const char * strDigit, areg::Radix radix = areg::Radix::Decimal, const char ** end = nullptr );
@@ -282,8 +278,7 @@ public:
      * \brief   Converts a string of digits to a 32-bit floating-point number.
      *
      * \param   strDigit    The string with digits.
-     * \param[out] end         If not nullptr, receives pointer to the next character after the
-     *                         numerical value.
+     * \param[out] end      If not nullptr, receives pointer to the next character after the numerical value.
      * \return  Returns the 32-bit floating-point number.
      **/
     static float make_float( const char * strDigit, const char ** end = nullptr );
@@ -291,18 +286,15 @@ public:
      * \brief   Converts a string of digits to a 64-bit floating-point number.
      *
      * \param   strDigit    The string with digits.
-     * \param[out] end         If not nullptr, receives pointer to the next character after the
-     *                         numerical value.
+     * \param[out] end      If not nullptr, receives pointer to the next character after the numerical value.
      * \return  Returns the 64-bit floating-point number.
      **/
     static double make_double( const char * strDigit, const char ** end = nullptr );
     /**
      * \brief   Converts a string to a boolean value.
      *
-     * \param   strBoolean      The string to convert. Recognized as true if equal to "true"
-     *                          (case-insensitive).
-     * \param[out] end             If not nullptr, receives pointer to the next character after the
-     *                             value.
+     * \param   strBoolean  The string to convert. Recognized as true if equal to "true" (case-insensitive).
+     * \param[out] end      If not nullptr, receives pointer to the next character after the value.
      * \return  Returns true if string matches "true"; false otherwise.
      **/
     static bool make_bool( const char * strBoolean, const char ** end = nullptr );
@@ -364,18 +356,17 @@ public:
     /**
      * \brief   Formats a string using printf-like formatting rules.
      *
-     * \param[out] strDst      The destination buffer for the formatted string.
+     * \param[out] strDst   The destination buffer for the formatted string.
      * \param   count       The size of the destination buffer.
      * \param   format      The format string, followed by arguments to format.
-     * \return  Returns the number of characters copied; zero if nothing copied; negative if error
-     *          occurred.
+     * \return  Returns the number of characters copied; zero if nothing copied; negative if error occurred.
      **/
     static int32_t format_string( char * strDst, int32_t count, const char * format, ... );
 
     /**
      * \brief   Formats a string using printf-like formatting rules and a va_list.
      *
-     * \param[out] strDst      The destination buffer for the formatted string.
+     * \param[out] strDst   The destination buffer for the formatted string.
      * \param   count       The size of the destination buffer.
      * \param   format      The format string.
      * \param   argptr      The variable argument list.

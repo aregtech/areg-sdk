@@ -73,8 +73,7 @@ public:
 
     /**
      * \brief   Called when the thread starts running and is fully operable. Implement the thread's
-     *          main loop here. When this returns, the thread completes. Call start() again
-     *          to restart.
+     *          main loop here. When this returns, the thread completes. Call start() again to restart.
      **/
     virtual void on_run() = 0;
 

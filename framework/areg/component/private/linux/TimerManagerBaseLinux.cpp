@@ -91,7 +91,6 @@ bool TimerManagerBase::run_dispatcher()
 
             if (ptr == EXIT_PTR)
             {
-                // Exit signal
                 exitRequested = true;
             }
             else if (ptr == COMMAND_PTR)

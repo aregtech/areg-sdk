@@ -56,7 +56,6 @@ void TimerManager::_os_timer_stop(TIMERHANDLE timerHandle)
 
 bool TimerManager::_os_timer_start(Timer & timer)
 {
-    bool result{ false };
     areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(timer.handle());
     ASSERT(posixTimer != nullptr);
 
@@ -64,12 +63,7 @@ bool TimerManager::_os_timer_start(Timer & timer)
     ::clock_gettime(CLOCK_REALTIME, &startTime);
     timer.timer_starting(startTime.tv_sec, startTime.tv_nsec, reinterpret_cast<ptr_type>(posixTimer));
 
-    if (posixTimer->start_timer(timer, 0, &TimerManager::_posix_timer_expired))
-    {
-        result = true;
-    }
-
-    return result;
+    return posixTimer->start_timer(timer, 0, &TimerManager::_posix_timer_expired);
 }
 
 } // namespace areg

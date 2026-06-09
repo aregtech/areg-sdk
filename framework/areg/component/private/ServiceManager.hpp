@@ -72,16 +72,16 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Registers a Stub server at Service Manager and notifies all proxy clients of service
-     *          availability.
+     * \brief   Registers a Stub server at Service Manager and notifies all proxy clients
+     *          of service availability.
      *
      * \param   whichServer     The address of Stub Server object requesting registration.
      **/
     static void request_register_provider( const StubAddress & whichServer );
 
     /**
-     * \brief   Unregisters a Stub server from Service Manager and notifies all proxy clients of
-     *          service unavailability.
+     * \brief   Unregisters a Stub server from Service Manager and notifies all proxy clients
+     *          of service unavailability.
      *
      * \param   whichServer     The address of Stub Server object requesting unregistration.
      * \param   reason          The reason for service unregistration.
@@ -89,8 +89,7 @@ public:
     static void request_unregister_provider( const StubAddress & whichServer, const areg::DisconnectReason reason );
 
     /**
-     * \brief   Registers a Proxy client at Service Manager and notifies it of available Stub
-     *          services.
+     * \brief   Registers a Proxy client at Service Manager and notifies it of available Stub services.
      *
      * \param   whichClient     The address of Proxy client object requesting registration.
      **/
@@ -273,8 +272,7 @@ private:
     /**
      * \brief   Processes a dispatched service manager event.
      *
-     * \param   data    The event data object. Must have default constructor and assignment
-     *                  operator.
+     * \param   data    The event data object. Must have default constructor and assignment operator.
      **/
     void process_event( const ServiceManagerEventData & data ) final;
 
@@ -317,8 +315,7 @@ private:
     void on_service_channel_disconnected( const Channel & channel ) final;
 
     /**
-     * \brief   Called when a remote service connection is lost unexpectedly (not explicitly
-     *          stopped).
+     * \brief   Called when a remote service connection is lost unexpectedly (not explicitly stopped).
      *
      * \param   channel     The lost communication channel.
      **/
@@ -329,8 +326,7 @@ private:
 /************************************************************************/
 
     /**
-     * \brief   Extracts lists of remote service providers and consumers, optionally filtered by
-     *          cookie.
+     * \brief   Extracts lists of remote service providers and consumers, optionally filtered by cookie.
      *
      * \param      cookie           The cookie to filter by; pass areg::COOKIE_ANY to include all services.
      * \param[out] listProviders    On output contains the list of remote service provider addresses.

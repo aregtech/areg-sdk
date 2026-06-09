@@ -128,16 +128,15 @@ public:
      * \brief   Reads list elements from the input stream, clearing any existing elements first.
      *
      * \param   stream      The input stream to read from.
-     * \param[in,out] input       The list to store deserialized elements. Existing elements are
-     *                            cleared.
+     * \param[in,out] input The list to store deserialized elements. Existing elements are cleared.
      **/
     template<typename V>
     friend const InStream& operator >> (const InStream& stream, SortedLinkedList<V>& input);
     /**
      * \brief   Writes all list elements to the output stream in head-to-tail order.
      *
-     * \param[in,out] stream      The output stream to write to.
-     * \param   output      The list whose elements will be serialized.
+     * \param[in,out] stream    The output stream to write to.
+     * \param   output          The list whose elements will be serialized.
      **/
     template<typename V>
     friend OutStream& operator << (OutStream& stream, const SortedLinkedList<V>& output);
@@ -343,12 +342,11 @@ public:
     /**
      * \brief   Extracts the next position and value of the element following the given position.
      *
-     * \param[in,out] nextPos         On input this indicates the valid position of the entry in the
-     *                                linked list. On output, this parameter points either next
-     *                                valid entry in the linked list or invalid entry if no more
-     *                                entry is following.
-     * \param[out] nextValue       On output, this contains value of the next entry in the linked
-     *                             list.
+     * \param[in,out] nextPos   On input this indicates the valid position of the entry in the
+     *                          linked list. On output, this parameter points either next
+     *                          valid entry in the linked list or invalid entry if no more
+     *                          entry is following.
+     * \param[out] nextValue    On output, this contains value of the next entry in the linked list.
      * \return  Returns true if there is a next element and the output value is valid.
      **/
     inline bool next_entry( LISTPOS& nextPos, VALUE& nextValue ) const;
@@ -356,12 +354,11 @@ public:
     /**
      * \brief   Extracts the previous position and value of the element preceding the given position.
      *
-     * \param[in,out] prevPos         On input this indicates the valid position of the entry in the
-     *                                linked list. On output, this parameter points either previous
-     *                                valid entry in the linked list or invalid entry if has no
-     *                                previous entry, i.e. indicates first entry.
-     * \param[out] prevValue       On output, this contains value of the previous entry in the
-     *                             linked list.
+     * \param[in,out] prevPos   On input this indicates the valid position of the entry in the
+     *                          linked list. On output, this parameter points either previous
+     *                          valid entry in the linked list or invalid entry if has no
+     *                          previous entry, i.e. indicates first entry.
+     * \param[out] prevValue    On output, this contains value of the previous entry in the linked list.
      * \return  Returns true if there is a previous element and the output value is valid.
      **/
     inline bool prev_entry( LISTPOS& prevPos, VALUE& prevValue ) const;
@@ -413,22 +410,18 @@ public:
     LISTPOS add(VALUE&& newElement);
 
     /**
-     * \brief   Inserts element only if not already in the list; returns position and insertion
-     *          success flag.
+     * \brief   Inserts element only if not already in the list; returns position and insertion success flag.
      *
-     * \param   newElement          Element to conditionally insert.
-     * \param   updateExisting      If true and element exists, the existing element is updated with
-     *                              the new value.
+     * \param   newElement      Element to conditionally insert.
+     * \param   updateExisting  If true and element exists, the existing element is updated with the new value.
      **/
     std::pair<LISTPOS, bool> add_if_unique(const VALUE& newElement, bool updateExisting = false );
 
     /**
-     * \brief   Inserts element only if not already in the list; returns position and insertion
-     *          success flag.
+     * \brief   Inserts element only if not already in the list; returns position and insertion success flag.
      *
-     * \param   newElement          Element to move and conditionally insert.
-     * \param   updateExisting      If true and element exists, the existing element is updated with
-     *                              the new value.
+     * \param   newElement      Element to move and conditionally insert.
+     * \param   updateExisting  If true and element exists, the existing element is updated with the new value.
      * \note    Move overload. Takes ownership of the element.
      **/
     std::pair<LISTPOS, bool> add_if_unique(VALUE&& newElement, bool updateExisting = false );
@@ -458,7 +451,7 @@ public:
      *          linked list. Returns invalid position if tail entry is removed.
      *
      * \param   atPosition      Position of the element to remove from Linked List.
-     * \param[out] Value           On output, it contains value of removed element
+     * \param[out] Value        On output, it contains value of removed element
      * \return  Returns the position of the next entry in the linked-list. If the tail entry is
      *          removed, returns invalid position.
      **/
@@ -474,9 +467,8 @@ public:
     inline bool remove_entry( const VALUE& removeElement ) noexcept;
 
     /**
-     * \brief   Searches and removes first match of entry, which value is equal to the given
-     *          element, starting from the given position. Returns true if found and removed entry
-     *          with success.
+     * \brief   Searches and removes first match of entry, which value is equal to the given element,
+     *          starting from the given position. Returns true if found and removed entry with success.
      *
      * \param   removeElement       Element to search and remove from Linked List
      * \param   searchAfter         The valid position in the linked list to start searching.
@@ -557,9 +549,8 @@ public:
      *          `elemCount` elements are copied. Otherwise, all elements in the linked list are
      *          copied. No elements are copied if `elemCount` is 0.
      *
-     * \param[in,out] list            A pre-allocated buffer where the linked list elements will be
-     *                                copied. Must be large enough to hold at least `elemCount`
-     *                                elements.
+     * \param[in,out] list      A pre-allocated buffer where the linked list elements will be
+     *                          copied. Must be large enough to hold at least `elemCount` elements.
      * \param   elemCount       The maximum number of elements to copy into the `list` buffer. If
      *                          set to 0, no elements are copied.
      * \return  The number of elements successfully copied into the `list` buffer.

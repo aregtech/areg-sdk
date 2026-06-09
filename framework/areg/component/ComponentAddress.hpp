@@ -79,8 +79,8 @@ public:
      * \brief   Parses component path string to component address.
      *
      * \param   componentPath       The component path string.
-     * \param[in,out] out_nextPart        If not nullptr, on output contains the remaining path
-     *                                    after the component address.
+     * \param[in,out] out_nextPart  If not nullptr, on output contains the remaining path
+     *                              after the component address.
      * \return  Returns the parsed component address. Validate before use.
      **/
     [[nodiscard]]

@@ -575,15 +575,6 @@ private:
     static ThreadLocalStorage * _thread_local_storage( Thread* ownThread );
 
     /**
-     * \brief   Searches for thread by handle and returns its pointer. Returns nullptr if not found.
-     *
-     * \param   threadHandle    The unique handle of thread to search.
-     * \return  Pointer to the thread object if found; nullptr otherwise.
-     **/
-    [[nodiscard]]
-    inline static Thread * _find_by_handle( THREADHANDLE threadHandle ) noexcept;
-
-    /**
      * \brief   Searches for thread by ID and returns its handle. Returns nullptr if not found or
      *          thread is invalid.
      *
@@ -684,13 +675,6 @@ private:
     using   ImplThreadIDResource    = ResourceMapImpl<id_type, Thread *>;
     using   MapThreadIDResource     = ConcurrentResourceMap<id_type, Thread *, MapThreadID,ImplThreadIDResource>;
     /**
-     * \brief   Thread resource mapping by thread handle. 
-     *          The unique thread handle can be used to access thread object.
-     **/
-    using   MapThreadPoiters        = PtrMap<Thread *>;
-    using   ImplThreadHandleResource= ResourceMapImpl< void *, Thread *>;
-    using   MapThreadHandleResource = ConcurrentResourceMap< void *, Thread *, MapThreadPoiters,ImplThreadHandleResource >;
-    /**
      * \brief   Thread resource mapping by thread name. 
      *          The unique thread name can be used to access thread object.
      **/
@@ -701,12 +685,6 @@ private:
 /************************************************************************/
 // Resource controlling and mapping variables
 /************************************************************************/
-    /**
-     * \brief   Returns the static map of thread objects indexed by thread handle.
-     **/
-    [[nodiscard]]
-    static  Thread::MapThreadHandleResource & _map_threadh_handle() noexcept;
-
     /**
      * \brief   Returns the static map of thread objects indexed by thread name.
      **/
@@ -730,11 +708,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Thread class inline function implementation
 //////////////////////////////////////////////////////////////////////////
-
-inline Thread* Thread::_find_by_handle(THREADHANDLE threadHandle) noexcept
-{
-    return Thread::_map_threadh_handle().find_resource_object(threadHandle);
-}
 
 inline THREADHANDLE Thread::_find_handle( id_type threadId) noexcept
 {

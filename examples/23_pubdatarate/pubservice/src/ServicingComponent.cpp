@@ -13,7 +13,6 @@
 #include "pubservice/src/ServicingComponent.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentThread.hpp"
-// EventDataStream removed — no longer part of the wire protocol
 #include "areg/component/RemoteEventFactory.hpp"
 #include "areg/component/ResponseEvents.hpp"
 #include "areg/logging/areg_log.h"
@@ -430,9 +429,19 @@ uint32_t ServicingComponent::_build_prebuilt_messages()
                     // raw copy of `data`, i.e. [uint32 length][serialized ImageBlock]; the patchable
                     // RawImageBlock starts right after the length prefix.
                     areg::ServiceResponseEvent respEvent{ create_response(proxy, message_id, areg::ResultType::RequestOK, data) };
-                    areg::RemoteEventFactory::route_outgoing_message(respEvent, channel);
+                    [[maybe_unused]] const bool routed{ areg::RemoteEventFactory::route_outgoing_message(respEvent, channel) };
                     remote.message = respEvent.envelope();
                     remote.offset  = static_cast<uint32_t>(sizeof(uint32_t));
+
+                    // The envelope is only delivered if it is fully addressed: a remote response
+                    // routed to a non-zero target cookie, carrying the broadcast message id, with the
+                    // patchable RawImageBlock fully inside the payload. A failure here means the message
+                    // would silently go nowhere, so catch it at build time rather than on the wire.
+                    ASSERT(routed && respEvent.is_valid());
+                    ASSERT(remote.message.message_id() == message_id);
+                    ASSERT(remote.message.target() != 0u);
+                    ASSERT(remote.message.buffer() != nullptr);
+                    ASSERT(remote.offset + sizeof(RawImageBlock) <= remote.message.size_used());
                 }
 
                 ASSERT(index == shift + (block_index + 1) * channels);

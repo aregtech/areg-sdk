@@ -232,7 +232,7 @@ bool SpinLock::try_lock()
         return true;
     }
 
-    // Single CAS attempt, no spinning.
+    // Single attempt, no spinning.
     id_type expected{ 0 };
     if (mOwner.compare_exchange_strong(expected, self, std::memory_order_acquire, std::memory_order_relaxed))
     {

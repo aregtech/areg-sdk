@@ -63,7 +63,7 @@ class AREG_API Component   : public    RuntimeObject
     /**
      * \brief   Component::MapComponentResource
      *          The Resource Map of instantiated components.
-     *          uint32_t            The calculated number of component as a key.
+     *          uint32_t                The calculated number of component as a key.
      *          Component               The type of container values, it contains Components
      *          MapComponentContainer   The hash-map object to store containers.
      *          ImplComponentResource   The implementation of basic resource+map operations.

@@ -38,10 +38,6 @@ class Timer;
 /**
  * \brief   Timer event containing an expired timer, created and sent by the Timer Manager for
  *          dispatch to the timer consumer's owner thread.
- *
- *          Timer pointer is stored at payload_ptr() (LOCAL-ONLY, never serialized).
- *          TimerConsumer pointer is stored in EventHeader.internal2 via set_event_consumer().
- *          No extra member variables — safe for Event value semantics in MpscEventQueue.
  **/
 class AREG_API TimerEvent final : public Event
 {
@@ -81,8 +77,7 @@ public:
     static Timer * timer_from_event( const Event & evt ) noexcept;
 
     /**
-     * \brief   Calls Timer::_unqueue_timer() after the timer has been processed.
-     *          Must be called by the consumer after dispatching the timer callback.
+     * \brief   Must be called by the consumer after dispatching the timer callback.
      *          TimerEvent is a friend of Timer, so this method has access.
      **/
     static void unqueue_timer( Timer & timer ) noexcept;
@@ -94,7 +89,6 @@ private:
     /**
      * \brief   Constructs the timer event, stores Timer* at payload_ptr(),
      *          sets the consumer, and registers for the target thread.
-     *          Calls timer._queue_timer() — caller must call _unqueue_timer() on failure.
      *
      * \param   timer   The timer object.
      * \param   target  The target dispatcher thread.

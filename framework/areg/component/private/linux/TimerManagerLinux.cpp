@@ -44,7 +44,6 @@ void TimerManager::_os_timer_stop(TIMERHANDLE timerHandle)
     if (posixTimer == nullptr)
         return;
 
-    // Remove from epoll
     const int epollFd = TimerManager::instance().mEpollFd;
     const int timerFd = posixTimer->timer_fd();
     if ((epollFd >= 0) && (timerFd >= 0))
@@ -64,7 +63,6 @@ bool TimerManager::_os_timer_start(Timer& timer)
     ::clock_gettime(CLOCK_REALTIME, &startTime);
     timer.timer_starting(startTime.tv_sec, startTime.tv_nsec, reinterpret_cast<ptr_type>(posixTimer));
 
-    // Arm the timerfd (funcTimer unused on Linux).
     if (!posixTimer->start_timer(timer, 0, nullptr))
         return false;
 

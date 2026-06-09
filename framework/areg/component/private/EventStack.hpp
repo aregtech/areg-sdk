@@ -81,7 +81,8 @@ public:
     uint32_t delete_except_exit() noexcept;
 
     /**
-     * \brief   Destroys all events whose runtime class ID matches \a eventClassId, except Exit events.
+     * \brief   Destroys all events whose runtime class ID matches \a eventClassId,
+     *          except Exit events.
      *
      * \param   eventClassId    Runtime class ID to match and remove.
      * \return  Number of remaining events after the operation.
@@ -89,8 +90,8 @@ public:
     uint32_t delete_matching(uint32_t eventClassId) noexcept;
 
     /**
-     * \brief   Destroys all events whose runtime class ID does NOT match \a eventClassId, except
-     *          Exit events.
+     * \brief   Destroys all events whose runtime class ID does NOT match \a eventClassId,
+     *          except Exit events.
      *
      * \param   eventClassId    Runtime class ID of events to keep.
      * \return  Number of remaining events after the operation.

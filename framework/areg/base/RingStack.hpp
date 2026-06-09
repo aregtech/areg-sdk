@@ -55,13 +55,11 @@ class RingStackBase
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initializes ring stack with synchronization object, initial capacity, and overlap
-     *          behavior.
+     * \brief   Initializes ring stack with synchronization object, initial capacity, and overlap behavior.
      *
      * \param   syncObject      Reference to synchronization object.
      * \param   initCapacity    The initial capacity size of ring stack.
-     * \param   onOverlap       Overlap policy applied when ring stack is full and new element must
-     *                          be inserted.
+     * \param   onOverlap       Overlap policy applied when ring stack is full and new element must be inserted.
      **/
     explicit RingStackBase( Lockable & syncObject, uint32_t initCapacity = 0, areg::OverlapPolicy onOverlap = areg::OverlapPolicy::Stop );
 
@@ -152,7 +150,7 @@ public:
      *          resizes if necessary.
      *
      * \param   stream      The input stream to read values from.
-     * \param[out] input       The ring stack to initialize with deserialized values.
+     * \param[out] input    The ring stack to initialize with deserialized values.
      * \return  Returns const reference to input stream.
      * \note    VALUE type must support streaming deserialization operator.
      **/
@@ -161,7 +159,7 @@ public:
     /**
      * \brief   Serializes ring stack elements to output stream starting from head position.
      *
-     * \param[out] stream      The output stream to write values to.
+     * \param[out] stream   The output stream to write values to.
      * \param   output      The ring stack to serialize.
      * \return  Returns reference to output stream.
      * \note    VALUE type must support streaming serialization operator.
@@ -176,24 +174,18 @@ public:
 
     /**
      * \brief   Returns number of elements in stack.
-     *
-     * \return  Returns element count.
      **/
     [[nodiscard]]
     uint32_t size() const noexcept;
 
     /**
      * \brief   Returns true if ring stack is empty.
-     *
-     * \return  Returns true if stack is empty; false otherwise.
      **/
     [[nodiscard]]
     bool is_empty() const noexcept;
 
     /**
      * \brief   Returns the overlap policy of the ring stack.
-     *
-     * \return  Returns overlap policy applied when stack is full.
      **/
     [[nodiscard]]
     areg::OverlapPolicy overlap() const noexcept;
@@ -214,16 +206,12 @@ public:
 
     /**
      * \brief   Returns the capacity of the ring stack.
-     *
-     * \return  Returns capacity.
      **/
     [[nodiscard]]
     uint32_t capacity() const noexcept;
 
     /**
      * \brief   Returns true if ring stack is full; always false for resize-on-overlap policy.
-     *
-     * \return  Returns true if stack is full and not auto-resizing; false otherwise.
      **/
     [[nodiscard]]
     bool is_full() const noexcept;
@@ -301,16 +289,14 @@ public:
      * \brief   Adds elements from source stack; behavior on full stack depends on overlap policy.
      *
      * \param   source      The source ring stack to copy elements from.
-     * \return  Returns number of elements actually copied (may differ from source size depending on
-     *          overlap policy).
+     * \return  Returns number of elements actually copied (may differ from source size depending on overlap policy).
      * \note    If insufficient capacity: Stop policy copies until full then stops, Shift policy
      *          overwrites head elements as needed, Resize policy enlarges to fit all elements.
      **/
     uint32_t add( const RingStackBase<VALUE> & source );
 
     /**
-     * \brief   Reserves space for given capacity; enlarges if needed, ignores if new capacity is
-     *          not larger.
+     * \brief   Reserves space for given capacity; enlarges if needed, ignores if new capacity is not larger.
      *
      * \param   newCapacity     New capacity to set for ring stack.
      * \return  Returns new capacity after reservation.
@@ -408,7 +394,7 @@ private:
      * \brief   Copies elements from source ring buffer to destination; destination must have
      *          sufficient capacity.
      *
-     * \param[out] dst             The destination buffer to copy elements into.
+     * \param[out] dst          The destination buffer to copy elements into.
      * \param   src             The source ring buffer to copy elements from.
      * \param   srcStart        Starting position index in source ring.
      * \param   srcEnd          Ending position index in source ring (inclusive).

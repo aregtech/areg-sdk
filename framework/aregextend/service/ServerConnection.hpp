@@ -186,7 +186,7 @@ inline int32_t ServerConnection::send_message(const MessageEnvelope & in_message
         return 0;
 
     in_message.buffer_completion_fix();
-    const uint32_t wireSize{ sizeof(areg::EventHeader) + hdr->bufHeader.biUsed };
+    const uint32_t wireSize{ static_cast<uint32_t>(sizeof(areg::EventHeader)) + hdr->bufHeader.biUsed };
     areg::IoBuffer ioBuffer{ reinterpret_cast<const uint8_t*>(hdr), wireSize };
     return SocketConnectionBase::send_messages_batch(&ioBuffer, 1u, hSocket, wireSize);
 }

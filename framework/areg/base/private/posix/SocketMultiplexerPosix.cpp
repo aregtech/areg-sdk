@@ -143,8 +143,7 @@ bool areg::SocketMultiplexer::unregister_socket(SOCKETHANDLE hSocket) noexcept
             *it = mSockets.back();
             mSockets.pop_back();
 
-            // Discard the batch cache: it may contain hSocket or a socket that
-            // was ready alongside hSocket.  The next wait() will fetch a fresh batch
+            // Discard the batch cache, next wait() will fetch a fresh batch
             mBatchCount = mBatchIdx = 0;
             return true;
         }

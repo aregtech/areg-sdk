@@ -52,10 +52,10 @@ bool WaitableTimerPosix::set_timer(uint32_t msTimeout, bool is_periodic)
         {
             const uint64_t interval_ns = static_cast<uint64_t>(msTimeout) * NSEC_PER_MSEC;
 
-            dispatch_source_set_timer(mTimerSource,
-                                      dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(interval_ns)),
-                                      is_periodic ? interval_ns : DISPATCH_TIME_FOREVER,
-                                      0);  // leeway = 0: maximum precision
+            dispatch_source_set_timer( mTimerSource
+                                     , dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(interval_ns))
+                                     , is_periodic ? interval_ns : DISPATCH_TIME_FOREVER
+                                     , 0);  // leeway = 0: maximum precision
 
             dispatch_source_set_event_handler(mTimerSource, ^{
                 this->_timer_expired();

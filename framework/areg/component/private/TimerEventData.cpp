@@ -61,9 +61,6 @@ bool TimerEvent::send_event(Timer & timer, DispatcherThread & dispatchThread, ar
     const bool result = dispatchThread.event_dispatcher().post_event(timerEvent);
     if (!result)
     {
-        // post_event did not move the event. 
-        // _queue_timer was called in constructor, the event is not queued,
-        // so _unqueue_timer must be called here to balance.
         timer._unqueue_timer();
     }
 

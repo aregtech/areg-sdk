@@ -168,6 +168,8 @@ bool File::_os_open_file() noexcept
         flag |= O_RDWR;
     }
 
+    // BitCreateNew:  O_TRUNC already set above, truncates as expected.
+    // BitOpenAlways: no O_TRUNC, opens existing file without truncating.
     if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreateNew)) != 0)
     {
         flag |= (O_CREAT | O_TRUNC);
@@ -188,8 +190,6 @@ bool File::_os_open_file() noexcept
         flag |= O_TRUNC;
     }
 
-    // Creation permissions: only used by open when O_CREAT is set.
-    // Start with private owner access, then expand for sharing flags.
     if ((flag & O_CREAT) != 0)
     {
         mode = S_IRUSR | S_IWUSR;                  // owner read+write (baseline)
@@ -215,10 +215,7 @@ bool File::_os_open_file() noexcept
                 flag &= ~O_TRUNC;   // remove truncate, since it is not applicable for directories
                 flag |= O_DIRECTORY;// set directory option
             }
-            // else: regular file exists.
             
-            // BitCreateNew:  O_TRUNC already set above, truncates as expected.
-            // BitOpenAlways: no O_TRUNC, opens existing file without truncating.
         }
         else
         {

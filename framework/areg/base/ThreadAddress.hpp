@@ -50,8 +50,7 @@ public:
 // Public static methods
 //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Converts a ThreadAddress object to a path string with format "<process ID>::<thread
-     *          name>::".
+     * \brief   Converts a ThreadAddress object to a path string with format "<process ID>::<thread name>::".
      *
      * \param   threadAddress       The thread address object to convert.
      * \return  Returns the thread path string.
@@ -63,11 +62,9 @@ public:
      * \brief   Parses a path string and converts it to a ThreadAddress object. Returns remaining
      *          string after the address part.
      *
-     * \param   threadPath      The path string to parse in format "<process ID>::<thread
-     *                          name>::...".
-     * \param[out] nextPart        If not nullptr, receives the pointer to the remaining path after
-     *                             the address. If parsing fails, contains the same address as
-     *                             threadPath.
+     * \param   threadPath      The path string to parse in format "<process ID>::<thread name>::...".
+     * \param[out] nextPart     If not nullptr, receives the pointer to the remaining path after
+     *                          the address. If parsing fails, contains the same address as threadPath.
      * \return  Returns the ThreadAddress object created from the path.
      **/
     [[nodiscard]]
@@ -145,8 +142,7 @@ public:
     bool is_valid() const noexcept;
 
     /**
-     * \brief   Converts the ThreadAddress to a path string with format "<process ID>::<thread
-     *          name>::".
+     * \brief   Converts the ThreadAddress to a path string with format "<process ID>::<thread name>::".
      *
      * \return  Returns the thread path string.
      **/
@@ -154,12 +150,10 @@ public:
     inline String to_string() const noexcept;
 
     /**
-     * \brief   Parses a path string to extract thread address data. Returns remaining string after
-     *          address.
+     * \brief   Parses a path string to extract thread address data. Returns remaining string after address.
      *
      * \param   threadPath      The path string containing thread address data.
-     * \param[out] nextPart        If not nullptr, receives the pointer to the remaining path after
-     *                             the address.
+     * \param[out] nextPart     If not nullptr, receives the pointer to the remaining path after the address.
      **/
     void from_string(const char * threadPath, const char** nextPart = nullptr );
 

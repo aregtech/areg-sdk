@@ -30,9 +30,9 @@ namespace areg {
 // FileBuffer class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Memory-based file buffer that performs all read and write operations on in-memory
- *          buffers. Supports shared buffer ownership and attach/detach modes for efficient data
- *          handling without unnecessary copying.
+ * \brief   Memory-based file buffer that performs all read and write operations on in-memory buffers.
+ *          Supports shared buffer ownership and attach/detach modes for efficient data handling without
+ *          unnecessary copying.
  **/
 class AREG_API FileBuffer   : public    FileBase      // derive all basic functionalities of file operations
 {
@@ -74,8 +74,7 @@ public:
     FileBuffer(SharedBuffer & sharedBuffer, const char * name = nullptr);
 
     /**
-     * \brief   Constructs a FileBuffer in attached read-only mode from a const SharedBuffer
-     *          reference.
+     * \brief   Constructs a FileBuffer in attached read-only mode from a const SharedBuffer reference.
      *
      * \param   sharedBuffer    The SharedBuffer to attach to (read-only).
      * \param   name            Optional name for the file object.
@@ -95,16 +94,16 @@ public:
     /**
      * \brief   Deserializes data from the input stream into the file buffer.
      *
-     * \param   stream      The input stream to read from.
-     * \param[in,out] input       The FileBuffer to receive deserialized data.
+     * \param   stream          The input stream to read from.
+     * \param[in,out] input     The FileBuffer to receive deserialized data.
      * \return  Reference to the input stream.
      **/
     friend inline const InStream & operator >> ( const InStream & stream, FileBuffer & input );
     /**
      * \brief   Serializes data from the file buffer to the output stream.
      *
-     * \param[in,out] stream      The output stream to write to.
-     * \param   output      The FileBuffer to read from.
+     * \param[in,out] stream    The output stream to write to.
+     * \param   output          The FileBuffer to read from.
      * \return  Reference to the output stream.
      **/
     friend inline OutStream & operator << ( OutStream & stream, const FileBuffer & output );
@@ -120,8 +119,8 @@ public:
     inline bool is_valid() const noexcept;
 
     /**
-     * \brief   Returns a pointer to the buffer data if the file is opened and non-empty; otherwise
-     *          returns nullptr.
+     * \brief   Returns a pointer to the buffer data if the file is opened and non-empty;
+     *          otherwise returns nullptr.
      *
      * \return  Pointer to buffer data, or nullptr.
      **/
@@ -135,8 +134,7 @@ public:
     inline const SharedBuffer & shared_buffer() const;
 
     /**
-     * \brief   Inserts data into the file buffer at the specified position. Existing data is
-     *          shifted.
+     * \brief   Inserts data into the file buffer at the specified position. Existing data is shifted.
      *
      * \param   buffer      The data buffer to insert.
      * \param   size        The size in bytes of the data.
@@ -152,9 +150,8 @@ public:
 // FileBase class virtual function overrides
 /************************************************************************/
     /**
-     * \brief   Opens the file buffer. The file must be configured with open mode. For memory
-     *          buffers, no file name is required. For file system buffers, the file name must be
-     *          set.
+     * \brief   Opens the file buffer. The file must be configured with open mode. For memory buffers,
+     *          no file name is required. For file system buffers, the file name must set.
      *
      * \return  True if opened successfully; false if already open or required parameters not set.
      **/

@@ -58,14 +58,13 @@ struct CloserInvoker<nullptr, Primitive>
  *
  *          Structured like std::shared_ptr, but the control block stores the
  *          managed value directly instead of a pointer to it. The object
- *          itself is a single pointer (8 bytes on 64-bit). One heap allocation
- *          is made per resource: a control block holding the atomic reference
+ *          itself is a single pointer. A control block holding the atomic reference
  *          counter and the value together.
  *
  *          When the last copy is destroyed or reset(), the Closer function is
  *          called with the stored value to release the underlying resource.
  *
- * \tparam  Primitive               The primitive type to store (int, size_t, HANDLE, etc.).
+ * \tparam  Primitive       The primitive type to store (int, size_t, HANDLE, etc.).
  * \tparam  InvalidValue    Sentinel value returned by value() when the instance is
  *                          empty. Must be a compile-time constant (constexpr).
  * \tparam  Closer          Optional function called with the value when the reference
@@ -195,33 +194,33 @@ private:
 //////////////////////////////////////////////////////////////////////////
 template<typename Primitive, Primitive InvalidValue, void(*Closer)(Primitive) noexcept /*= nullptr*/>
 inline SharedPrimitive<Primitive, InvalidValue, Closer>::ControlBlock::ControlBlock(Primitive value) noexcept
-    : mRefCount{ 1 }
-    , mValue{ value }
+    : mRefCount ( 1 )
+    , mValue    ( value )
 {
 }
 
 template<typename Primitive, Primitive InvalidValue, void(*Closer)(Primitive) noexcept /*= nullptr*/>
 inline SharedPrimitive<Primitive, InvalidValue, Closer>::SharedPrimitive() noexcept
-    : mCtrl{ static_cast<ControlBlock *>(nullptr) }
+    : mCtrl( static_cast<ControlBlock *>(nullptr) )
 {
 }
 
 template<typename Primitive, Primitive InvalidValue, void(*Closer)(Primitive) noexcept /*= nullptr*/>
 inline SharedPrimitive<Primitive, InvalidValue, Closer>::SharedPrimitive(Primitive value)
-    : mCtrl{ new ControlBlock(value) }
+    : mCtrl( new ControlBlock(value) )
 {
 }
 
 template<typename Primitive, Primitive InvalidValue, void(*Closer)(Primitive) noexcept /*= nullptr*/>
 inline SharedPrimitive<Primitive, InvalidValue, Closer>::SharedPrimitive(const SharedPrimitive& other) noexcept
-    : mCtrl{ other.mCtrl.load(std::memory_order_relaxed) }
+    : mCtrl( other.mCtrl.load(std::memory_order_relaxed) )
 {
     _add_ref();
 }
 
 template<typename Primitive, Primitive InvalidValue, void(*Closer)(Primitive) noexcept /*= nullptr*/>
 inline SharedPrimitive<Primitive, InvalidValue, Closer>::SharedPrimitive(SharedPrimitive && other) noexcept
-    : mCtrl{ other.mCtrl.exchange(nullptr, std::memory_order_acq_rel) }
+    : mCtrl( other.mCtrl.exchange(nullptr, std::memory_order_acq_rel) )
 {
 }
 

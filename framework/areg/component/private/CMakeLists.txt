@@ -16,12 +16,6 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/component/private/EventStack.cpp
 	areg/component/private/ExitEvent.cpp
 	areg/component/private/EventConsumer.cpp
-	areg/component/private/EventRouter.cpp
-	areg/component/private/ProxyListener.cpp
-	areg/component/private/QueueListener.cpp
-	areg/component/private/RemoteEventConsumer.cpp
-	areg/component/private/TimerConsumer.cpp
-	areg/component/private/WorkerThreadConsumer.cpp
 	areg/component/private/Model.cpp
 	areg/component/private/MpscEventQueue.cpp
 	areg/component/private/ServiceDefs.cpp
@@ -31,8 +25,6 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/component/private/ProxyConnectEvent.cpp
 	areg/component/private/ProxyEvent.cpp
 	areg/component/private/RemoteEventFactory.cpp
-	areg/component/private/RequestEvents.cpp
-	areg/component/private/ResponseEvents.cpp
 	areg/component/private/ServerInfo.cpp
 	areg/component/private/ServerList.cpp
 	areg/component/private/ServiceAddress.cpp
@@ -40,19 +32,15 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/component/private/ServiceManager.cpp
 	areg/component/private/ServiceManagerEventProcessor.cpp
 	areg/component/private/ServiceManagerEvents.cpp
-	areg/component/private/ServiceRequestEvent.cpp
-	areg/component/private/ServiceResponseEvent.cpp
 	areg/component/private/StubAddress.cpp
 	areg/component/private/StubBase.cpp
 	areg/component/private/StubConnectEvent.cpp
 	areg/component/private/StubEvent.cpp
-	areg/component/private/EventTemplate.cpp
 	areg/component/private/Timer.cpp
 	areg/component/private/TimerBase.cpp
 	areg/component/private/TimerEventData.cpp
 	areg/component/private/TimerManager.cpp
 	areg/component/private/TimerManagerBase.cpp
-	areg/component/private/TimerManagerEvent.cpp
 	areg/component/private/Watchdog.cpp
 	areg/component/private/WatchdogManager.cpp
 	areg/component/private/WorkerThread.cpp
