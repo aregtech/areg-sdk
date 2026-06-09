@@ -102,6 +102,25 @@ public:
      **/
     inline ServiceResponseEvent(const ProxyAddress & target, MessageEnvelope && env);
 
+    /**
+     * \brief   Creates service response event and sets parameters.
+     *
+     * \param   consumer    The target consumer to send event
+     * \param   service     The raw service structure
+     * \param   result      The response result
+     * \param   respId      The response message ID
+     * \param   eventType   The type of event.
+     * \param   seqNr       The sequence number of call.
+     * \param   initSize    Payload bytes to reserve after the header for serialized parameters.
+     **/
+    inline ServiceResponseEvent( const areg::Endpoint& consumer
+                               , const areg::RawService& service
+                               , areg::ResultType result
+                               , uint32_t respId
+                               , areg::EventType eventType
+                               , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
+                               , uint32_t initSize = 0u );
+
     inline ServiceResponseEvent(const areg::Endpoint& consumer, const areg::RawService& service, const ServiceResponseEvent& src);
 
     inline ServiceResponseEvent(const areg::Endpoint& consumer, const areg::RawService& service, MessageEnvelope&& env);
@@ -193,6 +212,24 @@ inline ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress& target, c
 inline ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress& target, MessageEnvelope&& env )
     : ProxyEvent    (target, std::move(env))
 {
+}
+
+inline ServiceResponseEvent::ServiceResponseEvent( const areg::Endpoint& consumer
+                                                 , const areg::RawService& service
+                                                 , areg::ResultType result
+                                                 , uint32_t respId
+                                                 , areg::EventType eventType
+                                                 , const SequenceNumber& seqNr
+                                                 , uint32_t initSize)
+    : ProxyEvent(consumer, service, eventType, initSize)
+{
+    areg::EventHeader* hdr{ header() };
+    if (hdr != nullptr)
+    {
+        hdr->messageId = respId;
+        hdr->result = static_cast<uint32_t>(result);
+        hdr->sequenceNr = seqNr;
+    }
 }
 
 inline ServiceResponseEvent::ServiceResponseEvent(const areg::Endpoint& consumer, const areg::RawService& service, const ServiceResponseEvent& src)

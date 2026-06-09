@@ -313,8 +313,7 @@ void StubBase::send_error_notification( const StubListenerList & whichListeners,
 {
     const uint32_t respId = masterEvent.response_id();
 
-    // Strip one-shot (seqNr > 0) listeners from the map under ONE lock instead of one lock per remove.
-    // Negated-seqNr entries are intentionally not stripped here (matches original error semantics).
+    do
     {
         Lock lock(mListenerLock);
         for (uint32_t i = 0; i < whichListeners.size(); ++i)
@@ -323,7 +322,7 @@ void StubBase::send_error_notification( const StubListenerList & whichListeners,
             if (static_cast<SignedSequence>(listener.mSequenceNr) > 0)
                 remove_from_map(respId, listener);  // recursive lock: safe
         }
-    }
+    } while (false);
 
     // Send events outside the lock.
     for (uint32_t i = 0; i < whichListeners.size(); ++i)

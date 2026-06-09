@@ -50,7 +50,6 @@ namespace areg {
     class NotificationEvent;
     class DispatcherThread;
     class ProxyListener;
-    class ResponseEvent;
     class SharedBuffer;
     class ProxyEvent;
     class ProxyBase;
@@ -437,7 +436,7 @@ public:
      * \param   msgId       The message ID of the failed request.
      * \param   errCode     The error code indicating the failure reason.
      * \param   seqNr       The sequence number associated with the request.
-     * \return  A ResponseEvent value; check is_valid() before use.
+     * \return  A ServiceResponseEvent value; check is_valid() before use.
      **/
     [[nodiscard]]
     static ServiceResponseEvent request_failure_event(const ProxyAddress & target, uint32_t msgId, areg::ResultType errCode, const SequenceNumber & seqNr);
@@ -657,13 +656,13 @@ protected:
 
     /**
      * \brief   Creates an error response event when a remote request fails to reach the target.
-     *          Base returns an invalid ResponseEvent. Override in generated proxies.
+     *          Base returns an invalid ServiceResponseEvent. Override in generated proxies.
      *
      * \param   addrProxy       The address of the proxy that sent the failed request.
      * \param   msgId           The message ID of the failed request.
      * \param   reason          The failure reason code.
      * \param   seqNr           The sequence number of the failed request.
-     * \return  A ResponseEvent value; check is_valid() before use.
+     * \return  A ServiceResponseEvent value; check is_valid() before use.
      **/
     [[nodiscard]]
     virtual ServiceResponseEvent create_request_failed( const ProxyAddress & addrProxy, uint32_t msgId, areg::ResultType reason, const SequenceNumber & seqNr ) const = 0;

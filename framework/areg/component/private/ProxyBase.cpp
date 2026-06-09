@@ -173,7 +173,7 @@ ServiceResponseEvent ProxyBase::request_failure_event(const ProxyAddress & targe
     LOG_SCOPE( areg_component_ProxyBase, request_failure_event);
 
     std::shared_ptr<ProxyBase> proxy = ProxyBase::find_proxy(static_cast<uint32_t>(target));
-    return (proxy.get() != nullptr ? proxy->create_request_failed(target, msgId, errCode, seqNr) : ResponseEvent(MessageEnvelope{}));
+    return (proxy.get() != nullptr ? proxy->create_request_failed(target, msgId, errCode, seqNr) : ServiceResponseEvent(MessageEnvelope{}));
 }
 
 //////////////////////////////////////////////////////////////////////////

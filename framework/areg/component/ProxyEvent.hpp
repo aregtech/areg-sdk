@@ -41,7 +41,6 @@ class StubAddress;
 class ServiceResponseEvent;
 class NotificationConsumer;
 class Channel;
-class ResponseEvent;
 class ProxyConnectEvent;
 
 /**
@@ -79,6 +78,17 @@ protected:
     inline ProxyEvent(const ProxyAddress& toTarget, const MessageEnvelope& src);
 
     inline ProxyEvent(const ProxyAddress& toTarget, MessageEnvelope&& src) noexcept;
+
+    /**
+     * \brief   Initializes the proxy event and sets the target consumer ans service structure.
+     *
+     * \param   consumer    The address of the target consumer to receive the event.
+     * \param   service     The service information
+     * \param   eventType   The type of event.
+     * \param   initSize    Payload bytes to reserve after the header so that serialization does not
+     *                      reallocate. 0 keeps the default block size.
+     **/
+    inline ProxyEvent(const areg::Endpoint& consumer, const areg::RawService& service, areg::EventType eventType, uint32_t initSize = 0u);
 
     inline ProxyEvent(const areg::Endpoint& consumer, const areg::RawService& service, const MessageEnvelope& src);
 
@@ -275,6 +285,17 @@ inline ProxyEvent::ProxyEvent(const ProxyAddress& toTarget, MessageEnvelope&& sr
     areg::EventHeader* hdr{ header() };
     if (hdr != nullptr)
         toTarget.to_event(*hdr);
+}
+
+inline ProxyEvent::ProxyEvent(const areg::Endpoint& consumer, const areg::RawService& service, areg::EventType eventType, uint32_t initSize)
+    : Event(eventType, initSize)
+{
+    areg::EventHeader* hdr{ header() };
+    if (hdr != nullptr)
+    {
+        hdr->consumer = consumer;
+        hdr->rawService = service;
+    }
 }
 
 inline ProxyEvent::ProxyEvent(const areg::Endpoint& consumer, const areg::RawService& service, const MessageEnvelope& src)

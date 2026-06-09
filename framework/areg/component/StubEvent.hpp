@@ -48,8 +48,6 @@ namespace areg {
  * Dependencies
  ************************************************************************/
 class ServiceRequestEvent;
-class RequestEvent;
-class NotifyRequestEvent;
 class StubConnectEvent;
 
 /************************************************************************
@@ -224,14 +222,14 @@ private:
      *
      * \param   reqEvent    Local request event to process.
      **/
-    void _local_request( RequestEvent & reqEvent );
+    void _local_request(ServiceRequestEvent& reqEvent );
 
     /**
      * \brief   Processes a local notification request event.
      *
      * \param   notifyRequest       Notification request event to process.
      **/
-    void _local_notify_request( NotifyRequestEvent & notifyRequest );
+    void _local_notify_request(ServiceRequestEvent& notifyRequest );
 
     /**
      * \brief   Processes a connection update notification (registration or client connection

@@ -415,7 +415,7 @@ void RouterClient::process_request_event(ServiceRequestEvent& reqEvent)
     }
 }
 
-void RouterClient::process_notify_request(NotifyRequestEvent& reqNotifyEvent )
+void RouterClient::process_notify_request(ServiceRequestEvent& reqNotifyEvent )
 {
     LOG_SCOPE( areg_ipc_private_RouterClient, process_notify_request );
 

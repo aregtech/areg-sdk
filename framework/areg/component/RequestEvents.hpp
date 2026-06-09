@@ -28,94 +28,22 @@ namespace areg {
  * List of declared classes:
  ************************************************************************/
 // ServiceRequestEvent;
-    class RequestEvent;
-        class LocalRequestEvent;
-        class RemoteRequestEvent;
-
-    class NotifyRequestEvent;
-        class LocalNotifyRequestEvent;
-        class RemoteNotifyRequestEvent;
+    class LocalRequestEvent;
+    class RemoteRequestEvent;
+    class LocalNotifyRequestEvent;
+    class RemoteNotifyRequestEvent;
 /************************************************************************
  * \brief   In this file following request event classes are declared:
  *              1. Request function call events:
- *                  a. RequestEvent
- *                  b.      LocalRequestEvent
- *                  c.      RemoteRequestEvent
+ *                  a.      LocalRequestEvent
+ *                  b.      RemoteRequestEvent
  *              2. Notification request events:
- *                  a.  NotifyRequestEvent
- *                  b.      LocalNotifyRequestEvent
- *                  c.      RemoteNotifyRequestEvent
+ *                  a.      LocalNotifyRequestEvent
+ *                  b.      RemoteNotifyRequestEvent
  *          These are base classes for communication, used to send
  *          Data in Request objects for local and remote communication.
  *          For more information, see description bellow.
  ************************************************************************/
-
-//////////////////////////////////////////////////////////////////////////
-// RequestEvent class declaration
-//////////////////////////////////////////////////////////////////////////
-/************************************************************************
- * RequestEvent class, sends request event
- ************************************************************************/
-/**
- * \brief   Service request event sent from proxy to stub; carries request ID and serialized
- *          parameter data.
- **/
-class AREG_API RequestEvent    : public ServiceRequestEvent
-{
-//////////////////////////////////////////////////////////////////////////
-// Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Initializes a request event with source/target addresses and request ID (no
-     *          parameters).
-     *
-     * \param   fromSource      Source proxy address.
-     * \param   toTarget        Target stub address.
-     * \param   reqId           Request ID.
-     * \param   eventType       Event type (local or remote request).
-     * \param   initSize        Payload bytes to reserve after the header for serialized parameters.
-     **/
-    inline RequestEvent( const ProxyAddress & fromSource
-                       , const StubAddress & toTarget
-                       , uint32_t reqId
-                       , areg::EventType eventType
-                       , uint32_t initSize = 0u );
-
-    /**
-     * \brief   Initializes a request event with serialized parameters copied into the event payload.
-     *
-     * \param   args            Serialized request parameters (SharedBuffer payload, copied in).
-     * \param   fromSource      Source proxy address.
-     * \param   toTarget        Target stub address.
-     * \param   reqId           Request ID.
-     * \param   eventType       Event type (local or remote request).
-     **/
-    inline RequestEvent( const SharedBuffer & args
-                       , const ProxyAddress & fromSource
-                       , const StubAddress & toTarget
-                       , uint32_t reqId
-                       , areg::EventType eventType);
-
-    /**
-     * \brief   Constructs from a received MessageEnvelope.
-     *
-     * \param   envelope    Received event envelope with header and payload.
-     **/
-    explicit inline RequestEvent( const MessageEnvelope & envelope ) noexcept;
-
-    RequestEvent(const RequestEvent& /*src*/) = default;
-
-    RequestEvent(RequestEvent&& /*src*/) = default;
-
-    ~RequestEvent() override = default;
-
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    RequestEvent() = delete;
-};
 
 //////////////////////////////////////////////////////////////////////////
 // LocalRequestEvent class declaration
@@ -126,7 +54,7 @@ private:
 /**
  * \brief   Event for triggering a service request on the stub side within the same process.
  **/
-class AREG_API LocalRequestEvent  : public    RequestEvent
+class AREG_API LocalRequestEvent  : public    ServiceRequestEvent
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -185,7 +113,7 @@ private:
  * \brief   Generic Remote Request Event object to trigger requests on Stub side within different
  *          processes via service routing module.
  **/
-class AREG_API RemoteRequestEvent : public    RequestEvent
+class AREG_API RemoteRequestEvent : public    ServiceRequestEvent
 {
     friend class RemoteEventFactory;
     friend class StubBase;   // needs new RemoteRequestEvent(envelope) on IPC receive path
@@ -266,58 +194,13 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// NotifyRequestEvent class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Event for sending notification subscription/unsubscription requests from a proxy to a stub.
- **/
-class AREG_API NotifyRequestEvent : public ServiceRequestEvent
-{
-//////////////////////////////////////////////////////////////////////////
-// Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Initializes a notification request event for starting or stopping notifications.
-     *
-     * \param   fromProxy   The address of the source proxy requesting notifications.
-     * \param   toStub      The address of the target stub to start or stop sending notifications.
-     * \param   msgId       The ID of the message (attribute, broadcast, or response). Request IDs cannot be notified.
-     * \param   reqType     The request type (subscribe or unsubscribe).
-     * \param   eventType   The type of event (local or remote request).
-     **/
-    inline NotifyRequestEvent( const ProxyAddress & fromProxy
-                             , const StubAddress & toStub
-                             , uint32_t msgId
-                             , areg::RequestType reqType
-                             , areg::EventType eventType );
-
-    /**
-     * \brief   Constructs from a received MessageEnvelope.
-     **/
-    explicit inline NotifyRequestEvent( const MessageEnvelope & envelope ) noexcept;
-
-    NotifyRequestEvent(const NotifyRequestEvent& /*src*/) = default;
-
-    NotifyRequestEvent(NotifyRequestEvent&& /*src*/) noexcept = default;
-
-    ~NotifyRequestEvent() override = default;
-
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    NotifyRequestEvent() = delete;
-};
-
-//////////////////////////////////////////////////////////////////////////
 // LocalNotifyRequestEvent class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Event for sending notification subscription/unsubscription requests from a proxy to a
  *          stub within the same process.
  **/
-class AREG_API LocalNotifyRequestEvent    : public    NotifyRequestEvent
+class AREG_API LocalNotifyRequestEvent    : public    ServiceRequestEvent
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -362,7 +245,7 @@ private:
  * \brief   Remote notification request event sent by a proxy to a stub to start or stop
  *          attribute/broadcast/response notifications.
  **/
-class AREG_API RemoteNotifyRequestEvent    : public    NotifyRequestEvent
+class AREG_API RemoteNotifyRequestEvent    : public    ServiceRequestEvent
 {
     friend class RemoteEventFactory;
     friend class StubBase;   // needs new RemoteNotifyRequestEvent(envelope) on IPC receive path
@@ -433,38 +316,10 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// RequestEvent class, Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
-inline RequestEvent::RequestEvent( const ProxyAddress & fromSource
-                                  , const StubAddress & toTarget
-                                  , uint32_t reqId
-                                  , areg::EventType eventType
-                                  , uint32_t initSize /*= 0u*/ )
-    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, eventType, initSize)
-{
-}
-
-inline RequestEvent::RequestEvent( const SharedBuffer & args
-                                  , const ProxyAddress & fromSource
-                                  , const StubAddress& toTarget
-                                  , uint32_t reqId
-                                  , areg::EventType eventType)
-    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, eventType)
-{
-    if (args.is_valid())
-        write_data(args.buffer(), args.size_used());
-}
-
-inline RequestEvent::RequestEvent( const MessageEnvelope & envelope ) noexcept
-    : ServiceRequestEvent( envelope )
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-// RequestEvent class, Constructors / Destructor
+// LocalRequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 inline LocalRequestEvent::LocalRequestEvent(const ProxyAddress& fromSource, const StubAddress& toTarget, uint32_t reqId, uint32_t initSize /*= 0*/)
-    : RequestEvent(fromSource, toTarget, reqId, areg::EventType::EventLocalRequest, initSize)
+    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, areg::EventType::EventLocalRequest, initSize)
 {
 }
 
@@ -472,20 +327,22 @@ inline LocalRequestEvent::LocalRequestEvent( const SharedBuffer& args
                                            , const ProxyAddress& fromSource
                                            , const StubAddress& toTarget
                                            , uint32_t reqId)
-    : RequestEvent(args, fromSource, toTarget, reqId, areg::EventType::EventLocalRequest)
+    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, areg::EventType::EventLocalRequest, 0u)
 {
+    if (args.is_valid())
+        write_data(args.buffer(), args.size_used());
 }
 
 inline LocalRequestEvent::LocalRequestEvent(const MessageEnvelope& envelope) noexcept
-    : RequestEvent(envelope)
+    : ServiceRequestEvent(envelope)
 {
 }
 
 //////////////////////////////////////////////////////////////////////////
-// RequestEvent class, Constructors / Destructor
+// RemoteRequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 inline RemoteRequestEvent::RemoteRequestEvent( const ProxyAddress & fromSource, const StubAddress & toTarget, uint32_t reqId, uint32_t initSize /*= 0u*/ )
-    : RequestEvent(fromSource, toTarget, reqId, areg::EventType::EventRemoteRequest, initSize)
+    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, areg::EventType::EventRemoteRequest, initSize)
 {
 }
 
@@ -493,12 +350,14 @@ inline RemoteRequestEvent::RemoteRequestEvent( const SharedBuffer & args
                                              , const ProxyAddress & fromSource
                                              , const StubAddress & toTarget
                                              , uint32_t reqId)
-    : RequestEvent(args, fromSource, toTarget, reqId, areg::EventType::EventRemoteRequest)
+    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, areg::EventType::EventRemoteRequest, 0u)
 {
+    if (args.is_valid())
+        write_data(args.buffer(), args.size_used());
 }
 
 inline RemoteRequestEvent::RemoteRequestEvent( const MessageEnvelope & envelope ) noexcept
-    : RequestEvent( envelope )
+    : ServiceRequestEvent( envelope )
 {
 }
 
@@ -540,51 +399,34 @@ inline Channel RemoteRequestEvent::source_channel() const noexcept
 }
 
 //////////////////////////////////////////////////////////////////////////
-// NotifyRequestEvent class, Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
-inline NotifyRequestEvent::NotifyRequestEvent( const ProxyAddress & fromProxy
-                                             , const StubAddress & toStub
-                                             , uint32_t msgId
-                                             , areg::RequestType reqType
-                                             , areg::EventType eventType)
-    : ServiceRequestEvent ( fromProxy, toStub, msgId, reqType, eventType)
-{
-}
-
-inline NotifyRequestEvent::NotifyRequestEvent( const MessageEnvelope & envelope ) noexcept
-    : ServiceRequestEvent( envelope )
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-// NotifyRequestEvent class, Constructors / Destructor
+// LocalNotifyRequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 inline LocalNotifyRequestEvent::LocalNotifyRequestEvent( const ProxyAddress& fromProxy
                                                        , const StubAddress& toStub
                                                        , uint32_t msgId
                                                        , areg::RequestType reqType)
-    : NotifyRequestEvent(fromProxy, toStub, msgId, reqType, areg::EventType::EventLocalNotifyRequest)
+    : ServiceRequestEvent(fromProxy, toStub, msgId, reqType, areg::EventType::EventLocalNotifyRequest)
 {
 }
 
 inline LocalNotifyRequestEvent::LocalNotifyRequestEvent(const MessageEnvelope& envelope) noexcept
-    : NotifyRequestEvent(envelope)
+    : ServiceRequestEvent(envelope)
 {
 }
 
 //////////////////////////////////////////////////////////////////////////
-// NotifyRequestEvent class, Constructors / Destructor
+// RemoteNotifyRequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 inline RemoteNotifyRequestEvent::RemoteNotifyRequestEvent( const ProxyAddress& fromProxy
                                                          , const StubAddress& toStub
                                                          , uint32_t msgId
                                                          , areg::RequestType reqType)
-    : NotifyRequestEvent(fromProxy, toStub, msgId, reqType, areg::EventType::EventRemoteNotifyRequest)
+    : ServiceRequestEvent(fromProxy, toStub, msgId, reqType, areg::EventType::EventRemoteNotifyRequest)
 {
 }
 
 inline RemoteNotifyRequestEvent::RemoteNotifyRequestEvent(const MessageEnvelope& envelope) noexcept
-    : NotifyRequestEvent(envelope)
+    : ServiceRequestEvent(envelope)
 {
 }
 

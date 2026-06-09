@@ -39,7 +39,6 @@ namespace areg {
     class RemoteRequestEvent;
     class ComponentThread;
     class SharedBuffer;
-    class ResponseEvent;
     class Component;
 } // namespace areg
 

@@ -31,7 +31,6 @@ namespace areg {
  * Dependencies.
  ************************************************************************/
 class ServiceRequestEvent;
-class NotifyRequestEvent;
 class ServiceResponseEvent;
 
 //////////////////////////////////////////////////////////////////////////
@@ -66,7 +65,7 @@ public:
      *
      * \param   reqNotifyEvent      The remote notification request event to process.
      **/
-    virtual void process_notify_request(NotifyRequestEvent& reqNotifyEvent ) = 0;
+    virtual void process_notify_request(ServiceRequestEvent& reqNotifyEvent ) = 0;
 
     /**
      * \brief   Processes a remote response event received by the stub (e.g., to subscribe or
@@ -112,7 +111,7 @@ inline void RemoteEventConsumer::start_event_processing(Event& eventElem)
         process_response_event(static_cast<ServiceResponseEvent&>(eventElem));
         break;
     case areg::EventType::EventRemoteNotifyRequest:
-        process_notify_request(static_cast<NotifyRequestEvent&>(eventElem));
+        process_notify_request(static_cast<ServiceRequestEvent&>(eventElem));
         break;
     default:
         break;

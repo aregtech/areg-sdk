@@ -33,7 +33,7 @@ StubEventConsumer::StubEventConsumer( const StubAddress & stubAddress )
 {
 }
 
-inline void StubEventConsumer::_local_request( RequestEvent & reqEvent )
+inline void StubEventConsumer::_local_request(ServiceRequestEvent& reqEvent )
 {
     Component* curComponent = Component::find_by_name(mStubAddress.role_name());
     ComponentThread::set_current_component(curComponent);
@@ -46,7 +46,7 @@ inline void StubEventConsumer::_local_request( RequestEvent & reqEvent )
     ComponentThread::set_current_component(nullptr);
 }
 
-inline void StubEventConsumer::_local_notify_request( NotifyRequestEvent & notifyRequest )
+inline void StubEventConsumer::_local_notify_request(ServiceRequestEvent& notifyRequest )
 {
     Component* curComponent = Component::find_by_name(mStubAddress.role_name());
     ComponentThread::set_current_component(curComponent);
@@ -99,11 +99,11 @@ void StubEventConsumer::start_event_processing( Event & eventElem )
         break;
     case areg::EventType::EventLocalRequest:            // fall through
     case areg::EventType::EventRemoteRequest:
-        _local_request(static_cast<RequestEvent&>(eventElem));
+        _local_request(static_cast<ServiceRequestEvent&>(eventElem));
         break;
     case areg::EventType::EventLocalNotifyRequest:      // fall through
     case areg::EventType::EventRemoteNotifyRequest:
-        _local_notify_request(static_cast<NotifyRequestEvent&>(eventElem));
+        _local_notify_request(static_cast<ServiceRequestEvent&>(eventElem));
         break;
     default:
         process_stub_event(static_cast<StubEvent&>(eventElem));

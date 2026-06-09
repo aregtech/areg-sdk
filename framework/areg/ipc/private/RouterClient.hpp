@@ -224,7 +224,7 @@ protected:
      *
      * \param   reqNotifyEvent      The remote notification request event to be processed.
      **/
-    void process_notify_request(NotifyRequestEvent& reqNotifyEvent ) final;
+    void process_notify_request(ServiceRequestEvent& reqNotifyEvent ) final;
 
     /**
      * \brief   Called when Stub receives a remote response subscription request.
