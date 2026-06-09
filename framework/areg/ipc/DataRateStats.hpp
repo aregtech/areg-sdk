@@ -106,6 +106,17 @@ private:
     AREG_NOCOPY_NOMOVE(DataRateStats);
 };
 
+//////////////////////////////////////////////////////////////////////////
+// DataRateStats inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline DataRateStats::DataRateStats() noexcept
+    : mBytes    (0u)
+    , mMsgs     (0u)
+    , mEnabled  (false)
+{
+}
+
 inline void DataRateStats::accumulate(uint64_t bytes, uint32_t msgs) noexcept
 {
     if (mEnabled)

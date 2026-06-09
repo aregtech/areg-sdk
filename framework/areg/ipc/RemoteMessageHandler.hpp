@@ -34,8 +34,7 @@ namespace areg {
 // RemoteMessageHandler interface declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Interface for handling remote service operations with callbacks for send/receive success
- *          and failure.
+ * \brief   Interface for handling remote service operations with callbacks for send/receive success and failure.
  **/
 class AREG_API RemoteMessageHandler
 {

@@ -102,6 +102,10 @@ public:
      **/
     inline ServiceResponseEvent(const ProxyAddress & target, MessageEnvelope && env);
 
+    inline ServiceResponseEvent(const areg::Endpoint& consumer, const areg::RawService& service, const ServiceResponseEvent& src);
+
+    inline ServiceResponseEvent(const areg::Endpoint& consumer, const areg::RawService& service, MessageEnvelope&& env);
+
     ServiceResponseEvent(const ServiceResponseEvent& /*src*/) = default;
 
     ServiceResponseEvent(ServiceResponseEvent&& /*src*/) noexcept = default;
@@ -146,6 +150,8 @@ public:
     [[nodiscard]]
     inline ServiceResponseEvent clone_for_target(const ProxyAddress & target) const;
 
+    inline ServiceResponseEvent clone_for_target(const areg::Endpoint& consumer, const areg::RawService& service) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
@@ -189,9 +195,24 @@ inline ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress& target, M
 {
 }
 
+inline ServiceResponseEvent::ServiceResponseEvent(const areg::Endpoint& consumer, const areg::RawService& service, const ServiceResponseEvent& src)
+    : ProxyEvent(consumer, service, src.envelope().clone())
+{
+}
+
+inline ServiceResponseEvent::ServiceResponseEvent(const areg::Endpoint& consumer, const areg::RawService& service, MessageEnvelope&& env)
+    : ProxyEvent(consumer, service, std::move(env))
+{
+}
+
 inline ServiceResponseEvent ServiceResponseEvent::clone_for_target( const ProxyAddress & target ) const
 {
     return ServiceResponseEvent(target, envelope().clone());
+}
+
+inline ServiceResponseEvent ServiceResponseEvent::clone_for_target(const areg::Endpoint& consumer, const areg::RawService& service) const
+{
+    return ServiceResponseEvent(consumer, service, envelope().clone());
 }
 
 inline uint32_t ServiceResponseEvent::response_id() const noexcept

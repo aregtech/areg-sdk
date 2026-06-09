@@ -202,7 +202,7 @@
             static areg::LogScope     _##path##_##method(#path "." #method);                                    \
             static areg::ScopeMessage  _messager(_##path##_##method);                                           \
             static bool is_activated { false };                                                                 \
-            if (!is_activated) { areg::activate_scope( _##path##_##method ); is_activated = true; }            \
+            if (!is_activated) { areg::activate_scope( _##path##_##method ); is_activated = true; }             \
             return _messager;                                                                                   \
         }
 

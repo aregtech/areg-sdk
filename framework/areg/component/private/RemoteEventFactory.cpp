@@ -86,28 +86,29 @@ bool RemoteEventFactory::route_outgoing_message( Event & srcWire, const Channel 
 
 bool RemoteEventFactory::route_incoming_message( MessageEnvelope & src, const Channel & comChannel )
 {
-    const areg::EventHeader * hdrPtr = src.header();
-    if ((hdrPtr == nullptr) || !src.is_valid())
+    if (!src.is_valid())
         return false;
 
-    const areg::EventType eventType{ static_cast<areg::EventType>(hdrPtr->eventType) };
+    areg::EventHeader* hdr{ src.header() };
+    ASSERT(hdr != nullptr);
+    const areg::EventType eventType{ static_cast<areg::EventType>(hdr->eventType) };
 
     switch ( eventType )
     {
     case areg::EventType::EventRemoteRequest:       // fall through
     case areg::EventType::EventRemoteNotifyRequest:
     {
-        UniqueNumber stubId = hdrPtr->provider.number;
-        const StubBase * stub = StubBase::find_stub(stubId);
+        UniqueNumber stubId = hdr->provider.number;
+        StubBase * stub = StubBase::find_stub(stubId);
         if ( stub == nullptr )
             return false;
+
+        DispatcherThread& thread{ stub->component_thread() };
+        ASSERT(thread.is_valid());
 
         const Channel chTarget(stub->address().channel());
         const Channel chSource(comChannel.source(), chTarget.source(), src.source());
 
-        ResponseEvent evt(std::move(src));
-        areg::EventHeader * hdr = evt.header();
-        ASSERT(hdr != nullptr);
         // Route to stub's local thread
         hdr->target          = chTarget.cookie();
         hdr->channel         = chTarget.target();
@@ -117,35 +118,33 @@ bool RemoteEventFactory::route_incoming_message( MessageEnvelope & src, const Ch
         hdr->source          = chSource.target();
         hdr->consumer.id     = chSource.cookie();
         hdr->consumer.thread = chSource.source();
-        evt.set_event_consumer(static_cast<areg::EventConsumer *>(const_cast<areg::StubBase *>(stub)));
+        hdr->internal2       = areg::to_num<uint64_t, EventConsumer*>(stub);
 
-        evt.register_for_thread(&stub->component_thread());
-        evt.deliver_event();
-        return true;
+        Event evt(std::move(src));
+        return thread.event_dispatcher().post_event(evt);
     }
 
     case areg::EventType::EventRemoteResponse:
     {
-        UniqueNumber proxyId = hdrPtr->consumer.number;
+        UniqueNumber proxyId = hdr->consumer.number;
         const std::shared_ptr<ProxyBase> proxy = ProxyBase::find_proxy(proxyId);
         if ( !proxy )
             return false;
 
+        DispatcherThread& thread{ proxy->proxy_dispatcher_thread() };
+        ASSERT(thread.is_valid());
+
         const Channel chTarget(proxy->proxy_address().channel());
 
-        Event evt(std::move(src));
-        areg::EventHeader * hdr = evt.header();
-        ASSERT(hdr != nullptr);
         // Route response to proxy's local thread
         hdr->target          = chTarget.cookie();
         hdr->channel         = chTarget.target();
         hdr->consumer.id     = chTarget.cookie();
         hdr->consumer.thread = chTarget.source();
-        evt.set_event_consumer(static_cast<areg::EventConsumer *>(proxy.get()));
+        hdr->internal2 = areg::to_num<uint64_t, EventConsumer*>(proxy.get());
 
-        evt.register_for_thread(&proxy->proxy_dispatcher_thread());
-        evt.deliver_event();
-        return true;
+        Event evt(std::move(src));
+        return thread.event_dispatcher().post_event(evt);
     }
 
     case areg::EventType::EventRemoteProviderConnect:   // fall through

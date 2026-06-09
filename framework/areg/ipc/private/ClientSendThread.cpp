@@ -31,6 +31,8 @@ ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientCo
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
     , mSendStats        ( )
+    , mDrain            ( )
+    , mIoBuffer         ( )
 {
 }
 
@@ -67,12 +69,8 @@ void ClientSendThread::start_event_processing( Event & eventElem )
     hdr0->custom    = 0u;
     eventElem.envelope().buffer_completion_fix(); // compute checksum now; zeroed fields are not covered by checksum
 
-    // Drained buffers are retained in mDrain[] (a reused member array) so the raw header pointers held
-    // in ioBuffer stay valid through the writev. We retain only the shared_ptr (one atomic increment),
-    // never a full Event. mDrain is reset, not reconstructed, each call. Slot 0 is the triggering event
-    // (kept alive by the caller); drained events occupy slots [1 .. bufCount).
     // ZEPHYR-INCOMPATIBLE: ~4 KB stack IoBuffer array for batch send draining.
-    areg::IoBuffer ioBuffer[areg::THREAD_DRAIN_LIMIT];
+    areg::IoBuffer* ioBuffer{ mIoBuffer };
     uint32_t totalSize { 0u };
     uint32_t bufCount  { 0u };
 

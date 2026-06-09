@@ -57,9 +57,9 @@ public:
 
     virtual ~ClientReceiveThread() = default;
 
-    /************************************************************************/
-    // Actions and attributes.
-    /************************************************************************/
+/************************************************************************/
+// Actions and attributes.
+/************************************************************************/
 public:
     /**
      * \brief   Returns accumulative value of received data size and resets the existing value to

@@ -38,8 +38,7 @@ namespace areg {
 // RegistrationConsumer interface declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Interface for remote service registration callbacks triggered when service states
- *          change.
+ * \brief   Interface for remote service registration callbacks triggered when service states change.
  **/
 class AREG_API RegistrationConsumer
 {
@@ -59,15 +58,11 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Extracts lists of registered remote service providers and consumers matching the
-     *          cookie filter.
+     * \brief   Extracts lists of registered remote service providers and consumers matching the cookie filter.
      *
-     * \param   cookie              Cookie filter; pass areg::COOKIE_ANY to retrieve all
-     *                              services.
-     * \param[out] listProviders       On output contains addresses of remote service providers
-     *                                 matching filter.
-     * \param[out] listConsumers       On output contains addresses of remote service consumers
-     *                                 matching filter.
+     * \param   cookie              Cookie filter; pass areg::COOKIE_ANY to retrieve all services.
+     * \param[out] listProviders    On output contains addresses of remote service providers matching filter.
+     * \param[out] listConsumers    On output contains addresses of remote service consumers matching filter.
      **/
     virtual void extract_service_addresses(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumers ) const = 0;
 
@@ -90,8 +85,7 @@ public:
      *
      * \param   stub        Address of the unregistered service provider.
      * \param   reason      Reason for unregistration.
-     * \param   cookie      Cookie of source initiating unregistration; ignored if
-     *                      areg::COOKIE_ANY.
+     * \param   cookie      Cookie of source initiating unregistration; ignored if areg::COOKIE_ANY.
      **/
     virtual void on_provider_unregistered( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) = 0;
 
@@ -100,8 +94,7 @@ public:
      *
      * \param   proxy       Address of the unregistered service consumer.
      * \param   reason      Reason for unregistration.
-     * \param   cookie      Cookie of source initiating unregistration; ignored if
-     *                      areg::COOKIE_ANY.
+     * \param   cookie      Cookie of source initiating unregistration; ignored if areg::COOKIE_ANY.
      **/
     virtual void on_consumer_unregistered( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) = 0;
 

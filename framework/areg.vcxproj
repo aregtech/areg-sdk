@@ -112,9 +112,6 @@
     <ClCompile Include="areg\component\private\macos\TimerPosixMacOS.cpp" />
     <ClCompile Include="areg\component\private\macos\WatchdogManagerMacOS.cpp" />
     <ClCompile Include="areg\component\private\MpscEventQueue.cpp" />
-    <ClCompile Include="areg\ipc\private\ConnectionConsumer.cpp" />
-    <ClCompile Include="areg\ipc\private\DataRateStats.cpp" />
-    <ClCompile Include="areg\ipc\private\RegistrationProvider.cpp" />
     <ClCompile Include="areg\component\private\ServiceManagerEventProcessor.cpp" />
     <ClCompile Include="areg\component\private\posix\TimerBasePosix.cpp" />
     <ClCompile Include="areg\component\private\posix\TimerManagerPosix.cpp" />
@@ -165,19 +162,14 @@
     <ClCompile Include="areg\component\private\Model.cpp" />
     <ClCompile Include="areg\component\private\ServiceDefs.cpp" />
     <ClCompile Include="areg\ipc\private\ClientConnection.cpp" />
-    <ClCompile Include="areg\ipc\private\ConnectionDefs.cpp" />
     <ClCompile Include="areg\ipc\private\RouterClient.cpp" />
     <ClCompile Include="areg\ipc\private\ServiceClientConnectionBase.cpp" />
     <ClCompile Include="areg\ipc\private\ClientReceiveThread.cpp" />
     <ClCompile Include="areg\ipc\private\ConnectionConfiguration.cpp" />
     <ClCompile Include="areg\ipc\private\ClientSendThread.cpp" />
     <ClCompile Include="areg\ipc\private\ServerConnectionBase.cpp" />
-    <ClCompile Include="areg\ipc\private\ServiceEvent.cpp" />
     <ClCompile Include="areg\ipc\private\ServiceEventConsumer.cpp" />
     <ClCompile Include="areg\ipc\private\SocketConnectionBase.cpp" />
-    <ClCompile Include="areg\ipc\private\ConnectionProvider.cpp" />
-    <ClCompile Include="areg\ipc\private\RegistrationConsumer.cpp" />
-    <ClCompile Include="areg\ipc\private\RemoteMessageHandler.cpp" />
     <ClCompile Include="areg\ipc\private\RemoteServiceDefs.cpp" />
     <ClCompile Include="areg\persist\private\DatabaseEngine.cpp" />
     <ClCompile Include="areg\persist\private\Property.cpp" />
@@ -186,7 +178,6 @@
     <ClCompile Include="areg\persist\private\PersistenceDefs.cpp" />
     <ClCompile Include="areg\logging\private\DatabaseLogger.cpp" />
     <ClCompile Include="areg\logging\private\DebugOutputLogger.cpp" />
-    <ClCompile Include="areg\logging\private\LogDatabaseEngine.cpp" />
     <ClCompile Include="areg\logging\private\LayoutManager.cpp" />
     <ClCompile Include="areg\logging\private\Layouts.cpp" />
     <ClCompile Include="areg\logging\private\LogConfiguration.cpp" />
@@ -201,7 +192,6 @@
     <ClCompile Include="areg\logging\private\LogScope.cpp" />
     <ClCompile Include="areg\logging\private\LoggingDefs.cpp" />
     <ClCompile Include="areg\logging\private\LoggingEvent.cpp" />
-    <ClCompile Include="areg\logging\private\LogOptions.cpp" />
     <ClCompile Include="areg\logging\private\FileLogger.cpp" />
     <ClCompile Include="areg\logging\private\LoggerBase.cpp" />
     <ClCompile Include="areg\component\private\WatchdogManager.cpp" />

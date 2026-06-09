@@ -72,17 +72,6 @@ namespace areg {
 class AREG_API SharedBuffer : public  BufferBase
 {
     friend class FileBuffer;
-    friend class BufferBase;
-
-//////////////////////////////////////////////////////////////////////////
-// Defined static constants and types
-//////////////////////////////////////////////////////////////////////////
-protected:
-
-    /**
-     * \brief   Maximum length of byte buffer. It is defined as 64 Mb.
-     **/
-    static constexpr uint32_t   MAX_BUF_LENGTH  { 0x04000000u };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor

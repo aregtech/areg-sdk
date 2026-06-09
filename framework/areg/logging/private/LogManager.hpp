@@ -206,8 +206,7 @@ public:
      * \param   overwriteExisting       If true, resets and overwrites existing configuration with
      *                                  defaults regardless of prior state. If false, only applies
      *                                  defaults if not previously configured. After calling with
-     *                                  true, configuration will not be loaded from file until
-     *                                  reset.
+     *                                  true, configuration will not be loaded from file until reset.
      **/
     static void set_default_configuration(bool overwriteExisting);
 

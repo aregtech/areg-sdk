@@ -85,11 +85,11 @@ protected:
     // StubBase::Listener class declaration
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   This is internal class to track list of assigned listeners
-     *          for requests and attribute update notifications. 
-     *          It contains message ID (request or attribute ID), 
-     *          message sequence number and address of Proxy object to send
-     *          response message.
+     * \brief   Compact listener entry that tracks a registered proxy client for a message ID.
+     *          Stores the proxy identity in integer form (RawService + Endpoint, 28 bytes)
+     *          instead of a full ProxyAddress (which carries string fields).
+     *          Use proxy() to reconstruct a routable ProxyAddress for event dispatch,
+     *          or proxy_matches() for fast equality without constructing a ProxyAddress.
      **/
     class AREG_API Listener
     {
@@ -100,26 +100,27 @@ protected:
 
         inline Listener() noexcept;
 
-        inline Listener(const StubBase::Listener& src) noexcept;
+        Listener(const StubBase::Listener& src) noexcept = default;
 
-        inline Listener(StubBase::Listener&& src) noexcept;
+        Listener(StubBase::Listener&& src) noexcept = default;
 
         /**
-         * \brief   Initializes listener with message ID; proxy address must be set separately.
+         * \brief   Initializes listener with message ID; proxy fields zeroed.
          **/
         inline Listener(uint32_t reqId) noexcept;
 
         /**
-         * \brief   Initializes listener with message ID and sequence number; proxy address must set separately.
+         * \brief   Initializes listener with message ID and sequence number; proxy fields zeroed.
          **/
         inline Listener(uint32_t reqId, const SequenceNumber & seqId) noexcept;
 
         /**
          * \brief   Initializes listener with message ID, sequence number, and proxy address.
+         *          The proxy is stored in compact integer form via ProxyAddress::to_endpoint.
          *
          * \param   reqId       The message ID.
          * \param   seqId       The sequence number.
-         * \param   proxy       The target proxy address.
+         * \param   proxy       The target proxy address to extract routing integers from.
          **/
         inline Listener(uint32_t reqId, const SequenceNumber & seqId, const ProxyAddress & proxy) noexcept;
 
@@ -128,16 +129,38 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     public:
 
-        StubBase::Listener & operator = (const StubBase::Listener & src) noexcept;
+        StubBase::Listener & operator = (const StubBase::Listener & src) noexcept = default;
 
-        StubBase::Listener & operator = ( StubBase::Listener && src ) noexcept;
+        StubBase::Listener & operator = ( StubBase::Listener && src ) noexcept = default;
 
         /**
          * \brief   Returns true if listeners are equal; matching message ID and either matching
-         *          sequence number, proxy address, or one sequence number is ANY.
+         *          sequence number or one sequence number is ANY.
          **/
         [[nodiscard]]
         bool operator == ( const StubBase::Listener & other ) const noexcept;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Proxy access
+    //////////////////////////////////////////////////////////////////////////
+    public:
+
+        /**
+         * \brief   Reconstructs a ProxyAddress from the compact routing integers.
+         *          Use for event dispatch (clone_for_target, create_response).
+         *          Strings (service name, role name, thread name) are not restored;
+         *          all routing integer fields are correct.
+         **/
+        [[nodiscard]]
+        inline ProxyAddress proxy() const noexcept;
+
+        /**
+         * \brief   Returns true if the stored proxy identity matches addr without
+         *          constructing a full ProxyAddress.
+         *          Equivalent to (proxy() == addr) but avoids the construction cost.
+         **/
+        [[nodiscard]]
+        inline bool proxy_matches(const ProxyAddress & addr) const noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables.
@@ -146,15 +169,22 @@ protected:
         /**
          * \brief   The message ID of Listener object.
          **/
-        uint32_t        mMessageId;
+        uint32_t        mMessageId  { 0 };
         /**
-         * \brief   Sequence number of Listener
+         * \brief   Sequence number of Listener.
          **/
-        SequenceNumber  mSequenceNr;
+        SequenceNumber  mSequenceNr { 0 };
+
         /**
-         * \brief   The address of target Proxy object.
+         * \brief   Compact proxy service identity: service CRC and role CRC (8 bytes).
+         *          Populated by ProxyAddress::to_endpoint; consumed by ProxyAddress(RawService,Endpoint).
          **/
-        ProxyAddress    mProxy;
+        areg::RawService    mRawService { };
+        /**
+         * \brief   Compact proxy endpoint: cookie (id), proxy magic (number), thread CRC,
+         *          service version, and service type (20 bytes).
+         **/
+        areg::Endpoint      mConsumer   { };
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -682,6 +712,19 @@ private:
      **/
     void remove_from_map( uint32_t msgId, const StubBase::Listener & toRemove ) noexcept;
 
+    /**
+     * \brief   Collects all listeners for respId into out_listeners and, in the same locked
+     *          region, removes the one-shot entries that the response path would consume:
+     *          - seqNr > 0 (one-shot request): removed from the map.
+     *          - seqNr < 0 (unblocked request with existing notify): the matching seqNr==0
+     *            (notify subscription) entry is removed; the negated entry itself is kept.
+     *          - seqNr == 0 (notify subscription): kept in the map.
+     *
+     * \param   respId          The response / broadcast message ID to collect listeners for.
+     * \param[out] out_listeners Receives all listeners for respId.
+     **/
+    void collect_and_strip_response_listeners( uint32_t respId, StubListenerList & out_listeners );
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -710,12 +753,18 @@ protected:
     #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
+
+private:
     /**
      * \brief   Per-message-ID listener map. Each sub-vector holds all listeners registered for a specific message ID.
      **/
     StubBase::StubListenerMap       mListenerMap;
 
-private:
+    /**
+     * \brief   Guards all accesses to mListenerMap.
+     **/
+    mutable SpinLock                mListenerLock;
+
     /**
      * \brief   Message ID of the listener currently being processed.
      **/
@@ -764,63 +813,46 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 inline StubBase::Listener::Listener() noexcept
-    : mMessageId ( 0 )
-    , mSequenceNr( 0 )
-    , mProxy     ( ProxyAddress::invalid_proxy_address() )
+    : mMessageId  ( 0 )
+    , mSequenceNr ( 0 )
+    , mRawService ( )
+    , mConsumer   ( )
 {
 }
 
 inline StubBase::Listener::Listener( uint32_t reqId ) noexcept
-    : mMessageId ( reqId )
-    , mSequenceNr( 0 )
-    , mProxy     ( ProxyAddress::invalid_proxy_address() )
+    : mMessageId  ( reqId )
+    , mSequenceNr ( 0 )
+    , mRawService ( )
+    , mConsumer   ( )
 {
 }
 
 inline StubBase::Listener::Listener( uint32_t reqId, const SequenceNumber & seqId ) noexcept
-    : mMessageId ( reqId )
-    , mSequenceNr( seqId )
-    , mProxy     ( ProxyAddress::invalid_proxy_address() )
+    : mMessageId  ( reqId )
+    , mSequenceNr ( seqId )
+    , mRawService ( )
+    , mConsumer   ( )
 {
 }
 
-inline StubBase::Listener::Listener( uint32_t reqId, const SequenceNumber & seqId, const ProxyAddress& proxy ) noexcept
-    : mMessageId ( reqId )
-    , mSequenceNr( seqId )
-    , mProxy     ( proxy )
+inline StubBase::Listener::Listener( uint32_t reqId, const SequenceNumber & seqId, const ProxyAddress & proxy ) noexcept
+    : mMessageId  ( reqId )
+    , mSequenceNr ( seqId )
+    , mRawService ( )
+    , mConsumer   ( )
 {
+    proxy.to_endpoint( mRawService, mConsumer );
 }
 
-inline StubBase::Listener::Listener( const StubBase::Listener& src ) noexcept
-    : mMessageId ( src.mMessageId )
-    , mSequenceNr( src.mSequenceNr)
-    , mProxy     ( src.mProxy )
+inline ProxyAddress StubBase::Listener::proxy() const noexcept
 {
+    return ProxyAddress( mRawService, mConsumer );
 }
 
-inline StubBase::Listener::Listener( StubBase::Listener && src ) noexcept
-    : mMessageId ( src.mMessageId )
-    , mSequenceNr( src.mSequenceNr )
-    , mProxy     ( std::move(src.mProxy) )
+inline bool StubBase::Listener::proxy_matches( const ProxyAddress & addr ) const noexcept
 {
-}
-
-inline StubBase::Listener& StubBase::Listener::operator = ( const StubBase::Listener& src ) noexcept
-{
-    mMessageId  = src.mMessageId;
-    mSequenceNr = src.mSequenceNr;
-    mProxy      = src.mProxy;
-
-    return (*this);
-}
-
-inline StubBase::Listener& StubBase::Listener::operator = ( StubBase::Listener && src ) noexcept
-{
-    mMessageId  = src.mMessageId;
-    mSequenceNr = src.mSequenceNr;
-    mProxy      = std::move(src.mProxy);
-    
-    return (*this);
+    return (addr.cookie() == mConsumer.id) && (static_cast<uint32_t>(addr) == mConsumer.number);
 }
 
 /************************************************************************

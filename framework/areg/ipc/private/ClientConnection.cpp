@@ -20,7 +20,7 @@
 namespace areg {
 
 ClientConnection::ClientConnection()
-    : SocketConnectionBase    ( )
+    : SocketConnectionBase  ( )
     , mClientSocket         ( )
     , mCookie               ( areg::COOKIE_UNKNOWN )
     , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )
@@ -30,7 +30,7 @@ ClientConnection::ClientConnection()
 }
 
 ClientConnection::ClientConnection(const String & hostName, uint16_t portNr)
-    : SocketConnectionBase    ( )
+    : SocketConnectionBase  ( )
     , mClientSocket         ( hostName, portNr )
     , mCookie               ( areg::COOKIE_UNKNOWN )
     , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )
@@ -40,7 +40,7 @@ ClientConnection::ClientConnection(const String & hostName, uint16_t portNr)
 }
 
 ClientConnection::ClientConnection(const areg::SocketAddress & remoteAddress)
-    : SocketConnectionBase    ( )
+    : SocketConnectionBase  ( )
     , mClientSocket         ( remoteAddress )
     , mCookie               ( areg::COOKIE_UNKNOWN )
     , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )

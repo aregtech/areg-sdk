@@ -141,6 +141,11 @@ enum class BufferType : int16_t
 inline constexpr const char * as_string( areg::BufferType val ) noexcept;
 
 /**
+ * \brief   Maximum length of byte buffer. It is defined as 1GiB Mb.
+ **/
+constexpr uint32_t      MAX_BUF_LENGTH  { 0x4000'0000u };
+
+/**
  * \brief   Constant. Defines the minimum size of Byte Buffer data
  *          Also defines the size to align buffer allocation.
  **/

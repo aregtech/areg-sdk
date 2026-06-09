@@ -506,7 +506,7 @@ public:
      * \return  Returns true if listeners are assigned for the message ID; false otherwise.
      **/
     [[nodiscard]]
-    inline bool has_any_listener(uint32_t msgId) const noexcept;
+    bool has_any_listener(uint32_t msgId) const noexcept;
 
     /**
      * \brief   Returns true if at least one listener is registered for attribute update
@@ -517,7 +517,7 @@ public:
      *          otherwise.
      **/
     [[nodiscard]]
-    inline bool has_notification_listener(uint32_t msgId) const noexcept;
+    bool has_notification_listener(uint32_t msgId) const noexcept;
 
     /**
      * \brief   Returns the dispatcher thread that owns this proxy.
@@ -807,10 +807,11 @@ protected:
      * \param   seqNr       The sequence number of the listener.
      * \param   caller      The notification consumer to remove.
      **/
-    inline void remove_listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer * caller ) noexcept;
+    void remove_listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer * caller ) noexcept;
 
     /**
      * \brief   Adds a listener to the listener list, optionally checking for duplicates.
+     *          GuardedBy(mListenerLock): caller must hold mListenerLock or delegate to a method that does.
      *
      * \param   msgId       The message ID of the listener.
      * \param   seqNr       The sequence number of the listener.
@@ -820,7 +821,7 @@ protected:
      * \return  Returns true if the listener was added; false if it already existed and unique was
      *          true.
      **/
-    inline bool add_listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer * caller, bool unique );
+    bool add_listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer * caller, bool unique );
 
     /**
      * \brief   Sets the data state for the specified message ID in the proxy data.
@@ -939,10 +940,14 @@ protected:
 #endif  // _MSC_VER
 
     /**
-     * \brief   Per-message-ID listener map. O(1) average lookup replaces the former O(n) flat scan.
-     *          Each sub-vector holds all listeners registered for a specific message ID.
+     * \brief   Per-message-ID listener map.
      **/
     ProxyListenerMap        mListenerMap;
+
+    /**
+     * \brief   Guards all accesses to mListenerMap and mSequenceCount.
+     **/
+    mutable SpinLock        mListenerLock;
 
     /**
      * \brief   The list of connected clients of the proxy.
@@ -1145,27 +1150,6 @@ inline areg::ServiceConnectionState ProxyBase::connection_status() const noexcep
     return mConnectionStatus;
 }
 
-inline bool ProxyBase::has_any_listener(uint32_t msgId) const noexcept
-{
-    ProxyListenerMap::MAPPOS pos = mListenerMap.find(msgId);
-    return mListenerMap.is_valid_position(pos) && (pos->second.size() != 0u);
-}
-
-inline bool ProxyBase::has_notification_listener(uint32_t msgId) const noexcept
-{
-    ProxyListenerMap::MAPPOS pos = mListenerMap.find(msgId);
-    if (!mListenerMap.is_valid_position(pos))
-        return false;
-
-    const ProxyListenerList & subVec = pos->second;
-    for (uint32_t i = 0; i < subVec.size(); ++i)
-    {
-        if (subVec.value_at(i).mSequenceNr == areg::SEQUENCE_NUMBER_NOTIFY)
-            return true;
-    }
-    return false;
-}
-
 inline void ProxyBase::start_notification( uint32_t msgId )
 {
     if (is_connected())
@@ -1207,29 +1191,6 @@ inline areg::ProxyData & ProxyBase::proxy_data() noexcept
 {
     return mProxyData;
 }
-
-inline bool ProxyBase::add_listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer* caller, bool unique)
-{
-    ProxyBase::Listener listener{ seqNr, caller };
-    ProxyListenerList & subVec = mListenerMap[msgId];
-    if (unique)
-    {
-        return subVec.add_if_unique(listener);
-    }
-    else
-    {
-        subVec.add(listener);
-        return true;
-    }
-}
-
-inline void ProxyBase::remove_listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer* caller ) noexcept
-{
-    ProxyListenerMap::MAPPOS pos = mListenerMap.find(msgId);
-    if (mListenerMap.is_valid_position(pos))
-        static_cast<void>(pos->second.remove_elem(ProxyBase::Listener{ seqNr, caller }));
-}
-
 
 inline void ProxyBase::register_for_event( const uint32_t eventClass )
 {

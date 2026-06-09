@@ -143,8 +143,7 @@ public:
     /**
      * \brief   Enable or disable the data rate calculation.
      *
-     * \param   enable      If true, the data rate calculation is enabled. Otherwise, it is
-     *                      disabled.
+     * \param   enable      If true, the data rate calculation is enabled. Otherwise, it is disabled.
      **/
     inline void enable_data_rate(bool enable);
 
@@ -204,8 +203,7 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Configures remote service by reading configuration file and initializing connection
-     *          settings.
+     * \brief   Configures remote service by reading configuration file and initializing connection settings.
      *
      * \param   service         The type of remote service to setup.
      * \param   connectTypes    The type of connection to setup.
@@ -214,8 +212,7 @@ protected:
     bool setup_connection_data(areg::RemoteServiceKind service, uint32_t connectTypes) override;
 
     /**
-     * \brief   Sets router service host name and port number. Note: does not restart service if
-     *          already started.
+     * \brief   Sets router service host name and port number. Note: does not restart service if already started.
      *
      * \param   hostName    IP-address or host name of routing service to connect.
      * \param   portNr      Port number of routing service to connect.
@@ -248,8 +245,7 @@ protected:
     bool is_host_connected() const override;
 
     /**
-     * \brief   Returns true if remote service connection is pending (triggered but not yet
-     *          connected).
+     * \brief   Returns true if remote service connection is pending (triggered but not yet connected).
      **/
     bool is_host_pending() const override;
 

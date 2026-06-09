@@ -225,7 +225,6 @@ bool SpinLock::lock(uint32_t /*timeout = areg::WAIT_INFINITE*/)
 bool SpinLock::try_lock()
 {
     const id_type self = Thread::current_thread_id();
-
     if (mOwner.load(std::memory_order_relaxed) == self)
     {
         mCount.fetch_add(1u, std::memory_order_relaxed);
@@ -291,31 +290,6 @@ SyncTimer::~SyncTimer()
     ASSERT( mSyncObject != nullptr );
     _os_release_time( );
     mSyncObject = nullptr;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Lock class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// Lock class, Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-Lock::Lock(SyncObject &syncObj, bool autoLock /* = true */)
-    : mSyncObject(syncObj)
-    , mAutoLock  (autoLock)
-{
-    if (mAutoLock && mSyncObject.is_valid() )
-    {
-        mSyncObject.lock();
-    }
-}
-
-Lock::~Lock()
-{
-    if (mAutoLock && mSyncObject.is_valid())
-    {
-        mSyncObject.unlock();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

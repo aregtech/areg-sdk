@@ -40,8 +40,8 @@ NetTcpLogger::NetTcpLogger(LogConfiguration & logConfig, ScopeController & scope
                                     , static_cast<RemoteMessageHandler &>(self())
                                     , dispatchThread
                                     , NetTcpLogger::PREFIX_THREAD)
-    , ConnectionConsumer   ( )
-    , RemoteMessageHandler        ( )
+    , ConnectionConsumer    ( )
+    , RemoteMessageHandler  ( )
 
     , mScopeController  ( scopeController )
     , mIsEnabled        ( false )

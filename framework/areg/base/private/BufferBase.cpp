@@ -217,7 +217,7 @@ uint32_t BufferBase::reserve(uint32_t size, bool copy)
     const bool preserveData    = copy || hasView;
     const uint32_t used        = preserveData ? size_used() : 0u;
     uint32_t total             = (preserveData && (raw != nullptr)) ? used + size : size;
-    total = std::min(total, BufferBase::MAX_BUF_LENGTH);
+    total = std::min(total, areg::MAX_BUF_LENGTH);
 
     if ((raw != nullptr) && !hasView && (total <= raw->bufHeader.biLength))
     {

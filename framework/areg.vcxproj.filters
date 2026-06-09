@@ -36,15 +36,6 @@
     <ClCompile Include="areg\component\private\ServiceDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\ipc\private\ConnectionProvider.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\RegistrationConsumer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\RemoteMessageHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\ipc\private\RemoteServiceDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -52,9 +43,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\logging\private\Layouts.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\logging\private\LogOptions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\logging\private\LoggingDefs.cpp">
@@ -429,25 +417,13 @@
     <ClCompile Include="areg\logging\private\ScopeNodes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\ipc\private\RegistrationProvider.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\ConnectionConsumer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\ipc\private\ServiceEventConsumer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\ServiceEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\ipc\private\RouterClient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\persist\private\ConfigManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\ConnectionDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\persist\private\ConfigListener.cpp">
@@ -457,9 +433,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\logging\private\DatabaseLogger.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\logging\private\LogDatabaseEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\EventStack.cpp">
@@ -511,9 +484,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\MpscEventQueue.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\DataRateStats.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\BufferBase.cpp">

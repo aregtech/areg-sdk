@@ -67,7 +67,7 @@ void ServiceClient::startup_component(areg::ComponentThread& /* comThread */)
 }
 
 DEBUG_DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient, broadcast_image_block_acquired);
-void ServiceClient::broadcast_image_block_acquired(const areg::SharedBuffer& imageBlock)
+void ServiceClient::broadcast_image_block_acquired([[maybe_unused]] const areg::SharedBuffer& imageBlock)
 {
     // Always count every delivered block, independent of DO_STATS. A non-zero per-second rate
     // here proves the wire envelope is correctly addressed and the broadcast callback fires.

@@ -657,7 +657,7 @@ class AREG_API SpinLock final   : public Lockable
 public:
     SpinLock();
 
-    virtual ~SpinLock() = default;
+    ~SpinLock() override = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations, SyncObject interface
@@ -990,9 +990,9 @@ public:
      * \param   autoLock    If true, automatically locks on construction and unlocks on destruction.
      *                      Manual lock/unlock must be called otherwise.
      **/
-    explicit Lock( SyncObject &syncObj, bool autoLock = true );
+    explicit inline Lock( SyncObject &syncObj, bool autoLock = true );
 
-    ~Lock();
+    inline ~Lock();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -1544,6 +1544,27 @@ inline bool SyncTimer::is_autoreset() const noexcept
 //////////////////////////////////////////////////////////////////////////
 // Lock class inline functions
 //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Lock class, Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+inline Lock::Lock(SyncObject& syncObj, bool autoLock /* = true */)
+    : mSyncObject(syncObj)
+    , mAutoLock  (autoLock)
+{
+    if (mAutoLock && mSyncObject.is_valid())
+    {
+        mSyncObject.lock();
+    }
+}
+
+inline Lock::~Lock()
+{
+    if (mAutoLock && mSyncObject.is_valid())
+    {
+        mSyncObject.unlock();
+    }
+}
+
 inline bool Lock::lock(uint32_t timeout /* = areg::WAIT_INFINITE */)
 {
     return mSyncObject.lock(timeout);

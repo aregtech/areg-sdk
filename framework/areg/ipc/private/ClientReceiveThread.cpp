@@ -46,7 +46,6 @@ bool ClientReceiveThread::run_dispatcher()
 
     ready_for_events( true );
 
-    // Blocking TCP connect — runs on this thread, never on the dispatcher.
     if ( !mConnection.connect_socket() )
     {
         LOG_WARN("Client receive thread failed to connect. Notifying handler.");

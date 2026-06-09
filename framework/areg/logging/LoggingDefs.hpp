@@ -346,14 +346,7 @@ namespace areg {
     };
 
     /**
-     * \brief   The structure of logging message object to output on target (log collector or
-     *          observer).
-     *
-     * \note    Fields are ordered by descending alignment so the head block has no padding holes
-     *          (704 bytes total), and grouped HOT/WARM/COLD by access frequency. The struct is
-     *          memcpy'd to the wire (create_log_message) and the pre-text head is streamed as a
-     *          raw blob sized by offsetof(LogEntry, logMessage); changing field order therefore
-     *          changes the log wire format and requires rebuilding log collector and observer.
+     * \brief   The structure of logging message object to output on target (log collector or observer).
      **/
     struct AREG_API LogEntry
     {
@@ -368,11 +361,9 @@ namespace areg {
          *
          * \param   msgType         The logging message type.
          * \param   scopeId         The ID of message scope.
-         * \param   sessionId       The ID of session, which is used to differentiate messages of
-         *                          the same scope.
-         * \param   scopeStamp      The timestamp of the scope message, which is used to log
-         *                          message. This parameter is used to set duration. The duration is
-         *                          ignored and set to 0 if the scopeStamp is 0.
+         * \param   sessionId       The ID of session, which is used to differentiate messages of the same scope.
+         * \param   scopeStamp      The timestamp of the scope message, which is used to log message.
+         *                          This parameter is used to set duration. The duration is ignored and set to 0 if the scopeStamp is 0.
          * \param   msgPrio         The priority of logging message.
          * \param   message         The message text to output on target. Can be empty.
          * \param   msgLen          The length of the message string.

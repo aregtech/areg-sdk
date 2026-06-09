@@ -148,8 +148,7 @@ public:
     inline ITEM_ID cookie( const SocketAccepted & clientSocket ) const;
 
     /**
-     * \brief   Returns the unique cookie identifier for the socket handle of an accepted
-     *          connection.
+     * \brief   Returns the unique cookie identifier for the socket handle of an accepted connection.
      *
      * \param   socketHandle    Socket handle of accepted client connection.
      **/
@@ -157,8 +156,7 @@ public:
     inline ITEM_ID cookie( SOCKETHANDLE socketHandle ) const;
 
     /**
-     * \brief   Returns the accepted socket object matching the specified cookie, or invalid if not
-     *          found.
+     * \brief   Returns the accepted socket object matching the specified cookie, or invalid if not found.
      *
      * \param   clientCookie    The client cookie. Should be valid cookie.
      * \return  Returns valid SocketAccepted object if cookie matches; otherwise invalid.
@@ -167,8 +165,7 @@ public:
     inline SocketAccepted client_by_cookie(const ITEM_ID & clientCookie ) const;
 
     /**
-     * \brief   Returns the raw socket handle matching the specified cookie, or
-     *          areg::InvalidSocketHandle if not found.
+     * \brief   Returns the raw socket handle matching the specified cookie, or areg::InvalidSocketHandle if not found.
      *
      * \param   clientCookie    The client cookie. Should be valid cookie.
      * \return  Returns valid SOCKETHANDLE if cookie matches; otherwise areg::InvalidSocketHandle.
@@ -202,8 +199,7 @@ public:
     inline bool cookie_exist(const ITEM_ID& clientCookie) const noexcept;
 
     /**
-     * \brief   Returns the accepted socket object matching the specified socket handle, or invalid
-     *          if not found.
+     * \brief   Returns the accepted socket object matching the specified socket handle, or invalid if not found.
      *
      * \param   clientSocket    The client socket. Should be valid handle.
      * \return  Returns valid SocketAccepted object if socket handle matches; otherwise invalid.
@@ -274,8 +270,7 @@ public:
 
     /**
      * \brief   Blocking call that waits for connection event (new connection, data, or closure).
-     *          Returns valid socket handle; address output parameter is updated only for new
-     *          connections.
+     *          Returns valid socket handle; address output parameter is updated only for new connections.
      *
      * \param[in,out] out_addrNewAccepted     On output, if new connection is accepted, this
      *                                        parameter contain address of new accepted socket. In
@@ -424,17 +419,17 @@ protected:
     /**
      * \brief   SO_SNDBUF size applied to every accepted client socket.
      **/
-    uint32_t                mSockSendBuf;
+    uint32_t            mSockSendBuf;
 
     /**
      * \brief   Requested SO_RCVBUF size for every accepted client socket.
      **/
-    uint32_t                mSockRecvBuf;
+    uint32_t            mSockRecvBuf;
 
     /**
      * \brief   SO_SNDTIMEO value in ms applied to every accepted client socket.
      **/
-    uint32_t                mSockSendTimeoutMs;
+    uint32_t            mSockSendTimeoutMs;
 
 #if defined(_MSC_VER)
     #pragma warning(push)

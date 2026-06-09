@@ -96,8 +96,7 @@ public:
     virtual bool is_host_connected() const = 0;
 
     /**
-     * \brief   Returns true if remote service connection is pending (triggered but not yet
-     *          connected).
+     * \brief   Returns true if remote service connection is pending (triggered but not yet connected).
      **/
     [[nodiscard]]
     virtual bool is_host_pending() const = 0;
@@ -109,8 +108,7 @@ public:
     virtual bool is_host_setup() const = 0;
 
     /**
-     * \brief   Creates service connect request message with specified source, target, and message
-     *          source type.
+     * \brief   Creates service connect request message with specified source, target, and message source type.
      *
      * \param   source          ID of the source sending the connect message.
      * \param   target          ID of the target receiving the connect message.

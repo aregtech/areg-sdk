@@ -76,13 +76,10 @@ private:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes the network logging client object to forward logs to the log collector
-     *          service.
+     * \brief   Initializes the network logging client object to forward logs to the log collector service.
      *
-     * \param   logConfig           The log configuration object, which contains information about
-     *                              log state.
-     * \param   scopeController     The scope controller object, which contains and controls the
-     *                              scopes in application.
+     * \param   logConfig           The log configuration object, which contains information about log state.
+     * \param   scopeController     The scope controller object, which contains and controls the scopes in application.
      * \param   dispatchThread      The dispatcher thread to dispatch events and messages.
      **/
     NetTcpLogger(LogConfiguration & logConfig, ScopeController & scopeController, DispatcherThread & dispatchThread);
@@ -165,8 +162,8 @@ private:
     void on_service_channel_disconnected(const Channel& channel) final;
 
     /**
-     * \brief   Triggered when remote service connection and communication channel is lost. The
-     *          connection is considered lost if it not possible to read or receive data, and it was
+     * \brief   Triggered when remote service connection and communication channel is lost.
+     *          The connection is considered lost if it not possible to read or receive data, and it was
      *          not stopped by API call.
      *
      * \param   channel     The connection and communication channel of remote service.
@@ -194,8 +191,7 @@ private:
 
     /**
      * \brief   Triggered when failed to process message, i.e. the target for message processing was
-     *          not found. In case of request message processing, the source should receive error
-     *          notification.
+     *          not found. In case of request message processing, the source should receive error notification.
      *
      * \param   msgUnprocessed      Unprocessed message data.
      **/

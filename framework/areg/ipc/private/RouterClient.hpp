@@ -115,8 +115,7 @@ protected:
     void on_service_exit() final;
 
     /**
-     * \brief   Returns true if remote service connection is pending (triggered but not yet
-     *          connected).
+     * \brief   Returns true if remote service connection is pending (triggered but not yet connected).
      **/
     bool is_host_pending() const final;
 
@@ -221,8 +220,7 @@ protected:
     void process_request_event( ServiceRequestEvent & reqEvent ) final;
 
     /**
-     * \brief   Called when Stub receives a remote notification subscription request (start/stop
-     *          attribute updates).
+     * \brief   Called when Stub receives a remote notification subscription request (start/stop attribute updates).
      *
      * \param   reqNotifyEvent      The remote notification request event to be processed.
      **/
@@ -240,8 +238,7 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Enables or disables event dispatching thread to receive events. Override for custom
-     *          preparation.
+     * \brief   Enables or disables event dispatching thread to receive events. Override for custom preparation.
      *
      * \param   is_ready     The flag to indicate whether the dispatcher is ready for events.
      **/
@@ -307,9 +304,6 @@ inline const areg::Channel& RouterClient::connection_channel() const noexcept
 inline void RouterClient::on_message_received(const MessageEnvelope& msgReceived)
 {
     ASSERT(areg::is_executable_id(static_cast<uint32_t>(msgReceived.message_id())));
-    // Non-hot, event-dispatched entry (executables route directly via process_received_message).
-    // route_incoming_message consumes its argument, so route a local envelope view (O(1) shared_ptr
-    // copy) and keep the const-correct delivery chain (Event::envelope()) intact.
     MessageEnvelope routable{ msgReceived };
     if (!RemoteEventFactory::route_incoming_message(routable, mChannel))
     {

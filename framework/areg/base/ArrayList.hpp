@@ -772,14 +772,14 @@ template<typename VALUE >
 inline const VALUE & ArrayList< VALUE >::value_at( const uint32_t atPosition ) const noexcept
 {
     ASSERT( is_valid_index( atPosition ) );
-    return mValueList[ atPosition ];
+    return mValueList.at(atPosition);
 }
 
 template<typename VALUE >
 inline VALUE& ArrayList< VALUE >::value_at( uint32_t atPosition ) noexcept
 {
     ASSERT(is_valid_index(atPosition));
-    return mValueList[ atPosition ];
+    return mValueList.at(atPosition);
 }
 
 template<typename VALUE >

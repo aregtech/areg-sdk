@@ -186,6 +186,7 @@ ProxyBase::ProxyBase(const String & roleName, const areg::InterfaceData & servic
     , mStubAddress      ( StubAddress::invalid_stub_address() )
     , mSequenceCount    ( 0 )
     , mListenerMap      ( )
+    , mListenerLock     ( )
     , mListConnect      (   )
     , mProxyInstCount   ( 0 )
 
@@ -203,6 +204,49 @@ ProxyBase::ProxyBase(const String & roleName, const areg::InterfaceData & servic
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class, methods
 //////////////////////////////////////////////////////////////////////////
+
+bool ProxyBase::has_any_listener( uint32_t msgId ) const noexcept
+{
+    Lock lock(mListenerLock);
+    ProxyListenerMap::MAPPOS pos = mListenerMap.find(msgId);
+    return mListenerMap.is_valid_position(pos) && (pos->second.size() != 0u);
+}
+
+bool ProxyBase::has_notification_listener( uint32_t msgId ) const noexcept
+{
+    Lock lock(mListenerLock);
+    ProxyListenerMap::MAPPOS pos = mListenerMap.find(msgId);
+    if (!mListenerMap.is_valid_position(pos))
+        return false;
+
+    const ProxyListenerList & subVec = pos->second;
+    for (uint32_t i = 0; i < subVec.size(); ++i)
+    {
+        if (subVec.value_at(i).mSequenceNr == areg::SEQUENCE_NUMBER_NOTIFY)
+            return true;
+    }
+    return false;
+}
+
+bool ProxyBase::add_listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer * caller, bool unique )
+{
+    Lock lock(mListenerLock);
+    ProxyBase::Listener listener{ seqNr, caller };
+    ProxyListenerList & subVec = mListenerMap[msgId];
+    if (unique)
+        return subVec.add_if_unique(listener);
+
+    subVec.add(listener);
+    return true;
+}
+
+void ProxyBase::remove_listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer * caller ) noexcept
+{
+    Lock lock(mListenerLock);
+    ProxyListenerMap::MAPPOS pos = mListenerMap.find(msgId);
+    if (mListenerMap.is_valid_position(pos))
+        static_cast<void>(pos->second.remove_elem(ProxyBase::Listener{ seqNr, caller }));
+}
 
 void ProxyBase::register_service_listeners()
 {
@@ -235,7 +279,10 @@ void ProxyBase::free_proxy( ProxyListener & connect )
         {
             stop_all_notifications( );
             unregister_service_listeners( );
-            mListenerMap.clear();
+            {
+                Lock lock(mListenerLock);
+                mListenerMap.clear();
+            }
 
             ServiceManager::request_unregister_consumer( proxy_address( ), areg::DisconnectReason::ConsumerDisconnected );
             mDispatcherThread.remove_consumer( *this );
@@ -259,7 +306,10 @@ void ProxyBase::terminate_self()
     if (mProxyInstCount == 0)
         return;
 
-    mListenerMap.clear();
+    {
+        Lock lock(mListenerLock);
+        mListenerMap.clear();
+    }
     if (!mIsStopped)
     {
         ServiceManager::request_unregister_consumer(proxy_address(), areg::DisconnectReason::ConsumerDisconnected );
@@ -300,25 +350,28 @@ void ProxyBase::service_connection_updated( const StubAddress & server, const Ch
         mProxyData.reset();
     }
 
-    ProxyListenerMap::MAPPOS mapPos = mListenerMap.find(CONNECTION_ID);
-    if (mListenerMap.is_valid_position(mapPos))
+    ProxyListenerList connectListeners;
     {
-        const ProxyListenerList& subVec = mapPos->second;
-        for (uint32_t i = 0u; i < subVec.size(); ++i)
+        Lock lock(mListenerLock);
+        ProxyListenerMap::MAPPOS mapPos = mListenerMap.find(CONNECTION_ID);
+        if (mListenerMap.is_valid_position(mapPos))
+            connectListeners = mapPos->second;
+    }
+
+    for (uint32_t i = 0u; i < connectListeners.size(); ++i)
+    {
+        ProxyListener* connect = static_cast<ProxyListener*>(connectListeners[i].mListener);
+
+        if (proxyConnected)
         {
-            ProxyListener* connect = static_cast<ProxyListener*>(subVec[i].mListener);
-
-            if (proxyConnected)
-            {
-                mListConnect.add_if_unique(connect);
-            }
-            else
-            {
-                mListConnect.remove_elem(connect, 0);
-            }
-
-            connect->service_connected(status, *this);
+            mListConnect.add_if_unique(connect);
         }
+        else
+        {
+            mListConnect.remove_elem(connect, 0);
+        }
+
+        connect->service_connected(status, *this);
     }
 }
 
@@ -326,9 +379,16 @@ void ProxyBase::set_notification( uint32_t msgId, NotificationConsumer* caller, 
 {
     if (!is_connected())
         return;
- 
-    bool hasListener{ has_notification_listener(msgId) };
-    if ( add_listener(msgId, areg::SEQUENCE_NUMBER_NOTIFY, caller, hasListener) )
+
+    bool hasListener;
+    bool added;
+    {
+        Lock lock(mListenerLock);
+        hasListener = has_notification_listener(msgId);   // recursive lock: safe
+        added = add_listener(msgId, areg::SEQUENCE_NUMBER_NOTIFY, caller, hasListener);   // recursive lock: safe
+    }
+
+    if ( added )
     {
         // new listener, if attribute, send actual data.
         if (areg::is_attribute_id(msgId))
@@ -362,8 +422,13 @@ void ProxyBase::set_notification( uint32_t msgId, NotificationConsumer* caller, 
 
 void ProxyBase::clear_notification( uint32_t msgId, NotificationConsumer* caller )
 {
-    remove_listener(msgId, areg::SEQUENCE_NUMBER_NOTIFY, caller);
-    if (has_notification_listener(msgId) == false)
+    bool noListeners;
+    {
+        Lock lock(mListenerLock);
+        remove_listener(msgId, areg::SEQUENCE_NUMBER_NOTIFY, caller);   // recursive lock: safe
+        noListeners = !has_notification_listener(msgId);                // recursive lock: safe
+    }
+    if (noListeners)
     {
         stop_notification(msgId);
         mProxyData.set_data_state(msgId, areg::DataState::DataIsUnavailable);
@@ -375,35 +440,42 @@ void ProxyBase::unregister_listener( NotificationConsumer *consumer )
     LOG_SCOPE( areg_component_ProxyBase, unregister_listener );
     LOG_DBG("Unregisters proxy client [ %p ]", consumer);
 
-    for (ProxyListenerMap::MAPPOS mapPos = mListenerMap.first_position(); mListenerMap.is_valid_position(mapPos); )
+    ArrayList<uint32_t> stopIds;
     {
-        ProxyListenerList & subVec = mapPos->second;
-        const uint32_t msgId = mapPos->first;
-        bool removed { false };
-        uint32_t i = 0;
-        while (i < subVec.size())
+        Lock lock(mListenerLock);
+        for (ProxyListenerMap::MAPPOS mapPos = mListenerMap.first_position(); mListenerMap.is_valid_position(mapPos); )
         {
-            if (subVec.value_at(i).mListener != consumer)
+            ProxyListenerList & subVec = mapPos->second;
+            const uint32_t msgId = mapPos->first;
+            bool removed { false };
+            uint32_t i = 0;
+            while (i < subVec.size())
             {
-                ++i;
-                continue;
+                if (subVec.value_at(i).mListener != consumer)
+                {
+                    ++i;
+                    continue;
+                }
+
+                LOG_DBG("Removes proxy client listener of message [ %u ] at index [ %d ]", msgId, i);
+                removed = true;
+                const uint32_t last = subVec.size() - 1u;
+                if (i != last)
+                    subVec.set_value_at(i, subVec.value_at(last));
+                subVec.remove_at(last);
             }
 
-            LOG_DBG("Removes proxy client listener of message [ %u ] at index [ %d ]", msgId, i);
-            removed = true;
-            const uint32_t last = subVec.size() - 1u;
-            if (i != last)
-                subVec.set_value_at(i, subVec.value_at(last));
-            subVec.remove_at(last);
-        }
+            if (removed && !has_notification_listener(msgId))  // recursive lock: safe
+                stopIds.add(msgId);
 
-        if (removed && !has_notification_listener(msgId))
-        {
-            stop_notification(msgId);
-            mProxyData.set_data_state(msgId, areg::DataState::DataIsUnavailable);
+            mapPos = subVec.is_empty() ? mListenerMap.remove_at(mapPos) : mListenerMap.next_position(mapPos);
         }
+    }
 
-        mapPos = subVec.is_empty() ? mListenerMap.remove_at(mapPos) : mListenerMap.next_position(mapPos);
+    for (uint32_t i = 0; i < stopIds.size(); ++i)
+    {
+        stop_notification(stopIds.value_at(i));
+        mProxyData.set_data_state(stopIds.value_at(i), areg::DataState::DataIsUnavailable);
     }
 }
 
@@ -411,6 +483,7 @@ uint32_t ProxyBase::prepare_listeners( ProxyBase::ProxyListenerList& out_listene
 {
     LOG_SCOPE( areg_component_ProxyBase, prepare_listeners );
 
+    Lock lock(mListenerLock);
     ProxyListenerMap::MAPPOS pos = mListenerMap.find(msgId);
     if (!mListenerMap.is_valid_position(pos))
     {
@@ -490,7 +563,9 @@ void ProxyBase::send_request_event(ServiceRequestEvent& reqEvent, NotificationCo
     ASSERT(areg::is_response_id(respId) || (respId == areg::RESPONSE_ID_NONE));
     if (respId != areg::RESPONSE_ID_NONE)
     {
-        static_cast<void>(add_listener(respId, ++mSequenceCount, caller, true));
+        Lock lock(mListenerLock);
+        ++mSequenceCount;
+        static_cast<void>(add_listener(respId, mSequenceCount, caller, true));  // recursive lock: safe
         reqEvent.set_sequence_number(mSequenceCount);
     }
 
@@ -528,6 +603,7 @@ void ProxyBase::send_service_event( ProxyBase::ServiceAvailableEvent& eventInsta
 
 bool ProxyBase::is_listener_registered( NotificationConsumer & caller ) const
 {
+    Lock lock(mListenerLock);
     ProxyListenerMap::MAPPOS mapPos = mListenerMap.find(CONNECTION_ID);
     if (mListenerMap.is_valid_position(mapPos) && !mapPos->second.is_empty())
     {
@@ -580,7 +656,10 @@ void ProxyBase::stop_proxy()
 
     stop_all_notifications( );
     unregister_service_listeners( );
-    mListenerMap.clear();
+    {
+        Lock lock(mListenerLock);
+        mListenerMap.clear();
+    }
     ServiceManager::request_unregister_consumer( proxy_address( ), areg::DisconnectReason::ConsumerDisconnected );
     mDispatcherThread.remove_consumer( *this );
 

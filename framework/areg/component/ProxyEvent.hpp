@@ -78,7 +78,11 @@ protected:
 
     inline ProxyEvent(const ProxyAddress& toTarget, const MessageEnvelope& src);
 
-    inline ProxyEvent(const ProxyAddress& toTarget, MessageEnvelope&& src);
+    inline ProxyEvent(const ProxyAddress& toTarget, MessageEnvelope&& src) noexcept;
+
+    inline ProxyEvent(const areg::Endpoint& consumer, const areg::RawService& service, const MessageEnvelope& src);
+
+    inline ProxyEvent(const areg::Endpoint& consumer, const areg::RawService& service, MessageEnvelope&& src) noexcept;
 
     inline ProxyEvent(const MessageEnvelope& envelope);
 
@@ -265,12 +269,34 @@ inline ProxyEvent::ProxyEvent(const ProxyAddress& toTarget, const MessageEnvelop
         toTarget.to_event(*hdr);
 }
 
-inline ProxyEvent::ProxyEvent(const ProxyAddress& toTarget, MessageEnvelope&& src)
+inline ProxyEvent::ProxyEvent(const ProxyAddress& toTarget, MessageEnvelope&& src) noexcept
     : Event(std::move(src))
 {
     areg::EventHeader* hdr{ header() };
     if (hdr != nullptr)
         toTarget.to_event(*hdr);
+}
+
+inline ProxyEvent::ProxyEvent(const areg::Endpoint& consumer, const areg::RawService& service, const MessageEnvelope& src)
+    : Event(src)
+{
+    areg::EventHeader* hdr{ header() };
+    if (hdr != nullptr)
+    {
+        hdr->consumer   = consumer;
+        hdr->rawService = service;
+    }
+}
+
+inline ProxyEvent::ProxyEvent(const areg::Endpoint& consumer, const areg::RawService& service, MessageEnvelope&& src) noexcept
+    : Event(std::move(src))
+{
+    areg::EventHeader* hdr{ header() };
+    if (hdr != nullptr)
+    {
+        hdr->consumer = consumer;
+        hdr->rawService = service;
+    }
 }
 
 inline ProxyEvent::ProxyEvent(const MessageEnvelope& envelope)
