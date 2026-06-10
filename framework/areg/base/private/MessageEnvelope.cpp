@@ -209,7 +209,7 @@ void MessageEnvelope::destroy_event() noexcept
             using CleanupFn = void(*)(void*) noexcept;
             CleanupFn fn{ nullptr };
             std::memcpy(&fn, &env->envHeader.custom, sizeof(fn));
-            env->envHeader.custom = 0u;   // clear before call — prevent double-call
+            env->envHeader.custom = 0u;   // clear before call -- prevent double-call
             fn(env->envData);
         }
     }

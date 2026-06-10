@@ -467,7 +467,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * \brief   InStream convenience helpers — inline implementations
+ * \brief   InStream convenience helpers -- inline implementations
  ************************************************************************/
 
 inline uint8_t areg::InStream::read8_bits() const noexcept
@@ -513,7 +513,7 @@ inline double areg::InStream::read64_real() const noexcept
 }
 
 /************************************************************************
- * \brief   OutStream convenience helpers — inline implementations
+ * \brief   OutStream convenience helpers -- inline implementations
  ************************************************************************/
 
 inline bool areg::OutStream::write8_bits( uint8_t value )

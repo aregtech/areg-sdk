@@ -117,7 +117,8 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
             AREG_LT_SCOPE(areg::LtStage::RecvNode);  // router inline route+forward
             mRemoteService.process_received_message(msgReceived, clientSocket);
         }
-        if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, areg::THREAD_DRAIN_LIMIT - 1u, clientSocket,
+
+        if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, areg::DEFAULT_DRAIN_LIMIT - 1u, clientSocket,
                 msgReceived, [this](uint64_t bytes, uint32_t msgs) { accumulate_received(bytes, msgs); }))
         {
             mRemoteService.failed_receive_message(clientSocket);
@@ -188,7 +189,7 @@ bool ServerReceiveThread::run_dispatcher()
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
                     uint32_t drainCount{ 0 };
 #endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-                    for (uint32_t drain = 0; drain < areg::THREAD_DRAIN_LIMIT; ++drain)
+                    for (uint32_t drain = 0; drain < areg::DEFAULT_DRAIN_LIMIT; ++drain)
                     {
                         const SOCKETHANDLE hDrain = mConnection.wait_connection_nowait(addrDrain);
                         if ( !areg::is_valid_socket(hDrain) )
@@ -204,9 +205,9 @@ bool ServerReceiveThread::run_dispatcher()
                     }
 
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-                    if (drainCount >= areg::THREAD_DRAIN_LIMIT)
+                    if (drainCount >= areg::DEFAULT_DRAIN_LIMIT)
                     {
-                        DEBUG_LOG_WARN("Receive drain loop exhausted thread drain limit (%d) -- inbound event queue is growing", areg::THREAD_DRAIN_LIMIT);
+                        DEBUG_LOG_WARN("Receive drain loop exhausted thread drain limit (%d) -- inbound event queue is growing", areg::DEFAULT_DRAIN_LIMIT);
                     }
 #endif   // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
                 }

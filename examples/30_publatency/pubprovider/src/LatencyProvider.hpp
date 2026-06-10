@@ -29,7 +29,7 @@
 #include <vector>
 
 //////////////////////////////////////////////////////////////////////////
-// ProviderCmdData — carries a console command from input thread to component thread
+// ProviderCmdData -- carries a console command from input thread to component thread
 //////////////////////////////////////////////////////////////////////////
 
 struct ProviderCmdData
@@ -66,7 +66,7 @@ class LatencyProvider final : public    areg::Component
     friend class DisplayConsumer;
 
 //////////////////////////////////////////////////////////////////////////
-// Nested command consumer — delivers ProviderCmdData on the component thread
+// Nested command consumer -- delivers ProviderCmdData on the component thread
 //////////////////////////////////////////////////////////////////////////
     class ProviderCmdConsumer : public ProviderCmdConsumerBase
     {
@@ -88,7 +88,7 @@ class LatencyProvider final : public    areg::Component
     };
 
 //////////////////////////////////////////////////////////////////////////
-// Nested display consumer — drives the 1-second console refresh thread
+// Nested display consumer -- drives the 1-second console refresh thread
 //////////////////////////////////////////////////////////////////////////
     class DisplayConsumer : public areg::ThreadConsumer
     {
@@ -121,7 +121,7 @@ private:
     static constexpr areg::ext::Console::Coord COORD_LATENCY { 1, 5 };
     static constexpr areg::ext::Console::Coord COORD_SEP2    { 1, 6 };
     static constexpr areg::ext::Console::Coord COORD_PROMPT  { 1, 7 };
-    //!< Input row — " > " drawn here; cursor rests here
+    //!< Input row -- " > " drawn here; cursor rests here
     static constexpr areg::ext::Console::Coord COORD_INPUT   { 1, 8 };
     static constexpr areg::ext::Console::Coord COORD_SEP3    { 1, 9 };
 

@@ -93,9 +93,9 @@ inline void send_pending_groups( areg::ext::PendingSend * batch
 
         const uint32_t groupSize{ j - i };
 
-        areg::IoBuffer ioBuffer[areg::THREAD_DRAIN_LIMIT];
+        areg::IoBuffer ioBuffer[areg::DEFAULT_DRAIN_LIMIT];
         uint32_t bufCount  { 0u };
-        uint32_t totalSize { 0u };
+        uint64_t totalSize { 0u };  // 64-bit: sum of up to DEFAULT_DRAIN_LIMIT wire sizes cannot overflow.
 
         for ( uint32_t k{ 0u }; k < groupSize; ++k )
         {
@@ -118,15 +118,51 @@ inline void send_pending_groups( areg::ext::PendingSend * batch
             continue;
         }
 
-        const int32_t sent{ conn.send_messages_batch(ioBuffer, bufCount, hSocket, totalSize) };
-        if ( sent > 0 )
+        // send_messages_batch() returns the byte count as a signed int32, so one call must never carry
+        // more than MAX_SEND_BATCH_BYTES (else the return overflows negative and the send looks like a
+        // failure -> the client is dropped). The common case (the whole group fits the cap) is one send
+        // call with no extra pass over the buffers; only a rare oversized aggregate enters the split
+        // loop. A single message is capped at MAX_BUF_LENGTH (< MAX_SEND_BATCH_BYTES), always fitting one batch.
+        if ( totalSize <= areg::MAX_SEND_BATCH_BYTES )
         {
-            accum(static_cast<uint64_t>(sent), groupSize);
+            const int32_t sent{ conn.send_messages_batch(ioBuffer, bufCount, hSocket, static_cast<uint32_t>(totalSize)) };
+            if ( sent > 0 )
+            {
+                accum(static_cast<uint64_t>(sent), bufCount);
+            }
+            else if ( !conn.is_interrupted() )
+            {
+                areg::SocketAccepted client{ conn.client_by_handle(hSocket) };
+                handler.failed_send_message(batch[i].msg, client);
+            }
         }
-        else if ( !conn.is_interrupted() )
+        else
         {
-            areg::SocketAccepted client{ conn.client_by_handle(hSocket) };
-            handler.failed_send_message(batch[i].msg, client);
+            for ( uint32_t start{ 0u }; start < bufCount; )
+            {
+                uint32_t end       { start };
+                uint32_t batchBytes{ 0u };
+                do
+                {
+                    batchBytes += static_cast<uint32_t>(ioBuffer[end].size);
+                    ++end;
+                }
+                while ( (end < bufCount) &&
+                        (static_cast<uint32_t>(ioBuffer[end].size) <= (areg::MAX_SEND_BATCH_BYTES - batchBytes)) );
+
+                const int32_t sent{ conn.send_messages_batch(ioBuffer + start, end - start, hSocket, batchBytes) };
+                if ( sent > 0 )
+                {
+                    accum(static_cast<uint64_t>(sent), end - start);
+                }
+                else if ( !conn.is_interrupted() )
+                {
+                    areg::SocketAccepted client{ conn.client_by_handle(hSocket) };
+                    handler.failed_send_message(batch[i].msg, client);
+                }
+
+                start = end;
+            }
         }
 
         i = j;

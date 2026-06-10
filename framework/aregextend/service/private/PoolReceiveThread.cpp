@@ -162,7 +162,7 @@ bool PoolReceiveThread::run_dispatcher()
                 }
 
                 // Drain bytes cached by _os_recv_data read-ahead.
-                if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, areg::THREAD_DRAIN_LIMIT - 1u, clientSocket,
+                if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, areg::DEFAULT_DRAIN_LIMIT - 1u, clientSocket,
                         msgReceived, [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_received(bytes, msgs); }))
                 {
                     mMux.unregister_socket(hReady);
@@ -182,7 +182,7 @@ bool PoolReceiveThread::run_dispatcher()
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
             uint32_t drainCount{ 0 };
 #endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-            for ( uint32_t drain = 0; drain < areg::THREAD_DRAIN_LIMIT; ++drain )
+            for ( uint32_t drain = 0; drain < areg::DEFAULT_DRAIN_LIMIT; ++drain )
             {
                 const SOCKETHANDLE hDrain = mMux.wait(0);
                 if ( (hDrain == areg::InvalidSocketHandle) || (hDrain == areg::FailedSocketHandle) )
@@ -205,7 +205,7 @@ bool PoolReceiveThread::run_dispatcher()
                     mRemoteService.process_received_message(msgReceived, drainSocket);
 
                     // Drain read-ahead cache for this socket too.
-                    if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, areg::THREAD_DRAIN_LIMIT - 1u, drainSocket,
+                    if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, areg::DEFAULT_DRAIN_LIMIT - 1u, drainSocket,
                             msgReceived, [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_received(bytes, msgs); }))
                     {
                         mMux.unregister_socket(hDrain);
@@ -221,9 +221,9 @@ bool PoolReceiveThread::run_dispatcher()
             }
 
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-            if (drainCount >= areg::THREAD_DRAIN_LIMIT)
+            if (drainCount >= areg::DEFAULT_DRAIN_LIMIT)
             {
-                DEBUG_LOG_WARN("Receive drain loop exhausted thread drain limit (%d) -- inbound event queue is growing", areg::THREAD_DRAIN_LIMIT);
+                DEBUG_LOG_WARN("Receive drain loop exhausted thread drain limit (%d) -- inbound event queue is growing", areg::DEFAULT_DRAIN_LIMIT);
             }
 #endif   // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
         }

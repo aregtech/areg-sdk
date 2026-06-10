@@ -155,10 +155,9 @@ bool StubBase::prepare_response( SessionID sessionId )
 
 void StubBase::prepare_request( Listener & listener, const SequenceNumber & seqNr, uint32_t respId )
 {
-    listener.mMessageId = respId;
-    // If a notification subscriber already exists for this response ID, negate seqNr to encode
-    // "unblocked" state so the broadcast path can distinguish it from a fresh one-time request.
     Lock lock(mListenerLock);
+
+    listener.mMessageId = respId;
     StubListenerList& subVec = mListenerMap[respId];
     bool hasNotifyEntry = false;
     for (uint32_t i = 0; i < subVec.size(); ++i)
@@ -176,13 +175,13 @@ void StubBase::prepare_request( Listener & listener, const SequenceNumber & seqN
     mCurrIndex  = subVec.size() - 1;
 }
 
-uint32_t StubBase::find_listeners( uint32_t reqId, StubListenerList & out_listners ) const
+uint32_t StubBase::find_listeners( uint32_t reqId, StubListenerList & listeners ) const
 {
     Lock lock(mListenerLock);
     StubListenerMap::MAPPOS pos = mListenerMap.find(reqId);
     if (mListenerMap.is_valid_position(pos))
-        out_listners.append(pos->second);
-    return out_listners.size();
+        listeners.append(pos->second);
+    return listeners.size();
 }
 
 void StubBase::clear_all_listeners( const ProxyAddress & whichProxy, IntegerArray & removedIDs )
@@ -233,14 +232,8 @@ void StubBase::clear_all_listeners( const ProxyAddress & whichProxy ) noexcept
     }
 }
 
-void StubBase::remove_from_map( uint32_t msgId, const StubBase::Listener & toRemove ) noexcept
+void StubBase::remove_from_list( StubListenerList & subVec, const StubBase::Listener & toRemove ) noexcept
 {
-    Lock lock(mListenerLock);
-    StubListenerMap::MAPPOS pos = mListenerMap.find(msgId);
-    if (!mListenerMap.is_valid_position(pos))
-        return;
-
-    StubListenerList & subVec = pos->second;
     for (uint32_t i = 0; i < subVec.size(); ++i)
     {
         if (subVec.value_at(i) == toRemove)
@@ -254,9 +247,16 @@ void StubBase::remove_from_map( uint32_t msgId, const StubBase::Listener & toRem
     }
 }
 
-void StubBase::collect_and_strip_response_listeners( uint32_t respId, StubListenerList & out_listeners )
+void StubBase::remove_from_map( uint32_t msgId, const StubBase::Listener & toRemove ) noexcept
 {
-    // ONE lock covers collect + all removal decisions — callers need no further map access.
+    Lock lock(mListenerLock);
+    StubListenerMap::MAPPOS pos = mListenerMap.find(msgId);
+    if (mListenerMap.is_valid_position(pos))
+        remove_from_list(pos->second, toRemove);
+}
+
+void StubBase::collect_and_strip_response_listeners( uint32_t respId, StubListenerList & listeners )
+{
     Lock lock(mListenerLock);
 
     StubListenerMap::MAPPOS pos = mListenerMap.find(respId);
@@ -264,29 +264,25 @@ void StubBase::collect_and_strip_response_listeners( uint32_t respId, StubListen
         return;
 
     StubListenerList & subVec = pos->second;
-    out_listeners.append(subVec);   // copy all (deliver to every listener incl. notify subs)
+    listeners.append(subVec);   // copy all (deliver to every listener incl. notify subs)
 
-    // Mirror the removal logic of the original send_response_notification so semantics are unchanged.
-    // remove_from_map() acquires mListenerLock recursively — SpinLock is recursive, so it's safe.
-    for (uint32_t i = 0; i < out_listeners.size(); ++i)
+    for (uint32_t i = 0; i < listeners.size(); ++i)
     {
-        const Listener & listener = out_listeners.value_at(i);
+        const Listener & listener = listeners.value_at(i);
         if (static_cast<SignedSequence>(listener.mSequenceNr) >= 0)
         {
             if (listener.mSequenceNr != 0)
-                remove_from_map(respId, listener);
+                remove_from_list(subVec, listener);
         }
         else
         {
-            remove_from_map(respId, StubBase::Listener(respId, areg::SEQUENCE_NUMBER_NOTIFY));
+            remove_from_list(subVec, StubBase::Listener(respId, areg::SEQUENCE_NUMBER_NOTIFY));
         }
     }
 }
 
 void StubBase::send_response_notification( const StubListenerList & whichListeners, ServiceResponseEvent & masterEvent )
 {
-    // Precondition: caller has already invoked collect_and_strip_response_listeners() so the map
-    // is already updated. This method is now map-neutral: no lock, no remove_from_map calls.
     const uint32_t count = whichListeners.size();
     if (count == 0)
         return;
@@ -303,7 +299,7 @@ void StubBase::send_response_notification( const StubListenerList & whichListene
         }
     }
 
-    // Send masterEvent directly to listener[0] — no clone, transfers ownership to dispatcher.
+    // Send masterEvent directly to listener[0] -- no clone, transfers ownership to dispatcher.
     const StubBase::Listener & first = whichListeners.value_at(0);
     masterEvent.set_sequence_number(static_cast<SignedSequence>(first.mSequenceNr) >= 0 ? first.mSequenceNr : static_cast<SequenceNumber>(-1 * static_cast<SignedSequence>(first.mSequenceNr)));
     send_service_response(masterEvent);
@@ -316,11 +312,16 @@ void StubBase::send_error_notification( const StubListenerList & whichListeners,
     do
     {
         Lock lock(mListenerLock);
+        StubListenerMap::MAPPOS pos = mListenerMap.find(respId);
+        if (!mListenerMap.is_valid_position(pos))
+            break;
+
+        StubListenerList & subVec = pos->second;
         for (uint32_t i = 0; i < whichListeners.size(); ++i)
         {
             const StubBase::Listener & listener = whichListeners.value_at(i);
             if (static_cast<SignedSequence>(listener.mSequenceNr) > 0)
-                remove_from_map(respId, listener);  // recursive lock: safe
+                remove_from_list(subVec, listener);  // already locked + resolved
         }
     } while (false);
 
@@ -343,7 +344,6 @@ void StubBase::send_update_notification( const StubListenerList & whichListeners
     if (count == 0)
         return;
 
-    // Clone for listeners [1..count-1] first while masterEvent is still alive.
     for (uint32_t i = 1; i < count; ++i)
     {
         const StubBase::Listener & listener = whichListeners.value_at(i);
@@ -354,7 +354,6 @@ void StubBase::send_update_notification( const StubListenerList & whichListeners
         }
     }
 
-    // Send masterEvent directly to listener[0] — transfers ownership to dispatcher.
     send_service_response(masterEvent);
 }
 
@@ -690,11 +689,11 @@ ServiceResponseEvent StubBase::create_response_event( const ProxyAddress &    /*
     return ServiceResponseEvent(MessageEnvelope{});  // invalid; derived stubs override to produce real events
 }
 
-ServiceResponseEvent StubBase::prepare_response_event( uint32_t respId, areg::ResultType result, uint32_t reserve, StubBase::StubListenerList & out_listeners )
+ServiceResponseEvent StubBase::prepare_response_event( uint32_t respId, areg::ResultType result, uint32_t reserve, StubBase::StubListenerList & listeners )
 {
-    collect_and_strip_response_listeners(respId, out_listeners);
-    if (out_listeners.size() > 0)
-        return create_response_event(out_listeners.first_entry().proxy(), respId, result, reserve);
+    collect_and_strip_response_listeners(respId, listeners);
+    if (listeners.size() > 0)
+        return create_response_event(listeners.first_entry().proxy(), respId, result, reserve);
 
     return ServiceResponseEvent(MessageEnvelope{});  // no listeners: invalid event
 }

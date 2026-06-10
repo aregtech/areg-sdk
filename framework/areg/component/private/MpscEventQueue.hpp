@@ -193,7 +193,7 @@ public:
 
     /**
      * \brief   Queues an event by moving it into the queue. The event's shared buffer is
-     *          transferred (O(1) — no data copy). The caller's event is left in a moved-from
+     *          transferred (O(1) -- no data copy). The caller's event is left in a moved-from
      *          (empty/invalid) state after a successful push. On capacity overflow or node
      *          allocation failure the event is NOT queued and remains in eventElem.
      *

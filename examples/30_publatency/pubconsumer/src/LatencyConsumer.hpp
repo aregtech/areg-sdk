@@ -30,7 +30,7 @@
 #include <climits>
 
 //////////////////////////////////////////////////////////////////////////
-// LatencySample — one measured round-trip record
+// LatencySample -- one measured round-trip record
 //////////////////////////////////////////////////////////////////////////
 
 struct LatencySample
@@ -43,7 +43,7 @@ struct LatencySample
 };
 
 //////////////////////////////////////////////////////////////////////////
-// ResultEntry — summary statistics for one completed test run
+// ResultEntry -- summary statistics for one completed test run
 //////////////////////////////////////////////////////////////////////////
 
 struct ResultEntry
@@ -65,7 +65,7 @@ struct ResultEntry
 };
 
 //////////////////////////////////////////////////////////////////////////
-// CmdData — carries a parsed console command to the component thread
+// CmdData -- carries a parsed console command to the component thread
 //////////////////////////////////////////////////////////////////////////
 
 struct CmdData
@@ -116,7 +116,7 @@ class LatencyConsumer final : public    areg::Component
     friend class DisplayConsumer;
 
 //////////////////////////////////////////////////////////////////////////
-// Nested command consumer — forwards events to the component thread
+// Nested command consumer -- forwards events to the component thread
 //////////////////////////////////////////////////////////////////////////
     class CmdConsumer : public IECmdConsumer
     {
@@ -137,7 +137,7 @@ class LatencyConsumer final : public    areg::Component
     };
 
 //////////////////////////////////////////////////////////////////////////
-// Nested display consumer — drives the 1-second console refresh thread
+// Nested display consumer -- drives the 1-second console refresh thread
 //////////////////////////////////////////////////////////////////////////
     class DisplayConsumer : public areg::ThreadConsumer
     {
@@ -236,7 +236,7 @@ private:
     static constexpr std::string_view MSG_EX8       { " Other Opt: -p (`stop`) | -i (`info`) | -h (`help`) | -q (global `quit`) | -q=1 (local `quit`)" };
     static constexpr std::string_view MSG_SETTINGS  { " mode=%-6s  count=%-6u  dur=%-3u s  warmup=%-3u  connected=%-3s  running=%-3s  csv: %s" };
     static constexpr std::string_view MSG_RES_HDR   { " Test Results (last 8 runs):" };
-    // Table strings — all 83 chars wide (1 leading space + 82 table chars)
+    // Table strings -- all 83 chars wide (1 leading space + 82 table chars)
     static constexpr std::string_view MSG_TBL_SEP   { " +-----+---------+--------+----------+----------+----------+----------+----------+----------+" };
     static constexpr std::string_view MSG_TBL_HDR   { " |  #  |    Mode |  Count |  Min(us) |  P50(us) |  P95(us) |  P99(us) |  Max(us) | Mean(us) |" };
     static constexpr std::string_view MSG_TBL_EMPTY { " |     |         |        |          |          |          |          |          |          |" };

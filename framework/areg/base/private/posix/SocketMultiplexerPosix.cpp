@@ -254,7 +254,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
             {
                 first   = mSockets[static_cast<std::size_t>(i)];
             }
-            else if (mBatchCount < areg::BATCH_SIZE)
+            else if (mBatchCount < areg::DEFAULT_DRAIN_LIMIT)
             {
                 mBatchFds[mBatchCount]    = mSockets[static_cast<std::size_t>(i)];
                 mBatchEvents[mBatchCount] = static_cast<uint32_t>(rev);

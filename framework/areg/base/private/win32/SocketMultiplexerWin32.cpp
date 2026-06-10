@@ -39,7 +39,7 @@
  * WAKEUP DESIGN -- loopback TCP socket pair:
  *
  *  mWakeupReadFd  = accepted side  -- added to the WSAPoll descriptor list.
- *   mWakeupWriteFd = connected side -- send() writes one byte in reset().
+ *  mWakeupWriteFd = connected side -- send() writes one byte in reset().
  *
  *   Construction creates a temporary listener on 127.0.0.1:0, connects
  *   to it, accepts one connection, then closes the listener.  The result
@@ -313,7 +313,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
             {
                 first = mSockets[static_cast<std::size_t>(i)];
             }
-            else if (mBatchCount < areg::BATCH_SIZE)
+            else if (mBatchCount < areg::DEFAULT_DRAIN_LIMIT)
             {
                 mBatchFds[mBatchCount]    = mSockets[static_cast<std::size_t>(i)];
                 mBatchEvents[mBatchCount] = static_cast<uint32_t>(rev);

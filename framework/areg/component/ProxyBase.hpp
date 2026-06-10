@@ -157,15 +157,12 @@ private:
     // ProxyBase::ProxyConnectList definition
     //////////////////////////////////////////////////////////////////////////
     /************************************************************************
-     * \brief   Proxy Connected client List class to handle connect and 
-     *          disconnect service.
+     * \brief   Proxy Connected client List class to handle connect and disconnect service.
      ************************************************************************/
     using ProxyConnectList  = ArrayList<ProxyListener *>;
 
     /************************************************************************
      * \brief   HashMap keyed by message ID mapping to per-ID listener lists.
-     *          Provides O(1) average lookup in prepare_listeners(), replacing
-     *          the O(n) flat-scan across all registered listeners.
      ************************************************************************/
     using ProxyListenerMap  = HashMap<uint32_t, ProxyListenerList>;
 
@@ -349,10 +346,8 @@ public:
      * \param   roleName            The role name of the server component.
      * \param   serviceIfData       The service interface data containing name and version.
      * \param   connect             The listener to notify when server accepts the proxy connection.
-     * \param   funcCreate          The function pointer to instantiate the proxy object if not yet
-     *                              registered.
-     * \param   ownerThread         The dispatcher thread name where messages are dispatched. If
-     *                              empty, searches in the current thread.
+     * \param   funcCreate          The function pointer to instantiate the proxy object if not yet registered.
+     * \param   ownerThread         The dispatcher thread name where messages are dispatched. If empty, searches in the current thread.
      * \return  Returns a shared pointer to the proxy object.
      **/
     [[nodiscard]]
@@ -369,8 +364,7 @@ public:
      * \param   roleName            The role name of the server component.
      * \param   serviceIfData       The service interface data containing name and version.
      * \param   connect             The listener to notify when server accepts the proxy connection.
-     * \param   funcCreate          The function pointer to instantiate the proxy object if not yet
-     *                              registered.
+     * \param   funcCreate          The function pointer to instantiate the proxy object if not yet registered.
      * \param   ownerThread         The dispatcher thread unique number. If 0, searches in the current thread.
      * \return  Returns a shared pointer to the proxy object.
      **/
@@ -388,8 +382,7 @@ public:
      * \param   roleName            The role name of the server component.
      * \param   serviceIfData       The service interface data containing name and version.
      * \param   connect             The listener to notify when server accepts the proxy connection.
-     * \param   funcCreate          The function pointer to instantiate the proxy object if not yet
-     *                              registered.
+     * \param   funcCreate          The function pointer to instantiate the proxy object if not yet registered.
      * \param   ownerThread         The dispatcher thread where messages are dispatched.
      * \return  Returns a shared pointer to the proxy object.
      * \note    Overload that takes a thread reference instead of thread name.
@@ -512,8 +505,7 @@ public:
      *          notifications of the specified message ID.
      *
      * \param   msgId       The attribute or response message ID to check for notification listeners.
-     * \return  Returns true if notification listeners are assigned for the message ID; false
-     *          otherwise.
+     * \return  Returns true if notification listeners are assigned for the message ID; false otherwise.
      **/
     [[nodiscard]]
     bool has_notification_listener(uint32_t msgId) const noexcept;
@@ -743,16 +735,14 @@ protected:
 protected:
 
     /**
-     * \brief   Sends a request to the stub to start sending update notifications for the specified
-     *          message ID.
+     * \brief   Sends a request to the stub to start sending update notifications for the  message ID.
      *
      * \param   msgId       The attribute or response message ID to start receiving updates for.
      **/
     inline void start_notification( uint32_t msgId );
 
     /**
-     * \brief   Sends a request to the stub to stop sending update notifications for the specified
-     *          message ID.
+     * \brief   Sends a request to the stub to stop sending update notifications for the specified message ID.
      *
      * \param   msgId       The attribute or response message ID to stop receiving updates for.
      **/
@@ -850,20 +840,18 @@ protected:
      * \brief   Collects all listeners matching the message ID and sequence number into the output
      *          list.
      *
-     * \param[out] out_listenerList    Receives the list of listeners matching the criteria.
-     * \param   msgId               The message ID to filter listeners.
-     * \param   seqNrToSearch       The sequence number to filter listeners. If
-     *                              SEQUENCE_NUMBER_NOTIFY, matches all listeners.
+     * \param[out] listeners    Receives the list of listeners matching the criteria.
+     * \param   msgId           The message ID to filter listeners.
+     * \param   seqNrToSearch   The sequence number to filter listeners. If SEQUENCE_NUMBER_NOTIFY, matches all listeners.
      * \return  Returns the number of listeners added to the output list.
      **/
-    uint32_t prepare_listeners( ProxyBase::ProxyListenerList & out_listenerList, uint32_t msgId, const SequenceNumber & seqNrToSearch );
+    uint32_t prepare_listeners( ProxyBase::ProxyListenerList & listeners, uint32_t msgId, const SequenceNumber & seqNrToSearch );
 
     /**
      * \brief   Sends a request event to the stub with serialized arguments and an optional response listener.
      *
      * \param   reqId       The ID of the request.
-     * \param   args        The buffer containing serialized request arguments. Can be empty if the
-     *                      request has no parameters.
+     * \param   args        The buffer containing serialized request arguments. Can be empty if the request has no parameters.
      * \param   caller      The consumer to receive the response. Must be non-null if the request
      *                      has a response; can be null if the request is one-way.
      **/

@@ -264,7 +264,8 @@ void ProxyBase::free_proxy( ProxyListener & connect )
     if ( exists >= 0 )
     {
         mListConnect.remove_at(static_cast<uint32_t>(exists));
-        connect.service_connected(areg::ServiceConnectionState::Disconnected, self());
+        if ( mIsConnected )
+            connect.service_connected(areg::ServiceConnectionState::Disconnected, self());
     }
 
     remove_listener( static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
@@ -334,13 +335,19 @@ void ProxyBase::service_connection_updated( const StubAddress & server, const Ch
                 , ProxyAddress::to_path(proxy_address()).as_string()
                 , areg::as_string(status)
                 , StubAddress::to_path(server).as_string());
- 
-    // Local: channel.target = stub's thread CRC32 = server.source(). Must match when connected.
+
+    const bool wasConnected{ mIsConnected };
+    const bool nowConnected{ areg::is_service_connected(status) };
+    if ( (nowConnected == wasConnected) && (status != areg::ServiceConnectionState::Rejected) )
+    {
+        LOG_DBG("Ignored no-op connection update [ %s ]: not a connect/disconnect edge", areg::as_string(status));
+        return;
+    }
+
     ASSERT(channel.target() == server.source() || !server.is_local_address() || status != areg::ServiceConnectionState::Connected);
     mProxyAddress.set_channel(channel);
     set_connection_status( status );
-    bool proxyConnected{ is_connected() };
-    if ( proxyConnected )
+    if (nowConnected)
     {
         mStubAddress = server;
     }
@@ -361,8 +368,7 @@ void ProxyBase::service_connection_updated( const StubAddress & server, const Ch
     for (uint32_t i = 0u; i < connectListeners.size(); ++i)
     {
         ProxyListener* connect = static_cast<ProxyListener*>(connectListeners[i].mListener);
-
-        if (proxyConnected)
+        if (nowConnected)
         {
             mListConnect.add_if_unique(connect);
         }
@@ -399,7 +405,7 @@ void ProxyBase::set_notification( uint32_t msgId, NotificationConsumer* caller, 
         }
 
         // assign only if there was no listener
-        if (hasListener == false)
+        if (!hasListener)
         {
             start_notification(msgId);
         }
@@ -641,12 +647,14 @@ void ProxyBase::stop_proxy()
         return;
     
     LOG_WARN("Going to stop proxy [ %s ]", ProxyAddress::to_path(mProxyAddress).as_string());
-
-    for (uint32_t i = 0 ; i < mListConnect.size(); ++ i)
+    if ( mIsConnected )
     {
-        ProxyListener * listener = mListConnect.value_at(i);
-        ASSERT(listener != nullptr);
-        listener->service_connected( areg::ServiceConnectionState::Disconnected, *this);
+        for (uint32_t i = 0 ; i < mListConnect.size(); ++ i)
+        {
+            ProxyListener * listener = mListConnect.value_at(i);
+            ASSERT(listener != nullptr);
+            listener->service_connected( areg::ServiceConnectionState::Disconnected, *this);
+        }
     }
 
     mListConnect.clear();
@@ -660,6 +668,7 @@ void ProxyBase::stop_proxy()
         Lock lock(mListenerLock);
         mListenerMap.clear();
     }
+
     ServiceManager::request_unregister_consumer( proxy_address( ), areg::DisconnectReason::ConsumerDisconnected );
     mDispatcherThread.remove_consumer( *this );
 

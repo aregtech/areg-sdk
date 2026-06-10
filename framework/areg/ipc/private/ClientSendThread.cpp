@@ -69,20 +69,17 @@ void ClientSendThread::start_event_processing( Event & eventElem )
     hdr0->custom    = 0u;
     eventElem.envelope().buffer_completion_fix(); // compute checksum now; zeroed fields are not covered by checksum
 
-    // ZEPHYR-INCOMPATIBLE: ~4 KB stack IoBuffer array for batch send draining.
-    areg::IoBuffer* ioBuffer{ mIoBuffer };
-    uint32_t totalSize { 0u };
     uint32_t bufCount  { 0u };
-
+    uint64_t totalSize { 0u };  // 64-bit: sum of up to DEFAULT_DRAIN_LIMIT wire sizes cannot overflow.
     {
         const uint32_t wireSize{ static_cast<uint32_t>(sizeof(areg::EventHeader)) + hdr0->bufHeader.biUsed };
-        ioBuffer[bufCount++] = { reinterpret_cast<const uint8_t*>(hdr0), wireSize };
+        mIoBuffer[bufCount++] = { reinterpret_cast<const uint8_t*>(hdr0), wireSize };
         totalSize += wireSize;
     }
 
     // Drain further queued events into the same batch (one OS send). The single-message ping-pong case
     // finds the queue empty and skips the loop, touching no mDrain slot.
-    for ( ; bufCount < areg::THREAD_DRAIN_LIMIT; ++bufCount )
+    for ( ; bufCount < areg::DEFAULT_DRAIN_LIMIT; ++bufCount )
     {
         Event evt{ pick_event() };
         if ( !evt.is_valid() )
@@ -106,21 +103,50 @@ void ClientSendThread::start_event_processing( Event & eventElem )
         evt.envelope().buffer_completion_fix(); // compute checksum now; zeroed fields are not covered by checksum
 
         const uint32_t wireSize{ static_cast<uint32_t>(sizeof(areg::EventHeader)) + hdr->bufHeader.biUsed };
-        ioBuffer[bufCount] = { reinterpret_cast<const uint8_t*>(hdr), wireSize };
+        mIoBuffer[bufCount] = { reinterpret_cast<const uint8_t*>(hdr), wireSize };
         totalSize += wireSize;
         mDrain[bufCount] = evt.envelope().share_buffer();  // retain buffer; raw pointer hdr stays valid through writev
     }
 
-    int32_t sentBytes{ 0 };
+    if ( totalSize <= areg::MAX_SEND_BATCH_BYTES )
     {
-        AREG_LT_SCOPE(areg::LtStage::SendSyscall);  // isolates the raw send()/writev syscall cost
-        sentBytes = mConnection.send_messages_batch(ioBuffer, bufCount, totalSize);
-    }
+        int32_t sentBytes{ 0 };
+        {
+            AREG_LT_SCOPE(areg::LtStage::SendSyscall);  // isolates the raw send()/writev syscall cost
+            sentBytes = mConnection.send_messages_batch(mIoBuffer, bufCount, static_cast<uint32_t>(totalSize) );
+        }
 
-    if ( sentBytes > 0 )
-        accumulate_sent( static_cast<uint64_t>(sentBytes), bufCount );
+        if ( sentBytes > 0 )
+            accumulate_sent( static_cast<uint64_t>(sentBytes), bufCount );
+        else
+            mRemoteService.failed_send_message( eventElem.envelope(), mConnection.socket() );
+    }
     else
-        mRemoteService.failed_send_message( eventElem.envelope(), mConnection.socket() );
+    {
+        for ( uint32_t start{ 0u }; start < bufCount; )
+        {
+            uint32_t end       { start };
+            uint32_t batchBytes{ 0u };
+            do
+            {
+                batchBytes += static_cast<uint32_t>(mIoBuffer[end].size);
+                ++end;
+            } while ( (end < bufCount) && (static_cast<uint32_t>(mIoBuffer[end].size) <= (areg::MAX_SEND_BATCH_BYTES - batchBytes)) );
+
+            int32_t sentBytes{ 0 };
+            {
+                AREG_LT_SCOPE(areg::LtStage::SendSyscall);
+                sentBytes = mConnection.send_messages_batch(mIoBuffer + start, end - start, batchBytes );
+            }
+
+            if ( sentBytes > 0 )
+                accumulate_sent( static_cast<uint64_t>(sentBytes), end - start );
+            else
+                mRemoteService.failed_send_message( eventElem.envelope(), mConnection.socket() );
+
+            start = end;
+        }
+    }
 
     // Release retained drained buffers (slot 0 is owned by the caller). Keeps mDrain allocated for reuse.
     for ( uint32_t i{ 1u }; i < bufCount; ++i )

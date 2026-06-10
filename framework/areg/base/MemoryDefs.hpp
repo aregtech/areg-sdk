@@ -522,9 +522,9 @@ struct RawService
  *  priority         95     1  EventPriority
  *  checksum         96     4  CRC32 of payload; 0=skip validation
  *  classId         100     4  class ID assigned by the final event class
- *  internal1       104     8  LOCAL-ONLY: DispatcherThread*  — zeroed on IPC wire
- *  internal2       112     8  LOCAL-ONLY: EventConsumer*     — zeroed on IPC wire
- *  custom          120     8  LOCAL-ONLY: DATA_CLASS cleanup hook — zeroed on IPC wire.
+ *  internal1       104     8  LOCAL-ONLY: DispatcherThread*  -- zeroed on IPC wire
+ *  internal2       112     8  LOCAL-ONLY: EventConsumer*     -- zeroed on IPC wire
+ *  custom          120     8  LOCAL-ONLY: DATA_CLASS cleanup hook -- zeroed on IPC wire.
  *                             For AREG_DECLARE_EVENT custom events: stores void(*)(void*)
  *                             noexcept pointing to the DATA_CLASS destructor, invoked by
  *                             MessageEnvelope::destroy_event() / Event::~Event() while this is
@@ -549,9 +549,9 @@ struct EventHeader
     uint8_t             priority    { 0 };  //!< [95]       EventPriority
     uint32_t            checksum    { 0 };  //!< [96..99]   CRC32 of payload; 0=skip
     uint32_t            eventId     { 0 };  //!< [100..103] class ID of the final event class
-    uint64_t            internal1   { 0 };  //!< [104..111] LOCAL-ONLY: DispatcherThread* — zeroed on IPC wire
-    uint64_t            internal2   { 0 };  //!< [112..119] LOCAL-ONLY: EventConsumer*    — zeroed on IPC wire
-    uint64_t            custom      { 0 };  //!< [120..127] LOCAL-ONLY: DATA_CLASS cleanup hook — zeroed on IPC wire; see struct docs
+    uint64_t            internal1   { 0 };  //!< [104..111] LOCAL-ONLY: DispatcherThread* -- zeroed on IPC wire
+    uint64_t            internal2   { 0 };  //!< [112..119] LOCAL-ONLY: EventConsumer*    -- zeroed on IPC wire
+    uint64_t            custom      { 0 };  //!< [120..127] LOCAL-ONLY: DATA_CLASS cleanup hook -- zeroed on IPC wire; see struct docs
 };                                          //!< 128 bytes
 
 //////////////////////////////////////////////////////////////////////////

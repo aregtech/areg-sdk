@@ -283,7 +283,7 @@ int32_t SyncLockAndWaitPosix::_wait_any_new(WaitablePosix** listWaitables, int32
                 w->notify_released_threads(1);
                 break;
             }
-            // Another concurrent signal already fired — use that result
+            // Another concurrent signal already fired -- use that result
         }
     }
 

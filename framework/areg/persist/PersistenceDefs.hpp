@@ -201,7 +201,7 @@ namespace areg {
 
         , NetSocketSndbuf      = 29    //!< The SO_SNDBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::sndbuf).
         , NetSocketRcvbuf      = 30    //!< The SO_RCVBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::rcvbuf).
-        , NetSocketBatch       = 31    //!< Send batch/drain size (format: net::SERVICE::TRANSPORT::batch).
+        , NetSocketDrain       = 31    //!< Send batch/drain size (format: net::SERVICE::TRANSPORT::drain).
         , NetPoolPairs         = 32    //!< Thread-pool pair count (format: net::SERVICE::TRANSPORT::pairs).
         , NetSocketTimeout     = 33    //!< SO_SNDTIMEO in ms (format: net::SERVICE::TRANSPORT::timeout).
         , NetThreadCache       = 34    //!< The size of thread cache for networking in kilobytes (format: net::SERVICE::TRANSPORT::cache).
@@ -252,7 +252,7 @@ namespace areg {
 
             , {"net"    , "*"   , "*"       , "sndbuf"          }   //! 29  , The SO_SNDBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::sndbuf).
             , {"net"    , "*"   , "*"       , "rcvbuf"          }   //! 30  , The SO_RCVBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::rcvbuf).
-            , {"net"    , "*"   , "*"       , "batch"           }   //! 31  , Batch/drain size per dispatcher wake-up.
+            , {"net"    , "*"   , "*"       , "drain"           }   //! 31  , Batch/drain size per dispatcher wake-up.
             , {"net"    , "*"   , "*"       , "pairs"           }   //! 32  , Thread-pool pair count (0 = disabled).
             , {"net"    , "*"   , "*"       , "timeout"         }   //! 33  , SO_SNDTIMEO in milliseconds (0 = use compile-time default SOCKET_SEND_TIMEOUT_MS).
             , {"net"    , "*"   , "*"       , "cache"           }   //! 34  , The thread cache size in network communication (0 = default THREAD_CACHE_SIZE (128KB)).
@@ -415,9 +415,9 @@ inline constexpr const areg::ConfigKey& net_socket_rcvbuf() noexcept
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::NetSocketRcvbuf)];
 }
 
-inline constexpr const areg::ConfigKey& net_socket_batch() noexcept
+inline constexpr const areg::ConfigKey& net_socket_drain() noexcept
 {
-    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::NetSocketBatch)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::NetSocketDrain)];
 }
 
 inline constexpr const areg::ConfigKey& net_pool_pairs() noexcept

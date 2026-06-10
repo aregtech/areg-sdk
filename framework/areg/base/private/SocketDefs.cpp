@@ -94,7 +94,7 @@ namespace areg::os {
 
     /**
      * \brief   Receives exactly \a dataLength bytes from \a hSocket in windowed chunks
-     *          of at most DEFAULT_THREAD_CACHE_KB * ONE_KILOBYTE bytes per recv() call.
+     *          of at most DEFAULT_THREAD_CACHE bytes per recv() call.
      *          Loops until all bytes are received; no cache involvement.
      * \return  Returns number of bytes received; negative on error or peer disconnect.
      **/
@@ -430,7 +430,7 @@ DEF_LOG_SCOPE(areg_base_areg, set_recv_size);
 
 AREG_API_IMPL uint32_t areg::thread_cache_size() noexcept
 {
-    return Application::config_manager().network_cache() * areg::ONE_KILOBYTE;;
+    return Application::config_manager().network_cache();
 }
 
 

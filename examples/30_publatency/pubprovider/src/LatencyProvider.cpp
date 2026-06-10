@@ -317,7 +317,7 @@ void LatencyProvider::_send_one_broadcast()
         break;
 
     default:
-        return;     // Stop/unknown — nothing to send (e.g. a stray pull after the test ended).
+        return;     // Stop/unknown -- nothing to send (e.g. a stray pull after the test ended).
     }
 
     mTotalServed.fetch_add(1u, std::memory_order_relaxed);
@@ -368,7 +368,7 @@ void LatencyProvider::_run_input_thread()
         }
 
         // Set the quit flag before sending the event so the while-loop condition
-        // is false by the time we return here — avoids re-entering wait_for_input.
+        // is false by the time we return here -- avoids re-entering wait_for_input.
         if (data.has_quit())
         {
             mQuitInput.store(true, std::memory_order_relaxed);
@@ -478,7 +478,7 @@ void LatencyProvider::_update_latency_stats()
 
     if (is_broadcast)
     {
-        // Broadcast mode: show dashes — do NOT touch mLastStats (preserve prior request test results)
+        // Broadcast mode: show dashes -- do NOT touch mLastStats (preserve prior request test results)
         console.output_txt(COORD_LATENCY, MSG_LATENCY_NONE);
     }
     else if (is_request && !mOneWayLatencies.empty())

@@ -61,7 +61,7 @@ class PoolSendThread final  : public    DispatcherThread
 // Internal types and constants
 //////////////////////////////////////////////////////////////////////////
 private:
-    using BatchEntries = std::array<areg::ext::PendingSend, areg::THREAD_BATCH_LIMIT>;
+    using BatchEntries = std::array<areg::ext::PendingSend, areg::DEFAULT_DRAIN_LIMIT>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -131,8 +131,8 @@ private:
     ServerSendThread &          mGlobalStats;   //!< Global counters accumulated here.
     BatchEntries                mBatch;         //!< Pre-allocated batch work list reused each drain cycle.
     //!< Reused scratch: per-slot target cookies and resolved socket handles (POD; off the stack).
-    std::array<ITEM_ID, areg::THREAD_BATCH_LIMIT>       mTargets;
-    std::array<SOCKETHANDLE, areg::THREAD_BATCH_LIMIT>  mSockets;
+    std::array<ITEM_ID, areg::DEFAULT_DRAIN_LIMIT>       mTargets;
+    std::array<SOCKETHANDLE, areg::DEFAULT_DRAIN_LIMIT>  mSockets;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

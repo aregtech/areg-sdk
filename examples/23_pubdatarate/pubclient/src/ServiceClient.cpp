@@ -218,7 +218,7 @@ bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg
     notify_on_broadcast_service_stopping(isConnected);
     notify_on_broadcast_image_block_acquired(isConnected);
 
-    if (is_connected())
+    if (isConnected)
     {
         mReceivedBlocks         = 0u;
         mLastReceivedBlocks     = 0u;

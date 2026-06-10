@@ -235,8 +235,8 @@ private:
     //!< Only accessed from the single receive thread that calls wait(), so no synchronization needed.
     mutable uint32_t            mBatchCount;    //!< Number of valid entries in mBatchFds[].
     mutable uint32_t            mBatchIdx;      //!< Index of the next entry to serve from mBatchFds[].
-    mutable SOCKETHANDLE        mBatchFds[areg::BATCH_SIZE];      //!< Cached ready socket handles.
-    mutable uint32_t            mBatchEvents[areg::BATCH_SIZE];   //!< Cached OS event flags (epoll events / kqueue flags / poll revents).
+    mutable SOCKETHANDLE        mBatchFds[areg::DEFAULT_DRAIN_LIMIT];      //!< Cached ready socket handles.
+    mutable uint32_t            mBatchEvents[areg::DEFAULT_DRAIN_LIMIT];   //!< Cached OS event flags (epoll events / kqueue flags / poll revents).
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden

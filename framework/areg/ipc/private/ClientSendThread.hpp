@@ -152,9 +152,11 @@ private:
      * \brief   Reusable holder keeping drained message buffers alive until the writev completes.
      *          Constructed once; slots are reset (not reconstructed) per send. ClientSendThread context only.
      **/
-    areg::RawBufferPtr              mDrain[areg::THREAD_DRAIN_LIMIT];
-
-    areg::IoBuffer                  mIoBuffer[areg::THREAD_DRAIN_LIMIT];
+    areg::RawBufferPtr              mDrain[areg::DEFAULT_DRAIN_LIMIT];
+    /**
+     * \brief   Reusable continues region of buffers and data size.
+     **/
+    areg::IoBuffer                  mIoBuffer[areg::DEFAULT_DRAIN_LIMIT];
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

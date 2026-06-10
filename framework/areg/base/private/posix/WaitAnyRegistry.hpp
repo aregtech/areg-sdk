@@ -166,7 +166,7 @@ public:
             }
 
             if (k == EMPTY_KEY)
-                return;  // key not in table — should not happen
+                return;  // key not in table -- should not happen
         }
     }
 

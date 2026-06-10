@@ -34,7 +34,7 @@ int32_t SocketConnectionBase::receive_message(MessageEnvelope & message, const S
     if (socket.receive(reinterpret_cast<uint8_t*>(&evtHeader), sizeof(areg::EventHeader)) != static_cast<int32_t>(sizeof(areg::EventHeader)))
         return 0;
 
-    if (evtHeader.bufHeader.biUsed > areg::MAX_MESSAGE_DATA_SIZE)
+    if (evtHeader.bufHeader.biUsed > areg::MAX_BUF_LENGTH)
         return 0;
 
     uint8_t * buffer = message.init_envelope(evtHeader, evtHeader.bufHeader.biUsed);

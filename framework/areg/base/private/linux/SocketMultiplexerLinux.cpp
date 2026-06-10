@@ -223,8 +223,8 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         return fd;
     }
 
-    struct epoll_event events[BATCH_SIZE];
-    const int n = ::epoll_wait(static_cast<int>(mEpollFd), events, BATCH_SIZE, timeoutMs);
+    struct epoll_event events[DEFAULT_DRAIN_LIMIT];
+    const int n = ::epoll_wait(static_cast<int>(mEpollFd), events, DEFAULT_DRAIN_LIMIT, timeoutMs);
 
     if (n < 0)
         return (errno == EINTR) ? areg::InvalidSocketHandle : areg::FailedSocketHandle;

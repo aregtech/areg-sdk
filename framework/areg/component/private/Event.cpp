@@ -75,7 +75,7 @@ Event::~Event()
         CleanupFn fn{ nullptr };
         static_assert(sizeof(fn) <= sizeof(uint64_t), "cleanup fn ptr does not fit in uint64_t");
         std::memcpy(&fn, &hdr->custom, sizeof(fn));
-        hdr->custom = 0u;   // clear before call — prevent re-entrant double-call
+        hdr->custom = 0u;   // clear before call -- prevent re-entrant double-call
         fn(payload_ptr());
     }
 }

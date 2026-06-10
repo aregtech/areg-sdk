@@ -85,10 +85,6 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   Compact listener entry that tracks a registered proxy client for a message ID.
-     *          Stores the proxy identity in integer form (RawService + Endpoint, 28 bytes)
-     *          instead of a full ProxyAddress (which carries string fields).
-     *          Use proxy() to reconstruct a routable ProxyAddress for event dispatch,
-     *          or proxy_matches() for fast equality without constructing a ProxyAddress.
      **/
     class AREG_API Listener
     {
@@ -146,9 +142,6 @@ protected:
 
         /**
          * \brief   Reconstructs a ProxyAddress from the compact routing integers.
-         *          Use for event dispatch (clone_for_target, create_response).
-         *          Strings (service name, role name, thread name) are not restored;
-         *          all routing integer fields are correct.
          **/
         [[nodiscard]]
         inline ProxyAddress proxy() const noexcept;
@@ -156,7 +149,6 @@ protected:
         /**
          * \brief   Returns true if the stored proxy identity matches addr without
          *          constructing a full ProxyAddress.
-         *          Equivalent to (proxy() == addr) but avoids the construction cost.
          **/
         [[nodiscard]]
         inline bool proxy_matches(const ProxyAddress & addr) const noexcept;
@@ -175,13 +167,11 @@ protected:
         SequenceNumber  mSequenceNr { 0 };
 
         /**
-         * \brief   Compact proxy service identity: service CRC and role CRC (8 bytes).
-         *          Populated by ProxyAddress::to_endpoint; consumed by ProxyAddress(RawService,Endpoint).
+         * \brief   Compact proxy service identity
          **/
         areg::RawService    mRawService { };
         /**
-         * \brief   Compact proxy endpoint: cookie (id), proxy magic (number), thread CRC,
-         *          service version, and service type (20 bytes).
+         * \brief   Compact proxy endpoint.
          **/
         areg::Endpoint      mConsumer   { };
     };
@@ -230,8 +220,7 @@ protected:
      * \brief   Initializes the stub with its master component and service interface metadata.
      *
      * \param   masterComp      The component that owns this service implementation.
-     * \param   siData          The service interface data containing service name, version, and
-     *                          type.
+     * \param   siData          The service interface data containing service name, version, and type.
      **/
     StubBase( Component & masterComp, const areg::InterfaceData & siData );
 
@@ -386,11 +375,7 @@ protected:
 
     /**
      * \brief   Creates an empty (no-payload) response event of the stub's concrete type, with the
-     *          buffer allocated for the header plus \a reserve payload bytes. The caller serializes the
-     *          response parameters directly into the event via write_stream(), so the response is built
-     *          in a single heap allocation (no intermediate SharedBuffer + copy). Base returns an
-     *          invalid event; generated stubs override it. Pair with prepare_response_event() +
-     *          send_response_notification().
+     *          buffer allocated for the header plus \a reserve payload bytes.
      *
      * \param   proxy       The address of the client proxy to receive the response.
      * \param   msgId       The message ID of the response.
@@ -408,8 +393,7 @@ protected:
     /**
      * \brief   Processes a service request event. Must be overridden by derived classes to handle specific requests.
      *
-     * \param   eventElem       The request event containing the request ID and serialized
-     *                          parameters.
+     * \param   eventElem       The request event containing the request ID and serialized parameters.
      **/
     void process_request_event( areg::ServiceRequestEvent & eventElem ) override = 0;
     
@@ -421,12 +405,10 @@ protected:
     void process_attribute_event( areg::ServiceRequestEvent & eventElem ) override = 0;
 
     /**
-     * \brief   Called when the stub is registered in the service registry. The status indicates
-     *          success or failure.
+     * \brief   Called when the stub is registered in the service registry. The status indicates success or failure.
      *
      * \param   stubTarget      The address of this registered stub.
-     * \param   status          The registration status. Connected indicates successful
-     *                          registration.
+     * \param   status          The registration status. Connected indicates successful registration.
      **/
     void process_registered_event( const areg::StubAddress & stubTarget, areg::ServiceConnectionState status ) override;
 
@@ -504,9 +486,8 @@ protected:
      * \brief   Marks the request as pending and adds its listener to the list. Only called for
      *          requests that have associated responses.
      *
-     * \param   listener        The listener object for this request (contains source proxy and
-     *                          message ID).
-     * \param   seqNr           The sequence number of the request call.
+     * \param   listener    The listener object for this request (contains source proxy and message ID).
+     * \param   seqNr       The sequence number of the request call.
      * \param   reqId       The ID of the request to prepare.
      **/
     void prepare_request(StubBase::Listener & listener, const SequenceNumber & seqNr, uint32_t reqId);
@@ -514,28 +495,23 @@ protected:
     /**
      * \brief   Collects all listeners matching the specified request ID into the output list.
      *
-     * \param   reqId       The request ID to filter listeners.
-     * \param[out] out_listners    Receives the list of listeners for the request ID.
+     * \param      reqId        The request ID to filter listeners.
+     * \param[out] listeners    Receives the list of listeners for the request ID.
      * \return  Returns the number of listeners found.
      **/
-    uint32_t find_listeners(uint32_t reqId, StubListenerList & out_listners) const;
+    uint32_t find_listeners(uint32_t reqId, StubListenerList & listeners) const;
 
     /**
-     * \brief   Finds the listeners subscribed to \a respId and, if any, builds an empty typed response
-     *          event (sized for the header plus \a reserve payload bytes) targeted at the first
-     *          listener. The caller serializes the response parameters into the returned event via
-     *          write_stream() and then dispatches it with send_response_notification(out_listeners, ...),
-     *          which clones it for the remaining listeners. This builds the response in a single heap
-     *          allocation (no intermediate SharedBuffer + copy).
+     * \brief   Finds the listeners subscribed to \a respId.
      *
      * \param   respId          The response / broadcast message ID.
      * \param   result          The result code to stamp into the response.
      * \param   reserve         Payload bytes to reserve after the header for serialized parameters.
-     * \param[out] out_listeners Receives the listeners subscribed to respId (empty if none).
+     * \param[out] listeners    Receives the listeners subscribed to respId (empty if none).
      * \return  A typed response event; invalid (is_valid()==false) when there are no listeners.
      **/
     [[nodiscard]]
-    ServiceResponseEvent prepare_response_event( uint32_t respId, areg::ResultType result, uint32_t reserve, StubBase::StubListenerList & out_listeners );
+    ServiceResponseEvent prepare_response_event( uint32_t respId, areg::ResultType result, uint32_t reserve, StubBase::StubListenerList & listeners );
 
     /**
      * \brief   Returns true if a notification listener with the specified message ID and proxy address exists.
@@ -712,7 +688,17 @@ private:
     void remove_from_map( uint32_t msgId, const StubBase::Listener & toRemove ) noexcept;
 
     /**
-     * \brief   Collects all listeners for respId into out_listeners and, in the same locked
+     * \brief   Removes one listener matching toRemove from an already resolved sub-vector using swap-and-pop. 
+     *          It performs NO map lookup and acquires NO lock, so it must be called by a caller that
+     *          already holds the Lock and the target sub-vector.
+     *
+     * \param   subVec      The sub-vector to search and compact in place.
+     * \param   toRemove    The listener to find and remove (matched via Listener::operator==).
+     **/
+    static void remove_from_list( StubListenerList & subVec, const StubBase::Listener & toRemove ) noexcept;
+
+    /**
+     * \brief   Collects all listeners for respId into listeners and, in the same locked
      *          region, removes the one-shot entries that the response path would consume:
      *          - seqNr > 0 (one-shot request): removed from the map.
      *          - seqNr < 0 (unblocked request with existing notify): the matching seqNr==0
@@ -720,9 +706,9 @@ private:
      *          - seqNr == 0 (notify subscription): kept in the map.
      *
      * \param   respId          The response / broadcast message ID to collect listeners for.
-     * \param[out] out_listeners Receives all listeners for respId.
+     * \param[out] listeners    Receives all listeners for respId.
      **/
-    void collect_and_strip_response_listeners( uint32_t respId, StubListenerList & out_listeners );
+    void collect_and_strip_response_listeners( uint32_t respId, StubListenerList & listeners );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

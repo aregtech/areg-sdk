@@ -66,7 +66,7 @@ bool ClientReceiveThread::run_dispatcher()
     MessageEnvelope msgReceived;
     int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
 
-    constexpr uint32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
+    constexpr uint32_t DRAIN_LIMIT{ areg::DEFAULT_DRAIN_LIMIT };
     uint32_t drainCount{ 0u };
 
     do

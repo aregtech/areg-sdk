@@ -327,7 +327,7 @@ public:
 
     /**
      * \brief   Waits for either of two events to be signaled. Typed convenience overload for the
-     *          common dispatcher pattern (queue event + exit event) — avoids stack array allocation
+     *          common dispatcher pattern (queue event + exit event) -- avoids stack array allocation
      *          at the call site. Returns 0 if ev0 fired, 1 if ev1 fired, or WAIT_ANY_TIMEOUT.
      *
      * \param   ev0         First event (index 0).

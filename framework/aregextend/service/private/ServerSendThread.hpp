@@ -54,7 +54,7 @@ class ServerSendThread final    : public    DispatcherThread
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    using BatchEntries = std::array<areg::ext::PendingSend, areg::THREAD_BATCH_LIMIT>;
+    using BatchEntries = std::array<areg::ext::PendingSend, areg::DEFAULT_DRAIN_LIMIT>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -165,8 +165,8 @@ private:
      **/
     BatchEntries                    mBatch;
     //!< Reused scratch: per-slot target cookies and resolved socket handles (POD; off the stack).
-    std::array<ITEM_ID, areg::THREAD_BATCH_LIMIT>       mTargets;
-    std::array<SOCKETHANDLE, areg::THREAD_BATCH_LIMIT>  mSockets;
+    std::array<ITEM_ID, areg::DEFAULT_DRAIN_LIMIT>       mTargets;
+    std::array<SOCKETHANDLE, areg::DEFAULT_DRAIN_LIMIT>  mSockets;
     /**
      * \brief   Atomic stats (bytes + messages sent + enabled flag).
      **/

@@ -82,9 +82,9 @@ void ServerSendThread::start_event_processing( areg::Event & eventElem )
     ++batchCount;
 
     // Phase 1: drain additional queued events straight into mBatch (the persistent batch list retains
-    // each buffer). No Event array — one transient Event per popped message. The common single-message
+    // each buffer). No Event array -- one transient Event per popped message. The common single-message
     // relay finds the queue empty and skips the loop.
-    while ( batchCount < areg::THREAD_BATCH_LIMIT )
+    while ( batchCount < areg::DEFAULT_DRAIN_LIMIT )
     {
         areg::Event evt{ pick_event() };
         if ( !evt.is_valid() )
@@ -137,7 +137,7 @@ void ServerSendThread::start_event_processing( areg::Event & eventElem )
             mBatch[mid].socket <= entry.socket ? lo = mid + 1u : hi = mid;
         }
 
-        // Shift right using move-assignment (PendingSend has MessageEnvelope — memmove is unsafe)
+        // Shift right using move-assignment (PendingSend has MessageEnvelope -- memmove is unsafe)
         for ( uint32_t j{ validCount }; j > lo; --j )
             mBatch[j] = std::move(mBatch[j - 1]);
 
@@ -147,7 +147,7 @@ void ServerSendThread::start_event_processing( areg::Event & eventElem )
 
     if ( validCount != 0u )
     {
-        // Phase 4: batch is already sorted — send groups directly.
+        // Phase 4: batch is already sorted -- send groups directly.
         AREG_LT_SCOPE(areg::LtStage::SendSyscall);  // isolate the ::send() from resolve+sort
         areg::ext::send_pending_groups(mBatch.data(), validCount, mConnection, mRemoteService,
             [this](uint64_t bytes, uint32_t msgs) { accumulate_sent(bytes, msgs); });

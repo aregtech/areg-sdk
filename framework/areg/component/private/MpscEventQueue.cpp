@@ -122,7 +122,7 @@ void MpscEventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullpt
     {
         if (removedEvent != nullptr)
             *removedEvent = std::move(eventElem);
-        // else: eventElem stays unmodified (capacity overflow — caller decides)
+        // else: eventElem stays unmodified (capacity overflow -- caller decides)
         return;
     }
 
@@ -534,7 +534,7 @@ inline void MpscEventQueue::_delete_nodes() noexcept
     mPrioCount.store(0u, std::memory_order_relaxed);
     mPrioLock.unlock();
 
-    // Drain fast lane — Event values in nodes go out of scope when node is deleted.
+    // Drain fast lane -- Event values in nodes go out of scope when node is deleted.
     for (;;)
     {
         Node* next = mHead->next.load(std::memory_order_acquire);

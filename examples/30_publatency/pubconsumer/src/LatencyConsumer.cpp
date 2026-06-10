@@ -144,7 +144,7 @@ void LatencyConsumer::response_start_mode(const Latency::LantencySetup & setup)
     if (mode == Latency::LatencyMode::Stop)
         return;
 
-    // Provider confirmed the test setup — now activate the test on the consumer side.
+    // Provider confirmed the test setup -- now activate the test on the consumer side.
     mTestRunning = true;
 
     const uint16_t val       = static_cast<uint16_t>(mode);
@@ -937,7 +937,7 @@ void LatencyConsumer::_save_csv(const ResultEntry & result) const
         return;
     }
 
-    // Metadata comment block — lets the user see run parameters and summary in the file header.
+    // Metadata comment block -- lets the user see run parameters and summary in the file header.
     areg::String line;
     line.format("# Run #%u: mode=%s, count=%u, warmup=%u, dur=%us"
               , result.run_no, result.mode.as_string(), result.count, mWarmup, mDurationSec);
