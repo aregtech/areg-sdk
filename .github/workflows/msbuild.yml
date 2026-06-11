@@ -58,6 +58,24 @@ jobs:
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
 
+    - name: Install ATL/MFC components
+      # GitHub's windows-latest image (VS 18) no longer installs ATL/MFC by default,
+      # so add it to the existing Visual Studio instance before building the solution.
+      # Required by examples.
+      shell: pwsh
+      run: |
+        $vswhere   = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+        $installer = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe"
+        $installPath = & $vswhere -latest -property installationPath
+        $params = @(
+          'modify', '--installPath', $installPath,
+          '--add', 'Microsoft.VisualStudio.Component.VC.ATLMFC',
+          '--quiet', '--norestart', '--nocache', '--force'
+        )
+        Write-Host "Adding ATL/MFC to $installPath"
+        $p = Start-Process -FilePath $installer -ArgumentList $params -Wait -PassThru
+        if ($p.ExitCode -ne 0 -and $p.ExitCode -ne 3010) { throw "vs_installer failed: $($p.ExitCode)" }
+
     - name: Restore NuGet packages
       working-directory: ${{github.workspace}}
       run: nuget restore ${{env.SOLUTION_FILE_PATH}}
