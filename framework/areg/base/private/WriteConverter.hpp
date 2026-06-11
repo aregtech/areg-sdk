@@ -184,8 +184,7 @@ public:
     bool write_line( const char * in_value );
 
     /**
-     * \brief   Writes a null-terminated wide-character string as a line with automatic newline
-     *          terminator.
+     * \brief   Writes a null-terminated wide-character string as a line with automatic newline terminator.
      *
      * \param   in_value    The null-terminated wide-character string to write.
      * \return  Returns true if the operation succeeded.
@@ -195,8 +194,8 @@ public:
     /**
      * \brief   Writes a null-terminator at the current position to indicate end of string.
      *
-     * \param   isWideChar      If true, writes wide-character (Unicode) null-terminator; otherwise
-     *                          writes ASCII.
+     * \param   isWideChar      If true, writes wide-character (Unicode) null-terminator;
+     *                          otherwise writes ASCII.
      * \return  Returns true if the operation succeeded.
      **/
     bool set_string_end( bool isWideChar );

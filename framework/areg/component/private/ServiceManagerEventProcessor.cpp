@@ -94,8 +94,7 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
         {
             ProxyAddress  addrProxy;
             Channel       channel;
-            stream >> addrProxy;
-            stream >> channel;
+            addrProxy.from_stream(stream) >> channel;
             addrProxy.set_channel( channel );
             _register_consumer( addrProxy, registerProvider);
         }
@@ -106,9 +105,7 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
             ProxyAddress  addrProxy;
             Channel       channel;
             areg::DisconnectReason reason{areg::DisconnectReason::UndefinedReason};
-            stream >> addrProxy;
-            stream >> channel;
-            stream >> reason;
+            addrProxy.from_stream(stream) >> channel >> reason;
             addrProxy.set_channel( channel );
             _unregister_consumer( addrProxy, reason, registerProvider);
         }
@@ -118,8 +115,7 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
         {
             StubAddress   addrstub;
             Channel       channel;
-            stream >> addrstub;
-            stream >> channel;
+            addrstub.from_stream(stream) >> channel;
             addrstub.set_channel( channel );
             _register_provider( addrstub, registerProvider);
         }
@@ -130,9 +126,7 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
             StubAddress   addrstub;
             Channel       channel;
             areg::DisconnectReason reason{areg::DisconnectReason::UndefinedReason};
-            stream >> addrstub;
-            stream >> channel;
-            stream >> reason;
+            addrstub.from_stream(stream) >> channel >> reason;
             addrstub.set_channel( channel );
             _unregister_provider( addrstub, reason, registerProvider);
         }
@@ -405,10 +399,9 @@ void ServiceManagerEventProcessor::_send_connected( const ProxyAddress & client,
                    , StubAddress::to_path( server ).as_string( )
                    , ProxyAddress::to_path( client ).as_string( ) );
 
-        StubConnectEvent * clientConnect = DEBUG_NEW StubConnectEvent( client, server, areg::ServiceConnectionState::Connected );
-        if ( clientConnect != nullptr )
         {
-            server.deliver_service_event( *clientConnect );
+            StubConnectEvent clientConnect( client, server, areg::ServiceConnectionState::Connected );
+            server.deliver_service_event( clientConnect );  // moves clientConnect into queue
         }
     }
 
@@ -418,10 +411,9 @@ void ServiceManagerEventProcessor::_send_connected( const ProxyAddress & client,
                    , ProxyAddress::to_path( client ).as_string( )
                    , StubAddress::to_path( server ).as_string( ) );
 
-        ProxyConnectEvent * proxyConnect = DEBUG_NEW ProxyConnectEvent( client, server, areg::ServiceConnectionState::Connected );
-        if ( proxyConnect != nullptr )
         {
-            client.deliver_service_event( *proxyConnect );
+            ProxyConnectEvent proxyConnect( client, server, areg::ServiceConnectionState::Connected );
+            client.deliver_service_event( proxyConnect );  // moves proxyConnect into queue
         }
     }
 }
@@ -438,11 +430,10 @@ void ServiceManagerEventProcessor::_send_disconnected( const ProxyAddress & clie
                    , StubAddress::to_path( server ).as_string( )
                    , ProxyAddress::to_path( client ).as_string( ) );
 
-        StubConnectEvent * clientConnect = DEBUG_NEW StubConnectEvent( client, server, status );
-        if ( clientConnect != nullptr )
         {
-            clientConnect->set_event_priority(areg::EventPriority::HighPrio);
-            server.deliver_service_event( *clientConnect );
+            StubConnectEvent clientConnect( client, server, status );
+            clientConnect.set_event_priority(areg::EventPriority::HighPrio);
+            server.deliver_service_event( clientConnect );
         }
     }
 
@@ -452,11 +443,10 @@ void ServiceManagerEventProcessor::_send_disconnected( const ProxyAddress & clie
                    , ProxyAddress::to_path( client ).as_string( )
                    , StubAddress::to_path( server ).as_string( ) );
 
-        ProxyConnectEvent * proxyConnect = DEBUG_NEW ProxyConnectEvent( client, server, status );
-        if ( proxyConnect != nullptr )
         {
-            proxyConnect->set_event_priority(areg::EventPriority::HighPrio);
-            client.deliver_service_event( *proxyConnect );
+            ProxyConnectEvent proxyConnect( client, server, status );
+            proxyConnect.set_event_priority(areg::EventPriority::HighPrio);
+            client.deliver_service_event( proxyConnect );
         }
     }
 }
@@ -467,7 +457,7 @@ bool ServiceManagerEventProcessor::_terminate_component_thread( const String & t
 
     bool result{ false };
 
-    Thread * thread = Thread::find_by_name( threadName );
+    Thread * thread = Thread::find_by_address(ThreadAddress(threadName));
     ComponentThread * compThread = AREG_RUNTIME_CAST( thread, ComponentThread );
     if ( compThread != nullptr )
     {
@@ -488,7 +478,7 @@ void ServiceManagerEventProcessor::_start_component_thread( const String & threa
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor, _start_component_thread );
 
     const areg::ComponentThreadEntry & entry = ComponentLoader::find_thread_entry( threadName );
-    Thread * thread = Thread::find_by_name( threadName );
+    Thread * thread = Thread::find_by_address(ThreadAddress(threadName));
     if ( entry.is_valid( ) && (thread == nullptr) )
     {
         ComponentThread * compThread = DEBUG_NEW ComponentThread( entry.mThreadName, entry.mWatchdogTimeout );

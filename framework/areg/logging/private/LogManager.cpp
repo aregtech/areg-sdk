@@ -42,38 +42,41 @@ LogManager & LogManager::instance()
     return _log_manager;
 }
 
-void LogManager::log_message(const areg::LogEntry& logData )
+void LogManager::log_message(const areg::LogEntry& logData)
 {
-    constexpr uint32_t logSize{ static_cast<uint32_t>(sizeof(areg::LogEntry)) };
-    RemoteMessage msg(logSize, areg::BLOCK_SIZE);
-    areg::LogEntry* dst = reinterpret_cast<areg::LogEntry*>(msg.buffer());
-    if (dst == nullptr)
+    areg::MessageEnvelope msg{ areg::make_log_message( logData.logMsgType
+                                                   , logData.logScopeId
+                                                   , logData.logSessionId
+                                                   , 0u
+                                                   , logData.logMessagePrio
+                                                   , logData.logMessage
+                                                   , logData.logMessageLen) };
+    if (!msg.is_valid())
         return;
 
-    areg::mem_copy(dst, logSize, &logData, logSize);
     LogManager& mgr = LogManager::instance();
-    LoggingEvent* ev = LoggingEvent::make_event();
-    ev->data().set_action(LoggingEventData::LogAction::LogMessage);
-    ev->data().message() = std::move(msg);
+    LoggingEvent ev;
+    ev.data().set_action(LoggingEventData::LogAction::LogMessage);
+    ev.data().message() = std::move(msg);
     LoggingEvent::send_event(ev, static_cast<LoggingEventConsumer&>(mgr), static_cast<DispatcherThread&>(mgr));
 }
 
-void LogManager::log_message(areg::RemoteMessage&& msg)
+void LogManager::log_message(areg::MessageEnvelope&& msg)
 {
     LogManager& mgr = LogManager::instance();
-    LoggingEvent* ev = LoggingEvent::make_event();
-    ev->data().set_action(LoggingEventData::LogAction::LogMessage);
-    ev->data().message() = std::move(msg);
+    LoggingEvent ev;
+    ev.data().set_action(LoggingEventData::LogAction::LogMessage);
+    ev.data().message() = std::move(msg);
 
     LoggingEvent::send_event(ev, static_cast<LoggingEventConsumer&>(mgr), static_cast<DispatcherThread&>(mgr));
 }
 
-void LogManager::log_message(const RemoteMessage& logData)
+void LogManager::log_message(const areg::MessageEnvelope& logData)
 {
     LogManager& mgr = LogManager::instance();
-    LoggingEvent* ev = LoggingEvent::make_event();
-    ev->data().set_action(LoggingEventData::LogAction::LogMessage);
-    ev->data().message() = logData;
+    LoggingEvent ev;
+    ev.data().set_action(LoggingEventData::LogAction::LogMessage);
+    ev.data().message() = logData;
 
     LoggingEvent::send_event(ev, static_cast<LoggingEventConsumer&>(mgr), static_cast<DispatcherThread&>(mgr));
 }
@@ -373,7 +376,7 @@ void LogManager::stop_logs()
 
 void LogManager::write_log_message( const LoggingEventData & data )
 {
-    RemoteMessage& msg = const_cast<LoggingEventData &>(data).message();
+    areg::MessageEnvelope& msg = const_cast<LoggingEventData &>(data).message();
     const areg::LogEntry* logEntry = data.log_entry();
     ASSERT(logEntry != nullptr);
 

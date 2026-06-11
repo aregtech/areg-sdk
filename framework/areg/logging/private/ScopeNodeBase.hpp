@@ -338,8 +338,8 @@ public:
     /**
      * \brief   Recursively creates and adds child nodes from a scope path until a leaf is created.
      *
-     * \param[in,out] scopePath       The scope path to process; consumed as nodes are created.
-     * \param   prioStates      Logging priority flags to apply to created nodes.
+     * \param[in,out] scopePath     The scope path to process; consumed as nodes are created.
+     * \param   prioStates          Logging priority flags to apply to created nodes.
      * \return  The number of nodes created or updated.
      **/
     uint32_t add_child_recursive( String & scopePath, uint32_t prioStates );

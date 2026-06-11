@@ -147,8 +147,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Acquires mutex ownership. Blocks for up to timeout milliseconds if owned by another
-     *          thread.
+     * \brief   Acquires mutex ownership. Blocks for up to timeout milliseconds if owned by another thread.
      *
      * \param   timeout     Timeout in milliseconds; WAIT_INFINITE to wait indefinitely.
      * \return  Returns true if ownership was acquired.
@@ -165,8 +164,7 @@ public:
     /**
      * \brief   Attempts to acquire mutex ownership without blocking.
      *
-     * \return  Returns true if acquired or already owned by current thread; false if owned by
-     *          another.
+     * \return  Returns true if acquired or already owned by current thread; false if owned by another.
      **/
     inline bool try_lock() final;
 
@@ -263,11 +261,11 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Waits for the event to be signaled. If already signaled, returns immediately. If
-     *          auto-reset, the event is automatically set to non-signaled after this call.
+     * \brief   Waits for the event to be signaled. If already signaled, returns immediately.
+     *          If auto-reset, the event is automatically set to non-signaled after this call.
      *
-     * \param   timeout     The timeout in milliseconds to wait for the event to be signaled. Use
-     *                      areg::WAIT_INFINITE for indefinite wait. Use areg::DO_NOT_WAIT
+     * \param   timeout     The timeout in milliseconds to wait for the event to be signaled.
+     *                      Use areg::WAIT_INFINITE for indefinite wait. Use areg::DO_NOT_WAIT
      *                      for non-blocking check.
      * \return  Returns true if the event was signaled before or during the timeout; false if
      *          timeout expired.
@@ -329,7 +327,7 @@ public:
 
     /**
      * \brief   Waits for either of two events to be signaled. Typed convenience overload for the
-     *          common dispatcher pattern (queue event + exit event) — avoids stack array allocation
+     *          common dispatcher pattern (queue event + exit event) -- avoids stack array allocation
      *          at the call site. Returns 0 if ev0 fired, 1 if ev1 fired, or WAIT_ANY_TIMEOUT.
      *
      * \param   ev0         First event (index 0).
@@ -659,7 +657,7 @@ class AREG_API SpinLock final   : public Lockable
 public:
     SpinLock();
 
-    virtual ~SpinLock() = default;
+    ~SpinLock() override = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations, SyncObject interface
@@ -804,15 +802,15 @@ public:
     /**
      * \brief   Creates a waitable timer with the specified timeout, type, and mode.
      *
-     * \param   msTimeout           The timer timeout in milliseconds.
-     * \param   is_periodic         If true, the timer fires repeatedly at the specified interval;
-     *                              otherwise, it fires once.
-     * \param   is_auto_reset       If true, the timer is auto-reset (synchronization timer);
-     *                              otherwise, it is manual-reset.
-     * \param   isSteady            If true, uses a steady high-resolution timer; otherwise, uses a
-     *                              system clock.
+     * \param   msTimeout       The timer timeout in milliseconds.
+     * \param   is_periodic     If true, the timer fires repeatedly at the specified interval;
+     *                          otherwise, it fires once.
+     * \param   isAutoReset     If true, the timer is auto-reset (synchronization timer);
+     *                          otherwise, it is manual-reset.
+     * \param   isSteady        If true, uses a steady high-resolution timer; otherwise, uses a
+     *                          system clock.
      **/
-    SyncTimer( uint32_t msTimeout, bool is_periodic = false, bool is_auto_reset = true, bool isSteady = true );
+    SyncTimer( uint32_t msTimeout, bool is_periodic = false, bool isAutoReset = true, bool isSteady = true );
 
     virtual ~SyncTimer();
 
@@ -830,8 +828,7 @@ public:
     inline bool lock( uint32_t timeout = areg::WAIT_INFINITE ) final;
 
     /**
-     * \brief   Activates the timer. The timer will fire at the due time specified in the
-     *          constructor.
+     * \brief   Activates the timer. The timer will fire at the due time specified in the constructor.
      *
      * \return  Returns true if the timer was successfully activated.
      **/
@@ -881,8 +878,7 @@ private:
     /**
      * \brief   OS-specific implementation to create the synchronization timer.
      *
-     * \param   isSteady    If true, uses a steady high-resolution timer; otherwise, uses a system
-     *                      clock.
+     * \param   isSteady    If true, uses a steady high-resolution timer; otherwise, uses a system clock.
      **/
     void _os_create_timer( bool isSteady );
 
@@ -901,8 +897,7 @@ private:
     bool _os_lock( uint32_t timeout );
 
     /**
-     * \brief   OS-specific implementation to activate the timer with the timeout from the
-     *          constructor.
+     * \brief   OS-specific implementation to activate the timer with the timeout from the constructor.
      *
      * \return  Returns true if successfully activated.
      **/
@@ -995,9 +990,9 @@ public:
      * \param   autoLock    If true, automatically locks on construction and unlocks on destruction.
      *                      Manual lock/unlock must be called otherwise.
      **/
-    explicit Lock( SyncObject &syncObj, bool autoLock = true );
+    explicit inline Lock( SyncObject &syncObj, bool autoLock = true );
 
-    ~Lock();
+    inline ~Lock();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -1164,8 +1159,7 @@ private:
      **/
     SyncObject* const*  mSyncObjArray;
     /**
-     * \brief   Size of synchronization object. 
-     *          Cannot be more than MAX_SIZE_OF_ARRAY (64)
+     * \brief   Size of synchronization object. Cannot be more than MAX_SIZE_OF_ARRAY (64)
      **/
     const int32_t       mSizeCount;
     /**
@@ -1550,6 +1544,27 @@ inline bool SyncTimer::is_autoreset() const noexcept
 //////////////////////////////////////////////////////////////////////////
 // Lock class inline functions
 //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Lock class, Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+inline Lock::Lock(SyncObject& syncObj, bool autoLock /* = true */)
+    : mSyncObject(syncObj)
+    , mAutoLock  (autoLock)
+{
+    if (mAutoLock && mSyncObject.is_valid())
+    {
+        mSyncObject.lock();
+    }
+}
+
+inline Lock::~Lock()
+{
+    if (mAutoLock && mSyncObject.is_valid())
+    {
+        mSyncObject.unlock();
+    }
+}
+
 inline bool Lock::lock(uint32_t timeout /* = areg::WAIT_INFINITE */)
 {
     return mSyncObject.lock(timeout);

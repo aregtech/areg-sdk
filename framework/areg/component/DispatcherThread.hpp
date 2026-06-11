@@ -23,6 +23,7 @@
 #include "areg/base/areg_global.h"
 #include "areg/base/Thread.hpp"
 #include "areg/component/EventDispatcher.hpp"
+#include "areg/base/MathDefs.hpp"
 
 namespace areg {
 
@@ -63,28 +64,16 @@ class AREG_API DispatcherThread : public Thread
 public:
 
     /**
-     * \brief   By given thread name searches registered Event Dispatcher thread and returns object.
+     * \brief   By given thread CRC32 number searches registered Event Dispatcher thread and returns object.
      *          If no thread by give name was found, it returns NullDispatcher Thread, which will
      *          ignore (destroy) any event passed to thread.
      *
-     * \param   threadName      The unique name of dispatching thread.
+     * \param   threadNumber    The unique number of dispatching thread.
      * \return  If found, returns valid Dispatcher thread. Otherwise, returns NullDispather object,
      *          which destroys any event passed to thread.
      **/
     [[nodiscard]]
-    static inline DispatcherThread & dispatcher_thread(const String & threadName) noexcept;
-
-    /**
-     * \brief   By given thread ID searches registered Event Dispatcher thread and returns object.
-     *          If no thread by give name was found, it returns NullDispatcher Thread, which will
-     *          ignore (destroy) any event passed to thread.
-     *
-     * \param   threadId    The unique thread ID.
-     * \return  If found, returns valid Dispatcher thread. Otherwise, returns NullDispather object,
-     *          which destroys any event passed to thread.
-     **/
-    [[nodiscard]]
-    static inline DispatcherThread & dispatcher_thread( id_type threadId) noexcept;
+    static inline DispatcherThread & dispatcher_thread( const UniqueNumber threadNumber) noexcept;
 
     /**
      * \brief   By given thread address searches registered Event Dispatcher thread and returns
@@ -127,7 +116,7 @@ public:
      *          specified class ID.
      **/
     [[nodiscard]]
-    static DispatcherThread * find_consumer_thread(const RuntimeClassID & whichClass) noexcept;
+    static DispatcherThread * find_consumer_thread(uint32_t whichClass) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -242,7 +231,7 @@ protected:
      * \return  If found, returns valid pointer of dispatching thread. Otherwise returns nullptr
      **/
     [[nodiscard]]
-    virtual DispatcherThread * event_consumer_thread( const RuntimeClassID & whichClass );
+    virtual DispatcherThread * event_consumer_thread( const uint32_t whichClass ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -285,16 +274,10 @@ private:
 // DispatcherThread class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline DispatcherThread & DispatcherThread::dispatcher_thread( const String & threadName ) noexcept
+inline DispatcherThread & DispatcherThread::dispatcher_thread( const UniqueNumber threadNumber ) noexcept
 {
-    DispatcherThread * dispThread = AREG_RUNTIME_CAST(threadName.is_empty() == false ? Thread::find_by_name(threadName) : Thread::current_thread(), DispatcherThread);
-    return ( dispThread != nullptr ? *dispThread : DispatcherThread::_null_dispather_thread() );
-}
-
-inline DispatcherThread & DispatcherThread::dispatcher_thread( id_type threadId ) noexcept
-{
-    DispatcherThread* dispThread = AREG_RUNTIME_CAST(threadId != 0 ? Thread::find_by_id(threadId) : Thread::current_thread(), DispatcherThread);
-    return ( dispThread != nullptr ? *dispThread : DispatcherThread::_null_dispather_thread() );
+    DispatcherThread * dispThread = AREG_RUNTIME_CAST(Thread::find_by_number(threadNumber), DispatcherThread);
+    return ( dispThread != nullptr ? *dispThread : DispatcherThread::current_dispatcher_thread() );
 }
 
 inline DispatcherThread & DispatcherThread::dispatcher_thread(const ThreadAddress & threadAddr ) noexcept

@@ -70,10 +70,10 @@ private:
 //////////////////////////////////////////////////////////////////////////
 protected:
     bool start(uint32_t waitForStartMs = areg::DO_NOT_WAIT) final;
-    bool register_event_consumer( const RuntimeClassID & whichClass, EventConsumer & whichConsumer ) final;
-    bool unregister_event_consumer( const RuntimeClassID & whichClass, EventConsumer & whichConsumer ) final;
+    bool register_event_consumer( const uint32_t whichClass, EventConsumer & whichConsumer ) final;
+    bool unregister_event_consumer( const uint32_t whichClass, EventConsumer & whichConsumer ) final;
     int32_t  remove_consumer( EventConsumer & whichConsumer ) final;
-    bool has_registered_consumer( const RuntimeClassID & whichClass ) const final;
+    bool has_registered_consumer( const uint32_t whichClass ) const final;
     [[nodiscard]] bool post_event( Event & eventElem ) final;
     bool on_thread_registered( Thread * threadObj ) final;
     [[nodiscard]] bool on_pre_run() final;
@@ -117,21 +117,20 @@ inline NullDispatcherThread::NullDispatcherThread()
 bool NullDispatcherThread::start(uint32_t /*waitForStartMs = areg::DO_NOT_WAIT*/)
 {   return false;   }
 
-bool NullDispatcherThread::register_event_consumer( const RuntimeClassID & /* whichClass*/, EventConsumer & /*whichConsumer*/ )
+bool NullDispatcherThread::register_event_consumer( const uint32_t /* whichClass*/, EventConsumer & /*whichConsumer*/ )
 {   return false;   }
 
-bool NullDispatcherThread::unregister_event_consumer( const RuntimeClassID & /*whichClass*/, EventConsumer & /* whichConsumer*/ )
+bool NullDispatcherThread::unregister_event_consumer( const uint32_t /*whichClass*/, EventConsumer & /* whichConsumer*/ )
 {   return false;   }
 
 int32_t NullDispatcherThread::remove_consumer( EventConsumer & /* whichConsumer*/ )
 {   return 0;       }
 
-bool NullDispatcherThread::has_registered_consumer( const RuntimeClassID & /* whichClass */ ) const
+bool NullDispatcherThread::has_registered_consumer( const uint32_t /* whichClass */ ) const
 {   return false;   }
 
-bool NullDispatcherThread::post_event( Event& eventElem )
+bool NullDispatcherThread::post_event( Event& /*eventElem*/ )
 {
-    eventElem.destroy();
     ASSERT(false);
     return false;
 }
@@ -199,9 +198,8 @@ DispatcherThread::DispatcherThread (const String & threadName, uint32_t stackSiz
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread class Methods
 //////////////////////////////////////////////////////////////////////////
-bool DispatcherThread::post_event( Event& eventElem )
+bool DispatcherThread::post_event( Event& /*eventElem*/ )
 {
-    eventElem.destroy();
     ASSERT(false);  // <= this should not be called.
     // You may want to call EventDispatcher::post_event() and/or filter events here
 
@@ -233,7 +231,7 @@ Thread::ThreadCompletion DispatcherThread::shutdown( uint32_t waitForStopMs /*= 
     return result;
 }
 
-DispatcherThread* DispatcherThread::event_consumer_thread( const RuntimeClassID& whichClass )
+DispatcherThread* DispatcherThread::event_consumer_thread( const uint32_t whichClass ) noexcept
 {
     return (has_registered_consumer(whichClass) ? this : nullptr);
 }
@@ -252,7 +250,7 @@ void DispatcherThread::ready_for_events( bool is_ready )
     }
 }
 
-DispatcherThread * DispatcherThread::find_consumer_thread( const RuntimeClassID & whichClass ) noexcept
+DispatcherThread * DispatcherThread::find_consumer_thread( const uint32_t whichClass ) noexcept
 {
     DispatcherThread * result = nullptr;
     Thread* dispThread = AREG_RUNTIME_CAST(Thread::current_thread(), DispatcherThread);

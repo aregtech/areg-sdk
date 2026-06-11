@@ -53,40 +53,36 @@ class ProxyAddress;
 class AREG_API ServiceResponseEvent    : public ProxyEvent
 {
 //////////////////////////////////////////////////////////////////////////
-// Internal defines
+// Friend declarations
 //////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \todo        <b>TODO :</b> remove version object from here and place
-     *              in data streaming object, because this parameter is 
-     *              needed only on server connect and optional on server
-     *              disconnect case. In all other cases version object
-     *              might be ignored.
-     **/
-//////////////////////////////////////////////////////////////////////////
-// Declare as runtime event.
-//////////////////////////////////////////////////////////////////////////
-    AREG_DECLARE_RUNTIME_EVENT(ServiceResponseEvent)
+    friend class StubBase;   // needs delete on heap-allocated ServiceResponseEvent shells
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-protected:
+public:
 
     /**
      * \brief   Creates service response event and sets parameters.
      *
-     * \param   target          The event target proxy address
-     * \param   result          The response result
+     * \param   target      The event target proxy address
+     * \param   result      The response result
      * \param   respId      The response message ID
-     * \param   eventType       The type of event.
-     * \param   seqNr           The sequence number of call.
+     * \param   eventType   The type of event.
+     * \param   seqNr       The sequence number of call.
+     * \param   initSize    Payload bytes to reserve after the header for serialized parameters.
      **/
-    ServiceResponseEvent( const ProxyAddress & target
-                        , areg::ResultType result
-                        , uint32_t respId
-                        , areg::EventType eventType
-                        , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY );
+    inline ServiceResponseEvent( const ProxyAddress & target
+                               , areg::ResultType result
+                               , uint32_t respId
+                               , areg::EventType eventType
+                               , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
+                               , uint32_t initSize = 0u );
+
+    /**
+     * \brief   Constructs from a received MessageEnvelope.
+     **/
+    explicit inline ServiceResponseEvent( const MessageEnvelope & envelope ) noexcept;
 
     /**
      * \brief   Copies all data from given source, except the target proxy address. This is used if
@@ -95,16 +91,45 @@ protected:
      * \param   target      The target proxy address
      * \param   src         The service response source to copy data.
      **/
-    ServiceResponseEvent(const ProxyAddress & target, const ServiceResponseEvent & src );
+    inline ServiceResponseEvent(const ProxyAddress & target, const ServiceResponseEvent & src );
 
     /**
-     * \brief   Creates event from streaming object and initializes data.
+     * \brief   Constructs from a cloned MessageEnvelope and redirects the consumer endpoint to target.
+     *          Used by clone_for_target() to create a lightweight copy sharing EventHeader data.
      *
-     * \param   stream      The streaming object to read data
+     * \param   target  The new consumer proxy address (written into the cloned header).
+     * \param   env     A deep-copied MessageEnvelope; its consumer endpoint is updated to target.
      **/
-    ServiceResponseEvent(const InStream & stream);
+    inline ServiceResponseEvent(const ProxyAddress & target, MessageEnvelope && env);
 
-    virtual ~ServiceResponseEvent() = default;
+    /**
+     * \brief   Creates service response event and sets parameters.
+     *
+     * \param   consumer    The target consumer to send event
+     * \param   service     The raw service structure
+     * \param   result      The response result
+     * \param   respId      The response message ID
+     * \param   eventType   The type of event.
+     * \param   seqNr       The sequence number of call.
+     * \param   initSize    Payload bytes to reserve after the header for serialized parameters.
+     **/
+    inline ServiceResponseEvent( const areg::Endpoint& consumer
+                               , const areg::RawService& service
+                               , areg::ResultType result
+                               , uint32_t respId
+                               , areg::EventType eventType
+                               , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
+                               , uint32_t initSize = 0u );
+
+    inline ServiceResponseEvent(const areg::Endpoint& consumer, const areg::RawService& service, const ServiceResponseEvent& src);
+
+    inline ServiceResponseEvent(const areg::Endpoint& consumer, const areg::RawService& service, MessageEnvelope&& env);
+
+    ServiceResponseEvent(const ServiceResponseEvent& /*src*/) = default;
+
+    ServiceResponseEvent(ServiceResponseEvent&& /*src*/) noexcept = default;
+
+    ~ServiceResponseEvent() override = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -114,111 +139,137 @@ public:
     /**
      * \brief   Returns response message ID.
      **/
+    [[nodiscard]]
     inline uint32_t response_id() const noexcept;
 
     /**
-     * \brief   Returns response call result.
+     * \brief   Returns sequence number stored in the EventHeader.
      **/
     [[nodiscard]]
-    inline areg::ResultType result() const noexcept;
-
-    /**
-     * \brief   Returns sequence number of call.
-     **/
     inline const SequenceNumber & sequence_number() const noexcept;
 
     /**
-     * \brief   Sets sequence number of call.
+     * \brief   Sets new sequence number stored in the EventHeader.
+     **/
+    inline void set_sequence_number(const SequenceNumber & newSeqNr) noexcept;
+
+    /**
+     * \brief   Returns the IPC routing cookie of the consumer (proxy) endpoint.
+     **/
+    [[nodiscard]]
+    inline uint32_t target_cookie() const noexcept;
+
+    /**
+     * \brief   Returns a deep-copied event retargeted to the given proxy. The clone shares no
+     *          buffer with the original (independent serialization state).
      *
-     * \param   newSeqNr    The new sequence number to set.
+     * \param   target      Proxy address for the cloned event's consumer endpoint.
+     * \return  A new ServiceResponseEvent value with an independent buffer and updated consumer.
      **/
-    inline void set_sequence_number( const SequenceNumber & newSeqNr ) noexcept;
+    [[nodiscard]]
+    inline ServiceResponseEvent clone_for_target(const ProxyAddress & target) const;
 
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
-
-    /**
-     * \brief   Clones existing service event object with specified target proxy address. Override
-     *          this method in each service response specific class.
-     *
-     * \param   target      The target proxy address.
-     * \return  Cloned service response event object, which contains specified target proxy address.
-     **/
-    virtual ServiceResponseEvent * clone_for_target(const ProxyAddress & target) const;
-
-//////////////////////////////////////////////////////////////////////////
-// Operations
-//////////////////////////////////////////////////////////////////////////
-protected:
-/************************************************************************/
-// StreamableEvent overrides
-/************************************************************************/
-    /**
-     * \brief   Reads and initializes event data from streaming object.
-     *
-     * \param   stream      The streaming object to read out event data
-     * \return  Returns streaming object to read out data.
-     **/
-    const InStream & read_stream( const InStream & stream ) override;
-
-    /**
-     * \brief   Writes event data to streaming object.
-     *
-     * \param   stream      The streaming object to write event data.
-     * \return  Returns streaming object to write event data.
-     **/
-    OutStream & write_stream( OutStream & stream ) const override;
-
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   The response message ID
-     **/
-    uint32_t            mResponseId;
-
-    /**
-     * \brief   The response result
-     **/
-    areg::ResultType    mResult;
-
-    /**
-     * \brief   The sequence number.
-     **/
-    SequenceNumber      mSequenceNr;
+    inline ServiceResponseEvent clone_for_target(const areg::Endpoint& consumer, const areg::RawService& service) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
     ServiceResponseEvent() = delete;
-    AREG_NOCOPY_NOMOVE( ServiceResponseEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceResponseEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t ServiceResponseEvent::response_id() const noexcept
+inline ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress & target
+                                                 , areg::ResultType result
+                                                 , uint32_t respId
+                                                 , areg::EventType eventType
+                                                 , const SequenceNumber & seqNr    /*= areg::SEQUENCE_NUMBER_NOTIFY*/
+                                                 , uint32_t initSize               /*= 0u*/ )
+    : ProxyEvent    (target, eventType, initSize)
 {
-    return mResponseId;
+    areg::EventHeader* hdr{ header() };
+    if (hdr != nullptr)
+    {
+        hdr->messageId  = respId;
+        hdr->result     = static_cast<uint32_t>(result);
+        hdr->sequenceNr = seqNr;
+    }
 }
 
-inline areg::ResultType ServiceResponseEvent::result() const noexcept
+inline ServiceResponseEvent::ServiceResponseEvent( const MessageEnvelope & envelope ) noexcept
+    : ProxyEvent    (envelope)
 {
-    return mResult;
+}
+
+inline ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress& target, const ServiceResponseEvent& src )
+    : ProxyEvent    (target, src.envelope().clone())
+{
+}
+
+inline ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress& target, MessageEnvelope&& env )
+    : ProxyEvent    (target, std::move(env))
+{
+}
+
+inline ServiceResponseEvent::ServiceResponseEvent( const areg::Endpoint& consumer
+                                                 , const areg::RawService& service
+                                                 , areg::ResultType result
+                                                 , uint32_t respId
+                                                 , areg::EventType eventType
+                                                 , const SequenceNumber& seqNr
+                                                 , uint32_t initSize)
+    : ProxyEvent(consumer, service, eventType, initSize)
+{
+    areg::EventHeader* hdr{ header() };
+    if (hdr != nullptr)
+    {
+        hdr->messageId = respId;
+        hdr->result = static_cast<uint32_t>(result);
+        hdr->sequenceNr = seqNr;
+    }
+}
+
+inline ServiceResponseEvent::ServiceResponseEvent(const areg::Endpoint& consumer, const areg::RawService& service, const ServiceResponseEvent& src)
+    : ProxyEvent(consumer, service, src.envelope().clone())
+{
+}
+
+inline ServiceResponseEvent::ServiceResponseEvent(const areg::Endpoint& consumer, const areg::RawService& service, MessageEnvelope&& env)
+    : ProxyEvent(consumer, service, std::move(env))
+{
+}
+
+inline ServiceResponseEvent ServiceResponseEvent::clone_for_target( const ProxyAddress & target ) const
+{
+    return ServiceResponseEvent(target, envelope().clone());
+}
+
+inline ServiceResponseEvent ServiceResponseEvent::clone_for_target(const areg::Endpoint& consumer, const areg::RawService& service) const
+{
+    return ServiceResponseEvent(consumer, service, envelope().clone());
+}
+
+inline uint32_t ServiceResponseEvent::response_id() const noexcept
+{
+    return message_id();
 }
 
 inline const SequenceNumber & ServiceResponseEvent::sequence_number() const noexcept
 {
-    return mSequenceNr;
+    return sequence();
 }
 
-inline void ServiceResponseEvent::set_sequence_number( const SequenceNumber & newSeqNr ) noexcept
+inline void ServiceResponseEvent::set_sequence_number(const SequenceNumber & newSeqNr) noexcept
 {
-    mSequenceNr = newSeqNr;
+    set_sequence(newSeqNr);
+}
+
+inline uint32_t ServiceResponseEvent::target_cookie() const noexcept
+{
+    return consumer_id();
 }
 
 } // namespace areg

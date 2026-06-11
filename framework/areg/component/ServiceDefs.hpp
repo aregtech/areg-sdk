@@ -36,7 +36,7 @@
  ************************************************************************/
 
 namespace areg {
-    class RemoteMessage;
+    class MessageEnvelope;
     class Channel;
 }
 
@@ -248,12 +248,12 @@ inline constexpr areg::ServiceConnectionState service_connection( areg::Disconne
 /**
  * \brief   The service request types.
  **/
-enum class RegistrationAction   : uint16_t
+enum class RegistrationAction   : uint8_t
 {
-      RegisterConsumer   = 0x0010   //!< Service Consumer requests to register.     Bit set: 0001 0000
-    , UnregisterConsumer = 0x0011   //!< Service Consumer requests to unregister.   Bit set: 0001 0001
-    , RegisterProvider   = 0x0020   //!< Service Provider requests to register.     Bit set: 0010 0000
-    , UnregisterProvider = 0x0021   //!< Service Provider requests to unregister.   Bit set: 0010 0001
+      RegisterConsumer   = 0x10 //!< Service Consumer requests to register.     Bit set: 0001 0000
+    , UnregisterConsumer = 0x11 //!< Service Consumer requests to unregister.   Bit set: 0001 0001
+    , RegisterProvider   = 0x20 //!< Service Provider requests to register.     Bit set: 0010 0000
+    , UnregisterProvider = 0x21 //!< Service Provider requests to unregister.   Bit set: 0010 0001
 };
 
 /**
@@ -279,6 +279,18 @@ enum class ServiceType  : uint16_t
  **/
 [[nodiscard]]
 inline constexpr const char* as_string( areg::ServiceType value ) noexcept;
+
+enum class MessageCallType  : uint8_t
+{
+      CallUndefined   = 0
+    , CallService
+    , CallRegistration
+    , CallSystem
+    , CallRequest
+    , CallResponse
+    , CallBroadcast
+    , CallData
+};
 
 /**
  * \brief   The source of the communication message
@@ -875,9 +887,8 @@ public:
      *          Automatically determines whether the ID is an attribute or response and converts
      *          it to an index.
      *
-     * \param   msgId       A function ID in the areg::FuncIdRange (attribute or response
-     *                      ID). Invalid IDs are ignored. areg::ATTRIBUTE_SI_VERSION is
-     *                      handled specially.
+     * \param   msgId       A function ID in the areg::FuncIdRange (attribute or response ID).
+     *                      Invalid IDs are ignored. areg::ATTRIBUTE_SI_VERSION is handled specially.
      * \param   newState    The state to set. For response IDs, the state is set for all
      *                      response parameters.
      **/
@@ -951,7 +962,7 @@ struct ConnectedInstance
 };
 
 /**
- * \brief   Sends a pre-serialized RemoteMessage directly to the IPC send thread,
+ * \brief   Sends a pre-serialized MessageEnvelope directly to the IPC send thread,
  *          bypassing all event dispatch and serialization overhead.
  *          The caller is responsible for ensuring the message was built while the
  *          connection was valid and the target cookie is still active.
@@ -959,7 +970,7 @@ struct ConnectedInstance
  * \param   msg     The pre-built message to send.
  * \return  Returns true if the message was accepted by the send thread.
  **/
-AREG_API bool send_raw_message(const areg::RemoteMessage& msg) noexcept;
+AREG_API bool send_raw_message(const areg::MessageEnvelope& msg) noexcept;
 
 /**
  * \brief   Returns the active IPC connection channel used to route messages

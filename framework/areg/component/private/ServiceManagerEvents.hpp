@@ -85,8 +85,7 @@ public:
     static ServiceManagerEventData stop_router_client();
 
     /**
-     * \brief   Creates event data with the command to stop routing and shut down the service
-     *          manager.
+     * \brief   Creates event data with the command to stop routing and shut down the service manager.
      **/
     static ServiceManagerEventData shutdown_service_manager();
 
@@ -139,8 +138,7 @@ public:
     static ServiceManagerEventData start_connection(areg::RemoteServiceKind service, uint32_t connectTypes);
 
     /**
-     * \brief   Creates event data with the command to start a router client connection to a remote
-     *          service.
+     * \brief   Creates event data with the command to start a router client connection to a remote service.
      *
      * \param   ipAddress       The IP address of the remote routing service.
      * \param   portNr          The port number to connect to.
@@ -241,7 +239,7 @@ public:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceManagerCommand mCommand;   //!< Service Manager event data command
+    ServiceManagerCommand   mCommand;   //!< Service Manager event data command
     SharedBuffer            mStream;    //!< Service Manager event data streaming object to write and read data.
 
 //////////////////////////////////////////////////////////////////////////

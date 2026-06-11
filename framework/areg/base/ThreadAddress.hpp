@@ -19,6 +19,7 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
+#include "areg/base/MemoryDefs.hpp"
 
 #include <string_view>
 #include <utility>
@@ -28,10 +29,9 @@
  * Dependencies
  ************************************************************************/
 namespace areg {
-    class InStream;
-} // namespace areg
 
-namespace areg {
+class InStream;
+class OutStream;
 
 //////////////////////////////////////////////////////////////////////////
 // ThreadAddress class declaration
@@ -50,8 +50,7 @@ public:
 // Public static methods
 //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Converts a ThreadAddress object to a path string with format "<process ID>::<thread
-     *          name>::".
+     * \brief   Converts a ThreadAddress object to a path string with format "<process ID>::<thread name>::".
      *
      * \param   threadAddress       The thread address object to convert.
      * \return  Returns the thread path string.
@@ -63,11 +62,9 @@ public:
      * \brief   Parses a path string and converts it to a ThreadAddress object. Returns remaining
      *          string after the address part.
      *
-     * \param   threadPath      The path string to parse in format "<process ID>::<thread
-     *                          name>::...".
-     * \param[out] nextPart        If not nullptr, receives the pointer to the remaining path after
-     *                             the address. If parsing fails, contains the same address as
-     *                             threadPath.
+     * \param   threadPath      The path string to parse in format "<process ID>::<thread name>::...".
+     * \param[out] nextPart     If not nullptr, receives the pointer to the remaining path after
+     *                          the address. If parsing fails, contains the same address as threadPath.
      * \return  Returns the ThreadAddress object created from the path.
      **/
     [[nodiscard]]
@@ -83,12 +80,13 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     ThreadAddress();
+    ThreadAddress(const areg::Endpoint & endPoint);
     ThreadAddress(const ThreadAddress& src);
     ThreadAddress(ThreadAddress&& src) noexcept;
     ~ThreadAddress() = default;
 
     /**
-     * \brief   Initializes with the current process ID and the specified thread name.
+     * \brief   Initializes with the specified thread name.
      *
      * \param   threadName      The null-terminated thread name string.
      **/
@@ -96,11 +94,11 @@ public:
     explicit ThreadAddress( const String & threadName );
 
     /**
-     * \brief   Initializes the ThreadAddress from data read from an input stream.
+     * \brief   Initializes with specified thread unique number.
      *
-     * \param   stream      The input stream containing ThreadAddress data.
+     * \param   threadName      The null-terminated thread name string.
      **/
-    ThreadAddress( const InStream & stream );
+    explicit ThreadAddress(const UniqueNumber numThread) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // ThreadAddress operators
@@ -127,25 +125,6 @@ public:
     [[nodiscard]]
     inline constexpr bool operator < (const ThreadAddress& other) const noexcept;
 
-/************************************************************************/
-// Friend global operators to make thread address streamable
-/************************************************************************/
-    /**
-     * \brief   Reads ThreadAddress data from an input stream.
-     *
-     * \param   stream      The input stream to read from.
-     * \param   input       The ThreadAddress object to initialize from the stream.
-     **/
-    friend inline const InStream & operator >> ( const InStream & stream, ThreadAddress & input );
-
-    /**
-     * \brief   Writes ThreadAddress data to an output stream.
-     *
-     * \param   stream      The output stream to write to.
-     * \param   output      The ThreadAddress object to write to the stream.
-     **/
-    friend inline OutStream & operator << ( OutStream & stream, const ThreadAddress & output);
-
 //////////////////////////////////////////////////////////////////////////
 // ThreadAddress operations and attributes
 //////////////////////////////////////////////////////////////////////////
@@ -163,8 +142,7 @@ public:
     bool is_valid() const noexcept;
 
     /**
-     * \brief   Converts the ThreadAddress to a path string with format "<process ID>::<thread
-     *          name>::".
+     * \brief   Converts the ThreadAddress to a path string with format "<process ID>::<thread name>::".
      *
      * \return  Returns the thread path string.
      **/
@@ -172,14 +150,36 @@ public:
     inline String to_string() const noexcept;
 
     /**
-     * \brief   Parses a path string to extract thread address data. Returns remaining string after
-     *          address.
+     * \brief   Parses a path string to extract thread address data. Returns remaining string after address.
      *
      * \param   threadPath      The path string containing thread address data.
-     * \param[out] nextPart        If not nullptr, receives the pointer to the remaining path after
-     *                             the address.
+     * \param[out] nextPart     If not nullptr, receives the pointer to the remaining path after the address.
      **/
     void from_string(const char * threadPath, const char** nextPart = nullptr );
+
+    /**
+     * \brief   Initialize data from areg::Endpoint structure.
+     **/
+    inline void from_endpoint(const areg::Endpoint& endPoint) noexcept;
+
+    /**
+     * \brief   Fill areg::Endpoint structure that matches data
+     **/
+    inline void to_endpoint(areg::Endpoint& endPoint) const noexcept;
+
+    /**
+     * \brief   Reads ThreadAddress data from an input stream.
+     *
+     * \param   stream      The input stream to read from.
+     **/
+    inline const InStream & from_stream( const InStream & stream );
+
+    /**
+     * \brief   Writes ThreadAddress data to an output stream.
+     *
+     * \param   stream      The output stream to write to.
+     **/
+    inline OutStream & to_stream( OutStream & stream ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -260,17 +260,37 @@ inline String ThreadAddress::to_string() const noexcept
     return mThreadName;
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Global operators for ThreadAddress class
-//////////////////////////////////////////////////////////////////////////
-inline const InStream & operator >> (const InStream & stream, ThreadAddress & input)
+inline void ThreadAddress::from_endpoint(const areg::Endpoint& endPoint) noexcept
 {
-    return ( stream >> input.mThreadName );
+    mMagicNum = endPoint.thread;
+    mThreadName.clear();
 }
 
-inline OutStream & operator << (OutStream & stream, const ThreadAddress & output)
+inline void ThreadAddress::to_endpoint(areg::Endpoint& endPoint) const noexcept
 {
-    return ( stream << output.mThreadName );
+    endPoint.thread = mMagicNum;
+}
+
+inline const InStream& ThreadAddress::from_stream(const InStream& stream) 
+{
+    stream >> mMagicNum;
+    return stream;
+}
+
+inline OutStream& ThreadAddress::to_stream(OutStream& stream) const
+{
+    stream << mMagicNum;
+    return stream;
+}
+
+inline const InStream & operator >> ( const InStream & stream, ThreadAddress & addr )
+{
+    return addr.from_stream(stream);
+}
+
+inline OutStream & operator << ( OutStream & stream, const ThreadAddress & addr )
+{
+    return addr.to_stream(stream);
 }
 
 } // namespace areg

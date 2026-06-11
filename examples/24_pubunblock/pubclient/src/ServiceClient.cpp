@@ -120,7 +120,7 @@ void ServiceClient::response_hello_unblock( uint32_t clientId, uint32_t seqNr )
         << std::endl;
 }
 
-void ServiceClient::request_hello_ublock_failed( areg::ResultType FailureReason )
+void ServiceClient::request_hello_ublock_failed( [[maybe_unused]] areg::ResultType FailureReason )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceClient, request_hello_ublock_failed );
     LOG_WARN( "The request HelloUnblock failed with reason [ %s ]", areg::as_string( FailureReason ) );

@@ -254,8 +254,8 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         return fd;
     }
 
-    // Fetch a new batch, up to BATCH_SIZE events in one kevent() syscall.
-    struct kevent events[BATCH_SIZE];
+    // Fetch a new batch, up to DEFAULT_DRAIN_LIMIT events in one kevent() syscall.
+    struct kevent events[DEFAULT_DRAIN_LIMIT];
     struct timespec ts;
     const struct timespec * pTs = nullptr;
 
@@ -266,7 +266,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         pTs = &ts;
     }
 
-    const int n = ::kevent(static_cast<int>(mKqueueFd), nullptr, 0, events, BATCH_SIZE, pTs);
+    const int n = ::kevent(static_cast<int>(mKqueueFd), nullptr, 0, events, DEFAULT_DRAIN_LIMIT, pTs);
 
     if (n < 0)
         return (errno == EINTR) ? areg::InvalidSocketHandle : areg::FailedSocketHandle;

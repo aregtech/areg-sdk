@@ -108,8 +108,7 @@ public:
      *
      * \param   timeout     The timeout in milliseconds to wait for ownership. WAIT_INFINITE means
      *                      wait indefinitely.
-     * \return  Returns true if the thread successfully acquired ownership; false if timeout
-     *          expired.
+     * \return  Returns true if the thread successfully acquired ownership; false if timeout expired.
      **/
     virtual bool lock( uint32_t timeout = areg::WAIT_INFINITE );
 

@@ -38,8 +38,7 @@ namespace areg {
     class ServiceResponseEvent;
     class RemoteRequestEvent;
     class ComponentThread;
-    class EventDataStream;
-    class ResponseEvent;
+    class SharedBuffer;
     class Component;
 } // namespace areg
 
@@ -85,11 +84,7 @@ protected:
     // StubBase::Listener class declaration
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   This is internal class to track list of assigned listeners
-     *          for requests and attribute update notifications. 
-     *          It contains message ID (request or attribute ID), 
-     *          message sequence number and address of Proxy object to send
-     *          response message.
+     * \brief   Compact listener entry that tracks a registered proxy client for a message ID.
      **/
     class AREG_API Listener
     {
@@ -100,26 +95,27 @@ protected:
 
         inline Listener() noexcept;
 
-        inline Listener(const StubBase::Listener& src) noexcept;
+        Listener(const StubBase::Listener& src) noexcept = default;
 
-        inline Listener(StubBase::Listener&& src) noexcept;
+        Listener(StubBase::Listener&& src) noexcept = default;
 
         /**
-         * \brief   Initializes listener with message ID; proxy address must be set separately.
+         * \brief   Initializes listener with message ID; proxy fields zeroed.
          **/
         inline Listener(uint32_t reqId) noexcept;
 
         /**
-         * \brief   Initializes listener with message ID and sequence number; proxy address must set separately.
+         * \brief   Initializes listener with message ID and sequence number; proxy fields zeroed.
          **/
         inline Listener(uint32_t reqId, const SequenceNumber & seqId) noexcept;
 
         /**
          * \brief   Initializes listener with message ID, sequence number, and proxy address.
+         *          The proxy is stored in compact integer form via ProxyAddress::to_endpoint.
          *
          * \param   reqId       The message ID.
          * \param   seqId       The sequence number.
-         * \param   proxy       The target proxy address.
+         * \param   proxy       The target proxy address to extract routing integers from.
          **/
         inline Listener(uint32_t reqId, const SequenceNumber & seqId, const ProxyAddress & proxy) noexcept;
 
@@ -128,16 +124,34 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     public:
 
-        StubBase::Listener & operator = (const StubBase::Listener & src) noexcept;
+        StubBase::Listener & operator = (const StubBase::Listener & src) noexcept = default;
 
-        StubBase::Listener & operator = ( StubBase::Listener && src ) noexcept;
+        StubBase::Listener & operator = ( StubBase::Listener && src ) noexcept = default;
 
         /**
          * \brief   Returns true if listeners are equal; matching message ID and either matching
-         *          sequence number, proxy address, or one sequence number is ANY.
+         *          sequence number or one sequence number is ANY.
          **/
         [[nodiscard]]
         bool operator == ( const StubBase::Listener & other ) const noexcept;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Proxy access
+    //////////////////////////////////////////////////////////////////////////
+    public:
+
+        /**
+         * \brief   Reconstructs a ProxyAddress from the compact routing integers.
+         **/
+        [[nodiscard]]
+        inline ProxyAddress proxy() const noexcept;
+
+        /**
+         * \brief   Returns true if the stored proxy identity matches addr without
+         *          constructing a full ProxyAddress.
+         **/
+        [[nodiscard]]
+        inline bool proxy_matches(const ProxyAddress & addr) const noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables.
@@ -146,15 +160,20 @@ protected:
         /**
          * \brief   The message ID of Listener object.
          **/
-        uint32_t        mMessageId;
+        uint32_t        mMessageId  { 0 };
         /**
-         * \brief   Sequence number of Listener
+         * \brief   Sequence number of Listener.
          **/
-        SequenceNumber  mSequenceNr;
+        SequenceNumber  mSequenceNr { 0 };
+
         /**
-         * \brief   The address of target Proxy object.
+         * \brief   Compact proxy service identity
          **/
-        ProxyAddress    mProxy;
+        areg::RawService    mRawService { };
+        /**
+         * \brief   Compact proxy endpoint.
+         **/
+        areg::Endpoint      mConsumer   { };
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -201,8 +220,7 @@ protected:
      * \brief   Initializes the stub with its master component and service interface metadata.
      *
      * \param   masterComp      The component that owns this service implementation.
-     * \param   siData          The service interface data containing service name, version, and
-     *                          type.
+     * \param   siData          The service interface data containing service name, version, and type.
      **/
     StubBase( Component & masterComp, const areg::InterfaceData & siData );
 
@@ -254,7 +272,16 @@ public:
      * \return  Returns a pointer to the stub if found; otherwise nullptr.
      **/
     [[nodiscard]]
-    static StubBase * find_stub(const StubAddress& address) noexcept;
+    static inline StubBase * find_stub(const StubAddress& address) noexcept;
+
+    /**
+     * \brief   Searches for and returns the stub object at the specified unique stub ID.
+     *
+     * \param   stubId  The unique ID of the stub to find.
+     * \return  Returns a pointer to the stub if found; otherwise nullptr.
+     **/
+    [[nodiscard]]
+    static inline StubBase * find_stub( const UniqueNumber stubId ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -334,34 +361,30 @@ public:
 protected:
 
     /**
-     * \brief   Creates a response event to send to a client. Must be overridden by derived classes.
+     * \brief   Creates a response event to send to a client. Override in derived stubs.
+     *          Base returns an invalid ServiceResponseEvent (is_valid() == false).
      *
      * \param   proxy       The address of the client proxy to receive the response.
      * \param   msgId       The message ID of the response.
      * \param   result      The result code of the response.
      * \param   data        The serialized response data. Can be an empty/invalid buffer.
-     * \return  Returns a valid pointer to the created response event.
+     * \return  A ServiceResponseEvent value; check is_valid() before use.
      **/
     [[nodiscard]]
-    virtual ResponseEvent * create_response( const areg::ProxyAddress & proxy, uint32_t msgId, areg::ResultType result, const areg::EventDataStream & data ) const;
+    virtual ServiceResponseEvent create_response( const areg::ProxyAddress & proxy, uint32_t msgId, areg::ResultType result, const areg::SharedBuffer & data ) const;
 
     /**
-     * \brief   Creates a request event from a data stream for stub processing. Must be overridden by derived classes.
+     * \brief   Creates an empty (no-payload) response event of the stub's concrete type, with the
+     *          buffer allocated for the header plus \a reserve payload bytes.
      *
-     * \param   stream      The stream containing serialized request data.
-     * \return  Returns a valid request event pointer on success; otherwise nullptr.
+     * \param   proxy       The address of the client proxy to receive the response.
+     * \param   msgId       The message ID of the response.
+     * \param   result      The result code of the response.
+     * \param   reserve     Payload bytes to reserve after the header for the serialized parameters.
+     * \return  A typed empty ServiceResponseEvent; check is_valid() before use.
      **/
     [[nodiscard]]
-    virtual RemoteRequestEvent * create_remote_request( const areg::InStream & stream ) const;
-
-    /**
-     * \brief   Creates a notification request event from a data stream. Must be overridden by derived classes.
-     *
-     * \param   stream      The stream containing serialized notification request data.
-     * \return  Returns a valid notification request event pointer on success; otherwise nullptr.
-     **/
-    [[nodiscard]]
-    virtual RemoteNotifyRequestEvent * create_notify_request( const areg::InStream & stream ) const;
+    virtual ServiceResponseEvent create_response_event( const areg::ProxyAddress & proxy, uint32_t msgId, areg::ResultType result, uint32_t reserve ) const;
 
 /************************************************************************/
 // StubEventConsumer interface overrides.
@@ -370,8 +393,7 @@ protected:
     /**
      * \brief   Processes a service request event. Must be overridden by derived classes to handle specific requests.
      *
-     * \param   eventElem       The request event containing the request ID and serialized
-     *                          parameters.
+     * \param   eventElem       The request event containing the request ID and serialized parameters.
      **/
     void process_request_event( areg::ServiceRequestEvent & eventElem ) override = 0;
     
@@ -383,12 +405,10 @@ protected:
     void process_attribute_event( areg::ServiceRequestEvent & eventElem ) override = 0;
 
     /**
-     * \brief   Called when the stub is registered in the service registry. The status indicates
-     *          success or failure.
+     * \brief   Called when the stub is registered in the service registry. The status indicates success or failure.
      *
      * \param   stubTarget      The address of this registered stub.
-     * \param   status          The registration status. Connected indicates successful
-     *                          registration.
+     * \param   status          The registration status. Connected indicates successful registration.
      **/
     void process_registered_event( const areg::StubAddress & stubTarget, areg::ServiceConnectionState status ) override;
 
@@ -466,9 +486,8 @@ protected:
      * \brief   Marks the request as pending and adds its listener to the list. Only called for
      *          requests that have associated responses.
      *
-     * \param   listener        The listener object for this request (contains source proxy and
-     *                          message ID).
-     * \param   seqNr           The sequence number of the request call.
+     * \param   listener    The listener object for this request (contains source proxy and message ID).
+     * \param   seqNr       The sequence number of the request call.
      * \param   reqId       The ID of the request to prepare.
      **/
     void prepare_request(StubBase::Listener & listener, const SequenceNumber & seqNr, uint32_t reqId);
@@ -476,11 +495,23 @@ protected:
     /**
      * \brief   Collects all listeners matching the specified request ID into the output list.
      *
-     * \param   reqId       The request ID to filter listeners.
-     * \param[out] out_listners    Receives the list of listeners for the request ID.
+     * \param      reqId        The request ID to filter listeners.
+     * \param[out] listeners    Receives the list of listeners for the request ID.
      * \return  Returns the number of listeners found.
      **/
-    uint32_t find_listeners(uint32_t reqId, StubListenerList & out_listners) const;
+    uint32_t find_listeners(uint32_t reqId, StubListenerList & listeners) const;
+
+    /**
+     * \brief   Finds the listeners subscribed to \a respId.
+     *
+     * \param   respId          The response / broadcast message ID.
+     * \param   result          The result code to stamp into the response.
+     * \param   reserve         Payload bytes to reserve after the header for serialized parameters.
+     * \param[out] listeners    Receives the listeners subscribed to respId (empty if none).
+     * \return  A typed response event; invalid (is_valid()==false) when there are no listeners.
+     **/
+    [[nodiscard]]
+    ServiceResponseEvent prepare_response_event( uint32_t respId, areg::ResultType result, uint32_t reserve, StubBase::StubListenerList & listeners );
 
     /**
      * \brief   Returns true if a notification listener with the specified message ID and proxy address exists.
@@ -590,7 +621,7 @@ protected:
      * \param   data        The serialized update data. Can be an empty/invalid buffer.
      * \param   result      The result code of the update.
      **/
-    void send_update_event(uint32_t msgId, const EventDataStream & data, areg::ResultType result) const;
+    void send_update_event(uint32_t msgId, const areg::SharedBuffer & data, areg::ResultType result) const;
 
     /**
      * \brief   Sends an update notification to a single target proxy.
@@ -600,7 +631,7 @@ protected:
      * \param   data        The serialized update data. Can be an empty/invalid buffer.
      * \param   result      The result code of the update.
      **/
-    void send_notify_once( const ProxyAddress & target, uint32_t msgId, const EventDataStream & data, areg::ResultType result ) const;
+    void send_notify_once( const ProxyAddress & target, uint32_t msgId, const areg::SharedBuffer & data, areg::ResultType result ) const;
 
     /**
      * \brief   Sends a response event to proxy clients subscribed to the specified response ID.
@@ -608,7 +639,7 @@ protected:
      * \param   respId      The ID of the response.
      * \param   data        The serialized response data (response call arguments).
      **/
-    void send_response_event(uint32_t respId, const EventDataStream & data);
+    void send_response_event(uint32_t respId, const areg::SharedBuffer & data);
 
     /**
      * \brief   Sends a busy response to indicate that a request is already being processed.
@@ -645,7 +676,7 @@ private:
      * \brief   Returns the global registry of all stub service implementations in the system.
      **/
     [[nodiscard]]
-    inline static MapProviderResource& map_providers() noexcept;
+    static MapProviderResource& map_providers() noexcept;
 
     /**
      * \brief   Removes one listener matching toRemove from the sub-vector for msgId using
@@ -655,6 +686,29 @@ private:
      * \param   toRemove    The listener to find and remove (matched via Listener::operator==).
      **/
     void remove_from_map( uint32_t msgId, const StubBase::Listener & toRemove ) noexcept;
+
+    /**
+     * \brief   Removes one listener matching toRemove from an already resolved sub-vector using swap-and-pop. 
+     *          It performs NO map lookup and acquires NO lock, so it must be called by a caller that
+     *          already holds the Lock and the target sub-vector.
+     *
+     * \param   subVec      The sub-vector to search and compact in place.
+     * \param   toRemove    The listener to find and remove (matched via Listener::operator==).
+     **/
+    static void remove_from_list( StubListenerList & subVec, const StubBase::Listener & toRemove ) noexcept;
+
+    /**
+     * \brief   Collects all listeners for respId into listeners and, in the same locked
+     *          region, removes the one-shot entries that the response path would consume:
+     *          - seqNr > 0 (one-shot request): removed from the map.
+     *          - seqNr < 0 (unblocked request with existing notify): the matching seqNr==0
+     *            (notify subscription) entry is removed; the negated entry itself is kept.
+     *          - seqNr == 0 (notify subscription): kept in the map.
+     *
+     * \param   respId          The response / broadcast message ID to collect listeners for.
+     * \param[out] listeners    Receives all listeners for respId.
+     **/
+    void collect_and_strip_response_listeners( uint32_t respId, StubListenerList & listeners );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -684,21 +738,25 @@ protected:
     #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
+
+private:
     /**
      * \brief   Per-message-ID listener map. Each sub-vector holds all listeners registered for a specific message ID.
      **/
     StubBase::StubListenerMap       mListenerMap;
 
-private:
     /**
-     * \brief   Message ID of the listener currently being processed inside process_request_event().
-     *          Set to INVALID_MESSAGE_ID when no request is active or after cancel/unblock.
+     * \brief   Guards all accesses to mListenerMap.
+     **/
+    mutable SpinLock                mListenerLock;
+
+    /**
+     * \brief   Message ID of the listener currently being processed.
      **/
     uint32_t                        mCurrMsgId;
 
     /**
-     * \brief   Index of the current listener within mListenerMap[mCurrMsgId]. Valid only when
-     *          mCurrMsgId != INVALID_MESSAGE_ID.
+     * \brief   Index of the current listener.
      **/
     uint32_t                        mCurrIndex;
 
@@ -740,63 +798,46 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 inline StubBase::Listener::Listener() noexcept
-    : mMessageId ( 0 )
-    , mSequenceNr( 0 )
-    , mProxy     ( ProxyAddress::invalid_proxy_address() )
+    : mMessageId  ( 0 )
+    , mSequenceNr ( 0 )
+    , mRawService ( )
+    , mConsumer   ( )
 {
 }
 
 inline StubBase::Listener::Listener( uint32_t reqId ) noexcept
-    : mMessageId ( reqId )
-    , mSequenceNr( 0 )
-    , mProxy     ( ProxyAddress::invalid_proxy_address() )
+    : mMessageId  ( reqId )
+    , mSequenceNr ( 0 )
+    , mRawService ( )
+    , mConsumer   ( )
 {
 }
 
 inline StubBase::Listener::Listener( uint32_t reqId, const SequenceNumber & seqId ) noexcept
-    : mMessageId ( reqId )
-    , mSequenceNr( seqId )
-    , mProxy     ( ProxyAddress::invalid_proxy_address() )
+    : mMessageId  ( reqId )
+    , mSequenceNr ( seqId )
+    , mRawService ( )
+    , mConsumer   ( )
 {
 }
 
-inline StubBase::Listener::Listener( uint32_t reqId, const SequenceNumber & seqId, const ProxyAddress& proxy ) noexcept
-    : mMessageId ( reqId )
-    , mSequenceNr( seqId )
-    , mProxy     ( proxy )
+inline StubBase::Listener::Listener( uint32_t reqId, const SequenceNumber & seqId, const ProxyAddress & proxy ) noexcept
+    : mMessageId  ( reqId )
+    , mSequenceNr ( seqId )
+    , mRawService ( )
+    , mConsumer   ( )
 {
+    proxy.to_endpoint( mRawService, mConsumer );
 }
 
-inline StubBase::Listener::Listener( const StubBase::Listener& src ) noexcept
-    : mMessageId ( src.mMessageId )
-    , mSequenceNr( src.mSequenceNr)
-    , mProxy     ( src.mProxy )
+inline ProxyAddress StubBase::Listener::proxy() const noexcept
 {
+    return ProxyAddress( mRawService, mConsumer );
 }
 
-inline StubBase::Listener::Listener( StubBase::Listener && src ) noexcept
-    : mMessageId ( src.mMessageId )
-    , mSequenceNr( src.mSequenceNr )
-    , mProxy     ( std::move(src.mProxy) )
+inline bool StubBase::Listener::proxy_matches( const ProxyAddress & addr ) const noexcept
 {
-}
-
-inline StubBase::Listener& StubBase::Listener::operator = ( const StubBase::Listener& src ) noexcept
-{
-    mMessageId  = src.mMessageId;
-    mSequenceNr = src.mSequenceNr;
-    mProxy      = src.mProxy;
-
-    return (*this);
-}
-
-inline StubBase::Listener& StubBase::Listener::operator = ( StubBase::Listener && src ) noexcept
-{
-    mMessageId  = src.mMessageId;
-    mSequenceNr = src.mSequenceNr;
-    mProxy      = std::move(src.mProxy);
-    
-    return (*this);
+    return (addr.cookie() == mConsumer.id) && (static_cast<uint32_t>(addr) == mConsumer.number);
 }
 
 /************************************************************************
@@ -805,6 +846,16 @@ inline StubBase::Listener& StubBase::Listener::operator = ( StubBase::Listener &
 //////////////////////////////////////////////////////////////////////////
 // StubBase class inline function implementation
 //////////////////////////////////////////////////////////////////////////
+
+inline StubBase* StubBase::find_stub(const StubAddress& address) noexcept
+{
+    return map_providers().find_resource_object(static_cast<uint32_t>(address));
+}
+
+inline StubBase* StubBase::find_stub(const UniqueNumber stubId) noexcept
+{
+    return map_providers().find_resource_object(static_cast<uint32_t>(stubId));
+}
 
 inline StubBase & StubBase::self() noexcept
 {

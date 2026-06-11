@@ -64,7 +64,6 @@ void TimerBase::_os_destroy( TIMERHANDLE handle ) noexcept
 
     if (h->timerPool != nullptr)
     {
-        // Disarm and drain any in-flight callback before closing
         ::SetThreadpoolTimer(h->timerPool, nullptr, 0, 0);
         ::WaitForThreadpoolTimerCallbacks(h->timerPool, TRUE);
         ::CloseThreadpoolTimer(h->timerPool);

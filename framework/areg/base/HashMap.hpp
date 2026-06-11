@@ -35,10 +35,11 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   Hash map binding values to unique keys, with key-value pair access by key. Keys are
- *          hashed for O(1) lookup. KEY type must be hashable via std::hash<KEY> and comparable via
- *          std::equal_to<KEY>; VALUE type can differ. Both KEY and VALUE require default
- *          constructor and assignment operator. Not thread-safe; synchronize manually.
+ * \brief   Hash map binding values to unique keys, with key-value pair access by key.
+ *          Keys are hashed for O(1) lookup. KEY type must be hashable via std::hash<KEY>
+ *          and comparable via std::equal_to<KEY>; VALUE type can differ.
+ *          Both KEY and VALUE require default constructor and assignment operator.
+ *          Not thread-safe; synchronize manually.
  **/
 template < typename KEY, typename VALUE>
 class HashMap : protected Constless<std::unordered_map<KEY, VALUE>>
@@ -78,8 +79,7 @@ public:
 
     /**
      * \brief   Constructs hash-map from parallel arrays of keys and values. Duplicate keys result
-     *          in the last value being retained; final size equals count only if all keys are
-     *          unique.
+     *          in the last value being retained; final size equals count only if all keys are unique.
      *
      * \param   keys        The list of keys to copy.
      * \param   values      The list of values to pair with keys.
@@ -209,9 +209,8 @@ public:
     inline bool is_valid_position(const MAPPOS pos) const noexcept;
 
     /**
-     * \brief   Checks and ensures that specified position is pointing the valid entry in the
-     *          hash-map. The duration of checkup depends on the location of the position in the
-     *          hash-map.
+     * \brief   Checks and ensures that specified position is pointing the valid entry in hash-map.
+     *          The duration of checkup depends on the location of the position in the hash-map.
      *
      * \param   pos     The position to check.
      **/
@@ -258,14 +257,13 @@ public:
      * \brief   Searches for element by key. Returns true if found; outputs the value.
      *
      * \param   Key         The key to search.
-     * \param[out] Value       On output, contains value of found element
+     * \param[out] Value    On output, contains value of found element
      * \return  Returns true if there is an entry with the specified key.
      **/
     bool find( const KEY & Key, VALUE & Value ) const;
 
     /**
-     * \brief   Returns the position of the entry with the given key, or invalid position if not
-     *          found.
+     * \brief   Returns the position of the entry with the given key, or invalid position if not found.
      *
      * \param   Key     The key to search.
      * \return  Returns valid hash-map position if found an entry by the give key. Otherwise,
@@ -352,8 +350,7 @@ public:
     inline std::pair<MAPPOS, bool> add_if_unique(KEY && newKey, VALUE && newValue, bool updateExisting = false );
 
     /**
-     * \brief   Updates value of existing entry. Returns its position, or invalid position if key
-     *          not found.
+     * \brief   Updates value of existing entry. Returns its position, or invalid position if key not found.
      *
      * \param   Key         The key of an element in the hash-map to update.
      * \param   newValue    New value to set on existing entry.
@@ -370,12 +367,10 @@ public:
     inline bool remove_at(const KEY& Key ) noexcept;
 
     /**
-     * \brief   Removes entry by key. Returns true if found and removed, outputting the removed
-     *          value.
+     * \brief   Removes entry by key. Returns true if found and removed, outputting the removed value.
      *
      * \param   Key         The Key of the entry to search and remove.
-     * \param[out] Value       If succeeded to remove, on output it contains the value of the
-     *                         removed element.
+     * \param[out] Value    If succeeded to remove, on output it contains the value of the removed element.
      **/
     inline bool remove_at( const KEY & Key, VALUE & Value );
 
@@ -415,14 +410,11 @@ public:
     inline void remove_first() noexcept;
 
     /**
-     * \brief   Removes the first entry, outputting its key and value. Returns true if map was not
-     *          empty.
+     * \brief   Removes the first entry, outputting its key and value. Returns true if map was not empty.
      *
      * \param[out] Key         On output it contains the key of the removed element in the hash-map.
-     * \param[out] Value       On output it contains the value of the removed element in the
-     *                         hash-map.
-     * \return  Returns true if hash-map was not empty and first entry is removed. Otherwise,
-     *          returns false.
+     * \param[out] Value       On output it contains the value of the removed element in the hash-map.
+     * \return  Returns true if hash-map was not empty and first entry is removed. Otherwise, returns false.
      **/
     inline bool remove_first(KEY& Key, VALUE& Value);
 
@@ -432,14 +424,11 @@ public:
     inline void remove_last() noexcept;
 
     /**
-     * \brief   Removes the last entry, outputting its key and value. Returns true if map was not
-     *          empty.
+     * \brief   Removes the last entry, outputting its key and value. Returns true if map was not empty.
      *
      * \param[out] Key         On output it contains the key of the removed element in the hash-map.
-     * \param[out] Value       On output it contains the value of the removed element in the
-     *                         hash-map.
-     * \return  Returns true if hash-map was not empty and last entry is removed. Otherwise, returns
-     *          false.
+     * \param[out] Value       On output it contains the value of the removed element in the hash-map.
+     * \return  Returns true if hash-map was not empty and last entry is removed. Otherwise, returns false.
      **/
     inline bool remove_last(KEY& Key, VALUE& Value);
 
@@ -453,12 +442,11 @@ public:
     inline MAPPOS next_position(MAPPOS atPosition) const noexcept;
 
     /**
-     * \brief   Returns position of the next entry following the given position, outputting key and
-     *          value.
+     * \brief   Returns position of the next entry following the given position, outputting key and value.
      *
-     * \param   atPosition      The position of the entry to get next and extract values.
-     * \param[out] Key             On output, this contains key of given position.
-     * \param[out] Value           On output, this contains value of given position.
+     * \param   atPosition  The position of the entry to get next and extract values.
+     * \param[out] Key      On output, this contains key of given position.
+     * \param[out] Value    On output, this contains value of given position.
      * \return  Next valid position in the hash-map or invalid position if reached end of hash-map.
      **/
     [[nodiscard]]
@@ -468,9 +456,9 @@ public:
      * \brief   Returns position of the next entry following the given position, outputting
      *          key-value pair.
      *
-     * \param   atPosition      The position of the entry to get next and extract values.
-     * \param[out] Element         On output, this element contains pair of Key and Value specified
-     *                             by given position.
+     * \param   atPosition  The position of the entry to get next and extract values.
+     * \param[out] Element  On output, this element contains pair of Key and Value specified
+     *                      by given position.
      * \return  Next valid position in the hash-map or invalid position if reached end of hash-map.
      **/
     [[nodiscard]]
@@ -479,18 +467,17 @@ public:
     /**
      * \brief   Extracts key and value at the given position.
      *
-     * \param   atPosition      The position of the element to extract key and value.
-     * \param[out] Key             On output, contains key of the element at given position.
-     * \param[out] Value           On output, contains value of the element at given position.
+     * \param   atPosition  The position of the element to extract key and value.
+     * \param[out] Key      On output, contains key of the element at given position.
+     * \param[out] Value    On output, contains value of the element at given position.
      **/
     inline void at_position(MAPPOS atPosition, KEY & Key, VALUE & Value ) const;
 
     /**
      * \brief   Extracts key-value pair at the given position.
      *
-     * \param   atPosition      The position of the element to extract key and value.
-     * \param[out] Element         On output, contains the Key and Value pair of the element at
-     *                             given position
+     * \param   atPosition  The position of the element to extract key and value.
+     * \param[out] Element  On output, contains the Key and Value pair of the element at given position
      **/
     inline void at_position(MAPPOS atPosition, std::pair<KEY, VALUE> & Element) const;
 
@@ -538,15 +525,13 @@ public:
     inline VALUE& value_at(MAPPOS atPosition) noexcept;
 
     /**
-     * \brief   Advances position and outputs next entry's key and value. Returns true if next entry
-     *          exists.
+     * \brief   Advances position and outputs next entry's key and value. Returns true if next entry exists.
      *
-     * \param[in,out] nextPos         On input this indicates the valid position of the entry in the
-     *                                hash map. On output, this parameter points either next valid
-     *                                entry in the hash-map or invalid entry if no more entry is
-     *                                following.
-     * \param[out] nextKey         On output, this contains key of the next entry in hash map.
-     * \param[out] nextValue       On output, this contain value of the next entry in hash map.
+     * \param[in,out] nextPos   On input this indicates the valid position of the entry in the hash map.
+     *                          On output, this parameter points either next valid entry in the hash-map or
+     *                          invalid entry if no more entry is following.
+     * \param[out] nextKey      On output, this contains key of the next entry in hash map.
+     * \param[out] nextValue    On output, this contain value of the next entry in hash map.
      * \return  Returns true, if there is a next element and the output values are valid.
      **/
     inline bool next_entry(MAPPOS & nextPos, KEY & nextKey, VALUE & nextValue ) const;
@@ -555,14 +540,12 @@ public:
      * \brief   Copies up to elemCount entries into provided pre-allocated buffers. Returns number
      *          of entries copied.
      *
-     * \param[in,out] keys            A pre-allocated buffer where the keys of the hash-map elements
-     *                                will be copied. Must be large enough to hold at least
-     *                                `elemCount` elements.
-     * \param[in,out] values          A pre-allocated buffer where the values of the hash-map
-     *                                elements will be copied. Must be large enough to hold at least
-     *                                `elemCount` elements.
-     * \param   elemCount       The maximum number of elements to copy into the keys and values
-     *                          buffer. If set to 0, no elements are copied.
+     * \param[in,out] keys      A pre-allocated buffer where the keys of the hash-map elements will be copied.
+     *                          Must be large enough to hold at least `elemCount` elements.
+     * \param[in,out] values    A pre-allocated buffer where the values of the hash-map elements will be copied.
+     *                          Must be large enough to hold at least `elemCount` elements.
+     * \param   elemCount       The maximum number of elements to copy into the keys and values buffer.
+     *                          If set to 0, no elements are copied.
      * \return  The number of elements successfully copied.
      **/
     inline uint32_t elements(KEY * keys, VALUE * values, uint32_t elemCount);

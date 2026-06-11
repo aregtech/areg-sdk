@@ -168,8 +168,6 @@ void TimerManager::_unregister_timer( Timer & timer )
 void TimerManager::_remove_all_timers()
 {
     // Drain the map under the lock, then stop OS timers outside it.
-    // Holding the lock while calling _os_timer_stop() (which acquires a secondary
-    // lock on POSIX or blocks on a Win32 API) would increase lock contention.
     std::vector<TIMERHANDLE> handles;
 
     mTimerResource.lock();

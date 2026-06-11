@@ -397,8 +397,7 @@ public:
      *
      * \param   waitComplete    If true, waits for Component Loader to complete jobs and exit
      *                          threads. Otherwise, triggers exit and returns immediately.
-     * \param   modelName       The name of the model to unload; if empty, unloads all loaded
-     *                          models.
+     * \param   modelName       The name of the model to unload; if empty, unloads all loaded models.
      **/
     static void unload_component_model( bool waitComplete, const String & modelName );
 

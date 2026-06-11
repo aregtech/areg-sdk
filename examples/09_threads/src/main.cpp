@@ -114,10 +114,10 @@ protected:
     bool dispatch_event(areg::Event & eventElem) final
     {
         LOG_SCOPE( threads_main_HelloDispatcher, dispatch_event );
-        LOG_DBG("Received event [%s], custom dispatching here", eventElem.class_string());
+        LOG_DBG("Received event [%u], custom dispatching here", eventElem.event_id());
 
         areg::Lock lock(gSync);
-        std::cout << "Received event [" << eventElem.class_string() << "], custom dispatching here" << std::endl;
+        std::cout << "Received event [" << eventElem.event_id() << "], custom dispatching here" << std::endl;
         return true; // prevent process_timer()
     }
 

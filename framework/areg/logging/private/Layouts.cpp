@@ -118,7 +118,7 @@ ModuleIdLayout::ModuleIdLayout( ModuleIdLayout && /*src*/ ) noexcept
 
 void ModuleIdLayout::log_message( const areg::LogEntry & msgLog, OutStream & stream ) const
 {
-    static const ITEM_ID _moduleId{ Process::instance().id() };
+    static const ITEM_ID _moduleId{ static_cast<ITEM_ID>(Process::instance().id()) };
 #ifdef _BIT64
     static const String  _moduleName{ String::make_string(static_cast<uint64_t>(_moduleId), areg::Radix::Hexadecimal) };
 #else   // _BIT32

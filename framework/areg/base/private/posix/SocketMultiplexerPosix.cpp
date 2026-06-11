@@ -143,8 +143,7 @@ bool areg::SocketMultiplexer::unregister_socket(SOCKETHANDLE hSocket) noexcept
             *it = mSockets.back();
             mSockets.pop_back();
 
-            // Discard the batch cache: it may contain hSocket or a socket that
-            // was ready alongside hSocket.  The next wait() will fetch a fresh batch
+            // Discard the batch cache, next wait() will fetch a fresh batch
             mBatchCount = mBatchIdx = 0;
             return true;
         }
@@ -255,7 +254,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
             {
                 first   = mSockets[static_cast<std::size_t>(i)];
             }
-            else if (mBatchCount < areg::BATCH_SIZE)
+            else if (mBatchCount < areg::DEFAULT_DRAIN_LIMIT)
             {
                 mBatchFds[mBatchCount]    = mSockets[static_cast<std::size_t>(i)];
                 mBatchEvents[mBatchCount] = static_cast<uint32_t>(rev);

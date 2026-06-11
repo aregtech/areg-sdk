@@ -21,8 +21,8 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 
-#include "areg/component/ServiceDefs.hpp"
 #include "areg/base/IOStream.hpp"
+#include "areg/base/String.hpp"
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -59,11 +59,11 @@ public:
     /**
      * \brief   Initializes the channel with source and target identifiers and an optional cookie.
      *
-     * \param   source      The channel communication source ID.
-     * \param   target      The channel communication target ID.
-     * \param   cookie      The system-assigned ID.
+     * \param   source      CRC32(thread_name) of the source thread.
+     * \param   target      CRC32(thread_name) of the target thread, or 0 if unknown.
+     * \param   cookie      Process identity cookie (0=unknown, 1=local, >=256 IPC-assigned).
      **/
-    explicit inline constexpr Channel( const ITEM_ID & source, const ITEM_ID & target = areg::TARGET_UNKNOWN, const ITEM_ID & cookie = areg::COOKIE_UNKNOWN ) noexcept;
+    explicit inline constexpr Channel( uint32_t source, uint32_t target = 0u, uint32_t cookie = 0u ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -80,10 +80,10 @@ public:
     inline constexpr bool operator != ( const Channel & other ) const noexcept;
 
     /**
-     * \brief   Converts the channel to its ITEM_ID representation.
+     * \brief   Returns the source as a scalar channel identity.
      **/
     [[nodiscard]]
-    inline explicit constexpr operator const ITEM_ID & () const noexcept;
+    inline explicit constexpr operator uint32_t () const noexcept;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -111,43 +111,43 @@ public:
 public:
 
     /**
-     * \brief   Returns the source identifier of the channel.
+     * \brief   Returns the source CRC32(thread_name) of this channel.
      **/
     [[nodiscard]]
-    inline constexpr const ITEM_ID& source() const noexcept;
+    inline constexpr uint32_t source() const noexcept;
 
     /**
-     * \brief   Sets the source identifier of the channel.
+     * \brief   Sets the source thread magic.
      *
-     * \param   source      The new source identifier.
+     * \param   source      CRC32(thread_name) of the source thread.
      **/
-    inline constexpr void set_source(const ITEM_ID& source ) noexcept;
+    inline constexpr void set_source( uint32_t source ) noexcept;
 
     /**
-     * \brief   Returns the target identifier of the channel.
+     * \brief   Returns the target CRC32(thread_name) of this channel, or 0 if unknown.
      **/
     [[nodiscard]]
-    inline constexpr const ITEM_ID& target() const noexcept;
+    inline constexpr uint32_t target() const noexcept;
+
     /**
-     * \brief   Sets the target identifier of the channel.
+     * \brief   Sets the target thread magic.
      *
-     * \param   target      The new target identifier.
+     * \param   target      CRC32(thread_name) of the target thread.
      **/
-
-    inline constexpr void set_target(const ITEM_ID & target ) noexcept;
+    inline constexpr void set_target( uint32_t target ) noexcept;
 
     /**
-     * \brief   Returns the cookie identifier of the channel.
+     * \brief   Returns the process identity cookie.
      **/
     [[nodiscard]]
-    inline constexpr const ITEM_ID & cookie() const noexcept;
+    inline constexpr uint32_t cookie() const noexcept;
 
     /**
-     * \brief   Sets the cookie identifier of the channel.
+     * \brief   Sets the process identity cookie.
      *
-     * \param   cookie      The new cookie identifier.
+     * \param   cookie      Process cookie (0=unknown, 1=local, >=256 IPC-assigned).
      **/
-    inline constexpr void set_cookie(const ITEM_ID & cookie ) noexcept;
+    inline constexpr void set_cookie( uint32_t cookie ) noexcept;
 
     /**
      * \brief   Returns true if the channel data is valid.
@@ -179,28 +179,19 @@ public:
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Channel source ID
-     **/
-    ITEM_ID     mSource{ areg::SOURCE_UNKNOWN };
-    /**
-     * \brief   Channel Target ID
-     **/
-    ITEM_ID     mTarget{ areg::TARGET_UNKNOWN };
-    /**
-     * \brief   Channel Cookie assigned by system
-     **/
-    ITEM_ID     mCookie{ areg::COOKIE_UNKNOWN };
+    uint32_t    mSource { 0u };  //!< CRC32(thread_name) of the source thread
+    uint32_t    mTarget { 0u };  //!< CRC32(thread_name) of the target thread; 0 = unknown
+    uint32_t    mCookie { 0u };  //!< process identity cookie (0=unknown, 1=local, >=256 IPC)
 };
 
 //////////////////////////////////////////////////////////////////////////
 // Channel class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline constexpr Channel::Channel(const ITEM_ID& source, const ITEM_ID& target /*= areg::TARGET_UNKNOWN*/, const ITEM_ID& cookie /*= areg::COOKIE_UNKNOWN*/) noexcept
-    : mSource(source)
-    , mTarget(target)
-    , mCookie(cookie)
+inline constexpr Channel::Channel( uint32_t source, uint32_t target, uint32_t cookie ) noexcept
+    : mSource ( source )
+    , mTarget ( target )
+    , mCookie ( cookie )
 {
 }
 
@@ -214,51 +205,51 @@ inline constexpr bool Channel::operator != (const Channel& other) const noexcept
     return (this != &other ? (mCookie != other.mCookie) || (mTarget != other.mTarget) || (mSource != other.mSource) : false);
 }
 
-inline constexpr Channel::operator const ITEM_ID& () const noexcept
+inline constexpr Channel::operator uint32_t () const noexcept
 {
     return mSource;
 }
 
-inline constexpr const ITEM_ID & Channel::source() const noexcept
+inline constexpr uint32_t Channel::source() const noexcept
 {
     return mSource;
 }
 
-inline constexpr void Channel::set_source(const ITEM_ID & source) noexcept
+inline constexpr void Channel::set_source( uint32_t source ) noexcept
 {
     mSource = source;
 }
 
-inline constexpr const ITEM_ID & Channel::target() const noexcept
+inline constexpr uint32_t Channel::target() const noexcept
 {
     return mTarget;
 }
 
-inline constexpr void Channel::set_target(const ITEM_ID & target) noexcept
+inline constexpr void Channel::set_target( uint32_t target ) noexcept
 {
     mTarget = target;
 }
 
-inline constexpr const ITEM_ID & Channel::cookie() const noexcept
+inline constexpr uint32_t Channel::cookie() const noexcept
 {
     return mCookie;
 }
 
-inline constexpr void Channel::set_cookie(const ITEM_ID & cookie) noexcept
+inline constexpr void Channel::set_cookie( uint32_t cookie ) noexcept
 {
     mCookie = cookie;
 }
 
 inline constexpr bool Channel::is_valid() const noexcept
 {
-    return (mCookie != areg::COOKIE_UNKNOWN);
+    return (mCookie != 0u);
 }
 
 inline constexpr void Channel::invalidate() noexcept
 {
-    mSource = areg::SOURCE_UNKNOWN;
-    mTarget = areg::TARGET_UNKNOWN;
-    mCookie = areg::COOKIE_UNKNOWN;
+    mSource = 0u;
+    mTarget = 0u;
+    mCookie = 0u;
 }
 
 inline const InStream & operator >> ( const InStream & stream, Channel & input )

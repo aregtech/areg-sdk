@@ -163,22 +163,23 @@ public:
     /**
      * \brief   Walks the intrusive waiter list and fires each eligible WaitAny waiter.
      *
-     *          For each node: CAS mFiredWord from SYNC_FIRE_INVALID to mFiredValue, then
-     *          wakes the sleeping thread via the platform primitive.  For objects
-     *          where can_signal_threads() is false (Mutex), only the first successfully
-     *          CAS'd node is woken.
-     *
      * \return  Returns the number of waiters woken.
      **/
     int32_t notify_any_waiters() noexcept;
 
 private:
-    //! Head of the per-object intrusive WaiterNode list; nullptr when empty.
+    //!< Head of the per-object intrusive WaiterNode list; nullptr when empty.
     std::atomic<WaiterNode*>    mWaiters;
-    //! Spinlock protecting mWaiters list mutations.
+    //!< Spinlock protecting mWaiters list mutations.
     std::atomic_flag            mWaitersLock;
 
 #endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
+
+private:
+    //! Set to false by free_resources() to signal the object is no longer usable.
+    std::atomic<bool>        mValid;
+    //! Number of active WaitAll (SyncLockAndWaitPosix) registrations.
+    std::atomic<uint32_t>    mWaitAllCount;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -189,15 +190,6 @@ private:
      **/
     WaitablePosix() = delete;
     AREG_NOCOPY_NOMOVE( WaitablePosix );
-
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-private:
-    //! Set to false by free_resources() to signal the object is no longer usable.
-    std::atomic<bool>        mValid;
-    //! Number of active WaitAll (SyncLockAndWaitPosix) registrations.
-    std::atomic<uint32_t>    mWaitAllCount;
 };
 
 //////////////////////////////////////////////////////////////////////////

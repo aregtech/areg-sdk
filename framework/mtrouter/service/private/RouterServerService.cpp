@@ -78,13 +78,13 @@ void RouterServerService::unregister_service_consumer(const areg::ProxyAddress &
     LOG_ERR("Method is not implemented, this should not be called");
 }
 
-void RouterServerService::on_message_received(const areg::RemoteMessage &msgReceived)
+void RouterServerService::on_message_received(const areg::MessageEnvelope &msgReceived)
 {
     LOG_SCOPE( mtrouter_service_RouterServerService, on_message_received );
 
     ASSERT( msgReceived.is_valid() );
     areg::FuncIdRange msgId { static_cast<areg::FuncIdRange>(msgReceived.message_id()) };
-    const ITEM_ID & source{ msgReceived.source() };
+    const uint32_t source{ msgReceived.source() };
 
     LOG_DBG("Processing received valid message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
                     , areg::as_string(msgId)
@@ -96,43 +96,44 @@ void RouterServerService::on_message_received(const areg::RemoteMessage &msgRece
     {
     case areg::FuncIdRange::SystemServiceRequestRegister:
         {
-            areg::RegistrationAction reqType;
-            msgReceived >> reqType;
+            const areg::RegistrationAction reqType{ static_cast<areg::RegistrationAction>(msgReceived.call_type()) };
             LOG_DBG("Routing service received registration request message [ %s ]", areg::as_string(reqType));
             switch ( reqType )
             {
             case areg::RegistrationAction::RegisterProvider:
                 {
-                    areg::StubAddress stubService(msgReceived);
-                    stubService.set_source(source);
+                    areg::StubAddress stubService(*msgReceived.header());
+                    stubService.set_cookie(static_cast<ITEM_ID>(source));
+                    stubService.set_source(static_cast<ITEM_ID>(source));
                     on_provider_registered(stubService);
                 }
                 break;
 
             case areg::RegistrationAction::RegisterConsumer:
                 {
-                    areg::ProxyAddress proxyService(msgReceived);
-                    proxyService.set_source(source);
+                    areg::ProxyAddress proxyService(*msgReceived.header());
+                    proxyService.set_cookie(static_cast<ITEM_ID>(source));
+                    proxyService.set_source(static_cast<ITEM_ID>(source));
                     on_consumer_registered(proxyService);
                 }
                 break;
 
             case areg::RegistrationAction::UnregisterProvider:
                 {
-                    areg::StubAddress stubService(msgReceived);
-                    areg::DisconnectReason reason{areg::DisconnectReason::UndefinedReason};
-                    msgReceived >> reason;
-                    stubService.set_source(source);
+                    areg::StubAddress stubService(*msgReceived.header());
+                    const areg::DisconnectReason reason{ static_cast<areg::DisconnectReason>(msgReceived.result()) };
+                    stubService.set_cookie(static_cast<ITEM_ID>(source));
+                    stubService.set_source(static_cast<ITEM_ID>(source));
                     on_provider_unregistered(stubService, reason, stubService.cookie());
                 }
                 break;
 
             case areg::RegistrationAction::UnregisterConsumer:
                 {
-                    areg::ProxyAddress proxyService(msgReceived);
-                    areg::DisconnectReason reason { areg::DisconnectReason::UndefinedReason };
-                    msgReceived >> reason;
-                    proxyService.set_source(source);
+                    areg::ProxyAddress proxyService(*msgReceived.header());
+                    const areg::DisconnectReason reason{ static_cast<areg::DisconnectReason>(msgReceived.result()) };
+                    proxyService.set_cookie(static_cast<ITEM_ID>(source));
+                    proxyService.set_source(static_cast<ITEM_ID>(source));
                     on_consumer_unregistered(proxyService, reason, proxyService.cookie());
                 }
                 break;
@@ -208,7 +209,7 @@ void RouterServerService::on_message_received(const areg::RemoteMessage &msgRece
                        , msgReceived.target()
                        , source);
 
-            if ( msgReceived.target() != areg::TARGET_UNKNOWN )
+            if ( msgReceived.target() != static_cast<uint32_t>(areg::TARGET_UNKNOWN) )
             {
                 send_message( msgReceived );
             }
@@ -225,7 +226,7 @@ void RouterServerService::on_message_received(const areg::RemoteMessage &msgRece
     }
 }
 
-void RouterServerService::on_message_send(const areg::RemoteMessage &msgSend)
+void RouterServerService::on_message_send(const areg::MessageEnvelope &msgSend)
 {
     LOG_SCOPE( mtrouter_service_RouterServerService, on_message_send );
 
@@ -233,12 +234,12 @@ void RouterServerService::on_message_send(const areg::RemoteMessage &msgSend)
     LOG_DBG("Sending message [ %s ] of id [ 0x%X ] is going to send to target [ %u ] from source [ %u ]"
                     , areg::as_string(msgId)
                     , static_cast<uint32_t>(msgId)
-                    , static_cast<uint32_t>(msgSend.target())
-                    , static_cast<uint32_t>(msgSend.source()));
+                    , msgSend.target()
+                    , msgSend.source());
 
     if ( areg::is_executable_id( static_cast<uint32_t>(msgId)) )
     {
-        if ( msgSend.target( ) != areg::TARGET_UNKNOWN )
+        if ( msgSend.target( ) != static_cast<uint32_t>(areg::TARGET_UNKNOWN) )
         {
             send_message( msgSend );
         }
@@ -299,29 +300,29 @@ void RouterServerService::on_provider_registered(const areg::StubAddress & stub)
                 const areg::ProxyAddress & addrProxy    = proxyService.service_address();
                 if ( (proxyService.service_status() == areg::ServiceConnectionState::Connected) && (addrProxy.source() != stub.source()) )
                 {
-                    areg::RemoteMessage msgRegisterProxy = areg::client_registered_event(addrProxy, mServerConnection.channel_id(), stub.source());
+                    areg::MessageEnvelope msgRegisterProxy{ areg::client_registered_event(addrProxy, mServerConnection.channel_id(), stub.source()) };
                     send_message(msgRegisterProxy);
 
                     LOG_DBG("Send to stub [ %s ] the proxy [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
                                 , stub.to_string().as_string()
                                 , addrProxy.to_string().as_string()
                                 , areg::as_string( static_cast<areg::FuncIdRange>(msgRegisterProxy.message_id()))
-                                , static_cast<uint32_t>(msgRegisterProxy.message_id())
-                                , static_cast<uint32_t>(msgRegisterProxy.source())
-                                , static_cast<uint32_t>(msgRegisterProxy.target()));
+                                , msgRegisterProxy.message_id()
+                                , msgRegisterProxy.source()
+                                , msgRegisterProxy.target());
 
                     if ( sendList.add_if_unique(addrProxy.source()) )
                     {
-                        areg::RemoteMessage msgRegisterProvider  = areg::service_registered_event(stub, mServerConnection.channel_id(), addrProxy.source());
+                        areg::MessageEnvelope msgRegisterProvider{ areg::service_registered_event(stub, mServerConnection.channel_id(), addrProxy.source()) };
                         send_message(msgRegisterProvider);
 
                         LOG_DBG("Send to proxy [ %s ] the provider [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
                                     , addrProxy.to_string().as_string()
                                     , stub.to_string().as_string()
                                     , areg::as_string( static_cast<areg::FuncIdRange>(msgRegisterProvider.message_id()))
-                                    , static_cast<uint32_t>(msgRegisterProvider.message_id())
-                                    , static_cast<uint32_t>(msgRegisterProvider.source())
-                                    , static_cast<uint32_t>(msgRegisterProvider.target()));
+                                    , msgRegisterProvider.message_id()
+                                    , msgRegisterProvider.source()
+                                    , msgRegisterProvider.target());
                     }
                     else
                     {
@@ -369,27 +370,27 @@ void RouterServerService::on_consumer_registered(const areg::ProxyAddress & prox
 
         if ( (proxyService.service_status() == areg::ServiceConnectionState::Connected) && (proxy.source() != addrStub.source()) )
         {
-            areg::RemoteMessage msgRegisterProxy = areg::client_registered_event(proxy, mServerConnection.channel_id(), addrStub.source());
+            areg::MessageEnvelope msgRegisterProxy{ areg::client_registered_event(proxy, mServerConnection.channel_id(), addrStub.source()) };
             send_message(msgRegisterProxy);
 
             LOG_DBG("Send to stub [ %s ] the proxy [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
                         , addrStub.to_string().as_string()
                         , proxy.to_string().as_string()
                         , areg::as_string( static_cast<areg::FuncIdRange>(msgRegisterProxy.message_id()))
-                        , static_cast<uint32_t>(msgRegisterProxy.message_id())
-                        , static_cast<uint32_t>(msgRegisterProxy.source())
-                        , static_cast<uint32_t>(msgRegisterProxy.target()));
+                        , msgRegisterProxy.message_id()
+                        , msgRegisterProxy.source()
+                        , msgRegisterProxy.target());
 
-            areg::RemoteMessage msgRegisterProvider  = areg::service_registered_event(addrStub, mServerConnection.channel_id(), proxy.source());
+            areg::MessageEnvelope msgRegisterProvider{ areg::service_registered_event(addrStub, mServerConnection.channel_id(), proxy.source()) };
             send_message(msgRegisterProvider);
 
             LOG_DBG("Send to proxy [ %s ] the provider [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
                         , proxy.to_string().as_string()
                         , addrStub.to_string().as_string()
                         , areg::as_string( static_cast<areg::FuncIdRange>(msgRegisterProvider.message_id()))
-                        , static_cast<uint32_t>(msgRegisterProvider.message_id())
-                        , static_cast<uint32_t>(msgRegisterProvider.source())
-                        , static_cast<uint32_t>(msgRegisterProvider.target()));
+                        , msgRegisterProvider.message_id()
+                        , msgRegisterProvider.source()
+                        , msgRegisterProvider.target());
         }
         else
         {
@@ -464,7 +465,7 @@ void RouterServerService::on_consumer_unregistered(const areg::ProxyAddress & pr
                     , areg::ProxyAddress::to_path(proxy).as_string()
                     , static_cast<uint32_t>(cookie));
 
-    areg::RemoteMessage msgRegisterProxy;
+    areg::MessageEnvelope msgRegisterProxy;
     ServiceProxy svcProxy;
     const ServiceStub * svcStub     = nullptr;
 
@@ -505,7 +506,7 @@ void RouterServerService::on_service_channel_lost(const areg::Channel & /* chann
 {
 }
 
-void RouterServerService::failed_process_message(const areg::RemoteMessage & /* msgUnprocessed */)
+void RouterServerService::failed_process_message(const areg::MessageEnvelope & /* msgUnprocessed */)
 {
 }
 

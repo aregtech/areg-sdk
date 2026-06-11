@@ -10,13 +10,13 @@
  * \file        areg/component/private/StubConnectEvent.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Areg Platform, Stub Connection event class declaration.
+ * \brief       Areg Platform, Stub Connection event class implementation.
  *
  ************************************************************************/
 #include "areg/component/private/StubConnectEvent.hpp"
+
 #include "areg/component/StubAddress.hpp"
 #include "areg/component/ProxyAddress.hpp"
-#include "areg/base/IOStream.hpp"
 namespace areg {
 
 AREG_IMPLEMENT_RUNTIME_EVENT(StubConnectEvent, ServiceRequestEvent)
@@ -27,8 +27,13 @@ StubConnectEvent::StubConnectEvent(const StubAddress & stubTarget, areg::Service
                             , static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
                             , areg::RequestType::ServiceConnection
                             , areg::EventType::EventLocalProviderConnect)
-    , mConnectionStatus     ( connectStatus )
 {
+    areg::EventHeader* hdr{ header() };
+    if (hdr != nullptr)
+    {
+        hdr->result = static_cast<uint32_t>(connectStatus);
+        hdr->eventId = StubConnectEvent::CLASS_ID;
+    }
 }
 
 StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const StubAddress & stubTarget, areg::ServiceConnectionState connectStatus)
@@ -37,29 +42,13 @@ StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const StubA
                             , static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
                             , areg::RequestType::ClientConnection
                             , areg::EventType::EventLocalProviderConnect)
-    , mConnectionStatus     ( connectStatus )
 {
-}
-
-StubConnectEvent::StubConnectEvent( const InStream & stream )
-    : ServiceRequestEvent   ( stream )
-    , mConnectionStatus    ( areg::ServiceConnectionState::Unknown )
-{
-    stream >> mConnectionStatus;
-}
-
-const InStream & StubConnectEvent::read_stream(const InStream & stream)
-{
-    ServiceRequestEvent::read_stream(stream);
-    stream >> mConnectionStatus;
-    return stream;
-}
-
-OutStream & StubConnectEvent::write_stream(OutStream & stream) const
-{
-    ServiceRequestEvent::write_stream(stream);
-    stream << mConnectionStatus;
-    return stream;
+    areg::EventHeader* hdr{ header() };
+    if (hdr != nullptr)
+    {
+        hdr->result = static_cast<uint32_t>(connectStatus);
+        hdr->eventId = StubConnectEvent::CLASS_ID;
+    }
 }
 
 } // namespace areg

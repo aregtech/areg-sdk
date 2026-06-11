@@ -40,7 +40,7 @@ TimerManagerBase::TimerManagerBase(const String& threadName, uint32_t stackSizeK
 
 bool TimerManagerBase::post_event(Event& eventElem)
 {
-    return (AREG_RUNTIME_CAST(&eventElem, TimerManagerEvent) != nullptr) && EventDispatcher::post_event(eventElem);
+    return (eventElem.event_id() == TimerManagerEvent::CLASS_ID) && EventDispatcher::post_event(eventElem);
 }
 
 bool TimerManagerBase::run_dispatcher()
@@ -49,7 +49,6 @@ bool TimerManagerBase::run_dispatcher()
 
     SyncEvent* events[2] { &mEventExit, &mEventQueue };
     int32_t whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
-    const ExitEvent& exitEvent = ExitEvent::exit_event();
 
     do
     {
@@ -63,15 +62,15 @@ bool TimerManagerBase::run_dispatcher()
         // re-entering the kernel wait between consecutive events.
         for (;;)
         {
-            Event* eventElem = pick_event();
+            Event eventElem = pick_event();
 
-            if (static_cast<const Event*>(eventElem) == static_cast<const Event*>(&exitEvent))
+            if (eventElem.is_exit_prio())
             {
                 whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
                 break;
             }
 
-            if (eventElem == nullptr)
+            if (!eventElem.is_valid())
             {
                 whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue);
                 break;
@@ -79,7 +78,7 @@ bool TimerManagerBase::run_dispatcher()
 
             if (prepare_dispatch_event(eventElem))
             {
-                dispatch_event(*eventElem);
+                dispatch_event(eventElem);
             }
 
             post_dispatch_event(eventElem);

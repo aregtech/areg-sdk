@@ -15,6 +15,12 @@
 #include "aregextend/service/ServiceCommunicationBase.hpp"
 
 #include "areg/base/DateTime.hpp"
+#include "areg/base/MessageEnvelope.hpp"
+#include "areg/component/Event.hpp"
+#include "areg/component/EventConsumer.hpp"
+#include "areg/component/ExitEvent.hpp"
+
+#include <cstring>
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
@@ -78,6 +84,7 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
     , mWhiteList        ( )
     , mBlackList        ( )
     , mEventConsumer    ( self() )
+    , mMessageConsumer  ( self() )
     , mTimerConsumer    ( self() )
     , mInstanceMap      (  )
     , mEventSendStop    ( false, false )
@@ -94,15 +101,15 @@ void ServiceCommunicationBase::update_dispatch_mode()
 {
     if (mNumPairs == 0)
     {
-        mSendFn     = [this](const RemoteMessage & d, areg::EventPriority p)  { return do_send_shared(d, p); };
-        mSendMoveFn = [this](RemoteMessage && d,       areg::EventPriority p) { return do_send_shared(std::move(d), p); };
-        mAcceptFn   = [this](areg::SocketAccepted & s)                        { return do_accept_client_shared(s); };
-        mLostFn     = [this](ITEM_ID c)                                       { do_client_lost_shared(c); };
+        mSendFn     = [this](const areg::MessageEnvelope & d, areg::EventPriority p)  { return do_send_shared(d, p); };
+        mSendMoveFn = [this](areg::MessageEnvelope && d,     areg::EventPriority p)  { return do_send_shared(std::move(d), p); };
+        mAcceptFn   = [this](areg::SocketAccepted & s)                             { return do_accept_client_shared(s); };
+        mLostFn     = [this](ITEM_ID c)                                            { do_client_lost_shared(c); };
     }
     else
     {
-        mSendFn     = [this](const RemoteMessage & d, areg::EventPriority p)  { return do_send_pool(d, p); };
-        mSendMoveFn = [this](RemoteMessage && d,       areg::EventPriority p) { return do_send_pool(std::move(d), p); };
+        mSendFn     = [this](const areg::MessageEnvelope & d, areg::EventPriority p)  { return do_send_pool(d, p); };
+        mSendMoveFn = [this](areg::MessageEnvelope && d,     areg::EventPriority p)   { return do_send_pool(std::move(d), p); };
         mAcceptFn   = [this](areg::SocketAccepted & s)                        { return do_accept_client_pool(s); };
         mLostFn     = [this](ITEM_ID c)                                       { do_client_lost_pool(c); };
     }
@@ -275,8 +282,8 @@ void ServiceCommunicationBase::connection_lost( SocketAccepted & clientSocket )
     {
         mLostFn(cookie);
         remove_instance(cookie);
-        RemoteMessage msgDisconnect = areg::create_disconnect_request(cookie, channel);
-        send_communication_message(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgDisconnect, areg::EventPriority::HighPrio);
+        areg::MessageEnvelope msgDisconnect{ areg::create_disconnect_request(cookie, channel) };
+        send_received_message(std::move(msgDisconnect), areg::EventPriority::HighPrio);
     }
 
     mServerConnection.close_connection(clientSocket);
@@ -478,8 +485,8 @@ void ServiceCommunicationBase::stop_connection()
 
     // Queue graceful disconnect notifications while sockets are still alive.
     disconnect_services();
-    disconnect_service( areg::EventPriority::HighPrio);
 
+    mThreadSend.trigger_exit();
     constexpr uint32_t DISCONNECT_TIMEOUT_MS{ 2500u };
     if ( !mThreadSend.wait_completion(DISCONNECT_TIMEOUT_MS) )
     {
@@ -563,57 +570,44 @@ void ServiceCommunicationBase::do_client_lost_pool( ITEM_ID cookie )
     mClientPairs[idx]->remove_socket(cookie);
 }
 
-bool ServiceCommunicationBase::do_send_shared( const RemoteMessage & data, areg::EventPriority prio )
+bool ServiceCommunicationBase::do_send_shared( const areg::MessageEnvelope & data, areg::EventPriority prio )
 {
-    return SendMessageEvent::send_event( SendMessageEventData( data )
-                                       , static_cast<SendMessageEventConsumer &>(mThreadSend)
-                                       , static_cast<DispatcherThread &>(mThreadSend)
-                                       , prio );
+    areg::MessageEnvelope copy{ data };
+    return do_send_shared(std::move(copy), prio);
 }
 
-bool ServiceCommunicationBase::do_send_shared( RemoteMessage && data, areg::EventPriority prio )
+bool ServiceCommunicationBase::do_send_shared( areg::MessageEnvelope && data, areg::EventPriority prio )
 {
-    SendMessageEvent * evt = SendMessageEvent::make_event(prio);
-    if ( evt == nullptr )
-        return false;
-
-    evt->data().set_remote_message(std::move(data), SendMessageEventData::SendCommand::ForwardMessage);
-    return SendMessageEvent::send_event(evt
-                                       , static_cast<SendMessageEventConsumer &>(mThreadSend)
-                                       , static_cast<DispatcherThread &>(mThreadSend)
-                                       , prio);
+    areg::Event evt(std::move(data));
+    evt.set_event_priority(prio);
+    evt.set_event_consumer(&mThreadSend);
+    evt.set_target_dispatcher(&mThreadSend);
+    evt.deliver_event();
+    return true;
 }
 
-bool ServiceCommunicationBase::do_send_pool( const RemoteMessage & data, areg::EventPriority prio )
+bool ServiceCommunicationBase::do_send_pool( const areg::MessageEnvelope & data, areg::EventPriority prio )
 {
     if ( mClientPairs.empty() )
         return do_send_shared(data, prio);
 
-    const uint32_t idx = static_cast<uint32_t>(data.target()) % mNumPairs;
-    PoolSendThread & sendThread = mClientPairs[idx]->send_thread();
-    return SendMessageEvent::send_event( SendMessageEventData( data )
-                                       , static_cast<SendMessageEventConsumer &>(sendThread)
-                                       , static_cast<DispatcherThread &>(sendThread)
-                                       , prio );
+    areg::MessageEnvelope copy{ data };
+    return do_send_pool(std::move(copy), prio);
 }
 
-bool ServiceCommunicationBase::do_send_pool( RemoteMessage && data, areg::EventPriority prio )
+bool ServiceCommunicationBase::do_send_pool( areg::MessageEnvelope && data, areg::EventPriority prio )
 {
     if ( mClientPairs.empty() )
         return do_send_shared(std::move(data), prio);
 
-    const uint32_t idx = static_cast<uint32_t>(data.target()) % mNumPairs;
-    PoolSendThread & sendThread = mClientPairs[idx]->send_thread();
-
-    SendMessageEvent * evt = SendMessageEvent::make_event(prio);
-    if ( evt == nullptr )
-        return false;
-
-    evt->data() = SendMessageEventData(std::move(data));
-    return SendMessageEvent::send_event(evt
-                                       , static_cast<SendMessageEventConsumer &>(sendThread)
-                                       , static_cast<DispatcherThread &>(sendThread)
-                                       , prio);
+    const uint32_t idx{ data.target() % mNumPairs };
+    PoolSendThread & sendThread{ mClientPairs[idx]->send_thread() };
+    areg::Event evt(std::move(data));
+    evt.set_event_priority(prio);
+    evt.set_event_consumer(&sendThread);
+    evt.set_target_dispatcher(&sendThread);
+    evt.deliver_event();
+    return true;
 }
 
 
@@ -635,20 +629,20 @@ bool ServiceCommunicationBase::start_receive_thread()
            mThreadReceive.wait_start( areg::WAIT_INFINITE );
 }
 
-bool ServiceCommunicationBase::send_message( const RemoteMessage & data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
+bool ServiceCommunicationBase::send_message( const areg::MessageEnvelope & data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
     return mSendFn(data, eventPrio);
 }
 
-bool ServiceCommunicationBase::send_message( RemoteMessage && data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
+bool ServiceCommunicationBase::send_message( areg::MessageEnvelope && data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
     return mSendMoveFn(std::move(data), eventPrio);
 }
 
 #ifdef DEBUG
-void ServiceCommunicationBase::failed_send_message(const RemoteMessage & msgFailed, Socket & whichTarget )
+void ServiceCommunicationBase::failed_send_message(const areg::MessageEnvelope & msgFailed, Socket & whichTarget )
 #else  // DEBUG
-void ServiceCommunicationBase::failed_send_message(const RemoteMessage& /*msgFailed*/, Socket& whichTarget)
+void ServiceCommunicationBase::failed_send_message(const areg::MessageEnvelope& /*msgFailed*/, Socket& whichTarget)
 #endif // DEBUG
 {
     LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, failed_send_message );
@@ -686,23 +680,23 @@ void ServiceCommunicationBase::failed_receive_message(Socket & whichSource)
     }
 }
 
-void ServiceCommunicationBase::process_received_message(RemoteMessage & msgReceived, Socket & whichSource)
+void ServiceCommunicationBase::process_received_message(areg::MessageEnvelope & msgReceived, Socket & whichSource)
 {
     DEBUG_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, process_received_message);
 
     if (!msgReceived.is_valid())
     {
-        DEBUG_LOG_WARN("Received invalid message from source [ %u ], ignoring to process", static_cast<uint32_t>(msgReceived.source()));
+        DEBUG_LOG_WARN("Received invalid message from source [ %u ], ignoring to process", msgReceived.source());
         return;
     }
 
-    const ITEM_ID source{ msgReceived.source() };
-    const ITEM_ID target{ msgReceived.target() };
+    const uint32_t source{ msgReceived.source() };
+    const uint32_t target{ msgReceived.target() };
     const areg::FuncIdRange msgId{ static_cast<areg::FuncIdRange>( msgReceived.message_id() ) };
 
-    if ( (source >= areg::COOKIE_REMOTE_SERVICE) && areg::is_executable_id(static_cast<uint32_t>(msgId)) )
+    if ( (source >= static_cast<uint32_t>(areg::COOKIE_REMOTE_SERVICE)) && areg::is_executable_id(static_cast<uint32_t>(msgId)) )
     {
-        if ( target != areg::TARGET_UNKNOWN )
+        if ( target != static_cast<uint32_t>(areg::TARGET_UNKNOWN) )
         {
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
             // Log every 100k forwarded messages.
@@ -716,8 +710,8 @@ void ServiceCommunicationBase::process_received_message(RemoteMessage & msgRecei
                             , s_fwdCount
                             , s_fwdBytes
                             , static_cast<uint32_t>(msgId)
-                            , static_cast<uint32_t>(source)
-                            , static_cast<uint32_t>(target));
+                            , source
+                            , target);
             }
 #endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
 
@@ -732,13 +726,13 @@ void ServiceCommunicationBase::process_received_message(RemoteMessage & msgRecei
     DEBUG_LOG_DBG("Received message [ %s ] of id [ %u ] from source [ %u ] ( connection cookie = %u ) of client host [ %s : %d ] for target [ %u ]"
                     , areg::as_string(msgId)
                     , static_cast<uint32_t>(msgId)
-                    , static_cast<uint32_t>(source)
+                    , source
                     , static_cast<uint32_t>(cookie)
                     , static_cast<const char *>(whichSource.address().host_address())
                     , static_cast<int32_t>(whichSource.address().host_port( ))
-                    , static_cast<id_type>(target));
+                    , target);
 
-    if ( (source == cookie) && (msgId != areg::FuncIdRange::SystemServiceConnect) )
+    if ( (source == static_cast<uint32_t>(cookie)) && (msgId != areg::FuncIdRange::SystemServiceConnect) )
     {
         if ( msgId == areg::FuncIdRange::SystemServiceDisconnect )
         {
@@ -746,20 +740,20 @@ void ServiceCommunicationBase::process_received_message(RemoteMessage & msgRecei
             mServerConnection.close_connection( cookie );
         }
 
-        send_communication_message( ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgReceived, areg::EventPriority::HighPrio );
+        send_received_message( std::move(msgReceived), areg::EventPriority::HighPrio );
     }
-    else if ( (source == areg::SOURCE_UNKNOWN) && (msgId == areg::FuncIdRange::SystemServiceConnect) )
+    else if ( (source == static_cast<uint32_t>(areg::SOURCE_UNKNOWN)) && (msgId == areg::FuncIdRange::SystemServiceConnect) )
     {
         areg::ConnectedInstance instance{};
         msgReceived >> instance;
         instance.ciTimestamp = static_cast<TIME64>(DateTime::now());
         instance.ciCookie = cookie;
         add_instance(cookie, instance);
-        RemoteMessage msgConnect(connect_message(mServerConnection.channel_id(), cookie, areg::MessageSource::SourceService));
+        areg::MessageEnvelope msgConnect{ connect_message(mServerConnection.channel_id(), cookie, areg::MessageSource::SourceService) };
         DEBUG_LOG_DBG("Received request connect message, sending response [ %s ] of id [ %u ], to new target [ %u ], connection socket [ %u ], checksum [ %u ]"
                     , areg::as_string( static_cast<areg::FuncIdRange>(msgConnect.message_id()))
-                    , static_cast<uint32_t>(msgConnect.message_id())
-                    , static_cast<uint32_t>(msgConnect.target())
+                    , msgConnect.message_id()
+                    , msgConnect.target()
                     , static_cast<uint32_t>(whichSource.handle())
                     , msgConnect.checksum());
 
@@ -770,7 +764,7 @@ void ServiceCommunicationBase::process_received_message(RemoteMessage & msgRecei
         DEBUG_LOG_WARN("Ignoring to process message [ %s ] of id [ %u ] from source [ %u ]"
                     , areg::as_string(msgId)
                     , static_cast<uint32_t>(msgId)
-                    , static_cast<uint32_t>(source));
+                    , source);
     }
 }
 
@@ -793,15 +787,15 @@ bool ServiceCommunicationBase::post_event( Event & eventElem )
     return EventDispatcher::post_event( eventElem );
 }
 
-RemoteMessage ServiceCommunicationBase::connect_message(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const
+areg::MessageEnvelope ServiceCommunicationBase::connect_message(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const
 {
-    RemoteMessage result{ areg::create_connect_notify(source, target) };
+    areg::MessageEnvelope result{ areg::create_connect_notify(source, target) };
     result.move_to_end();
     result << msgSource;
     return result;
 }
 
-RemoteMessage ServiceCommunicationBase::disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const
+areg::MessageEnvelope ServiceCommunicationBase::disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const
 {
     return areg::create_disconnect_notify(source, target);
 }

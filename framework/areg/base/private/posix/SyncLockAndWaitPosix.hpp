@@ -126,8 +126,7 @@ class SyncLockAndWaitPosix
 
 #if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
     /**
-     * \brief   Lock-free registry for the WaitAny path: maps sleeping thread IDs to their
-     *          per-call firedWord pointers.
+     * \brief   Lock-free registry for the WaitAny path
      **/
     using WaitAnyRegistryMap = WaitAnyRegistry<256>;
 #endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
@@ -187,18 +186,13 @@ public:
      * \brief   Locks and waits for a list of synchronization objects until one or all are signaled.
      *          Maximum areg::MAXIMUM_WAITING_OBJECTS entries.
      *
-     * \param   listWaitables       The list of waitables to check the signaled state. No more than
-     *                              areg::MAXIMUM_WAITING_OBJECTS entries.
-     * \param   count               The number of waitables in the list. No more than
-     *                              areg::MAXIMUM_WAITING_OBJECTS.
-     * \param   waitAll             If true, waits for all waitables to be signaled. If false, any
-     *                              signaled waitable unlocks.
-     * \param   msTimeout           Timeout in milliseconds. areg::WAIT_INFINITE to wait
-     *                              indefinitely.
+     * \param   listWaitables       The list of waitables to check the signaled state. No more than areg::MAXIMUM_WAITING_OBJECTS entries.
+     * \param   count               The number of waitables in the list. No more than areg::MAXIMUM_WAITING_OBJECTS.
+     * \param   waitAll             If true, waits for all waitables to be signaled. If false, any signaled waitable unlocks.
+     * \param   msTimeout           Timeout in milliseconds. areg::WAIT_INFINITE to wait indefinitely.
      * \return  Returns: SyncSignal::First + N (if waitAll=false and object N is signaled),
      *          SyncSignal::All (if waitAll=true and all signaled), SyncSignal::Timeout (expired),
-     *          SyncSignal::Interrupted (interrupted), or SyncSignal::FirstError + N (error on
-     *          object N).
+     *          SyncSignal::Interrupted (interrupted), or SyncSignal::FirstError + N (error on object N).
      **/
     static int32_t wait_multiple( WaitablePosix ** listWaitables, int32_t count, bool waitAll = false, uint32_t msTimeout = areg::WAIT_INFINITE);
 

@@ -36,8 +36,8 @@ class OutStream;
 // Version class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Represents a version with major, minor, and patch numbers; supports serialization and
- *          comparison.
+ * \brief   Represents a version with major, minor, and patch numbers;
+ *          supports serialization and comparison.
  **/
 class AREG_API Version
 {
@@ -168,6 +168,8 @@ public:
     [[nodiscard]]
     inline constexpr bool is_compatible(const Version & version) const noexcept;
 
+    inline void set_version(uint32_t major, uint32_t minor, uint32_t patch) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
@@ -235,6 +237,11 @@ inline constexpr bool Version::is_valid() const noexcept
 inline constexpr bool Version::is_compatible( const Version & version ) const noexcept
 {
     return ((mMajor == version.mMajor)  && (mMinor >= version.mMinor));
+}
+
+inline void Version::set_version(uint32_t major, uint32_t minor, uint32_t patch) noexcept
+{
+    mMajor = major; mMinor = minor; mPatch = patch;
 }
 
 inline Version & Version::operator = ( const char * version )

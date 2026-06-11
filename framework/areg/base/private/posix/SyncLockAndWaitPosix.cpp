@@ -283,7 +283,7 @@ int32_t SyncLockAndWaitPosix::_wait_any_new(WaitablePosix** listWaitables, int32
                 w->notify_released_threads(1);
                 break;
             }
-            // Another concurrent signal already fired — use that result
+            // Another concurrent signal already fired -- use that result
         }
     }
 
@@ -298,7 +298,6 @@ int32_t SyncLockAndWaitPosix::_wait_any_new(WaitablePosix** listWaitables, int32
 
         if (woken == SYNC_FIRE_INVALID)
         {
-            // Claim timeout code atomically; if a concurrent signal already fired, the CAS fails — use that result.
             uint32_t expected{ SYNC_FIRE_INVALID };
             firedWord.compare_exchange_strong(
                 expected,
@@ -308,7 +307,6 @@ int32_t SyncLockAndWaitPosix::_wait_any_new(WaitablePosix** listWaitables, int32
         }
     }
 
-    // Deregistration:
     for (int32_t i{ 0 }; i < count; ++i)
         listWaitables[i]->unregister_waiter(&nodes[i]);
 

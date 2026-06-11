@@ -31,17 +31,12 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 
 EventStack::EventStack() noexcept
-    : Stack<Event*>   ( )
+    : Stack<Event>   ( )
 {
 }
 
 EventStack::~EventStack() noexcept
 {
-    for (Event* evt : mValueList)
-    {
-        evt->destroy();
-    }
-
     mValueList.clear();
 }
 
@@ -51,11 +46,6 @@ EventStack::~EventStack() noexcept
 
 void EventStack::delete_all_events() noexcept
 {
-    for (Event* evt : mValueList)
-    {
-        evt->destroy();
-    }
-
     mValueList.clear();
 }
 
@@ -64,55 +54,38 @@ uint32_t EventStack::delete_except_exit() noexcept
     auto it = mValueList.begin();
     while (it != mValueList.end())
     {
-        if ((*it)->event_priority() == areg::EventPriority::ExitPrio)
-        {
+        if (it->event_priority() == areg::EventPriority::ExitPrio)
             ++it;
-        }
         else
-        {
-            (*it)->destroy();
             it = mValueList.erase(it);
-        }
     }
 
     return static_cast<uint32_t>(mValueList.size());
 }
 
-uint32_t EventStack::delete_matching(const RuntimeClassID& eventClassId) noexcept
+uint32_t EventStack::delete_matching(uint32_t eventClassId) noexcept
 {
     auto it = mValueList.begin();
     while (it != mValueList.end())
     {
-        Event* evt = *it;
-        if ((evt->event_priority() != areg::EventPriority::ExitPrio) && (eventClassId == evt->class_id()))
-        {
-            evt->destroy();
+        if ((it->event_priority() != areg::EventPriority::ExitPrio) && (eventClassId == it->event_id()))
             it = mValueList.erase(it);
-        }
         else
-        {
             ++it;
-        }
     }
 
     return static_cast<uint32_t>(mValueList.size());
 }
 
-uint32_t EventStack::delete_except(const RuntimeClassID& eventClassId) noexcept
+uint32_t EventStack::delete_except(uint32_t eventClassId) noexcept
 {
     auto it = mValueList.begin();
     while (it != mValueList.end())
     {
-        Event* evt = *it;
-        if ((evt->event_priority() != areg::EventPriority::ExitPrio) && (eventClassId != evt->class_id()))
-        {
-            evt->destroy();
+        if ((it->event_priority() != areg::EventPriority::ExitPrio) && (eventClassId != it->event_id()))
             it = mValueList.erase(it);
-        }
         else
-        {
             ++it;
-        }
     }
 
     return static_cast<uint32_t>(mValueList.size());

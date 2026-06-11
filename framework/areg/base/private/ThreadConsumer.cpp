@@ -27,7 +27,6 @@ bool ThreadConsumer::on_thread_registered(Thread * /*threadObj*/)
 
 void ThreadConsumer::on_thread_unregistering()
 {
-
 }
 
 int32_t ThreadConsumer::on_exit()

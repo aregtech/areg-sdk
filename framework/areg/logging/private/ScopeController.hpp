@@ -47,8 +47,7 @@ inline constexpr uint32_t SCOPE_MAP_INITIAL_RESERVE { 512u };
 
 /**
  * \brief   Container and controller of all registered log scopes in the application. Manages scope
- *          registration, activation, and priority changes including individual scopes and scope
- *          groups.
+ *          registration, activation, and priority changes including individual scopes and scope groups.
  **/
 class ScopeController
 {

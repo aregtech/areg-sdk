@@ -26,7 +26,7 @@
 
 namespace
 {
-    //!< Invalid thread name constant
+//!< Invalid thread name constant
 constexpr std::string_view   INVALID_THREAD_NAME     { "INVALID_THREAD_NAME" };
 }
 
@@ -51,6 +51,12 @@ ThreadAddress::ThreadAddress()
 {
 }
 
+ThreadAddress::ThreadAddress(const areg::Endpoint& endPoint)
+    : mThreadName   ( )
+    , mMagicNum     ( endPoint.thread )
+{
+}
+
 ThreadAddress::ThreadAddress( const char * threadName )
     : mThreadName   ( threadName != nullptr ? threadName : INVALID_THREAD_NAME )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
@@ -66,6 +72,12 @@ ThreadAddress::ThreadAddress( const String & threadName )
     mMagicNum    = ThreadAddress::_magic_number(*this);
 }
 
+ThreadAddress::ThreadAddress(const UniqueNumber numThread) noexcept
+    : mThreadName   ( )
+    , mMagicNum     (numThread)
+{
+}
+
 ThreadAddress::ThreadAddress( const ThreadAddress & src )
     : mThreadName   ( src.mThreadName )
     , mMagicNum     ( src.mMagicNum )
@@ -79,16 +91,9 @@ ThreadAddress::ThreadAddress( ThreadAddress && src ) noexcept
     src.mMagicNum   = areg::CHECKSUM_IGNORE;
 }
 
-ThreadAddress::ThreadAddress( const InStream & stream )
-    : mThreadName   ( stream )
-    , mMagicNum     ( areg::CHECKSUM_IGNORE )
-{
-    mMagicNum    = ThreadAddress::_magic_number(*this);
-}
-
 bool ThreadAddress::is_valid() const noexcept
 {
-    return (mMagicNum != areg::CHECKSUM_IGNORE);
+    return areg::crc32_valid(mMagicNum);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -119,7 +124,7 @@ void ThreadAddress::from_string(const char * threadPath, const char** nextPart /
     }
 
     mThreadName  = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
-    mMagicNum    = ThreadAddress::_magic_number(*this);
+    mMagicNum    = mThreadName.is_numeric() ? mThreadName.to_uint32() : ThreadAddress::_magic_number(*this);
 
     if (nextPart != nullptr)
     {

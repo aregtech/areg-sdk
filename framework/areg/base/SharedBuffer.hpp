@@ -15,8 +15,8 @@
  * \brief       Areg Platform, Shared Buffer with integrated streaming.
  *
  * \details     Flat, high-performance in-memory streaming buffer that shares its
- *              underlying heap allocation across copies via std::shared_ptr reference
- *              counting. The buffer is zero-virtual-dispatch on the hot path:
+ *              underlying heap allocation across copies via reference counting.
+ *              The buffer is zero-virtual-dispatch on the hot path:
  *
  *              - A single unified cursor (mPosition) serves as BOTH the read and
  *                write position.  Writes land at mPosition and advance it by the
@@ -37,8 +37,9 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
+#include "areg/base/BufferBase.hpp"
 #include "areg/base/Cursor.hpp"
-#include "areg/base/IOStream.hpp"       // InStream, OutStream, IOStream
+#include "areg/base/IOStream.hpp"
 
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/String.hpp"
@@ -54,8 +55,8 @@ namespace areg {
 /**
  * \brief   Reference-counted, streaming, in-memory byte buffer.
  *
- *          Copying a SharedBuffer shares the underlying heap block (no data
- *          copy); the block is freed when the last owner is destroyed.
+ *          Copying a SharedBuffer shares the underlying heap block (no data copy);
+ *          the block is freed when the last owner is destroyed.
  *          Any write operation enlarges the block with an amortised doubling strategy.
  *
  *          A single cursor (mPosition) is shared by both reads and writes.
@@ -68,25 +69,9 @@ namespace areg {
  *          rejected when it would require reallocation, matching the semantics
  *          of reserve(). Callers should clone() before writing to a shared buffer.
  **/
-class AREG_API SharedBuffer : public  IOStream
-                            , public  Cursor
+class AREG_API SharedBuffer : public  BufferBase
 {
     friend class FileBuffer;
-
-//////////////////////////////////////////////////////////////////////////
-// Defined static constants and types
-//////////////////////////////////////////////////////////////////////////
-protected:
-
-    /**
-     * \brief   Shared pointer allocator / deleter.
-     **/
-    using ByteBufferDeleter     = areg::BufferDeleter<areg::RawBuffer>;
-
-    /**
-     * \brief   Maximum length of byte buffer. It is defined as 64 Mb.
-     **/
-    static constexpr uint32_t   MAX_BUF_LENGTH  { 0x04000000u };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
@@ -323,6 +308,15 @@ public:
     inline const areg::RawBuffer* byte_buffer()  const noexcept;
 
     /**
+     * \brief   Returns the shared owner of the underlying heap block. Copying it (cheap: one atomic
+     *          refcount increment) keeps the allocation alive without constructing a full SharedBuffer/
+     *          Event. Used by batch send paths to retain drained message buffers until the writev
+     *          completes, instead of moving heavyweight Event objects into a holding array.
+     **/
+    [[nodiscard]]
+    inline const areg::RawBufferPtr& share_buffer() const noexcept;
+
+    /**
      * \brief   Returns true if the buffer is valid.
      **/
     [[nodiscard]]
@@ -341,15 +335,10 @@ public:
     inline areg::BufferType type() const noexcept;
 
     /**
-     * \brief   Inserts bytes at an arbitrary position, shifting later bytes right.
-     *          Appends if \a atPos is at or past the current write position.
-     *
-     * \param   buf     Source data.
-     * \param   size    Bytes to insert.
-     * \param   atPos   Byte offset at which to insert.
-     * \return  Bytes inserted.
+     * \brief   A SharedBuffer is writable only while it is an owner (not a zero-copy view).
      **/
-    uint32_t insert_at(const uint8_t* buf, uint32_t size, uint32_t atPos);
+    [[nodiscard]]
+    inline bool can_write() const noexcept override { return !is_view(); }
 
     /**
      * \brief   Returns true when both buffers contain identical byte sequences.
@@ -362,6 +351,13 @@ public:
      **/
     [[nodiscard]]
     inline bool is_shared() const noexcept;
+
+    /**
+     * \brief   Returns true when this instance is the sole owner of the underlying block
+     *          (use_count == 1). Use to guard placement-new'd payload destructors.
+     **/
+    [[nodiscard]]
+    inline bool is_unique() const noexcept;
 
     /**
      * \brief   Returns true when this instance owns the full backing allocation
@@ -526,42 +522,19 @@ protected:
      **/
     virtual uint32_t init_buffer(uint8_t* newBuffer, uint32_t bufLength, bool makeCopy) const noexcept;
 
-    /**
-     * \brief   Returns sizeof(areg::RawBuffer): the total header allocation footprint.
-     **/
-    [[nodiscard]]
-    virtual uint32_t header_size() const noexcept;
-
-    /**
-     * \brief   Returns sizeof(areg::BufferHeader): the data payload begins at this offset.
-     **/
-    [[nodiscard]]
-    virtual uint32_t data_offset() const noexcept;
-
-//////////////////////////////////////////////////////////////////////////
-// Hot-path helpers -- protected so derived classes (e.g. RemoteMessage) can
-// call them directly without going through the virtual OutStream/InStream
-// dispatch.  Non-virtual; the compiler can inline all three within a TU.
-//////////////////////////////////////////////////////////////////////////
 protected:
 
     /**
-     * \brief   Returns the default block size from application configuration,
-     *          falling back to areg::BLOCK_SIZE.  Result is cached atomically.
-     **/
-    [[nodiscard]]
-    static uint32_t default_block_size() noexcept;
-
-    /**
-     * \brief   Core write: writes exactly \a size bytes at the current cursor
-     *          position (mPosition), then advances mPosition by \a size.  Extends
-     *          biUsed when writing beyond the existing end.  Grows the buffer if
-     *          needed using the
-     *          doubling strategy in SharedBuffer::reserve().
+     * \brief   Sets dst to be a zero-copy read-only view into this buffer's data area.
+     *          Call from derived-class operators that need to expose a sub-range of
+     *          this buffer to a plain SharedBuffer without an intermediate copy.
      *
-     * \return  Bytes actually written.
+     * \param[out] dst       Target buffer that will receive the view.
+     * \param   viewStart    First byte of the view (data-area offset; 0 = payload start).
+     * \param   viewEnd      One-past-last byte of the view. Must be > 0; use size_used()
+     *                       to expose the entire payload.
      **/
-    uint32_t write_data(const uint8_t* buf, uint32_t size) noexcept;
+    inline void share_as_view(SharedBuffer& dst, uint32_t viewStart, uint32_t viewEnd) const noexcept;
 
     /**
      * \brief   Core read: copies up to \a size bytes starting from mPosition
@@ -621,43 +594,13 @@ protected:
 protected:
 
     /**
-     * \brief   Allocation growth step in bytes.  Constant after construction.
-     **/
-    const uint32_t  mBlockSize;
-
-#if defined(_MSC_VER)
-    #pragma warning(push)
-    #pragma warning(disable: 4251)
-#endif  // _MSC_VER
-
-    /**
-     * \brief   Pointer to Byte Buffer structure.
-     **/
-    mutable std::shared_ptr<areg::RawBuffer> mByteBuffer;
-
-#if defined(_MSC_VER)
-    #pragma warning(pop)
-#endif  // _MSC_VER
-
-    /**
-     * \brief   Unified read/write cursor: absolute byte offset from the start of
-     *          the data area (buffer_data_read base).  Both read_data() and
-     *          write_data() operate at this position and advance it.
-     *          Writing within biUsed overwrites in-place; beyond biUsed extends it.
-     **/
-    mutable uint32_t    mPosition;
-
-    /**
-     * \brief   Absolute start of the active view window (inclusive).
-     *          Set to 0 for non-view (full-buffer) instances.
-     *          For zero-copy sub-buffer views created by read(SharedBuffer&),
-     *          this is the absolute offset of the first byte of the view.
+     * \brief   Absolute start of the active view window (inclusive). 0 for non-view buffers.
+     *          mBlockSize, mByteBuffer and mPosition are inherited from BufferBase.
      **/
     mutable uint32_t    mViewStart;
 
     /**
-     * \brief   Absolute end of the active view window (exclusive).
-     *          0 means no view: use biUsed as the readable limit.
+     * \brief   Absolute end of the active view window (exclusive). 0 means no view (use biUsed).
      *          For zero-copy views, mViewEnd = mViewStart + view_length.
      **/
     mutable uint32_t    mViewEnd;
@@ -741,6 +684,11 @@ inline void SharedBuffer::invalidate() noexcept
 inline bool SharedBuffer::is_shared() const noexcept
 {
     return is_valid() && (mByteBuffer.use_count() > 1);
+}
+
+inline bool SharedBuffer::is_unique() const noexcept
+{
+    return is_valid() && (mByteBuffer.use_count() == 1);
 }
 
 inline bool SharedBuffer::is_owner() const noexcept
@@ -853,9 +801,22 @@ inline const areg::RawBuffer* SharedBuffer::byte_buffer() const noexcept
     return mByteBuffer.get();
 }
 
+inline const areg::RawBufferPtr& SharedBuffer::share_buffer() const noexcept
+{
+    return mByteBuffer;
+}
+
 inline areg::RawBuffer* SharedBuffer::byte_buffer() noexcept
 {
     return mByteBuffer.get();
+}
+
+inline void SharedBuffer::share_as_view(SharedBuffer& dst, uint32_t viewStart, uint32_t viewEnd) const noexcept
+{
+    dst.mByteBuffer = mByteBuffer;
+    dst.mViewStart  = viewStart;
+    dst.mViewEnd    = viewEnd;
+    dst.mPosition   = viewStart;
 }
 
 inline const uint8_t* SharedBuffer::buffer_to_read() const noexcept

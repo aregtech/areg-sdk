@@ -41,12 +41,6 @@ ServiceProxy::ServiceProxy(const areg::StubAddress & addrStub)
 {
 }
 
-ServiceProxy::ServiceProxy( areg::StubAddress && addrStub) noexcept
-    : mProxyAddress (std::move(addrStub))
-    , mConnectStatus(areg::ServiceConnectionState::Unknown)
-{
-}
-
 ServiceProxy::ServiceProxy( const ServiceProxy & serviceProxy )
     : mProxyAddress ( serviceProxy.mProxyAddress )
     , mConnectStatus( serviceProxy.mConnectStatus )

@@ -59,23 +59,13 @@ bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg
     return result;
 }
 
-#if AREG_LOGGING
-
-void ServiceClient::on_service_state_update( HelloWatchdog::ComponentState ServiceState, areg::DataState state )
+void ServiceClient::on_service_state_update( [[maybe_unused]] HelloWatchdog::ComponentState ServiceState, [[maybe_unused]] areg::DataState state )
 {
     LOG_SCOPE( examples_21_locwatchdog_ServiceClient, on_service_state_update );
     LOG_DBG("Current service state is [ %s ], data state is [ %s ]", HelloWatchdog::as_string(ServiceState), areg::as_string(state));
 }
 
-#else  // AREG_LOGGING
-
-void ServiceClient::on_service_state_update( HelloWatchdog::ComponentState /*ServiceState*/, areg::DataState /*state*/ )
-{
-}
-
-#endif  // AREG_LOGGING
-
-void ServiceClient::response_start_sleep( uint32_t timeoutSleep )
+void ServiceClient::response_start_sleep( [[maybe_unused]] uint32_t timeoutSleep )
 {
     LOG_SCOPE( examples_21_locwatchdog_ServiceClient, response_start_sleep );
     LOG_DBG("Completed service sleep, current timeout is [ %u ]", timeoutSleep);

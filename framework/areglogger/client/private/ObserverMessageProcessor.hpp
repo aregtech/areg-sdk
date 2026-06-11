@@ -26,7 +26,7 @@
  ************************************************************************/
 namespace areg {
     struct LogEntry;
-    class RemoteMessage;
+    class MessageEnvelope;
 } // namespace areg
 
 namespace areg::logger {
@@ -65,14 +65,14 @@ public:
      * \param   msgReceived     Buffer containing the connection message with the observer's Cookie
      *                          ID.
      **/
-    void notify_service_connection(const RemoteMessage& msgReceived);
+    void notify_service_connection(const areg::MessageEnvelope& msgReceived);
 
     /**
      * \brief   Handles notification of the list of connected clients in response to a query.
      *
      * \param   msgReceived     Buffer containing the data of connected clients.
      **/
-    void notify_connected_clients(const RemoteMessage& msgReceived);
+    void notify_connected_clients(const areg::MessageEnvelope& msgReceived);
 
     /**
      * \brief   Handles notification of registered scopes with their IDs and message priorities in
@@ -81,21 +81,21 @@ public:
      * \param   msgReceived     Buffer containing scope names, IDs, and message priorities for all
      *                          scopes.
      **/
-    void notify_log_register_scopes(const RemoteMessage& msgReceived);
+    void notify_log_register_scopes(const areg::MessageEnvelope& msgReceived);
 
     /**
      * \brief   Handles notification that scope priorities have been updated.
      *
      * \param   msgReceived     Buffer containing scope names, IDs, and updated message priorities.
      **/
-    void notify_log_update_scopes(const RemoteMessage& msgReceived);
+    void notify_log_update_scopes(const areg::MessageEnvelope& msgReceived);
 
     /**
      * \brief   Handles a log message notification.
      *
      * \param   msgReceived     Buffer containing the log message.
      **/
-    void notify_log_message(const RemoteMessage& msgReceived);
+    void notify_log_message(const areg::MessageEnvelope& msgReceived);
 
 private:
 
@@ -105,7 +105,7 @@ private:
      *
      * \param   msgReceived     Buffer containing connected client data.
      **/
-    void _clients_connected(const RemoteMessage& msgReceived);
+    void _clients_connected(const areg::MessageEnvelope& msgReceived);
 
     //!< Triggered to process client disconnected message.
     /**
@@ -113,7 +113,7 @@ private:
      *
      * \param   msgReceived     Buffer containing disconnected client data.
      **/
-    void _clients_disconnected(const RemoteMessage& msgReceived);
+    void _clients_disconnected(const areg::MessageEnvelope& msgReceived);
 
     //!< Initializes the local log message with default values.
     void _init_local_log_message(areg::LogEntry& log, ITEM_ID cookie, TIME64 timestamp = 0) const;

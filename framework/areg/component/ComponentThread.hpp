@@ -210,7 +210,7 @@ protected:
      * \param   whichClass      Runtime class ID to search for.
      * \return  Valid pointer to the owning dispatcher thread, or nullptr if not found.
      **/
-    DispatcherThread * event_consumer_thread( const RuntimeClassID & whichClass ) final;
+    DispatcherThread * event_consumer_thread( const uint32_t whichClass ) noexcept final;
 
 /************************************************************************/
 // ThreadConsumer interface overrides

@@ -35,7 +35,7 @@
  ************************************************************************/
 
 namespace areg {
-    class SharedBuffer;
+    class MessageEnvelope;
 }
 
 namespace areg::logger {
@@ -137,7 +137,7 @@ public:
      *                          `log_%time%.sqlog`.
      * \return  Returns true if processed successfully; false otherwise.
      **/
-    bool restart(const std::string& dbLocation = String::EmptyString);
+    bool restart(const std::string& dbLocation = areg::String::EmptyString);
 
     /**
      * \brief   Returns true if the log observer is initialized.
@@ -152,8 +152,7 @@ public:
     bool is_connected() const noexcept;
 
     /**
-     * \brief   Returns true if the log observer is fully operable and able to collect and write
-     *          logs.
+     * \brief   Returns true if the log observer is fully operable and able to collect and write logs.
      **/
     [[nodiscard]]
     bool is_stated() const noexcept;
@@ -215,8 +214,7 @@ public:
     void set_config_logger_port(uint16_t portNr);
 
     /**
-     * \brief   Sets the TCP/IP address and port number of the log collector service in the active
-     *          configuration.
+     * \brief   Sets the TCP/IP address and port number of the log collector service in the active configuration.
      *
      * \param   address     The IP address of the log collector service to set.
      * \param   portNr      The TCP port number of the log collector service to set.
@@ -281,7 +279,7 @@ public:
      *
      * \param[out] names       On output, contains the list of names of connected instances.
      **/
-    void log_instance_names(std::vector<String>& names);
+    void log_instance_names(std::vector<areg::String>& names);
 
     /**
      * \brief   Queries the log database and returns the list of IDs of connected instances.
@@ -295,7 +293,7 @@ public:
      *
      * \param[out] names       On output, contains the list of all thread names that sent messages.
      **/
-    void log_thread_names(std::vector<String>& names);
+    void log_thread_names(std::vector<areg::String>& names);
 
     /**
      * \brief   Queries the log database and returns the list of IDs of threads of the connected instances.
@@ -309,7 +307,7 @@ public:
      *
      * \param[out] names       On output, contains the names of all priorities.
      **/
-    void log_priority_names(std::vector<String>& names);
+    void log_priority_names(std::vector<areg::String>& names);
 
     /**
      * \brief   Queries the log database and returns information of all connected instances.
@@ -333,7 +331,7 @@ public:
      *
      * \param[out] messages    On output, contains the list of all log messages.
      **/
-    void log_messages(std::vector<SharedBuffer>& messages);
+    void log_messages(std::vector<areg::SharedBuffer>& messages);
 
     /**
      * \brief   Returns log messages of a specified instance from the log database. If `instId` is
@@ -343,7 +341,7 @@ public:
      * \param   instId      The ID of the instance to get log messages from. If
      *                      `areg::COOKIE_ANY`, returns log messages of all instances.
      **/
-    void log_inst_messages(std::vector<SharedBuffer>& messages, ITEM_ID instId = areg::COOKIE_ANY);
+    void log_inst_messages(std::vector<areg::SharedBuffer>& messages, ITEM_ID instId = areg::COOKIE_ANY);
 
     /**
      * \brief   Returns log messages of a specified scope from the log database. If `scopeId` is
@@ -353,7 +351,7 @@ public:
      * \param   scopeId     The ID of the scope to get log messages from. If `0`, returns log
      *                      messages of all scopes.
      **/
-    void log_scope_messages(std::vector<SharedBuffer>& messages, uint32_t scopeId = 0);
+    void log_scope_messages(std::vector<areg::SharedBuffer>& messages, uint32_t scopeId = 0);
 
     /**
      * \brief   Returns log messages of a specified instance and scope from the log database. If
@@ -365,7 +363,7 @@ public:
      * \param   scopeId     The ID of the scope to get log messages from. If `0`, returns log
      *                      messages of all scopes.
      **/
-    void log_messages(std::vector<SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId);
+    void log_messages(std::vector<areg::SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId);
 
 //////////////////////////////////////////////////////////////////////////
 // Actions
@@ -525,7 +523,7 @@ protected:
      *
      * \param   logMessage  The structure of the message to log.
      **/
-    virtual void on_log_message(const SharedBuffer & logMessage) = 0;
+    virtual void on_log_message(const areg::MessageEnvelope& logMessage) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

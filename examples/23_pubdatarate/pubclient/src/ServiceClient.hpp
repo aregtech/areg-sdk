@@ -46,6 +46,8 @@ private:
     static constexpr areg::ext::Console::Coord     COORD_SEP1       { 1, 3 };
     //!< Coordinates to output data rate information of large data client.
     static constexpr areg::ext::Console::Coord     COORD_DATA_RATE  { 1, 5 };
+    //!< Coordinates to output the application-level count of received image blocks (always shown).
+    static constexpr areg::ext::Console::Coord     COORD_RECV_COUNT { 1, 6 };
     //!< Coordinates to output data rate information of large data client.
     static constexpr areg::ext::Console::Coord     COORD_DATA_STAT  { 1, 7 };
     //!< Coordinates to output per-second miss-type breakdown.
@@ -64,48 +66,40 @@ private:
     static constexpr std::string_view   MSG_SEPARATOR       { " --------------------------------------------------------------------------------------------" };
     //!< The message to output network communication rate.
     static constexpr std::string_view   MSG_NET_RATE_SENT   { " Network receive rate ..: data      [ %8.2f ] %s / sec, message [ %u ] blocks/sec." };
-    //!< The message to output on-time / late delivery statistics (cumulative totals)
-    static constexpr std::string_view   MSG_STATS_RATE      { " Stats on data receive .: OK=[ %u ] MISS=[ %u ]." };
-    //!< Per-second miss-type breakdown; values reset each timer tick.
-    static constexpr std::string_view   MSG_MISS_DETAIL     { " Miss detail  /sec .....: seqN=%-5u line=%-5u aband=%-5u init=%-5u" };
-
-    enum FrameState : int32_t
-    {
-          Unknown       = -1
-        , Initial       =  0
-        , Pending       =  1
-        , Missing       =  2
-        , Complete      =  3
-    };
+    //!< The message to output the application-level received-block count (proves the broadcast callback fires).
+    static constexpr std::string_view   MSG_RECV_COUNT      { " Image blocks received .: total     [ %10u ] blocks, [ %u ] blocks/sec." };
+    //!< The message to output frame-assembly statistics (cumulative totals).
+    static constexpr std::string_view   MSG_STATS_RATE      { " Frame stats on receive : complete  [ %u ], incomplete [ %u ]." };
+    //!< Per-second sequencing-error breakdown; values reset each timer tick.
+    static constexpr std::string_view   MSG_MISS_DETAIL     { " Sequencing errors /sec : seqErr=%-7u lineErr=%-7u" };
 
     /**
-     * \brief   Per-channel frame tracking state. Fixed-size: zero heap allocation in
-     *          the hot path. Uses only block metadata -- no pixel data accessed.
+     * \brief   Per-channel frame-assembly state. Fixed-size: zero heap allocation in the
+     *          hot path. Uses only block metadata -- no pixel data accessed.
+     *
+     *          A frame is a contiguous run of blocks covering posY 0 .. height (by imgHeight),
+     *          all carrying the same frameSeqId; frameSeqId increases by one for the next frame.
      **/
     struct FrameStats
     {
-        int32_t     channelId   { -1 };
-        FrameState  state       { Unknown };
-        int32_t     height      { -1 };
-        int32_t     line        { -1 };
-        uint32_t    seqNr       { 0u };
+        uint32_t    height  { 0u };     //!< Expected total frame height in lines.
+        uint32_t    curSeq  { 0u };     //!< frameSeqId of the frame currently being assembled.
+        uint32_t    nextY   { 0u };     //!< posY expected for the next block of the current frame.
+        bool        started { false };  //!< True once locked onto a clean frame start (posY == 0).
     };
 
     using Stats = std::vector<FrameStats>;
 
     /**
-     * \brief   Per-second miss-event breakdown. Reset on every timer tick so the
-     *          console shows a rate (events/sec) rather than a cumulative total.
-     *          All four fields together identify the dominant failure mode.
+     * \brief   Per-second sequencing-error breakdown. Reset on every timer tick so the
+     *          console shows a rate (errors/sec) rather than a cumulative total.
      **/
     struct MissStats
     {
-        uint32_t seqMismatch  { 0u }; //!< seqNr jumps (frame skip, wrap or reorder).
-        uint32_t lineMismatch { 0u }; //!< posY mismatch within the same frame.
-        uint32_t abandoned    { 0u }; //!< Mid-frame abandoned (also counted in mIncompleteFrames).
-        uint32_t initialMid   { 0u }; //!< First block arrived mid-frame.
+        uint32_t seqErrors  { 0u }; //!< frameSeqId not contiguous across frames, or changed mid-frame.
+        uint32_t lineErrors { 0u }; //!< Block posY gap / overlap / out-of-order within a frame.
 
-        void clear() noexcept { seqMismatch = lineMismatch = abandoned = initialMid = 0u; }
+        void clear() noexcept { seqErrors = lineErrors = 0u; }
     };
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -187,11 +181,13 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     areg::Timer mTimer;                  //!< Timer to output message.
+    uint32_t    mReceivedBlocks;         //!< Cumulative count of image blocks delivered to the broadcast callback.
+    uint32_t    mLastReceivedBlocks;     //!< Value of mReceivedBlocks at the previous timer tick (used for per-second delta).
     uint32_t    mCompleteFrames;         //!< Cumulative complete frame count.
     uint32_t    mIncompleteFrames;       //!< Cumulative incomplete frame count.
     uint32_t    mLastIncompleteFrames;   //!< Value of mIncompleteFrames at the previous timer tick (used for per-second delta).
     Stats       mFrameStats;             //!< Per-channel frame tracking.
-    MissStats   mMissStats;              //!< Per-second miss-event breakdown (reset each timer tick).
+    MissStats   mMissStats;              //!< Per-second sequencing-error breakdown (reset each timer tick).
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods

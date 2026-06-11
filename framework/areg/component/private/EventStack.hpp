@@ -36,12 +36,12 @@ class RuntimeClassID;
 // EventStack class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   A non-concurrent FIFO queue for Event pointers.
- *          All events are appended at the back (FIFO order).
+ * \brief   A non-concurrent FIFO queue for Event values.
+ *          Events are stored by value; the destructor is called automatically on removal.
  *          There is NO internal synchronization. For multi-threaded access,
  *          the caller must hold an external lock before calling any mutating method.
  **/
-class AREG_API EventStack final : protected Stack<Event*>
+class AREG_API EventStack final : protected Stack<Event>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constants
@@ -81,44 +81,40 @@ public:
     uint32_t delete_except_exit() noexcept;
 
     /**
-     * \brief   Destroys all events whose runtime class ID matches \a eventClassId, except Exit events.
+     * \brief   Destroys all events whose runtime class ID matches \a eventClassId,
+     *          except Exit events.
      *
      * \param   eventClassId    Runtime class ID to match and remove.
      * \return  Number of remaining events after the operation.
      **/
-    uint32_t delete_matching(const RuntimeClassID& eventClassId) noexcept;
+    uint32_t delete_matching(uint32_t eventClassId) noexcept;
 
     /**
-     * \brief   Destroys all events whose runtime class ID does NOT match \a eventClassId, except
-     *          Exit events.
+     * \brief   Destroys all events whose runtime class ID does NOT match \a eventClassId,
+     *          except Exit events.
      *
      * \param   eventClassId    Runtime class ID of events to keep.
      * \return  Number of remaining events after the operation.
      **/
-    uint32_t delete_except(const RuntimeClassID& eventClassId) noexcept;
+    uint32_t delete_except(uint32_t eventClassId) noexcept;
 
     /**
-     * \brief   Pushes an event onto the queue.
+     * \brief   Pushes an event onto the queue by moving it in (O(1) shared_ptr transfer; no payload copy).
+     *          The caller's event is left in a moved-from (empty/invalid) state after the push.
      *
-     * Exit events (ExitPrio) are always inserted at the front and bypass the capacity limit.
-     * All other events are appended at the back. If the queue is at capacity, the oldest event
-     * at the back is evicted: it is returned via \a removedEvent if non-null, or destroyed
-     * immediately otherwise.
-     *
-     * \param   newEvent        The event to push. Must not be nullptr.
+     * \param   event   The event to push; moved in.
      * \return  Number of events in the queue after the push.
      **/
-    inline uint32_t push_event(Event* newEvent) noexcept;
+    inline uint32_t push_event(Event& event) noexcept;
 
     /**
-     * \brief   Removes and returns the first event (FIFO order).
+     * \brief   Removes and returns the first event by move (FIFO order).
+     *          Precondition: !is_empty().
      *
-     * \param[out] stackEvent   Receives the popped event, or nullptr if the queue is empty.
-     *                          Must not be nullptr.
-     * \return  Number of remaining events.
+     * \return  The popped Event value.
      **/
     [[nodiscard]]
-    inline uint32_t pop_event(Event** stackEvent) noexcept;
+    inline Event pop_event() noexcept;
 
     /**
      * \brief   Returns true if the queue contains no events.
@@ -157,29 +153,18 @@ inline uint32_t EventStack::count() const noexcept
     return static_cast<uint32_t>(mValueList.size());
 }
 
-inline uint32_t EventStack::push_event(Event* newEvent) noexcept
+inline uint32_t EventStack::push_event(Event& event) noexcept
 {
-    ASSERT(newEvent != nullptr);
-
-    mValueList.push_back(newEvent);
+    mValueList.push_back(std::move(event));
     return static_cast<uint32_t>(mValueList.size());
 }
 
-inline uint32_t EventStack::pop_event(Event** stackEvent) noexcept
+inline Event EventStack::pop_event() noexcept
 {
-    ASSERT(stackEvent != nullptr);
-
-    if (!mValueList.empty())
-    {
-        *stackEvent = mValueList.front();
-        mValueList.pop_front();
-    }
-    else
-    {
-        *stackEvent = nullptr;
-    }
-
-    return static_cast<uint32_t>(mValueList.size());
+    ASSERT(!mValueList.empty());
+    Event result{ std::move(mValueList.front()) };
+    mValueList.pop_front();
+    return result;
 }
 
 } // namespace areg

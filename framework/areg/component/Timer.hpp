@@ -157,8 +157,7 @@ public:
 private:
 
     /**
-     * \brief   Called by timer manager when timer expires. Returns false to stop timer, true to
-     *          continue.
+     * \brief   Called by timer manager when timer expires. Returns false to stop timer, true to continue.
      *
      * \param   highValue       High 32-bit value of 64-bit UTC time.
      * \param   lowValue        Low 32-bit value of 64-bit UTC time.
@@ -209,8 +208,7 @@ private:
     uint64_t            mExpiredAt;
     /**
      * \brief   Flag, indicating whether the timer is already started by timer manager or not.
-     *          This flag is true, only when start_timer of timer manager is called. 
-     *          Otherwise it is false.
+     *          This flag is true, only when start_timer of timer manager is called. Otherwise it is false.
      *          The timer can be active, but stopped. This might happen when timer event
      *          reached its maximum queue number in the dispatcher thread (mMaxQueued).
      *          In this case the timer might be stopped on timer manager side, 
@@ -222,14 +220,12 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Increments queued count and stops timer if maximum reached. Called by TimerEvent
-     *          constructor.
+     * \brief   Increments queued count and stops timer if maximum reached. Called by TimerEvent constructor.
      **/
     void _queue_timer();
 
     /**
-     * \brief   Decrements queued count and restarts timer if below maximum. Called by TimerEvent
-     *          destructor.
+     * \brief   Decrements queued count and restarts timer if below maximum. Called by TimerEvent destructor.
      **/
     void _unqueue_timer();
 

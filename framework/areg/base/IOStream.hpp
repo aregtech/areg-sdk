@@ -62,14 +62,10 @@ namespace areg {
  ************************************************************************/
 
 //////////////////////////////////////////////////////////////////////////
-// Macros declaration: declare data as streamable, 
-// i.e. available for read and write
+// Macros declaration: declare data as streamable, i.e. available for read and write
+// Fine for object with primitives. Might be not proper for objects with multiple instance.
 //////////////////////////////////////////////////////////////////////////
 
-/**
- * \brief   Declaration of streaming operator. Fine for object with primitives.
- *          Might be not proper for objects with multiple instance.
- **/
 /**
  * \brief   Declares friend stream operators for a data type (use inside a class).
  **/
@@ -200,8 +196,7 @@ public:
     virtual uint32_t read( String& ascii ) const = 0;
 
     /**
-     * \brief   Reads wide-string data from stream into a WideString. Returns the number of bytes
-     *          read.
+     * \brief   Reads wide-string data from stream into a WideString. Returns the number of bytes read.
      *
      * \param[out] wide    WideString to receive the data.
      * \return  The number of bytes read.
@@ -472,7 +467,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * \brief   InStream convenience helpers — inline implementations
+ * \brief   InStream convenience helpers -- inline implementations
  ************************************************************************/
 
 inline uint8_t areg::InStream::read8_bits() const noexcept
@@ -518,7 +513,7 @@ inline double areg::InStream::read64_real() const noexcept
 }
 
 /************************************************************************
- * \brief   OutStream convenience helpers — inline implementations
+ * \brief   OutStream convenience helpers -- inline implementations
  ************************************************************************/
 
 inline bool areg::OutStream::write8_bits( uint8_t value )

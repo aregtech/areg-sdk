@@ -44,8 +44,7 @@ class WaitableSemaphorePosix final  : public WaitablePosix
 public:
 
     /**
-     * \brief   Initializes semaphore with maximum and initial counts. Initial count must not exceed
-     *          maximum.
+     * \brief   Initializes semaphore with maximum and initial counts. Initial count must not exceed maximum.
      *
      * \param   maxCount        Maximum count; must be greater than zero.
      * \param   initCount       Initial count; must not exceed maximum.
@@ -100,8 +99,7 @@ public:
     bool notify_request_ownership( pthread_t ownerThread ) final;
 
     /**
-     * \brief   Returns true if the count is greater than one, indicating multiple threads can be
-     *          signaled.
+     * \brief   Returns true if the count is greater than one, indicating multiple threads can be signaled.
      **/
     bool can_signal_threads() const noexcept final;
 
@@ -122,17 +120,13 @@ public:
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
 private:
-    //! Internal mutex protecting mCurCount.
+    //!< Internal mutex protecting mCurCount.
     MutexPosix      mObjectLock;
 
-    /**
-     * \brief   Maximum count number. After setting cannot be changed.
-     **/
+    //!< Maximum count number. After setting cannot be changed.
     const int32_t   mMaxCount;
 
-    /**
-     * \brief   Current lock count of semaphore.
-     **/
+    //!< Current lock count of semaphore.
     int32_t         mCurCount;
 
 //////////////////////////////////////////////////////////////////////////

@@ -31,8 +31,8 @@ macro(macro_add_unit_test test_project)
         target_compile_options(${test_project} PRIVATE -O1)
     endif()
 
-    # Fix of Cygwin unit test compilation.
-    if (CYGWIN OR ${AREG_ARCH} STREQUAL ${_proc_arm32} OR ${AREG_ARCH} STREQUAL ${_proc_arm64})
+    # Use PRE_TEST discovery on macOS, Cygwin, and ARM to avoid build-time binary execution.
+    if (APPLE OR CYGWIN OR ${AREG_ARCH} STREQUAL ${_proc_arm32} OR ${AREG_ARCH} STREQUAL ${_proc_arm64})
         gtest_discover_tests(${test_project} DISCOVERY_TIMEOUT 60 DISCOVERY_MODE PRE_TEST)
     else()
         gtest_discover_tests(${test_project} DISCOVERY_TIMEOUT 60)
@@ -46,23 +46,23 @@ endmacro(macro_add_unit_test)
 
 macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     GUnitTest.cpp
+    ArrayListTest.cpp
     DateTimeTest.cpp
+    EventEnvelopeTest.cpp
     FileTest.cpp
+    FixedArrayTest.cpp
+    HashMapTest.cpp
+    KeyValuePairTest.cpp
+    LinkedListTest.cpp
     LogScopesTest.cpp
+    MapTest.cpp
     OptionParserTest.cpp
+    RingStackTest.cpp
+    SharedBufferTest.cpp
+    SortedLinkedListTest.cpp
+    StackTest.cpp
     StringDefsTest.cpp
     StringDefsTest2.cpp
     StringDefsTest3.cpp
     StringUtilsTest.cpp
-    ArrayListTest.cpp
-    FixedArrayTest.cpp
-    HashMapTest.cpp
-    LinkedListTest.cpp
-    MapTest.cpp
-    KeyValuePairTest.cpp
-    RingStackTest.cpp
-    SharedBufferTest.cpp
-    RemoteMessageTest.cpp
-    SortedLinkedListTest.cpp
-    StackTest.cpp
 )

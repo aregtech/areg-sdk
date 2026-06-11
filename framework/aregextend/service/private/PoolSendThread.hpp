@@ -25,7 +25,8 @@
 #include "areg/base/areg_global.h"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/component/DispatcherThread.hpp"
-#include "areg/ipc/SendMessageEvent.hpp"
+#include "areg/component/EventConsumer.hpp"
+#include "aregextend/service/SystemServiceDefs.hpp"
 
 #include <string_view>
 
@@ -54,13 +55,13 @@ namespace areg::ext {
  *          to the global ServerSendThread for DataRateHelper aggregation.
  **/
 class PoolSendThread final  : public    DispatcherThread
-                            , public    SendMessageEventConsumer
+                            , public    areg::EventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
 //////////////////////////////////////////////////////////////////////////
 private:
-    using BatchEntries = std::array<areg::PendingSend, areg::THREAD_DRAIN_LIMIT>;
+    using BatchEntries = std::array<areg::ext::PendingSend, areg::DEFAULT_DRAIN_LIMIT>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -89,8 +90,7 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Registers or unregisters this thread as a SendMessageEvent consumer and
-     *          enables / disables the inherited DispatcherThread event loop.
+     * \brief   Enables / disables the inherited DispatcherThread event loop.
      *
      * \param   is_ready    True when the thread is ready to receive events; false on shutdown.
      **/
@@ -101,7 +101,7 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Accepts only SendMessageEvent; all others are silently destroyed.
+     * \brief   Posts the event to this thread's queue.
      *
      * \param   eventElem   Event to post.
      * \return  Returns true if the event was accepted and queued.
@@ -111,16 +111,15 @@ protected:
 
 private:
 /************************************************************************/
-// SendMessageEventConsumer overrides
+// EventConsumer interface override.
 /************************************************************************/
 
     /**
-     * \brief   Dispatches one send event: resolves the target socket by cookie,
-     *          sends the message, and updates counters.
-     *
-     * \param   data    Event payload carrying the remote message to send.
+     * \brief   Receives IPC outbound events and exit signals dispatched to this send thread.
+     *          Zeros internal1/internal2/custom before wire transmission.
+     *          Exits on is_exit_prio().
      **/
-    void process_event( const SendMessageEventData & data ) final;
+    void start_event_processing( areg::Event & eventElem ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -130,7 +129,10 @@ private:
     areg::RemoteMessageHandler& mRemoteService; //!< Failure callbacks.
     ServerConnection &          mConnection;    //!< Server connection (socket lookup + send API).
     ServerSendThread &          mGlobalStats;   //!< Global counters accumulated here.
-    BatchEntries                mBatch;         //!< Batching list
+    BatchEntries                mBatch;         //!< Pre-allocated batch work list reused each drain cycle.
+    //!< Reused scratch: per-slot target cookies and resolved socket handles (POD; off the stack).
+    std::array<ITEM_ID, areg::DEFAULT_DRAIN_LIMIT>       mTargets;
+    std::array<SOCKETHANDLE, areg::DEFAULT_DRAIN_LIMIT>  mSockets;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

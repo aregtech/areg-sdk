@@ -296,8 +296,7 @@ public:
     inline void date_time(areg::CalendarTime& sysTime) noexcept;
 
     /**
-     * \brief   Sets date and time from calendar time structure, converting to microseconds since
-     *          Unix epoch.
+     * \brief   Sets date and time from calendar time structure, converting to microseconds since Unix epoch.
      *
      * \param   sysTime     Calendar time structure to convert.
      **/

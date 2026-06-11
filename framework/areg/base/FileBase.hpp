@@ -153,23 +153,23 @@ public:
      **/
     enum class OpenMode : uint32_t
     {
-          Invalid       = (BIT_INVALID)                                                     //!< 0000000000000000 <= invalid mode
+          Invalid       = (BIT_INVALID)                                             //!< 0000000000000000 <= invalid mode
 
-        , OnlyRead      = (BIT_READ)                                                        //!< 0000000000000001 <= exclusive read, contains only read bit
-        , OnlyWrite     = (BIT_WRITE | BIT_READ)                                            //!< 0000000000000011 <= exclusive write, should contain "read" bit
-        , Read          = (BIT_READ | BIT_SHARE_READ)                                       //!< 0000000000010001 <= read mode, can share read
-        , Write         = (BIT_WRITE | BIT_READ | BIT_SHARE_READ)                           //!< 0000000000010011 <= write mode, should contain "read" bit and can share read
-        , Binary        = (BIT_BINARY)                                                      //!< 0000000000000100 <= binary bit. strings in binary mode will write EOS char, all data will be dumped.
-        , Text          = (BIT_TEXT)                                                        //!< 0000000000001000 <= text bit. EOS char of string will not be written, can write and read line of string
-        , ShareRead     = (BIT_SHARE_READ  | BIT_READ)                                      //!< 0000000000010001 <= share read mode, should contain "read" bit
-        , ShareWrite    = (BIT_SHARE_WRITE | BIT_SHARE_READ | BIT_WRITE | BIT_READ)         //!< 0000000000110011 <= share write mode, should contain "read", "write" and "share read" bits
-        , Create        = (BIT_CREATE)                                                      //!< 0000000001000000 <= always create file
-        , Exist         = (BIT_EXIST)                                                       //!< 0000000010000000 <= file should exist, otherwise it fails
-        , Truncate      = (BIT_TRUNCATE | BIT_WRITE | BIT_READ)                             //!< 0000000100000011 <= truncate file, i.e. set initial size zero, "read" and "write" bits should be set
-        , Delete        = (BIT_DELETE)                                                      //!< 0000100000000000 <= delete on close. The file is deleted when the last handle is closed. For filesystem files the OS handles deletion; for memory buffers only the owner (sole-reference holder) may delete.
-        , WriteDirect   = (BIT_DIRECT | BIT_WRITE | BIT_READ)                               //!< 0001000000000011 <= write operations will not go through any intermediate cache, they will go directly to disk. read and write flags are set automatically.
-        , CreateTemp    = (BIT_FILE | BIT_WRITE | BIT_READ)                                 //!< 0010000000000011 <= The file is being used for temporary storage. File systems avoid writing data back to mass storage if sufficient cache memory is available, because an application deletes a temporary file after a handle is closed. In that case, the system can entirely avoid writing the data.
-        , OpenAlways    = (BIT_OPEN_ALWAYS)                                                 //!< 0100000000000000 <= open existing or create new. If file does not exist, it will be created. If file exists, it will be opened.
+        , OnlyRead      = (BIT_READ)                                                //!< 0000000000000001 <= exclusive read, contains only read bit
+        , OnlyWrite     = (BIT_WRITE | BIT_READ)                                    //!< 0000000000000011 <= exclusive write, should contain "read" bit
+        , Read          = (BIT_READ | BIT_SHARE_READ)                               //!< 0000000000010001 <= read mode, can share read
+        , Write         = (BIT_WRITE | BIT_READ | BIT_SHARE_READ)                   //!< 0000000000010011 <= write mode, should contain "read" bit and can share read
+        , Binary        = (BIT_BINARY)                                              //!< 0000000000000100 <= binary bit. strings in binary mode will write EOS char, all data will be dumped.
+        , Text          = (BIT_TEXT)                                                //!< 0000000000001000 <= text bit. EOS char of string will not be written, can write and read line of string
+        , ShareRead     = (BIT_SHARE_READ  | BIT_READ)                              //!< 0000000000010001 <= share read mode, should contain "read" bit
+        , ShareWrite    = (BIT_SHARE_WRITE | BIT_SHARE_READ | BIT_WRITE | BIT_READ) //!< 0000000000110011 <= share write mode, should contain "read", "write" and "share read" bits
+        , Create        = (BIT_CREATE)                                              //!< 0000000001000000 <= always create file
+        , Exist         = (BIT_EXIST)                                               //!< 0000000010000000 <= file should exist, otherwise it fails
+        , Truncate      = (BIT_TRUNCATE | BIT_WRITE | BIT_READ)                     //!< 0000000100000011 <= truncate file, i.e. set initial size zero, "read" and "write" bits should be set
+        , Delete        = (BIT_DELETE)                                              //!< 0000100000000000 <= delete on close. The file is deleted when the last handle is closed. For filesystem files the OS handles deletion; for memory buffers only the owner (sole-reference holder) may delete.
+        , WriteDirect   = (BIT_DIRECT | BIT_WRITE | BIT_READ)                       //!< 0001000000000011 <= write operations will not go through any intermediate cache, they will go directly to disk. read and write flags are set automatically.
+        , CreateTemp    = (BIT_FILE | BIT_WRITE | BIT_READ)                         //!< 0010000000000011 <= The file is being used for temporary storage. File systems avoid writing data back to mass storage if sufficient cache memory is available, because an application deletes a temporary file after a handle is closed. In that case, the system can entirely avoid writing the data.
+        , OpenAlways    = (BIT_OPEN_ALWAYS)                                         //!< 0100000000000000 <= open existing or create new. If file does not exist, it will be created. If file exists, it will be opened.
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -245,29 +245,27 @@ public:
     /**
      * \brief   Writes wide-char string to the file, handling null-termination based on file mode.
      *
-     * \param stream      The file stream to write to.
-     * \param   wide        The wide-char string to write.
+     * \param   stream  The file stream to write to.
+     * \param   wide    The wide-char string to write.
      * \return  Reference to the file stream.
      * \note    WideString overload.
      **/
     friend inline FileBase & operator << (FileBase & stream, const WideString & wide );
 
     /**
-     * \brief   Reads file data as ASCII string, stopping at end of file or first unprintable
-     *          character.
+     * \brief   Reads file data as ASCII string, stopping at end of file or first unprintable character.
      *
-     * \param   stream      The file stream to read from.
-     * \param[out] ascii       On output, contains the ASCII string data read.
+     * \param    stream     The file stream to read from.
+     * \param[out] ascii    On output, contains the ASCII string data read.
      * \return  Reference to the file stream.
      **/
     friend inline const FileBase & operator >> ( const FileBase & stream, String & ascii );
 
     /**
-     * \brief   Reads file data as wide-char string, stopping at end of file or first unprintable
-     *          character.
+     * \brief   Reads file data as wide-char string, stopping at end of file or first unprintable character.
      *
      * \param   stream      The file stream to read from.
-     * \param[out] wide        On output, contains the wide-char string data read.
+     * \param[out] wide     On output, contains the wide-char string data read.
      * \return  Reference to the file stream.
      * \note    WideString overload.
      **/
@@ -408,7 +406,7 @@ public:
     /**
      * \brief   Reads data in inverted (reversed) order.
      *
-     * \param[out] buffer      On output, contains the data read in inverted order.
+     * \param[out] buffer   On output, contains the data read in inverted order.
      * \param   length      The size in bytes of the buffer.
      * \return  Returns the size of data read in bytes.
      **/
@@ -427,8 +425,8 @@ public:
      * \brief   Sets the new file size and fills resized space with a specified byte value. Returns
      *          the current pointer position.
      *
-     * \param   newSize         The new size in bytes to set or reserve.
-     * \param   fillValue       The byte value to fill any newly reserved space.
+     * \param   newSize     The new size in bytes to set or reserve.
+     * \param   fillValue   The byte value to fill any newly reserved space.
      * \return  Returns the current file pointer position on success; otherwise
      *          Cursor::INVALID_CURSOR_POSITION.
      **/
@@ -438,16 +436,14 @@ public:
 // Read / Write simple types
 /************************************************************************/
     /**
-     * \brief   Reads a boolean value and returns true on success; file pointer position unchanged
-     *          on failure.
+     * \brief   Reads a boolean value and returns true on success; file pointer position unchanged on failure.
      *
      * \param[out] Value       On output, contains the boolean value read.
      **/
     inline bool read_bool(bool & Value) const;
 
     /**
-     * \brief   Reads one byte and converts to char; returns true on success; file pointer position
-     *          unchanged on failure.
+     * \brief   Reads one byte and converts to char; returns true on success; file pointer position unchanged on failure.
      *
      * \param[out] Value       On output, contains the char value read.
      **/
@@ -574,8 +570,8 @@ public:
      * \brief   Reads a string into the buffer, automatically null-terminates it, and returns the
      *          number of characters read.
      *
-     * \param[out] buffer          On output, contains the string read.
-     * \param   charCount       The maximum number of characters the buffer can hold.
+     * \param[out] buffer   On output, contains the string read.
+     * \param   charCount   The maximum number of characters the buffer can hold.
      * \return  Returns the number of characters read.
      **/
     int32_t read_string( char * buffer, int32_t charCount ) const;
@@ -583,8 +579,8 @@ public:
      * \brief   Reads a wide-char string into the buffer, automatically null-terminates it, and
      *          returns the number of characters read.
      *
-     * \param[out] buffer          On output, contains the wide-char string read.
-     * \param   charCount       The maximum number of characters the buffer can hold.
+     * \param[out] buffer   On output, contains the wide-char string read.
+     * \param   charCount   The maximum number of characters the buffer can hold.
      * \return  Returns the number of characters read.
      * \note    Wide char overload.
      **/
@@ -593,15 +589,14 @@ public:
     /**
      * \brief   Reads a string until end of file or null-terminated character without validation.
      *
-     * \param[out] buffer      On output, contains the string read.
+     * \param[out] buffer   On output, contains the string read.
      * \return  Returns the number of characters read.
      **/
     int32_t read_string(String & buffer) const;
     /**
-     * \brief   Reads a wide-char string until end of file or null-terminated character without
-     *          validation.
+     * \brief   Reads a wide-char string until end of file or null-terminated character without validation.
      *
-     * \param[out] buffer      On output, contains the wide-char string read.
+     * \param[out] buffer   On output, contains the wide-char string read.
      * \return  Returns the number of characters read.
      * \note    WideString overload.
      **/
@@ -611,8 +606,8 @@ public:
      * \brief   Reads a line into the buffer, automatically null-terminates it, and returns the
      *          number of characters read.
      *
-     * \param[out] buffer          On output, contains the line read.
-     * \param   charCount       The maximum number of characters the buffer can hold.
+     * \param[out] buffer   On output, contains the line read.
+     * \param   charCount   The maximum number of characters the buffer can hold.
      * \return  Returns the number of characters read.
      **/
     int32_t read_line( char * buffer, int32_t charCount) const;
@@ -620,18 +615,17 @@ public:
      * \brief   Reads a wide-char line into the buffer, automatically null-terminates it, and
      *          returns the number of characters read.
      *
-     * \param[out] buffer          On output, contains the wide-char line read.
-     * \param   charCount       The maximum number of characters the buffer can hold.
+     * \param[out] buffer   On output, contains the wide-char line read.
+     * \param   charCount   The maximum number of characters the buffer can hold.
      * \return  Returns the number of characters read.
      * \note    Wide char overload.
      **/
     int32_t read_line( wchar_t * buffer, int32_t charCount ) const;
 
     /**
-     * \brief   Reads a line until end of file, null-terminator, or newline character without
-     *          validation.
+     * \brief   Reads a line until end of file, null-terminator, or newline character without validation.
      *
-     * \param[out] buffer      On output, contains the line read.
+     * \param[out] buffer   On output, contains the line read.
      * \return  Returns the number of characters read.
      **/
     int32_t read_line(String & buffer) const;
@@ -639,7 +633,7 @@ public:
      * \brief   Reads a wide-char line until end of file, null-terminator, or newline character
      *          without validation.
      *
-     * \param[out] buffer      On output, contains the wide-char line read.
+     * \param[out] buffer   On output, contains the wide-char line read.
      * \return  Returns the number of characters read.
      * \note    WideString overload.
      **/
@@ -819,8 +813,7 @@ public:
     virtual bool open(const String& fileName, uint32_t mode) = 0;
 
     /**
-     * \brief   Closes the file. File handles and buffers are handled based on open mode (Attach,
-     *          Detach, etc.).
+     * \brief   Closes the file. File handles and buffers are handled based on open mode (Attach, Detach, etc.).
      **/
     virtual void close() = 0;
 
@@ -844,8 +837,7 @@ public:
     virtual bool is_opened() const noexcept = 0;
 
     /**
-     * \brief   Reserves or resizes the file to the specified size and returns the current pointer
-     *          position.
+     * \brief   Reserves or resizes the file to the specified size and returns the current pointer position.
      *
      * \param   newSize     The new size in bytes.
      * \return  Returns the current pointer position on success; otherwise
@@ -865,7 +857,7 @@ public:
     /**
      * \brief   Reads data from the file into the buffer and returns the number of bytes read.
      *
-     * \param[out] buffer      On output, contains the data read from the file.
+     * \param[out] buffer   On output, contains the data read from the file.
      * \param   size        The size in bytes of the available buffer.
      * \return  Returns the number of bytes read.
      **/
@@ -887,14 +879,13 @@ public:
     /**
      * \brief   Reads data from the file into the SharedBuffer and returns the number of bytes read.
      *
-     * \param[out] buffer      On output, contains the data read from the file.
+     * \param[out] buffer   On output, contains the data read from the file.
      * \return  Returns the number of bytes read.
      **/
     uint32_t read(SharedBuffer& buffer ) const override;
 
     /**
-     * \brief   Reads string data from the file into the ASCII String and returns the number of
-     *          bytes read.
+     * \brief   Reads string data from the file into the ASCII String and returns the number of bytes read.
      *
      * \param[out] ascii       On output, contains the string data read from the file.
      * \return  Returns the number of bytes read.
@@ -903,8 +894,7 @@ public:
     uint32_t read( String & ascii ) const override;
 
     /**
-     * \brief   Reads string data from the file into the WideString and returns the number of bytes
-     *          read.
+     * \brief   Reads string data from the file into the WideString and returns the number of bytes read.
      *
      * \param[out] wide    On output, contains the wide-char string data read from the file.
      * \return  Returns the number of bytes read.
@@ -925,8 +915,7 @@ public:
     uint32_t write( const SharedBuffer& buffer ) override;
 
     /**
-     * \brief   Writes string data from the String to the file and returns the number of bytes
-     *          written.
+     * \brief   Writes string data from the String to the file and returns the number of bytes written.
      *
      * \param   ascii       The String containing data to write.
      * \return  Returns the number of bytes written.
@@ -987,7 +976,7 @@ protected:
     /**
      * \brief   File open mode
      **/
-    uint32_t    mFileMode;
+    uint32_t        mFileMode;
 
 private:
     /**

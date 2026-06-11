@@ -8,168 +8,134 @@
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/component/private/Event.cpp
- * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, Event Base class implementation
  *
  ************************************************************************/
 #include "areg/component/Event.hpp"
 
+#include "areg/base/RuntimeClassID.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/EventConsumer.hpp"
+
+#include <cstring>
+
 namespace areg {
-
-//////////////////////////////////////////////////////////////////////////
-// Event class declaration
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// Event class, Runtime implementation
-//////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_RUNTIME_EVENT(Event, RuntimeObject)
 
 //////////////////////////////////////////////////////////////////////////
 // Event class, static members
 //////////////////////////////////////////////////////////////////////////
 
-/**
- * \brief   Predefined Bad Event object
- **/
 const Event Event::BAD_EVENT(areg::EventType::EventUnknown);
 
-bool Event::add_listener( const RuntimeClassID & classId, EventConsumer & eventConsumer, const String & whichThread )
+bool Event::add_listener(const uint32_t classId, EventConsumer& eventConsumer, const UniqueNumber whichThread)
 {
     return Event::add_listener(classId, eventConsumer, DispatcherThread::dispatcher_thread(whichThread));
 }
 
-bool Event::add_listener( const RuntimeClassID & classId, EventConsumer & eventConsumer, id_type whichThread )
+bool Event::add_listener(const uint32_t classId, EventConsumer& eventConsumer, DispatcherThread& dispThread)
 {
-    return Event::add_listener( classId, eventConsumer, DispatcherThread::dispatcher_thread( whichThread ) );
+    return (dispThread.is_running() ? dispThread.register_event_consumer(classId, eventConsumer) : false);
 }
 
-bool Event::add_listener( const RuntimeClassID & classId, EventConsumer & eventConsumer, DispatcherThread & dispThread )
-{
-    return ( dispThread.is_running() ? dispThread.register_event_consumer(classId, eventConsumer) : false );
-}
-
-bool Event::remove_listener( const RuntimeClassID & classId, EventConsumer & eventConsumer, const String & whichThread )
+bool Event::remove_listener(const uint32_t classId, EventConsumer& eventConsumer, const UniqueNumber whichThread)
 {
     return Event::remove_listener(classId, eventConsumer, DispatcherThread::dispatcher_thread(whichThread));
 }
 
-bool Event::remove_listener( const RuntimeClassID & classId, EventConsumer & eventConsumer, id_type whichThread )
-{
-    return Event::remove_listener( classId, eventConsumer, DispatcherThread::dispatcher_thread( whichThread ) );
-}
-
-bool Event::remove_listener( const RuntimeClassID & classId, EventConsumer & eventConsumer, DispatcherThread & dispThread )
+bool Event::remove_listener(const uint32_t classId, EventConsumer& eventConsumer, DispatcherThread& dispThread)
 {
     return dispThread.is_running() ? dispThread.unregister_event_consumer(classId, eventConsumer) : false;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// Event class, Constructors / Destructor
+// Event class, Constructors
 //////////////////////////////////////////////////////////////////////////
-
-Event::Event(areg::EventPriority prio /*= areg::DefaultPriority*/)
-    : RuntimeObject ( )
-    , mEventType    ( areg::EventType::EventUnknown )
-    , mEventPrio    ( prio )
-    , mConsumer     ( nullptr )
-    , mTargetThread ( nullptr )
-{
-}
-
-Event::Event( areg::EventType eventType, areg::EventPriority prio /*= areg::DefaultPriority*/)
-    : RuntimeObject ( )
-    , mEventType    ( eventType )
-    , mEventPrio    ( prio )
-    , mConsumer     ( nullptr )
-    , mTargetThread ( nullptr )
-{
-}
 
 Event::~Event()
 {
-    mConsumer       = nullptr;
-    mTargetThread   = nullptr;
-}
+    if (!is_unique())
+        return;
 
-inline Event & Event::self() noexcept
-{
-    return (*this);
+    areg::EventHeader* hdr{ MessageEnvelope::header() };
+    if ((hdr != nullptr) && (hdr->custom != 0u))
+    {
+        using CleanupFn = void(*)(void*) noexcept;
+        CleanupFn fn{ nullptr };
+        static_assert(sizeof(fn) <= sizeof(uint64_t), "cleanup fn ptr does not fit in uint64_t");
+        std::memcpy(&fn, &hdr->custom, sizeof(fn));
+        hdr->custom = 0u;   // clear before call -- prevent re-entrant double-call
+        fn(payload_ptr());
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Event class, methods
 //////////////////////////////////////////////////////////////////////////
 
-void Event::destroy()
-{
-    delete this;
-}
-
 EventDispatcher& Event::dispatcher() const noexcept
 {
-    return (mTargetThread != nullptr ? mTargetThread->event_dispatcher() : DispatcherThread::current_dispatcher());
+    DispatcherThread* dt{ target_dispatcher() };
+    return (dt != nullptr ? dt->event_dispatcher() : DispatcherThread::current_dispatcher());
 }
 
 void Event::deliver_event()
 {
-    EventDispatcher * dispatcher = mTargetThread != nullptr ? &mTargetThread->event_dispatcher( ) : nullptr;
-    if ((dispatcher == nullptr) || (dispatcher->post_event(*this) == false))
+    DispatcherThread* dt{ target_dispatcher() };
+    if (dt == nullptr)
     {
-        destroy();
+        DispatcherThread& thread = DispatcherThread::dispatcher_thread(static_cast<UniqueNumber>(consumer_thread()));
+        if (thread.is_running())
+        {
+            register_for_thread(&thread);
+            dt = &thread;
+        }
+    }
+
+    if ((dt == nullptr) || !dt->event_dispatcher().post_event(*this))
+    {
+        destroy_event();
     }
 }
 
-bool Event::register_for_thread( id_type whichThread /*= 0*/ )
+bool Event::register_for_thread( UniqueNumber threadNum )
 {
-    return register_for_thread(whichThread != 0 ? AREG_RUNTIME_CAST(Thread::find_by_id(whichThread), DispatcherThread)
-                                                : AREG_RUNTIME_CAST(Thread::current_thread(), DispatcherThread));
-}
-
-bool Event::register_for_thread( const char* whichThread )
-{
-    return register_for_thread(whichThread != nullptr ? AREG_RUNTIME_CAST(Thread::find_by_name(whichThread), DispatcherThread) : nullptr);
+    return register_for_thread(&DispatcherThread::dispatcher_thread(threadNum));
 }
 
 bool Event::register_for_thread( DispatcherThread * dispatchThread )
 {
     if ((dispatchThread != nullptr) && dispatchThread->is_valid())
     {
-        mTargetThread = dispatchThread->is_ready() ? dispatchThread : nullptr;
+        set_target_dispatcher(dispatchThread->is_ready() ? dispatchThread : nullptr);
     }
 
-    return (mTargetThread != nullptr);
+    return (target_dispatcher() != nullptr);
 }
 
 bool Event::is_event_registered() const noexcept
 {
-    return dispatcher().has_registered_consumer(class_id());
+    return dispatcher().has_registered_consumer(event_id());
 }
 
 bool Event::add_event_listener( EventConsumer& eventConsumer )
 {
-    return dispatcher().register_event_consumer(class_id(), eventConsumer);
+    return dispatcher().register_event_consumer(event_id(), eventConsumer);
 }
 
 bool Event::remove_event_listener( EventConsumer& eventConsumer )
 {
-    return dispatcher().unregister_event_consumer(class_id(), eventConsumer);
+    return dispatcher().unregister_event_consumer(event_id(), eventConsumer);
 }
 
 void Event::dispatch_self( EventConsumer* consumer )
 {
+    consumer = consumer != nullptr ? consumer : event_consumer();
     if (consumer != nullptr)
     {
         if (consumer->preprocess_event(*this))
             consumer->start_event_processing(*this);
-    }
-    else if (mConsumer != nullptr)
-    {
-        if (mConsumer->preprocess_event(*this))
-            mConsumer->start_event_processing(*this);
     }
 }
 

@@ -14,7 +14,7 @@
  ************************************************************************/
 #include "aregextend/service/private/ServerReceiveThread.hpp"
 
-#include "areg/base/RemoteMessage.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/component/ExitEvent.hpp"
@@ -25,6 +25,8 @@
 #include "aregextend/service/ConnectionHandler.hpp"
 #include "aregextend/service/ServerConnection.hpp"
 #include "aregextend/service/private/ServiceThreadHelper.hpp"
+
+#include "areg/base/private/DebugDefs.hpp"
 
 namespace areg::ext {
 
@@ -40,7 +42,7 @@ ServerReceiveThread::ServerReceiveThread( ConnectionHandler & connectHandler, Re
 {
 }
 
-void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const areg::SocketAddress & addrAccepted, areg::RemoteMessage & msgReceived)
+void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const areg::SocketAddress & addrAccepted, areg::MessageEnvelope & msgReceived)
 {
     DEBUG_LOG_SCOPE( areg_aregextend_service_ServerReceiveThread, _process_connection_event );
     SocketAccepted clientSocket;
@@ -111,8 +113,12 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
                     , addSocket.host_port()
                     , msgReceived.size_used());
 
-        mRemoteService.process_received_message(msgReceived, clientSocket);
-        if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, areg::THREAD_DRAIN_LIMIT - 1u, clientSocket,
+        {
+            AREG_LT_SCOPE(areg::LtStage::RecvNode);  // router inline route+forward
+            mRemoteService.process_received_message(msgReceived, clientSocket);
+        }
+
+        if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, areg::DEFAULT_DRAIN_LIMIT - 1u, clientSocket,
                 msgReceived, [this](uint64_t bytes, uint32_t msgs) { accumulate_received(bytes, msgs); }))
         {
             mRemoteService.failed_receive_message(clientSocket);
@@ -142,7 +148,7 @@ bool ServerReceiveThread::run_dispatcher()
     if ( mConnection.server_listen( areg::MAXIMUM_LISTEN_QUEUE_SIZE) )
     {
         SyncEvent* events[2] { &mEventExit, &mEventQueue };
-        RemoteMessage msgReceived;
+        areg::MessageEnvelope msgReceived;
         areg::SocketAddress addrDrain;
         uint32_t retryCount = 0;
         do
@@ -183,7 +189,7 @@ bool ServerReceiveThread::run_dispatcher()
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
                     uint32_t drainCount{ 0 };
 #endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-                    for (uint32_t drain = 0; drain < areg::THREAD_DRAIN_LIMIT; ++drain)
+                    for (uint32_t drain = 0; drain < areg::DEFAULT_DRAIN_LIMIT; ++drain)
                     {
                         const SOCKETHANDLE hDrain = mConnection.wait_connection_nowait(addrDrain);
                         if ( !areg::is_valid_socket(hDrain) )
@@ -199,17 +205,21 @@ bool ServerReceiveThread::run_dispatcher()
                     }
 
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-                    if (drainCount >= areg::THREAD_DRAIN_LIMIT)
+                    if (drainCount >= areg::DEFAULT_DRAIN_LIMIT)
                     {
-                        DEBUG_LOG_WARN("Receive drain loop exhausted thread drain limit (%d) -- inbound event queue is growing", areg::THREAD_DRAIN_LIMIT);
+                        DEBUG_LOG_WARN("Receive drain loop exhausted thread drain limit (%d) -- inbound event queue is growing", areg::DEFAULT_DRAIN_LIMIT);
                     }
 #endif   // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
                 }
             }
             else
             {
-                Event * eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pick_event() : nullptr;
-                whichEvent = is_exit_event(eventElem) ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) : whichEvent;
+                if (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue))
+                {
+                    Event eventElem{ pick_event() };
+                    if (eventElem.is_exit_prio())
+                        whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
+                }
             }
 
         } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue));

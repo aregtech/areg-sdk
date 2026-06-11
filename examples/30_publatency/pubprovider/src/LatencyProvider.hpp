@@ -29,7 +29,7 @@
 #include <vector>
 
 //////////////////////////////////////////////////////////////////////////
-// ProviderCmdData — carries a console command from input thread to component thread
+// ProviderCmdData -- carries a console command from input thread to component thread
 //////////////////////////////////////////////////////////////////////////
 
 struct ProviderCmdData
@@ -66,7 +66,7 @@ class LatencyProvider final : public    areg::Component
     friend class DisplayConsumer;
 
 //////////////////////////////////////////////////////////////////////////
-// Nested command consumer — delivers ProviderCmdData on the component thread
+// Nested command consumer -- delivers ProviderCmdData on the component thread
 //////////////////////////////////////////////////////////////////////////
     class ProviderCmdConsumer : public ProviderCmdConsumerBase
     {
@@ -88,7 +88,7 @@ class LatencyProvider final : public    areg::Component
     };
 
 //////////////////////////////////////////////////////////////////////////
-// Nested display consumer — drives the 1-second console refresh thread
+// Nested display consumer -- drives the 1-second console refresh thread
 //////////////////////////////////////////////////////////////////////////
     class DisplayConsumer : public areg::ThreadConsumer
     {
@@ -121,7 +121,7 @@ private:
     static constexpr areg::ext::Console::Coord COORD_LATENCY { 1, 5 };
     static constexpr areg::ext::Console::Coord COORD_SEP2    { 1, 6 };
     static constexpr areg::ext::Console::Coord COORD_PROMPT  { 1, 7 };
-    //!< Input row — " > " drawn here; cursor rests here
+    //!< Input row -- " > " drawn here; cursor rests here
     static constexpr areg::ext::Console::Coord COORD_INPUT   { 1, 8 };
     static constexpr areg::ext::Console::Coord COORD_SEP3    { 1, 9 };
 
@@ -142,7 +142,6 @@ private:
 private:
     static constexpr std::string_view THREAD_DISPLAY    { "LatencyProviderDisplayThread" };
     static constexpr std::string_view THREAD_INPUT       { "LatencyProviderInputThread" };
-    static constexpr std::string_view TIMER_BROADCAST    { "LatencyProviderBroadcastTimer" };
 
     //!< Last computed one-way stats; shown persistently between timer ticks in request mode:
     struct LatencyStats
@@ -162,6 +161,15 @@ private:
 public:
     LatencyProvider(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
     ~LatencyProvider() = default;
+
+    /**
+     * \brief   Request call (one-way pull token, no response).
+     *          Emits exactly one broadcast of the currently active broadcast mode, stamped
+     *          with the send timestamp. The consumer calls this once per received broadcast,
+     *          giving a warm, 1-in-flight one-way latency loop bounded by the requested count.
+     * \param   id  Consumer's expected sequence number (debug/drop-detection only).
+     **/
+    void request_message_next(uint32_t id);
 
 //////////////////////////////////////////////////////////////////////////
 // LatencyProviderBase overrides
@@ -303,7 +311,7 @@ protected:
 // Private methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    void _run_broadcast_burst();
+    void _send_one_broadcast();     //!< Emits one broadcast of the active mode (one-way pull).
     void _run_input_thread();
     void _run_display_thread();
     void _on_provider_cmd(const ProviderCmdData & data);
@@ -317,23 +325,20 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     areg::Thread                        mInputThread;
-    areg::Timer                         mBroadcastTimer;//!< 1-second broadcast burst timer
     std::atomic_bool                    mQuit;
     std::atomic_bool                    mQuitInput;
     std::atomic<uint32_t>               mDurationSec;
-    std::atomic<uint32_t>               mBroadcastCount;
     std::atomic<Latency::LatencyMode>   mBroadcastMode;
     ProviderCmdConsumer                 mProviderCmdConsumer;
     DisplayConsumer                     mDisplayConsumer;   //!< Must be declared before mDisplayThread
     areg::Thread                        mDisplayThread;     //!< 1-second console refresh thread
 
-    //!< These are accessed only on the component thread (timer + consumer_connected):
+    //!< These are accessed only on the component thread (request handlers + consumer_connected):
     uint32_t                            mClientCount;           //!< Number of connected consumers
     uint32_t                            mLastRateCount;         //!< Served count at last stats tick
-    uint32_t                            mBroadcastCyclesLeft;   //!< Remaining 1-second broadcast cycles (0 = infinite)
     uint32_t                            mMsgId;                 //!< Running broadcast message sequence number
 
-    //!< Incremented from both the component thread (ping-pong) and broadcast thread:
+    //!< Incremented on the component thread (ping-pong responses and one-way pulls):
     std::atomic<uint32_t>               mTotalServed;
 
     LatencyStats                        mLastStats;

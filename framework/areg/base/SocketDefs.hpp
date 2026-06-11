@@ -24,6 +24,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
+#include "areg/base/MemoryDefs.hpp"
 #include "areg/base/String.hpp"
 
 #include <memory>
@@ -281,6 +282,9 @@ constexpr uint16_t      DEFAULT_LOGGER_PORT     { 8282 };
 //!< Buffer size required to hold any IPv4 address string (e.g. "255.255.255.255\0").
 constexpr uint32_t      IP_ADDRESS_SIZE         { 16u };
 
+//!< Socket connection timeout
+constexpr uint32_t      SOCKET_CONNECT_TIMEOUT_MS{ 1'000u };
+
 //!< Maximum payload size in bytes for a single send or receive operation.
 constexpr uint32_t      PACKET_MAX_SIZE         { 65536u };
 
@@ -293,8 +297,7 @@ constexpr uint32_t      PACKET_DEFAULT_SIZE     { PACKET_MAX_SIZE };
 //!< Sentinel indicating an invalid or uninitialized packet size.
 constexpr uint32_t      PACKET_INVALID_SIZE     { 0u };
 
-//!< Compile-time default for SO_SNDBUF applied to every new socket.
-//!< Applied on all platforms including Windows.
+//!< Compile-time default for SO_SNDBUF applied to every new socket. Applied on all platforms.
 //!< Override at runtime via `net::SERVICE::TRANSPORT::sndbuf` in areg.init (value in KB).
 constexpr uint32_t      SOCKET_SEND_BUFFER_SIZE { 4u * areg::ONE_MEGABYTE };
 
@@ -305,48 +308,35 @@ constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE { 4u * areg::ONE_MEGABYTE };
 //!< Maximum milliseconds a single send() call may block waiting for TCP send-window space.
 constexpr uint32_t      SOCKET_SEND_TIMEOUT_MS  { 2500u };
 
-//!< Floor applied to any caller-supplied max -- prevents degenerate limits.
+//!< Floor applied to any caller-supplied max, prevents degenerate limits.
 constexpr uint32_t      MIN_CONNECTIONS         { 32u };
 
-//!< Ceiling applied to any caller-supplied max -- mtrouter is not a web server.
+//!< Ceiling applied to any caller-supplied max, mtrouter is not a web server.
 constexpr uint32_t      MAX_CONNECTIONS         { 10000u };
-
-//!< Default socket capacity: initial mSockets.reserve() size and the stack-allocation
-//!< threshold for the WSAPOLLFD / pollfd array in SocketMultiplexer::wait().
-//!< Must be >= BATCH_SIZE.
-constexpr uint32_t      DEFAULT_CONNECTIONS     { 128u };
-
-//!< Number of socket events fetched from the OS in a single epoll_wait / kevent / syscall.
-//!< Optimal when BATCH_SIZE == THREAD_DRAIN_LIMIT: one OS call covers exactly one drain pass.
-constexpr uint32_t      BATCH_SIZE              { 128u };
-
-//!< Number of additional sockets (receive) or events (send) drained per dispatcher wake-up
-//!< before returning to the blocking wait.  One drain pass processes exactly one OS-level
-//!< batch, so setting THREAD_DRAIN_LIMIT == BATCH_SIZE eliminates stale-batch residuals.
-constexpr uint32_t      THREAD_DRAIN_LIMIT      { BATCH_SIZE };
-
-//!< Size of the IoBuffer / iovec stack array used for scatter-gather send (writev / WSASend).
-//!< Equals THREAD_DRAIN_LIMIT: slot 0 holds the triggering message.
-//!< Total batch is exactly THREAD_DRAIN_LIMIT entries.  128 × sizeof(iovec) = 2 KB -- L1-friendly.
-constexpr uint32_t      THREAD_BATCH_LIMIT      { THREAD_DRAIN_LIMIT };
 
 //!< Maximum number of events queued in any send thread (ServerSendThread, PoolSendThread, areg::ClientSendThread).
 //!< 0 = unlimited: the queue grows without bound and never drops messages.
-constexpr uint32_t      SEND_THREAD_QUEUE_LIMIT { 0u };
+constexpr uint32_t          SEND_THREAD_QUEUE_LIMIT { 0u };
 
-//!< Default send/drain batch size; configurable via net::*::tcpip::batch in areg.init.
-//!< Must equal THREAD_DRAIN_LIMIT to cover exactly one drain pass per OS wake-up.
-constexpr uint32_t      DEFAULT_BATCH_SIZE          { BATCH_SIZE };
+//!< Default send/drain batch size; configurable via net::*::tcpip::drain in areg.init.
+//!< Number of socket events fetched from the OS in a single epoll_wait / kevent / syscall.
+constexpr uint32_t          DEFAULT_DRAIN_LIMIT     { 128u };
+
+//!< Default socket capacity. Must be >= DEFAULT_DRAIN_LIMIT.
+constexpr uint32_t          DEFAULT_CONNECTIONS     { DEFAULT_DRAIN_LIMIT };
 
 //!< Default thread-pool pair count; configurable via net::*::tcpip::pairs in areg.init.
 //!< 0 = no pool (shared send/receive threads only).
-constexpr uint32_t      DEFAULT_POOL_PAIRS          { 0u };
+constexpr uint32_t          DEFAULT_POOL_PAIRS      { 0u };
 
-//!< Default thread-local receive-cache size in KB.
-constexpr const uint32_t    DEFAULT_THREAD_CACHE_KB{ 256 };
+//!< Default thread-local receive-cache size in, align to KB.
+constexpr const uint32_t    DEFAULT_THREAD_CACHE    { 256 * areg::ONE_KILOBYTE };
 
-//!< Maximum biUsed value accepted in any received MessageHeader.
-constexpr uint32_t          MAX_MESSAGE_DATA_SIZE   { 64u * areg::ONE_MEGABYTE };
+//!< Maximum aggregate wire bytes coalesced into one send_data_v() / scatter-gather send call.
+constexpr uint32_t          MAX_SEND_BATCH_BYTES    { 0x7000'0000u };   // 1.75 GiB, < INT32_MAX
+
+//!< The minimum size of the block to send without copying to the cache.
+constexpr uint32_t          MIN_BIG_BLOCK           { 64 * areg::ONE_KILOBYTE };
 
 /**
  * \brief   Maximum number of pending connections the OS will queue on a
@@ -356,16 +346,16 @@ extern AREG_API const int32_t MAXIMUM_LISTEN_QUEUE_SIZE /*= SOMAXCONN*/;
 
 AREG_API uint32_t   thread_cache_size() noexcept;
 
+//!< Thread local cache to send / receive data
 struct ThreadCache
 {
-    static constexpr uint32_t THREAD_CACHE_SIZE{ areg::DEFAULT_THREAD_CACHE_KB * areg::ONE_KILOBYTE };
-
-    SOCKETHANDLE socket{ areg::InvalidSocketHandle };   //!< Socket whose data occupies [head, head+unread)
+    SOCKETHANDLE socket { areg::InvalidSocketHandle };  //!< Socket whose data occupies [head, head+unread)
     uint32_t     head   { 0u };                         //!< Read cursor: index of next byte to serve to caller
     uint32_t     unread { 0u };                         //!< Unread cached bytes: valid bytes at [head, head+unread)
     uint32_t     space  { 0u };                         //!< total space in buffer
     std::unique_ptr<uint8_t[]> buffer{ nullptr };       //!< initialize by need
 
+    //!< Returns thread local cache
     inline uint8_t* cache() noexcept
     {
         if (buffer == nullptr)
@@ -382,9 +372,6 @@ struct ThreadCache
 
 /**
  * \brief   Selects the receive strategy for the current thread.
- *          Exact mode never speculatively reads beyond the caller request.
- *          Cached mode enables thread-local read-ahead for single-socket
- *          receive loops to reduce recv() syscall frequency.
  **/
 enum class ReceiveMode : uint8_t
 {
@@ -398,12 +385,10 @@ enum class ReceiveMode : uint8_t
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Describes one contiguous region in a scatter/gather write list.
- *          Used by send_data_v() to combine multiple buffers into a single
- *          socket syscall (writev on POSIX, WSASend on Windows).
  **/
 struct IoBuffer
 {
-    const uint8_t* data;   //!< Pointer to the start of the data region.
+    const uint8_t*  data;   //!< Pointer to the start of the data region.
     std::size_t     size;   //!< Number of bytes to send from this region.
 };
 
@@ -421,9 +406,6 @@ inline bool is_valid_socket(SOCKETHANDLE hSocket) noexcept;
 /**
  * \brief   Returns the thread-local TX staging cache for the calling thread.
  *          Socket-independent: within a single thread only one socket sends at a time.
- *          Used exclusively by the Windows coalesced-send path (_os_send_data_v).
- *          Controller threads that send single messages bypass the staging buffer
- *          entirely (count == 1 fast-path in _os_send_data_v).
  **/
 [[nodiscard]]
 AREG_API ThreadCache& thread_tx_cache() noexcept;
@@ -431,7 +413,6 @@ AREG_API ThreadCache& thread_tx_cache() noexcept;
 /**
  * \brief   Returns the thread-local RX cache for \a hSocket.
  *          One ThreadCache per (thread, socket) pair held in a thread-local map.
- *          The cache buffer is lazily allocated on first use via ThreadCache::cache().
  *          Threads that operate in ReceiveMode::Exact never allocate the buffer.
  *
  * \param   hSocket     Socket whose receive cache is requested.
@@ -488,12 +469,6 @@ AREG_API void socket_close(SOCKETHANDLE hSocket) noexcept;
  * \brief   Applies the default socket-buffer policy to \a hSocket immediately
  *          after creation or acceptance.
  *
- *          Sets SO_SNDBUF to SOCKET_SEND_BUFFER_SIZE on all platforms.
- *          Linux and macOS also set SO_RCVBUF to SOCKET_RECV_BUFFER_SIZE.
- *          Windows intentionally leaves SO_RCVBUF unchanged: setting it on a connected
- *          or accepted socket disables SIO_LOOPBACK_FAST_PATH and drops loopback
- *          throughput from 2+ GB/s to ~300 MB/s.
- *
  * \param   hSocket     Valid socket descriptor to configure.
  **/
 AREG_API void socket_configure(SOCKETHANDLE hSocket) noexcept;
@@ -527,6 +502,17 @@ AREG_API SOCKETHANDLE client_connect(const SocketAddress& peerAddr);
 AREG_API SOCKETHANDLE client_connect(const String& hostName, uint16_t portNr, SocketAddress* socketAddr = nullptr);
 
 /**
+ * \brief   Connects an already-created socket FD to \a peerAddr (blocking, 1-second timeout).
+ *          On success applies TCP_NODELAY.  On failure the socket is NOT closed by this function;
+ *          the caller is responsible for calling socket_close() if needed.
+ *
+ * \param   hSocket     A valid, unconnected socket handle.
+ * \param   peerAddr    Remote peer address to connect to.
+ * \return  Returns true if the connection was established within the timeout.
+ **/
+AREG_API bool client_connect_fd(SOCKETHANDLE hSocket, const SocketAddress& peerAddr);
+
+/**
  * \brief   Creates a TCP/IP server socket and binds to \a peerAddr.
  *          Call server_listen() before accepting connections.
  *
@@ -551,8 +537,7 @@ AREG_API SOCKETHANDLE server_connect(const String& hostName, uint16_t portNr, So
  * \brief   Places \a serverSocket into listening mode.
  *
  * \param   serverSocket    Bound server socket descriptor.
- * \param   maxQueueSize    Maximum number of pending connections the OS will
- *                          queue (default: MAXIMUM_LISTEN_QUEUE_SIZE).
+ * \param   maxQueueSize    Maximum number of pending connections the OS will queue (default: MAXIMUM_LISTEN_QUEUE_SIZE).
  * \return  true if the socket is now listening; false otherwise.
  **/
 AREG_API bool server_listen(SOCKETHANDLE serverSocket, int32_t maxQueueSize = areg::MAXIMUM_LISTEN_QUEUE_SIZE) noexcept;
@@ -562,16 +547,13 @@ AREG_API bool server_listen(SOCKETHANDLE serverSocket, int32_t maxQueueSize = ar
  *          client connection if the server socket fired.
  *
  *          All sockets must have been registered with \a multiplexer before
- *          calling this overload.  On Linux this uses epoll_wait() instead
- *          of poll(), giving O(1) readiness notification.
+ *          calling this overload.
  *
- * \param   multiplexer     Persistent multiplexer with the server and client
- *                          sockets already registered.
+ * \param   multiplexer     Persistent multiplexer with the server and client sockets already registered.
  * \param   serverSocket    The listening server socket descriptor.
- * \param   socketAddr      If not nullptr, receives the new client's address
- *                          when a new connection is accepted.
- * \return  Valid descriptor for the new connection or an existing readable
- *          client; FailedSocketHandle if \a serverSocket is invalid;
+ * \param   socketAddr      If not nullptr, receives the new client's address when a new connection is accepted.
+ * \return  Valid descriptor for the new connection or an existing readable client;
+ *          FailedSocketHandle if \a serverSocket is invalid;
  *          InvalidSocketHandle on timeout or other failure.
  **/
 [[nodiscard]]
@@ -584,8 +566,7 @@ AREG_API SOCKETHANDLE server_accept(SocketMultiplexer& multiplexer, SOCKETHANDLE
  *          persistent server accept loops.
  *
  * \param   serverSocket    Listening server socket descriptor.
- * \param   masterList      Array of already-accepted socket descriptors, or
- *                          nullptr if none.
+ * \param   masterList      Array of already-accepted socket descriptors, or nullptr if none.
  * \param   entriesCount    Number of entries in \a masterList; zero if nullptr.
  * \param   socketAddr      If not nullptr, receives the new client's address.
  * \return  Valid descriptor for the new connection; FailedSocketHandle if
@@ -637,15 +618,12 @@ AREG_API int32_t send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, uint
 
 /**
  * \brief   Scatter/gather send: sends \a count buffers through \a hSocket
- *          in a single syscall (writev on POSIX, WSASend on Windows).
- *          Reduces per-message syscall overhead when the same socket receives
- *          multiple queued messages in a single drain pass.
+ *          in a single syscall.
  *
  * \param   hSocket     Valid connected socket descriptor.
  * \param   buffers     Array of IoBuffer descriptors; must contain \a count entries.
  * \param   count       Number of buffers in the array.
- * \return  Total bytes sent on success; negative on error; 0 on invalid socket
- *          or empty list.
+ * \return  Total bytes sent on success; negative on error; 0 on invalid socket or empty list.
  **/
 AREG_API int32_t send_data_v(SOCKETHANDLE hSocket, const IoBuffer* buffers, uint32_t count, uint32_t totalSize = 0) noexcept;
 
@@ -664,7 +642,7 @@ AREG_API int32_t receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_
 
 /**
  * \brief   Receives exactly \a dataLength bytes from \a hSocket, reading at most
- *          DEFAULT_THREAD_CACHE_KB * ONE_KILOBYTE bytes per recv() call.
+ *          DEFAULT_THREAD_CACHE bytes per recv() call.
  *          Use for large message bodies to keep per-call latency bounded.
  *          Does not interact with the thread-local receive cache.
  *
@@ -678,14 +656,8 @@ AREG_API int32_t receive_data_window(SOCKETHANDLE hSocket, uint8_t* dataBuffer, 
 /**
  * \brief   Returns the number of bytes of received data that are cached in
  *          the calling thread's read-ahead buffer for \a hSocket.
- *
  *          A non-zero return means additional complete messages are available
- *          in the application cache and will NOT trigger an epoll/select
- *          wakeup (the kernel socket buffer is empty).  Callers that use a
- *          multiplexer-based receive loop (ServerReceiveThread, PoolReceiveThread)
- *          must drain this cache before blocking on the multiplexer again, or
- *          those messages will never be processed.
- *          In Exact receive mode this function always returns zero.
+ *          in the application cache.
  *
  * \param   hSocket     Socket whose cache is queried.
  * \return  Bytes available in the thread-local cache for this socket (>= 0).
@@ -693,11 +665,8 @@ AREG_API int32_t receive_data_window(SOCKETHANDLE hSocket, uint8_t* dataBuffer, 
 AREG_API uint32_t recv_data_available(SOCKETHANDLE hSocket) noexcept;
 
 /**
- * \brief   Sets SO_SNDTIMEO on \a hSocket so that a blocking send() cannot
- *          hang longer than \a timeoutMs milliseconds.  This is a kernel-level
- *          safety net: even if the application-level deadline in _os_send_data
- *          is somehow bypassed, the kernel will return EAGAIN/EWOULDBLOCK after
- *          the configured timeout.
+ * \brief   Sets SO_SNDTIMEO on \a hSocket so that a blocking send() cannot hang 
+ *          longer than \a timeoutMs milliseconds.  This is a kernel-level safety net.
  *
  * \param   hSocket     Valid connected socket descriptor.
  * \param   timeoutMs   Maximum milliseconds a send() may block (0 = infinite).
@@ -754,15 +723,13 @@ AREG_API uint32_t pending_read(SOCKETHANDLE hSocket) noexcept;
 AREG_API const String& hostname() noexcept;
 
 /**
- * \brief   Returns true if \a address is a loopback address
- *          ("localhost" or "127.0.0.1").
+ * \brief   Returns true if \a address is a loopback address ("localhost" or "127.0.0.1").
  **/
 [[nodiscard]]
 inline bool is_local_address(const String& address) noexcept;
 
 /**
- * \brief   Returns true if \a address is a well-formed IPv4 dotted-decimal
- *          string (e.g. "192.168.0.1").
+ * \brief   Returns true if \a address is a well-formed IPv4 dotted-decimal string (e.g. "192.168.0.1").
  **/
 [[nodiscard]]
 AREG_API bool is_ip_address(const String& address) noexcept;

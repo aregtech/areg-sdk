@@ -43,7 +43,7 @@ void LogMessage::set_message(const char * message, int32_t msgLen ) noexcept
 
 #else   // AREG_LOGGING
 
-LogMessage::LogMessage(areg::LogMessageType /*msgType*/, uint32_t /*sessionId*/, TIME64 scopeStamp, const LogScope& /*logScope*/) noexcept
+LogMessage::LogMessage(areg::LogMessageType /*msgType*/, uint32_t /*sessionId*/, TIME64 /*scopeStamp*/, const LogScope& /*logScope*/) noexcept
     : areg::LogEntry( )
 {
 }

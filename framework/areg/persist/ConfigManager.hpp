@@ -466,11 +466,10 @@ public:
     /**
      * \brief   Sets the logging state for the current module.
      *
-     * \param   newValue        If true, enables logging; if false, disables logging for the current
-     *                          module.
-     * \param   is_temporary    If true, the change is not saved to the configuration file.
+     * \param   newValue        If true, enables logging; if false, disables logging for the current module.
+     * \param   isTemporary     If true, the change is not saved to the configuration file.
      **/
-    inline void set_logging_status(bool newValue, bool is_temporary = false);
+    inline void set_logging_status(bool newValue, bool isTemporary = false);
 
     /**
      * \brief   Returns whether logging is enabled for the specified log target.
@@ -504,27 +503,27 @@ public:
      *
      * \param   logType         The Identifier object containing the areg::LogTarget value.
      * \param   newValue        If true, enables logging for the target; if false, disables it.
-     * \param   is_temporary    If true, the change is not saved to the configuration file.
+     * \param   isTemporary     If true, the change is not saved to the configuration file.
      **/
-    inline void set_log_enabled(const Identifier& logType, bool newValue, bool is_temporary = false);
+    inline void set_log_enabled(const Identifier& logType, bool newValue, bool isTemporary  = false);
 
     /**
      * \brief   Sets whether logging is enabled for the specified log target.
      *
      * \param   logType         The string value of the logging target (areg::LogTarget).
      * \param   newValue        If true, enables logging for the target; if false, disables it.
-     * \param   is_temporary    If true, the change is not saved to the configuration file.
+     * \param   isTemporary     If true, the change is not saved to the configuration file.
      **/
-    inline void set_log_enabled(const String& logType, bool newValue, bool is_temporary = false);
+    inline void set_log_enabled(const String& logType, bool newValue, bool isTemporary  = false);
 
     /**
      * \brief   Sets whether logging is enabled for the specified log target.
      *
      * \param   logType         The logging target to set.
      * \param   newValue        If true, enables logging for the target; if false, disables it.
-     * \param   is_temporary    If true, the change is not saved to the configuration file.
+     * \param   isTemporary     If true, the change is not saved to the configuration file.
      **/
-    void set_log_enabled(areg::LogTarget logType, bool newValue, bool is_temporary = false);
+    void set_log_enabled(areg::LogTarget logType, bool newValue, bool isTemporary  = false);
 
     /**
      * \brief   Returns the path where log messages are written.
@@ -536,9 +535,9 @@ public:
      * \brief   Sets the path of the log file where messages are written.
      *
      * \param   newValue        The relative or absolute file path with optional mask to write logs.
-     * \param   is_temporary    If true, the change is not saved to the configuration file.
+     * \param   isTemporary     If true, the change is not saved to the configuration file.
      **/
-    inline void set_file_location(const String& newValue, bool is_temporary = false);
+    inline void set_file_location(const String& newValue, bool isTemporary  = false);
 
     /**
      * \brief   Returns true if log messages are appended to the existing log file.
@@ -552,9 +551,9 @@ public:
      *
      * \param   newValue        If true, log messages are appended to the existing log file; if
      *                          false, a new file is created.
-     * \param   is_temporary    If true, the change is not saved to the configuration file.
+     * \param   isTemporary     If true, the change is not saved to the configuration file.
      **/
-    void set_file_append(bool newValue, bool is_temporary = false);
+    void set_file_append(bool newValue, bool isTemporary  = false);
 
     /**
      * \brief   Returns the maximum queue size for log messages when there is no connection to the
@@ -569,9 +568,9 @@ public:
      *
      * \param   newValue        The maximum queue size. A value of 0 means messages are sent
      *                          immediately without queuing.
-     * \param   is_temporary    If true, the change is not saved to the configuration file.
+     * \param   isTemporary     If true, the change is not saved to the configuration file.
      **/
-    void set_remote_queue_size(uint32_t newValue, bool is_temporary = false);
+    void set_remote_queue_size(uint32_t newValue, bool isTemporary  = false);
 
     /**
      * \brief   Returns the layout format string for log messages when entering a scope.
@@ -583,9 +582,9 @@ public:
      * \brief   Sets the layout format string for log messages when entering a scope.
      *
      * \param   newValue        The new layout format string.
-     * \param   is_temporary    If true, the change is not saved to the configuration file.
+     * \param   isTemporary     If true, the change is not saved to the configuration file.
      **/
-    void set_layout_enter(const String& newValue, bool is_temporary = false);
+    void set_layout_enter(const String& newValue, bool isTemporary  = false);
 
     /**
      * \brief   Returns the layout format string for log messages.
@@ -597,9 +596,9 @@ public:
      * \brief   Sets the layout format string for log messages.
      *
      * \param   newValue        The new layout format string.
-     * \param   is_temporary    If true, the change is not saved to the configuration file.
+     * \param   isTemporary     If true, the change is not saved to the configuration file.
      **/
-    void set_layout_message(const String& newValue, bool is_temporary = false);
+    void set_layout_message(const String& newValue, bool isTemporary  = false);
 
     /**
      * \brief   Returns the layout format string for log messages when exiting a scope.
@@ -611,9 +610,9 @@ public:
      * \brief   Sets the layout format string for log messages when exiting a scope.
      *
      * \param   newValue        The new layout format string.
-     * \param   is_temporary    If true, the change is not saved to the configuration file.
+     * \param   isTemporary     If true, the change is not saved to the configuration file.
      **/
-    void set_layout_exit(const String& newValue, bool is_temporary = false);
+    void set_layout_exit(const String& newValue, bool isTemporary  = false);
 
     /**
      * \brief   Returns the list of log scope properties for the module.
@@ -733,9 +732,9 @@ public:
      * \param   service         The string value of the remote service.
      * \param   connectType     The string value of the connection type.
      * \param   newValue        If true, enables the connection; if false, disables it.
-     * \param   is_temporary    If true, the change is not saved to the configuration file.
+     * \param   isTemporary     If true, the change is not saved to the configuration file.
      **/
-    void set_service_enable(const String& service, const String& connectType, bool newValue, bool is_temporary = false);
+    void set_service_enable(const String& service, const String& connectType, bool newValue, bool isTemporary  = false);
 
     /**
      * \brief   Sets whether the specified remote service connection is enabled.
@@ -743,9 +742,9 @@ public:
      * \param   serviceType     The remote service type.
      * \param   connectType     The connection type.
      * \param   newValue        If true, enables the connection; if false, disables it.
-     * \param   is_temporary    If true, the change is not saved to the configuration file.
+     * \param   isTemporary     If true, the change is not saved to the configuration file.
      **/
-    void set_service_enable(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, bool newValue, bool is_temporary = false);
+    void set_service_enable(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, bool newValue, bool isTemporary  = false);
 
     /**
      * \brief   Returns the address of the remote service for the specified connection type.
@@ -769,9 +768,9 @@ public:
      * \param   service         The string value of the remote service.
      * \param   connectType     The string value of the connection type.
      * \param   newValue        The new address value.
-     * \param   is_temporary    If true, the change is not saved to the configuration file.
+     * \param   isTemporary     If true, the change is not saved to the configuration file.
      **/
-    void set_service_address(const String& service, const String& connectType, const String& newValue, bool is_temporary = false);
+    void set_service_address(const String& service, const String& connectType, const String& newValue, bool isTemporary  = false);
 
     /**
      * \brief   Sets the address of the remote service for the specified connection type.
@@ -779,9 +778,9 @@ public:
      * \param   serviceType     The remote service type.
      * \param   connectType     The connection type.
      * \param   newValue        The new address value.
-     * \param   is_temporary    If true, the change is not saved to the configuration file.
+     * \param   isTemporary     If true, the change is not saved to the configuration file.
      **/
-    void set_service_address(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, const String& newValue, bool is_temporary = false);
+    void set_service_address(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, const String& newValue, bool isTemporary  = false);
 
     /**
      * \brief   Returns the port number of the remote service for the specified connection type.
@@ -805,9 +804,9 @@ public:
      * \param   service         The string value of the remote service.
      * \param   connectType     The string value of the connection type.
      * \param   newValue        The new port number value.
-     * \param   is_temporary    If true, the change is not saved to the configuration file.
+     * \param   isTemporary     If true, the change is not saved to the configuration file.
      **/
-    void set_service_port(const String& service, const String& connectType, uint16_t newValue, bool is_temporary = false);
+    void set_service_port(const String& service, const String& connectType, uint16_t newValue, bool isTemporary  = false);
 
     /**
      * \brief   Sets the port number of the remote service for the specified connection type.
@@ -815,9 +814,9 @@ public:
      * \param   serviceType     The remote service type.
      * \param   connectType     The connection type.
      * \param   newValue        The new port number value.
-     * \param   is_temporary    If true, the change is not saved to the configuration file.
+     * \param   isTemporary     If true, the change is not saved to the configuration file.
      **/
-    void set_service_port(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, uint16_t newValue, bool is_temporary = false);
+    void set_service_port(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, uint16_t newValue, bool isTemporary  = false);
 
     /**
      * \brief   Returns the log database property for the specified position.
@@ -831,9 +830,9 @@ public:
      *
      * \param   whichPosition       The position identifier of the log database property.
      * \param   newValue            The new value to set.
-     * \param   is_temporary        If true, the change is not saved to the configuration file.
+     * \param   isTemporary         If true, the change is not saved to the configuration file.
      **/
-    void set_db_property(const String & whichPosition, const String & newValue, bool is_temporary = false);
+    void set_db_property(const String & whichPosition, const String & newValue, bool isTemporary  = false);
 
     /**
      * \brief   Returns the configured SO_SNDBUF size (bytes) for the network socket.
@@ -844,7 +843,6 @@ public:
      *                          Pass empty string to use the current process name.
      * \param   connectType     The transport type name (e.g. "tcpip").
      *                          Pass empty string to match any transport.
-     * \return  Returns the configured SO_SNDBUF size in bytes, or the compile-time default if not set.
      **/
     uint32_t network_sndbuf(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
 
@@ -854,7 +852,6 @@ public:
      *
      * \param   serviceType     The remote service kind.
      * \param   connectType     The connection type.
-     * \return  Returns the configured SO_SNDBUF size in bytes, or the compile-time default if not set.
      **/
     uint32_t network_sndbuf(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept;
 
@@ -867,7 +864,6 @@ public:
      *                          Pass empty string to use the current process name.
      * \param   connectType     The transport type name (e.g. "tcpip").
      *                          Pass empty string to match any transport.
-     * \return  Returns the configured SO_RCVBUF size in bytes, or the compile-time default if not set.
      **/
     uint32_t network_rcvbuf(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
 
@@ -877,15 +873,14 @@ public:
      *
      * \param   serviceType     The remote service kind.
      * \param   connectType     The connection type.
-     * \return  Returns the configured SO_RCVBUF size in bytes, or the compile-time default if not set.
      **/
     uint32_t network_rcvbuf(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept;
 
     /**
-     * \brief   Returns the configured send/drain batch size (net::MODULE::TRANSPORT::batch).
-     *          Falls back to DEFAULT_BATCH_SIZE when the key is absent.
+     * \brief   Returns the configured send/drain batch size (net::MODULE::TRANSPORT::drain).
+     *          Falls back to DEFAULT_DRAIN_LIMIT when the key is absent.
      **/
-    uint32_t network_batch(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
+    uint32_t network_drain_limit(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
 
     /**
      * \brief   Returns the configured thread-pool pair count (net::MODULE::TRANSPORT::pairs).
@@ -899,22 +894,16 @@ public:
      *          Lookup order: module-specific entry --> wildcard "*" entry --> compile-time default.
      *          Falls back to SOCKET_SEND_TIMEOUT_MS when the key is absent or zero.
      *
-     * \param   module          The process/application name (e.g. "mtrouter").
-     *                          Pass empty string to use the current process name.
-     * \param   connectType     The transport type name (e.g. "tcpip").
-     *                          Pass empty string to match any transport.
-     * \return  Returns the configured send timeout in milliseconds.
+     * \param   module          The process/application name. Pass empty string to use the current process name.
+     * \param   connectType     The transport type name (e.g. "tcpip"). Pass empty string to match any transport.
      **/
     uint32_t network_timeout(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
 
     /**
-     * \brief   Returns the configured per thread (send/receive) cache size in kilobytes for network communication
-     *          (net::MODULE::TRANSPORT::cache).
-     * \param   module          The process/application name (e.g. "mtrouter").
-     *                          Pass empty string to use the current process name.
-     * \param   connectType     The transport type name (e.g. "tcpip").
-     *                          Pass empty string to match any transport.
-     * \return  Returns the configured send timeout in milliseconds.
+     * \brief   Returns the configured per thread (send/receive) cache size in bytes for network communication
+     *          (net::MODULE::TRANSPORT::cache). The value saved in areg.init in kilobytes
+     * \param   module          The process/application name. Pass empty string to use the current process name.
+     * \param   connectType     The transport type name (e.g. "tcpip"). Pass empty string to match any transport.
      **/
     uint32_t network_cache(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
 
@@ -922,7 +911,6 @@ public:
      * \brief   Returns the default buffer block size for growing buffers.
      *
      * \param   whichModule     The module name or '*' for generic settings.
-     * \return  Returns the buffer block size in bytes.
      **/
     uint32_t buffer_block_size(const String& whichModule = areg::EmptyStringA) noexcept;
 
@@ -930,7 +918,6 @@ public:
      * \brief   Returns the default message queue size for message queues.
      *
      * \param   whichModule     The module name or '*' for generic settings.
-     * \return  Returns the default message queue size.
      **/
     uint32_t message_queue_size(const String& whichModule = areg::EmptyStringA) noexcept;
 
@@ -1037,9 +1024,9 @@ inline const Property* ConfigManager::module_property(const PropertyKey& key) co
     return module_property(key.section(), key.property(), key.position(), key.key_type());
 }
 
-inline void ConfigManager::set_module_property(const PropertyKey& key, const String& value, bool is_temporary)
+inline void ConfigManager::set_module_property(const PropertyKey& key, const String& value, bool isTemporary )
 {
-    set_module_property(key.section(), key.property(), key.position(), value, key.key_type(), is_temporary);
+    set_module_property(key.section(), key.property(), key.position(), value, key.key_type(), isTemporary );
 }
 
 inline const PropertyValue * ConfigManager::property_value( const String& section
@@ -1132,14 +1119,14 @@ inline void ConfigManager::release_properties()
     mReadonlyProperties.clear();
 }
 
-inline void ConfigManager::set_logging_status(bool newValue, bool is_temporary /*= false*/)
+inline void ConfigManager::set_logging_status(bool newValue, bool isTemporary  /*= false*/)
 {
     Lock lock(mLock);
 
     constexpr areg::ConfigEntry confKey = areg::ConfigEntry::LogStatus;
     const areg::ConfigKey& key = areg::log_status();
 
-    set_module_property(key.section, key.property, key.position, String::make_string(newValue), confKey, is_temporary);
+    set_module_property(key.section, key.property, key.position, String::make_string(newValue), confKey, isTemporary );
 }
 
 inline bool ConfigManager::log_enabled(const Identifier& logType) const
@@ -1147,27 +1134,27 @@ inline bool ConfigManager::log_enabled(const Identifier& logType) const
     return log_enabled(logType.name());
 }
 
-inline void ConfigManager::set_log_enabled(const String& logType, bool newValue, bool is_temporary /*= false*/)
+inline void ConfigManager::set_log_enabled(const String& logType, bool newValue, bool isTemporary  /*= false*/)
 {
     Lock lock(mLock);
 
     constexpr areg::ConfigEntry confKey = areg::ConfigEntry::LogEnable;
     const areg::ConfigKey& key = areg::log_enable();
-    set_module_property(key.section, key.property, logType, String::make_string(newValue), confKey, is_temporary);
+    set_module_property(key.section, key.property, logType, String::make_string(newValue), confKey, isTemporary );
 }
 
-inline void ConfigManager::set_log_enabled(const Identifier& logType, bool newValue, bool is_temporary /*= false*/)
+inline void ConfigManager::set_log_enabled(const Identifier& logType, bool newValue, bool isTemporary  /*= false*/)
 {
-    set_log_enabled(logType.name(), newValue, is_temporary);
+    set_log_enabled(logType.name(), newValue, isTemporary );
 }
 
-inline void ConfigManager::set_file_location(const String& newValue, bool is_temporary /*= false*/)
+inline void ConfigManager::set_file_location(const String& newValue, bool isTemporary  /*= false*/)
 {
     Lock lock(mLock);
 
     constexpr areg::ConfigEntry confKey = areg::ConfigEntry::LogFileLocation;
     const areg::ConfigKey& key = areg::log_file_location();
-    set_module_property(key.section, key.property, key.position, newValue, confKey, is_temporary);
+    set_module_property(key.section, key.property, key.position, newValue, confKey, isTemporary );
 }
 
 inline std::vector<Property> ConfigManager::module_log_scopes() const

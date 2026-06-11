@@ -15,7 +15,7 @@
 #include "aregextend/service/ServerConnection.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areg/component/ServiceDefs.hpp"
-#include "areg/base/RemoteMessage.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 
 #include <shared_mutex>
 
@@ -45,19 +45,20 @@ ServerConnection::ServerConnection(const ITEM_ID & channelId, const areg::Socket
 void ServerConnection::reject_connection(SocketAccepted & clientConnection)
 {
     const ITEM_ID & cookie_id = cookie(clientConnection.handle());
-    RemoteMessage msgReject = areg::create_reject_notify(mChannelId, cookie_id);
+    areg::MessageEnvelope msgReject{ areg::create_reject_notify(mChannelId, cookie_id) };
     send_message(msgReject, clientConnection);
     close_connection(clientConnection);
 }
 
 void ServerConnection::close_all_connections()
 {
+    static constexpr areg::EventHeader HDR{ areg::notify_client_connection() };
     std::unique_lock<std::shared_mutex> lock( mLock );
-    RemoteMessage msgByeClient;
-    if ( msgByeClient.init_message(areg::notify_client_connection().rbHeader ) != nullptr )
+    areg::MessageEnvelope msgByeClient;
+    if ( msgByeClient.init_envelope(HDR, 2 * sizeof(ITEM_ID)) != nullptr )
     {
         msgByeClient.set_sequence( areg::SEQUENCE_NUMBER_ANY );
-        msgByeClient.set_source( mChannelId );
+        msgByeClient.set_source( static_cast<uint32_t>(mChannelId) );
 
         for (MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position(); mAcceptedConnections.is_valid_position(pos); pos = mAcceptedConnections.next_position(pos))
         {
@@ -68,8 +69,8 @@ void ServerConnection::close_all_connections()
             const ITEM_ID target{ mSocketToCookie.is_valid_position(posC) ? mSocketToCookie.value_at(posC) : areg::COOKIE_UNKNOWN };
             if (target >= areg::COOKIE_REMOTE_SERVICE)
             {
-                RemoteMessage msgDisconnect{ msgByeClient.clone() };
-                msgDisconnect.set_target(target);
+                areg::MessageEnvelope msgDisconnect{ msgByeClient.clone() };
+                msgDisconnect.set_target(static_cast<uint32_t>(target));
                 msgDisconnect << target << areg::ServiceConnectionState::Disconnected;
                 send_message(msgDisconnect, clientConnection);
             }

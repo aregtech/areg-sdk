@@ -87,9 +87,9 @@ uint32_t ConnectionConfiguration::socket_recv_buffer() const noexcept
     return Application::config_manager().network_rcvbuf(areg::EmptyStringA, mConnectType);
 }
 
-uint32_t ConnectionConfiguration::batch_size() const noexcept
+uint32_t ConnectionConfiguration::drain_limit() const noexcept
 {
-    return Application::config_manager().network_batch(areg::EmptyStringA, mConnectType);
+    return Application::config_manager().network_drain_limit(areg::EmptyStringA, mConnectType);
 }
 
 uint32_t ConnectionConfiguration::pool_pairs() const noexcept

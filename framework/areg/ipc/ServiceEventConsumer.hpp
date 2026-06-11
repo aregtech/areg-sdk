@@ -19,6 +19,8 @@
   * Include files.
   ************************************************************************/
 #include "areg/base/areg_global.h"
+#include "areg/base/MessageEnvelope.hpp"
+#include "areg/component/EventConsumer.hpp"
 #include "areg/component/TimerConsumer.hpp"
 #include "areg/ipc/ServiceEvent.hpp"
 
@@ -33,11 +35,6 @@ namespace areg {
 } // namespace areg
 
 namespace areg {
-
-/************************************************************************
- * Dependencies.
- ************************************************************************/
-class RemoteMessage;
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceEventConsumer class declaration
@@ -102,14 +99,14 @@ public:
      *
      * \param   msgReceived     The received communication message.
      **/
-    virtual void on_message_received(const RemoteMessage& msgReceived) = 0;
+    virtual void on_message_received(const MessageEnvelope& msgReceived) = 0;
 
     /**
      * \brief   Triggered to send a communication message.
      *
      * \param   msgSend     The communication message to send.
      **/
-    virtual void on_message_send(const RemoteMessage& msgSend) = 0;
+    virtual void on_message_send(const MessageEnvelope& msgSend) = 0;
 
     /**
      * \brief   Triggered to inform of channel connection.
@@ -270,6 +267,56 @@ private:
     ServiceServerConsumer() = delete;
     AREG_NOCOPY_NOMOVE(ServiceServerConsumer);
 };
+
+//////////////////////////////////////////////////////////////////////////
+// RemoteMessageConsumer class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Receives an Event that carries the IPC MessageEnvelope 
+ **/
+class AREG_API RemoteMessageConsumer : public areg::EventConsumer
+{
+public:
+    /**
+     * \brief   Initializes with the service event consumer that receives the envelope.
+     *
+     * \param   eventConsumer   Callback target for on_message_received().
+     **/
+    RemoteMessageConsumer(ServiceEventConsumer& eventConsumer);
+
+    virtual ~RemoteMessageConsumer() = default;
+
+private:
+/************************************************************************/
+// EventConsumer interface override.
+/************************************************************************/
+    /**
+     * \brief   Casts the event back to MessageEnvelope
+     * \param   eventElem   The event carrying the IPC envelope.
+     **/
+    inline void start_event_processing(areg::Event& eventElem) final;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    ServiceEventConsumer& mServiceEventConsumer;
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+    RemoteMessageConsumer() = delete;
+    AREG_NOCOPY_NOMOVE(RemoteMessageConsumer);
+};
+
+//////////////////////////////////////////////////////////////////////////
+// RemoteMessageConsumer inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline void RemoteMessageConsumer::start_event_processing(areg::Event& eventElem)
+{
+    mServiceEventConsumer.on_message_received(eventElem.envelope());
+}
 
 } // namespace areg
 #endif // AREG_IPC_SERVICEEVENTCONSUMER_HPP

@@ -92,14 +92,14 @@ public:
      *
      * \param   msg     A pre-built message from make_log_message(); moved into the event.
      **/
-    static void log_message( areg::RemoteMessage && msg );
+    static void log_message( areg::MessageEnvelope && msg );
 
     /**
      * \brief   Triggers an event to log a remote message.
      *
-     * \param   logData     The remote message buffer containing a log message from another process.
+     * \param   logData     The event envelope containing a log message from another process.
      **/
-    static void log_message( const RemoteMessage& logData );
+    static void log_message( const areg::MessageEnvelope& logData );
 
     /**
      * \brief   Reads logging configuration from a file.
@@ -206,8 +206,7 @@ public:
      * \param   overwriteExisting       If true, resets and overwrites existing configuration with
      *                                  defaults regardless of prior state. If false, only applies
      *                                  defaults if not previously configured. After calling with
-     *                                  true, configuration will not be loaded from file until
-     *                                  reset.
+     *                                  true, configuration will not be loaded from file until reset.
      **/
     static void set_default_configuration(bool overwriteExisting);
 

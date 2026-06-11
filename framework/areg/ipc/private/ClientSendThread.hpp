@@ -21,7 +21,7 @@
 #include "areg/base/areg_global.h"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/component/DispatcherThread.hpp"
-#include "areg/ipc/SendMessageEvent.hpp"
+#include "areg/component/EventConsumer.hpp"
 #include "areg/ipc/DataRateStats.hpp"
 
 /************************************************************************
@@ -41,7 +41,7 @@ namespace areg {
  * \brief   Message sender thread that queues and sends all messages to remote routing service.
  **/
 class ClientSendThread final    : public    DispatcherThread
-                                , public    SendMessageEventConsumer
+                                , public    EventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -123,14 +123,14 @@ protected:
 
 private:
 /************************************************************************/
-// SendMessageEventConsumer interface overrides.
+// EventConsumer interface override.
 /************************************************************************/
     /**
-     * \brief   Processes send message events dispatched by worker or component thread.
-     *
-     * \param   data    Send message event data to process.
+     * \brief   Receives IPC outbound events and exit signals dispatched to this send thread.
+     *          Zeros internal1/internal2/custom in the event header before wire transmission.
+     *          Exits on is_exit_prio().
      **/
-    void process_event( const SendMessageEventData & data ) final;
+    void start_event_processing( Event & eventElem ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -148,6 +148,15 @@ private:
      * \brief   Atomic stats (bytes + messages sent + enabled flag).
      **/
     DataRateStats                   mSendStats;
+    /**
+     * \brief   Reusable holder keeping drained message buffers alive until the writev completes.
+     *          Constructed once; slots are reset (not reconstructed) per send. ClientSendThread context only.
+     **/
+    areg::RawBufferPtr              mDrain[areg::DEFAULT_DRAIN_LIMIT];
+    /**
+     * \brief   Reusable continues region of buffers and data size.
+     **/
+    areg::IoBuffer                  mIoBuffer[areg::DEFAULT_DRAIN_LIMIT];
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

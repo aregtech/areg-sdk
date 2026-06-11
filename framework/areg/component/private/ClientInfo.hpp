@@ -183,7 +183,7 @@ inline bool ClientInfo::operator == (const ProxyAddress& client) const noexcept
 
 inline bool ClientInfo::operator == (const ClientInfo& other) const noexcept
 {
-    return (this != &other ? mClientAddress == other.mClientAddress : true);
+    return ((this == &other) || (mClientAddress == other.mClientAddress));
 }
 
 inline bool ClientInfo::operator == (const StubAddress& server) const noexcept

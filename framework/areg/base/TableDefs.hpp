@@ -39,11 +39,10 @@ namespace areg {
  *          CRC polynomial:
  *          X^32+X^28+X^27+X^26+X^25+X^23+X^22+X^20+X^19+X^18+X^14+X^13+X^11+X^10+X^9+X^8+X^6+1
  *
- *          CRC32C is used by iSCSI, SCTP, Btrfs, ext4, and the SSE4.2
- *          hardware CRC32 instruction (_mm_crc32_u*). Choosing this polynomial
+ *          Hardware CRC32 instruction -- _mm_crc32_u*. Choosing this polynomial
  *          keeps the software and hardware paths bit-for-bit identical.
  *
- * \param   byte    Input byte value (0–255) for which to compute the entry.
+ * \param   byte    Input byte value (0-255) for which to compute the entry.
  * \return  32-bit CRC32C table entry corresponding to the given byte.
  **/
 [[nodiscard]]
@@ -134,7 +133,7 @@ inline constexpr uint16_t TBL_CTRL{ static_cast<uint16_t>(areg::CharCategory::Co
 //!< Any printable character (letters, digits, symbols, space, tab).
 inline constexpr uint16_t TBL_PRINT{ static_cast<uint16_t>(areg::CharCategory::Printable) };
 
-//!< Decimal digit (0–9); also printable.
+//!< Decimal digit (0-9); also printable.
 inline constexpr uint16_t TBL_NUMBER{ static_cast<uint16_t>(areg::CharCategory::Number) | static_cast<uint16_t>(areg::CharCategory::Printable) };
 
 //!< Printable punctuation or special symbol.

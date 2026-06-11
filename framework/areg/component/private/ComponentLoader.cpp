@@ -320,10 +320,9 @@ bool ComponentLoader::add_model( const areg::Model & newModel )
 {
     Lock  lock(mLock);
     bool succeed { (newModel.model_name().is_empty() == false) && (newModel.is_model_loaded() == false) };
-    // the new model name cannot be empty and it should be unique, and it cannot be marked as loaded.
+    // the new model name cannot be empty and it should be unique.
     ASSERT(succeed);
 
-    // search if model with the same name exists
     for (uint32_t i = 0; succeed && (i < mModelList.size()); ++ i )
     {
         const areg::Model & regModel = mModelList.value_at(i);
@@ -340,14 +339,14 @@ bool ComponentLoader::add_model( const areg::Model & newModel )
                     {
                         const areg::ComponentEntry & regComponentEntry = regComponentList.mListComponents.value_at(k);
                         succeed = !newModel.has_registered_component(regComponentEntry);
-                    } // end of for ( int k = 0; hasError == false && k < newComponentList.GetSize(); k ++ )
+                    }
                 }
                 else
                 {
                     succeed = false;
                     ASSERT(false);
                 }
-            } // end of for ( int j = 0; hasError == false && j < newThreadList.GetSize(); j ++ )
+            }
         }
         else
         {
@@ -411,7 +410,7 @@ bool ComponentLoader::load_model( areg::Model & whichModel ) const
             continue;
         }
 
-        if (Thread::find_by_name(entry.mThreadName) != nullptr)
+        if (Thread::find_by_address(ThreadAddress(entry.mThreadName)) != nullptr)
         {
             result = true;
             continue;
@@ -461,7 +460,7 @@ void ComponentLoader::unload_model( bool waitComplete, areg::Model & whichModel 
     ThreadList threadList( modelThreads.mListThreads.size( ) );
     for ( uint32_t i = 0; i < modelThreads.mListThreads.size( ); ++ i )
     {
-        Thread * compThread = Thread::find_by_name(modelThreads.mListThreads.value_at(i ).mThreadName);
+        Thread * compThread = Thread::find_by_address(ThreadAddress(modelThreads.mListThreads.value_at(i).mThreadName));
         if (compThread != nullptr)
         {
             ASSERT(AREG_RUNTIME_CAST(compThread, ComponentThread));
@@ -508,7 +507,7 @@ void ComponentLoader::wait_threads(areg::Model & whichModel)
     ThreadList threadList(modelThreads.mListThreads.size());
     for (uint32_t i = 0; i < modelThreads.mListThreads.size(); ++ i)
     {
-        Thread * compThread = Thread::find_by_name(modelThreads.mListThreads.value_at(i).mThreadName);
+        Thread * compThread = Thread::find_by_address(ThreadAddress(modelThreads.mListThreads.value_at(i).mThreadName));
         if (compThread != nullptr)
         {
             ASSERT(AREG_RUNTIME_CAST(compThread, ComponentThread) != nullptr);

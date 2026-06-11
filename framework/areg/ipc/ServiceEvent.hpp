@@ -20,7 +20,6 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/component/EventTemplate.hpp"
-#include "areg/base/RemoteMessage.hpp"
 
 namespace areg {
 
@@ -28,7 +27,7 @@ namespace areg {
 // ServiceEventData class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Wraps service state change event with command instruction and optional message data.
+ * \brief   Wraps a service state-change command for dispatching on the service thread.
  **/
 class AREG_API ServiceEventData
 {
@@ -37,19 +36,17 @@ class AREG_API ServiceEventData
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   The list of service connections and communication events
+     * \brief   Service lifecycle and connection commands.
      **/
     enum class ServiceCommand
     {
-          CMD_StartService          //!< Start service and connection.
-        , CMD_StopService           //!< Stop service and connection.
-        , CMD_RestartService        //!< Restart service and connection
-        , CMD_ServiceStarted        //!< Notify service connection is started.
-        , CMD_ServiceStopped        //!< Notify service connection is stopped.
-        , CMD_ServiceLost           //!< Notify service connection is lost.
-        , CMD_ServiceExit           //!< Quit service.
-        , CMD_ServiceSendMsg        //!< Notify send remote messages
-        , CMD_ServiceReceivedMsg    //!< Notify received remote message
+          CMD_StartService      //!< Start service and connection.
+        , CMD_StopService       //!< Stop service and connection.
+        , CMD_RestartService    //!< Restart service and connection.
+        , CMD_ServiceStarted    //!< Notify service connection is started.
+        , CMD_ServiceStopped    //!< Notify service connection is stopped.
+        , CMD_ServiceLost       //!< Notify service connection is lost.
+        , CMD_ServiceExit       //!< Quit service.
     };
 
     /**
@@ -68,15 +65,6 @@ public:
      * \param   cmdService      Command to set in event data.
      **/
     explicit inline ServiceEventData( ServiceEventData::ServiceCommand cmdService );
-    /**
-     * \brief   Initializes with service command and message data.
-     *
-     * \param   cmdService      Command to set in event data.
-     * \param   msgService      Message data buffer to initialize.
-     **/
-    inline ServiceEventData(ServiceEventData::ServiceCommand cmdService, const RemoteMessage& msgService);
-
-    inline ServiceEventData(ServiceEventData::ServiceCommand cmdService, RemoteMessage&& msgService) noexcept;
 
     ServiceEventData( const ServiceEventData & source ) = default;
 
@@ -99,12 +87,6 @@ public:
     [[nodiscard]]
     inline ServiceEventData::ServiceCommand command() const noexcept;
 
-    /**
-     * \brief   Returns the message data buffer saved in event data.
-     **/
-    [[nodiscard]]
-    inline const RemoteMessage & message() const noexcept;
-
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -113,11 +95,6 @@ private:
      * \brief   The command of client service event.
      **/
     ServiceEventData::ServiceCommand    mServiceCommand;
-
-    /**
-     * \brief   The message data buffer saved in service event.
-     **/
-    mutable RemoteMessage               mMessageData;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -142,31 +119,13 @@ AREG_DECLARE_EVENT(ServiceEventData, ServiceServerEvent, ServiceServerEventConsu
 //////////////////////////////////////////////////////////////////////////////
 
 inline ServiceEventData::ServiceEventData( ServiceEventData::ServiceCommand cmdService )
-    : mServiceCommand   ( cmdService )
-    , mMessageData      ( )
-{
-}
-
-inline ServiceEventData::ServiceEventData(ServiceEventData::ServiceCommand cmdService, const RemoteMessage& msgService)
-    : mServiceCommand   ( cmdService )
-    , mMessageData      ( msgService )
-{
-}
-
-inline ServiceEventData::ServiceEventData(ServiceEventData::ServiceCommand cmdService, RemoteMessage&& msgService) noexcept
-    : mServiceCommand   ( cmdService )
-    , mMessageData      ( std::move(msgService) )
+    : mServiceCommand( cmdService )
 {
 }
 
 inline ServiceEventData::ServiceCommand ServiceEventData::command() const noexcept
 {
     return mServiceCommand;
-}
-
-inline const RemoteMessage& ServiceEventData::message() const noexcept
-{
-    return mMessageData;
 }
 
 inline constexpr const char * ServiceEventData::as_string( ServiceEventData::ServiceCommand cmdService ) noexcept
@@ -187,10 +146,6 @@ inline constexpr const char * ServiceEventData::as_string( ServiceEventData::Ser
         return "ServiceEventData::CMD_ServiceLost";
     case ServiceEventData::ServiceCommand::CMD_ServiceExit:
         return "ServiceEventData::CMD_ServiceExit";
-    case ServiceEventData::ServiceCommand::CMD_ServiceSendMsg:
-        return "ServiceEventData::CMD_ServiceSendMsg";
-    case ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg:
-        return "ServiceEventData::CMD_ServiceReceivedMsg";
     default:
         return "ERR: Undefined ServiceEventData::ServiceCommand value!!!";
     }

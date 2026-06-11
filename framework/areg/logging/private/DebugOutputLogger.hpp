@@ -114,8 +114,7 @@ protected:
      * \brief   Writes binary data from SharedBuffer object to output stream and returns the size of
      *          written data.
      *
-     * \param   buffer      The instance of SharedBuffer object containing data to stream to output
-     *                      stream.
+     * \param   buffer      The instance of SharedBuffer object containing data to stream to output stream.
      * \return  Returns the size in bytes of written data.
      **/
     uint32_t write( const SharedBuffer& buffer ) final;

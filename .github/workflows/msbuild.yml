@@ -21,7 +21,8 @@ permissions:
 jobs:
   build-tests:
     name: ${{matrix.config.name}}
-    runs-on: windows-latest
+    # Pinned to windows-2022 (Visual Studio 2022) on purpose
+    runs-on: windows-2022
 
     strategy:
       fail-fast: false

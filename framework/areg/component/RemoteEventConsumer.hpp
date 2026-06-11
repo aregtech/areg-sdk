@@ -20,15 +20,18 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/component/EventConsumer.hpp"
-#include "areg/component/StreamableEvent.hpp"
+#include "areg/component/Event.hpp"
+#include "areg/component/ServiceRequestEvent.hpp"
+#include "areg/component/ServiceResponseEvent.hpp"
+#include "areg/component/RequestEvents.hpp"
+
 namespace areg {
 
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-class RemoteRequestEvent;
-class RemoteNotifyRequestEvent;
-class RemoteResponseEvent;
+class ServiceRequestEvent;
+class ServiceResponseEvent;
 
 //////////////////////////////////////////////////////////////////////////
 // RemoteEventConsumer class declaration
@@ -54,15 +57,15 @@ public:
      *
      * \param   reqEvent    The remote request event to process.
      **/
-    virtual void process_request_event( RemoteRequestEvent & reqEvent ) = 0;
+    virtual void process_request_event(ServiceRequestEvent& reqEvent ) = 0;
 
     /**
-     * \brief   Processes a remote notification request event received by the stub (e.g., to start
-     *          or stop attribute notifications).
+     * \brief   Processes a remote notification request event received by the stub
+     *          (e.g., to start or stop attribute notifications).
      *
      * \param   reqNotifyEvent      The remote notification request event to process.
      **/
-    virtual void process_notify_request( RemoteNotifyRequestEvent & reqNotifyEvent ) = 0;
+    virtual void process_notify_request(ServiceRequestEvent& reqNotifyEvent ) = 0;
 
     /**
      * \brief   Processes a remote response event received by the stub (e.g., to subscribe or
@@ -70,7 +73,7 @@ public:
      *
      * \param   respEvent       The remote response event to process.
      **/
-    virtual void process_response_event( RemoteResponseEvent & respEvent ) = 0;
+    virtual void process_response_event(ServiceResponseEvent& respEvent ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations
@@ -81,12 +84,11 @@ private:
 /************************************************************************/
 
     /**
-     * \brief   Triggered by the dispatcher when starting to process an event. Overwrite to handle
-     *          event processing.
+     * \brief   Triggered by the dispatcher when starting to process an event.
      *
      * \param   eventElem       The event object being processed by the dispatcher.
      **/
-    void start_event_processing( Event & eventElem ) override;
+    inline void start_event_processing( Event & eventElem ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -94,6 +96,27 @@ private:
 private:
     AREG_NOCOPY_NOMOVE( RemoteEventConsumer );
 };
+
+//////////////////////////////////////////////////////////////////////////
+// RemoteEventConsumer inline methods
+//////////////////////////////////////////////////////////////////////////
+inline void RemoteEventConsumer::start_event_processing(Event& eventElem)
+{
+    switch (eventElem.event_type())
+    {
+    case areg::EventType::EventRemoteRequest:
+        process_request_event(static_cast<ServiceRequestEvent&>(eventElem));
+        break;
+    case areg::EventType::EventRemoteResponse:
+        process_response_event(static_cast<ServiceResponseEvent&>(eventElem));
+        break;
+    case areg::EventType::EventRemoteNotifyRequest:
+        process_notify_request(static_cast<ServiceRequestEvent&>(eventElem));
+        break;
+    default:
+        break;
+    }
+}
 
 } // namespace areg
 #endif  // AREG_COMPONENT_REMOTEEVENTCONSUMER_HPP

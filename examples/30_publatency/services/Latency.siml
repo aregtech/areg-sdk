@@ -268,7 +268,7 @@
                 </Field>
                 <Field ID="531" Name="count" DataType="uint32">
                     <Value IsDefault="true">0</Value>
-                    <Description>Broadcast: number of messages per second. Request-response: number of requests to expect,</Description>
+                    <Description>Number of measured messages to collect (in addition to warmup). Both broadcast (one-way) and request-response (ping-pong) are count-bounded; the test stops once this many samples are gathered.</Description>
                 </Field>
             </FieldList>
         </DataType>
@@ -292,7 +292,7 @@
                     <Description>The number of elements to warmup. Value 0 means no warm up.</Description>
                 </Parameter>
                 <Parameter ID="535" Name="count" DataType="uint32">
-                    <Description>Broadcast: number of messages per second. Request-response: number of requests to expect, plus warmup value.</Description>
+                    <Description>Number of measured messages to collect (in addition to warmup). Both broadcast (one-way) and request-response (ping-pong) are count-bounded; the test stops once this many samples are gathered.</Description>
                 </Parameter>
             </ParamList>
         </Method>
@@ -301,6 +301,14 @@
             <ParamList>
                 <Parameter ID="536" Name="mode" DataType="LantencySetup">
                     <Description>The latency test mode that was setup</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="700" Name="message_next" MethodType="Request">
+            <Description>One-way pull token. The consumer calls this to ask the provider to emit exactly one broadcast of the currently active broadcast mode. This drives the warm, 1-in-flight one-way latency loop and replaces the former 50 ms broadcast timer, so the test can never run endlessly: the provider only emits when pulled.</Description>
+            <ParamList>
+                <Parameter ID="701" Name="id" DataType="uint32">
+                    <Description>Consumer's expected next message sequence number (used only for drop detection / debugging; the provider stamps its own running id).</Description>
                 </Parameter>
             </ParamList>
         </Method>

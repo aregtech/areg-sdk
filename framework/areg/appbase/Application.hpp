@@ -186,8 +186,7 @@ public:
     static void stop_logging();
 
     /**
-     * \brief   Starts the Service Manager thread. Does not trigger Router Service client
-     *          connection.
+     * \brief   Starts the Service Manager thread. Does not trigger Router Service client connection.
      *
      * \return  Returns true if Service Manager started successfully or is already running.
      **/
@@ -238,11 +237,9 @@ public:
     static bool config_message_routing();
 
     /**
-     * \brief   Starts the Message Router client. Starts the Service Manager first if not already
-     *          running.
+     * \brief   Starts the Message Router client. Starts the Service Manager first if not already running.
      *
-     * \param   connectTypes    Bitwise set of connection types to establish. Currently only TCP/IP
-     *                          is supported.
+     * \param   connectTypes    Bitwise set of connection types to establish. Currently only TCP/IP is supported.
      * \return  Returns true if the Message Router client started successfully.
      **/
     static bool start_message_routing(uint32_t connectTypes);
@@ -265,9 +262,7 @@ public:
     static void stop_message_routing();
 
     /**
-     * \brief   Returns true if the Message Router client is configured.
-     *
-     * \return  Returns true if the Message Router client is configured; false otherwise.
+     * \brief   Returns true if the Message Router client is configured; false otherwise.
      **/
     [[nodiscard]]
     static bool is_message_routing_configured();
@@ -516,8 +511,7 @@ private:
     static bool _os_start_local_service( const wchar_t * serviceName, const wchar_t * serviceExecutable );
 
     /**
-     * \brief   OS-specific initialization. On Linux, sets up signal handlers; on Windows, sets up
-     *          time period.
+     * \brief   OS-specific initialization. On Linux, sets up signal handlers; on Windows, sets up time period.
      **/
     static void _os_setup_handlers();
 

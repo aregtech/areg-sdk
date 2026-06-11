@@ -30,7 +30,7 @@
 #include <climits>
 
 //////////////////////////////////////////////////////////////////////////
-// LatencySample — one measured round-trip record
+// LatencySample -- one measured round-trip record
 //////////////////////////////////////////////////////////////////////////
 
 struct LatencySample
@@ -43,7 +43,7 @@ struct LatencySample
 };
 
 //////////////////////////////////////////////////////////////////////////
-// ResultEntry — summary statistics for one completed test run
+// ResultEntry -- summary statistics for one completed test run
 //////////////////////////////////////////////////////////////////////////
 
 struct ResultEntry
@@ -65,7 +65,7 @@ struct ResultEntry
 };
 
 //////////////////////////////////////////////////////////////////////////
-// CmdData — carries a parsed console command to the component thread
+// CmdData -- carries a parsed console command to the component thread
 //////////////////////////////////////////////////////////////////////////
 
 struct CmdData
@@ -81,12 +81,14 @@ struct CmdData
     bool                    set_warmup  { false };
     bool                    set_duration{ false };
     bool                    set_output  { false };
+    bool                    enable_file { false };  //!< -f: enable CSV output (optionally with path)
     bool                    error       { false };
     Latency::LatencyMode    mode        { Latency::LatencyMode::Request0 };
     uint32_t                count       { 0u };
     uint32_t                warmup      { 0u };
     uint32_t                duration_sec{ 0u };
-    areg::String            csv_path    {    };
+    areg::String            csv_path    {    };  //!< path from -o=<path>
+    areg::String            csv_file    {    };  //!< path from -f=<path> (empty = auto)
 
     CmdData() = default;
     CmdData(const CmdData &) = default;
@@ -114,7 +116,7 @@ class LatencyConsumer final : public    areg::Component
     friend class DisplayConsumer;
 
 //////////////////////////////////////////////////////////////////////////
-// Nested command consumer — forwards events to the component thread
+// Nested command consumer -- forwards events to the component thread
 //////////////////////////////////////////////////////////////////////////
     class CmdConsumer : public IECmdConsumer
     {
@@ -135,7 +137,7 @@ class LatencyConsumer final : public    areg::Component
     };
 
 //////////////////////////////////////////////////////////////////////////
-// Nested display consumer — drives the 1-second console refresh thread
+// Nested display consumer -- drives the 1-second console refresh thread
 //////////////////////////////////////////////////////////////////////////
     class DisplayConsumer : public areg::ThreadConsumer
     {
@@ -167,6 +169,7 @@ class LatencyConsumer final : public    areg::Component
         , Warmup   = 8
         , Duration = 9
         , Output   = 10
+        , File     = 11
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -221,19 +224,19 @@ private:
     static constexpr std::string_view MSG_LIVE_1    { " Mode: %-6s  Status: %-8s  Samples: %-6u  Rate: %8.1f msg/sec" };
     static constexpr std::string_view MSG_LIVE_2    { " Min: %9.3f us   Mean: %9.3f us   Max: %9.3f us" };
     static constexpr std::string_view MSG_LIVE_FINAL{ " Min:%9.3f  P50:%9.3f  P95:%9.3f  P99:%9.3f  Max:%9.3f  Mean:%9.3f  (us)" };
-    static constexpr std::string_view MSG_PROMPT    { " Commands: start | stop | -q | -q=1 | -h | -m=<mode> -c=<n> -w=<n> -d=<s> -o=<path>" };
+    static constexpr std::string_view MSG_PROMPT    { " Commands: start | stop | -q | -q=1 | -h | -m=<mode> -c=<n> -w=<n> -d=<s> -f[=<path>] -o=<path>" };
     static constexpr std::string_view MSG_EX_HDR    { " Examples (short or long form, combinable on one line):" };
-    static constexpr std::string_view MSG_EX1       { "   -s (or `start`" };
+    static constexpr std::string_view MSG_EX1       { "   -s (or `start`)" };
     static constexpr std::string_view MSG_EX2       { "   -s -m=pp0 -c=1000 -w=50           (or `start mode=pp0 count=1000 warmup=50`)" };
     static constexpr std::string_view MSG_EX3       { "   -s -m=pp8 -c=5000 -w=100          (or `start mode=pp8 count=5000 warmup=100`)" };
-    static constexpr std::string_view MSG_EX4       { "   -s -m=bc0 -c=2000 -d=5            (or `start mode=bc0 count=2000 dur=5`)" };
-    static constexpr std::string_view MSG_EX5       { "   -s -m=bc8 -c=1000 -o=results.csv  (or `start mode=bc8 count=1000 out=results.csv`)" };
+    static constexpr std::string_view MSG_EX4       { "   -s -m=bc64 -c=5000 -w=500         (or `start mode=bc64 count=5000 warmup=500`)" };
+    static constexpr std::string_view MSG_EX5       { "   -s -m=bc8 -c=1000 -f=results.csv  (or `start mode=bc8 count=1000 file=results.csv`)" };
     static constexpr std::string_view MSG_EX6       { " PP Modes: pp0 | pp8 | pp16 | pp32 | pp64 | pp128 | pp512 | pp1024 | pp4096 | pp65536" };
     static constexpr std::string_view MSG_EX7       { " BC Modes: bc0 | bc8 | bc16 | bc32 | bc64 | bc128 | bc512 | bc1024 | bc4096 | bc65536" };
     static constexpr std::string_view MSG_EX8       { " Other Opt: -p (`stop`) | -i (`info`) | -h (`help`) | -q (global `quit`) | -q=1 (local `quit`)" };
     static constexpr std::string_view MSG_SETTINGS  { " mode=%-6s  count=%-6u  dur=%-3u s  warmup=%-3u  connected=%-3s  running=%-3s  csv: %s" };
     static constexpr std::string_view MSG_RES_HDR   { " Test Results (last 8 runs):" };
-    // Table strings — all 83 chars wide (1 leading space + 82 table chars)
+    // Table strings -- all 83 chars wide (1 leading space + 82 table chars)
     static constexpr std::string_view MSG_TBL_SEP   { " +-----+---------+--------+----------+----------+----------+----------+----------+----------+" };
     static constexpr std::string_view MSG_TBL_HDR   { " |  #  |    Mode |  Count |  Min(us) |  P50(us) |  P95(us) |  P99(us) |  Max(us) | Mean(us) |" };
     static constexpr std::string_view MSG_TBL_EMPTY { " |     |         |        |          |          |          |          |          |          |" };
@@ -503,6 +506,7 @@ private:
     void _start_test();
     void _stop_test();
     void _send_next_ping();
+    void _send_next_oneway();   //!< Broadcast/one-way: pull the next message from the provider.
     void _record_sample(uint64_t t1, uint64_t t2, uint64_t t4);
 
     /**
@@ -538,6 +542,7 @@ private:
     uint32_t                mCount;
     uint32_t                mWarmup;
     uint32_t                mDurationSec;
+    bool                    mCsvEnabled;    //!< true only when -f was given; gates all CSV writes
     areg::String            mCsvPath;
 
     uint32_t                mCurrentSeq;    //!< Total arrivals since test start (warmup + measured)

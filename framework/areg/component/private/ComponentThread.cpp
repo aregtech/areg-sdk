@@ -171,7 +171,7 @@ void ComponentThread::shutdown_components()
     _shutdown_components();
 }
 
-DispatcherThread* ComponentThread::event_consumer_thread( const RuntimeClassID& whichClass )
+DispatcherThread* ComponentThread::event_consumer_thread( const uint32_t whichClass ) noexcept
 {
     DispatcherThread* result = has_registered_consumer(whichClass) ? static_cast<DispatcherThread *>(this) : nullptr;
     if (result != nullptr)
@@ -192,7 +192,7 @@ void ComponentThread::terminate_self()
 {
     mHasStarted = false;
     remove_all_events();
-    mEventExit.set_signaled();
+    signal_exit_event();
 
     _shutdown_proxies();
 

@@ -522,7 +522,7 @@ protected:
      * \param   msgFailed       The message that failed to send.
      * \param   whichTarget     The target socket where the send failed.
      **/
-    void failed_send_message( const RemoteMessage & msgFailed, Socket & whichTarget ) final;
+    void failed_send_message( const MessageEnvelope & msgFailed, Socket & whichTarget ) final;
 
     /**
      * \brief   Called when message reception fails.
@@ -537,7 +537,7 @@ protected:
      *
      * \param   msgUnprocessed      The unprocessed message data.
      **/
-    void failed_process_message( const RemoteMessage & msgUnprocessed ) final;
+    void failed_process_message( const MessageEnvelope & msgUnprocessed ) final;
 
     /**
      * \brief   Processes a received message.
@@ -545,7 +545,7 @@ protected:
      * \param   msgReceived     The received message to process.
      * \param   whichSource     The source socket that received the message.
      **/
-    void process_received_message( RemoteMessage & msgReceived, Socket & whichSource ) final;
+    void process_received_message( MessageEnvelope & msgReceived, Socket & whichSource ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

@@ -40,7 +40,7 @@ inline void drain_eventfd(int fd) noexcept
 //
 // WHY mSockets[] IS TRACKED ALONGSIDE THE KERNEL EPOLL SET:
 //   reset() must not close mEpollFd while another thread is inside epoll_wait().
-//   Closing a watched epoll fd from a different thread is undefined behaviour.
+//   Closing a watched epoll fd from a different thread is undefined behavior.
 //   Instead, reset() removes every real socket via epoll_ctl(DEL) and then signals the eventfd.
 // -----------------------------------------------------------------------
 
@@ -82,7 +82,6 @@ areg::SocketMultiplexer::SocketMultiplexer(uint32_t maxConnections /*= areg::DEF
 
 areg::SocketMultiplexer::~SocketMultiplexer() noexcept
 {
-    // Close the eventfd once (both members reference the same fd).
     if (mWakeupReadFd != areg::InvalidSocketHandle)
     {
         ::close(static_cast<int>(mWakeupReadFd));
@@ -224,8 +223,8 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         return fd;
     }
 
-    struct epoll_event events[BATCH_SIZE];
-    const int n = ::epoll_wait(static_cast<int>(mEpollFd), events, BATCH_SIZE, timeoutMs);
+    struct epoll_event events[DEFAULT_DRAIN_LIMIT];
+    const int n = ::epoll_wait(static_cast<int>(mEpollFd), events, DEFAULT_DRAIN_LIMIT, timeoutMs);
 
     if (n < 0)
         return (errno == EINTR) ? areg::InvalidSocketHandle : areg::FailedSocketHandle;

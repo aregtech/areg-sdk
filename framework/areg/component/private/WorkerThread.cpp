@@ -71,7 +71,7 @@ void WorkerThread::ready_for_events( bool is_ready )
     DispatcherThread::ready_for_events(is_ready);
 }
 
-DispatcherThread* WorkerThread::event_consumer_thread( const RuntimeClassID& whichClass )
+DispatcherThread* WorkerThread::event_consumer_thread( const uint32_t whichClass ) noexcept
 {
     return (has_registered_consumer(whichClass) ? static_cast<DispatcherThread *>(this) : binding_component().find_event_consumer(whichClass));
 }
@@ -94,7 +94,7 @@ void WorkerThread::terminate_self()
 {
     mHasStarted = false;
     remove_all_events();
-    mEventExit.set_signaled();
+    signal_exit_event();
     Thread::shutdown(areg::TIMEOUT_10_MS);
 
     delete this;

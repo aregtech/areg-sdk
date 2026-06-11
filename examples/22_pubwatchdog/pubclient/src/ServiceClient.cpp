@@ -96,24 +96,20 @@ void ServiceClient::response_start_sleep( uint32_t timeoutSleep )
     }
 }
 
-#if AREG_LOGGING
-
-void ServiceClient::request_start_sleep_failed( areg::ResultType FailureReason )
+void ServiceClient::request_start_sleep_failed( [[maybe_unused]] areg::ResultType FailureReason )
 {
     LOG_SCOPE( examples_22_pubclient_ServiceClient, request_start_sleep_failed );
     LOG_WARN("Request to sleep service failed with reason [ %s ]", areg::as_string(FailureReason));
 }
 
-void ServiceClient::request_stop_service_failed( areg::ResultType FailureReason )
+void ServiceClient::request_stop_service_failed( [[maybe_unused]] areg::ResultType FailureReason )
 {
     LOG_SCOPE( examples_22_pubclient_ServiceClient, request_stop_service_failed );
     LOG_WARN( "Request to stop the service failed with reason [ %s ]", areg::as_string( FailureReason ) );
 }
 
-void ServiceClient::request_shutdown_service_failed( areg::ResultType FailureReason )
+void ServiceClient::request_shutdown_service_failed( [[maybe_unused]] areg::ResultType FailureReason )
 {
     LOG_SCOPE( examples_22_pubclient_ServiceClient, request_shutdown_service_failed );
     LOG_WARN( "Request to shutdown service failed with reason [ %s ]", areg::as_string( FailureReason ) );
 }
-
-#endif  // AREG_LOGGING

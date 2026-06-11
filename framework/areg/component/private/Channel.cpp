@@ -45,9 +45,9 @@ const Channel & Channel::from_string(const String & channel)
     pos = channel.substring( target, areg::OBJECT_SEPARATOR, pos );
     channel.substring( cookie, areg::OBJECT_SEPARATOR, pos );
 
-    mSource = static_cast<ITEM_ID>( source.to_uint64() );
-    mTarget = static_cast<ITEM_ID>( target.to_uint64() );
-    mCookie = static_cast<ITEM_ID>( cookie.to_uint64() );
+    mSource = static_cast<ITEM_ID>( source.to_uint32() );
+    mTarget = static_cast<ITEM_ID>( target.to_uint32() );
+    mCookie = static_cast<ITEM_ID>( cookie.to_uint32() );
 
     return (*this);
 }

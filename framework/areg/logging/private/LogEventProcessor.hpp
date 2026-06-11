@@ -39,8 +39,7 @@ namespace areg {
 // LogEventProcessor class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This is a helper class to process the events received
- *          by LogManager.
+ * \brief   This is a helper class to process the events received by LogManager.
  **/
 class LogEventProcessor
 {

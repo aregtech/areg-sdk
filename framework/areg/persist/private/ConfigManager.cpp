@@ -1072,11 +1072,11 @@ uint32_t ConfigManager::network_rcvbuf(areg::RemoteServiceKind serviceType, areg
     return network_rcvbuf(module, connect);
 }
 
-uint32_t ConfigManager::network_batch(const String& module, const String& connectType) const noexcept
+uint32_t ConfigManager::network_drain_limit(const String& module, const String& connectType) const noexcept
 {
     Lock lock(mLock);
-    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::NetSocketBatch };
-    constexpr const areg::ConfigKey& key{ areg::net_socket_batch() };
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::NetSocketDrain };
+    constexpr const areg::ConfigKey& key{ areg::net_socket_drain() };
     const String& transport{ connectType.is_empty() ? String(areg::SYNTAX_ALL_MODULES) : connectType };
 
     const String& mod{ module.is_empty() ? mModule : module };
@@ -1093,7 +1093,7 @@ uint32_t ConfigManager::network_batch(const String& module, const String& connec
             return static_cast<uint32_t>(prop->value().as_integer());
     }
 
-    return areg::DEFAULT_BATCH_SIZE;
+    return areg::DEFAULT_DRAIN_LIMIT;
 }
 
 uint32_t ConfigManager::network_pool_pairs(const String& module, const String& connectType) const noexcept
@@ -1162,18 +1162,18 @@ uint32_t ConfigManager::network_cache(const String& module, const String& connec
     {
         const Property* prop = _get_property(mWritableProperties, key.section, mod, transport, key.position, confKey, true);
         if ((prop != nullptr) && (prop->value().as_integer() > 0))
-            return static_cast<uint32_t>(prop->value().as_integer());
+            return static_cast<uint32_t>(prop->value().as_integer()) * areg::ONE_KILOBYTE;
     }
 
     // Step 2: wildcard "*" entry
     {
         const Property* prop = _get_property(mReadonlyProperties, key.section, String(areg::SYNTAX_ALL_MODULES), transport, key.position, confKey, false);
         if ((prop != nullptr) && (prop->value().as_integer() > 0))
-            return static_cast<uint32_t>(prop->value().as_integer());
+            return static_cast<uint32_t>(prop->value().as_integer()) * areg::ONE_KILOBYTE;
     }
 
     // Step 3: compile-time default
-    return areg::DEFAULT_THREAD_CACHE_KB;
+    return areg::DEFAULT_THREAD_CACHE;
 }
 
 } // namespace areg

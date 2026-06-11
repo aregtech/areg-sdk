@@ -22,6 +22,9 @@
 #include "areg/ipc/ConnectionProvider.hpp"
 #include "areg/ipc/ServiceEventConsumer.hpp"
 
+#include "areg/component/Event.hpp"
+#include "areg/component/EventConsumer.hpp"
+#include "areg/component/ExitEvent.hpp"
 #include "areg/ipc/ClientConnection.hpp"
 #include "areg/ipc/private/ClientReceiveThread.hpp"
 #include "areg/ipc/private/ClientSendThread.hpp"
@@ -30,6 +33,7 @@
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/String.hpp"
 
+#include <cstring>
 #include <utility>
 namespace areg {
 
@@ -139,8 +143,7 @@ public:
     /**
      * \brief   Enable or disable the data rate calculation.
      *
-     * \param   enable      If true, the data rate calculation is enabled. Otherwise, it is
-     *                      disabled.
+     * \param   enable      If true, the data rate calculation is enabled. Otherwise, it is disabled.
      **/
     inline void enable_data_rate(bool enable);
 
@@ -193,15 +196,14 @@ protected:
      *
      * \param   msgReceived     The message sent by service to the client.
      **/
-    virtual void service_connection_event(const RemoteMessage& msgReceived);
+    virtual void service_connection_event(const MessageEnvelope& msgReceived);
 
 /************************************************************************/
 // ConnectionProvider interface overrides
 /************************************************************************/
 
     /**
-     * \brief   Configures remote service by reading configuration file and initializing connection
-     *          settings.
+     * \brief   Configures remote service by reading configuration file and initializing connection settings.
      *
      * \param   service         The type of remote service to setup.
      * \param   connectTypes    The type of connection to setup.
@@ -210,8 +212,7 @@ protected:
     bool setup_connection_data(areg::RemoteServiceKind service, uint32_t connectTypes) override;
 
     /**
-     * \brief   Sets router service host name and port number. Note: does not restart service if
-     *          already started.
+     * \brief   Sets router service host name and port number. Note: does not restart service if already started.
      *
      * \param   hostName    IP-address or host name of routing service to connect.
      * \param   portNr      Port number of routing service to connect.
@@ -244,8 +245,7 @@ protected:
     bool is_host_connected() const override;
 
     /**
-     * \brief   Returns true if remote service connection is pending (triggered but not yet
-     *          connected).
+     * \brief   Returns true if remote service connection is pending (triggered but not yet connected).
      **/
     bool is_host_pending() const override;
 
@@ -263,7 +263,7 @@ protected:
      * \param   msgSource       The message source type of the connected client.
      * \return  Returns the created message for remote communication.
      **/
-    RemoteMessage connect_message( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const override;
+    MessageEnvelope connect_message( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const override;
 
     /**
      * \brief   Creates a service disconnection request message with specified source and target.
@@ -272,7 +272,7 @@ protected:
      * \param   target      The ID of the target to send the disconnection message request.
      * \return  Returns the created message for remote communication.
      **/
-    RemoteMessage disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const override;
+    MessageEnvelope disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -327,14 +327,14 @@ protected:
      *
      * \param   msgReceived     The received communication message.
      **/
-    void on_message_received(const RemoteMessage& msgReceived) override;
+    void on_message_received(const MessageEnvelope& msgReceived) override;
 
     /**
      * \brief   Called when communication message needs to be sent.
      *
      * \param   msgSend     The communication message to send.
      **/
-    void on_message_send(const RemoteMessage& msgSend) override;
+    void on_message_send(const MessageEnvelope& msgSend) override;
 
     /**
      * \brief   Called to notify that a channel connection is established.
@@ -362,22 +362,32 @@ protected:
     inline void send_command(ServiceEventData::ServiceCommand cmd, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
     /**
+     * \brief   Posts a received data envelope directly to the dispatcher, bypassing the
+     *          ServiceEventData wrapper. Hot-path optimization: eliminates one allocation and
+     *          one switch-dispatch per received message.
+     *
+     * \param   msg         The received message envelope.
+     * \param   eventPrio   Event priority (default: HighPrio for received messages).
+     **/
+    inline bool send_received_message(const areg::MessageEnvelope& msg, areg::EventPriority eventPrio = areg::EventPriority::HighPrio);
+    inline bool send_received_message(areg::MessageEnvelope&& msg, areg::EventPriority eventPrio = areg::EventPriority::HighPrio);
+
+    /**
      * \brief   Queues a message for sending with optional priority (copy).
      *
      * \param   data            The data of the message.
      * \param   eventPrio       The priority of the message to set.
      **/
-    inline bool send_message(const RemoteMessage & data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
+    inline bool send_message(const MessageEnvelope & data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
     /**
      * \brief   Queues a message for sending with optional priority (move).
      *          Transfers payload ownership to the send queue without copying the message buffer.
-     *          Use when the caller has no further use for the message, e.g. after stream_from_event().
      *
-     * \param   data            Remote message to move into the send queue.
+     * \param   data            Envelope to move into the send queue.
      * \param   eventPrio       The priority of the message to set.
      **/
-    inline bool send_message(RemoteMessage && data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio ) noexcept;
+    inline bool send_message(MessageEnvelope && data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
     /**
      * \brief   Starts client socket connection.
@@ -403,13 +413,6 @@ protected:
      **/
     [[nodiscard]]
     inline ServiceClientConnectionBase::ConnectionPhase connection_state() const noexcept;
-
-    /**
-     * \brief   Queues a disconnect event to close socket and exit thread.
-     *
-     * \param   eventPrio       The priority of the event.
-     **/
-    inline void disconnect_service( areg::EventPriority eventPrio );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations and attributes
@@ -474,6 +477,11 @@ protected:
      * \brief   The Client Service event consumer
      **/
     areg::ServiceClientConsumer     mEventConsumer;
+
+    /**
+     * \brief   Direct data-message consumer for RemoteMessageEvent
+     **/
+    areg::RemoteMessageConsumer     mMessageConsumer;
 
     /**
      * \brief   Data access synchronization object
@@ -627,28 +635,38 @@ inline void ServiceClientConnectionBase::send_command( ServiceEventData::Service
                                  , eventPrio );
 }
 
-inline bool ServiceClientConnectionBase::send_message(const RemoteMessage & data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
+inline bool ServiceClientConnectionBase::send_received_message( const areg::MessageEnvelope & msg
+                                                              , areg::EventPriority eventPrio /*= areg::EventPriority::HighPrio*/ )
 {
-    return SendMessageEvent::send_event( SendMessageEventData(data)
-                                      , static_cast<SendMessageEventConsumer &>(mThreadSend)
-                                      , static_cast<DispatcherThread &>(mThreadSend)
-                                      , eventPrio);
+    areg::MessageEnvelope copy{ msg };
+    return send_received_message(std::move(copy), eventPrio);
 }
 
-inline bool ServiceClientConnectionBase::send_message(RemoteMessage && data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ ) noexcept
+inline bool ServiceClientConnectionBase::send_received_message( areg::MessageEnvelope && msg
+                                                              , areg::EventPriority eventPrio /*= areg::EventPriority::HighPrio*/ )
 {
-    return SendMessageEvent::send_event( SendMessageEventData(std::move(data))
-                                      , static_cast<SendMessageEventConsumer &>(mThreadSend)
-                                      , static_cast<DispatcherThread &>(mThreadSend)
-                                      , eventPrio);
+    areg::Event evt(std::move(msg));
+    evt.set_event_priority(eventPrio);
+    evt.set_event_consumer(static_cast<areg::EventConsumer *>(&mMessageConsumer));
+    evt.set_target_dispatcher(static_cast<areg::DispatcherThread *>(&mMessageDispatcher));
+    evt.deliver_event();
+    return true;
 }
 
-inline void ServiceClientConnectionBase::disconnect_service( areg::EventPriority eventPrio )
+inline bool ServiceClientConnectionBase::send_message(const MessageEnvelope & data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
-    SendMessageEvent::send_event( SendMessageEventData()
-                               , static_cast<SendMessageEventConsumer &>(mThreadSend)
-                               , static_cast<DispatcherThread &>(mThreadSend)
-                               , eventPrio );
+    MessageEnvelope copy{ data };
+    return send_message(std::move(copy), eventPrio);
+}
+
+inline bool ServiceClientConnectionBase::send_message(MessageEnvelope && data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
+{
+    areg::Event evt(std::move(data));
+    evt.set_event_priority(eventPrio);
+    evt.set_event_consumer(static_cast<areg::EventConsumer *>(&mThreadSend));
+    evt.set_target_dispatcher(static_cast<areg::DispatcherThread *>(&mThreadSend));
+    evt.deliver_event();
+    return true;
 }
 
 } // namespace areg

@@ -85,6 +85,22 @@ public:
      **/
     bool create() override;
 
+    /**
+     * \brief   Creates a socket file descriptor without connecting. Use connect_to() to establish the
+     *          connection (e.g. from a dedicated I/O thread). mAddress must be set beforehand.
+     *
+     * \return  Returns true if the socket descriptor was created.
+     **/
+    bool create_fd();
+
+    /**
+     * \brief   Blocking TCP connect to the stored remote address. Must be called after create_fd().
+     *          On failure the socket is closed and invalidated. On success applies TCP_NODELAY.
+     *
+     * \return  Returns true if the connection was established.
+     **/
+    bool connect_to();
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////

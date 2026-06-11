@@ -141,11 +141,11 @@ public:
     uint32_t socket_recv_buffer() const noexcept;
 
     /**
-     * \brief   Returns the configured send/drain batch size for this connection.
-     *          Falls back to DEFAULT_BATCH_SIZE when the key is absent from areg.init.
+     * \brief   Returns the configured send/drain batch limit for this connection.
+     *          Falls back to DEFAULT_DRAIN_LIMIT when the key is absent from areg.init.
      **/
     [[nodiscard]]
-    uint32_t batch_size() const noexcept;
+    uint32_t drain_limit() const noexcept;
 
     /**
      * \brief   Returns the configured thread-pool pair count.

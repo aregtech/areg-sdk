@@ -40,12 +40,8 @@ namespace areg {
 
 /**
  * \brief   Base class for event queues. Wraps a EventStack and a QueueListener and
- *          provides push/pop/remove operations. The base class performs no locking -- derived
- *          classes are responsible for thread safety.
- *
- * \note    push_event() and pop_event() are non-virtual. ExternalEventQueue hides them with
- *          locked versions. All callers in EventDispatcherBase use the concrete derived types
- *          directly, so no virtual dispatch is required on the hot path.
+ *          provides push/pop/remove operations. The base class performs no locking,
+ *          derived classes are responsible for thread safety.
  **/
 class AREG_API EventQueue
 {
@@ -75,20 +71,21 @@ public:
     inline bool is_empty() const noexcept;
 
     /**
-     * \brief   Pushes an event into the queue and notifies the listener. If the queue is full
-     *          and an event is evicted, it is either returned via removedEvent or destroyed.
+     * \brief   Moves an event into the queue (O(1) shared_ptr transfer; no payload copy) and
+     *          notifies the listener. The caller's event is left in a moved-from (empty) state.
      *
-     * \param   eventElem       The event to enqueue.
+     * \param   eventElem       The event to enqueue; moved in.
      **/
     inline void push_event(Event& eventElem);
 
     /**
-     * \brief   Pops the first event from the queue. Notifies the listener if the queue becomes
-     *          empty.
+     * \brief   Pops the first event from the queue by move. Notifies the listener.
+     *          Precondition: !is_empty().
      *
-     * \return  The popped event pointer, or nullptr if the queue was empty.
+     * \return  The popped Event value.
      **/
-    inline Event* pop_event() noexcept;
+    [[nodiscard]]
+    inline Event pop_event() noexcept;
 
     /**
      * \brief   Removes all non-Exit events from the queue and notifies the listener.
@@ -101,7 +98,7 @@ public:
      *
      * \param   eventClassId    Runtime class ID of events to remove.
      **/
-    inline void remove_events(const RuntimeClassID& eventClassId) noexcept;
+    inline void remove_events(uint32_t eventClassId) noexcept;
 
     /**
      * \brief   Removes every event from the queue (including Exit events) and resets the
@@ -200,18 +197,13 @@ inline bool EventQueue::is_empty() const noexcept
 
 inline void EventQueue::push_event(Event& eventElem)
 {
-    mEventListener.signal_event(mEventQueue.push_event(&eventElem));
+    mEventListener.signal_event(mEventQueue.push_event(eventElem));
 }
 
-inline Event* EventQueue::pop_event() noexcept
+inline Event EventQueue::pop_event() noexcept
 {
-    Event* result{ nullptr };
-    const uint32_t size = mEventQueue.pop_event(&result);
-    if (size == 0)
-    {
-        mEventListener.signal_event(0);
-    }
-
+    Event result{ mEventQueue.pop_event() };
+    mEventListener.signal_event(mEventQueue.count());
     return result;
 }
 
@@ -227,7 +219,7 @@ inline void EventQueue::remove_events() noexcept
     mEventListener.signal_event(remain);
 }
 
-inline void EventQueue::remove_events(const RuntimeClassID& eventClassId) noexcept
+inline void EventQueue::remove_events(uint32_t eventClassId) noexcept
 {
     const uint32_t remain = mEventQueue.delete_matching(eventClassId);
     mEventListener.signal_event(remain);

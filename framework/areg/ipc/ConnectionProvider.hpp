@@ -20,8 +20,8 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/RemoteMessage.hpp"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 
@@ -96,8 +96,7 @@ public:
     virtual bool is_host_connected() const = 0;
 
     /**
-     * \brief   Returns true if remote service connection is pending (triggered but not yet
-     *          connected).
+     * \brief   Returns true if remote service connection is pending (triggered but not yet connected).
      **/
     [[nodiscard]]
     virtual bool is_host_pending() const = 0;
@@ -109,8 +108,7 @@ public:
     virtual bool is_host_setup() const = 0;
 
     /**
-     * \brief   Creates service connect request message with specified source, target, and message
-     *          source type.
+     * \brief   Creates service connect request message with specified source, target, and message source type.
      *
      * \param   source          ID of the source sending the connect message.
      * \param   target          ID of the target receiving the connect message.
@@ -118,7 +116,7 @@ public:
      * \return  Returns the created message for remote communication.
      **/
     [[nodiscard]]
-    virtual RemoteMessage connect_message( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const = 0;
+    virtual MessageEnvelope connect_message( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const = 0;
 
     /**
      * \brief   Creates service disconnect request message with specified source and target.
@@ -128,7 +126,7 @@ public:
      * \return  Returns the created message for remote communication.
      **/
     [[nodiscard]]
-    virtual RemoteMessage disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const = 0;
+    virtual MessageEnvelope disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

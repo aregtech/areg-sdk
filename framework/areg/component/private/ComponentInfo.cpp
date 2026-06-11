@@ -20,17 +20,6 @@
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
-// ComponentInfo::_ImplWorkerThreadMap class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// ComponentInfo::_WorkerThreadMap class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// ComponentInfo::_WorkerThreadMap class, methods, overrides
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
 // ComponentInfo class implementation
 //////////////////////////////////////////////////////////////////////////
 
@@ -47,7 +36,36 @@ ComponentInfo::ComponentInfo( ComponentThread& ownerThread, const String & roleN
 //////////////////////////////////////////////////////////////////////////
 // ComponentInfo class, methods
 //////////////////////////////////////////////////////////////////////////
-DispatcherThread * ComponentInfo::find_event_consumer( const RuntimeClassID& whichClass ) const noexcept
+WorkerThread* ComponentInfo::first_worker_thread(ThreadAddress& threadAddress) noexcept
+{
+    uint32_t num{ areg::CHECKSUM_IGNORE };
+    WorkerThread* result = mWorkerThreadMap.resource_first_key(num);
+    if (result != nullptr)
+        threadAddress = result->address();
+    return result;
+}
+
+WorkerThread* ComponentInfo::next_worker_thread(ThreadAddress& threadAddress) noexcept
+{
+    uint32_t num{ static_cast<uint32_t>(threadAddress) };
+    WorkerThread* result = mWorkerThreadMap.resource_next_key(num);
+    if (result != nullptr)
+        threadAddress = result->address();
+    return result;
+}
+
+WorkerThread* ComponentInfo::remove_worker_thread(ThreadAddress& threadAddress) noexcept
+{
+    std::pair<uint32_t, WorkerThread*> elem{ areg::CHECKSUM_IGNORE, nullptr };
+    if (!mWorkerThreadMap.is_empty() && mWorkerThreadMap.remove_first_element(elem))
+    {
+        threadAddress = elem.second->address();
+    }
+
+    return elem.second;
+}
+
+DispatcherThread * ComponentInfo::find_event_consumer( uint32_t whichClass ) const noexcept
 {
     DispatcherThread * result = nullptr;
 
@@ -61,7 +79,7 @@ DispatcherThread * ComponentInfo::find_event_consumer( const RuntimeClassID& whi
         // start checking component binded worker threads.
         mWorkerThreadMap.lock();
 
-        ThreadAddress Key;
+        uint32_t Key;
         DispatcherThread * dispThread = static_cast<DispatcherThread *>(mWorkerThreadMap.resource_first_key(Key));
         while (result == nullptr && dispThread != nullptr)
         {
@@ -78,12 +96,12 @@ DispatcherThread * ComponentInfo::find_event_consumer( const RuntimeClassID& whi
 
 void ComponentInfo::register_worker_thread( WorkerThread& workerThread )
 {
-    mWorkerThreadMap.register_resource_object(workerThread.address(), &workerThread);
+    mWorkerThreadMap.register_resource_object(static_cast<uint32_t>(workerThread.address()), &workerThread);
 }
 
 bool ComponentInfo::unregister_worker_thread( WorkerThread& workerThread )
 {
-    return (mWorkerThreadMap.unregister_resource_object(workerThread.address()) == &workerThread);
+    return (mWorkerThreadMap.unregister_resource_object(static_cast<uint32_t>(workerThread.address())) == &workerThread);
 }
 
 bool ComponentInfo::is_worker_registered( WorkerThread& workerThread ) const noexcept

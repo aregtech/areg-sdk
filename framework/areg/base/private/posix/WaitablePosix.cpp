@@ -34,16 +34,16 @@ extern "C" {
 
 #elif defined(__CYGWIN__)
 
-#  ifndef NOMINMAX
-#    define NOMINMAX
-#  endif
-#  include <windows.h>
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif
+#include <windows.h>
 
 #elif defined(__linux__)
 
-#  include <linux/futex.h>
-#  include <sys/syscall.h>
-#  include <unistd.h>
+#include <linux/futex.h>
+#include <sys/syscall.h>
+#include <unistd.h>
 
 #endif  // defined(__APPLE__) / defined(__CYGWIN__) / defined(__linux__)
 
@@ -137,9 +137,6 @@ void WaitablePosix::unregister_waiter( WaiterNode* node ) noexcept
 
 int32_t WaitablePosix::notify_any_waiters() noexcept
 {
-    // Collect wake targets while holding the spinlock, then issue wake syscalls
-    // outside. This prevents unregister_waiter() from spinning on mWaitersLock
-    // for the entire duration of each kernel wake syscall (~100-500 ns each).
     std::atomic<uint32_t>* toWake[areg::MAXIMUM_WAITING_OBJECTS];
     int32_t wakeCount{ 0 };
 
@@ -152,14 +149,9 @@ int32_t WaitablePosix::notify_any_waiters() noexcept
 
         // If the CAS fails, the waiter already received a signal or timed out, skip it
         uint32_t expected{ SYNC_FIRE_INVALID };
-        if (node->mFiredWord->compare_exchange_strong(
-                expected, node->mFiredValue,
-                std::memory_order_acq_rel,
-                std::memory_order_relaxed))
+        if (node->mFiredWord->compare_exchange_strong(expected, node->mFiredValue, std::memory_order_acq_rel, std::memory_order_relaxed))
         {
             toWake[wakeCount++] = node->mFiredWord;
-
-            // For objects that allow only one concurrent owner (e.g., Mutex), wake only one waiter per signal.
             if (!can_signal_threads())
             {
                 break;
@@ -169,8 +161,6 @@ int32_t WaitablePosix::notify_any_waiters() noexcept
         node = next;
     }
 
-    // Release spinlock BEFORE wake syscalls: the woken thread calls unregister_waiter()
-    // immediately on resume; it must not spin waiting for us to finish kernel calls.
     mWaitersLock.clear(std::memory_order_release);
 
     for (int32_t i{ 0 }; i < wakeCount; ++i)

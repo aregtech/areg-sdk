@@ -83,48 +83,36 @@ NotificationEventData & NotificationEventData::operator = ( NotificationEventDat
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// NotificationEvent class, implement runtime
-//////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_RUNTIME_EVENT(NotificationEvent, Event)
-
-//////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, static methods
 //////////////////////////////////////////////////////////////////////////
 void NotificationEvent::send_event( const NotificationEventData& data, NotificationConsumer* caller /*= nullptr*/ )
 {
-    NotificationEvent* eventElem = DEBUG_NEW NotificationEvent(data);
-    if (eventElem != nullptr)
-    {
-        if (caller != nullptr)
-        {
-            eventElem->set_event_consumer(static_cast<EventConsumer *>(caller));
-        }
+    NotificationEvent eventElem(data);
+    if (caller != nullptr)
+        eventElem.set_event_consumer(static_cast<EventConsumer *>(caller));
 
-        if ((eventElem->mTargetThread != nullptr) && eventElem->mTargetThread->event_dispatcher().post_event(*eventElem))
-        {
-            return;
-        }
-
-        eventElem->destroy();
-    }
+    DispatcherThread* _dt{ eventElem.target_dispatcher() };
+    if ((_dt == nullptr) || !_dt->event_dispatcher().post_event(eventElem))
+        eventElem.destroy_event();
 }
 
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 NotificationEvent::NotificationEvent( const NotificationEventData& data )
-    : Event (areg::EventType::EventNotifyClient)
-    , mData (data)
+    : Event (areg::EventType::EventNotifyClient, static_cast<uint32_t>(sizeof(NotificationEventData)), areg::DefaultPriority)
 {
-    set_target_thread();
+    uint8_t* ptr = payload_ptr();
+    new(ptr) NotificationEventData(data);
+    current_target_thread();
 }
 
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, methods
 //////////////////////////////////////////////////////////////////////////
-void NotificationEvent::set_target_thread()
+void NotificationEvent::current_target_thread()
 {
-    const ProxyBase * proxy = mData.service_proxy();
+    const ProxyBase * proxy = data().service_proxy();
     DispatcherThread& dispThread = proxy != nullptr ? proxy->proxy_dispatcher_thread() : DispatcherThread::current_dispatcher_thread();
     ASSERT(dispThread.is_valid());
     register_for_thread(&dispThread);
@@ -139,10 +127,9 @@ void NotificationEvent::set_target_thread()
 //////////////////////////////////////////////////////////////////////////
 void NotificationConsumer::start_event_processing( Event& eventElem )
 {
-    NotificationEvent* eventNotify = AREG_RUNTIME_CAST(&eventElem, NotificationEvent);
-    if (eventNotify != nullptr)
+    if (eventElem.event_type() == areg::EventType::EventNotifyClient)
     {
-        process_notification_event(*eventNotify);
+        process_notification_event(static_cast<NotificationEvent&>(eventElem));
     }
 }
 

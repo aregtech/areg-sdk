@@ -108,7 +108,7 @@ int32_t _os_send_data_window(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, in
     ASSERT(areg::is_valid_socket(hSocket));
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
 
-    constexpr int32_t WINDOW{ static_cast<int32_t>(areg::DEFAULT_THREAD_CACHE_KB * areg::ONE_KILOBYTE) };
+    constexpr int32_t WINDOW{ static_cast<int32_t>(areg::DEFAULT_THREAD_CACHE) };
     int32_t total{ 0 };
     do
     {
@@ -150,13 +150,11 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
         return _os_send_data(hSocket, buffers->data, static_cast<int32_t>(buffers->size));
     }
 
-    ASSERT(count <= areg::THREAD_BATCH_LIMIT);
+    ASSERT(count <= areg::DEFAULT_DRAIN_LIMIT);
     int32_t result = 0;
     areg::ThreadCache& tc = areg::thread_tx_cache();
     uint8_t* const staging = tc.cache();
-    constexpr uint32_t BIG_BLOCK{ 64 * 1024 };
-    // if (((totalSize / count) >= (tc.space / 2)) || (staging == nullptr))
-    if (((totalSize / count) >= BIG_BLOCK) || (staging == nullptr))
+    if (((totalSize / count) >= areg::MIN_BIG_BLOCK) || (staging == nullptr))
     {
         for (uint32_t i = 0; i < count; ++i)
         {
@@ -169,22 +167,39 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
     }
     else
     {
-        uint32_t copied = static_cast<int32_t>(buffers->size);
-        ::memcpy(staging, buffers->data, copied);
-        ++buffers;
-        for (uint32_t i = 1; i < count; ++i, ++buffers)
+        uint32_t copied = 0u;
+        for (uint32_t i = 0; i < count; ++i, ++buffers)
         {
-            if ((copied + buffers->size) > tc.space)
+            const uint32_t bsize = static_cast<uint32_t>(buffers->size);
+            if (bsize > tc.space)
+            {
+                if (copied != 0u)
+                {
+                    const int32_t written = _os_send_data(hSocket, staging, copied);
+                    if (written < 0)
+                        return -1;
+                    result += written;
+                    copied = 0u;
+                }
+
+                const int32_t written = _os_send_data_window(hSocket, buffers->data, static_cast<int32_t>(bsize));
+                if (written < 0)
+                    return -1;
+                result += written;
+                continue;
+            }
+
+            if ((copied + bsize) > tc.space)
             {
                 const int32_t written = _os_send_data(hSocket, staging, copied);
                 if (written < 0)
                     return -1;
                 result += written;
-                copied = 0;
+                copied = 0u;
             }
 
-            ::memcpy(staging + copied, buffers->data, buffers->size);
-            copied += static_cast<int32_t>(buffers->size);
+            ::memcpy(staging + copied, buffers->data, bsize);
+            copied += bsize;
         }
 
         if (copied != 0)
@@ -205,7 +220,7 @@ int32_t _os_recv_data_window(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t 
     ASSERT(areg::is_valid_socket(hSocket));
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
 
-    constexpr int32_t WINDOW{ static_cast<int32_t>(areg::DEFAULT_THREAD_CACHE_KB * areg::ONE_KILOBYTE) };
+    constexpr int32_t WINDOW{ static_cast<int32_t>(areg::DEFAULT_THREAD_CACHE) };
     int32_t total{ 0 };
     do
     {
@@ -264,7 +279,6 @@ static inline int32_t _recv_cached(SOCKETHANDLE hSocket, uint8_t* dataBuffer, in
         needed -= take;
     }
 
-    // tc.unread == 0: cache is empty (drained by Phase 1 or was already empty).
     // Phase 2: large request, bypass cache, read directly into the caller's buffer.
     if (needed >= static_cast<uint32_t>(tc.space))
     {

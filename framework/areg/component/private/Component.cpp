@@ -86,32 +86,6 @@ void Component::unload_component( Component& comItem, const areg::ComponentEntry
     entry.mFuncDelete(comItem, entry);
 }
 
-Component* Component::find_by_name( const String & roleName ) noexcept
-{
-    ASSERT(roleName.is_empty() == false);
-    
-    return Component::resource_map().find_resource_object(areg::crc32_calculate(roleName.as_string()));
-}
-
-Component * Component::find_by_number(uint32_t magicNum) noexcept
-{
-    ASSERT(magicNum != areg::CHECKSUM_IGNORE);
-
-    return Component::resource_map().find_resource_object(magicNum);
-}
-
-Component* Component::find_by_address( const ComponentAddress& comAddress ) noexcept
-{
-    Component* result = Component::resource_map().find_resource_object( static_cast<uint32_t>(comAddress.role_name()) );
-    return (result != nullptr && result->address() == comAddress ? result : nullptr);
-}
-
-bool Component::exist( const String & roleName ) noexcept
-{
-    ASSERT(roleName.is_empty() == false);
-    return Component::resource_map().exist(areg::crc32_calculate(roleName.as_string()));
-}
-
 ComponentThread& Component::_current_component_thread() noexcept
 {
     ComponentThread* result = AREG_RUNTIME_CAST(&(DispatcherThread::current_dispatcher_thread()), ComponentThread);

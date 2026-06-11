@@ -19,9 +19,11 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/component/ServiceDefs.hpp"
+#include "areg/component/EventDefs.hpp"
 
 #include <string_view>
 
@@ -31,7 +33,6 @@
 namespace areg {
     class StubAddress;
     class ProxyAddress;
-    class RemoteMessage;
     class Channel;
 } // namespace areg
 
@@ -96,46 +97,46 @@ enum class RemoteConnectionState : uint32_t
 constexpr bool              DEFAULT_REMOTE_SERVICE_ENABLED  { true };
 
 /**
- * \brief   Returns fixed predefined message to initiate server connection.
+ * \brief   Returns EventHeader template for the server connect (hello) message.
  **/
 [[nodiscard]]
-inline const areg::RawMessage & message_hello_server() noexcept;
+constexpr areg::EventHeader message_hello_server() noexcept;
 
 /**
- * \brief   Returns fixed predefined message to terminate server connection.
+ * \brief   Returns EventHeader template for the server disconnect (bye) message.
  **/
 [[nodiscard]]
-inline const areg::RawMessage & message_bye_server() noexcept;
+constexpr areg::EventHeader message_bye_server() noexcept;
 
 /**
- * \brief   Returns fixed message to notify client of connection status (accepted, rejected, or closed).
+ * \brief   Returns EventHeader template for the notify-client-connection message.
  **/
 [[nodiscard]]
-inline const areg::RawMessage & notify_client_connection() noexcept;
+constexpr areg::EventHeader notify_client_connection() noexcept;
 
 /**
- * \brief   Returns fixed message to initiate service registration.
+ * \brief   Returns EventHeader template for the service registration request message.
  **/
 [[nodiscard]]
-inline const areg::RawMessage & message_register_service() noexcept;
+constexpr areg::EventHeader message_register_service() noexcept;
 
 /**
- * \brief   Returns fixed message to query connected service instances. Only log observers can query.
+ * \brief   Returns EventHeader template for the query-instances message.
  **/
 [[nodiscard]]
-inline const areg::RawMessage & message_query_instances() noexcept;
+constexpr areg::EventHeader message_query_instances() noexcept;
 
 /**
- * \brief   Returns fixed message to notify log observers of connected service instances.
+ * \brief   Returns EventHeader template for the notify-instances message.
  **/
 [[nodiscard]]
-inline const areg::RawMessage & message_notify_instances() noexcept;
+constexpr areg::EventHeader message_notify_instances() noexcept;
 
 /**
- * \brief   Returns fixed message to register for notifications.
+ * \brief   Returns EventHeader template for the register-notify message.
  **/
 [[nodiscard]]
-inline const areg::RawMessage & message_register_notify() noexcept;
+constexpr areg::EventHeader message_register_notify() noexcept;
 
 /**
  * \brief   Creates a connection request message with specified source, target, and message
@@ -147,7 +148,7 @@ inline const areg::RawMessage & message_register_notify() noexcept;
  * \return  Returns initialized connection request message.
  **/
 [[nodiscard]]
-AREG_API RemoteMessage create_connect_request(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource);
+AREG_API MessageEnvelope create_connect_request(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource);
 
 /**
  * \brief   Creates a disconnection request message with specified source and target.
@@ -157,7 +158,7 @@ AREG_API RemoteMessage create_connect_request(const ITEM_ID & source, const ITEM
  * \return  Returns initialized disconnection request message.
  **/
 [[nodiscard]]
-AREG_API RemoteMessage create_disconnect_request( const ITEM_ID & source, const ITEM_ID & target );
+AREG_API MessageEnvelope create_disconnect_request( const ITEM_ID & source, const ITEM_ID & target );
 
 /**
  * \brief   Creates a connection available notification message.
@@ -167,7 +168,7 @@ AREG_API RemoteMessage create_disconnect_request( const ITEM_ID & source, const 
  * \return  Returns initialized connection available notification message.
  **/
 [[nodiscard]]
-AREG_API RemoteMessage create_connect_notify( const ITEM_ID & source, const ITEM_ID & target );
+AREG_API MessageEnvelope create_connect_notify( const ITEM_ID & source, const ITEM_ID & target );
 
 /**
  * \brief   Creates a connection rejection notification message.
@@ -177,7 +178,7 @@ AREG_API RemoteMessage create_connect_notify( const ITEM_ID & source, const ITEM
  * \return  Returns initialized connection rejection notification message.
  **/
 [[nodiscard]]
-AREG_API RemoteMessage create_reject_notify( const ITEM_ID & source, const ITEM_ID & target );
+AREG_API MessageEnvelope create_reject_notify( const ITEM_ID & source, const ITEM_ID & target );
 
 /**
  * \brief   Creates a disconnection notification message sent by server to clients.
@@ -187,7 +188,7 @@ AREG_API RemoteMessage create_reject_notify( const ITEM_ID & source, const ITEM_
  * \return  Returns initialized disconnection notification message.
  **/
 [[nodiscard]]
-AREG_API RemoteMessage create_disconnect_notify( const ITEM_ID & source, const ITEM_ID & target );
+AREG_API MessageEnvelope create_disconnect_notify( const ITEM_ID & source, const ITEM_ID & target );
 
 /**
  * \brief   Creates a message to register a Stub at the router.
@@ -198,7 +199,7 @@ AREG_API RemoteMessage create_disconnect_notify( const ITEM_ID & source, const I
  * \return  Returns initialized Stub registration message.
  **/
 [[nodiscard]]
-AREG_API RemoteMessage router_register_service( const StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target);
+AREG_API MessageEnvelope router_register_service( const StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target);
 
 /**
  * \brief   Creates a message to unregister a Stub from the router.
@@ -210,7 +211,7 @@ AREG_API RemoteMessage router_register_service( const StubAddress & stub, const 
  * \return  Returns initialized Stub unregistration message.
  **/
 [[nodiscard]]
-AREG_API RemoteMessage router_unregister_service( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+AREG_API MessageEnvelope router_unregister_service( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
 /**
  * \brief   Creates a message to register a Proxy at the router.
@@ -221,7 +222,7 @@ AREG_API RemoteMessage router_unregister_service( const StubAddress & stub, areg
  * \return  Returns initialized Proxy registration message.
  **/
 [[nodiscard]]
-AREG_API RemoteMessage router_register_consumer( const ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target );
+AREG_API MessageEnvelope router_register_consumer( const ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target );
 
 /**
  * \brief   Creates a message to unregister a Proxy from the router.
@@ -233,7 +234,7 @@ AREG_API RemoteMessage router_register_consumer( const ProxyAddress & proxy, con
  * \return  Returns initialized Proxy unregistration message.
  **/
 [[nodiscard]]
-AREG_API RemoteMessage router_unregister_consumer( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+AREG_API MessageEnvelope router_unregister_consumer( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
 /**
  * \brief   Creates a Stub availability notification message to broadcast.
@@ -244,7 +245,7 @@ AREG_API RemoteMessage router_unregister_consumer( const ProxyAddress & proxy, a
  * \return  Returns initialized Stub availability notification message.
  **/
 [[nodiscard]]
-AREG_API RemoteMessage service_registered_event( const StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target );
+AREG_API MessageEnvelope service_registered_event( const StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target );
 
 /**
  * \brief   Creates a Stub unavailability notification message to broadcast.
@@ -256,7 +257,7 @@ AREG_API RemoteMessage service_registered_event( const StubAddress & stub, const
  * \return  Returns initialized Stub unavailability notification message.
  **/
 [[nodiscard]]
-AREG_API RemoteMessage service_unregistered_event( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+AREG_API MessageEnvelope service_unregistered_event( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
 /**
  * \brief   Creates a Proxy availability notification message to broadcast.
@@ -267,7 +268,7 @@ AREG_API RemoteMessage service_unregistered_event( const StubAddress & stub, are
  * \return  Returns initialized Proxy availability notification message.
  **/
 [[nodiscard]]
-AREG_API RemoteMessage client_registered_event( const ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target);
+AREG_API MessageEnvelope client_registered_event( const ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target);
 
 /**
  * \brief   Creates a Proxy unavailability notification message to broadcast.
@@ -279,43 +280,43 @@ AREG_API RemoteMessage client_registered_event( const ProxyAddress & proxy, cons
  * \return  Returns initialized Proxy unavailability notification message.
  **/
 [[nodiscard]]
-AREG_API RemoteMessage client_unregistered_event( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+AREG_API MessageEnvelope client_unregistered_event( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
 /**
  * \brief   Checks whether specified message is a connect request.
  *
- * \param   msgHelloServer      The instance of remote message to check.
+ * \param   msg     The received envelope to check.
  * \return  Returns true if the message is a connect request.
  **/
 [[nodiscard]]
-AREG_API bool is_server_hello( const RemoteMessage & msgHelloServer );
+AREG_API bool is_server_hello( const MessageEnvelope & msg );
 
 /**
  * \brief   Checks whether specified message is a disconnect request.
  *
- * \param   msgByeServer    The instance of remote message to check.
+ * \param   msg     The received envelope to check.
  * \return  Returns true if the message is a disconnect request.
  **/
 [[nodiscard]]
-AREG_API bool is_server_bye( const RemoteMessage & msgByeServer );
+AREG_API bool is_server_bye( const MessageEnvelope & msg );
 
 /**
  * \brief   Checks whether specified message is a client notification request.
  *
- * \param   msgNotifyClient     The instance of remote message to check.
+ * \param   msg     The received envelope to check.
  * \return  Returns true if the message is a client notification request.
  **/
 [[nodiscard]]
-AREG_API bool is_notify_client( const RemoteMessage & msgNotifyClient );
+AREG_API bool is_notify_client( const MessageEnvelope & msg );
 
 /**
  * \brief   Checks whether specified message is a service registration request.
  *
- * \param   msgRegisterService      The instance of remote message to check.
+ * \param   msg     The received envelope to check.
  * \return  Returns true if the message is a service registration request.
  **/
 [[nodiscard]]
-AREG_API bool is_register_message( const RemoteMessage & msgRegisterService );
+AREG_API bool is_register_message( const MessageEnvelope & msg );
 
 //////////////////////////////////////////////////////////////////////////
 // Make RemoteServiceKind and ConnectionType streamable
@@ -326,124 +327,88 @@ AREG_IMPLEMENT_STREAMABLE(areg::RemoteConnectionState);
 
 } // namespace areg
 
-inline const areg::RawMessage& areg::message_hello_server() noexcept
+constexpr areg::EventHeader areg::message_hello_server() noexcept
 {
-    static constexpr const areg::RawMessage _messageHelloServer
-        ( sizeof(uint8_t)                                                           // biLength
-        , sizeof(areg::MessageHeader)                                               // biOffset
-        , areg::BufferType::Remote                                                  // biBufType
-        , 0u                                                                        // biUsed
-        , areg::COOKIE_ROUTER                                                       // rbhTarget
-        , areg::INVALID_VALUE                                                       // rbhChecksum
-        , static_cast<ITEM_ID>(areg::INVALID_VALUE)                                 // rbhSource
-        , static_cast<uint32_t>(areg::FuncIdRange::SystemServiceConnect)            // rbhMessageId
-        , areg::MESSAGE_SUCCESS                                                     // rbhResult
-        , areg::SEQUENCE_NUMBER_NOTIFY);                                            // rbhSequenceNr
-
-    return _messageHelloServer;
+    areg::EventHeader hdr{};
+    hdr.checksum  = areg::CHECKSUM_INVALID;
+    hdr.target    = static_cast<uint32_t>(areg::COOKIE_ROUTER);
+    hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceConnect);
+    hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
+    hdr.result    = areg::MESSAGE_SUCCESS;
+    hdr.sequenceNr= areg::SEQUENCE_NUMBER_NOTIFY;
+    return hdr;
 }
 
-inline const areg::RawMessage& areg::message_bye_server() noexcept
+constexpr areg::EventHeader areg::message_bye_server() noexcept
 {
-    static constexpr const areg::RawMessage _messageByeServer
-        ( sizeof(uint8_t)                                                           // biLength
-        , sizeof(areg::MessageHeader)                                               // biOffset
-        , areg::BufferType::Remote                                                  // biBufType
-        , 0u                                                                        // biUsed
-        , areg::COOKIE_ROUTER                                                       // rbhTarget
-        , areg::INVALID_VALUE                                                       // rbhChecksum
-        , static_cast<ITEM_ID>(areg::INVALID_VALUE)                                 // rbhSource
-        , static_cast<uint32_t>(areg::FuncIdRange::SystemServiceDisconnect)         // rbhMessageId
-        , areg::MESSAGE_SUCCESS                                                     // rbhResult
-        , areg::SEQUENCE_NUMBER_ANY);                                               // rbhSequenceNr
-
-    return _messageByeServer;
+    areg::EventHeader hdr{};
+    hdr.checksum  = areg::CHECKSUM_INVALID;
+    hdr.target    = static_cast<uint32_t>(areg::COOKIE_ROUTER);
+    hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceDisconnect);
+    hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
+    hdr.result    = areg::MESSAGE_SUCCESS;
+    hdr.sequenceNr = areg::SEQUENCE_NUMBER_ANY;
+    return hdr;
 }
 
-inline const areg::RawMessage& areg::notify_client_connection() noexcept
+constexpr areg::EventHeader areg::notify_client_connection() noexcept
 {
-    static constexpr const areg::RawMessage _messageAcceptClient
-        ( sizeof(uint8_t)                                                           // biLength
-        , sizeof(areg::MessageHeader)                                               // biOffset
-        , areg::BufferType::Remote                                                  // biBufType
-        , 0u                                                                        // biUsed
-        , static_cast<ITEM_ID>(areg::INVALID_VALUE)                                 // rbhTarget
-        , areg::INVALID_VALUE                                                       // rbhChecksum
-        , areg::COOKIE_ROUTER                                                       // rbhSource
-        , static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyConnection)   // rbhMessageId
-        , areg::MESSAGE_SUCCESS                                                     // rbhResult
-        , areg::SEQUENCE_NUMBER_NOTIFY);                                            // rbhSequenceNr
-
-    return _messageAcceptClient;
+    areg::EventHeader hdr{};
+    hdr.checksum  = areg::CHECKSUM_INVALID;
+    hdr.source    = static_cast<uint32_t>(areg::COOKIE_ROUTER);
+    hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyConnection);
+    hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
+    hdr.result    = areg::MESSAGE_SUCCESS;
+    hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
+    return hdr;
 }
 
-inline const areg::RawMessage& areg::message_register_service() noexcept
+constexpr areg::EventHeader areg::message_register_service() noexcept
 {
-    static constexpr const areg::RawMessage _messageRegisterService
-        ( sizeof(uint8_t)                                                           // biLength
-        , sizeof(areg::MessageHeader)                                               // biOffset
-        , areg::BufferType::Remote                                                  // biBufType
-        , 0u                                                                        // biUsed
-        , areg::COOKIE_ROUTER                                                       // rbhTarget
-        , areg::INVALID_VALUE                                                       // rbhChecksum
-        , static_cast<ITEM_ID>(areg::INVALID_VALUE)                                 // rbhSource
-        , static_cast<uint32_t>(areg::FuncIdRange::SystemServiceRequestRegister)    // rbhMessageId
-        , areg::MESSAGE_SUCCESS                                                     // rbhResult
-        , areg::SEQUENCE_NUMBER_NOTIFY);                                            // rbhSequenceNr
-
-    return _messageRegisterService;
+    areg::EventHeader hdr{};
+    hdr.checksum  = areg::CHECKSUM_INVALID;
+    hdr.target    = static_cast<uint32_t>(areg::COOKIE_ROUTER);
+    hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceRequestRegister);
+    hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
+    hdr.result    = areg::MESSAGE_SUCCESS;
+    hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
+    return hdr;
 }
 
-inline const areg::RawMessage& areg::message_query_instances() noexcept
+constexpr areg::EventHeader areg::message_query_instances() noexcept
 {
-    static constexpr const areg::RawMessage _messageQueryService
-        ( sizeof(uint8_t)                                                           // biLength
-        , sizeof(areg::MessageHeader)                                               // biOffset
-        , areg::BufferType::Remote                                                  // biBufType
-        , 0u                                                                        // biUsed
-        , static_cast<ITEM_ID>(areg::INVALID_VALUE)                                 // rbhTarget
-        , areg::INVALID_VALUE                                                       // rbhChecksum
-        , static_cast<ITEM_ID>(areg::INVALID_VALUE)                                 // rbhSource
-        , static_cast<uint32_t>(areg::FuncIdRange::SystemServiceQueryInstances)     // rbhMessageId
-        , areg::MESSAGE_SUCCESS                                                     // rbhResult
-        , areg::SEQUENCE_NUMBER_NOTIFY);                                            // rbhSequenceNr
-
-    return _messageQueryService;
+    areg::EventHeader hdr{};
+    hdr.checksum  = areg::CHECKSUM_INVALID;
+    hdr.target = static_cast<uint32_t>(areg::COOKIE_ROUTER);
+    hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceQueryInstances);
+    hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
+    hdr.result    = areg::MESSAGE_SUCCESS;
+    hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
+    return hdr;
 }
 
-
-inline const areg::RawMessage& areg::message_notify_instances() noexcept
+constexpr areg::EventHeader areg::message_notify_instances() noexcept
 {
-    static constexpr const areg::RawMessage _messageQueryService
-        ( sizeof(uint8_t)                                                           // biLength
-        , sizeof(areg::MessageHeader)                                               // biOffset
-        , areg::BufferType::Remote                                                  // biBufType
-        , 0u                                                                        // biUsed
-        , areg::COOKIE_ROUTER                                                       // rbhTarget
-        , areg::INVALID_VALUE                                                       // rbhChecksum
-        , static_cast<ITEM_ID>(areg::INVALID_VALUE)                                 // rbhSource
-        , static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyInstances)    // rbhMessageId
-        , areg::MESSAGE_SUCCESS                                                     // rbhResult
-        , areg::SEQUENCE_NUMBER_NOTIFY);                                            // rbhSequenceNr
-
-    return _messageQueryService;
+    areg::EventHeader hdr{};
+    hdr.checksum  = areg::CHECKSUM_INVALID;
+    hdr.target    = static_cast<uint32_t>(areg::COOKIE_ROUTER);
+    hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyInstances);
+    hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
+    hdr.result    = areg::MESSAGE_SUCCESS;
+    hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
+    return hdr;
 }
 
-inline const areg::RawMessage& areg::message_register_notify() noexcept
+constexpr areg::EventHeader areg::message_register_notify() noexcept
 {
-    static constexpr const areg::RawMessage _messageRegisterNotify
-        ( sizeof(uint8_t)                                                           // biLength
-        , sizeof(areg::MessageHeader)                                               // biOffset
-        , areg::BufferType::Remote                                                  // biBufType
-        , 0u                                                                        // biUsed
-        , static_cast<ITEM_ID>(areg::INVALID_VALUE)                                 // rbhTarget
-        , areg::INVALID_VALUE                                                       // rbhChecksum
-        , areg::COOKIE_ROUTER                                                       // rbhSource
-        , static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyRegister)     // rbhMessageId
-        , areg::MESSAGE_SUCCESS                                                     // rbhResult
-        , areg::SEQUENCE_NUMBER_NOTIFY);                                            // rbhSequenceNr
-
-    return _messageRegisterNotify;
+    areg::EventHeader hdr{};
+    hdr.checksum  = areg::CHECKSUM_INVALID;
+    hdr.source    = static_cast<uint32_t>(areg::COOKIE_ROUTER);
+    hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyRegister);
+    hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
+    hdr.result    = areg::MESSAGE_SUCCESS;
+    hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
+    return hdr;
 }
 
 inline constexpr const char* areg::as_string(areg::ConnectionType type) noexcept

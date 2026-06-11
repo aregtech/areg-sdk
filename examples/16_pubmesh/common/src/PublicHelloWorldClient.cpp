@@ -168,7 +168,7 @@ void PublicHelloWorldClient::on_service_state_update( SystemShutdown::RunState S
     }
 }
 
-void PublicHelloWorldClient::process_timer(areg::Timer & timer)
+void PublicHelloWorldClient::process_timer([[maybe_unused]] areg::Timer & timer)
 {
     LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldClient, process_timer );
     ASSERT(&timer == &mTimer);

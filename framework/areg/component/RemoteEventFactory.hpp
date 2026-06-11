@@ -12,8 +12,8 @@
  * \file        areg/component/RemoteEventFactory.hpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Areg Platform, Remote Event Factory class. 
- *              Creates event from stream and converts event to stream.
+ * \brief       Areg Platform, Remote Event Factory.
+ *              Single chokepoint for remote (IPC) event serialization and routing.
  ************************************************************************/
 /************************************************************************
  * Include files.
@@ -25,17 +25,23 @@ namespace areg {
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class RemoteResponseEvent;
-class StreamableEvent;
-class RemoteMessage;
 class Channel;
+class Event;
+class MessageEnvelope;
+class ServiceResponseEvent;
 
 //////////////////////////////////////////////////////////////////////////
 // RemoteEventFactory class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Factory for creating remote event objects from streams or serializing events to streams
- *          for inter-process communication.
+ * \brief   Single chokepoint for remote (IPC) event serialization and delivery.
+ *
+ *          Three directional methods cover the entire IPC data plane:
+ *            - route_outgoing_message      : event -> wire  (serialize for transmission)
+ *            - route_incoming_message      : wire  -> local (translate and deliver to stub/proxy)
+ *            - create_request_failed_event : wire  -> failure response (undeliverable request)
+ *
+ * \note    ThreadSafe: all methods are stateless static functions.
  **/
 class AREG_API RemoteEventFactory
 {
@@ -45,40 +51,37 @@ class AREG_API RemoteEventFactory
 public:
 
     /**
-     * \brief   Creates event from streaming object. Returns event object of appropriate type.
-     *          Automatically deleted by dispatcher after processing.
+     * \brief   Stamps the wire routing fields (source/target) on a local remote event in place,
+     *          making it ready for transmission. The event payload already carries the serialized
+     *          data and the message/sequence fields. Rewrites the process-routing cookies.
      *
-     * \param   stream          The streaming object containing event data.
-     * \param   comChannel      The communication channel object to send event.
-     * \return  Returns valid pointer to remote event object if successful, or nullptr if streaming
-     *          data contains wrong or unsupported event types.
+     * \param[in,ou]    srcWire     In-out remote event; its header is rewritten to wire form.
+     * \param           comChannel  Communication channel providing the sender's process cookie.
+     * \return  true if stamped; false for unrecognised event type or empty buffer.
      **/
-    [[nodiscard]]
-    static StreamableEvent * event_from_stream( const RemoteMessage & stream, const Channel & comChannel );
+    static bool route_outgoing_message( Event & srcWire, const Channel & comChannel );
 
     /**
-     * \brief   Serializes remote event object to streaming object. The specified event must be
-     *          remote type.
+     * \brief   Translates an inbound wire envelope and delivers it to the target stub or proxy thread.
+     *          Must be called directly on the receive thread.
      *
-     * \param   stream              The streaming object to serialize data.
-     * \param   eventStreamable     The event object, must be remote event type. Otherwise,
-     *                              serialization is ignored.
-     * \param   comChannel          The communication channel object to send event.
-     * \return  Returns true if successfully recognized remote object and serialized to stream.
-     *          Otherwise returns false.
+     * \param   wire        Received wire envelope; consumed (moved-from) only when this returns true.
+     * \param   comChannel  Communication channel of the receiving Router Client thread.
+     * \return  true if delivered;
+     *          false when the target stub/proxy is not found (wire left intact).
      **/
-    static bool stream_from_event( RemoteMessage & stream, const StreamableEvent & eventStreamable, const Channel & comChannel );
+    static bool route_incoming_message( MessageEnvelope & wire, const Channel & comChannel );
 
     /**
-     * \brief   Creates request failure remote event. Called when system fails to process request.
+     * \brief   Creates a request-failure response Event for an undeliverable request.
+     *          Returns an invalid Event when the source proxy cannot be located.
      *
-     * \param   stream          The remote messaging streaming object to serialize failure
-     *                          information.
-     * \param   comChannel      The communication channel object to send event.
-     * \return  Returns streamable event object to send to target object.
+     * \param   wire        The original wire envelope that could not be processed.
+     * \param   comChannel  The communication channel for routing correction.
+     * \return  An Event value; check is_valid() before delivering.
      **/
     [[nodiscard]]
-    static StreamableEvent * request_failed_event( const RemoteMessage & stream, const Channel & comChannel );
+    static ServiceResponseEvent create_request_failed_event( const MessageEnvelope & wire, const Channel & comChannel );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Hidden

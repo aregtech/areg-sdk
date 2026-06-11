@@ -16,6 +16,7 @@
 #include "areg/component/private/EventConsumerMap.hpp"
 
 #include "areg/component/EventConsumer.hpp"
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -36,7 +37,7 @@ EventConsumerList::~EventConsumerList()
 //////////////////////////////////////////////////////////////////////////
 bool EventConsumerList::add_consumer( EventConsumer& whichConsumer )
 {
-    if (!EventConsumerListBase::push_last_unique(&whichConsumer))
+    if (!EventConsumerListBase::add_if_unique(&whichConsumer))
         return false;
     
     whichConsumer.consumer_registered(true);
@@ -45,7 +46,7 @@ bool EventConsumerList::add_consumer( EventConsumer& whichConsumer )
 
 bool EventConsumerList::remove_consumer( EventConsumer& whichConsumer ) noexcept
 {
-    if (!EventConsumerListBase::remove_entry(&whichConsumer))
+    if (!EventConsumerListBase::remove_elem(&whichConsumer))
         return false;
     
     whichConsumer.consumer_registered(false);
@@ -54,43 +55,13 @@ bool EventConsumerList::remove_consumer( EventConsumer& whichConsumer ) noexcept
 
 void EventConsumerList::remove_all_consumers() noexcept
 {
-    EventConsumerListBase::LISTPOS pos = EventConsumerListBase::first_position();
-    for (; is_valid_position(pos); pos = next_position(pos))
+    for (auto consumer : EventConsumerList::data())
     {
-        EventConsumer* consumer = value_at(pos);
         ASSERT(consumer != nullptr);
         consumer->consumer_registered(false);
     }
 
     EventConsumerListBase::clear();
 }
-
-//////////////////////////////////////////////////////////////////////////
-// ImplEventConsumerMap class implementation
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-// ImplEventConsumerMap class, methods
-//////////////////////////////////////////////////////////////////////////
-#if defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG)
-
-void ImplEventConsumerMap::impl_clean_resource( RuntimeClassID & Key, EventConsumerList* Resource )
-{
-    AREG_OUTPUT_DBG("Resource [ %s ]: Removing all consumers and deleting resource at address [ %p ]", Key.name().as_string(), Resource);
-    ASSERT(Resource != nullptr);
-    Resource->remove_all_consumers();
-    delete Resource;
-    Resource = nullptr;
-}
-
-#else   // !(defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG))
-
-void ImplEventConsumerMap::impl_clean_resource( RuntimeClassID & /*Key*/, EventConsumerList * Resource )
-{
-    Resource->remove_all_consumers();
-    delete Resource;
-    Resource = nullptr;
-}
-
-#endif  // defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG)
 
 } // namespace areg

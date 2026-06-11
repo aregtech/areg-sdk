@@ -77,9 +77,7 @@ int main()
         LOG_DBG("%s to create thread [ %s ]", aThread.is_valid() ? "SUCCEEDED" : "FAILED", aThread.name().as_string());
 
         LOG_INFO("Stopping and destroying thread [ %s ]", aThread.name().as_string());
-#if AREG_LOGGING
-        areg::Thread::ThreadCompletion status = aThread.shutdown(areg::WAIT_INFINITE);
-#endif  // AREG_LOGGING
+        [[maybe_unused]] areg::Thread::ThreadCompletion status = aThread.shutdown(areg::WAIT_INFINITE);
         LOG_WARN_IF(areg::Thread::ThreadCompletion::Completed != status, "The thread exit abnormal, status = [ %d ]", static_cast<int32_t>(status));
         LOG_INFO_IF(areg::Thread::ThreadCompletion::Completed == status, "The thread exit normal");
 

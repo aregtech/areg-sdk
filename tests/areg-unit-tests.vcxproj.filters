@@ -73,10 +73,10 @@
     <ClCompile Include="units\StringDefsTest3.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="units\RemoteMessageTest.cpp">
+    <ClCompile Include="units\SharedBufferTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="units\SharedBufferTest.cpp">
+    <ClCompile Include="units\EventEnvelopeTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -50,10 +50,12 @@ protected:
      *
      * \param   consumerName    The name of consumer bind to worker thread.
      **/
-    explicit WorkerThreadConsumer( const String & consumerName );
+    explicit inline WorkerThreadConsumer( const String & consumerName );
 
 public:
     virtual ~WorkerThreadConsumer() = default;
+
+    inline explicit operator uint32_t () const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -108,6 +110,11 @@ private:
      **/
     const String    mConsumerName;
 
+    /**
+     * \brief   The calculated unique number of the worker thread consumer.
+     **/
+    const uint32_t  mMagicNum;
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
@@ -119,6 +126,18 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // WorkerThreadConsumer class inline function implementation
 //////////////////////////////////////////////////////////////////////////
+
+inline WorkerThreadConsumer::WorkerThreadConsumer(const String& consumerName)
+    : mConsumerName(consumerName)
+    , mMagicNum(consumerName.is_empty() ? areg::CHECKSUM_IGNORE : areg::crc32_calculate(consumerName.as_string()))
+{
+}
+
+inline WorkerThreadConsumer::operator uint32_t() const noexcept
+{
+    return mMagicNum;
+}
+
 inline const String & WorkerThreadConsumer::consumer_name() const
 {
     return mConsumerName;

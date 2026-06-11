@@ -126,12 +126,12 @@ void LogCollectorServerService::remove_all_instances()
     mObservers.clear();
 }
 
-void LogCollectorServerService::dispatch_and_forward_logger_message(const areg::RemoteMessage& msgForward)
+void LogCollectorServerService::dispatch_and_forward_logger_message(const areg::MessageEnvelope& msgForward)
 {
     areg::Lock lock(mLock);
 
     ASSERT(msgForward.is_valid());
-    ASSERT(msgForward.source() == areg::COOKIE_LOGGER);
+    ASSERT(msgForward.source() == static_cast<uint32_t>(areg::COOKIE_LOGGER));
     areg::FuncIdRange msgId = static_cast<areg::FuncIdRange>(msgForward.message_id());
     switch (msgId)
     {
@@ -178,7 +178,7 @@ void LogCollectorServerService::dispatch_and_forward_logger_message(const areg::
     }
 }
 
-void LogCollectorServerService::on_message_received(const areg::RemoteMessage &msgReceived)
+void LogCollectorServerService::on_message_received(const areg::MessageEnvelope &msgReceived)
 {
     LOG_SCOPE( logcollector_service_LogCollectorServerService, on_message_received );
 
@@ -189,8 +189,8 @@ void LogCollectorServerService::on_message_received(const areg::RemoteMessage &m
     LOG_DBG("Processing received valid message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
                     , areg::as_string(msgId)
                     , static_cast<uint32_t>(msgId)
-                    , static_cast<uint32_t>(msgReceived.source())
-                    , static_cast<uint32_t>(msgReceived.target()));
+                    , msgReceived.source()
+                    , msgReceived.target());
 
     switch (msgId)
     {
@@ -261,7 +261,7 @@ void LogCollectorServerService::process_timer(areg::Timer& /* timer */ )
 {
 }
 
-void LogCollectorServerService::on_message_send(const areg::RemoteMessage &msgSend)
+void LogCollectorServerService::on_message_send(const areg::MessageEnvelope &msgSend)
 {
     LOG_SCOPE( logcollector_service_LogCollectorServerService, on_message_send );
 
@@ -269,12 +269,12 @@ void LogCollectorServerService::on_message_send(const areg::RemoteMessage &msgSe
     LOG_DBG("Sending message [ %s ] of id [ 0x%X ] is going to send to target [ %u ] from source [ %u ]"
                     , areg::as_string(msgId)
                     , static_cast<uint32_t>(msgId)
-                    , static_cast<uint32_t>(msgSend.target())
-                    , static_cast<uint32_t>(msgSend.source()));
+                    , msgSend.target()
+                    , msgSend.source());
 
     if ( areg::is_executable_id( static_cast<uint32_t>(msgId)) )
     {
-        if ( msgSend.target( ) != areg::TARGET_UNKNOWN )
+        if ( msgSend.target( ) != static_cast<uint32_t>(areg::TARGET_UNKNOWN) )
         {
             send_message( msgSend );
         }
@@ -300,7 +300,7 @@ void LogCollectorServerService::on_service_channel_lost(const areg::Channel & /*
 {
 }
 
-void LogCollectorServerService::failed_process_message(const areg::RemoteMessage & /* msgUnprocessed */)
+void LogCollectorServerService::failed_process_message(const areg::MessageEnvelope & /* msgUnprocessed */)
 {
 }
 

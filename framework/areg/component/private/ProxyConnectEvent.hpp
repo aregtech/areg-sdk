@@ -10,7 +10,7 @@
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ProxyConnectEvent.hpp
- * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, Proxy Connection event class declaration.
  *
@@ -28,10 +28,11 @@ namespace areg {
 // ProxyConnectEvent class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Event sent to Proxy to notify connection status with Stub. Connection established or
- *          lost, contains Stub address for communication.
+ * \brief   Event sent to Proxy to notify connection status with Stub.
+ *          All data is stored in EventHeader: connection status in result field,
+ *          stub information in the provider endpoint.
  **/
-class ProxyConnectEvent   : public ServiceResponseEvent
+class ProxyConnectEvent final  : public ServiceResponseEvent
 {
 //////////////////////////////////////////////////////////////////////////
 // Friend classes
@@ -39,7 +40,7 @@ class ProxyConnectEvent   : public ServiceResponseEvent
     friend class ProxyBase;
 
 //////////////////////////////////////////////////////////////////////////
-// Declare Runtime Event
+// Declare Event Runtime
 //////////////////////////////////////////////////////////////////////////
     AREG_DECLARE_RUNTIME_EVENT(ProxyConnectEvent)
 
@@ -49,103 +50,59 @@ class ProxyConnectEvent   : public ServiceResponseEvent
 public:
     /**
      * \brief   Initializes Connection Event indicating to Proxy that connection with Stub is
-     *          established or lost.
+     *          established or lost. Stores connection status in EventHeader.result and stub
+     *          address information in EventHeader.provider.
      *
      * \param   proxy               The address of Proxy to send Connection Event.
-     * \param   server              The address of Stub object. If valid, Proxy can send request
-     *                              events.
+     * \param   server              The address of Stub object.
      * \param   connectStatus       Indicates the connection status.
      **/
     ProxyConnectEvent( const ProxyAddress & proxy, const StubAddress & server, areg::ServiceConnectionState connectStatus );
 
     /**
-     * \brief   Clones event data for different target Proxy address.
+     * \brief   Clones event data for a different target Proxy address. The full EventHeader
+     *          (including result and provider endpoint) is copied; only the consumer endpoint
+     *          is updated to the new target.
      *
      * \param   target      The target Proxy address to initialize event.
      * \param   src         The source of data to copy.
      **/
     ProxyConnectEvent(const ProxyAddress & target, const ProxyConnectEvent & src);
 
-    /**
-     * \brief   Creates event from streaming object and initializes data.
-     *
-     * \param   stream      The streaming object to read data
-     **/
-    ProxyConnectEvent(const InStream & stream);
+    ProxyConnectEvent(const ProxyConnectEvent& /*src*/) = default;
 
-    virtual ~ProxyConnectEvent() = default;
+    ProxyConnectEvent(ProxyConnectEvent&& /*src*/) noexcept = default;
+
+    ~ProxyConnectEvent() override = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Returns the target address of Stub object.
+     * \brief   Returns the target address of Stub object, reconstructed from EventHeader.provider.
      **/
-    inline const StubAddress & stub_address() const;
+    StubAddress stub_address() const;
 
     /**
-     * \brief   Returns the current connection status set in proxy connect event.
+     * \brief   Returns the current connection status, read from EventHeader.result.
      **/
-    inline areg::ServiceConnectionState connection_status() const;
-
-//////////////////////////////////////////////////////////////////////////
-// Operations
-//////////////////////////////////////////////////////////////////////////
-protected:
-/************************************************************************/
-// StreamableEvent overrides
-/************************************************************************/
-    /**
-     * \brief   Reads and initializes event data from streaming object.
-     *
-     * \param   stream      The streaming object to read out event data
-     * \return  Returns streaming object to read out data.
-     **/
-    const InStream & read_stream( const InStream & stream ) override;
-
-    /**
-     * \brief   Writes event data to streaming object.
-     *
-     * \param   stream      The streaming object to write event data.
-     * \return  Returns streaming object to write event data.
-     **/
-    OutStream & write_stream( OutStream & stream ) const override;
-
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   The address of Stub server object.
-     **/
-    StubAddress                     mStubAddress;
-
-    /**
-     * \brief   The proxy connection status.
-     **/
-    areg::ServiceConnectionState   mConnectionStatus;
+    inline areg::ServiceConnectionState connection_status() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
     ProxyConnectEvent() = delete;
-    AREG_NOCOPY_NOMOVE( ProxyConnectEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyConnectEvent class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const StubAddress & ProxyConnectEvent::stub_address() const
+inline areg::ServiceConnectionState ProxyConnectEvent::connection_status() const noexcept
 {
-    return mStubAddress;
-}
-
-inline areg::ServiceConnectionState ProxyConnectEvent::connection_status() const
-{
-    return mConnectionStatus;
+    return static_cast<areg::ServiceConnectionState>(result());
 }
 
 } // namespace areg

@@ -93,7 +93,7 @@ ComponentAddress::ComponentAddress( const String & roleName )
 
 ComponentAddress::ComponentAddress( const String & roleName, const String & nameThread )
     : mRoleName     ( roleName.is_empty() ? INVALID_COMPONENT_NAME : roleName)
-    , mThreadAddress( nameThread.is_empty() != false ? DispatcherThread::dispatcher_thread(nameThread).address() : ThreadAddress::invalid_thread_address())
+    , mThreadAddress( nameThread.is_empty() ? ThreadAddress::invalid_thread_address() : DispatcherThread::dispatcher_thread(areg::crc32_calculate(nameThread.as_string())).address())
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
     mRoleName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
@@ -105,14 +105,6 @@ ComponentAddress::ComponentAddress( ComponentAddress && src ) noexcept
     , mThreadAddress( std::move(src.mThreadAddress) )
     , mMagicNum     ( src.mMagicNum )
 {
-}
-
-ComponentAddress::ComponentAddress( const InStream & stream )
-    : mRoleName     ( stream )
-    , mThreadAddress( stream )
-    , mMagicNum     ( areg::CHECKSUM_IGNORE )
-{
-    mMagicNum   = ComponentAddress::_magic_number(*this);
 }
 
 String ComponentAddress::to_string() const

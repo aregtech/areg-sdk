@@ -14,13 +14,16 @@
  ************************************************************************/
 #include "areg/ipc/private/ClientReceiveThread.hpp"
 
-#include "areg/base/RemoteMessage.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/ipc/ClientConnection.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
 
+#include "areg/base/private/DebugDefs.hpp"
+
 #include "areg/logging/areg_log.h"
+
 namespace areg {
 
 DEF_LOG_SCOPE(areg_ipc_private_ClientReceiveThread, run_dispatcher);
@@ -43,11 +46,27 @@ bool ClientReceiveThread::run_dispatcher()
 
     ready_for_events( true );
 
+    if ( !mConnection.connect_socket() )
+    {
+        LOG_WARN("Client receive thread failed to connect. Notifying handler.");
+        mRemoteService.failed_receive_message( mConnection.socket() );
+        ready_for_events( false );
+        remove_all_events();
+        return false;
+    }
+
+    // Send connect handshake
+    if ( mHandshakeMsg.is_valid() )
+    {
+        mConnection.send_message( mHandshakeMsg );
+        mHandshakeMsg.invalidate();
+    }
+
     SyncEvent* events[2] { &mEventExit, &mEventQueue };
-    RemoteMessage msgReceived;
+    MessageEnvelope msgReceived;
     int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
 
-    constexpr uint32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
+    constexpr uint32_t DRAIN_LIMIT{ areg::DEFAULT_DRAIN_LIMIT };
     uint32_t drainCount{ 0u };
 
     do
@@ -65,15 +84,27 @@ bool ClientReceiveThread::run_dispatcher()
             }
             else
             {
+#if defined(AREG_LATENCY_TRACE) && (AREG_LATENCY_TRACE)
                 accumulate_received(static_cast<uint64_t>(sizeReceive), 1);
+                const uint64_t _ltRecv{ AREG_LT_NOW() };
                 mRemoteService.process_received_message( msgReceived, mConnection.socket( ) );
+                AREG_LT_SAMPLE(areg::LtStage::RecvNode, AREG_LT_NOW() - _ltRecv);
                 drainCount = (drainCount + 1) % DRAIN_LIMIT;
+#else   // defined(AREG_LATENCY_TRACE) && (AREG_LATENCY_TRACE)
+                accumulate_received(static_cast<uint64_t>(sizeReceive), 1);
+                mRemoteService.process_received_message(msgReceived, mConnection.socket());
+                drainCount = (drainCount + 1) % DRAIN_LIMIT;
+#endif  // defined(AREG_LATENCY_TRACE) && (AREG_LATENCY_TRACE)
             }
         }
         else
         {
-            Event * eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pick_event() : nullptr;
-            whichEvent = is_exit_event(eventElem) ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) : whichEvent;
+            if (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue))
+            {
+                Event eventElem{ pick_event() };
+                if (eventElem.is_exit_prio())
+                    whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
+            }
             drainCount = 0;
         }
 

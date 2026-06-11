@@ -197,8 +197,7 @@ inline bool WaitableEventPosix::can_signal_threads() const noexcept
 
 inline void WaitableEventPosix::notify_released_threads(int32_t numThreads)
 {
-    // Auto-reset is handled atomically in notify_request_ownership() via CAS.
-    // Resetting here is no longer needed; keeping the debug trace only.
+    // Auto-reset is handled atomically in notify_request_ownership(), no need to reset here.
     AREG_OUTPUT_DBG("There were [ %d ] released threads from waitable event [ %p ].", numThreads, this);
 }
 

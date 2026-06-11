@@ -62,12 +62,11 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initializes the POSIX synchronization object with the specified type and optional
-     *          name.
+     * \brief   Initializes the POSIX synchronization object with the specified type and optional name.
      *
      * \param   syncType        The type of synchronization object.
      **/
-    SyncObjectPosix( areg::os::SyncKind syncType );
+    inline SyncObjectPosix( areg::os::SyncKind syncType );
 
 //////////////////////////////////////////////////////////////////////////
 // Public destructor.
@@ -128,6 +127,11 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // SyncObjectPosix class inline implementation
 //////////////////////////////////////////////////////////////////////////
+inline SyncObjectPosix::SyncObjectPosix(areg::os::SyncKind syncType)
+    : mSyncType(syncType)
+{
+}
+
 inline areg::os::SyncKind SyncObjectPosix::sync_type() const noexcept
 {
     return mSyncType;

@@ -85,12 +85,9 @@ public:
     /**
      * \brief   Moves the cursor position by the specified offset relative to the starting origin.
      *
-     * \param   offset      The offset in bytes to move. Positive moves forward; negative moves
-     *                      backward.
-     * \param   startAt     The starting position: Begin (start of data), Current (current
-     *                      position), or End (end of data).
-     * \return  Returns the new cursor position in bytes; INVALID_CURSOR_POSITION if the operation
-     *          fails.
+     * \param   offset      The offset in bytes to move. Positive moves forward; negative moves backward.
+     * \param   startAt     The starting position: Begin (start of data), Current (current position), or End (end of data).
+     * \return  Returns the new cursor position in bytes; INVALID_CURSOR_POSITION if the operation fails.
      **/
     virtual uint32_t set_position( int32_t offset, Cursor::SeekOrigin startAt ) const noexcept = 0;
 

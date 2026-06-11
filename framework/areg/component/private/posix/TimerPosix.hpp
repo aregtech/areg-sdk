@@ -115,7 +115,6 @@ public:
      **/
     inline const timespec & due_time() const noexcept;
 
-
     /**
      * \brief   Returns true if the timer is valid (has valid ID and context).
      **/

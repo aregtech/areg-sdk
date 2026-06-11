@@ -176,8 +176,7 @@ public:
     friend inline StringBase<CT> operator + (const CT lhs, const StringBase<CT>& rhs);
 
     /**
-     * \brief   Streams to input object, i.e. reads data from streaming object to string, initialize
-     *          string data.
+     * \brief   Streams to input object, i.e. reads data from streaming object to string, initialize string data.
      *
      * \return  Reference to stream object.
      **/
@@ -376,8 +375,7 @@ public:
      *
      * \param   chSearch            The character to search in the string.
      * \param   caseSensitive       If true, the character match should be by exact, i.e.
-     *                              case-sensitive. Otherwise, the search is by upper and lower
-     *                              case.
+     *                              case-sensitive. Otherwise, the search is by upper and lower case.
      * \return  Returns valid string position value, if found given character. Otherwise, returns
      *          areg::INVALID_POS value.
      **/
@@ -388,12 +386,10 @@ public:
      * \brief   Find the first occurrence of given phrase in the string. If found, returns valid
      *          position value in the string. Otherwise, it returns areg::INVALID_POS value.
      *
-     * \param   caseSensitive       If true, the search of phrase should be exact, i.e.
-     *                              case-sensitive. Otherwise, the search is by upper and lower
-     *                              case.
-     * \param   wholeWord           If true, the search of phrase should be the whole word.
-     *                              Otherwise, searches by any match. By default, the search is by
-     *                              any match.
+     * \param   caseSensitive   If true, the search of phrase should be exact, i.e.
+     *                          case-sensitive. Otherwise, the search is by upper and lower case.
+     * \param   wholeWord       If true, the search of phrase should be the whole word.
+     *                          Otherwise, searches by any match. By default, the search is by any match.
      * \return  Returns valid string position value, if found given character. Otherwise, returns
      *          areg::INVALID_POS value.
      **/
@@ -403,12 +399,10 @@ public:
      * \brief   Find the first occurrence of given phrase in the string. If found, returns valid
      *          position value in the string. Otherwise, it returns areg::INVALID_POS value.
      *
-     * \param   caseSensitive       If true, the search of phrase should be exact, i.e.
-     *                              case-sensitive. Otherwise, the search is by upper and lower
-     *                              case.
-     * \param   wholeWord           If true, the search of phrase should be the whole word.
-     *                              Otherwise, searches by any match. By default, the search is by
-     *                              any match.
+     * \param   caseSensitive   If true, the search of phrase should be exact, i.e.
+     *                          case-sensitive. Otherwise, the search is by upper and lower case.
+     * \param   wholeWord       If true, the search of phrase should be the whole word.
+     *                          Otherwise, searches by any match. By default, the search is by any match.
      * \return  Returns valid string position value, if found given character. Otherwise, returns
      *          areg::INVALID_POS value.
      **/
@@ -421,8 +415,7 @@ public:
      *
      * \param   chSearch            The character to search in the string.
      * \param   caseSensitive       If true, the character match should be by exact, i.e.
-     *                              case-sensitive. Otherwise, the search is by upper and lower
-     *                              case.
+     *                              case-sensitive. Otherwise, the search is by upper and lower case.
      * \return  Returns valid string position value, if found given character. Otherwise, returns
      *          areg::INVALID_POS value.
      **/
@@ -434,8 +427,7 @@ public:
      *          position value in the string. Otherwise, it returns areg::INVALID_POS value.
      *
      * \param   caseSensitive       If true, the search of phrase should be exact, i.e.
-     *                              case-sensitive. Otherwise, the search is by upper and lower
-     *                              case.
+     *                              case-sensitive. Otherwise, the search is by upper and lower case.
      * \return  Returns valid string position value, if found given character. Otherwise, returns
      *          areg::INVALID_POS value.
      **/
@@ -446,8 +438,7 @@ public:
      * \brief   Find the last occurrence of given phrase in the string. If found, returns valid
      *          position value in the string. Otherwise, it returns areg::INVALID_POS value.
      *
-     * \param   caseSensitive       If true, the search of phrase should be exact, i.e.
-     *                              case-sensitive.
+     * \param   caseSensitive   If true, the search of phrase should be exact, i.e. case-sensitive.
      * \return  Returns valid string position value, if found given character. Otherwise, returns
      *          areg::INVALID_POS value.
      **/
@@ -458,8 +449,7 @@ public:
      * \brief   Find the last occurrence of given phrase in the string. If found, returns valid
      *          position value in the string. Otherwise, it returns areg::INVALID_POS value.
      *
-     * \param   caseSensitive       If true, the search of phrase should be exact, i.e.
-     *                              case-sensitive.
+     * \param   caseSensitive   If true, the search of phrase should be exact, i.e. case-sensitive.
      * \return  Returns valid string position value, if found given character. Otherwise, returns
      *          areg::INVALID_POS value.
      **/
@@ -517,8 +507,7 @@ public:
     /**
      * \brief   Searches given phrase in the string starting from given position until the end of
      *          string. If found, copies the string data into the result until the found position
-     *          returns position next after phrase. If not found, will copy complete string until
-     *          end.
+     *          returns position next after phrase. If not found, will copy complete string until end.
      *
      * \return  Returns next position after searched phrase and value are followings: - Valid string
      *          position not equal to areg::END_POS, if found phrase and the phrase is not at
@@ -548,8 +537,7 @@ public:
     /**
      * \brief   Searches given symbol in the string starting from given position until end of
      *          string. If found, copies the string data into the result until the found position
-     *          returns position next after symbol. If not found, will copy complete string until
-     *          end.
+     *          returns position next after symbol. If not found, will copy complete string until end.
      *
      * \param   chSymbol    The symbol to search in the string.
      * \return  Returns next position after searched symbol and value are followings: - Valid string
@@ -632,8 +620,7 @@ public:
 
     /**
      * \brief   Searches replaces given character by another character. The search replacement
-     *          starts at given position. The method either replaces only first match or all
-     *          matches.
+     *          starts at given position. The method either replaces only first match or all matches.
      *
      * \param   chSearch        The character to be searched to replace.
      * \param   chReplace       The character to set when found 'chSearch'.
@@ -928,8 +915,7 @@ protected:
 
     /**
      * \brief   Searches the first match of the entire word in string. The comparing can be done by
-     *          exact match of ignoring upper lower cases. It compares upper lower cases by default
-     *          locale.
+     *          exact match of ignoring upper lower cases. It compares upper lower cases by default locale.
      *
      * \param   caseSensitive       If true, it searches by exact match. Otherwise, ignores upper
      *                              and lower cases.

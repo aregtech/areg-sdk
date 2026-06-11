@@ -336,7 +336,7 @@ bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 
             if ((fds[1].revents & POLLIN) != 0)
             {
-                // Interrupt pipe triggered — drain it and abort the read.
+                // Interrupt pipe triggered -- drain it and abort the read.
                 char dummy{ 0 };
                 [[maybe_unused]] ssize_t ignored = ::read(pipeReadFd, &dummy, 1);
                 len = 0;

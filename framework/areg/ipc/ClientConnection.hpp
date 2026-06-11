@@ -21,6 +21,7 @@
 #include "areg/base/areg_global.h"
 #include "areg/ipc/SocketConnectionBase.hpp"
 
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/SocketClient.hpp"
 namespace areg {
 
@@ -130,34 +131,28 @@ public:
     bool create_socket();
 
     /**
+     * \brief   Creates a socket file descriptor without connecting. Sets socket buffer sizes and send
+     *          timeout from stored configuration. Use connect_socket() to establish the TCP connection
+     *          from a separate I/O thread.
+     *
+     * \return  Returns true if socket descriptor was created.
+     **/
+    bool create_socket_fd();
+
+    /**
+     * \brief   Blocking TCP connect using the socket FD created by create_socket_fd(). On failure
+     *          the socket is closed and the cookie is reset to COOKIE_UNKNOWN.
+     *
+     * \return  Returns true if connection succeeded.
+     **/
+    inline bool connect_socket();
+
+    /**
      * \brief   Closes the socket and disconnects from remote server.
      **/
     void close_socket();
 
 public:
-    /**
-     * \brief   Sends message data via socket connection. Validates checksum before sending. Returns
-     *          bytes sent, zero if invalid checksum, or negative on failure.
-     *
-     * \param   in_message      The instance of buffer to send. The checksum number of Remote Buffer
-     *                          object will be checked before sending. If checksum is invalid, the
-     *                          data will not be sent.
-     * \return  Returns length in bytes of data sent; zero if checksum invalid or buffer empty;
-     *          negative if socket invalid or send failed.
-     **/
-    inline int32_t send_message( const RemoteMessage & in_message ) const;
-
-    /**
-     * \brief   Sends a batch of messages via scatter-gather (writev / WSASend) in a single syscall.
-     *
-     * \param   messages    Array of pointers to messages to send. Entries may be nullptr (skipped).
-     * \param   count       Number of entries in the array.
-     * \return  Returns total bytes sent on success, or 0 / negative on failure.
-     *
-     * \note    Threading: call only from the send thread that owns this connection.
-     **/
-    inline int32_t send_messages_batch( const RemoteMessage* const* messages, uint32_t count ) const;
-
     /**
      * \brief   Sends a batch of messages via scatter-gather (writev / WSASend) in a single syscall.
      *
@@ -173,14 +168,20 @@ public:
      * \brief   Receives message data via socket connection. Validates checksum after receiving.
      *          Returns bytes received, zero if invalid checksum, or negative on failure.
      *
-     * \param[in,out] out_message     The instance of Remote Buffer to receive data. The checksum
-     *                                number of Remote Buffer object will be checked after receiving
-     *                                data. If checksum is invalid, the data will invalidated and
-     *                                dropped.
+     * \param[in,out] out_message     MessageEnvelope to receive into; checksum validated after receiving.
      * \return  Returns length in bytes of data received; zero if checksum invalid or buffer empty;
      *          negative if socket invalid or receive failed.
      **/
-    inline int32_t receive_message( RemoteMessage & out_message ) const;
+    inline int32_t receive_message( MessageEnvelope & out_message ) const;
+
+    /**
+     * \brief   Sends an MessageEnvelope over the socket connection via scatter/gather I/O.
+     *          Calls buffer_completion_fix() before sending to ensure checksum is computed.
+     *
+     * \param   env     The envelope to send.
+     * \return  Returns bytes sent on success, or 0 / negative on failure.
+     **/
+    inline int32_t send_message( const MessageEnvelope & env ) const;
 
     /**
      * \brief   Configures the socket-buffer sizes applied when create_socket() succeeds.
@@ -299,24 +300,37 @@ inline Socket & ClientConnection::socket()
     return mClientSocket;
 }
 
-inline int32_t ClientConnection::send_message(const RemoteMessage & in_message) const
-{
-    return SocketConnectionBase::send_message(in_message, mClientSocket);
-}
-
-inline int32_t ClientConnection::send_messages_batch(const RemoteMessage* const* messages, uint32_t count) const
-{
-    return SocketConnectionBase::send_messages_batch(messages, count, mClientSocket);
-}
-
 inline int32_t ClientConnection::send_messages_batch(const areg::IoBuffer* ioBuffer, uint32_t count, uint32_t totalSize) const
 {
     return SocketConnectionBase::send_messages_batch(ioBuffer, count, mClientSocket, totalSize);
 }
 
-inline int32_t ClientConnection::receive_message(RemoteMessage & out_message) const
+inline int32_t ClientConnection::receive_message(MessageEnvelope & out_message) const
 {
     return SocketConnectionBase::receive_message(out_message, mClientSocket);
+}
+
+inline bool ClientConnection::connect_socket()
+{
+    if ( !mClientSocket.connect_to() )
+    {
+        set_cookie(areg::COOKIE_UNKNOWN);
+        return false;
+    }
+
+    return true;
+}
+
+inline int32_t ClientConnection::send_message(const MessageEnvelope & env) const
+{
+    const areg::EventHeader * hdr{ env.header() };
+    if (hdr == nullptr)
+        return 0;
+
+    env.buffer_completion_fix();
+    const uint32_t wireSize{ static_cast<uint32_t>(sizeof(areg::EventHeader)) + hdr->bufHeader.biUsed };
+    areg::IoBuffer ioBuffer{ reinterpret_cast<const uint8_t *>(hdr), wireSize };
+    return send_messages_batch(&ioBuffer, 1u, wireSize);
 }
 
 inline void ClientConnection::set_socket_buffers(uint32_t sendBuf, uint32_t recvBuf) noexcept

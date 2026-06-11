@@ -21,7 +21,7 @@
 
 #include "areg/base/Containers.hpp"
 #include "areg/base/IOStream.hpp"
-#include "areg/base/RemoteMessage.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/MathDefs.hpp"
 #include "areg/base/StringDefs.hpp"
 
@@ -346,8 +346,7 @@ namespace areg {
     };
 
     /**
-     * \brief   The structure of logging message object to output on target (log collector or
-     *          observer).
+     * \brief   The structure of logging message object to output on target (log collector or observer).
      **/
     struct AREG_API LogEntry
     {
@@ -362,11 +361,9 @@ namespace areg {
          *
          * \param   msgType         The logging message type.
          * \param   scopeId         The ID of message scope.
-         * \param   sessionId       The ID of session, which is used to differentiate messages of
-         *                          the same scope.
-         * \param   scopeStamp      The timestamp of the scope message, which is used to log
-         *                          message. This parameter is used to set duration. The duration is
-         *                          ignored and set to 0 if the scopeStamp is 0.
+         * \param   sessionId       The ID of session, which is used to differentiate messages of the same scope.
+         * \param   scopeStamp      The timestamp of the scope message, which is used to log message.
+         *                          This parameter is used to set duration. The duration is ignored and set to 0 if the scopeStamp is 0.
          * \param   msgPrio         The priority of logging message.
          * \param   message         The message text to output on target. Can be empty.
          * \param   msgLen          The length of the message string.
@@ -386,25 +383,25 @@ namespace areg {
          **/
         LogEntry & operator = (const LogEntry & src);
 
-        areg::LogDataType    logDataType    { areg::LogDataType::Local };          //!< The type of log message data.
-        areg::LogMessageType logMsgType     { areg::LogMessageType::Undefined };    //!< The type of the logging message.
-        areg::LogPriority    logMessagePrio { areg::LogPriority::PrioInvalid }; //!< The log message priority
-        ITEM_ID              logSource      { 0 };  //!< The ID of the source that generated logging message.
-        ITEM_ID              logTarget      { 0 };  //!< The ID of the target to send logging message, valid only in case of TCP/IP logging.
-        ITEM_ID              logCookie      { 0 };  //!< The cookie set by the networking service, i.e. the log collector. Valid only in case of TCP/IP logging.
-        ITEM_ID              logModuleId    { 0 };  //!< The ID of the process in the local machine.
-        ITEM_ID              logThreadId    { 0 };  //!< The ID the thread in the local process.
-        TIME64               logTimestamp   { 0 };  //!< The timestamp of generated log.
-        TIME64               logReceived    { 0 };  //!< The timestamp when the log message is updated.
-        uint32_t             logDuration    { 0 };  //!< The duration in microseconds after scope message is instantiated in the method call.
-        uint32_t             logScopeId     { 0 };  //!< The ID of log scope that generated log message
-        uint32_t             logSessionId   { 0 };  //!< The session ID of the logging message, valid only in case of remote logging.
-        uint32_t             logMessageLen  { 0 };  //!< The actual length of the log message
-        uint32_t             logThreadLen   { 0 };  //!< The length of the thread name;
-        uint32_t             logModuleLen   { 0 };  //!< The length of the module name.
-        char                 logMessage[LOG_MSG_SIZE]{ 0 }; //!< The message text to output, with maximum LOG_MSG_SIZE characters.
-        char                 logThread[LOG_NAME_SIZE]{ 0 }; //!< The name of the thread that generated the log. Valid only for remote logging
-        char                 logModule[LOG_NAME_SIZE]{ 0 }; //!< The name of the module that generated the log. Valid only for remote logging.
+        TIME64               logTimestamp   { 0 };  //!< [0..7]    The timestamp of generated log. HOT
+        TIME64               logReceived    { 0 };  //!< [8..15]   The timestamp when the log message is updated. HOT
+        uint32_t             logScopeId     { 0 };  //!< [16..19]  The ID of log scope that generated log message. HOT
+        uint32_t             logMessageLen  { 0 };  //!< [20..23]  The actual length of the log message. HOT
+        areg::LogPriority    logMessagePrio { areg::LogPriority::PrioInvalid };  //!< [24..25] The log message priority (uint16_t). HOT
+        areg::LogMessageType logMsgType     { areg::LogMessageType::Undefined }; //!< [26]     The type of the logging message (uint8_t). HOT
+        areg::LogDataType    logDataType    { areg::LogDataType::Local };        //!< [27]     The type of log message data (uint8_t). HOT
+        uint32_t             logDuration    { 0 };  //!< [28..31]  The duration in microseconds after scope message is instantiated. WARM
+        uint32_t             logSessionId   { 0 };  //!< [32..35]  The session ID of the logging message, valid only in case of remote logging. WARM
+        ITEM_ID              logModuleId    { 0 };  //!< [36..39]  The ID of the process in the local machine. WARM
+        ITEM_ID              logThreadId    { 0 };  //!< [40..43]  The ID the thread in the local process. WARM
+        ITEM_ID              logSource      { 0 };  //!< [44..47]  The ID of the source that generated logging message. WARM
+        uint32_t             logThreadLen   { 0 };  //!< [48..51]  The length of the thread name. WARM
+        uint32_t             logModuleLen   { 0 };  //!< [52..55]  The length of the module name. WARM
+        ITEM_ID              logTarget      { 0 };  //!< [56..59]  The ID of the target to send logging message, valid only in case of TCP/IP logging. COLD
+        ITEM_ID              logCookie      { 0 };  //!< [60..63]  The cookie set by the networking service, i.e. the log collector. Valid only in case of TCP/IP logging. COLD
+        char                 logMessage[LOG_MSG_SIZE]{ 0 }; //!< [64..575]  The message text to output, with maximum LOG_MSG_SIZE characters.
+        char                 logThread[LOG_NAME_SIZE]{ 0 }; //!< [576..639] The name of the thread that generated the log. Valid only for remote logging
+        char                 logModule[LOG_NAME_SIZE]{ 0 }; //!< [640..703] The name of the module that generated the log. Valid only for remote logging.
     };
 
     /**
@@ -541,7 +538,7 @@ namespace areg {
      * \return  The message object ready for network communication.
      **/
     [[nodiscard]]
-    AREG_API RemoteMessage create_log_message(const LogEntry& logMessage, LogDataType dataType, const ITEM_ID & srcCookie);
+    AREG_API MessageEnvelope create_log_message(const LogEntry& logMessage, LogDataType dataType, const ITEM_ID & srcCookie);
 
     /**
      * \brief   Creates a log message directly in a network-ready buffer without an intermediate copy.
@@ -555,29 +552,29 @@ namespace areg {
      * \param   msgPrio         The message priority.
      * \param   message         The message text; may be nullptr for deferred formatting.
      * \param   msgLen          The length of the message string; 0 if message is nullptr.
-     * \return  A RemoteMessage with the LogEntry written directly into its buffer.
-     *          Returns an invalid message (is_valid() == false) on allocation failure.
+     * \return  An MessageEnvelope with the LogEntry written directly into its buffer.
+     *          Returns an invalid envelope (is_valid() == false) on allocation failure.
      **/
     [[nodiscard]]
-    AREG_API RemoteMessage make_log_message(LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, LogPriority msgPrio, const char* message, uint32_t msgLen);
+    AREG_API MessageEnvelope make_log_message(LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, LogPriority msgPrio, const char* message, uint32_t msgLen);
 
     /**
      * \brief   Patches TCP-specific fields in a pre-built log message before network transmission.
-     *          Updates logDataType, logCookie, and the RemoteMessage source header field.
+     *          Updates logDataType, logCookie, and the MessageEnvelope source header field.
      *          Clears logThread when dataType is Local.
      *
      * \param   msg         The pre-built message to finalize; no-op if invalid.
      * \param   dataType    The log data type to set (Local or Remote).
      * \param   srcCookie   The source cookie to embed in the message.
      **/
-    AREG_API void finalize_log_message(RemoteMessage& msg, LogDataType dataType, const ITEM_ID& srcCookie);
+    AREG_API void finalize_log_message(MessageEnvelope& msg, LogDataType dataType, const ITEM_ID& srcCookie);
 
     /**
      * \brief   Logs a remote message contained in the buffer.
      *
      * \param   message     The buffer containing the information to log.
      **/
-    AREG_API void log_message(const RemoteMessage& message);
+    AREG_API void log_message(const MessageEnvelope& message);
 
     /**
      * \brief   Logs a custom message without including process and thread names.
@@ -601,7 +598,7 @@ namespace areg {
      * \param   scopeList       The list of scopes to register.
      * \return  The message ready to send from source to target.
      **/
-    AREG_API RemoteMessage message_register_scopes(const ITEM_ID & source, const ITEM_ID & target, const areg::ScopeList & scopeList);
+    AREG_API MessageEnvelope message_register_scopes(const ITEM_ID & source, const ITEM_ID & target, const areg::ScopeList & scopeList);
 
     /**
      * \brief   Creates a message to update the priorities of scopes or scope groups.
@@ -612,7 +609,7 @@ namespace areg {
      *                          (set to 0) for scope groups.
      * \return  The message ready to send from source to target.
      **/
-    AREG_API RemoteMessage message_update_scopes(const ITEM_ID & source, const ITEM_ID & target, const areg::ScopeNames & scopeNames);
+    AREG_API MessageEnvelope message_update_scopes(const ITEM_ID & source, const ITEM_ID & target, const areg::ScopeNames & scopeNames);
 
     /**
      * \brief   Creates a message to update the logging priority of a scope or scope group.
@@ -624,7 +621,7 @@ namespace areg {
      * \param   scopePrio       The new logging priority for the scope.
      * \return  The message ready to send from source to target.
      **/
-    AREG_API RemoteMessage message_update_scope(const ITEM_ID& source, const ITEM_ID& target, const String & scopeName, uint32_t scopeId, uint32_t scopePrio);
+    AREG_API MessageEnvelope message_update_scope(const ITEM_ID& source, const ITEM_ID& target, const String & scopeName, uint32_t scopeId, uint32_t scopePrio);
 
     /**
      * \brief   Creates a message to query instances connected to the logging service.
@@ -633,7 +630,7 @@ namespace areg {
      * \param   target      The target ID or areg::TARGET_ALL for all clients.
      * \return  The message ready to forward via the log collector service.
      **/
-    AREG_API RemoteMessage message_query_instances(const ITEM_ID& source, const ITEM_ID& target);
+    AREG_API MessageEnvelope message_query_instances(const ITEM_ID& source, const ITEM_ID& target);
 
     /**
      * \brief   Creates a message to query the list of scopes from connected clients.
@@ -643,7 +640,7 @@ namespace areg {
      * \param   target      The ID of the target or areg::TARGET_ALL for all connected clients.
      * \return  The message ready to send from source to target.
      **/
-    AREG_API RemoteMessage message_query_scopes(const ITEM_ID& source, const ITEM_ID& target);
+    AREG_API MessageEnvelope message_query_scopes(const ITEM_ID& source, const ITEM_ID& target);
 
     /**
      * \brief   Creates a message to notify that scope priorities have been changed.
@@ -654,7 +651,7 @@ namespace areg {
      * \param   scopeList       The list of all scopes, IDs, and their updated priorities.
      * \return  The message ready to send to the log collector.
      **/
-    AREG_API RemoteMessage message_scopes_updated(const ITEM_ID& source, const ITEM_ID& target, const areg::ScopeList& scopeList);
+    AREG_API MessageEnvelope message_scopes_updated(const ITEM_ID& source, const ITEM_ID& target, const areg::ScopeList& scopeList);
 
     /**
      * \brief   Creates a message to request connected clients to save configuration.
@@ -663,14 +660,14 @@ namespace areg {
      * \param   target      The ID of the target or areg::TARGET_ALL to forward to all clients.
      * \return  The message ready to send to client(s) via the log collector service.
      **/
-    AREG_API RemoteMessage message_save_configuration(const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API MessageEnvelope message_save_configuration(const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   Creates a message to notify the log collector that configuration has been saved.
      *
      * \return  The message ready to send to the log collector.
      **/
-    AREG_API RemoteMessage message_configuration_saved();
+    AREG_API MessageEnvelope message_configuration_saved();
 
     /**
      * \brief   Sets the external logging database engine.
@@ -744,22 +741,22 @@ inline OutStream& operator << (OutStream& stream, const areg::ScopeEntry & outpu
 // areg namespace inline methods
 //////////////////////////////////////////////////////////////////////////////
 
-inline constexpr uint32_t areg::make_id(const char* scopeName) noexcept
+inline constexpr uint32_t areg::make_id([[maybe_unused]] const char* scopeName) noexcept
 {
 #if AREG_LOGGING
     return  areg::crc32_calculate(scopeName);
-#else
-    return 0;
-#endif // AREG_LOGGING
+#else   // AREG_LOGGING
+    return areg::CHECKSUM_IGNORE;
+#endif  // AREG_LOGGING
 }
 
-inline constexpr uint32_t areg::make_scope_id_ex(const char* scopeName) noexcept
+inline constexpr uint32_t areg::make_scope_id_ex([[maybe_unused]] const char* scopeName) noexcept
 {
 #if AREG_LOGGING
     return  (areg::string_ends_with<char>(scopeName, areg::LOG_SYNTAX_GROUP, true) ? areg::CHECKSUM_IGNORE : areg::make_id(scopeName));
-#else
-    return 0;
-#endif // AREG_LOGGING
+#else   // AREG_LOGGING
+    return areg::CHECKSUM_IGNORE;
+#endif  // AREG_LOGGING
 }
 
 inline constexpr const char* areg::as_string(areg::LogPriority prio) noexcept

@@ -20,7 +20,8 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/component/DispatcherThread.hpp"
-#include "areg/ipc/SendMessageEvent.hpp"
+#include "areg/component/EventConsumer.hpp"
+#include "aregextend/service/SystemServiceDefs.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/ipc/DataRateStats.hpp"
 
@@ -46,14 +47,14 @@ namespace areg::ext {
  * \brief   The IPC message sender thread.
  **/
 class ServerSendThread final    : public    DispatcherThread
-                                , public    SendMessageEventConsumer
+                                , public    areg::EventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    using BatchEntries = std::array<areg::PendingSend, areg::THREAD_BATCH_LIMIT>;
+    using BatchEntries = std::array<areg::ext::PendingSend, areg::DEFAULT_DRAIN_LIMIT>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -138,16 +139,14 @@ protected:
 
 private:
 /************************************************************************/
-// SendMessageEventConsumer class overrides.
+// EventConsumer interface override.
 /************************************************************************/
     /**
-     * \brief   Automatically triggered when event is dispatched by registered worker / component
-     *          thread.
-     *
-     * \param   data    The data object passed in event. It should have at least default constructor
-     *                  and assigning operator. This object is not used for IPC.
+     * \brief   Receives IPC outbound events and exit signals dispatched to this send thread.
+     *          Zeros internal1/internal2/custom before wire transmission.
+     *          Exits on is_exit_prio().
      **/
-    void process_event( const SendMessageEventData & data ) final;
+    void start_event_processing( areg::Event & eventElem ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -165,6 +164,9 @@ private:
      * \brief   Pre-allocated batch work list reused across every drain cycle.
      **/
     BatchEntries                    mBatch;
+    //!< Reused scratch: per-slot target cookies and resolved socket handles (POD; off the stack).
+    std::array<ITEM_ID, areg::DEFAULT_DRAIN_LIMIT>       mTargets;
+    std::array<SOCKETHANDLE, areg::DEFAULT_DRAIN_LIMIT>  mSockets;
     /**
      * \brief   Atomic stats (bytes + messages sent + enabled flag).
      **/

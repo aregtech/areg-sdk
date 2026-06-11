@@ -243,8 +243,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Called when removing all resources to perform additional cleanup for each resource
-     *          list.
+     * \brief   Called when removing all resources to perform additional cleanup for each resource list.
      *
      * \param   Key     The key value of the resource being removed.
      * \param   List    The resource list of objects being removed.

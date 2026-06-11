@@ -197,8 +197,7 @@ public:
     /**
      * \brief   Removes the first element from the resource map and returns it.
      *
-     * \param[out] firstElement    On output, contains the key and object pair of the removed first
-     *                             element.
+     * \param[out] firstElement    On output, contains the key and object pair of the removed first element.
      * \return  Returns true if an element was successfully removed.
      **/
     inline bool remove_first_element( std::pair<RESOURCE_KEY, RESOURCE_OBJECT> & firstElement );
@@ -206,8 +205,7 @@ public:
     /**
      * \brief   Returns the resource object of the first entry and retrieves its associated key.
      *
-     * \param[out] firstKey    On output, contains the key of the first resource if the map is not
-     *                         empty.
+     * \param[out] firstKey    On output, contains the key of the first resource if the map is not empty.
      * \return  Returns a pointer to the first resource object.
      **/
     inline RESOURCE_OBJECT resource_first_key( RESOURCE_KEY & firstKey ) const;

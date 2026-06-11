@@ -69,9 +69,8 @@ void PageConnections::OnServiceStartup( bool /*isStarted*/, areg::Component* /*o
 void PageConnections::OnServiceNetwork( bool isConnected, areg::DispatcherThread * ownerThread )
 {
     LOG_SCOPE( chatter_ui_PageConnections, OnServiceNetwork );
-#if AREG_LOGGING
-    uint32_t cookie = mConnectionHandler.GetCookie();
-    const areg::String& nickName = mConnectionHandler.GetNickName();
+    [[maybe_unused]] uint32_t cookie = mConnectionHandler.GetCookie();
+    [[maybe_unused]] const areg::String& nickName = mConnectionHandler.GetNickName();
     LOG_DBG("Handling network service: is [ %s ], owning thread [ %s ], connection handler [ %s ] (cookie = %s, nick name = %s), connection handler [ %s ], the connection SI [ %s ] ..."
                 , isConnected ? "CONNECTED" : "DISCONNECTED"
                 , ownerThread != nullptr ? "VALID" : "NULL"
@@ -80,7 +79,6 @@ void PageConnections::OnServiceNetwork( bool isConnected, areg::DispatcherThread
                 , nickName.as_string()
                 , mConnectionHandler.GetRegistered() ? "REGISTERED" : "NOT REGISTERED"
                 , mClientConnections != nullptr ? mClientConnections->interface_name().as_string() : "NULL");
-#endif  // AREG_LOGGING
 
     if ( isConnected && (ownerThread != nullptr) )
     {

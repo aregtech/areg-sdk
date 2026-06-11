@@ -18,31 +18,10 @@
     <ClCompile Include="areg\appbase\private\configure.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\areg_global.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\base\private\Cursor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\base\private\IOStream.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\base\private\ThreadConsumer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\CommonDefs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\base\private\DebugDefs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\base\private\MathDefs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\base\private\MemoryDefs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\base\private\StringDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\UtilityDefs.cpp">
@@ -51,34 +30,10 @@
     <ClCompile Include="areg\component\private\EventConsumer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\ProxyListener.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\component\private\QueueListener.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\component\private\RemoteEventConsumer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\component\private\WorkerThreadConsumer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\component\private\Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\ServiceDefs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\component\private\EventTemplate.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\ConnectionProvider.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\RegistrationConsumer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\RemoteMessageHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\ipc\private\RemoteServiceDefs.cpp">
@@ -88,9 +43,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\logging\private\Layouts.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\logging\private\LogOptions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\logging\private\LoggingDefs.cpp">
@@ -118,9 +70,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\win32\UtilityDefsWin32.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\base\private\posix\SyncObjectPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\appbase\private\Application.cpp">
@@ -222,9 +171,6 @@
     <ClCompile Include="areg\base\private\RuntimeBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\RuntimeClassID.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\base\private\RuntimeObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -234,13 +180,7 @@
     <ClCompile Include="areg\base\private\ReadConverter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\RemoteMessage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\base\private\SyncPrimitives.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\base\private\Containers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\win32\SyncPrimitivesWin32.cpp">
@@ -262,9 +202,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\ServerInfo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\component\private\StreamableEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\StubAddress.cpp">
@@ -294,12 +231,6 @@
     <ClCompile Include="areg\component\private\ClientInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\EventData.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\component\private\EventDataStream.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\component\private\EventDispatcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -322,12 +253,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\ServiceManagerEvents.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\component\private\ServiceRequestEvent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\component\private\ServiceResponseEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\ClientList.cpp">
@@ -375,12 +300,6 @@
     <ClCompile Include="areg\component\private\RemoteEventFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\RequestEvents.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\component\private\ResponseEvents.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\component\private\ServerList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -400,9 +319,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\ipc\private\SocketConnectionBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\SendMessageEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\persist\private\Property.cpp">
@@ -441,13 +357,7 @@
     <ClCompile Include="areg\logging\private\LogScope.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\TimerConsumer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\ipc\private\ServerConnectionBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\base\private\win32\SpinLockWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\posix\SpinLockPosix.cpp">
@@ -489,13 +399,7 @@
     <ClCompile Include="areg\component\private\TimerManagerBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\TimerManagerEvent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\logging\private\NetTcpLogger.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\component\private\SortedEventStack.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\logging\private\ScopeController.cpp">
@@ -513,25 +417,13 @@
     <ClCompile Include="areg\logging\private\ScopeNodes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\ipc\private\RegistrationProvider.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\ConnectionConsumer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\ipc\private\ServiceEventConsumer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\ServiceEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\ipc\private\RouterClient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\persist\private\ConfigManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\ConnectionDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\persist\private\ConfigListener.cpp">
@@ -541,12 +433,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\logging\private\DatabaseLogger.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\logging\private\LogDatabaseEngine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\component\private\EventRouter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\EventStack.cpp">
@@ -582,9 +468,6 @@
     <ClCompile Include="areg\component\private\linux\WatchdogManagerLinux.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\linux\ProcessLinux.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\base\private\linux\SocketMultiplexerLinux.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -603,7 +486,10 @@
     <ClCompile Include="areg\component\private\MpscEventQueue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\ipc\private\DataRateStats.cpp">
+    <ClCompile Include="areg\base\private\BufferBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\base\private\MessageEnvelope.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -836,9 +722,6 @@
     <ClInclude Include="areg\base\ThreadLocalStorage.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\RemoteMessage.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="areg\base\RuntimeClassID.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -929,12 +812,6 @@
     <ClInclude Include="areg\component\Event.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\component\EventData.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\component\EventDataStream.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="areg\component\EventDispatcher.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -960,9 +837,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\ServiceResponseEvent.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\component\StreamableEvent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\StubAddress.hpp">
@@ -1043,9 +917,6 @@
     <ClInclude Include="areg\ipc\RemoteMessageHandler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\ipc\SendMessageEvent.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="areg\ipc\ServerConnectionBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1053,9 +924,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\ipc\ServiceClientConnectionBase.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\base\private\win32\SpinLockWin32.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\private\posix\SpinLockPosix.hpp">
@@ -1086,9 +954,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\logging\private\NetTcpLogger.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\component\private\SortedEventStack.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\logging\private\ScopeController.hpp">
@@ -1170,6 +1035,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\private\posix\WaitAnyRegistry.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\base\BufferBase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\base\MessageEnvelope.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

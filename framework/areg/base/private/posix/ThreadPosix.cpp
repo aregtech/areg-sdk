@@ -143,7 +143,6 @@ id_type Thread::_os_thread_id()  noexcept
 
 Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
 {
-    // Initially, the thread is not valid and not running, nothing to destroy
     Thread::ThreadCompletion result = Thread::ThreadCompletion::Invalid;
     pthread_t threadId = to_ptr<pthread_t, id_type>(Thread::INVALID_THREAD_ID);
 
@@ -162,7 +161,6 @@ Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
 
     if ((waitForStopMs != DO_NOT_WAIT) && (mWaitForExit.lock(waitForStopMs) == false))
     {
-        // force to terminate thread and close handles due to waiting timeout expire
         AREG_OUTPUT_DBG("The thread [ %s ] should be terminated", mThreadAddress.name().as_string());
         result = Thread::ThreadCompletion::Terminated;
         pthread_cancel(threadId);
@@ -171,7 +169,6 @@ Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
     }
     else
     {
-        // The thread completed job normally
         AREG_OUTPUT_DBG("The thread [ %s ] completed job", mThreadAddress.name().as_string());
         result = Thread::ThreadCompletion::Completed;
         ASSERT(waitForStopMs != WAIT_INFINITE || is_running() == false);

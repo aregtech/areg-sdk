@@ -59,12 +59,6 @@ AREG_IMPLEMENT_RUNTIME(Thread, RuntimeObject)
 /************************************************************************/
 // Define internal static mapping objects
 /************************************************************************/
-Thread::MapThreadHandleResource& Thread::_map_threadh_handle() noexcept
-{
-    static Thread::MapThreadHandleResource _mapThreadhHandle;
-    return _mapThreadhHandle;
-}
-
 Thread::MapThreadNameResource& Thread::_map_thread_name() noexcept
 {
     static Thread::MapThreadNameResource _mapThreadName;
@@ -275,8 +269,7 @@ size_t Thread::current_stack_size() noexcept
 int32_t Thread::_thread_entry()
 {
     ThreadConsumer::ExitCode result = ThreadConsumer::ExitCode::Terminated;
-
-    if (Thread::_find_by_handle(mThreadHandle) != nullptr )
+    if (Thread::find_by_id(mThreadId) != nullptr )
     {
         ThreadLocalStorage& tls = Thread::current_thread_storage();
         tls.set_item(STORAGE_THREAD_CONSUMER, reinterpret_cast<void *>(&mThreadConsumer));
@@ -327,7 +320,6 @@ void Thread::_clean_resources(bool unregister)
 
 bool Thread::_register_thread()
 {
-    Thread::_map_threadh_handle().register_resource_object(mThreadHandle, this);
     Thread::_map_thread_name().register_resource_object(static_cast<uint32_t>(mThreadAddress), this);
     Thread::_map_thread_id().register_resource_object(mThreadId, this);
 
@@ -341,14 +333,15 @@ void Thread::_unregister_thread()
     {
         mThreadConsumer.on_thread_unregistering();
         
-        Thread::_map_threadh_handle().unregister_resource_object(mThreadHandle);
         Thread::_map_thread_name().unregister_resource_object(static_cast<uint32_t>(mThreadAddress));
         Thread::_map_thread_id().unregister_resource_object(mThreadId);
     }
+#ifdef _DEBUG
     else
     {
         ASSERT(mThreadHandle == Thread::INVALID_THREAD_HANDLE);
     }
+#endif  // _DEBUG
 }
 
 bool Thread::startup_phase() const noexcept

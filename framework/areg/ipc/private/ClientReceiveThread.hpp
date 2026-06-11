@@ -19,6 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/ipc/DataRateStats.hpp"
 
@@ -56,9 +57,9 @@ public:
 
     virtual ~ClientReceiveThread() = default;
 
-    /************************************************************************/
-    // Actions and attributes.
-    /************************************************************************/
+/************************************************************************/
+// Actions and attributes.
+/************************************************************************/
 public:
     /**
      * \brief   Returns accumulative value of received data size and resets the existing value to
@@ -98,6 +99,15 @@ public:
      **/
     inline void accumulate_received(uint64_t bytes, uint32_t msgs) noexcept;
 
+    /**
+     * \brief   Sets the connection handshake message to send after the TCP
+     *          connection is established. Must be called before start() returns.
+     *          The message is sent once and then released.
+     *
+     * \param   msg     The handshake envelope (connect request message).
+     **/
+    inline void set_handshake(areg::MessageEnvelope msg);
+
 protected:
 /************************************************************************/
 // DispatcherThread overrides
@@ -117,16 +127,21 @@ private:
     /**
      * \brief   The instance of remote service handler to dispatch messages.
      **/
-    RemoteMessageHandler&     mRemoteService;
+    RemoteMessageHandler&   mRemoteService;
     /**
      * \brief   The instance of connection to receive messages from remote routing service.
      **/
-    ClientConnection &          mConnection;
+    ClientConnection &      mConnection;
 
     /**
      * \brief   Atomic stats (bytes + messages received + enabled flag).
      **/
-    DataRateStats                   mRecvStats;
+    DataRateStats           mRecvStats;
+
+    /**
+     * \brief   Connection handshake message. Released after use.
+     **/
+    areg::MessageEnvelope     mHandshakeMsg;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -163,6 +178,11 @@ inline bool ClientReceiveThread::is_data_rate_enabled() const noexcept
 inline void ClientReceiveThread::accumulate_received(uint64_t bytes, uint32_t msgs) noexcept
 {
     mRecvStats.accumulate(bytes, msgs);
+}
+
+inline void ClientReceiveThread::set_handshake(areg::MessageEnvelope msg)
+{
+    mHandshakeMsg = std::move(msg);
 }
 
 } // namespace areg

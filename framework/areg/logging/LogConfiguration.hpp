@@ -40,9 +40,8 @@ namespace areg {
 // LogConfiguration class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Configuration interface for logging system. Provides read-only access to logging
- *          settings including enabled targets (file, remote, database), layout formats, and scope
- *          priorities.
+ * \brief   Configuration interface for logging system. Provides read-only access to logging settings
+ *          including enabled targets (file, remote, database), layout formats, and scope priorities.
  **/
 class AREG_API LogConfiguration
 {

@@ -64,16 +64,14 @@ public:
      * \brief   Creates list of layout objects from passed formatting string.
      *
      * \param   layoutFormat    The formatting string to parse and create layout objects.
-     * \return  Returns true if after parsing the layout manager contains at least one layout
-     *          object.
+     * \return  Returns true if after parsing the layout manager contains at least one layout object.
      **/
     bool create_layouts( const char * layoutFormat );
     /**
      * \brief   Creates list of layout objects from passed formatting string.
      *
      * \param   layoutFormat    The formatting string to parse and create layout objects.
-     * \return  Returns true if after parsing the layout manager contains at least one layout
-     *          object.
+     * \return  Returns true if after parsing the layout manager contains at least one layout object.
      * \note    Overload with String parameter.
      **/
     bool create_layouts( const String & layoutFormat );

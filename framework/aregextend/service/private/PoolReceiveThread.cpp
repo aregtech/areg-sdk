@@ -14,7 +14,7 @@
  ************************************************************************/
 #include "aregextend/service/private/PoolReceiveThread.hpp"
 
-#include "areg/base/RemoteMessage.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/base/SyncPrimitives.hpp"
@@ -29,6 +29,8 @@
 #include "aregextend/service/private/ServerReceiveThread.hpp"
 #include "aregextend/service/private/ClientConnectionPair.hpp"
 #include "aregextend/service/private/ServiceThreadHelper.hpp"
+
+#include "areg/base/private/DebugDefs.hpp"
 
 namespace areg::ext {
 
@@ -109,7 +111,7 @@ bool PoolReceiveThread::run_dispatcher()
     areg::set_receive_mode(areg::ReceiveMode::MultiCache);
     ready_for_events(true);
 
-    areg::RemoteMessage msgReceived;
+    areg::MessageEnvelope msgReceived;
     int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) };
     SyncEvent* events[2] { &mEventExit, &mEventQueue };
 
@@ -120,8 +122,12 @@ bool PoolReceiveThread::run_dispatcher()
         whichEvent = SyncEvent::wait_any(events, 2, areg::DO_NOT_WAIT);
         if ( whichEvent != SyncEvent::WAIT_ANY_TIMEOUT )
         {
-            Event * eventElem = ( whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ) ? pick_event() : nullptr;
-            whichEvent = is_exit_event(eventElem) ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) : whichEvent;
+            if (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue))
+            {
+                Event eventElem{ pick_event() };
+                if (eventElem.is_exit_prio())
+                    whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
+            }
             continue;
         }
 
@@ -150,10 +156,13 @@ bool PoolReceiveThread::run_dispatcher()
             if ( received > 0 )
             {
                 mGlobalStats.accumulate_received(static_cast<uint64_t>(received), 1u);
-                mRemoteService.process_received_message(msgReceived, clientSocket);
+                {
+                    AREG_LT_SCOPE(areg::LtStage::RecvNode);  // router inline route+forward
+                    mRemoteService.process_received_message(msgReceived, clientSocket);
+                }
 
                 // Drain bytes cached by _os_recv_data read-ahead.
-                if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, areg::THREAD_DRAIN_LIMIT - 1u, clientSocket,
+                if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, areg::DEFAULT_DRAIN_LIMIT - 1u, clientSocket,
                         msgReceived, [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_received(bytes, msgs); }))
                 {
                     mMux.unregister_socket(hReady);
@@ -173,7 +182,7 @@ bool PoolReceiveThread::run_dispatcher()
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
             uint32_t drainCount{ 0 };
 #endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-            for ( uint32_t drain = 0; drain < areg::THREAD_DRAIN_LIMIT; ++drain )
+            for ( uint32_t drain = 0; drain < areg::DEFAULT_DRAIN_LIMIT; ++drain )
             {
                 const SOCKETHANDLE hDrain = mMux.wait(0);
                 if ( (hDrain == areg::InvalidSocketHandle) || (hDrain == areg::FailedSocketHandle) )
@@ -196,7 +205,7 @@ bool PoolReceiveThread::run_dispatcher()
                     mRemoteService.process_received_message(msgReceived, drainSocket);
 
                     // Drain read-ahead cache for this socket too.
-                    if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, areg::THREAD_DRAIN_LIMIT - 1u, drainSocket,
+                    if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, areg::DEFAULT_DRAIN_LIMIT - 1u, drainSocket,
                             msgReceived, [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_received(bytes, msgs); }))
                     {
                         mMux.unregister_socket(hDrain);
@@ -212,9 +221,9 @@ bool PoolReceiveThread::run_dispatcher()
             }
 
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-            if (drainCount >= areg::THREAD_DRAIN_LIMIT)
+            if (drainCount >= areg::DEFAULT_DRAIN_LIMIT)
             {
-                DEBUG_LOG_WARN("Receive drain loop exhausted thread drain limit (%d) -- inbound event queue is growing", areg::THREAD_DRAIN_LIMIT);
+                DEBUG_LOG_WARN("Receive drain loop exhausted thread drain limit (%d) -- inbound event queue is growing", areg::DEFAULT_DRAIN_LIMIT);
             }
 #endif   // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
         }

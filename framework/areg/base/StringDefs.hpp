@@ -239,8 +239,7 @@ template<typename CharType>
 inline constexpr bool is_empty( const CharType * strBuffer ) noexcept;
 
 /**
- * \brief   Returns the length of the string buffer, counting characters until the null
- *          terminator.
+ * \brief   Returns the length of the string buffer, counting characters until the null terminator.
  *
  * \param   theString       The string to measure.
  * \return  Returns the number of characters in the string.
@@ -261,8 +260,7 @@ template <typename CharType>
 inline CharCount string_line_length(const CharType* theString) noexcept;
 
 /**
- * \brief   Copies characters from source to destination buffer without reallocating destination
- *          space.
+ * \brief   Copies characters from source to destination buffer without reallocating destination space.
  *
  * \param   strDst          The destination string buffer.
  * \param   dstSpace        The space available in the destination string buffer.
@@ -279,8 +277,7 @@ CharCount copy_string( CharDst*       strDst
                      , CharCount      charsCopy = areg::COUNT_ALL ) noexcept;
 
 /**
- * \brief   Fast copy of characters from source to destination buffer without reallocating
- *          destination space.
+ * \brief   Fast copy of characters from source to destination buffer without reallocating destination space.
  *
  * \param   strDst          The destination string buffer.
  * \param   strSrc          The source string.
@@ -295,8 +292,7 @@ CharCount copy_string_fast( CharType*       strDst
                           , CharCount       charsCopy = areg::COUNT_ALL) noexcept;
 
 /**
- * \brief   Converts the given character to lower case based on the first 256 UTF-8 code page
- *          symbols.
+ * \brief   Converts the given character to lower case based on the first 256 UTF-8 code page symbols.
  *
  * \param   ch      The character to convert.
  * \return  If the character is in range [-128, 127], returns the lower case equivalent.
@@ -317,8 +313,7 @@ template <typename CharType>
 inline constexpr const CharType* make_lower(CharType* source) noexcept;
 
 /**
- * \brief   Converts the given character to upper case based on the first 256 UTF-8 code page
- *          symbols.
+ * \brief   Converts the given character to upper case based on the first 256 UTF-8 code page symbols.
  *
  * \param   ch      The character to convert.
  * \return  If the character is in range [-128, 127], returns the upper case equivalent.
@@ -357,14 +352,12 @@ template<typename CharType>
 inline constexpr bool is_upper(CharType ch) noexcept;
 
 /**
- * \brief   Compares two strings up to a specified number of characters or until null terminator
- *          is reached.
+ * \brief   Compares two strings up to a specified number of characters or until null terminator is reached.
  *
- * \param   left_side           The left-hand side string to compare.
- * \param   right_side          The right-hand side string to compare.
- * \param   charCount           The number of characters to compare, or COUNT_ALL to compare
- *                              complete strings.
- * \param   caseSensitive       If false, comparison ignores case differences.
+ * \param   left_side       The left-hand side string to compare.
+ * \param   right_side      The right-hand side string to compare.
+ * \param   charCount       The number of characters to compare, or COUNT_ALL to compare complete strings.
+ * \param   caseSensitive   If false, comparison ignores case differences.
  * \tparam  CharLhs     The type of characters on left string. Either `char` or `wchar_t`.
  * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
  * \return  Returns -1 if left-side is less than right-side, 0 if equal, 1 if left-side is
@@ -599,8 +592,7 @@ template<typename CharType>
 inline constexpr bool is_control(CharType ch) noexcept;
 
 /**
- * \brief   Returns true if the character is readable (human-readable characters and
- *          white-space).
+ * \brief   Returns true if the character is readable (human-readable characters and white-space).
  *
  * \param   ch      The character in range [-128, 127] to check.
  * \return  Returns true if the character is readable.
@@ -711,8 +703,7 @@ constexpr void trim_all( CharDst *strDst, areg::CharCount lenDst, const CharSrc 
  *
  * \param   chRemove            The character to search and remove.
  * \param   strSource           The string to search in and remove characters from.
- * \param   removeAll           If true, removes all matches; if false, removes only the first
- *                              match.
+ * \param   removeAll           If true, removes all matches; if false, removes only the first match.
  * \param   caseSensitive       If false, ignores case when searching for the character.
  * \return  If removeAll is false, returns the position of the removed character if found. If
  *          removeAll is true or no match found, returns end-of-string position.
@@ -723,15 +714,13 @@ constexpr CharType * remove_char(const CharType chRemove, CharType* strSource, b
 /**
  * \brief   Searches for a phrase within a string, starting at the specified position.
  *
- * \param   strPhrase           The phrase to search for.
- * \param   strSource           The source string to search in.
- * \param   startPos            The starting position. If START_POS, searches from the
- *                              beginning.
- * \param   caseSensitive       If false, ignores case differences in the search.
- * \param[out] next            If not nullptr, on output contains the pointer in the source
- *                                 string after the found phrase; nullptr if not found.
- * \return  Returns the position where the phrase starts if found; areg::INVALID_POS
- *          otherwise.
+ * \param   strPhrase       The phrase to search for.
+ * \param   strSource       The source string to search in.
+ * \param   startPos        The starting position. If START_POS, searches from the beginning.
+ * \param   caseSensitive   If false, ignores case differences in the search.
+ * \param[out] next         If not nullptr, on output contains the pointer in the source
+ *                          string after the found phrase; nullptr if not found.
+ * \return  Returns the position where the phrase starts if found; areg::INVALID_POS otherwise.
  **/
 template<typename CharType>
 [[nodiscard]]
@@ -744,15 +733,13 @@ constexpr CharPos find_first( const CharType*  strPhrase
 /**
  * \brief   Searches for a character within a string, starting at the specified position.
  *
- * \param   chSearch            The character to search for.
- * \param   strSource           The source string to search in.
- * \param   startPos            The starting position. If START_POS, searches from the
- *                              beginning.
- * \param   caseSensitive       If false, ignores case differences in the search.
- * \param[out] next            If not nullptr, on output contains the pointer in the source
- *                                 string after the found character; nullptr if not found.
- * \return  Returns the position where the character is found; areg::INVALID_POS if not
- *          found.
+ * \param   chSearch        The character to search for.
+ * \param   strSource       The source string to search in.
+ * \param   startPos        The starting position. If START_POS, searches from the beginning.
+ * \param   caseSensitive   If false, ignores case differences in the search.
+ * \param[out] next         If not nullptr, on output contains the pointer in the source
+ *                          string after the found character; nullptr if not found.
+ * \return  Returns the position where the character is found; areg::INVALID_POS if not found.
  **/
 template<typename CharType>
 [[nodiscard]]
@@ -765,16 +752,15 @@ constexpr CharPos find_first( CharType chSearch
  * \brief   Reverse searches for a phrase within a string, starting from the specified position
  *          and moving toward the beginning.
  *
- * \param   strPhrase           The phrase to search for.
- * \param   strSource           The source string to search in.
- * \param   startPos            The starting position. If END_POS, searches from the end.
- * \param   caseSensitive       If false, ignores case differences in the search.
- * \param[out] next            If not nullptr, on output contains the pointer in the source
- *                                 string before the found phrase; nullptr if not found.
+ * \param   strPhrase       The phrase to search for.
+ * \param   strSource       The source string to search in.
+ * \param   startPos        The starting position. If END_POS, searches from the end.
+ * \param   caseSensitive   If false, ignores case differences in the search.
+ * \param[out] next         If not nullptr, on output contains the pointer in the source
+ *                          string before the found phrase; nullptr if not found.
  * \return  Returns the position where the phrase starts (relative to the beginning);
  *          areg::INVALID_POS if not found.
- * \note    This is a reverse search, but the returned position is relative to the beginning of
- *          the string.
+ * \note    This is a reverse search, but the returned position is relative to the beginning of the string.
  **/
 template<typename CharType>
 [[nodiscard]]
@@ -788,16 +774,15 @@ constexpr CharPos find_last( const CharType*  strPhrase
  * \brief   Reverse searches for a character within a string, starting from the specified
  *          position and moving toward the beginning.
  *
- * \param   chSearch            The character to search for.
- * \param   strSource           The source string to search in.
- * \param   startPos            The starting position. If END_POS, searches from the end.
- * \param   caseSensitive       If false, ignores case differences in the search.
- * \param[out] next            If not nullptr, on output contains the pointer to the found
- *                                 character; nullptr if not found.
+ * \param   chSearch        The character to search for.
+ * \param   strSource       The source string to search in.
+ * \param   startPos        The starting position. If END_POS, searches from the end.
+ * \param   caseSensitive   If false, ignores case differences in the search.
+ * \param[out] next         If not nullptr, on output contains the pointer to the found
+ *                          character; nullptr if not found.
  * \return  Returns the position where the character is found (relative to the beginning);
  *          areg::INVALID_POS if not found.
- * \note    This is a reverse search, but the returned position is relative to the beginning of
- *          the string.
+ * \note    This is a reverse search, but the returned position is relative to the beginning of the string.
  **/
 template<typename CharType>
 [[nodiscard]]
@@ -859,10 +844,10 @@ inline constexpr bool string_ends_with(const CharType * strString, const CharTyp
  * \brief   Returns the first printable portion of the string. Requires the buffer to be
  *          modifiable.
  *
- * \param   strSource       The source string to check. The buffer must be modifiable.
- * \param   charCount       The number of characters in the buffer.
- * \param[out] next        If not nullptr, on output contains the pointer after the first
- *                             non-printable character; nullptr if all characters are printable.
+ * \param   strSource   The source string to check. The buffer must be modifiable.
+ * \param   charCount   The number of characters in the buffer.
+ * \param[out] next     If not nullptr, on output contains the pointer after the first
+ *                      non-printable character; nullptr if all characters are printable.
  * \return  Returns the first printable portion. Returns empty string if the first character is
  *          not printable; nullptr if the buffer is invalid.
  **/
@@ -872,10 +857,10 @@ constexpr const CharType* printable( CharType * strSource, CharCount charCount, 
 /**
  * \brief   Extracts a single line from the string. Requires the buffer to be modifiable.
  *
- * \param   strSource       The source string to extract from. The buffer must be modifiable.
- * \param   charCount       The number of characters in the buffer.
- * \param[out] next        If not nullptr, on output contains the pointer after the first
- *                             end-of-line character; nullptr if no more lines.
+ * \param   strSource   The source string to extract from. The buffer must be modifiable.
+ * \param   charCount   The number of characters in the buffer.
+ * \param[out] next     If not nullptr, on output contains the pointer after the first
+ *                      end-of-line character; nullptr if no more lines.
  * \return  Returns the first line. Returns nullptr if the buffer is invalid.
  **/
 template<typename CharType>    
@@ -884,16 +869,15 @@ const CharType * line( CharType * strSource, CharCount charCount = areg::COUNT_A
 /**
  * \brief   Converts the given string to an integer in base 10, ignoring leading white-space.
  *
- * \param   strNumber       The string to convert.
- * \param[out] remain          On output, contains the pointer to the first non-digit character.
+ * \param   strNumber   The string to convert.
+ * \param[out] remain   On output, contains the pointer to the first non-digit character.
  **/
 template<typename CharType>
 [[nodiscard]]
 constexpr int32_t make_integer(const CharType * strNumber, const CharType ** remain) noexcept;
 
 /**
- * \brief   Computes the buffer size required to format a string. Works only for char and
- *          wchar_t types.
+ * \brief   Computes the buffer size required to format a string. Works only for char and wchar_t types.
  *
  * \param   format      The formatting string.
  * \param   argptr      The pointer to the argument list matching the format.
@@ -907,8 +891,7 @@ template<typename CharType>
 inline int32_t required_char_count( const CharType * format, va_list argptr ) noexcept;
 
 /**
- * \brief   Computes the buffer size required to format a string. Works only for char and
- *          wchar_t types.
+ * \brief   Computes the buffer size required to format a string. Works only for char and wchar_t types.
  *
  * \param   format      The formatting string.
  * \return  Returns an approximate size (128, 256, 512, 1024) or -1 if the required size exceeds

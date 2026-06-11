@@ -20,6 +20,7 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/component/ServiceAddress.hpp"
+#include "areg/base/ThreadAddress.hpp"
 #include "areg/component/Channel.hpp"
 
 #include <utility>
@@ -28,7 +29,6 @@
  * Dependencies
  ************************************************************************/
 namespace areg {
-    class InStream;
     class ProxyAddress;
     class ServiceRequestEvent;
 } // namespace areg
@@ -97,6 +97,23 @@ public:
                , const String & threadName = String::empty_string() );
 
     /**
+     * \brief   Creates a stub address from service details and component role name.
+     *
+     * \param   serviceNum          The name of the implemented service interface.
+     * \param   serviceVersion      The version of the implemented service interface.
+     * \param   serviceType         The type of service.
+     * \param   roleNum             The role name of the holder component.
+     * \param   threadNum           The unique thread number of the stub. If zero, uses the current thread.
+     * \param   stubNum             The unique number of the stub.
+     **/
+    StubAddress( const UniqueNumber serviceNum
+               , const Version & serviceVersion
+               , areg::ServiceType serviceType
+               , const UniqueNumber roleNum
+               , const UniqueNumber threadNum
+               , const UniqueNumber stubNum = areg::CHECKSUM_IGNORE);
+
+    /**
      * \brief   Creates a stub address from a service item and component role name.
      *
      * \param   service         Service item containing basic service information.
@@ -104,6 +121,16 @@ public:
      * \param   threadName      The thread name of the stub. If empty, uses the current thread.
      **/
     StubAddress( const ServiceItem & service, const String & roleName, const String & threadName = String::empty_string() );
+
+    /**
+     * \brief   Creates a stub address from a service item and component role number.
+     *
+     * \param   service         Service item containing basic service address.
+     * \param   roleNum         The role number of the holder component.
+     * \param   threadNum       The thread number of the stub. If zero, uses the current thread.
+     * \param   stubNum         The unique number of the stub.
+     **/
+    StubAddress(const ServiceAddress& service, const UniqueNumber threadNum, const UniqueNumber stubNum = areg::CHECKSUM_IGNORE);
 
     /**
      * \brief   Creates a stub address from service interface data and component role name.
@@ -115,21 +142,31 @@ public:
     StubAddress( const areg::InterfaceData & siData, const String & roleName, const String & threadName = String::empty_string() );
 
     /**
+     * \brief   Creates a stub address from shared service identity and endpoint fields.
+     *
+     * \param   rawService  Shared service interface identity.
+     * \param   endPoint    Provider endpoint (provider field of EventHeader).
+     **/
+    StubAddress(const areg::RawService& rawService, const areg::Endpoint& endPoint);
+
+    /**
+     * \brief   Creates a stub address from an EventHeader (provider field).
+     **/
+    StubAddress(const areg::EventHeader& header);
+
+    /**
      * \brief   Creates a stub address by copying a service address.
      * \param   source      The service address to copy.
      **/
     explicit StubAddress( const ServiceAddress & source );
+
+    explicit StubAddress(const ProxyAddress& proxy);
 
     /**
      * \brief   Creates a stub address by moving a service address.
      * \param   source      The service address to move.
      **/
     explicit StubAddress( ServiceAddress && source );
-
-    /**
-     * \brief   Creates a stub address by reading from a stream.
-     **/
-    StubAddress( const InStream & stream);
 
     StubAddress(const StubAddress& source) = default;
 
@@ -205,25 +242,21 @@ public:
     [[nodiscard]]
     inline explicit operator uint32_t () const noexcept;
 
-/************************************************************************/
-// Friend global operators for streaming
-/************************************************************************/
+    /**
+     * \brief   Deserializes date and time value from stream.
+     *
+     * \param   stream      Streaming object containing serialized date and time.
+     * \param[out] input    StubAddress object initialized from deserialized stream data.
+     **/
+    friend inline const InStream & operator >> ( const InStream & stream, StubAddress& input );
 
     /**
-     * \brief   Reads and initializes a stub address from a stream.
+     * \brief   Serializes date and time value to stream.
      *
-     * \param   stream      The input stream.
-     * \param[out] input       The stub address to initialize from stream data.
+     * \param[out] stream   Streaming object where date and time will be serialized.
+     * \param   output      StubAddress object to serialize.
      **/
-    friend AREG_API const InStream & operator >> ( const InStream & stream, StubAddress & input );
-
-    /**
-     * \brief   Writes a stub address to a stream.
-     *
-     * \param   stream      The output stream.
-     * \param   output      The stub address to serialize.
-     **/
-    friend AREG_API OutStream & operator << ( OutStream & stream, const StubAddress & output);
+    friend inline OutStream & operator << ( OutStream & stream, const StubAddress& output );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -284,7 +317,7 @@ public:
      * \brief   Returns the cookie value of this stub.
      **/
     [[nodiscard]]
-    inline const ITEM_ID & cookie() const noexcept;
+    inline ITEM_ID cookie() const noexcept;
 
     /**
      * \brief   Sets the cookie value for this stub.
@@ -297,7 +330,7 @@ public:
      * \brief   Returns the source ID set in the communication channel.
      **/
     [[nodiscard]]
-    inline const ITEM_ID & source() const noexcept;
+    inline ITEM_ID source() const noexcept;
 
     /**
      * \brief   Sets the source ID in the communication channel.
@@ -307,28 +340,35 @@ public:
     inline void set_source(const ITEM_ID & source ) noexcept;
 
     /**
-     * \brief   Returns the thread name of the service owner.
+     * \brief   Returns the thread address of the service owner.
      **/
     [[nodiscard]]
-    inline const String & thread() const noexcept;
+    inline const ThreadAddress & thread() const noexcept;
 
     /**
-     * \brief   Sets the thread name of the service owner.
+     * \brief   Sets the thread address of the service owner.
      *
-     * \param   threadName      The thread name to set.
+     * \param   thread      The thread address to set.
      **/
-    void set_thread( const String & threadName );
+    void set_thread( const ThreadAddress& thread );
+
+    /**
+     * \brief   Sets the thread name to the thread address of the service owner.
+     *
+     * \param   thread      The thread name to set.
+     **/
+    void set_thread(const String& thread);
 
     /**
      * \brief   Returns true if the stub address is valid.
      **/
     [[nodiscard]]
-    bool is_valid() const noexcept;
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Marks the communication channel as invalid.
      **/
-    void invalidate_channel() noexcept;
+    inline void invalidate_channel() noexcept { mChannel.invalidate(); }
 
     /**
      * \brief   Returns true if the specified proxy address is compatible with this stub.
@@ -364,12 +404,45 @@ public:
      **/
     void from_string(const char* pathStub, const char** nextPart = nullptr);
 
-protected:
     /**
-     * \brief   Returns true if the stub address data is valid.
+     * \brief   Initialize stub address data from shared service identity and endpoint fields.
+     *
+     * \param   rawService  Shared service interface identity (role/service hash, type).
+     * \param   endPoint    Provider endpoint carrying thread, version, and routing fields.
      **/
-    [[nodiscard]]
-    bool is_validated() const noexcept;
+    inline void from_endpoint(const areg::RawService& rawService, const areg::Endpoint& endPoint) noexcept;
+
+    /**
+     * \brief   Write stub address data into shared service identity and endpoint fields.
+     *
+     * \param   rawService  Receives role/service hash and type.
+     * \param   endPoint    Receives thread, version, routing, and magic number.
+     **/
+    inline void to_endpoint(areg::RawService& rawService, areg::Endpoint& endPoint) const noexcept;
+
+    /**
+     * \brief   Initialize stub address data from an EventHeader (provider field).
+     **/
+    inline void from_event(const areg::EventHeader& header) noexcept;
+
+    /**
+     * \brief   Write stub address data into an EventHeader (provider field).
+     **/
+    inline void to_event(areg::EventHeader& header) const noexcept;
+
+    /**
+     * \brief   Reads ServiceAddress data from an input stream.
+     *
+     * \param   stream      The input stream to read from.
+     **/
+    inline const InStream& from_stream(const InStream& stream);
+
+    /**
+     * \brief   Writes ServiceAddress data to an output stream.
+     *
+     * \param   stream      The output stream to write to.
+     **/
+    inline OutStream& to_stream(OutStream& stream) const;
 
 private:
     [[nodiscard]]
@@ -390,17 +463,16 @@ private:
     /**
      * \brief   The name of owner thread.
      **/
-    String          mThreadName;
+    ThreadAddress   mThread;
     /**
      * \brief   The communication channel.
      **/
     Channel         mChannel;
 
-private:
     /**
      * \brief   The calculated number of stub address.
      **/
-    uint32_t    mMagicNum;
+    uint32_t        mMagicNum;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -416,7 +488,7 @@ inline StubAddress & StubAddress::operator = ( const StubAddress & source )
     if (this != &source)
     {
         static_cast<ServiceAddress &>(*this) = static_cast<const ServiceAddress &>(source);
-        mThreadName = source.mThreadName;
+        mThread     = source.mThread;
         mChannel    = source.mChannel;
         mMagicNum   = source.mMagicNum;
     }
@@ -429,7 +501,7 @@ inline StubAddress & StubAddress::operator = ( StubAddress && source ) noexcept
     if ( this != &source )
     {
         static_cast<ServiceAddress &>(*this) = static_cast<ServiceAddress &&>(source);
-        mThreadName = std::move(source.mThreadName);
+        mThread     = std::move(source.mThread);
         mChannel    = std::move(source.mChannel);
         mMagicNum   = source.mMagicNum;
     }
@@ -442,9 +514,9 @@ inline StubAddress & StubAddress::operator = (const ServiceAddress & addrService
     if ( static_cast<const ServiceAddress *>(this) != &addrService)
     {
         static_cast<ServiceAddress &>(*this) = static_cast<const ServiceAddress &>(addrService);
-        mThreadName = String::empty_string();
+        mThread     = ThreadAddress::invalid_thread_address();
         mChannel    = Channel();
-        mMagicNum   = StubAddress::_magic_number(*this);
+        mMagicNum   = areg::INVALID_VALUE;
     }
 
     return (*this);
@@ -455,9 +527,9 @@ inline StubAddress & StubAddress::operator = ( ServiceAddress && addrService ) n
     if ( static_cast<const ServiceAddress *>(this) != &addrService )
     {
         static_cast<ServiceAddress &>(*this) = static_cast<ServiceAddress &&>(addrService);
-        mThreadName = String::empty_string();
+        mThread     = ThreadAddress::invalid_thread_address();
         mChannel    = Channel( );
-        mMagicNum   = StubAddress::_magic_number( *this );
+        mMagicNum   = areg::INVALID_VALUE;
     }
 
     return (*this);
@@ -481,6 +553,11 @@ inline bool StubAddress::operator == ( const ProxyAddress & addrProxy ) const no
 inline StubAddress::operator uint32_t () const noexcept
 {
     return mMagicNum;
+}
+
+inline bool StubAddress::is_valid() const noexcept
+{
+    return areg::crc32_valid(mMagicNum) && mChannel.is_valid();
 }
 
 inline bool StubAddress::is_local_address() const noexcept
@@ -513,9 +590,9 @@ inline bool StubAddress::is_target_public() const noexcept
     return (mChannel.cookie( ) >= areg::COOKIE_LOCAL) && (mChannel.target( ) != 0);
 }
 
-inline const String & StubAddress::thread() const noexcept
+inline const ThreadAddress & StubAddress::thread() const noexcept
 {
-    return mThreadName;
+    return mThread;
 }
 
 inline const Channel & StubAddress::channel() const noexcept
@@ -528,7 +605,7 @@ inline void StubAddress::set_channel(const Channel & channel) noexcept
     mChannel = channel;
 }
 
-inline const ITEM_ID & StubAddress::cookie() const noexcept
+inline ITEM_ID StubAddress::cookie() const noexcept
 {
     return mChannel.cookie();
 }
@@ -538,19 +615,76 @@ inline void StubAddress::set_cookie(const ITEM_ID & cookie ) noexcept
     mChannel.set_cookie(cookie);
 }
 
-inline const ITEM_ID & StubAddress::source() const noexcept
+inline ITEM_ID StubAddress::source() const noexcept
 {
     return mChannel.source();
 }
 
 inline void StubAddress::set_source(const ITEM_ID & source ) noexcept
 {
-    return mChannel.set_source(source);
+    mChannel.set_source(source);
+}
+
+inline void StubAddress::from_endpoint(const areg::RawService& rawService, const areg::Endpoint& endPoint) noexcept
+{
+    ServiceAddress::from_endpoint(rawService, endPoint);
+    mThread.from_endpoint(endPoint);
+    mChannel.set_cookie(endPoint.id);
+    mChannel.set_source(endPoint.thread);
+}
+
+inline void StubAddress::to_endpoint(areg::RawService& rawService, areg::Endpoint& endPoint) const noexcept
+{
+    ServiceAddress::to_endpoint(rawService, endPoint);
+    mThread.to_endpoint(endPoint);
+    endPoint.id     = mChannel.cookie();
+    endPoint.number = mMagicNum;
+}
+
+inline void StubAddress::from_event(const areg::EventHeader& header) noexcept
+{
+    from_endpoint(header.rawService, header.provider);
+}
+
+inline void StubAddress::to_event(areg::EventHeader& header) const noexcept
+{
+    to_endpoint(header.rawService, header.provider);
 }
 
 inline StubAddress& StubAddress::self() noexcept
 {
     return (*this);
+}
+
+inline const InStream& StubAddress::from_stream(const InStream& stream)
+{
+    ITEM_ID cookie = areg::COOKIE_LOCAL;
+    ServiceAddress::from_stream(stream);
+    stream >> mMagicNum;
+    stream >> mThread;
+    stream >> cookie;
+    set_cookie(cookie);
+
+    return stream;
+}
+
+inline OutStream& StubAddress::to_stream(OutStream& stream) const
+{
+    ServiceAddress::to_stream(stream);
+    stream << mMagicNum;
+    stream << mThread;
+    stream << cookie();
+    return stream;
+}
+
+inline const InStream & operator >> (const InStream & stream, StubAddress & input)
+{
+    return input.from_stream(stream);
+}
+
+inline OutStream & operator << (OutStream & stream, const StubAddress & output)
+{
+    return output.to_stream(stream);
 }
 
 } // namespace areg

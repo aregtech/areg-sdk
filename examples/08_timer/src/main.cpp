@@ -105,7 +105,7 @@ protected:
     [[nodiscard]]
     bool post_event(areg::Event& eventElem) final
     {
-        ASSERT(AREG_RUNTIME_CAST(&eventElem, areg::TimerEvent) != nullptr);    // Make sure that only timer events are passed.
+        ASSERT(eventElem.is_event_id(areg::TimerEvent::CLASS_ID));    // Make sure that only timer events are passed.
         return areg::EventDispatcher::post_event(eventElem);
     }
 private:

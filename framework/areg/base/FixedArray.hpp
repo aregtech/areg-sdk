@@ -140,14 +140,14 @@ public:
      * \brief   Deserializes array values from stream, replacing existing contents.
      *
      * \param   stream      Streaming object to read values from.
-     * \param[out] input       FixedArray to receive deserialized values.
+     * \param[out] input    FixedArray to receive deserialized values.
      **/
     template<typename V>
     friend const InStream & operator >> ( const InStream & stream, FixedArray<V> & input );
     /**
      * \brief   Serializes all array values to stream starting from first element.
      *
-     * \param[out] stream      Streaming object to write values to.
+     * \param[out] stream   Streaming object to write values to.
      * \param   output      FixedArray containing values to serialize.
      **/
     template<typename V>
@@ -298,8 +298,8 @@ public:
     /**
      * \brief   Copies up to elemCount elements into pre-allocated buffer.
      *
-     * \param[out] list            Pre-allocated buffer large enough for elemCount elements.
-     * \param   elemCount       Maximum number of elements to copy (0 means no copy).
+     * \param[out] list     Pre-allocated buffer large enough for elemCount elements.
+     * \param   elemCount   Maximum number of elements to copy (0 means no copy).
      * \return  Number of elements actually copied.
      **/
     [[nodiscard]]

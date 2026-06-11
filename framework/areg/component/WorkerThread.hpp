@@ -141,7 +141,7 @@ protected:
      * \return  Valid dispatcher thread pointer if found; nullptr otherwise.
      **/
     [[nodiscard]]
-    DispatcherThread * event_consumer_thread( const RuntimeClassID & whichClass ) final;
+    DispatcherThread * event_consumer_thread( const uint32_t whichClass ) noexcept final;
 
 /************************************************************************/
 // EventDispatcherBase overrides

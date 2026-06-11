@@ -14,14 +14,13 @@
  ************************************************************************/
 #include "areg/ipc/ClientConnection.hpp"
 
-#include "areg/base/RemoteMessage.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/component/ServiceDefs.hpp"
 
 namespace areg {
 
 ClientConnection::ClientConnection()
-    : SocketConnectionBase    ( )
+    : SocketConnectionBase  ( )
     , mClientSocket         ( )
     , mCookie               ( areg::COOKIE_UNKNOWN )
     , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )
@@ -31,7 +30,7 @@ ClientConnection::ClientConnection()
 }
 
 ClientConnection::ClientConnection(const String & hostName, uint16_t portNr)
-    : SocketConnectionBase    ( )
+    : SocketConnectionBase  ( )
     , mClientSocket         ( hostName, portNr )
     , mCookie               ( areg::COOKIE_UNKNOWN )
     , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )
@@ -41,7 +40,7 @@ ClientConnection::ClientConnection(const String & hostName, uint16_t portNr)
 }
 
 ClientConnection::ClientConnection(const areg::SocketAddress & remoteAddress)
-    : SocketConnectionBase    ( )
+    : SocketConnectionBase  ( )
     , mClientSocket         ( remoteAddress )
     , mCookie               ( areg::COOKIE_UNKNOWN )
     , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )
@@ -74,6 +73,19 @@ bool ClientConnection::create_socket()
         areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
         areg::set_send_timeout(mClientSocket.handle(), mSockSendTimeoutMs);
         areg::socket_set_no_delay(mClientSocket.handle());
+    }
+
+    return mClientSocket.is_valid();
+}
+
+bool ClientConnection::create_socket_fd()
+{
+    set_cookie( mClientSocket.create_fd() ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
+    if (mClientSocket.is_valid())
+    {
+        areg::set_send_size(mClientSocket.handle(), mSockSendBuf);
+        areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
+        areg::set_send_timeout(mClientSocket.handle(), mSockSendTimeoutMs);
     }
 
     return mClientSocket.is_valid();

@@ -61,7 +61,6 @@ bool WatchdogManager::_os_timer_start( Watchdog & watchdog )
     Win32TimerHandle * h = static_cast<Win32TimerHandle *>(watchdog.handle());
     ASSERT( (h != nullptr) && (h->timerHandle != nullptr) );
 
-    // One-shot watchdog timer
     const int64_t due_time = -(static_cast<int64_t>(watchdog.timeout() * areg::MILLISEC_TO_100NS));
     LARGE_INTEGER timeTrigger{};
     timeTrigger.LowPart  = static_cast<DWORD>(areg::lo_dword(static_cast<uint64_t>(due_time)));
@@ -79,8 +78,8 @@ bool WatchdogManager::_os_timer_start( Watchdog & watchdog )
 }
 
 void WatchdogManager::_windows_watchdog_expired( void * argPtr,
-                                                  unsigned long lowValue,
-                                                  unsigned long highValue ) noexcept
+                                                 unsigned long lowValue,
+                                                 unsigned long highValue ) noexcept
 {
     ASSERT(argPtr != nullptr);
     WatchdogManager & watchdogManager = WatchdogManager::instance();

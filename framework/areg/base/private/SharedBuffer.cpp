@@ -20,10 +20,7 @@
 #include "areg/base/StringDefs.hpp"
 #include "areg/base/WideString.hpp"
 
-#include "areg/appbase/Application.hpp"
-
 #include <algorithm>
-#include <atomic>
 
 namespace areg {
 
@@ -36,105 +33,63 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 
 SharedBuffer::SharedBuffer(uint32_t blockSize /* = areg::BLOCK_SIZE */)
-    : IOStream      ( )
-    , Cursor        ( )
-    , mBlockSize    ( areg::align_size(blockSize, areg::BLOCK_SIZE) )
-    , mByteBuffer   ( nullptr, ByteBufferDeleter() )
-    , mPosition     ( 0u )
+    : BufferBase    ( blockSize )
     , mViewStart    ( 0u )
     , mViewEnd      ( 0u )
 {
 }
 
 SharedBuffer::SharedBuffer(uint32_t reserveSize, uint32_t blockSize)
-    : IOStream      ( )
-    , Cursor        ( )
-    , mBlockSize    ( areg::align_size(blockSize, areg::BLOCK_SIZE) )
-    , mByteBuffer   ( nullptr, ByteBufferDeleter() )
-    , mPosition     ( 0u )
+    : BufferBase    ( reserveSize, blockSize )
     , mViewStart    ( 0u )
     , mViewEnd      ( 0u )
 {
-    reserve(reserveSize, false);
 }
 
 SharedBuffer::SharedBuffer(const uint8_t* buffer, uint32_t size, uint32_t blockSize /* = areg::BLOCK_SIZE */)
-    : IOStream      ( )
-    , Cursor        ( )
-    , mBlockSize    ( areg::align_size(blockSize, areg::BLOCK_SIZE) )
-    , mByteBuffer   ( nullptr, ByteBufferDeleter() )
-    , mPosition     ( 0u )
+    : BufferBase    ( buffer, size, blockSize )
     , mViewStart    ( 0u )
     , mViewEnd      ( 0u )
 {
-    write_data(buffer, size);
 }
 
 SharedBuffer::SharedBuffer(uint32_t reserveSize, const uint8_t* buffer, uint32_t size, uint32_t blockSize /* = areg::BLOCK_SIZE */)
-    : IOStream      ( )
-    , Cursor        ( )
-    , mBlockSize    ( areg::align_size(blockSize, areg::BLOCK_SIZE) )
-    , mByteBuffer   ( nullptr, ByteBufferDeleter() )
-    , mPosition     ( 0u )
+    : BufferBase    ( reserveSize, buffer, size, blockSize )
     , mViewStart    ( 0u )
     , mViewEnd      ( 0u )
 {
-    reserveSize = std::max(reserveSize, size);
-    reserve(reserveSize, false);
-    write_data(buffer, size);
 }
 
 SharedBuffer::SharedBuffer(const char* textString, uint32_t blockSize /* = areg::BLOCK_SIZE */)
-    : IOStream      ( )
-    , Cursor        ( )
-    , mBlockSize    ( areg::align_size(blockSize, areg::BLOCK_SIZE) )
-    , mByteBuffer   ( nullptr, ByteBufferDeleter() )
-    , mPosition     ( 0u )
+    : BufferBase    ( textString, blockSize )
     , mViewStart    ( 0u )
     , mViewEnd      ( 0u )
 {
-    const uint32_t size = (static_cast<uint32_t>(areg::string_length<char>(textString)) + 1u) * sizeof(char);
-    write_data(reinterpret_cast<const uint8_t*>(textString != nullptr ? textString : areg::EmptyStringA.data()), size);
 }
 
 SharedBuffer::SharedBuffer(const wchar_t* textString, uint32_t blockSize /* = areg::BLOCK_SIZE */)
-    : IOStream      ( )
-    , Cursor        ( )
-    , mBlockSize    ( areg::align_size(blockSize, areg::BLOCK_SIZE) )
-    , mByteBuffer   ( nullptr, ByteBufferDeleter() )
-    , mPosition     ( 0u )
+    : BufferBase    ( textString, blockSize )
     , mViewStart    ( 0u )
     , mViewEnd      ( 0u )
 {
-    const uint32_t size = (static_cast<uint32_t>(areg::string_length<wchar_t>(textString)) + 1u) * sizeof(wchar_t);
-    write_data(reinterpret_cast<const uint8_t*>(textString != nullptr ? textString : areg::EmptyStringW.data()), size);
 }
 
 SharedBuffer::SharedBuffer(const SharedBuffer& src) noexcept
-    : IOStream      ( )
-    , Cursor        ( )
-    , mBlockSize    ( src.mBlockSize )
-    , mByteBuffer   ( nullptr, ByteBufferDeleter() )
-    , mPosition     ( src.mViewStart )
+    : BufferBase    ( src )         // shares the block + copies block size; cursor reset to 0
     , mViewStart    ( src.mViewStart )
     , mViewEnd      ( src.mViewEnd )
 {
-    mByteBuffer = src.mByteBuffer;   // share the block and preserve the visible slice
+    mPosition = src.mViewStart;     // preserve the visible slice start
 }
 
 SharedBuffer::SharedBuffer(SharedBuffer&& src) noexcept
-    : IOStream      ( )
-    , Cursor        ( )
-    , mBlockSize    ( src.mBlockSize )
-    , mByteBuffer   ( nullptr, ByteBufferDeleter() )
-    , mPosition     ( src.mViewStart )
+    : BufferBase    ( std::move(src) )
     , mViewStart    ( src.mViewStart )
     , mViewEnd      ( src.mViewEnd )
 {
-    mByteBuffer     = std::move(src.mByteBuffer);
-    src.mPosition   = 0u;
-    src.mViewStart  = 0u;
-    src.mViewEnd    = 0u;
+    mPosition      = mViewStart;
+    src.mViewStart = 0u;
+    src.mViewEnd   = 0u;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -206,9 +161,7 @@ uint32_t SharedBuffer::set_position(int32_t offset, Cursor::SeekOrigin startAt) 
         break;
 
     case Cursor::SeekOrigin::Current:
-        offset = offset < 0
-               ? std::max(offset, -curPos)
-               : std::min(offset, rangeSize - curPos);
+        offset = offset < 0 ? std::max(offset, -curPos) : std::min(offset, rangeSize - curPos);
         break;
 
     case Cursor::SeekOrigin::End:
@@ -241,7 +194,7 @@ uint32_t SharedBuffer::reserve(uint32_t size, bool copy)
     const bool preserveData    = copy || hasView;
     const uint32_t used        = preserveData ? size_used() : 0u;
     uint32_t total             = (preserveData && (raw != nullptr)) ? used + size : size;
-    total = std::min(total, SharedBuffer::MAX_BUF_LENGTH);
+    total = std::min(total, areg::MAX_BUF_LENGTH);
 
     if ((raw != nullptr) && !hasView && (total <= raw->bufHeader.biLength))
     {
@@ -265,7 +218,7 @@ uint32_t SharedBuffer::reserve(uint32_t size, bool copy)
     if (position != Cursor::INVALID_CURSOR_POSITION)
     {
         invalidate();
-        mByteBuffer = std::shared_ptr<areg::RawBuffer>(reinterpret_cast<areg::RawBuffer*>(buffer), ByteBufferDeleter());
+        mByteBuffer = areg::RawBufferPtr(reinterpret_cast<areg::RawBuffer*>(buffer));
         mPosition   = position;
         return (mByteBuffer->bufHeader.biLength - mPosition);
     }
@@ -410,47 +363,6 @@ uint32_t SharedBuffer::read(WideString& wide) const
 // Additional streaming operations
 //////////////////////////////////////////////////////////////////////////
 
-uint32_t SharedBuffer::insert_at(const uint8_t* buf, uint32_t size, uint32_t atPos)
-{
-    if ((size == 0u) || (buf == nullptr))
-        return 0u;
-
-    // Views are read-only, call detach() first to obtain a writable owner copy.
-    ASSERT(is_owner());
-    if (is_view())
-        return 0u;
-
-    const uint32_t writeEnd = is_valid() ? mByteBuffer->bufHeader.biUsed : 0u;
-    if (!is_valid() || (atPos >= writeEnd))
-    {
-        const uint32_t needed = writeEnd + size;
-        reserve(needed, true);
-        areg::RawBuffer* const raw = mByteBuffer.get();
-        if ((raw == nullptr) || (needed > raw->bufHeader.biLength))
-            return 0u;
-
-        ::memcpy(areg::buffer_data_write(raw) + writeEnd, buf, size);
-
-        raw->bufHeader.biUsed = needed;
-        return size;
-    }
-    else
-    {
-        const uint32_t needed = writeEnd + size;
-        if (reserve(needed, true) < size)
-            return 0u;
-
-        ASSERT(is_valid());
-        uint8_t* dst = areg::buffer_data_write(mByteBuffer.get()) + atPos;
-        const uint32_t moveSize = writeEnd - atPos;
-
-        areg::mem_move(dst + size, dst, moveSize);
-        areg::mem_copy(dst, size, buf, size);
-        mByteBuffer->bufHeader.biUsed = writeEnd + size;
-        return size;
-    }
-}
-
 bool SharedBuffer::is_equal(const SharedBuffer& other) const noexcept
 {
     if (static_cast<const SharedBuffer*>(this) == &other)
@@ -487,76 +399,8 @@ SharedBuffer SharedBuffer::detach() const
 }
 
 //////////////////////////////////////////////////////////////////////////
-// SharedBuffer protected overrides
+// Hot-path helpers (view-aware overrides)
 //////////////////////////////////////////////////////////////////////////
-
-uint32_t SharedBuffer::data_offset() const noexcept
-{
-    return sizeof(areg::BufferHeader);
-}
-
-uint32_t SharedBuffer::header_size() const noexcept
-{
-    return sizeof(areg::RawBuffer);
-}
-
-uint32_t SharedBuffer::default_block_size() noexcept
-{
-    static std::atomic_uint32_t cached{ 0u };
-    uint32_t result = cached.load(std::memory_order_relaxed);
-    if (result == 0u)
-    {
-        result = Application::config_manager().buffer_block_size();
-        result = (result == 0u ? areg::BLOCK_SIZE : result);
-        cached.store(result, std::memory_order_relaxed);
-    }
-
-    return result;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Hot-path helpers
-//////////////////////////////////////////////////////////////////////////
-
-uint32_t SharedBuffer::write_data(const uint8_t* buf, uint32_t size) noexcept
-{
-    if ((size == 0u) || (buf == nullptr))
-        return 0u;
-
-    // Views are read-only. Call detach() to obtain a writable owner copy first.
-    ASSERT(is_owner());
-    if (is_view())
-        return 0u;
-
-    areg::RawBuffer* const raw  = mByteBuffer.get();
-    const uint32_t writePos     = mPosition;    // mViewStart == 0 for owners
-    const uint32_t needed       = writePos + size;
-
-    if ((raw != nullptr) && (needed <= raw->bufHeader.biLength))
-    {
-        areg::mem_copy(areg::buffer_data_write(raw) + writePos, raw->bufHeader.biLength - writePos, buf, size);
-        if (needed > raw->bufHeader.biUsed)
-            raw->bufHeader.biUsed = needed;
-
-        mPosition= needed;
-        return size;
-    }
-    else
-    {
-        // Slow path: grow the buffer (doubling strategy inside reserve).
-        reserve(needed, true);
-        areg::RawBuffer* const grownRaw = mByteBuffer.get();
-        if ((grownRaw == nullptr) || (needed > grownRaw->bufHeader.biLength))
-            return 0u;
-
-        areg::mem_copy(areg::buffer_data_write(grownRaw) + writePos, grownRaw->bufHeader.biLength - writePos, buf, size);
-        if (needed > grownRaw->bufHeader.biUsed)
-            grownRaw->bufHeader.biUsed = needed;
-
-        mPosition = needed;
-        return size;
-    }
-}
 
 uint32_t SharedBuffer::read_data(uint8_t* buf, uint32_t size) const noexcept
 {
@@ -574,8 +418,6 @@ uint32_t SharedBuffer::read_data(uint8_t* buf, uint32_t size) const noexcept
     mPosition += result;
     return result;
 }
-
-// Rec 5: Binary string format reads — uint32_t(byte_count) + raw bytes, no NUL terminator on wire.
 
 uint32_t SharedBuffer::read_string_bin(String& str) const noexcept
 {

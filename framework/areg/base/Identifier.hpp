@@ -87,14 +87,12 @@ public:
 public:
 
     /**
-     * \brief   Converts an integer value to its corresponding string representation using a lookup
-     *          table.
+     * \brief   Converts an integer value to its corresponding string representation using a lookup table.
      *
      * \param   idValue         The integer value to convert.
      * \param   lookupList      The lookup table to search for the identifier.
-     * \param   defIndex        The index of the default string to return if the identifier is not
-     *                          found; pass areg::INVALID_POSITION to return an empty string if
-     *                          not found.
+     * \param   defIndex        The index of the default string to return if the identifier is not found;
+     *                          pass areg::INVALID_POSITION to return an empty string if not found.
      * \return  Returns the string representation of the identifier if found; returns the default
      *          string if the identifier is not found and defIndex is valid; returns an empty string
      *          if not found and defIndex is invalid.
@@ -105,14 +103,12 @@ public:
                                          , uint32_t defIndex ) noexcept;
 
     /**
-     * \brief   Converts a string value to its corresponding integer representation using a lookup
-     *          table.
+     * \brief   Converts a string value to its corresponding integer representation using a lookup table.
      *
      * \param   idName          The string value to convert.
      * \param   lookupList      The lookup table to search for the identifier.
-     * \param   defIndex        The index of the default integer to return if the identifier is not
-     *                          found; pass areg::INVALID_POSITION to return 0xFFFFFFFF if not
-     *                          found.
+     * \param   defIndex        The index of the default integer to return if the identifier is not found;
+     *                          pass areg::INVALID_POSITION to return 0xFFFFFFFF if not found.
      * \return  Returns the integer representation of the identifier if found; returns the default
      *          integer if the identifier is not found and defIndex is valid; returns 0xFFFFFFFF if
      *          not found and defIndex is invalid.

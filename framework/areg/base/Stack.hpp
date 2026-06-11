@@ -67,8 +67,8 @@ public:
     /**
      * \brief   Initializes stack with a synchronization object and copies elements from the given array.
      *
-     * \param   list            Array of elements to copy into the stack.
-     * \param   count           The number of elements in the array.
+     * \param   list    Array of elements to copy into the stack.
+     * \param   count   The number of elements in the array.
      **/
     StackBase(const VALUE* list, uint32_t count);
 
@@ -216,8 +216,7 @@ public:
     STACKPOS invalid_position() const noexcept;
 
     /**
-     * \brief   Returns true if the given position is valid and not pointing to the end of the
-     *          stack.
+     * \brief   Returns true if the given position is valid and not pointing to the end of the stack.
      *
      * \param   pos     The position to validate.
      * \return  True if position is valid; false otherwise.
@@ -245,8 +244,7 @@ public:
     inline bool contains(const VALUE& elemSearch) const noexcept;
 
     /**
-     * \brief   Returns true if the element is found in the stack, starting from the specified
-     *          position.
+     * \brief   Returns true if the element is found in the stack, starting from the specified position.
      *
      * \param   elemSearch      The element to search for.
      * \param   startAt         The position to start searching from.
@@ -304,15 +302,13 @@ public:
     inline void resize(uint32_t newSize);
 
     /**
-     * \brief   Returns the first inserted element without removing it. Caller must ensure the stack
-     *          is not empty.
+     * \brief   Returns the first inserted element without removing it. Caller must ensure the stack is not empty.
      **/
     [[nodiscard]]
     inline const VALUE & first_entry() const noexcept;
 
     /**
-     * \brief   Returns the last inserted element without removing it. Caller must ensure the stack
-     *          is not empty.
+     * \brief   Returns the last inserted element without removing it. Caller must ensure the stack is not empty.
      **/
     [[nodiscard]]
     inline const VALUE & last_entry() const noexcept;
@@ -350,8 +346,7 @@ public:
     inline uint32_t push_first( VALUE && newElement);
 
     /**
-     * \brief   Removes and returns the first element. Stack must not be empty; assertion fails
-     *          otherwise.
+     * \brief   Removes and returns the first element. Stack must not be empty; assertion fails otherwise.
      *
      * \return  The removed element.
      **/
@@ -409,8 +404,7 @@ public:
     inline const VALUE& value_at( const STACKPOS atPosition ) const noexcept;
 
     /**
-     * \brief   Returns the mutable reference to the element at the specified position. Allows
-     *          modification.
+     * \brief   Returns the mutable reference to the element at the specified position. Allows modification.
      *
      * \param   atPosition      The valid position in the stack.
      * \return  Mutable reference to the element.
@@ -419,19 +413,16 @@ public:
     inline VALUE& value_at( STACKPOS atPosition ) noexcept;
 
     /**
-     * \brief   Returns the next valid position after the given one, or an invalid position if at
-     *          the end.
+     * \brief   Returns the next valid position after the given one, or an invalid position if at the end.
      *
      * \param   pos     The current position.
-     * \return  Valid position if one exists after the given position; invalid position if at the
-     *          end.
+     * \return  Valid position if one exists after the given position; invalid position if at the end.
      **/
     [[nodiscard]]
     inline STACKPOS next_position( STACKPOS pos ) const noexcept;
 
     /**
-     * \brief   Sorts the stack using the provided comparison function. Returns this stack for
-     *          chaining.
+     * \brief   Sorts the stack using the provided comparison function. Returns this stack  chaining.
      *
      * \param   comp    The comparison function, similar to std::greater().
      * \return  Reference to this stack object.
@@ -443,8 +434,8 @@ public:
      * \brief   Copies elements from the stack into the provided buffer. If elemCount is smaller
      *          than the stack size, only the first elemCount elements are copied.
      *
-     * \param[in,out] list            Pre-allocated buffer where elements will be copied. Must be
-     *                                large enough to hold elemCount elements.
+     * \param[in,out] list      Pre-allocated buffer where elements will be copied. Must be
+     *                          large enough to hold elemCount elements.
      * \param   elemCount       Maximum number of elements to copy. If zero, no elements are copied.
      * \return  The number of elements successfully copied.
      **/

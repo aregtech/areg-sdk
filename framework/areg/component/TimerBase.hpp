@@ -49,7 +49,7 @@ public:
      */
     enum class TimerType    : uint8_t
     {
-          PerThreadTimer       //! Normal timer
+          PerThreadTimer    //! Normal timer
         , WatchdogTimer     //! Watchdog timer.
     };
 
@@ -113,8 +113,7 @@ public:
     inline void set_timeout(uint32_t timeoutMs) noexcept;
 
     /**
-     * \brief   Returns the number of events remaining to fire; zero if stopped, CONTINUOUSLY for
-     *          infinite.
+     * \brief   Returns the number of events remaining to fire; zero if stopped, CONTINUOUSLY for infinite.
      **/
     [[nodiscard]]
     inline uint32_t event_count() const noexcept;

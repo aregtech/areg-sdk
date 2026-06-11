@@ -51,6 +51,7 @@ LatencyConsumer::LatencyConsumer(const areg::ComponentEntry & entry, areg::Compo
     , mCount        ( DEFAULT_COUNT )
     , mWarmup       ( DEFAULT_WARMUP )
     , mDurationSec  ( DEFAULT_DURATION )
+    , mCsvEnabled   ( false )
     , mCsvPath      ( )
 
     , mCurrentSeq   ( 0u )
@@ -72,6 +73,7 @@ void LatencyConsumer::startup_component(areg::ComponentThread & /* comThread */)
 {
     mQuit.store(false, std::memory_order_relaxed);
     mTestRunning    = false;
+    mCsvEnabled     = false;
     mCurrentSeq     = 0u;
     mTotalRuns      = 0u;
     mSamples.clear();
@@ -142,14 +144,18 @@ void LatencyConsumer::response_start_mode(const Latency::LantencySetup & setup)
     if (mode == Latency::LatencyMode::Stop)
         return;
 
-    // Provider confirmed the test setup — now activate the test on the consumer side.
+    // Provider confirmed the test setup -- now activate the test on the consumer side.
     mTestRunning = true;
 
     const uint16_t val       = static_cast<uint16_t>(mode);
     const bool     is_request = (val >= static_cast<uint16_t>(Latency::LatencyMode::Request0));
 
+    // Kick the loop. Request (ping-pong) sends the first request; broadcast (one-way) pulls the
+    // first message. Both keep exactly one message in flight, so the pipeline stays warm.
     if (is_request)
         _send_next_ping();
+    else
+        _send_next_oneway();
 }
 
 void LatencyConsumer::response_ping_pong_0(uint32_t /* id */, uint64_t start, uint64_t replied)
@@ -348,7 +354,9 @@ void LatencyConsumer::_update_live()
 void LatencyConsumer::_update_settings() const
 {
     areg::ext::Console & console = areg::ext::Console::instance();
-    const areg::String path = mCsvPath.is_empty() ? areg::String("auto") : mCsvPath;
+    const areg::String path = !mCsvEnabled ? areg::String("off")
+                            : mCsvPath.is_empty() ? areg::String("auto")
+                            : mCsvPath;
     console.save_cursor_position();
     console.output_msg(COORD_SETTINGS, MSG_SETTINGS.data()
                      , Latency::mode_as_str(mMode)
@@ -376,6 +384,7 @@ void LatencyConsumer::_run_input_thread()
         , { "-w", "warmup", static_cast<int32_t>(ConsumerCmd::Warmup),   areg::ext::OptionParser::INTEGER_NO_RANGE, {}, {}, {} }
         , { "-d", "dur",    static_cast<int32_t>(ConsumerCmd::Duration), areg::ext::OptionParser::INTEGER_NO_RANGE, {}, {}, {} }
         , { "-o", "out",    static_cast<int32_t>(ConsumerCmd::Output),   areg::ext::OptionParser::FREESTYLE_DATA,   {}, {}, {} }
+        , { "-f", "file",   static_cast<int32_t>(ConsumerCmd::File),     areg::ext::OptionParser::FREESTYLE_DATA,   {}, {}, {} }
     };
 
     areg::ext::OptionParser parser(opts, static_cast<uint32_t>(sizeof(opts) / sizeof(opts[0])));
@@ -497,6 +506,12 @@ void LatencyConsumer::_run_input_thread()
                 else { data.error = true; }
                 break;
 
+            case ConsumerCmd::File:
+                data.enable_file = true;
+                if (!opt.inString.empty())
+                    data.csv_file = opt.inString[0];
+                break;
+
             default:
                 data.error = true;
                 break;
@@ -508,7 +523,8 @@ void LatencyConsumer::_run_input_thread()
 
         const bool has_any = data.quit || data.quit_local || data.help || data.info
                            || data.start || data.stop || data.set_mode || data.set_count
-                           || data.set_warmup || data.set_duration || data.set_output || data.error;
+                           || data.set_warmup || data.set_duration || data.set_output
+                           || data.enable_file || data.error;
 
         if (has_any)
         {
@@ -534,6 +550,12 @@ void LatencyConsumer::_on_cmd_event(const CmdData & data)
     if (data.set_warmup)   mWarmup      = data.warmup;
     if (data.set_duration) mDurationSec = data.duration_sec;
     if (data.set_output)   mCsvPath     = data.csv_path;
+    if (data.enable_file)
+    {
+        mCsvEnabled = true;
+        if (!data.csv_file.is_empty())
+            mCsvPath = data.csv_file;
+    }
 
     if (data.quit)
     {
@@ -612,7 +634,9 @@ void LatencyConsumer::_start_test()
     }
     else
     {
-        // Broadcast mode: provider needs duration (seconds) and count for rate control.
+        // Broadcast (one-way) mode: count-bounded and pull-driven (warm, 1-in-flight), exactly
+        // like ping-pong. `duration` is no longer used for pacing (kept only as CSV metadata);
+        // the run stops as soon as `count` samples are collected, so it can never run endlessly.
         request_start_mode(mMode, mDurationSec, mWarmup, mCount);
     }
 
@@ -685,6 +709,19 @@ void LatencyConsumer::_send_next_ping()
     }
 }
 
+void LatencyConsumer::_send_next_oneway()
+{
+    // Pull the next one-way broadcast from the provider. Sent once per received broadcast (and
+    // through warmup), this keeps exactly one message in flight: the provider's send thread is
+    // idle when it stamps the timestamp, so the measured now_ns() - begin is a true one-way
+    // delivery latency rather than a queuing delay. The provider stamps its own running id; the
+    // value we pass is only for drop detection.
+    if (!is_connected() || !mTestRunning)
+        return;
+
+    request_message_next(mCurrentSeq);
+}
+
 void LatencyConsumer::_record_sample(uint64_t t1, uint64_t t2, uint64_t t4)
 {
     if (!mTestRunning)
@@ -698,6 +735,8 @@ void LatencyConsumer::_record_sample(uint64_t t1, uint64_t t2, uint64_t t4)
         const uint16_t val = static_cast<uint16_t>(mMode);
         if (val >= static_cast<uint16_t>(Latency::LatencyMode::Request0))
             _send_next_ping();
+        else
+            _send_next_oneway();    // keep the one-way loop alive through warmup
         return;
     }
 
@@ -730,6 +769,10 @@ void LatencyConsumer::_record_sample(uint64_t t1, uint64_t t2, uint64_t t4)
     else if (is_request_mode)
     {
         _send_next_ping();
+    }
+    else
+    {
+        _send_next_oneway();    // pull the next one-way message
     }
 }
 
@@ -796,7 +839,8 @@ void LatencyConsumer::_finish_test()
     r.valid   = true;
 
     _draw_result_row(slot);
-    _save_csv(r);
+    if (mCsvEnabled)
+        _save_csv(r);
 }
 
 void LatencyConsumer::_draw_result_row(uint32_t slot) const
@@ -893,7 +937,7 @@ void LatencyConsumer::_save_csv(const ResultEntry & result) const
         return;
     }
 
-    // Metadata comment block — lets the user see run parameters and summary in the file header.
+    // Metadata comment block -- lets the user see run parameters and summary in the file header.
     areg::String line;
     line.format("# Run #%u: mode=%s, count=%u, warmup=%u, dur=%us"
               , result.run_no, result.mode.as_string(), result.count, mWarmup, mDurationSec);

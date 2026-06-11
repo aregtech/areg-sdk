@@ -170,7 +170,7 @@ protected:
      *
      * \param   msgUnprocessed      The unprocessed message.
      **/
-    void failed_process_message( const areg::RemoteMessage & msgUnprocessed ) final;
+    void failed_process_message( const areg::MessageEnvelope & msgUnprocessed ) final;
 
 /************************************************************************/
 // ServiceEventConsumer overrides
@@ -196,14 +196,14 @@ protected:
      *
      * \param   msgReceived     The received communication message.
      **/
-    void on_message_received(const areg::RemoteMessage & msgReceived) final;
+    void on_message_received(const areg::MessageEnvelope & msgReceived) final;
 
     /**
      * \brief   Triggered when a message needs to be sent.
      *
      * \param   msgSend     The message to send.
      **/
-    void on_message_send(const areg::RemoteMessage & msgSend) final;
+    void on_message_send(const areg::MessageEnvelope & msgSend) final;
 
 /************************************************************************/
 // ConnectionHandler overrides

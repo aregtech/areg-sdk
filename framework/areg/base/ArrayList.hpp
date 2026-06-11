@@ -464,8 +464,7 @@ public:
     inline VALUE & last_entry() noexcept;
 
     /**
-     * \brief   Sorts the array using the given comparison function and returns reference to this
-     *          array.
+     * \brief   Sorts the array using the given comparison function and returns reference to this array.
      *
      * \param   comp    The comparison function, similar to std::greater().
      * \return  Returns reference to the sorted array.
@@ -479,9 +478,8 @@ public:
      *          `elemCount` elements are copied. Otherwise, all elements in the array are copied. No
      *          elements are copied if `elemCount` is 0.
      *
-     * \param[in,out] list            A pre-allocated buffer where the array elements will be
-     *                                copied. Must be large enough to hold at least `elemCount`
-     *                                elements.
+     * \param[in,out] list      A pre-allocated buffer where the array elements will be copied.
+     *                          Must be large enough to hold at least `elemCount` elements.
      * \param   elemCount       The maximum number of elements to copy into the `list` buffer. If
      *                          set to 0, no elements are copied.
      * \return  The number of elements successfully copied into the `list` buffer.
@@ -502,8 +500,7 @@ protected:
     inline void set_size( uint32_t elemCount );
 
     /**
-     * \brief   Returns the position of the element at the given index. The returned position cannot
-     *          be modified.
+     * \brief   Returns the position of the element at the given index. The returned position cannot be modified.
      *
      * \param   index       The index of the element to return position.
      * \return  Returns the position of the element at the given index.
@@ -775,14 +772,14 @@ template<typename VALUE >
 inline const VALUE & ArrayList< VALUE >::value_at( const uint32_t atPosition ) const noexcept
 {
     ASSERT( is_valid_index( atPosition ) );
-    return mValueList[ atPosition ];
+    return mValueList.at(atPosition);
 }
 
 template<typename VALUE >
 inline VALUE& ArrayList< VALUE >::value_at( uint32_t atPosition ) noexcept
 {
     ASSERT(is_valid_index(atPosition));
-    return mValueList[ atPosition ];
+    return mValueList.at(atPosition);
 }
 
 template<typename VALUE >

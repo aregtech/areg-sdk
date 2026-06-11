@@ -21,163 +21,29 @@
 #include "areg/base/areg_global.h"
 #include "areg/component/ServiceRequestEvent.hpp"
 
-#include "areg/component/EventData.hpp"
+#include "areg/base/SharedBuffer.hpp"
 namespace areg {
 
 /************************************************************************
  * List of declared classes:
  ************************************************************************/
 // ServiceRequestEvent;
-    class RequestEvent;
-        class LocalRequestEvent;
-        class RemoteRequestEvent;
-
-    class NotifyRequestEvent;
-        class LocalNotifyRequestEvent;
-        class RemoteNotifyRequestEvent;
+    class LocalRequestEvent;
+    class RemoteRequestEvent;
+    class LocalNotifyRequestEvent;
+    class RemoteNotifyRequestEvent;
 /************************************************************************
  * \brief   In this file following request event classes are declared:
  *              1. Request function call events:
- *                  a. RequestEvent
- *                  b.      LocalRequestEvent
- *                  c.      RemoteRequestEvent
+ *                  a.      LocalRequestEvent
+ *                  b.      RemoteRequestEvent
  *              2. Notification request events:
- *                  a.  NotifyRequestEvent
- *                  b.      LocalNotifyRequestEvent
- *                  c.      RemoteNotifyRequestEvent
+ *                  a.      LocalNotifyRequestEvent
+ *                  b.      RemoteNotifyRequestEvent
  *          These are base classes for communication, used to send
  *          Data in Request objects for local and remote communication.
  *          For more information, see description bellow.
  ************************************************************************/
-
-//////////////////////////////////////////////////////////////////////////
-// RequestEvent class declaration
-//////////////////////////////////////////////////////////////////////////
-/************************************************************************
- * RequestEvent class, sends request event
- ************************************************************************/
-/**
- * \brief   Service request event sent from proxy to stub; carries request ID and serialized
- *          parameter data.
- **/
-class AREG_API RequestEvent    : public ServiceRequestEvent
-{
-//////////////////////////////////////////////////////////////////////////
-// Declare event as runtime to support runtime casting.
-//////////////////////////////////////////////////////////////////////////
-    AREG_DECLARE_RUNTIME_EVENT(RequestEvent)
-
-//////////////////////////////////////////////////////////////////////////
-// Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   Initializes a request event with source/target addresses and request ID (no
-     *          parameters).
-     *
-     * \param   fromSource      Source proxy address.
-     * \param   toTarget        Target stub address.
-     * \param   reqId           Request ID.
-     * \param   eventType       Event type (local or remote request).
-     **/
-    RequestEvent( const ProxyAddress & fromSource
-                , const StubAddress & toTarget
-                , uint32_t reqId
-                , areg::EventType eventType);
-
-    /**
-     * \brief   Initializes a request event with serialized parameters.
-     *
-     * \param   args            Serialized request parameters.
-     * \param   fromSource      Source proxy address.
-     * \param   toTarget        Target stub address.
-     * \param   reqId           Request ID.
-     * \param   eventType       Event type (local or remote request).
-     **/
-    RequestEvent( const EventDataStream & args
-                , const ProxyAddress & fromSource
-                , const StubAddress & toTarget
-                , uint32_t reqId
-                , areg::EventType eventType);
-
-    /**
-     * \brief   Initializes the event from a stream.
-     *
-     * \param   stream      Input stream to read data.
-     **/
-    RequestEvent( const InStream & stream );
-
-    virtual ~RequestEvent() = default;
-
-//////////////////////////////////////////////////////////////////////////
-// Attributes
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Returns the event data object.
-     **/
-    inline const EventData & data() const noexcept;
-
-    /**
-     * \brief   Returns the data type of the request.
-     **/
-    inline areg::MessageDataType data_type() const noexcept;
-
-    /**
-     * \brief   Returns the input stream for deserializing request parameters.
-     **/
-    inline const InStream & read_stream() const noexcept;
-
-    /**
-     * \brief   Returns the output stream for serializing request parameters.
-     **/
-    inline OutStream & write_stream() noexcept;
-
-protected:
-    /**
-     * \brief   Returns the event data object for modification.
-     **/
-    inline EventData & data() noexcept;
-
-//////////////////////////////////////////////////////////////////////////
-// Operations
-//////////////////////////////////////////////////////////////////////////
-
-/************************************************************************/
-// StreamableEvent overrides
-/************************************************************************/
-    /**
-     * \brief   Reads and initializes event data from a stream.
-     *
-     * \param   stream      Input stream to read data.
-     * \return  The input stream.
-     **/
-    const InStream & read_stream( const InStream & stream ) override;
-
-    /**
-     * \brief   Writes event data to a stream.
-     *
-     * \param   stream      Output stream to write data.
-     * \return  The output stream.
-     **/
-    OutStream & write_stream( OutStream & stream ) const override;
-
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Event data object.
-     **/
-    EventData     mData;
-
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    RequestEvent() = delete;
-    AREG_NOCOPY_NOMOVE( RequestEvent );
-};
 
 //////////////////////////////////////////////////////////////////////////
 // LocalRequestEvent class declaration
@@ -188,54 +54,53 @@ private:
 /**
  * \brief   Event for triggering a service request on the stub side within the same process.
  **/
-class AREG_API LocalRequestEvent  : public    RequestEvent
+class AREG_API LocalRequestEvent  : public    ServiceRequestEvent
 {
-//////////////////////////////////////////////////////////////////////////
-// Declare event as runtime to support runtime casting.
-//////////////////////////////////////////////////////////////////////////
-    AREG_DECLARE_RUNTIME_EVENT(LocalRequestEvent)
-
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-protected:
+public:
     /**
      * \brief   Initializes a request event with no data. Use when the request has no parameters.
      *
      * \param   fromSource      The address of the source proxy.
      * \param   toTarget        The address of the target stub.
      * \param   reqId           The ID of the request.
+     * \param   initSize        The payload initial size to reserve. If zero, nothing is reserved.
      **/
-    LocalRequestEvent(const ProxyAddress & fromSource, const StubAddress & toTarget, uint32_t reqId);
+    inline LocalRequestEvent(const ProxyAddress & fromSource, const StubAddress & toTarget, uint32_t reqId, uint32_t initSize = 0);
 
     /**
      * \brief   Initializes a request event with data. Use when the request has parameters.
      *
-     * \param   args            The shared buffer object containing the request data.
+     * \param   args            Serialized request parameters (SharedBuffer payload, copied in).
      * \param   fromSource      The address of the source proxy.
      * \param   toTarget        The address of the target stub.
      * \param   reqId           The ID of the request.
      **/
-    LocalRequestEvent( const EventDataStream & args
-                     , const ProxyAddress & fromSource
-                     , const StubAddress & toTarget
-                     , uint32_t reqId);
+    inline LocalRequestEvent( const SharedBuffer & args
+                            , const ProxyAddress & fromSource
+                            , const StubAddress & toTarget
+                            , uint32_t reqId);
 
     /**
-     * \brief   Initializes the event by deserializing data from the given input stream.
+     * \brief   Constructs from a received MessageEnvelope
      *
-     * \param   stream      The input stream containing serialized event data.
+     * \param   envelope    The received event envelope containing header and payload.
      **/
-    LocalRequestEvent( const InStream & stream );
+    explicit inline LocalRequestEvent(const MessageEnvelope& envelope) noexcept;
 
-    virtual ~LocalRequestEvent() = default;
+    LocalRequestEvent(const LocalRequestEvent& /*src*/) = default;
+
+    LocalRequestEvent(LocalRequestEvent&& /*src*/) noexcept = default;
+
+    ~LocalRequestEvent() override = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
     LocalRequestEvent() = delete;
-    AREG_NOCOPY_NOMOVE( LocalRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -248,51 +113,50 @@ private:
  * \brief   Generic Remote Request Event object to trigger requests on Stub side within different
  *          processes via service routing module.
  **/
-class AREG_API RemoteRequestEvent : public    RequestEvent
+class AREG_API RemoteRequestEvent : public    ServiceRequestEvent
 {
     friend class RemoteEventFactory;
-//////////////////////////////////////////////////////////////////////////
-// Declare event as runtime to support runtime casting.
-//////////////////////////////////////////////////////////////////////////
-    AREG_DECLARE_RUNTIME_EVENT(RemoteRequestEvent)
+    friend class StubBase;   // needs new RemoteRequestEvent(envelope) on IPC receive path
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-protected:
+public:
     /**
-     * \brief   Creates event with no data. Initializes event source, target address, and message
-     *          ID. Use if request has no parameters.
+     * \brief   Creates event with no data. Initializes event source, target address, and message ID.
+     *          Use if request has no parameters.
      *
      * \param   fromSource      The address of source Proxy.
      * \param   toTarget        The address of Stub target
      * \param   reqId           The ID of request.
+     * \param   initSize        Payload bytes to reserve after the header for serialized parameters.
      **/
-    RemoteRequestEvent(const ProxyAddress & fromSource, const StubAddress & toTarget, uint32_t reqId);
+    inline RemoteRequestEvent(const ProxyAddress & fromSource, const StubAddress & toTarget, uint32_t reqId, uint32_t initSize = 0u);
 
     /**
-     * \brief   Creates event with data. Initializes event source, target information, and message
-     *          ID. Use if request with parameters should be sent.
+     * \brief   Creates event with data. Initializes event source, target information, and message ID.
+     *          Use if request with parameters should be sent.
      *
-     * \param   args            The reference to Shared Buffer object to transfer data.
+     * \param   args            Serialized request parameters (SharedBuffer payload, copied in).
      * \param   fromSource      The address of Proxy source.
      * \param   toTarget        The address of Stub target.
      * \param   reqId           The ID of request.
      **/
-    RemoteRequestEvent( const EventDataStream & args
-                      , const ProxyAddress & fromSource
-                      , const StubAddress & toTarget
-                      , uint32_t reqId);
-
+    inline RemoteRequestEvent( const SharedBuffer & args
+                             , const ProxyAddress & fromSource
+                             , const StubAddress & toTarget
+                             , uint32_t reqId);
 
     /**
-     * \brief   Initializes object data from streaming object.
-     *
-     * \param   stream      Streaming object, containing initialized data information.
+     * \brief   Constructs from a received MessageEnvelope.
      **/
-    RemoteRequestEvent( const InStream & stream );
+    explicit inline RemoteRequestEvent( const MessageEnvelope & envelope ) noexcept;
 
-    virtual ~RemoteRequestEvent() = default;
+    RemoteRequestEvent(const RemoteRequestEvent& /*src*/) = default;
+
+    RemoteRequestEvent(RemoteRequestEvent&& /*src*/) = default;
+
+    ~RemoteRequestEvent() override = default;
 
 //////////////////////////////////////////////////////////////////////////////
 // Protected operations
@@ -308,7 +172,7 @@ protected:
     /**
      * \brief   Returns target communication channel object.
      **/
-    inline const Channel & target_channel() const noexcept;
+    inline Channel target_channel() const noexcept;
 
     /**
      * \brief   Sets the source communication Channel object.
@@ -320,66 +184,13 @@ protected:
     /**
      * \brief   Returns source communication channel object.
      **/
-    inline const Channel & source_channel() const noexcept;
+    inline Channel source_channel() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
     RemoteRequestEvent() = delete;
-    AREG_NOCOPY_NOMOVE( RemoteRequestEvent );
-};
-
-//////////////////////////////////////////////////////////////////////////
-// NotifyRequestEvent class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Event for sending notification subscription/unsubscription requests from a proxy to a
- *          stub.
- **/
-class AREG_API NotifyRequestEvent : public ServiceRequestEvent
-{
-//////////////////////////////////////////////////////////////////////////
-// Declare event as runtime to support runtime casting.
-//////////////////////////////////////////////////////////////////////////
-    AREG_DECLARE_RUNTIME_EVENT(NotifyRequestEvent)
-
-//////////////////////////////////////////////////////////////////////////
-// Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   Initializes a notification request event for starting or stopping notifications.
-     *
-     * \param   fromProxy       The address of the source proxy requesting notifications.
-     * \param   toStub          The address of the target stub to start or stop sending
-     *                          notifications.
-     * \param   msgId           The ID of the message (attribute, broadcast, or response). Request
-     *                          IDs cannot be notified.
-     * \param   reqType         The request type (subscribe or unsubscribe).
-     * \param   eventType       The type of event (local or remote request).
-     **/
-    NotifyRequestEvent( const ProxyAddress & fromProxy
-                      , const StubAddress & toStub
-                      , uint32_t msgId
-                      , areg::RequestType reqType
-                      , areg::EventType eventType );
-
-    /**
-     * \brief   Initializes the event by deserializing data from the given input stream.
-     *
-     * \param   stream      The input stream containing serialized event data.
-     **/
-    NotifyRequestEvent( const InStream & stream );
-
-    virtual ~NotifyRequestEvent() = default;
-
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    NotifyRequestEvent() = delete;
-    AREG_NOCOPY_NOMOVE( NotifyRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -389,47 +200,42 @@ private:
  * \brief   Event for sending notification subscription/unsubscription requests from a proxy to a
  *          stub within the same process.
  **/
-class AREG_API LocalNotifyRequestEvent    : public    NotifyRequestEvent
+class AREG_API LocalNotifyRequestEvent    : public    ServiceRequestEvent
 {
-//////////////////////////////////////////////////////////////////////////
-// Declare event as runtime to support runtime casting.
-//////////////////////////////////////////////////////////////////////////
-    AREG_DECLARE_RUNTIME_EVENT(LocalNotifyRequestEvent)
-
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-protected:
+public:
     /**
-     * \brief   Initializes a notification request event for starting or stopping notifications.
+     * \brief   Initializes a notification request event for starting or stopping notifications
+     *          within the same process.
      *
-     * \param   fromProxy       The address of the source proxy requesting notifications.
-     * \param   toStub          The address of the target stub to start or stop sending
-     *                          notifications.
-     * \param   msgId           The ID of the message (attribute, broadcast, or response). Request
-     *                          IDs cannot be notified.
-     * \param   reqType         The request type (subscribe or unsubscribe).
+     * \param   fromProxy   The address of the source proxy requesting notifications.
+     * \param   toStub      The address of the target stub to start or stop sending notifications.
+     * \param   msgId       The ID of the message (attribute, broadcast, or response). Request IDs cannot be notified.
+     * \param   reqType     The request type (subscribe or unsubscribe).
      **/
-    LocalNotifyRequestEvent( const ProxyAddress & fromProxy
-                           , const StubAddress & toStub
-                           , uint32_t msgId
-                           , areg::RequestType reqType );
+    inline LocalNotifyRequestEvent( const ProxyAddress & fromProxy
+                                  , const StubAddress & toStub
+                                  , uint32_t msgId
+                                  , areg::RequestType reqType );
 
     /**
-     * \brief   Initializes the event by deserializing data from the given input stream.
-     *
-     * \param   stream      The input stream containing serialized event data.
+     * \brief   Constructs from a received MessageEnvelope.
      **/
-    LocalNotifyRequestEvent( const InStream & stream );
+    explicit inline LocalNotifyRequestEvent(const MessageEnvelope& envelope) noexcept;
 
-    virtual ~LocalNotifyRequestEvent() = default;
+    LocalNotifyRequestEvent(const LocalNotifyRequestEvent& /*src*/) = default;
+
+    LocalNotifyRequestEvent(LocalNotifyRequestEvent&& /*src*/) noexcept = default;
+
+    ~LocalNotifyRequestEvent() override = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
     LocalNotifyRequestEvent() = delete;
-    AREG_NOCOPY_NOMOVE( LocalNotifyRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -439,42 +245,39 @@ private:
  * \brief   Remote notification request event sent by a proxy to a stub to start or stop
  *          attribute/broadcast/response notifications.
  **/
-class AREG_API RemoteNotifyRequestEvent    : public    NotifyRequestEvent
+class AREG_API RemoteNotifyRequestEvent    : public    ServiceRequestEvent
 {
     friend class RemoteEventFactory;
-//////////////////////////////////////////////////////////////////////////
-// Declare event as runtime to support runtime casting.
-//////////////////////////////////////////////////////////////////////////
-    AREG_DECLARE_RUNTIME_EVENT(RemoteNotifyRequestEvent)
+    friend class StubBase;   // needs new RemoteNotifyRequestEvent(envelope) on IPC receive path
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-protected:
+public:
     /**
      * \brief   Initializes a notification request event for starting or stopping notifications
-     *          between the specified proxy and stub.
+     *          between the specified proxy and stub (cross-process).
      *
      * \param   fromProxy       The address of the source proxy requesting notifications.
-     * \param   toStub          The address of the target stub to start or stop sending
-     *                          notifications.
-     * \param   msgId           The ID of the message (attribute, broadcast, or response). Request
-     *                          IDs cannot be notified.
+     * \param   toStub          The address of the target stub to start or stop sending notifications.
+     * \param   msgId           The ID of the message (attribute, broadcast, or response). Request IDs cannot be notified.
      * \param   reqType         The request type (subscribe or unsubscribe).
      **/
-    RemoteNotifyRequestEvent( const ProxyAddress & fromProxy
-                            , const StubAddress & toStub
-                            , uint32_t msgId
-                            , areg::RequestType reqType );
+    inline RemoteNotifyRequestEvent( const ProxyAddress & fromProxy
+                                   , const StubAddress & toStub
+                                   , uint32_t msgId
+                                   , areg::RequestType reqType );
 
     /**
-     * \brief   Initializes the event by deserializing data from the given input stream.
-     *
-     * \param   stream      The input stream containing serialized event data.
+     * \brief   Constructs from a received MessageEnvelope.
      **/
-    RemoteNotifyRequestEvent( const InStream & stream );
+    explicit inline RemoteNotifyRequestEvent( const MessageEnvelope & envelope ) noexcept;
 
-    virtual ~RemoteNotifyRequestEvent() = default;
+    RemoteNotifyRequestEvent(const RemoteNotifyRequestEvent& /*src*/) = default;
+
+    RemoteNotifyRequestEvent(RemoteNotifyRequestEvent&& /*src*/) noexcept = default;
+
+    ~RemoteNotifyRequestEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////////
 // Protected operations
@@ -491,7 +294,7 @@ protected:
     /**
      * \brief   Returns the target communication channel.
      **/
-    inline const Channel & target_channel() const noexcept;
+    inline Channel target_channel() const noexcept;
 
     /**
      * \brief   Sets the source communication channel.
@@ -503,43 +306,59 @@ protected:
     /**
      * \brief   Returns the source communication channel.
      **/
-    inline const Channel & source_channel() const noexcept;
+    inline Channel source_channel() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
     RemoteNotifyRequestEvent() = delete;
-    AREG_NOCOPY_NOMOVE( RemoteNotifyRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// RequestEvent class inline function implementation
+// LocalRequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-
-inline const EventData & RequestEvent::data() const noexcept
+inline LocalRequestEvent::LocalRequestEvent(const ProxyAddress& fromSource, const StubAddress& toTarget, uint32_t reqId, uint32_t initSize /*= 0*/)
+    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, areg::EventType::EventLocalRequest, initSize)
 {
-    return mData;
 }
 
-inline areg::MessageDataType RequestEvent::data_type() const noexcept
+inline LocalRequestEvent::LocalRequestEvent( const SharedBuffer& args
+                                           , const ProxyAddress& fromSource
+                                           , const StubAddress& toTarget
+                                           , uint32_t reqId)
+    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, areg::EventType::EventLocalRequest, 0u)
 {
-    return mData.data_type();
+    if (args.is_valid())
+        write_data(args.buffer(), args.size_used());
 }
 
-inline EventData& RequestEvent::data() noexcept
+inline LocalRequestEvent::LocalRequestEvent(const MessageEnvelope& envelope) noexcept
+    : ServiceRequestEvent(envelope)
 {
-    return mData;
 }
 
-inline const InStream & RequestEvent::read_stream() const noexcept
+//////////////////////////////////////////////////////////////////////////
+// RemoteRequestEvent class, Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+inline RemoteRequestEvent::RemoteRequestEvent( const ProxyAddress & fromSource, const StubAddress & toTarget, uint32_t reqId, uint32_t initSize /*= 0u*/ )
+    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, areg::EventType::EventRemoteRequest, initSize)
 {
-    return mData.read_stream();
 }
 
-inline OutStream & RequestEvent::write_stream() noexcept
+inline RemoteRequestEvent::RemoteRequestEvent( const SharedBuffer & args
+                                             , const ProxyAddress & fromSource
+                                             , const StubAddress & toTarget
+                                             , uint32_t reqId)
+    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, areg::EventType::EventRemoteRequest, 0u)
 {
-    return mData.write_stream();
+    if (args.is_valid())
+        write_data(args.buffer(), args.size_used());
+}
+
+inline RemoteRequestEvent::RemoteRequestEvent( const MessageEnvelope & envelope ) noexcept
+    : ServiceRequestEvent( envelope )
+{
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -548,22 +367,67 @@ inline OutStream & RequestEvent::write_stream() noexcept
 
 inline void RemoteRequestEvent::set_target_channel(const Channel & channel) noexcept
 {
-    mTargetStubAddress.set_channel(channel);
+    areg::EventHeader* hdr{ header() };
+    ASSERT(hdr != nullptr);
+    hdr->target          = channel.cookie();
+    hdr->channel         = channel.target();
+    hdr->provider.id     = channel.cookie();
+    hdr->provider.thread = channel.source();
 }
 
-inline const Channel & RemoteRequestEvent::target_channel() const noexcept
+inline Channel RemoteRequestEvent::target_channel() const noexcept
 {
-    return mTargetStubAddress.channel();
+    const areg::EventHeader* hdr{ header() };
+    ASSERT(hdr != nullptr);
+    return Channel(hdr->provider.thread, hdr->channel, hdr->provider.id);
 }
 
 inline void RemoteRequestEvent::set_source_channel( const Channel & channel ) noexcept
 {
-    mProxySource.set_channel(channel);
+    areg::EventHeader* hdr{ header() };
+    ASSERT(hdr != nullptr);
+    hdr->source          = channel.target();
+    hdr->consumer.id     = channel.cookie();
+    hdr->consumer.thread = channel.source();
 }
 
-inline const Channel & RemoteRequestEvent::source_channel() const noexcept
+inline Channel RemoteRequestEvent::source_channel() const noexcept
 {
-    return mProxySource.channel();
+    const areg::EventHeader* hdr{ header() };
+    ASSERT(hdr != nullptr);
+    return Channel(hdr->consumer.thread, hdr->source, hdr->consumer.id);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// LocalNotifyRequestEvent class, Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+inline LocalNotifyRequestEvent::LocalNotifyRequestEvent( const ProxyAddress& fromProxy
+                                                       , const StubAddress& toStub
+                                                       , uint32_t msgId
+                                                       , areg::RequestType reqType)
+    : ServiceRequestEvent(fromProxy, toStub, msgId, reqType, areg::EventType::EventLocalNotifyRequest)
+{
+}
+
+inline LocalNotifyRequestEvent::LocalNotifyRequestEvent(const MessageEnvelope& envelope) noexcept
+    : ServiceRequestEvent(envelope)
+{
+}
+
+//////////////////////////////////////////////////////////////////////////
+// RemoteNotifyRequestEvent class, Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+inline RemoteNotifyRequestEvent::RemoteNotifyRequestEvent( const ProxyAddress& fromProxy
+                                                         , const StubAddress& toStub
+                                                         , uint32_t msgId
+                                                         , areg::RequestType reqType)
+    : ServiceRequestEvent(fromProxy, toStub, msgId, reqType, areg::EventType::EventRemoteNotifyRequest)
+{
+}
+
+inline RemoteNotifyRequestEvent::RemoteNotifyRequestEvent(const MessageEnvelope& envelope) noexcept
+    : ServiceRequestEvent(envelope)
+{
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -572,22 +436,35 @@ inline const Channel & RemoteRequestEvent::source_channel() const noexcept
 
 inline void RemoteNotifyRequestEvent::set_target_channel(const Channel & channel) noexcept
 {
-    mTargetStubAddress.set_channel(channel);
+    areg::EventHeader* hdr{ header() };
+    ASSERT(hdr != nullptr);
+    hdr->target          = channel.cookie();
+    hdr->channel         = channel.target();
+    hdr->provider.id     = channel.cookie();
+    hdr->provider.thread = channel.source();
 }
 
-inline const Channel & RemoteNotifyRequestEvent::target_channel() const noexcept
+inline Channel RemoteNotifyRequestEvent::target_channel() const noexcept
 {
-    return mTargetStubAddress.channel();
+    const areg::EventHeader* hdr{ header() };
+    ASSERT(hdr != nullptr);
+    return Channel(hdr->provider.thread, hdr->channel, hdr->provider.id);
 }
 
 inline void RemoteNotifyRequestEvent::set_source_channel( const Channel & channel ) noexcept
 {
-    mProxySource.set_channel(channel);
+    areg::EventHeader* hdr{ header() };
+    ASSERT(hdr != nullptr);
+    hdr->source          = channel.target();
+    hdr->consumer.id     = channel.cookie();
+    hdr->consumer.thread = channel.source();
 }
 
-inline const Channel & RemoteNotifyRequestEvent::source_channel() const noexcept
+inline Channel RemoteNotifyRequestEvent::source_channel() const noexcept
 {
-    return mProxySource.channel();
+    const areg::EventHeader* hdr{ header() };
+    ASSERT(hdr != nullptr);
+    return Channel(hdr->consumer.thread, hdr->source, hdr->consumer.id);
 }
 
 } // namespace areg
