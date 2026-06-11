@@ -34,22 +34,12 @@ bool Event::add_listener(const uint32_t classId, EventConsumer& eventConsumer, c
     return Event::add_listener(classId, eventConsumer, DispatcherThread::dispatcher_thread(whichThread));
 }
 
-bool Event::add_listener(const uint32_t classId, EventConsumer& eventConsumer, const id_type whichThread)
-{
-    return Event::add_listener(classId, eventConsumer, DispatcherThread::dispatcher_thread(whichThread));
-}
-
 bool Event::add_listener(const uint32_t classId, EventConsumer& eventConsumer, DispatcherThread& dispThread)
 {
     return (dispThread.is_running() ? dispThread.register_event_consumer(classId, eventConsumer) : false);
 }
 
 bool Event::remove_listener(const uint32_t classId, EventConsumer& eventConsumer, const UniqueNumber whichThread)
-{
-    return Event::remove_listener(classId, eventConsumer, DispatcherThread::dispatcher_thread(whichThread));
-}
-
-bool Event::remove_listener(const uint32_t classId, EventConsumer& eventConsumer, id_type whichThread)
 {
     return Event::remove_listener(classId, eventConsumer, DispatcherThread::dispatcher_thread(whichThread));
 }
@@ -109,14 +99,9 @@ void Event::deliver_event()
     }
 }
 
-bool Event::register_for_thread_id( id_type whichThread /*= 0*/ )
+bool Event::register_for_thread( UniqueNumber threadNum )
 {
-    return register_for_thread(&DispatcherThread::dispatcher_thread(whichThread));
-}
-
-bool Event::register_for_thread_number( uint32_t whichThread )
-{
-    return register_for_thread(&DispatcherThread::dispatcher_thread(whichThread));
+    return register_for_thread(&DispatcherThread::dispatcher_thread(threadNum));
 }
 
 bool Event::register_for_thread( DispatcherThread * dispatchThread )

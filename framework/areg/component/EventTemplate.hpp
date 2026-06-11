@@ -221,14 +221,10 @@ public:                                                                         
     static inline bool add_listener(AregImpl_##ConsumerClass<DATA_CLASS>& listener,                                     \
                                     const areg::String& whichThread);                                                   \
     static inline bool add_listener(AregImpl_##ConsumerClass<DATA_CLASS>& listener,                                     \
-                                    id_type whichThread = 0);                                                           \
-    static inline bool add_listener(AregImpl_##ConsumerClass<DATA_CLASS>& listener,                                     \
                                     areg::DispatcherThread& dispThread);                                                 \
     /** \brief  Unregisters the consumer for this event type from the specified thread.        **/                      \
     static inline bool remove_listener(AregImpl_##ConsumerClass<DATA_CLASS>& listener,                                  \
                                        const areg::String& whichThread);                                                \
-    static inline bool remove_listener(AregImpl_##ConsumerClass<DATA_CLASS>& listener,                                  \
-                                       id_type whichThread = 0);                                                        \
     static inline bool remove_listener(AregImpl_##ConsumerClass<DATA_CLASS>& listener,                                  \
                                        areg::DispatcherThread& dispThread);                                             \
     /** \brief  Read-only access to the event data stored in the payload.                      **/                      \
@@ -473,19 +469,11 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::add_listener(AregImpl_##ConsumerC
 {   return areg::Event::add_listener(AregImpl_##EventClass<DATA_CLASS>::CLASS_ID, listener, whichThread); }             \
 template <class DATA_CLASS>                                                                                             \
 inline bool AregImpl_##EventClass<DATA_CLASS>::add_listener(AregImpl_##ConsumerClass<DATA_CLASS>& listener,             \
-                                                             id_type whichThread)                                       \
-{   return areg::Event::add_listener(AregImpl_##EventClass<DATA_CLASS>::CLASS_ID, listener, whichThread); }             \
-template <class DATA_CLASS>                                                                                             \
-inline bool AregImpl_##EventClass<DATA_CLASS>::add_listener(AregImpl_##ConsumerClass<DATA_CLASS>& listener,             \
                                                              areg::DispatcherThread& dispThread)                        \
 {   return areg::Event::add_listener(AregImpl_##EventClass<DATA_CLASS>::CLASS_ID, listener, dispThread); }              \
 template <class DATA_CLASS>                                                                                             \
 inline bool AregImpl_##EventClass<DATA_CLASS>::remove_listener(AregImpl_##ConsumerClass<DATA_CLASS>& listener,          \
                                                                 const areg::String& whichThread)                        \
-{   return areg::Event::remove_listener(AregImpl_##EventClass<DATA_CLASS>::CLASS_ID, listener, whichThread); }          \
-template <class DATA_CLASS>                                                                                             \
-inline bool AregImpl_##EventClass<DATA_CLASS>::remove_listener(AregImpl_##ConsumerClass<DATA_CLASS>& listener,          \
-                                                                id_type whichThread)                                    \
 {   return areg::Event::remove_listener(AregImpl_##EventClass<DATA_CLASS>::CLASS_ID, listener, whichThread); }          \
 template <class DATA_CLASS>                                                                                             \
 inline bool AregImpl_##EventClass<DATA_CLASS>::remove_listener(AregImpl_##ConsumerClass<DATA_CLASS>& listener,          \

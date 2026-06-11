@@ -41,13 +41,9 @@ public:                                                                         
     /*  Declare static function to add/register event consumer to start processing event.       */                          \
     static bool add_listener(areg::EventConsumer& eventConsumer, const UniqueNumber whichThread = areg::IGNORE_VALUE);      \
     /*  Declare static function to add/register event consumer to start processing event.       */                          \
-    static bool add_listener(areg::EventConsumer& eventConsumer, const id_type whichThread);                                \
-    /*  Declare static function to add/register event consumer to start processing event.       */                          \
     static bool add_listener(areg::EventConsumer& eventConsumer, areg::DispatcherThread & dispThread);                      \
     /*  Declare static function to remove/unregister event consumer to stop processing event.   */                          \
     static bool remove_listener(areg::EventConsumer& eventConsumer, const UniqueNumber whichThread = areg::IGNORE_VALUE);   \
-    /*  Declare static function to remove/unregister event consumer to stop processing event.   */                          \
-    static bool remove_listener(areg::EventConsumer& eventConsumer, const id_type whichThread);                             \
     /*  Declare static function to remove/unregister event consumer to stop processing event.   */                          \
     static bool remove_listener(areg::EventConsumer& eventConsumer, areg::DispatcherThread & dispThread);
 
@@ -59,13 +55,9 @@ public:                                                                         
 #define AREG_IMPLEMENT_EVENT_REGISTRATION(EventClass)                                                                       \
     bool EventClass::add_listener(areg::EventConsumer& eventConsumer, const UniqueNumber whichThread)                       \
     {   return areg::Event::add_listener(EventClass::CLASS_ID, eventConsumer, whichThread);       }                         \
-    bool EventClass::add_listener(areg::EventConsumer& eventConsumer, const id_type whichThread)                            \
-    {   return areg::Event::add_listener(EventClass::CLASS_ID, eventConsumer, whichThread);       }                         \
     bool EventClass::add_listener(areg::EventConsumer& eventConsumer, areg::DispatcherThread & dispThread)                  \
     {   return areg::Event::add_listener(EventClass::CLASS_ID, eventConsumer, dispThread);        }                         \
     bool EventClass::remove_listener(areg::EventConsumer& eventConsumer, const UniqueNumber whichThread)                    \
-    {   return areg::Event::remove_listener(EventClass::CLASS_ID, eventConsumer, whichThread);    }                         \
-    bool EventClass::remove_listener(areg::EventConsumer& eventConsumer, const id_type whichThread)                         \
     {   return areg::Event::remove_listener(EventClass::CLASS_ID, eventConsumer, whichThread);    }                         \
     bool EventClass::remove_listener(areg::EventConsumer& eventConsumer, areg::DispatcherThread & dispThread)               \
     {   return areg::Event::remove_listener(EventClass::CLASS_ID, eventConsumer, dispThread);     }
@@ -106,13 +98,9 @@ public:                                                                         
 #define AREG_IMPLEMENT_EVENT_REGISTRATION_TEMPLATE(Template, ClassName)                                                     \
     Template inline bool ClassName::add_listener(areg::EventConsumer& eventConsumer, const UniqueNumber whichThread)        \
     {   return areg::Event::add_listener(ClassName::CLASS_ID, eventConsumer, whichThread);       }                          \
-    Template inline bool ClassName::add_listener(areg::EventConsumer& eventConsumer, const id_type whichThread)             \
-    {   return areg::Event::add_listener(ClassName::CLASS_ID, eventConsumer, whichThread);       }                          \
     Template inline bool ClassName::add_listener(areg::EventConsumer& eventConsumer, areg::DispatcherThread & dispThread)   \
     {   return areg::Event::add_listener(ClassName::CLASS_ID, eventConsumer, dispThread);        }                          \
     Template inline bool ClassName::remove_listener(areg::EventConsumer& eventConsumer, const UniqueNumber whichThread)     \
-    {   return areg::Event::remove_listener(ClassName::CLASS_ID, eventConsumer, whichThread);    }                          \
-    Template inline bool ClassName::remove_listener(areg::EventConsumer& eventConsumer, const id_type whichThread)          \
     {   return areg::Event::remove_listener(ClassName::CLASS_ID, eventConsumer, whichThread);    }                          \
     Template inline bool ClassName::remove_listener(areg::EventConsumer& eventConsumer, areg::DispatcherThread & dispThread)\
     {   return areg::Event::remove_listener(ClassName::CLASS_ID, eventConsumer, dispThread);     }
@@ -163,11 +151,6 @@ public:
     static bool add_listener(const uint32_t classId, EventConsumer & eventConsumer, const UniqueNumber whichThread);
 
     /**
-     * \brief   Registers an event consumer for a specific event class in the specified thread by ID.
-     **/
-    static bool add_listener( const uint32_t classId, EventConsumer & eventConsumer, const id_type whichThread );
-
-    /**
      * \brief   Registers an event consumer for a specific event class in the specified dispatcher thread.
      **/
     static bool add_listener(const uint32_t classId, EventConsumer & eventConsumer, DispatcherThread & dispThread);
@@ -176,11 +159,6 @@ public:
      * \brief   Unregisters an event consumer for a specific event class from the specified thread.
      **/
     static bool remove_listener(const uint32_t classId, EventConsumer & eventConsumer, const UniqueNumber whichThread);
-
-    /**
-     * \brief   Unregisters an event consumer for a specific event class from the specified thread by ID.
-     **/
-    static bool remove_listener( const uint32_t classId, EventConsumer & eventConsumer, id_type whichThread );
 
     /**
      * \brief   Unregisters an event consumer for a specific event class from the specified dispatcher thread.
@@ -268,14 +246,9 @@ public:
     bool remove_event_listener( EventConsumer & eventConsumer );
 
     /**
-     * \brief   Registers this event with the specified thread by ID.
+     * \brief   Registers this event with the thread of the specified thread number.
      **/
-    bool register_for_thread_id( id_type whichThread = 0);
-
-    /**
-     * \brief   Registers this event with the thread of the specified name.
-     **/
-    bool register_for_thread_number( uint32_t whichThread );
+    bool register_for_thread( UniqueNumber threadNum );
 
     /**
      * \brief   Sets the target dispatcher thread for this event.

@@ -76,18 +76,6 @@ public:
     static inline DispatcherThread & dispatcher_thread( const UniqueNumber threadNumber) noexcept;
 
     /**
-     * \brief   By given thread ID searches registered Event Dispatcher thread and returns object.
-     *          If no thread by give name was found, it returns NullDispatcher Thread, which will
-     *          ignore (destroy) any event passed to thread.
-     *
-     * \param   threadId    The unique thread ID.
-     * \return  If found, returns valid Dispatcher thread. Otherwise, returns NullDispather object,
-     *          which destroys any event passed to thread.
-     **/
-    [[nodiscard]]
-    static inline DispatcherThread & dispatcher_thread( const id_type threadId) noexcept;
-
-    /**
      * \brief   By given thread address searches registered Event Dispatcher thread and returns
      *          object. If no thread by give name was found, it returns NullDispatcher Thread, which
      *          will ignore (destroy) any event passed to thread.
@@ -290,12 +278,6 @@ inline DispatcherThread & DispatcherThread::dispatcher_thread( const UniqueNumbe
 {
     DispatcherThread * dispThread = AREG_RUNTIME_CAST(Thread::find_by_number(threadNumber), DispatcherThread);
     return ( dispThread != nullptr ? *dispThread : DispatcherThread::current_dispatcher_thread() );
-}
-
-inline DispatcherThread & DispatcherThread::dispatcher_thread( const id_type threadId ) noexcept
-{
-    DispatcherThread* dispThread = AREG_RUNTIME_CAST(Thread::find_by_id(threadId), DispatcherThread);
-    return (dispThread != nullptr ? *dispThread : DispatcherThread::current_dispatcher_thread());
 }
 
 inline DispatcherThread & DispatcherThread::dispatcher_thread(const ThreadAddress & threadAddr ) noexcept
