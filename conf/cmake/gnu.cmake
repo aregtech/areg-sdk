@@ -137,6 +137,15 @@ else()
     endif()
 endif()
 
+if (NOT CYGWIN AND "${CMAKE_BUILD_TYPE}" MATCHES "Release")
+    list(APPEND AREG_LDFLAGS
+            -Wno-stringop-overflow
+            -Wno-stringop-overread
+            -Wno-free-nonheap-object
+    )
+    string(APPEND AREG_LDFLAGS_STR " -Wno-stringop-overflow -Wno-stringop-overread -Wno-free-nonheap-object")
+endif()
+
 # disable SQLite warnings
 list(APPEND AREG_OPT_DISABLE_WARN_THIRDPARTY
         -w
