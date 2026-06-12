@@ -133,6 +133,7 @@ void LatencyProvider::request_start_mode(Latency::LatencyMode mode, uint32_t dur
 
     if (is_request)
     {
+        mOneWayLatencies.clear();
         mOneWayLatencies.reserve(count + warmup);
         mLastStats  = {};
         mRunMin     = INT64_MAX;

@@ -57,6 +57,8 @@ struct ResultEntry
     double          p99_us  { 0.0 };
     double          max_us  { 0.0 };
     double          mean_us { 0.0 };
+    double          dur_ms  { 0.0 };   //!< Actual measured wall-clock duration of the run (ms)
+    double          mps     { 0.0 };   //!< Throughput: measured messages per second
     bool            valid   { false };
 
     ResultEntry() = default;
@@ -86,7 +88,7 @@ struct CmdData
     Latency::LatencyMode    mode        { Latency::LatencyMode::Request0 };
     uint32_t                count       { 0u };
     uint32_t                warmup      { 0u };
-    uint32_t                duration_sec{ 0u };
+    uint32_t                duration_ms { 0u };  //!< -d value, milliseconds (run duration)
     areg::String            csv_path    {    };  //!< path from -o=<path>
     areg::String            csv_file    {    };  //!< path from -f=<path> (empty = auto)
 
@@ -172,6 +174,16 @@ class LatencyConsumer final : public    areg::Component
         , File     = 11
     };
 
+    //!< Selects how a measured run is bounded and (optionally) paced, chosen from the bounds given
+    //!< on the start command line: `-c` only, `-d` only, or both `-c` and `-d` together.
+    enum class StopMode : uint8_t
+    {
+          ByCount       //!< `-c` only: stop after mCount measured samples; messages sent at max rate.
+        , ByDuration    //!< `-d` only: stop after mDurationNs of measured wall-clock; messages at max rate.
+        , Paced         //!< `-c` and `-d`: send exactly mCount messages spread across mDurationNs
+                        //!< (target rate = mCount / mDurationNs). Stops by count; rate is best-effort.
+    };
+
 //////////////////////////////////////////////////////////////////////////
 // Internal constants
 //////////////////////////////////////////////////////////////////////////
@@ -180,9 +192,15 @@ private:
 
     static constexpr std::string_view THREAD_INPUT   { "LatencyConsumerInputThread" };
     static constexpr std::string_view THREAD_DISPLAY { "LatencyConsumerDisplayThread" };
+    static constexpr std::string_view TIMER_PACE     { "LatencyConsumerPaceTimer" };
     static constexpr uint32_t DEFAULT_COUNT         { 1000u };
     static constexpr uint32_t DEFAULT_WARMUP        { 10u };
-    static constexpr uint32_t DEFAULT_DURATION      { 0u };
+    static constexpr uint64_t DEFAULT_DURATION_NS   { 0u };
+    //!< Pre-reservation estimate for duration runs: a deliberate over-estimate (~2x the fastest
+    //!< realistic 1-in-flight rate) so the measurement loop never reallocates mid-run.
+    static constexpr uint32_t DURATION_RESERVE_PER_SEC { 200000u };
+    //!< Upper bound on pre-reserved samples, to keep memory bounded for long duration runs.
+    static constexpr uint32_t MAX_SAMPLE_RESERVE    { 4000000u };
 
 //////////////////////////////////////////////////////////////////////////
 // Console layout coordinates  (col=1, rows 2-32)
@@ -224,23 +242,23 @@ private:
     static constexpr std::string_view MSG_LIVE_1    { " Mode: %-6s  Status: %-8s  Samples: %-6u  Rate: %8.1f msg/sec" };
     static constexpr std::string_view MSG_LIVE_2    { " Min: %9.3f us   Mean: %9.3f us   Max: %9.3f us" };
     static constexpr std::string_view MSG_LIVE_FINAL{ " Min:%9.3f  P50:%9.3f  P95:%9.3f  P99:%9.3f  Max:%9.3f  Mean:%9.3f  (us)" };
-    static constexpr std::string_view MSG_PROMPT    { " Commands: start | stop | -q | -q=1 | -h | -m=<mode> -c=<n> -w=<n> -d=<s> -f[=<path>] -o=<path>" };
+    static constexpr std::string_view MSG_PROMPT    { " Commands: start | stop | -q | -q=1 | -h | -m=<mode> -c=<n> -w=<n> -d=<ms> -f[=<path>] -o=<path>" };
     static constexpr std::string_view MSG_EX_HDR    { " Examples (short or long form, combinable on one line):" };
     static constexpr std::string_view MSG_EX1       { "   -s (or `start`)" };
     static constexpr std::string_view MSG_EX2       { "   -s -m=pp0 -c=1000 -w=50           (or `start mode=pp0 count=1000 warmup=50`)" };
-    static constexpr std::string_view MSG_EX3       { "   -s -m=pp8 -c=5000 -w=100          (or `start mode=pp8 count=5000 warmup=100`)" };
-    static constexpr std::string_view MSG_EX4       { "   -s -m=bc64 -c=5000 -w=500         (or `start mode=bc64 count=5000 warmup=500`)" };
+    static constexpr std::string_view MSG_EX3       { "   -s -m=pp64 -d=2000 -w=500         (run pp64 for 2000 ms at max rate; report count and msg/s)" };
+    static constexpr std::string_view MSG_EX4       { "   -s -m=pp64 -c=2000 -d=2000        (paced: send 2000 msgs spread over 2000 ms = ~1000 msg/s)" };
     static constexpr std::string_view MSG_EX5       { "   -s -m=bc8 -c=1000 -f=results.csv  (or `start mode=bc8 count=1000 file=results.csv`)" };
     static constexpr std::string_view MSG_EX6       { " PP Modes: pp0 | pp8 | pp16 | pp32 | pp64 | pp128 | pp512 | pp1024 | pp4096 | pp65536" };
     static constexpr std::string_view MSG_EX7       { " BC Modes: bc0 | bc8 | bc16 | bc32 | bc64 | bc128 | bc512 | bc1024 | bc4096 | bc65536" };
     static constexpr std::string_view MSG_EX8       { " Other Opt: -p (`stop`) | -i (`info`) | -h (`help`) | -q (global `quit`) | -q=1 (local `quit`)" };
-    static constexpr std::string_view MSG_SETTINGS  { " mode=%-6s  count=%-6u  dur=%-3u s  warmup=%-3u  connected=%-3s  running=%-3s  csv: %s" };
+    static constexpr std::string_view MSG_SETTINGS  { " mode=%-6s  stop=%-5s  count=%-6u  dur=%-6u ms  warmup=%-3u  connected=%-3s  running=%-3s  csv: %s" };
     static constexpr std::string_view MSG_RES_HDR   { " Test Results (last 8 runs):" };
-    // Table strings -- all 83 chars wide (1 leading space + 82 table chars)
-    static constexpr std::string_view MSG_TBL_SEP   { " +-----+---------+--------+----------+----------+----------+----------+----------+----------+" };
-    static constexpr std::string_view MSG_TBL_HDR   { " |  #  |    Mode |  Count |  Min(us) |  P50(us) |  P95(us) |  P99(us) |  Max(us) | Mean(us) |" };
-    static constexpr std::string_view MSG_TBL_EMPTY { " |     |         |        |          |          |          |          |          |          |" };
-    static constexpr std::string_view MSG_TBL_ROW   { " | %3u | %-7s | %6u | %8.2f | %8.2f | %8.2f | %8.2f | %8.2f | %8.2f |" };
+    // Table strings -- all 115 chars wide (1 leading space + 114 table chars)
+    static constexpr std::string_view MSG_TBL_SEP   { " +-----+---------+--------+----------+----------+----------+----------+----------+----------+----------+----------+" };
+    static constexpr std::string_view MSG_TBL_HDR   { " |  #  |    Mode |  Count |  Min(us) |  P50(us) |  P95(us) |  P99(us) |  Max(us) | Mean(us) |  Dur(ms) |    Msg/s |" };
+    static constexpr std::string_view MSG_TBL_EMPTY { " |     |         |        |          |          |          |          |          |          |          |          |" };
+    static constexpr std::string_view MSG_TBL_ROW   { " | %3u | %-7s | %6u | %8.2f | %8.2f | %8.2f | %8.2f | %8.2f | %8.2f | %8.0f | %8.0f |" };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -507,6 +525,7 @@ private:
     void _stop_test();
     void _send_next_ping();
     void _send_next_oneway();   //!< Broadcast/one-way: pull the next message from the provider.
+    void _send_next_paced();    //!< Dispatch the next ping/one-way send (used by the pacing timer).
     void _record_sample(uint64_t t1, uint64_t t2, uint64_t t4);
 
     /**
@@ -541,11 +560,14 @@ private:
     Latency::LatencyMode    mMode;
     uint32_t                mCount;
     uint32_t                mWarmup;
-    uint32_t                mDurationSec;
+    uint64_t                mDurationNs;    //!< -d run duration in nanoseconds (0 = unset)
+    StopMode                mStopMode;      //!< Active run regime: count-, duration-bounded, or paced
+    uint64_t                mPacingIntervalNs;  //!< Paced mode: target ns between measured sends (mDurationNs/mCount)
     bool                    mCsvEnabled;    //!< true only when -f was given; gates all CSV writes
     areg::String            mCsvPath;
 
     uint32_t                mCurrentSeq;    //!< Total arrivals since test start (warmup + measured)
+    uint64_t                mMeasureStartNs;//!< Send timestamp (t1) of the first measured sample; window origin
     bool                    mTestRunning;
     uint32_t                mTotalRuns;     //!< Completed test runs since startup
 
@@ -556,6 +578,8 @@ private:
     int64_t                 mRunMax;
     int64_t                 mRunSum;
     uint32_t                mLastRateCount;
+
+    areg::Timer             mPaceTimer;     //!< One-shot timer gating the next paced send (no CPU spin)
 
     ResultEntry             mResults[MAX_RESULT_ROWS];  //!< Circular results buffer
 
