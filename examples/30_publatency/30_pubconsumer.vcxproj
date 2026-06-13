@@ -43,6 +43,7 @@
     <ClCompile Include="pubconsumer\src\LatencyConsumer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="common\common.hpp" />
     <ClInclude Include="common\latency_common.hpp" />
     <ClInclude Include="pubconsumer\src\LatencyConsumer.hpp" />
   </ItemGroup>

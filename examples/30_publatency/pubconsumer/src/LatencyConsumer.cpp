@@ -720,34 +720,34 @@ void LatencyConsumer::_send_next_ping()
         request_ping_pong_0(mCurrentSeq, Latency::now_ns());
         break;
     case Latency::LatencyMode::Request8:
-        { Latency::Data8   d {}; request_ping_pong_8(mCurrentSeq, Latency::now_ns(), d); }
+        request_ping_pong_8(mCurrentSeq, Latency::now_ns(), Latency::latency8());
         break;
     case Latency::LatencyMode::Request16:
-        { Latency::Data16  d {}; request_ping_pong_16(mCurrentSeq, Latency::now_ns(), d); }
+        request_ping_pong_16(mCurrentSeq, Latency::now_ns(), Latency::latency16());
         break;
     case Latency::LatencyMode::Request32:
-        { Latency::Data32  d {}; request_ping_pong_32(mCurrentSeq, Latency::now_ns(), d); }
+        request_ping_pong_32(mCurrentSeq, Latency::now_ns(), Latency::latency32());
         break;
     case Latency::LatencyMode::Request64:
-        { Latency::Data64  d {}; request_ping_pong_64(mCurrentSeq, Latency::now_ns(), d); }
+        request_ping_pong_64(mCurrentSeq, Latency::now_ns(), Latency::latency64());
         break;
     case Latency::LatencyMode::Request128:
-        { Latency::Data128 d {}; request_ping_pong_128(mCurrentSeq, Latency::now_ns(), d); }
+        request_ping_pong_128(mCurrentSeq, Latency::now_ns(), Latency::latency128());
         break;
     case Latency::LatencyMode::Request256:
-        { Latency::Data256 d {}; request_ping_pong_256(mCurrentSeq, Latency::now_ns(), d); }
+        request_ping_pong_256(mCurrentSeq, Latency::now_ns(), Latency::latency256());
         break;
     case Latency::LatencyMode::Request512:
-        { Latency::Data512 d {}; request_ping_pong_512(mCurrentSeq, Latency::now_ns(), d); }
+        request_ping_pong_512(mCurrentSeq, Latency::now_ns(), Latency::latency512());
         break;
     case Latency::LatencyMode::Request1024:
-        { Latency::Data1024 d {}; d.data_rest.set_size_used(1024 - 128 - 64); request_ping_pong_1024(mCurrentSeq, Latency::now_ns(), d); }
+        request_ping_pong_1024(mCurrentSeq, Latency::now_ns(), Latency::latency1024());
         break;
     case Latency::LatencyMode::Request4096:
-    { Latency::Data4096 d{}; d.data_rest.set_size_used(4096 - 128 - 64); request_ping_pong_4096(mCurrentSeq, Latency::now_ns(), d); }
+        request_ping_pong_4096(mCurrentSeq, Latency::now_ns(), Latency::latency4096());
         break;
     case Latency::LatencyMode::Request65536:
-        { Latency::Data65536 d {}; d.data_rest.set_size_used(65536 - 128 - 64); request_ping_pong_65536(mCurrentSeq, Latency::now_ns(), d); }
+        request_ping_pong_65536(mCurrentSeq, Latency::now_ns(), Latency::latency65536());
         break;
     default:
         break;
