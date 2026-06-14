@@ -69,20 +69,32 @@ bool Timer::start_timer(uint32_t timeoutInMs, DispatcherThread & whichThread, ui
 {
     LOG_SCOPE( areg_component_Timer, start_timer );
 
-    Lock lock(mLock);
-
-    if (is_active())
+    bool active = false;
     {
-        LOG_WARN("The timer [ %s ] is still active, going to stop first. Current timeout [ %u ] ms and event count [ %d]"
-            , mName.as_string()
-            , mTimeoutInMs
-            , mEventsCount);
+        Lock lock(mLock);
+        active = is_active();
+    }
 
+    if (active)
+    {
+        LOG_WARN("The timer [ %s ] is still active, going to stop first.", mName.as_string());
         TimerManager::stop_timer(self());
     }
 
-    if (eventCount != 0)
+    if (eventCount == 0)
     {
+        LOG_WARN("Ignoring to start a timer [ %s ] with either 0 timeout or 0 event count", mName.as_string());
+        Lock lock(mLock);
+        mTimeoutInMs = timeoutInMs;
+        mEventsCount = 0;
+
+        return false;
+    }
+
+    // Publish the dispatch thread before registering so an early expiry always sees a valid target.
+    bool canStart = false;
+    {
+        Lock lock(mLock);
         LOG_DBG("Starting [ %s ] with timeout [ %u ] ms and event count [ %d ], target thread [ %s ]"
             , mName.as_string()
             , timeoutInMs
@@ -92,34 +104,31 @@ bool Timer::start_timer(uint32_t timeoutInMs, DispatcherThread & whichThread, ui
         mTimeoutInMs    = timeoutInMs;
         mEventsCount    = eventCount;
         mCurrentQueued  = 0;
-        mDispatchThread = nullptr;
-
-        if (whichThread.is_running() && TimerBase::create_waitable_timer())
-        {
-            mStarted        = TimerManager::start_timer(self(), whichThread);
-            mActive         = mStarted;
-            mDispatchThread = mStarted ? &whichThread : nullptr;
-        }
-#if AREG_LOGGING
-        else
-        {
-            LOG_WARN("The target thread [ %u : %s ]static_cast is not running or failed to create a timer [ %s ]"
-                , whichThread.id()
-                , whichThread.name().as_string()
-                , mName.as_string());
-        }
-#endif // AREG_LOGGING
-
-        return (mDispatchThread != nullptr);
+        mStarted        = false;
+        mActive         = false;
+        canStart        = whichThread.is_running() && TimerBase::create_waitable_timer();
+        mDispatchThread = canStart ? &whichThread : nullptr;
     }
-    else
+
+    if (canStart == false)
     {
-        LOG_WARN("Ignoring to start a timer [ %s ] with either 0 timeout or 0 event count", mName.as_string());
-        mTimeoutInMs = timeoutInMs;
-        mEventsCount = 0;
+        LOG_WARN("The target thread [ %s ] is not running or failed to create a timer [ %s ]"
+            , whichThread.name().as_string()
+            , mName.as_string());
 
         return false;
     }
+
+    // Register and arm the timer with the manager OUTSIDE mLock (keeps resource-lock -> mLock order).
+    const bool started = TimerManager::start_timer(self(), whichThread);
+
+    Lock lock(mLock);
+    mStarted = started;
+    mActive  = started;
+    if (started == false)
+        mDispatchThread = nullptr;
+
+    return (mDispatchThread != nullptr);
 }
 
 void Timer::stop_timer()
@@ -169,42 +178,58 @@ void Timer::timer_starting(uint32_t highValue, uint32_t lowValue, ptr_type /*con
 
 void Timer::_queue_timer()
 {
-    Lock lock(mLock);
-
-    if ( mMaxQueued != Timer::IGNORE_TIMER_QUEUE && mEventsCount > static_cast<uint32_t>(mMaxQueued) )
+    bool needStop = false;
     {
-        if (mDispatchThread != nullptr)
+        Lock lock(mLock);
+
+        if ( mMaxQueued != Timer::IGNORE_TIMER_QUEUE && mEventsCount > static_cast<uint32_t>(mMaxQueued) )
         {
-            if ((++ mCurrentQueued > mMaxQueued) && mStarted)
+            if (mDispatchThread != nullptr)
             {
-                mStarted = false;
-                TimerManager::stop_timer(self());
+                if ((++ mCurrentQueued > mMaxQueued) && mStarted)
+                {
+                    mStarted = false;
+                    needStop = true;
+                }
             }
         }
     }
+
+    if (needStop)
+        TimerManager::stop_timer(self());
 }
 
 void Timer::_unqueue_timer()
 {
-    Lock lock(mLock);
-
-    if ( mMaxQueued != Timer::IGNORE_TIMER_QUEUE && mEventsCount > static_cast<uint32_t>(mMaxQueued) )
+    DispatcherThread * startThread = nullptr;
     {
-        if (mDispatchThread != nullptr)
+        Lock lock(mLock);
+
+        if ( mMaxQueued != Timer::IGNORE_TIMER_QUEUE && mEventsCount > static_cast<uint32_t>(mMaxQueued) )
         {
-           if ((-- mCurrentQueued < mMaxQueued) && (mStarted == false))
-           {
-                mStarted = TimerManager::start_timer(self(), *mDispatchThread);
-           }
+            if (mDispatchThread != nullptr)
+            {
+               if ((-- mCurrentQueued < mMaxQueued) && (mStarted == false))
+               {
+                    startThread = mDispatchThread;
+               }
+            }
         }
+    }
+
+    if (startThread != nullptr)
+    {
+        const bool started = TimerManager::start_timer(self(), *startThread);
+        Lock lock(mLock);
+        mStarted = started;
     }
 }
 
 void Timer::_stop_timer()
 {
-    Lock lock(mLock);
-
     TimerManager::stop_timer(self());
+
+    Lock lock(mLock);
 
     mStarted        = false;
     mActive         = false;

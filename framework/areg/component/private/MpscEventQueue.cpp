@@ -176,7 +176,8 @@ Event MpscEventQueue::pop_event() noexcept
 #endif
         _free_node(node);
         const uint32_t remaining{ mFastCount.fetch_sub(1u, std::memory_order_relaxed) - 1u };
-        mListener.signal_event(remaining);
+        // Include the priority lane so the queue event is not reset while an Exit/High event waits there.
+        mListener.signal_event(remaining + mPrioCount.load(std::memory_order_acquire));
         return result;
     }
 

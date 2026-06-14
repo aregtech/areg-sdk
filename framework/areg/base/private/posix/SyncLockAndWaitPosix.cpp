@@ -267,23 +267,22 @@ int32_t SyncLockAndWaitPosix::_wait_any_new(WaitablePosix** listWaitables, int32
         listWaitables[i]->register_waiter(&nodes[i]);
     }
 
-    // Early-exit check (already signaled):
-    bool ownershipTaken{ false };
+    // Early-exit check (already signaled)
+    int32_t ownedIndex{ areg::INVALID_INDEX };
     for (int32_t i{ 0 }; i < count; ++i)
     {
         WaitablePosix* w{ listWaitables[i] };
         if (w->check_signaled(self) && w->notify_request_ownership(self))
         {
+            ownedIndex = i;
             uint32_t expected{ SYNC_FIRE_INVALID };
             if (firedWord.compare_exchange_strong(
                     expected, static_cast<uint32_t>(i),
                     std::memory_order_acq_rel, std::memory_order_relaxed))
             {
-                ownershipTaken = true;
                 w->notify_released_threads(1);
-                break;
             }
-            // Another concurrent signal already fired -- use that result
+            break;
         }
     }
 
@@ -310,14 +309,9 @@ int32_t SyncLockAndWaitPosix::_wait_any_new(WaitablePosix** listWaitables, int32
     for (int32_t i{ 0 }; i < count; ++i)
         listWaitables[i]->unregister_waiter(&nodes[i]);
 
-    // Ownership acquisition for the winning waitable:
-    // If a waitable fired our node in notify_any_waiters(), ownership was NOT
-    // taken there. Take it now.
-    // For events, notify_request_ownership() always succeeds.
-    // For Mutex, it takes the lock if still free; on failure return the index so the can retry.
-    // Auto-reset and notify_released_threads() are handled by event_signaled()
+    // Acquire the winning waitable, unless the early-exit above already took this very one.
     const uint32_t result{ firedWord.load(std::memory_order_acquire) };
-    if (!ownershipTaken && result < static_cast<uint32_t>(areg::MAXIMUM_WAITING_OBJECTS))
+    if ((static_cast<int32_t>(result) != ownedIndex) && (result < static_cast<uint32_t>(areg::MAXIMUM_WAITING_OBJECTS)))
     {
         listWaitables[static_cast<int32_t>(result)]->notify_request_ownership(self);
     }
