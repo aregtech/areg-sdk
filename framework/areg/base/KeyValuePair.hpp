@@ -19,6 +19,7 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/base/IOStream.hpp"
+#include "areg/base/MemoryDefs.hpp"
 namespace areg {
 
 /**
@@ -325,6 +326,20 @@ inline OutStream& operator << (OutStream& stream, const KeyValuePair<K, V>& outp
     stream << output.mValue.second;
     return stream;
 }
+
+
+/**
+ * \brief   Serialized size of a key-value pair: key size + value size (no length prefix).
+ **/
+template<typename KEY, typename VALUE>
+struct required_size< areg::KeyValuePair<KEY, VALUE> >
+{
+    [[nodiscard]]
+    inline uint32_t operator ()(const areg::KeyValuePair<KEY, VALUE>& pair) const noexcept
+    {
+        return required_size<KEY>{}(pair.key()) + required_size<VALUE>{}(pair.value());
+    }
+};
 
 } // namespace areg
 #endif  // AREG_BASE_KEYVALUEPAIR_HPP

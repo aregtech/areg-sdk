@@ -27,6 +27,7 @@
 #include "areg/base/areg_global.h"
 #include "areg/base/TemplateBase.hpp"
 #include "areg/base/IOStream.hpp"
+#include "areg/base/MemoryDefs.hpp"
 
 #include <algorithm>
 #include <list>
@@ -1205,6 +1206,27 @@ areg::OutStream& operator << (areg::OutStream& stream, const areg::SortedLinkedL
 
     return stream;
 }
+
+
+/**
+ * \brief   Serialized size of a sorted linked list: uint32 count + uint8 sort-order flag + each element.
+ **/
+template<typename VALUE>
+struct required_size< areg::SortedLinkedList<VALUE> >
+{
+    [[nodiscard]]
+    inline uint32_t operator ()(const areg::SortedLinkedList<VALUE>& list) const noexcept
+    {
+        const uint32_t count{ list.size() };
+        uint32_t result{ static_cast<uint32_t>(sizeof(uint32_t) + sizeof(uint8_t)) };
+        for (uint32_t i = 0u; i < count; ++i)
+        {
+            result += required_size<VALUE>{}(list.value_at(i));
+        }
+
+        return result;
+    }
+};
 
 } // namespace areg
 
