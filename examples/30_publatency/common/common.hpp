@@ -9,17 +9,17 @@
 #ifndef EXAMPLES_30_PUBLATENCY_COMMON_COMMON_HPP
 #define EXAMPLES_30_PUBLATENCY_COMMON_COMMON_HPP
 
-#include "areg/base/SharedBuffer.hpp"
+#include "areg/base/SharedBuffer.hpp"     // also pulls in areg/base/MemoryDefs.hpp (areg::mem_zero)
 #include "areg/base/String.hpp"
 #include <chrono>
 
 namespace Latency {
 
-    //!< Sizes (in bytes) of the SharedBuffer "rest" payload that pads each large
-    //!< structure up to its nominal size, after the fixed 64- and 128-byte blocks.
-    constexpr uint32_t REST_1024{ 1024 - 128 - 64 };
-    constexpr uint32_t REST_4096{ 4096 - 128 - 64 };
-    constexpr uint32_t REST_65536{ 65536 - 128 - 64 };
+    constexpr uint32_t FIXED_HEAD { 64u + 128u + static_cast<uint32_t>(sizeof(uint32_t)) };
+
+    constexpr uint32_t REST_1024  { 1024u  - FIXED_HEAD };
+    constexpr uint32_t REST_4096  { 4096u  - FIXED_HEAD };
+    constexpr uint32_t REST_65536 { 65536u - FIXED_HEAD };
 
     /**
      * \brief   Extra 8 bytes of payload for broadcast and request/response ping-pong calls.
@@ -69,13 +69,12 @@ namespace Latency {
     };
 
     /**
-     * \brief   Extra 128 bytes of payload: a 64-byte block plus a 64-character text.
-     *          Latency::Latency128
+     * \brief   Extra 128 bytes of payload
      **/
     struct Latency128
     {
         Latency::Latency64  data1;
-        areg::String        data128{ "123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456" };
+        areg::String        data128{ "123456789_123456789_123456789_123456789_123456789_123456789_123" };
     };
 
     /**
@@ -125,38 +124,36 @@ namespace Latency {
     };
 
     /**
-     * \brief   Extra 65536 bytes of payload: an 8-byte field, a 128-byte block, plus a sized SharedBuffer.
-     *          Latency::Latency65536
+     * \brief   Extra 65536 bytes of payload
      **/
     struct Latency65536
     {
         inline Latency65536();
 
-        uint64_t            data_64{ 0 };
+        Latency::Latency64  data_64;
         Latency::Latency128 data_128;
         areg::SharedBuffer  data_rest;
     };
 
-    /**
-     * The SharedBuffer-backed structures reserve their "rest" payload and immediately mark it
-     * as used, so that streaming actually serialises the bytes instead of an empty buffer.
-     **/
     inline Latency1024::Latency1024()
         : data_rest(REST_1024, areg::BLOCK_SIZE)
     {
         data_rest.set_size_used(REST_1024);
+        areg::mem_zero(data_rest.buffer(), REST_1024);
     }
 
     inline Latency4096::Latency4096()
         : data_rest(REST_4096, areg::BLOCK_SIZE)
     {
         data_rest.set_size_used(REST_4096);
+        areg::mem_zero(data_rest.buffer(), REST_4096);
     }
 
     inline Latency65536::Latency65536()
         : data_rest(REST_65536, areg::BLOCK_SIZE)
     {
         data_rest.set_size_used(REST_65536);
+        areg::mem_zero(data_rest.buffer(), REST_65536);
     }
 
 }   // namespace Latency
@@ -354,6 +351,100 @@ inline areg::OutStream& operator << (areg::OutStream& stream, const Latency::Lat
 
 
 /************************************************************************
+ * areg::required_size<> specializations for the Latency payload structs.
+ ************************************************************************/
+
+namespace areg {
+
+    template<> struct required_size<Latency::Latency8>
+    {
+        [[nodiscard]] inline uint32_t operator () (const Latency::Latency8 & /*v*/) const noexcept
+        {
+            return static_cast<uint32_t>(sizeof(Latency::Latency8));
+        }
+    };
+
+    template<> struct required_size<Latency::Latency16>
+    {
+        [[nodiscard]] inline uint32_t operator () (const Latency::Latency16 & /*v*/) const noexcept
+        {
+            return static_cast<uint32_t>(sizeof(Latency::Latency16));
+        }
+    };
+
+    template<> struct required_size<Latency::Latency32>
+    {
+        [[nodiscard]] inline uint32_t operator () (const Latency::Latency32 & /*v*/) const noexcept
+        {
+            return static_cast<uint32_t>(sizeof(Latency::Latency32));
+        }
+    };
+
+    template<> struct required_size<Latency::Latency64>
+    {
+        [[nodiscard]] inline uint32_t operator () (const Latency::Latency64 & /*v*/) const noexcept
+        {
+            return static_cast<uint32_t>(sizeof(Latency::Latency64));
+        }
+    };
+
+    template<> struct required_size<Latency::Latency128>
+    {
+        [[nodiscard]] inline uint32_t operator () (const Latency::Latency128 & v) const noexcept
+        {
+            return required_size<Latency::Latency64>{}(v.data1) + v.data128.space();
+        }
+    };
+
+    template<> struct required_size<Latency::Latency256>
+    {
+        [[nodiscard]] inline uint32_t operator () (const Latency::Latency256 & v) const noexcept
+        {
+            return required_size<Latency::Latency128>{}(v.data1) + required_size<Latency::Latency128>{}(v.data2);
+        }
+    };
+
+    template<> struct required_size<Latency::Latency512>
+    {
+        [[nodiscard]] inline uint32_t operator () (const Latency::Latency512 & v) const noexcept
+        {
+            return required_size<Latency::Latency256>{}(v.data1) + required_size<Latency::Latency256>{}(v.data2);
+        }
+    };
+
+    template<> struct required_size<Latency::Latency1024>
+    {
+        [[nodiscard]] inline uint32_t operator () (const Latency::Latency1024 & v) const noexcept
+        {
+            return required_size<Latency::Latency64>{}(v.data_64)
+                 + required_size<Latency::Latency128>{}(v.data_128)
+                 + required_size<areg::SharedBuffer>{}(v.data_rest);
+        }
+    };
+
+    template<> struct required_size<Latency::Latency4096>
+    {
+        [[nodiscard]] inline uint32_t operator () (const Latency::Latency4096 & v) const noexcept
+        {
+            return required_size<Latency::Latency64>{}(v.data_64)
+                 + required_size<Latency::Latency128>{}(v.data_128)
+                 + required_size<areg::SharedBuffer>{}(v.data_rest);
+        }
+    };
+
+    template<> struct required_size<Latency::Latency65536>
+    {
+        [[nodiscard]] inline uint32_t operator () (const Latency::Latency65536 & v) const noexcept
+        {
+            return required_size<Latency::Latency64>{}(v.data_64)
+                 + required_size<Latency::Latency128>{}(v.data_128)
+                 + required_size<areg::SharedBuffer>{}(v.data_rest);
+        }
+    };
+
+}   // namespace areg
+
+/************************************************************************
  * Prebuilt singletons: each structure is constructed exactly once and
  * reused for every send, so the SharedBuffer-backed payloads are
  * allocated and sized a single time.
@@ -361,61 +452,61 @@ inline areg::OutStream& operator << (areg::OutStream& stream, const Latency::Lat
 
 namespace Latency {
 
-    static inline const Latency::Latency8& latency8()
+    inline const Latency::Latency8& latency8()
     {
         static Latency::Latency8 _data;
         return _data;
     }
 
-    static inline const Latency::Latency16& latency16()
+    inline const Latency::Latency16& latency16()
     {
         static Latency::Latency16 _data;
         return _data;
     }
 
-    static inline const Latency::Latency32& latency32()
+    inline const Latency::Latency32& latency32()
     {
         static Latency::Latency32 _data;
         return _data;
     }
 
-    static inline const Latency::Latency64& latency64()
+    inline const Latency::Latency64& latency64()
     {
         static Latency::Latency64 _data;
         return _data;
     }
 
-    static inline const Latency::Latency128& latency128()
+    inline const Latency::Latency128& latency128()
     {
         static Latency::Latency128 _data;
         return _data;
     }
 
-    static inline const Latency::Latency256& latency256()
+    inline const Latency::Latency256& latency256()
     {
         static Latency::Latency256 _data;
         return _data;
     }
 
-    static inline const Latency::Latency512& latency512()
+    inline const Latency::Latency512& latency512()
     {
         static Latency::Latency512 _data;
         return _data;
     }
 
-    static inline const Latency::Latency1024& latency1024()
+    inline const Latency::Latency1024& latency1024()
     {
         static Latency::Latency1024 _data;
         return _data;
     }
 
-    static inline const Latency::Latency4096& latency4096()
+    inline const Latency::Latency4096& latency4096()
     {
         static Latency::Latency4096 _data;
         return _data;
     }
 
-    static inline const Latency::Latency65536& latency65536()
+    inline const Latency::Latency65536& latency65536()
     {
         static Latency::Latency65536 _data;
         return _data;

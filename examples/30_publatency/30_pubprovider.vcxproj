@@ -43,6 +43,7 @@
     <ClCompile Include="pubprovider\src\LatencyProvider.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="common\common.hpp" />
     <ClInclude Include="common\latency_common.hpp" />
     <ClInclude Include="pubprovider\src\LatencyProvider.hpp" />
   </ItemGroup>

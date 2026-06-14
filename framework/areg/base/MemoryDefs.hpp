@@ -825,11 +825,22 @@ struct BufferDeleter
     void operator ( ) (void * buffer);
 };
 
+/**
+ * \brief   For trivial types (primitives, enums, fixed PODs) this is return compile time constant.
+ *          For variable-size types (String, SharedBuffer, containers, ...) provide own specialization.
+ *          The value is used to allocate a data buffer in events
+ **/
 template<typename Type>
 struct required_size
 {
     [[nodiscard]]
     inline constexpr uint32_t operator()() const noexcept
+    {
+        return sizeof(Type);
+    }
+
+    [[nodiscard]]
+    inline constexpr uint32_t operator()(const Type& /*value*/) const noexcept
     {
         return sizeof(Type);
     }
