@@ -26,6 +26,7 @@
 
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/IOStream.hpp"
+#include "areg/base/MemoryDefs.hpp"
 
 #include <algorithm>
 #include <deque>
@@ -847,6 +848,39 @@ areg::OutStream & operator << (areg::OutStream & stream, const areg::StackBase<V
     areg::Lock lock(output.mSyncObject);
     return (stream << output.mValueList);
 }
+
+
+/**
+ * \brief   Serialized size of a std::deque: uint32 element count + each element.
+ **/
+template<typename VALUE>
+struct required_size< std::deque<VALUE> >
+{
+    [[nodiscard]]
+    inline uint32_t operator ()(const std::deque<VALUE>& list) const noexcept
+    {
+        uint32_t result{ static_cast<uint32_t>(sizeof(uint32_t)) };
+        for (const VALUE& entry : list)
+        {
+            result += required_size<VALUE>{}(entry);
+        }
+
+        return result;
+    }
+};
+
+/**
+ * \brief   Serialized size of a Stack / ConcurrentStack: delegates to its std::deque payload.
+ **/
+template<typename VALUE, typename SYNC>
+struct required_size< areg::StackBase<VALUE, SYNC> >
+{
+    [[nodiscard]]
+    inline uint32_t operator ()(const areg::StackBase<VALUE, SYNC>& stack) const noexcept
+    {
+        return required_size< std::deque<VALUE> >{}(stack.data());
+    }
+};
 
 } // namespace areg
 

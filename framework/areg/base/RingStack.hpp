@@ -1368,6 +1368,47 @@ areg::OutStream & operator << (areg::OutStream & stream, const areg::RingStackBa
     return stream;
 }
 
+
+/**
+ * \brief   Serialized size of a ring stack: uint32 element count + each element.
+ **/
+template<typename VALUE>
+struct required_size< areg::RingStackBase<VALUE> >
+{
+    [[nodiscard]]
+    inline uint32_t operator ()(const areg::RingStackBase<VALUE>& stack) const noexcept
+    {
+        const uint32_t count{ stack.size() };
+        uint32_t result{ static_cast<uint32_t>(sizeof(uint32_t)) };
+        for (uint32_t i = 0u; i < count; ++i)
+        {
+            result += required_size<VALUE>{}(stack.value_at(i));
+        }
+
+        return result;
+    }
+};
+
+template<typename VALUE>
+struct required_size< areg::RingStack<VALUE> >
+{
+    [[nodiscard]]
+    inline uint32_t operator ()(const areg::RingStack<VALUE>& stack) const noexcept
+    {
+        return required_size< areg::RingStackBase<VALUE> >{}(stack);
+    }
+};
+
+template<typename VALUE>
+struct required_size< areg::ConcurrentRingStack<VALUE> >
+{
+    [[nodiscard]]
+    inline uint32_t operator ()(const areg::ConcurrentRingStack<VALUE>& stack) const noexcept
+    {
+        return required_size< areg::RingStackBase<VALUE> >{}(stack);
+    }
+};
+
 } // namespace areg
 
 #endif  // AREG_BASE_RINGSTACK_HPP

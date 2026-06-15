@@ -278,43 +278,43 @@ void LatencyProvider::_send_one_broadcast()
         break;
 
     case Latency::LatencyMode::Broadcast8:
-        { Latency::Data8 d {};   broadcast_message_8(mMsgId++, Latency::now_ns(), d); }
+        broadcast_message_8(mMsgId++, Latency::now_ns(), Latency::latency8());
         break;
 
     case Latency::LatencyMode::Broadcast16:
-        { Latency::Data16 d {};  broadcast_message_16(mMsgId++, Latency::now_ns(), d); }
+        broadcast_message_16(mMsgId++, Latency::now_ns(), Latency::latency16());
         break;
 
     case Latency::LatencyMode::Broadcast32:
-        { Latency::Data32 d {};  broadcast_message_32(mMsgId++, Latency::now_ns(), d); }
+        broadcast_message_32(mMsgId++, Latency::now_ns(), Latency::latency32());
         break;
 
     case Latency::LatencyMode::Broadcast64:
-        { Latency::Data64 d {};  broadcast_message_64(mMsgId++, Latency::now_ns(), d); }
+        broadcast_message_64(mMsgId++, Latency::now_ns(), Latency::latency64());
         break;
 
     case Latency::LatencyMode::Broadcast128:
-        { Latency::Data128 d {}; broadcast_message_128(mMsgId++, Latency::now_ns(), d); }
+        broadcast_message_128(mMsgId++, Latency::now_ns(), Latency::latency128());
         break;
 
     case Latency::LatencyMode::Broadcast256:
-        { Latency::Data256 d {}; broadcast_message_256(mMsgId++, Latency::now_ns(), d); }
+        broadcast_message_256(mMsgId++, Latency::now_ns(), Latency::latency256());
         break;
 
     case Latency::LatencyMode::Broadcast512:
-        { Latency::Data512 d {}; broadcast_message_512(mMsgId++, Latency::now_ns(), d); }
+        broadcast_message_512(mMsgId++, Latency::now_ns(), Latency::latency512());
         break;
 
     case Latency::LatencyMode::Broadcast1024:
-        { Latency::Data1024 d {}; d.data_rest.set_size_used(1024 - 128 - 64); broadcast_message_1024(mMsgId++, Latency::now_ns(), d); }
+        broadcast_message_1024(mMsgId++, Latency::now_ns(), Latency::latency1024());
         break;
 
     case Latency::LatencyMode::Broadcast4096:
-        { Latency::Data4096 d {}; d.data_rest.set_size_used(4096 - 128 - 64); broadcast_message_4096(mMsgId++, Latency::now_ns(), d); }
+        broadcast_message_4096(mMsgId++, Latency::now_ns(), Latency::latency4096());
         break;
 
     case Latency::LatencyMode::Broadcast65536:
-        { Latency::Data65536 d {}; d.data_rest.set_size_used(65536 - 128 - 64); broadcast_message_65536(mMsgId++, Latency::now_ns(), d); }
+        broadcast_message_65536(mMsgId++, Latency::now_ns(), Latency::latency65536());
         break;
 
     default:

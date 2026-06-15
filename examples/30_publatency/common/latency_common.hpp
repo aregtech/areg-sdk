@@ -12,7 +12,7 @@
 #include "examples/30_publatency/services/Latency.hpp"
 #include <chrono>
 
-namespace Latency 
+namespace Latency
 {
     //!< Role name for the latency service provider; used in component registration and proxy lookup.
     constexpr char LATENCY_SERVICE_ROLE[]{ "LatencyServiceProvider" };
