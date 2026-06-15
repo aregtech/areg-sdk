@@ -171,23 +171,50 @@ data serialization, event dispatching, and multithreading — not raw socket thr
 >
 > Measurements taken at `mtrouter` — duplex communication, high-precision timers.
 >
-> | Platform        | CPU Type         | ~3 MB data   | ~3 KB msg/s      | ~0.5 KB msg/s   |
-> |-----------------|------------------|--------------|------------------|-----------------|
-> | Windows 11 ¹    | i7-13700H (DDR4) | 2.4–2.6 GB/s | 450–520K msg/s   | 1.0–1.2M msg/s  |
-> | WSL2 Ubuntu ²   | i7-13700H (DDR4) | 5.5–6.0 GB/s | 330–375K msg/s   | 650–700K msg/s  |
-> | macOS native ³  | M3 Pro (LPDDR5)  | 6.5–7.0 GB/s | 700K–1.0M msg/s  | 2.5–3.0M msg/s  |
-> | Linux native ⁴  | x86_64 (DDR4)    | 6.0–6.5 GB/s | 600–800K msg/s   | 2.2–2.8M msg/s  |
+> | Platform       | CPU Type         | ~3 MB, GB/s             | ~0.5 KB, msg/s            |
+> |----------------|------------------|-------------------------|---------------------------|
+> | Linux Ubuntu ¹ | i7-13700H (DDR4) | ~6.0 sust. / ~7.2 burst | ~1.5M sust. / ~2.0M burst |
+> | macOS native ² | M3 Pro (LPDDR5)  | ~6.7–7.0                | ~2.5M                     |
+> | Windows 11 ³   | i7-13700H (DDR4) | ~2.2 sust. / ~3.0 burst | ~1.5M sust. / ~2.0M burst |
+> | WSL2 Ubuntu ⁴  | i7-13700H (DDR4) | 4.0–4.5                 | ~1.5M                     |
 >
-> ¹ On Windows, stable end-to-end consumer dispatch reaches 300–400K msg/s; above that the RPC dispatch thread becomes the bottleneck. macOS stable dispatch measured at 500–600K msg/s. See [23_pubdatarate README](examples/23_pubdatarate/ReadMe.md) for details.  
-> ² Requires [network tuning](./docs/wiki/07d-troubleshooting-network-tunning.md); default WSL2 settings yield ~4.5 GB/s and ~700K msg/s.  
-> ³ Measured without network tuning. Numbers are transport-layer ceiling; current optimization level. M4 Pro results pending re-measurement.  
-> ⁴ Estimated from WSL2 baseline. Bare-metal Linux measurements pending.
+> ¹ Measured on **USB live boot** (Ubuntu 26.04, i7-13700H, DDR4). Burst = first 30 s; sustained = 5+ minutes. Native SSD expected to sustain burst figures (~1.8–2.0M msg/s, ~6.5–7.2 GB/s).
+> ² Measured without network tuning. Numbers are transport-layer ceiling; macOS on M4 demonstrated message rate up to 3.0M msg/s.  
+> ³ On Windows, stable end-to-end consumer dispatch reaches +1.0M msg/s; above 1.2M msg/s the RPC dispatch thread starts to become the bottleneck. See [23_pubdatarate README](examples/23_pubdatarate/ReadMe.md) for details.  
+> ⁴ With [network tuning](./docs/wiki/07d-troubleshooting-network-tunning.md) the data rate may grow +5.5 GB/s.  
 >
 > **Full stack:** data serialization, event dispatching, multithreading — not raw socket throughput.
 >
 > **Real-world fit:** covers the software pipeline layer of scientific imaging (laser microscopy, X-ray, electron microscopy) and industrial machine vision on a standard laptop.
 >
 > 📊 Measure your own hardware: run [`23_pubdatarate`](examples/23_pubdatarate/) — see the [README](examples/23_pubdatarate/ReadMe.md) for benchmark recipes and results.
+
+> [!NOTE]
+> **IPC Latency — TCP `localhost`, full stack, 204-byte messages (pp64 / bc64):**
+>
+> Timestamps taken **before serialization** (sender) and **after deserialization + dispatch** (receiver).
+> RTT = 4-hop round-trip through `mtrouter`. Measured via [`30_publatency`](examples/30_publatency/).
+>
+> | Platform       | CPU               | OWT Min     | OWT P50     | RTT Min     | RTT P50    |
+> |----------------|-------------------|-------------|-------------|-------------|------------|
+> | Linux Ubuntu ¹ | i7-13700H (DDR4)  | **14.8 μs** | **~17 μs**  | **29.8 μs** | **~32 μs** |
+> | macOS M3 Pro   | Apple M3 (LPDDR5) | 21.6 μs     | 31.4 μs     | 46.0 μs     | 62.5 μs    |
+> | Windows 11     | i7-13700H (DDR4)  | ~32 μs      | ~40 μs      | ~63 μs      | ~83 μs     |
+>
+> ¹ USB live boot; Min is unaffected by USB noise. Native SSD expected to improve tail percentiles.
+>
+> For comparison: **gRPC C++ sequential RTT ~116–167 μs** over Unix domain socket — 3.6× higher
+> despite fewer hops, no service dispatch, and a faster local transport.
+> Source: [MPI-HD, F. Werner, 2021](https://www.mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc/).
+>
+> Latency is **payload-size insensitive** up to 4 KB: Min increases only 3.3 μs from 140 B to 4236 B (30× size increase). Framework overhead dominates.
+>
+> 📊 Latency details: [`30_publatency`](examples/30_publatency/) | [Full benchmark data](./docs/wiki/08b-areg-sdk-performance-benchmarks.md) | [vs ZMQ/NanoMsg/NNG](./docs/wiki/08c-areg-vs-hitachi-benchmark.md)
+
+> 📊 **Benchmark documentation (full data, methodology, competitive analysis):**
+> - [areg-sdk Performance Benchmarks](./docs/wiki/08b-areg-sdk-performance-benchmarks.md) — latency and throughput across Linux, Windows, macOS
+> - [areg-sdk vs ZMQ / NanoMsg / NNG](./docs/wiki/08c-areg-vs-hitachi-benchmark.md) — direct TCP comparison (Hitachi Energy Research, arXiv:2508.07934v1)
+> - [areg-sdk Framework Rankings](./docs/wiki/08d-areg-framework-rankings.md) — competitive position across all known frameworks
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -312,8 +339,9 @@ cmake --build build -j20
 2. **[02_minimalipc](examples/02_minimalipc/)** — IPC: the same components from `01_minimalrpc` running in separate processes via `mtrouter`
 3. **[03_helloservice](examples/03_helloservice/)** — Extended progression: three projects showing the same service and consumer in one thread → separate threads → separate processes
 4. **[16_pubmesh](examples/16_pubmesh/)** — Service mesh: multiple local and public services discovering each other automatically
-5. **[23_pubdatarate](examples/23_pubdatarate/)** — Platform-dependent high-throughput benchmark: 2.2–7 GB/s and 1M+ msg/s on `localhost`
-6. **[More Examples](examples/README.md)** — Advanced patterns and features
+5. **[23_pubdatarate](examples/23_pubdatarate/)** — Platform-dependent high-throughput benchmark: 2.0–7.0 GB/s and 1.5M+ msg/s on `localhost`
+6. **[30_publatency](examples/30_publatency/)** — Full-stack latency benchmark: RTT and OWT across payload sizes, all platforms
+7. **[More Examples](examples/README.md)** — Advanced patterns and features
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -435,7 +463,7 @@ moving between thread, process, and network deployment.
 
 **Why Areg SDK:** Imaging pipelines — laser microscopy, X-ray, electron microscopy,
 machine vision — move continuous multi-megabyte frames between acquisition, processing,
-and storage processes. At 2.0–6.0 GB/s full-stack IPC on a standard laptop CPU, Areg SDK
+and storage processes. At **2.0–7.0 GB/s** full-stack IPC on a standard laptop CPU, Areg SDK
 covers the software transport layer for virtually every such pipeline without custom
 networking code or stripped-down benchmarks. Few service-oriented C++ frameworks
 reach this throughput with full service semantics active.

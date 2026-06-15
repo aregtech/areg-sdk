@@ -19,12 +19,12 @@ without a dedicated networking library underneath.
 
 ### Data Rate — Large Payload (~3 MB per message)
 
-| Platform             | CPU               | RAM       | Payload | Data Rate  | Unit | Status    |
-|----------------------|-------------------|-----------|---------|------------|------|-----------|
-| Windows 11           | Intel i7-13700H   | DDR4      | ~3 MB   | 2.4 – 2.6  | GB/s | measured  |
-| WSL2 (on Win11) ¹    | Intel i7-13700H   | DDR4      | ~3 MB   | 5.0 – 5.6  | GB/s | measured  |
-| macOS native         | Apple M3 Pro      | LPDDR5    | ~3 MB   | 6.5 – 7.0  | GB/s | measured  |
-| Linux bare-metal     | x86-64            | DDR4/DDR5 | ~3 MB   | 6.0 – 7.5  | GB/s | estimated |
+| Platform             | CPU               | RAM       | Payload | Burst         | Sustained      | Status    |
+|----------------------|-------------------|-----------|---------|---------------|----------------|-----------|
+| Windows 11           | Intel i7-13700H   | DDR4      | ~3 MB   | ~3.0 GB/s     | ~2.0–2.2 GB/s  | measured  |
+| WSL2 (on Win11) ¹    | Intel i7-13700H   | DDR4      | ~3 MB   | —             | 4.0–4.5 GB/s    | measured (untuned)  |
+| macOS native         | Apple M3 Pro      | LPDDR5    | ~3 MB   | —             | ~6.7–7.0 GB/s  | measured  |
+| Linux native ²       | Intel i7-13700H   | DDR4      | ~3 MB   | ~7.2 GB/s     | ~6.0 GB/s      | measured (USB boot) |
 
 ---
 
@@ -35,21 +35,25 @@ without a dedicated networking library underneath.
 | Windows 11           | Intel i7-13700H   | DDR4      | ~3 KB   | 450 – 520K   | msg/s | measured  |
 | WSL2 (on Win11) ¹    | Intel i7-13700H   | DDR4      | ~3 KB   | 330 – 375K   | msg/s | measured  |
 | macOS native         | Apple M3 Pro      | LPDDR5    | ~3 KB   | 700K – 1.0M  | msg/s | measured  |
-| Linux bare-metal     | x86-64            | DDR4/DDR5 | ~3 KB   | 500 – 600K   | msg/s | estimated |
+| Linux native ²       | Intel i7-13700H   | DDR4      | ~3 KB   | —            | —     | not measured on Linux |
 
 ---
 
 ### Message Rate — Very Small Payload (~0.5 KB per message)
 
-| Platform             | CPU               | RAM       | Payload  | Message Rate | Unit  | Status    |
-|----------------------|-------------------|-----------|----------|--------------|-------|-----------|
-| Windows 11           | Intel i7-13700H   | DDR4      | ~0.5 KB  | 1.0 – 1.2M   | msg/s | measured  |
-| WSL2 (on Win11) ¹    | Intel i7-13700H   | DDR4      | ~0.5 KB  | 450 – 520K   | msg/s | measured  |
-| macOS native         | Apple M3 Pro      | LPDDR5    | ~0.5 KB  | 2.5 – 3.0M   | msg/s | measured  |
-| Linux bare-metal     | x86-64            | DDR4/DDR5 | ~0.5 KB  | —            | msg/s | needed    |
+| Platform             | CPU               | RAM       | Payload  | Burst          | Sustained      | Status    |
+|----------------------|-------------------|-----------|----------|----------------|----------------|-----------|
+| Windows 11           | Intel i7-13700H   | DDR4      | ~0.5 KB  | ~2.0M msg/s    | ~1.5M msg/s    | measured  |
+| WSL2 (on Win11) ¹    | Intel i7-13700H   | DDR4      | ~0.5 KB  | —              | 450–520K msg/s | measured  |
+| macOS native         | Apple M3 Pro      | LPDDR5    | ~0.5 KB  | —              | ~2.5M msg/s    | measured  |
+| Linux native ²       | Intel i7-13700H   | DDR4      | ~0.5 KB  | ~2.0M msg/s    | ~1.5M msg/s    | measured (USB boot) |
 
-¹ Requires [network tuning](../../docs/wiki/07d-troubleshooting-network-tunning.md).
-Default WSL2 settings yield approximately 60–70% of the values shown.
+¹ Without [network tuning](../../docs/wiki/07d-troubleshooting-network-tunning.md): ~4.0–4.5 GB/s data rate, ~450–520K msg/s (~0.5 KB).
+With tuning: data rate grows to ~5.0–5.6 GB/s. See [network tuning guide](../../docs/wiki/07d-troubleshooting-network-tunning.md).
+
+² Linux measured from USB live boot ("Try Ubuntu"). Burst = first 0–30 seconds (RAM overlay warm);
+sustained = stable after 5+ minutes. Native SSD install expected to sustain close to burst values
+(~1.8–2.0M msg/s, ~6.5–7.2 GB/s).
 
 **Methodology:**
 - TCP `localhost`, 1:1 connection (single provider → single consumer) via `mtrouter`.
@@ -460,12 +464,12 @@ separate timestamped test.
 
 **Transport ceiling (measured at `mtrouter`):**
 
-| Platform | ~3 MB | ~3 KB | ~0.5 KB |
-|---|---|---|---|
-| Windows 11 (i7-13700H, DDR4) | 2.4–2.6 GB/s | 450–520K msg/s | 1.0–1.2M msg/s |
-| WSL2 Ubuntu (i7-13700H, DDR4) | 5.0–5.6 GB/s | 330–375K msg/s | 450–520K msg/s |
-| macOS (M3 Pro, LPDDR5) | 6.5–7.0 GB/s | 700K–1.0M msg/s | 2.5–3.0M msg/s |
-| Linux bare-metal (x86-64, est.) | 6.0–7.5 GB/s | 500–600K msg/s | — |
+| Platform | ~3 MB | ~0.5 KB (sustained) |
+|---|---|---|
+| Windows 11 (i7-13700H, DDR4) | ~2.0–2.2 GB/s sustained / ~3.0 GB/s burst | ~1.5M msg/s sustained / ~2.0M burst |
+| WSL2 Ubuntu (i7-13700H, DDR4) | 4.0–4.5 GB/s (untuned) / 5.0–5.6 GB/s (tuned) | 450–520K msg/s |
+| macOS M3 Pro (LPDDR5) | ~6.7–7.0 GB/s | ~2.5M msg/s |
+| Linux USB boot (i7-13700H, DDR4) | ~6.0 GB/s sustained / ~7.2 GB/s burst | ~1.5M msg/s sustained / ~2.0M burst |
 
 **Stable end-to-end consumer dispatch:**
 
@@ -476,3 +480,8 @@ Above these rates the dispatch thread becomes the bottleneck — serialization- 
 
 These are not raw socket numbers. They include message routing, event dispatching, multithreading, and automatic framing.
 **This is what your production system gets.**
+
+> For full latency data, competitive analysis, and methodology:
+> → **[areg-sdk Performance Benchmarks](../../docs/wiki/08b-areg-sdk-performance-benchmarks.md)**
+> → **[areg-sdk vs ZMQ / NanoMsg / NNG](../../docs/wiki/08c-areg-vs-hitachi-benchmark.md)**
+> → **[areg-sdk Framework Rankings](../../docs/wiki/08d-areg-framework-rankings.md)**
