@@ -339,7 +339,7 @@ cmake --build build -j20
 2. **[02_minimalipc](examples/02_minimalipc/)** – IPC: the same components from `01_minimalrpc` running in separate processes via `mtrouter`
 3. **[03_helloservice](examples/03_helloservice/)** – three projects showing one thread → separate threads → separate processes
 4. **[16_pubmesh](examples/16_pubmesh/)** – Service mesh: multiple local and public services discovering each other automatically
-5. **[23_pubdatarate](examples/23_pubdatarate/)** – Platform-dependent high-throughput benchmark: 2.0–7.2 GB/s and 1.5M+ msg/s on `localhost`
+5. **[23_pubdatarate](examples/23_pubdatarate/)** – Platform-dependent high-throughput benchmark: ~7.0 GB/s and ~2.5M+ msg/s on `localhost`
 6. **[30_publatency](examples/30_publatency/)** – Full-stack latency benchmark: RTT and OWT across payload sizes, all platforms
 7. **[More Examples](examples/README.md)** – Advanced patterns and features
 
@@ -351,9 +351,7 @@ cmake --build build -j20
 
 ### Component Model
 
-Areg SDK uses an **Object RPC (ORPC)** model. Services expose typed interfaces; consumers
-communicate through generated proxies. The framework routes all communication – whether
-the target is a thread, a process, or a remote device.
+Areg SDK uses an Object RPC (ORPC) model. Services expose interfaces; consumers communicate through generated proxies. The framework routes communication, whether the target is a thread, a process, or a remote device.
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
