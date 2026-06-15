@@ -4,16 +4,16 @@
 
 ## Overview
 
-This demo shows how Areg’s **`SyncEvent`** keeps signals safe — no spurious wakeups, no missed notifications. Two auto-reset events are signaled in different threads, proving that once an event is set, it stays signaled until a thread consumes it.  
+This demo shows how Areg’s **`SyncEvent`** keeps signals safe – no spurious wakeups, no missed notifications. Two auto-reset events are signaled in different threads, proving that once an event is set, it stays signaled until a thread consumes it.  
 
 Unlike `std::condition_variable`, you don’t need extra boilerplate or worry about losing signals.
 
 ## Concepts Shown
-- **Auto-reset events** — one signal wakes one thread, then resets.  
-- **Signal persistence** — an event stays signaled until taken.  
-- **Thread coordination** — simple lock/unlock with `lock()`.  
-- **Cross-platform consistency** — works the same on Windows and Linux.  
-- **Cleaner than STL** — no spurious wakeups, no manual re-check loops.  
+- **Auto-reset events** – one signal wakes one thread, then resets.  
+- **Signal persistence** – an event stays signaled until taken.  
+- **Thread coordination** – simple lock/unlock with `lock()`.  
+- **Cross-platform consistency** – works the same on Windows and Linux.  
+- **Cleaner than STL** – no spurious wakeups, no manual re-check loops.  
 
 ## How It Works
 1. Two worker threads share a `std::string data`.  

@@ -247,7 +247,7 @@ This allows filtering of particular components, even specific methods.
 
 #### 2. Message-Level Filtering
 
-Filter by message priority level in the log message window, functioning the same as in live logging. This filtering is performed on the Lusan side—logs of unselected priorities are hidden from the log viewer.
+Filter by message priority level in the log message window, functioning the same as in live logging. This filtering is performed on the Lusan side–logs of unselected priorities are hidden from the log viewer.
 
 <div align="center"><a href="../img/lusan-live-log-message-prio.png"><img src="../img/lusan-live-log-message-prio.png" alt="Lusan log message priority filter" style="width:80%;height:80%"/></a></div>
 

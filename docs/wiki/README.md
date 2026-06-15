@@ -167,8 +167,8 @@ Hands-on learning resources:
 - **[Examples Source Code](https://github.com/aregtech/areg-sdk/tree/master/examples)** - GitHub repository
 
 **Benchmark Examples:**
-- **[30_publatency](https://github.com/aregtech/areg-sdk/tree/master/examples/30_publatency)** — Latency benchmark: ping-pong RTT and broadcast OWT across all payload sizes. → [View measured results](./08b-areg-sdk-performance-benchmarks.md)
-- **[23_pubdatarate](https://github.com/aregtech/areg-sdk/tree/master/examples/23_pubdatarate)** — Throughput benchmark: data rate and message rate at scale. → [View measured results](./08b-areg-sdk-performance-benchmarks.md)
+- **[30_publatency](https://github.com/aregtech/areg-sdk/tree/master/examples/30_publatency)** – Latency benchmark: ping-pong RTT and broadcast OWT across all payload sizes. → [View measured results](./08b-areg-sdk-performance-benchmarks.md)
+- **[23_pubdatarate](https://github.com/aregtech/areg-sdk/tree/master/examples/23_pubdatarate)** – Throughput benchmark: data rate and message rate at scale. → [View measured results](./08b-areg-sdk-performance-benchmarks.md)
 
 **Demo Projects:**
 - **[Areg SDK Demo](https://github.com/aregtech/areg-sdk-demo)** - Real-world project examples
@@ -179,20 +179,20 @@ Hands-on learning resources:
 
 ### 📊 Performance and Benchmarks
 
-Areg SDK is built on a performance mandate: **latency, throughput, stability, and security are primary design constraints — not secondary concerns.** Every IPC path is measured on production code — service discovery, routing, dispatch, and serialization all active. Nothing is stripped for the benchmark.
+Areg SDK is built on a performance mandate: **latency, throughput, stability, and security are primary design constraints – not secondary concerns.** Every IPC path is measured on production code – service discovery, routing, dispatch, and serialization all active. Nothing is stripped for the benchmark.
 
-> **Run the benchmarks on your own hardware and share results.** Community measurements from diverse hardware help the project and may be published here. If you find a performance regression, open a GitHub issue — regressions are treated as bugs.
+> **Run the benchmarks on your own hardware and share results.** Community measurements from diverse hardware help the project and may be published here. If you find a performance regression, open a GitHub issue – regressions are treated as bugs.
 
 **Measured results:**
-- **[areg-sdk Performance Benchmarks](./08b-areg-sdk-performance-benchmarks.md)** — Full latency and throughput data across Linux, Windows, and macOS. Includes methodology, timestamp placement, and reproduction instructions.
-- **[areg-sdk vs ZMQ / NanoMsg / NNG](./08c-areg-vs-hitachi-benchmark.md)** — Direct TCP comparison against the Hitachi Energy Research benchmark (arXiv:2508.07934v1), using raw CSV data.
-- **[areg-sdk Framework Rankings](./08d-areg-framework-rankings.md)** — Competitive position across latency, message rate, and data rate versus all known frameworks with cited sources.
+- **[areg-sdk Performance Benchmarks](./08b-areg-sdk-performance-benchmarks.md)** – Full latency and throughput data across Linux, Windows, and macOS. Includes methodology, timestamp placement, and reproduction instructions.
+- **[areg-sdk vs ZMQ / NanoMsg / NNG](./08c-areg-vs-hitachi-benchmark.md)** – Direct TCP comparison against the Hitachi Energy Research benchmark (arXiv:2508.07934v1), using raw CSV data.
+- **[areg-sdk Framework Rankings](./08d-areg-framework-rankings.md)** – Competitive position across latency, message rate, and data rate versus all known frameworks with cited sources.
 
 > 📁 *Prefix note:* These files use the `08` prefix alongside examples, since benchmarks run via examples 23 and 30. If additional benchmark documents are added, a dedicated `09` prefix is recommended.
 
 **Reproduce the results:**
-- **[30_publatency](https://github.com/aregtech/areg-sdk/tree/master/examples/30_publatency)** — Run latency measurements on your machine
-- **[23_pubdatarate](https://github.com/aregtech/areg-sdk/tree/master/examples/23_pubdatarate)** — Run throughput measurements on your machine
+- **[30_publatency](https://github.com/aregtech/areg-sdk/tree/master/examples/30_publatency)** – Run latency measurements on your machine
+- **[23_pubdatarate](https://github.com/aregtech/areg-sdk/tree/master/examples/23_pubdatarate)** – Run throughput measurements on your machine
 
 ---
 
@@ -239,11 +239,11 @@ Areg SDK is built on a performance mandate: **latency, throughput, stability, an
 → **[Low-Latency TCP Tuning](./07d-troubleshooting-network-tunning.md)** (GBytes data and 1M messages per second)  
 
 ### ...measure or validate performance
-→ **[Performance Benchmarks](./08b-areg-sdk-performance-benchmarks.md)** — latency and throughput data with methodology  
-→ **[vs ZMQ / NanoMsg / NNG](./08c-areg-vs-hitachi-benchmark.md)** — direct TCP comparison (Hitachi paper)  
-→ **[Framework Rankings](./08d-areg-framework-rankings.md)** — competitive position table  
-→ **[Run 30_publatency](https://github.com/aregtech/areg-sdk/tree/master/examples/30_publatency)** — reproduce latency measurements  
-→ **[Run 23_pubdatarate](https://github.com/aregtech/areg-sdk/tree/master/examples/23_pubdatarate)** — reproduce throughput measurements  
+→ **[Performance Benchmarks](./08b-areg-sdk-performance-benchmarks.md)** – latency and throughput data with methodology  
+→ **[vs ZMQ / NanoMsg / NNG](./08c-areg-vs-hitachi-benchmark.md)** – direct TCP comparison (Hitachi paper)  
+→ **[Framework Rankings](./08d-areg-framework-rankings.md)** – competitive position table  
+→ **[Run 30_publatency](https://github.com/aregtech/areg-sdk/tree/master/examples/30_publatency)** – reproduce latency measurements  
+→ **[Run 23_pubdatarate](https://github.com/aregtech/areg-sdk/tree/master/examples/23_pubdatarate)** – reproduce throughput measurements  
 
 ---
 

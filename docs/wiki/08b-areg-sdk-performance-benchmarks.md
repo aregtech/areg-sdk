@@ -1,4 +1,4 @@
-# areg-sdk — Performance Benchmarks
+# areg-sdk – Performance Benchmarks
 ## Latency, Message Rate, and Data Rate
 
 > **Scope:** All measurements are same-machine TCP loopback (`127.0.0.1`) only.
@@ -35,7 +35,7 @@ cmake --build ./build
 | **Windows 11** | Same i7-13700H (same physical machine) | 32 GB DDR4 | Native SSD | Windows 11 |
 | **macOS** | Apple M3 Pro | 32 GB LPDDR5 | Native SSD | macOS (native) |
 
-> **Linux note:** Tests run from a USB live session ("Try Ubuntu" — no installation).
+> **Linux note:** Tests run from a USB live session ("Try Ubuntu" – no installation).
 > The system runs entirely from a RAM overlay. This introduces occasional I/O interference
 > from the USB filesystem, visible as a bimodal P50 distribution in a minority of runs.
 > All Min values are unaffected by USB noise. Native SSD installation is expected to
@@ -63,7 +63,7 @@ All service discovery, automatic reconnection, and thread dispatch are active du
 ### 3.2 Communication Patterns
 
 #### Ping-Pong RTT (`ppX` modes)
-Closed-loop sequential request/response chain. The consumer sends one request; the provider echoes it back; the consumer records RTT and immediately sends the next. There is **exactly 1 request in flight** and **1 response in flight** at all times. The component thread is idle during transit — no artificial delay is added.
+Closed-loop sequential request/response chain. The consumer sends one request; the provider echoes it back; the consumer records RTT and immediately sends the next. There is **exactly 1 request in flight** and **1 response in flight** at all times. The component thread is idle during transit – no artificial delay is added.
 
 #### Broadcast OWT (`bcX` modes)
 Closed-loop pull-paced one-way chain. The consumer sends `request_message_next()` to pull the next broadcast; the provider sends one `broadcast_message_X()`; the consumer records OWT and immediately sends the next pull. There is **exactly 1 pull request and 1 broadcast in flight** at all times.
@@ -73,7 +73,7 @@ Closed-loop pull-paced one-way chain. The consumer sends `request_message_next()
 > approximately OWT(pull) + OWT(broadcast) ≈ RTT. A pure push model would improve
 > bc throughput by approximately 30%.
 
-**Both modes use T=0 (no artificial inter-message delay).** The next message fires immediately on receipt of the previous — continuous operation, no sleep, no pacing.
+**Both modes use T=0 (no artificial inter-message delay).** The next message fires immediately on receipt of the previous – continuous operation, no sleep, no pacing.
 
 ### 3.3 Payload Structures
 
@@ -82,7 +82,7 @@ Payload fields are serialized **field-by-field** (typed, parameter-by-parameter)
 | Mode range | Extra payload structure | Allocation |
 |-----------|------------------------|------------|
 | `pp0` / `bc0` | None | None |
-| `pp8` – `pp64` / `bc8` – `bc64` | 1–8 × `uint64_t` fields | None — stack only |
+| `pp8` – `pp64` / `bc8` – `bc64` | 1–8 × `uint64_t` fields | None – stack only |
 | `pp128` – `pp512` / `bc128` – `bc512` | `uint64_t` fields + `areg::String` (128 B) | Heap: `String` per message |
 | `pp1024` – `pp65536` / `bc1024` – `bc65536` | `uint64_t` + `String` + `areg::SharedBuffer` | Heap: `String` + pre-allocated `SharedBuffer` |
 
@@ -94,7 +94,7 @@ Payload fields are serialized **field-by-field** (typed, parameter-by-parameter)
 
 This is the critical difference between areg-sdk latency measurements and raw transport benchmarks.
 
-**OWT (`bcX`) — one measurement cycle:**
+**OWT (`bcX`) – one measurement cycle:**
 
 ```
 t1 = now_ns()                    ← BEFORE any serialization
@@ -113,7 +113,7 @@ OWT = t4 − t1
     + dispatch + deserialize + method_call
 ```
 
-**RTT (`ppX`) — full cycle, both directions:**
+**RTT (`ppX`) – full cycle, both directions:**
 
 ```
 t1 = now_ns()                    ← BEFORE serialization (consumer)
@@ -161,7 +161,7 @@ Configuration: `count=5000`, `warmup=1000`, T=0, 8 consecutive runs.
 Averages reported; outlier runs due to USB interference are noted where identified.
 All values in **μs**.
 
-### 4.1 Linux — Ubuntu 26.04 LTS (USB boot, i7-13700H, 32 GB DDR4)
+### 4.1 Linux – Ubuntu 26.04 LTS (USB boot, i7-13700H, 32 GB DDR4)
 
 | Mode    | Payload struct                | Total msg size | Min  | P50  | P95  | P99  | Mean |
 |---------|-------------------------------|----------------|------|------|------|------|------|
@@ -179,7 +179,7 @@ All values in **μs**.
 > Min values are stable across all runs and reflect the genuine transport floor.
 > bc65536 P99 variance is higher (49–97 μs across runs) for the same reason.
 
-### 4.2 macOS — Apple M3 Pro, 32 GB LPDDR5 (native SSD)
+### 4.2 macOS – Apple M3 Pro, 32 GB LPDDR5 (native SSD)
 
 | Mode | Payload struct | Total msg size | Min | P50 | P95 | P99 | Mean |
 |------|---------------|---------------|-----|-----|-----|-----|------|
@@ -197,7 +197,7 @@ All values in **μs**.
 > Higher P50 than Linux reflects macOS TCP stack overhead; lower P99 reflects
 > absence of USB I/O interference.
 
-### 4.3 Windows 11 — same i7-13700H, 32 GB DDR4 (native SSD)
+### 4.3 Windows 11 – same i7-13700H, 32 GB DDR4 (native SSD)
 
 | Mode | Payload struct | Total msg size | Min | P50 | P95 | P99 | Mean |
 |------|---------------|---------------|-----|-----|-----|-----|------|
@@ -212,7 +212,7 @@ All values in **μs**.
 
 Windows OWT is approximately 2.2× higher than Linux at the same hardware.
 The Windows TCP loopback stack has higher per-message overhead than Linux.
-No bimodal distribution — all 8 runs land in the same cluster.
+No bimodal distribution – all 8 runs land in the same cluster.
 
 ---
 
@@ -221,7 +221,7 @@ No bimodal distribution — all 8 runs land in the same cluster.
 Configuration: `count=5000–10000`, `warmup=1000`, T=0.
 All values in **μs**. P50 "clean" values exclude bimodal USB-interference runs.
 
-### 5.1 Linux — Ubuntu 26.04 LTS (USB boot, i7-13700H, 32 GB DDR4)
+### 5.1 Linux – Ubuntu 26.04 LTS (USB boot, i7-13700H, 32 GB DDR4)
 
 | Mode | Payload struct | Request / Response total | Min | P50 (clean) | P95 | P99 |
 |------|---------------|------------------------|-----|-------------|-----|-----|
@@ -239,7 +239,7 @@ All values in **μs**. P50 "clean" values exclude bimodal USB-interference runs.
 > P50 (bimodal): "clean" value is the low cluster; USB interference produces a high
 > cluster (~2× the low cluster value) in a subset of runs. Min is unaffected by USB interference.
 
-### 5.2 macOS — Apple M3 Pro, 32 GB LPDDR5 (native SSD)
+### 5.2 macOS – Apple M3 Pro, 32 GB LPDDR5 (native SSD)
 
 | Mode | Payload struct | Request / Response total | Min | P50 | P95 | P99 |
 |------|---------------|------------------------|-----|-----|-----|-----|
@@ -254,9 +254,9 @@ All values in **μs**. P50 "clean" values exclude bimodal USB-interference runs.
 
 > macOS P99 is extremely stable: pp65536 P99 spread = 0.8 μs across 8 runs.
 > Consistent with native SSD, no USB interference, well-behaved macOS scheduler.
-> Unlike Linux, no bimodal distribution — all 8 runs land in the same cluster.
+> Unlike Linux, no bimodal distribution – all 8 runs land in the same cluster.
 
-### 5.3 Windows 11 — i7-13700H, 32 GB DDR4 (native SSD)
+### 5.3 Windows 11 – i7-13700H, 32 GB DDR4 (native SSD)
 
 | Mode | Payload struct | Request / Response total | Min | P50 | P95 | P99 | Mean |
 |------|---------------|------------------------|-----|-----|-----|-----|------|
@@ -271,7 +271,7 @@ All values in **μs**. P50 "clean" values exclude bimodal USB-interference runs.
 | pp65536 | u64 + Lat128 + SharedBuffer | 65676 / 65684 B | 115.6 | 142.5 | 204.8 | 242.9 | 152.8 |
 
 > Windows RTT is approximately 2.6× higher than Linux at the same hardware (pp64 P50: 82.5 vs ~32 μs).
-> No bimodal distribution — results are stable and predictable across all runs.
+> No bimodal distribution – results are stable and predictable across all runs.
 > pp65536 shows higher tail (P99 242 μs) due to TCP segmentation overhead on the Windows loopback stack.
 
 ---
@@ -279,7 +279,7 @@ All values in **μs**. P50 "clean" values exclude bimodal USB-interference runs.
 ## 6. Payload Sensitivity
 
 areg-sdk latency is nearly flat from 140 B to 4 KB. Framework overhead (routing,
-dispatch, thread wakeup) dominates — payload serialization adds minimal overhead
+dispatch, thread wakeup) dominates – payload serialization adds minimal overhead
 for messages below the TCP segment boundary (~1460 B).
 
 ### Linux OWT (bc modes, Min values)
@@ -309,7 +309,7 @@ with the same TCP-segmentation jump at 65 KB (+20.2 μs from bc4096 to bc65536).
 
 ## 7. Throughput Results (23_pubdatarate)
 
-### 7.1 Linux — Ubuntu 26.04 LTS (USB boot, i7-13700H, 32 GB DDR4)
+### 7.1 Linux – Ubuntu 26.04 LTS (USB boot, i7-13700H, 32 GB DDR4)
 
 #### Message rate (~0.5 KB per message)
 
@@ -339,7 +339,7 @@ with the same TCP-segmentation jump at 65 KB (+20.2 μs from bc4096 to bc65536).
 > is eliminated and sustained throughput is expected to remain close to the burst figures
 > (~1.8–2.0M msg/s, ~6.5–7.0 GB/s).
 
-### 7.2 macOS — Apple M3 Pro, 32 GB LPDDR5 (native SSD)
+### 7.2 macOS – Apple M3 Pro, 32 GB LPDDR5 (native SSD)
 
 | Metric | Payload | Sustained rate |
 |--------|---------|---------------|
@@ -349,7 +349,7 @@ with the same TCP-segmentation jump at 65 KB (+20.2 μs from bc4096 to bc65536).
 Higher message rate than Linux (2.5M vs 1.5M sustained) due to LPDDR5 memory bandwidth
 and absence of USB memory pressure.
 
-### 7.3 Windows 11 — i7-13700H, 32 GB DDR4 (native SSD)
+### 7.3 Windows 11 – i7-13700H, 32 GB DDR4 (native SSD)
 
 #### Message rate (~0.5 KB per message)
 
@@ -369,7 +369,7 @@ and absence of USB memory pressure.
 
 > Windows data rate is approximately 2.4× lower than Linux sustained (2.5 vs 6.0 GB/s)
 > due to higher per-message TCP overhead on the Windows loopback stack.
-> Message rate at small payloads declines more steeply than Linux — no 5-minute stable
+> Message rate at small payloads declines more steeply than Linux – no 5-minute stable
 > figure measured; extrapolated sustained is ~1.0–1.1M msg/s.
 
 ---
@@ -397,8 +397,8 @@ and absence of USB memory pressure.
 | Platform | Msg/s burst | Msg/s sustained | Data rate burst | Data rate sustained |
 |----------|------------|----------------|----------------|--------------------|
 | **Linux (USB boot, measured)** | ~2.0M | **~1.5M** | **~7.0 GB/s** | **~6.0 GB/s** |
-| **Linux (native SSD, est.)** | — | **~1.8–2.0M** | — | **~6.5–7.0 GB/s** |
-| **macOS M3 Pro** | — | **~2.5M** | — | **~6.7–7.0 GB/s** |
+| **Linux (native SSD, est.)** | – | **~1.8–2.0M** | – | **~6.5–7.0 GB/s** |
+| **macOS M3 Pro** | – | **~2.5M** | – | **~6.7–7.0 GB/s** |
 | **Windows 11** | ~1.56M | ~1.1M | ~2.7 GB/s | ~2.5 GB/s |
 
 ### Platform Profiles
@@ -424,7 +424,7 @@ All areg-sdk numbers above include full service dispatch, routing, serialization
 deserialization. Competitor numbers cited below are raw transport benchmarks unless
 noted otherwise.
 
-### 9.1 ZeroMQ, NanoMsg, NNG — TCP Loopback
+### 9.1 ZeroMQ, NanoMsg, NNG – TCP Loopback
 
 **Source:** Hitachi Energy Research, *"Performance Evaluation of Brokerless Messaging Libraries"*,
 arXiv:2508.07934v1 (August 2025).
@@ -433,9 +433,9 @@ Raw CSV data: [github.com/hitachienergy/messaging-libraries-benchmark/blob/main/
 **Test conditions (competitors):** Intel Xeon w3-2435, 8 cores, 3.1 GHz / 4.2 GHz boost,
 64 GB RAM, Linux native, publisher and subscriber pinned to isolated cores.
 T=1000 μs publishing interval (1 message per millisecond, low load).
-PUB/SUB pattern, 1 subscriber, 5000 messages. Raw transport only — no service dispatch.
+PUB/SUB pattern, 1 subscriber, 5000 messages. Raw transport only – no service dispatch.
 
-**TCP OWT comparison — 1 KB payload:**
+**TCP OWT comparison – 1 KB payload:**
 
 | Framework | Min | Avg | P90 | P99 | Transport | Scope |
 |-----------|-----|-----|-----|-----|-----------|-------|
@@ -444,7 +444,7 @@ PUB/SUB pattern, 1 subscriber, 5000 messages. Raw transport only — no service 
 | NNG | 24.3 μs | 34.9 μs | 39.7 μs | 48.4 μs | TCP direct | Raw |
 | **areg-sdk Linux** | **15.8 μs** | **20.8 μs** | **37.1 μs** | 54.1 μs | TCP 2-hop broker | Full stack |
 
-**TCP OWT comparison — 4 KB payload:**
+**TCP OWT comparison – 4 KB payload:**
 
 | Framework | Min | Avg | P90 | P99 |
 |-----------|-----|-----|-----|-----|
@@ -453,7 +453,7 @@ PUB/SUB pattern, 1 subscriber, 5000 messages. Raw transport only — no service 
 | NNG | 27.0 μs | 35.6 μs | 39.8 μs | 50.2 μs |
 | **areg-sdk Linux** | **17.1 μs** | **23.1 μs** | **37.0 μs** | 46.0 μs |
 
-**TCP OWT comparison — 64 KB payload:**
+**TCP OWT comparison – 64 KB payload:**
 
 | Framework | Min | Avg | P90 | P99 |
 |-----------|-----|-----|-----|-----|
@@ -463,20 +463,20 @@ PUB/SUB pattern, 1 subscriber, 5000 messages. Raw transport only — no service 
 | **areg-sdk Linux** | 38.3 μs | **45.1 μs** | **50.2 μs** | 78.6 μs |
 
 > **NanoMsg 64 KB anomaly (T=1000 μs):** Nagle's algorithm fires at this payload size.
-> Min (32.1 μs) remains clean but Avg jumps to 171 μs — a 5.3× degradation.
+> Min (32.1 μs) remains clean but Avg jumps to 171 μs – a 5.3× degradation.
 > areg-sdk shows near-flat latency across all sizes (no Nagle issue).
 >
 > areg-sdk **wins Min and Avg at 1 KB and 4 KB** under significantly harder conditions:
 > max send rate vs T=1000 μs (1 msg/ms), 2-hop broker vs direct, full dispatch vs raw,
 > mobile CPU vs workstation, no core isolation vs isolated cores.
-> areg-sdk **P99 is higher** — attributed to USB boot noise and continuous send rate.
+> areg-sdk **P99 is higher** – attributed to USB boot noise and continuous send rate.
 >
 > **RTT floor vs 2× NanoMsg OWT:**
 > areg-sdk pp64 RTT Min (29.8 μs) < 2 × NanoMsg TCP OWT Min (18.0 × 2 = 36.0 μs).
-> The complete areg-sdk service framework — 4-hop brokered RTT, both-sides serialization,
-> dispatch, and method call — adds less overhead than a second raw NanoMsg TCP one-way hop.
+> The complete areg-sdk service framework – 4-hop brokered RTT, both-sides serialization,
+> dispatch, and method call – adds less overhead than a second raw NanoMsg TCP one-way hop.
 
-**Reliability at maximum send rate (T=0) — from the same Hitachi CSV:**
+**Reliability at maximum send rate (T=0) – from the same Hitachi CSV:**
 
 | Framework | 1 KB T=0 Avg | 1 KB T=0 P99 | Stable? |
 |-----------|-------------|-------------|---------|
@@ -491,7 +491,7 @@ areg-sdk Mean (20.8 μs) beats ZMQ Mean (25.3 μs) at equal load.
 > **NanoMsg maintenance status:** 0 commits and 2 open issues recorded
 > January–April 2025 per the Hitachi Energy paper. The library is effectively unmaintained.
 
-### 9.2 Zenoh — UDP / SHM, same machine
+### 9.2 Zenoh – UDP / SHM, same machine
 
 **Source:** ZettaScale, *"Zenoh vs MQTT, Kafka, and DDS"* blog post, March 2023.
 [zenoh.io/blog/2023-03-21-zenoh-vs-mqtt-kafka-dds](https://zenoh.io/blog/2023-03-21-zenoh-vs-mqtt-kafka-dds/)
@@ -508,10 +508,10 @@ areg-sdk uses TCP through a centralized broker regardless of topology.
 
 **Context:** areg-sdk Linux bc64 OWT Mean (19.5 μs) is comparable to Zenoh brokered
 (21 μs raw) despite TCP vs UDP and full dispatch vs raw pub-sub. Zenoh P2P (10 μs)
-uses shared memory which bypasses the kernel TCP stack — a different transport category.
+uses shared memory which bypasses the kernel TCP stack – a different transport category.
 
 
-### 9.3 Aeron — UDP loopback
+### 9.3 Aeron – UDP loopback
 
 **Source:** E. Sequeira, *"Aeron Latency at Lower Throughputs"*, May 2023.
 [esequeira.com/posts/aeron-latency-at-lower-throughputs](https://esequeira.com/posts/aeron-latency-at-lower-throughputs/)
@@ -523,7 +523,7 @@ Test rate: up to 10K msg/s. Raw transport, no service dispatch.
 | Transport | P50 baseline | P90 (default config) | P90 (spin idle strategy) |
 |-----------|-------------|---------------------|--------------------------|
 | Aeron UDP | **~50 μs** | **> 6 ms** | **< 120 μs** |
-| Aeron IPC | **~40 μs** | — | ~120 μs (after MTU fix) |
+| Aeron IPC | **~40 μs** | – | ~120 μs (after MTU fix) |
 
 > The large P90 gap with default config is caused by the `backoff` idle strategy, which
 > uses OS yields and sleeps between sends. Switching to `spin` eliminates this jitter.
@@ -534,14 +534,14 @@ Test rate: up to 10K msg/s. Raw transport, no service dispatch.
 > Hardware is different and tuning matters significantly for Aeron.
 > Comparison is indicative, not conclusive.
 
-### 9.4 gRPC C++ — Unix domain socket, sequential single-client
+### 9.4 gRPC C++ – Unix domain socket, sequential single-client
 
 **Source:** Felix Werner, Max Planck Institute for Nuclear Physics, September 2021.
 [mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc](https://www.mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc/)
 
 **Hardware:** AMD EPYC 7402P server, CentOS 8, "latency-performance" profile, gRPC v1.40.0.
 **Methodology:** Pure synchronous unary call, 1 million iterations per configuration,
-single client thread, no concurrency. Sequential — one call completes before the next starts.
+single client thread, no concurrency. Sequential – one call completes before the next starts.
 **Transport:** Unix domain socket (`unix://` address). Not TCP.
 
 | Configuration | Median | P95 | P99 |
@@ -555,7 +555,7 @@ single client thread, no concurrency. Sequential — one call completes before t
 > TCP header processing). gRPC over TCP loopback would be equal or higher than these values.
 >
 > **areg-sdk RTT comparison (pp64, TCP, 4-hop broker, full dispatch):**
-> areg-sdk Linux P50 ~32 μs vs gRPC UDS median ~116 μs (other core) —
+> areg-sdk Linux P50 ~32 μs vs gRPC UDS median ~116 μs (other core) –
 > areg-sdk full-stack RTT is approximately 3.6× lower despite more hops,
 > full typed serialization both sides, and TCP vs Unix domain socket.
 
@@ -575,10 +575,10 @@ numbers could not be extracted from their published pages for inclusion here:
   is rendered as charts. One community observation in the
   [OpenRobotics discourse](https://discourse.openrobotics.org/t/dds-implementation-performance-benchmark/19343)
   notes FastDDS at ~11 μs for **intraprocess** (same process) communication
-  with an RT-Preempt kernel — not inter-process UDP. Inter-process latency
+  with an RT-Preempt kernel – not inter-process UDP. Inter-process latency
   from the eProsima benchmark exists but is in chart images only.
 
-- **Chronicle Queue (OpenHFT):** Uses memory-mapped OS page cache for IPC —
+- **Chronicle Queue (OpenHFT):** Uses memory-mapped OS page cache for IPC –
   a fundamentally different transport from TCP. Not directly comparable to areg-sdk.
   Source: [github.com/OpenHFT/Chronicle-Queue-Demo](https://github.com/OpenHFT/Chronicle-Queue-Demo).
 
@@ -593,10 +593,10 @@ numbers could not be extracted from their published pages for inclusion here:
 
 | Metric | What it means | Design guidance |
 |--------|--------------|-----------------|
-| **Min** | Best-case — OS scheduler and TCP cooperated perfectly | Hardware/stack floor; use for theoretical planning |
-| **P50** | Median — the typical delivery time | Primary latency metric for most workloads |
+| **Min** | Best-case – OS scheduler and TCP cooperated perfectly | Hardware/stack floor; use for theoretical planning |
+| **P50** | Median – the typical delivery time | Primary latency metric for most workloads |
 | **P95** | 5% of messages took longer than this | Soft real-time deadline planning |
-| **P99** | Tail latency — 1% worst case | Hard real-time deadline planning |
+| **P99** | Tail latency – 1% worst case | Hard real-time deadline planning |
 | **Mean** | Arithmetic average; skewed by outliers | Use P50 instead for typical behaviour |
 
 **For real-time systems:** design to P99, not P50. The gap between P50 and P99 reveals OS
@@ -612,7 +612,7 @@ with both message size and available memory bandwidth.
 
 ## 11. Reproducing the Results
 
-### 30_publatency — Latency
+### 30_publatency – Latency
 
 Start three processes in order:
 
@@ -643,7 +643,7 @@ In the consumer console, set parameters once and run 8 times with `-s`:
 
 Results appear in a scrolling table of the last 8 runs.
 
-### 23_pubdatarate — Throughput
+### 23_pubdatarate – Throughput
 
 ```bash
 # Terminal 1: mtrouter
@@ -662,7 +662,7 @@ In the provider console, configure then start:
 -p
 ```
 
-Watch `mtrouter` output — it shows the highest-accuracy throughput signal
+Watch `mtrouter` output – it shows the highest-accuracy throughput signal
 (raw bytes at the socket boundary, both directions).
 
 ---

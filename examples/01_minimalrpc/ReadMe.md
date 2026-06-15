@@ -6,7 +6,7 @@
 
 The **01\_minimalrpc** example demonstrates the most minimal use of **RPC between threads** in a single process using the Areg Framework.
 It defines a simple model with **two threads** and **two components**: a **Service Provider** and a **Service Consumer**.
-The consumer waits for `service_connected()` to confirm the provider is available before calling `request_hello_service()`. Once invoked, the application terminates — keeping the logic as simple as possible.
+The consumer waits for `service_connected()` to confirm the provider is available before calling `request_hello_service()`. Once invoked, the application terminates – keeping the logic as simple as possible.
 
 This addresses the common pain points of multithreaded communication: knowing when a service is ready, avoiding race conditions, and managing threads safely without boilerplate.
 

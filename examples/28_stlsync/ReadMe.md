@@ -6,11 +6,11 @@
 The **28_stlsync** project demonstrates how Areg’s **event synchronization object (`SyncEvent`)** can be used in STL-based applications. It adapts the [std::condition_variable](https://en.cppreference.com/w/cpp/thread/condition_variable.html) demo to use `SyncEvent` with `std::thread`, showing event waiting and signaling with sleep-based timing.
 
 ## Concepts Shown
-- **Thread Synchronization** — coordinate access to shared resources with `SyncEvent`.
-- **Locking Styles** — demonstrate automatic RAII lock (`Lock`) and manual lock handling.
-- **Auto-reset Events** — `SyncEvent` resets automatically after being signaled; requires explicit `set_event()` to trigger.
-- **Conditional Waiting** — threads block until the event is signaled.
-- **Cross-Platform Consistency** — unified behavior across Windows and Linux.
+- **Thread Synchronization** – coordinate access to shared resources with `SyncEvent`.
+- **Locking Styles** – demonstrate automatic RAII lock (`Lock`) and manual lock handling.
+- **Auto-reset Events** – `SyncEvent` resets automatically after being signaled; requires explicit `set_event()` to trigger.
+- **Conditional Waiting** – threads block until the event is signaled.
+- **Cross-Platform Consistency** – unified behavior across Windows and Linux.
 
 ## How It Works
 Two threads share a `std::string data`. The main thread signals when data is ready, and the worker waits on the event, processes the data, and signals completion. Both use `std::this_thread::sleep_for()` to simulate work and control timing, demonstrating event-based conditional waiting.

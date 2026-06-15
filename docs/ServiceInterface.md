@@ -62,8 +62,8 @@ The `<Overview>` element defines service identity:
 | `Category` | `Public` for IPC, `Local` for single-process only |
 
 **Category values:**
-- `Public` (or `isRemote="true"`) — Accessible across processes and network
-- `Local` (or `isRemote="false"`) — Only accessible within the same process
+- `Public` (or `isRemote="true"`) – Accessible across processes and network
+- `Local` (or `isRemote="false"`) – Only accessible within the same process
 
 ---
 

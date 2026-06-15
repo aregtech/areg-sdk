@@ -1,5 +1,5 @@
 # areg-sdk vs ZMQ / NanoMsg / NNG
-## TCP Loopback Latency — Direct Benchmark Comparison
+## TCP Loopback Latency – Direct Benchmark Comparison
 ### Reference: Hitachi Energy Research, arXiv:2508.07934v1 (August 2025)
 
 ---
@@ -24,13 +24,13 @@ No cross-machine or real-network numbers appear anywhere in this document.
 |-----------|-------|
 | Hardware | Intel Xeon w3-2435, 8 cores, 3.1 GHz base / 4.2 GHz boost, 64 GB RAM |
 | OS | Linux, native SSD install |
-| Core isolation | Yes — publisher and subscriber pinned to dedicated isolated cores |
+| Core isolation | Yes – publisher and subscriber pinned to dedicated isolated cores |
 | Transport | TCP loopback (127.0.0.1), direct 1-hop connection |
-| Send rate | T=1000 μs — 1 message per millisecond (low load) |
+| Send rate | T=1000 μs – 1 message per millisecond (low load) |
 | Latency type | One-way: publisher embeds timestamp (CLOCK_REALTIME); subscriber records delta |
 | Sample count | 5000 messages, 4 repetitions |
 | Metrics | Min / Avg / P90 / P99 (nanosecond precision in CSV) |
-| Framework scope | Raw transport layer only — no service dispatch, no method call, no routing |
+| Framework scope | Raw transport layer only – no service dispatch, no method call, no routing |
 
 ### 2.2 areg-sdk
 
@@ -40,8 +40,8 @@ No cross-machine or real-network numbers appear anywhere in this document.
 | OS tested | Ubuntu 26.04 LTS (USB boot) / Windows 11 (native SSD) / macOS M3 Pro (native) |
 | Core isolation | None |
 | Transport | TCP loopback (127.0.0.1), through centralized mtrouter broker (2 hops) |
-| Send mode | Closed-loop sequential pipeline — 1 message in flight at all times |
-| Artificial spacing | None — next message fires immediately on receipt; component thread idle during transit |
+| Send mode | Closed-loop sequential pipeline – 1 message in flight at all times |
+| Artificial spacing | None – next message fires immediately on receipt; component thread idle during transit |
 | Queue depth | Pinned to 1 by construction (confirmed by source code analysis) |
 | Latency type | One-way (bc): provider embeds timestamp; consumer records delta. Same-machine clock. |
 | Sample count | 5000 per run (bc) / 10000 per run (pp), warmup=1000, 8 consecutive runs averaged |
@@ -56,7 +56,7 @@ The following is confirmed by source code inspection of example 30.
 
 ### areg-sdk: timestamp taken BEFORE serialization / AFTER deserialization
 
-**OWT (bc mode) — one measurement cycle:**
+**OWT (bc mode) – one measurement cycle:**
 
 ```
 t1 = now_ns()                           ← stamped BEFORE any serialization
@@ -66,7 +66,7 @@ t1 = now_ns()                           ← stamped BEFORE any serialization
 ├─ mtrouter: receive → identify → TCP kernel write
 ├─ TCP kernel read (consumer)
 ├─ dispatch: identify service/method → route raw message to component thread queue
-├─ deserialize(seq, t1, payload)        on the component thread — after dispatch
+├─ deserialize(seq, t1, payload)        on the component thread – after dispatch
 └─ method call invoked with typed params
    └─ t4 = now_ns()                     ← stamped AFTER deserialize + call
 
@@ -80,10 +80,10 @@ OWT = t4 − t1
 ```
 
 Note: **dispatch precedes deserialization**. The raw (still serialized) message bytes
-are routed to the correct component thread first — this is how areg-sdk enforces thread
+are routed to the correct component thread first – this is how areg-sdk enforces thread
 affinity. Deserialization and the method call then happen on the component's own thread.
 
-**RTT (pp mode) — one full cycle, both directions:**
+**RTT (pp mode) – one full cycle, both directions:**
 
 ```
 t1 = now_ns()                           ← BEFORE serialization (consumer)
@@ -131,9 +131,9 @@ subscriber: read(fd, buf, N)             ← timestamp here
 A flat-buffer areg-sdk implementation without field serialization would reduce OWT by
 an estimated 0.1–0.3 μs for small messages (bc64: 8+8 uint64 fields) and
 2–6 μs for large payloads (bc65536: SharedBuffer copy both ends).
-The published numbers are conservative — they reflect real application overhead.
+The published numbers are conservative – they reflect real application overhead.
 
-### 2.4 Methodology Differences — Every Factor Favors Competitors
+### 2.4 Methodology Differences – Every Factor Favors Competitors
 
 | Factor | Competitors | areg-sdk | Impact on areg |
 |--------|-------------|---------|----------------|
@@ -150,9 +150,9 @@ The published numbers are conservative — they reflect real application overhea
 
 | Paper metric | areg-sdk metric | Notes |
 |---|---|---|
-| Min | Min | Direct equivalent — best-case single message |
+| Min | Min | Direct equivalent – best-case single message |
 | Avg | Mean | Paper: low load; areg: continuous load |
-| P90 | P95 | Different percentile — not directly comparable, shown for reference |
+| P90 | P95 | Different percentile – not directly comparable, shown for reference |
 | P99 | P99 | Direct match |
 
 ---
@@ -164,23 +164,23 @@ The suffix `n` in mode names denotes additional parameter bytes.
 
 | areg mode | Extra | Request total | Response total | Closest paper size |
 |-----------|-------|--------------|----------------|-------------------|
-| bc0 / pp0 | 0 B | 140 B | 148 B | — (paper min = 1 KB) |
-| bc64 / pp64 | 64 B | 204 B | 212 B | — |
-| bc128 / pp128 | 128 B | 268 B | 276 B | — |
-| bc512 / pp512 | 512 B | 652 B | 660 B | — |
+| bc0 / pp0 | 0 B | 140 B | 148 B | – (paper min = 1 KB) |
+| bc64 / pp64 | 64 B | 204 B | 212 B | – |
+| bc128 / pp128 | 128 B | 268 B | 276 B | – |
+| bc512 / pp512 | 512 B | 652 B | 660 B | – |
 | bc1024 / pp1024 | 1024 B | 1164 B | 1172 B | 1 KB (1000 B) |
 | bc4096 / pp4096 | 4096 B | 4236 B | 4244 B | 4 KB (4000 B) |
 | bc65536 / pp65536 | 65536 B | 65676 B | 65684 B | 64 KB (64000 B) |
 
 ---
 
-## 4. OWT Latency — Linux vs Competitors
+## 4. OWT Latency – Linux vs Competitors
 
 All competitor values from Hitachi CSV: TCP, T=1000 μs, 1 subscriber, Xeon w3-2435, isolated cores.
 areg-sdk: Ubuntu 26.04 LTS, USB boot, i7-13700H, no isolation, T=0 continuous, warmed (w=1000).
 All values in **μs**. **Bold** = wins against nearest competitor at similar message size.
 
-### 4.1 Sub-1 KB — areg only (paper minimum is 1 KB)
+### 4.1 Sub-1 KB – areg only (paper minimum is 1 KB)
 
 | Framework | Mode | Total size | Min | P50 | P95 | P99 | Mean |
 |-----------|------|-----------|-----|-----|-----|-----|------|
@@ -195,7 +195,7 @@ All values in **μs**. **Bold** = wins against nearest competitor at similar mes
 
 ---
 
-### 4.2 ~1 KB — areg bc1024 (1164 B) vs paper 1 KB (1000 B)
+### 4.2 ~1 KB – areg bc1024 (1164 B) vs paper 1 KB (1000 B)
 
 | Framework | Transport | Size | Min | Avg/Mean | P90/P95 | P99 | Conditions |
 |-----------|-----------|------|-----|----------|---------|-----|-----------|
@@ -205,12 +205,12 @@ All values in **μs**. **Bold** = wins against nearest competitor at similar mes
 | NNG | TCP direct | 1000 B | 24.3 | 34.9 (Avg) | 39.7 (P90) | 48.4 | same |
 
 **areg-sdk wins:** Min (−2.2 μs), Mean vs Avg (−1.1 μs)
-**areg-sdk loses:** P99 (+29.3 μs) — due to USB noise and continuous send rate
+**areg-sdk loses:** P99 (+29.3 μs) – due to USB noise and continuous send rate
 > bc4096 (not bc1024) is the most stable dataset: zero outliers, Min 17.05–18.36 μs across 8 runs.
 
 ---
 
-### 4.3 ~4 KB — areg bc4096 (4236 B) vs paper 4 KB (4000 B)
+### 4.3 ~4 KB – areg bc4096 (4236 B) vs paper 4 KB (4000 B)
 
 | Framework | Transport | Size | Min | Avg/Mean | P90/P95 | P99 | Conditions |
 |-----------|-----------|------|-----|----------|---------|-----|-----------|
@@ -220,12 +220,12 @@ All values in **μs**. **Bold** = wins against nearest competitor at similar mes
 | NNG | TCP direct | 4000 B | 27.0 | 35.6 (Avg) | 39.8 (P90) | 50.2 | same |
 
 **areg-sdk wins:** Min (−2.2 μs), Mean vs Avg (−1.4 μs)
-**areg-sdk loses:** P99 (+27.9 μs) — due to USB noise and continuous send rate
+**areg-sdk loses:** P99 (+27.9 μs) – due to USB noise and continuous send rate
 > Most reliable dataset: zero outliers across all 8 runs.
 
 ---
 
-### 4.4 ~64 KB — areg bc65536 (65676 B) vs paper 64 KB (64000 B)
+### 4.4 ~64 KB – areg bc65536 (65676 B) vs paper 64 KB (64000 B)
 
 | Framework | Transport | Size | Min | Avg/Mean | P90/P95 | P99 | Conditions |
 |-----------|-----------|------|-----|----------|---------|-----|-----------|
@@ -235,8 +235,8 @@ All values in **μs**. **Bold** = wins against nearest competitor at similar mes
 | NanoMsg | TCP direct | 64000 B | 32.1 | **171.1 ⚠️** | **303.9 ⚠️** | **307.3 ⚠️** | Nagle failure |
 
 **areg-sdk wins:** Mean vs ZMQ (−7.5 μs), Mean vs NNG (−4.3 μs), Min vs ZMQ (−5.3 μs), Min vs NNG (−1.6 μs)
-**areg-sdk loses:** P99 (+13.4 μs vs NNG) — USB noise driven
-**NanoMsg at 64 KB:** Nagle algorithm failure — Avg=171 μs vs Min=32 μs (5.3× degradation).
+**areg-sdk loses:** P99 (+13.4 μs vs NNG) – USB noise driven
+**NanoMsg at 64 KB:** Nagle algorithm failure – Avg=171 μs vs Min=32 μs (5.3× degradation).
 areg-sdk Mean (45.1 μs) is 3.8× better than NanoMsg average at this size.
 
 ---
@@ -249,13 +249,13 @@ areg-sdk Mean (45.1 μs) is 3.8× better than NanoMsg average at this size.
 | ~4 KB | vs NanoMsg TCP | ✅ areg −2.2 μs | ✅ areg −1.4 μs | ❌ areg +27.9 μs |
 | ~64 KB | vs NNG TCP (Min) / ZMQ (Mean) | ✅ areg −1.6 μs | ✅ areg −4.3 μs | ❌ areg +13.4 μs |
 
-**Pattern:** areg wins Min and Mean at all sizes. areg loses P99 across all sizes — entirely attributable
+**Pattern:** areg wins Min and Mean at all sizes. areg loses P99 across all sizes – entirely attributable
 to USB boot noise and continuous send rate (vs 1 msg/ms test design). The same
 areg-sdk running on native SSD with core isolation is projected to close the P99 gap.
 
 ---
 
-## 5. RTT Latency (pp modes) — areg-sdk Only (paper does not measure RTT)
+## 5. RTT Latency (pp modes) – areg-sdk Only (paper does not measure RTT)
 
 Full round-trip: Consumer → mtrouter → Provider → mtrouter → Consumer (4 TCP hops).
 Both sides fully processed: serialize, dispatch, method call, response.
@@ -281,7 +281,7 @@ Both sides fully processed: serialize, dispatch, method call, response.
 
 ---
 
-## 6. IPC Reference (Hitachi CSV — Unix socket, same machine)
+## 6. IPC Reference (Hitachi CSV – Unix socket, same machine)
 
 Provided for context. areg-sdk does not use IPC/Unix socket transport.
 
@@ -293,7 +293,7 @@ Provided for context. areg-sdk does not use IPC/Unix socket transport.
 | **areg-sdk Linux TCP** | **14.8** | **19.5** | **33.4** | 42.0 | ✅ Measured |
 
 **areg-sdk TCP beats ZMQ IPC and NNG IPC on Min and Mean/Avg.**
-areg-sdk is competitive with NanoMsg IPC — achieving similar Avg (19.5 vs 16.2 μs)
+areg-sdk is competitive with NanoMsg IPC – achieving similar Avg (19.5 vs 16.2 μs)
 despite TCP vs Unix socket, 2-hop vs direct, full dispatch vs raw, and max load vs low load.
 
 ---
@@ -311,7 +311,7 @@ Hitachi CSV shows severe reliability problems:
 | NNG TCP | 42.8 μs | 542.8 μs | ❌ P99 broken |
 
 At the same send rate: areg-sdk is the most reliable framework of the four.
-NanoMsg loses TCP_NODELAY effectiveness at high rates — Avg becomes 452 μs despite Min=21 μs.
+NanoMsg loses TCP_NODELAY effectiveness at high rates – Avg becomes 452 μs despite Min=21 μs.
 areg-sdk Mean (20.8 μs) beats ZMQ Mean (25.3 μs) even at maximum load.
 
 ---
@@ -352,12 +352,12 @@ for every broadcast received, the consumer sends `request_message_next()` before
 the provider can send the next message. The effective cycle time is
 OWT(pull) + OWT(broadcast) ≈ RTT, not OWT alone. A pure-push model without
 this mechanism would improve areg bc throughput by approximately 30%.
-Note: paper throughput also bounded by polling architecture (10 ms poll timeout) —
+Note: paper throughput also bounded by polling architecture (10 ms poll timeout) –
 not representative of ZMQ/NNG maximum throughput potential.
 
 ---
 
-## 10. Platform Analysis — areg-sdk Across Three Platforms
+## 10. Platform Analysis – areg-sdk Across Three Platforms
 
 Tested on same hardware (i7-13700H, DDR4) for Windows and Linux.
 macOS on MacBook Pro M3 Pro, LPDDR5.
@@ -382,20 +382,20 @@ macOS on MacBook Pro M3 Pro, LPDDR5.
 
 | Platform | Burst (0–30s) | Sustained (5min+) | Data rate burst | Data rate sustained |
 |----------|--------------|------------------|----------------|---------------------|
-| **macOS M3 Pro** | — | **~2.5M** | — | **~6.7–7.0 GB/s** |
+| **macOS M3 Pro** | – | **~2.5M** | – | **~6.7–7.0 GB/s** |
 | **Linux Ubuntu 26.04** | **~2.0M** | **~1.5M** | **~7.2 GB/s** | **~6.0 GB/s** |
 | **Windows 11** | **~2.0M** | **~1.5M** | **~2.8 GB/s** | **~2.0–2.2 GB/s** |
 
 > **Linux burst vs sustained:** At high throughput, the USB live-boot RAM overlay accumulates
 > large message buffers, causing gradual memory pressure. Throughput declines smoothly from
 > 2.0M msg/s (burst, 0–30s) to 1.5M msg/s (sustained, 5min+) and 7.2 GB/s to 6.0 GB/s.
-> On native SSD, memory pressure is eliminated — sustained performance is expected to remain
+> On native SSD, memory pressure is eliminated – sustained performance is expected to remain
 > close to the burst figures (~1.8–2.0M msg/s, ~6.5–7.2 GB/s).
 
 ### 10.4 Platform Profiles
 
 **Linux (Ubuntu 26.04, USB boot):**
-- Strongest latency: Min 14.8 μs, P50 16.9 μs — fastest single-message delivery
+- Strongest latency: Min 14.8 μs, P50 16.9 μs – fastest single-message delivery
 - USB interference creates bimodal P50 (~25% of runs inflate to ~65 μs)
 - P99 (42 μs) slightly higher than macOS P99 (40.6 μs) due to USB spikes
 - On native SSD: bimodal distribution expected to disappear, P99 to improve
@@ -404,12 +404,12 @@ macOS on MacBook Pro M3 Pro, LPDDR5.
 **macOS M3 Pro (LPDDR5, native):**
 - Higher typical latency (P50 ~31 μs) due to macOS TCP stack overhead
 - Exceptional P99 consistency: bc65536 P99 spread = 0.8 μs across 8 runs
-- Higher throughput: 2.5M msg/s vs 1.5M on Linux — LPDDR5 bandwidth advantage
+- Higher throughput: 2.5M msg/s vs 1.5M on Linux – LPDDR5 bandwidth advantage
 - Best for: real-time systems requiring guaranteed latency bounds; high-throughput pipelines
 
 **Windows 11 (native SSD):**
 - Highest latency (P50 ~40 μs OWT, ~83 μs RTT)
-- Stable and predictable — no bimodal distribution
+- Stable and predictable – no bimodal distribution
 - Lowest data rate (2.0–2.2 GB/s) vs 6.2–7.0 GB/s on Linux/macOS
 - Best for: Windows-native production deployments; development and testing
 
@@ -433,7 +433,7 @@ Windows areg-sdk beats NNG; is slower than ZMQ and NanoMsg.
 The following claims are directly supported by measured data:
 
 > *"areg-sdk on Linux TCP achieves Min 14.8 μs and Mean 19.5 μs one-way
-> for 204-byte messages — faster than ZMQ (27.5 μs Avg) and NanoMsg (21.9 μs Avg)
+> for 204-byte messages – faster than ZMQ (27.5 μs Avg) and NanoMsg (21.9 μs Avg)
 > on TCP, despite routing through a centralized broker and including full service
 > dispatch on the receiver, running at maximum send rate on a mobile CPU
 > without core isolation. Competitor numbers: Hitachi Energy Research,

@@ -243,9 +243,9 @@ is measured in every RTT sample.
 
 ---
 
-### Linux Ubuntu 26.04 — Intel i7-13700H (mobile), 32 GB DDR4
+### Linux Ubuntu 26.04 – Intel i7-13700H (mobile), 32 GB DDR4
 
-> Tested from USB live boot ("Try Ubuntu" — no installation). Min values are unaffected by USB noise.
+> Tested from USB live boot ("Try Ubuntu" – no installation). Min values are unaffected by USB noise.
 > P50 is the median across runs; ~25% of runs show elevated P50 due to USB I/O interference.
 > Native SSD installation expected to improve P95/P99 variance.
 
@@ -278,9 +278,9 @@ is measured in every RTT sample.
 
 ---
 
-### Windows 11 — Intel i7-13700H (mobile), 32 GB DDR4
+### Windows 11 – Intel i7-13700H (mobile), 32 GB DDR4
 
-> Native SSD install. Results are stable — no bimodal distribution.
+> Native SSD install. Results are stable – no bimodal distribution.
 
 #### Ping-Pong RTT (μs)
 
@@ -311,7 +311,7 @@ is measured in every RTT sample.
 
 ---
 
-### macOS — Apple M3 Pro, 32 GB LPDDR5 (native SSD)
+### macOS – Apple M3 Pro, 32 GB LPDDR5 (native SSD)
 
 > No USB noise. P99 consistency is exceptional: bc65536 P99 spread = 0.8 μs across 8 runs.
 
@@ -373,26 +373,26 @@ the constant framing, routing, and dispatch overhead dominates.
 
 ## Competitive Context
 
-These numbers are produced by a **full-stack framework** — centralized broker routing,
+These numbers are produced by a **full-stack framework** – centralized broker routing,
 guaranteed thread affinity, and service dispatch are all active and included in every
 measurement. This is not a raw transport benchmark.
 
 Timestamps are taken **before serialization** (sender) and **after deserialization + dispatch**
-(receiver) — the full production call path is inside the measured window.
+(receiver) – the full production call path is inside the measured window.
 
 | Framework | Transport | OWT / RTT | Metric | Source |
 |:----------|:---------:|:---------:|:------:|:-------|
-| **areg-sdk** | TCP, 2-hop broker (Linux) | OWT **14.8 μs** Min / **~16.9 μs** P50 | Full: serialization + routing + dispatch | Measured — this example |
-| **areg-sdk** | TCP, 2-hop broker (Linux) | RTT **29.8 μs** Min / **~32 μs** P50 | Full: broker + dispatch + thread affinity | Measured — this example |
-| **areg-sdk** | TCP, 2-hop broker (Windows) | RTT **82.5 μs** P50 | Full: broker + dispatch + thread affinity | Measured — this example |
-| **areg-sdk** | TCP, 2-hop broker (macOS M3) | RTT **62.5 μs** P50 | Full: broker + dispatch + thread affinity | Measured — this example |
+| **areg-sdk** | TCP, 2-hop broker (Linux) | OWT **14.8 μs** Min / **~16.9 μs** P50 | Full: serialization + routing + dispatch | Measured – this example |
+| **areg-sdk** | TCP, 2-hop broker (Linux) | RTT **29.8 μs** Min / **~32 μs** P50 | Full: broker + dispatch + thread affinity | Measured – this example |
+| **areg-sdk** | TCP, 2-hop broker (Windows) | RTT **82.5 μs** P50 | Full: broker + dispatch + thread affinity | Measured – this example |
+| **areg-sdk** | TCP, 2-hop broker (macOS M3) | RTT **62.5 μs** P50 | Full: broker + dispatch + thread affinity | Measured – this example |
 | NanoMsg | TCP, direct (Linux) | OWT **18.0 μs** Min / **21.9 μs** Avg | Raw transport, no dispatch | [Hitachi Energy, arXiv:2508.07934v1](https://arxiv.org/abs/2508.07934) |
 | ZMQ | TCP, direct (Linux) | OWT **22.0 μs** Min / **27.5 μs** Avg | Raw transport, no dispatch | [Hitachi Energy, arXiv:2508.07934v1](https://arxiv.org/abs/2508.07934) |
 | NNG | TCP, direct (Linux) | OWT **24.3 μs** Min / **34.9 μs** Avg | Raw transport, no dispatch | [Hitachi Energy, arXiv:2508.07934v1](https://arxiv.org/abs/2508.07934) |
 | gRPC C++ | UDS, direct (Linux) | RTT **116 μs** median (other core) | Full RPC, HTTP/2 + protobuf | [MPI-HD, F. Werner, 2021](https://www.mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc/) |
 
 > **areg-sdk on Linux (OWT, TCP, 2-hop)** achieves lower Min and Mean than NanoMsg, ZMQ,
-> and NNG (raw TCP, direct, isolated cores, low load) — while routing through a centralized
+> and NNG (raw TCP, direct, isolated cores, low load) – while routing through a centralized
 > broker and including full typed serialization and dispatch on both sides.
 >
 > **RTT floor claim:** areg-sdk pp64 RTT Min (29.8 μs) < 2 × NanoMsg direct OWT Min (18.0 × 2 = 36 μs).

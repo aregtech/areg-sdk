@@ -1,9 +1,9 @@
-# areg-sdk — Competitive Position Among All Known Frameworks
+# areg-sdk – Competitive Position Among All Known Frameworks
 ## Latency | Message Rate | Data Rate | Use Case Analysis
 
 ---
 
-## 1.1 Measurement Scope — What Each Framework Actually Measures
+## 1.1 Measurement Scope – What Each Framework Actually Measures
 
 This distinction is critical for interpreting all numbers in this document.
 
@@ -14,7 +14,7 @@ Every component of a real production call is inside the measured window:
 
 | Component | Included in areg-sdk latency? | Order |
 |-----------|-------------------------------|-------|
-| Payload serialization — typed, field-by-field (sender) | ✅ Yes | 1st |
+| Payload serialization – typed, field-by-field (sender) | ✅ Yes | 1st |
 | TCP kernel send | ✅ Yes | 2nd |
 | Centralized broker routing (2 hops total) | ✅ Yes | 3rd |
 | TCP kernel receive | ✅ Yes | 4th |
@@ -22,18 +22,18 @@ Every component of a real production call is inside the measured window:
 | Payload deserialization on component thread (after dispatch) | ✅ Yes | 6th |
 | Method / callback invocation with typed parameters | ✅ Yes | 7th |
 
-For RTT (pp modes): all of the above runs **twice** — once on the provider side
+For RTT (pp modes): all of the above runs **twice** – once on the provider side
 (dispatch → deserialize → serialize) and once on the consumer side
-(dispatch → deserialize → call) — within every single RTT sample.
+(dispatch → deserialize → call) – within every single RTT sample.
 
-The dispatch-before-deserialize order is not incidental — it is the mechanism by which
+The dispatch-before-deserialize order is not incidental – it is the mechanism by which
 areg-sdk enforces thread affinity. Raw message bytes are routed to the owning component
 thread first; deserialization and method invocation happen only on that thread.
 
 ### Competitors (ZMQ / NanoMsg / NNG): raw socket transfer only
 
 Timestamps bracket only the raw TCP read/write. No serialization, no field parsing, no dispatch.
-Payload is a flat byte buffer — one `memcpy` or direct write each end.
+Payload is a flat byte buffer – one `memcpy` or direct write each end.
 
 ### Practical consequence
 
@@ -41,7 +41,7 @@ areg-sdk's latency numbers are conservative. They include serialization + deseri
 overhead that competitor benchmarks do not measure. A flat-buffer implementation of areg-sdk
 without field serialization would reduce OWT by an estimated 0.1–0.3 μs for small messages
 and 2–6 μs for large payloads. The published numbers represent what a real production
-service call costs end-to-end — not a synthetic transport floor.
+service call costs end-to-end – not a synthetic transport floor.
 
 ---
 
@@ -73,9 +73,9 @@ service call costs end-to-end — not a synthetic transport floor.
 
 ---
 
-## 3. Ranking 1 — OWT Latency (same-machine loopback, small messages)
+## 3. Ranking 1 – OWT Latency (same-machine loopback, small messages)
 
-Sorted best-to-worst P50/Avg. Mixed transports — see Notes column.
+Sorted best-to-worst P50/Avg. Mixed transports – see Notes column.
 
 | Rank | Framework | Transport | OWT P50/Avg | Source | Scope | Notes |
 |------|-----------|-----------|------------|--------|-------|-------|
@@ -98,13 +98,13 @@ Sorted best-to-worst P50/Avg. Mixed transports — see Notes column.
 | 17 | ROS2 | UDP DDS | ~200–500 μs | ✅ arxiv | ⚙️ Full | Full RCL/executor overhead. |
 
 > **areg-sdk Linux is #8 overall.** All 7 frameworks ranked above it use:
-> in-process threads, Java persisted queues, shared memory, Unix sockets, or UDP —
+> in-process threads, Java persisted queues, shared memory, Unix sockets, or UDP –
 > and all except CycloneDDS/FastDDS measure raw transport without application dispatch.
 > areg-sdk is the highest-ranked **measured, full-stack, device-to-device TCP framework.**
 
 ---
 
-## 4. Ranking 2 — Message Rate (msg/s, small messages)
+## 4. Ranking 2 – Message Rate (msg/s, small messages)
 
 | Rank | Framework | Transport | Stable msg/s | Source | Scope | Conditions |
 |------|-----------|-----------|-------------|--------|-------|-----------|
@@ -121,17 +121,17 @@ Sorted best-to-worst P50/Avg. Mixed transports — see Notes column.
 
 > areg-sdk macOS M3 at 2.5M msg/s (full dispatch) reaches the upper bound of
 > CycloneDDS estimated range (raw DDS, no dispatch). areg-sdk's measured number
-> is harder to achieve — it includes complete receive-side processing.
+> is harder to achieve – it includes complete receive-side processing.
 >
 > **Note on bc mode throughput ceiling:** areg-sdk bc mode uses a closed-loop pull
-> mechanism — for each broadcast received, the consumer sends `request_message_next()`
+> mechanism – for each broadcast received, the consumer sends `request_message_next()`
 > before the provider can send the next message. Effective cycle time ≈ OWT(pull) +
 > OWT(broadcast) ≈ RTT. A pure-push model would improve bc throughput by ~30%.
 > The published bc msg/s numbers are therefore conservative.
 
 ---
 
-## 5. Ranking 3 — Data Rate (GB/s, large messages)
+## 5. Ranking 3 – Data Rate (GB/s, large messages)
 
 | Rank | Framework | Transport | Stable data rate | Source | Scope | Msg size |
 |------|-----------|-----------|-----------------|--------|-------|---------|
@@ -146,7 +146,7 @@ Sorted best-to-worst P50/Avg. Mixed transports — see Notes column.
 | 9 | NNG TCP | TCP | ~2.0 GB/s | ✅ Hitachi paper | 🏗️ Raw | 512 KB |
 | 10 | NanoMsg TCP | TCP | ~1.4 GB/s | ✅ Hitachi paper | 🏗️ Raw | 512 KB |
 
-> areg-sdk macOS M3 and Linux rank #2 and #3 overall in data rate —
+> areg-sdk macOS M3 and Linux rank #2 and #3 overall in data rate –
 > only Zenoh P2P (raw pub-sub, SHM/UDP) exceeds either.
 > areg-sdk with full dispatch (6.0–7.0 GB/s) beats Zenoh brokered (4.6 GB/s),
 > CycloneDDS raw DDS (3.2 GB/s), and all TCP frameworks.
@@ -257,7 +257,7 @@ under reproducible conditions, with production reliability.
 > measured at raw layer without application dispatch).
 >
 > The only frameworks with lower latency use shared memory, in-process threads,
-> Unix sockets, or UDP — transports that cannot survive device separation or
+> Unix sockets, or UDP – transports that cannot survive device separation or
 > process restart. On TCP specifically, no comparable framework comes close.
 
 ---
@@ -268,10 +268,10 @@ under reproducible conditions, with production reliability.
 
 Best for:
 - **Embedded and edge C++** systems requiring structured IPC with service model
-- **Industrial automation** — PLCs, robot controllers, CNC: control and coordination plane
+- **Industrial automation** – PLCs, robot controllers, CNC: control and coordination plane
 - **Robotics service/control plane** alongside DDS for raw sensor data highways
 - **Distributed C++ applications** scaling from single device to multi-device without rewrites
-- **Any C++ team** with threading safety requirements — race conditions eliminated architecturally
+- **Any C++ team** with threading safety requirements – race conditions eliminated architecturally
 - **Projects scaling topology** (single process → multi-process → distributed): zero code changes
 
 Avoid when:
@@ -331,7 +331,7 @@ Estimated for a medium-sized embedded/distributed C++ project (6–12 month scop
 | **Topology rewrites** | Location transparency: zero code changes scaling thread → process → device | 2–4 weeks per scaling event |
 | **Service infrastructure** | No manual service discovery, routing, or reconnection code | 2–3 weeks |
 | **IDL code generation** | SIML generates serialization/dispatch for 10–20 interfaces | 1–2 weeks |
-| **Distributed state debugging** | Thread affinity eliminates concurrent mutation — entire bug class removed | 2–4 weeks lifetime |
+| **Distributed state debugging** | Thread affinity eliminates concurrent mutation – entire bug class removed | 2–4 weeks lifetime |
 
 **Total conservative estimate: 10–19 weeks** over one product lifecycle.
 Add 2–4 weeks per topology change event.
@@ -356,15 +356,15 @@ macOS M3: **1.7× higher throughput** than Linux, **best P99 predictability** of
 
 | Data | Source |
 |------|--------|
-| ZMQ/NanoMsg/NNG TCP | arXiv:2508.07934v1, results.csv — github.com/hitachienergy/messaging-libraries-benchmark |
+| ZMQ/NanoMsg/NNG TCP | arXiv:2508.07934v1, results.csv – github.com/hitachienergy/messaging-libraries-benchmark |
 | ZMQ/NanoMsg/NNG IPC | Same CSV (ipc transport rows) |
 | CycloneDDS ~8 μs / Zenoh ~10 μs | ZettaScale, zenoh.io/blog/2023-03-21-zenoh-vs-mqtt-kafka-dds (2023) |
-| Zenoh throughput (5M msg/s, 67 Gbps) | ZettaScale 2023 — zenoh.io/blog/2023-03-21-zenoh-vs-mqtt-kafka-dds |
+| Zenoh throughput (5M msg/s, 67 Gbps) | ZettaScale 2023 – zenoh.io/blog/2023-03-21-zenoh-vs-mqtt-kafka-dds |
 | Aeron >20M msg/s | aeron.io official |
 | Aeron IPC mean ~7.978 μs | Pirogov, medium.com/@pirogov.alexey/aeron-low-latency-transport-protocol-9493f8d504e8 (2017) |
 | Aeron UDP ~50 μs (untuned) | E. Sequeira, esequeira.com/posts/aeron-latency-at-lower-throughputs (2023) |
 | gRPC C++ UDS ~116 μs | F. Werner, MPI-HD, mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc/ (2021) |
 | ROS2 | arxiv:2201.00393 (ros2_tracing) |
-| areg-sdk all measurements | June 2026 — i7-13700H DDR4 (Win/Linux), MacBook Pro M3 Pro LPDDR5 |
+| areg-sdk all measurements | June 2026 – i7-13700H DDR4 (Win/Linux), MacBook Pro M3 Pro LPDDR5 |
 
 *Compiled June 2026. All same-machine loopback. areg-sdk: Release, AREG_LOGGING=OFF.*

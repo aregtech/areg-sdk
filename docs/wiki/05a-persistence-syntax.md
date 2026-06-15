@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Areg Framework provides a lightweight key-value persistence mechanism designed specifically for system configuration and runtime parameters. Unlike heavyweight structured formats (XML, JSON, YAML), the Areg [persistence module](./../../framework/areg/persist) prioritizes parsing speed, minimal memory footprint, and developer simplicity—making it ideal for embedded systems, real-time applications, and performance-critical software.
+The Areg Framework provides a lightweight key-value persistence mechanism designed specifically for system configuration and runtime parameters. Unlike heavyweight structured formats (XML, JSON, YAML), the Areg [persistence module](./../../framework/areg/persist) prioritizes parsing speed, minimal memory footprint, and developer simplicity–making it ideal for embedded systems, real-time applications, and performance-critical software.
 
 **When to use**: Configuration files, initialization parameters, logging settings, runtime tuning.  
 **When not to use**: Complex hierarchical data, large datasets, or application-specific data serialization.
@@ -26,7 +26,7 @@ The Areg Framework provides a lightweight key-value persistence mechanism design
 
 The Areg SDK persistence module solves three critical problems in system-level C++ development:
 
-- **Fast Initialization**: Parse configuration in microseconds, not milliseconds—critical for real-time systems.
+- **Fast Initialization**: Parse configuration in microseconds, not milliseconds–critical for real-time systems.
 - **Zero Dependencies**: No external libraries required; pure C++ implementation.
 - **Human-Readable**: Engineers can edit configuration files directly without specialized tools.
 
@@ -39,7 +39,7 @@ log::*::scope::*            = NOTSET            # Default: no logging for any ap
 log::myapp::scope::*        = DEBUG | SCOPE     # Override: enable logging only for 'myapp'
 ```
 
-When `myapp` queries `log::myapp::scope::*`, it receives `DEBUG | SCOPE`. Other applications receive `NOTSET` from the wildcard. This eliminates the need to maintain separate configuration files in multiple locations—ideal for IPC scenarios where distributed processes need coordinated configuration.
+When `myapp` queries `log::myapp::scope::*`, it receives `DEBUG | SCOPE`. Other applications receive `NOTSET` from the wildcard. This eliminates the need to maintain separate configuration files in multiple locations–ideal for IPC scenarios where distributed processes need coordinated configuration.
 
 **Use Cases**
 
@@ -74,7 +74,7 @@ The Areg persistence module organizes key-value pairs into three distinct storag
 
 **Purpose**: Global configuration applicable to all modules.
 
-- **Scope**: Keys with wildcard module (`*`) — e.g., `log::*::scope::areg_*`
+- **Scope**: Keys with wildcard module (`*`) – e.g., `log::*::scope::areg_*`
 - **Mutability**: Immutable after initialization
 - **Persistence**: Fixed values that remain constant across process restarts
 - **Use Case**: Framework-wide defaults, system-level settings, shared logging scopes
@@ -92,7 +92,7 @@ When any module queries `log::*::scope::areg_*`, it receives the same immutable 
 
 **Purpose**: Module-specific configuration that can be modified and persisted.
 
-- **Scope**: Keys with specific module names — e.g., `log::myapp::scope::*`
+- **Scope**: Keys with specific module names – e.g., `log::myapp::scope::*`
 - **Mutability**: Applications can modify values at runtime
 - **Persistence**: Changes are written to the file system and survive process restarts
 - **Use Case**: User preferences, feature toggles, runtime-adjustable settings
@@ -112,7 +112,7 @@ Writable properties enable applications to store configuration state between ses
 
 - **Scope**: Keys with specific module names, marked as temporary
 - **Mutability**: Applications can modify values at runtime
-- **Persistence**: **Not persisted**—changes exist only during process lifetime
+- **Persistence**: **Not persisted**–changes exist only during process lifetime
 - **Lifecycle**: Created on startup, destroyed on shutdown
 - **Use Case**: Session state, runtime flags, ephemeral counters, dynamic behavior switches
 
@@ -233,7 +233,7 @@ log::mtrouter::scope::*     = NOTSET    # 'mtrouter': no logging
 4. If wildcard exists, return its value
 5. If neither exists, return default/empty value
 
-This mechanism enables **one configuration file, many applications**—critical for IPC deployments where updating multiple config files is error-prone.
+This mechanism enables **one configuration file, many applications**–critical for IPC deployments where updating multiple config files is error-prone.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -429,9 +429,9 @@ When multiple applications share one `areg.init` file:
 
 ### Performance Considerations
 
-- Configuration files are parsed once at startup—keep files under 100KB for sub-millisecond parsing
+- Configuration files are parsed once at startup–keep files under 100KB for sub-millisecond parsing
 - Use temporary properties for frequently changing values to avoid file I/O
-- Writable properties trigger file updates on change—use sparingly for critical data only
+- Writable properties trigger file updates on change–use sparingly for critical data only
 - Read-only properties (wildcards) have no runtime overhead after initialization
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>

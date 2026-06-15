@@ -38,7 +38,7 @@ Generates complete service interface code for object-based RPC communication, in
 - **Zero Boilerplate**: Eliminates hundreds of lines of repetitive code per service
 - **Rapid Prototyping**: Define interfaces quickly, generate code instantly
 - **Modular Architecture**: Clean separation between interface definition and implementation
-- **Easy Refactoring**: Update `.siml` file, regenerate—no manual code changes needed
+- **Easy Refactoring**: Update `.siml` file, regenerate–no manual code changes needed
 
 ### Secure Collaboration
 
@@ -263,7 +263,7 @@ java -jar codegen.jar ^
 
 **Step 4: Implement Business Logic**
 
-Same as CMake workflow—inherit from generated stubs and implement service methods.
+Same as CMake workflow–inherit from generated stubs and implement service methods.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -311,7 +311,7 @@ project/
 
 ### Common Pitfalls
 
-- **Manual edits to generated code**: Never modify generated files—changes will be lost on regeneration
+- **Manual edits to generated code**: Never modify generated files–changes will be lost on regeneration
 - **Stale generated code**: Always regenerate after updating `.siml` files
 - **Missing dependencies**: Ensure Java 17+ is installed and accessible
 - **Path issues**: Use absolute paths or CMake variables for reliable builds
