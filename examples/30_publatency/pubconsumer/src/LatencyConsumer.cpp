@@ -47,7 +47,7 @@ LatencyConsumer::LatencyConsumer(const areg::ComponentEntry & entry, areg::Compo
     , mDisplayConsumer( *this )
     , mDisplayThread( static_cast<areg::ThreadConsumer &>(mDisplayConsumer), THREAD_DISPLAY )
 
-    , mMode         ( Latency::LatencyMode::Request0 )
+    , mMode         ( Latency::LatencyMode::Broadcast64 )
     , mCount        ( DEFAULT_COUNT )
     , mWarmup       ( DEFAULT_WARMUP )
     , mDurationNs   ( DEFAULT_DURATION_NS )
