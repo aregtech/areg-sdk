@@ -184,13 +184,13 @@ All values in **μs**. **Bold** = wins against nearest competitor at similar mes
 
 | Framework | Mode | Total size | Min | P50 | P95 | P99 | Mean |
 |-----------|------|-----------|-----|-----|-----|-----|------|
-| **areg-sdk Linux** | bc0 | 140 B | **14.8** | **15.9** | 33.3 | 42.0 | **21.8** |
-| **areg-sdk Linux** | bc64 | 204 B | **15.1** | **16.7** | 33.4 | 42.0 | **19.5** |
-| **areg-sdk Linux** | bc128 | 268 B | **15.4** | **16.9** | 30.2 | 41.0 | **19.1** |
-| **areg-sdk Linux** | bc512 | 652 B | **16.4** | 21.3 | 47.7 | 63.3 | 25.3 |
+| **areg-sdk Linux** | bc0 | 140 B | **14.1** | **15.9** | 33.0 | 40.0 | **19.6** |
+| **areg-sdk Linux** | bc64 | 204 B | **14.8** | **16.9** | 33.4 | 42.0 | **19.5** |
+| **areg-sdk Linux** | bc128 | 268 B | **15.0** | **17.4** | 38.0 | 50.0 | **21.0** |
+| **areg-sdk Linux** | bc512 | 652 B | **15.7** | 19.4 | 34.5 | 47.8 | 21.9 |
 
 > No competitor data below 1 KB exists in the reference benchmark.
-> areg bc64 Min (15.1 μs) is already faster than NanoMsg at 1 KB (18.0 μs),
+> areg bc64 Min (14.8 μs) is already faster than NanoMsg at 1 KB (18.0 μs),
 > with a 5× larger message going through an additional TCP hop and full dispatch.
 
 ---
@@ -199,13 +199,13 @@ All values in **μs**. **Bold** = wins against nearest competitor at similar mes
 
 | Framework | Transport | Size | Min | Avg/Mean | P90/P95 | P99 | Conditions |
 |-----------|-----------|------|-----|----------|---------|-----|-----------|
-| **areg-sdk Linux** | TCP bc1024 | 1164 B | **15.8** | **20.2** (Mean) | **30.3** (P95) | 38.0 | USB, T=0, 2-hop, full stack |
+| **areg-sdk Linux** | TCP bc1024 | 1164 B | **15.8** | **20.8** (Mean) | **37.1** (P95) | 54.1 | USB, T=0, 2-hop, full stack |
 | NanoMsg | TCP direct | 1000 B | 18.0 | 21.9 (Avg) | 22.3 (P90) | **24.8** | Xeon, T=1000μs, isolated, raw |
 | ZMQ | TCP direct | 1000 B | 22.0 | 27.5 (Avg) | 28.5 (P90) | 31.6 | same |
 | NNG | TCP direct | 1000 B | 24.3 | 34.9 (Avg) | 39.7 (P90) | 48.4 | same |
 
-**areg-sdk wins:** Min (−2.2 μs), Mean vs Avg (−1.7 μs)
-**areg-sdk loses:** P99 (+13.2 μs) — due to USB noise and continuous send rate
+**areg-sdk wins:** Min (−2.2 μs), Mean vs Avg (−1.1 μs)
+**areg-sdk loses:** P99 (+29.3 μs) — due to USB noise and continuous send rate
 > bc4096 (not bc1024) is the most stable dataset: zero outliers, Min 17.05–18.36 μs across 8 runs.
 
 ---
@@ -214,13 +214,13 @@ All values in **μs**. **Bold** = wins against nearest competitor at similar mes
 
 | Framework | Transport | Size | Min | Avg/Mean | P90/P95 | P99 | Conditions |
 |-----------|-----------|------|-----|----------|---------|-----|-----------|
-| **areg-sdk Linux** | TCP bc4096 | 4236 B | **17.7** | **21.0** (Mean) | **27.6** (P95) | 42.3 | USB, T=0, 2-hop, full stack |
+| **areg-sdk Linux** | TCP bc4096 | 4236 B | **17.1** | **23.1** (Mean) | **40.6** (P95) | 55.9 | USB, T=0, 2-hop, full stack |
 | NanoMsg | TCP direct | 4000 B | 19.3 | 24.5 (Avg) | 26.3 (P90) | **28.0** | Xeon, T=1000μs, isolated, raw |
 | ZMQ | TCP direct | 4000 B | 23.9 | 29.3 (Avg) | 31.0 (P90) | 34.1 | same |
 | NNG | TCP direct | 4000 B | 27.0 | 35.6 (Avg) | 39.8 (P90) | 50.2 | same |
 
-**areg-sdk wins:** Min (−1.6 μs), Mean vs Avg (−3.5 μs), P95 vs P90 near-equal (27.6 vs 26.3)
-**areg-sdk loses:** P99 (+14.3 μs)
+**areg-sdk wins:** Min (−2.2 μs), Mean vs Avg (−1.4 μs)
+**areg-sdk loses:** P99 (+27.9 μs) — due to USB noise and continuous send rate
 > Most reliable dataset: zero outliers across all 8 runs.
 
 ---
@@ -229,16 +229,15 @@ All values in **μs**. **Bold** = wins against nearest competitor at similar mes
 
 | Framework | Transport | Size | Min | Avg/Mean | P90/P95 | P99 | Conditions |
 |-----------|-----------|------|-----|----------|---------|-----|-----------|
-| **areg-sdk Linux** | TCP bc65536 | 65676 B | **41.3** | **45.3** (Mean) | **50.2** (P95) | 71.7 | USB, T=0, 2-hop, full stack |
+| **areg-sdk Linux** | TCP bc65536 | 65676 B | **38.3** | **45.1** (Mean) | **54.9** (P95) | 78.6 | USB, T=0, 2-hop, full stack |
 | NNG | TCP direct | 64000 B | **39.9** | 49.4 (Avg) | 55.6 (P90) | **65.2** | Xeon, T=1000μs, isolated, raw |
 | ZMQ | TCP direct | 64000 B | 43.6 | 52.6 (Avg) | 53.4 (P90) | 59.5 | same |
 | NanoMsg | TCP direct | 64000 B | 32.1 | **171.1 ⚠️** | **303.9 ⚠️** | **307.3 ⚠️** | Nagle failure |
 
-**areg-sdk wins:** Mean vs ZMQ (−7.3 μs), Mean vs NNG (−4.1 μs), Min vs ZMQ (−2.3 μs)
-**NNG wins by 1.4 μs on Min** — within measurement variance
-**areg-sdk loses:** P99 (+6.5 μs vs NNG) — USB noise driven
+**areg-sdk wins:** Mean vs ZMQ (−7.5 μs), Mean vs NNG (−4.3 μs), Min vs ZMQ (−5.3 μs), Min vs NNG (−1.6 μs)
+**areg-sdk loses:** P99 (+13.4 μs vs NNG) — USB noise driven
 **NanoMsg at 64 KB:** Nagle algorithm failure — Avg=171 μs vs Min=32 μs (5.3× degradation).
-areg-sdk Mean (45.3 μs) is 3.8× better than NanoMsg average at this size.
+areg-sdk Mean (45.1 μs) is 3.8× better than NanoMsg average at this size.
 
 ---
 
@@ -246,11 +245,11 @@ areg-sdk Mean (45.3 μs) is 3.8× better than NanoMsg average at this size.
 
 | Size | areg vs best competitor | Min | Mean/Avg | P99 |
 |------|------------------------|-----|----------|-----|
-| ~1 KB | vs NanoMsg TCP | ✅ areg −2.2 μs | ✅ areg −1.7 μs | ❌ areg +13.2 μs |
-| ~4 KB | vs NanoMsg TCP | ✅ areg −1.6 μs | ✅ areg −3.5 μs | ❌ areg +14.3 μs |
-| ~64 KB | vs NNG TCP (Min) / ZMQ (Mean) | ±1.4 μs NNG | ✅ areg −4.1 μs | ❌ areg +6.5 μs |
+| ~1 KB | vs NanoMsg TCP | ✅ areg −2.2 μs | ✅ areg −1.1 μs | ❌ areg +29.3 μs |
+| ~4 KB | vs NanoMsg TCP | ✅ areg −2.2 μs | ✅ areg −1.4 μs | ❌ areg +27.9 μs |
+| ~64 KB | vs NNG TCP (Min) / ZMQ (Mean) | ✅ areg −1.6 μs | ✅ areg −4.3 μs | ❌ areg +13.4 μs |
 
-**Pattern:** areg wins Min and Mean at all sizes. areg loses P99 — entirely attributable
+**Pattern:** areg wins Min and Mean at all sizes. areg loses P99 across all sizes — entirely attributable
 to USB boot noise and continuous send rate (vs 1 msg/ms test design). The same
 areg-sdk running on native SSD with core isolation is projected to close the P99 gap.
 
@@ -267,18 +266,18 @@ Both sides fully processed: serialize, dispatch, method call, response.
 |------|-----------|-----|-----|-----|-----|------|
 | pp0 | 140+148 B | **~28.5 μs** | ~32–35 μs | ~85 μs | ~105 μs | ~50 μs |
 | pp64 | 204+212 B | **~29.8 μs** | **~31.8 μs** (clean) | ~80 μs | ~95 μs | ~44 μs |
-| pp128 | 268+276 B | ~31 μs | ~33 μs | ~80 μs | ~99 μs | ~48 μs |
-| pp512 | 652+660 B | ~32 μs | ~34 μs | ~80 μs | ~96 μs | ~47 μs |
-| pp1024 | 1164+1172 B | **~31.4 μs** | **~33.7 μs** | ~67 μs | ~82 μs | ~39 μs |
-| pp4096 | 4236+4244 B | ~35.2 μs | ~37.6 μs | ~80 μs | ~91 μs | ~47 μs |
+| pp128 | 268+276 B | **~30.0 μs** | ~32 μs | ~80 μs | ~99 μs | ~48 μs |
+| pp512 | 652+660 B | ~31.8 μs | ~33 μs | ~80 μs | ~96 μs | ~47 μs |
+| pp1024 | 1164+1172 B | **~32.0 μs** | **~34 μs** | ~67 μs | ~82 μs | ~42 μs |
+| pp4096 | 4236+4244 B | ~34.5 μs | ~37 μs | ~80 μs | ~91 μs | ~47 μs |
 
 > pp0 RTT Min (28.5 μs) and pp64 RTT Min (29.8 μs) measured after static buffer
 > optimization (provider uses pre-allocated buffers, eliminating heap allocation from
 > hot path). This reduces minimum RTT by ~1–2 μs vs dynamic allocation.
 >
-> pp1024 RTT Min (31.4–32 μs) = full 4-hop round-trip at ~1 KB.
+> pp1024 RTT Min (~32 μs) = full 4-hop round-trip at ~1 KB.
 > NanoMsg OWT at 1 KB = 18.0 μs. 2 × NanoMsg OWT = 36 μs.
-> **areg full 4-hop brokered RTT (31.4 μs) < 2 × NanoMsg direct OWT (36 μs).**
+> **areg full 4-hop brokered RTT (~32 μs) < 2 × NanoMsg direct OWT (36 μs).**
 
 ---
 
@@ -291,7 +290,7 @@ Provided for context. areg-sdk does not use IPC/Unix socket transport.
 | NanoMsg IPC | **13.0** | **16.2** | 16.5 | **17.9** | ✅ Hitachi CSV, T=1000 μs, Xeon |
 | ZMQ IPC | 20.4 | 25.8 | 26.4 | 28.4 | ✅ Hitachi CSV |
 | NNG IPC | 20.0 | 28.4 | 32.9 | 43.3 | ✅ Hitachi CSV |
-| **areg-sdk Linux TCP** | **15.1** | **19.5** | **33.4** | 42.0 | ✅ Measured |
+| **areg-sdk Linux TCP** | **14.8** | **19.5** | **33.4** | 42.0 | ✅ Measured |
 
 **areg-sdk TCP beats ZMQ IPC and NNG IPC on Min and Mean/Avg.**
 areg-sdk is competitive with NanoMsg IPC — achieving similar Avg (19.5 vs 16.2 μs)
@@ -306,14 +305,14 @@ Hitachi CSV shows severe reliability problems:
 
 | Framework | 1 KB T=0 Avg | 1 KB T=0 P99 | Status |
 |-----------|-------------|-------------|--------|
-| **areg-sdk Linux** | **20.2 μs** | **38.0 μs** | **✅ Stable** |
+| **areg-sdk Linux** | **20.8 μs** | **54.1 μs** | **✅ Stable** |
 | ZMQ TCP | 25.3 μs | 30.3 μs | ✅ Stable |
 | NanoMsg TCP | 452.8 μs | 867.1 μs | ❌ Nagle broken |
 | NNG TCP | 42.8 μs | 542.8 μs | ❌ P99 broken |
 
 At the same send rate: areg-sdk is the most reliable framework of the four.
 NanoMsg loses TCP_NODELAY effectiveness at high rates — Avg becomes 452 μs despite Min=21 μs.
-areg-sdk Mean (20.2 μs) beats ZMQ Mean (25.3 μs) even at maximum load.
+areg-sdk Mean (20.8 μs) beats ZMQ Mean (25.3 μs) even at maximum load.
 
 ---
 
@@ -323,17 +322,17 @@ areg-sdk latency is nearly flat from 140 B to 4 KB. Framework overhead dominates
 
 | areg mode | Total size | Min | Mean | Delta Min from bc64 |
 |-----------|-----------|-----|------|---------------------|
-| bc64 | 204 B | 15.1 μs | 19.5 μs | baseline |
-| bc128 | 268 B | 15.4 μs | 19.1 μs | +0.3 μs (+2%) |
-| bc512 | 652 B | 16.4 μs | 25.3 μs | +1.3 μs (+9%) |
-| bc1024 | 1164 B | 15.8 μs | 20.2 μs | +0.7 μs (+5%) |
-| bc4096 | 4236 B | 17.7 μs | 21.0 μs | +2.6 μs (+17%) |
-| bc65536 | 65676 B | 41.3 μs | 45.3 μs | +26.2 μs (+174%) |
+| bc64 | 204 B | 14.8 μs | 19.5 μs | baseline |
+| bc128 | 268 B | 15.0 μs | 21.0 μs | +0.2 μs (+1%) |
+| bc512 | 652 B | 15.7 μs | 21.9 μs | +0.9 μs (+6%) |
+| bc1024 | 1164 B | 15.8 μs | 20.8 μs | +1.0 μs (+7%) |
+| bc4096 | 4236 B | 17.1 μs | 23.1 μs | +2.3 μs (+15%) |
+| bc65536 | 65676 B | 38.3 μs | 45.1 μs | +23.5 μs (+159%) |
 
-From 204 B to 4236 B (20× size increase): Min increases only 2.6 μs.
+From 204 B to 4236 B (20× size increase): Min increases only 2.3 μs.
 Jump at 65 KB is due to TCP segmentation (~45 segments per message).
 
-NanoMsg comparison (T=1000 μs): 1 KB → 4 KB: +1.3 μs (+7%). areg: +2.6 μs (+17%) over a 20× range.
+NanoMsg comparison (T=1000 μs): 1 KB → 4 KB: +1.3 μs (+7%). areg: +2.3 μs (+15%) over a 20× range.
 
 ---
 
@@ -375,9 +374,9 @@ macOS on MacBook Pro M3 Pro, LPDDR5.
 
 | Platform | Min | P50 | P95 | P99 | Mean |
 |----------|-----|-----|-----|-----|------|
-| **Linux USB** | **~31 μs** | **~33 μs** | ~74 μs | ~88 μs | ~45 μs |
+| **Linux USB** | **~30 μs** | **~32 μs** | ~80 μs | ~95 μs | ~44 μs |
 | **macOS M3 Pro** | 46.0 μs | 62.5 μs | **74.6 μs** | **78.3 μs** | 62.9 μs |
-| **Windows 11** | ~63 μs | ~83 μs | ~86 μs | ~104–115 μs | ~83 μs |
+| **Windows 11** | ~64 μs | ~83 μs | ~86 μs | ~108 μs | ~83 μs |
 
 ### 10.3 Throughput by Platform
 
@@ -396,7 +395,7 @@ macOS on MacBook Pro M3 Pro, LPDDR5.
 ### 10.4 Platform Profiles
 
 **Linux (Ubuntu 26.04, USB boot):**
-- Strongest latency: Min 15.1 μs, P50 16.7 μs — fastest single-message delivery
+- Strongest latency: Min 14.8 μs, P50 16.9 μs — fastest single-message delivery
 - USB interference creates bimodal P50 (~25% of runs inflate to ~65 μs)
 - P99 (42 μs) slightly higher than macOS P99 (40.6 μs) due to USB spikes
 - On native SSD: bimodal distribution expected to disappear, P99 to improve
@@ -418,7 +417,7 @@ macOS on MacBook Pro M3 Pro, LPDDR5.
 
 | Comparison | Linux | macOS M3 | Windows |
 |------------|-------|----------|---------|
-| vs NanoMsg TCP Min (18.0 μs) | **wins −2.9 μs** | **loses +3.6 μs** | **loses +14 μs** |
+| vs NanoMsg TCP Min (18.0 μs) | **wins −3.2 μs** | **loses +3.6 μs** | **loses +14 μs** |
 | vs NanoMsg TCP Avg (21.9 μs) | **wins −2.4 μs** | **loses +9.7 μs** | **loses +18 μs** |
 | vs ZMQ TCP Avg (27.5 μs) | **wins −8.0 μs** | **loses +4.1 μs** | **loses +12.5 μs** |
 | vs NNG TCP Avg (34.9 μs) | **wins −15.4 μs** | **wins −3.3 μs** | **wins −5.1 μs** |
@@ -433,7 +432,7 @@ Windows areg-sdk beats NNG; is slower than ZMQ and NanoMsg.
 
 The following claims are directly supported by measured data:
 
-> *"areg-sdk on Linux TCP achieves Min 15.1 μs and Mean 19.5 μs one-way
+> *"areg-sdk on Linux TCP achieves Min 14.8 μs and Mean 19.5 μs one-way
 > for 204-byte messages — faster than ZMQ (27.5 μs Avg) and NanoMsg (21.9 μs Avg)
 > on TCP, despite routing through a centralized broker and including full service
 > dispatch on the receiver, running at maximum send rate on a mobile CPU
@@ -446,7 +445,7 @@ The following claims are directly supported by measured data:
 
 > *"At maximum send rate (T=0): areg-sdk is the only stable framework among
 > ZMQ, NanoMsg, NNG, and areg-sdk. NanoMsg and NNG show P99 of 542–867 μs
-> at 1 KB; areg-sdk P99 remains at 38 μs. (Source: Hitachi CSV, T=0 data.)"*
+> at 1 KB; areg-sdk P99 remains at 54 μs. (Source: Hitachi CSV, T=0 data.)"*
 
 ---
 

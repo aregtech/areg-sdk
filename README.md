@@ -171,17 +171,17 @@ data serialization, event dispatching, and multithreading — not raw socket thr
 >
 > Measurements taken at `mtrouter` — duplex communication, high-precision timers.
 >
-> | Platform       | CPU Type         | ~3 MB, GB/s             | ~0.5 KB, msg/s            |
-> |----------------|------------------|-------------------------|---------------------------|
-> | Linux Ubuntu ¹ | i7-13700H (DDR4) | ~6.0 sust. / ~7.2 burst | ~1.5M sust. / ~2.0M burst |
-> | macOS native ² | M3 Pro (LPDDR5)  | ~6.7–7.0                | ~2.5M                     |
-> | Windows 11 ³   | i7-13700H (DDR4) | ~2.2 sust. / ~3.0 burst | ~1.5M sust. / ~2.0M burst |
-> | WSL2 Ubuntu ⁴  | i7-13700H (DDR4) | 4.0–4.5                 | ~1.5M                     |
+> | Platform       | CPU Type         | ~3 MB, GB/s                   | ~0.5 KB, msg/s               |
+> |----------------|------------------|-------------------------------|------------------------------|
+> | Linux Ubuntu ¹ | i7-13700H (DDR4) | ~6.0 sust. / ~7.0 burst       | ~1.5M sust. / ~2.0M burst    |
+> | macOS native ² | M3 Pro (LPDDR5)  | ~6.7–7.0                      | ~2.5M                        |
+> | Windows 11 ³   | i7-13700H (DDR4) | ~2.5 sust. / ~2.7 burst       | ~1.56M burst / ~1.1M decl. ³ |
+> | WSL2 Ubuntu ⁴  | i7-13700H (DDR4) | 4.0–4.5                       | ~1.5M                       |
 >
-> ¹ Measured on **USB live boot** (Ubuntu 26.04, i7-13700H, DDR4). Burst = first 30 s; sustained = 5+ minutes. Native SSD expected to sustain burst figures (~1.8–2.0M msg/s, ~6.5–7.2 GB/s).
+> ¹ Measured on **USB live boot** (Ubuntu 26.04, i7-13700H, DDR4). Burst = first 30 s; sustained = 5+ minutes. Native SSD expected to sustain burst figures (~1.8–2.0M msg/s, ~6.5–7.0 GB/s).
 > ² Measured without network tuning. Numbers are transport-layer ceiling; macOS on M4 demonstrated message rate up to 3.0M msg/s.  
-> ³ On Windows, stable end-to-end consumer dispatch reaches +1.0M msg/s; above 1.2M msg/s the RPC dispatch thread starts to become the bottleneck. See [23_pubdatarate README](examples/23_pubdatarate/ReadMe.md) for details.  
-> ⁴ With [network tuning](./docs/wiki/07d-troubleshooting-network-tunning.md) the data rate may grow +5.5 GB/s.  
+> ³ On Windows, stable end-to-end consumer dispatch reaches +1.1M msg/s; above +1.5M msg/s the RPC dispatch thread starts to become the bottleneck. See [23_pubdatarate README](examples/23_pubdatarate/ReadMe.md) for details.  
+> ⁴ With [network tuning](./docs/wiki/07d-troubleshooting-network-tunning.md) the data rate may reach ~5.0–5.6 GB/s.  
 >
 > **Full stack:** data serialization, event dispatching, multithreading — not raw socket throughput.
 >
@@ -197,9 +197,9 @@ data serialization, event dispatching, and multithreading — not raw socket thr
 >
 > | Platform       | CPU               | OWT Min     | OWT P50     | RTT Min     | RTT P50    |
 > |----------------|-------------------|-------------|-------------|-------------|------------|
-> | Linux Ubuntu ¹ | i7-13700H (DDR4)  | **14.8 μs** | **~17 μs**  | **29.8 μs** | **~32 μs** |
+> | Linux Ubuntu ¹ | i7-13700H (DDR4)  | **14.8 μs** | **~16.9 μs** | **29.8 μs** | **~32 μs** |
 > | macOS M3 Pro   | Apple M3 (LPDDR5) | 21.6 μs     | 31.4 μs     | 46.0 μs     | 62.5 μs    |
-> | Windows 11     | i7-13700H (DDR4)  | ~32 μs      | ~40 μs      | ~63 μs      | ~83 μs     |
+> | Windows 11     | i7-13700H (DDR4)  | 32.5 μs     | 40.3 μs     | 64.0 μs     | 82.5 μs    |
 >
 > ¹ USB live boot; Min is unaffected by USB noise. Native SSD expected to improve tail percentiles.
 >
@@ -207,7 +207,7 @@ data serialization, event dispatching, and multithreading — not raw socket thr
 > despite fewer hops, no service dispatch, and a faster local transport.
 > Source: [MPI-HD, F. Werner, 2021](https://www.mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc/).
 >
-> Latency is **payload-size insensitive** up to 4 KB: Min increases only 3.3 μs from 140 B to 4236 B (30× size increase). Framework overhead dominates.
+> Latency is **payload-size insensitive** up to 4 KB: Min increases only 3.0 μs from 140 B to 4236 B (30× size increase). Framework overhead dominates.
 >
 > 📊 Latency details: [`30_publatency`](examples/30_publatency/) | [Full benchmark data](./docs/wiki/08b-areg-sdk-performance-benchmarks.md) | [vs ZMQ/NanoMsg/NNG](./docs/wiki/08c-areg-vs-hitachi-benchmark.md)
 
@@ -339,7 +339,7 @@ cmake --build build -j20
 2. **[02_minimalipc](examples/02_minimalipc/)** — IPC: the same components from `01_minimalrpc` running in separate processes via `mtrouter`
 3. **[03_helloservice](examples/03_helloservice/)** — Extended progression: three projects showing the same service and consumer in one thread → separate threads → separate processes
 4. **[16_pubmesh](examples/16_pubmesh/)** — Service mesh: multiple local and public services discovering each other automatically
-5. **[23_pubdatarate](examples/23_pubdatarate/)** — Platform-dependent high-throughput benchmark: 2.0–7.0 GB/s and 1.5M+ msg/s on `localhost`
+5. **[23_pubdatarate](examples/23_pubdatarate/)** — Platform-dependent high-throughput benchmark: 2.0–7.2 GB/s and 1.5M+ msg/s on `localhost`
 6. **[30_publatency](examples/30_publatency/)** — Full-stack latency benchmark: RTT and OWT across payload sizes, all platforms
 7. **[More Examples](examples/README.md)** — Advanced patterns and features
 

@@ -163,19 +163,19 @@ All values in **μs**.
 
 ### 4.1 Linux — Ubuntu 26.04 LTS (USB boot, i7-13700H, 32 GB DDR4)
 
-| Mode | Payload struct | Total msg size | Min | P50 | P95 | P99 | Mean |
-|------|---------------|---------------|-----|-----|-----|-----|------|
-| bc0 | None | 140 B | 14.1 | 15.9 | 33.0 | 39.6 | 19.6 |
-| bc8 | Latency8 (1×u64) | 148 B | 14.2 | 16.0 | 38.0 | 55.2 | 20.3 |
-| bc64 | Latency64 (8×u64) | 204 B | 14.8 | 16.9 | 33.4 | 42.0 | 19.5 |
-| bc128 | Latency128 (8×u64 + String) | 268 B | 15.4 | 16.9 | 30.2 | 41.0 | 19.1 |
-| bc256 | Latency256 (2×Lat128) | 396 B | 15.2 | 16.7 | 32.6 | 49.3 | 19.3 |
-| bc512 | Latency512 (4×Lat128) | 652 B | 15.9 | 20.3 | 34.3 | 47.9 | 21.8 |
-| bc1024 | Lat64 + Lat128 + SharedBuffer | 1164 B | 15.6 | 17.5 | 37.2 | 54.5 | 20.7 |
-| bc4096 | Lat64 + Lat128 + SharedBuffer | 4236 B | 17.4 | 18.5 | 37.0 | 46.0 | 23.0 |
-| bc65536 | u64 + Lat128 + SharedBuffer | 65676 B | 38.9 | 43.3 | 56.7 | 79.6 | 45.1 |
+| Mode    | Payload struct                | Total msg size | Min  | P50  | P95  | P99  | Mean |
+|---------|-------------------------------|----------------|------|------|------|------|------|
+| bc0     | None                          | 140 B          | 14.1 | 15.9 | 33.0 | 40.0 | 19.6 |
+| bc8     | Latency8 (1×u64)              | 148 B          | 14.2 | 16.0 | 37.8 | 55.0 | 20.1 |
+| bc64    | Latency64 (8×u64)             | 204 B          | 14.8 | 16.9 | 33.4 | 42.0 | 19.5 |
+| bc128   | Latency128 (8×u64 + String)   | 268 B          | 15.0 | 17.4 | 38.0 | 50.0 | 21.0 |
+| bc256   | Latency256 (2×Lat128)         | 396 B          | 15.2 | 16.9 | 32.6 | 48.0 | 19.5 |
+| bc512   | Latency512 (4×Lat128)         | 652 B          | 15.7 | 19.4 | 34.5 | 47.8 | 21.9 |
+| bc1024  | Lat64 + Lat128 + SharedBuffer | 1164 B         | 15.8 | 17.6 | 37.1 | 54.1 | 20.8 |
+| bc4096  | Lat64 + Lat128 + SharedBuffer | 4236 B         | 17.1 | 20.5 | 40.6 | 55.9 | 23.1 |
+| bc65536 | u64 + Lat128 + SharedBuffer   | 65676 B        | 38.3 | 43.3 | 54.9 | 78.6 | 45.1 |
 
-> P50 shows bimodal behavior in ~25% of bc0–bc512 runs due to USB I/O interference.
+> P50 shows bimodal behavior in ~25% of runs due to USB I/O interference.
 > Min values are stable across all runs and reflect the genuine transport floor.
 > bc65536 P99 variance is higher (49–97 μs across runs) for the same reason.
 
@@ -199,12 +199,20 @@ All values in **μs**.
 
 ### 4.3 Windows 11 — same i7-13700H, 32 GB DDR4 (native SSD)
 
-| Mode | Total msg size | Min | P50 | P95 | P99 | Mean |
-|------|---------------|-----|-----|-----|-----|------|
-| bc64 | 204 B | ~32 | ~40 | ~44 | ~47–64 | ~41 |
+| Mode | Payload struct | Total msg size | Min | P50 | P95 | P99 | Mean |
+|------|---------------|---------------|-----|-----|-----|-----|------|
+| bc0 | None | 140 B | 32.0 | 39.5 | 41.9 | 57.1 | 40.1 |
+| bc64 | Latency64 (8×u64) | 204 B | 32.5 | 40.3 | 43.3 | 60.0 | 41.2 |
+| bc128 | Latency128 | 268 B | 33.0 | 40.5 | 43.5 | 53.6 | 40.5 |
+| bc256 | Latency256 | 396 B | 33.4 | 41.6 | 46.3 | 72.0 | 42.2 |
+| bc512 | Latency512 | 652 B | 33.5 | 41.4 | 46.0 | 68.6 | 42.0 |
+| bc1024 | Lat64 + Lat128 + SharedBuffer | 1164 B | 33.8 | 41.8 | 45.8 | 60.4 | 42.9 |
+| bc4096 | Lat64 + Lat128 + SharedBuffer | 4236 B | 36.4 | 46.7 | 49.8 | 67.4 | 46.1 |
+| bc65536 | u64 + Lat128 + SharedBuffer | 65676 B | 57.6 | 72.8 | 76.9 | 104.3 | 73.7 |
 
-Windows OWT is approximately 2.4× higher than Linux at the same hardware.
+Windows OWT is approximately 2.2× higher than Linux at the same hardware.
 The Windows TCP loopback stack has higher per-message overhead than Linux.
+No bimodal distribution — all 8 runs land in the same cluster.
 
 ---
 
@@ -217,19 +225,19 @@ All values in **μs**. P50 "clean" values exclude bimodal USB-interference runs.
 
 | Mode | Payload struct | Request / Response total | Min | P50 (clean) | P95 | P99 |
 |------|---------------|------------------------|-----|-------------|-----|-----|
-| pp0 | None | 140 / 148 B | 28.5 | ~32 | ~85 | ~105 |
+| pp0 | None | 140 / 148 B | 28.5 | ~32 | ~82 | ~100 |
 | pp64 | Latency64 | 204 / 212 B | 29.8 | ~32 | ~80 | ~95 |
-| pp128 | Latency128 | 268 / 276 B | ~30 | ~32 | ~98 | ~114 |
-| pp256 | Latency256 | 396 / 404 B | ~31 | ~32 | ~46 | ~51 |
-| pp512 | Latency512 | 652 / 660 B | ~32 | ~33 | ~39 | ~50 |
-| pp1024 | Lat64 + Lat128 + SharedBuffer | 1164 / 1172 B | 31.8 | ~33.7 | ~67 | ~82 |
-| pp4096 | Lat64 + Lat128 + SharedBuffer | 4236 / 4244 B | 35.2 | ~37.6 | ~80 | ~91 |
-| pp65536 | u64 + Lat128 + SharedBuffer | 65676 / 65684 B | ~83 | ~87 | ~102 | ~108 |
+| pp128 | Latency128 | 268 / 276 B | 30.0 | ~32 | ~80 | ~99 |
+| pp256 | Latency256 | 396 / 404 B | 30.6 | ~32 | ~70 | ~80 |
+| pp512 | Latency512 | 652 / 660 B | 31.8 | ~33 | ~80 | ~96 |
+| pp1024 | Lat64 + Lat128 + SharedBuffer | 1164 / 1172 B | 32.0 | ~34 | ~67 | ~82 |
+| pp4096 | Lat64 + Lat128 + SharedBuffer | 4236 / 4244 B | 34.5 | ~37 | ~80 | ~91 |
+| pp65536 | u64 + Lat128 + SharedBuffer | 65676 / 65684 B | 82.1 | ~87 | ~102 | ~108 |
 
 > pp0 Min (28.5 μs) and pp64 Min (29.8 μs) are the confirmed floor for this hardware.
 > These represent full 4-hop RTT including two serialization + two deserialization cycles.
 > P50 (bimodal): "clean" value is the low cluster; USB interference produces a high
-> cluster around 65–76 μs in a subset of runs. Min is unaffected by USB interference.
+> cluster (~2× the low cluster value) in a subset of runs. Min is unaffected by USB interference.
 
 ### 5.2 macOS — Apple M3 Pro, 32 GB LPDDR5 (native SSD)
 
@@ -250,9 +258,21 @@ All values in **μs**. P50 "clean" values exclude bimodal USB-interference runs.
 
 ### 5.3 Windows 11 — i7-13700H, 32 GB DDR4 (native SSD)
 
-| Mode | Request / Response total | Min | P50 | P95 | P99 | Mean |
-|------|------------------------|-----|-----|-----|-----|------|
-| pp64 | 204 / 212 B | ~63 | ~83 | ~86 | ~104–115 | ~83 |
+| Mode | Payload struct | Request / Response total | Min | P50 | P95 | P99 | Mean |
+|------|---------------|------------------------|-----|-----|-----|-----|------|
+| pp0 | None | 140 / 148 B | 63.0 | 81.9 | 84.6 | 104.9 | 81.9 |
+| pp32 | Latency32 | 172 / 180 B | 63.5 | 82.0 | 84.8 | 108.0 | 82.3 |
+| pp64 | Latency64 | 204 / 212 B | 64.0 | 82.5 | 85.2 | 107.8 | 82.5 |
+| pp128 | Latency128 | 268 / 276 B | 64.5 | 82.5 | 89.3 | 133.0 | 83.5 |
+| pp256 | Latency256 | 396 / 404 B | 64.5 | 82.5 | 85.0 | 108.8 | 82.5 |
+| pp512 | Latency512 | 652 / 660 B | 65.0 | 84.1 | 87.0 | 113.5 | 84.5 |
+| pp1024 | Lat64 + Lat128 + SharedBuffer | 1164 / 1172 B | 65.3 | 83.0 | 85.8 | 112.5 | 83.5 |
+| pp4096 | Lat64 + Lat128 + SharedBuffer | 4236 / 4244 B | 69.1 | 85.3 | 89.6 | 114.1 | 86.7 |
+| pp65536 | u64 + Lat128 + SharedBuffer | 65676 / 65684 B | 115.6 | 142.5 | 204.8 | 242.9 | 152.8 |
+
+> Windows RTT is approximately 2.6× higher than Linux at the same hardware (pp64 P50: 82.5 vs ~32 μs).
+> No bimodal distribution — results are stable and predictable across all runs.
+> pp65536 shows higher tail (P99 242 μs) due to TCP segmentation overhead on the Windows loopback stack.
 
 ---
 
@@ -269,13 +289,14 @@ for messages below the TCP segment boundary (~1460 B).
 | 140 B (bc0) | 14.1 | baseline |
 | 148 B (bc8) | 14.2 | +0.1 μs (+1%) |
 | 204 B (bc64) | 14.8 | +0.7 μs (+5%) |
-| 268 B (bc128) | 15.4 | +1.3 μs (+9%) |
-| 652 B (bc512) | 15.9 | +1.8 μs (+13%) |
-| 1164 B (bc1024) | 15.6 | +1.5 μs (+11%) |
-| 4236 B (bc4096) | 17.4 | +3.3 μs (+23%) |
-| 65676 B (bc65536) | 38.9 | +24.8 μs (+176%) |
+| 268 B (bc128) | 15.0 | +0.9 μs (+6%) |
+| 396 B (bc256) | 15.2 | +1.1 μs (+8%) |
+| 652 B (bc512) | 15.7 | +1.6 μs (+11%) |
+| 1164 B (bc1024) | 15.8 | +1.7 μs (+12%) |
+| 4236 B (bc4096) | 17.1 | +3.0 μs (+21%) |
+| 65676 B (bc65536) | 38.3 | +24.2 μs (+171%) |
 
-From 140 B to 4236 B (30× size increase): Min increases only 3.3 μs.
+From 140 B to 4236 B (30× size increase): Min increases only 3.0 μs.
 The jump at 65 KB is due to TCP segmentation: a 65 KB message requires approximately
 45 TCP segments (at 1460 B MTU), each requiring a separate kernel write.
 
@@ -296,7 +317,9 @@ with the same TCP-segmentation jump at 65 KB (+20.2 μs from bc4096 to bc65536).
 |----------|------|--------|
 | 0–26 s | **~2.0M msg/s** | Burst (warm, RAM overlay not yet pressured) |
 | ~30 s | ~1.875M | Declining |
-| ~80 s | ~1.74M | Declining |
+| ~36 s | ~1.8M | Declining |
+| ~48 s | ~1.74M | Declining |
+| ~110 s | ~1.67M | Declining |
 | ~170 s | ~1.56M | Declining |
 | **5 min+** | **~1.5M msg/s** | **Sustained (stable, stopped)** |
 
@@ -304,8 +327,8 @@ with the same TCP-segmentation jump at 65 KB (+20.2 μs from bc4096 to bc65536).
 
 | Duration | Rate | Status |
 |----------|------|--------|
-| 0–5 s | **~7.2 GB/s** | Burst |
-| ~35 s | ~7.0 GB/s | Declining |
+| ~35 s | **~7.0 GB/s** | Burst |
+| ~45 s | ~6.8 GB/s | Declining |
 | ~80 s | ~6.5 GB/s | Declining |
 | **5 min+** | **~6.0 GB/s** | **Sustained (stable, stopped)** |
 
@@ -314,7 +337,7 @@ with the same TCP-segmentation jump at 65 KB (+20.2 μs from bc4096 to bc65536).
 > queue faster than they drain, consuming the available RAM overlay. The OS must work
 > progressively harder, reducing throughput. On a native SSD install, the RAM overlay
 > is eliminated and sustained throughput is expected to remain close to the burst figures
-> (~1.8–2.0M msg/s, ~6.5–7.2 GB/s).
+> (~1.8–2.0M msg/s, ~6.5–7.0 GB/s).
 
 ### 7.2 macOS — Apple M3 Pro, 32 GB LPDDR5 (native SSD)
 
@@ -328,13 +351,26 @@ and absence of USB memory pressure.
 
 ### 7.3 Windows 11 — i7-13700H, 32 GB DDR4 (native SSD)
 
-| Metric | Payload | Stable | Peak |
-|--------|---------|--------|------|
-| Message rate | ~0.5 KB | ~1.5M msg/s | ~2.0M msg/s |
-| Data rate | ~3 MB | ~2.0–2.2 GB/s | ~2.8 GB/s |
+#### Message rate (~0.5 KB per message)
 
-Lower data rate than Linux/macOS (2.2 vs 6.0–7.0 GB/s) due to Windows TCP loopback
-stack behavior for large messages.
+| Duration | Rate | Status |
+|----------|------|--------|
+| ~8 s | **~1.56M msg/s** | Burst |
+| ~30 s | ~1.25M | Declining |
+| ~45 s | ~1.20M | Declining |
+| +2 min | **~1.12M msg/s** | **Declining (test stopped)** |
+
+#### Data rate (~3 MB per message)
+
+| Duration | Rate | Status |
+|----------|------|--------|
+| Peak | **~2.7 GB/s** | Burst |
+| +2 min+ | **~2.5 GB/s** | **Stable** |
+
+> Windows data rate is approximately 2.4× lower than Linux sustained (2.5 vs 6.0 GB/s)
+> due to higher per-message TCP overhead on the Windows loopback stack.
+> Message rate at small payloads declines more steeply than Linux — no 5-minute stable
+> figure measured; extrapolated sustained is ~1.0–1.1M msg/s.
 
 ---
 
@@ -346,7 +382,7 @@ stack behavior for large messages.
 |----------|-----|-----|-----|-----|------|
 | **Linux (USB)** | **14.8 μs** | **16.9 μs** | 33.4 μs | 42.0 μs | **19.5 μs** |
 | **macOS M3 Pro** | 21.6 μs | 31.4 μs | **37.8 μs** | **40.6 μs** | 31.6 μs |
-| **Windows 11** | ~32 μs | ~40 μs | ~44 μs | ~47–64 μs | ~41 μs |
+| **Windows 11** | 32.5 μs | 40.3 μs | 43.3 μs | 60.0 μs | 41.2 μs |
 
 ### RTT Latency (pp64, 204+212 B)
 
@@ -354,16 +390,16 @@ stack behavior for large messages.
 |----------|-----|-------------|-----|-----|
 | **Linux (USB)** | **29.8 μs** | **~32 μs** | ~80 μs | ~95 μs |
 | **macOS M3 Pro** | 46.0 μs | 62.5 μs | **74.6 μs** | **78.3 μs** |
-| **Windows 11** | ~63 μs | ~83 μs | ~86 μs | ~104–115 μs |
+| **Windows 11** | 64.0 μs | 82.5 μs | 85.2 μs | 107.8 μs |
 
 ### Throughput
 
-| Platform | Msg/s sustained | Msg/s burst | Data rate sustained | Data rate burst |
-|----------|----------------|------------|--------------------|--------------:|
-| **macOS M3 Pro** | **~2.5M** | — | **~6.7–7.0 GB/s** | — |
-| **Linux (native SSD, est.)** | **~1.8–2.0M** | — | **~6.5–7.2 GB/s** | — |
-| **Linux (USB boot, measured)** | ~1.5M | ~2.0M | ~6.0 GB/s | ~7.2 GB/s |
-| **Windows 11** | ~1.5M | ~2.0M | ~2.0–2.2 GB/s | ~2.8 GB/s |
+| Platform | Msg/s burst | Msg/s sustained | Data rate burst | Data rate sustained |
+|----------|------------|----------------|----------------|--------------------|
+| **Linux (USB boot, measured)** | ~2.0M | **~1.5M** | **~7.0 GB/s** | **~6.0 GB/s** |
+| **Linux (native SSD, est.)** | — | **~1.8–2.0M** | — | **~6.5–7.0 GB/s** |
+| **macOS M3 Pro** | — | **~2.5M** | — | **~6.7–7.0 GB/s** |
+| **Windows 11** | ~1.56M | ~1.1M | ~2.7 GB/s | ~2.5 GB/s |
 
 ### Platform Profiles
 
@@ -371,14 +407,13 @@ stack behavior for large messages.
 highest burst data rate. USB-boot variance inflates P99 and degrades sustained
 throughput; a native SSD install resolves both.
 
-**macOS M3 Pro** offers the best P99 consistency (40.6 μs for bc64, compared to
-42.0 μs on Linux USB despite higher typical latency) and the highest sustained
-message rate (2.5M msg/s). The higher P50 latency vs Linux reflects macOS TCP stack
-per-packet overhead.
+**macOS M3 Pro** offers the best P99 consistency (40.6 μs for bc64 vs 42.0 μs
+on Linux USB) and the highest sustained message rate (2.5M msg/s). The higher
+P50 latency vs Linux reflects macOS TCP stack per-packet overhead.
 
-**Windows 11** has the highest OWT and RTT latency and lowest data rate. Message rate
-at small payloads is competitive with Linux (1.5M sustained). Suitable for Windows-native
-production deployments.
+**Windows 11** has the highest OWT and RTT latency and lowest data rate.
+Data throughput is stable at ~2.5 GB/s. Message rate declines over time on long
+runs. Suitable for Windows-native production deployments.
 
 ---
 
@@ -407,7 +442,7 @@ PUB/SUB pattern, 1 subscriber, 5000 messages. Raw transport only — no service 
 | NanoMsg | 18.0 μs | 21.9 μs | 22.3 μs | **24.8 μs** | TCP direct | Raw |
 | ZMQ | 22.0 μs | 27.5 μs | 28.5 μs | 31.6 μs | TCP direct | Raw |
 | NNG | 24.3 μs | 34.9 μs | 39.7 μs | 48.4 μs | TCP direct | Raw |
-| **areg-sdk Linux** | **15.6 μs** | **20.7 μs** | **37.2 μs** | 54.5 μs | TCP 2-hop broker | Full stack |
+| **areg-sdk Linux** | **15.8 μs** | **20.8 μs** | **37.1 μs** | 54.1 μs | TCP 2-hop broker | Full stack |
 
 **TCP OWT comparison — 4 KB payload:**
 
@@ -416,7 +451,7 @@ PUB/SUB pattern, 1 subscriber, 5000 messages. Raw transport only — no service 
 | NanoMsg | 19.3 μs | 24.5 μs | 26.3 μs | **28.0 μs** |
 | ZMQ | 23.9 μs | 29.3 μs | 31.0 μs | 34.1 μs |
 | NNG | 27.0 μs | 35.6 μs | 39.8 μs | 50.2 μs |
-| **areg-sdk Linux** | **17.4 μs** | **23.0 μs** | **37.0 μs** | 46.0 μs |
+| **areg-sdk Linux** | **17.1 μs** | **23.1 μs** | **37.0 μs** | 46.0 μs |
 
 **TCP OWT comparison — 64 KB payload:**
 
@@ -425,7 +460,7 @@ PUB/SUB pattern, 1 subscriber, 5000 messages. Raw transport only — no service 
 | NNG | **39.9 μs** | 49.4 μs | 55.6 μs | **65.2 μs** |
 | ZMQ | 43.6 μs | 52.6 μs | 53.4 μs | 59.5 μs |
 | NanoMsg | 32.1 μs | **171.1 μs ⚠️** | **303.9 μs ⚠️** | **307.3 μs ⚠️** |
-| **areg-sdk Linux** | 41.3 μs | **45.1 μs** | **50.2 μs** | 79.6 μs |
+| **areg-sdk Linux** | 38.3 μs | **45.1 μs** | **50.2 μs** | 78.6 μs |
 
 > **NanoMsg 64 KB anomaly (T=1000 μs):** Nagle's algorithm fires at this payload size.
 > Min (32.1 μs) remains clean but Avg jumps to 171 μs — a 5.3× degradation.
@@ -448,10 +483,10 @@ PUB/SUB pattern, 1 subscriber, 5000 messages. Raw transport only — no service 
 | ZMQ | 25.3 μs | 30.3 μs | ✅ |
 | NNG | 42.8 μs | 542.8 μs | ❌ P99 collapsed |
 | NanoMsg | 452.8 μs | 867.1 μs | ❌ Broken (Nagle) |
-| **areg-sdk Linux** | **20.7 μs** | **54.5 μs** | **✅** |
+| **areg-sdk Linux** | **20.8 μs** | **54.1 μs** | **✅** |
 
 At the same send rate as areg-sdk: NanoMsg and NNG become unreliable.
-areg-sdk Mean (20.7 μs) beats ZMQ Mean (25.3 μs) at equal load.
+areg-sdk Mean (20.8 μs) beats ZMQ Mean (25.3 μs) at equal load.
 
 > **NanoMsg maintenance status:** 0 commits and 2 open issues recorded
 > January–April 2025 per the Hitachi Energy paper. The library is effectively unmaintained.
@@ -494,8 +529,8 @@ Test rate: up to 10K msg/s. Raw transport, no service dispatch.
 > uses OS yields and sleeps between sends. Switching to `spin` eliminates this jitter.
 > Aeron IPC default also showed max latencies >100 ms (fixed by increasing `IPC_MTU_LENGTH`).
 >
-> **Context:** areg-sdk Linux bc64 P50 (~16.7 μs, full TCP dispatch) is approximately
-> 3× lower than Aeron UDP P50 (~50 μs, raw transport) at comparable message rates.
+> **Context:** areg-sdk Linux bc64 P50 (~16.9 μs, full TCP dispatch) is approximately
+> 2.8× lower than Aeron UDP P50 (~50 μs, raw transport) at comparable message rates.
 > Hardware is different and tuning matters significantly for Aeron.
 > Comparison is indicative, not conclusive.
 
