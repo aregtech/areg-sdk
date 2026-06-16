@@ -753,6 +753,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wiki", "wiki", "{C33D0DF1-A
 		docs\wiki\04c-logobserver.md = docs\wiki\04c-logobserver.md
 		docs\wiki\04d-logcollector.md = docs\wiki\04d-logcollector.md
 		docs\wiki\05a-persistence-syntax.md = docs\wiki\05a-persistence-syntax.md
+		docs\wiki\05b-areg-configuration-file.md = docs\wiki\05b-areg-configuration-file.md
 		docs\wiki\06a-areg-sdk-tools.md = docs\wiki\06a-areg-sdk-tools.md
 		docs\wiki\06b-code-generator.md = docs\wiki\06b-code-generator.md
 		docs\wiki\06c-build-lusan.md = docs\wiki\06c-build-lusan.md
@@ -765,6 +766,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wiki", "wiki", "{C33D0DF1-A
 		docs\wiki\07c-troubleshooting-integration.md = docs\wiki\07c-troubleshooting-integration.md
 		docs\wiki\07d-troubleshooting-network-tunning.md = docs\wiki\07d-troubleshooting-network-tunning.md
 		docs\wiki\08a-examples-and-tests.md = docs\wiki\08a-examples-and-tests.md
+		docs\wiki\08b-areg-sdk-performance-benchmarks.md = docs\wiki\08b-areg-sdk-performance-benchmarks.md
+		docs\wiki\08c-areg-vs-hitachi-benchmark.md = docs\wiki\08c-areg-vs-hitachi-benchmark.md
+		docs\wiki\08d-areg-framework-rankings.md = docs\wiki\08d-areg-framework-rankings.md
 		docs\wiki\README.md = docs\wiki\README.md
 	EndProjectSection
 EndProject
