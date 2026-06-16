@@ -173,9 +173,9 @@ Measured on **mobile-class consumer hardware**, full stack active — data seria
 | Windows 11 ³   | i7-13700H (DDR4) | ~2.5 sust. / ~2.7 burst  | ~1.1M sust. / ~1.6M burst |
 | WSL2 Ubuntu ⁴  | i7-13700H (DDR4) | ~4.0–4.5                 | ~1.5M                     |
 
-¹ USB live boot (Ubuntu 26.04). Burst = first 30 s; sustained = 5+ min. Native SSD expected to sustain burst figures.
-² No network tuning. M4 reached up to 3.0M msg/s.
-³ Stable dispatch ~1.1M msg/s; above ~1.6M the dispatch thread becomes the bottleneck.
+¹ USB live boot (Ubuntu 26.04). Burst = first 30 s; sustained = 5+ min. Native SSD expected to sustain burst figures.  
+² No network tuning. M4 reached up to 3.0M msg/s.  
+³ Stable dispatch ~1.1M msg/s; above ~1.6M the dispatch thread becomes the bottleneck.  
 ⁴ With [network tuning](./docs/wiki/07d-troubleshooting-network-tunning.md), up to ~5.0–5.6 GB/s.
 
 ### Latency — TCP `localhost`, full stack, 204-byte messages
