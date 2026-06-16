@@ -321,7 +321,7 @@ Change logging priorities at the source application level, affecting which logs 
 
 #### Message-Level Filtering (Viewer Side)
 
-Filter already received logs in the log viewer. This filtering is performed on the Lusan side—logs of unselected priorities are hidden from view but remain in the buffer.
+Filter already received logs in the log viewer. This filtering is performed on the Lusan side–logs of unselected priorities are hidden from view but remain in the buffer.
 
 <div align="center"><a href="../img/lusan-live-log-message-prio.png"><img src="../img/lusan-live-log-message-prio.png" alt="Lusan live log message priority filter" style="width:80%;height:80%"/></a></div>
 

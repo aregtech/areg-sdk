@@ -296,12 +296,12 @@ router::*::port::tcpip      = 8181			                # Router TCP port number (d
 #   MODULE    = process name ("mtrouter", "logcollector") or "*" (all processes).
 #   TRANSPORT = "tcpip" (future: "udp", "sm" for shared memory).
 #   Value is in KB (kilobytes). E.g., 4096 = 4 MB, 8192 = 8MB, 12288 = 12MB, 16384 = 16 MB.
-#   Not applied on Windows — OS autotuning is used there instead.
+#   Not applied on Windows - OS autotuning is used there instead.
 #   On Linux, the kernel doubles the configured value internally.
 # ---------------------------------------------------------------------------
 net::mtrouter::tcpip::sndbuf        = 8192                  # Router SO_SNDBUF (8192 KB = 8 MB). Increase for 3MB+ frames.
 net::mtrouter::tcpip::rcvbuf        = 8192                  # Router SO_RCVBUF (8192 KB = 8 MB).
-net::logcollector::tcpip::sndbuf    = 2048                  # Logger SO_SNDBUF (2048 KB = 2 MB — log traffic is bursty but small).
+net::logcollector::tcpip::sndbuf    = 2048                  # Logger SO_SNDBUF (2048 KB = 2 MB - log traffic is bursty but small).
 net::logcollector::tcpip::rcvbuf    = 2048                  # Logger SO_RCVBUF (2048 KB = 2 MB).
 net::*::tcpip::sndbuf               = 8192                  # Default SO_SNDBUF for all services (uncomment to set a global default).
 net::*::tcpip::rcvbuf               = 8192                  # Default SO_RCVBUF for all services (uncomment to set a global default).

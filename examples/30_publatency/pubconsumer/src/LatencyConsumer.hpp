@@ -193,11 +193,10 @@ private:
     static constexpr std::string_view THREAD_INPUT   { "LatencyConsumerInputThread" };
     static constexpr std::string_view THREAD_DISPLAY { "LatencyConsumerDisplayThread" };
     static constexpr std::string_view TIMER_PACE     { "LatencyConsumerPaceTimer" };
-    static constexpr uint32_t DEFAULT_COUNT         { 1000u };
-    static constexpr uint32_t DEFAULT_WARMUP        { 10u };
+    static constexpr uint32_t DEFAULT_COUNT         { 5000u };
+    static constexpr uint32_t DEFAULT_WARMUP        { 1000u };
     static constexpr uint64_t DEFAULT_DURATION_NS   { 0u };
-    //!< Pre-reservation estimate for duration runs: a deliberate over-estimate (~2x the fastest
-    //!< realistic 1-in-flight rate) so the measurement loop never reallocates mid-run.
+    //!< Pre-reservation estimate for duration runs
     static constexpr uint32_t DURATION_RESERVE_PER_SEC { 200000u };
     //!< Upper bound on pre-reserved samples, to keep memory bounded for long duration runs.
     static constexpr uint32_t MAX_SAMPLE_RESERVE    { 4000000u };

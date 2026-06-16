@@ -19,8 +19,8 @@ set(AREG_COMPILER_FAMILY "gnu")
 # On a 64-bit host the default library search paths include 64-bit multilib
 # directories (e.g. /usr/lib/x86_64-linux-gnu/).  The settings below steer
 # CMake toward 32-bit paths instead:
-#   CMAKE_LIBRARY_ARCHITECTURE — makes find_library() prefer /usr/lib/i386-linux-gnu/
-#   CMAKE_FIND_ROOT_PATH + ONLY — prevents accidental pickup of 64-bit headers/libs
+#   CMAKE_LIBRARY_ARCHITECTURE - makes find_library() prefer /usr/lib/i386-linux-gnu/
+#   CMAKE_FIND_ROOT_PATH + ONLY - prevents accidental pickup of 64-bit headers/libs
 #                                  from outside /usr (e.g. /usr/local/lib64)
 # PROGRAM stays NEVER so host build tools (cmake, python, etc.) are still found.
 set(CMAKE_LIBRARY_ARCHITECTURE i386-linux-gnu)

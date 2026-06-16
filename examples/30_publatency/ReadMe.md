@@ -215,65 +215,130 @@ is measured in every RTT sample.
 
 ## Benchmark Results
 
-> Test configuration: `count=10000 warmup=1000` for RTT; `count=5000 warmup=1000` for OWT.
-> Values in **μs** (microseconds). Each table is the average of 8 consecutive runs.
+> Test configuration: `count=10000 warmup=1000` for RTT (`ppX`); `count=5000 warmup=1000` for OWT (`bcX`).
+> Values in **μs** (microseconds). Each row is the average of 8 consecutive runs.
 > Build: `Release`, `AREG_LOGGING=OFF`.
+>
+> Full methodology, timestamp placement, and interpretation:
+> → **[areg-sdk Performance Benchmarks](../../docs/wiki/08b-areg-sdk-performance-benchmarks.md)**
+> → **[areg-sdk vs ZMQ / NanoMsg / NNG](../../docs/wiki/08c-areg-vs-hitachi-benchmark.md)**
+> → **[areg-sdk Framework Rankings](../../docs/wiki/08d-areg-framework-rankings.md)**
+
+### Cross-Platform Summary
+
+> bc64 = 204 B one-way (OWT). pp64 = 204+212 B round-trip (RTT). Full service stack active on all platforms.
+
+| Platform | OWT Min | OWT P50 | RTT Min | RTT P50 | RTT P99 |
+|:---------|:-------:|:-------:|:-------:|:-------:|:-------:|
+| **Linux Ubuntu** (i7-13700H, DDR4, USB boot) | **14.8 μs** | **~16.9 μs** | **29.8 μs** | **~32 μs** | ~95 μs |
+| **macOS M3 Pro** (LPDDR5, native SSD) | 21.6 μs | 31.4 μs | 46.0 μs | 62.5 μs | 78.3 μs |
+| **Windows 11** (i7-13700H, DDR4, native SSD) | 32.5 μs | 40.3 μs | 64.0 μs | 82.5 μs | 107.8 μs |
+
+> Linux P50 bimodal: ~25% of runs show elevated P50 (~65 μs) due to USB I/O interference; Min is unaffected.
+> macOS shows best P99 predictability (0.8 μs P99 spread at 65 KB across 8 runs).
+> Latency is **payload-insensitive up to 4 KB**: Min increases only 3.0 μs over a 30× size range.
+>
+> For comparison: gRPC C++ sequential RTT **~116–167 μs** over Unix domain socket (no service dispatch).
+> Source: [MPI-HD, F. Werner, 2021](https://www.mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc/)
 
 ---
 
-### Linux Ubuntu 26.04 -- Intel i7-13700H (mobile), 32 GB DDR4
+### Linux Ubuntu 26.04 – Intel i7-13700H (mobile), 32 GB DDR4
 
-> Tested from USB boot. P50 uses median across runs due to bimodal distribution
-> caused by USB I/O interference (~25% of runs show elevated P50). Native SSD
-> installation expected to show lower variance and improved P95/P99.
+> Tested from USB live boot ("Try Ubuntu" – no installation). Min values are unaffected by USB noise.
+> P50 is the median across runs; ~25% of runs show elevated P50 due to USB I/O interference.
+> Native SSD installation expected to improve P95/P99 variance.
 
 #### Ping-Pong RTT (μs)
 
-| Mode  | Total msg size  | Min   | P50   | P95   | P99    | Mean  |
-|:------|:---------------:|:-----:|:-----:|:-----:|:------:|:-----:|
-| pp0   | 140 / 148 B     | ~30   | ~34   | ~81   | ~106   | ~47   |
-| pp64  | 204 / 212 B     | ~31   | ~33   | ~74   | ~88    | ~45   |
-| pp128 | 268 / 276 B     | ~31   | ~33   | ~80   | ~99    | ~48   |
-| pp512 | 652 / 660 B     | ~32   | ~34   | ~80   | ~96    | ~47   |
+| Mode    | Total msg size       | Min    | P50 (clean) | P95    | P99    | Mean   |
+|:--------|:--------------------:|:------:|:-----------:|:------:|:------:|:------:|
+| `pp0`   | 140 / 148 B          | 28.5   | ~32         | ~82    | ~100   | ~47    |
+| `pp64`  | 204 / 212 B          | 29.8   | ~32         | ~80    | ~95    | ~44    |
+| `pp128` | 268 / 276 B          | 30.0   | ~32         | ~80    | ~99    | ~48    |
+| `pp256` | 396 / 404 B          | 30.6   | ~32         | ~70    | ~80    | ~41    |
+| `pp512` | 652 / 660 B          | 31.8   | ~33         | ~80    | ~96    | ~45    |
+| `pp1024`| 1 164 / 1 172 B      | 32.0   | ~34         | ~67    | ~82    | ~45    |
+| `pp4096`| 4 236 / 4 244 B      | 34.5   | ~37         | ~80    | ~91    | ~50    |
+| `pp65536`| 65 676 / 65 684 B   | 82.1   | ~87         | ~102   | ~108   | ~80    |
 
 #### Broadcast One-Way (μs)
 
-| Mode   | Total msg size | Min   | P50   | P95   | P99   | Mean  |
-|:-------|:--------------:|:-----:|:-----:|:-----:|:-----:|:-----:|
-| bc0    | 140 B          | ~15   | ~16   | ~33   | ~42   | ~22   |
-| bc64   | 204 B          | ~16   | ~17   | ~36   | ~44   | ~23   |
-| bc128  | 268 B          | ~15   | ~17   | ~34   | ~49   | ~20   |
-| bc512  | 652 B          | ~16   | ~19   | ~38   | ~51   | ~22   |
+| Mode      | Total msg size | Min    | P50   | P95   | P99   | Mean  |
+|:----------|:--------------:|:------:|:-----:|:-----:|:-----:|:-----:|
+| `bc0`     | 140 B          | 14.1   | 15.9  | 33.0  | 40.0  | 19.6  |
+| `bc8`     | 148 B          | 14.2   | 16.0  | 37.8  | 55.0  | 20.1  |
+| `bc64`    | 204 B          | 14.8   | 16.9  | 33.4  | 42.0  | 19.5  |
+| `bc128`   | 268 B          | 15.0   | 17.4  | 38.0  | 50.0  | 21.0  |
+| `bc256`   | 396 B          | 15.2   | 16.9  | 32.6  | 48.0  | 19.5  |
+| `bc512`   | 652 B          | 15.7   | 19.4  | 34.5  | 47.8  | 21.9  |
+| `bc1024`  | 1 164 B        | 15.8   | 17.6  | 37.1  | 54.1  | 20.8  |
+| `bc4096`  | 4 236 B        | 17.1   | 20.5  | 40.6  | 55.9  | 23.1  |
+| `bc65536` | 65 676 B       | 38.3   | 43.3  | 54.9  | 78.6  | 45.1  |
 
 ---
 
-### Windows 11 -- Intel i7-13700H (mobile), 32 GB DDR4
+### Windows 11 – Intel i7-13700H (mobile), 32 GB DDR4
 
-> Native SSD install. Results are stable -- no bimodal distribution.
+> Native SSD install. Results are stable – no bimodal distribution.
 
 #### Ping-Pong RTT (μs)
 
-| Mode  | Total msg size  | Min   | P50   | P95   | P99    | Mean  |
-|:------|:---------------:|:-----:|:-----:|:-----:|:------:|:-----:|
-| pp64  | 204 / 212 B     | ~63   | ~83   | ~88   | ~117   | ~84   |
+| Mode      | Total msg size       | Min    | P50    | P95    | P99    | Mean   |
+|:----------|:--------------------:|:------:|:------:|:------:|:------:|:------:|
+| `pp0`     | 140 / 148 B          | 63.0   | 81.9   | 84.6   | 104.9  | 81.9   |
+| `pp32`    | 172 / 180 B          | 63.5   | 82.0   | 84.8   | 108.0  | 82.3   |
+| `pp64`    | 204 / 212 B          | 64.0   | 82.5   | 85.2   | 107.8  | 82.5   |
+| `pp128`   | 268 / 276 B          | 64.5   | 82.5   | 89.3   | 133.0  | 83.5   |
+| `pp256`   | 396 / 404 B          | 64.5   | 82.5   | 85.0   | 108.8  | 82.5   |
+| `pp512`   | 652 / 660 B          | 65.0   | 84.1   | 87.0   | 113.5  | 84.5   |
+| `pp1024`  | 1 164 / 1 172 B      | 65.3   | 83.0   | 85.8   | 112.5  | 83.5   |
+| `pp4096`  | 4 236 / 4 244 B      | 69.1   | 85.3   | 89.6   | 114.1  | 86.7   |
+| `pp65536` | 65 676 / 65 684 B    | 115.6  | 142.5  | 204.8  | 242.9  | 152.8  |
 
 #### Broadcast One-Way (μs)
 
-| Mode  | Total msg size | Min   | P50   | P95   | P99   | Mean  |
-|:------|:--------------:|:-----:|:-----:|:-----:|:-----:|:-----:|
-| bc64  | 204 B          | ~32   | ~40   | ~44   | ~60   | ~41   |
+| Mode      | Total msg size | Min    | P50    | P95    | P99    | Mean   |
+|:----------|:--------------:|:------:|:------:|:------:|:------:|:------:|
+| `bc0`     | 140 B          | 32.0   | 39.5   | 41.9   | 57.1   | 40.1   |
+| `bc64`    | 204 B          | 32.5   | 40.3   | 43.3   | 60.0   | 41.2   |
+| `bc128`   | 268 B          | 33.0   | 40.5   | 43.5   | 53.6   | 40.5   |
+| `bc256`   | 396 B          | 33.4   | 41.6   | 46.3   | 72.0   | 42.2   |
+| `bc512`   | 652 B          | 33.5   | 41.4   | 46.0   | 68.6   | 42.0   |
+| `bc1024`  | 1 164 B        | 33.8   | 41.8   | 45.8   | 60.4   | 42.9   |
+| `bc4096`  | 4 236 B        | 36.4   | 46.7   | 49.8   | 67.4   | 46.1   |
+| `bc65536` | 65 676 B       | 57.6   | 72.8   | 76.9   | 104.3  | 73.7   |
 
 ---
 
-### macOS -- Apple M4, LPDDR5
+### macOS – Apple M3 Pro, 32 GB LPDDR5 (native SSD)
 
-> ⚠️ These numbers are **outdated** -- measured before the latest optimizations.
-> Re-measurement is pending. Expected to match or slightly exceed Linux numbers.
+> No USB noise. P99 consistency is exceptional: bc65536 P99 spread = 0.8 μs across 8 runs.
 
-| Mode  | P50 (pre-opt) | P95 (pre-opt) |
-|:------|:-------------:|:-------------:|
-| pp64 RTT  | ~69 μs    | ~102 μs       |
-| bc64 OWT  | ~21 μs    | ~44 μs        |
+#### Ping-Pong RTT (μs)
+
+| Mode      | Total msg size       | Min    | P50    | P95    | P99    |
+|:----------|:--------------------:|:------:|:------:|:------:|:------:|
+| `pp0`     | 140 / 148 B          | 46.4   | 63.3   | 74.8   | 78.1   |
+| `pp64`    | 204 / 212 B          | 46.0   | 62.5   | 74.6   | 78.3   |
+| `pp128`   | 268 / 276 B          | 48.1   | 65.4   | 75.7   | 79.0   |
+| `pp256`   | 396 / 404 B          | 47.8   | 66.2   | 76.6   | 80.0   |
+| `pp512`   | 652 / 660 B          | 48.8   | 69.5   | 78.0   | 81.0   |
+| `pp1024`  | 1 164 / 1 172 B      | 47.9   | 65.5   | 75.7   | 79.0   |
+| `pp4096`  | 4 236 / 4 244 B      | 49.5   | 70.3   | 78.6   | 81.8   |
+| `pp65536` | 65 676 / 65 684 B    | 82.1   | 95.9   | 102.2  | 106.0  |
+
+#### Broadcast One-Way (μs)
+
+| Mode      | Total msg size | Min    | P50    | P95    | P99    |
+|:----------|:--------------:|:------:|:------:|:------:|:------:|
+| `bc0`     | 140 B          | 21.7   | 31.7   | 38.3   | 41.3   |
+| `bc64`    | 204 B          | 21.6   | 31.4   | 37.8   | 40.6   |
+| `bc128`   | 268 B          | 22.4   | 32.9   | 38.3   | 41.2   |
+| `bc512`   | 652 B          | 22.8   | 34.3   | 39.5   | 42.9   |
+| `bc1024`  | 1 164 B        | 23.0   | 33.4   | 39.3   | 42.6   |
+| `bc4096`  | 4 236 B        | 23.2   | 34.5   | 40.1   | 43.2   |
+| `bc65536` | 65 676 B       | 41.8   | 49.5   | 53.8   | 56.6   |
 
 ---
 
@@ -308,19 +373,31 @@ the constant framing, routing, and dispatch overhead dominates.
 
 ## Competitive Context
 
-These numbers are produced by a **full-stack framework** -- centralized broker routing,
+These numbers are produced by a **full-stack framework** – centralized broker routing,
 guaranteed thread affinity, and service dispatch are all active and included in every
 measurement. This is not a raw transport benchmark.
 
-| Framework       | Transport    | RTT P50  | Scope                          |
-|:----------------|:------------:|:--------:|:-------------------------------|
-| **areg-sdk**    | TCP (Linux)  | **~33 μs** | Full: broker + dispatch + thread affinity |
-| **areg-sdk**    | TCP (Windows)| **~83 μs** | Full: broker + dispatch + thread affinity |
-| ZMQ (tuned)     | TCP (Linux)  | ~40-50 μs | Raw transport only, 1-byte messages |
-| nng req/rep     | TCP (Linux)  | ~44 μs   | Minimal req/rep, no framework  |
-| gRPC C++        | TCP (Linux)  | ~200-300 μs | Full RPC, HTTP/2 + protobuf  |
+Timestamps are taken **before serialization** (sender) and **after deserialization + dispatch**
+(receiver) – the full production call path is inside the measured window.
 
-areg-sdk on Linux approaches published ZMQ latency figures on a mobile CPU (2023)
-while routing through a centralized broker and carrying 204-byte messages through
-a complete service framework. gRPC, the de facto industry standard for C++ RPC,
-is 2.4-3.5x slower on equivalent hardware.
+| Framework | Transport | OWT / RTT | Metric | Source |
+|:----------|:---------:|:---------:|:------:|:-------|
+| **areg-sdk** | TCP, 2-hop broker (Linux) | OWT **14.8 μs** Min / **~16.9 μs** P50 | Full: serialization + routing + dispatch | Measured – this example |
+| **areg-sdk** | TCP, 2-hop broker (Linux) | RTT **29.8 μs** Min / **~32 μs** P50 | Full: broker + dispatch + thread affinity | Measured – this example |
+| **areg-sdk** | TCP, 2-hop broker (Windows) | RTT **82.5 μs** P50 | Full: broker + dispatch + thread affinity | Measured – this example |
+| **areg-sdk** | TCP, 2-hop broker (macOS M3) | RTT **62.5 μs** P50 | Full: broker + dispatch + thread affinity | Measured – this example |
+| NanoMsg | TCP, direct (Linux) | OWT **18.0 μs** Min / **21.9 μs** Avg | Raw transport, no dispatch | [Hitachi Energy, arXiv:2508.07934v1](https://arxiv.org/abs/2508.07934) |
+| ZMQ | TCP, direct (Linux) | OWT **22.0 μs** Min / **27.5 μs** Avg | Raw transport, no dispatch | [Hitachi Energy, arXiv:2508.07934v1](https://arxiv.org/abs/2508.07934) |
+| NNG | TCP, direct (Linux) | OWT **24.3 μs** Min / **34.9 μs** Avg | Raw transport, no dispatch | [Hitachi Energy, arXiv:2508.07934v1](https://arxiv.org/abs/2508.07934) |
+| gRPC C++ | UDS, direct (Linux) | RTT **116 μs** median (other core) | Full RPC, HTTP/2 + protobuf | [MPI-HD, F. Werner, 2021](https://www.mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc/) |
+
+> **areg-sdk on Linux (OWT, TCP, 2-hop)** achieves lower Min and Mean than NanoMsg, ZMQ,
+> and NNG (raw TCP, direct, isolated cores, low load) – while routing through a centralized
+> broker and including full typed serialization and dispatch on both sides.
+>
+> **RTT floor claim:** areg-sdk pp64 RTT Min (29.8 μs) < 2 × NanoMsg direct OWT Min (18.0 × 2 = 36 μs).
+> The complete service framework adds less overhead than a second raw TCP hop.
+>
+> For the full competitive analysis, see:
+> → **[areg-sdk vs ZMQ / NanoMsg / NNG](../../docs/wiki/08c-areg-vs-hitachi-benchmark.md)**
+> → **[areg-sdk Framework Rankings](../../docs/wiki/08d-areg-framework-rankings.md)**

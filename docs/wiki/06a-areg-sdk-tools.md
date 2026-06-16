@@ -1,6 +1,6 @@
 ﻿# Areg SDK Development Tools
 
-Areg SDK provides a comprehensive suite of development tools supporting the complete lifecycle of service-oriented C++ applications—from initial project setup and code generation to runtime logging, monitoring, and diagnostics. Tools are categorized as **core utilities** (built with the SDK) and **optional tools** (standalone or GUI-based).
+Areg SDK provides a comprehensive suite of development tools supporting the complete lifecycle of service-oriented C++ applications–from initial project setup and code generation to runtime logging, monitoring, and diagnostics. Tools are categorized as **core utilities** (built with the SDK) and **optional tools** (standalone or GUI-based).
 
 This document provides an overview of available tools, their purpose, and basic usage information. Detailed documentation for each tool is available in dedicated guides.
 

@@ -1094,7 +1094,7 @@ macro(macro_add_service_interface lib_name interface_doc codegen_root output_pat
     # Run the code generator tool
     execute_process(COMMAND ${Java_JAVA_EXECUTABLE} -jar ${codegen_tool} --doc=${interface_doc} --root=${codegen_root} --target=${output_path})
 
-    # List of generated source and header files (initialize fresh — macro runs in caller scope)
+    # List of generated source and header files (initialize fresh, macro runs in caller scope)
     set(_sources)
     list(APPEND _sources
         ${_generate}/private/${_interface_name}.cpp

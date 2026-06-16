@@ -1,7 +1,7 @@
 # Toolchain: Clang-CL for Windows x86 (32-bit)
 # Requires: LLVM + Visual Studio Build Tools with the "Clang compiler for Windows" component
 #
-# Usage from areg-sdk root (Visual Studio generator — default on Windows):
+# Usage from areg-sdk root (Visual Studio generator - default on Windows):
 #   cmake -B ./build -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/clang-win-x86.cmake
 #   cmake --build ./build -j20 --config Release
 #

@@ -310,7 +310,7 @@ enum class ConnectionState
 ConnectionState state = ConnectionState::Connected;
 ```
 
-**With explicit values — align for readability:**
+**With explicit values – align for readability:**
 
 ```cpp
 enum class Priority
@@ -537,8 +537,8 @@ void process_message() {
 
 ### 3.3 Line Length
 
-- **Preferred limit:** 120 characters — lines up to 120 need no breaking.
-- **Hard limit:** 180 characters — lines between 120 and 180 are acceptable when breaking hurts readability.
+- **Preferred limit:** 120 characters – lines up to 120 need no breaking.
+- **Hard limit:** 180 characters – lines between 120 and 180 are acceptable when breaking hurts readability.
 - Lines exceeding 180 characters must be broken.
 
 ```cpp
@@ -1050,7 +1050,7 @@ private:
 8. Private member variables
 9. Deleted constructors / operators
 
-**Recommendation (C.133):** Prefer private data with protected accessors over protected data members. Protected data creates tight coupling between base and derived classes — changing the member type or semantics silently breaks all subclasses. Protected accessors allow the base class to evolve its internals. However, protected data is acceptable when it significantly reduces verbosity and the inheritance hierarchy is small and controlled.
+**Recommendation (C.133):** Prefer private data with protected accessors over protected data members. Protected data creates tight coupling between base and derived classes – changing the member type or semantics silently breaks all subclasses. Protected accessors allow the base class to evolve its internals. However, protected data is acceptable when it significantly reduces verbosity and the inheritance hierarchy is small and controlled.
 
 ### 8.2 Constructor Initialization
 

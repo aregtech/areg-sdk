@@ -58,7 +58,7 @@ net.core.netdev_max_backlog=10000
 
 If you prefer not to open a text editor, use one of the two options below.
 
-#### Option A: Immediate Effect (Temporary — Resets on Reboot)
+#### Option A: Immediate Effect (Temporary – Resets on Reboot)
 
 Open a terminal and paste this block. Each line takes effect instantly:
 
@@ -70,7 +70,7 @@ sudo sysctl -w net.ipv4.tcp_wmem="4096 65536 16777216"
 sudo sysctl -w net.core.netdev_max_backlog=10000
 ```
 
-> **Note:** `net.ipv4.tcp_low_latency` was removed in Linux kernel 4.14. Skip it on modern systems — the kernel no longer recognises it.
+> **Note:** `net.ipv4.tcp_low_latency` was removed in Linux kernel 4.14. Skip it on modern systems – the kernel no longer recognises it.
 
 #### Option B: Persistent (Survives Reboot)
 
@@ -79,7 +79,7 @@ This block appends the settings to `/etc/sysctl.conf` and activates them in one 
 ```bash
 sudo tee -a /etc/sysctl.conf <<'EOF'
 
-# Areg SDK — high-performance TCP settings
+# Areg SDK – high-performance TCP settings
 net.core.rmem_max=16777216
 net.core.wmem_max=16777216
 net.ipv4.tcp_rmem=4096 87380 16777216
@@ -98,8 +98,8 @@ sudo sysctl -p
 Windows defaults to power efficiency settings that add latency to socket operations and throttle high-frequency packet delivery. All steps below must be applied to reach 1M+ messages/second.
 
 > **Two shells are used in these steps. Always open the correct one for each step:**
-> - **Command Prompt** — Press `Win+R`, type `cmd`, press `Ctrl+Shift+Enter` to open as Administrator.
-> - **PowerShell** — Press `Win+R`, type `powershell`, press `Ctrl+Shift+Enter` to open as Administrator.
+> - **Command Prompt** – Press `Win+R`, type `cmd`, press `Ctrl+Shift+Enter` to open as Administrator.
+> - **PowerShell** – Press `Win+R`, type `powershell`, press `Ctrl+Shift+Enter` to open as Administrator.
 >
 > PowerShell cmdlets (`Get-NetAdapter`, `New-ItemProperty`, `Set-NetTCPSetting`, etc.) are **not recognized** in Command Prompt and will fail with "not recognized" errors.
 
@@ -146,7 +146,7 @@ Confirm the output matches the values you set. If it does not, close and reopen 
 
 ### Step 3: Disable Hardware RSC Per Network Adapter
 
-The global TCP setting above permits RSC at the stack level for large-payload throughput. Each NIC also has its own hardware-level RSC toggle that operates independently. On many drivers, hardware RSC coalesces small packets and delays their delivery — disable it on all adapters.
+The global TCP setting above permits RSC at the stack level for large-payload throughput. Each NIC also has its own hardware-level RSC toggle that operates independently. On many drivers, hardware RSC coalesces small packets and delays their delivery – disable it on all adapters.
 
 **Open PowerShell as Administrator and run:**
 
@@ -154,7 +154,7 @@ The global TCP setting above permits RSC at the stack level for large-payload th
 # Disable hardware RSC on all adapters
 Get-NetAdapter | Disable-NetAdapterRsc -ErrorAction SilentlyContinue
 
-# Verify — all IPv4Enabled and IPv6Enabled must show False
+# Verify – all IPv4Enabled and IPv6Enabled must show False
 Get-NetAdapter | Get-NetAdapterRsc | Select-Object Name, IPv4Enabled, IPv6Enabled
 ```
 
@@ -162,7 +162,7 @@ Get-NetAdapter | Get-NetAdapterRsc | Select-Object Name, IPv4Enabled, IPv6Enable
 
 ### Step 4: Suppress Delayed ACK on All Network Interfaces
 
-Windows delays sending TCP ACKs by up to 200 ms by default (delayed-ACK algorithm). At 1M+ messages/second, this stalls the sender's congestion window. There is no per-socket API for this on Windows — the registry is the only way.
+Windows delays sending TCP ACKs by up to 200 ms by default (delayed-ACK algorithm). At 1M+ messages/second, this stalls the sender's congestion window. There is no per-socket API for this on Windows – the registry is the only way.
 
 The values must be written to **each interface subkey individually**, not to the parent key. The loop below handles all interfaces automatically.
 
@@ -175,13 +175,13 @@ Get-ChildItem $ifPath | ForEach-Object {
     New-ItemProperty -Path $_.PSPath -Name "TCPNoDelay"      -PropertyType DWORD -Value 1 -Force | Out-Null
 }
 
-# Verify a sample interface — pick any GUID from the list
+# Verify a sample interface – pick any GUID from the list
 Get-ChildItem $ifPath | Select-Object -First 1 | Get-ItemProperty | Select-Object TcpAckFrequency, TCPNoDelay
 ```
 
-> **`TcpAckFrequency=1`** — Forces an immediate ACK for every received TCP segment. This is the Windows equivalent of Linux `TCP_QUICKACK` and is the most impactful setting for high-frequency message rates.
+> **`TcpAckFrequency=1`** – Forces an immediate ACK for every received TCP segment. This is the Windows equivalent of Linux `TCP_QUICKACK` and is the most impactful setting for high-frequency message rates.
 >
-> **`TCPNoDelay=1`** — System-wide default for `TCP_NODELAY`. Redundant for AREG SDK sockets (the SDK sets `TCP_NODELAY` per-socket programmatically) but harmless and helps other applications on the same machine.
+> **`TCPNoDelay=1`** – System-wide default for `TCP_NODELAY`. Redundant for AREG SDK sockets (the SDK sets `TCP_NODELAY` per-socket programmatically) but harmless and helps other applications on the same machine.
 
 ---
 
@@ -246,9 +246,9 @@ Get-ItemProperty $mm | Select-Object NetworkThrottlingIndex, SystemResponsivenes
 
 ---
 
-### Step 8: Windows Server Only — Apply Datacenter TCP Profile
+### Step 8: Windows Server Only – Apply Datacenter TCP Profile
 
-These cmdlets exist **only on Windows Server** editions. They will fail on Windows 10/11 with "not recognized" — skip this step on desktop systems.
+These cmdlets exist **only on Windows Server** editions. They will fail on Windows 10/11 with "not recognized" – skip this step on desktop systems.
 
 **Open PowerShell as Administrator and run:**
 
@@ -261,28 +261,28 @@ Set-NetTCPSetting -SettingName InternetCustom -CongestionProvider   DCTCP
 
 ### Performance Regression Checklist
 
-If message rates drop between runs (e.g. 1.5M → 1.25M msg/sec), check these first — Windows Updates commonly reset them:
+If message rates drop between runs (e.g. 1.5M → 1.25M msg/sec), check these first – Windows Updates commonly reset them:
 
 **Open PowerShell as Administrator and run:**
 
 ```powershell
-# 1. Check power plan — must show Ultimate Performance
+# 1. Check power plan – must show Ultimate Performance
 powercfg /getactivescheme
 
-# 2. Check RSC on adapters — all must show False
+# 2. Check RSC on adapters – all must show False
 Get-NetAdapter | Get-NetAdapterRsc | Select-Object Name, IPv4Enabled, IPv6Enabled
 
-# 3. Check ACK frequency on first interface — must show 1
+# 3. Check ACK frequency on first interface – must show 1
 $ifPath = "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces"
 Get-ChildItem $ifPath | Select-Object -First 1 | Get-ItemProperty | Select-Object TcpAckFrequency, TCPNoDelay
 
-# 4. Check interrupt moderation — all must show Disabled
+# 4. Check interrupt moderation – all must show Disabled
 Get-NetAdapterAdvancedProperty -Name "*" |
     Where-Object DisplayName -match "Interrupt Moderation" |
     Select-Object Name, DisplayValue
 ```
 
-If any value is wrong, re-run the corresponding step above without rebooting — most settings take effect immediately except the Winsock buffer and throttling registry keys which require a restart.
+If any value is wrong, re-run the corresponding step above without rebooting – most settings take effect immediately except the Winsock buffer and throttling registry keys which require a restart.
 
 ---
 
@@ -294,7 +294,7 @@ If any value is wrong, re-run the corresponding step above without rebooting —
 
 macOS applies conservative per-socket and system-wide buffer limits by default. The following settings increase TCP buffer sizes and eliminate acknowledgment delays that add latency to high-frequency message streams.
 
-### Temporary Settings (Immediate Effect — Resets on Reboot)
+### Temporary Settings (Immediate Effect – Resets on Reboot)
 
 Open a terminal and paste this block:
 
@@ -323,7 +323,7 @@ macOS reads `/etc/sysctl.conf` at boot. This file does not exist by default. The
 ```bash
 sudo tee -a /etc/sysctl.conf <<'EOF'
 
-# Areg SDK — high-performance TCP settings
+# Areg SDK – high-performance TCP settings
 kern.ipc.maxsockbuf=8388608
 net.inet.tcp.sendspace=1048576
 net.inet.tcp.recvspace=1048576

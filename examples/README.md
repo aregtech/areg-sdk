@@ -85,13 +85,14 @@ MSBuild ./areg-sdk.sln
 | [20\_winchat](./20_winchat/)           | 🚀 Multiprocessing | Windows Chat, Real-Time            | Demonstrates a Windows-based chat application using IPC with fault-tolerant public services.                        |
 | [21\_locwatchdog](./21_locwatchdog/)   | 🧵 Multithreading  | Watchdog, Fault-Tolerance          | Implements a local service watchdog to monitor threads and automatically restart failed services.                   |
 | [22\_pubwatchdog](./22_pubwatchdog/)   | 🚀 Multiprocessing | Watchdog, IPC                      | Extends watchdog functionality to monitor public services across processes, ensuring fault-tolerant operations.     |
-| [23\_pubdatarate](./23_pubdatarate/)   | 🚀 Multiprocessing | Data Rate, IPC                     | Measures data transfer rates between public services and clients; useful for performance benchmarking.              |
+| [23\_pubdatarate](./23_pubdatarate/)   | 🚀 Multiprocessing | Data Rate, IPC                     | Measures data transfer rates between public services and clients; useful for performance benchmarking. → [Benchmark results](../docs/wiki/08b-areg-sdk-performance-benchmarks.md) |
 | [24\_pubunblock](./24_pubunblock/)     | 🚀 Multiprocessing | Manual Unblocking, Throughput      | Demonstrates manually unblocking service requests to optimize handling in asynchronous communication.               |
 | [25\_pubsub](./25_pubsub/)             | 🚀 Multiprocessing | Pub/Sub, IPC                       | Implements the Publish/Subscribe pattern with notifications on change or on every update for subscribed clients.    |
 | [26\_pubsubmix](./26_pubsubmix/)       | 🚀 Multiprocessing | Hybrid Pub/Sub, Fault-Tolerance    | Shows mixed Pub/Sub configuration across threads and processes; maintains reliability during network interruptions. |
 | [27\_pubsubmulti](./27_pubsubmulti/)   | 🚀 Multiprocessing | Multi-Subscriber, Efficient Events | Optimizes Pub/Sub with multiple subscribers per thread, reducing event overhead and improving efficiency.           |
 | [28\_stlsync](./28_stlsync/)           | 🧵 Multithreading  | Synchronization Event and STL      | Event-based synchronization with STL threads for safe multithreading.                                               |
 | [29_syncevent](./29_syncevent/)        | 🧵 Multithreading  | Auto-Reset Events, Signal Persistence | Demonstrates reliable Areg `SyncEvent` signaling: events stay signaled until locked, no spurious wakeups, works the same on Windows and Linux. |
+| [30_publatency](./30_publatency/)      | 🚀 Multiprocessing | Latency Benchmark, RTT, OWT           | Measures full-stack IPC latency across payload sizes using ping-pong RTT and broadcast one-way tests. → [Benchmark results](../docs/wiki/08b-areg-sdk-performance-benchmarks.md) |
 
 
 ---
