@@ -162,9 +162,9 @@ For full details, see the [Service Interface Guide](./docs/wiki/06e-lusan-servic
 
 ## Performance[![](./docs/img/pin.svg)](#performance)
 
-Measured on **mobile-class consumer hardware**, full stack active — data serialization, event dispatching, and multithreading. These are not raw socket numbers.
+Measured on **mobile-class consumer hardware**, full stack active – data serialization, event dispatching, and multithreading. These are not raw socket numbers.
 
-### Throughput — TCP `localhost`, 1:1, measured at `mtrouter`
+### Throughput – TCP `localhost`, 1:1, measured at `mtrouter`
 
 | Platform       | CPU Type         | ~3 MB, GB/s              | ~0.5 KB, msg/s            |
 |----------------|------------------|--------------------------|---------------------------|
@@ -178,7 +178,7 @@ Measured on **mobile-class consumer hardware**, full stack active — data seria
 ³ Stable dispatch ~1.1M msg/s; above ~1.6M the dispatch thread becomes the bottleneck.  
 ⁴ With [network tuning](./docs/wiki/07d-troubleshooting-network-tunning.md), up to ~5.0–5.6 GB/s.
 
-### Latency — TCP `localhost`, full stack, 204-byte messages
+### Latency – TCP `localhost`, full stack, 204-byte messages
 
 Timestamps span the full call path: before serialization (sender) to after deserialization and dispatch (receiver). OWT = one-way (2-hop). RTT = round-trip through `mtrouter` (4-hop).
 
@@ -190,7 +190,7 @@ Timestamps span the full call path: before serialization (sender) to after deser
 
 ¹ USB live boot; native SSD expected to improve tail percentiles.
 
-For comparison: **gRPC C++ sequential RTT ~116–167 μs** over Unix domain socket — 3.6× higher, despite fewer hops and no service dispatch ([MPI-HD, F. Werner, 2021](https://www.mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc/)). Latency is payload-insensitive up to 4 KB — Min rises only 3 μs across a 30× size increase; framework overhead dominates.
+For comparison: **gRPC C++ sequential RTT ~116–167 μs** over Unix domain socket – 3.6× higher, despite fewer hops and no service dispatch ([MPI-HD, F. Werner, 2021](https://www.mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc/)). Latency is payload-insensitive up to 4 KB – Min rises only 3 μs across a 30× size increase; framework overhead dominates.
 
 **Real-world fit:** covers the software pipeline layer of scientific imaging (laser microscopy, X-ray, electron microscopy) and industrial machine vision on a standard laptop.
 
