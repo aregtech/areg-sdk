@@ -167,6 +167,7 @@ bool PoolReceiveThread::run_dispatcher()
                 {
                     mMux.unregister_socket(hReady);
                     mRemoteService.failed_receive_message(clientSocket);
+                    areg::thread_rx_cache_release(hReady);
                 }
             }
             else
@@ -177,6 +178,7 @@ bool PoolReceiveThread::run_dispatcher()
 
                 mMux.unregister_socket(hReady);
                 mRemoteService.failed_receive_message(clientSocket);
+                areg::thread_rx_cache_release(hReady);
             }
 
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
@@ -210,6 +212,7 @@ bool PoolReceiveThread::run_dispatcher()
                     {
                         mMux.unregister_socket(hDrain);
                         mRemoteService.failed_receive_message(drainSocket);
+                        areg::thread_rx_cache_release(hDrain);
                     }
                 }
                 else
@@ -217,6 +220,7 @@ bool PoolReceiveThread::run_dispatcher()
                     DEBUG_LOG_WARN("Pool receive thread [ %s ]: receive failed on drain socket [ %u ], notifying connection_lost", name().as_string(), static_cast<uint32_t>(hDrain));
                     mMux.unregister_socket(hDrain);
                     mRemoteService.failed_receive_message(drainSocket);
+                    areg::thread_rx_cache_release(hDrain);
                 }
             }
 

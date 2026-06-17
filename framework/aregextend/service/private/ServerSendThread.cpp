@@ -81,9 +81,7 @@ void ServerSendThread::start_event_processing( areg::Event & eventElem )
     mBatch[batchCount].msg    = eventElem.envelope();  // O(1) shared_ptr copy; fields already zeroed
     ++batchCount;
 
-    // Phase 1: drain additional queued events straight into mBatch (the persistent batch list retains
-    // each buffer). No Event array -- one transient Event per popped message. The common single-message
-    // relay finds the queue empty and skips the loop.
+    // Phase 1: drain additional queued events straight into mBatch
     while ( batchCount < areg::DEFAULT_DRAIN_LIMIT )
     {
         areg::Event evt{ pick_event() };
@@ -137,7 +135,7 @@ void ServerSendThread::start_event_processing( areg::Event & eventElem )
             mBatch[mid].socket <= entry.socket ? lo = mid + 1u : hi = mid;
         }
 
-        // Shift right using move-assignment (PendingSend has MessageEnvelope -- memmove is unsafe)
+        // Shift right using move-assignment
         for ( uint32_t j{ validCount }; j > lo; --j )
             mBatch[j] = std::move(mBatch[j - 1]);
 
@@ -152,6 +150,10 @@ void ServerSendThread::start_event_processing( areg::Event & eventElem )
         areg::ext::send_pending_groups(mBatch.data(), validCount, mConnection, mRemoteService,
             [this](uint64_t bytes, uint32_t msgs) { accumulate_sent(bytes, msgs); });
     }
+
+    // Phase 5: release every wire buffer
+    for ( uint32_t i{ 0u }; i < batchCount; ++i )
+        mBatch[i].msg.destroy_event();
 }
 
 bool ServerSendThread::post_event( Event & eventElem )

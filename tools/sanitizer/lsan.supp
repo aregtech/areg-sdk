@@ -1,0 +1,19 @@
+# LeakSanitizer suppressions for the Areg SDK.
+# ---------------------------------------------------------------------------
+# Format:  leak:<substring matched against a frame in the leak's stack>
+#
+# Keep this list MINIMAL and only for proven third-party / runtime noise.
+# A leak inside framework/areg, framework/aregextend, mtrouter, logcollector
+# is a real defect - never suppress it here, fix it.
+#
+# Enable an entry by removing the leading '#'.  The first run is intentionally
+# left un-suppressed so every report is visible.
+
+# --- Examples of third-party noise that may appear (uncomment if seen) ---
+# GoogleTest one-time global registrations (freed at exit by the OS only):
+#leak:testing::internal
+# SQLite static mutex / page-cache allocations on some builds:
+#leak:sqlite3
+# glibc dynamic-loader / locale one-time allocations:
+#leak:_dl_
+#leak:__new_exitfn
