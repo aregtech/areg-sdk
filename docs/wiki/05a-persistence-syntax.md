@@ -1,47 +1,52 @@
-﻿# Key-Value Data Persistence in Areg Framework
+# Key-Value Data Persistence in Areg Framework
 
 ## Overview
 
-The Areg Framework provides a lightweight key-value persistence mechanism designed specifically for system configuration and runtime parameters. Unlike heavyweight structured formats (XML, JSON, YAML), the Areg [persistence module](./../../framework/areg/persist) prioritizes parsing speed, minimal memory footprint, and developer simplicity–making it ideal for embedded systems, real-time applications, and performance-critical software.
+The Areg Framework provides a lightweight key-value persistence mechanism designed for system configuration and runtime parameters. Unlike heavyweight structured formats (XML, JSON, YAML), the Areg [persistence module](./../../framework/areg/persist) prioritizes parsing speed, minimal memory footprint, and developer simplicity — making it ideal for embedded systems, real-time applications, and performance-critical software.
 
-**When to use**: Configuration files, initialization parameters, logging settings, runtime tuning.  
-**When not to use**: Complex hierarchical data, large datasets, or application-specific data serialization.
+This document describes the **generic persistence mechanism**: the file syntax, the storage model, the wildcard resolution rules, and the `ConfigManager` API you can use to store your *own* application data.
+
+> 💡 The framework's own configuration file, `areg.init`, is built on this exact mechanism. For a complete reference of every `areg.init` section and property (logging, router, log collector, network tuning), see **[Areg Configuration File Reference (`areg.init`)](./05b-areg-configuration-file.md)**.
+
+**When to use**: configuration files, initialization parameters, logging settings, runtime tuning, simple per-application key-value state.  
+**When *not* to use**: complex hierarchical data, large datasets, or application-specific data serialization (use [`SharedBuffer`](./../../framework/areg/base/SharedBuffer.hpp) / streaming instead).
 
 ---
 
 ## Table of Contents
 1. [Why Key-Value Persistence](#1-why-key-value-persistence)
-2. [How It Works](#2-how-it-works)
+2. [The Property Model](#2-the-property-model)
 3. [Syntax Reference](#3-syntax-reference)
-4. [Property Keys](#4-property-keys)
-5. [Property Values](#5-property-values)
-6. [Practical Examples](#6-practical-examples)
-7. [Best Practices](#7-best-practices)
+4. [Storage Model: Read-Only, Writable, Temporary](#4-storage-model-read-only-writable-temporary)
+5. [Wildcard Resolution](#5-wildcard-resolution)
+6. [Reading and Writing with ConfigManager](#6-reading-and-writing-with-configmanager)
+7. [Storing Your Own Data](#7-storing-your-own-data)
+8. [Best Practices](#8-best-practices)
 
 ---
 
 ## 1. Why Key-Value Persistence
 
-**Design Philosophy**
+**Design philosophy**
 
-The Areg SDK persistence module solves three critical problems in system-level C++ development:
+The Areg persistence module solves three problems in system-level C++ development:
 
-- **Fast Initialization**: Parse configuration in microseconds, not milliseconds–critical for real-time systems.
-- **Zero Dependencies**: No external libraries required; pure C++ implementation.
-- **Human-Readable**: Engineers can edit configuration files directly without specialized tools.
+- **Fast initialization** — parse configuration in microseconds, not milliseconds; critical for real-time systems.
+- **Zero dependencies** — pure C++ implementation, no external parser libraries.
+- **Human-readable** — engineers edit the files directly with any text editor; no tooling required.
 
-**Shared Configuration for IPC**
+**One file, many processes**
 
-A key advantage is **single-file, multi-process configuration**. Multiple applications can share one configuration file with global defaults and per-application overrides:
+A key advantage is **single-file, multi-process configuration**. Several applications can share one file that holds both global defaults and per-application overrides:
 
 ```text
 log::*::scope::*            = NOTSET            # Default: no logging for any application
 log::myapp::scope::*        = DEBUG | SCOPE     # Override: enable logging only for 'myapp'
 ```
 
-When `myapp` queries `log::myapp::scope::*`, it receives `DEBUG | SCOPE`. Other applications receive `NOTSET` from the wildcard. This eliminates the need to maintain separate configuration files in multiple locations–ideal for IPC scenarios where distributed processes need coordinated configuration.
+When `myapp` queries `log::myapp::scope::*`, it receives `DEBUG | SCOPE`; every other application receives `NOTSET` from the wildcard. This removes the need to maintain separate configuration files for distributed processes — ideal for IPC deployments.
 
-**Use Cases**
+**Typical use cases**
 
 - Logging verbosity and output formatting
 - Network and IPC endpoint settings
@@ -52,105 +57,30 @@ When `myapp` queries `log::myapp::scope::*`, it receives `DEBUG | SCOPE`. Other 
 
 ---
 
-## 2. How It Works
+## 2. The Property Model
 
-The persistence module reads plain-text configuration files (e.g., [areg.init](./../../framework/areg/resources/areg.init)) and stores key-value pairs with wildcard resolution support. Applications query this store during initialization to configure components, logging, and runtime behavior.
+Each line of a configuration file defines one **property** — a key-value pair. The key is a four-part, `::`-separated path:
 
-**Processing Pipeline**
-
-1. **Load**: Read configuration file from disk or embedded resource
-2. **Parse**: Extract key-value pairs using syntax rules defined below
-3. **Store**: Populate internal key-value store with section-based organization
-4. **Resolve**: When queried, return module-specific value or fall back to wildcard (`*`) default
-5. **Query**: Application components retrieve resolved values by key
-
-**Wildcard Resolution**: When an application queries a key, the persistence module first searches for a module-specific entry (e.g., `log::myapp::scope::*`). If not found, it falls back to the wildcard entry (e.g., `log::*::scope::*`). This enables global defaults with selective overrides.
-
-### Storage Architecture
-
-The Areg persistence module organizes key-value pairs into three distinct storage sections, each with different mutability and lifetime characteristics:
-
-#### Read-Only Section
-
-**Purpose**: Global configuration applicable to all modules.
-
-- **Scope**: Keys with wildcard module (`*`) – e.g., `log::*::scope::areg_*`
-- **Mutability**: Immutable after initialization
-- **Persistence**: Fixed values that remain constant across process restarts
-- **Use Case**: Framework-wide defaults, system-level settings, shared logging scopes
-
-**Example**:
 ```text
-log::*::scope::areg_*       = NOTSET            # Fixed for all applications
-log::*::layout::enter       = %d: [ %t  %x.%z: Enter -->]%n
-router::*::address::tcpip   = localhost         # Fixed router address
+section :: module :: property [ :: position ]   =   value
 ```
 
-When any module queries `log::*::scope::areg_*`, it receives the same immutable value (`NOTSET`).
+| Component | Required | Meaning | Examples |
+|-----------|----------|---------|----------|
+| **section** | Yes | Top-level configuration domain | `log`, `router`, `net`, `config`, or your own |
+| **module** | Yes | Target executable (process) name, or `*` for *all* processes | `myapp`, `mtrouter`, `*` |
+| **property** | Yes | Setting identifier within the section | `scope`, `enable`, `address`, `port` |
+| **position** | No | Sub-qualifier for compound settings | `tcpip`, `enter`, `areg_*`, `database_*` |
 
-#### Writable Section
-
-**Purpose**: Module-specific configuration that can be modified and persisted.
-
-- **Scope**: Keys with specific module names – e.g., `log::myapp::scope::*`
-- **Mutability**: Applications can modify values at runtime
-- **Persistence**: Changes are written to the file system and survive process restarts
-- **Use Case**: User preferences, feature toggles, runtime-adjustable settings
-
-**Example**:
 ```text
-log::myapp::scope::*        = INFO | SCOPE      # Initial value
-# Application changes to DEBUG | SCOPE at runtime
-# Next startup reads: log::myapp::scope::* = DEBUG | SCOPE
+log::*::scope::*                    # section=log  module=*       property=scope    position=*
+log::myapp::scope::database_*       # section=log  module=myapp   property=scope    position=database_*
+router::*::address::tcpip           # section=router module=*     property=address  position=tcpip
+net::mtrouter::tcpip::sndbuf        # section=net  module=mtrouter property=tcpip    position=sndbuf
+config::*::version                  # section=config module=*     property=version  (no position)
 ```
 
-Writable properties enable applications to store configuration state between sessions without external databases.
-
-#### Temporary Section
-
-**Purpose**: Runtime-only module-specific properties.
-
-- **Scope**: Keys with specific module names, marked as temporary
-- **Mutability**: Applications can modify values at runtime
-- **Persistence**: **Not persisted**–changes exist only during process lifetime
-- **Lifecycle**: Created on startup, destroyed on shutdown
-- **Use Case**: Session state, runtime flags, ephemeral counters, dynamic behavior switches
-
-**Example**:
-```text
-# Process 'myapp' sets temporary property at runtime (not in areg.init file)
-log::myapp::scope::temp_debug = DEBUG | SCOPE   # Exists only while process runs
-# After shutdown, this property is lost
-```
-
-Temporary properties provide fast, memory-only storage for transient state without file I/O overhead.
-
-### Section Interaction
-
-When a module queries a key, the resolution order follows this priority:
-
-1. **Temporary section** (module-specific, runtime-modified, not persisted)
-2. **Writable section** (module-specific, runtime-modified, persisted)
-3. **Read-only section** (wildcard, immutable, persisted)
-
-**Example Resolution**:
-```text
-# Configuration file areg.init (read-only + writable sections)
-log::*::scope::*            = WARN              # Read-only default
-log::myapp::scope::*        = INFO | SCOPE      # Writable initial value
-
-# Runtime (temporary section)
-# Application 'myapp' sets temporary override:
-#   log::myapp::scope::* = DEBUG | SCOPE
-
-# Query result for 'myapp': DEBUG | SCOPE (temporary takes precedence)
-# After restart: INFO | SCOPE (temporary lost, writable persists)
-# Other apps query result: WARN (read-only default)
-```
-
-This three-tier architecture balances flexibility (writable + temporary) with safety (read-only defaults) while minimizing file system writes (temporary properties never touch disk).
-
-**Thread Safety**: The persistence module is read-only after initialization, allowing lock-free concurrent access from multiple threads.
+The **module** field is the linchpin of the whole model — it decides whether a property is a shared global default or a process-specific value. See [Storage Model](#4-storage-model-read-only-writable-temporary).
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -158,7 +88,7 @@ This three-tier architecture balances flexibility (writable + temporary) with sa
 
 ## 3. Syntax Reference
 
-### Basic Format
+### Basic format
 
 ```text
 <property_key> = <property_value>
@@ -169,13 +99,17 @@ This three-tier architecture balances flexibility (writable + temporary) with sa
 | Element | Description | Example |
 |---------|-------------|---------|
 | **Assignment** | Key and value separated by `=` | `log::*::enable = true` |
-| **Terminator** | Optional `;` at end of value | `router::*::port::tcpip = 8181;` |
-| **Comments** | Lines starting with `# ` (hash + space) | `# Logging configuration` |
-| **Whitespace** | Spaces and tabs ignored around `=` and `::` | `key  =  value` → `key=value` |
-| **Key Separator** | Double colon `::` for hierarchical keys | `log::myapp::scope::*` |
-| **Value Delimiter** | Pipe `|` for multi-value lists | `DEBUG | SCOPE` |
+| **Key separator** | Double colon `::` between key parts | `log::myapp::scope::*` |
+| **Whitespace** | Spaces and tabs around `=` and `::` are ignored | `key  =  value` ≡ `key=value` |
+| **Terminator** | Optional `;` after the value | `router::*::port::tcpip = 8181;` |
+| **Value list** | Pipe `\|` separates multiple values (logical OR) | `DEBUG \| SCOPE` |
+| **Comment** | Text starting with `# ` (hash **+ space**) | `# this is a comment` |
+| **Inline comment** | A ` # ` after the value ends the value | `port = 8181  # router port` |
+| **Boolean** | Literal `true` / `false` | `log::*::enable::file = false` |
 
-**Important**: Comments require a space after `#`. The sequence `#comment` is not recognized; use `# comment` instead.
+> ⚠️ **The space after `#` is significant.** `# comment` is a comment; `#comment` (no space) is treated as a blank/ignored line, *not* a recognized comment. Always write `# `.
+
+The parser is implemented in [`Property::parse()`](./../../framework/areg/persist/Property.hpp); the syntax constants live in [`PersistenceDefs.hpp`](./../../framework/areg/persist/PersistenceDefs.hpp).
 
 ### Example
 
@@ -189,250 +123,196 @@ log::myapp::scope::*        = DEBUG | SCOPE     # Override for 'myapp'
 
 ---
 
-## 4. Property Keys
+## 4. Storage Model: Read-Only, Writable, Temporary
 
-### Anatomy of a Key
+When `ConfigManager` reads a file, it sorts every property into one of two in-memory lists **based solely on the `module` field**, relative to the current process name:
 
-```text
-section::module::property[::position]
+```
+                 ┌──────────────────────────────────────────────┐
+  areg.init  ──▶ │  for each property line                       │
+                 │    module == "*"            ─▶ READ-ONLY list  │
+                 │    module == <this process> ─▶ WRITABLE list   │
+                 │    module == <other process>─▶ DISCARDED       │
+                 └──────────────────────────────────────────────┘
 ```
 
-| Component | Required | Description | Examples |
-|-----------|----------|-------------|----------|
-| **section** | Yes | Configuration domain | `log`, `router`, `logger`, `config` |
-| **module** | Yes | Target executable name or `*` for all | `myapp`, `mtrouter`, `*` |
-| **property** | Yes | Setting identifier | `scope`, `enable`, `layout`, `address` |
-| **position** | No | Sub-category for complex settings | `areg_*`, `tcpip`, `enter`, `message` |
+This is the single most important rule of the model:
 
-### Key Hierarchy Examples
+- **Read-only properties** (`module = *`) are global defaults shared by every process. They are never modified or written back. Conceptually they are the immutable "factory settings".
+- **Writable properties** (`module =` the running process's name) are this process's own values. They override the global defaults and can be changed at runtime and saved back to the file.
+- **Properties addressed to a *different* module are dropped at load time** — process `myapp` never holds `log::server::scope::*` in memory. This keeps each process's view small and prevents one application from mutating another's settings.
 
-```text
-log::*::scope::*                    # Global scope settings for all executables
-log::myapp::scope::*                # Scope settings specific to 'myapp' executable
-log::myapp::scope::database_*       # Database-related scopes in 'myapp'
-router::*::address::tcpip           # TCP/IP address for message router
-```
+> The exact split happens while `ConfigManager::read_config()` parses the file (the `_read_config` helper in [ConfigManager.cpp](./../../framework/areg/persist/private/ConfigManager.cpp)): `key.is_all_modules()` → read-only; `is_module_property(currentModule)` → writable; otherwise ignored.
 
-### Wildcard Behavior
+### The "temporary" attribute
 
-Using `*` in the module position creates **global defaults** that apply to all executables unless overridden by module-specific entries. Wildcards in the position field match patterns (e.g., `areg_*` matches all scopes starting with `areg_`).
+There is no separate "temporary list". **Temporary is a boolean flag on a writable property.** A writable entry created with `temporary = true`:
 
-**Resolution Priority**: Module-specific keys take precedence over wildcard keys.
+- participates in lookups exactly like any other writable entry, **but**
+- is **excluded when the configuration is saved** (`save_config`), so it never reaches the file.
 
-```text
-log::*::scope::areg_*       = NOTSET    # All apps: disable scopes starting with 'areg_'
-log::*::scope::*            = WARN      # All apps: default WARN for other scopes
-log::myapp::scope::*        = DEBUG     # 'myapp': override to DEBUG
-log::mtrouter::scope::*     = NOTSET    # 'mtrouter': no logging
-```
+Use it for runtime-only state — a debug toggle you flip for the current session, a counter, an ephemeral override — that should vanish on the next start. Persistent writable entries (the default, `temporary = false`) *are* written back and survive restarts.
 
-**Resolution Algorithm**:
-1. Query for `log::<module>::scope::*` where `<module>` is the requesting application
-2. If module-specific key exists, return its value
-3. If not found, search for `log::*::scope::*` (wildcard)
-4. If wildcard exists, return its value
-5. If neither exists, return default/empty value
-
-This mechanism enables **one configuration file, many applications**–critical for IPC deployments where updating multiple config files is error-prone.
+| | Read-only | Writable (persistent) | Writable (temporary) |
+|---|---|---|---|
+| Key module field | `*` | this process | this process |
+| Modifiable at runtime | No | Yes | Yes |
+| Saved to file | Yes (unchanged) | Yes | **No** |
+| Survives restart | Yes | Yes | No |
+| Typical use | shared defaults | per-app settings | session-only state |
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-## 5. Property Values
+## 5. Wildcard Resolution
 
-### Value Syntax
+When the application queries a key, `ConfigManager` resolves it in two tiers:
 
-Values begin immediately after `=` and terminate at:
-- Semicolon (optional) `;`
-- Comment marker `# `
-- End of line
-
-### Single Value
+1. **Writable list** — look for an *exact* entry for the current process module.
+2. **Read-only list** — if not found, fall back to the `*` (wildcard) entry.
 
 ```text
-log::*::enable              = true
-router::*::port::tcpip      = 8181;
-log::*::file::append        = false
+log::*::scope::areg_*       = NOTSET    # all apps: disable scopes starting with 'areg_'
+log::*::scope::*            = WARN      # all apps: default WARN for everything else
+log::myapp::scope::*        = DEBUG     # 'myapp' only: override to DEBUG
 ```
 
-### Multi-Value Lists
+→ `myapp` resolving `log::myapp::scope::*` gets `DEBUG` (writable wins).  
+→ any other app resolving `log::*::scope::*` gets `WARN` (read-only default).
 
-Use pipe `|` to specify multiple values (logical OR relationship):
+**Position wildcards.** A `*` (or a `prefix_*`) in the *position* field matches a family of keys. For example, `log::*::scope::areg_*` applies to every scope whose name begins with `areg_`. Pattern matching of scope names is hierarchical and is described in the [Areg Configuration Reference — `log` section](./05b-areg-configuration-file.md#5-log-section--logging).
 
-```text
-log::*::scope::*            = DEBUG | SCOPE
-log::*::target              = remote | file | debug | db
-router::*::connect          = tcpip
+### Override-collapse (set semantics)
+
+When you *set* a module value, `ConfigManager` is smart about not creating redundant overrides:
+
+- If the new value **differs** from the read-only default → a writable override is created/updated.
+- If the new value **equals** the read-only default → any existing writable override is **removed** (the global default already provides that value).
+
+This keeps the writable list — and therefore the saved file — minimal: only genuine deviations from the defaults are persisted. (See `_set_position_value()` in `ConfigManager.cpp`.)
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## 6. Reading and Writing with ConfigManager
+
+[`ConfigManager`](./../../framework/areg/persist/ConfigManager.hpp) is the object that owns the in-memory property store. In an Areg application it is created and loaded for you by `Application::setup()` / `Application::load_configuration()`, and you reach it through `Application::config_manager()`.
+
+### Loading and saving
+
+```cpp
+ConfigManager& config = Application::config_manager();
+
+config.read_config("./config/areg.init");   // empty path => areg::DEFAULT_CONFIG_FILE
+// ... read / modify properties ...
+config.save_config();                        // writes back to the same file
 ```
 
-**Parsing Behavior**: The persistence module returns multi-value entries as an array or list type (implementation-dependent).
+`read_config()` and `save_config()` accept an optional [`ConfigListener*`](./../../framework/areg/persist/ConfigListener.hpp) that is notified before and after the operation, letting components reload derived state. `save_config()` rewrites only this process's non-temporary writable entries and leaves all other lines of the source file intact.
 
-### Special Characters
+### Reading a value
 
-Values support all printable ASCII characters. To include literal `#` or `;` in a value, ensure no space precedes `#`, or use `;` only as a terminator.
+```cpp
+// Generic lookup (writable for this module, then read-only wildcard):
+const PropertyValue* v = config.property_value("config", "version");
+Version ver = v != nullptr ? Version(v->value()) : Version();
 
-```text
-config::*::version          = 2.0.0         # Valid: version number
-log::*::file::location      = ./logs/%appname%_%time%.log   # Valid: masks
+// Typed helpers exist for the framework's own keys, e.g.:
+Version  cfgVersion = config.config_version();
+bool     fileLog    = config.log_enabled(LogTarget::File);
+uint16_t routerPort = config.remote_service_port(RemoteServiceKind::Router, ConnectionType::Tcpip);
+```
+
+### Writing a value
+
+```cpp
+// Persistent: saved on save_config(), survives restart
+config.set_module_property("config", "myflag", "", "enabled");
+
+// Temporary: lives only for this run, never written to disk
+config.set_module_property("config", "myflag", "", "enabled",
+                           ConfigEntry::AnyKey, /*temporary*/ true);
+```
+
+### Thread safety
+
+`ConfigManager` guards every operation with an internal mutex, so individual calls are thread-safe. After the initial load the data is effectively read-mostly, which makes concurrent reads cheap. When you need a *sequence* of calls to be atomic, hold the lock yourself:
+
+```cpp
+Lock guard(config.lockable());   // RAII: hold across multiple operations
+// ... several reads/writes that must be consistent ...
 ```
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-## 6. Practical Examples
+## 7. Storing Your Own Data
 
-### Complete Configuration File
+The persistence module is not limited to the framework's predefined keys — you can define your own `section`/`property` names and reuse the same file, syntax, and storage model.
 
-Wildcard in position (`database_*`) matches any scope starting with `database_`.
+**Choose a section that won't collide** with the framework's (`config`, `log`, `service`, `router`, `logger`, `net`). For example use your application name as the section, or a clearly custom one such as `app`:
 
 ```text
-# Areg Framework Configuration - areg.init
-# Shared by multiple processes in IPC deployment
-
-# ===== Global Defaults (Read-Only Section) =====
-log::*::scope::*            = NOTSET            # Disable all scopes by default
-log::*::scope::areg_*       = NOTSET            # Framework scopes disabled
-log::*::layout::enter       = %d: [ %t  %x.%z: Enter -->]%n
-log::*::layout::message     = %d: [ %t  %p >>> ] %m%n
-log::*::layout::exit        = %d: [ %t  %x.%z: Exit <-- ]%n
-log::*::enable              = true              # Global logging enabled
-log::*::enable::remote      = true              # Remote logging enabled
-log::*::enable::file        = false             # File logging disabled
-log::*::file::location      = ./logs/%appname%_%time%.log
-
-# ===== Application-Specific Overrides (Writable Section) =====
-log::myapp::scope::*        = DEBUG | SCOPE     # Enable all scopes for 'myapp'
-log::myapp::scope::ui_*     = WARN | SCOPE      # UI scopes at WARN level
-
-log::server::scope::*       = INFO | SCOPE      # 'server' uses INFO level
-log::server::scope::database_* = DEBUG | SCOPE  # Database scopes at DEBUG
-
-log::mtrouter::scope::*     = NOTSET            # Message router: no logging
-log::logcollector::scope::* = NOTSET            # Log collector: no logging
-
-# Note: 'client' app will use global default (NOTSET) - no logging
-
-# ===== Remote Service Configuration =====
-router::*::service          = mtrouter          # Message router service name
-router::*::connect          = tcpip             # Supported protocol
-router::*::enable::tcpip    = true              # TCP/IP enabled
-router::*::address::tcpip   = localhost         # Router IP address
-router::*::port::tcpip      = 8181              # Router port number
-
-logger::*::service          = logcollector      # Log collector service name
-logger::*::connect          = tcpip             # Supported protocol
-logger::*::enable::tcpip    = true              # TCP/IP enabled
-logger::*::address::tcpip   = localhost         # Log collector IP address
-logger::*::port::tcpip      = 8282              # Log collector port number
+# In areg.init (or your own .init file)
+app::*::theme              = dark            # shared default for all processes
+app::myeditor::theme       = solarized       # 'myeditor' override (writable for that process)
+app::myeditor::recent::0   = /home/me/a.txt
+app::myeditor::recent::1   = /home/me/b.txt
 ```
 
-**Section Classification**:
-- **Read-only**: All `log::*::...` (wildcard module), `router::*::...`, `logger::*::...`
-- **Writable**: `log::myapp::...`, `log::server::...`, `log::mtrouter::...`
-- **Temporary**: Not shown in file (created at runtime programmatically)
+Read and write them through the generic accessors:
 
-### Log Layout Tokens
+```cpp
+ConfigManager& config = Application::config_manager();
 
-Format specifiers in `log::*::layout::*` properties:
+// Read: 'myeditor' gets "solarized"; any other process gets "dark"
+String theme = "dark";
+if (const PropertyValue* v = config.property_value("app", "theme"))
+    theme = v->value();
 
-| Token | Meaning               | Example Output                |
-|-------|-----------------------|-------------------------------|
-| `%a`  | Logging object ID     | `0x1234`                      |
-| `%c`  | Tick-count            | `123456`                      |
-| `%d`  | Date/time             | `2025-01-26 14:32:45`         |
-| `%e`  | Module (process) ID   | `5678`                        |
-| `%m`  | Message text          | `Connection established`      |
-| `%n`  | Newline               | (platform-specific)           |
-| `%p`  | Priority (log level)  | `INFO`, `DEBUG`, `WARN`       |
-| `%s`  | Scope ID              | `42`                          |
-| `%t`  | Thread ID             | `0x7f8a`                      |
-| `%x`  | Module/Process name   | `myapp`                       |
-| `%y`  | Thread name           | `WorkerThread`                |
-| `%z`  | Scope name            | `myapp_Connection_connect`    |
+// Write a persistent per-process value, then save
+config.set_module_property("app", "theme", "", "monokai");
+config.save_config();
+```
 
-### Scope Priority Values
+Because the module field drives storage, the same line gives every process a sensible shared default (`app::*::theme`) while letting each process keep its own persisted override — with no extra files and no merge logic on your side.
 
-Valid values for `log::*::scope::*` properties:
-
-| Priority | Description | Logs Output |
-|----------|-------------|-------------|
-| `DEBUG` | Debug level (lowest) | DEBUG, INFO, WARN, ERROR, FATAL |
-| `INFO` | Information level | INFO, WARN, ERROR, FATAL |
-| `WARN` | Warning level | WARN, ERROR, FATAL |
-| `ERROR` | Error level | ERROR, FATAL |
-| `FATAL` | Fatal errors (highest) | FATAL only |
-| `SCOPE` | Enter/exit messages | Scope boundaries (combine with others) |
-| `NOTSET` | Disabled | No logging for this scope |
-
-**Combinations**: Use `|` to combine priorities: `DEBUG | SCOPE`, `WARN | SCOPE`
+If you do not want to share the framework's `areg.init`, point `read_config()`/`save_config()` at your own file path; the syntax and behavior are identical.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-## 7. Best Practices
+## 8. Best Practices
 
-### Key Naming Conventions
+### Key naming
 
-- Use lowercase ASCII letters, digits, and underscores only
-- Prefer descriptive names: `database_connection` over `db_conn`
-- Group related settings under common sections: `log::`, `router::`, `logger::`
-- Use wildcards in position for pattern matching: `scope::database_*` for all database scopes
+- Use lowercase ASCII letters, digits, and underscores for key parts.
+- Group related settings under a common section (`log::`, `net::`, `app::`).
+- Use a position wildcard for families of related keys: `scope::database_*`.
+- Pick a section name that cannot collide with framework sections when storing your own data.
 
-### Value Guidelines
+### Values
 
-- Keep values simple and atomic (avoid encoding complex structures)
-- Use multi-value lists for enumeration sets: `DEBUG | SCOPE`
-- Document value units in comments: `port = 8181 # Port number`
-- Use masks in file paths: `%appname%_%time%.log` for timestamped files
+- Keep values atomic; do not encode complex structures in a single value.
+- Use multi-value lists for enumerations: `DEBUG | SCOPE`.
+- Document units in inline comments: `port = 8181  # TCP port`.
 
-### File Organization
+### Choosing storage scope
 
-```text
-# Structure configuration files in sections:
-# 1. Global defaults (using *) - Read-Only Section
-# 2. Application-specific overrides - Writable Section
-# 3. Remote service configuration
-# 4. Module-specific settings
-```
+- **Read-only (`module = *`)** — shared defaults that rarely change: framework endpoints, layouts, baseline scopes.
+- **Writable (per-module)** — values a process may change and must remember across restarts.
+- **Temporary (writable + flag)** — session-only state that must never touch disk; cheap, no file I/O.
 
-### Choosing Storage Types
+### Performance
 
-**Use Read-Only (wildcard keys) for:**
-- Framework defaults that never change: `log::*::layout::*`
-- System-wide logging configurations: `log::*::scope::areg_*`
-- Service endpoints: `router::*::address::tcpip`
-- Constants shared across all applications
-
-**Use Writable (module-specific) for:**
-- Application-specific scope settings: `log::myapp::scope::*`
-- Per-module log levels that may change between sessions
-- Feature flags that persist: `log::myapp::scope::ui_*`
-- Runtime-adjustable settings that should survive restarts
-
-**Use Temporary (runtime-only) for:**
-- Session tokens and authentication state
-- Real-time counters and metrics: `log::myapp::scope::temp_counter`
-- Debug flags enabled at runtime without file modification
-- Transient feature switches for testing
-
-### Shared Configuration Strategy
-
-When multiple applications share one `areg.init` file:
-- Set conservative defaults with wildcards: `log::*::scope::* = NOTSET`
-- Enable features selectively per application: `log::myapp::scope::* = DEBUG | SCOPE`
-- Disable logging for system services: `log::mtrouter::scope::* = NOTSET`
-- Place the shared file in a common location: `/etc/areg/areg.init` or `~/.config/areg/areg.init`
-- Use environment variables to override the configuration file path if needed
-
-### Performance Considerations
-
-- Configuration files are parsed once at startup–keep files under 100KB for sub-millisecond parsing
-- Use temporary properties for frequently changing values to avoid file I/O
-- Writable properties trigger file updates on change–use sparingly for critical data only
-- Read-only properties (wildcards) have no runtime overhead after initialization
+- Files are parsed once at startup — keep them small (well under 100 KB) for sub-millisecond parsing.
+- Read-only properties have no runtime cost after load.
+- Prefer temporary properties for frequently changing values to avoid repeated file writes.
+- Persisting (`save_config`) rewrites the file — call it deliberately, not on every change.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -440,10 +320,11 @@ When multiple applications share one `areg.init` file:
 
 ## Further Reading
 
-- **Areg SDK Repository**: [github.com/aregtech/areg-sdk](https://github.com/aregtech/areg-sdk)
-- **Persistence Module Source**: [framework/areg/persist](./../../framework/areg/persist)
-- **Example Configuration**: [areg.init](./../../framework/areg/resources/areg.init)
-- **Logging Documentation**: [Areg Logging Guide](../logging/README.md)
+- **[Areg Configuration File Reference (`areg.init`)](./05b-areg-configuration-file.md)** — every section and property documented, with examples
+- **[Logging Configuration](./04a-logging-config.md)** — scopes, priorities, and outputs
+- **[Message Router (`mtrouter`)](./03a-mtrouter.md)** — IPC routing and its network settings
+- **Persistence module source**: [framework/areg/persist](./../../framework/areg/persist)
+- **Example configuration**: [areg.init](./../../framework/areg/resources/areg.init)
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 

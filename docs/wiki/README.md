@@ -121,7 +121,8 @@ Centralized logging for distributed systems:
 
 Configuration and data persistence:
 
-- **[Key-Value Persistence Syntax](./05a-persistence-syntax.md)** - `areg.init` configuration file format
+- **[Key-Value Persistence Syntax](./05a-persistence-syntax.md)** - File syntax, storage model, and the `ConfigManager` API for persisting data
+- **[Areg Configuration Reference (`areg.init`)](./05b-areg-configuration-file.md)** - Complete reference of every `areg.init` section and property
 
 ---
 
@@ -229,7 +230,7 @@ Areg SDK is built on a performance mandate: **latency, throughput, stability, an
 
 ### ...configure logging and services
 → **[Logging Configuration](./04a-logging-config.md)** (scopes and priorities)  
-→ **[Persistence Syntax](./05a-persistence-syntax.md)** (`areg.init` file)
+→ **[Areg Configuration Reference](./05b-areg-configuration-file.md)** (`areg.init` file)
 
 ### ...build for embedded systems
 → **[CMake Cross-Compilation](./01b-cmake-build.md#cross-compilation)** (ARM, etc.)  

@@ -600,7 +600,7 @@ logger::*::port::tcpip      = 8282
 logger::someapp::enable::tcpip = false
 ```
 
-**See:** [Persistence Syntax Guide](./06a-persistence-syntax.md) for complete syntax
+**See:** [Areg Configuration Reference](./05b-areg-configuration-file.md) for the complete property list
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -943,7 +943,7 @@ Restart service.
 
 **Configuration:**
 - [areg.init](../../framework/areg/resources/areg.init) - Default configuration
-- [Persistence Syntax](./06a-persistence-syntax.md) - Configuration file format
+- [Areg Configuration Reference](./05b-areg-configuration-file.md) - `areg.init` properties
 
 **Service Files:**
 - [logcollector.service](../../framework/logcollector/resources/logcollector.service) - Linux service file

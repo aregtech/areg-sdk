@@ -886,7 +886,7 @@ log::*::scope::*            = NOTSET
 ```
 
 > [!TIP]
-> For detailed configuration syntax, see [Persistence Syntax Guide](./06a-persistence-syntax.md).
+> For detailed configuration properties, see the [Areg Configuration Reference](./05b-areg-configuration-file.md).
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -1404,7 +1404,7 @@ Type `-n` or `--instances` in mtrouter console.
 **Related Guides:**
 - [Quick Project Setup](./02a-quick-project-setup.md) - Create multiprocessing projects
 - [CMake Integration](./02b-cmake-integrate.md) - Integration methods
-- [Persistence Syntax](./06a-persistence-syntax.md) - Configuration file format
+- [Areg Configuration Reference](./05b-areg-configuration-file.md) - `areg.init` properties
 
 **Configuration Files:**
 - [areg.init](../../framework/areg/resources/areg.init) - Default configuration

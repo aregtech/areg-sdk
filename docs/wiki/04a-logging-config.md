@@ -143,7 +143,7 @@ log::*::enable::file = true
 ```
 
 > [!TIP]
-> For complete syntax details, see [Persistence Syntax Guide](./06a-persistence-syntax.md).
+> For complete configuration property details, see the [Areg Configuration Reference](./05b-areg-configuration-file.md). For file syntax, see [Key-Value Persistence](./05a-persistence-syntax.md).
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -1118,9 +1118,9 @@ log::*::enable::debug = true
 ## Additional Resources
 
 **Related Guides:**
-- [Log Collector Guide](./XX-logcollector.md) - Remote log collection service
+- [Log Collector Guide](./04d-logcollector.md) - Remote log collection service
 - [Log Observer Guide](./04c-logobserver.md) - Runtime scope control
-- [Persistence Syntax](./06a-persistence-syntax.md) - Configuration file format
+- [Areg Configuration Reference](./05b-areg-configuration-file.md) - `areg.init` properties
 
 **Configuration Files:**
 - [areg.init](../../framework/areg/resources/areg.init) - Default configuration
