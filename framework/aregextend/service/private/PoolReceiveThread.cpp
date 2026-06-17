@@ -167,9 +167,6 @@ bool PoolReceiveThread::run_dispatcher()
                 {
                     mMux.unregister_socket(hReady);
                     mRemoteService.failed_receive_message(clientSocket);
-                    // Free this socket's thread-local read-ahead cache (256 KB). The MultiCache map
-                    // never erases an entry on its own, so a closed socket would pin its cache for the
-                    // receive thread's lifetime (and a reused fd would resurrect stale head/unread cursors).
                     areg::thread_rx_cache_release(hReady);
                 }
             }

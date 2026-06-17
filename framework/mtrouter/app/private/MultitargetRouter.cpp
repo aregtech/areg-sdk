@@ -161,10 +161,7 @@ void MultitargetRouter::run_console_io()
                                       areg::ext::COORD_USER_INPUT.posY });
     console.refresh_screen();
 
-    // Background thread: update all four stat rows every second.
-    // The 1s tick is interruptible via a condition_variable so that '-q' stops the thread
-    // immediately instead of joining through the remainder of an in-flight sleep_for(1s)
-    // (which delayed quit by up to ~1 second).
+    // update all four stat rows every second
     std::mutex rate_mtx;
     std::condition_variable rate_cv;
     bool rate_running{ true };                  // guarded by rate_mtx
@@ -178,11 +175,10 @@ void MultitargetRouter::run_console_io()
             std::unique_lock<std::mutex> lock(rate_mtx);
             while (rate_running)
             {
-                // Wake after 1s for the periodic refresh, or immediately when rate_running is cleared.
                 if (rate_cv.wait_for(lock, std::chrono::seconds(1), [&]() { return !rate_running; }))
                     break;
 
-                lock.unlock();                  // release during the slower console I/O
+                lock.unlock();
                 helper.query_data_sent(sizeSent, msgSent);
                 helper.query_data_received(sizeRecv, msgRecv);
 

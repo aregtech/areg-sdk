@@ -122,9 +122,6 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
                 msgReceived, [this](uint64_t bytes, uint32_t msgs) { accumulate_received(bytes, msgs); }))
         {
             mRemoteService.failed_receive_message(clientSocket);
-            // Free this socket's thread-local read-ahead cache (256 KB). The MultiCache map never
-            // erases an entry on its own, so a closed socket would pin its cache for the lifetime
-            // of the receive thread (and a reused fd would resurrect stale head/unread cursors).
             areg::thread_rx_cache_release(clientSocket.handle());
         }
     }
@@ -137,7 +134,6 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
                         , mConnection.is_valid() ? "YES" : "NO");
 
         mRemoteService.failed_receive_message(clientSocket);
-        // Free this socket's thread-local read-ahead cache (see note above).
         areg::thread_rx_cache_release(clientSocket.handle());
     }
 }

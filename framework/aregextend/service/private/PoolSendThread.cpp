@@ -85,9 +85,7 @@ void PoolSendThread::start_event_processing( areg::Event & eventElem )
     mBatch[batchCount].msg    = eventElem.envelope();  // fields already zeroed
     ++batchCount;
 
-    // Phase 1: drain additional queued events straight into mBatch (the persistent batch list retains
-    // each buffer). No Event array -- one transient Event per popped message. The common single-message
-    // relay finds the queue empty and skips the loop.
+    // Phase 1: drain additional queued events straight into mBatch
     while ( batchCount < areg::DEFAULT_DRAIN_LIMIT )
     {
         areg::Event evt{ pick_event() };
@@ -112,7 +110,7 @@ void PoolSendThread::start_event_processing( areg::Event & eventElem )
 
         mTargets[batchCount]      = static_cast<ITEM_ID>(hdr->target);
         mBatch[batchCount].socket = areg::InvalidSocketHandle;
-        mBatch[batchCount].msg    = evt.envelope();  // O(1) shared_ptr copy; mBatch keeps the buffer alive
+        mBatch[batchCount].msg    = evt.envelope();
         ++batchCount;
     }
 
@@ -139,7 +137,7 @@ void PoolSendThread::start_event_processing( areg::Event & eventElem )
             mBatch[mid].socket <= entry.socket ? lo = mid + 1u : hi = mid;
         }
 
-        // Shift right using move-assignment (PendingSend has MessageEnvelope -- memmove is unsafe).
+        // Shift right using move-assignment
         for ( uint32_t j{ validCount }; j > lo; --j )
             mBatch[j] = std::move(mBatch[j - 1]);
 
@@ -155,12 +153,7 @@ void PoolSendThread::start_event_processing( areg::Event & eventElem )
             [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_sent(bytes, msgs); });
     }
 
-    // Phase 5: release every wire buffer touched this cycle now that it has been sent (or its
-    // target was dropped). Covers [0, batchCount): valid entries, discarded slots that Phase 3
-    // skipped with `continue`, and moved-from slots (destroy_event() is a no-op on those).
-    // Without this the array retains the last batch's envelopes (up to DEFAULT_DRAIN_LIMIT) until
-    // a later, equally large batch overwrites the slots -- a high-water-mark retention that pins
-    // hundreds of MB of already-sent payloads in RAM after a throughput burst subsides.
+    // Phase 5: release every wire buffer
     for ( uint32_t i{ 0u }; i < batchCount; ++i )
         mBatch[i].msg.destroy_event();
 }
