@@ -1,0 +1,14 @@
+# ThreadSanitizer suppressions for the Areg SDK.
+# ---------------------------------------------------------------------------
+# Format (see https://github.com/google/sanitizers/wiki/ThreadSanitizerSuppressions):
+#   race:<func/file substring>          suppress a data-race report
+#   deadlock:<substring>                suppress a lock-order report
+#   called_from_lib:<lib name>          ignore races originating in a library
+#
+# Keep MINIMAL.  A race inside the framework is a real defect - fix it, do not
+# hide it.  The first run is intentionally left un-suppressed.
+
+# --- Examples (uncomment only if proven benign) ---
+# Benign stats counters updated without a lock for telemetry only:
+#race:accumulate_sent
+#race:accumulate_received

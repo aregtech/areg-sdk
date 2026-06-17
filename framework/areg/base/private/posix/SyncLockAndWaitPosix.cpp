@@ -25,6 +25,7 @@
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Thread.hpp"
 #include <algorithm>
+#include <chrono>
 #include <cstdint>
 #include <errno.h>
 
@@ -249,7 +250,19 @@ inline uint32_t _wait_any_sleep(std::atomic<uint32_t>& firedWord, uint32_t msTim
 
 } // anonymous namespace
 
-// WaitAny path: register nodes, early-exit check, sleep, deregister.
+// WaitAny path: register nodes, then loop { arm, try-acquire, sleep } until a
+// waitable is actually owned, the wait times out, or an async signal arrives.
+//
+// CRITICAL: being woken because a waitable became signaled does NOT mean this
+// thread owns it. Between the owner releasing (mutex owner -> 0, auto-reset
+// event / semaphore count -> available) and this thread claiming it, another
+// thread -- including the releaser itself re-locking through the early acquire
+// scan below -- can take it first. When that happens notify_request_ownership()
+// returns false and the thread MUST wait again. Returning success on a failed
+// ownership request lets two threads both believe they hold the same mutex, or
+// lets several threads pass the same auto-reset event (can_signal_threads() is
+// true for events/semaphores, so notify_any_waiters() wakes them all and only
+// the notify_request_ownership() winner is the real owner).
 int32_t SyncLockAndWaitPosix::_wait_any_new(WaitablePosix** listWaitables, int32_t count, uint32_t msTimeout) noexcept
 {
     const pthread_t self{ ::pthread_self() };
@@ -258,8 +271,8 @@ int32_t SyncLockAndWaitPosix::_wait_any_new(WaitablePosix** listWaitables, int32
     alignas(64) std::atomic<uint32_t> firedWord{ SYNC_FIRE_INVALID };
     WaiterNode nodes[areg::MAXIMUM_WAITING_OBJECTS];
 
-    // Registration:
-    // Register BEFORE checking signaled state.
+    // Register the waiter nodes once for the whole call, BEFORE checking the
+    // signaled state, so no wake-up can be lost while we contend below.
     for (int32_t i{ 0 }; i < count; ++i)
     {
         nodes[i].mFiredWord  = &firedWord;
@@ -267,56 +280,86 @@ int32_t SyncLockAndWaitPosix::_wait_any_new(WaitablePosix** listWaitables, int32
         listWaitables[i]->register_waiter(&nodes[i]);
     }
 
-    // Early-exit check (already signaled)
-    int32_t ownedIndex{ areg::INVALID_INDEX };
-    for (int32_t i{ 0 }; i < count; ++i)
+    // Absolute deadline computed once: a re-wait after a lost ownership race
+    // must not restart the timeout, otherwise a contended timed wait could
+    // block far longer than the caller requested.
+    using Clock = std::chrono::steady_clock;
+    const bool              infinite{ msTimeout == areg::WAIT_INFINITE };
+    const Clock::time_point deadline{ infinite
+                                    ? Clock::time_point::max()
+                                    : Clock::now() + std::chrono::milliseconds(msTimeout) };
+
+    int32_t resultCode{ static_cast<int32_t>(areg::os::SyncSignal::Timeout) };
+
+    for ( ; ; )
     {
-        WaitablePosix* w{ listWaitables[i] };
-        if (w->check_signaled(self) && w->notify_request_ownership(self))
+        // Arm the fire word BEFORE re-checking the signaled state. A signal that
+        // arrives after this point is either observed by the acquire scan below
+        // or leaves firedWord != SYNC_FIRE_INVALID so the futex wait returns at
+        // once -- in neither case is the wake-up lost.
+        firedWord.store(SYNC_FIRE_INVALID, std::memory_order_release);
+
+        // Try to actually take ownership of any currently-signaled waitable.
+        int32_t acquired{ areg::INVALID_INDEX };
+        for (int32_t i{ 0 }; i < count; ++i)
         {
-            ownedIndex = i;
-            uint32_t expected{ SYNC_FIRE_INVALID };
-            if (firedWord.compare_exchange_strong(
-                    expected, static_cast<uint32_t>(i),
-                    std::memory_order_acq_rel, std::memory_order_relaxed))
+            WaitablePosix* w{ listWaitables[i] };
+            if (w->check_signaled(self) && w->notify_request_ownership(self))
             {
                 w->notify_released_threads(1);
+                acquired = i;
+                break;
             }
+        }
+
+        if (acquired != areg::INVALID_INDEX)
+        {
+            resultCode = acquired;
             break;
         }
-    }
 
-    // Sleep if not already fired:
-    if (firedWord.load(std::memory_order_acquire) == SYNC_FIRE_INVALID)
-    {
-        // Register in the WaitAny registry so notify_async_signal() can reach us.
+        // Remaining time for this sleep (honours the absolute deadline).
+        uint32_t remaining{ areg::WAIT_INFINITE };
+        if (!infinite)
+        {
+            const Clock::time_point now{ Clock::now() };
+            if (now >= deadline)
+            {
+                resultCode = static_cast<int32_t>(areg::os::SyncSignal::Timeout);
+                break;
+            }
+
+            const int64_t ms{ std::chrono::duration_cast<std::chrono::milliseconds>(deadline - now).count() };
+            remaining = static_cast<uint32_t>(ms <= 0 ? 1 : ms);
+        }
+
+        // Register in the WaitAny registry so notify_async_signal() can reach
+        // this thread, sleep until firedWord changes, then deregister.
         WaitAnyRegistryMap& mapAny{ SyncLockAndWaitPosix::_map_wait_any_ids() };
         mapAny.register_resource_object(to_num<ptr_type>(self), &firedWord);
-        const uint32_t woken{ _wait_any_sleep(firedWord, msTimeout) };
+        const uint32_t woken{ _wait_any_sleep(firedWord, remaining) };
         mapAny.unregister_resource_object(to_num<ptr_type>(self));
 
         if (woken == SYNC_FIRE_INVALID)
         {
-            uint32_t expected{ SYNC_FIRE_INVALID };
-            firedWord.compare_exchange_strong(
-                expected,
-                static_cast<uint32_t>(areg::os::SyncSignal::Timeout),
-                std::memory_order_acq_rel,
-                std::memory_order_relaxed);
+            resultCode = static_cast<int32_t>(areg::os::SyncSignal::Timeout);
+            break;
         }
+
+        if (woken == static_cast<uint32_t>(areg::os::SyncSignal::AsyncSignal))
+        {
+            resultCode = static_cast<int32_t>(areg::os::SyncSignal::AsyncSignal);
+            break;
+        }
+
+        // A waitable fired: loop back and try to claim it. It may have been
+        // stolen meanwhile, in which case we arm and wait again.
     }
 
     for (int32_t i{ 0 }; i < count; ++i)
         listWaitables[i]->unregister_waiter(&nodes[i]);
 
-    // Acquire the winning waitable, unless the early-exit above already took this very one.
-    const uint32_t result{ firedWord.load(std::memory_order_acquire) };
-    if ((static_cast<int32_t>(result) != ownedIndex) && (result < static_cast<uint32_t>(areg::MAXIMUM_WAITING_OBJECTS)))
-    {
-        listWaitables[static_cast<int32_t>(result)]->notify_request_ownership(self);
-    }
-
-    return static_cast<int32_t>(result);
+    return resultCode;
 }
 
 #endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)

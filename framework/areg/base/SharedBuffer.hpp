@@ -520,7 +520,7 @@ protected:
      * \return  Returns the current writing position in the initialized buffer; returns
      *          INVALID_CURSOR_POSITION if the buffer is invalid.
      **/
-    virtual uint32_t init_buffer(uint8_t* newBuffer, uint32_t bufLength, bool makeCopy) const noexcept;
+    uint32_t init_buffer(uint8_t* newBuffer, uint32_t bufLength, bool makeCopy) const noexcept final;
 
 protected:
 

@@ -27,6 +27,8 @@
 
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
+#include <mutex>
 #include <thread>
 #include <stdio.h>
 
@@ -170,7 +172,12 @@ void LogCollector::run_console_io()
     console.refresh_screen();
 
     // Background thread: refresh all four stat rows every second.
-    std::atomic_bool rate_running{ true };
+    // The 1s tick is interruptible via a condition_variable so that '-q' stops the thread
+    // immediately instead of joining through the remainder of an in-flight sleep_for(1s)
+    // (which delayed quit by up to ~1 second).
+    std::mutex rate_mtx;
+    std::condition_variable rate_cv;
+    bool rate_running{ true };                  // guarded by rate_mtx
     std::thread rate_thread([&]()
     {
         DataRateHelper& helper = data_rate_helper();
@@ -178,12 +185,14 @@ void LogCollector::run_console_io()
         uint64_t sizeSent{ 0u }, sizeRecv{ 0u };
         uint32_t msgSent{ 0u }, msgRecv{ 0u };
 
-        while (rate_running.load(std::memory_order_relaxed))
+        std::unique_lock<std::mutex> lock(rate_mtx);
+        while (rate_running)
         {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-            if (rate_running.load(std::memory_order_relaxed) == false)
+            // Wake after 1s for the periodic refresh, or immediately when rate_running is cleared.
+            if (rate_cv.wait_for(lock, std::chrono::seconds(1), [&]() { return !rate_running; }))
                 break;
 
+            lock.unlock();                      // release during the slower console I/O
             helper.query_data_sent(sizeSent, msgSent);
             helper.query_data_received(sizeRecv, msgRecv);
 
@@ -195,13 +204,18 @@ void LogCollector::run_console_io()
             console.output_msg(areg::ext::COORD_SEND_MSGS, areg::ext::FORMAT_SEND_MSGS.data(), msgSent);
             console.output_msg(areg::ext::COORD_RECV_MSGS, areg::ext::FORMAT_RECV_MSGS.data(), msgRecv);
             console.refresh_screen();
+            lock.lock();
         }
     });
 
     // Block until the user types '-q' / '--quit'.
     console.wait_for_input(option_check_callback());
 
-    rate_running.store(false, std::memory_order_relaxed);
+    {
+        std::lock_guard<std::mutex> lock(rate_mtx);
+        rate_running = false;
+    }
+    rate_cv.notify_one();
     rate_thread.join();
 
     console.uninitialize();

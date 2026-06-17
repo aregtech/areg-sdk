@@ -154,6 +154,15 @@ void PoolSendThread::start_event_processing( areg::Event & eventElem )
         areg::ext::send_pending_groups(mBatch.data(), validCount, mConnection, mRemoteService,
             [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_sent(bytes, msgs); });
     }
+
+    // Phase 5: release every wire buffer touched this cycle now that it has been sent (or its
+    // target was dropped). Covers [0, batchCount): valid entries, discarded slots that Phase 3
+    // skipped with `continue`, and moved-from slots (destroy_event() is a no-op on those).
+    // Without this the array retains the last batch's envelopes (up to DEFAULT_DRAIN_LIMIT) until
+    // a later, equally large batch overwrites the slots -- a high-water-mark retention that pins
+    // hundreds of MB of already-sent payloads in RAM after a throughput burst subsides.
+    for ( uint32_t i{ 0u }; i < batchCount; ++i )
+        mBatch[i].msg.destroy_event();
 }
 
 bool PoolSendThread::post_event( Event & eventElem )

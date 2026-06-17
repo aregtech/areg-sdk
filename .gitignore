@@ -19,6 +19,7 @@
 .idea
 
 build/*
+build-*/
 out/*
 product/*
 tools/*.zip
