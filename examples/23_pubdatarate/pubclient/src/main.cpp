@@ -29,7 +29,7 @@
 
 constexpr char const _modelName[]   = { "DataRate" };  //!< The name of model
 const areg::String   _serviceClient = areg::generate_name("ServiceConsumer"); //!< Generated name of service client component
-constexpr uint32_t     CLIENT_EVENT_QUEUE_SIZE { 1024u };
+constexpr uint32_t     CLIENT_EVENT_QUEUE_SIZE { areg::QUEUE_SIZE_MAXIMUM };
 
 //////////////////////////////////////////////////////////////////////////
 //
