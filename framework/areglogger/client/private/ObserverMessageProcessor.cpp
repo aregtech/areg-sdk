@@ -136,9 +136,9 @@ void ObserverMessageProcessor::notify_log_register_scopes(const areg::MessageEnv
         _init_local_log_message(log, areg::COOKIE_LOGGER, now);
         log.logMessageLen = static_cast<uint32_t>(String::format_string(log.logMessage
                                                     , areg::LOG_MSG_SIZE
-                                                    , "Log observer registered %u scopes of instance %llu."
+                                                    , "Log observer registered %u scopes of instance %u."
                                                     , count
-                                                    , static_cast<uint64_t>(cookie)));
+                                                    , cookie));
         areg::MessageEnvelope msgLog = areg::create_log_message(log, areg::LogDataType::Local, areg::COOKIE_LOGGER);
         notify_log_message(msgLog);
 
@@ -308,10 +308,10 @@ void ObserverMessageProcessor::_clients_connected(const areg::MessageEnvelope& m
                     _init_local_log_message(log, areg::COOKIE_LOGGER, now);
                     log.logMessageLen = static_cast<uint32_t>(String::format_string( log.logMessage
                                                             , static_cast<int32_t>(areg::LOG_MSG_SIZE)
-                                                            , "Log observer have got %u-bit %s (%llu) client connection event, ready to receive logs."
+                                                            , "Log observer have got %u-bit %s (%u) client connection event, ready to receive logs."
                                                             , static_cast<uint32_t>(client.ciBitness)
                                                             , client.ciInstance.c_str()
-                                                            , static_cast<uint64_t>(client.ciCookie)));
+                                                            , client.ciCookie));
                     areg::MessageEnvelope msgLog = areg::create_log_message(log, areg::LogDataType::Local, areg::COOKIE_LOGGER);
                     notify_log_message(msgLog);
                 }
@@ -336,10 +336,10 @@ void ObserverMessageProcessor::_clients_connected(const areg::MessageEnvelope& m
                     _init_local_log_message(log, areg::COOKIE_LOGGER, now);
                     log.logMessageLen = static_cast<uint32_t>(String::format_string( log.logMessage
                                                              , static_cast<int32_t>(areg::LOG_MSG_SIZE)
-                                                             , "Log observer have got %u-bit %s (%llu) client connection event, starts receiving logs."
+                                                             , "Log observer have got %u-bit %s (%u) client connection event, starts receiving logs."
                                                              , static_cast<uint32_t>(client.ciBitness)
                                                              , client.ciInstance.c_str()
-                                                             , static_cast<uint64_t>(client.ciCookie)));
+                                                             , client.ciCookie));
                     areg::MessageEnvelope msgLog = areg::create_log_message(log, areg::LogDataType::Local, areg::COOKIE_LOGGER);
                     notify_log_message(msgLog);
                 }

@@ -104,7 +104,7 @@ void ServiceClientConnectionBase::service_connection_event(const MessageEnvelope
     areg::ServiceConnectionState connection{ areg::ServiceConnectionState::Unknown };
     msgReceived >> cookie;
     msgReceived >> connection;
-    LOG_DBG("Remote service connection notification: status [ %s ], cookie [ %llu ]", areg::as_string(connection), cookie);
+    LOG_DBG("Remote service connection notification: status [ %s ], cookie [ %u ]", areg::as_string(connection), cookie);
 
     switch (connection)
     {
@@ -322,7 +322,7 @@ void ServiceClientConnectionBase::on_connection_started()
             return;
         }
 
-        LOG_DBG("Succeeded to start router service client, cookie [ %llu ]", mClientConnection.cookie());
+        LOG_DBG("Succeeded to start router service client, cookie [ %u ]", mClientConnection.cookie());
 
         mChannel.set_cookie( mClientConnection.cookie() );
         mChannel.set_source( mMessageDispatcher.number() );
@@ -418,7 +418,7 @@ void ServiceClientConnectionBase::on_channel_connected(const ITEM_ID& cookie)
 
     if (cookie < areg::COOKIE_REMOTE_SERVICE)
     {
-        LOG_INFO("Disconnecting remote channel [ source = %llu, target = %llu, cookie = %llu ]", mChannel.source(), mChannel.target(), mChannel.cookie());
+        LOG_INFO("Disconnecting remote channel [ source = %u, target = %u, cookie = %u ]", mChannel.source(), mChannel.target(), mChannel.cookie());
         mChannel.invalidate();
         return;
     }
