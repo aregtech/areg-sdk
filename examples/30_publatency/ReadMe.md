@@ -245,9 +245,6 @@ is measured in every RTT sample.
 
 ### Linux Ubuntu 26.04 – Intel i7-13700H (mobile), 32 GB DDR4
 
-> Tested from USB live boot ("Try Ubuntu" – no installation). Min values are unaffected by USB noise.
-> P50 is the median across runs; ~25% of runs show elevated P50 due to USB I/O interference.
-> Native SSD installation expected to improve P95/P99 variance.
 
 #### Ping-Pong RTT (μs)
 

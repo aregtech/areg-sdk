@@ -173,7 +173,7 @@ Measured on **mobile-class consumer hardware**, full stack active – data seria
 | Windows 11 ³   | i7-13700H (DDR4) | ~2.5 sust. / ~2.7 burst  | ~1.1M sust. / ~1.6M burst |
 | WSL2 Ubuntu ⁴  | i7-13700H (DDR4) | ~4.0–4.5                 | ~1.5M                     |
 
-¹ USB live boot (Ubuntu 26.04). Burst = first 30 s; sustained = 5+ min. Native SSD expected to sustain burst figures.  
+¹ Ubuntu 26.04, native SSD. Burst = first 30 s; sustained = 5+ min.  
 ² No network tuning. M4 reached up to 3.0M msg/s.  
 ³ Stable dispatch ~1.1M msg/s; above ~1.6M the dispatch thread becomes the bottleneck.  
 ⁴ With [network tuning](./docs/wiki/07d-troubleshooting-network-tunning.md), up to ~5.0–5.6 GB/s.
@@ -188,7 +188,7 @@ Timestamps span the full call path: before serialization (sender) to after deser
 | macOS M3 Pro   | Apple M3 (LPDDR5) | 21.6 μs     | 31.4 μs      | 46.0 μs     | 62.5 μs    |
 | Windows 11     | i7-13700H (DDR4)  | 32.5 μs     | 40.3 μs      | 64.0 μs     | 82.5 μs    |
 
-¹ USB live boot; native SSD expected to improve tail percentiles.
+¹ Ubuntu 26.04, **Balanced** power mode; **Performance** mode drops OWT Min to ~12 μs (~3 μs / ~20% lower).
 
 For comparison: **gRPC C++ sequential RTT ~116–167 μs** over Unix domain socket – 3.6× higher, despite fewer hops and no service dispatch ([MPI-HD, F. Werner, 2021](https://www.mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc/)). Latency is payload-insensitive up to 4 KB – Min rises only 3 μs across a 30× size increase; framework overhead dominates.
 

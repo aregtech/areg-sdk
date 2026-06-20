@@ -32,14 +32,12 @@ without a dedicated networking library underneath.
 
 | Platform             | CPU               | RAM       | Payload  | Burst          | Sustained      | Status    |
 |----------------------|-------------------|-----------|----------|----------------|----------------|-----------|
-| Linux native ¹       | Intel i7-13700H   | DDR4      | ~0.5 KB  | ~2.0M msg/s    | ~1.5M msg/s    | measured (USB boot) |
+| Linux native ¹       | Intel i7-13700H   | DDR4      | ~0.5 KB  | ~2.0M msg/s    | ~1.5M msg/s    | measured  |
 | macOS native         | Apple M3 Pro      | LPDDR5    | ~0.5 KB  | –              | ~2.5M msg/s    | measured  |
 | Windows 11           | Intel i7-13700H   | DDR4      | ~0.5 KB  | ~1.56M msg/s   | ~1.1M msg/s ³  | measured  |
 | WSL2 (on Win11) ²    | Intel i7-13700H   | DDR4      | ~0.5 KB  | –              | ~1.5M msg/s    | measured  |
 
-¹ Linux measured from USB live boot ("Try Ubuntu"). Burst = first 0–30 seconds (RAM overlay warm);
-sustained = stable after 5+ minutes. Native SSD install expected to sustain close to burst values
-(~1.8–2.0M msg/s, ~6.5–7.0 GB/s).
+¹ Linux Ubuntu 26.04, native SSD. Burst = first 0–30 seconds; sustained = stable after 5+ minutes.
 
 ² Without [network tuning](../../docs/wiki/07d-troubleshooting-network-tunning.md): ~4.0–4.5 GB/s data rate.
 With tuning: data rate grows to ~5.0–5.6 GB/s. See [network tuning guide](../../docs/wiki/07d-troubleshooting-network-tunning.md).
