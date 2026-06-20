@@ -21,6 +21,35 @@
 
 #include "areg/base/private/DebugDefs.hpp"
 
+#include <atomic>
+#include <chrono>
+#if defined(__GLIBC__)
+    #include <malloc.h>     // malloc_trim(): hand a drained backlog's pages back to the OS
+#endif  // __GLIBC__
+
+namespace
+{
+    //!< Returns freed heap pages to the OS.
+    //!< glibc keeps a slow consumer's drained backlog mapped at the RSS high-water mark (per-arena retention);
+    //!< malloc_trim(0) releases it.
+    inline void _release_heap( void ) noexcept
+    {
+#if defined(__GLIBC__)
+        ::malloc_trim( 0 );
+#endif  // __GLIBC__
+    }
+
+    //!< Process-wide throttle: concurrently-idling dispatchers issue at most one trim per window.
+    std::atomic<int64_t>    gLastHeapTrimMs { 0 };
+    constexpr uint64_t      HEAP_TRIM_EVENT_THRESHOLD   { 100000u };    //!< events drained since last trim
+    constexpr int64_t       HEAP_TRIM_MIN_INTERVAL_MS   { 5000 };       //!< min ms between trims, process-wide
+
+    inline int64_t _steady_now_ms( void ) noexcept
+    {
+        return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now( ).time_since_epoch( ) ).count( );
+    }
+}
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -168,15 +197,12 @@ bool EventDispatcherBase::run_dispatcher()
     ready_for_events( true );
 
     int32_t whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
+    uint64_t processedSinceTrim{ 0u };  // events drained since the last heap trim (this thread)
 
+    whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue);
     do
     {
-        const bool signaled = mEventQueue.lock(areg::WAIT_INFINITE);
-        whichEvent = (signaled && !mExitRequested.load(std::memory_order_acquire))
-                   ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue)
-                   : static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
-
-        // Tight drain loop: process all available events before returning to wait.
+        // Tight drain loop: process all available events before considering a wait.
         for (;;)
         {
             Event eventElem = pick_event();  // returns Event by value; invalid if queue empty
@@ -212,10 +238,36 @@ bool EventDispatcherBase::run_dispatcher()
                 if (prepare_dispatch_event(intEvent))
                     dispatch_event(intEvent);
             }
+
+            ++processedSinceTrim;
         }
 
         if (mExitRequested.load(std::memory_order_acquire))
             whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
+
+        if (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit))
+            break;
+
+        // Queue drained, this dispatcher is going idle.
+        if ( processedSinceTrim >= HEAP_TRIM_EVENT_THRESHOLD )
+        {
+            const int64_t nowMs{ _steady_now_ms() };
+            int64_t lastMs{ gLastHeapTrimMs.load(std::memory_order_relaxed) };
+            if ( ((nowMs - lastMs) >= HEAP_TRIM_MIN_INTERVAL_MS)
+              && gLastHeapTrimMs.compare_exchange_strong(lastMs, nowMs, std::memory_order_relaxed) )
+            {
+                _release_heap();
+                processedSinceTrim = 0u;
+            }
+        }
+
+        // Lost-wakeup-free eventcount wait. The CONSUMER owns the reset: clear the queue event,
+        mEventQueue.reset();
+        std::atomic_thread_fence(std::memory_order_seq_cst);
+        if (!mExternalEvents.is_empty())
+            continue;
+
+        mEventQueue.lock(areg::WAIT_INFINITE);
 
     } while (whichEvent != static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
 

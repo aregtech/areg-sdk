@@ -99,6 +99,7 @@ void MpscEventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullpt
         Lock lock(mPrioLock);
         mPrioQueue.push_front(std::move(eventElem));
         mPrioCount.store(static_cast<uint32_t>(mPrioQueue.size()), std::memory_order_relaxed);
+        std::atomic_thread_fence(std::memory_order_seq_cst);   // pair with consumer reset/re-check
         mListener.signal_event(1u);
         return;
     }
@@ -112,6 +113,7 @@ void MpscEventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullpt
 
         mPrioQueue.insert(it, std::move(eventElem));
         mPrioCount.store(static_cast<uint32_t>(mPrioQueue.size()), std::memory_order_relaxed);
+        std::atomic_thread_fence(std::memory_order_seq_cst);   // pair with consumer reset/re-check
         mListener.signal_event(1u);
         return;
     }
@@ -140,7 +142,9 @@ void MpscEventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullpt
     node->lt_ns = AREG_LT_NOW();    // stamp before publishing; visible to consumer via the release in _mpsc_push
 #endif
     _mpsc_push(node);
-    mFastCount.fetch_add(1u, std::memory_order_relaxed);
+    mFastCount.fetch_add(1u, std::memory_order_acq_rel);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    // SET on every push
     mListener.signal_event(1u);
 }
 

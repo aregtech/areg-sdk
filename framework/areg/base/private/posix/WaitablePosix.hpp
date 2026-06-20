@@ -167,6 +167,13 @@ public:
      **/
     int32_t notify_any_waiters() noexcept;
 
+    /**
+     * \brief   Returns true if at least one waiter is currently parked on this object's intrusive list.
+     *          Lets a signaler wake a parked waiter even after the false->true edge passed.
+     **/
+    [[nodiscard]]
+    inline bool has_waiters() const noexcept;
+
 private:
     //!< Head of the per-object intrusive WaiterNode list; nullptr when empty.
     std::atomic<WaiterNode*>    mWaiters;
@@ -214,6 +221,11 @@ inline bool WaitablePosix::has_wait_all_waiters() const noexcept
 inline bool WaitablePosix::is_valid() const noexcept
 {
     return mValid.load(std::memory_order_relaxed);
+}
+
+inline bool  WaitablePosix::has_waiters() const noexcept
+{
+    return (mWaiters.load(std::memory_order_acquire) != nullptr);
 }
 
 } // namespace areg::os

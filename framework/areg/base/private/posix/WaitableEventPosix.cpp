@@ -40,7 +40,12 @@ bool WaitableEventPosix::set_signaled() noexcept
     if (!is_valid())
         return false;
 
-    if (!mIsSignaled.exchange(true, std::memory_order_acq_rel))
+    // Notify on the false->true edge, AND whenever a waiter is parked even if already signaled.
+    bool notify{ !mIsSignaled.exchange(true, std::memory_order_acq_rel) };
+#if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
+    notify = notify || has_waiters();
+#endif
+    if (notify)
     {
         SyncLockAndWaitPosix::event_signaled(*this);
     }
