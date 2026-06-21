@@ -47,32 +47,23 @@ bool TimerManagerBase::run_dispatcher()
 {
     ready_for_events(true);
 
-    SyncEvent* events[2] { &mEventExit, &mEventQueue };
-    int32_t whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
+    bool isExit{ false };   // true once the ExitEvent is dequeued -> leave the loop
 
     do
     {
-        whichEvent = SyncEvent::wait_any(events, 2, areg::WAIT_INFINITE);
-        if (whichEvent != static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue))
-        {
-            break;
-        }
-
-        // process all queued timer events without
-        // re-entering the kernel wait between consecutive events.
+        // Drain all queued timer events without re-entering the wait between them.
         for (;;)
         {
             Event eventElem = pick_event();
 
             if (eventElem.is_exit_prio())
             {
-                whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
+                isExit = true;
                 break;
             }
 
             if (!eventElem.is_valid())
             {
-                whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue);
                 break;
             }
 
@@ -83,17 +74,23 @@ bool TimerManagerBase::run_dispatcher()
 
             post_dispatch_event(eventElem);
 
-            ASSERT(static_cast<EventQueue&>(mInternalEvents).is_empty());
+            ASSERT(mInternalEvents.is_empty());
         }
 
-    } while (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue));
+        if (isExit)
+            break;
+
+        // Block until a timer event is posted or exit is triggered (queue owns the wake-up).
+        mExternalEvents.wait_event(areg::WAIT_INFINITE);
+
+    } while (true);
 
     ready_for_events(false);
     remove_all_events();
 
-    ASSERT(static_cast<EventQueue&>(mInternalEvents).is_empty());
+    ASSERT(mInternalEvents.is_empty());
 
-    return (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
+    return isExit;
 }
 
 void TimerManagerBase::stop_manager_thread(bool waitComplete)

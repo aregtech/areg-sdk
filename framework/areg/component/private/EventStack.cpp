@@ -44,12 +44,12 @@ EventStack::~EventStack() noexcept
 // EventStack -- bulk-removal operations
 //////////////////////////////////////////////////////////////////////////
 
-void EventStack::delete_all_events() noexcept
+void EventStack::remove_all_events() noexcept
 {
     mValueList.clear();
 }
 
-uint32_t EventStack::delete_except_exit() noexcept
+uint32_t EventStack::remove_events() noexcept
 {
     auto it = mValueList.begin();
     while (it != mValueList.end())

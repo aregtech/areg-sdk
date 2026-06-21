@@ -29,10 +29,9 @@
  * Includes
  ************************************************************************/
 #include "areg/base/areg_global.h"
-#include "areg/component/private/QueueListener.hpp"
 
 #include "areg/component/private/EventConsumerMap.hpp"
-#include "areg/component/private/EventQueue.hpp"
+#include "areg/component/private/EventStack.hpp"
 #include "areg/component/private/MpscEventQueue.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/SyncPrimitives.hpp"
@@ -48,7 +47,8 @@ namespace areg {
 
 namespace areg {
 
-using ExternalQueue = areg::MpscEventQueue;
+using ExternalQueue         = areg::MpscEventQueue; //!< External Event queue, lockable
+using InternalEventQueue    = areg::EventStack;     //!< Internal Event queue, non-lockable
 
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcherBase class declaration
@@ -60,23 +60,8 @@ using ExternalQueue = areg::MpscEventQueue;
  *          thread should contain one Event Dispatcher running in Loop. Class contains map of
  *          registered Event Consumers to trigger Event Processing.
  **/
-class AREG_API EventDispatcherBase  : protected QueueListener
+class AREG_API EventDispatcherBase
 {
-//////////////////////////////////////////////////////////////////////////
-// Internal defines and constants.
-//////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   EventDispatcherBase::EventSignal
-     *          Used in main loop to identify event signal.
-     **/
-    enum class EventSignal : int32_t
-    {
-          Error = -1    //!< Error happened during waiting for event
-        , Exit  =  0    //!< Exit event has been signaled.
-        , Queue =  1    //!< Queue event has been signaled.
-    };
-
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected.
 //////////////////////////////////////////////////////////////////////////
@@ -231,23 +216,11 @@ public:
 // Protected overrides
 //////////////////////////////////////////////////////////////////////////
 protected:
-/************************************************************************/
-// QueueListener overrides
-/************************************************************************/
 
     /**
-     * \brief   Triggered from Event Queue every time when new event element is pushed into
-     *          queue or when queue is empty.
-     *
-     * \param   eventCount      The number of event elements currently in the queue.
-     **/
-    inline void signal_event(uint32_t eventCount) final;
-
-    /**
-     * \brief   Requests dispatcher shutdown without blocking. Sets the exit flag and signals BOTH
-     *          sync events: mEventQueue wakes the base single-object run_dispatcher() wait, and
-     *          mEventExit wakes subclass loops (receive/timer threads) that still wait on it.
-     *          Replaces bare mEventExit.set_signaled() at every shutdown site.
+     * \brief   Requests dispatcher shutdown without blocking. Triggers the exit
+     *          state on the external queue, which wakes any consumer blocked in
+     *          wait_event() and makes pick_event() return the ExitEvent.
      **/
     inline void signal_exit_event() noexcept;
 
@@ -319,11 +292,6 @@ protected:
     std::atomic<bool>   mHasStarted;
 
     /**
-     * \brief   Exit requested flag.
-     **/
-    std::atomic<bool>   mExitRequested;
-
-    /**
      * \brief   Map of registered consumers.
      **/
     EventConsumerMap    mConsumerMap;
@@ -331,16 +299,6 @@ protected:
 #if defined(_MSC_VER)
     #pragma warning(pop)
 #endif  // _MSC_VER
-
-    /**
-     * \brief   Exit Synchronization Event. Signaled when dispatcher should be stopped.
-     **/
-    SyncEvent           mEventExit;
-
-    /**
-     * \brief   Queue Synchronization Event. Signaled when new event is pushed; reset when queue is empty.
-     **/
-    SyncEvent           mEventQueue;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls.
@@ -371,17 +329,9 @@ inline uint32_t EventDispatcherBase::pop_events(Event* listEvents, uint32_t coun
     return mExternalEvents.pop_events(listEvents, count);
 }
 
-inline void EventDispatcherBase::signal_event(uint32_t eventCount)
-{
-    if (eventCount != 0u)
-        mEventQueue.set_signaled();
-}
-
 inline void EventDispatcherBase::signal_exit_event() noexcept
 {
-    mExitRequested.store(true, std::memory_order_release);
-    mEventExit.set_signaled();
-    mEventQueue.set_signaled();
+    mExternalEvents.trigger_exit();
 }
 
 inline bool EventDispatcherBase::is_ready() const noexcept

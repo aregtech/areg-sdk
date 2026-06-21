@@ -49,8 +49,8 @@ bool EventDispatcher::on_thread_registered( Thread * threadObj )
     ASSERT(mDispatcherThread != nullptr);
 
     EventDispatcherBase::remove_all_events( );
-    EventDispatcherBase::mExitRequested.store(false, std::memory_order_relaxed);
-    return EventDispatcherBase::mEventExit.reset();
+    EventDispatcherBase::mExternalEvents.reset_exit();
+    return true;
 }
 
 void EventDispatcher::on_thread_unregistering()

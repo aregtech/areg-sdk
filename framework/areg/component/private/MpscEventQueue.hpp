@@ -14,27 +14,6 @@
  * \author      Artak Avetyan
  * \brief       Areg Platform, lock-free MPSC (Multi-Producer, Single-Consumer) event queue.
  *              Based on Dmitry Vyukov's MPSC queue algorithm.
- *
- *   Fast lane  - Dmitry Vyukov MPSC (Multi-Producer, Single-Consumer) linked-list (lock-free).
- *                Push: one atomic exchange on mTail  (any producer thread).
- *                Pop:  wait-free read of mHead->next (consumer thread only).
- *                Used for Normal-priority events (the overwhelming majority).
- *
- *   Priority lane - SpinLock-guarded deque for ExitPrio and HighPrio events.
- *                   SpinLock is recursive (same-thread re-entry safe) and is
- *                   used by lock_queue()/unlock_queue() so stop_dispatcher()
- *                   can atomically check mHasStarted and push ExitEvent.
- *
- * The public interface mirrors ExternalEventQueue so EventDispatcherBase
- * can select between the two at compile time without any caller changes.
- *
- * THREAD SAFETY:
- *   push_event()                  - safe from any number of producer threads.
- *   pop_event()                   - single consumer thread only.
- *   remove_*()                    - control path only; no concurrent push_event().
- *   lock_queue() / unlock_queue() - SpinLock; recursive; used by
- *                                   stop_dispatcher() for atomic check+push.
- *
  ************************************************************************/
 
 /************************************************************************
@@ -42,7 +21,6 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/base/SyncPrimitives.hpp"
-#include "areg/component/private/QueueListener.hpp"
 
 #include <atomic>
 #include <cstdint>
@@ -74,13 +52,18 @@ namespace areg {
  *          performs a single atomic exchange instead of acquiring a recursive
  *          OS mutex, eliminating kernel-mode transitions per normal event.
  *
- *          ExitPrio and HighPrio events use a separate SpinLock-guarded
+ *          HighPrio and CriticalPrio events use a separate SpinLock-guarded
  *          priority deque to preserve front-insertion ordering semantics.
  *          SpinLock is recursive (owns mOwner + mCount) - same-thread
- *          re-entry is safe, which is required by stop_dispatcher().
+ *          re-entry is safe.
  *
- * \note    pop_event() must be called from a single consumer thread only.
- *          push_event() is safe from any number of producer threads.
+ *          The queue fully owns the consumer wake-up: a private manual-reset
+ *          SyncEvent doorbell is set on every push, reset only by the consumer
+ *          inside wait_event() (lost-wakeup-free eventcount discipline), and
+ *          forced signaled by trigger_exit(). ExitPrio is never queued.
+ *
+ * \note    pop_event() and wait_event() must be called from a single consumer
+ *          thread only. push_event() is safe from any number of producer threads.
  **/
 class AREG_API MpscEventQueue
 {
@@ -159,12 +142,11 @@ public:
     /**
      * \brief   Constructs the queue and pre-allocates the stub node.
      *
-     * \param   eventListener   Listener notified on push / empty transitions.
      * \param   maxQueue        Soft capacity limit for normal-priority events.
      *                          Pass areg::IGNORE_VALUE (0) to read from
      *                          application configuration or use unlimited.
      **/
-    MpscEventQueue(QueueListener& eventListener, uint32_t maxQueue);
+    explicit MpscEventQueue(uint32_t maxQueue);
 
     ~MpscEventQueue();
 
@@ -175,8 +157,8 @@ public:
 
     /**
      * \brief   Acquires the priority-lane SpinLock (recursive).
-     *          Used by stop_dispatcher() to atomically check mHasStarted
-     *          and push the ExitEvent without a TOCTOU race.
+     *          Used by the dispatcher to gate mHasStarted against producers
+     *          without a TOCTOU race.
      **/
     inline void lock_queue() noexcept;
 
@@ -186,10 +168,39 @@ public:
     inline void unlock_queue() noexcept;
 
     /**
-     * \brief   Returns true when both lanes are empty.
-     *          Acquires mPrioLock briefly; safe from any thread.
+     * \brief   Returns true if the consumer has something to pop: a queued event
+     *          or a pending exit. Non-blocking; safe from any thread.
      **/
-    bool is_empty() const noexcept;
+    inline bool has_pending() const noexcept;
+
+    /**
+     * \brief   Returns true if exit was triggered for this queue.
+     **/
+    inline bool is_exit_triggered() const noexcept;
+
+    /**
+     * \brief   Requests exit: sets the sticky exit flag and wakes every consumer
+     *          blocked in wait_event(). After this, pop_event() returns the
+     *          singleton ExitEvent until reset_exit() is called.
+     **/
+    inline void trigger_exit() noexcept;
+
+    /**
+     * \brief   Clears the sticky exit flag. Must be called only when the owner
+     *          dispatcher (re)starts, single-threaded with respect to the queue.
+     **/
+    inline void reset_exit() noexcept;
+
+    /**
+     * \brief   Blocks the single consumer thread until the queue has something to
+     *          pop (a queued event or a pending exit), or the timeout elapses.
+     *
+     * \param   timeout     Milliseconds to wait. areg::WAIT_INFINITE blocks until signaled.
+     *                      areg::DO_NOT_WAIT polls without blocking.
+     * \return  true if there is something to pop (or the doorbell was signaled);
+     *          false on timeout.
+     **/
+    bool wait_event(uint32_t timeout = areg::WAIT_INFINITE) noexcept;
 
     /**
      * \brief   Queues an event by moving it into the queue. The event's shared buffer is
@@ -330,13 +341,15 @@ private:
     std::atomic<uint32_t>   mFastCount; //!< Current fast-lane depth
     const uint32_t          mCapacity;  //!< Soft cap (MAX_UINT = unlimited)
 
-    //!< Priority lane - ExitPrio at front, then descending priority order.
+    //!< Priority lane - Critical at front, then descending priority order.
     SpinLock                mPrioLock;  //!< Recursive guard for mPrioQueue
-    std::deque<Event>       mPrioQueue; //!< [Exit-][Critical-][High-] ordered (stored by value)
+    std::deque<Event>       mPrioQueue; //!< [Critical-][High-] ordered (stored by value)
     std::atomic_uint32_t    mPrioCount; //!< The number of elements in mPrioQueue
 
-    //!< Queue listener to signal and reset on push and pop.
-    QueueListener&          mListener;
+    //!< Consumer wake-up doorbell. Manual-reset: set by push/trigger_exit, reset only by wait_event.
+    SyncEvent               mQueueEvent;
+    //!< Sticky exit state. When set, pop_event() returns the singleton ExitEvent.
+    std::atomic<bool>       mExitTriggered;
 
     //////////////////////////////////////////////////////////////////////////
     // Lock-free LIFO via tagged-pointer CAS (PoolTop: head + ABA counter).
@@ -373,6 +386,28 @@ inline void MpscEventQueue::lock_queue() noexcept
 inline void MpscEventQueue::unlock_queue() noexcept
 {
     mPrioLock.unlock();
+}
+
+inline bool MpscEventQueue::is_exit_triggered() const noexcept
+{
+    return mExitTriggered.load(std::memory_order_acquire);
+}
+
+inline bool MpscEventQueue::has_pending() const noexcept
+{
+    return ((mFastCount.load(std::memory_order_acquire) != 0u) && (mPrioCount.load(std::memory_order_relaxed) != 0u)) || is_exit_triggered();
+}
+
+inline void MpscEventQueue::trigger_exit() noexcept
+{
+    mExitTriggered.store(true, std::memory_order_release);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    mQueueEvent.set_signaled();
+}
+
+inline void MpscEventQueue::reset_exit() noexcept
+{
+    mExitTriggered.store(false, std::memory_order_release);
 }
 
 } // namespace areg

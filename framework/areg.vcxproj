@@ -139,7 +139,6 @@
     <ClCompile Include="areg\component\private\EventConsumerMap.cpp" />
     <ClCompile Include="areg\component\private\EventDispatcher.cpp" />
     <ClCompile Include="areg\component\private\EventDispatcherBase.cpp" />
-    <ClCompile Include="areg\component\private\EventQueue.cpp" />
     <ClCompile Include="areg\component\private\ExitEvent.cpp" />
     <ClCompile Include="areg\component\private\NotificationEvent.cpp" />
     <ClCompile Include="areg\component\private\ProxyAddress.cpp" />
@@ -258,7 +257,6 @@
     <ClInclude Include="areg\component\private\EventConsumerMap.hpp" />
     <ClInclude Include="areg\component\EventDispatcher.hpp" />
     <ClInclude Include="areg\component\private\EventDispatcherBase.hpp" />
-    <ClInclude Include="areg\component\private\EventQueue.hpp" />
     <ClInclude Include="areg\base\File.hpp" />
     <ClInclude Include="areg\base\FileBase.hpp" />
     <ClInclude Include="areg\base\FileBuffer.hpp" />

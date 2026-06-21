@@ -16,9 +16,14 @@
 
 #include "areg/base/RuntimeClassID.hpp"
 #include "areg/component/Event.hpp"
+#include "areg/component/ExitEvent.hpp"
 #include "areg/base/private/DebugDefs.hpp"
 
 #include <algorithm>
+#include <type_traits>
+
+// pop_event() is noexcept and returns the exit event by copying the cached singleton.
+static_assert(std::is_nothrow_copy_constructible_v<areg::Event>, "Event copy must be noexcept for noexcept pop_event()");
 
 namespace areg {
 
@@ -26,7 +31,7 @@ namespace areg {
 // MpscEventQueue - constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 
-MpscEventQueue::MpscEventQueue(QueueListener& eventListener, uint32_t maxQueue)
+MpscEventQueue::MpscEventQueue(uint32_t maxQueue)
     : mTail         ( nullptr )
     , mHead         ( nullptr )
     , mFastCount    ( 0u )
@@ -34,7 +39,8 @@ MpscEventQueue::MpscEventQueue(QueueListener& eventListener, uint32_t maxQueue)
     , mPrioLock     ( )
     , mPrioQueue    ( )
     , mPrioCount    ( 0u )
-    , mListener     ( eventListener )
+    , mQueueEvent   ( true, false )     // manual-reset, initially non-signaled
+    , mExitTriggered( false )
     , mPool         ( PoolTop{} )
     , mPoolSize     ( 0u )
 {
@@ -78,12 +84,22 @@ MpscEventQueue::~MpscEventQueue()
 }
 
 //////////////////////////////////////////////////////////////////////////
-// MpscEventQueue - is_empty
+// MpscEventQueue - consumer wait / exit control
 //////////////////////////////////////////////////////////////////////////
 
-bool MpscEventQueue::is_empty() const noexcept
+bool MpscEventQueue::wait_event(uint32_t timeout /*= areg::WAIT_INFINITE*/) noexcept
 {
-    return ((mFastCount.load(std::memory_order_acquire) == 0u) && (mPrioCount.load(std::memory_order_relaxed) == 0u));
+    // Lost-wakeup-free eventcount: reset the doorbell, then re-check under a full
+    // fence so a push that raced the reset is never missed.
+    if (has_pending())
+        return true;
+
+    mQueueEvent.reset();
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    if (has_pending())
+        return true;
+
+    return mQueueEvent.lock(timeout);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -96,11 +112,8 @@ void MpscEventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullpt
 
     if (prio == areg::EventPriority::ExitPrio)
     {
-        Lock lock(mPrioLock);
-        mPrioQueue.push_front(std::move(eventElem));
-        mPrioCount.store(static_cast<uint32_t>(mPrioQueue.size()), std::memory_order_relaxed);
-        std::atomic_thread_fence(std::memory_order_seq_cst);   // pair with consumer reset/re-check
-        mListener.signal_event(1u);
+        eventElem.destroy_event();
+        trigger_exit();
         return;
     }
 
@@ -114,7 +127,7 @@ void MpscEventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullpt
         mPrioQueue.insert(it, std::move(eventElem));
         mPrioCount.store(static_cast<uint32_t>(mPrioQueue.size()), std::memory_order_relaxed);
         std::atomic_thread_fence(std::memory_order_seq_cst);   // pair with consumer reset/re-check
-        mListener.signal_event(1u);
+        mQueueEvent.set_signaled();
         return;
     }
 
@@ -142,10 +155,9 @@ void MpscEventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullpt
     node->lt_ns = AREG_LT_NOW();    // stamp before publishing; visible to consumer via the release in _mpsc_push
 #endif
     _mpsc_push(node);
-    mFastCount.fetch_add(1u, std::memory_order_acq_rel);
-    std::atomic_thread_fence(std::memory_order_seq_cst);
-    // SET on every push
-    mListener.signal_event(1u);
+    mFastCount.fetch_add(1u, std::memory_order_relaxed);   // soft depth counter; ordering is from the fence below
+    std::atomic_thread_fence(std::memory_order_seq_cst);   // pair with consumer reset/re-check
+    mQueueEvent.set_signaled();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -154,6 +166,10 @@ void MpscEventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullpt
 
 Event MpscEventQueue::pop_event() noexcept
 {
+    // Exit preempts everything
+    if (mExitTriggered.load(std::memory_order_acquire))
+        return ExitEvent::exit_event();
+
     // Priority lane: always drained before the fast lane.
     if (mPrioCount.load(std::memory_order_relaxed) != 0u)
     {
@@ -163,9 +179,7 @@ Event MpscEventQueue::pop_event() noexcept
         {
             Event result{ std::move(mPrioQueue.front()) };
             mPrioQueue.pop_front();
-            const uint32_t prioRemaining{ static_cast<uint32_t>(mPrioQueue.size()) };
-            mPrioCount.store(prioRemaining, std::memory_order_relaxed);
-            mListener.signal_event(prioRemaining + mFastCount.load(std::memory_order_acquire));
+            mPrioCount.store(static_cast<uint32_t>(mPrioQueue.size()), std::memory_order_relaxed);
             return result;
         }
     }
@@ -179,9 +193,7 @@ Event MpscEventQueue::pop_event() noexcept
         AREG_LT_SAMPLE(areg::LtStage::MpscHandoff, AREG_LT_NOW() - node->lt_ns);
 #endif
         _free_node(node);
-        const uint32_t remaining{ mFastCount.fetch_sub(1u, std::memory_order_relaxed) - 1u };
-        // Include the priority lane so the queue event is not reset while an Exit/High event waits there.
-        mListener.signal_event(remaining + mPrioCount.load(std::memory_order_acquire));
+        mFastCount.fetch_sub(1u, std::memory_order_relaxed);
         return result;
     }
 
@@ -191,29 +203,11 @@ Event MpscEventQueue::pop_event() noexcept
 void MpscEventQueue::remove_events() noexcept
 {
     mPrioLock.lock();
-    uint32_t prioCount{ 0u };
-    // Preserve at most one ExitPrio event; destroy the rest.
-    Event exitEvt{};
     for (Event& evt : mPrioQueue)
-    {
-        if (evt.is_exit_prio())
-        {
-            exitEvt = std::move(evt);
-        }
-        else
-        {
-            evt.destroy_event();
-        }
-    }
+        evt.destroy_event();
 
     mPrioQueue.clear();
-    if (exitEvt.is_valid())
-    {
-        mPrioQueue.push_back(std::move(exitEvt));
-        prioCount = 1u;
-    }
-
-    mPrioCount.store(prioCount, std::memory_order_relaxed);
+    mPrioCount.store(0u, std::memory_order_relaxed);
     mPrioLock.unlock();
 
     std::vector<Event> drained;
@@ -222,7 +216,6 @@ void MpscEventQueue::remove_events() noexcept
         evt.destroy_event();
 
     mFastCount.store(0u, std::memory_order_relaxed);
-    mListener.signal_event(prioCount);
 }
 
 void MpscEventQueue::remove_events(const uint32_t eventClassId) noexcept
@@ -269,7 +262,6 @@ void MpscEventQueue::remove_events(const uint32_t eventClassId) noexcept
     }
 
     mFastCount.store(re_pushed, std::memory_order_relaxed);
-    mListener.signal_event(re_pushed + mPrioCount.load(std::memory_order_relaxed));
 }
 
 void MpscEventQueue::remove_all_events() noexcept
@@ -290,7 +282,6 @@ void MpscEventQueue::remove_all_events() noexcept
         evt.destroy_event();
 
     mFastCount.store(0u, std::memory_order_relaxed);
-    mListener.signal_event(0u);
 }
 
 uint32_t MpscEventQueue::push_events(Event* eventElems, uint32_t count)
@@ -299,6 +290,7 @@ uint32_t MpscEventQueue::push_events(Event* eventElems, uint32_t count)
         return 0u;
 
     uint32_t signalCount{ 0u };
+    bool     exitRequested{ false };
 
     // Phase 1: insert all priority-lane events in ONE mPrioLock acquisition.
     if (eventElems[0].event_priority() > areg::EventPriority::NormalPrio)
@@ -313,7 +305,8 @@ uint32_t MpscEventQueue::push_events(Event* eventElems, uint32_t count)
             const areg::EventPriority prio{ evt.event_priority() };
             if (prio == areg::EventPriority::ExitPrio)
             {
-                mPrioQueue.push_front(std::move(evt));
+                evt.destroy_event();    // exit is sticky (flag), never queued -- see push_event()
+                exitRequested = true;
                 ++signalCount;
             }
             else if (prio >= areg::EventPriority::HighPrio)
@@ -368,8 +361,15 @@ uint32_t MpscEventQueue::push_events(Event* eventElems, uint32_t count)
         ++signalCount;
     }
 
-    if (signalCount != 0u)
-        mListener.signal_event(signalCount);
+    if (exitRequested)
+    {
+        trigger_exit();   // sticky flag + fence + doorbell; covers the Phase-2 stores in program order
+    }
+    else if (signalCount != 0u)
+    {
+        std::atomic_thread_fence(std::memory_order_seq_cst);   // pair with consumer reset/re-check
+        mQueueEvent.set_signaled();
+    }
 
     return removedCount;
 }
@@ -378,6 +378,13 @@ uint32_t MpscEventQueue::pop_events(Event* eventElems, uint32_t count)
 {
     if ((eventElems == nullptr) || (count == 0u))
         return 0u;
+
+    // Exit preempts every lane
+    if (mExitTriggered.load(std::memory_order_acquire))
+    {
+        eventElems[0] = ExitEvent::exit_event();
+        return 1u;
+    }
 
     uint32_t popped{ 0u };
 
@@ -405,12 +412,6 @@ uint32_t MpscEventQueue::pop_events(Event* eventElems, uint32_t count)
         _free_node(node);
         mFastCount.fetch_sub(1u, std::memory_order_relaxed);
     }
-
-    if (popped == 0u)
-        return 0u;
-
-    const uint32_t fast_remaining{ mFastCount.load(std::memory_order_acquire) };
-    mListener.signal_event(fast_remaining + mPrioCount.load(std::memory_order_relaxed));
 
     return popped;
 }
@@ -496,7 +497,8 @@ inline MpscEventQueue::Node* MpscEventQueue::_alloc_node() noexcept
         {
             mPoolSize.fetch_sub(1u, std::memory_order_relaxed);
             cur.head->next.store(nullptr, std::memory_order_relaxed);
-            cur.head->event.destroy_event();  // reset the Event value to empty
+            // Event is already empty: _free_node() reset it before pooling and pre-allocated
+            // nodes are default-constructed, so no destroy_event() is needed here.
             return cur.head;
         }
     }

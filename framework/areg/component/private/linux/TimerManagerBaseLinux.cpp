@@ -118,7 +118,7 @@ bool TimerManagerBase::run_dispatcher()
                     }
 
                     post_dispatch_event(evt);
-                    ASSERT(static_cast<EventQueue&>(mInternalEvents).is_empty());
+                    ASSERT(mInternalEvents.is_empty());
                 }
             }
             else

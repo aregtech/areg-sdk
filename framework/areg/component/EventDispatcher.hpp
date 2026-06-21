@@ -148,7 +148,7 @@ inline DispatcherThread * EventDispatcher::dispatcher_thread() const noexcept
 
 inline bool EventDispatcher::has_more_events() const noexcept
 {
-    return (mExternalEvents.is_empty() == false);
+    return mExternalEvents.has_pending();
 }
 
 } // namespace areg

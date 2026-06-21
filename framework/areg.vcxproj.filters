@@ -237,9 +237,6 @@
     <ClCompile Include="areg\component\private\EventDispatcherBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\EventQueue.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\component\private\ExitEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -756,9 +753,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\private\EventDispatcherBase.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\component\private\EventQueue.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\ExitEvent.hpp">

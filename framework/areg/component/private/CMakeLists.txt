@@ -12,7 +12,6 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/component/private/EventConsumerMap.cpp
 	areg/component/private/EventDispatcher.cpp
 	areg/component/private/EventDispatcherBase.cpp
-	areg/component/private/EventQueue.cpp
 	areg/component/private/EventStack.cpp
 	areg/component/private/ExitEvent.cpp
 	areg/component/private/EventConsumer.cpp
