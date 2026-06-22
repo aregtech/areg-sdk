@@ -395,7 +395,7 @@ inline bool MpscEventQueue::is_exit_triggered() const noexcept
 
 inline bool MpscEventQueue::has_pending() const noexcept
 {
-    return ((mFastCount.load(std::memory_order_acquire) != 0u) && (mPrioCount.load(std::memory_order_relaxed) != 0u)) || is_exit_triggered();
+    return (mFastCount.load(std::memory_order_acquire) != 0u) || (mPrioCount.load(std::memory_order_relaxed) != 0u) || is_exit_triggered();
 }
 
 inline void MpscEventQueue::trigger_exit() noexcept
