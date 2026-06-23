@@ -197,20 +197,19 @@ namespace areg {
         , ServicePort          = 26    //!< The connection port number of the remote service.
 
         , DefaultBufferBlock   = 27    //!< The size in bytes to align when allocate a block in the bugger. The default `0` means allocated `sizeof(areg::uAlignt)`
-        , DefaultMessageQueue  = 28    //!< The default size of message queue in the dispatcher thread. The default `0` means to ignore the limitation, increase by need.
 
-        , NetSocketSndbuf      = 29    //!< The SO_SNDBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::sndbuf).
-        , NetSocketRcvbuf      = 30    //!< The SO_RCVBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::rcvbuf).
-        , NetSocketDrain       = 31    //!< Send batch/drain size (format: net::SERVICE::TRANSPORT::drain).
-        , NetPoolPairs         = 32    //!< Thread-pool pair count (format: net::SERVICE::TRANSPORT::pairs).
-        , NetSocketTimeout     = 33    //!< SO_SNDTIMEO in ms (format: net::SERVICE::TRANSPORT::timeout).
-        , NetThreadCache       = 34    //!< The size of thread cache for networking in kilobytes (format: net::SERVICE::TRANSPORT::cache).
+        , NetSocketSndbuf      = 28    //!< The SO_SNDBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::sndbuf).
+        , NetSocketRcvbuf      = 29    //!< The SO_RCVBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::rcvbuf).
+        , NetSocketDrain       = 30    //!< Send batch/drain size (format: net::SERVICE::TRANSPORT::drain).
+        , NetPoolPairs         = 31    //!< Thread-pool pair count (format: net::SERVICE::TRANSPORT::pairs).
+        , NetSocketTimeout     = 32    //!< SO_SNDTIMEO in ms (format: net::SERVICE::TRANSPORT::timeout).
+        , NetThreadCache       = 33    //!< The size of thread cache for networking in kilobytes (format: net::SERVICE::TRANSPORT::cache).
 
-        , QueueCapacity        = 35    //!< Dispatcher event-queue ring capacity (format: config::*::queue::capacity). 0 = QUEUE_DEFAULT_RING_CAPACITY.
-        , QueueWaitTimeout     = 36    //!< Dispatcher lossless full-ring block timeout in ms (format: config::*::queue::timeout). 0 = QUEUE_DEFAULT_FULL_WAIT_MS.
-        , QueueDropOnFull      = 37    //!< Dispatcher full-ring policy (format: config::*::queue::drop). false (default) = lossless block, true = drop-newest.
+        , QueueCapacity        = 34    //!< Dispatcher event-queue ring capacity (format: config::*::queue::capacity). 0 = QUEUE_DEFAULT_RING_CAPACITY.
+        , QueueWaitTimeout     = 35    //!< Dispatcher lossless full-ring block timeout in ms (format: config::*::queue::timeout). 0 = QUEUE_DEFAULT_FULL_WAIT_MS.
+        , QueueDropOnFull      = 36    //!< Dispatcher full-ring policy (format: config::*::queue::drop). false (default) = lossless block, true = drop-newest.
 
-        , AnyKey               = 38    //!< Indicates any key type.
+        , AnyKey               = 37    //!< Indicates any key type.
     };
 
     /**
@@ -252,20 +251,19 @@ namespace areg {
             , {"*"      , "*"   , "port"    , "*"               }   //! 26  , The connection port number of the remote service property structure.
 
             , {"config" , "*"   , "default" , "blocksize"       }   //! 27  , The default block size in bytes to allocate in shared buffer.
-            , {"config" , "*"   , "default" , "messagequeue"    }   //! 28  , The default message queue size in the dispatcher thread.
 
-            , {"net"    , "*"   , "*"       , "sndbuf"          }   //! 29  , The SO_SNDBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::sndbuf).
-            , {"net"    , "*"   , "*"       , "rcvbuf"          }   //! 30  , The SO_RCVBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::rcvbuf).
-            , {"net"    , "*"   , "*"       , "drain"           }   //! 31  , Batch/drain size per dispatcher wake-up.
-            , {"net"    , "*"   , "*"       , "pairs"           }   //! 32  , Thread-pool pair count (0 = disabled).
-            , {"net"    , "*"   , "*"       , "timeout"         }   //! 33  , SO_SNDTIMEO in milliseconds (0 = use compile-time default SOCKET_SEND_TIMEOUT_MS).
-            , {"net"    , "*"   , "*"       , "cache"           }   //! 34  , The thread cache size in network communication (0 = default THREAD_CACHE_SIZE (128KB)).
+            , {"net"    , "*"   , "*"       , "sndbuf"          }   //! 28  , The SO_SNDBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::sndbuf).
+            , {"net"    , "*"   , "*"       , "rcvbuf"          }   //! 29  , The SO_RCVBUF size in KB for a network transport (format: net::SERVICE::TRANSPORT::rcvbuf).
+            , {"net"    , "*"   , "*"       , "drain"           }   //! 30  , Batch/drain size per dispatcher wake-up.
+            , {"net"    , "*"   , "*"       , "pairs"           }   //! 31  , Thread-pool pair count (0 = disabled).
+            , {"net"    , "*"   , "*"       , "timeout"         }   //! 32  , SO_SNDTIMEO in milliseconds (0 = use compile-time default SOCKET_SEND_TIMEOUT_MS).
+            , {"net"    , "*"   , "*"       , "cache"           }   //! 33  , The thread cache size in network communication (0 = default THREAD_CACHE_SIZE (128KB)).
 
-            , {"config" , "*"   , "queue"   , "capacity"        }   //! 35  , Dispatcher event-queue ring capacity (0 = QUEUE_DEFAULT_RING_CAPACITY).
-            , {"config" , "*"   , "queue"   , "timeout"         }   //! 36  , Dispatcher lossless full-ring block timeout in ms (0 = QUEUE_DEFAULT_FULL_WAIT_MS).
-            , {"config" , "*"   , "queue"   , "drop"            }   //! 37  , Dispatcher full-ring policy (false = lossless block, true = drop-newest).
+            , {"config" , "*"   , "queue"   , "capacity"        }   //! 34  , Dispatcher event-queue ring capacity (0 = QUEUE_DEFAULT_RING_CAPACITY).
+            , {"config" , "*"   , "queue"   , "timeout"         }   //! 35  , Dispatcher lossless full-ring block timeout in ms (0 = QUEUE_DEFAULT_FULL_WAIT_MS).
+            , {"config" , "*"   , "queue"   , "drop"            }   //! 36  , Dispatcher full-ring policy (false = lossless block, true = drop-newest).
 
-            , {"*"      , "*"   , "*"       , "*"               }   //! 38  , Indicates any key type (AnyKey sentinel -- keep last).
+            , {"*"      , "*"   , "*"       , "*"               }   //! 37  , Indicates any key type (AnyKey sentinel -- keep last).
 
     };
 
@@ -406,11 +404,6 @@ inline constexpr const areg::ConfigKey& log_database_password() noexcept
 inline constexpr const areg::ConfigKey& buffer_block_size() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::DefaultBufferBlock)];
-}
-
-inline constexpr const areg::ConfigKey& message_queue_size() noexcept
-{
-    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::DefaultMessageQueue)];
 }
 
 inline constexpr const areg::ConfigKey& net_socket_sndbuf() noexcept

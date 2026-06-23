@@ -987,14 +987,6 @@ uint32_t ConfigManager::buffer_block_size(const String& whichModule /*= areg::Em
     return (prop != nullptr ? prop->value().as_integer() : 0u);
 }
 
-uint32_t ConfigManager::message_queue_size(const String& whichModule /*= areg::EmptyStringA*/) noexcept
-{
-    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::DefaultMessageQueue };
-    constexpr const areg::ConfigKey& key{ areg::message_queue_size() };
-    const Property* prop = _get_property(mReadonlyProperties, key.section, whichModule.is_empty() ? areg::SYNTAX_ALL_MODULES : whichModule, key.property, key.position, confKey, true);
-    return ( prop != nullptr ? prop->value().as_integer() : std::numeric_limits<uint32_t>::max() );
-}
-
 uint32_t ConfigManager::queue_capacity(const String& whichModule /*= areg::EmptyStringA*/) noexcept
 {
     constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::QueueCapacity };

@@ -44,12 +44,19 @@ class AREG_API EventDispatcher  : public    EventDispatcherBase
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Creates EventDispatcher with specified name and maximum queue size.
+     * \brief   Creates EventDispatcher with specified name and event-queue parameters. The queue
+     *          parameters follow a three-tier resolution (explicit value, then configuration, then
+     *          built-in default); see EventDispatcherBase for the full semantics.
      *
      * \param   name            The name of Event Dispatcher
-     * \param   maxQeueue       The maximum number of queued external events.
+     * \param   maxQeueue       The event-queue ring capacity. areg::IGNORE_VALUE reads from configuration.
+     * \param   dropOnFull      The full-ring policy. areg::Bool::Undefined reads from configuration.
+     * \param   waitMs          The lossless full-ring block timeout. areg::WAIT_INFINITE reads from configuration.
      **/
-    explicit EventDispatcher( const String & name, uint32_t maxQeueue);
+    explicit EventDispatcher( const String & name
+                            , uint32_t maxQeueue   = areg::IGNORE_VALUE
+                            , areg::Bool dropOnFull = areg::Bool::Undefined
+                            , uint32_t waitMs       = areg::WAIT_INFINITE );
 
     virtual ~EventDispatcher();
 

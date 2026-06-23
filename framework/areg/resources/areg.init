@@ -189,19 +189,9 @@ config::*::version          = 2.0.0                         # Configuration sche
 # Global Runtime Settings
 # ---------------------------------------------------------------------------
 config::*::default::blocksize       = 64                    # Default block size (bytes) for shared buffer allocation to minimize fragmentation. 0 = ignore
-config::*::default::messagequeue    = 0                     # Default message queue size in dispatcher threads. 0 = ignore, no limitation
 config::*::queue::capacity          = 0                     # Dispatcher event-queue ring capacity (rounded up to power of two, min 32). 0 = built-in default (1024)
 config::*::queue::timeout           = 0                     # Dispatcher full-ring block timeout (ms) in lossless mode. 0 = built-in default (1000 ms)
 config::*::queue::drop              = false                 # Dispatcher full-ring policy. false = lossless (producer blocks); true = drop-newest (best-effort, never blocks)
-
-# ---------------------------------------------------------------------------
-# Per-module override (example 23_pubdatarate)
-# ---------------------------------------------------------------------------
-# The publisher generates image blocks far faster than the wire can drain them.
-# Lossless backpressure would clamp its generate+queue rate to the send rate, so
-# this module opts into drop-newest: the producer never blocks and reaches its
-# full generation rate (~3M msg/s); blocks the wire cannot keep up with are dropped.
-config::23_pubservice::queue::drop  = true                 # Best-effort broadcast stream (example-local; framework default stays lossless)
 
 # ###########################################################################
 # APPLICATION LOGGING SETTINGS

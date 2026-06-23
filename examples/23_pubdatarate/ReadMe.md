@@ -19,32 +19,39 @@ without a dedicated networking library underneath.
 
 ### Data Rate – Large Payload (~3 MB per message)
 
-| Platform             | CPU               | RAM       | Payload | Burst         | Sustained      | Status    |
-|----------------------|-------------------|-----------|---------|---------------|----------------|-----------|
-| Linux native ¹       | Intel i7-13700H   | DDR4      | ~3 MB   | ~7.0 GB/s     | ~6.0 GB/s      | measured (USB boot) |
-| macOS native         | Apple M3 Pro      | LPDDR5    | ~3 MB   | –             | ~6.7–7.0 GB/s  | measured  |
-| Windows 11           | Intel i7-13700H   | DDR4      | ~3 MB   | ~2.7 GB/s     | ~2.5 GB/s      | measured  |
-| WSL2 (on Win11) ²    | Intel i7-13700H   | DDR4      | ~3 MB   | –             | 4.0–4.5 GB/s   | measured (untuned)  |
+| Platform | Peak | Sustained |
+|---|---|---|
+| Linux ¹ | **~8.0 GB/s** | ~6.0 GB/s ² |
+| macOS M3 Pro | – | ~6.7–7.0 GB/s |
+| Windows 11 ³ | **~3.0 GB/s** | ~2.5 GB/s |
+| WSL2 (Win11) ⁴ | – | ~4.0–4.5 GB/s |
 
 ---
 
 ### Message Rate – Very Small Payload (~0.5 KB per message)
 
-| Platform             | CPU               | RAM       | Payload  | Burst          | Sustained      | Status    |
-|----------------------|-------------------|-----------|----------|----------------|----------------|-----------|
-| Linux native ¹       | Intel i7-13700H   | DDR4      | ~0.5 KB  | ~2.0M msg/s    | ~1.5M msg/s    | measured (USB boot) |
-| macOS native         | Apple M3 Pro      | LPDDR5    | ~0.5 KB  | –              | ~2.5M msg/s    | measured  |
-| Windows 11           | Intel i7-13700H   | DDR4      | ~0.5 KB  | ~1.56M msg/s   | ~1.1M msg/s ³  | measured  |
-| WSL2 (on Win11) ²    | Intel i7-13700H   | DDR4      | ~0.5 KB  | –              | ~1.5M msg/s    | measured  |
+| Platform | Peak | Sustained |
+|---|---|---|
+| Linux ¹ | **~2.5M msg/s** | ~1.5M msg/s ² |
+| macOS M3 Pro | – | ~2.5M msg/s |
+| Windows 11 ³ | **~2.8M msg/s** | ~1.1M msg/s ⁵ |
+| WSL2 (Win11) | – | ~1.5M msg/s |
 
-¹ Linux measured from USB live boot ("Try Ubuntu"). Burst = first 0–30 seconds (RAM overlay warm);
-sustained = stable after 5+ minutes. Native SSD install expected to sustain close to burst values
-(~1.8–2.0M msg/s, ~6.5–7.0 GB/s).
+All x86 rows: same physical machine, Intel i7-13700H, 32 GB DDR4. macOS: Apple M3 Pro, 32 GB LPDDR5.
 
-² Without [network tuning](../../docs/wiki/07d-troubleshooting-network-tunning.md): ~4.0–4.5 GB/s data rate.
-With tuning: data rate grows to ~5.0–5.6 GB/s. See [network tuning guide](../../docs/wiki/07d-troubleshooting-network-tunning.md).
+¹ Ubuntu 26.04, **Performance** power mode.
 
-³ Windows message rate at ~0.5 KB declines over time: ~1.56M at 8s → ~1.12M at 2 min (test stopped). No 5-minute stable figure measured; extrapolated sustained ~1.0–1.1M msg/s.
+² Sustained (5-minute) figure carried over from a prior measurement round taken in
+**Balanced** power mode; not yet re-verified under Performance mode. A re-test is
+recommended to confirm whether sustained throughput improved alongside the peak.
+
+³ Updated peak reading; supersedes the previous burst figures for Windows.
+
+⁴ Without [network tuning](../../docs/wiki/07d-troubleshooting-network-tunning.md): ~4.0–4.5 GB/s.
+With tuning: ~5.0–5.6 GB/s. See [network tuning guide](../../docs/wiki/07d-troubleshooting-network-tunning.md).
+
+⁵ Windows message rate at ~0.5 KB declines over time: peak → ~1.12M at 2 min (test stopped).
+No 5-minute stable figure measured; extrapolated sustained ~1.0–1.1M msg/s.
 
 **Methodology:**
 - TCP `localhost`, 1:1 connection (single provider → single consumer) via `mtrouter`.
@@ -454,12 +461,15 @@ separate timestamped test.
 
 **Transport ceiling (measured at `mtrouter`):**
 
-| Platform | ~3 MB | ~0.5 KB (sustained) |
+| Platform | ~3 MB peak/sustained | ~0.5 KB peak/sustained |
 |---|---|---|
-| Linux USB boot (i7-13700H, DDR4) | ~6.0 GB/s sustained / ~7.0 GB/s burst | ~1.5M msg/s sustained / ~2.0M burst |
-| macOS M3 Pro (LPDDR5) | ~6.7–7.0 GB/s | ~2.5M msg/s |
-| Windows 11 (i7-13700H, DDR4) | ~2.5 GB/s stable / ~2.7 GB/s burst | ~1.56M burst / ~1.1M declining |
-| WSL2 Ubuntu (i7-13700H, DDR4) | 4.0–4.5 GB/s (untuned) / 5.0–5.6 GB/s (tuned) | ~1.5M msg/s |
+| Linux ¹ | ~8.0 / ~6.0 GB/s | ~2.5M / ~1.5M msg/s |
+| macOS M3 Pro | – / ~6.7–7.0 GB/s | – / ~2.5M msg/s |
+| Windows 11 ² | ~3.0 / ~2.5 GB/s | ~2.8M / ~1.1M msg/s |
+| WSL2 (Win11) | – / 4.0–4.5 GB/s (untuned), 5.0–5.6 (tuned) | – / ~1.5M msg/s |
+
+¹ Performance power mode (peak); sustained figure from a prior Balanced-mode round, pending re-test.
+² Updated peak readings for Windows 11.
 
 **Stable end-to-end consumer dispatch:**
 

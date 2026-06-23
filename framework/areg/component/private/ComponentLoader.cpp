@@ -416,7 +416,7 @@ bool ComponentLoader::load_model( areg::Model & whichModel ) const
             continue;
         }
 
-        ComponentThread* thrObject = DEBUG_NEW ComponentThread( entry.mThreadName, entry.mWatchdogTimeout, entry.mStackSizeKB, entry.mMaxQueue );
+        ComponentThread* thrObject = DEBUG_NEW ComponentThread( entry.mThreadName, entry.mWatchdogTimeout, entry.mStackSizeKB, entry.mMaxQueue, entry.mDropOnFull, entry.mQueueTimeout );
         if (thrObject == nullptr)
             result = false;
 

@@ -26,8 +26,8 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcher class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-EventDispatcher::EventDispatcher( const String & name, uint32_t maxQeueue )
-    : EventDispatcherBase( name, maxQeueue )
+EventDispatcher::EventDispatcher( const String & name, uint32_t maxQeueue, areg::Bool dropOnFull, uint32_t waitMs )
+    : EventDispatcherBase( name, maxQeueue, dropOnFull, waitMs )
     , ThreadConsumer     (  )
     , EventRouter        (  )
 

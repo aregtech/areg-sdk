@@ -915,13 +915,6 @@ public:
     uint32_t buffer_block_size(const String& whichModule = areg::EmptyStringA) noexcept;
 
     /**
-     * \brief   Returns the default message queue size for message queues.
-     *
-     * \param   whichModule     The module name or '*' for generic settings.
-     **/
-    uint32_t message_queue_size(const String& whichModule = areg::EmptyStringA) noexcept;
-
-    /**
      * \brief   Returns the dispatcher event-queue ring capacity (config::MODULE::queue::capacity).
      *          Lookup order: module-specific entry --> wildcard "*" entry --> compile-time default.
      *          Falls back to areg::QUEUE_DEFAULT_RING_CAPACITY when the key is absent or zero.

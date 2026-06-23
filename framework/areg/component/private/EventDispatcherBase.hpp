@@ -67,12 +67,26 @@ class AREG_API EventDispatcherBase
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initializes Dispatcher and assigns name.
+     * \brief   Initializes Dispatcher and assigns name. The event-queue parameters follow a
+     *          three-tier resolution: an explicit caller value wins; otherwise the value is read
+     *          from the configuration (Application::config_manager()); otherwise the built-in default.
      *
      * \param   name            The name of Dispatcher.
-     * \param   maxQeueue       The maximum number of event elements in the queue.
+     * \param   maxQeueue       The event-queue ring capacity. areg::IGNORE_VALUE (0) reads the value
+     *                          from configuration, falling back to areg::QUEUE_DEFAULT_RING_CAPACITY.
+     * \param   dropOnFull      The full-ring policy. areg::Bool::True drops the incoming event when
+     *                          the ring is full; areg::Bool::False blocks the producer up to \a waitMs;
+     *                          areg::Bool::Undefined reads the value from configuration, falling back
+     *                          to areg::QUEUE_DROP_WHEN_FULL.
+     * \param   waitMs          The lossless full-ring block timeout in milliseconds (used only when
+     *                          the resolved policy is "block"). 0 means do not wait; areg::WAIT_INFINITE
+     *                          reads the value from configuration, falling back to
+     *                          areg::QUEUE_DEFAULT_FULL_WAIT_MS.
      **/
-    EventDispatcherBase( const String & name, uint32_t maxQeueue );
+    explicit EventDispatcherBase( const String & name
+                                , uint32_t maxQeueue   = areg::IGNORE_VALUE
+                                , areg::Bool dropOnFull = areg::Bool::Undefined
+                                , uint32_t waitMs       = areg::WAIT_INFINITE );
 
     virtual ~EventDispatcherBase();
 

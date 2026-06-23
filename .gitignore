@@ -48,3 +48,6 @@ examples/*/*/*/.settings
 examples/*/*/*/Debug
 examples/*/*/*/Release
 CMakeSettings.json
+
+mempalace.yaml
+entities.json

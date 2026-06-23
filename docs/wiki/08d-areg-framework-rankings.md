@@ -85,8 +85,8 @@ Sorted best-to-worst P50/Avg. Mixed transports – see Notes column.
 | 4 | CycloneDDS | UDP/SHM | ~8 μs | ✅ NTU 2024 | ⚙️ | Full DDS. Raw DDS layer measured (no app dispatch). |
 | 5 | Zenoh P2P | SHM/UDP | ~10 μs | ✅ NTU 2024 | 🏗️ | Raw pub-sub. No dispatch. |
 | 6 | FastDDS | UDP/SHM | ~10–15 μs | ✅ eProsima 2022 | ⚙️ | Full DDS. Raw DDS layer measured. |
-| 7 | NanoMsg IPC | Unix socket | ~16.2 μs avg | ✅ Hitachi CSV | 🏗️ | Dead project. Same machine only. Raw. |
-| **8** | **areg-sdk Linux** | **TCP** | **~16.9 μs P50** | **✅ Measured** | **⚙️ Full** | **2-hop broker. Full dispatch. Device-to-device.** |
+| **7** | **areg-sdk Linux** | **TCP** | **~13.8 μs P50** | **✅ Measured** | **⚙️ Full** | **2-hop broker. Full dispatch. Device-to-device.** |
+| 8 | NanoMsg IPC | Unix socket | ~16.2 μs avg | ✅ Hitachi CSV | 🏗️ | Dead project. Same machine only. Raw. |
 | 9 | Zenoh brokered | UDP | ~21 μs | ✅ NTU 2024 | 🏗️ | Raw pub-sub through router. |
 | 10 | ZMQ IPC | Unix socket | ~25.8 μs avg | ✅ Hitachi CSV | 🏗️ | Same machine only. Raw. |
 | 11 | NanoMsg TCP | TCP | ~18 μs Min / 21.9 μs avg | ✅ Hitachi CSV | 🏗️ | Dead project. Raw. Low load. |
@@ -97,10 +97,12 @@ Sorted best-to-worst P50/Avg. Mixed transports – see Notes column.
 | 16 | gRPC C++ | UDS → TCP ≥ | ~116–167 μs | ✅ MPI-HD (Werner 2021) | ⚙️ Full | UDS, single client, sequential. TCP would be equal or higher. |
 | 17 | ROS2 | UDP DDS | ~200–500 μs | ✅ arxiv | ⚙️ Full | Full RCL/executor overhead. |
 
-> **areg-sdk Linux is #8 overall.** All 7 frameworks ranked above it use:
-> in-process threads, Java persisted queues, shared memory, Unix sockets, or UDP –
+> **areg-sdk Linux is #7 overall.** All 6 frameworks ranked above it use:
+> in-process threads, Java persisted queues, shared memory, or UDP –
 > and all except CycloneDDS/FastDDS measure raw transport without application dispatch.
-> areg-sdk is the highest-ranked **measured, full-stack, device-to-device TCP framework.**
+> areg-sdk is the highest-ranked **measured, full-stack, device-to-device TCP framework**,
+> and the only one in the top 8 with full application dispatch *and* a directly measured
+> (not estimated) number.
 
 ---
 
@@ -113,9 +115,9 @@ Sorted best-to-worst P50/Avg. Mixed transports – see Notes column.
 | 3 | ZMQ inproc | In-process | ~3–5M | 🔲 Est. | 🏗️ | Threads, tiny messages |
 | **4** | **areg-sdk macOS M3** | **TCP** | **~2.5M** | **✅ Measured** | **⚙️ Full dispatch** | **~0.5 KB, LPDDR5** |
 | 5 | CycloneDDS | UDP/SHM | ~1–3M | 🔲 Est. (derived from GB/s) | ⚙️ Full DDS | Raw DDS layer |
-| **6** | **areg-sdk Linux** | **TCP** | **~1.5M sustained / ~2.0M burst** | **✅ Measured** | **⚙️ Full dispatch** | **~0.5 KB, DDR4. USB memory-limited.** |
+| **6** | **areg-sdk Linux** | **TCP** | **~1.5M sustained / ~2.5M peak** | **✅ Measured** | **⚙️ Full dispatch** | **~0.5 KB, DDR4, `Performance` power mode** |
 | 7 | ZMQ / NNG TCP | TCP | ~1–2M | 🔲 Est. (paper polling-limited) | 🏗️ Raw | Unpolled config |
-| **8** | **areg-sdk Windows** | **TCP** | **~1.1M stable / ~1.6M peak** | **✅ Measured** | **⚙️ Full dispatch** | **~0.5 KB, DDR4** |
+| **8** | **areg-sdk Windows** | **TCP** | **~1.1M stable / ~2.8M peak** | **✅ Measured** | **⚙️ Full dispatch** | **~0.5 KB, DDR4** |
 | 9 | gRPC streaming | TCP | ~100–500K | ✅ Community | ⚙️ Full | HTTP/2 streaming |
 | 10 | ROS2 | UDP DDS | ~1–10K | ✅ arxiv | ⚙️ Full | Full executor overhead |
 
@@ -137,19 +139,20 @@ Sorted best-to-worst P50/Avg. Mixed transports – see Notes column.
 |------|-----------|-----------|-----------------|--------|-------|---------|
 | 1 | Zenoh P2P | SHM/UDP | ~8 GB/s peak (67 Gbps) | ✅ NTU/ZettaScale | 🏗️ Raw | 8 KB+, raw |
 | **2** | **areg-sdk macOS M3** | **TCP** | **~6.7–7.0 GB/s** | **✅ Measured** | **⚙️ Full dispatch** | **~3 MB** |
-| **3** | **areg-sdk Linux** | **TCP** | **~6.0 GB/s sustained / ~7.0 GB/s burst** | **✅ Measured** | **⚙️ Full dispatch** | **~3 MB (USB: memory-pressure limited)** |
+| **3** | **areg-sdk Linux** | **TCP** | **~6.0 GB/s sustained / ~8.0 GB/s peak** | **✅ Measured** | **⚙️ Full dispatch** | **~3 MB, `Performance` power mode** |
 | 4 | Aeron | SHM/UDP | ~5+ GB/s | 🔲 Est. | 🏗️ Raw | Large msgs |
 | 5 | Zenoh brokered | UDP | ~4.6 GB/s (37 Gbps) | ✅ NTU paper | 🏗️ Raw | Large msgs |
 | 6 | CycloneDDS | UDP/SHM | ~3.2 GB/s (25.8 Gbps) | ✅ NTU paper | ⚙️ Full DDS | Large msgs |
 | 7 | ZMQ TCP | TCP | ~2.9 GB/s | ✅ Hitachi paper | 🏗️ Raw | 512 KB |
-| **8** | **areg-sdk Windows** | **TCP** | **~2.5 GB/s stable / ~2.8 GB/s peak** | **✅ Measured** | **⚙️ Full dispatch** | **~3 MB** |
+| **8** | **areg-sdk Windows** | **TCP** | **~2.5 GB/s stable / ~3.0 GB/s peak** | **✅ Measured** | **⚙️ Full dispatch** | **~3 MB** |
 | 9 | NNG TCP | TCP | ~2.0 GB/s | ✅ Hitachi paper | 🏗️ Raw | 512 KB |
 | 10 | NanoMsg TCP | TCP | ~1.4 GB/s | ✅ Hitachi paper | 🏗️ Raw | 512 KB |
 
 > areg-sdk macOS M3 and Linux rank #2 and #3 overall in data rate –
-> only Zenoh P2P (raw pub-sub, SHM/UDP) exceeds either.
-> areg-sdk with full dispatch (6.0–7.0 GB/s) beats Zenoh brokered (4.6 GB/s),
-> CycloneDDS raw DDS (3.2 GB/s), and all TCP frameworks.
+> only Zenoh P2P (raw pub-sub, SHM/UDP) exceeds either, and only by a small margin
+> on peak (areg-sdk Linux's ~8.0 GB/s peak is within ~5% of Zenoh P2P's ~8.4 GB/s).
+> areg-sdk with full dispatch (6.0–7.0 GB/s sustained) still beats Zenoh brokered
+> (4.6 GB/s), CycloneDDS raw DDS (3.2 GB/s), and all TCP frameworks.
 
 ---
 
@@ -164,7 +167,7 @@ Sorted best-to-worst P50/Avg. Mixed transports – see Notes column.
 | 1 | CycloneDDS | UDP/SHM | ~8 μs | ⚙️ Full DDS (raw DDS layer measured) |
 | 2 | Zenoh P2P | UDP | ~10 μs | 🏗️ Raw pub-sub |
 | 3 | FastDDS | UDP | ~10–15 μs | ⚙️ Full DDS (raw DDS layer measured) |
-| **4** | **areg-sdk Linux TCP** | **TCP** | **~16.9 μs** | **⚙️ Full: broker + dispatch + method call** |
+| **4** | **areg-sdk Linux TCP** | **TCP** | **~13.8 μs** | **⚙️ Full: broker + dispatch + method call** |
 | 5 | NanoMsg TCP | TCP | ~18 μs avg | 🏗️ Raw |
 | 6 | Zenoh brokered | UDP | ~21 μs | 🏗️ Raw pub-sub |
 | 7 | ZMQ TCP | TCP | ~22 μs avg | 🏗️ Raw |
@@ -185,7 +188,7 @@ areg-sdk (full stack, TCP, 2-hop broker) is faster than Zenoh brokered (raw, UDP
 |------|-----------|---------|
 | 1 | CycloneDDS | ~8–18 μs* |
 | 2 | FastDDS | ~10–25 μs* |
-| **3** | **areg-sdk Linux** | **~16.9 μs** ✅ measured |
+| **3** | **areg-sdk Linux** | **~13.8 μs** ✅ measured |
 | 4 | gRPC | ~116–167 μs ¹ |
 | 5 | ROS2 | ~200–500 μs |
 
@@ -202,7 +205,7 @@ areg-sdk (full stack, TCP, 2-hop broker) is faster than Zenoh brokered (raw, UDP
 
 | Rank | Framework | OWT P50 | RTT P50 | Source | Scope |
 |------|-----------|---------|---------|--------|-------|
-| **1** | **areg-sdk Linux** | **~16.9 μs** | **~33 μs** | **✅ Measured** | **⚙️ Full: 2-hop broker + dispatch** |
+| **1** | **areg-sdk Linux** | **~13.8 μs** | **~25.7 μs** | **✅ Measured** | **⚙️ Full: 2-hop broker + dispatch** |
 | 2 | NanoMsg TCP | ~18 μs avg | ~36 μs | ✅ Hitachi CSV | 🏗️ Raw, T=1000 μs, Xeon |
 | 3 | ZMQ TCP | ~22 μs avg | ~44 μs | ✅ Hitachi CSV | 🏗️ Raw |
 | 4 | NNG TCP | ~25–35 μs | ~50–70 μs | ✅ Hitachi CSV | 🏗️ Raw |
@@ -221,7 +224,7 @@ areg-sdk (full stack, TCP, 2-hop broker) is faster than Zenoh brokered (raw, UDP
 
 | Question | Answer | Evidence |
 |----------|--------|---------|
-| Top 10 IPC/RPC overall (latency)? | ✅ **#8** | Directly measured |
+| Top 10 IPC/RPC overall (latency)? | ✅ **#7** | Directly measured |
 | Top 10 overall (msg rate)? | ✅ **#4** (macOS), **#6** (Linux) | Directly measured |
 | Top 10 overall (data rate)? | ✅ **#2** (macOS), **#3** (Linux) | Directly measured |
 | Top 5 networking (TCP+UDP)? | ✅ **#4** overall, **#3** full-stack | Directly measured |
@@ -238,14 +241,14 @@ under reproducible conditions, with production reliability.
 
 | Criterion | areg-sdk value | vs nearest competitor | Class |
 |-----------|---------------|----------------------|-------|
-| TCP OWT Min (Linux) | 14.8 μs | < NanoMsg 18.0 μs (raw, Xeon) | ✅ |
-| TCP OWT P50 (Linux) | 16.9 μs | < NanoMsg 21.9 μs avg (raw, Xeon) | ✅ |
-| TCP RTT Min (Linux) | **29.8 μs** | < 2× NanoMsg OWT (36 μs) | ✅ |
+| TCP OWT Min (Linux) | 12.0 μs | < NanoMsg 18.0 μs (raw, Xeon) | ✅ |
+| TCP OWT P50 (Linux) | 13.8 μs | < NanoMsg 21.9 μs avg (raw, Xeon) | ✅ |
+| TCP RTT Min (Linux) | **23.5 μs** | < 2× NanoMsg OWT (36 μs) | ✅ |
 | TCP data rate (macOS) | 6.7–7.0 GB/s | > Zenoh brokered 4.6 GB/s | ✅ |
-| TCP data rate (Linux) | **6.0 GB/s** sustained / ~7.2 GB/s burst | > ZMQ 2.9 GB/s (2.1×) | ✅ |
+| TCP data rate (Linux) | **6.0 GB/s** sustained / ~8.0 GB/s peak | > ZMQ 2.9 GB/s (2.1×) | ✅ |
 | Msg rate (macOS) | 2.5M/s full dispatch | Competitive with CycloneDDS raw | ✅ |
-| Stability at T=0 | Stable P99=54 μs | Only stable framework of 4 tested | ✅ |
-| Payload sensitivity | +2.3 μs over 20× range | Better than NanoMsg 7× range | ✅ |
+| Stability at T=0 | Stable P99=46.3 μs | Only stable framework of 4 tested | ✅ |
+| Payload sensitivity | +1.8 μs over 20× range | Better than NanoMsg 7× range | ✅ |
 | Full service framework | Yes | No TCP competitor provides this | ✅ |
 | Device-to-device native | Yes | TCP, zero rewrite across topologies | ✅ |
 
@@ -343,12 +346,12 @@ Add 3–6 weeks for teams with documented race condition history.
 
 | Platform | bc OWT P50 | pp RTT P50 | Msg/s | Data rate | Best suited for |
 |----------|-----------|-----------|-------|-----------|----------------|
-| **Linux** (i7-13700H, DDR4) | **~16–18 μs** | **~30–32 μs** | ~1.5M sustained / **~2.0M burst** | ~6.0 GB/s sustained / **~7.2 GB/s burst** | Lowest latency; throughput USB-limited on live boot |
-| **macOS M3 Pro** (LPDDR5) | ~31 μs | ~63 μs | **~2.5M** | **~6.7–7.0 GB/s** | Best P99 consistency + highest throughput |
-| **Windows 11** (i7-13700H, DDR4) | ~40 μs | ~83 μs | ~1.5M | ~2.0–2.2 GB/s | Windows-native production |
+| **Linux** (i7-13700H, DDR4, `Performance` mode) | **~13–15 μs** | **~24–27 μs** | ~1.5M sustained / **~2.5M peak** | ~6.0 GB/s sustained / **~8.0 GB/s peak** | Lowest latency; highest peak throughput of the three platforms |
+| **macOS M3 Pro** (LPDDR5) | ~31 μs | ~63 μs | **~2.5M** | **~6.7–7.0 GB/s** | Best P99 consistency + highest confirmed *sustained* throughput |
+| **Windows 11** (i7-13700H, DDR4) | ~40 μs | ~83 μs | ~1.1M sustained / ~2.8M peak | ~2.5 GB/s sustained / ~3.0 GB/s peak | Windows-native production |
 
-Linux: **2.5× lower P50 latency** than macOS, **5× lower** than Windows on same hardware.
-macOS M3: **1.7× higher throughput** than Linux, **best P99 predictability** of all platforms.
+Linux: **~2.3× lower** P50 latency than macOS, **~2.9× lower** than Windows on the same hardware (bc64 OWT).
+macOS M3: **1.7× higher sustained throughput** than Linux, **best P99 predictability** of all platforms.
 
 ---
 
@@ -365,6 +368,6 @@ macOS M3: **1.7× higher throughput** than Linux, **best P99 predictability** of
 | Aeron UDP ~50 μs (untuned) | E. Sequeira, esequeira.com/posts/aeron-latency-at-lower-throughputs (2023) |
 | gRPC C++ UDS ~116 μs | F. Werner, MPI-HD, mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc/ (2021) |
 | ROS2 | arxiv:2201.00393 (ros2_tracing) |
-| areg-sdk all measurements | June 2026 – i7-13700H DDR4 (Win/Linux), MacBook Pro M3 Pro LPDDR5 |
+| areg-sdk all measurements | June 2026 – i7-13700H DDR4 (Win/Linux, Linux in `Performance` power mode), MacBook Pro M3 Pro LPDDR5 |
 
 *Compiled June 2026. All same-machine loopback. areg-sdk: Release, AREG_LOGGING=OFF.*

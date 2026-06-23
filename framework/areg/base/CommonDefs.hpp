@@ -71,6 +71,16 @@ namespace areg {
     };
 
     /**
+     * \brief   Indicates the boolean state assigned of persisted.
+     **/
+    enum class Bool     : int8_t
+    {
+          Undefined = -1
+        , False     = 0
+        , True      = 1
+    };
+
+    /**
      * \brief   The success return code.
      **/
     constexpr int32_t       RETURNED_OK             { 0 };

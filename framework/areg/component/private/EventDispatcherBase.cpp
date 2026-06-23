@@ -52,6 +52,24 @@ namespace
                     : areg::Application::config_manager().queue_capacity();
     }
 
+    //!< Resolves the full-ring policy: an explicit caller flag wins (True = drop, False = block),
+    //!< areg::Bool::Undefined defers to the configured value (config::MODULE::queue::drop) or its default.
+    inline bool _resolve_drop_on_full( areg::Bool dropOnFull ) noexcept
+    {
+        return (dropOnFull == areg::Bool::Undefined)
+                    ? areg::Application::config_manager().queue_drop_on_full()
+                    : (dropOnFull == areg::Bool::True);
+    }
+
+    //!< Resolves the lossless full-ring block timeout: an explicit caller value wins (0 = do not wait),
+    //!< areg::WAIT_INFINITE defers to the configured value (config::MODULE::queue::timeout) or its default.
+    inline uint32_t _resolve_queue_wait( uint32_t waitMs ) noexcept
+    {
+        return (waitMs != areg::WAIT_INFINITE)
+                    ? waitMs
+                    : areg::Application::config_manager().queue_wait_timeout();
+    }
+
 }
 
 namespace areg {
@@ -63,9 +81,9 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcherBase class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-EventDispatcherBase::EventDispatcherBase(const String & name, uint32_t maxQeueue)
+EventDispatcherBase::EventDispatcherBase(const String & name, uint32_t maxQeueue, areg::Bool dropOnFull, uint32_t waitMs)
     : mDispatcherName( name )
-    , mExternalEvents( _resolve_queue_capacity( maxQeueue ), Application::config_manager().queue_drop_on_full(), Application::config_manager().queue_wait_timeout() )
+    , mExternalEvents( _resolve_queue_capacity( maxQeueue ), _resolve_drop_on_full( dropOnFull ), _resolve_queue_wait( waitMs ) )
     , mInternalEvents( )
     , mHasStarted    ( false )
     , mConsumerMap   ( )

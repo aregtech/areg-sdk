@@ -131,12 +131,23 @@ public:
      * \param   stackSizeKb     The stack size of the thread in kilobytes (1 KB = 1024 Bytes). Pass
      *                          `areg::DEFAULT_STACK_SIZE` (0) to ignore changing stack size and
      *                          use system default stack size.
-     * \param   maxQeueue       The maximum number of queued external events. Pass
-     *                          `areg::IGNORE_VALUE` to use default value set in configuration
-     *                          or ignore the parameter if not configured. The configuration is set
-     *                          in `areg.init` file under key "config::*::default::messagequeue".
+     * \param   maxQeueue       The event-queue ring capacity. Pass `areg::IGNORE_VALUE` (0) to read
+     *                          the value from configuration (`areg.init` key "config::*::queue::capacity"),
+     *                          falling back to `areg::QUEUE_DEFAULT_RING_CAPACITY`.
+     * \param   dropOnFull      The full-ring policy. `areg::Bool::True` drops the incoming event when
+     *                          the queue is full; `areg::Bool::False` blocks the producer up to
+     *                          \a waitMs; `areg::Bool::Undefined` reads the value from configuration
+     *                          ("config::*::queue::drop"), falling back to `areg::QUEUE_DROP_WHEN_FULL`.
+     * \param   waitMs          The lossless full-ring block timeout in milliseconds (used only when
+     *                          the resolved policy is "block"). 0 means do not wait; `areg::WAIT_INFINITE`
+     *                          reads the value from configuration ("config::*::queue::timeout"),
+     *                          falling back to `areg::QUEUE_DEFAULT_FULL_WAIT_MS`.
      **/
-    explicit DispatcherThread( const String & threadName, uint32_t stackSizeKb, uint32_t maxQeueue);
+    explicit DispatcherThread( const String & threadName
+                             , uint32_t stackSizeKb
+                             , uint32_t maxQeueue
+                             , areg::Bool dropOnFull = areg::Bool::Undefined
+                             , uint32_t waitMs       = areg::WAIT_INFINITE );
     virtual ~DispatcherThread() = default;
 
 //////////////////////////////////////////////////////////////////////////

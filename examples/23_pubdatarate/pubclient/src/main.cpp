@@ -29,7 +29,6 @@
 
 constexpr char const _modelName[]   = { "DataRate" };  //!< The name of model
 const areg::String   _serviceClient = areg::generate_name("ServiceConsumer"); //!< Generated name of service client component
-constexpr uint32_t     CLIENT_EVENT_QUEUE_SIZE { areg::QUEUE_SIZE_MAXIMUM };
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -41,7 +40,7 @@ constexpr uint32_t     CLIENT_EVENT_QUEUE_SIZE { areg::QUEUE_SIZE_MAXIMUM };
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD_EX2( "TestServiceConsumerThread", areg::WATCHDOG_IGNORE, areg::DEFAULT_STACK_SIZE, CLIENT_EVENT_QUEUE_SIZE )
+    BEGIN_REGISTER_THREAD_EX2("TestServiceProviderThread", areg::WATCHDOG_IGNORE, areg::DEFAULT_STACK_SIZE, 24 * 1024u, areg::Bool::False, 0u)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _serviceClient, ServiceClient )
             // register service dependency
