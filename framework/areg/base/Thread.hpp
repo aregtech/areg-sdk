@@ -35,6 +35,10 @@
 #include <string_view>
 #include <limits>
 
+#ifdef _MSC_VER
+    #include <intrin.h>     // _mm_pause() for Thread::cpu_pause()
+#endif  // _MSC_VER
+
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -339,6 +343,15 @@ public:
      * \brief   Yields thread processing time to allow other threads to run.
      **/
     inline static void switch_thread() noexcept;
+
+    /**
+     * \brief   Emits a CPU spin-wait hint (PAUSE / YIELD). Relaxes the core during a
+     *          short busy-wait so a hyper-thread sibling gets resources and the loop
+     *          burns less power. Does NOT yield to the OS scheduler -- intended for
+     *          bounded spins (e.g. SpinLock).
+     *          On architectures with no pause hint it falls back to switch_thread().
+     **/
+    inline static void cpu_pause() noexcept;
 
     /**
      * \brief   Returns the ID of the current thread.
@@ -820,6 +833,19 @@ inline void Thread::sleep( uint32_t ms )
 inline void Thread::switch_thread() noexcept
 {
     Thread::_os_yield_to_thread();
+}
+
+inline void Thread::cpu_pause() noexcept
+{
+#if defined(_MSC_VER)
+    _mm_pause();
+#elif defined(__x86_64__) || defined(__i386__)
+    __builtin_ia32_pause();
+#elif defined(__aarch64__) || defined(__arm__)
+    __asm__ __volatile__("yield" ::: "memory");
+#else
+    Thread::switch_thread();
+#endif
 }
 
 inline id_type Thread::current_thread_id() noexcept

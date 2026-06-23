@@ -567,7 +567,6 @@ public:
      * \param   eventElem       Event object to post
      * \return  In this class it always returns true.
      **/
-    [[nodiscard]]
     bool post_event( Event & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////////

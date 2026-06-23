@@ -113,7 +113,6 @@ public:
      *
      * \param   eventElem       Event to post.
      **/
-    [[nodiscard]]
     bool post_event( Event & eventElem ) final;
 
 protected:

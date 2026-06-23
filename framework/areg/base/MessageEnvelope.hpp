@@ -128,7 +128,7 @@ public:
 
     MessageEnvelope(MessageEnvelope&& src) noexcept = default;
 
-    virtual ~MessageEnvelope() noexcept = default;
+    ~MessageEnvelope() noexcept override = default;
 
 //////////////////////////////////////////////////////////////////////////////
 // Operators
@@ -166,10 +166,10 @@ public:
     friend inline const MessageEnvelope& operator >> (const MessageEnvelope& env, SharedBuffer& dst) noexcept;
 
 //////////////////////////////////////////////////////////////////////////////
-// Overrides
+// Operations
 //////////////////////////////////////////////////////////////////////////////
 public:
-    virtual void destroy_event() noexcept;
+    void destroy_event() noexcept;
 
 //////////////////////////////////////////////////////////////////////////////
 // Header bulk access

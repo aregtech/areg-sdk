@@ -7,10 +7,10 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        units/MpscEventQueueTest.cpp
+ * \file        units/EventQueueTest.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Areg Platform, unit tests for MpscEventQueue.
+ * \brief       Areg Platform, unit tests for EventQueue.
  *              Covers single-threaded correctness (push/pop, priority lanes,
  *              capacity, exit state, doorbell polling) and multi-threaded
  *              stress (many producers, single consumer) verifying no event loss
@@ -21,7 +21,7 @@
  * Include files.
  ************************************************************************/
 #include "units/GUnitTest.hpp"
-#include "areg/component/private/MpscEventQueue.hpp"
+#include "areg/component/private/EventQueue.hpp"
 #include "areg/component/Event.hpp"
 #include "areg/component/EventDefs.hpp"
 
@@ -35,7 +35,7 @@ namespace
     using areg::Event;
     using areg::EventType;
     using areg::EventPriority;
-    using areg::MpscEventQueue;
+    using areg::EventQueue;
 
     //!< Event protectedly inherits MessageEnvelope, so set_event_id() is reachable only
     //!< from a derived class. This thin tag carries the test id in the event buffer.
@@ -59,18 +59,18 @@ namespace
 // Single-threaded correctness
 //////////////////////////////////////////////////////////////////////////
 
-TEST(MpscEventQueueTest, empty_on_construction)
+TEST(EventQueueTest, empty_on_construction)
 {
-    MpscEventQueue queue(0u);
+    EventQueue queue(0u);
     EXPECT_FALSE(queue.has_pending());
     EXPECT_FALSE(queue.is_exit_triggered());
     EXPECT_FALSE(queue.pop_event().is_valid());
     EXPECT_FALSE(queue.wait_event(areg::DO_NOT_WAIT));
 }
 
-TEST(MpscEventQueueTest, push_pop_single)
+TEST(EventQueueTest, push_pop_single)
 {
-    MpscEventQueue queue(0u);
+    EventQueue queue(0u);
     Event evt = makeEvent(42u);
     queue.push_event(evt);
 
@@ -85,9 +85,9 @@ TEST(MpscEventQueueTest, push_pop_single)
     EXPECT_FALSE(queue.pop_event().is_valid());
 }
 
-TEST(MpscEventQueueTest, fifo_order_normal_lane)
+TEST(EventQueueTest, fifo_order_normal_lane)
 {
-    MpscEventQueue queue(0u);
+    EventQueue queue(0u);
     constexpr uint32_t COUNT{ 100u };
     for (uint32_t i = 0u; i < COUNT; ++i)
     {
@@ -105,9 +105,9 @@ TEST(MpscEventQueueTest, fifo_order_normal_lane)
     EXPECT_FALSE(queue.has_pending());
 }
 
-TEST(MpscEventQueueTest, priority_lane_drained_first)
+TEST(EventQueueTest, priority_lane_drained_first)
 {
-    MpscEventQueue queue(0u);
+    EventQueue queue(0u);
     Event normal   = makeEvent(1u, EventPriority::NormalPrio);   queue.push_event(normal);
     Event high     = makeEvent(2u, EventPriority::HighPrio);     queue.push_event(high);
     Event critical = makeEvent(3u, EventPriority::CriticalPrio); queue.push_event(critical);
@@ -119,9 +119,9 @@ TEST(MpscEventQueueTest, priority_lane_drained_first)
     EXPECT_FALSE(queue.has_pending());
 }
 
-TEST(MpscEventQueueTest, exit_preempts_is_sticky_and_resets)
+TEST(EventQueueTest, exit_preempts_is_sticky_and_resets)
 {
-    MpscEventQueue queue(0u);
+    EventQueue queue(0u);
     Event normal = makeEvent(7u);
     queue.push_event(normal);
 
@@ -142,11 +142,11 @@ TEST(MpscEventQueueTest, exit_preempts_is_sticky_and_resets)
     EXPECT_FALSE(queue.has_pending());
 }
 
-TEST(MpscEventQueueTest, push_event_exit_routes_to_sticky_flag)
+TEST(EventQueueTest, push_event_exit_routes_to_sticky_flag)
 {
     // An ExitPrio event must NOT be queued: it sets the sticky exit flag so pop_event()
     // synthesizes the singleton ExitEvent and the queue itself stays empty.
-    MpscEventQueue queue(0u);
+    EventQueue queue(0u);
     Event exit = makeEvent(0u, EventPriority::ExitPrio);
     queue.push_event(exit);
 
@@ -155,11 +155,11 @@ TEST(MpscEventQueueTest, push_event_exit_routes_to_sticky_flag)
     EXPECT_TRUE(queue.pop_event().is_exit_prio());
 }
 
-TEST(MpscEventQueueTest, pop_events_preempts_with_exit)
+TEST(EventQueueTest, pop_events_preempts_with_exit)
 {
     // pop_events() must honor the sticky exit flag and return a single ExitEvent,
     // exactly like pop_event().
-    MpscEventQueue queue(0u);
+    EventQueue queue(0u);
     Event normal = makeEvent(5u);
     queue.push_event(normal);
     queue.trigger_exit();
@@ -170,10 +170,10 @@ TEST(MpscEventQueueTest, pop_events_preempts_with_exit)
     EXPECT_TRUE(out[0].is_exit_prio());
 }
 
-TEST(MpscEventQueueTest, push_events_routes_exit_to_flag)
+TEST(EventQueueTest, push_events_routes_exit_to_flag)
 {
     // A batch whose highest-priority slot is an exit must set the sticky flag, not queue it.
-    MpscEventQueue queue(0u);
+    EventQueue queue(0u);
     Event batch[3] =
     {
           makeEvent(0u, EventPriority::ExitPrio)
@@ -187,10 +187,10 @@ TEST(MpscEventQueueTest, push_events_routes_exit_to_flag)
     EXPECT_TRUE(queue.pop_event().is_exit_prio());   // exit preempts the queued high/normal events
 }
 
-TEST(MpscEventQueueTest, capacity_overflow_returns_event)
+TEST(EventQueueTest, capacity_overflow_returns_event)
 {
     constexpr uint32_t CAPACITY{ 32u };
-    MpscEventQueue queue(CAPACITY);
+    EventQueue queue(CAPACITY);
     for (uint32_t i = 0u; i < CAPACITY; ++i)
     {
         Event evt = makeEvent(i);
@@ -204,9 +204,9 @@ TEST(MpscEventQueueTest, capacity_overflow_returns_event)
     EXPECT_EQ(removed.event_id(), 999u);
 }
 
-TEST(MpscEventQueueTest, remove_all_events_empties_queue)
+TEST(EventQueueTest, remove_all_events_empties_queue)
 {
-    MpscEventQueue queue(0u);
+    EventQueue queue(0u);
     for (uint32_t i = 0u; i < 50u; ++i)
     {
         Event evt = makeEvent(i);
@@ -224,9 +224,9 @@ TEST(MpscEventQueueTest, remove_all_events_empties_queue)
 // Doorbell wake-up
 //////////////////////////////////////////////////////////////////////////
 
-TEST(MpscEventQueueTest, wait_event_wakes_on_push)
+TEST(EventQueueTest, wait_event_wakes_on_push)
 {
-    MpscEventQueue queue(0u);
+    EventQueue queue(0u);
     std::atomic<bool> woke{ false };
     std::thread consumer([&]
     {
@@ -242,9 +242,9 @@ TEST(MpscEventQueueTest, wait_event_wakes_on_push)
     EXPECT_TRUE(woke.load(std::memory_order_acquire));
 }
 
-TEST(MpscEventQueueTest, wait_event_wakes_on_exit)
+TEST(EventQueueTest, wait_event_wakes_on_exit)
 {
-    MpscEventQueue queue(0u);
+    EventQueue queue(0u);
     std::atomic<bool> sawExit{ false };
     std::thread consumer([&]
     {
@@ -265,9 +265,9 @@ TEST(MpscEventQueueTest, wait_event_wakes_on_exit)
 // Single producer drives one event at a time while the consumer blocks on
 // wait_event(WAIT_INFINITE). A missed wake-up would stall the consumer until
 // the watchdog exit fires, leaving consumed < ITERS and failing the test.
-TEST(MpscEventQueueTest, blocking_consumer_no_lost_wakeup)
+TEST(EventQueueTest, blocking_consumer_no_lost_wakeup)
 {
-    MpscEventQueue queue(0u);
+    EventQueue queue(0u);
     constexpr uint32_t ITERS{ 200000u };
     std::atomic<uint32_t> consumed{ 0u };
 
@@ -311,13 +311,13 @@ TEST(MpscEventQueueTest, blocking_consumer_no_lost_wakeup)
 }
 
 // Many producers, single consumer: verify every event is delivered exactly once.
-TEST(MpscEventQueueTest, mpsc_stress_no_event_loss)
+TEST(EventQueueTest, mpsc_stress_no_event_loss)
 {
     constexpr uint32_t PRODUCERS{ 4u };
     constexpr uint32_t PER_PRODUCER{ 50000u };
     constexpr uint32_t TOTAL{ PRODUCERS * PER_PRODUCER };
 
-    MpscEventQueue queue(0u);   // unlimited capacity
+    EventQueue queue(0u);   // unlimited capacity
     std::atomic<uint32_t> ready{ 0u };
     std::atomic<bool> go{ false };
     std::atomic<uint32_t> received{ 0u };

@@ -106,7 +106,6 @@ protected:
      * \param   eventElem   Event to post.
      * \return  Returns true if the event was accepted and queued.
      **/
-    [[nodiscard]]
     bool post_event( Event & eventElem ) final;
 
 private:
@@ -133,6 +132,8 @@ private:
     //!< Reused scratch: per-slot target cookies and resolved socket handles (POD; off the stack).
     std::array<ITEM_ID, areg::DEFAULT_DRAIN_LIMIT>       mTargets;
     std::array<SOCKETHANDLE, areg::DEFAULT_DRAIN_LIMIT>  mSockets;
+    //!< Reusable single-window drain buffer (pop_events); constructed once.
+    std::array<areg::Event, areg::DEFAULT_DRAIN_LIMIT>   mEvents;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

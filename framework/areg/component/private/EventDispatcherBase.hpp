@@ -32,7 +32,7 @@
 
 #include "areg/component/private/EventConsumerMap.hpp"
 #include "areg/component/private/EventStack.hpp"
-#include "areg/component/private/MpscEventQueue.hpp"
+#include "areg/component/private/EventQueue.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 
@@ -47,8 +47,8 @@ namespace areg {
 
 namespace areg {
 
-using ExternalQueue         = areg::MpscEventQueue; //!< External Event queue, lockable
-using InternalEventQueue    = areg::EventStack;     //!< Internal Event queue, non-lockable
+using ExternalQueue         = areg::EventQueue; //!< External Event queue, lockable
+using InternalEventQueue    = areg::EventStack; //!< Internal Event queue, non-lockable
 
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcherBase class declaration
@@ -194,13 +194,6 @@ public:
     inline bool is_ready() const noexcept;
 
     /**
-     * \brief   Removes all internal events, and all external events except exit events.
-     *
-     * \param   keepSpecials    If true, keeps special reserved events.
-     **/
-    inline void remove_events( bool keepSpecials ) noexcept;
-
-    /**
      * \brief   Removes all events. Makes event queue empty.
      **/
     inline void remove_all_events() noexcept;
@@ -269,9 +262,7 @@ protected:
     String              mDispatcherName;
 
     /**
-     * \brief   External Event Queue element.
-     *          Selected at compile time: MpscEventQueue (default) or ExternalEventQueue.
-     *          Multiple producer threads may push; only the owner thread pops.
+     * \brief   External Event Queue element. Multiple producer threads may push; only the owner thread pops.
      **/
     ExternalQueue       mExternalEvents;
 
@@ -337,14 +328,6 @@ inline void EventDispatcherBase::signal_exit_event() noexcept
 inline bool EventDispatcherBase::is_ready() const noexcept
 {
     return mHasStarted;
-}
-
-inline void EventDispatcherBase::remove_events(bool /*keepSpecials*/) noexcept
-{
-    mExternalEvents.lock_queue();
-    mInternalEvents.remove_events( );
-    mExternalEvents.remove_events( );
-    mExternalEvents.unlock_queue();
 }
 
 inline void EventDispatcherBase::remove_all_events() noexcept

@@ -18,10 +18,6 @@
 #include "areg/base/MathDefs.hpp"
 #include "areg/base/Thread.hpp"
 
-#ifdef _MSC_VER
-    #include <intrin.h>
-#endif  // _MSC_VER
-
 #include <algorithm>
 #include <thread>
 namespace areg {
@@ -205,15 +201,7 @@ bool SpinLock::lock(uint32_t /*timeout = areg::WAIT_INFINITE*/)
         // CPU starvation under contention (critical on Linux / POSIX)
         while (mOwner.load(std::memory_order_relaxed) != 0)
         {
-#if defined(_MSC_VER)
-            _mm_pause();
-#elif defined(__x86_64__) || defined(__i386__)
-            __builtin_ia32_pause();
-#elif defined(__aarch64__) || defined(__arm__)
-            __asm__ __volatile__("yield" ::: "memory");
-#else
-            std::this_thread::yield();
-#endif
+            Thread::cpu_pause();
             if ((++spins & 63u) == 0u)
             {
                 std::this_thread::yield();

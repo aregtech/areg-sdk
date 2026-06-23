@@ -26,6 +26,11 @@
 
 namespace areg {
 
+    constexpr uint32_t   QUEUE_MIN_RING_CAPACITY     {                 32u };  //!< Smallest ring size.
+    constexpr uint32_t   QUEUE_MAX_RING_CAPACITY     {           16777216u };  //! explicit-size upper bound (keeps round-up safe)
+    constexpr uint32_t   QUEUE_DEFAULT_RING_CAPACITY {               1024u };  //!< Default Ring size to use.
+    constexpr uint32_t   QUEUE_DEFAULT_FULL_WAIT_MS  { areg::WAIT_1_SECOND };  //!< Default lossless block timeout.
+
 /************************************************************************
  * areg::EventType
  * Bitmask enum. Composite values OR together the primitive bits below.

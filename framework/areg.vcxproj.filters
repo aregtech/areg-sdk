@@ -480,7 +480,7 @@
     <ClCompile Include="areg\base\private\macos\WaitableTimerMacOS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\MpscEventQueue.cpp">
+    <ClCompile Include="areg\component\private\EventQueue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\BufferBase.cpp">
@@ -1022,7 +1022,7 @@
     <ClInclude Include="areg\base\SharedPrimitive.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\component\private\MpscEventQueue.hpp">
+    <ClInclude Include="areg\component\private\EventQueue.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\ipc\DataRateStats.hpp">

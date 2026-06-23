@@ -102,7 +102,6 @@ protected:
     }
 
     //! Override the default implementation to escape assertion
-    [[nodiscard]]
     bool post_event(areg::Event& eventElem) final
     {
         ASSERT(eventElem.is_event_id(areg::TimerEvent::CLASS_ID));    // Make sure that only timer events are passed.

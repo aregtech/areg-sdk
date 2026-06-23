@@ -74,7 +74,6 @@ protected:
      * \return  Returns true if target was found and the event delivered successfully. Otherwise
      *          returns false.
      **/
-    [[nodiscard]]
     bool post_event( Event & eventElem ) override;
 
     /**

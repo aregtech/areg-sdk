@@ -19,6 +19,8 @@
 #include "areg/component/EventConsumer.hpp"
 #include "areg/component/ExitEvent.hpp"
 
+#include "areg/appbase/Application.hpp"
+#include "areg/persist/ConfigManager.hpp"
 #include "areg/base/private/DebugDefs.hpp"
 
 #include <atomic>
@@ -41,6 +43,15 @@ namespace
 #endif  // __GLIBC__
     }
 
+    //!< Resolves the external event-queue ring capacity: an explicit caller request wins,
+    //!< otherwise the configured value (config::MODULE::queue::capacity) or its compile-time default.
+    inline uint32_t _resolve_queue_capacity( uint32_t requested ) noexcept
+    {
+        return (requested != areg::IGNORE_VALUE)
+                    ? requested
+                    : areg::Application::config_manager().queue_capacity();
+    }
+
 }
 
 namespace areg {
@@ -54,7 +65,7 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 EventDispatcherBase::EventDispatcherBase(const String & name, uint32_t maxQeueue)
     : mDispatcherName( name )
-    , mExternalEvents( maxQeueue )
+    , mExternalEvents( _resolve_queue_capacity( maxQeueue ), Application::config_manager().queue_drop_on_full(), Application::config_manager().queue_wait_timeout() )
     , mInternalEvents( )
     , mHasStarted    ( false )
     , mConsumerMap   ( )
@@ -253,9 +264,8 @@ bool EventDispatcherBase::prepare_dispatch_event( Event& eventElem ) noexcept
     return eventElem.is_valid();
 }
 
-void EventDispatcherBase::post_dispatch_event( Event& eventElem )
+void EventDispatcherBase::post_dispatch_event( Event& /*eventElem*/ )
 {
-    eventElem.destroy_event();
 }
 
 bool EventDispatcherBase::dispatch_event( Event& eventElem )

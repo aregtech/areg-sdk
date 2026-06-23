@@ -83,19 +83,18 @@ EventDispatcher& Event::dispatcher() const noexcept
 void Event::deliver_event()
 {
     DispatcherThread* dt{ target_dispatcher() };
-    if (dt == nullptr)
+    if (dt != nullptr)
+    {
+        dt->event_dispatcher().post_event(*this);
+    }
+    else
     {
         DispatcherThread& thread = DispatcherThread::dispatcher_thread(static_cast<UniqueNumber>(consumer_thread()));
         if (thread.is_running())
         {
             register_for_thread(&thread);
-            dt = &thread;
+            thread.event_dispatcher().post_event(*this);
         }
-    }
-
-    if ((dt == nullptr) || !dt->event_dispatcher().post_event(*this))
-    {
-        destroy_event();
     }
 }
 

@@ -206,7 +206,11 @@ namespace areg {
         , NetSocketTimeout     = 33    //!< SO_SNDTIMEO in ms (format: net::SERVICE::TRANSPORT::timeout).
         , NetThreadCache       = 34    //!< The size of thread cache for networking in kilobytes (format: net::SERVICE::TRANSPORT::cache).
 
-        , AnyKey               = 35    //!< Indicates any key type.
+        , QueueCapacity        = 35    //!< Dispatcher event-queue ring capacity (format: config::*::queue::capacity). 0 = QUEUE_DEFAULT_RING_CAPACITY.
+        , QueueWaitTimeout     = 36    //!< Dispatcher lossless full-ring block timeout in ms (format: config::*::queue::timeout). 0 = QUEUE_DEFAULT_FULL_WAIT_MS.
+        , QueueDropOnFull      = 37    //!< Dispatcher full-ring policy (format: config::*::queue::drop). false (default) = lossless block, true = drop-newest.
+
+        , AnyKey               = 38    //!< Indicates any key type.
     };
 
     /**
@@ -257,7 +261,11 @@ namespace areg {
             , {"net"    , "*"   , "*"       , "timeout"         }   //! 33  , SO_SNDTIMEO in milliseconds (0 = use compile-time default SOCKET_SEND_TIMEOUT_MS).
             , {"net"    , "*"   , "*"       , "cache"           }   //! 34  , The thread cache size in network communication (0 = default THREAD_CACHE_SIZE (128KB)).
 
-            , {"*"      , "*"   , "*"       , "*"               }   //! 35  , Indicates any key type (AnyKey sentinel -- keep at index 31 for compatibility).
+            , {"config" , "*"   , "queue"   , "capacity"        }   //! 35  , Dispatcher event-queue ring capacity (0 = QUEUE_DEFAULT_RING_CAPACITY).
+            , {"config" , "*"   , "queue"   , "timeout"         }   //! 36  , Dispatcher lossless full-ring block timeout in ms (0 = QUEUE_DEFAULT_FULL_WAIT_MS).
+            , {"config" , "*"   , "queue"   , "drop"            }   //! 37  , Dispatcher full-ring policy (false = lossless block, true = drop-newest).
+
+            , {"*"      , "*"   , "*"       , "*"               }   //! 38  , Indicates any key type (AnyKey sentinel -- keep last).
 
     };
 
@@ -433,6 +441,21 @@ inline constexpr const areg::ConfigKey& net_socket_timeout() noexcept
 inline constexpr const areg::ConfigKey& net_thread_cache() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::NetThreadCache)];
+}
+
+inline constexpr const areg::ConfigKey& queue_capacity() noexcept
+{
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::QueueCapacity)];
+}
+
+inline constexpr const areg::ConfigKey& queue_wait_timeout() noexcept
+{
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::QueueWaitTimeout)];
+}
+
+inline constexpr const areg::ConfigKey& queue_drop_on_full() noexcept
+{
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::QueueDropOnFull)];
 }
 
 } // namespace areg

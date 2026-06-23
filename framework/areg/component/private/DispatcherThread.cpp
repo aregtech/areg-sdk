@@ -74,7 +74,7 @@ protected:
     bool unregister_event_consumer( const uint32_t whichClass, EventConsumer & whichConsumer ) final;
     int32_t  remove_consumer( EventConsumer & whichConsumer ) final;
     bool has_registered_consumer( const uint32_t whichClass ) const final;
-    [[nodiscard]] bool post_event( Event & eventElem ) final;
+    bool post_event( Event & eventElem ) final;
     bool on_thread_registered( Thread * threadObj ) final;
     [[nodiscard]] bool on_pre_run() final;
     void on_run() final;
