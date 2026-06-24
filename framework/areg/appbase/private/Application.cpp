@@ -81,7 +81,12 @@ constexpr areg::ConfigProperty _defaultLogScopesConfig[]
 //////////////////////////////////////////////////////////////////////////
 // Constants and types
 //////////////////////////////////////////////////////////////////////////
-Application Application::_theApplication;
+
+Application & Application::instance()
+{
+    static Application _theApplication;
+    return _theApplication;
+}
 
 Application::Application()
     : mAppState     ( areg::AppState::Stopped )

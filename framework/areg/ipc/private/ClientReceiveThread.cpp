@@ -62,25 +62,23 @@ bool ClientReceiveThread::run_dispatcher()
         mHandshakeMsg.invalidate();
     }
 
-    SyncEvent* events[2] { &mEventExit, &mEventQueue };
     MessageEnvelope msgReceived;
-    int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
+    bool isExit{ false };
 
     constexpr uint32_t DRAIN_LIMIT{ areg::DEFAULT_DRAIN_LIMIT };
     uint32_t drainCount{ 0u };
 
-    do
+    for ( ;; )
     {
-        whichEvent = drainCount == 0u ? SyncEvent::wait_any(events, 2, areg::DO_NOT_WAIT) : SyncEvent::WAIT_ANY_TIMEOUT;
-        if ( whichEvent == SyncEvent::WAIT_ANY_TIMEOUT )
+        // Poll the queue only between drain bursts; otherwise keep servicing the socket.
+        const bool hasControl{ (drainCount == 0u) && mExternalEvents.has_pending() };
+        if ( !hasControl )
         {
-            whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue); // escape quit
             int32_t sizeReceive = mConnection.receive_message( msgReceived );
             if ( sizeReceive <= 0 )
             {
                 mRemoteService.failed_receive_message( mConnection.socket() );
-                whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
-                drainCount = 0u;
+                break;  // receive failure: stop the loop with isExit == false
             }
             else
             {
@@ -99,25 +97,25 @@ bool ClientReceiveThread::run_dispatcher()
         }
         else
         {
-            if (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue))
+            Event eventElem{ pick_event() };
+            if ( eventElem.is_exit_prio() )
             {
-                Event eventElem{ pick_event() };
-                if (eventElem.is_exit_prio())
-                    whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
+                isExit = true;
+                break;
             }
+
             drainCount = 0;
         }
-
-    } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue));
+    }
 
     ready_for_events(false);
     remove_all_events( );
 
     LOG_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]"
                 , name().as_string()
-                , whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) ? "SUCCESS" : "FAILURE");
+                , isExit ? "SUCCESS" : "FAILURE");
 
-    return (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
+    return isExit;
 }
 
 } // namespace areg

@@ -168,14 +168,14 @@ Measured on **mobile-class consumer hardware**, full stack active – data seria
 
 | Platform       | CPU Type         | ~3 MB, GB/s              | ~0.5 KB, msg/s            |
 |----------------|------------------|--------------------------|---------------------------|
-| Linux Ubuntu ¹ | i7-13700H (DDR4) | ~6.0 sust. / ~7.0 burst  | ~1.5M sust. / ~2.0M burst |
-| macOS native ² | M3 Pro (LPDDR5)  | ~6.7–7.0                 | ~2.5M                     |
-| Windows 11 ³   | i7-13700H (DDR4) | ~2.5 sust. / ~2.7 burst  | ~1.1M sust. / ~1.6M burst |
+| Linux Ubuntu ¹ | i7-13700H (DDR4) | ~6.0 sust. / ~8.0 peak   | ~2.0M sust. / ~2.5M peak  |
+| macOS native ² | M3 Pro (LPDDR5)  | ~6.5 sust. / –7.0 peak   | ~2.5M sust. / ~3.0M peak  |
+| Windows 11 ³   | i7-13700H (DDR4) | ~2.2 sust. / ~3.0 peak   | ~1.8M sust. / ~2.5M peak  |
 | WSL2 Ubuntu ⁴  | i7-13700H (DDR4) | ~4.0–4.5                 | ~1.5M                     |
 
-¹ Ubuntu 26.04, native SSD. Burst = first 30 s; sustained = 5+ min.  
+¹ Ubuntu 26.04, `Performance` power mode. Peak = best short-run reading measured this round; sustained = prior 5+ min measurement.  
 ² No network tuning. M4 reached up to 3.0M msg/s.  
-³ Stable dispatch ~1.1M msg/s; above ~1.6M the dispatch thread becomes the bottleneck.  
+³ Updated peak reading; stable dispatch remains ~1.1M msg/s – above that, the dispatch thread becomes the bottleneck.  
 ⁴ With [network tuning](./docs/wiki/07d-troubleshooting-network-tunning.md), up to ~5.0–5.6 GB/s.
 
 ### Latency – TCP `localhost`, full stack, 204-byte messages
@@ -184,13 +184,13 @@ Timestamps span the full call path: before serialization (sender) to after deser
 
 | Platform       | CPU               | OWT Min     | OWT P50      | RTT Min     | RTT P50    |
 |----------------|-------------------|-------------|--------------|-------------|------------|
-| Linux Ubuntu ¹ | i7-13700H (DDR4)  | **14.8 μs** | **~16.9 μs** | **29.8 μs** | **~32 μs** |
+| Linux Ubuntu ¹ | i7-13700H (DDR4)  | **12.0 μs** | **~13.8 μs** | **23.5 μs** | **~25.7 μs** |
 | macOS M3 Pro   | Apple M3 (LPDDR5) | 21.6 μs     | 31.4 μs      | 46.0 μs     | 62.5 μs    |
 | Windows 11     | i7-13700H (DDR4)  | 32.5 μs     | 40.3 μs      | 64.0 μs     | 82.5 μs    |
 
-¹ Ubuntu 26.04, **Balanced** power mode; **Performance** mode drops OWT Min to ~12 μs (~3 μs / ~20% lower).
+¹ Ubuntu 26.04, `Performance` power mode.
 
-For comparison: **gRPC C++ sequential RTT ~116–167 μs** over Unix domain socket – 3.6× higher, despite fewer hops and no service dispatch ([MPI-HD, F. Werner, 2021](https://www.mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc/)). Latency is payload-insensitive up to 4 KB – Min rises only 3 μs across a 30× size increase; framework overhead dominates.
+For comparison: **gRPC C++ sequential RTT ~116–167 μs** over Unix domain socket – despite fewer hops and no service dispatch ([MPI-HD, F. Werner, 2021](https://www.mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc/)). Latency is payload-insensitive up to 4 KB – Min rises only 1.8 μs across a 20× size increase; framework overhead dominates.
 
 **Real-world fit:** covers the software pipeline layer of scientific imaging (laser microscopy, X-ray, electron microscopy) and industrial machine vision on a standard laptop.
 
@@ -320,7 +320,7 @@ cmake --build build -j20
 2. **[02_minimalipc](examples/02_minimalipc/)** – IPC: the same components from `01_minimalrpc` running in separate processes via `mtrouter`
 3. **[03_helloservice](examples/03_helloservice/)** – three projects showing one thread → separate threads → separate processes
 4. **[16_pubmesh](examples/16_pubmesh/)** – Service mesh: multiple local and public services discovering each other automatically
-5. **[23_pubdatarate](examples/23_pubdatarate/)** – Platform-dependent high-throughput benchmark: ~7.0 GB/s and ~2.5M+ msg/s on `localhost`
+5. **[23_pubdatarate](examples/23_pubdatarate/)** – Platform-dependent high-throughput benchmark: ~8.0 GB/s and ~2.5M+ msg/s on `localhost`
 6. **[30_publatency](examples/30_publatency/)** – Full-stack latency benchmark: RTT and OWT across payload sizes, all platforms
 7. **[More Examples](examples/README.md)** – Advanced patterns and features
 
@@ -442,7 +442,7 @@ moving between thread, process, and network deployment.
 
 **Why Areg SDK:** Imaging pipelines – laser microscopy, X-ray, electron microscopy,
 machine vision – move continuous multi-megabyte frames between acquisition, processing,
-and storage processes. At **2.0–7.0 GB/s** full-stack IPC on a standard laptop CPU, Areg SDK
+and storage processes. At **2.0–8.0 GB/s** full-stack IPC on a standard laptop CPU, Areg SDK
 covers the software transport layer for virtually every such pipeline without custom
 networking code or stripped-down benchmarks. Few service-oriented C++ frameworks
 reach this throughput with full service semantics active.

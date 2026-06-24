@@ -915,11 +915,34 @@ public:
     uint32_t buffer_block_size(const String& whichModule = areg::EmptyStringA) noexcept;
 
     /**
-     * \brief   Returns the default message queue size for message queues.
+     * \brief   Returns the dispatcher event-queue ring capacity (config::MODULE::queue::capacity).
+     *          Lookup order: module-specific entry --> wildcard "*" entry --> compile-time default.
+     *          Falls back to areg::QUEUE_DEFAULT_RING_CAPACITY when the key is absent or zero.
      *
      * \param   whichModule     The module name or '*' for generic settings.
      **/
-    uint32_t message_queue_size(const String& whichModule = areg::EmptyStringA) noexcept;
+    uint32_t queue_capacity(const String& whichModule = areg::EmptyStringA) noexcept;
+
+    /**
+     * \brief   Returns the dispatcher lossless full-ring block timeout in milliseconds
+     *          (config::MODULE::queue::timeout).
+     *          Lookup order: module-specific entry --> wildcard "*" entry --> compile-time default.
+     *          Falls back to areg::QUEUE_DEFAULT_FULL_WAIT_MS when the key is absent or zero.
+     *
+     * \param   whichModule     The module name or '*' for generic settings.
+     **/
+    uint32_t queue_wait_timeout(const String& whichModule = areg::EmptyStringA) noexcept;
+
+    /**
+     * \brief   Returns the dispatcher full-ring policy (config::MODULE::queue::drop).
+     *          false (default) -- lossless: the producer blocks up to queue_wait_timeout()
+     *          for a free slot. true -- drop-newest: the incoming event is rejected when the
+     *          ring is full, so the producer never blocks (best-effort / latest-value streams).
+     *          Lookup order: module-specific entry --> wildcard "*" entry --> compile-time default (false).
+     *
+     * \param   whichModule     The module name; empty uses the current process module.
+     **/
+    bool queue_drop_on_full(const String& whichModule = areg::EmptyStringA) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables

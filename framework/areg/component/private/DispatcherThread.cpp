@@ -74,7 +74,7 @@ protected:
     bool unregister_event_consumer( const uint32_t whichClass, EventConsumer & whichConsumer ) final;
     int32_t  remove_consumer( EventConsumer & whichConsumer ) final;
     bool has_registered_consumer( const uint32_t whichClass ) const final;
-    [[nodiscard]] bool post_event( Event & eventElem ) final;
+    bool post_event( Event & eventElem ) final;
     bool on_thread_registered( Thread * threadObj ) final;
     [[nodiscard]] bool on_pre_run() final;
     void on_run() final;
@@ -108,7 +108,7 @@ AREG_IMPLEMENT_RUNTIME(NullDispatcherThread, DispatcherThread)
 // NullDispatcherThread class Constructor 
 //////////////////////////////////////////////////////////////////////////
 inline NullDispatcherThread::NullDispatcherThread()
-    : DispatcherThread( NullDispatcherName, areg::DEFAULT_STACK_SIZE, areg::IGNORE_VALUE )
+    : DispatcherThread( areg::NullTag{}, NullDispatcherName )
 {}
 
 //////////////////////////////////////////////////////////////////////////
@@ -187,11 +187,17 @@ DispatcherThread & DispatcherThread::_null_dispather_thread() noexcept
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread class Constructor / Destructor.
 //////////////////////////////////////////////////////////////////////////
-DispatcherThread::DispatcherThread (const String & threadName, uint32_t stackSizeKb, uint32_t maxQeueue)
+DispatcherThread::DispatcherThread (const String & threadName, uint32_t stackSizeKb, uint32_t maxQeueue, areg::Bool dropOnFull /*= areg::Bool::Undefined*/, uint32_t waitMs /*= areg::WAIT_INFINITE*/)
     : Thread          ( static_cast<ThreadConsumer &>(self()), threadName, stackSizeKb )
-    , EventDispatcher ( threadName, maxQeueue )
-
+    , EventDispatcher ( threadName, maxQeueue, dropOnFull, waitMs )
     , mEventStarted   ( true, false )
+{
+}
+
+DispatcherThread::DispatcherThread( areg::NullTag, const String & threadName ) noexcept
+    : Thread          ( areg::NullTag{}, static_cast<ThreadConsumer &>(self()), threadName )
+    , EventDispatcher ( areg::NullTag{} )
+    , mEventStarted   ( areg::NullTag{} )
 {
 }
 

@@ -290,7 +290,6 @@ protected:
      * \param   eventElem       Event object to post.
      * \return  Returns true.
      **/
-    [[nodiscard]]
     bool post_event( Event & eventElem ) final;
 
 /************************************************************************/

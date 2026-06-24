@@ -21,6 +21,7 @@
 #include "areg/appbase/AppDefs.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/Process.hpp"
+#include "areg/component/EventDefs.hpp"     // QUEUE_DEFAULT_RING_CAPACITY / QUEUE_DEFAULT_FULL_WAIT_MS
 #include "areg/persist/ConfigListener.hpp"
 
 namespace
@@ -986,12 +987,49 @@ uint32_t ConfigManager::buffer_block_size(const String& whichModule /*= areg::Em
     return (prop != nullptr ? prop->value().as_integer() : 0u);
 }
 
-uint32_t ConfigManager::message_queue_size(const String& whichModule /*= areg::EmptyStringA*/) noexcept
+uint32_t ConfigManager::queue_capacity(const String& whichModule /*= areg::EmptyStringA*/) noexcept
 {
-    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::DefaultMessageQueue };
-    constexpr const areg::ConfigKey& key{ areg::message_queue_size() };
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::QueueCapacity };
+    constexpr const areg::ConfigKey& key{ areg::queue_capacity() };
     const Property* prop = _get_property(mReadonlyProperties, key.section, whichModule.is_empty() ? areg::SYNTAX_ALL_MODULES : whichModule, key.property, key.position, confKey, true);
-    return ( prop != nullptr ? prop->value().as_integer() : std::numeric_limits<uint32_t>::max() );
+    const uint32_t value = (prop != nullptr ? static_cast<uint32_t>(prop->value().as_integer()) : 0u);
+    return (value != 0u ? value : areg::QUEUE_DEFAULT_RING_CAPACITY);
+}
+
+uint32_t ConfigManager::queue_wait_timeout(const String& whichModule /*= areg::EmptyStringA*/) noexcept
+{
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::QueueWaitTimeout };
+    constexpr const areg::ConfigKey& key{ areg::queue_wait_timeout() };
+    const Property* prop = _get_property(mReadonlyProperties, key.section, whichModule.is_empty() ? areg::SYNTAX_ALL_MODULES : whichModule, key.property, key.position, confKey, true);
+    const uint32_t value = (prop != nullptr ? static_cast<uint32_t>(prop->value().as_integer()) : 0u);
+    return (value != 0u ? value : areg::QUEUE_DEFAULT_FULL_WAIT_MS);
+}
+
+bool ConfigManager::queue_drop_on_full(const String& whichModule /*= areg::EmptyStringA*/) const noexcept
+{
+    Lock lock(mLock);
+
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::QueueDropOnFull };
+    constexpr const areg::ConfigKey& key{ areg::queue_drop_on_full() };
+
+    // Step 1: module-specific entry (caller-supplied or current process).
+    const String& mod{ whichModule.is_empty() ? mModule : whichModule };
+    if (!mod.is_empty())
+    {
+        const Property* prop = _get_property(mWritableProperties, key.section, mod, key.property, key.position, confKey, true);
+        if (prop != nullptr)
+            return prop->value().as_boolean();
+    }
+
+    // Step 2: wildcard "*" entry.
+    {
+        const Property* prop = _get_property(mReadonlyProperties, key.section, String(areg::SYNTAX_ALL_MODULES), key.property, key.position, confKey, false);
+        if (prop != nullptr)
+            return prop->value().as_boolean();
+    }
+
+    // Step 3: compile-time default -- lossless (block, never drop).
+    return false;
 }
 
 uint32_t ConfigManager::network_sndbuf(const String& module /*= areg::EmptyStringA*/, const String& connectType /*= areg::EmptyStringA*/) const noexcept

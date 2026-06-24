@@ -48,7 +48,7 @@ constexpr uint32_t     CLIENT_EVENT_QUEUE_SIZE { 1024u };
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD_EX2( "TestServiceConsumerThread", areg::WATCHDOG_IGNORE, areg::DEFAULT_STACK_SIZE, CLIENT_EVENT_QUEUE_SIZE )
+    BEGIN_REGISTER_THREAD_EX2( "TestServiceConsumerThread", areg::WATCHDOG_IGNORE, areg::DEFAULT_STACK_SIZE, CLIENT_EVENT_QUEUE_SIZE, areg::Bool::Undefined, areg::WAIT_INFINITE )
         // register the latency consumer component
         BEGIN_REGISTER_COMPONENT( _serviceClient.as_string(), LatencyConsumer )
             REGISTER_DEPENDENCY( Latency::LATENCY_SERVICE_ROLE )

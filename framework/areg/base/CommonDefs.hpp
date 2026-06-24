@@ -71,6 +71,16 @@ namespace areg {
     };
 
     /**
+     * \brief   Indicates the boolean state assigned of persisted.
+     **/
+    enum class Bool     : int8_t
+    {
+          Undefined = -1
+        , False     = 0
+        , True      = 1
+    };
+
+    /**
      * \brief   The success return code.
      **/
     constexpr int32_t       RETURNED_OK             { 0 };
@@ -553,6 +563,11 @@ namespace areg {
      * \brief   The ID of first valid remote cookie.
      **/
     constexpr ITEM_ID   COOKIE_REMOTE_SERVICE       { static_cast<ITEM_ID>(areg::Cookie::FirstRemote) };
+
+    /**
+     * \brief   Sentinel tag for zero-allocation ("null") construction.
+     **/
+    struct NullTag {};
 
 } // namespace areg
 

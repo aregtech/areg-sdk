@@ -111,7 +111,7 @@
     <ClCompile Include="areg\component\private\macos\TimerManagerMacOS.cpp" />
     <ClCompile Include="areg\component\private\macos\TimerPosixMacOS.cpp" />
     <ClCompile Include="areg\component\private\macos\WatchdogManagerMacOS.cpp" />
-    <ClCompile Include="areg\component\private\MpscEventQueue.cpp" />
+    <ClCompile Include="areg\component\private\EventQueue.cpp" />
     <ClCompile Include="areg\component\private\ServiceManagerEventProcessor.cpp" />
     <ClCompile Include="areg\component\private\posix\TimerBasePosix.cpp" />
     <ClCompile Include="areg\component\private\posix\TimerManagerPosix.cpp" />
@@ -139,7 +139,6 @@
     <ClCompile Include="areg\component\private\EventConsumerMap.cpp" />
     <ClCompile Include="areg\component\private\EventDispatcher.cpp" />
     <ClCompile Include="areg\component\private\EventDispatcherBase.cpp" />
-    <ClCompile Include="areg\component\private\EventQueue.cpp" />
     <ClCompile Include="areg\component\private\ExitEvent.cpp" />
     <ClCompile Include="areg\component\private\NotificationEvent.cpp" />
     <ClCompile Include="areg\component\private\ProxyAddress.cpp" />
@@ -230,7 +229,7 @@
     <ClInclude Include="areg\base\WideString.hpp" />
     <ClInclude Include="areg\component\EventDefs.hpp" />
     <ClInclude Include="areg\component\private\EventStack.hpp" />
-    <ClInclude Include="areg\component\private\MpscEventQueue.hpp" />
+    <ClInclude Include="areg\component\private\EventQueue.hpp" />
     <ClInclude Include="areg\ipc\ConnectionConsumer.hpp" />
     <ClInclude Include="areg\ipc\DataRateStats.hpp" />
     <ClInclude Include="areg\ipc\RegistrationProvider.hpp" />
@@ -258,7 +257,6 @@
     <ClInclude Include="areg\component\private\EventConsumerMap.hpp" />
     <ClInclude Include="areg\component\EventDispatcher.hpp" />
     <ClInclude Include="areg\component\private\EventDispatcherBase.hpp" />
-    <ClInclude Include="areg\component\private\EventQueue.hpp" />
     <ClInclude Include="areg\base\File.hpp" />
     <ClInclude Include="areg\base\FileBase.hpp" />
     <ClInclude Include="areg\base\FileBuffer.hpp" />

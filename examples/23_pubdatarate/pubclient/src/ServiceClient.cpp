@@ -26,8 +26,7 @@ ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::Component
     : areg::Component       ( entry, owner )
     , LargeDataConsumerBase ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
     , areg::TimerConsumer   ( )
-
-    , mTimer                    ( static_cast<areg::TimerConsumer&>(self()), TIMER_NAME )
+    , mTimer                    ( static_cast<areg::TimerConsumer&>(self()), TIMER_NAME, areg::INVALID_TIMEOUT, areg::Timer::IGNORE_TIMER_QUEUE, areg::EventPriority::HighPrio )
     , mReceivedBlocks           ( 0u )
     , mLastReceivedBlocks       ( 0u )
     , mCompleteFrames           ( 0u )

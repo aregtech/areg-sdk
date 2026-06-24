@@ -109,14 +109,21 @@ public:
      * \param   stackSizeKb         The stack size of thread in kilobytes (1 KB = 1024 Bytes). Pass
      *                              `areg::DEFAULT_STACK_SIZE` (0) to ignore changing stack size
      *                              and use system default stack size.
-     * \param   maxQeueue           The maximum number of events in the internal event queue. Pass
-     *                              areg::IGNORE_VALUE to use default value set in configuration
-     *                              or ignore the parameter if not configured.
+     * \param   maxQeueue           The event-queue ring capacity. Pass areg::IGNORE_VALUE (0) to read
+     *                              the value from configuration, falling back to the built-in default.
+     * \param   dropOnFull          The full-ring policy. areg::Bool::True drops the incoming event when
+     *                              the queue is full; areg::Bool::False blocks the producer up to
+     *                              \a waitMs; areg::Bool::Undefined reads the value from configuration.
+     * \param   waitMs              The lossless full-ring block timeout in milliseconds (used only when
+     *                              the resolved policy is "block"). 0 means do not wait; areg::WAIT_INFINITE
+     *                              reads the value from configuration.
      **/
     explicit ComponentThread( const String & threadName
                             , uint32_t watchdogTimeout  = areg::WATCHDOG_IGNORE
                             , uint32_t stackSizeKb      = areg::DEFAULT_STACK_SIZE
-                            , uint32_t maxQeueue        = areg::IGNORE_VALUE);
+                            , uint32_t maxQeueue        = areg::IGNORE_VALUE
+                            , areg::Bool dropOnFull      = areg::Bool::Undefined
+                            , uint32_t waitMs            = areg::WAIT_INFINITE );
 
     virtual ~ComponentThread() = default;
 
@@ -184,7 +191,6 @@ public:
      * \param   eventElem       The event object to push in the queue.
      * \return  Returns true if successfully pushed event in the queue.
      **/
-    [[nodiscard]]
     bool post_event( Event & eventElem ) final;
 
 //////////////////////////////////////////////////////////////////////////

@@ -146,19 +146,16 @@ bool ServerReceiveThread::run_dispatcher()
     areg::set_receive_mode(areg::ReceiveMode::MultiCache);
 
     ready_for_events(true);
-    int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
+    bool isExit{ false };   // stays false if server_listen() fails (failure return); set on a clean ExitEvent
     if ( mConnection.server_listen( areg::MAXIMUM_LISTEN_QUEUE_SIZE) )
     {
-        SyncEvent* events[2] { &mEventExit, &mEventQueue };
         areg::MessageEnvelope msgReceived;
         areg::SocketAddress addrDrain;
         uint32_t retryCount = 0;
         do
         {
-            whichEvent = SyncEvent::wait_any(events, 2, areg::DO_NOT_WAIT);
-            if ( whichEvent == SyncEvent::WAIT_ANY_TIMEOUT )
+            if ( !mExternalEvents.has_pending() )
             {
-                whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue); // escape quit
                 areg::SocketAddress addrAccepted;
                 SOCKETHANDLE hSocket = mConnection.wait_connection(addrAccepted);
 
@@ -170,14 +167,14 @@ bool ServerReceiveThread::run_dispatcher()
                         areg::socket_close(hSocket);
                     }
 
-                    whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
+                    isExit = true;
                 }
                 else if (hSocket == areg::FailedSocketHandle)
                 {
                     if (++retryCount >= RETRY_COUNT)
                     {
                         mConnectHandler.connection_failure();
-                        whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
+                        isExit = true;
                     }
 
                     DEBUG_LOG_WARN("Failed selecting server socket, going to retry [ %d ] times before restart.", (RETRY_COUNT - retryCount));
@@ -216,22 +213,19 @@ bool ServerReceiveThread::run_dispatcher()
             }
             else
             {
-                if (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue))
-                {
-                    Event eventElem{ pick_event() };
-                    if (eventElem.is_exit_prio())
-                        whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
-                }
+                Event eventElem{ pick_event() };
+                if ( eventElem.is_exit_prio() )
+                    isExit = true;
             }
 
-        } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue));
+        } while ( !isExit );
     }
 
     ready_for_events(false);
     remove_all_events();
 
     DEBUG_LOG_DBG("Dispatcher [ %s ] completed job and stopping running.", mDispatcherName.as_string());
-    return (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
+    return isExit;
 }
 
 } // namespace areg::ext

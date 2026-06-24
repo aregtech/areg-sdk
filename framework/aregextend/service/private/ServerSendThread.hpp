@@ -134,7 +134,6 @@ protected:
      * \param   eventElem       Event object to post
      * \return  In this class it always returns true.
      **/
-    [[nodiscard]]
     bool post_event( Event & eventElem ) final;
 
 private:
@@ -167,6 +166,8 @@ private:
     //!< Reused scratch: per-slot target cookies and resolved socket handles (POD; off the stack).
     std::array<ITEM_ID, areg::DEFAULT_DRAIN_LIMIT>       mTargets;
     std::array<SOCKETHANDLE, areg::DEFAULT_DRAIN_LIMIT>  mSockets;
+    //!< Reusable single-window drain buffer (pop_events); constructed once.
+    std::array<areg::Event, areg::DEFAULT_DRAIN_LIMIT>   mEvents;
     /**
      * \brief   Atomic stats (bytes + messages sent + enabled flag).
      **/

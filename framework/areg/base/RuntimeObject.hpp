@@ -28,6 +28,8 @@
 #include "areg/base/String.hpp"
 #include "areg/base/RuntimeClassID.hpp"
 
+#include <new>
+
 /************************************************************************/
 // Runtime object MACRO definition. Begin
 /************************************************************************/
@@ -243,6 +245,16 @@ public:
 
     void * operator new []( size_t size );
 
+    /**
+     * \brief   Over-aligned allocation. Required so types with extended alignment
+     *          (e.g. cache-line-aligned dispatcher objects) are actually allocated
+     *          aligned; without it the class operator new(size) would hide the global
+     *          aligned operator and hand back under-aligned memory.
+     **/
+    void * operator new( size_t size, std::align_val_t align );
+
+    void * operator new []( size_t size, std::align_val_t align );
+
     void * operator new( size_t /*size*/, void * ptr );
 
     void * operator new []( size_t /*size*/, void * ptr );
@@ -266,6 +278,13 @@ public:
     void operator delete( void * ptr, size_t size );
 
     /**
+     * \brief   Over-aligned deallocation, matching the aligned operator new above.
+     **/
+    void operator delete( void * ptr, std::align_val_t align );
+
+    void operator delete( void * ptr, size_t size, std::align_val_t align );
+
+    /**
      * \brief   Debug delete operator matching the debug new signature.
      **/
     void operator delete( void * ptr, int32_t, const char *, int32_t );
@@ -273,6 +292,10 @@ public:
     void operator delete []( void * ptr );
 
     void operator delete []( void * ptr, size_t /*size*/ );
+
+    void operator delete []( void * ptr, std::align_val_t align );
+
+    void operator delete []( void * ptr, size_t size, std::align_val_t align );
 
     /**
      * \brief   Debug array delete operator matching the debug array new signature.

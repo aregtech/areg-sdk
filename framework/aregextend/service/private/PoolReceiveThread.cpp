@@ -112,31 +112,25 @@ bool PoolReceiveThread::run_dispatcher()
     ready_for_events(true);
 
     areg::MessageEnvelope msgReceived;
-    int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) };
-    SyncEvent* events[2] { &mEventExit, &mEventQueue };
+    bool isExit{ false };   // set on a clean ExitEvent or a fatal multiplexer wait failure
 
     do
     {
         _process_pending_sockets();
 
-        whichEvent = SyncEvent::wait_any(events, 2, areg::DO_NOT_WAIT);
-        if ( whichEvent != SyncEvent::WAIT_ANY_TIMEOUT )
+        if ( mExternalEvents.has_pending() )
         {
-            if (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue))
-            {
-                Event eventElem{ pick_event() };
-                if (eventElem.is_exit_prio())
-                    whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
-            }
+            Event eventElem{ pick_event() };
+            if ( eventElem.is_exit_prio() )
+                isExit = true;
             continue;
         }
 
-        whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue);
         const SOCKETHANDLE hReady = mMux.wait();
 
         if ( hReady == areg::FailedSocketHandle )
         {
-            whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
+            isExit = true;
         }
         else if ( hReady == areg::InvalidSocketHandle )
         {
@@ -232,14 +226,14 @@ bool PoolReceiveThread::run_dispatcher()
 #endif   // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
         }
 
-    } while ( whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) );
+    } while ( !isExit );
 
     ready_for_events(false);
     remove_all_events();
 
     DEBUG_LOG_DBG("Pool receive thread [ %s ] stopped", name().as_string());
 
-    return (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
+    return isExit;
 }
 
 } // namespace areg::ext

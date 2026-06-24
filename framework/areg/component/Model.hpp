@@ -324,8 +324,17 @@ public:
      *                              disables watchdog.
      * \param   stackSizeKb         Stack size in kilobytes; 0 (DEFAULT_STACK_SIZE) uses system
      *                              default.
-     * \param   maxQueue            Maximum message queue size; IGNORE_VALUE uses configured or
-     *                              default value.
+     * \param   maxQueue            Event-queue ring capacity; areg::IGNORE_VALUE (0) reads the value
+     *                              from configuration, falling back to the built-in default.
+     * \param   queueDropEvent      Indicates whether a new event should be dropped if the message queue
+     *                              is full or the producer should wait until a free slot appears. If
+     *                              `True`, drops the event when the message queue is full. If `False`
+     *                              and the message queue is full, the producer waits until a free slot
+     *                              is opened. If `Undefined`, reads the value from configuration or uses
+     *                              the default value.
+     * \param   queueTimeout        The waiting time for the queue free slot when the message queue is full.
+     *                              Meaningful only if `queueDropEvent` is `False`. areg::WAIT_INFINITE reads
+     *                              the value from configuration.
      **/
     WorkerThreadEntry( const String& masterThreadName
                      , const String& workerThreadName
@@ -333,7 +342,9 @@ public:
                      , const String& compConsumerName
                      , const uint32_t watchdogTimeout   = areg::WATCHDOG_IGNORE
                      , const uint32_t stackSizeKb       = areg::DEFAULT_STACK_SIZE
-                     , const uint32_t maxQueue          = areg::IGNORE_VALUE);
+                     , const uint32_t maxQueue          = areg::IGNORE_VALUE
+                     , const areg::Bool queueDropEvent  = areg::Bool::Undefined
+                     , const uint32_t queueTimeout      = areg::WAIT_INFINITE );
 
 //////////////////////////////////////////////////////////////////////////
 // areg::WorkerThreadEntry class, Operators
@@ -383,6 +394,16 @@ public:
      * \brief   The maximum size of message queue for the thread
      **/
     uint32_t    mMaxQueue;
+    /**
+     * \brief   The flag indicating whether a new event message should be dropped or the producer
+     *          should wait for a free slot if the message queue is full.
+     **/
+    areg::Bool  mDropOnFull;
+    /**
+     * \brief   The waiting time in milliseconds for the free slot if the queue is full.
+     *          Meaningful only if `mDropOnFull` is `False`. Otherwise, ignored.
+     **/
+    uint32_t    mQueueTimeout;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1152,11 +1173,20 @@ public:
      * \param   maxQueue            The maximum size of message queue for the thread. Pass
      *                              areg::IGNORE_VALUE to use default value set in
      *                              configuration or ignore the parameter if not configured.
+     * \param   queueDropEvent          Indicates wether new event should be dropped if message queue
+     *                              is full or wait until free slot appears. If `True`, drops event
+     *                              if message queue is full. If `False` and the message queue is full
+     *                              producer waits for until free slot is opened. If `Undefined`,
+     *                              read data from configuration file or use the default value.
+     * \param   queueTimeout    The waiting time for the queue free slot when the message queue is full.
+     *                              Meaningful only if `queueDropEvent` is `True`. Otherwise, it is ignored.
      **/
     explicit ComponentThreadEntry( const String & threadName
                                  , const uint32_t watchdogTimeout   = areg::WATCHDOG_IGNORE
                                  , const uint32_t stackSizeKb       = areg::DEFAULT_STACK_SIZE
-                                 , const uint32_t maxQueue          = areg::IGNORE_VALUE);
+                                 , const uint32_t maxQueue          = areg::IGNORE_VALUE
+                                 , const areg::Bool queueDropEvent  = areg::Bool::Undefined
+                                 , const uint32_t queueTimeout      = areg::WAIT_INFINITE );
 
     /**
      * \brief   Initializes Thread Entry with given Thread name and given Component List.
@@ -1170,12 +1200,21 @@ public:
      *                              Bytes). Pass `areg::DEFAULT_STACK_SIZE` (0) to ignore
      *                              changing stack size and use system default stack size.
      * \param   maxQueue            The maximum size of message queue for the thread.
+     * \param   queueDropEvent          Indicates wether new event should be dropped if message queue
+     *                              is full or wait until free slot appears. If `True`, drops event
+     *                              if message queue is full. If `False` and the message queue is full
+     *                              producer waits for until free slot is opened. If `Undefined`,
+     *                              read data from configuration file or use the default value.
+     * \param   queueTimeout        The waiting time for the queue free slot when the message queue is full.
+     *                              Meaningful only if `queueDropEvent` is `True`. Otherwise, it is ignored.
      **/
     ComponentThreadEntry( const String & threadName
                         , const areg::ComponentList & componentList
-                        , const uint32_t watchdogTimeout= areg::WATCHDOG_IGNORE
-                        , const uint32_t stackSizeKb    = areg::DEFAULT_STACK_SIZE
-                        , const uint32_t maxQueue       = areg::IGNORE_VALUE );
+                        , const uint32_t watchdogTimeout    = areg::WATCHDOG_IGNORE
+                        , const uint32_t stackSizeKb        = areg::DEFAULT_STACK_SIZE
+                        , const uint32_t maxQueue           = areg::IGNORE_VALUE
+                        , const areg::Bool queueDropEvent   = areg::Bool::Undefined
+                        , const uint32_t queueTimeout       = areg::WAIT_INFINITE );
 
 //////////////////////////////////////////////////////////////////////////
 // areg::ComponentThreadEntry class, Operators
@@ -1339,6 +1378,18 @@ public:
      * \brief   The maximum size of message queue for the thread.
      **/
     uint32_t        mMaxQueue;
+
+    /**
+     * \brief   The flag indicating whether new event message should be dropped or the producer
+     *          should wait for the free slot if message queue is full.
+     */
+    areg::Bool      mDropOnFull;
+
+    /**
+     * \brief   The waiting time in milliseconds for the free slot if queue is full.
+     *          Meaningful only if `mDropOnFull` is `True`. Otherwise, ignored.
+     **/
+    uint32_t        mQueueTimeout;
 };
 
 //////////////////////////////////////////////////////////////////////////

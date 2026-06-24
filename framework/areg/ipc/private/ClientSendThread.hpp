@@ -118,7 +118,6 @@ protected:
      * \param   eventElem       Event object to post.
      * \return  Returns true.
      **/
-    [[nodiscard]]
     bool post_event( Event & eventElem ) final;
 
 private:
@@ -157,6 +156,11 @@ private:
      * \brief   Reusable continues region of buffers and data size.
      **/
     areg::IoBuffer                  mIoBuffer[areg::DEFAULT_DRAIN_LIMIT];
+    /**
+     * \brief   Reusable batch buffer for the single-window queue drain (pop_events).
+     *          Constructed once; ClientSendThread context only.
+     **/
+    areg::Event                     mEvents[areg::DEFAULT_DRAIN_LIMIT];
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

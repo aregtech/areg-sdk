@@ -286,7 +286,6 @@ private:
      * \param   eventElem       The event to post.
      * \return  Returns true if the event was delivered to its target successfully; false otherwise.
      **/
-    [[nodiscard]]
     bool post_event( Event & eventElem ) final;
 
     /**

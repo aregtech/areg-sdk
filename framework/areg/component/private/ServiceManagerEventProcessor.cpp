@@ -85,7 +85,7 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
 
             mServerList.clear( );
             connectProvider.disconnect_service_host( );
-            mServiceManager.remove_events( false );
+            mServiceManager.remove_all_events( );
             mServiceManager.pulse_exit( );
         }
         break;

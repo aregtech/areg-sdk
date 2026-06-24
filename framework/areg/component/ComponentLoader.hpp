@@ -80,19 +80,21 @@
  * \param   stackSizeKb     The stack size of the thread in kilobytes. 1 KB = 1024 Bytes.
  *                          The value 0 (areg::DEFAULT_STACK_SIZE) ignores to change the stack size,
  *                          and uses system default stack size.
- * \param   queueSize       The queue size of the thread. 0 means unlimited.
+ * \param   queueSize       The queue size of the thread. 0 means event default queue size (areg::QUEUE_DEFAULT_RING_CAPACITY).
+ * \param   dropOnFull      If true, drops event if message queue is full; otherwise, wait until message queue is free.
+ * \param   queueWait       The waiting timeout before the message is dropped if message queue has no free slot.
  **/
-#define BEGIN_REGISTER_THREAD_EX2(thread_name, timeout, stackSizeKb, queueSize)                             \
+#define BEGIN_REGISTER_THREAD_EX2(thread_name, timeout, stackSizeKb, queueSize, dropOnFull, queueWait)      \
         {                                                                                                   \
             /*  Begin registering component thread                                  */                      \
-            areg::ComponentThreadEntry  thrEntry((thread_name), (timeout), (stackSizeKb), queueSize);
+            areg::ComponentThreadEntry  thrEntry((thread_name), (timeout), (stackSizeKb), queueSize, dropOnFull, queueWait);
 
 /**
  * \brief   Register component thread with the watchdog timeout and system default thread stack size.
  *          The watchdog timeout is set if `timeout` is not 0.
  **/
 #define BEGIN_REGISTER_THREAD_EX(thread_name, timeout)                                                      \
-            BEGIN_REGISTER_THREAD_EX2((thread_name), (timeout), areg::DEFAULT_STACK_SIZE, 0);
+            BEGIN_REGISTER_THREAD_EX2((thread_name), (timeout), areg::DEFAULT_STACK_SIZE, 0, areg::Bool::Undefined, areg::WAIT_INFINITE);
 
 /**
  * \brief   Register component thread with no watchdog and system default stack size.
@@ -198,14 +200,17 @@
  *                              The value 0 (areg::DEFAULT_STACK_SIZE) ignores to change the stack size,
  *                              and uses system default stack size.
  **/
-#define REGISTER_WORKER_THREAD_EX2(worker_thread_name, consumer_name, timeout, stackSizeKb)                 \
+#define REGISTER_WORKER_THREAD_EX2(worker_thread_name, consumer_name, timeout, stackSizeKb, dropOnFull, queueWait) \
                 /*  Register component worker thread                                */                      \
                 comEntry.add_worker_thread(   areg::WorkerThreadEntry(comEntry.mThreadName                  \
                                             , (worker_thread_name)                                          \
                                             , comEntry.mRoleName                                            \
                                             , (consumer_name)                                               \
                                             , (timeout)                                                     \
-                                            , (stackSizeKb)) );
+                                            , (stackSizeKb)                                                 \
+                                            , areg::IGNORE_VALUE                                            \
+                                            , (dropOnFull)                                                  \
+                                            , (queueWait)) );
 
 /**
  * \brief   Register worker thread with watchdog timeout and system default stack size.
@@ -214,7 +219,9 @@
             REGISTER_WORKER_THREAD_EX2(   (worker_thread_name)                                              \
                                         , (consumer_name)                                                   \
                                         , (timeout)                                                         \
-                                        , areg::DEFAULT_STACK_SIZE)
+                                        , areg::DEFAULT_STACK_SIZE                                          \
+                                        , areg::Bool::Undefined                                             \
+                                        , areg::WAIT_INFINITE)
 
 /**
  * \brief   Register worker thread with no watchdog and system default stack size.

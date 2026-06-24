@@ -26,11 +26,18 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcher class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-EventDispatcher::EventDispatcher( const String & name, uint32_t maxQeueue )
-    : EventDispatcherBase( name, maxQeueue )
+EventDispatcher::EventDispatcher( const String & name, uint32_t maxQeueue, areg::Bool dropOnFull, uint32_t waitMs )
+    : EventDispatcherBase( name, maxQeueue, dropOnFull, waitMs )
     , ThreadConsumer     (  )
     , EventRouter        (  )
+    , mDispatcherThread  ( nullptr )
+{
+}
 
+EventDispatcher::EventDispatcher( areg::NullTag ) noexcept
+    : EventDispatcherBase( areg::NullTag{} )
+    , ThreadConsumer     (  )
+    , EventRouter        (  )
     , mDispatcherThread  ( nullptr )
 {
 }
@@ -49,8 +56,8 @@ bool EventDispatcher::on_thread_registered( Thread * threadObj )
     ASSERT(mDispatcherThread != nullptr);
 
     EventDispatcherBase::remove_all_events( );
-    EventDispatcherBase::mExitRequested.store(false, std::memory_order_relaxed);
-    return EventDispatcherBase::mEventExit.reset();
+    EventDispatcherBase::mExternalEvents.reset_exit();
+    return true;
 }
 
 void EventDispatcher::on_thread_unregistering()
