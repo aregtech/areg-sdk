@@ -108,7 +108,11 @@ AREG_IMPLEMENT_RUNTIME(NullDispatcherThread, DispatcherThread)
 // NullDispatcherThread class Constructor 
 //////////////////////////////////////////////////////////////////////////
 inline NullDispatcherThread::NullDispatcherThread()
-    : DispatcherThread( NullDispatcherName, areg::DEFAULT_STACK_SIZE, areg::IGNORE_VALUE )
+    : DispatcherThread( NullDispatcherName
+                      , areg::DEFAULT_STACK_SIZE
+                      , areg::QUEUE_DEFAULT_RING_CAPACITY
+                      , areg::Bool::False
+                      , areg::QUEUE_DEFAULT_FULL_WAIT_MS )
 {}
 
 //////////////////////////////////////////////////////////////////////////
