@@ -198,12 +198,12 @@ Tables are sorted best-to-worst by Min (or Avg where Min is skewed by a transpor
 
 ### 4.2 ~1 KB – areg bc1024 (1164 B) vs paper 1 KB (1000 B)
 
-| Framework | Transport | Size | Min | Avg/Mean | P90/P95 | P99 | Conditions |
-|-----------|-----------|------|-----|----------|---------|-----|-----------|
-| **areg-sdk Linux** | TCP bc1024 | 1164 B | **12.5** | **16.8** (Mean) | **29.4** (P95) | 46.3 | Perf. mode, T=0, 2-hop, full stack |
-| NanoMsg | TCP direct | 1000 B | 18.0 | 21.9 (Avg) | 22.3 (P90) | **24.8** | Xeon, T=1000μs, isolated, raw |
-| ZMQ | TCP direct | 1000 B | 22.0 | 27.5 (Avg) | 28.5 (P90) | 31.6 | same |
-| NNG | TCP direct | 1000 B | 24.3 | 34.9 (Avg) | 39.7 (P90) | 48.4 | same |
+| Framework          | Transport  | Size   | Min      | Avg/Mean        | P90/P95        | P99      | Conditions                         |
+|--------------------|------------|--------|----------|-----------------|----------------|----------|------------------------------------|
+| **areg-sdk Linux** | TCP bc1024 | 1164 B | **12.5** | **16.8** (Mean) | **29.4** (P95) | 46.3     | Perf. mode, T=0, 2-hop, full stack |
+| NanoMsg            | TCP direct | 1000 B | 18.0     | 21.9 (Avg)      | 22.3 (P90)     | **24.8** | Xeon, T=1000μs, isolated, raw      |
+| ZMQ                | TCP direct | 1000 B | 22.0     | 27.5 (Avg)      | 28.5 (P90)     | 31.6     | same                               |
+| NNG                | TCP direct | 1000 B | 24.3     | 34.9 (Avg)      | 39.7 (P90)     | 48.4     | same                               |
 
 **areg-sdk wins:** Min (−5.5 μs), Mean vs Avg (−5.1 μs)
 **areg-sdk loses:** P99 (+21.5 μs) – non-isolated, user-space scheduling at continuous send rate

@@ -19,38 +19,32 @@ without a dedicated networking library underneath.
 
 ### Data Rate – Large Payload (~3 MB per message)
 
-| Platform | Peak | Sustained |
-|---|---|---|
-| Linux ¹ | **~8.0 GB/s** | ~6.0 GB/s ² |
-| macOS M3 Pro | – | ~6.7–7.0 GB/s |
-| Windows 11 ³ | **~3.0 GB/s** | ~2.5 GB/s |
-| WSL2 (Win11) ⁴ | – | ~4.0–4.5 GB/s |
+| Platform       | Peak          | Sustained    |
+|----------------|---------------|--------------|
+| Linux ¹        | **~8.0 GB/s** | ~6.5 GB/s ²  |
+| macOS M3 Pro   | ~7.0 GB/s     | ~6.5 GB/s    |
+| Windows 11 ³   | **~3.0 GB/s** | ~2.5 GB/s    |
+| WSL2 (Win11) ⁴ | ~4.5 GB/s     | ~4.0 GB/s    |
 
 ---
 
 ### Message Rate – Very Small Payload (~0.5 KB per message)
 
-| Platform | Peak | Sustained |
-|---|---|---|
-| Linux ¹ | **~2.5M msg/s** | ~2.0M msg/s ² |
-| macOS M3 Pro | – | ~2.5M msg/s |
+| Platform     | Peak            | Sustained     |
+|--------------|-----------------|---------------|
+| Linux ¹      | **~2.5M msg/s** | ~2.0M msg/s ² |
+| macOS M3 Pro | **~3.0M msg/s** | ~2.5M msg/s   |
 | Windows 11 ³ | **~2.5M msg/s** | ~1.8M msg/s ⁵ |
-| WSL2 (Win11) | – | ~1.5M msg/s |
+| WSL2 (Win11) | –               | ~1.5M msg/s   |
 
 All x86 rows: same physical machine, Intel i7-13700H, 32 GB DDR4. macOS: Apple M3 Pro, 32 GB LPDDR5.
 
-¹ Ubuntu 26.04, **Performance** power mode.
-
-² Sustained (5-minute) figure carried over from a prior measurement round taken in
-**Balanced** power mode; not yet re-verified under Performance mode. A re-test is
-recommended to confirm whether sustained throughput improved alongside the peak.
-
-³ Updated peak reading; supersedes the previous burst figures for Windows.
-
+¹ Ubuntu 26.04, **Performance** power mode.  
+² Sustained (5-minute) figure carried over from a measurement round taken in**Balanced** power mode.  
+³ Updated peak reading; supersedes the previous burst figures for Windows.  
 ⁴ Without [network tuning](../../docs/wiki/07d-troubleshooting-network-tunning.md): ~4.0–4.5 GB/s.
-With tuning: ~5.0–5.6 GB/s. See [network tuning guide](../../docs/wiki/07d-troubleshooting-network-tunning.md).
-
-⁵ Windows message rate at ~0.5 KB declines over time: peak → ~1.8M at 2 min (test stopped).
+With tuning: ~5.0–5.6 GB/s. See [network tuning guide](../../docs/wiki/07d-troubleshooting-network-tunning.md).  
+⁵ Windows message rate at ~0.5 KB declines over time: stable → ~1.8M at 2 min (test stopped).
 
 **Methodology:**
 - TCP `localhost`, 1:1 connection (single provider → single consumer) via `mtrouter`.
@@ -413,7 +407,7 @@ The consumer process receives data at this rate at the socket level, but the
 **dispatch thread** – which deserializes and executes the RPC call – has a lower
 stable throughput ceiling.
 
-**Stable dispatch ceiling: ~300–400K msg/s on Windows (i7-13700H), ~500–600K msg/s on macOS (M3 Pro).**
+**Stable dispatch ceiling: ~2.0M msg/s on Linux (i7-13700H), ~2.0M msg/s on macOS (M3 pro) and ~1.8M on Windows (i7-13700H).**
 
 Above this rate, the consumer's internal queue between the socket pump and the
 dispatch thread grows faster than it drains. Memory climbs steadily and the OS
@@ -462,20 +456,18 @@ separate timestamped test.
 
 | Platform     | ~3 MB peak/sustained | ~0.5 KB peak/sustained |
 |--------------|----------------------|------------------------|
-| Linux ¹      | ~8.0 / ~6.0 GB/s     | ~2.5M / ~2.0M msg/s    |
+| Linux        | ~8.0 / ~6.0 GB/s     | ~2.5M / ~2.0M msg/s    |
 | macOS M3 Pro | ~7.0 / ~6.0 GB/s     | ~3.0M / ~2.5M msg/s    |
-| Windows 11 ² | ~3.0 / ~2.2 GB/s     | ~2.5M / ~1.8M msg/s    |
+| Windows 11   | ~3.0 / ~2.2 GB/s     | ~2.5M / ~1.8M msg/s    |
 | WSL2 (Win11) | – / 4.0–4.5 GB/s (untuned), 5.0–5.6 (tuned) | – / ~1.5M msg/s |
 
-¹ Performance power mode (peak); sustained figure from a prior Balanced-mode round, pending re-test.
-² Updated peak readings for Windows 11.
+**Stable end-to-end consumer dispatch (minutes of run):**
 
-**Stable end-to-end consumer dispatch:**
+- Linux (i7-13700H): **~2.0M msg/s**
+- macOS (M3 Pro): **~2.0M msg/s**
+- Windows (i7-13700H): **~1.8M msg/s**
 
-- Windows (i7-13700H): **300–400K msg/s**
-- macOS (M3 Pro): **500–600K msg/s**
-
-Above these rates the dispatch thread becomes the bottleneck – serialization- and dispatch-bound, not transport-bound. Improvements are planned.
+Above these rates, seconds or minutes later the dispatch thread becomes the bottleneck – serialization- and dispatch-bound.
 
 These are not raw socket numbers. They include message routing, event dispatching, multithreading, and automatic framing.
 **This is what your production system gets.**
