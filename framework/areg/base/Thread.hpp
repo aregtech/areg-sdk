@@ -154,6 +154,16 @@ public:
 
     virtual ~Thread();
 
+protected:
+    /**
+     * \brief   Null constructor: creates a hollow Thread with no OS handle and no sync events
+     *          allocated. The thread is never started or registered in thread maps.
+     *
+     * \param   threadConsumer  The consumer that owns this thread.
+     * \param   threadName      The thread name (stored but not registered).
+     **/
+    Thread( areg::NullTag, ThreadConsumer & threadConsumer, const String & threadName ) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Operations / Attributes
 //////////////////////////////////////////////////////////////////////////

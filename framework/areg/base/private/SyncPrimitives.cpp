@@ -70,16 +70,22 @@ Mutex::~Mutex()
 //////////////////////////////////////////////////////////////////////////
 SyncEvent::SyncEvent( bool initLock /* = true */, bool autoReset /* = true */ )
     : SyncObject( SyncObject::SyncKind::SoEvent )
-
     , mAutoReset( autoReset )
 {
     _os_create_event( initLock );
 }
 
+SyncEvent::SyncEvent( areg::NullTag ) noexcept
+    : SyncObject( SyncObject::SyncKind::SoEvent )
+    , mAutoReset( false )
+{
+    // mSyncObject stays nullptr (set by SyncObject base). No OS handle allocated.
+}
+
 SyncEvent::~SyncEvent()
 {
-    ASSERT( mSyncObject != nullptr );
-    _os_unlock_event( mSyncObject );
+    if (mSyncObject != nullptr)
+        _os_unlock_event( mSyncObject );
 }
 
 int32_t SyncEvent::wait_any( SyncEvent** events, int32_t count, uint32_t timeout /* = areg::WAIT_INFINITE */ ) noexcept

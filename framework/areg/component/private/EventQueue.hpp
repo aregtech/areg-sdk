@@ -71,6 +71,8 @@ namespace areg {
  **/
 class AREG_API EventQueue
 {
+    friend class EventDispatcherBase;
+
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
 //////////////////////////////////////////////////////////////////////////
@@ -116,6 +118,14 @@ public:
     explicit EventQueue(uint32_t maxQueue, bool dropOnFull = false, uint32_t waitMs = areg::QUEUE_DEFAULT_FULL_WAIT_MS);
 
     ~EventQueue();
+
+protected:
+    /**
+     * \brief   Null constructor: creates a hollow queue with no ring buffer and no OS sync handles.
+     *          All operations are safe no-ops. Used only by EventDispatcherBase(NullTag) to build
+     *          zero-allocation sentinel dispatcher objects.
+     **/
+    explicit EventQueue( areg::NullTag ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Public interface - mirrors ExternalEventQueue
@@ -342,6 +352,9 @@ inline bool EventQueue::is_exit_triggered() const noexcept
 
 inline bool EventQueue::has_pending() const noexcept
 {
+    if (mRing == nullptr)
+        return is_exit_triggered();
+
     const size_t pos{ mDequeuePos.load(std::memory_order_relaxed) };
     return (mRing[pos & mMask].sequence.load(std::memory_order_acquire) == (pos + 1u))
         || (mPrioCount.load(std::memory_order_relaxed) != 0u)

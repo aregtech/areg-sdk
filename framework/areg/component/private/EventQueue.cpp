@@ -54,6 +54,25 @@ EventQueue::EventQueue(uint32_t maxQueue, bool dropOnFull /*= false*/, uint32_t 
         mRing[i].sequence.store(i, std::memory_order_relaxed);
 }
 
+EventQueue::EventQueue( areg::NullTag ) noexcept
+    : mCapacity         ( 0u )
+    , mMask             ( 0u )
+    , mDropOnFull       ( false )
+    , mWaitMs           ( 0u )
+    , mRing             ( nullptr )
+    , mEnqueuePos       ( 0u )
+    , mDequeuePos       ( 0u )
+    , mPrioLock         ( )
+    , mPrioQueue        ( )
+    , mPrioCount        ( 0u )
+    , mQueueEvent       ( areg::NullTag{} )     // no OS handle
+    , mConsumerParked   ( false )
+    , mExitTriggered    ( false )
+    , mSlotEvent        ( areg::NullTag{} )     // no OS handle
+    , mProducersWaiting ( 0u )
+{
+}
+
 EventQueue::~EventQueue()
 {
     delete[] mRing;
@@ -98,6 +117,9 @@ inline void EventQueue::_wake_consumer() noexcept
 
 void EventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullptr*/)
 {
+    if (mRing == nullptr)
+        return;
+
     const areg::EventPriority prio{ eventElem.event_priority() };
 
     if (prio == areg::EventPriority::ExitPrio)
@@ -133,7 +155,7 @@ void EventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullptr*/)
 
 uint32_t EventQueue::push_events(Event* eventElems, uint32_t count)
 {
-    if ((eventElems == nullptr) || (count == 0u))
+    if ((eventElems == nullptr) || (count == 0u) || (mRing == nullptr))
         return 0u;
 
     uint32_t signalCount{ 0u };
@@ -212,6 +234,9 @@ uint32_t EventQueue::push_events(Event* eventElems, uint32_t count)
 
 Event EventQueue::pop_event() noexcept
 {
+    if (mRing == nullptr)
+        return Event{};
+
     // Exit preempts everything
     if (mExitTriggered.load(std::memory_order_acquire))
         return ExitEvent::exit_event();
@@ -238,7 +263,7 @@ Event EventQueue::pop_event() noexcept
 
 uint32_t EventQueue::pop_events(Event* eventElems, uint32_t count)
 {
-    if ((eventElems == nullptr) || (count == 0u))
+    if ((eventElems == nullptr) || (count == 0u) || (mRing == nullptr))
         return 0u;
 
     // Exit preempts every lane
@@ -280,6 +305,9 @@ uint32_t EventQueue::pop_events(Event* eventElems, uint32_t count)
 
 void EventQueue::remove_events(const uint32_t eventClassId) noexcept
 {
+    if (mRing == nullptr)
+        return;
+
     if (mPrioCount.load(std::memory_order_relaxed) != 0u)
     {
         Lock lock(mPrioLock);
@@ -324,6 +352,9 @@ void EventQueue::remove_events(const uint32_t eventClassId) noexcept
 
 void EventQueue::remove_all_events() noexcept
 {
+    if (mRing == nullptr)
+        return;
+
     if (mPrioCount.load(std::memory_order_relaxed) != 0u)
     {
         Lock lock(mPrioLock);
@@ -331,9 +362,6 @@ void EventQueue::remove_all_events() noexcept
         mPrioCount.store(0u, std::memory_order_relaxed);
     }
 
-    // Drain the ring: each event is released by the Event destructor at the end of its
-    // iteration. 'evt' MUST stay loop-scoped -- a reused 'evt' would be overwritten by the
-    // next move-assignment, which does NOT run the displaced payload's destructor.
     for (;;)
     {
         Event evt;
@@ -348,6 +376,8 @@ void EventQueue::remove_all_events() noexcept
 
 bool EventQueue::_ring_try_enqueue(Event& eventElem) noexcept
 {
+    ASSERT(mRing != nullptr);
+
     size_t pos{ mEnqueuePos.load(std::memory_order_relaxed) };
     Cell*  cell{ nullptr };
     for (;;)
@@ -380,6 +410,8 @@ bool EventQueue::_ring_try_enqueue(Event& eventElem) noexcept
 
 bool EventQueue::_ring_enqueue(Event& eventElem) noexcept
 {
+    ASSERT(mRing != nullptr);
+
     if (_ring_try_enqueue(eventElem))
         return true;
 
@@ -409,6 +441,8 @@ bool EventQueue::_ring_enqueue(Event& eventElem) noexcept
 
 bool EventQueue::_ring_try_dequeue(Event& result) noexcept
 {
+        ASSERT(mRing == nullptr);
+
     const size_t pos{ mDequeuePos.load(std::memory_order_relaxed) };
     Cell&        cell{ mRing[pos & mMask] };
     const size_t seq{ cell.sequence.load(std::memory_order_acquire) };

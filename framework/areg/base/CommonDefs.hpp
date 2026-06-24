@@ -564,6 +564,11 @@ namespace areg {
      **/
     constexpr ITEM_ID   COOKIE_REMOTE_SERVICE       { static_cast<ITEM_ID>(areg::Cookie::FirstRemote) };
 
+    /**
+     * \brief   Sentinel tag for zero-allocation ("null") construction.
+     **/
+    struct NullTag {};
+
 } // namespace areg
 
 #endif  // AREG_BASE_COMMONDEFS_HPP

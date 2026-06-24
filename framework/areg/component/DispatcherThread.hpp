@@ -150,9 +150,20 @@ public:
                              , uint32_t waitMs       = areg::WAIT_INFINITE );
     virtual ~DispatcherThread() = default;
 
+protected:
+    /**
+     * \brief   Null constructor: creates a hollow DispatcherThread with no ring buffer,
+     *          no OS sync handles. Used only by NullDispatcherThread to build the
+     *          "invalid thread" sentinel without any heap allocation.
+     *
+     * \param   threadName  The thread name stored in the base Thread.
+     **/
+    explicit DispatcherThread( areg::NullTag, const String & threadName ) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
+public:
     /**
      * \brief   Returns reference to Event Dispatcher object of the thread. Every Dispatching Thread
      *          has one event dispatcher object.

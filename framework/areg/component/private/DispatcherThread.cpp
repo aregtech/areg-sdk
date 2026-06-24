@@ -108,11 +108,7 @@ AREG_IMPLEMENT_RUNTIME(NullDispatcherThread, DispatcherThread)
 // NullDispatcherThread class Constructor 
 //////////////////////////////////////////////////////////////////////////
 inline NullDispatcherThread::NullDispatcherThread()
-    : DispatcherThread( NullDispatcherName
-                      , areg::DEFAULT_STACK_SIZE
-                      , areg::QUEUE_DEFAULT_RING_CAPACITY
-                      , areg::Bool::False
-                      , areg::QUEUE_DEFAULT_FULL_WAIT_MS )
+    : DispatcherThread( areg::NullTag{}, NullDispatcherName )
 {}
 
 //////////////////////////////////////////////////////////////////////////
@@ -194,8 +190,14 @@ DispatcherThread & DispatcherThread::_null_dispather_thread() noexcept
 DispatcherThread::DispatcherThread (const String & threadName, uint32_t stackSizeKb, uint32_t maxQeueue, areg::Bool dropOnFull /*= areg::Bool::Undefined*/, uint32_t waitMs /*= areg::WAIT_INFINITE*/)
     : Thread          ( static_cast<ThreadConsumer &>(self()), threadName, stackSizeKb )
     , EventDispatcher ( threadName, maxQeueue, dropOnFull, waitMs )
-
     , mEventStarted   ( true, false )
+{
+}
+
+DispatcherThread::DispatcherThread( areg::NullTag, const String & threadName ) noexcept
+    : Thread          ( areg::NullTag{}, static_cast<ThreadConsumer &>(self()), threadName )
+    , EventDispatcher ( areg::NullTag{} )
+    , mEventStarted   ( areg::NullTag{} )
 {
 }
 

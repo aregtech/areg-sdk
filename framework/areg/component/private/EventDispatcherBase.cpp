@@ -90,6 +90,15 @@ EventDispatcherBase::EventDispatcherBase(const String & name, uint32_t maxQeueue
 {
 }
 
+EventDispatcherBase::EventDispatcherBase( areg::NullTag ) noexcept
+    : mDispatcherName( )
+    , mExternalEvents( areg::NullTag{} )
+    , mInternalEvents( )
+    , mHasStarted    ( false )
+    , mConsumerMap   ( )
+{
+}
+
 EventDispatcherBase::~EventDispatcherBase()
 {
     mHasStarted = false;

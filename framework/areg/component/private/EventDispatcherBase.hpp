@@ -88,6 +88,12 @@ protected:
                                 , areg::Bool dropOnFull = areg::Bool::Undefined
                                 , uint32_t waitMs       = areg::WAIT_INFINITE );
 
+    /**
+     * \brief   Null constructor: creates a hollow dispatcher with no ring buffer and no OS sync handles.
+     *          Used only by the NullDispatcherThread sentinel — zero heap traffic.
+     **/
+    explicit EventDispatcherBase( areg::NullTag ) noexcept;
+
     virtual ~EventDispatcherBase();
 
 //////////////////////////////////////////////////////////////////////////

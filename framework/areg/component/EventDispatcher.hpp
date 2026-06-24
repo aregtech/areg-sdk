@@ -58,6 +58,11 @@ protected:
                             , areg::Bool dropOnFull = areg::Bool::Undefined
                             , uint32_t waitMs       = areg::WAIT_INFINITE );
 
+    /**
+     * \brief   Null constructor: creates a hollow dispatcher. Passes NullTag down the base chain.
+     **/
+    explicit EventDispatcher( areg::NullTag ) noexcept;
+
     virtual ~EventDispatcher();
 
 //////////////////////////////////////////////////////////////////////////

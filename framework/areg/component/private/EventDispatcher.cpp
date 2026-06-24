@@ -30,7 +30,14 @@ EventDispatcher::EventDispatcher( const String & name, uint32_t maxQeueue, areg:
     : EventDispatcherBase( name, maxQeueue, dropOnFull, waitMs )
     , ThreadConsumer     (  )
     , EventRouter        (  )
+    , mDispatcherThread  ( nullptr )
+{
+}
 
+EventDispatcher::EventDispatcher( areg::NullTag ) noexcept
+    : EventDispatcherBase( areg::NullTag{} )
+    , ThreadConsumer     (  )
+    , EventRouter        (  )
     , mDispatcherThread  ( nullptr )
 {
 }

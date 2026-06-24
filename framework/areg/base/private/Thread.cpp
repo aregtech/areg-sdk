@@ -139,7 +139,6 @@ ThreadLocalStorage* Thread::_thread_local_storage( Thread* ownThread )
 
 Thread::Thread(ThreadConsumer &threadConsumer, const String & threadName, uint32_t stackSizeKb /*= areg::DEFAULT_STACK_SIZE*/)
     : RuntimeObject   ( )
-
     , mThreadConsumer   (threadConsumer)
     , mThreadHandle     (Thread::INVALID_THREAD_HANDLE)
     , mThreadId         (Thread::INVALID_THREAD_ID)
@@ -147,12 +146,27 @@ Thread::Thread(ThreadConsumer &threadConsumer, const String & threadName, uint32
     , mThreadPriority   (Thread::ThreadPriority::Undefined)
     , mIsRunning        ( false )
     , mStackSizeKB      ( stackSizeKb )
-
     , mSyncObject       ( )
     , mWaitForRun       (false, false)
     , mWaitForExit      (false, false)
 {
     mWaitForExit.set_signaled();
+}
+
+Thread::Thread( areg::NullTag, ThreadConsumer & threadConsumer, const String & threadName ) noexcept
+    : RuntimeObject   ( )
+    , mThreadConsumer   ( threadConsumer )
+    , mThreadHandle     ( Thread::INVALID_THREAD_HANDLE )
+    , mThreadId         ( Thread::INVALID_THREAD_ID )
+    , mThreadAddress    ( threadName )
+    , mThreadPriority   ( Thread::ThreadPriority::Undefined )
+    , mIsRunning        ( false )
+    , mStackSizeKB      ( 0u )
+    , mSyncObject       ( )
+    , mWaitForRun       ( areg::NullTag{} )
+    , mWaitForExit      ( areg::NullTag{} )
+{
+    // Null thread: not registered in thread maps, no OS handle, no sync events allocated.
 }
 
 Thread::~Thread()
