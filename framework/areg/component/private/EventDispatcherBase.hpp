@@ -29,11 +29,10 @@
  * Includes
  ************************************************************************/
 #include "areg/base/areg_global.h"
-#include "areg/component/private/QueueListener.hpp"
 
 #include "areg/component/private/EventConsumerMap.hpp"
+#include "areg/component/private/EventStack.hpp"
 #include "areg/component/private/EventQueue.hpp"
-#include "areg/component/private/MpscEventQueue.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 
@@ -48,7 +47,8 @@ namespace areg {
 
 namespace areg {
 
-using ExternalQueue = areg::MpscEventQueue;
+using ExternalQueue         = areg::EventQueue; //!< External Event queue, lockable
+using InternalEventQueue    = areg::EventStack; //!< Internal Event queue, non-lockable
 
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcherBase class declaration
@@ -60,34 +60,39 @@ using ExternalQueue = areg::MpscEventQueue;
  *          thread should contain one Event Dispatcher running in Loop. Class contains map of
  *          registered Event Consumers to trigger Event Processing.
  **/
-class AREG_API EventDispatcherBase  : protected QueueListener
+class AREG_API EventDispatcherBase
 {
-//////////////////////////////////////////////////////////////////////////
-// Internal defines and constants.
-//////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   EventDispatcherBase::EventSignal
-     *          Used in main loop to identify event signal.
-     **/
-    enum class EventSignal : int32_t
-    {
-          Error = -1    //!< Error happened during waiting for event
-        , Exit  =  0    //!< Exit event has been signaled.
-        , Queue =  1    //!< Queue event has been signaled.
-    };
-
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected.
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initializes Dispatcher and assigns name.
+     * \brief   Initializes Dispatcher and assigns name. The event-queue parameters follow a
+     *          three-tier resolution: an explicit caller value wins; otherwise the value is read
+     *          from the configuration (Application::config_manager()); otherwise the built-in default.
      *
      * \param   name            The name of Dispatcher.
-     * \param   maxQeueue       The maximum number of event elements in the queue.
+     * \param   maxQeueue       The event-queue ring capacity. areg::IGNORE_VALUE (0) reads the value
+     *                          from configuration, falling back to areg::QUEUE_DEFAULT_RING_CAPACITY.
+     * \param   dropOnFull      The full-ring policy. areg::Bool::True drops the incoming event when
+     *                          the ring is full; areg::Bool::False blocks the producer up to \a waitMs;
+     *                          areg::Bool::Undefined reads the value from configuration, falling back
+     *                          to areg::QUEUE_DROP_WHEN_FULL.
+     * \param   waitMs          The lossless full-ring block timeout in milliseconds (used only when
+     *                          the resolved policy is "block"). 0 means do not wait; areg::WAIT_INFINITE
+     *                          reads the value from configuration, falling back to
+     *                          areg::QUEUE_DEFAULT_FULL_WAIT_MS.
      **/
-    EventDispatcherBase( const String & name, uint32_t maxQeueue );
+    explicit EventDispatcherBase( const String & name
+                                , uint32_t maxQeueue   = areg::IGNORE_VALUE
+                                , areg::Bool dropOnFull = areg::Bool::Undefined
+                                , uint32_t waitMs       = areg::WAIT_INFINITE );
+
+    /**
+     * \brief   Null constructor: creates a hollow dispatcher with no ring buffer and no OS sync handles.
+     *          Used only by the NullDispatcherThread sentinel — zero heap traffic.
+     **/
+    explicit EventDispatcherBase( areg::NullTag ) noexcept;
 
     virtual ~EventDispatcherBase();
 
@@ -209,13 +214,6 @@ public:
     inline bool is_ready() const noexcept;
 
     /**
-     * \brief   Removes all internal events, and all external events except exit events.
-     *
-     * \param   keepSpecials    If true, keeps special reserved events.
-     **/
-    inline void remove_events( bool keepSpecials ) noexcept;
-
-    /**
      * \brief   Removes all events. Makes event queue empty.
      **/
     inline void remove_all_events() noexcept;
@@ -231,23 +229,11 @@ public:
 // Protected overrides
 //////////////////////////////////////////////////////////////////////////
 protected:
-/************************************************************************/
-// QueueListener overrides
-/************************************************************************/
 
     /**
-     * \brief   Triggered from Event Queue every time when new event element is pushed into
-     *          queue or when queue is empty.
-     *
-     * \param   eventCount      The number of event elements currently in the queue.
-     **/
-    inline void signal_event(uint32_t eventCount) final;
-
-    /**
-     * \brief   Requests dispatcher shutdown without blocking. Sets the exit flag and signals BOTH
-     *          sync events: mEventQueue wakes the base single-object run_dispatcher() wait, and
-     *          mEventExit wakes subclass loops (receive/timer threads) that still wait on it.
-     *          Replaces bare mEventExit.set_signaled() at every shutdown site.
+     * \brief   Requests dispatcher shutdown without blocking. Triggers the exit
+     *          state on the external queue, which wakes any consumer blocked in
+     *          wait_event() and makes pick_event() return the ExitEvent.
      **/
     inline void signal_exit_event() noexcept;
 
@@ -296,9 +282,7 @@ protected:
     String              mDispatcherName;
 
     /**
-     * \brief   External Event Queue element.
-     *          Selected at compile time: MpscEventQueue (default) or ExternalEventQueue.
-     *          Multiple producer threads may push; only the owner thread pops.
+     * \brief   External Event Queue element. Multiple producer threads may push; only the owner thread pops.
      **/
     ExternalQueue       mExternalEvents;
 
@@ -319,11 +303,6 @@ protected:
     std::atomic<bool>   mHasStarted;
 
     /**
-     * \brief   Exit requested flag.
-     **/
-    std::atomic<bool>   mExitRequested;
-
-    /**
      * \brief   Map of registered consumers.
      **/
     EventConsumerMap    mConsumerMap;
@@ -331,16 +310,6 @@ protected:
 #if defined(_MSC_VER)
     #pragma warning(pop)
 #endif  // _MSC_VER
-
-    /**
-     * \brief   Exit Synchronization Event. Signaled when dispatcher should be stopped.
-     **/
-    SyncEvent           mEventExit;
-
-    /**
-     * \brief   Queue Synchronization Event. Signaled when new event is pushed; reset when queue is empty.
-     **/
-    SyncEvent           mEventQueue;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls.
@@ -371,32 +340,14 @@ inline uint32_t EventDispatcherBase::pop_events(Event* listEvents, uint32_t coun
     return mExternalEvents.pop_events(listEvents, count);
 }
 
-inline void EventDispatcherBase::signal_event(uint32_t eventCount)
-{
-    if (eventCount == 1)
-        mEventQueue.set_signaled();
-    else if (eventCount == 0)
-        mEventQueue.reset();
-}
-
 inline void EventDispatcherBase::signal_exit_event() noexcept
 {
-    mExitRequested.store(true, std::memory_order_release);
-    mEventExit.set_signaled();
-    mEventQueue.set_signaled();
+    mExternalEvents.trigger_exit();
 }
 
 inline bool EventDispatcherBase::is_ready() const noexcept
 {
     return mHasStarted;
-}
-
-inline void EventDispatcherBase::remove_events(bool /*keepSpecials*/) noexcept
-{
-    mExternalEvents.lock_queue();
-    mInternalEvents.remove_events( );
-    mExternalEvents.remove_events( );
-    mExternalEvents.unlock_queue();
 }
 
 inline void EventDispatcherBase::remove_all_events() noexcept

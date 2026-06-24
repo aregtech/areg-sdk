@@ -205,7 +205,6 @@ protected:
      * \param   eventElem       Event object to post.
      * \return  Always returns true in this base class.
      **/
-    [[nodiscard]]
     bool post_event( Event & eventElem ) final;
 
 /************************************************************************/

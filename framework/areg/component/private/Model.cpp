@@ -213,6 +213,8 @@ areg::WorkerThreadEntry::WorkerThreadEntry()
     , mWatchdogTimeout  (areg::WATCHDOG_IGNORE)
     , mStackSizeKb      (areg::DEFAULT_STACK_SIZE)
     , mMaxQueue         (areg::IGNORE_VALUE)
+    , mDropOnFull       (areg::Bool::Undefined)
+    , mQueueTimeout     (areg::WAIT_INFINITE)
 {
 }
 
@@ -222,12 +224,16 @@ areg::WorkerThreadEntry::WorkerThreadEntry( const String & masterThreadName
                                           , const String & compConsumerName
                                           , const uint32_t watchdogTimeout /* = areg::WATCHDOG_IGNORE     */
                                           , const uint32_t stackSizeKb     /* = areg::DEFAULT_STACK_SIZE  */
-                                          , const uint32_t maxQueue        /* = areg::IGNORE_VALUE        */ )
+                                          , const uint32_t maxQueue        /* = areg::IGNORE_VALUE        */
+                                          , const areg::Bool queueDropEvent/* = areg::Bool::Undefined     */
+                                          , const uint32_t queueTimeout    /* = areg::WAIT_INFINITE       */ )
     : mThreadName       (areg::create_component_item_name(masterThreadName, workerThreadName))
     , mConsumerName     (areg::create_component_item_name(compRoleName, compConsumerName))
     , mWatchdogTimeout  (watchdogTimeout)
     , mStackSizeKb      (stackSizeKb)
     , mMaxQueue         (maxQueue)
+    , mDropOnFull       (queueDropEvent)
+    , mQueueTimeout     (queueTimeout)
 {
 }
 
@@ -784,31 +790,41 @@ areg::ComponentThreadEntry::ComponentThreadEntry()
     , mWatchdogTimeout  (areg::WATCHDOG_IGNORE)
     , mStackSizeKB      (areg::DEFAULT_STACK_SIZE)
     , mMaxQueue         (areg::IGNORE_VALUE)
+    , mDropOnFull       (areg::Bool::Undefined)
+    , mQueueTimeout     (areg::WAIT_INFINITE)
 {
 }
 
 areg::ComponentThreadEntry::ComponentThreadEntry( const String & threadName
                                                 , const uint32_t watchdogTimeout  /* = areg::WATCHDOG_IGNORE      */
-                                                , const uint32_t stackSizeKb      /* = areg::DEFAULT_STACK_SIZE   */ 
-                                                , const uint32_t maxQueue         /* = areg::IGNORE_VALUE         */)
+                                                , const uint32_t stackSizeKb      /* = areg::DEFAULT_STACK_SIZE   */
+                                                , const uint32_t maxQueue         /* = areg::IGNORE_VALUE         */
+                                                , const areg::Bool queueDropEvent /* = areg::Bool::Undefined      */
+                                                , const uint32_t queueTimeout     /* = areg::WAIT_INFINITE        */)
     : mThreadName       (threadName)
     , mComponents       ( )
     , mWatchdogTimeout  (watchdogTimeout)
     , mStackSizeKB      (stackSizeKb)
     , mMaxQueue         (maxQueue)
+    , mDropOnFull       (queueDropEvent)
+    , mQueueTimeout     (queueTimeout)
 {
 }
 
 areg::ComponentThreadEntry::ComponentThreadEntry( const String & threadName
                                                 , const areg::ComponentList& supCompList
                                                 , const uint32_t watchdogTimeout  /* = areg::WATCHDOG_IGNORE      */
-                                                , const uint32_t stackSizeKb      /* = areg::DEFAULT_STACK_SIZE   */ 
-                                                , const uint32_t maxQueue         /* = areg::IGNORE_VALUE         */)
+                                                , const uint32_t stackSizeKb      /* = areg::DEFAULT_STACK_SIZE   */
+                                                , const uint32_t maxQueue         /* = areg::IGNORE_VALUE         */
+                                                , const areg::Bool queueDropEvent /* = areg::Bool::Undefined      */
+                                                , const uint32_t queueTimeout     /* = areg::WAIT_INFINITE        */)
     : mThreadName       (threadName)
     , mComponents       (supCompList)
     , mWatchdogTimeout  (watchdogTimeout)
     , mStackSizeKB      (stackSizeKb)
     , mMaxQueue         (maxQueue)
+    , mDropOnFull       (queueDropEvent)
+    , mQueueTimeout     (queueTimeout)
 {
 }
 

@@ -254,6 +254,12 @@ public:
      **/
     explicit SyncEvent ( bool initLock = true, bool autoReset = true );
 
+    /**
+     * \brief   Null constructor: creates a hollow SyncEvent with no OS handle. All operations
+     *          return false / no-op. Intended for zero-allocation sentinel objects.
+     **/
+    explicit SyncEvent( areg::NullTag ) noexcept;
+
     virtual ~SyncEvent();
 
 //////////////////////////////////////////////////////////////////////////

@@ -61,15 +61,23 @@ public:
      *                              the watchdog.
      * \param   stackSizeKb         Stack size in kilobytes; 0 (DEFAULT_STACK_SIZE) uses system
      *                              default.
-     * \param   maxQueue            Maximum message queue size; IGNORE_VALUE uses configured or
-     *                              default value.
+     * \param   maxQueue            Event-queue ring capacity; areg::IGNORE_VALUE (0) reads the value
+     *                              from configuration, falling back to the built-in default.
+     * \param   dropOnFull          Full-ring policy. areg::Bool::True drops the incoming event when the
+     *                              queue is full; areg::Bool::False blocks the producer up to \a waitMs;
+     *                              areg::Bool::Undefined reads the value from configuration.
+     * \param   waitMs              Lossless full-ring block timeout in milliseconds (used only when the
+     *                              resolved policy is "block"). 0 means do not wait; areg::WAIT_INFINITE
+     *                              reads the value from configuration.
      **/
     WorkerThread( const String & threadName
                 , Component & bindingComponent
                 , WorkerThreadConsumer & threadConsumer
                 , uint32_t watchdogTimeout  = areg::WATCHDOG_IGNORE
                 , uint32_t stackSizeKb      = areg::DEFAULT_STACK_SIZE
-                , uint32_t maxQueue         = areg::IGNORE_VALUE);
+                , uint32_t maxQueue         = areg::IGNORE_VALUE
+                , areg::Bool dropOnFull      = areg::Bool::Undefined
+                , uint32_t waitMs            = areg::WAIT_INFINITE );
 
     virtual ~WorkerThread() = default;
 
@@ -113,7 +121,6 @@ public:
      *
      * \param   eventElem       Event to post.
      **/
-    [[nodiscard]]
     bool post_event( Event & eventElem ) final;
 
 protected:

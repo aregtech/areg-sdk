@@ -539,8 +539,7 @@ void ProxyBase::send_notification_event( uint32_t msgId, areg::ResultType resTyp
     NotificationEventData data(self(), resType, msgId, seqNr);
     NotificationEvent eventElem{ create_client_notification(data) };
     eventElem.set_event_consumer(static_cast<EventConsumer*>(caller));
-    if (!mDispatcherThread.event_dispatcher().post_event(eventElem))
-        eventElem.destroy_event();
+    mDispatcherThread.event_dispatcher().post_event(eventElem);
 }
 
 void ProxyBase::process_proxy_event( [[maybe_unused]] ProxyEvent& eventElem )
@@ -602,8 +601,9 @@ void ProxyBase::send_service_event( ProxyBase::ServiceAvailableEvent& eventInsta
         }
 
         eventInstance.set_event_consumer(this);
-        if (!eventInstance.register_for_thread(&mDispatcherThread) || !mDispatcherThread.event_dispatcher().post_event(eventInstance))
-            eventInstance.destroy_event();
+        // Drop-on-failure is handled by the caller-owned eventInstance destructor.
+        if (eventInstance.register_for_thread(&mDispatcherThread))
+            mDispatcherThread.event_dispatcher().post_event(eventInstance);
     }
 }
 

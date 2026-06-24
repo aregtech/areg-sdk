@@ -121,7 +121,6 @@ protected:
         return true; // prevent process_timer()
     }
 
-    [[nodiscard]]
     bool post_event( areg::Event & eventElem ) final
     {
         return areg::EventDispatcher::post_event( eventElem );

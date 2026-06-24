@@ -77,14 +77,12 @@ void ClientSendThread::start_event_processing( Event & eventElem )
         totalSize += wireSize;
     }
 
-    // Drain further queued events into the same batch (one OS send). The single-message ping-pong case
-    // finds the queue empty and skips the loop, touching no mDrain slot.
-    for ( ; bufCount < areg::DEFAULT_DRAIN_LIMIT; ++bufCount )
+    // Drain further queued events into the same batch (one OS send) via a single dequeue window.
+    // The single-message ping-pong case drains nothing and touches no mDrain slot.
+    const uint32_t drained{ pop_events(mEvents, areg::DEFAULT_DRAIN_LIMIT - bufCount) };
+    for ( uint32_t k{ 0u }; k < drained; ++k, ++bufCount )
     {
-        Event evt{ pick_event() };
-        if ( !evt.is_valid() )
-            break;
-
+        Event& evt{ mEvents[k] };
         if ( evt.is_exit_prio() )
         {
             for ( uint32_t i{ 1u }; i < bufCount; ++i )
@@ -106,6 +104,7 @@ void ClientSendThread::start_event_processing( Event & eventElem )
         mIoBuffer[bufCount] = { reinterpret_cast<const uint8_t*>(hdr), wireSize };
         totalSize += wireSize;
         mDrain[bufCount] = evt.envelope().share_buffer();  // retain buffer; raw pointer hdr stays valid through writev
+        evt.destroy_event();                               // release the mEvents slot; mDrain keeps the buffer alive
     }
 
     if ( totalSize <= areg::MAX_SEND_BATCH_BYTES )

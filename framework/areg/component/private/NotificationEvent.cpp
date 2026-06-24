@@ -92,8 +92,8 @@ void NotificationEvent::send_event( const NotificationEventData& data, Notificat
         eventElem.set_event_consumer(static_cast<EventConsumer *>(caller));
 
     DispatcherThread* _dt{ eventElem.target_dispatcher() };
-    if ((_dt == nullptr) || !_dt->event_dispatcher().post_event(eventElem))
-        eventElem.destroy_event();
+    if (_dt != nullptr)
+        _dt->event_dispatcher().post_event(eventElem);
 }
 
 //////////////////////////////////////////////////////////////////////////

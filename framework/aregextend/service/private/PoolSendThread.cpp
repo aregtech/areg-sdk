@@ -86,12 +86,10 @@ void PoolSendThread::start_event_processing( areg::Event & eventElem )
     ++batchCount;
 
     // Phase 1: drain additional queued events straight into mBatch
-    while ( batchCount < areg::DEFAULT_DRAIN_LIMIT )
+    const uint32_t drained{ pop_events(mEvents.data(), areg::DEFAULT_DRAIN_LIMIT - batchCount) };
+    for ( uint32_t k{ 0u }; k < drained; ++k )
     {
-        areg::Event evt{ pick_event() };
-        if ( !evt.is_valid() )
-            break;
-
+        areg::Event& evt{ mEvents[k] };
         if ( evt.is_exit_prio() )
         {
             DEBUG_LOG_DBG("Received exit event during batch-drain, stopping pool send thread");
@@ -111,6 +109,7 @@ void PoolSendThread::start_event_processing( areg::Event & eventElem )
         mTargets[batchCount]      = static_cast<ITEM_ID>(hdr->target);
         mBatch[batchCount].socket = areg::InvalidSocketHandle;
         mBatch[batchCount].msg    = evt.envelope();
+        evt.destroy_event();         // release the mEvents slot; mBatch keeps the buffer alive
         ++batchCount;
     }
 

@@ -19,7 +19,58 @@
 #include "areg/component/EventConsumer.hpp"
 #include "areg/component/ExitEvent.hpp"
 
+#include "areg/appbase/Application.hpp"
+#include "areg/persist/ConfigManager.hpp"
 #include "areg/base/private/DebugDefs.hpp"
+
+#include <atomic>
+#include <chrono>
+#if defined(__GLIBC__)
+    #include <malloc.h>     // malloc_trim(): hand a drained backlog's pages back to the OS
+#endif  // __GLIBC__
+
+namespace
+{
+    constexpr uint32_t      HEAP_TRIM_EVENT_THRESHOLD   { 100000u };    //!< events drained since last trim
+
+    //!< Returns freed heap pages to the OS.
+    //!< glibc keeps a slow consumer's drained backlog mapped at the RSS high-water mark (per-arena retention);
+    //!< malloc_trim(0) releases it.
+    inline void _release_heap( void ) noexcept
+    {
+#if defined(__GLIBC__)
+        ::malloc_trim( 0 );
+#endif  // __GLIBC__
+    }
+
+    //!< Resolves the external event-queue ring capacity: an explicit caller request wins,
+    //!< otherwise the configured value (config::MODULE::queue::capacity) or its compile-time default.
+    inline uint32_t _resolve_queue_capacity( uint32_t requested ) noexcept
+    {
+        return (requested != areg::IGNORE_VALUE)
+                    ? requested
+                    : areg::Application::config_manager().queue_capacity();
+    }
+
+    //!< Resolves the full-ring policy: an explicit caller flag wins (True = drop, False = block),
+    //!< areg::Bool::Undefined defers to the configured value (config::MODULE::queue::drop) or its default.
+    inline bool _resolve_drop_on_full( areg::Bool dropOnFull ) noexcept
+    {
+        return (dropOnFull == areg::Bool::Undefined)
+                    ? areg::Application::config_manager().queue_drop_on_full()
+                    : (dropOnFull == areg::Bool::True);
+    }
+
+    //!< Resolves the lossless full-ring block timeout: an explicit caller value wins (0 = do not wait),
+    //!< areg::WAIT_INFINITE defers to the configured value (config::MODULE::queue::timeout) or its default.
+    inline uint32_t _resolve_queue_wait( uint32_t waitMs ) noexcept
+    {
+        return (waitMs != areg::WAIT_INFINITE)
+                    ? waitMs
+                    : areg::Application::config_manager().queue_wait_timeout();
+    }
+
+}
 
 namespace areg {
 
@@ -30,17 +81,21 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcherBase class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-EventDispatcherBase::EventDispatcherBase(const String & name, uint32_t maxQeueue)
-    : QueueListener  ( )
-
-    , mDispatcherName( name )
-    , mExternalEvents( static_cast<QueueListener &>(self()), maxQeueue)
+EventDispatcherBase::EventDispatcherBase(const String & name, uint32_t maxQeueue, areg::Bool dropOnFull, uint32_t waitMs)
+    : mDispatcherName( name )
+    , mExternalEvents( _resolve_queue_capacity( maxQeueue ), _resolve_drop_on_full( dropOnFull ), _resolve_queue_wait( waitMs ) )
     , mInternalEvents( )
     , mHasStarted    ( false )
-    , mExitRequested ( false )
     , mConsumerMap   ( )
-    , mEventExit     ( false, false )
-    , mEventQueue    ( true, false )
+{
+}
+
+EventDispatcherBase::EventDispatcherBase( areg::NullTag ) noexcept
+    : mDispatcherName( )
+    , mExternalEvents( areg::NullTag{} )
+    , mInternalEvents( )
+    , mHasStarted    ( false )
+    , mConsumerMap   ( )
 {
 }
 
@@ -55,22 +110,13 @@ EventDispatcherBase::~EventDispatcherBase()
 
 bool EventDispatcherBase::start_dispatcher()
 {
-    mExitRequested.store(false, std::memory_order_relaxed);
-    mEventExit.reset( );
+    mExternalEvents.reset_exit();
     return run_dispatcher( );
 }
 
 void EventDispatcherBase::stop_dispatcher() noexcept
 {
-    mExternalEvents.lock_queue( );
-    if ( mHasStarted )
-    {
-        Event exit{ ExitEvent::exit_event() };
-        mExternalEvents.push_event(exit);
-    }
-
-    signal_exit_event();
-    mExternalEvents.unlock_queue( );
+    mExternalEvents.trigger_exit();
 }
 
 void EventDispatcherBase::exit_dispatcher() noexcept
@@ -167,28 +213,18 @@ bool EventDispatcherBase::run_dispatcher()
 {
     ready_for_events( true );
 
-    int32_t whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
+    bool isExit{ false };               // true once the ExitEvent is dequeued -> leave the loop
+    uint64_t processedSinceTrim{ 0u };  // events drained since the last heap trim (this thread)
 
     do
     {
-        const bool signaled = mEventQueue.lock(areg::WAIT_INFINITE);
-        whichEvent = (signaled && !mExitRequested.load(std::memory_order_acquire))
-                   ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue)
-                   : static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
-
-        // Tight drain loop: process all available events before returning to wait.
+        // Tight drain loop: process all available events before considering a wait.
         for (;;)
         {
             Event eventElem = pick_event();  // returns Event by value; invalid if queue empty
-
-            if (eventElem.is_exit_prio())
+            if (!eventElem.is_valid() || eventElem.is_exit_prio())
             {
-                whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
-                break;
-            }
-
-            if (!eventElem.is_valid())
-            {
+                isExit = eventElem.is_exit_prio();
                 break;
             }
 
@@ -212,18 +248,30 @@ bool EventDispatcherBase::run_dispatcher()
                 if (prepare_dispatch_event(intEvent))
                     dispatch_event(intEvent);
             }
+
+            ++processedSinceTrim;
         }
 
-        if (mExitRequested.load(std::memory_order_acquire))
-            whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
+        // Queue drained, this dispatcher is going idle.
+        if ( isExit || processedSinceTrim >= HEAP_TRIM_EVENT_THRESHOLD )
+        {
+            _release_heap();
+            processedSinceTrim = 0u;
+        }
 
-    } while (whichEvent != static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
+        if (isExit)
+            break;
+
+        // Block until a producer pushes or exit is triggered (queue owns the wake-up).
+        mExternalEvents.wait_event(areg::WAIT_INFINITE);
+
+    } while (true);
 
     ready_for_events(false);
     remove_all_events();
     _clean();
 
-    return (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
+    return isExit;
 }
 
 void EventDispatcherBase::ready_for_events( bool is_ready )
@@ -243,9 +291,8 @@ bool EventDispatcherBase::prepare_dispatch_event( Event& eventElem ) noexcept
     return eventElem.is_valid();
 }
 
-void EventDispatcherBase::post_dispatch_event( Event& eventElem )
+void EventDispatcherBase::post_dispatch_event( Event& /*eventElem*/ )
 {
-    eventElem.destroy_event();
 }
 
 bool EventDispatcherBase::dispatch_event( Event& eventElem )

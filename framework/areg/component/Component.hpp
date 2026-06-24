@@ -243,6 +243,9 @@ public:
      * \param   ownerThread         The component thread that owns this worker thread.
      * \param   watchdogTimeout     Watchdog timeout in milliseconds (0 to disable).
      * \param   stackSizeKb         Stack size in kilobytes (0 to use system default).
+     * \param   maxQeueue           Event-queue ring capacity; areg::IGNORE_VALUE (0) reads from configuration.
+     * \param   dropOnFull          Full-ring policy; areg::Bool::Undefined reads from configuration.
+     * \param   waitMs              Lossless full-ring block timeout; areg::WAIT_INFINITE reads from configuration.
      * \return  Pointer to the created worker thread.
      **/
     WorkerThread * create_worker_thread( const String & threadName
@@ -250,7 +253,9 @@ public:
                                        , ComponentThread & ownerThread
                                        , uint32_t watchdogTimeout = areg::WATCHDOG_IGNORE
                                        , uint32_t stackSizeKb     = areg::DEFAULT_STACK_SIZE
-                                       , uint32_t maxQeueue       = areg::IGNORE_VALUE);
+                                       , uint32_t maxQeueue       = areg::IGNORE_VALUE
+                                       , areg::Bool dropOnFull     = areg::Bool::Undefined
+                                       , uint32_t waitMs           = areg::WAIT_INFINITE );
 
     /**
      * \brief   Stops and deletes a worker thread by name.

@@ -41,6 +41,16 @@ void* RuntimeObject::operator new[](size_t size)
     return ::operator new[](size);
 }
 
+void* RuntimeObject::operator new(size_t size, std::align_val_t align)
+{
+    return ::operator new(size, align);
+}
+
+void* RuntimeObject::operator new[](size_t size, std::align_val_t align)
+{
+    return ::operator new[](size, align);
+}
+
 void* RuntimeObject::operator new(size_t /*size*/, void* ptr)
 {
     return ptr;
@@ -86,6 +96,16 @@ void RuntimeObject::operator delete(void* ptr, size_t /*size*/)
     ::operator delete(ptr);
 }
 
+void RuntimeObject::operator delete(void* ptr, std::align_val_t align)
+{
+    ::operator delete(ptr, align);
+}
+
+void RuntimeObject::operator delete(void* ptr, size_t /*size*/, std::align_val_t align)
+{
+    ::operator delete(ptr, align);
+}
+
 void RuntimeObject::operator delete(void* ptr, int32_t, const char*, int32_t)
 {
     ::operator delete (ptr);
@@ -99,6 +119,16 @@ void RuntimeObject::operator delete[](void* ptr)
 void RuntimeObject::operator delete[](void* ptr, size_t /*size*/)
 {
     ::operator delete[](ptr);
+}
+
+void RuntimeObject::operator delete[](void* ptr, std::align_val_t align)
+{
+    ::operator delete[](ptr, align);
+}
+
+void RuntimeObject::operator delete[](void* ptr, size_t /*size*/, std::align_val_t align)
+{
+    ::operator delete[](ptr, align);
 }
 
 void RuntimeObject::operator delete[](void* ptr, int32_t, const char*, int32_t)

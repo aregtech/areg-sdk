@@ -17,7 +17,6 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/component/private/ExitEvent.cpp
 	areg/component/private/EventConsumer.cpp
 	areg/component/private/Model.cpp
-	areg/component/private/MpscEventQueue.cpp
 	areg/component/private/ServiceDefs.cpp
 	areg/component/private/NotificationEvent.cpp
 	areg/component/private/ProxyAddress.cpp

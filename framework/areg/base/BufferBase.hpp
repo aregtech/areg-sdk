@@ -92,9 +92,9 @@ public:
      * \param   blockSize       Allocation increment (default: areg::BLOCK_SIZE).
      **/
     BufferBase( uint32_t       reserveSize
-                , const uint8_t* buffer
-                , uint32_t       size
-                , uint32_t       blockSize = areg::BLOCK_SIZE);
+              , const uint8_t* buffer
+              , uint32_t       size
+              , uint32_t       blockSize = areg::BLOCK_SIZE);
 
     /**
      * \brief   Constructs and writes a null-terminated ASCII string (including

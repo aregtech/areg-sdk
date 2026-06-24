@@ -62,7 +62,9 @@ Component* Component::load_component(const areg::ComponentEntry &entry, Componen
                                                                 , componentThread
                                                                 , wtEntry.mWatchdogTimeout
                                                                 , wtEntry.mStackSizeKb
-                                                                , wtEntry.mMaxQueue);
+                                                                , wtEntry.mMaxQueue
+                                                                , wtEntry.mDropOnFull
+                                                                , wtEntry.mQueueTimeout);
 
         if (wThread != nullptr)
         {
@@ -140,13 +142,15 @@ WorkerThread* Component::create_worker_thread(  const String & threadName
                                             , ComponentThread & /* ownerThread */
                                             , uint32_t watchdogTimeout  /* = areg::WATCHDOG_IGNORE */
                                             , uint32_t stackSizeKb      /* = areg::DEFAULT_STACK_SIZE */
-                                            , uint32_t maxQeueue        /* = areg::IGNORE_VALUE */)
+                                            , uint32_t maxQeueue        /* = areg::IGNORE_VALUE */
+                                            , areg::Bool dropOnFull      /* = areg::Bool::Undefined */
+                                            , uint32_t waitMs            /* = areg::WAIT_INFINITE */)
 {
     WorkerThread* workThread = mComponentInfo.find_worker_thread(threadName);
     if (workThread != nullptr)
         return workThread;
-    
-    workThread = DEBUG_NEW WorkerThread(threadName, self(), consumer, watchdogTimeout, stackSizeKb, maxQeueue);
+
+    workThread = DEBUG_NEW WorkerThread(threadName, self(), consumer, watchdogTimeout, stackSizeKb, maxQeueue, dropOnFull, waitMs);
     if (workThread == nullptr)
         return nullptr;
     

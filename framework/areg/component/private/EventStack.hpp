@@ -71,14 +71,7 @@ public:
     /**
      * \brief   Destroys every event in the queue, including Exit events.
      **/
-    void delete_all_events() noexcept;
-
-    /**
-     * \brief   Destroys all non-Exit events. Exit events are preserved at the front.
-     *
-     * \return  Number of remaining events (Exit events only, in practice).
-     **/
-    uint32_t delete_except_exit() noexcept;
+    void remove_all_events() noexcept;
 
     /**
      * \brief   Destroys all events whose runtime class ID matches \a eventClassId,
