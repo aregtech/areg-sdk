@@ -472,11 +472,6 @@ private:
     #pragma warning(pop)
 #endif  // _MSC_VER
 
-    /**
-     * \brief	The singleton instance of Application object.
-     **/
-    static Application	_theApplication;
-
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -489,7 +484,7 @@ private:
      *
      * \return  Reference to the singleton Application instance.
      **/
-    static inline Application & instance();
+    static Application & instance();
 
     /**
      * \brief   Sets the application state. Allowed transitions: AppStateUndefined =>
@@ -526,15 +521,6 @@ private:
 private:
     AREG_NOCOPY_NOMOVE( Application );
 };
-
-//////////////////////////////////////////////////////////////////////////
-// Application class inline methods.
-//////////////////////////////////////////////////////////////////////////
-
-inline Application & Application::instance()
-{
-    return Application::_theApplication;
-}
 
 } // namespace areg
 #endif  // AREG_APPBASE_APPLICATION_HPP

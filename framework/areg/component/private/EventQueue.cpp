@@ -441,7 +441,7 @@ bool EventQueue::_ring_enqueue(Event& eventElem) noexcept
 
 bool EventQueue::_ring_try_dequeue(Event& result) noexcept
 {
-        ASSERT(mRing == nullptr);
+    ASSERT(mRing != nullptr);
 
     const size_t pos{ mDequeuePos.load(std::memory_order_relaxed) };
     Cell&        cell{ mRing[pos & mMask] };
