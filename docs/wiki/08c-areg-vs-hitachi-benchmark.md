@@ -62,10 +62,13 @@ The following is confirmed by source code inspection of example 30.
 t1 = now_ns()                           ← stamped BEFORE any serialization
 │
 ├─ serialize(seq, t1, payload)          payload serialized field-by-field (typed)
-├─ TCP kernel write
-├─ mtrouter: receive → identify → TCP kernel write
-├─ TCP kernel read (consumer)
-├─ dispatch: identify service/method → route raw message to component thread queue
+├─ dispatch: route communication channel → TCP send queue
+├─ TCP send: consumer → mtrouter
+├─ mtrouter: TCP receive → identify target
+├─ mtrouter: route to target → TCP send (→ provider)
+├─ TCP receive: provider → route to component thread queue
+├─ dispatch: route raw bytes to component thread queue
+├─ dispatch: find subscribers and method
 ├─ deserialize(seq, t1, payload)        on the component thread – after dispatch
 └─ method call invoked with typed params
    └─ t4 = now_ns()                     ← stamped AFTER deserialize + call
@@ -74,14 +77,15 @@ OWT = t4 − t1
     = serialize(sender)
     + TCP × 2 hops
     + broker route
-    + dispatch (raw message → component queue → thread wake)
+    + dispatch × 3
     + deserialize(receiver, on component thread)
     + method invocation
 ```
 
-Note: **dispatch precedes deserialization**. The raw (still serialized) message bytes
-are routed to the correct component thread first – this is how areg-sdk enforces thread
-affinity. Deserialization and the method call then happen on the component's own thread.
+Note: **dispatch precedes deserialization**, by design. Raw (still serialized) message
+bytes are routed to the correct component thread first – this is how areg-sdk enforces
+thread affinity. Deserialization and the method call then happen on that thread, eliminating
+data races by architecture, not locking.
 
 **RTT (pp mode) – one full cycle, both directions:**
 
@@ -89,20 +93,24 @@ affinity. Deserialization and the method call then happen on the component's own
 t1 = now_ns()                           ← BEFORE serialization (consumer)
 │
 ├─ serialize(seq, t1, payload)
+├─ dispatch: route communication channel → TCP send queue
 ├─ TCP × 2 → provider
-├─ dispatch → route raw msg to provider component thread
+├─ dispatch: route raw bytes to provider component thread
+├─ dispatch: find subscribers and method
 ├─ deserialize(seq, t1, payload)        on provider component thread
 └─ request_handler() invoked
     └─ t_mid = now_ns()                 ← AFTER deserialize (provider)
     ├─ serialize(seq, t1, t_mid, payload)
+    ├─ dispatch: route communication channel → TCP send queue
     ├─ TCP × 2 → consumer
-    ├─ dispatch → route raw msg to consumer component thread
+    ├─ dispatch: route raw bytes to consumer component thread
+    ├─ dispatch: find subscribers and method
     ├─ deserialize(seq, t1, t_mid, payload)  on consumer component thread
     └─ response_handler() invoked
         └─ t4 = now_ns()               ← AFTER deserialize (consumer)
 
 RTT = t4 − t1
-    = 2 × (serialize + TCP × 2 + route + dispatch + deserialize + call)
+    = 2 × (serialize + TCP × 2 + route + dispatch × 3 + deserialize + call)
 ```
 
 ### Competitor benchmarks (ZMQ / NanoMsg / NNG): raw buffer transfer only
@@ -125,13 +133,9 @@ subscriber: read(fd, buf, N)             ← timestamp here
 | Deserialize payload on component thread | ✅ Inside window | ❌ Not measured |
 | Method / callback invocation | ✅ Inside window | ❌ Not measured |
 
-**areg-sdk's published latency numbers include every component of the production call path.**
+**areg-sdk's published latency numbers include every component of the production call path:**
+typed, field-by-field serialization, not a flat buffer.
 **Competitor numbers include only raw TCP socket transfer.**
-
-A flat-buffer areg-sdk implementation without field serialization would reduce OWT by
-an estimated 0.1–0.3 μs for small messages (bc64: 8+8 uint64 fields) and
-2–6 μs for large payloads (bc65536: SharedBuffer copy both ends).
-The published numbers are conservative – they reflect real application overhead.
 
 ### 2.4 Methodology Differences – Every Factor Favors Competitors
 
@@ -139,10 +143,10 @@ The published numbers are conservative – they reflect real application overhea
 |--------|-------------|---------|----------------|
 | CPU boost clock | 4.2 GHz | 5.0 GHz | areg slight advantage |
 | Core isolation | Yes | No | some scheduling exposure |
-| Power / OS state | Native SSD | `Performance` power mode (Linux); native SSD (Win/mac) | comparable, no longer a handicap |
+| Power / OS state | Native SSD | Native SSD; `Performance` power mode (Linux) | comparable |
 | Send rate | T=1000 μs (1 msg/ms) | Natural rate (~5–50K msg/s) | Higher scheduling exposure |
 | TCP hops | 1 direct | 2 via broker | +1 TCP round-trip |
-| Framework overhead | None | Full stack | +10–20 μs vs raw transport |
+| Overhead | None | Full stack | +10–20 μs vs raw transport |
 
 **Most conditions still favor the competitor (send rate, hops, framework overhead). areg-sdk results are produced under harder conditions on every dimension except CPU clock.**
 
@@ -198,12 +202,12 @@ Tables are sorted best-to-worst by Min (or Avg where Min is skewed by a transpor
 
 ### 4.2 ~1 KB – areg bc1024 (1164 B) vs paper 1 KB (1000 B)
 
-| Framework | Transport | Size | Min | Avg/Mean | P90/P95 | P99 | Conditions |
-|-----------|-----------|------|-----|----------|---------|-----|-----------|
-| **areg-sdk Linux** | TCP bc1024 | 1164 B | **12.5** | **16.8** (Mean) | **29.4** (P95) | 46.3 | Perf. mode, T=0, 2-hop, full stack |
-| NanoMsg | TCP direct | 1000 B | 18.0 | 21.9 (Avg) | 22.3 (P90) | **24.8** | Xeon, T=1000μs, isolated, raw |
-| ZMQ | TCP direct | 1000 B | 22.0 | 27.5 (Avg) | 28.5 (P90) | 31.6 | same |
-| NNG | TCP direct | 1000 B | 24.3 | 34.9 (Avg) | 39.7 (P90) | 48.4 | same |
+| Framework          | Transport  | Size   | Min      | Avg/Mean        | P90/P95        | P99      | Conditions                         |
+|--------------------|------------|--------|----------|-----------------|----------------|----------|------------------------------------|
+| **areg-sdk Linux** | TCP bc1024 | 1164 B | **12.5** | **16.8** (Mean) | 29.4 (P95) | 46.3     | Perf. mode, T=0, 2-hop, full stack |
+| NanoMsg            | TCP direct | 1000 B | 18.0     | 21.9 (Avg)      | **22.3** (P90)     | **24.8** | Xeon, T=1000μs, isolated, raw      |
+| ZMQ                | TCP direct | 1000 B | 22.0     | 27.5 (Avg)      | 28.5 (P90)     | 31.6     | same                               |
+| NNG                | TCP direct | 1000 B | 24.3     | 34.9 (Avg)      | 39.7 (P90)     | 48.4     | same                               |
 
 **areg-sdk wins:** Min (−5.5 μs), Mean vs Avg (−5.1 μs)
 **areg-sdk loses:** P99 (+21.5 μs) – non-isolated, user-space scheduling at continuous send rate
@@ -215,8 +219,8 @@ Tables are sorted best-to-worst by Min (or Avg where Min is skewed by a transpor
 
 | Framework | Transport | Size | Min | Avg/Mean | P90/P95 | P99 | Conditions |
 |-----------|-----------|------|-----|----------|---------|-----|-----------|
-| **areg-sdk Linux** | TCP bc4096 | 4236 B | **13.8** | **19.3** (Mean) | **34.7** (P95) | 58.5 | Perf. mode, T=0, 2-hop, full stack |
-| NanoMsg | TCP direct | 4000 B | 19.3 | 24.5 (Avg) | 26.3 (P90) | **28.0** | Xeon, T=1000μs, isolated, raw |
+| **areg-sdk Linux** | TCP bc4096 | 4236 B | **13.8** | **19.3** (Mean) | 34.7 (P95) | 58.5 | Perf. mode, T=0, 2-hop, full stack |
+| NanoMsg | TCP direct | 4000 B | 19.3 | 24.5 (Avg) | **26.3** (P90) | **28.0** | Xeon, T=1000μs, isolated, raw |
 | ZMQ | TCP direct | 4000 B | 23.9 | 29.3 (Avg) | 31.0 (P90) | 34.1 | same |
 | NNG | TCP direct | 4000 B | 27.0 | 35.6 (Avg) | 39.8 (P90) | 50.2 | same |
 
@@ -231,9 +235,9 @@ Tables are sorted best-to-worst by Min (or Avg where Min is skewed by a transpor
 | Framework | Transport | Size | Min | Avg/Mean | P90/P95 | P99 | Conditions |
 |-----------|-----------|------|-----|----------|---------|-----|-----------|
 | **areg-sdk Linux** | TCP bc65536 | 65676 B | 32.3 | **37.6** (Mean) | **48.1** (P95) | 86.5 | Perf. mode, T=0, 2-hop, full stack |
-| NNG | TCP direct | 64000 B | **39.9** | 49.4 (Avg) | 55.6 (P90) | **65.2** | Xeon, T=1000μs, isolated, raw |
-| ZMQ | TCP direct | 64000 B | 43.6 | 52.6 (Avg) | 53.4 (P90) | 59.5 | same |
-| NanoMsg | TCP direct | 64000 B | 32.1 | **171.1 ⚠️** | **303.9 ⚠️** | **307.3 ⚠️** | Nagle failure |
+| NNG | TCP direct | 64000 B | 39.9 | 49.4 (Avg) | 55.6 (P90) | 65.2 | Xeon, T=1000μs, isolated, raw |
+| ZMQ | TCP direct | 64000 B | 43.6 | 52.6 (Avg) | 53.4 (P90) | **59.5** | same |
+| NanoMsg | TCP direct | 64000 B | **32.1** | 171.1 ⚠️ | 303.9 ⚠️ | 307.3 ⚠️ | Nagle failure |
 
 **areg-sdk wins:** Mean vs ZMQ (−15.0 μs), Mean vs NNG (−11.8 μs), Min vs ZMQ (−11.3 μs), Min vs NNG (−7.6 μs)
 **areg-sdk loses:** Min vs NanoMsg (+0.2 μs, before its Nagle collapse), P99 (+21.3 μs vs NNG) – scheduling-driven
@@ -350,14 +354,14 @@ NanoMsg comparison (T=1000 μs): 1 KB → 4 KB: +1.3 μs (+7%). areg: +1.8 μs (
 | bc4096 (~4 KB) | 4236 B | ~6.9K | 18.0K | 17.4K | 16.4K |
 | bc65536 (~64 KB) | 65676 B | ~5.7K | 16.1K | 14.9K | 14.1K |
 
-> **This is not areg-sdk's throughput ceiling.** The bc mode used for latency testing is a
-> closed-loop, pull-paced design: for every broadcast received, the consumer sends
-> `request_message_next()` before the provider sends the next message. Effective cycle time
-> is OWT(pull) + OWT(broadcast) ≈ RTT – it measures one message in flight, not sustained
-> throughput. The Msg/s column above is a byproduct of the latency test, not a stress test,
-> and at this round's Performance-mode latencies it now sits below the paper's reference
-> rates at all three sizes. A pure-push model without the pull mechanism would improve
-> areg bc throughput by approximately 30%.
+> The `bc` mode used for latency testing is closed-loop and reactive: for 
+> every broadcast received, the consumer pushes a `request_message_next()` 
+> call before the provider pushes the next message.
+> One round trip per measured message is the same as RTT = 2 × OWT).
+> It measures one message in flight, not sustained throughput. 
+> The Msg/s column above is a byproduct of the latency test, not a
+> stress test, and at this round's Performance-mode latencies it now sits below the paper's
+> reference rates at all three sizes.
 >
 > **The actual throughput ceiling is measured separately**, in the dedicated `23_pubdatarate`
 > benchmark with parallel channels: up to **~8.0 GB/s** and **~2.5M msg/s** on the same Linux
@@ -376,9 +380,9 @@ macOS on MacBook Pro M3 Pro, LPDDR5.
 
 | Platform | OS | Min | P50 | P95 | P99 | Mean | Notes |
 |----------|----|-----|-----|-----|-----|------|-------|
-| **Linux Ubuntu 26.04** | `Performance` mode | **11.5–12.5** | **12.9–15.0** | 17–29 | 23–47 | **14.8–16.3** | Variance concentrated in P95/P99; Min is stable. |
-| **macOS M3 Pro** | Native LPDDR5 | 21.6 | 31.4 | **37.8** | **40.6** | 31.6 | Excellent consistency, no outliers |
-| **Windows 11** | Native SSD | ~32 | ~40 | ~44 | ~47–64 | ~41 | Stable, high TCP stack overhead |
+| **Linux Ubuntu** | `Performance` mode | **11.5–12.5** | **12.9–15.0** | 17–29 | 23–47 | **14.8–16.3** | Min is stable. |
+| **macOS M3 Pro** | Native LPDDR5 | 21.6 | 31.4 | **37.8** | **40.6** | 31.6 | Excellent consistency |
+| **Windows 11** | Native SSD | ~32 | ~40 | ~44 | ~47–64 | ~41 | Stable |
 
 ### 10.2 RTT Latency by Platform (pp64, 204+212 B)
 
@@ -393,12 +397,8 @@ macOS on MacBook Pro M3 Pro, LPDDR5.
 | Platform | Msg/s peak | Msg/s sustained | Data rate peak | Data rate sustained |
 |----------|------------|----------------|----------------|--------------------|
 | **macOS M3 Pro** | – | **~2.5M** | – | **~6.7–7.0 GB/s** |
-| **Linux Ubuntu 26.04** | **~2.5M** | **~1.5M** ¹ | **~8.0 GB/s** | **~6.0 GB/s** ¹ |
-| **Windows 11** | ~2.8M ² | ~1.1M | ~3.0 GB/s ² | ~2.5 GB/s |
-
-¹ Sustained figure from a prior measurement round (`Balanced` power mode); pending re-verification
-under the current `Performance`-mode configuration.
-² Updated peak readings for Windows 11; supersede the previous ~2.0M msg/s / ~2.8 GB/s figures.
+| **Linux Ubuntu 26.04** | **~2.5M** | ~2.0M | **~8.0 GB/s** | ~6.0–6.5 GB/s |
+| **Windows 11** | ~2.8M | ~1.1M | ~3.0 GB/s | ~2.5 GB/s |
 
 ### 10.4 Platform Profiles
 
@@ -411,7 +411,7 @@ under the current `Performance`-mode configuration.
 **macOS M3 Pro (LPDDR5, native):**
 - Higher typical latency (P50 ~31 μs) due to macOS TCP stack overhead
 - Exceptional P99 consistency: bc65536 P99 spread = 0.8 μs across 8 runs
-- Highest confirmed *sustained* message rate: 2.5M msg/s vs 1.5M on Linux
+- Highest confirmed *sustained* message rate: 2.5M msg/s vs 2.0M on Linux
 - Best for: real-time systems requiring guaranteed latency bounds; high-throughput pipelines
 
 **Windows 11 (native SSD):**
@@ -466,7 +466,7 @@ The following claims are directly supported by measured data:
 | areg-sdk Linux latency | Measured June 2026, i7-13700H, 32 GB DDR4, Ubuntu 26.04, `Performance` power mode |
 | areg-sdk Windows latency | Measured June 2026, i7-13700H, 32 GB DDR4, Windows 11 SSD |
 | areg-sdk macOS latency | Measured June 2026, MacBook Pro M3 Pro, 32 GB LPDDR5 |
-| areg-sdk queuing model | Example 30 source code analysis (closed-loop pull-paced confirmed) |
+| areg-sdk queuing model | Example 30 source code analysis (closed-loop, reactive push confirmed) |
 | Library maintenance status | arXiv:2508.07934v1, January–April 2025 activity scan |
 
 *All latency values: same-machine TCP loopback only. Build: Release, AREG_LOGGING=OFF.*

@@ -87,7 +87,7 @@ namespace {
         "INSERT INTO instances "
         "(cookie_id, inst_connect, inst_type, inst_bits, inst_name, inst_location, time_connected, time_updated) "
         "VALUES "
-        "(%llu, 1, %u, %u, \'%s\', \'%s\', %llu, %llu);"
+        "(%u, 1, %u, %u, \'%s\', \'%s\', %llu, %llu);"
     };
 
     //! A string format to generate UPDATE statement to update instance entry.
@@ -96,7 +96,7 @@ namespace {
     //! It updates the disconnect time for the instance with specified cookie ID.
     constexpr std::string_view _fmtUpdInstance
     {
-        "UPDATE instances SET inst_connect = 0, time_disconnected = %llu, time_updated = %llu WHERE cookie_id = %llu AND time_disconnected IS NULL;"
+        "UPDATE instances SET inst_connect = 0, time_disconnected = %llu, time_updated = %llu WHERE cookie_id = %u AND time_disconnected IS NULL;"
     };
 
     //! Create a table with the information about scopes of connected instances.
@@ -122,7 +122,7 @@ namespace {
     //! It is called when registering or updating scope list of the connected application.
     constexpr std::string_view _fmtScopes
     {
-        "INSERT INTO scopes (scope_id, cookie_id, scope_is_active, scope_prio, scope_name, time_received)  VALUES (%u, %llu, 1, %u, \'%s\', %llu);"
+        "INSERT INTO scopes (scope_id, cookie_id, scope_is_active, scope_prio, scope_name, time_received)  VALUES (%u, %u, 1, %u, \'%s\', %llu);"
     };
 
     //! A string to generate INSERT statement to insert a new scope in the scopes table.
@@ -135,14 +135,14 @@ namespace {
     //! The script will mark all scopes of specified cookie ID as inactive.
     constexpr std::string_view _fmtUpdScopes
     {
-        "UPDATE scopes SET time_inactivated = %llu, scope_is_active = 0 WHERE cookie_id = %llu AND scope_is_active = 1;"
+        "UPDATE scopes SET time_inactivated = %llu, scope_is_active = 0 WHERE cookie_id = %u AND scope_is_active = 1;"
     };
 
     //! A string format to generate UPDATE statement to update the activation state of a single scope.
     //! The script will mark the specified scope of the specified cookie as inactive.
     constexpr std::string_view _fmtUpdScope
     {
-        "UPDATE scopes SET time_inactivated = %llu, scope_is_active = 0 WHERE cookie_id = %llu AND scope_id = %u AND scope_is_active = 1;"
+        "UPDATE scopes SET time_inactivated = %llu, scope_is_active = 0 WHERE cookie_id = %u AND scope_id = %u AND scope_is_active = 1;"
     };
 
     //! Create a table with logs that contain information of application cookie ID,
@@ -174,7 +174,7 @@ namespace {
         "INSERT INTO logs "
         "(cookie_id, scope_id, session_id, msg_type, msg_prio, msg_module_id, msg_thread_id, msg_log, msg_thread, msg_module, time_created, time_received, time_duration)"
         "VALUES "
-        "(%llu, %u, %u, %u, %u, %llu, %llu, \'%s\', \'%s\', \'%s\', %llu, %llu, %llu);"
+        "(%u, %u, %u, %u, %u, %llu, %llu, \'%s\', \'%s\', \'%s\', %llu, %llu, %u);"
     };
 
     //! A string format to create INSERT statement to insert new log message in the logs table.
@@ -502,7 +502,7 @@ inline void LogSqliteDatabase::_initialize() noexcept
     VERIFY(mDatabase.execute(sql));
 
     String::format_string(sql, SQL_LEN, _fmtLog.data()
-                        , static_cast<uint64_t>(areg::COOKIE_LOCAL)
+                        , static_cast<uint32_t>(areg::COOKIE_LOCAL)
                         , static_cast<uint32_t>(areg::CHECKSUM_IGNORE)
                         , static_cast<uint32_t>(0u)
                         , static_cast<uint32_t>(areg::LogMessageType::MessageText)
@@ -681,7 +681,7 @@ bool LogSqliteDatabase::log_instance_connected(const areg::ConnectedInstance& in
 
     char sqlInst[SQL_LEN];
     String::format_string( sqlInst, SQL_LEN, _fmtInstance.data()
-                        , static_cast<uint64_t>(instance.ciCookie)
+                        , instance.ciCookie
                         , static_cast<uint32_t>(instance.ciSource)
                         , static_cast<uint32_t>(instance.ciBitness)
                         , instance.ciInstance.c_str()
@@ -706,7 +706,7 @@ bool LogSqliteDatabase::log_instance_disconnected(const ITEM_ID& cookie, const D
     String::format_string( sqlInst, SQL_LEN, _fmtUpdInstance.data()
                         , static_cast<uint64_t>(timestamp.time())
                         , static_cast<uint64_t>(DateTime::now().time())
-                        , static_cast<uint64_t>(cookie)
+                        , cookie
                         );
     return mDatabase.execute(sqlInst);
 }
@@ -741,7 +741,7 @@ bool LogSqliteDatabase::log_scope_activate(const String& scopeName, uint32_t sco
     char sql[SQL_LEN];
     String::format_string( sql, SQL_LEN, _fmtScopes.data()
                         , static_cast<uint32_t>(scopeId)
-                        , static_cast<uint64_t>(cookie)
+                        , cookie
                         , static_cast<uint32_t>(scopePrio)
                         , scopeName.as_string()
                         , static_cast<uint64_t>(timestamp.time())
@@ -754,7 +754,7 @@ bool LogSqliteDatabase::log_scopes_deactivate(const ITEM_ID& cookie, const DateT
     char sql[SQL_LEN];
     String::format_string( sql, SQL_LEN, _fmtUpdScopes.data()
                         , static_cast<uint64_t>(timestamp.time())
-                        , static_cast<uint64_t>(cookie)
+                        , cookie
                         );
     return execute(sql);
 }
@@ -764,7 +764,7 @@ bool LogSqliteDatabase::log_scope_deactivate(const ITEM_ID& cookie, uint32_t sco
     char sql[SQL_LEN];
     String::format_string( sql, SQL_LEN, _fmtUpdScope.data()
                         , static_cast<uint64_t>(timestamp.time())
-                        , static_cast<uint64_t>(cookie)
+                        , cookie
                         , static_cast<uint32_t>(scopeId)
                         );
     return execute(sql);

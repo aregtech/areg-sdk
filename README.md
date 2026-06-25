@@ -168,14 +168,14 @@ Measured on **mobile-class consumer hardware**, full stack active – data seria
 
 | Platform       | CPU Type         | ~3 MB, GB/s              | ~0.5 KB, msg/s            |
 |----------------|------------------|--------------------------|---------------------------|
-| Linux Ubuntu ¹ | i7-13700H (DDR4) | ~6.0 sust. / ~8.0 peak   | ~1.5M sust. / ~2.5M peak  |
-| macOS native ² | M3 Pro (LPDDR5)  | ~6.7–7.0                 | ~2.5M                     |
-| Windows 11 ³   | i7-13700H (DDR4) | ~2.5 sust. / ~3.0 peak   | ~1.1M sust. / ~2.8M peak  |
+| Linux Ubuntu ¹ | i7-13700H (DDR4) | ~6.0–6.5 sust. / ~8.0 peak | ~2.0M sust. / ~2.5M peak  |
+| macOS native ² | M3 Pro (LPDDR5)  | ~6.5 sust. / –7.0 peak   | ~2.5M sust. / ~3.0M peak  |
+| Windows 11 ³   | i7-13700H (DDR4) | ~2.2 sust. / ~3.0 peak   | ~1.8M sust. / ~2.5M peak  |
 | WSL2 Ubuntu ⁴  | i7-13700H (DDR4) | ~4.0–4.5                 | ~1.5M                     |
 
-¹ Ubuntu 26.04, `Performance` power mode. Peak = best short-run reading measured this round; sustained = prior 5+ min measurement, pending re-verification under this configuration.  
+¹ Ubuntu 26.04, `Performance` power mode. Peak = best short-run measure; sustained = 5+ min run.  
 ² No network tuning. M4 reached up to 3.0M msg/s.  
-³ Updated peak reading; stable dispatch remains ~1.1M msg/s – above that, the dispatch thread becomes the bottleneck.  
+³ Stable dispatch is ~1.8M msg/s; above that, the dispatch thread becomes the bottleneck.  
 ⁴ With [network tuning](./docs/wiki/07d-troubleshooting-network-tunning.md), up to ~5.0–5.6 GB/s.
 
 ### Latency – TCP `localhost`, full stack, 204-byte messages

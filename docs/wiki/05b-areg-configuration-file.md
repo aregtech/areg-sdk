@@ -78,7 +78,9 @@ The `*` module is used for almost every key in the shipped file. You add process
 |---|---|---|---|
 | `config::*::version` | version `x.y.z` | `2.0.0` | Configuration schema version |
 | `config::*::default::blocksize` | bytes | `64` (0 = built-in) | SharedBuffer growth granularity |
-| `config::*::default::messagequeue` | count | `0` (unlimited) | Dispatcher message-queue size limit |
+| `config::*::queue::capacity` | count | `0` (built-in: 1024) | Dispatcher event-queue ring capacity (rounded up to power of two, min 32) |
+| `config::*::queue::timeout` | ms | `0` (built-in: 1000) | Dispatcher full-ring block timeout in lossless mode |
+| `config::*::queue::drop` | bool | `false` | Full-ring policy: `false` = lossless (producer blocks); `true` = drop-newest (never blocks) |
 | `log::*::version` | version `x.y.z` | `2.0.0` | Logging schema version |
 | `log::*::target` | list of `remote\|file\|debug\|db` | `remote\|file\|debug\|db` | Known/available log targets |
 | `log::*::enable` | bool | `true` | Master logging switch for the module |
@@ -135,15 +137,44 @@ Growth granularity, **in bytes**, for [`SharedBuffer`](./../../framework/areg/ba
 config::*::default::blocksize  = 64    # align buffer growth to 64-byte blocks
 ```
 
-### `config::*::default::messagequeue`
-Default maximum number of events a dispatcher thread's message queue may hold.
+### `config::*::queue::capacity`
+Ring-buffer capacity of every dispatcher's event queue — the maximum number of events the queue can hold before it is considered full. The value is rounded up to the nearest power of two; the minimum enforced is 32.
 
 - Shipped default: `0`.
-- `0` → **no limit** (the queue grows as needed). A positive value caps the queue.
-- Accessor: `ConfigManager::message_queue_size(module)`.
+- `0` → use the framework's built-in default (1024 slots).
+- Accessor: `ConfigManager::queue_capacity(module)`.
 
 ```text
-config::*::default::messagequeue = 0   # unbounded dispatcher queues (grow on demand)
+config::*::queue::capacity = 0    # built-in default (1024 slots)
+config::*::queue::capacity = 512  # explicit 512-slot ring per dispatcher
+```
+
+### `config::*::queue::timeout`
+How long (in milliseconds) a producer blocks waiting for a free slot when the event queue is full, in **lossless** mode (`queue::drop = false`). After this timeout the producer is unblocked and the event is dropped as a last resort.
+
+- Shipped default: `0`.
+- `0` → use the framework's built-in default (1000 ms).
+- Has no effect when `queue::drop = true` (producers never block in drop-newest mode).
+- Accessor: `ConfigManager::queue_wait_timeout(module)`.
+
+```text
+config::*::queue::timeout = 0      # built-in default (1000 ms)
+config::*::queue::timeout = 5000   # block up to 5 s before giving up
+```
+
+### `config::*::queue::drop`
+Full-ring policy for every dispatcher's event queue.
+
+| Value | Behaviour |
+|---|---|
+| `false` *(default)* | **Lossless** — producer blocks (up to `queue::timeout`) waiting for a free slot. Use when event delivery must be guaranteed. |
+| `true` | **Drop-newest** — the incoming event is discarded when the ring is full; the producer never blocks. Use for high-rate telemetry or "latest-value wins" streams where losing intermediate events is acceptable. |
+
+- Accessor: `ConfigManager::queue_drop_on_full(module)`.
+
+```text
+config::*::queue::drop = false   # lossless (default)
+config::*::queue::drop = true    # drop-newest, producers never block
 ```
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
@@ -445,7 +476,8 @@ Every property has a typed accessor on [`ConfigManager`](./../../framework/areg/
 | Property family | Read | Write |
 |---|---|---|
 | Versions | `config_version()`, `log_version()` | — |
-| Buffer / queue defaults | `buffer_block_size()`, `message_queue_size()` | — |
+| Buffer block size | `buffer_block_size()` | — |
+| Queue settings | `queue_capacity()`, `queue_wait_timeout()`, `queue_drop_on_full()` | — |
 | Logging master / targets | `logging_status()`, `log_targets()`, `log_enabled()` | `set_logging_status()`, `set_log_enabled()` |
 | Log file | `log_file_location()`, `log_file_append()` | `set_file_location()`, `set_file_append()` |
 | Remote logging | `remote_queue_size()` | `set_remote_queue_size()` |
