@@ -229,7 +229,7 @@ Projects utilizing Inter-Process Communication (IPC) require the **mtrouter** se
    ```
 
 > [!NOTE]
-> IPC examples are categorized in the `Multitasking` section of each example description. Look for examples that demonstrate inter-process communication.
+> IPC examples are categorized under `Multitasking` in each description.
 
 **Generated Projects**
 

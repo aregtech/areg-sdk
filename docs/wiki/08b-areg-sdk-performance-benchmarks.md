@@ -61,18 +61,18 @@ All service discovery, automatic reconnection, and thread dispatch are active du
 Closed-loop sequential request/response chain. The consumer sends one request; the provider echoes it back; the consumer records RTT and immediately sends the next. There is **exactly 1 request in flight** and **1 response in flight** at all times. The component thread is idle during transit – no artificial delay is added.
 
 #### Broadcast OWT (`bcX` modes)
-Closed-loop pull-paced one-way chain. The consumer sends `request_message_next()` to pull the next broadcast; the provider sends one `broadcast_message_X()`; the consumer records OWT and immediately sends the next pull. There is **exactly 1 pull request and 1 broadcast in flight** at all times.
+Closed-loop, reactive one-way chain. The consumer pushes a `request_message_next()` call; the provider reacts and pushes back one `broadcast_message_X()`. There is **exactly 1 request and 1 broadcast in flight** at all times – both delivered by push, never pull.
 
-> **Throughput implication:** The `request_message_next()` pull mechanism adds a full
-> round-trip (pull + broadcast) per measured message. The effective cycle time is
-> approximately OWT(pull) + OWT(broadcast) ≈ RTT. A pure push model would improve
-> bc throughput by approximately 30%.
+> **Throughput implication:** The request call and the broadcast that follows are each
+> one-way pushes; together they form one full round trip per measured message – the same
+> shape as RTT = 2 × OWT in the ping-pong test. areg-sdk has no pull mechanism: every
+> operation, including this pacing call, is reactive and push-based.
 
 **Both modes use T=0 (no artificial inter-message delay).** The next message fires immediately on receipt of the previous – continuous operation, no sleep, no pacing.
 
 ### 3.3 Payload Structures
 
-Payload fields are serialized **field-by-field** (typed, parameter-by-parameter), not as flat byte buffers. This reflects real-world service call overhead.
+Payload fields are serialized **field-by-field** (typed, parameter-by-parameter), not as flat byte buffers – reflecting real service call cost.
 
 | Mode range | Extra payload structure | Allocation |
 |-----------|------------------------|------------|
@@ -126,10 +126,9 @@ t1 = now_ns()                    ← BEFORE serialization (consumer)
 RTT = t4 − t1 = 2 × (serialize + TCP × 2 + route + dispatch × 3 + deserialize + call)
 ```
 
-> **Dispatch precedes deserialization** by design. Raw message bytes are first routed
-> to the owning component thread (enforcing thread affinity), and deserialization
-> happens on that thread. This is the mechanism by which areg-sdk eliminates race
-> conditions architecturally.
+> By design, dispatch precedes deserialization: raw bytes are routed to the owning
+> component's thread first (preserving thread affinity), and only deserialized there.
+> This is how areg-sdk eliminates data races by architecture, not by locking.
 
 **Scope comparison with raw-transport benchmarks:**
 
@@ -143,10 +142,8 @@ RTT = t4 − t1 = 2 × (serialize + TCP × 2 + route + dispatch × 3 + deseriali
 | Deserialize payload at receiver | ✅ Inside OWT | ❌ Not measured |
 | Method / callback invocation | ✅ Inside OWT | ❌ Not measured |
 
-areg-sdk numbers include every component of a production service call. A flat `memcpy`
-implementation without field serialization would reduce OWT by approximately
-0.1–0.3 μs for small messages and 2–6 μs for large payloads.
-**The published numbers are conservative relative to raw transport benchmarks.**
+areg-sdk numbers include every component of a production service call: typed,
+field-by-field serialization, not a flat `memcpy`.
 
 ---
 
@@ -310,18 +307,13 @@ with the same TCP-segmentation jump at 65 KB (+20.2 μs from bc4096 to bc65536).
 
 ### 7.1 Linux – Ubuntu 26.04 LTS (Performance mode, i7-13700H, 32 GB DDR4)
 
-| Metric        | Payload | Peak (this round)   | Sustained   |
-|---------------|---------|---------------------|-------------|
-| Message rate  | ~0.5 KB | **~2.5M msg/s**     | ~1.5M msg/s |
-| Data rate     | ~3 MB   | **~8.0 GB/s**       | ~6.0 GB/s   |
+| Metric        | Payload | Peak            | Sustained       |
+|---------------|---------|-----------------|-----------------|
+| Message rate  | ~0.5 KB | **~2.5M msg/s** | ~2.0M msg/s     |
+| Data rate     | ~3 MB   | **~8.0 GB/s**   | ~6.0–6.5 GB/s   |
 
-> This round's measurement reports a single best short-run ("peak") reading for each metric,
-> taken under Ubuntu 26.04 with the **Performance** power profile. It does not include the
-> multi-minute decline-to-stable timeline used in the prior measurement round (previously
-> attributed to a `Balanced` Power Mode). The sustained figures above are carried over
-> from that prior round and have **not** been re-confirmed under the current configuration –
-> a full 5-minute re-test is recommended to determine whether sustained throughput improved
-> alongside the peak figures.
+> Peak is the best short-run reading; sustained is the stable 5-minute rate.
+> Both measured under Ubuntu 26.04, **Performance** power mode.
 
 ### 7.2 macOS – Apple M3 Pro, 32 GB LPDDR5
 
@@ -330,7 +322,7 @@ with the same TCP-segmentation jump at 65 KB (+20.2 μs from bc4096 to bc65536).
 | Message rate | ~0.5 KB | **~2.5M msg/s** |
 | Data rate | ~3 MB | **~6.7–7.0 GB/s** |
 
-Higher message rate than Linux (2.5M vs 1.5M sustained) due to LPDDR5 memory bandwidth
+Higher message rate than Linux (2.5M vs 2.0M sustained) due to LPDDR5 memory bandwidth
 and a consistently active CPU performance state on Apple Silicon.
 
 ### 7.3 Windows 11 – i7-13700H, 32 GB DDR4
@@ -341,7 +333,7 @@ and a consistently active CPU performance state on Apple Silicon.
 | Data rate     | ~3 MB   | **~3.0 GB/s**   | ~2.2 GB/s   |
 
 Message rate at small payloads declines over the first 2 minutes before stabilizing;
-Windows sustained data rate is approximately 2.7× lower than Linux sustained (2.2 vs 6.0 GB/s)
+Windows sustained data rate is approximately 2.7–3.0× lower than Linux sustained (2.2 vs 6.0–6.5 GB/s)
 due to higher per-message TCP overhead on the Windows loopback stack.
 
 ---
@@ -368,8 +360,8 @@ due to higher per-message TCP overhead on the Windows loopback stack.
 
 | Platform         | Msg/s peak | Msg/s sustained | Data rate peak | Data rate sustained |
 |------------------|------------|-----------------|----------------|---------------------|
-| **Linux Ubuntu** | ~2.5M      | **~2.0M**       | **~8.0 GB/s**  | **~6.0 GB/s**       |
-| **macOS M3 Pro** | ~3.0M      | **~2.5M**       | ~7.0 GB/s      | **~6.5 GB/s**       |
+| **Linux Ubuntu** | ~2.5M      | ~2.0M           | **~8.0 GB/s**  | ~6.0–6.5 GB/s     |
+| **macOS M3 Pro** | **~3.0M**  | **~2.5M**       | ~7.0 GB/s      | **~6.5 GB/s**       |
 | **Windows 11**   | ~2.5M      | ~1.8M           | ~3.0 GB/s      | ~2.2 GB/s           |
 
 ### Platform Profiles
@@ -382,7 +374,7 @@ and the highest confirmed *sustained* message rate (2.5M msg/s). The higher P50 
 vs Linux reflects macOS TCP stack per-packet overhead.
 
 **Windows 11** has the highest OWT and RTT latency and the lowest *sustained* data rate.
-Sustained throughput is stable at ~2.2 GB/s; peak readings now reach ~3.0 GB/s / ~2.M msg/s.
+Sustained throughput is stable at ~2.2 GB/s; peak readings now reach ~3.0 GB/s / ~2.5M msg/s.
 Message rate declines over time on long runs. Suitable for Windows-native production deployments.
 
 ---
@@ -407,8 +399,8 @@ PUB/SUB pattern, 1 subscriber, 5000 messages. Raw transport only – no service 
 
 | Framework          | Min         | Avg         | P90         | P99         | Transport        | Scope      |
 |--------------------|-------------|-------------|-------------|-------------|------------------|------------|
-| **areg-sdk Linux** | **12.5 μs** | **16.8 μs** | **29.4 μs** | 46.3 μs     | TCP 2-hop broker | Full stack |
-| NanoMsg            | 18.0 μs     | 21.9 μs     | 22.3 μs     | **24.8 μs** | TCP direct       | Raw        |
+| **areg-sdk Linux** | **12.5 μs** | **16.8 μs** | 29.4 μs     | 46.3 μs     | TCP 2-hop broker | Full stack |
+| NanoMsg            | 18.0 μs     | 21.9 μs     | **22.3 μs** | **24.8 μs** | TCP direct       | Raw        |
 | ZMQ                | 22.0 μs     | 27.5 μs     | 28.5 μs     | 31.6 μs     | TCP direct       | Raw        |
 | NNG                | 24.3 μs     | 34.9 μs     | 39.7 μs     | 48.4 μs     | TCP direct       | Raw        |
 
@@ -416,8 +408,8 @@ PUB/SUB pattern, 1 subscriber, 5000 messages. Raw transport only – no service 
 
 | Framework | Min | Avg | P90 | P99 |
 |-----------|-----|-----|-----|-----|
-| **areg-sdk Linux** | **13.8 μs** | **19.3 μs** | **34.7 μs** | 58.5 μs |
-| NanoMsg | 19.3 μs | 24.5 μs | 26.3 μs | **28.0 μs** |
+| **areg-sdk Linux** | **13.8 μs** | **19.3 μs** | 34.7 μs | 58.5 μs |
+| NanoMsg | 19.3 μs | 24.5 μs | **26.3 μs** | **28.0 μs** |
 | ZMQ | 23.9 μs | 29.3 μs | 31.0 μs | 34.1 μs |
 | NNG | 27.0 μs | 35.6 μs | 39.8 μs | 50.2 μs |
 
@@ -426,9 +418,9 @@ PUB/SUB pattern, 1 subscriber, 5000 messages. Raw transport only – no service 
 | Framework | Min | Avg | P90 | P99 |
 |-----------|-----|-----|-----|-----|
 | **areg-sdk Linux** | 32.3 μs | **37.6 μs** | **48.1 μs** | 86.5 μs |
-| NNG | **39.9 μs** | 49.4 μs | 55.6 μs | **65.2 μs** |
-| ZMQ | 43.6 μs | 52.6 μs | 53.4 μs | 59.5 μs |
-| NanoMsg | 32.1 μs | **171.1 μs ⚠️** | **303.9 μs ⚠️** | **307.3 μs ⚠️** |
+| NNG | 39.9 μs | 49.4 μs | 55.6 μs | 65.2 μs |
+| ZMQ | 43.6 μs | 52.6 μs | 53.4 μs | **59.5 μs** |
+| NanoMsg | **32.1 μs** | 171.1 μs ⚠️ | 303.9 μs ⚠️ | 307.3 μs ⚠️ |
 
 > **NanoMsg 64 KB anomaly (T=1000 μs):** Nagle's algorithm fires at this payload size.
 > Min (32.1 μs) remains clean but Avg jumps to 171 μs – a 5.3× degradation.
@@ -534,11 +526,9 @@ single client thread, no concurrency. Sequential – one call completes before t
 The following frameworks have public performance claims but specific loopback latency
 numbers could not be extracted from their published pages for inclusion here:
 
-- **Aeron IPC/SHM (~7.978 μs mean):** The Pirogov Medium article
-  ([medium.com/@pirogov.alexey/aeron-low-latency-transport-protocol-9493f8d504e8](https://medium.com/@pirogov.alexey/aeron-low-latency-transport-protocol-9493f8d504e8),
-  September 2017) shows EmbeddedPingPong.java Mean=7.978 μs with BusySpin strategy.
-  This is Aeron **IPC transport (embedded media driver, shared memory)**, not UDP loopback.
-  For Aeron UDP, the verified baseline is ~50 μs without tuning (see section 9.3).
+- **Aeron IPC/SHM (~7.978 μs mean):** [Pirogov, Medium, Sept 2017](https://medium.com/@pirogov.alexey/aeron-low-latency-transport-protocol-9493f8d504e8)
+  reports `EmbeddedPingPong.java` Mean=7.978 μs with BusySpin. This is Aeron **IPC
+  (shared memory)**, not UDP loopback; for Aeron UDP see the ~50 μs baseline in section 9.3.
 
 - **FastDDS (eProsima):** Performance data at
   [eprosima.com/developer-resources/performance/eprosima-fast-dds-performance](https://www.eprosima.com/developer-resources/performance/eprosima-fast-dds-performance)

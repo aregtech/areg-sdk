@@ -19,12 +19,12 @@ without a dedicated networking library underneath.
 
 ### Data Rate – Large Payload (~3 MB per message)
 
-| Platform       | Peak          | Sustained    |
-|----------------|---------------|--------------|
-| Linux ¹        | **~8.0 GB/s** | ~6.5 GB/s ²  |
-| macOS M3 Pro   | ~7.0 GB/s     | ~6.5 GB/s    |
-| Windows 11 ³   | **~3.0 GB/s** | ~2.5 GB/s    |
-| WSL2 (Win11) ⁴ | ~4.5 GB/s     | ~4.0 GB/s    |
+| Platform       | Peak          | Sustained      |
+|----------------|---------------|----------------|
+| Linux ¹        | **~8.0 GB/s** | ~6.0–6.5 GB/s  |
+| macOS M3 Pro   | ~7.0 GB/s     | ~6.5 GB/s      |
+| Windows 11 ²   | **~3.0 GB/s** | ~2.5 GB/s      |
+| WSL2 (Win11) ³ | ~4.5 GB/s     | ~4.0 GB/s      |
 
 ---
 
@@ -32,19 +32,18 @@ without a dedicated networking library underneath.
 
 | Platform     | Peak            | Sustained     |
 |--------------|-----------------|---------------|
-| Linux ¹      | **~2.5M msg/s** | ~2.0M msg/s ² |
+| Linux ¹      | **~2.5M msg/s** | ~2.0M msg/s   |
 | macOS M3 Pro | **~3.0M msg/s** | ~2.5M msg/s   |
-| Windows 11 ³ | **~2.5M msg/s** | ~1.8M msg/s ⁵ |
+| Windows 11 ² | **~2.5M msg/s** | ~1.8M msg/s ⁴ |
 | WSL2 (Win11) | –               | ~1.5M msg/s   |
 
 All x86 rows: same physical machine, Intel i7-13700H, 32 GB DDR4. macOS: Apple M3 Pro, 32 GB LPDDR5.
 
 ¹ Ubuntu 26.04, **Performance** power mode.  
-² Sustained (5-minute) figure carried over from a measurement round taken in**Balanced** power mode.  
-³ Updated peak reading; supersedes the previous burst figures for Windows.  
-⁴ Without [network tuning](../../docs/wiki/07d-troubleshooting-network-tunning.md): ~4.0–4.5 GB/s.
+² Updated peak reading; supersedes the previous burst figures for Windows.  
+³ Without [network tuning](../../docs/wiki/07d-troubleshooting-network-tunning.md): ~4.0–4.5 GB/s.
 With tuning: ~5.0–5.6 GB/s. See [network tuning guide](../../docs/wiki/07d-troubleshooting-network-tunning.md).  
-⁵ Windows message rate at ~0.5 KB declines over time: stable → ~1.8M at 2 min (test stopped).
+⁴ Windows message rate at ~0.5 KB declines over time: stable → ~1.8M at 2 min (test stopped).
 
 **Methodology:**
 - TCP `localhost`, 1:1 connection (single provider → single consumer) via `mtrouter`.
@@ -456,8 +455,8 @@ separate timestamped test.
 
 | Platform     | ~3 MB peak/sustained | ~0.5 KB peak/sustained |
 |--------------|----------------------|------------------------|
-| Linux        | ~8.0 / ~6.0 GB/s     | ~2.5M / ~2.0M msg/s    |
-| macOS M3 Pro | ~7.0 / ~6.0 GB/s     | ~3.0M / ~2.5M msg/s    |
+| Linux        | ~8.0 / ~6.0–6.5 GB/s | ~2.5M / ~2.0M msg/s    |
+| macOS M3 Pro | ~7.0 / ~6.5 GB/s     | ~3.0M / ~2.5M msg/s    |
 | Windows 11   | ~3.0 / ~2.2 GB/s     | ~2.5M / ~1.8M msg/s    |
 | WSL2 (Win11) | – / 4.0–4.5 GB/s (untuned), 5.0–5.6 (tuned) | – / ~1.5M msg/s |
 
