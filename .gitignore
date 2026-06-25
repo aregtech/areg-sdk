@@ -15,7 +15,7 @@
 .vs
 .vscode
 .cache
-.claude
+*claude*
 .idea
 
 build/*
