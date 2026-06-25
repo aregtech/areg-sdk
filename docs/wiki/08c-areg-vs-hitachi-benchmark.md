@@ -62,10 +62,13 @@ The following is confirmed by source code inspection of example 30.
 t1 = now_ns()                           ← stamped BEFORE any serialization
 │
 ├─ serialize(seq, t1, payload)          payload serialized field-by-field (typed)
-├─ TCP kernel write
-├─ mtrouter: receive → identify → TCP kernel write
-├─ TCP kernel read (consumer)
-├─ dispatch: identify service/method → route raw message to component thread queue
+├─ dispatch: route communication channel → TCP send queue
+├─ TCP send: consumer → mtrouter
+├─ mtrouter: TCP receive → identify target
+├─ mtrouter: route to target → TCP send (→ provider)
+├─ TCP receive: provider → route to component thread queue
+├─ dispatch: route raw bytes to component thread queue
+├─ dispatch: find subscribers and method
 ├─ deserialize(seq, t1, payload)        on the component thread – after dispatch
 └─ method call invoked with typed params
    └─ t4 = now_ns()                     ← stamped AFTER deserialize + call
@@ -74,7 +77,7 @@ OWT = t4 − t1
     = serialize(sender)
     + TCP × 2 hops
     + broker route
-    + dispatch (raw message → component queue → thread wake)
+    + dispatch × 3
     + deserialize(receiver, on component thread)
     + method invocation
 ```
@@ -90,20 +93,24 @@ data races by architecture, not locking.
 t1 = now_ns()                           ← BEFORE serialization (consumer)
 │
 ├─ serialize(seq, t1, payload)
+├─ dispatch: route communication channel → TCP send queue
 ├─ TCP × 2 → provider
-├─ dispatch → route raw msg to provider component thread
+├─ dispatch: route raw bytes to provider component thread
+├─ dispatch: find subscribers and method
 ├─ deserialize(seq, t1, payload)        on provider component thread
 └─ request_handler() invoked
     └─ t_mid = now_ns()                 ← AFTER deserialize (provider)
     ├─ serialize(seq, t1, t_mid, payload)
+    ├─ dispatch: route communication channel → TCP send queue
     ├─ TCP × 2 → consumer
-    ├─ dispatch → route raw msg to consumer component thread
+    ├─ dispatch: route raw bytes to consumer component thread
+    ├─ dispatch: find subscribers and method
     ├─ deserialize(seq, t1, t_mid, payload)  on consumer component thread
     └─ response_handler() invoked
         └─ t4 = now_ns()               ← AFTER deserialize (consumer)
 
 RTT = t4 − t1
-    = 2 × (serialize + TCP × 2 + route + dispatch + deserialize + call)
+    = 2 × (serialize + TCP × 2 + route + dispatch × 3 + deserialize + call)
 ```
 
 ### Competitor benchmarks (ZMQ / NanoMsg / NNG): raw buffer transfer only
@@ -136,10 +143,10 @@ typed, field-by-field serialization, not a flat buffer.
 |--------|-------------|---------|----------------|
 | CPU boost clock | 4.2 GHz | 5.0 GHz | areg slight advantage |
 | Core isolation | Yes | No | some scheduling exposure |
-| Power / OS state | Native SSD | `Performance` power mode (Linux); native SSD (Win/mac) | comparable, no longer a handicap |
+| Power / OS state | Native SSD | Native SSD; `Performance` power mode (Linux) | comparable |
 | Send rate | T=1000 μs (1 msg/ms) | Natural rate (~5–50K msg/s) | Higher scheduling exposure |
 | TCP hops | 1 direct | 2 via broker | +1 TCP round-trip |
-| Framework overhead | None | Full stack | +10–20 μs vs raw transport |
+| Overhead | None | Full stack | +10–20 μs vs raw transport |
 
 **Most conditions still favor the competitor (send rate, hops, framework overhead). areg-sdk results are produced under harder conditions on every dimension except CPU clock.**
 
@@ -347,12 +354,12 @@ NanoMsg comparison (T=1000 μs): 1 KB → 4 KB: +1.3 μs (+7%). areg: +1.8 μs (
 | bc4096 (~4 KB) | 4236 B | ~6.9K | 18.0K | 17.4K | 16.4K |
 | bc65536 (~64 KB) | 65676 B | ~5.7K | 16.1K | 14.9K | 14.1K |
 
-> **This is not areg-sdk's throughput ceiling.** The bc mode used for latency testing is
-> closed-loop and reactive: for every broadcast received, the consumer pushes a
-> `request_message_next()` call before the provider pushes the next message. areg-sdk has
-> no pull mechanism – both steps are push; together they form one round trip per measured
-> message (the same shape as RTT = 2 × OWT). It measures one message in flight, not
-> sustained throughput. The Msg/s column above is a byproduct of the latency test, not a
+> The `bc` mode used for latency testing is closed-loop and reactive: for 
+> every broadcast received, the consumer pushes a `request_message_next()` 
+> call before the provider pushes the next message.
+> One round trip per measured message is the same as RTT = 2 × OWT).
+> It measures one message in flight, not sustained throughput. 
+> The Msg/s column above is a byproduct of the latency test, not a
 > stress test, and at this round's Performance-mode latencies it now sits below the paper's
 > reference rates at all three sizes.
 >
@@ -373,9 +380,9 @@ macOS on MacBook Pro M3 Pro, LPDDR5.
 
 | Platform | OS | Min | P50 | P95 | P99 | Mean | Notes |
 |----------|----|-----|-----|-----|-----|------|-------|
-| **Linux Ubuntu 26.04** | `Performance` mode | **11.5–12.5** | **12.9–15.0** | 17–29 | 23–47 | **14.8–16.3** | Variance concentrated in P95/P99; Min is stable. |
-| **macOS M3 Pro** | Native LPDDR5 | 21.6 | 31.4 | **37.8** | **40.6** | 31.6 | Excellent consistency, no outliers |
-| **Windows 11** | Native SSD | ~32 | ~40 | ~44 | ~47–64 | ~41 | Stable, high TCP stack overhead |
+| **Linux Ubuntu** | `Performance` mode | **11.5–12.5** | **12.9–15.0** | 17–29 | 23–47 | **14.8–16.3** | Min is stable. |
+| **macOS M3 Pro** | Native LPDDR5 | 21.6 | 31.4 | **37.8** | **40.6** | 31.6 | Excellent consistency |
+| **Windows 11** | Native SSD | ~32 | ~40 | ~44 | ~47–64 | ~41 | Stable |
 
 ### 10.2 RTT Latency by Platform (pp64, 204+212 B)
 
