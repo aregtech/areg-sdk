@@ -152,20 +152,16 @@ public:
     SharedBuffer(SharedBuffer&& src) noexcept;
 
     /**
-     * \brief   Zero-copy share-constructs from a MessageEnvelope. Both objects
-     *          reference the same heap block (one atomic refcount increment, no
-     *          byte copy). The SharedBuffer exposes the entire raw allocation
-     *          (EventHeader + payload) starting at position 0.
+     * \brief   Zero-copy share-constructs from a MessageEnvelope.
+     *          Both objects reference the same heap block.
      *
      * \param   envelope    Source envelope to share.
      **/
     SharedBuffer(const MessageEnvelope& envelope) noexcept;
 
     /**
-     * \brief   Zero-copy move-constructs from a MessageEnvelope. Ownership of
-     *          the heap block is transferred; \a envelope is left invalid.
-     *          The SharedBuffer exposes the entire raw allocation starting at
-     *          position 0.
+     * \brief   Zero-copy move-constructs from a MessageEnvelope.
+     *          Ownership of the heap block is transferred.
      *
      * \param   envelope    Source envelope to move from.
      **/
