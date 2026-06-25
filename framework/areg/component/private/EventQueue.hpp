@@ -96,7 +96,7 @@ private:
     //////////////////////////////////////////////////////////////////////////
     // 128 bytes separates the producer written enqueue cursor from the
     // consumer written dequeue cursor. This covers the widest hardware cache
-    // line in use: x86/x86-64 and ARM32 use 32–64 bytes; Apple Silicon uses
+    // line in use: x86/x86-64 and ARM32 use 32-64 bytes; Apple Silicon uses
     // 128 bytes. Padding is conservative on 32-bit targets (wastes ~248 B)
     // but keeps the layout correct across all supported platforms.
     //////////////////////////////////////////////////////////////////////////
