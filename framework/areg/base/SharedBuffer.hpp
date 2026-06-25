@@ -49,6 +49,8 @@
 
 namespace areg {
 
+class MessageEnvelope;
+
 //////////////////////////////////////////////////////////////////////////
 // SharedBuffer class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -149,6 +151,26 @@ public:
      **/
     SharedBuffer(SharedBuffer&& src) noexcept;
 
+    /**
+     * \brief   Zero-copy share-constructs from a MessageEnvelope. Both objects
+     *          reference the same heap block (one atomic refcount increment, no
+     *          byte copy). The SharedBuffer exposes the entire raw allocation
+     *          (EventHeader + payload) starting at position 0.
+     *
+     * \param   envelope    Source envelope to share.
+     **/
+    SharedBuffer(const MessageEnvelope& envelope) noexcept;
+
+    /**
+     * \brief   Zero-copy move-constructs from a MessageEnvelope. Ownership of
+     *          the heap block is transferred; \a envelope is left invalid.
+     *          The SharedBuffer exposes the entire raw allocation starting at
+     *          position 0.
+     *
+     * \param   envelope    Source envelope to move from.
+     **/
+    SharedBuffer(MessageEnvelope&& envelope) noexcept;
+
     virtual ~SharedBuffer() noexcept = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -161,6 +183,25 @@ public:
 
     SharedBuffer& operator = (const SharedBuffer& src) noexcept;
     SharedBuffer& operator = (SharedBuffer&& src) noexcept;
+
+    /**
+     * \brief   Zero-copy assignment from a MessageEnvelope. Shares the same
+     *          heap block; resets the view and cursor to the full raw allocation.
+     *
+     * \param   envelope    Source envelope to share.
+     * \return  Reference to this buffer.
+     **/
+    SharedBuffer& operator = (const MessageEnvelope& envelope) noexcept;
+
+    /**
+     * \brief   Zero-copy move-assignment from a MessageEnvelope. Transfers heap
+     *          ownership; \a envelope is left invalid. Resets view and cursor to
+     *          the full raw allocation.
+     *
+     * \param   envelope    Source envelope to move from.
+     * \return  Reference to this buffer.
+     **/
+    SharedBuffer& operator = (MessageEnvelope&& envelope) noexcept;
 
 /************************************************************************/
 // Friend global streaming operators
