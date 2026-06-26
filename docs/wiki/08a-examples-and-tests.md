@@ -229,7 +229,7 @@ Projects utilizing Inter-Process Communication (IPC) require the **mtrouter** se
    ```
 
 > [!NOTE]
-> IPC examples are categorized in the `Multitasking` section of each example description. Look for examples that demonstrate inter-process communication.
+> IPC examples are categorized under `Multitasking` in each description.
 
 **Generated Projects**
 
@@ -241,20 +241,22 @@ Projects like `xx_generate` are created from **Service Interface** document file
 **Platform-Specific Examples**
 
 **MFC-Based Projects**:
-- The [17_winchat](./../../examples/17_winchat/) project builds only on Windows
+- The [20_winchat](./../../examples/20_winchat/) project builds only on Windows
 - Requires Microsoft Compilers (MSVC or ClangCL)
 - Requires Microsoft Foundation Classes (MFC)
 
 ### Example Categories
 
-Examples are organized by complexity and features:
+[Examples](./../../examples/) are organized by complexity and features, here is a list worth to try:
 
-| Category | Description | Examples |
-|----------|-------------|----------|
-| **Basic** | Simple service communication | 00_helloservice, 01_hello |
-| **Multithreading** | Thread-based communication | 10_locsvc, 11_locmesh |
-| **Multitasking (IPC)** | Process-based communication | 12_pubsvc, 13_pubmesh |
-| **Advanced** | Complex scenarios | 16_pubfsm, 17_winchat |
+| Category                  | Description                   | Examples                                      |
+|---------------------------|-------------------------------|-----------------------------------------------|
+| **Basic**                 | Simple service communication  | 01_minimalrpc, 02_minimalipc, 03_helloservice |
+| **Multithreading**        | Thread-based communication    | 13_locsvc, 14_locmesh                         |
+| **Multitasking (IPC)**    | Process-based communication   | 15_pubsvc, 16_pubmesh                         |
+| **Advanced**              | Complex scenarios             | 16_pubfsm, 20_winchat (Windows only)          |
+| **Data- & Message-Rate**  | Performance Benchmark Test    | 23_pubdatarate                                |
+| **Latency Measurement**   | Latency Benchmark Test        | 30_publatency                                 |
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -536,28 +538,29 @@ This guide covered building and running Areg SDK examples and unit tests:
 ### Key Points
 
 - ✅ **Default Build**: Examples and unit tests included by default
-- ✅ **Configurable**: Use `AREG_TESTS` and `AREG_EXAMPLES` to control inclusion
+- ✅ **Configurable**: Use `AREG_LOGGING`, `AREG_TESTS` and `AREG_EXAMPLES` to control inclusion
 - ✅ **Multiple Test Methods**: Direct execution, Google Test filters, or CTest
 - ✅ **IPC Examples**: Require `mtrouter` service to be running
 - ✅ **Platform Support**: Cross-platform with some platform-specific examples
 
 ### Build Configuration Options
 
-| Configuration | Command | Use Case |
-|---------------|---------|----------|
-| **Full Build** | `cmake -B ./build` | Development and testing |
-| **Core Only** | `cmake -B ./build -DAREG_TESTS=OFF -DAREG_EXAMPLES=OFF` | Production deployment |
-| **Examples Only** | `cmake -B ./build -DAREG_TESTS=OFF` | Learning and demonstrations |
-| **Tests Only** | `cmake -B ./build -DAREG_EXAMPLES=OFF` | CI/CD testing pipelines |
+| Configuration      | Command                                                  | Use Case                      |
+|--------------------|----------------------------------------------------------|-------------------------------|
+| **Full Build**     | `cmake -B ./build`                                       | Development and testing       |
+| **Core Only**      | `cmake -B ./build -DAREG_TESTS=OFF -DAREG_EXAMPLES=OFF`  | Production deployment         |
+| **Examples Only**  | `cmake -B ./build -DAREG_TESTS=OFF`                      | Learning and demonstrations   |
+| **Tests Only**     | `cmake -B ./build -DAREG_EXAMPLES=OFF`                   | CI/CD testing pipelines       |
+| **For Benchmarks** | `cmake -B ./build -DAREG_LOGGING=OFF`                    | Disable logging overhead      |
 
 ### Testing Options
 
-| Method | Command | Best For |
-|--------|---------|----------|
-| **Direct Execution** | `./areg-unit-tests` | Development, debugging |
+| Method                 | Command                                       | Best For                |
+|------------------------|-----------------------------------------------|-------------------------|
+| **Direct Execution**   | `./areg-unit-tests`                           | Development, debugging  |
 | **Google Test Filter** | `./areg-unit-tests --gtest_filter=*TestName*` | Specific test debugging |
-| **CTest** | `ctest --test-dir ./build` | CI/CD, automation |
-| **Make Test** | `make test` | Make-based workflows |
+| **CTest**              | `ctest --test-dir ./build`                    | CI/CD, automation       |
+| **Make Test**          | `make test`                                   | Make-based workflows    |
 
 ### Next Steps
 

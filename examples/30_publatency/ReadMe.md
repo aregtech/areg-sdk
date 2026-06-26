@@ -315,7 +315,7 @@ is measured in every RTT sample.
 
 ### macOS – Apple M3 Pro, 32 GB LPDDR5 (native SSD)
 
-> Native SSD, stable scheduler. P99 consistency is exceptional: bc65536 P99 spread = 0.8 μs across 8 runs.
+> P99 consistency is exceptional: bc65536 P99 spread = 0.8 μs across 8 runs.
 
 #### Ping-Pong RTT (μs)
 

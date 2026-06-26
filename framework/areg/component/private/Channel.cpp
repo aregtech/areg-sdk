@@ -26,7 +26,7 @@ const Channel & Channel::invalid_channel()
 
 String Channel::to_string() const
 {
-    constexpr const char * format{ "%llu.%llu.%llu" };
+    constexpr const char * format{ "%u.%u.%u" };
 
     char buffer[ 128 ]{ 0 };
     int32_t len = String::format_string( buffer, 128, format, mSource, mTarget, mCookie );

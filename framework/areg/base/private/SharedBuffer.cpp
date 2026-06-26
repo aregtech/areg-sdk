@@ -16,6 +16,7 @@
 #include "areg/base/SharedBuffer.hpp"
 
 #include "areg/base/MathDefs.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/StringDefs.hpp"
 #include "areg/base/WideString.hpp"
@@ -92,6 +93,22 @@ SharedBuffer::SharedBuffer(SharedBuffer&& src) noexcept
     src.mViewEnd   = 0u;
 }
 
+SharedBuffer::SharedBuffer(const MessageEnvelope& envelope) noexcept
+    : BufferBase    ( static_cast<const BufferBase&>(envelope) )
+    , mViewStart    ( 0u )
+    , mViewEnd      ( 0u )
+{
+    mPosition = 0u;
+}
+
+SharedBuffer::SharedBuffer(MessageEnvelope&& envelope) noexcept
+    : BufferBase    ( static_cast<BufferBase&&>(std::move(envelope)) )
+    , mViewStart    ( 0u )
+    , mViewEnd      ( 0u )
+{
+    mPosition = 0u;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
@@ -136,6 +153,32 @@ SharedBuffer& SharedBuffer::operator = (SharedBuffer&& src) noexcept
         }
     }
 
+    return (*this);
+}
+
+SharedBuffer& SharedBuffer::operator = (const MessageEnvelope& envelope) noexcept
+{
+    if (envelope.is_valid())
+    {
+        mByteBuffer = envelope.share_buffer();
+        mPosition   = 0u;
+        mViewStart  = 0u;
+        mViewEnd    = 0u;
+    }
+    else
+    {
+        invalidate();
+    }
+
+    return (*this);
+}
+
+SharedBuffer& SharedBuffer::operator = (MessageEnvelope&& envelope) noexcept
+{
+    static_cast<BufferBase&>(*this) = static_cast<BufferBase&&>(std::move(envelope));
+    mPosition  = 0u;
+    mViewStart = 0u;
+    mViewEnd   = 0u;
     return (*this);
 }
 

@@ -26,9 +26,9 @@ For RTT (pp modes): all of the above runs **twice** – once on the provider sid
 (dispatch → deserialize → serialize) and once on the consumer side
 (dispatch → deserialize → call) – within every single RTT sample.
 
-The dispatch-before-deserialize order is not incidental – it is the mechanism by which
-areg-sdk enforces thread affinity. Raw message bytes are routed to the owning component
-thread first; deserialization and method invocation happen only on that thread.
+The dispatch-before-deserialize order is not incidental: by design, raw message bytes
+are routed to the owning component thread first (enforcing thread affinity), and only
+deserialized there – eliminating data races by architecture, not locking.
 
 ### Competitors (ZMQ / NanoMsg / NNG): raw socket transfer only
 
@@ -37,11 +37,9 @@ Payload is a flat byte buffer – one `memcpy` or direct write each end.
 
 ### Practical consequence
 
-areg-sdk's latency numbers are conservative. They include serialization + deserialization
-overhead that competitor benchmarks do not measure. A flat-buffer implementation of areg-sdk
-without field serialization would reduce OWT by an estimated 0.1–0.3 μs for small messages
-and 2–6 μs for large payloads. The published numbers represent what a real production
-service call costs end-to-end – not a synthetic transport floor.
+areg-sdk's published numbers include every component of a production service call:
+typed, field-by-field serialization, not a flat buffer. They represent what a real
+production service call costs end-to-end – not a synthetic transport floor.
 
 ---
 
@@ -115,7 +113,7 @@ Sorted best-to-worst P50/Avg. Mixed transports – see Notes column.
 | 3 | ZMQ inproc | In-process | ~3–5M | 🔲 Est. | 🏗️ | Threads, tiny messages |
 | **4** | **areg-sdk macOS M3** | **TCP** | **~2.5M** | **✅ Measured** | **⚙️ Full dispatch** | **~0.5 KB, LPDDR5** |
 | 5 | CycloneDDS | UDP/SHM | ~1–3M | 🔲 Est. (derived from GB/s) | ⚙️ Full DDS | Raw DDS layer |
-| **6** | **areg-sdk Linux** | **TCP** | **~1.5M sustained / ~2.5M peak** | **✅ Measured** | **⚙️ Full dispatch** | **~0.5 KB, DDR4, `Performance` power mode** |
+| **6** | **areg-sdk Linux** | **TCP** | **~2.0M sustained / ~2.5M peak** | **✅ Measured** | **⚙️ Full dispatch** | **~0.5 KB, DDR4, `Performance` power mode** |
 | 7 | ZMQ / NNG TCP | TCP | ~1–2M | 🔲 Est. (paper polling-limited) | 🏗️ Raw | Unpolled config |
 | **8** | **areg-sdk Windows** | **TCP** | **~1.1M stable / ~2.8M peak** | **✅ Measured** | **⚙️ Full dispatch** | **~0.5 KB, DDR4** |
 | 9 | gRPC streaming | TCP | ~100–500K | ✅ Community | ⚙️ Full | HTTP/2 streaming |
@@ -125,11 +123,12 @@ Sorted best-to-worst P50/Avg. Mixed transports – see Notes column.
 > CycloneDDS estimated range (raw DDS, no dispatch). areg-sdk's measured number
 > is harder to achieve – it includes complete receive-side processing.
 >
-> **Note on bc mode throughput ceiling:** areg-sdk bc mode uses a closed-loop pull
-> mechanism – for each broadcast received, the consumer sends `request_message_next()`
-> before the provider can send the next message. Effective cycle time ≈ OWT(pull) +
-> OWT(broadcast) ≈ RTT. A pure-push model would improve bc throughput by ~30%.
-> The published bc msg/s numbers are therefore conservative.
+> **Note on bc mode throughput ceiling:** areg-sdk bc mode is closed-loop and reactive –
+> for each broadcast received, the consumer pushes a `request_message_next()` call before
+> the provider pushes the next message. areg-sdk has no pull mechanism; both steps are
+> push, together forming one round trip per message (the same shape as RTT = 2 × OWT).
+> The published bc msg/s numbers reflect this pacing, not areg-sdk's throughput ceiling –
+> see `23_pubdatarate` for the dedicated throughput benchmark.
 
 ---
 
@@ -139,7 +138,7 @@ Sorted best-to-worst P50/Avg. Mixed transports – see Notes column.
 |------|-----------|-----------|-----------------|--------|-------|---------|
 | 1 | Zenoh P2P | SHM/UDP | ~8 GB/s peak (67 Gbps) | ✅ NTU/ZettaScale | 🏗️ Raw | 8 KB+, raw |
 | **2** | **areg-sdk macOS M3** | **TCP** | **~6.7–7.0 GB/s** | **✅ Measured** | **⚙️ Full dispatch** | **~3 MB** |
-| **3** | **areg-sdk Linux** | **TCP** | **~6.0 GB/s sustained / ~8.0 GB/s peak** | **✅ Measured** | **⚙️ Full dispatch** | **~3 MB, `Performance` power mode** |
+| **3** | **areg-sdk Linux** | **TCP** | **~6.0–6.5 GB/s sustained / ~8.0 GB/s peak** | **✅ Measured** | **⚙️ Full dispatch** | **~3 MB, `Performance` power mode** |
 | 4 | Aeron | SHM/UDP | ~5+ GB/s | 🔲 Est. | 🏗️ Raw | Large msgs |
 | 5 | Zenoh brokered | UDP | ~4.6 GB/s (37 Gbps) | ✅ NTU paper | 🏗️ Raw | Large msgs |
 | 6 | CycloneDDS | UDP/SHM | ~3.2 GB/s (25.8 Gbps) | ✅ NTU paper | ⚙️ Full DDS | Large msgs |
@@ -346,12 +345,12 @@ Add 3–6 weeks for teams with documented race condition history.
 
 | Platform | bc OWT P50 | pp RTT P50 | Msg/s | Data rate | Best suited for |
 |----------|-----------|-----------|-------|-----------|----------------|
-| **Linux** (i7-13700H, DDR4, `Performance` mode) | **~13–15 μs** | **~24–27 μs** | ~1.5M sustained / **~2.5M peak** | ~6.0 GB/s sustained / **~8.0 GB/s peak** | Lowest latency; highest peak throughput of the three platforms |
+| **Linux** (i7-13700H, DDR4, `Performance` mode) | **~13–15 μs** | **~24–27 μs** | ~2.0M sustained / **~2.5M peak** | ~6.0–6.5 GB/s sustained / **~8.0 GB/s peak** | Lowest latency; highest peak throughput of the three platforms |
 | **macOS M3 Pro** (LPDDR5) | ~31 μs | ~63 μs | **~2.5M** | **~6.7–7.0 GB/s** | Best P99 consistency + highest confirmed *sustained* throughput |
 | **Windows 11** (i7-13700H, DDR4) | ~40 μs | ~83 μs | ~1.1M sustained / ~2.8M peak | ~2.5 GB/s sustained / ~3.0 GB/s peak | Windows-native production |
 
 Linux: **~2.3× lower** P50 latency than macOS, **~2.9× lower** than Windows on the same hardware (bc64 OWT).
-macOS M3: **1.7× higher sustained throughput** than Linux, **best P99 predictability** of all platforms.
+macOS M3: **~1.25× higher sustained throughput** than Linux, **best P99 predictability** of all platforms.
 
 ---
 

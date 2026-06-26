@@ -1049,10 +1049,10 @@ void LatencyConsumer::_save_csv(const ResultEntry & result) const
         line.format("%u,%s,%llu,%llu,%llu,%lld,%.3f"
                   , s.seq
                   , result.mode.as_string()
-                  , static_cast<unsigned long long>(s.t1_ns)
-                  , static_cast<unsigned long long>(s.t2_ns)
-                  , static_cast<unsigned long long>(s.t4_ns)
-                  , static_cast<long long>(s.rtt_ns)
+                  , static_cast<uint64_t>(s.t1_ns)
+                  , static_cast<uint64_t>(s.t2_ns)
+                  , static_cast<uint64_t>(s.t4_ns)
+                  , static_cast<int64_t>(s.rtt_ns)
                   , static_cast<double>(s.rtt_ns) / 1000.0);
         csv.write_line(line);
     }
