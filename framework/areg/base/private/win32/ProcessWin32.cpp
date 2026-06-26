@@ -63,7 +63,7 @@ String Process::_os_env_variable( const char* var ) const
     uint32_t size = length + 1u;
     if (size > 1)
     {
-        char *buffer = DEBUG_NEW char[size];
+        char *buffer = new char[size];
         ::GetEnvironmentVariableA(var, buffer, length);
         result = buffer;
         delete [] buffer;

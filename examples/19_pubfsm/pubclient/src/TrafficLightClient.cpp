@@ -22,7 +22,7 @@ DEF_LOG_SCOPE(pubclient_src_TrafficLightClient, service_connected);
 
 TrafficLightClient::TrafficLightClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component                     ( entry, owner )
-    , TrafficControllerConsumerBase   (entry.mDependencyServices[0].mRoleName)
+    , TrafficControllerConsumerBase   (entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(*this))
     , mIsEastWest                   (std::any_cast<bool>(entry.data()))
 {
 }

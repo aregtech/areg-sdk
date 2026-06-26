@@ -150,7 +150,7 @@ WorkerThread* Component::create_worker_thread(  const String & threadName
     if (workThread != nullptr)
         return workThread;
 
-    workThread = DEBUG_NEW WorkerThread(threadName, self(), consumer, watchdogTimeout, stackSizeKb, maxQeueue, dropOnFull, waitMs);
+    workThread = new WorkerThread(threadName, self(), consumer, watchdogTimeout, stackSizeKb, maxQeueue, dropOnFull, waitMs);
     if (workThread == nullptr)
         return nullptr;
     

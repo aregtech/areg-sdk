@@ -1156,7 +1156,7 @@ inline void zero_elements( ELEM * elemList, uint32_t elemCount )
 template<typename BufType>
 BufType* areg::BufferAllocator<BufType>::operator ( ) (uint32_t space)
 {
-    uint8_t* result = DEBUG_NEW uint8_t[space];
+    uint8_t* result = new uint8_t[space];
     return ::new(result) BufType;
 }
 

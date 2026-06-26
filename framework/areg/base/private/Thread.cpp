@@ -115,7 +115,7 @@ ThreadLocalStorage* Thread::_thread_local_storage( Thread* ownThread )
     {
         // called only once, when thread starts.
         ASSERT(_localStorage == nullptr );
-        _localStorage = DEBUG_NEW ThreadLocalStorage( *ownThread );
+        _localStorage = new ThreadLocalStorage( *ownThread );
     }
     else
     {

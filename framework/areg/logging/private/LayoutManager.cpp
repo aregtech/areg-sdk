@@ -30,7 +30,7 @@ bool LayoutManager::create_layouts( const char * layoutFormat )
 {
     delete_layouts();
     int32_t len = !areg::is_empty<char>(layoutFormat) ? areg::string_length<char>( layoutFormat ) : 0;
-    char * strFormat = len > 0 ? DEBUG_NEW char[ static_cast<uint32_t>(len) + 1u ] : nullptr;
+    char * strFormat = len > 0 ? new char[ static_cast<uint32_t>(len) + 1u ] : nullptr;
 
     if ( strFormat != nullptr )
     {
@@ -101,59 +101,59 @@ inline void LayoutManager::_create_layouts(char* layoutFormat)
             switch (static_cast<areg::LayoutToken>(ch))
             {
             case areg::LayoutToken::TickCount:
-                newLayout = DEBUG_NEW TickCountLayout();
+                newLayout = new TickCountLayout();
                 break;
 
             case areg::LayoutToken::DayTime:
-                newLayout = DEBUG_NEW DayTimeLayout();
+                newLayout = new DayTimeLayout();
                 break;
 
             case areg::LayoutToken::ExecutableId:
-                newLayout = DEBUG_NEW ModuleIdLayout();
+                newLayout = new ModuleIdLayout();
                 break;
 
             case areg::LayoutToken::Message:
                 if (!hasExclusive)
                 {
-                    newLayout = DEBUG_NEW MessageLayout();
+                    newLayout = new MessageLayout();
                     hasExclusive = true;
                 }
                 break;
 
             case areg::LayoutToken::EndOfLine:
-                newLayout = DEBUG_NEW EndOfLineLayout();
+                newLayout = new EndOfLineLayout();
                 break;
 
             case areg::LayoutToken::Priority:
-                newLayout = DEBUG_NEW PriorityLayout();
+                newLayout = new PriorityLayout();
                 break;
 
             case areg::LayoutToken::ScopeId:
-                newLayout = DEBUG_NEW ScopeIdLayout();
+                newLayout = new ScopeIdLayout();
                 break;
 
             case areg::LayoutToken::ThreadId:
-                newLayout = DEBUG_NEW ThreadIdLayout();
+                newLayout = new ThreadIdLayout();
                 break;
 
             case areg::LayoutToken::ExecutableName:
-                newLayout = DEBUG_NEW ModuleNameLayout();
+                newLayout = new ModuleNameLayout();
                 break;
 
             case areg::LayoutToken::ThreadName:
-                newLayout = DEBUG_NEW ThreadNameLayout();
+                newLayout = new ThreadNameLayout();
                 break;
 
             case areg::LayoutToken::ScopeName:
                 if (!hasExclusive)
                 {
-                    newLayout = DEBUG_NEW ScopeNameLayout();
+                    newLayout = new ScopeNameLayout();
                     hasExclusive = true;
                 }
                 break;
 
             case areg::LayoutToken::CookieId:
-                newLayout = DEBUG_NEW CookieIdLayout();
+                newLayout = new CookieIdLayout();
                 break;
 
             case areg::LayoutToken::Undefined:  // fall through
@@ -162,7 +162,7 @@ inline void LayoutManager::_create_layouts(char* layoutFormat)
                 if (ch == areg::SYNTAX_SPECIAL_FORMAT)
                 {
                     *(pos + 1) = String::EmptyChar;
-                    newLayout = DEBUG_NEW AnyTextLayout(pos1);
+                    newLayout = new AnyTextLayout(pos1);
                     pos1 = pos; // <== will automatically move 2 positions when newLayout is not nullptr;
                 }
                 else
@@ -175,7 +175,7 @@ inline void LayoutManager::_create_layouts(char* layoutFormat)
             if (newLayout != nullptr)
             {
                 *pos = String::EmptyChar;
-                anyText = pos1 != pos ? DEBUG_NEW AnyTextLayout(pos1) : nullptr;
+                anyText = pos1 != pos ? new AnyTextLayout(pos1) : nullptr;
                 if (anyText != nullptr)
                 {
                     mLayoutList.add(anyText);
@@ -192,7 +192,7 @@ inline void LayoutManager::_create_layouts(char* layoutFormat)
         }
     }
     
-    anyText = pos1 != pos ? DEBUG_NEW AnyTextLayout(pos1) : nullptr;
+    anyText = pos1 != pos ? new AnyTextLayout(pos1) : nullptr;
     if (anyText != nullptr)
     {
         mLayoutList.add(anyText);
