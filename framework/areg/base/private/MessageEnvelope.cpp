@@ -65,7 +65,7 @@ MessageEnvelope::MessageEnvelope(const areg::EventHeader& evtHeader, uint32_t re
     sizeUsed = areg::align_size(sizeUsed, block_size());
 
     const uint32_t sizeBuffer{ sizeUsed + static_cast<uint32_t>(sizeof(areg::EventHeader)) };
-    uint8_t* result{ DEBUG_NEW uint8_t[sizeBuffer] };
+    uint8_t* result{ new uint8_t[sizeBuffer] };
     if (result != nullptr)
     {
         areg::RawEnvelope* env{ reinterpret_cast<areg::RawEnvelope*>(result) };
@@ -152,7 +152,7 @@ uint8_t* MessageEnvelope::init_envelope(const areg::EventHeader& evtHeader, uint
     invalidate();
 
     const uint32_t sizeBuffer{ sizeUsed + static_cast<uint32_t>(sizeof(areg::EventHeader)) };
-    uint8_t* result{ DEBUG_NEW uint8_t[sizeBuffer] };
+    uint8_t* result{ new uint8_t[sizeBuffer] };
     if (result == nullptr)
         return nullptr;
 

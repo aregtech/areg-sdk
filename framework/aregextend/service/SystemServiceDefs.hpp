@@ -288,7 +288,7 @@ inline constexpr const char * as_string( areg::ext::ServicePhase serviceState ) 
 template<typename CharType>
 inline char** convert_arguments(CharType** argv, int32_t argc)
 {
-    char** result = argc != 0 ? DEBUG_NEW char* [static_cast<uint32_t>(argc)] : nullptr;
+    char** result = argc != 0 ? new char* [static_cast<uint32_t>(argc)] : nullptr;
     if (result != nullptr)
     {
         for (uint32_t i = 0; i < static_cast<uint32_t>(argc); ++i)
@@ -296,7 +296,7 @@ inline char** convert_arguments(CharType** argv, int32_t argc)
             CharType* entry = argv[i];
             uint32_t length = static_cast<uint32_t>(areg::string_length<CharType>(entry));
             uint32_t size = length + 1u;
-            char* arg = DEBUG_NEW char[size];
+            char* arg = new char[size];
             areg::copy_string<char, CharType>(arg, static_cast<areg::CharCount>(size), entry);
             result[i] = arg;
         }

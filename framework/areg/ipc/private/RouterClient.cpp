@@ -206,8 +206,7 @@ void RouterClient::failed_send_message(const MessageEnvelope & msgFailed, Socket
             if ( whichTarget.is_valid() && (whichTarget.is_alive() == false))
             {
                 LOG_DBG("Trying to reconnect");
-                cancel_connection( );
-                send_command( ServiceEventData::ServiceCommand::CMD_ServiceLost, areg::EventPriority::NormalPrio );
+                notify_connection_lost( );
             }
         }
         else
@@ -232,8 +231,7 @@ void RouterClient::failed_receive_message( [[maybe_unused]] Socket & whichSource
                    , static_cast<uint32_t>(whichSource.handle())
                    , whichSource.is_valid() ? "VALID" : "INVALID"
                    , whichSource.is_alive() ? "ALIVE" : "DEAD");
-        cancel_connection();
-        send_command(ServiceEventData::ServiceCommand::CMD_ServiceLost, areg::EventPriority::NormalPrio);
+        notify_connection_lost();
     }
     else
     {

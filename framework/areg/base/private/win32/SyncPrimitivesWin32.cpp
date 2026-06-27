@@ -179,7 +179,7 @@ bool Semaphore::_os_unlock()
 
 void CriticalSection::_os_create_critical_section()
 {
-    mSyncObject = static_cast<void *>( DEBUG_NEW uint8_t [sizeof(CRITICAL_SECTION)] );
+    mSyncObject = static_cast<void *>( new uint8_t [sizeof(CRITICAL_SECTION)] );
     areg::construct_elems<CRITICAL_SECTION>( mSyncObject, 1 );
     InitializeCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSyncObject) );
 }

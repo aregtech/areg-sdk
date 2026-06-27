@@ -323,14 +323,14 @@ protected:
 
 template< typename VALUE >
 FixedArray<VALUE>::FixedArray(uint32_t elemCount /*= 0*/ )
-    : mValueList( elemCount != 0 ? DEBUG_NEW VALUE[elemCount] : nullptr )
+    : mValueList( elemCount != 0 ? new VALUE[elemCount] : nullptr )
     , mElemCount( mValueList != nullptr ? elemCount : 0 )
 {
 }
 
 template< typename VALUE >
 FixedArray<VALUE>::FixedArray( const FixedArray<VALUE>& src )
-    : mValueList( src.mElemCount != 0 ? DEBUG_NEW VALUE[src.mElemCount] : nullptr )
+    : mValueList( src.mElemCount != 0 ? new VALUE[src.mElemCount] : nullptr )
     , mElemCount( mValueList != nullptr ? src.mElemCount : 0 )
 {
     areg::copy_elems<VALUE>(mValueList, src.mValueList, mElemCount);
@@ -347,7 +347,7 @@ FixedArray<VALUE>::FixedArray( FixedArray<VALUE> && src ) noexcept
 
 template<typename VALUE>
 FixedArray<VALUE>::FixedArray(const VALUE* list, uint32_t count)
-    : mValueList(count ? DEBUG_NEW VALUE[count] : nullptr)
+    : mValueList(count ? new VALUE[count] : nullptr)
     , mElemCount(mValueList != nullptr ? count : 0)
 {
     areg::copy_elems<VALUE>(mValueList, list, mElemCount);
@@ -479,7 +479,7 @@ void FixedArray<VALUE>::copy(const FixedArray< VALUE >& src)
         if (mElemCount != src.size())
         {
             clear();
-            mValueList = src.size() > 0 ? DEBUG_NEW VALUE[src.size()] : nullptr;
+            mValueList = src.size() > 0 ? new VALUE[src.size()] : nullptr;
             mElemCount = mValueList != nullptr ? src.size() : 0;
         }
 
@@ -517,7 +517,7 @@ inline int32_t FixedArray<VALUE>::find(const VALUE& elemSearch, uint32_t startAt
 template< typename VALUE >
 void FixedArray<VALUE>::resize(uint32_t newLength)
 {
-    VALUE * newList = newLength != 0 ? DEBUG_NEW VALUE[newLength] : nullptr;
+    VALUE * newList = newLength != 0 ? new VALUE[newLength] : nullptr;
     uint32_t count = std::min(newLength, mElemCount);
     areg::copy_elems<VALUE>(newList, mValueList, count);
     delete [] mValueList;

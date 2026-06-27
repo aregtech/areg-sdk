@@ -153,9 +153,9 @@
       #define DEBUG_NEW    new(_NORMAL_BLOCK, __FILE__, __LINE__)
    #endif   // DEBUG_NEW
 #else // _DEBUG
-   #ifndef DEBUG_NEW
-      #define DEBUG_NEW    new
-   #endif   // DEBUG_NEW
+#ifndef DEBUG_NEW
+    #define DEBUG_NEW    new
+#endif   // DEBUG_NEW
 #endif   // _DEBUG
 
 /**

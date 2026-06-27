@@ -110,7 +110,7 @@ void PowerControllerClient::on_run()
         printf("\n");
     } while (loop);
 
-    printf("Quiting the Traffic Light Controller application ...");
+    printf("Quiting the Traffic Light Controller application ...\n");
     areg::Application::signal_quit();
 }
 

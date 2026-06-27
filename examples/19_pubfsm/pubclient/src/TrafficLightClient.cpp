@@ -22,7 +22,7 @@ DEF_LOG_SCOPE(pubclient_src_TrafficLightClient, service_connected);
 
 TrafficLightClient::TrafficLightClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component                     ( entry, owner )
-    , TrafficControllerConsumerBase   (entry.mDependencyServices[0].mRoleName)
+    , TrafficControllerConsumerBase   (entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(*this))
     , mIsEastWest                   (std::any_cast<bool>(entry.data()))
 {
 }
@@ -104,7 +104,7 @@ bool TrafficLightClient::service_connected( areg::ServiceConnectionState status,
         printf( "\tVehicle Light: %12s    |\tPedestrian Light: %s\n"
                 , fsm::name( TrafficController::VehicleTrafficLight::Off )
                 , fsm::name( TrafficController::PedestrianTrafficLight::Off ) );
-        printf( "\nClose the application ..." );
+        printf( "\nClose the application ...\n" );
 
         notify_on_traffic_east_west_update( false );
         notify_on_broadcast_east_west( false );

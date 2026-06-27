@@ -44,7 +44,7 @@ namespace
 
     inline char ** _convert_args( TCHAR ** argv, int32_t argc )
     {
-        char ** argvTemp = argc != 0 ? DEBUG_NEW char * [static_cast<uint32_t>(argc)] : nullptr;
+        char ** argvTemp = argc != 0 ? new char * [static_cast<uint32_t>(argc)] : nullptr;
         if ( argvTemp != nullptr )
         {
             for ( uint32_t i = 0; i < static_cast<uint32_t>(argc); ++i )
@@ -52,7 +52,7 @@ namespace
                 TCHAR * entry = argv[i];
                 uint32_t length = static_cast<uint32_t>(areg::string_length<TCHAR>( entry ));
                 uint32_t size = length + 1u;
-                char * arg = DEBUG_NEW char[size];
+                char * arg = new char[size];
                 areg::copy_string<char, TCHAR>( arg, static_cast<areg::CharCount>(size), entry );
                 argvTemp[i] = arg;
             }

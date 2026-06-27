@@ -678,7 +678,7 @@ AREG_API_IMPL SOCKETHANDLE areg::server_connect(const areg::SocketAddress & peer
         {
             areg::socket_configure(result);
 
-            int32_t yes = 1;    // avoid the "address already in use" error message
+            int32_t yes = 1; // avoid the "address already in use" error message
             ::setsockopt( result, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&yes), sizeof(int32_t) );
             if (areg::RETURNED_OK != bind(result, reinterpret_cast<sockaddr *>(&serverAddr), sizeof(sockaddr_in)) )
             {

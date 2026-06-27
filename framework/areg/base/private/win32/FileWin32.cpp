@@ -75,7 +75,7 @@ static areg::String _searchFile( const char* fileName, const char* fileExtension
     {
         fileExtension = fileExtension != nullptr && *fileExtension == '.' ? fileExtension : nullptr;
         String searchPath = File::NameHasCurrentFolder(searchInDirectory) ? File::GetCurrentDir() : searchInDirectory;
-        char * buffer = DEBUG_NEW char[File::MAXIMUM_PATH + 1];
+        char * buffer = new char[File::MAXIMUM_PATH + 1];
         uint32_t length = ::SearchPathA(searchPath, fileName, fileExtension, File::MAXIMUM_PATH, buffer, &fileName);
         result = length != 0 && length <= File::MAXIMUM_PATH ? buffer : "";
 

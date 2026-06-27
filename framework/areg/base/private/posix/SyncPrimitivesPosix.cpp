@@ -64,7 +64,7 @@ void SyncObject::_os_destroy()
 
 void Mutex::_os_create_mutex( bool initLock )
 {
-    mSyncObject = DEBUG_NEW areg::os::WaitableMutexPosix(initLock);
+    mSyncObject = new areg::os::WaitableMutexPosix(initLock);
 }
 
 bool Mutex::_os_lock_mutex( uint32_t timeout )
@@ -101,7 +101,7 @@ bool Mutex::_os_unlock_mutex()
 
 void SyncEvent::_os_create_event( bool initLock )
 {
-    mSyncObject    = static_cast<void *>( DEBUG_NEW areg::os::WaitableEventPosix(!initLock, mAutoReset) );
+    mSyncObject    = static_cast<void *>( new areg::os::WaitableEventPosix(!initLock, mAutoReset) );
 }
 
 bool SyncEvent::_os_unlock_event( void * eventHandle ) noexcept
@@ -148,7 +148,7 @@ int32_t SyncEvent::_os_wait_any( SyncEvent** events, int32_t count, uint32_t tim
 
 void Semaphore::_os_create_semaphore( )
 {
-    mSyncObject = DEBUG_NEW areg::os::WaitableSemaphorePosix(static_cast<int32_t>(mMaxCount), static_cast<int32_t>(mCurrCount.load()));
+    mSyncObject = new areg::os::WaitableSemaphorePosix(static_cast<int32_t>(mMaxCount), static_cast<int32_t>(mCurrCount.load()));
 }
 
 void Semaphore::_os_release_semaphore()
@@ -174,7 +174,7 @@ bool Semaphore::_os_unlock()
 
 void CriticalSection::_os_create_critical_section()
 {
-    mSyncObject = static_cast<void *>( DEBUG_NEW areg::os::CriticalSectionPosix(false) );
+    mSyncObject = static_cast<void *>( new areg::os::CriticalSectionPosix(false) );
 }
 
 void CriticalSection::_os_release_critical_section()
@@ -203,7 +203,7 @@ bool CriticalSection::_os_try_lock()
 
 void SyncTimer::_os_create_timer( bool /* isSteady */ )
 {
-    mSyncObject= static_cast<void *>(DEBUG_NEW areg::os::WaitableTimerPosix( mIsAutoReset ));
+    mSyncObject= static_cast<void *>(new areg::os::WaitableTimerPosix( mIsAutoReset ));
 }
 
 void SyncTimer::_os_release_time()
