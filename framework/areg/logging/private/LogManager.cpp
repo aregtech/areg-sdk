@@ -314,7 +314,8 @@ void LogManager::ready_for_events( bool is_ready )
         DispatcherThread::ready_for_events( false );
         LoggingEvent::remove_listener( static_cast<LoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
 
-        // When we are here, all loggers should be already closed.
+        stop_logs();
+
         ASSERT(!mLoggerFile.is_logger_opened());
         ASSERT(!mLoggerDebug.is_logger_opened());
         ASSERT(!mLoggerTcp.is_logger_opened());

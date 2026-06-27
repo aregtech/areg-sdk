@@ -352,6 +352,15 @@ public:
     static bool is_servicing_ready();
 
     /**
+     * \brief   Returns true while servicing can start or retry connections, i.e. the application
+     *          is initializing or ready (not releasing, stopped or in failure).
+     *
+     * \return  Returns true if the application state is Initializing or Ready.
+     **/
+    [[nodiscard]]
+    static bool is_servicing_available();
+
+    /**
      * \brief   Queries the amount of sent data in bytes and sent messages since the last call, and resets counters.
      *
      * \param[out] sizeSend     On output, contains the size of data in bytes sent since the last call.
