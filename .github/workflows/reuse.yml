@@ -16,4 +16,3 @@ jobs:
 
       - name: REUSE Compliance Check
         uses: fsfe/reuse-action@v6
-        continue-on-error: true
