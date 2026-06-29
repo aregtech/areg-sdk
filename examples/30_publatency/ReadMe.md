@@ -217,7 +217,11 @@ is measured in every RTT sample.
 
 > Test configuration: `count=10000 warmup=1000` for RTT (`ppX`); `count=5000 warmup=1000` for OWT (`bcX`).
 > Values in **μs** (microseconds). Each row is the average of 8 consecutive runs.
-> Build: `Release`, `AREG_LOGGING=OFF`.
+> Build: `Release`, `AREG_LOGGING=OFF`. Linux figures: `mtrouter`, provider, and consumer
+> each pinned to a dedicated physical core via `taskset`.
+>
+> Raw output of every run behind these numbers, including the exact `taskset` commands:
+> → **[benchmark-test-results.txt](../../docs/wiki/benchmark-test-results.txt)**
 >
 > Full methodology, timestamp placement, and interpretation:
 > → **[areg-sdk Performance Benchmarks](../../docs/wiki/08b-areg-sdk-performance-benchmarks.md)**
@@ -230,14 +234,15 @@ is measured in every RTT sample.
 
 | Platform | OWT Min | OWT P50 | RTT Min | RTT P50 | RTT P99 |
 |:---------|:-------:|:-------:|:-------:|:-------:|:-------:|
-| **Linux** ¹ | **12.0 μs** | **~13.8 μs** | **23.5 μs** | **~25.7 μs** | ~39.4 μs |
+| **Linux** ¹ | **10.5 μs** | **~11.2 μs** | **21.2 μs** | **~21.7 μs** | ~23.5 μs |
 | **macOS M3 Pro** | 21.6 μs | 31.4 μs | 46.0 μs | 62.5 μs | 78.3 μs |
 | **Windows 11** | 32.5 μs | 40.3 μs | 64.0 μs | 82.5 μs | 107.8 μs |
 
-> ¹ Same i7-13700H / 32 GB DDR4 laptop as Windows, Ubuntu 26.04, **Performance** power mode.
+> ¹ Same i7-13700H / 32 GB DDR4 laptop as Windows, Ubuntu 26.04, **Performance** power mode,
+> cores pinned via `taskset`. Unpinned, Linux latency is ~30% higher.
 > macOS: Apple M3 Pro, 32 GB LPDDR5. All three platforms tested on native SSD.
 >
-> Latency is **payload-insensitive up to 4 KB**: Linux Min increases only 1.8 μs over a
+> Latency is **payload-insensitive up to 4 KB**: Linux Min increases only 1.1 μs over a
 > 20× size range (bc64 to bc4096).
 >
 > For comparison: gRPC C++ sequential RTT **~116–167 μs** over Unix domain socket (no service dispatch).
@@ -247,36 +252,40 @@ is measured in every RTT sample.
 
 ### Linux – Ubuntu 26.04, Intel i7-13700H (mobile), 32 GB DDR4
 
-> **Performance** power mode, native SSD. Values are averages across 8 consecutive
-> runs per mode. Min is the most stable statistic across runs; P95/P99 carry the most
-> run-to-run variance.
+> **Performance** power mode, native SSD, cores pinned via `taskset`. Values are averages
+> across 8 consecutive runs per mode. Min and P50 are tight and stable across runs.
 
 #### Ping-Pong RTT (μs)
 
 | Mode    | Total msg size       | Min    | P50    | P95    | P99    | Mean   |
 |:--------|:--------------------:|:------:|:------:|:------:|:------:|:------:|
-| `pp0`   | 140 / 148 B          | 22.7   | 24.3   | 28.5   | 36.5   | 25.0   |
-| `pp64`  | 204 / 212 B          | 23.5   | 25.7   | 31.9   | 39.4   | 26.9   |
-| `pp128` | 268 / 276 B          | 23.5   | 25.2   | 31.7   | 41.6   | 26.7   |
-| `pp256` | 396 / 404 B          | 23.9   | 27.1   | 30.6   | 41.4   | 27.3   |
-| `pp512` | 652 / 660 B          | 24.5   | 26.3   | 30.3   | 45.7   | 27.3   |
-| `pp1024`| 1 164 / 1 172 B      | 24.6   | 25.6   | 30.0   | 44.6   | 26.8   |
-| `pp4096`| 4 236 / 4 244 B      | 28.0   | 32.7   | 37.9   | 48.8   | 33.4   |
-| `pp65536`| 65 676 / 65 684 B   | 76.8   | 82.4   | 91.9   | 103.1  | 83.5   |
+| `pp0`   | 140 / 148 B          | 21.0   | 21.4   | 22.0   | 23.0   | 21.5   |
+| `pp8`   | 148 / 156 B          | 21.1   | 21.4   | 22.0   | 23.0   | 21.5   |
+| `pp16`  | 156 / 164 B          | 21.0   | 21.5   | 22.2   | 23.2   | 21.6   |
+| `pp32`  | 172 / 180 B          | 21.1   | 21.6   | 22.3   | 23.2   | 21.7   |
+| `pp64`  | 204 / 212 B          | 21.2   | 21.7   | 22.5   | 23.5   | 22.0   |
+| `pp128` | 268 / 276 B          | 21.2   | 21.8   | 22.8   | 23.8   | 22.0   |
+| `pp256` | 396 / 404 B          | 21.8   | 22.3   | 23.3   | 24.2   | 22.4   |
+| `pp512` | 652 / 660 B          | 22.3   | 22.9   | 24.0   | 24.9   | 23.1   |
+| `pp1024`| 1 164 / 1 172 B      | 22.4   | 22.9   | 24.1   | 25.1   | 23.1   |
+| `pp4096`| 4 236 / 4 244 B      | 23.4   | 24.5   | 26.1   | 26.9   | 24.7   |
+| `pp65536`| 65 676 / 65 684 B   | 62.6   | 65.5   | 68.7   | 70.9   | 65.3   |
 
 #### Broadcast One-Way (μs)
 
 | Mode      | Total msg size | Min    | P50   | P95   | P99   | Mean  |
 |:----------|:--------------:|:------:|:-----:|:-----:|:-----:|:-----:|
-| `bc0`     | 140 B          | 12.1   | 14.2  | 17.1  | 23.0  | 14.8  |
-| `bc8`     | 148 B          | 11.5   | 15.0  | 20.5  | 31.9  | 15.3  |
-| `bc64`    | 204 B          | 12.0   | 13.8  | 28.8  | 41.7  | 16.0  |
-| `bc128`   | 268 B          | 11.8   | 13.3  | 28.3  | 41.4  | 15.7  |
-| `bc256`   | 396 B          | 11.8   | 12.9  | 26.4  | 46.7  | 14.8  |
-| `bc512`   | 652 B          | 12.5   | 14.5  | 26.3  | 41.5  | 16.3  |
-| `bc1024`  | 1 164 B        | 12.5   | 14.5  | 29.4  | 46.3  | 16.8  |
-| `bc4096`  | 4 236 B        | 13.8   | 16.1  | 34.7  | 58.5  | 19.3  |
-| `bc65536` | 65 676 B       | 32.3   | 35.4  | 48.1  | 86.5  | 37.6  |
+| `bc0`     | 140 B          | 10.4   | 10.7  | 10.9  | 11.9  | 10.8  |
+| `bc8`     | 148 B          | 10.5   | 10.9  | 11.1  | 12.3  | 11.0  |
+| `bc16`    | 156 B          | 10.4   | 11.0  | 11.3  | 13.3  | 11.1  |
+| `bc32`    | 172 B          | 10.4   | 11.1  | 11.5  | 16.3  | 11.3  |
+| `bc64`    | 204 B          | 10.5   | 11.2  | 11.8  | 21.4  | 11.5  |
+| `bc128`   | 268 B          | 10.5   | 11.3  | 12.1  | 25.4  | 11.7  |
+| `bc256`   | 396 B          | 10.6   | 11.5  | 13.2  | 30.5  | 12.3  |
+| `bc512`   | 652 B          | 11.0   | 11.8  | 13.0  | 28.1  | 12.3  |
+| `bc1024`  | 1 164 B        | 11.0   | 11.9  | 20.3  | 31.8  | 13.1  |
+| `bc4096`  | 4 236 B        | 11.6   | 12.8  | 29.5  | 40.7  | 15.4  |
+| `bc65536` | 65 676 B       | 28.8   | 29.9  | 32.7  | 34.6  | 30.2  |
 
 ---
 
@@ -384,8 +393,8 @@ Timestamps are taken **before serialization** (sender) and **after deserializati
 
 | Framework | Transport | OWT / RTT | Metric | Source |
 |:----------|:---------:|:---------:|:------:|:-------|
-| **areg-sdk** | TCP, 2-hop broker (Linux) | OWT **12.0 μs** Min / **~13.8 μs** P50 | Full: serialization + routing + dispatch | Measured – this example |
-| **areg-sdk** | TCP, 2-hop broker (Linux) | RTT **23.5 μs** Min / **~25.7 μs** P50 | Full: broker + dispatch + thread affinity | Measured – this example |
+| **areg-sdk** | TCP, 2-hop broker (Linux, pinned) | OWT **10.5 μs** Min / **~11.2 μs** P50 | Full: serialization + routing + dispatch | Measured – this example |
+| **areg-sdk** | TCP, 2-hop broker (Linux, pinned) | RTT **21.2 μs** Min / **~21.7 μs** P50 | Full: broker + dispatch + thread affinity | Measured – this example |
 | **areg-sdk** | TCP, 2-hop broker (Windows) | RTT **82.5 μs** P50 | Full: broker + dispatch + thread affinity | Measured – this example |
 | **areg-sdk** | TCP, 2-hop broker (macOS M3) | RTT **62.5 μs** P50 | Full: broker + dispatch + thread affinity | Measured – this example |
 | NanoMsg | TCP, direct (Linux) | OWT **18.0 μs** Min / **21.9 μs** Avg | Raw transport, no dispatch | [Hitachi Energy, arXiv:2508.07934v1](https://arxiv.org/abs/2508.07934) |
@@ -393,12 +402,14 @@ Timestamps are taken **before serialization** (sender) and **after deserializati
 | NNG | TCP, direct (Linux) | OWT **24.3 μs** Min / **34.9 μs** Avg | Raw transport, no dispatch | [Hitachi Energy, arXiv:2508.07934v1](https://arxiv.org/abs/2508.07934) |
 | gRPC C++ | UDS, direct (Linux) | RTT **116 μs** median (other core) | Full RPC, HTTP/2 + protobuf | [MPI-HD, F. Werner, 2021](https://www.mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc/) |
 
-> **areg-sdk on Linux (OWT, TCP, 2-hop)** achieves lower Min and Mean than NanoMsg, ZMQ,
-> and NNG (raw TCP, direct, isolated cores, low load) – while routing through a centralized
+> **areg-sdk on Linux (OWT, TCP, 2-hop, pinned cores)** achieves lower Min and Mean than NanoMsg,
+> ZMQ, and NNG (raw TCP, direct, isolated cores, low load) – while routing through a centralized
 > broker and including full typed serialization and dispatch on both sides.
 >
-> **RTT floor claim:** areg-sdk pp64 RTT Min (23.5 μs) < 2 × NanoMsg direct OWT Min (18.0 × 2 = 36 μs).
+> **RTT floor claim:** areg-sdk pp64 RTT Min (21.2 μs) < 2 × NanoMsg direct OWT Min (18.0 × 2 = 36 μs).
 > The complete service framework adds less overhead than a second raw TCP hop.
+>
+> Raw output of these exact runs: [benchmark-test-results.txt](../../docs/wiki/benchmark-test-results.txt)
 >
 > For the full competitive analysis, see:
 > → **[areg-sdk vs ZMQ / NanoMsg / NNG](../../docs/wiki/08c-areg-vs-hitachi-benchmark.md)**

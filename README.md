@@ -47,6 +47,7 @@
 ## Table of Contents
 
 - [Why Areg SDK](#why-areg-sdk)
+- [What You Get](#what-you-get)
 - [How It Works](#how-it-works)
 - [Performance](#performance)
 - [Areg SDK vs. Alternatives](#areg-sdk-vs-alternatives)
@@ -91,6 +92,28 @@ boundaries, and network boundaries – using a single consistent programming mod
 > to high-performance distributed systems.
 >
 > **Not for:** RTOS hard real-time targets (planned), web services, or non-C++ ecosystems.
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## What You Get[![](./docs/img/pin.svg)](#what-you-get)
+
+**If you build C++ systems with threads, processes, or networked devices – embedded, edge, or enterprise – here is what changes when you use Areg SDK.**
+
+- **Weeks of infrastructure work removed.** Threading, IPC, service discovery, and reconnection logic are normally hand-built and debugged on every project. Areg SDK generates and manages this layer, so you write business logic instead of plumbing. *(Full breakdown: [Development Time Savings](./docs/wiki/08d-areg-framework-rankings.md#10-development-time-savings-with-areg-sdk))*
+
+- **Race conditions on every message path are structurally eliminated.** Raw bytes route to the owning thread before any data is deserialized or touched. There is no shared state to lock, audit, or get wrong, for anything that goes through the framework.
+
+- **No startup-order or cross-dependency logic to write.** Services find each other by name, regardless of which one starts first, and regardless of thread, process, or machine. No boot sequencing, no "is the other service ready yet" checks, no manual retry loops.
+
+- **#1 TCP framework by both latency and data rate, among all frameworks with comparable sourced measurements.** Full service dispatch included, not a stripped transport benchmark. ~11 μs one-way, 6.0–8.0 GB/s (sustained to peak). Full rankings and sources: [framework rankings](./docs/wiki/08d-areg-framework-rankings.md), [measured output](./docs/wiki/benchmark-test-results.txt).
+
+- **Failed components recover without operator intervention.** Built-in restart and reconnection logic bring a failed thread back online, and dependent consumers reconnect automatically.
+
+- **The same source code runs at any scale.** As threads in one process, as separate processes on one machine, or as services across a network – no code changes required. Moving from prototype to production is a deployment change, not a rewrite.
+
+- **Swap real hardware for simulation without touching a line of consumer code.** Services are resolved by name, not by type or connection string. A simulated service registered under the same name is indistinguishable from the real one to every consumer on the network. Test before hardware exists. Deploy to production with zero code changes.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -162,7 +185,7 @@ For full details, see the [Service Interface Guide](./docs/wiki/06e-lusan-servic
 
 ## Performance[![](./docs/img/pin.svg)](#performance)
 
-Measured on **mobile-class consumer hardware**, full stack active – data serialization, event dispatching, and multithreading. These are not raw socket numbers.
+Measured on **mobile-class consumer hardware**, full stack active – data serialization, event dispatching, and multithreading. These are not raw socket numbers. [Raw benchmark output](./docs/wiki/benchmark-test-results.txt) is published alongside the full methodology for independent verification.
 
 ### Throughput – TCP `localhost`, 1:1, measured at `mtrouter`
 
@@ -180,17 +203,17 @@ Measured on **mobile-class consumer hardware**, full stack active – data seria
 
 ### Latency – TCP `localhost`, full stack, 204-byte messages
 
-Timestamps span the full call path: before serialization (sender) to after deserialization and dispatch (receiver). OWT = one-way (2-hop). RTT = round-trip through `mtrouter` (4-hop).
+Timestamps span the full call path: before serialization (sender) to after deserialization and dispatch (receiver). OWT = one-way (2-hop). RTT = round-trip through `mtrouter` (4-hop). Linux figures are measured with `mtrouter`, provider, and consumer each pinned to a dedicated CPU core via `taskset` – see the [raw output](./docs/wiki/benchmark-test-results.txt) and [methodology](./docs/wiki/08b-areg-sdk-performance-benchmarks.md#12-pinned-core-methodology-and-trade-offs).
 
 | Platform       | CPU               | OWT Min     | OWT P50      | RTT Min     | RTT P50    |
 |----------------|-------------------|-------------|--------------|-------------|------------|
-| Linux Ubuntu ¹ | i7-13700H (DDR4)  | **12.0 μs** | **~13.8 μs** | **23.5 μs** | **~25.7 μs** |
+| Linux Ubuntu ¹ | i7-13700H (DDR4)  | **10.5 μs** | **~11.2 μs** | **21.2 μs** | **~21.7 μs** |
 | macOS M3 Pro   | Apple M3 (LPDDR5) | 21.6 μs     | 31.4 μs      | 46.0 μs     | 62.5 μs    |
 | Windows 11     | i7-13700H (DDR4)  | 32.5 μs     | 40.3 μs      | 64.0 μs     | 82.5 μs    |
 
-¹ Ubuntu 26.04, `Performance` power mode.
+¹ Ubuntu 26.04, `Performance` power mode, cores pinned via `taskset`. Unpinned, latency is ~30% higher (still the fastest measured TCP framework in its class – see [framework rankings](./docs/wiki/08d-areg-framework-rankings.md)).
 
-For comparison: **gRPC C++ sequential RTT ~116–167 μs** over Unix domain socket – despite fewer hops and no service dispatch ([MPI-HD, F. Werner, 2021](https://www.mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc/)). Latency is payload-insensitive up to 4 KB – Min rises only 1.8 μs across a 20× size increase; framework overhead dominates.
+For comparison: **gRPC C++ sequential RTT ~116–167 μs** over Unix domain socket – despite fewer hops and no service dispatch ([MPI-HD, F. Werner, 2021](https://www.mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc/)). Latency is payload-insensitive up to 4 KB – Min rises only 1.1 μs across a 20× size increase; framework overhead dominates.
 
 **Real-world fit:** covers the software pipeline layer of scientific imaging (laser microscopy, X-ray, electron microscopy) and industrial machine vision on a standard laptop.
 
@@ -558,8 +581,9 @@ to real hardware with zero application code changes.
 processors, real-time analytics – typically build custom threading and IPC from scratch.
 Areg SDK replaces that infrastructure with a generated, typed service layer that handles
 thread safety, message dispatch, and inter-process routing automatically. With stable
-consumer dispatch at 300–600K msg/s on a single machine (platform-dependent), the
-framework does not constrain throughput for any realistic backend workload.
+dispatch at 1.5M-2.5M msg/s on a single machine (platform-dependent, see
+[Performance](#performance)), the framework does not constrain throughput for any
+realistic backend workload.
 
 **What this means in practice:** Define service interfaces, generate the infrastructure,
 implement the logic. Services scale from in-process components to distributed nodes
