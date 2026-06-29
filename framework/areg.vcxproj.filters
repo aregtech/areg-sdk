@@ -489,6 +489,12 @@
     <ClCompile Include="areg\base\private\MessageEnvelope.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="areg\base\private\posix\SimpleEventPosix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\base\private\win32\SimpleEventWin32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="areg\system\windows\areg_windows.h">
@@ -1035,6 +1041,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\MessageEnvelope.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\base\SimpleEvent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -19,6 +19,7 @@
  * Includes
  ************************************************************************/
 #include "areg/base/areg_global.h"
+#include "areg/base/SimpleEvent.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 
 #include <atomic>
@@ -310,7 +311,7 @@ private:
     std::atomic_uint32_t    mPrioCount; //!< The number of elements in mPrioQueue
 
     //!< Consumer wake-up doorbell. Manual-reset: set by push/trigger_exit, reset only by wait_event.
-    SyncEvent               mQueueEvent;
+    SimpleEvent             mQueueEvent;
     //!< Set by the consumer while parked in wait_event(); read by producers so the doorbell
     //!< is rung only when a waiter actually needs it (eventcount discipline, lost-wakeup-free).
     std::atomic<bool>       mConsumerParked;
@@ -318,7 +319,7 @@ private:
     std::atomic<bool>       mExitTriggered;
 
     //!< Producer wake-up (auto-reset): signalled by the consumer when a slot is freed.
-    SyncEvent               mSlotEvent;
+    SimpleEvent             mSlotEvent;
     //!< Number of producers blocked on a full ring (so the consumer signals only when needed).
     std::atomic<uint32_t>   mProducersWaiting;
 
