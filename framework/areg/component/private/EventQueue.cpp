@@ -15,6 +15,7 @@
 #include "areg/component/private/EventQueue.hpp"
 
 #include "areg/base/RuntimeClassID.hpp"
+#include "areg/base/Thread.hpp"
 #include "areg/component/Event.hpp"
 #include "areg/component/ExitEvent.hpp"
 #include "areg/base/private/DebugDefs.hpp"
@@ -25,6 +26,21 @@
 // pop_event() is noexcept and returns the exit event by copying the cached singleton.
 static_assert(std::is_nothrow_copy_constructible_v<areg::Event>, "Event copy must be noexcept for noexcept pop_event()");
 static_assert(std::is_nothrow_move_assignable_v<areg::Event>, "Event move must be noexcept for the ring hand-off");
+
+namespace
+{
+    //!< Upper bound on the adaptive pre-park spin (cpu_pause iterations). Caps the busy
+    //!< interval to a few microseconds on a hit.
+    constexpr uint32_t SPIN_BUDGET_MAX   { 8192u };
+    //!< Seed/reward increment applied when a spin catches a message (grows toward the cap).
+    constexpr uint32_t SPIN_GROW         { 256u };
+    //!< Cheap probe length used when the budget has decayed to zero, to re-discover a
+    //!< now-concurrent producer without committing to a full spin.
+    constexpr uint32_t SPIN_PROBE        { 48u };
+    //!< Park interval between zero-budget probes (power of two for mask arithmetic).
+    constexpr uint32_t SPIN_PROBE_PERIOD { 256u };
+    static_assert((SPIN_PROBE_PERIOD & (SPIN_PROBE_PERIOD - 1u)) == 0u, "SPIN_PROBE_PERIOD must be a power of two");
+}
 
 namespace areg {
 
@@ -48,6 +64,8 @@ EventQueue::EventQueue(uint32_t maxQueue, bool dropOnFull /*= false*/, uint32_t 
     , mExitTriggered    ( false )
     , mSlotEvent        ( true, true )      // auto-reset, initially non-signaled
     , mProducersWaiting ( 0u )
+    , mSpinBudget       ( 0u )
+    , mProbeCounter     ( 0u )
 {
     mRing = new Cell[mCapacity];
     for (uint32_t i = 0u; i < mCapacity; ++i)
@@ -70,6 +88,8 @@ EventQueue::EventQueue( areg::NullTag ) noexcept
     , mExitTriggered    ( false )
     , mSlotEvent        ( areg::NullTag{} )     // no OS handle
     , mProducersWaiting ( 0u )
+    , mSpinBudget       ( 0u )
+    , mProbeCounter     ( 0u )
 {
 }
 
@@ -88,8 +108,28 @@ bool EventQueue::wait_event(uint32_t timeout /*= areg::WAIT_INFINITE*/) noexcept
     if (has_pending())
         return true;
 
-    // Lost-wakeup-free eventcount: reset the doorbell, then re-check under a full
-    // fence so a push that raced the reset is never missed.
+    // Phase 0: adaptive, self-tuning pre-park spin.
+    uint32_t budget{ mSpinBudget };
+    if ((budget == 0u) && (((++mProbeCounter) & (SPIN_PROBE_PERIOD - 1u)) == 0u))
+        budget = SPIN_PROBE;    // occasional cheap probe to rediscover a now-busy peer
+
+    for (uint32_t i = 0u; i < budget; ++i)
+    {
+        Thread::cpu_pause();
+        if (has_pending())
+        {
+            // Hit: spinning paid off
+            mSpinBudget += (mSpinBudget >> 2) + SPIN_GROW;
+            if (mSpinBudget > SPIN_BUDGET_MAX)
+                mSpinBudget = SPIN_BUDGET_MAX;
+            return true;
+        }
+    }
+
+    // Miss (or no spin)
+    mSpinBudget = (mSpinBudget > 3u) ? (mSpinBudget - (mSpinBudget >> 2)) : 0u;
+
+    // Lost-wakeup-free eventcount, reset the doorbell
     mQueueEvent.reset();
     mConsumerParked.store(true, std::memory_order_relaxed);
     std::atomic_thread_fence(std::memory_order_seq_cst);
