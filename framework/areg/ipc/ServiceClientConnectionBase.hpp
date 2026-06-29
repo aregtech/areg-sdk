@@ -402,6 +402,27 @@ protected:
     void cancel_connection();
 
     /**
+     * \brief   Single, uniform entry point that a subclass MUST call when it detects that the
+     *          active connection to the remote service is broken (e.g. a failed send or receive).
+     *
+     *          It closes the socket and then queues the lost-connection command on the dispatcher,
+     *          which in turn arms the reconnect timer. Closing the socket first is an integral part
+     *          of the contract: on_connection_lost() treats a still-valid connection as a stale /
+     *          duplicate notification (a newer attempt is already in progress) and deliberately
+     *          skips reconnection. By funnelling every producer through this single method, the
+     *          reconnect behavior is identical for every service kind (router client, logger, and
+     *          any future client) and cannot be silently broken by a subclass that forgets to close
+     *          the socket before signaling.
+     *
+     *          The connection is torn down for good (no reconnect) only when the developer explicitly
+     *          stops it via on_service_stop() / disconnect_service_host(), or when servicing becomes
+     *          unavailable while the application is closing.
+     *
+     * \param   eventPrio   The priority of the queued lost-connection command. Normal by default.
+     **/
+    void notify_connection_lost( areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
+
+    /**
      * \brief   Sets the client socket connection state.
      *
      * \param   newState    The connection state to set.

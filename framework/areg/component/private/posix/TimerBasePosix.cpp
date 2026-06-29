@@ -31,7 +31,7 @@ namespace areg {
 
 TIMERHANDLE TimerBase::_os_create() noexcept
 {
-    return static_cast<TIMERHANDLE>(DEBUG_NEW areg::os::TimerPosix( ));
+    return static_cast<TIMERHANDLE>(new areg::os::TimerPosix( ));
 }
 
 void TimerBase::_os_destroy( TIMERHANDLE handle ) noexcept

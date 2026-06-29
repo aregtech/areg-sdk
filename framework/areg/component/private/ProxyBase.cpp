@@ -88,7 +88,10 @@ std::shared_ptr<ProxyBase> ProxyBase::acquire_proxy( const String & roleName
                                                    , FuncCreateProxy funcCreate
                                                    , const String & ownerThread /*= String::empty_string()*/)
 {
-    return ProxyBase::acquire_proxy(roleName, serviceIfData, connect, funcCreate, DispatcherThread::dispatcher_thread(ThreadAddress(ownerThread)) );
+    DispatcherThread & owner = ownerThread.is_empty()
+                                    ? DispatcherThread::current_dispatcher_thread()
+                                    : DispatcherThread::dispatcher_thread(ThreadAddress(ownerThread));
+    return ProxyBase::acquire_proxy(roleName, serviceIfData, connect, funcCreate, owner);
 }
 
 std::shared_ptr<ProxyBase> ProxyBase::acquire_proxy(const String& roleName, const areg::InterfaceData& serviceIfData, ProxyListener& connect, FuncCreateProxy funcCreate, const UniqueNumber ownerThread)
@@ -104,9 +107,13 @@ std::shared_ptr<ProxyBase> ProxyBase::acquire_proxy( const String & roleName
 {
     LOG_SCOPE( areg_component_ProxyBase, acquire_proxy );
 
+    ASSERT( !roleName.is_empty() );     // a proxy without a service role name is invalid
     std::shared_ptr<ProxyBase> proxy{ nullptr };
     if (!ownerThread.is_valid())
+    {
+        ASSERT( false );                // owner dispatcher thread did not resolve (unnamed or unknown)
         return proxy;
+    }
 
     MapProxyResource& mapProxies{ map_proxies() };
     ProxyAddress Key(serviceIfData, roleName, ownerThread.name() );

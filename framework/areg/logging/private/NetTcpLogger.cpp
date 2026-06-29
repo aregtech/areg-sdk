@@ -89,7 +89,7 @@ void NetTcpLogger::log_message(const areg::LogEntry& logMessage)
     if (!mIsEnabled)
         return;
 
-    if (mChannel.is_valid() && is_connect_state())
+    if (mChannel.is_valid() && is_connected_state())
     {
         send_message(areg::create_log_message(logMessage, areg::LogDataType::Remote, mChannel.cookie()), areg::EventPriority::NormalPrio);
     }
@@ -104,7 +104,7 @@ void NetTcpLogger::forward_message(const areg::MessageEnvelope& msg)
     if (!mIsEnabled)
         return;
 
-    if (mChannel.is_valid() && is_connect_state())
+    if (mChannel.is_valid() && is_connected_state())
     {
         send_message(msg, areg::EventPriority::NormalPrio);
     }
@@ -119,7 +119,7 @@ void NetTcpLogger::forward_message(areg::MessageEnvelope&& msg)
     if (!mIsEnabled)
         return;
 
-    if (mChannel.is_valid() && is_connect_state())
+    if (mChannel.is_valid() && is_connected_state())
     {
         send_message(std::move(msg), areg::EventPriority::NormalPrio);
     }
@@ -143,6 +143,10 @@ void NetTcpLogger::on_service_channel_connected(const Channel & channel)
 
     mIsEnabled = true;
     const ITEM_ID& cookie = channel.cookie();
+
+    const areg::ScopeList& scopes{ static_cast<const areg::ScopeList&>(mScopeController.scope_list()) };
+    send_message(areg::message_register_scopes(cookie, areg::COOKIE_LOGGER, scopes));
+
     while (mRingStack.is_empty() == false)
     {
         areg::MessageEnvelope msgLog{ mRingStack.pop() };
@@ -167,18 +171,24 @@ void NetTcpLogger::on_service_channel_lost(const Channel & /* channel */)
 
 void NetTcpLogger::failed_send_message(const MessageEnvelope & msgFailed, Socket & /* whichTarget */)
 {
+    if (connection_state() == ConnectionPhase::ConnectionStopping)
+        return;
+
     ASSERT(mIsEnabled);
     if (mLogConfiguration.stack_size() > 0)
     {
         mRingStack.push(msgFailed);
     }
 
-    send_command(ServiceEventData::ServiceCommand::CMD_ServiceLost);
+    notify_connection_lost();
 }
 
 void NetTcpLogger::failed_receive_message(Socket & /* whichSource */)
 {
-    send_command(ServiceEventData::ServiceCommand::CMD_ServiceLost);
+    if (connection_state() == ConnectionPhase::ConnectionStopping)
+        return;
+
+    notify_connection_lost();
 }
 
 void NetTcpLogger::failed_process_message(const MessageEnvelope & /* msgUnprocessed */)

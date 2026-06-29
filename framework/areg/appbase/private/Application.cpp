@@ -371,6 +371,12 @@ bool Application::is_servicing_ready()
     return (theApp.mAppState == areg::AppState::Ready);
 }
 
+bool Application::is_servicing_available()
+{
+    const areg::AppState state{ Application::instance().mAppState };
+    return (state == areg::AppState::Initializing) || (state == areg::AppState::Ready);
+}
+
 void Application::query_data_sent(uint64_t& sizeSent, uint32_t& msgSent) noexcept
 {
     ServiceManager::query_data_sent(sizeSent, msgSent);

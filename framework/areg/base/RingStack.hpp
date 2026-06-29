@@ -613,7 +613,7 @@ template <typename VALUE>
 RingStackBase<VALUE>::RingStackBase( Lockable & syncObject, uint32_t initCapacity /*= 0*/, areg::OverlapPolicy onOverlap /*= areg::OverlapPolicy::Stop*/ )
     : mSyncObj  ( syncObject )
     , mOnOverlap( onOverlap )
-    , mStackList( initCapacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW uint8_t[initCapacity * sizeof(VALUE)]) : nullptr )
+    , mStackList( initCapacity != 0 ? reinterpret_cast<VALUE*>(new uint8_t[initCapacity * sizeof(VALUE)]) : nullptr )
     , mElemCount( 0u )
     , mCapacity ( mStackList != nullptr ? initCapacity : 0 )
     , mHeadPos  ( 0u )
@@ -832,7 +832,7 @@ void RingStackBase<VALUE>::free_extra()
         return;
 
     uint32_t capacity = mElemCount;
-    VALUE* newList = capacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW uint8_t[capacity * sizeof(VALUE)]) : nullptr;
+    VALUE* newList = capacity != 0 ? reinterpret_cast<VALUE*>(new uint8_t[capacity * sizeof(VALUE)]) : nullptr;
     if (newList != nullptr)
     {
         if (mStackList != nullptr)
@@ -985,7 +985,7 @@ uint32_t RingStackBase<VALUE>::reserve(uint32_t newCapacity )
     if (mCapacity >= newCapacity)
         return mCapacity;
 
-    VALUE* newList = newCapacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW uint8_t[newCapacity * sizeof(VALUE)]) : nullptr;
+    VALUE* newList = newCapacity != 0 ? reinterpret_cast<VALUE*>(new uint8_t[newCapacity * sizeof(VALUE)]) : nullptr;
     if (newList == nullptr)
         return mCapacity;
 
@@ -1147,7 +1147,7 @@ void RingStackBase<VALUE>::_copy_stack(const RingStackBase<VALUE>& source)
     {
         delete[] reinterpret_cast<uint8_t*>(mStackList);
         mStackList  = nullptr;
-        newList     = srcCapacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW uint8_t[srcCapacity * sizeof(VALUE)]) : nullptr;
+        newList     = srcCapacity != 0 ? reinterpret_cast<VALUE*>(new uint8_t[srcCapacity * sizeof(VALUE)]) : nullptr;
         mCapacity   = srcCapacity;
     }
 

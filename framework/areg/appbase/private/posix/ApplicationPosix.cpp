@@ -41,7 +41,7 @@ namespace {
         if (sysctl(mib, 4, nullptr, &size, nullptr, 0) < 0)
             return -1;
 
-        uint8_t* buffer = size != 0 ? DEBUG_NEW uint8_t[size] : nullptr;
+        uint8_t* buffer = size != 0 ? new uint8_t[size] : nullptr;
         if (buffer == nullptr)
             return -1;
 
@@ -80,7 +80,7 @@ namespace {
         int pid {-1};
 
         DIR* dir = opendir(dirProc);
-        char* buffer = dir != nullptr ? DEBUG_NEW char[areg::File::MAXIMUM_PATH + 1] : nullptr;
+        char* buffer = dir != nullptr ? new char[areg::File::MAXIMUM_PATH + 1] : nullptr;
         if (buffer == nullptr)
             return pid;
 

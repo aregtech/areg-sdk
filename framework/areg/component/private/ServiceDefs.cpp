@@ -119,7 +119,7 @@ void areg::ParameterArray::construct( const uint32_t * params, uint32_t count ) 
     // space for parameters
     size += count_param_space(params, count);
 
-    uint8_t* buffer = DEBUG_NEW uint8_t[size];
+    uint8_t* buffer = new uint8_t[size];
     if (buffer == nullptr)
         return;
     

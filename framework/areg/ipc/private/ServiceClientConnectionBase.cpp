@@ -121,9 +121,8 @@ void ServiceClientConnectionBase::service_connection_event(const MessageEnvelope
         }
         else
         {
-            cancel_connection();
             on_channel_connected(areg::COOKIE_UNKNOWN);
-            send_command(ServiceEventData::ServiceCommand::CMD_ServiceLost);
+            notify_connection_lost();
         }
     }
     break;
@@ -132,9 +131,8 @@ void ServiceClientConnectionBase::service_connection_event(const MessageEnvelope
     case areg::ServiceConnectionState::Disconnected:
     case areg::ServiceConnectionState::Failed:
     {
-        cancel_connection();
         on_channel_connected(areg::COOKIE_UNKNOWN);
-        send_command(ServiceEventData::ServiceCommand::CMD_ServiceLost);
+        notify_connection_lost();
     }
     break;
 
@@ -251,7 +249,7 @@ void ServiceClientConnectionBase::on_service_start()
 {
     LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, on_service_start );
 
-    if (connection_state() == ConnectionPhase::ConnectionStopping || !Application::is_servicing_ready())
+    if (connection_state() == ConnectionPhase::ConnectionStopping || !Application::is_servicing_available())
     {
         LOG_WARN("Ignoring start event: connection is stopping or application is releasing.");
         return;
@@ -353,7 +351,7 @@ void ServiceClientConnectionBase::on_connection_stopped()
     mThreadSend.shutdown( areg::WAIT_INFINITE );
     mConnectionConsumer.on_service_channel_disconnected( channel );
 
-    if ( Application::is_servicing_ready( ) && (prevState != ConnectionPhase::ConnectionStopping) )
+    if ( Application::is_servicing_available( ) && (prevState != ConnectionPhase::ConnectionStopping) )
     {
         if (!mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1))
         {
@@ -380,7 +378,7 @@ void ServiceClientConnectionBase::on_connection_lost()
     Channel channel = mChannel;
     mChannel.invalidate();
 
-    if (!Application::is_servicing_ready() || !mTimerConnect.is_stopped() ||
+    if (!Application::is_servicing_available() || !mTimerConnect.is_stopped() ||
         (prevState == ConnectionPhase::ConnectionStopping))
     {
         LOG_WARN("Ignoring lost connection event, either servicing state is not allowed, or application is closing.");
@@ -450,7 +448,7 @@ bool ServiceClientConnectionBase::start_connection()
         if (!mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1))
         {
             LOG_WARN("Failed to start reconnect timer, retrying connection immediately.");
-            if (Application::is_servicing_ready())
+            if (Application::is_servicing_available())
                 send_command(ServiceEventData::ServiceCommand::CMD_StartService);
         }
 
@@ -484,7 +482,7 @@ bool ServiceClientConnectionBase::start_connection()
         if (!mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1))
         {
             LOG_WARN("Failed to start reconnect timer, retrying connection immediately.");
-            if (Application::is_servicing_ready())
+            if (Application::is_servicing_available())
                 send_command(ServiceEventData::ServiceCommand::CMD_StartService);
         }
     }
@@ -503,6 +501,13 @@ void ServiceClientConnectionBase::cancel_connection()
 
     mThreadReceive.trigger_exit();
     mThreadSend.trigger_exit();
+}
+
+void ServiceClientConnectionBase::notify_connection_lost( areg::EventPriority eventPrio )
+{
+    // Close the socket BEFORE queuing the lost-connection command
+    cancel_connection();
+    send_command( ServiceEventData::ServiceCommand::CMD_ServiceLost, eventPrio );
 }
 
 } // namespace areg
