@@ -322,14 +322,6 @@ private:
     //!< Number of producers blocked on a full ring (so the consumer signals only when needed).
     std::atomic<uint32_t>   mProducersWaiting;
 
-    //!< Adaptive pre-park spin budget (cpu_pause iterations), consumer-private. Grows on a
-    //!< spin hit and decays to 0 on a miss, so the queue spins only where a producer can run
-    //!< concurrently on another core (multi-core) and idles to a pure block on single-core /
-    //!< oversubscribed targets (embedded). Touched only by the single consumer thread.
-    uint32_t                mSpinBudget;
-    //!< Consumer-private park counter that paces the zero-budget rediscovery probe.
-    uint32_t                mProbeCounter;
-
 //////////////////////////////////////////////////////////////////////////
 // Forbidden
 //////////////////////////////////////////////////////////////////////////
