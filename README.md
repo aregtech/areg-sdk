@@ -100,20 +100,13 @@ boundaries, and network boundaries – using a single consistent programming mod
 ## What You Get[![](./docs/img/pin.svg)](#what-you-get)
 
 **If you build C++ systems with threads, processes, or networked devices – embedded, edge, or enterprise – here is what changes when you use Areg SDK.**
-
-- **Weeks of infrastructure work removed.** Threading, IPC, service discovery, and reconnection logic are normally hand-built and debugged on every project. Areg SDK generates and manages this layer, so you write business logic instead of plumbing. *(Full breakdown: [Development Time Savings](./docs/wiki/08d-areg-framework-rankings.md#10-development-time-savings-with-areg-sdk))*
-
-- **Race conditions on every message path are structurally eliminated.** Raw bytes route to the owning thread before any data is deserialized or touched. There is no shared state to lock, audit, or get wrong, for anything that goes through the framework.
-
-- **No startup-order or cross-dependency logic to write.** Services find each other by name, regardless of which one starts first, and regardless of thread, process, or machine. No boot sequencing, no "is the other service ready yet" checks, no manual retry loops.
-
-- **#1 TCP framework by both latency and data rate, among all frameworks with comparable sourced measurements.** Full service dispatch included, not a stripped transport benchmark. ~11 μs one-way, 6.0–8.0 GB/s (sustained to peak). Full rankings and sources: [framework rankings](./docs/wiki/08d-areg-framework-rankings.md), [measured output](./docs/wiki/benchmark-test-results.txt).
-
-- **Failed components recover without operator intervention.** Built-in restart and reconnection logic bring a failed thread back online, and dependent consumers reconnect automatically.
-
-- **The same source code runs at any scale.** As threads in one process, as separate processes on one machine, or as services across a network – no code changes required. Moving from prototype to production is a deployment change, not a rewrite.
-
-- **Swap real hardware for simulation without touching a line of consumer code.** Services are resolved by name, not by type or connection string. A simulated service registered under the same name is indistinguishable from the real one to every consumer on the network. Test before hardware exists. Deploy to production with zero code changes.
+- **Weeks of infrastructure work removed:** threading, IPC, service discovery, and reconnection logic are generated and managed, not hand-built on every project. *([Development Time Savings](./docs/wiki/08d-areg-framework-rankings.md#10-development-time-savings-with-areg-sdk))*
+- **Race conditions structurally eliminated:** raw bytes route to the owning thread before any deserialization, so there is no shared state to lock, audit, or get wrong.
+- **No startup-order or boot sequencing logic:** services find each other by name regardless of thread, process, or machine, with no manual retry loops.
+- **#1 TCP framework by latency and data rate:** full service dispatch included, not a stripped transport benchmark – ~11 us one-way, 6.0-8.0 GB/s sustained to peak. *([rankings](./docs/wiki/08d-areg-framework-rankings.md), [raw output](./docs/wiki/benchmark-test-results.txt))*
+- **Automatic recovery:** failed components restart and dependent consumers reconnect with no operator intervention.
+- **One codebase, any scale:** the same code runs as threads, processes, or networked services; moving from prototype to production is a deployment change, not a rewrite.
+- **Hardware-agnostic testing:** a simulated service registered under the same name is indistinguishable from the real one to any consumer, so you can test before hardware exists.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -155,13 +148,9 @@ The code generator produces all RPC infrastructure – serialization, proxies, e
 
 ### Service Interface and Code Generation
 
-A **service interface** defines the API contract: data types, attributes (pub/sub),
-requests, responses, broadcasts, and constants. A **service** is a named component
-instance that implements one or more interfaces. Consumers declare which named service
-they depend on – the framework connects them automatically when that service becomes
-available anywhere on the network.
-
-The workflow from interface definition to running code:
+Full definitions of service interface, service, and consumer are in
+[Service Identity Model](#service-identity-model). The workflow from interface
+definition to running code:
 
 ```
 MyService.siml  ──►  codegen.jar  ──►  MyServiceProviderBase.hpp
@@ -191,13 +180,13 @@ Measured on **mobile-class consumer hardware**, full stack active – data seria
 
 | Platform       | CPU Type         | ~3 MB, GB/s              | ~0.5 KB, msg/s            |
 |----------------|------------------|--------------------------|---------------------------|
-| Linux Ubuntu ¹ | i7-13700H (DDR4) | ~6.0–6.5 sust. / ~8.0 peak | ~2.0M sust. / ~2.5M peak  |
+| Linux Ubuntu ¹ | i7-13700H (DDR4) | ~6.5 sust. / ~8.0 peak   | ~2.0M sust. / ~2.5M peak  |
 | macOS native ² | M3 Pro (LPDDR5)  | ~6.5 sust. / –7.0 peak   | ~2.5M sust. / ~3.0M peak  |
 | Windows 11 ³   | i7-13700H (DDR4) | ~2.2 sust. / ~3.0 peak   | ~1.8M sust. / ~2.5M peak  |
-| WSL2 Ubuntu ⁴  | i7-13700H (DDR4) | ~4.0–4.5                 | ~1.5M                     |
+| WSL2 Ubuntu ⁴  | i7-13700H (DDR4) | ~4.0 sust. / –4.5 peak   | ~1.0M sust. / ~1.5M peak  |
 
 ¹ Ubuntu 26.04, `Performance` power mode. Peak = best short-run measure; sustained = 5+ min run.  
-² No network tuning. M4 reached up to 3.0M msg/s.  
+² No network tuning; M4 chip (separate supplementary test) reached up to 3.0M msg/s.  
 ³ Stable dispatch is ~1.8M msg/s; above that, the dispatch thread becomes the bottleneck.  
 ⁴ With [network tuning](./docs/wiki/07d-troubleshooting-network-tunning.md), up to ~5.0–5.6 GB/s.
 
@@ -467,8 +456,7 @@ moving between thread, process, and network deployment.
 machine vision – move continuous multi-megabyte frames between acquisition, processing,
 and storage processes. At **2.0–8.0 GB/s** full-stack IPC on a standard laptop CPU, Areg SDK
 covers the software transport layer for virtually every such pipeline without custom
-networking code or stripped-down benchmarks. Few service-oriented C++ frameworks
-reach this throughput with full service semantics active.
+networking code or stripped-down benchmarks.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="./docs/img/interface-centric.png" alt="Interface-centric communication diagram" style="width:50%;height:50%"/></a></div>
 
@@ -486,8 +474,7 @@ to separate processes to separate machines with only configuration and build scr
 inference → output / telemetry – requires fast IPC between stages that may run as
 threads, processes, or distributed nodes depending on hardware constraints. Areg SDK's
 location transparency means the pipeline topology can change without touching the
-inference or acquisition code. Few frameworks combine this flexibility with IPC
-throughput rates that match hardware DMA and PCIe data rates on standard CPUs.
+inference or acquisition code.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-for-embedded-ai.png"><img src="./docs/img/areg-for-embedded-ai.png" alt="Modular AI pipeline architecture" style="width:40%;height:40%"/></a></div>
 
@@ -598,7 +585,6 @@ in embedded deployments works in backend deployments.
 
 **In progress (2026):**
 - RTOS platform support (FreeRTOS, Zephyr)
-- Enhanced serialization throughput (targeting 500K+ stable msg/s consumer dispatch)
 - Python-based code generator (replaces Java dependency)
 - Shared memory transport (zero-copy for same-machine IPC)
 - Secure communication (optional TLS for `mtrouter` connections)
