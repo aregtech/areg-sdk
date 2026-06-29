@@ -40,6 +40,7 @@ EventQueue::EventQueue(uint32_t maxQueue, bool dropOnFull /*= false*/, uint32_t 
     , mRing             ( nullptr )
     , mEnqueuePos       ( 0u )
     , mDequeuePos       ( 0u )
+    , mFreedSinceWake   ( 0u )
     , mPrioLock         ( )
     , mPrioQueue        ( )
     , mPrioCount        ( 0u )
@@ -62,6 +63,7 @@ EventQueue::EventQueue( areg::NullTag ) noexcept
     , mRing             ( nullptr )
     , mEnqueuePos       ( 0u )
     , mDequeuePos       ( 0u )
+    , mFreedSinceWake   ( 0u )
     , mPrioLock         ( )
     , mPrioQueue        ( )
     , mPrioCount        ( 0u )
@@ -85,6 +87,14 @@ EventQueue::~EventQueue()
 
 bool EventQueue::wait_event(uint32_t timeout /*= areg::WAIT_INFINITE*/) noexcept
 {
+    // The consumer has finished a drain pass and is about to go idle
+    if (mFreedSinceWake != 0u)
+    {
+        mFreedSinceWake = 0u;
+        if (mProducersWaiting.load(std::memory_order_relaxed) != 0u)
+            mSlotEvent.set_signaled();
+    }
+
     if (has_pending())
         return true;
 
@@ -456,8 +466,16 @@ bool EventQueue::_ring_try_dequeue(Event& result) noexcept
     cell.sequence.store(pos + mMask + 1u, std::memory_order_release);   // free the slot for the next lap
     mDequeuePos.store(pos + 1u, std::memory_order_relaxed);
 
+    // A slot freed
     if (mProducersWaiting.load(std::memory_order_relaxed) != 0u)
-        mSlotEvent.set_signaled();   // a slot freed: wake a blocked producer
+    {
+        if (++mFreedSinceWake >= RING_WAKE_BATCH)
+        {
+            mFreedSinceWake = 0u;
+            mSlotEvent.set_signaled();
+        }
+    }
+
     return true;
 }
 
