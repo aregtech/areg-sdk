@@ -94,12 +94,6 @@ private:
     static constexpr uint32_t   RING_WAIT_RECHECK_MS  { 1u };     //!< Producer block re-check interval.
 
     //////////////////////////////////////////////////////////////////////////
-    // Producer-wake coalescing. The consumer frees one ring slot per dequeue;
-    // accumulate slots and ring the producer doorbell once per RING_WAKE_BATCH.
-    //////////////////////////////////////////////////////////////////////////
-    static constexpr uint32_t   RING_WAKE_BATCH       { 32u };    //!< Freed slots per producer-wake.
-
-    //////////////////////////////////////////////////////////////////////////
     // 128 bytes separates the producer written enqueue cursor from the
     // consumer written dequeue cursor. This covers the widest hardware cache
     // line in use: x86/x86-64 and ARM32 use 32-64 bytes; Apple Silicon uses
@@ -309,8 +303,6 @@ private:
 
     //!< Consumer-written dequeue cursor - own cache line.
     alignas(AREG_MPSC_CACHE_LINE_SIZE) std::atomic<size_t> mDequeuePos;
-    //!< Consumer-only count of slots freed since the last producer-wake
-    uint32_t                mFreedSinceWake;
 
     //!< Priority lane - Critical at front, then descending priority order.
     SpinLock                mPrioLock;  //!< Recursive guard for mPrioQueue
