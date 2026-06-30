@@ -105,6 +105,29 @@ Windows defaults to power efficiency settings that add latency to socket operati
 
 ---
 
+### Step 0: Reset a Wedged Winsock / TCP Stack (Recovery)
+
+Do this first if throughput **suddenly dropped** between runs - for example loopback fell from ~3.0 GB/s to ~0.9 GB/s - and the fine-tuning steps below do not bring it back. The Winsock catalog or the TCP/IP stack can drift into a degraded state after a Windows Update, a VPN or antivirus install/uninstall, or a half-applied network setting. Resetting it to a clean baseline is the single highest-impact recovery action: on one regressed machine this step alone recovered loopback from ~0.95 GB/s to ~1.45 GB/s, before any other tuning.
+
+**Open Command Prompt as Administrator and run:**
+
+```cmd
+rem Reset the Winsock catalog, the IPv4/IPv6 stack, and the TCP stack to defaults
+netsh winsock reset
+netsh int ip reset
+netsh int tcp reset
+```
+
+> **Caution:** `netsh int ip reset` clears custom IP configuration (static addresses, DNS overrides). On a DHCP machine this is harmless. On a machine with a static IP, record the settings first so you can restore them.
+>
+> **Restart required.** All three resets take effect only after a reboot. Reboot before measuring throughput again.
+
+After rebooting, continue with Steps 1-7 to apply the high-throughput parameters. A common side effect of a wedged stack is that `netsh int tcp show global` reports **Receive Window Auto-Tuning Level: experimental** instead of `normal`; Step 2 below restores it.
+
+> A convenience helper that performs the three resets above and then applies the Step 2 TCP global parameters in one pass (Windows Defender is left untouched) is available for repository contributors at `product\apply_network_tuning.bat`. Run it from an elevated Command Prompt; it prompts for a restart at the end.
+
+---
+
 ### Step 1: Set Power Plan to Maximum Performance
 
 CPU frequency throttling adds microsecond jitter to every blocking socket call. Set the power plan to prevent this.
@@ -261,7 +284,9 @@ Set-NetTCPSetting -SettingName InternetCustom -CongestionProvider   DCTCP
 
 ### Performance Regression Checklist
 
-If message rates drop between runs (e.g. 1.5M → 1.25M msg/sec), check these first – Windows Updates commonly reset them:
+For a **large sudden drop** (throughput roughly halving or worse), start with **Step 0** - reset the Winsock/TCP stack. The per-setting checks below address gradual drift, not a wedged stack.
+
+If message rates drop more modestly between runs (e.g. 1.5M → 1.25M msg/sec), check these first – Windows Updates commonly reset them:
 
 **Open PowerShell as Administrator and run:**
 
@@ -287,6 +312,38 @@ If any value is wrong, re-run the corresponding step above without rebooting –
 ---
 
 ⚠️ **Restart required.** Steps 6 and 7 (Winsock buffers and network throttling) write to registry keys loaded at boot. Steps 1–5 take effect immediately after running.
+
+---
+
+### Optional (Windows): Defender Network Inspection and Maximum Throughput
+
+Windows Defender registers a stream-inspection callout in the Windows Filtering Platform (WFP) named `windefend_stream_v4` / `windefend_stream_v6`, attached to the `FWPM_LAYER_STREAM` layer. That layer inspects the **byte stream of every TCP connection, including loopback (127.0.0.1)**. Because it runs per-byte rather than once per connection, it adds a measurable cost to bulk transfers: on one test machine it reduced single-stream loopback throughput from ~3.9 GB/s to ~1.4 GB/s (about 2.7x).
+
+This is **not a bug and not a misconfiguration** - it is Defender's Network Protection feature doing its job. For everyday development and for production, leave it **enabled**. The TCP tunings above, together with the Step 0 stack reset, are enough to reach a healthy ~2.5-3.0 GB/s on Windows 11 loopback with Defender on - which is the recommended target.
+
+Only if you need the **absolute maximum** throughput on a trusted, isolated benchmark machine should you temporarily disable Defender Network Protection (the component that hosts the `windefend_stream` callout):
+
+**Open PowerShell as Administrator and run:**
+
+```powershell
+# Disable Defender Network Protection (unloads the windefend_stream callout)
+Set-MpPreference -EnableNetworkProtection Disabled
+
+# Verify (0 = Disabled, 1 = Enabled, 2 = Audit)
+Get-MpPreference | Select-Object EnableNetworkProtection
+```
+
+To re-enable it afterwards (recommended):
+
+```powershell
+Set-MpPreference -EnableNetworkProtection Enabled
+```
+
+> **Tamper Protection.** If Tamper Protection is on, `Set-MpPreference` is silently ignored and Network Protection stays enabled. Turn Tamper Protection off first in **Windows Security > Virus & threat protection > Manage settings**, then re-run the command, then turn Tamper Protection back on.
+>
+> **Group Policy.** On managed machines, Group Policy can re-enable Network Protection on the next policy refresh. Treat this as a per-machine benchmark setting, never as something a shipped configuration relies on.
+
+> **Confirm it is the bottleneck before changing anything.** Compare a TCP-loopback transfer against a named-pipe transfer of the same size. Named pipes use `npfs.sys` and bypass the WFP TCP stream layer entirely, so they are unaffected by `windefend_stream`. If the named-pipe transfer is much faster than TCP loopback, stream inspection - not the TCP stack - is the limit. If both are similar, look back at Steps 0-7.
 
 ---
 

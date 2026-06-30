@@ -19,8 +19,8 @@
  * Includes
  ************************************************************************/
 #include "areg/base/areg_global.h"
-#include "areg/base/SimpleEvent.hpp"
 #include "areg/base/SyncPrimitives.hpp"
+#include "areg/component/private/SimpleEvent.hpp"
 
 #include <atomic>
 #include <cstdint>

@@ -100,13 +100,14 @@ boundaries, and network boundaries – using a single consistent programming mod
 ## What You Get[![](./docs/img/pin.svg)](#what-you-get)
 
 **If you build C++ systems with threads, processes, or networked devices – embedded, edge, or enterprise – here is what changes when you use Areg SDK.**
+
 - **Weeks of infrastructure work removed:** threading, IPC, service discovery, and reconnection logic are generated and managed, not hand-built on every project. *([Development Time Savings](./docs/wiki/08d-areg-framework-rankings.md#10-development-time-savings-with-areg-sdk))*
-- **Race conditions structurally eliminated:** raw bytes route to the owning thread before any deserialization, so there is no shared state to lock, audit, or get wrong.
+- **Race conditions structurally eliminated:** no shared state to lock, audit, or get wrong – raw bytes route to the owning thread before any deserialization.
 - **No startup-order or boot sequencing logic:** services find each other by name regardless of thread, process, or machine, with no manual retry loops.
-- **#1 TCP framework by latency and data rate:** full service dispatch included, not a stripped transport benchmark – ~11 us one-way, 6.0-8.0 GB/s sustained to peak. *([rankings](./docs/wiki/08d-areg-framework-rankings.md), [raw output](./docs/wiki/benchmark-test-results.txt))*
+- **#1 TCP framework by latency and data rate:** full service dispatch included, not a stripped transport benchmark – ~11 µs one-way, 6.0–8.0 GB/s sustained to peak. *([rankings](./docs/wiki/08d-areg-framework-rankings.md), [raw output](./docs/wiki/benchmark-test-results.txt))*
 - **Automatic recovery:** failed components restart and dependent consumers reconnect with no operator intervention.
 - **One codebase, any scale:** the same code runs as threads, processes, or networked services; moving from prototype to production is a deployment change, not a rewrite.
-- **Hardware-agnostic testing:** a simulated service registered under the same name is indistinguishable from the real one to any consumer, so you can test before hardware exists.
+- **Test before hardware exists, deploy unchanged:** register a simulation under the same service name and the rest of the system never notices – no conditional compilation, no mock frameworks, zero code changes when real hardware arrives.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
