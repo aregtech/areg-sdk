@@ -1163,11 +1163,11 @@ private:
     /**
      * \brief   List of synchronization objects passed on initialization
      **/
-    SyncObject* const*  mSyncObjArray;
+    SyncObject**        mSyncObjArray;
     /**
      * \brief   Size of synchronization object. Cannot be more than MAX_SIZE_OF_ARRAY (64)
      **/
-    const int32_t       mSizeCount;
+    int32_t             mSizeCount;
     /**
      * \brief   Flag, indicating whether auto-locking is enabled or disabled.
      **/

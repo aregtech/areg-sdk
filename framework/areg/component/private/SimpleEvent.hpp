@@ -1,5 +1,5 @@
-#ifndef AREG_BASE_SIMPLEEVENT_HPP
-#define AREG_BASE_SIMPLEEVENT_HPP
+#ifndef AREG_COMPONENT_PRIVATE_SIMPLEEVENT_HPP
+#define AREG_COMPONENT_PRIVATE_SIMPLEEVENT_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
  * Areg SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/base/SimpleEvent.hpp
+ * \file        areg/component/private/SimpleEvent.hpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, lightweight single-object event (queue doorbell).
@@ -23,6 +23,8 @@
 #include <atomic>
 #include <cstdint>
 
+namespace areg {
+
 //////////////////////////////////////////////////////////////////////////
 // class SimpleEvent declaration
 //////////////////////////////////////////////////////////////////////////
@@ -32,19 +34,15 @@
  *
  *          Unlike SyncEvent, SimpleEvent is NOT a SyncObject: it cannot be used
  *          with MultiLock or wait_any() (the WaitForMultipleObjects pattern).
- *          That restriction is precisely what makes it cheap. On POSIX it is a
- *          single futex word (one atomic plus one syscall, and only when a
- *          waiter is actually parked) with no waiter registry and no intrusive
- *          waiter list. On Windows it wraps a native auto / manual-reset event.
  *
  *          Reset modes mirror SyncEvent:
  *            - auto-reset   : a single waiter is released per signal and the
  *                             event returns to non-signaled when consumed.
  *            - manual-reset : the event stays signaled until reset() is called.
  *
- *          SimpleEvent supports exactly one logical wait point per object. Auto-
- *          reset still tolerates several parked waiters (one is released per
- *          signal); callers that race for the same resource must re-check their
+ *          SimpleEvent supports exactly one logical wait point per object.
+ *          Auto-reset still tolerates several parked waiters (one is released
+ *          per signal); callers that race for the same resource must re-check their
  *          own condition after lock() returns.
  **/
 class AREG_API SimpleEvent
@@ -132,4 +130,6 @@ inline bool SimpleEvent::is_auto_reset() const noexcept
     return mAutoReset;
 }
 
-#endif  // AREG_BASE_SIMPLEEVENT_HPP
+}   // namespace areg
+
+#endif  // AREG_COMPONENT_PRIVATE_SIMPLEEVENT_HPP

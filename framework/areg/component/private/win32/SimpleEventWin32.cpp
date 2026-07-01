@@ -7,7 +7,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/base/private/win32/SimpleEventWin32.cpp
+ * \file        areg/component/private/win32/SimpleEventWin32.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, lightweight single-object event - Windows implementation.
@@ -15,7 +15,7 @@
 /************************************************************************
  * Includes
  ************************************************************************/
-#include "areg/base/SimpleEvent.hpp"
+#include "areg/component/private/SimpleEvent.hpp"
 
 #ifdef  _WIN32
 
@@ -23,6 +23,8 @@
     #define NOMINMAX
 #endif  // NOMINMAX
 #include <Windows.h>
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // SimpleEvent class implementation (Windows)
@@ -64,5 +66,7 @@ bool SimpleEvent::reset() noexcept
 {
     return (mHandle != nullptr) && (::ResetEvent( static_cast<HANDLE>(mHandle) ) != FALSE);
 }
+
+} // namespace areg
 
 #endif  // _WIN32

@@ -54,7 +54,6 @@
     <ClCompile Include="areg\base\private\posix\FilePosix.cpp" />
     <ClCompile Include="areg\base\private\posix\MutexPosix.cpp" />
     <ClCompile Include="areg\base\private\posix\ProcessPosix.cpp" />
-    <ClCompile Include="areg\base\private\posix\SimpleEventPosix.cpp" />
     <ClCompile Include="areg\base\private\posix\SocketMultiplexerPosix.cpp" />
     <ClCompile Include="areg\base\private\posix\SpinLockPosix.cpp" />
     <ClCompile Include="areg\base\private\posix\SyncLockAndWaitPosix.cpp" />
@@ -72,7 +71,6 @@
     <ClCompile Include="areg\base\private\win32\FileWin32.cpp" />
     <ClCompile Include="areg\base\private\win32\DebugDefsWin32.cpp" />
     <ClCompile Include="areg\base\private\win32\ProcessWin32.cpp" />
-    <ClCompile Include="areg\base\private\win32\SimpleEventWin32.cpp" />
     <ClCompile Include="areg\base\private\win32\SocketMultiplexerWin32.cpp" />
     <ClCompile Include="areg\base\private\win32\ThreadWin32.cpp" />
     <ClCompile Include="areg\base\private\win32\SyncPrimitivesWin32.cpp" />
@@ -114,6 +112,7 @@
     <ClCompile Include="areg\component\private\macos\TimerPosixMacOS.cpp" />
     <ClCompile Include="areg\component\private\macos\WatchdogManagerMacOS.cpp" />
     <ClCompile Include="areg\component\private\EventQueue.cpp" />
+    <ClCompile Include="areg\component\private\posix\SimpleEventPosix.cpp" />
     <ClCompile Include="areg\component\private\ServiceManagerEventProcessor.cpp" />
     <ClCompile Include="areg\component\private\posix\TimerBasePosix.cpp" />
     <ClCompile Include="areg\component\private\posix\TimerManagerPosix.cpp" />
@@ -122,6 +121,7 @@
     <ClCompile Include="areg\component\private\TimerBase.cpp" />
     <ClCompile Include="areg\component\private\TimerManagerBase.cpp" />
     <ClCompile Include="areg\component\private\Watchdog.cpp" />
+    <ClCompile Include="areg\component\private\win32\SimpleEventWin32.cpp" />
     <ClCompile Include="areg\component\private\win32\TimerBaseWin32.cpp" />
     <ClCompile Include="areg\component\private\win32\TimerManagerWin32.cpp" />
     <ClCompile Include="areg\component\private\ClientInfo.cpp" />
@@ -207,7 +207,6 @@
     <ClInclude Include="areg\base\private\posix\WaitAnyRegistry.hpp" />
     <ClInclude Include="areg\base\OrderedMap.hpp" />
     <ClInclude Include="areg\base\SharedPrimitive.hpp" />
-    <ClInclude Include="areg\base\SimpleEvent.hpp" />
     <ClInclude Include="areg\base\SocketMultiplexer.hpp" />
     <ClInclude Include="areg\base\TableDefs.hpp" />
     <ClInclude Include="areg\base\TemplateBase.hpp" />
@@ -233,6 +232,7 @@
     <ClInclude Include="areg\component\EventDefs.hpp" />
     <ClInclude Include="areg\component\private\EventStack.hpp" />
     <ClInclude Include="areg\component\private\EventQueue.hpp" />
+    <ClInclude Include="areg\component\private\SimpleEvent.hpp" />
     <ClInclude Include="areg\ipc\ConnectionConsumer.hpp" />
     <ClInclude Include="areg\ipc\DataRateStats.hpp" />
     <ClInclude Include="areg\ipc\RegistrationProvider.hpp" />

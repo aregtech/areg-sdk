@@ -7,7 +7,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/base/private/posix/SimpleEventPosix.cpp
+ * \file        areg/component/private/posix/SimpleEventPosix.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, lightweight single-object event - POSIX futex implementation.
@@ -15,7 +15,7 @@
 /************************************************************************
  * Includes
  ************************************************************************/
-#include "areg/base/SimpleEvent.hpp"
+#include "areg/component/private/SimpleEvent.hpp"
 
 #if defined(_POSIX) || defined(POSIX)
 
@@ -129,6 +129,8 @@ inline void _wake_waiters( std::atomic<uint32_t> & word, bool wakeAll ) noexcept
 
 } // anonymous namespace
 
+namespace areg {
+
 //////////////////////////////////////////////////////////////////////////
 // SimpleEvent class implementation (POSIX)
 //////////////////////////////////////////////////////////////////////////
@@ -158,9 +160,7 @@ bool SimpleEvent::lock( uint32_t timeout /*= areg::WAIT_INFINITE*/ ) noexcept
 
     using Clock = std::chrono::steady_clock;
     const bool             infinite { timeout == areg::WAIT_INFINITE };
-    const Clock::time_point deadline { infinite
-                                     ? Clock::time_point::max()
-                                     : Clock::now() + std::chrono::milliseconds(timeout) };
+    const Clock::time_point deadline { infinite ? Clock::time_point::max() : Clock::now() + std::chrono::milliseconds(timeout) };
 
     for ( ; ; )
     {
@@ -200,12 +200,8 @@ bool SimpleEvent::set_signaled() noexcept
     if (!mValid)
         return false;
 
-    const uint32_t prev { mState.exchange(1u, std::memory_order_release) };
-
-    // Only the non-signaled -> signaled edge needs a wake syscall: if it was already
-    // signaled, any parked waiter was already released by the edge that set it (or will
-    // fail its pre-sleep value-compare). Auto-reset releases one waiter; manual-reset all.
-    if (prev == 0u)
+    // Only the non-signaled
+    if (mState.exchange(1u, std::memory_order_release) == 0u)
         _wake_waiters(mState, !mAutoReset);
 
     return true;
@@ -219,5 +215,7 @@ bool SimpleEvent::reset() noexcept
     mState.store(0u, std::memory_order_release);
     return true;
 }
+
+}   // namespace areg
 
 #endif  // defined(_POSIX) || defined(POSIX)

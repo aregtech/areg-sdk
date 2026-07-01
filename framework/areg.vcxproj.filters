@@ -489,10 +489,10 @@
     <ClCompile Include="areg\base\private\MessageEnvelope.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\SimpleEventPosix.cpp">
+    <ClCompile Include="areg\component\private\posix\SimpleEventPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\win32\SimpleEventWin32.cpp">
+    <ClCompile Include="areg\component\private\win32\SimpleEventWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1043,7 +1043,7 @@
     <ClInclude Include="areg\base\MessageEnvelope.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\SimpleEvent.hpp">
+    <ClInclude Include="areg\component\private\SimpleEvent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
