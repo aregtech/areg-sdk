@@ -33,7 +33,6 @@ Lockable::Lockable( SyncObject::SyncKind syncObjectType )
             syncObjectType == SyncObject::SyncKind::SoSemaphore  ||
             syncObjectType == SyncObject::SyncKind::SoCritical   ||
             syncObjectType == SyncObject::SyncKind::SoSpinlock   ||
-            syncObjectType == SyncObject::SyncKind::SoReslock    ||
             syncObjectType == SyncObject::SyncKind::SoNolock     );
 }
 
@@ -294,12 +293,35 @@ SyncTimer::~SyncTimer()
 // MultiLock class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 MultiLock::MultiLock(SyncObject* pObjects[], int32_t count, bool autoLock /* = true */)
-    : mSyncObjArray (pObjects)
+    : mSyncObjArray (nullptr)
     , mSizeCount    (std::min(count, areg::MAXIMUM_WAITING_OBJECTS))
     , mAutoLock     (autoLock)
 {
+    int32_t entry{ 0 };
+    for (int32_t i = 0; i < mSizeCount; ++i)
+    {
+        switch (pObjects[i]->type())
+        {
+        case SyncObject::SyncKind::SoMutex:
+        case SyncObject::SyncKind::SoEvent:
+        case SyncObject::SyncKind::SoSemaphore:
+        case SyncObject::SyncKind::SoTimer:
+            mSyncObjArray[entry++] = pObjects[i];
+            break;
+
+        case SyncObject::SyncKind::SoCritical:
+        case SyncObject::SyncKind::SoNolock:
+        case SyncObject::SyncKind::SoSpinlock:
+        case SyncObject::SyncKind::SoUnknown:
+        default:
+            ASSERT(false);  // multi-lock is not for these objects
+            break;
+        }
+    }
+
+    mSizeCount = entry;
     areg::mem_zero(static_cast<void *>(mLockedStates), areg::MAXIMUM_WAITING_OBJECTS * sizeof(LockState)  );
-    if (autoLock)
+    if ((mSizeCount != 0) && autoLock)
     {
         lock(areg::WAIT_INFINITE, true);
     }

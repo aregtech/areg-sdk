@@ -47,7 +47,6 @@ public:
         , SoSemaphore           //!< Synchronization object is a Semaphore.
         , SoCritical            //!< Synchronization object is a Critical Section
         , SoSpinlock            //!< Synchronization object is a Spin-Lock.
-        , SoReslock             //!< A synchronization object to use to access resources.
         , SoNolock              //!< Empty / Dummy Synchronization object, no real locking operations are supported
         , SoTimer               //!< Synchronization object is a Waiting Timer.
     };
