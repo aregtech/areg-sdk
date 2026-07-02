@@ -39,10 +39,10 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
 
     - name: Setup Java JDK to run code generator
-      uses: actions/setup-java@v5.2.0
+      uses: actions/setup-java@v5.4.0
       with: 
         java-version: 17
         java-package: jre
