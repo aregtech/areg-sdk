@@ -9,7 +9,7 @@
 This document compares areg-sdk OWT (one-way) and RTT (round-trip) latency
 against ZeroMQ, NanoMsg, and NNG as measured in a peer-reviewed benchmark
 published by Hitachi Energy Research (arXiv:2508.07934v1, August 2025).
-Raw data source: github.com/hitachienergy/messaging-libraries-benchmark/results/results.csv
+Raw data source: https://github.com/hitachienergy/messaging-libraries-benchmark/blob/main/results/results.csv
 
 All measurements are same-machine TCP loopback only.
 No cross-machine or real-network numbers appear anywhere in this document.

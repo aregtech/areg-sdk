@@ -188,7 +188,7 @@ class LatencyConsumer final : public    areg::Component
 // Internal constants
 //////////////////////////////////////////////////////////////////////////
 private:
-    static constexpr uint32_t MAX_RESULT_ROWS { 8u };
+    static constexpr uint32_t MAX_RESULT_ROWS { 10u };
 
     static constexpr std::string_view THREAD_INPUT   { "LatencyConsumerInputThread" };
     static constexpr std::string_view THREAD_DISPLAY { "LatencyConsumerDisplayThread" };
@@ -230,7 +230,7 @@ private:
     static constexpr areg::ext::Console::Coord COORD_TBL_HDR  { 1, 24 };
     static constexpr areg::ext::Console::Coord COORD_TBL_SEP  { 1, 25 };
     static constexpr areg::ext::Console::Coord COORD_TBL_ROW0 { 1, 26 };  //!< First data row
-    static constexpr areg::ext::Console::Coord COORD_TBL_BOT  { 1, 34 };  //!< 26 + MAX_RESULT_ROWS
+    static constexpr areg::ext::Console::Coord COORD_TBL_BOT  { 1, COORD_TBL_ROW0.posY + MAX_RESULT_ROWS };  //!< 26 + MAX_RESULT_ROWS
 
 //////////////////////////////////////////////////////////////////////////
 // Console message strings
