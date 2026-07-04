@@ -140,11 +140,11 @@ BEGIN
     BEGIN
         BLOCK "040904B0"
         BEGIN
-            VALUE "CompanyName", "AREGtech"
+            VALUE "CompanyName", "Aregtech (Artak Avetyan)"
             VALUE "FileDescription", "register"
             VALUE "FileVersion", "1.0.0.1"
             VALUE "InternalName", "register.exe"
-            VALUE "LegalCopyright", "(c) Aregtech.  All rights reserved."
+            VALUE "LegalCopyright", "(c) Aregtech (Artak Avetyan).  All rights reserved."
             VALUE "OriginalFilename", "register.exe"
             VALUE "ProductName", "Distributed Services demo, Register"
             VALUE "ProductVersion", "1.0.0.1"

@@ -590,4 +590,4 @@ This guide covered building and running Areg SDK examples and unit tests:
 
 ---
 
-Copyright © 2026, Aregtech, www.areg.tech, email: info[at]areg.tech
+Copyright © 2026, Aregtech (Artak Avetyan), www.areg.tech, email: info[at]areg.tech

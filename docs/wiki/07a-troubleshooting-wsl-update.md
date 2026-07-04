@@ -476,4 +476,4 @@ For additional help, consult the [official WSL documentation](https://learn.micr
 
 ---
 
-Copyright © 2026, Aregtech, www.areg.tech, email: info[at]areg.tech
+Copyright © 2026, Aregtech (Artak Avetyan), www.areg.tech, email: info[at]areg.tech

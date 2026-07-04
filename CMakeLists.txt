@@ -1,6 +1,6 @@
 # ###########################################################################
 #               CMake options of Areg SDK
-# Copyright 2022-2026 Aregtech
+# Copyright 2022-2026 Aregtech (Artak Avetyan)
 # ###########################################################################
 
 cmake_minimum_required(VERSION 3.20.0)

@@ -724,4 +724,4 @@ For questions or issues, open a [discussion](https://github.com/aregtech/areg-sd
 
 ---
 
-Copyright © 2026, Aregtech, www.areg.tech, email: info[at]areg.tech
+Copyright © 2026, Aregtech (Artak Avetyan), www.areg.tech, email: info[at]areg.tech
