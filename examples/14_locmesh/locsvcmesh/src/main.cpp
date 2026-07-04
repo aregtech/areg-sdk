@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2026 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2026 Aregtech (Artak Avetyan).
 // Description : The application that instantiates multiple instances of the
 //               same service and clients in different threads.The definition
 //               of servicing components, service provider or service client

@@ -87,7 +87,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,14,14,20,20
     LTEXT           "Chat application, Version 1.0",IDC_STATIC,42,14,114,8,SS_NOPREFIX
-    LTEXT           "Copyright (c) Aregtech 2019-2026",IDC_STATIC,42,26,114,8
+    LTEXT           "Copyright (c) Aregtech (Artak Avetyan) 2019-2026",IDC_STATIC,42,26,114,8
     DEFPUSHBUTTON   "OK",IDOK,113,41,50,14,WS_GROUP
 END
 
@@ -175,11 +175,11 @@ BEGIN
     BEGIN
         BLOCK "040904B0"
         BEGIN
-            VALUE "CompanyName", "AREGtech"
+            VALUE "CompanyName", "Aregtech (Artak Avetyan)"
             VALUE "FileDescription", "chatter"
             VALUE "FileVersion", "1.0.0.1"
             VALUE "InternalName", "chatter.exe"
-            VALUE "LegalCopyright", "(c) Aregtech.  All rights reserved."
+            VALUE "LegalCopyright", "(c) Aregtech (Artak Avetyan).  All rights reserved."
             VALUE "OriginalFilename", "chatter.exe"
             VALUE "ProductName", "Distributed Services demo"
             VALUE "ProductVersion", "1.0.0.1"

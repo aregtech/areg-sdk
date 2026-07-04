@@ -8,7 +8,7 @@
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech (Artak Avetyan)
  * \file        areg/logging/private/LogEventProcessor.hpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan

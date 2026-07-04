@@ -380,4 +380,4 @@ MSBuild /m /t:Rebuild /v:minimal /property:Configuration=Release /property:Platf
 
 ---
 
-Copyright © 2026, Aregtech, www.areg.tech, email: info[at]areg.tech
+Copyright © 2026, Aregtech (Artak Avetyan), www.areg.tech, email: info[at]areg.tech

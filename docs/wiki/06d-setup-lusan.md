@@ -676,4 +676,4 @@ Lusan is a core tool for building, testing, and maintaining reliable, scalable d
 
 ---
 
-Copyright © 2026, Aregtech, www.areg.tech, email: info[at]areg.tech
+Copyright © 2026, Aregtech (Artak Avetyan), www.areg.tech, email: info[at]areg.tech

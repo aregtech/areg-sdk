@@ -2,7 +2,7 @@
 
 ```
 This document is part of the Areg SDK and describes its example projects.
-Copyright (c) 2017-2026, Aregtech
+Copyright (c) 2017-2026, Aregtech (Artak Avetyan)
 Contact: info[at]areg.tech
 Website: https://www.areg.tech
 ```

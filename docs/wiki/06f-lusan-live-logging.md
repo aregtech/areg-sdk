@@ -698,4 +698,4 @@ Lusan's live log viewer transforms distributed logging from a challenge into a p
 
 ---
 
-Copyright © 2026, Aregtech, www.areg.tech, email: info[at]areg.tech
+Copyright © 2026, Aregtech (Artak Avetyan), www.areg.tech, email: info[at]areg.tech
