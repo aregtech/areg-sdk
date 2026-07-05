@@ -215,9 +215,7 @@ private:
     static constexpr uint32_t DURATION_RESERVE_PER_SEC { 200000u };
     //!< Upper bound on pre-reserved samples, to keep memory bounded for long duration runs.
     static constexpr uint32_t MAX_SAMPLE_RESERVE    { 4000000u };
-    //!< Benchmark-mode result list: initial reservation and fixed-block growth step. Pre-reserving
-    //!< and growing by a constant block (instead of vector doubling) keeps the per-run append O(1)
-    //!< with predictable, bounded reallocation, so caching a run never stalls the measured thread.
+    //!< Benchmark-mode result list size
     static constexpr uint32_t BENCHMARK_RESERVE     { 512u };
 
 //////////////////////////////////////////////////////////////////////////
@@ -298,11 +296,6 @@ protected:
 protected:
     /**
      * \brief   Triggered when the service provider connects or disconnects.
-     *          When the service provider connects, set listeners here.
-     *          When the service provider disconnects, clean the listeners.
-     *          Once connected, the consumer can subscribe and unsubscribe on updates,
-     *          responses and broadcasts, and trigger requests. Before connection,
-     *          the consumer cannot trigger requests or receive data update messages.
      * \param   status  The service connection status.
      * \param   proxy   The Service Interface Proxy object reporting the connection.
      * \return  Returns true if this service connection notification was relevant to this consumer.

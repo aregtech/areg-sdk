@@ -169,8 +169,7 @@ void LatencyConsumer::response_start_mode(const Latency::LantencySetup & setup)
     const uint16_t val       = static_cast<uint16_t>(mode);
     const bool     is_request = (val >= static_cast<uint16_t>(Latency::LatencyMode::Request0));
 
-    // Kick the loop. Request (ping-pong) sends the first request; broadcast (one-way) pulls the
-    // first message. Both keep exactly one message in flight, so the pipeline stays warm.
+    // Kick the loop
     if (is_request)
         _send_next_ping();
     else
@@ -521,7 +520,6 @@ void LatencyConsumer::_run_input_thread()
             case ConsumerCmd::Mode:
                 if (!opt.inString.empty())
                 {
-                    // String range check is case-insensitive; stored value preserves user case.
                     areg::String lc(opt.inString[0]);
                     lc.make_lower();
                     data.mode = Latency::string_as_mode(lc);
@@ -1070,15 +1068,13 @@ void LatencyConsumer::_finish_test()
     r.valid       = true;
 
     _draw_result_row(slot);
-    // In benchmark mode every result is buffered in RAM and dumped once on `-e`, so no per-run
-    // file write happens here -- that keeps the SSD off the measured path between batch cycles.
+    // In benchmark mode every result is buffered in RAM and dumped once on `-e`
     if (mCsvEnabled && !mBenchmarkMode)
         _save_csv(r);
 
     if (mBenchmarkMode)
     {
-        // Grow the buffer by a fixed block only when it is exactly full, so the append never
-        // triggers an implicit doubling reallocation while a cycle is being cached.
+        // Grow the buffer by a fixed block only when it is exactly full
         if (mBenchmarkResults.size() == mBenchmarkResults.capacity())
             mBenchmarkResults.reserve(mBenchmarkResults.capacity() + BENCHMARK_RESERVE);
 
@@ -1301,10 +1297,7 @@ void LatencyConsumer::_run_display_thread()
             break;
 
         // Only the live stats change second-to-second. While a test is running the settings row
-        // is static, so it is not redrawn on every tick -- one fewer format+refresh per second
-        // keeps the display thread off the measured thread's back. When idle the row is refreshed
-        // so it self-corrects (e.g. running=no) shortly after a run ends without extra work on
-        // the measured thread.
+        // is static, so it is not redrawn on every tick
         _update_live();
         if (!mTestRunning)
             _update_settings();

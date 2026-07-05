@@ -139,9 +139,7 @@ void LatencyProvider::request_start_mode(Latency::LatencyMode mode, uint32_t dur
 
     if (mode == Latency::LatencyMode::Stop)
     {
-        // A request test just ended -- compute the final percentile summary once here rather than
-        // sorting every second on the display thread while the test was running. Broadcast stops
-        // leave the persisted request stats untouched (no one-way samples were collected).
+        // A request test just ended, compute the final percentile summary
         _finalize_request_stats();
         _update_live();
     }
@@ -157,10 +155,6 @@ void LatencyProvider::request_start_mode(Latency::LatencyMode mode, uint32_t dur
         _update_live();
     }
 }
-
-// Ping-pong handlers dispatch the reply first, then do the bookkeeping. The arrival timestamp is
-// sampled once and echoed back, so the round-trip the consumer measures is not inflated by the
-// provider-side recording (buffering the sample and bumping the served counter).
 
 void LatencyProvider::request_ping_pong_0(uint32_t id, uint64_t start)
 {
@@ -278,9 +272,6 @@ void LatencyProvider::_run_display_thread()
             break;
 
         _update_live();
-        // While a test is active the summary row is static (it is published once on stop), so it is
-        // not repainted every second. Refresh it only when idle so it self-corrects cheaply without
-        // ever sorting on this thread.
         if (!_test_active())
             _update_latency_stats();
     }
@@ -288,9 +279,6 @@ void LatencyProvider::_run_display_thread()
 
 void LatencyProvider::_send_one_broadcast()
 {
-    // Emit exactly one broadcast of the currently active mode, stamping the send timestamp
-    // (the consumer measures now_ns() - begin as the one-way latency). The size-specific Data
-    // payload mirrors the request/ping-pong sizes so bcN is directly comparable with ppN.
     const Latency::LatencyMode mode = mBroadcastMode.load(std::memory_order_relaxed);
 
     switch (mode)
@@ -390,8 +378,7 @@ void LatencyProvider::_run_input_thread()
                 data.flags |= ProviderCmdData::F_ERROR;
         }
 
-        // Set the quit flag before sending the event so the while-loop condition
-        // is false by the time we return here -- avoids re-entering wait_for_input.
+        // Set the quit flag before sending the event
         if (data.has_quit())
         {
             mQuitInput.store(true, std::memory_order_relaxed);
@@ -486,8 +473,6 @@ void LatencyProvider::_record_oneway(uint64_t begin_ns, uint64_t arrival_ns) noe
 
 void LatencyProvider::_update_latency_stats()
 {
-    // Render-only: paint the currently published summary (or dashes). The percentiles are computed
-    // once, off the measured path, in _finalize_request_stats() -- this never sorts.
     areg::ext::Console & console = areg::ext::Console::instance();
     console.save_cursor_position();
 
