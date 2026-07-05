@@ -91,7 +91,7 @@ Three terminals are required. Start them in this order.
 ### Running Tests
 
 All test parameters are set interactively in the consumer console.
-**Parameters persist between runs** -- set them once, then use `-s` to start each run.
+**Parameters persist between runs** -- set them once, then use `-s` (or `-s=N`) to start runs.
 
 Recommended session for reproducible results (8 consecutive runs):
 
@@ -99,8 +99,8 @@ Recommended session for reproducible results (8 consecutive runs):
 # Set parameters once:
 -m=pp64 -c=10000 -w=1000
 
-# Then start 8 runs by typing -s and pressing Enter each time:
--s
+# Then run 8 cycles with the default 1000 ms pause between cycles:
+-s=8
 ```
 
 The consumer displays a scrolling table of the last 8 results.
@@ -144,6 +144,19 @@ at maximum rate. Either way the reported `Dur(ms)` / `Msg/s` reflect what really
 By default, the CSV output is disabled. Enable it with `-f` (optionally `-f=<file>`),
 and use `-o=<path>` to choose the output file path.
 
+For benchmark sessions across parameter changes:
+
+```
+-b
+-m=bc0 -c=5000 -w=1000
+-s=10
+-m=pp0 -c=10000 -w=1000
+-s=10 -p=2000
+-e
+```
+
+`-e` (or `end`) exports all collected run summaries into a single CSV file.
+
 ---
 
 ## How It Works
@@ -186,11 +199,14 @@ is measured in every RTT sample.
 | `-c=<N>`       | > 0              | Sample count. Alone: **count-bounded** run (collect exactly `N` samples at max rate). With `-d`: paced run of `N` messages |
 | `-d=<ms>`      | > 0              | Duration in **milliseconds**. Alone: **duration-bounded** run (max rate for `N` ms). With `-c`: **paced** run -- `-c` messages spread across `N` ms (target rate = `-c`/`N` msg/ms, best-effort) |
 | `-w=<N>`       | >= 0             | Warmup count -- excluded from statistics                 |
-| `-s`           | --               | Start test with current settings                         |
+| `-s[=N]`       | `N > 0`          | Start test with current settings (`-s` == `-s=1`, `-s=0` == `-s=1`) |
+| `-p=<ms>`      | `ms >= 0`        | Pause between batch cycles (`-s=N`)                      |
 | `-p`           | --               | Stop running test                                        |
 | `-i`           | --               | Show current settings                                    |
 | `-o=<path>`    | path             | Set the CSV output file path (does not enable writing)   |
 | `-f[=<file>]`  | path (optional)  | Enable CSV file output; optionally set the file name     |
+| `-b` / `begin` | --       | Start benchmark collection mode (store completed runs in memory) |
+| `-e` / `end`   | --       | Stop benchmark mode and export all collected runs        |
 | `-h`           | --               | Show help / redraw the console layout                    |
 | `-q`           | --               | Quit consumer and provider                               |
 | `-q=1`         | --               | Quit consumer only                                       |

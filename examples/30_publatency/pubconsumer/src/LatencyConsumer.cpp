@@ -53,7 +53,10 @@ LatencyConsumer::LatencyConsumer(const areg::ComponentEntry & entry, areg::Compo
     , mDurationNs   ( DEFAULT_DURATION_NS )
     , mStopMode     ( StopMode::ByCount )
     , mPacingIntervalNs( 0u )
+    , mPauseMs      ( DEFAULT_PAUSE_MS )
+    , mBatchRunsLeft( 0u )
     , mCsvEnabled   ( false )
+    , mBenchmarkMode( false )
     , mCsvPath      ( )
 
     , mCurrentSeq   ( 0u )
@@ -69,8 +72,10 @@ LatencyConsumer::LatencyConsumer(const areg::ComponentEntry & entry, areg::Compo
     , mLastRateCount( 0u )
 
     , mPaceTimer    ( static_cast<areg::TimerConsumer &>(*this), TIMER_PACE )
+    , mBatchTimer   ( static_cast<areg::TimerConsumer &>(*this), TIMER_BATCH )
 
     , mResults      { }
+    , mBenchmarkResults( )
 {
 }
 
@@ -82,8 +87,12 @@ void LatencyConsumer::startup_component(areg::ComponentThread & /* comThread */)
     mCurrentSeq     = 0u;
     mMeasureStartNs = 0u;
     mPacingIntervalNs = 0u;
+    mPauseMs       = DEFAULT_PAUSE_MS;
+    mBatchRunsLeft = 0u;
     mTotalRuns      = 0u;
+    mBenchmarkMode  = false;
     mSamples.clear();
+    mBenchmarkResults.clear();
     mRunMin         = INT64_MAX;
     mRunMax         = 0;
     mRunSum         = 0;
@@ -103,6 +112,7 @@ void LatencyConsumer::shutdown_component(areg::ComponentThread & /* comThread */
 {
     mTestRunning = false;
     mPaceTimer.stop_timer();
+    mBatchTimer.stop_timer();
     mQuit.store(true, std::memory_order_relaxed);
     areg::ext::Console::instance().enable_console_input(false);
     mInputThread.shutdown(areg::WAIT_INFINITE);
@@ -289,7 +299,13 @@ void LatencyConsumer::on_latency_setup_update(const Latency::LantencySetup & set
 void LatencyConsumer::process_timer(areg::Timer & timer)
 {
     if (&timer == &mPaceTimer)
+    {
         _send_next_paced();
+    }
+    else if (&timer == &mBatchTimer)
+    {
+        _start_next_batch_cycle();
+    }
 }
 
 void LatencyConsumer::on_run()
@@ -367,6 +383,7 @@ void LatencyConsumer::_update_settings() const
     const areg::String path = !mCsvEnabled ? areg::String("off")
                             : mCsvPath.is_empty() ? areg::String("auto")
                             : mCsvPath;
+    const char * const benchmark_str = mBenchmarkMode ? "on" : "off";
     const uint32_t dur_ms = static_cast<uint32_t>(mDurationNs / 1000000ull);
     const char * const stop_str = (mStopMode == StopMode::ByCount)    ? "count"
                                 : (mStopMode == StopMode::ByDuration) ? "dur"
@@ -378,6 +395,8 @@ void LatencyConsumer::_update_settings() const
                      , mCount
                      , dur_ms
                      , mWarmup
+                     , mPauseMs
+                     , benchmark_str
                      , is_connected() ? "yes" : "no"
                      , mTestRunning   ? "yes" : "no"
                      , path.as_string());
@@ -392,8 +411,10 @@ void LatencyConsumer::_run_input_thread()
           { "-q", "quit",   static_cast<int32_t>(ConsumerCmd::Quit),     areg::ext::OptionParser::FREESTYLE_DATA,   {}, {}, {} }
         , { "-h", "help",   static_cast<int32_t>(ConsumerCmd::Help),     areg::ext::OptionParser::NO_DATA,          {}, {}, {} }
         , { "-i", "info",   static_cast<int32_t>(ConsumerCmd::Info),     areg::ext::OptionParser::NO_DATA,          {}, {}, {} }
-        , { "-s", "start",  static_cast<int32_t>(ConsumerCmd::Start),    areg::ext::OptionParser::NO_DATA,          {}, {}, {} }
-        , { "-p", "stop",   static_cast<int32_t>(ConsumerCmd::Stop),     areg::ext::OptionParser::NO_DATA,          {}, {}, {} }
+        , { "-s", "start",  static_cast<int32_t>(ConsumerCmd::Start),    areg::ext::OptionParser::FREESTYLE_DATA,   {}, {}, {} }
+        , { "-p", "stop",   static_cast<int32_t>(ConsumerCmd::Stop),     areg::ext::OptionParser::FREESTYLE_DATA,   {}, {}, {} }
+        , { "-b", "begin",  static_cast<int32_t>(ConsumerCmd::Begin),    areg::ext::OptionParser::NO_DATA,          {}, {}, {} }
+        , { "-e", "end",    static_cast<int32_t>(ConsumerCmd::End),      areg::ext::OptionParser::NO_DATA,          {}, {}, {} }
         , { "-m", "mode",   static_cast<int32_t>(ConsumerCmd::Mode),     areg::ext::OptionParser::STRING_IN_RANGE,  {}, {}, { "pp0", "pp8", "pp16", "pp32", "pp64", "pp128", "pp256", "pp512", "pp1024", "pp4096", "pp65536", "bc0", "bc8", "bc16", "bc32", "bc64", "bc128", "bc256", "bc512", "bc1024", "bc4096", "bc65536" } }
         , { "-c", "count",  static_cast<int32_t>(ConsumerCmd::Count),    areg::ext::OptionParser::INTEGER_NO_RANGE, {}, {}, {} }
         , { "-w", "warmup", static_cast<int32_t>(ConsumerCmd::Warmup),   areg::ext::OptionParser::INTEGER_NO_RANGE, {}, {}, {} }
@@ -461,10 +482,39 @@ void LatencyConsumer::_run_input_thread()
 
             case ConsumerCmd::Start:
                 data.start = true;
+                if (!opt.inString.empty())
+                {
+                    const areg::String run_count(opt.inString[0]);
+                    if (run_count.is_numeric(false))
+                    {
+                        const uint32_t runs = run_count.to_uint32();
+                        data.start_runs = (runs == 0u ? 1u : runs);
+                    }
+                    else
+                    {
+                        data.error = true;
+                    }
+                }
                 break;
 
             case ConsumerCmd::Stop:
-                data.stop = true;
+                if (opt.inString.empty())
+                {
+                    data.stop = true;
+                }
+                else
+                {
+                    const areg::String pause(opt.inString[0]);
+                    if (pause.is_numeric(false))
+                    {
+                        data.pause_ms  = pause.to_uint32();
+                        data.set_pause = true;
+                    }
+                    else
+                    {
+                        data.error = true;
+                    }
+                }
                 break;
 
             case ConsumerCmd::Mode:
@@ -483,6 +533,14 @@ void LatencyConsumer::_run_input_thread()
                 {
                     data.error = true;
                 }
+                break;
+
+            case ConsumerCmd::Begin:
+                data.begin_benchmark = true;
+                break;
+
+            case ConsumerCmd::End:
+                data.end_benchmark = true;
                 break;
 
             case ConsumerCmd::Count:
@@ -538,7 +596,8 @@ void LatencyConsumer::_run_input_thread()
 
         const bool has_any = data.quit || data.quit_local || data.help || data.info
                            || data.start || data.stop || data.set_mode || data.set_count
-                           || data.set_warmup || data.set_duration || data.set_output
+                           || data.set_warmup || data.set_duration || data.set_pause
+                           || data.set_output || data.begin_benchmark || data.end_benchmark
                            || data.enable_file || data.error;
 
         if (has_any)
@@ -583,6 +642,7 @@ void LatencyConsumer::_on_cmd_event(const CmdData & data)
         mStopMode = StopMode::ByDuration;
 
     if (data.set_warmup)   mWarmup  = data.warmup;
+    if (data.set_pause)    mPauseMs = data.pause_ms;
     if (data.set_output)   mCsvPath = data.csv_path;
     if (data.enable_file)
     {
@@ -593,6 +653,7 @@ void LatencyConsumer::_on_cmd_event(const CmdData & data)
 
     if (data.quit)
     {
+        _cancel_batch();
         mTestRunning = false;
         if (is_connected())
             request_start_mode(Latency::LatencyMode::QuitApp, 0u, 0u, 0u);
@@ -601,6 +662,7 @@ void LatencyConsumer::_on_cmd_event(const CmdData & data)
     }
     else if (data.quit_local)
     {
+        _cancel_batch();
         mTestRunning = false;
         areg::Application::signal_quit();
     }
@@ -612,13 +674,25 @@ void LatencyConsumer::_on_cmd_event(const CmdData & data)
     {
         _update_settings();
     }
+    else if (data.begin_benchmark)
+    {
+        _begin_benchmark_mode();
+    }
+    else if (data.end_benchmark)
+    {
+        _end_benchmark_mode();
+    }
     else if (data.stop)
     {
+        _cancel_batch();
         _stop_test();
     }
     else if (data.start)
     {
-        _start_test();
+        _cancel_batch();
+        mBatchRunsLeft = (data.start_runs > 0u ? data.start_runs : 1u) - 1u;
+        if (_start_test() == false)
+            mBatchRunsLeft = 0u;
     }
     else
     {
@@ -626,9 +700,18 @@ void LatencyConsumer::_on_cmd_event(const CmdData & data)
     }
 }
 
-void LatencyConsumer::_start_test()
+bool LatencyConsumer::_start_test()
 {
     areg::ext::Console & console = areg::ext::Console::instance();
+
+    if (mTestRunning)
+    {
+        console.save_cursor_position();
+        console.output_msg(COORD_SETTINGS, " ERROR: test is already running.%-60s", "");
+        console.restore_cursor_position();
+        console.refresh_screen();
+        return false;
+    }
 
     if (!is_connected())
     {
@@ -636,7 +719,7 @@ void LatencyConsumer::_start_test()
         console.output_msg(COORD_SETTINGS, " ERROR: not connected to service provider.%-50s", "");
         console.restore_cursor_position();
         console.refresh_screen();
-        return;
+        return false;
     }
 
     const bool need_count = (mStopMode == StopMode::ByCount)    || (mStopMode == StopMode::Paced);
@@ -648,7 +731,7 @@ void LatencyConsumer::_start_test()
         console.output_msg(COORD_SETTINGS, " ERROR: count must be > 0. Use -c=N or count=N.%-40s", "");
         console.restore_cursor_position();
         console.refresh_screen();
-        return;
+        return false;
     }
     if (need_dur && mDurationNs == 0u)
     {
@@ -656,7 +739,7 @@ void LatencyConsumer::_start_test()
         console.output_msg(COORD_SETTINGS, " ERROR: duration must be > 0. Use -d=<ms>.%-40s", "");
         console.restore_cursor_position();
         console.refresh_screen();
-        return;
+        return false;
     }
 
     uint32_t reserve_hint = mCount;
@@ -685,6 +768,7 @@ void LatencyConsumer::_start_test()
     request_start_mode(mMode, 0u, mWarmup, reserve_hint);
 
     _update_settings();
+    return true;
 }
 
 void LatencyConsumer::_stop_test()
@@ -707,6 +791,43 @@ void LatencyConsumer::_stop_test()
 
     if (!mSamples.is_empty())
         _finish_test();
+}
+
+void LatencyConsumer::_cancel_batch()
+{
+    mBatchRunsLeft = 0u;
+    mBatchTimer.stop_timer();
+}
+
+void LatencyConsumer::_start_next_batch_cycle()
+{
+    if (mBatchRunsLeft == 0u)
+        return;
+
+    --mBatchRunsLeft;
+    if (_start_test() == false)
+        _cancel_batch();
+}
+
+void LatencyConsumer::_begin_benchmark_mode()
+{
+    mBenchmarkMode = true;
+    mBenchmarkResults.clear();
+
+    areg::ext::Console & console = areg::ext::Console::instance();
+    console.save_cursor_position();
+    console.output_msg(COORD_SETTINGS, " Benchmark mode enabled.%-90s", "");
+    console.restore_cursor_position();
+    console.refresh_screen();
+    _update_settings();
+}
+
+void LatencyConsumer::_end_benchmark_mode()
+{
+    _save_benchmark_results();
+    mBenchmarkMode = false;
+    mBenchmarkResults.clear();
+    _update_settings();
 }
 
 void LatencyConsumer::_send_next_ping()
@@ -905,24 +1026,48 @@ void LatencyConsumer::_finish_test()
 
     ++mTotalRuns;
     const uint32_t slot = (mTotalRuns - 1u) % MAX_RESULT_ROWS;
+    const uint32_t req_dur_ms = static_cast<uint32_t>(mDurationNs / 1000000ull);
+    const char * const stop_str = (mStopMode == StopMode::ByCount)    ? "count"
+                                : (mStopMode == StopMode::ByDuration) ? "dur"
+                                :                                       "paced";
+    const double target_mps = (mStopMode == StopMode::Paced && mDurationNs > 0u)
+                            ? (static_cast<double>(mCount) * 1.0e9 / static_cast<double>(mDurationNs))
+                            : 0.0;
+    const areg::String timestamp = areg::DateTime::now().format_time("%Y%m%d_%H%M%S");
 
     ResultEntry & r = mResults[slot];
-    r.run_no  = mTotalRuns;
-    r.mode    = Latency::mode_as_str(mMode);
-    r.count   = N;
-    r.min_us  = min_us;
-    r.p50_us  = p50_us;
-    r.p95_us  = p95_us;
-    r.p99_us  = p99_us;
-    r.max_us  = max_us;
-    r.mean_us = mean_us;
-    r.dur_ms  = dur_ms;
-    r.mps     = mps;
-    r.valid   = true;
+    r.run_no      = mTotalRuns;
+    r.timestamp   = timestamp;
+    r.mode        = Latency::mode_as_str(mMode);
+    r.stop        = stop_str;
+    r.count       = N;
+    r.warmup      = mWarmup;
+    r.req_dur_ms  = req_dur_ms;
+    r.target_mps  = target_mps;
+    r.min_us      = min_us;
+    r.p50_us      = p50_us;
+    r.p95_us      = p95_us;
+    r.p99_us      = p99_us;
+    r.max_us      = max_us;
+    r.mean_us     = mean_us;
+    r.dur_ms      = dur_ms;
+    r.mps         = mps;
+    r.valid       = true;
 
     _draw_result_row(slot);
     if (mCsvEnabled)
         _save_csv(r);
+
+    if (mBenchmarkMode)
+        mBenchmarkResults.add(r);
+
+    if (mBatchRunsLeft > 0u)
+    {
+        if (mPauseMs == 0u)
+            _start_next_batch_cycle();
+        else
+            mBatchTimer.start_timer(mPauseMs, areg::Timer::ONE_TIME);
+    }
 }
 
 void LatencyConsumer::_draw_result_row(uint32_t slot) const
@@ -998,6 +1143,14 @@ areg::String LatencyConsumer::_default_csv_path() const
     return areg::File::current_dir() + areg::File::PATH_SEPARATOR + name;
 }
 
+areg::String LatencyConsumer::_default_benchmark_path() const
+{
+    const areg::String ts = areg::DateTime::now().format_time("%Y%m%d_%H%M%S");
+    areg::String name;
+    name.format("latency_benchmark_%s.csv", ts.as_string());
+    return areg::File::current_dir() + areg::File::PATH_SEPARATOR + name;
+}
+
 void LatencyConsumer::_save_csv(const ResultEntry & result) const
 {
     const uint32_t N = mSamples.size();
@@ -1023,18 +1176,10 @@ void LatencyConsumer::_save_csv(const ResultEntry & result) const
 
     // Metadata comment block -- lets the user see run parameters and summary in the file header.
     areg::String line;
-    const uint32_t req_dur_ms = static_cast<uint32_t>(mDurationNs / 1000000ull);
-    const char * const stop_str = (mStopMode == StopMode::ByCount)    ? "count"
-                                : (mStopMode == StopMode::ByDuration) ? "dur"
-                                :                                       "paced";
-    // For paced runs, the requested target rate (mCount messages over mDurationNs); 0 otherwise.
-    const double target_mps = (mStopMode == StopMode::Paced && mDurationNs > 0u)
-                            ? (static_cast<double>(mCount) * 1.0e9 / static_cast<double>(mDurationNs))
-                            : 0.0;
     line.format("# Run #%u: mode=%s, stop=%s, count=%u, warmup=%u, req_dur=%ums, target_rate=%.0f msg/s, actual_dur=%.1fms, throughput=%.0f msg/s"
               , result.run_no, result.mode.as_string()
-              , stop_str
-              , result.count, mWarmup, req_dur_ms, target_mps, result.dur_ms, result.mps);
+              , result.stop.as_string()
+              , result.count, result.warmup, result.req_dur_ms, result.target_mps, result.dur_ms, result.mps);
     csv.write_line(line);
 
     line.format("# Min: %.2f us, P50: %.2f us, P95: %.2f us, P99: %.2f us, Max: %.2f us, Mean: %.2f us"
@@ -1062,6 +1207,63 @@ void LatencyConsumer::_save_csv(const ResultEntry & result) const
     areg::ext::Console & console = areg::ext::Console::instance();
     console.save_cursor_position();
     console.output_msg(COORD_SETTINGS, " Saved: %s%-40s", output_path.as_string(), "");
+    console.restore_cursor_position();
+    console.refresh_screen();
+}
+
+void LatencyConsumer::_save_benchmark_results() const
+{
+    const areg::String output_path = _default_benchmark_path();
+    const uint32_t mode = static_cast<uint32_t>(areg::FileBase::OpenMode::Write)
+                        | static_cast<uint32_t>(areg::FileBase::OpenMode::Text)
+                        | static_cast<uint32_t>(areg::FileBase::OpenMode::Create);
+
+    areg::File csv;
+    if (!csv.open(output_path, mode))
+    {
+        areg::ext::Console & console = areg::ext::Console::instance();
+        console.save_cursor_position();
+        console.output_msg(COORD_SETTINGS, " WARNING: could not write benchmark export to '%s'%-2s", output_path.as_string(), "");
+        console.restore_cursor_position();
+        console.refresh_screen();
+        return;
+    }
+
+    areg::String line;
+    line.format("# benchmark_mode_runs=%u", mBenchmarkResults.size());
+    csv.write_line(line);
+    line.format("# exported_at=%s", areg::DateTime::now().format_time("%Y%m%d_%H%M%S").as_string());
+    csv.write_line(line);
+    csv.write_line("run,timestamp,mode,stop,count,warmup,req_dur_ms,target_msg_s,min_us,p50_us,p95_us,p99_us,max_us,mean_us,dur_ms,msg_s");
+
+    for (uint32_t i = 0u; i < mBenchmarkResults.size(); ++i)
+    {
+        const ResultEntry & r = mBenchmarkResults.value_at(i);
+        line.format("%u,%s,%s,%s,%u,%u,%u,%.0f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.0f,%.0f"
+                  , r.run_no
+                  , r.timestamp.as_string()
+                  , r.mode.as_string()
+                  , r.stop.as_string()
+                  , r.count
+                  , r.warmup
+                  , r.req_dur_ms
+                  , r.target_mps
+                  , r.min_us
+                  , r.p50_us
+                  , r.p95_us
+                  , r.p99_us
+                  , r.max_us
+                  , r.mean_us
+                  , r.dur_ms
+                  , r.mps);
+        csv.write_line(line);
+    }
+
+    csv.close();
+
+    areg::ext::Console & console = areg::ext::Console::instance();
+    console.save_cursor_position();
+    console.output_msg(COORD_SETTINGS, " Benchmark saved: %s%-15s", output_path.as_string(), "");
     console.restore_cursor_position();
     console.refresh_screen();
 }
