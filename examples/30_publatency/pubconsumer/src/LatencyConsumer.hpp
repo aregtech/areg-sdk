@@ -28,6 +28,7 @@
 #include <atomic>
 #include <chrono>
 #include <climits>
+#include <vector>
 
 //////////////////////////////////////////////////////////////////////////
 // LatencySample -- one measured round-trip record
@@ -214,6 +215,10 @@ private:
     static constexpr uint32_t DURATION_RESERVE_PER_SEC { 200000u };
     //!< Upper bound on pre-reserved samples, to keep memory bounded for long duration runs.
     static constexpr uint32_t MAX_SAMPLE_RESERVE    { 4000000u };
+    //!< Benchmark-mode result list: initial reservation and fixed-block growth step. Pre-reserving
+    //!< and growing by a constant block (instead of vector doubling) keeps the per-run append O(1)
+    //!< with predictable, bounded reallocation, so caching a run never stalls the measured thread.
+    static constexpr uint32_t BENCHMARK_RESERVE     { 512u };
 
 //////////////////////////////////////////////////////////////////////////
 // Console layout coordinates  (col=1, rows 2-32)
@@ -540,6 +545,7 @@ private:
     void _start_next_batch_cycle();
     void _begin_benchmark_mode();
     void _end_benchmark_mode();
+    void _flush_benchmark_on_exit();    //!< On quit, dumps buffered benchmark results to CSV if any (as if `-e`).
     void _send_next_ping();
     void _send_next_oneway();   //!< Broadcast/one-way: pull the next message from the provider.
     void _send_next_paced();    //!< Dispatch the next ping/one-way send (used by the pacing timer).
@@ -596,6 +602,7 @@ private:
 
     areg::ArrayList<LatencySample>  mSamples;
     std::atomic<uint32_t>   mSampleCount;   //!< Atomic count of mSamples; safe to read from display thread
+    std::vector<int64_t>    mSortBuffer;    //!< Reused rtt scratch buffer for percentile sort (no per-run alloc)
 
     int64_t                 mRunMin;
     int64_t                 mRunMax;

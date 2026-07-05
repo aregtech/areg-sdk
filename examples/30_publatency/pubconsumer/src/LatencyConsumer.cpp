@@ -93,6 +93,7 @@ void LatencyConsumer::startup_component(areg::ComponentThread & /* comThread */)
     mBenchmarkMode  = false;
     mSamples.clear();
     mBenchmarkResults.clear();
+    mBenchmarkResults.reserve(BENCHMARK_RESERVE);
     mRunMin         = INT64_MAX;
     mRunMax         = 0;
     mRunSum         = 0;
@@ -655,6 +656,7 @@ void LatencyConsumer::_on_cmd_event(const CmdData & data)
     {
         _cancel_batch();
         mTestRunning = false;
+        _flush_benchmark_on_exit();     // quitting mid-benchmark still dumps the CSV, as if `-e` was typed
         if (is_connected())
             request_start_mode(Latency::LatencyMode::QuitApp, 0u, 0u, 0u);
 
@@ -664,6 +666,7 @@ void LatencyConsumer::_on_cmd_event(const CmdData & data)
     {
         _cancel_batch();
         mTestRunning = false;
+        _flush_benchmark_on_exit();
         areg::Application::signal_quit();
     }
     else if (data.help)
@@ -813,6 +816,7 @@ void LatencyConsumer::_begin_benchmark_mode()
 {
     mBenchmarkMode = true;
     mBenchmarkResults.clear();
+    mBenchmarkResults.reserve(BENCHMARK_RESERVE);
 
     areg::ext::Console & console = areg::ext::Console::instance();
     console.save_cursor_position();
@@ -828,6 +832,12 @@ void LatencyConsumer::_end_benchmark_mode()
     mBenchmarkMode = false;
     mBenchmarkResults.clear();
     _update_settings();
+}
+
+void LatencyConsumer::_flush_benchmark_on_exit()
+{
+    if (mBenchmarkMode && !mBenchmarkResults.is_empty())
+        _save_benchmark_results();
 }
 
 void LatencyConsumer::_send_next_ping()
@@ -985,28 +995,29 @@ void LatencyConsumer::_finish_test()
         return;
     }
 
-    std::vector<int64_t> sorted;
-    sorted.reserve(N);
+    mSortBuffer.clear();
+    if (mSortBuffer.capacity() < N)
+        mSortBuffer.reserve(N);
     for (uint32_t i = 0u; i < N; ++i)
-        sorted.push_back(mSamples.value_at(i).rtt_ns);
+        mSortBuffer.push_back(mSamples.value_at(i).rtt_ns);
 
-    std::sort(sorted.begin(), sorted.end());
+    std::sort(mSortBuffer.begin(), mSortBuffer.end());
 
     int64_t sum = 0;
-    for (int64_t v : sorted) sum += v;
+    for (int64_t v : mSortBuffer) sum += v;
     const double mean_ns = static_cast<double>(sum) / static_cast<double>(N);
 
     auto percentile = [&](double pct) -> int64_t
     {
         const size_t idx = static_cast<size_t>(pct * static_cast<double>(N - 1u) / 100.0 + 0.5);
-        return sorted[idx < static_cast<size_t>(N) ? idx : static_cast<size_t>(N) - 1u];
+        return mSortBuffer[idx < static_cast<size_t>(N) ? idx : static_cast<size_t>(N) - 1u];
     };
 
-    const double min_us  = static_cast<double>(sorted.front()) / 1000.0;
+    const double min_us  = static_cast<double>(mSortBuffer.front()) / 1000.0;
     const double p50_us  = static_cast<double>(percentile(50.0)) / 1000.0;
     const double p95_us  = static_cast<double>(percentile(95.0)) / 1000.0;
     const double p99_us  = static_cast<double>(percentile(99.0)) / 1000.0;
-    const double max_us  = static_cast<double>(sorted.back())  / 1000.0;
+    const double max_us  = static_cast<double>(mSortBuffer.back())  / 1000.0;
     const double mean_us = mean_ns / 1000.0;
 
     const uint64_t startNs = mSamples.value_at(0u).t1_ns;
@@ -1033,7 +1044,11 @@ void LatencyConsumer::_finish_test()
     const double target_mps = (mStopMode == StopMode::Paced && mDurationNs > 0u)
                             ? (static_cast<double>(mCount) * 1.0e9 / static_cast<double>(mDurationNs))
                             : 0.0;
-    const areg::String timestamp = areg::DateTime::now().format_time("%Y%m%d_%H%M%S");
+    // The timestamp is only consumed by the benchmark export; skip the DateTime formatting
+    // (a syscall plus string build) on the measured thread when benchmark mode is off.
+    const areg::String timestamp = mBenchmarkMode
+                                 ? areg::DateTime::now().format_time("%Y%m%d_%H%M%S")
+                                 : areg::String();
 
     ResultEntry & r = mResults[slot];
     r.run_no      = mTotalRuns;
@@ -1055,11 +1070,20 @@ void LatencyConsumer::_finish_test()
     r.valid       = true;
 
     _draw_result_row(slot);
-    if (mCsvEnabled)
+    // In benchmark mode every result is buffered in RAM and dumped once on `-e`, so no per-run
+    // file write happens here -- that keeps the SSD off the measured path between batch cycles.
+    if (mCsvEnabled && !mBenchmarkMode)
         _save_csv(r);
 
     if (mBenchmarkMode)
+    {
+        // Grow the buffer by a fixed block only when it is exactly full, so the append never
+        // triggers an implicit doubling reallocation while a cycle is being cached.
+        if (mBenchmarkResults.size() == mBenchmarkResults.capacity())
+            mBenchmarkResults.reserve(mBenchmarkResults.capacity() + BENCHMARK_RESERVE);
+
         mBenchmarkResults.add(r);
+    }
 
     if (mBatchRunsLeft > 0u)
     {
@@ -1276,7 +1300,13 @@ void LatencyConsumer::_run_display_thread()
         if (mQuit.load(std::memory_order_relaxed))
             break;
 
+        // Only the live stats change second-to-second. While a test is running the settings row
+        // is static, so it is not redrawn on every tick -- one fewer format+refresh per second
+        // keeps the display thread off the measured thread's back. When idle the row is refreshed
+        // so it self-corrects (e.g. running=no) shortly after a run ends without extra work on
+        // the measured thread.
         _update_live();
-        _update_settings();
+        if (!mTestRunning)
+            _update_settings();
     }
 }

@@ -51,10 +51,6 @@ LatencyProvider::LatencyProvider(const areg::ComponentEntry & entry, areg::Compo
     , mLastRateCount        ( 0u )
     , mMsgId                ( 0u )
     , mTotalServed          ( 0u )
-    , mRunMin               ( INT64_MAX )
-    , mRunMax               ( 0 )
-    , mRunSum               ( 0 )
-    , mRunCount             ( 0u )
     , mLastRate             ( 0.0 )
 {
 }
@@ -74,10 +70,6 @@ void LatencyProvider::startup_service_interface(areg::Component & holder)
     mLastStats       = {};
     mOneWayLatencies.clear();
     mLastRate        = 0.0;
-    mRunMin          = INT64_MAX;
-    mRunMax          = 0;
-    mRunSum          = 0;
-    mRunCount        = 0u;
 
     areg::ext::Console::instance().enable_console_input(true);
     _redraw_layout();
@@ -136,10 +128,6 @@ void LatencyProvider::request_start_mode(Latency::LatencyMode mode, uint32_t dur
         mOneWayLatencies.clear();
         mOneWayLatencies.reserve(count + warmup);
         mLastStats  = {};
-        mRunMin     = INT64_MAX;
-        mRunMax     = 0;
-        mRunSum     = 0;
-        mRunCount   = 0u;
     }
 
     mDurationSec.store(duration, std::memory_order_relaxed);
@@ -149,87 +137,117 @@ void LatencyProvider::request_start_mode(Latency::LatencyMode mode, uint32_t dur
     set_latency_setup(Latency::LantencySetup{ mode, duration, warmup, count });
     response_start_mode(static_cast<const Latency::LantencySetup &>(latency_setup()));
 
-    if (is_broadcast)
+    if (mode == Latency::LatencyMode::Stop)
     {
+        // A request test just ended -- compute the final percentile summary once here rather than
+        // sorting every second on the display thread while the test was running. Broadcast stops
+        // leave the persisted request stats untouched (no one-way samples were collected).
+        _finalize_request_stats();
+        _update_live();
+    }
+    else if (is_broadcast)
+    {
+        _clear_latency_row();
+        _update_live();
+    }
+    else if (is_request)
+    {
+        // New request test: blank the summary row until the final stats are published on stop.
+        _clear_latency_row();
         _update_live();
     }
 }
 
+// Ping-pong handlers dispatch the reply first, then do the bookkeeping. The arrival timestamp is
+// sampled once and echoed back, so the round-trip the consumer measures is not inflated by the
+// provider-side recording (buffering the sample and bumping the served counter).
+
 void LatencyProvider::request_ping_pong_0(uint32_t id, uint64_t start)
 {
-    _record_oneway(start);
+    const uint64_t t2 = Latency::now_ns();
+    response_ping_pong_0(id, start, t2);
+    _record_oneway(start, t2);
     mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-    response_ping_pong_0(id, start, Latency::now_ns());
 }
 
 void LatencyProvider::request_ping_pong_8(uint32_t id, uint64_t begin, const Latency::Data8 & data8)
 {
-    _record_oneway(begin);
+    const uint64_t t2 = Latency::now_ns();
+    response_ping_pong_8(id, begin, t2, data8);
+    _record_oneway(begin, t2);
     mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-    response_ping_pong_8(id, begin, Latency::now_ns(), data8);
 }
 
 void LatencyProvider::request_ping_pong_16(uint32_t id, uint64_t begin, const Latency::Data16 & data16)
 {
-    _record_oneway(begin);
+    const uint64_t t2 = Latency::now_ns();
+    response_ping_pong_16(id, begin, t2, data16);
+    _record_oneway(begin, t2);
     mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-    response_ping_pong_16(id, begin, Latency::now_ns(), data16);
 }
 
 void LatencyProvider::request_ping_pong_32(uint32_t id, uint64_t begin, const Latency::Data32 & data32)
 {
-    _record_oneway(begin);
+    const uint64_t t2 = Latency::now_ns();
+    response_ping_pong_32(id, begin, t2, data32);
+    _record_oneway(begin, t2);
     mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-    response_ping_pong_32(id, begin, Latency::now_ns(), data32);
 }
 
 void LatencyProvider::request_ping_pong_64(uint32_t id, uint64_t begin, const Latency::Data64 & data64)
 {
-    _record_oneway(begin);
+    const uint64_t t2 = Latency::now_ns();
+    response_ping_pong_64(id, begin, t2, data64);
+    _record_oneway(begin, t2);
     mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-    response_ping_pong_64(id, begin, Latency::now_ns(), data64);
 }
 
 void LatencyProvider::request_ping_pong_128(uint32_t id, uint64_t begin, const Latency::Data128 & data128)
 {
-    _record_oneway(begin);
+    const uint64_t t2 = Latency::now_ns();
+    response_ping_pong_128(id, begin, t2, data128);
+    _record_oneway(begin, t2);
     mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-    response_ping_pong_128(id, begin, Latency::now_ns(), data128);
 }
 
 void LatencyProvider::request_ping_pong_256(uint32_t id, uint64_t begin, const Latency::Data256 & data256)
 {
-    _record_oneway(begin);
+    const uint64_t t2 = Latency::now_ns();
+    response_ping_pong_256(id, begin, t2, data256);
+    _record_oneway(begin, t2);
     mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-    response_ping_pong_256(id, begin, Latency::now_ns(), data256);
 }
 
 void LatencyProvider::request_ping_pong_512(uint32_t id, uint64_t begin, const Latency::Data512& data512)
 {
-    _record_oneway(begin);
+    const uint64_t t2 = Latency::now_ns();
+    response_ping_pong_512(id, begin, t2, data512);
+    _record_oneway(begin, t2);
     mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-    response_ping_pong_512(id, begin, Latency::now_ns(), data512);
 }
 
 void LatencyProvider::request_ping_pong_1024(uint32_t id, uint64_t begin, const Latency::Data1024 & data1024)
 {
-    _record_oneway(begin);
+    const uint64_t t2 = Latency::now_ns();
+    response_ping_pong_1024(id, begin, t2, data1024);
+    _record_oneway(begin, t2);
     mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-    response_ping_pong_1024(id, begin, Latency::now_ns(), data1024);
 }
 
 void LatencyProvider::request_ping_pong_4096(uint32_t id, uint64_t begin, const Latency::Data4096 & data4096)
 {
-    _record_oneway(begin);
+    const uint64_t t2 = Latency::now_ns();
+    response_ping_pong_4096(id, begin, t2, data4096);
+    _record_oneway(begin, t2);
     mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-    response_ping_pong_4096(id, begin, Latency::now_ns(), data4096);
 }
 
 void LatencyProvider::request_ping_pong_65536(uint32_t id, uint64_t begin, const Latency::Data65536 & data65536)
 {
-    _record_oneway(begin);
+    const uint64_t t2 = Latency::now_ns();
+    response_ping_pong_65536(id, begin, t2, data65536);
+    _record_oneway(begin, t2);
     mTotalServed.fetch_add(1u, std::memory_order_relaxed);
-    response_ping_pong_65536(id, begin, Latency::now_ns(), data65536);
 }
 
 void LatencyProvider::request_message_next(uint32_t /* id */)
@@ -260,7 +278,11 @@ void LatencyProvider::_run_display_thread()
             break;
 
         _update_live();
-        _update_latency_stats();
+        // While a test is active the summary row is static (it is published once on stop), so it is
+        // not repainted every second. Refresh it only when idle so it self-corrects cheaply without
+        // ever sorting on this thread.
+        if (!_test_active())
+            _update_latency_stats();
     }
 }
 
@@ -452,77 +474,72 @@ void LatencyProvider::_update_live()
     console.refresh_screen();
 }
 
-void LatencyProvider::_record_oneway(uint64_t begin_ns) noexcept
+void LatencyProvider::_record_oneway(uint64_t begin_ns, uint64_t arrival_ns) noexcept
 {
-    const int64_t oneway = static_cast<int64_t>(Latency::now_ns()) - static_cast<int64_t>(begin_ns);
+    const int64_t oneway = static_cast<int64_t>(arrival_ns) - static_cast<int64_t>(begin_ns);
     if (oneway <= 0)
         return;
 
-    if (oneway < mRunMin) mRunMin = oneway;
-    if (oneway > mRunMax) mRunMax = oneway;
-    mRunSum += oneway;
-    ++mRunCount;
-
+    // Just buffer the sample; the summary is sorted/computed once on stop in _finalize_request_stats.
     mOneWayLatencies.push_back(oneway);
 }
 
 void LatencyProvider::_update_latency_stats()
 {
+    // Render-only: paint the currently published summary (or dashes). The percentiles are computed
+    // once, off the measured path, in _finalize_request_stats() -- this never sorts.
     areg::ext::Console & console = areg::ext::Console::instance();
     console.save_cursor_position();
 
-    const Latency::LatencyMode mode = mBroadcastMode.load(std::memory_order_relaxed);
-    const uint16_t val         = static_cast<uint16_t>(mode);
-    const bool     is_active   = (mode != Latency::LatencyMode::Stop) && (mode != Latency::LatencyMode::QuitApp);
-    const bool     is_request  = is_active && (val >= static_cast<uint16_t>(Latency::LatencyMode::Request0));
-    const bool     is_broadcast = is_active && !is_request;
-
-    if (is_broadcast)
+    if (mLastStats.valid)
     {
-        // Broadcast mode: show dashes -- do NOT touch mLastStats (preserve prior request test results)
-        console.output_txt(COORD_LATENCY, MSG_LATENCY_NONE);
-    }
-    else if (is_request && !mOneWayLatencies.empty())
-    {
-        // Active request test: sort all samples and compute full percentiles
-        std::vector<int64_t> sorted(mOneWayLatencies.begin(), mOneWayLatencies.end());
-        std::sort(sorted.begin(), sorted.end());
-        const size_t N = sorted.size();
-
-        int64_t sum = 0;
-        for (int64_t v : sorted) sum += v;
-
-        auto percentile = [&](double pct) -> int64_t
-        {
-            const size_t idx = static_cast<size_t>(pct * static_cast<double>(N - 1u) / 100.0 + 0.5);
-            return sorted[idx < N ? idx : N - 1u];
-        };
-
-        mLastStats.min_us  = static_cast<double>(sorted.front()) / 1000.0;
-        mLastStats.p50_us  = static_cast<double>(percentile(50.0)) / 1000.0;
-        mLastStats.p95_us  = static_cast<double>(percentile(95.0)) / 1000.0;
-        mLastStats.p99_us  = static_cast<double>(percentile(99.0)) / 1000.0;
-        mLastStats.max_us  = static_cast<double>(sorted.back()) / 1000.0;
-        mLastStats.mean_us = static_cast<double>(sum) / static_cast<double>(N) / 1000.0;
-        mLastStats.valid   = true;
-
-        console.output_msg(COORD_LATENCY, MSG_LATENCY.data()
-                         , mLastStats.min_us, mLastStats.p50_us, mLastStats.p95_us
-                         , mLastStats.p99_us, mLastStats.max_us, mLastStats.mean_us);
-    }
-    else if (mLastStats.valid)
-    {
-        // Stopped/idle: show persistent results from the last completed request test
         console.output_msg(COORD_LATENCY, MSG_LATENCY.data()
                          , mLastStats.min_us, mLastStats.p50_us, mLastStats.p95_us
                          , mLastStats.p99_us, mLastStats.max_us, mLastStats.mean_us);
     }
     else
     {
-        // No data yet
         console.output_txt(COORD_LATENCY, MSG_LATENCY_NONE);
     }
 
+    console.restore_cursor_position();
+    console.refresh_screen();
+}
+
+void LatencyProvider::_finalize_request_stats()
+{
+    // Only a request test collects one-way samples; a broadcast stop leaves the last summary intact.
+    if (!mOneWayLatencies.empty())
+    {
+        std::sort(mOneWayLatencies.begin(), mOneWayLatencies.end());
+        const size_t N = mOneWayLatencies.size();
+
+        int64_t sum = 0;
+        for (int64_t v : mOneWayLatencies) sum += v;
+
+        auto percentile = [&](double pct) -> int64_t
+        {
+            const size_t idx = static_cast<size_t>(pct * static_cast<double>(N - 1u) / 100.0 + 0.5);
+            return mOneWayLatencies[idx < N ? idx : N - 1u];
+        };
+
+        mLastStats.min_us  = static_cast<double>(mOneWayLatencies.front()) / 1000.0;
+        mLastStats.p50_us  = static_cast<double>(percentile(50.0)) / 1000.0;
+        mLastStats.p95_us  = static_cast<double>(percentile(95.0)) / 1000.0;
+        mLastStats.p99_us  = static_cast<double>(percentile(99.0)) / 1000.0;
+        mLastStats.max_us  = static_cast<double>(mOneWayLatencies.back()) / 1000.0;
+        mLastStats.mean_us = static_cast<double>(sum) / static_cast<double>(N) / 1000.0;
+        mLastStats.valid   = true;
+    }
+
+    _update_latency_stats();
+}
+
+void LatencyProvider::_clear_latency_row()
+{
+    areg::ext::Console & console = areg::ext::Console::instance();
+    console.save_cursor_position();
+    console.output_txt(COORD_LATENCY, MSG_LATENCY_NONE);
     console.restore_cursor_position();
     console.refresh_screen();
 }

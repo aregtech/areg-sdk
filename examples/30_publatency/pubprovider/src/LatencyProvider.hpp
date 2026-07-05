@@ -317,8 +317,22 @@ private:
     void _on_provider_cmd(const ProviderCmdData & data);
     void _redraw_layout();
     void _update_live();
-    void _record_oneway(uint64_t begin_ns) noexcept;
+    //!< Accumulates one one-way sample. `arrival_ns` is the timestamp captured on request arrival
+    //!< (the same value echoed back), passed in so the reply can be dispatched before bookkeeping.
+    void _record_oneway(uint64_t begin_ns, uint64_t arrival_ns) noexcept;
     void _update_latency_stats();
+    //!< Sorts the collected one-way samples once and publishes the final percentile summary. Called
+    //!< when a request test stops, so the display thread never sorts while a test is running.
+    void _finalize_request_stats();
+    //!< Blanks the one-way summary row (dashes). Used when a fresh test starts.
+    void _clear_latency_row();
+
+    //!< True while a benchmark test (request or broadcast) is active.
+    inline bool _test_active() const noexcept
+    {
+        const Latency::LatencyMode mode = mBroadcastMode.load(std::memory_order_relaxed);
+        return (mode != Latency::LatencyMode::Stop) && (mode != Latency::LatencyMode::QuitApp);
+    }
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -343,12 +357,8 @@ private:
 
     LatencyStats                        mLastStats;
 
-    //!< Cumulative one-way running stats for the current test (request mode only):
+    //!< One-way samples for the current request test; sorted once on stop to compute percentiles:
     std::vector<int64_t>                mOneWayLatencies;   //!< All one-way samples (ns); cleared on new test start
-    int64_t                             mRunMin;    //!< Running minimum one-way (ns); INT64_MAX = no samples
-    int64_t                             mRunMax;    //!< Running maximum one-way (ns)
-    int64_t                             mRunSum;    //!< Running sum for mean computation (ns)
-    uint32_t                            mRunCount;  //!< Number of one-way samples accumulated
     double                              mLastRate;  //!< Last non-zero msg/sec rate, shown when test is idle
 
 //////////////////////////////////////////////////////////////////////////
