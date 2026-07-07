@@ -104,7 +104,7 @@ boundaries, and network boundaries – using a single consistent programming mod
 - **Weeks of infrastructure work removed:** threading, IPC, service discovery, and reconnection logic are generated and managed, not hand-built on every project. *([Development Time Savings](./docs/wiki/08d-areg-framework-rankings.md#10-development-time-savings-with-areg-sdk))*
 - **Race conditions structurally eliminated:** no shared state to lock, audit, or get wrong – raw bytes route to the owning thread before any deserialization.
 - **No startup-order or boot sequencing logic:** services find each other by name regardless of thread, process, or machine, with no manual retry loops.
-- **#1 TCP framework by latency and data rate:** full service dispatch included, not a stripped transport benchmark – ~11 µs one-way, 6.0–8.0 GB/s sustained to peak. *([rankings](./docs/wiki/08d-areg-framework-rankings.md), [raw output](./docs/wiki/benchmark-test-results.txt))*
+- **#1 TCP framework by latency and data rate:** full service dispatch included, not a stripped transport benchmark – ~9.9 µs one-way, 6.0–8.0 GB/s sustained to peak. *([rankings](./docs/wiki/08d-areg-framework-rankings.md), [raw latency data](./docs/wiki/areg-latency-benchmark-20260705.csv))*
 - **Automatic recovery:** failed components restart and dependent consumers reconnect with no operator intervention.
 - **One codebase, any scale:** the same code runs as threads, processes, or networked services; moving from prototype to production is a deployment change, not a rewrite.
 - **Test before hardware exists, deploy unchanged:** register a simulation under the same service name and the rest of the system never notices – no conditional compilation, no mock frameworks, zero code changes when real hardware arrives.
@@ -175,7 +175,7 @@ For full details, see the [Service Interface Guide](./docs/wiki/06e-lusan-servic
 
 ## Performance[![](./docs/img/pin.svg)](#performance)
 
-Measured on **mobile-class consumer hardware**, full stack active – data serialization, event dispatching, and multithreading. These are not raw socket numbers. [Raw benchmark output](./docs/wiki/benchmark-test-results.txt) is published alongside the full methodology for independent verification.
+Measured on **mobile-class consumer hardware**, full stack active – data serialization, event dispatching, and multithreading. These are not raw socket numbers. Raw benchmark output is published alongside the full methodology for independent verification: [current latency dataset](./docs/wiki/areg-latency-benchmark-20260705.csv) (bare TTY) · [earlier round](./docs/wiki/areg-latency-benchmark-20260629.txt) (`gnome-terminal`).
 
 ### Throughput – TCP `localhost`, 1:1, measured at `mtrouter`
 
@@ -193,17 +193,21 @@ Measured on **mobile-class consumer hardware**, full stack active – data seria
 
 ### Latency – TCP `localhost`, full stack, 204-byte messages
 
-Timestamps span the full call path: before serialization (sender) to after deserialization and dispatch (receiver). OWT = one-way (2-hop). RTT = round-trip through `mtrouter` (4-hop). Linux figures are measured with `mtrouter`, provider, and consumer each pinned to a dedicated CPU core via `taskset` – see the [raw output](./docs/wiki/benchmark-test-results.txt) and [methodology](./docs/wiki/08b-areg-sdk-performance-benchmarks.md#12-pinned-core-methodology-and-trade-offs).
+Timestamps span the full call path: before serialization (sender) to after deserialization and dispatch (receiver). OWT = one-way (2-hop). RTT = round-trip through `mtrouter` (4-hop). Linux figures are measured from a bare TTY session (no desktop GUI) with `mtrouter`, provider, and consumer each pinned to a dedicated CPU core via `taskset` – see the [raw data](./docs/wiki/areg-latency-benchmark-20260705.csv) and [methodology](./docs/wiki/08b-areg-sdk-performance-benchmarks.md#21-measurement-environment-terminal-restart-protocol-and-absolute-floor).
 
-| Platform       | CPU               | OWT Min     | OWT P50      | RTT Min     | RTT P50    |
-|----------------|-------------------|-------------|--------------|-------------|------------|
-| Linux Ubuntu ¹ | i7-13700H (DDR4)  | **10.5 μs** | **~11.2 μs** | **21.2 μs** | **~21.7 μs** |
-| macOS M3 Pro   | Apple M3 (LPDDR5) | 21.6 μs     | 31.4 μs      | 46.0 μs     | 62.5 μs    |
-| Windows 11     | i7-13700H (DDR4)  | 32.5 μs     | 40.3 μs      | 64.0 μs     | 82.5 μs    |
+| Platform       | CPU               | OWT Min    | OWT P50     | RTT Min     | RTT P50     |
+|----------------|-------------------|------------|-------------|-------------|-------------|
+| Linux Ubuntu ¹ | i7-13700H (DDR4)  | **9.6 μs** | **~9.9 μs** | **19.1 μs** | **~19.6 μs** |
+| macOS M3 Pro   | Apple M3 (LPDDR5) | 21.6 μs    | 31.4 μs     | 46.0 μs     | 62.5 μs     |
+| Windows 11     | i7-13700H (DDR4)  | 32.5 μs    | 40.3 μs     | 64.0 μs     | 82.5 μs     |
 
-¹ Ubuntu 26.04, `Performance` power mode, cores pinned via `taskset`. Unpinned, latency is ~30% higher (still the fastest measured TCP framework in its class – see [framework rankings](./docs/wiki/08d-areg-framework-rankings.md)).
+¹ Ubuntu 26.04, `Performance` power mode, bare TTY, cores pinned via `taskset`. The single
+lowest sample observed to date is 9.14 μs (OWT) / 18.34 μs (RTT). A desktop `gnome-terminal`
+session reads ~0.9–1.4 μs higher; not pinning cores adds a further ~2–4 μs on top of either –
+still the fastest measured TCP framework in its class either way (see
+[framework rankings](./docs/wiki/08d-areg-framework-rankings.md)).
 
-For comparison: **gRPC C++ sequential RTT ~116–167 μs** over Unix domain socket – despite fewer hops and no service dispatch ([MPI-HD, F. Werner, 2021](https://www.mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc/)). Latency is payload-insensitive up to 4 KB – Min rises only 1.1 μs across a 20× size increase; framework overhead dominates.
+For comparison: **gRPC C++ sequential RTT ~116–167 μs** over Unix domain socket – despite fewer hops and no service dispatch ([MPI-HD, F. Werner, 2021](https://www.mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc/)). Latency is payload-insensitive up to 4 KB – Min rises only 1.0 μs across a 20× size increase; framework overhead dominates.
 
 **Real-world fit:** covers the software pipeline layer of scientific imaging (laser microscopy, X-ray, electron microscopy) and industrial machine vision on a standard laptop.
 

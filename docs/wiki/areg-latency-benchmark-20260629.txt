@@ -1,6 +1,6 @@
  Benchmark test results: 29.06.2026
 
- Pinned-core run: mtrouter, provider, and consumer each bound to a dedicated
+ Pinned-core run in `gnome-terminal`: mtrouter, provider, and consumer each bound to a dedicated
  physical core via `taskset` (cores 10, 6, and 1 respectively) to remove
  OS scheduler migration/jitter from the measurement, matching the isolated-core
  methodology used in the Hitachi Energy benchmark (arXiv:2508.07934) cited in
@@ -9,14 +9,16 @@
  baseline in 08b-areg-sdk-performance-benchmarks.md §4 – only core affinity differs.
  8 runs per mode, count=5000, warmup=1000, T=0.
 
- Runs:
+ Hardware: CPU 13th Gen Intel(R) Core(TM) i7-13700H, 2400 Mhz, 14 Core(s), 20 Logical Processor(s), RAM 32 GB DDR4
 
- ```bash
- taskset -c 10 ./mtrouter.elf
- ```
+Runs:
 
- ```bash
- taskset -c 1  ./30_pubconsumer.elf
+```bash
+taskset -c 10 ./mtrouter.elf
+```
+
+```bash
+taskset -c 1  ./30_pubconsumer.elf
 ```
 
 ```bash
