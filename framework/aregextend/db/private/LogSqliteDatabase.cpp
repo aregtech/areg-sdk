@@ -247,15 +247,6 @@ namespace {
     };
 
     //! A script to extract all logged messages
-    constexpr std::string_view _sqlGetAllLogMessages
-    {
-        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, "
-        "time_created, time_received, time_duration, scope_id, session_id, "
-        "msg_log, msg_thread, msg_module "
-        "FROM logs "
-        "ORDER BY time_created;"
-    };
-
     constexpr std::string_view _sqlGetAllLogMessagesPaged
     {
         "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, "
@@ -267,16 +258,6 @@ namespace {
     };
 
     //! A script to extract logged messages of the certain instance source
-    constexpr std::string_view _sqlGetInstLogMessages
-    {
-        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, "
-        "time_created, time_received, time_duration, scope_id, session_id, "
-        "msg_log, msg_thread, msg_module "
-        "FROM logs "
-        "WHERE cookie_id = ? "
-        "ORDER BY time_created;"
-    };
-
     constexpr std::string_view _sqlGetInstLogMessagesPaged
     {
         "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, "
@@ -452,7 +433,7 @@ String LogSqliteDatabase::read_instances_query()
 
 String LogSqliteDatabase::read_all_log_messages_query()
 {
-    return String(_sqlGetAllLogMessages);
+    return String(_sqlGetAllLogMessagesPaged);
 }
 
 LogSqliteDatabase::LogSqliteDatabase()
@@ -988,9 +969,11 @@ void LogSqliteDatabase::log_messages(std::vector<SharedBuffer>& messages)
 {
     Lock lock(mLock);
     messages.clear();
-    SqliteStatement stmt(mDatabase, _sqlGetAllLogMessages);
+    SqliteStatement stmt(mDatabase, _sqlGetAllLogMessagesPaged);
     if (stmt.is_valid())
     {
+        stmt.bind_int32(0, -1);
+        stmt.bind_uint32(1, 0u);
         while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             SharedBuffer buf;
@@ -1019,10 +1002,12 @@ void LogSqliteDatabase::log_inst_messages(std::vector<SharedBuffer>& messages, I
 
     Lock lock(mLock);
     messages.clear();
-    SqliteStatement stmt(mDatabase, _sqlGetInstLogMessages);
+    SqliteStatement stmt(mDatabase, _sqlGetInstLogMessagesPaged);
     if (stmt.is_valid())
     {
         stmt.bind_uint32(0, static_cast<uint32_t>(instId));
+        stmt.bind_int32(1, -1);
+        stmt.bind_uint32(2, 0u);
         while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             SharedBuffer buf;
@@ -1246,34 +1231,19 @@ uint32_t LogSqliteDatabase::setup_statement_read_logs(
 
     if (instId == areg::TARGET_ALL)
     {
-        if (limit >= 0)
-        {
-            return (
-                stmt.prepare(_sqlGetAllLogMessagesPaged) &&
-                stmt.bind_int32(0, limit) &&
-                stmt.bind_uint32(1, offset)
-            ) ? count_log_entries(instId) : 0u;
-        }
-
-        return (stmt.prepare(_sqlGetAllLogMessages) ? count_log_entries(instId) : 0u);
-    }
-    else
-    {
-        if (limit >= 0)
-        {
-            return (
-                stmt.prepare(_sqlGetInstLogMessagesPaged) &&
-                stmt.bind_uint32(0, static_cast<uint32_t>(instId)) &&
-                stmt.bind_int32(1, limit) &&
-                stmt.bind_uint32(2, offset)
-            ) ? count_log_entries(instId) : 0u;
-        }
-
         return (
-            stmt.prepare(_sqlGetInstLogMessages) &&
-            stmt.bind_uint32(0, static_cast<uint32_t>(instId))
+            stmt.prepare(_sqlGetAllLogMessagesPaged) &&
+            stmt.bind_int32(0, limit) &&
+            stmt.bind_uint32(1, offset)
         ) ? count_log_entries(instId) : 0u;
     }
+
+    return (
+        stmt.prepare(_sqlGetInstLogMessagesPaged) &&
+        stmt.bind_uint32(0, static_cast<uint32_t>(instId)) &&
+        stmt.bind_int32(1, limit) &&
+        stmt.bind_uint32(2, offset)
+    ) ? count_log_entries(instId) : 0u;
 }
 
 uint32_t LogSqliteDatabase::setup_filter_logs(ITEM_ID instId, const ArrayList<ScopeFilter>& filter)
