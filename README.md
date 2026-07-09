@@ -47,6 +47,7 @@
 ## Table of Contents
 
 - [Why Areg SDK](#why-areg-sdk)
+- [What You Get](#what-you-get)
 - [How It Works](#how-it-works)
 - [Performance](#performance)
 - [Areg SDK vs. Alternatives](#areg-sdk-vs-alternatives)
@@ -96,6 +97,22 @@ boundaries, and network boundaries – using a single consistent programming mod
 
 ---
 
+## What You Get[![](./docs/img/pin.svg)](#what-you-get)
+
+**If you build C++ systems with threads, processes, or networked devices – embedded, edge, or enterprise – here is what changes when you use Areg SDK.**
+
+- **Weeks of infrastructure work removed:** threading, IPC, service discovery, and reconnection logic are generated and managed, not hand-built on every project. *([Development Time Savings](./docs/wiki/08d-areg-framework-rankings.md#10-development-time-savings-with-areg-sdk))*
+- **Race conditions structurally eliminated:** no shared state to lock, audit, or get wrong – raw bytes route to the owning thread before any deserialization.
+- **No startup-order or boot sequencing logic:** services find each other by name regardless of thread, process, or machine, with no manual retry loops.
+- **#1 TCP framework by latency and data rate:** full service dispatch included, not a stripped transport benchmark – ~9.9 µs one-way, 6.0–8.0 GB/s sustained to peak. *([rankings](./docs/wiki/08d-areg-framework-rankings.md), [raw latency data](./docs/wiki/areg-latency-benchmark-20260705.csv))*
+- **Automatic recovery:** failed components restart and dependent consumers reconnect with no operator intervention.
+- **One codebase, any scale:** the same code runs as threads, processes, or networked services; moving from prototype to production is a deployment change, not a rewrite.
+- **Test before hardware exists, deploy unchanged:** register a simulation under the same service name and the rest of the system never notices – no conditional compilation, no mock frameworks, zero code changes when real hardware arrives.
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
 ## How It Works[![](./docs/img/pin.svg)](#how-it-works)
 
 Areg SDK implements **Object RPC (ORPC)** – a service model where components expose
@@ -132,13 +149,9 @@ The code generator produces all RPC infrastructure – serialization, proxies, e
 
 ### Service Interface and Code Generation
 
-A **service interface** defines the API contract: data types, attributes (pub/sub),
-requests, responses, broadcasts, and constants. A **service** is a named component
-instance that implements one or more interfaces. Consumers declare which named service
-they depend on – the framework connects them automatically when that service becomes
-available anywhere on the network.
-
-The workflow from interface definition to running code:
+Full definitions of service interface, service, and consumer are in
+[Service Identity Model](#service-identity-model). The workflow from interface
+definition to running code:
 
 ```
 MyService.siml  ──►  codegen.jar  ──►  MyServiceProviderBase.hpp
@@ -162,35 +175,39 @@ For full details, see the [Service Interface Guide](./docs/wiki/06e-lusan-servic
 
 ## Performance[![](./docs/img/pin.svg)](#performance)
 
-Measured on **mobile-class consumer hardware**, full stack active – data serialization, event dispatching, and multithreading. These are not raw socket numbers.
+Measured on **mobile-class consumer hardware**, full stack active – data serialization, event dispatching, and multithreading. These are not raw socket numbers. Raw benchmark output is published alongside the full methodology for independent verification: [current latency dataset](./docs/wiki/areg-latency-benchmark-20260705.csv) (bare TTY) · [earlier round](./docs/wiki/areg-latency-benchmark-20260629.txt) (`gnome-terminal`).
 
 ### Throughput – TCP `localhost`, 1:1, measured at `mtrouter`
 
 | Platform       | CPU Type         | ~3 MB, GB/s              | ~0.5 KB, msg/s            |
 |----------------|------------------|--------------------------|---------------------------|
-| Linux Ubuntu ¹ | i7-13700H (DDR4) | ~6.0–6.5 sust. / ~8.0 peak | ~2.0M sust. / ~2.5M peak  |
+| Linux Ubuntu ¹ | i7-13700H (DDR4) | ~6.5 sust. / ~8.0 peak   | ~2.0M sust. / ~2.5M peak  |
 | macOS native ² | M3 Pro (LPDDR5)  | ~6.5 sust. / –7.0 peak   | ~2.5M sust. / ~3.0M peak  |
 | Windows 11 ³   | i7-13700H (DDR4) | ~2.2 sust. / ~3.0 peak   | ~1.8M sust. / ~2.5M peak  |
-| WSL2 Ubuntu ⁴  | i7-13700H (DDR4) | ~4.0–4.5                 | ~1.5M                     |
+| WSL2 Ubuntu ⁴  | i7-13700H (DDR4) | ~4.0 sust. / –4.5 peak   | ~1.0M sust. / ~1.5M peak  |
 
 ¹ Ubuntu 26.04, `Performance` power mode. Peak = best short-run measure; sustained = 5+ min run.  
-² No network tuning. M4 reached up to 3.0M msg/s.  
+² No network tuning; M4 chip (separate supplementary test) reached up to 3.0M msg/s.  
 ³ Stable dispatch is ~1.8M msg/s; above that, the dispatch thread becomes the bottleneck.  
 ⁴ With [network tuning](./docs/wiki/07d-troubleshooting-network-tunning.md), up to ~5.0–5.6 GB/s.
 
 ### Latency – TCP `localhost`, full stack, 204-byte messages
 
-Timestamps span the full call path: before serialization (sender) to after deserialization and dispatch (receiver). OWT = one-way (2-hop). RTT = round-trip through `mtrouter` (4-hop).
+Timestamps span the full call path: before serialization (sender) to after deserialization and dispatch (receiver). OWT = one-way (2-hop). RTT = round-trip through `mtrouter` (4-hop). Linux figures are measured from a bare TTY session (no desktop GUI) with `mtrouter`, provider, and consumer each pinned to a dedicated CPU core via `taskset` – see the [raw data](./docs/wiki/areg-latency-benchmark-20260705.csv) and [methodology](./docs/wiki/08b-areg-sdk-performance-benchmarks.md#21-measurement-environment-terminal-restart-protocol-and-absolute-floor).
 
-| Platform       | CPU               | OWT Min     | OWT P50      | RTT Min     | RTT P50    |
-|----------------|-------------------|-------------|--------------|-------------|------------|
-| Linux Ubuntu ¹ | i7-13700H (DDR4)  | **12.0 μs** | **~13.8 μs** | **23.5 μs** | **~25.7 μs** |
-| macOS M3 Pro   | Apple M3 (LPDDR5) | 21.6 μs     | 31.4 μs      | 46.0 μs     | 62.5 μs    |
-| Windows 11     | i7-13700H (DDR4)  | 32.5 μs     | 40.3 μs      | 64.0 μs     | 82.5 μs    |
+| Platform       | CPU               | OWT Min    | OWT P50     | RTT Min     | RTT P50     |
+|----------------|-------------------|------------|-------------|-------------|-------------|
+| Linux Ubuntu ¹ | i7-13700H (DDR4)  | **9.6 μs** | **~9.9 μs** | **19.1 μs** | **~19.6 μs** |
+| macOS M3 Pro   | Apple M3 (LPDDR5) | 21.6 μs    | 31.4 μs     | 46.0 μs     | 62.5 μs     |
+| Windows 11     | i7-13700H (DDR4)  | 32.5 μs    | 40.3 μs     | 64.0 μs     | 82.5 μs     |
 
-¹ Ubuntu 26.04, `Performance` power mode.
+¹ Ubuntu 26.04, `Performance` power mode, bare TTY, cores pinned via `taskset`. The single
+lowest sample observed to date is 9.14 μs (OWT) / 18.34 μs (RTT). A desktop `gnome-terminal`
+session reads ~0.9–1.4 μs higher; not pinning cores adds a further ~2–4 μs on top of either –
+still the fastest measured TCP framework in its class either way (see
+[framework rankings](./docs/wiki/08d-areg-framework-rankings.md)).
 
-For comparison: **gRPC C++ sequential RTT ~116–167 μs** over Unix domain socket – despite fewer hops and no service dispatch ([MPI-HD, F. Werner, 2021](https://www.mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc/)). Latency is payload-insensitive up to 4 KB – Min rises only 1.8 μs across a 20× size increase; framework overhead dominates.
+For comparison: **gRPC C++ sequential RTT ~116–167 μs** over Unix domain socket – despite fewer hops and no service dispatch ([MPI-HD, F. Werner, 2021](https://www.mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc/)). Latency is payload-insensitive up to 4 KB – Min rises only 1.0 μs across a 20× size increase; framework overhead dominates.
 
 **Real-world fit:** covers the software pipeline layer of scientific imaging (laser microscopy, X-ray, electron microscopy) and industrial machine vision on a standard laptop.
 
@@ -444,8 +461,7 @@ moving between thread, process, and network deployment.
 machine vision – move continuous multi-megabyte frames between acquisition, processing,
 and storage processes. At **2.0–8.0 GB/s** full-stack IPC on a standard laptop CPU, Areg SDK
 covers the software transport layer for virtually every such pipeline without custom
-networking code or stripped-down benchmarks. Few service-oriented C++ frameworks
-reach this throughput with full service semantics active.
+networking code or stripped-down benchmarks.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="./docs/img/interface-centric.png" alt="Interface-centric communication diagram" style="width:50%;height:50%"/></a></div>
 
@@ -463,8 +479,7 @@ to separate processes to separate machines with only configuration and build scr
 inference → output / telemetry – requires fast IPC between stages that may run as
 threads, processes, or distributed nodes depending on hardware constraints. Areg SDK's
 location transparency means the pipeline topology can change without touching the
-inference or acquisition code. Few frameworks combine this flexibility with IPC
-throughput rates that match hardware DMA and PCIe data rates on standard CPUs.
+inference or acquisition code.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-for-embedded-ai.png"><img src="./docs/img/areg-for-embedded-ai.png" alt="Modular AI pipeline architecture" style="width:40%;height:40%"/></a></div>
 
@@ -558,8 +573,9 @@ to real hardware with zero application code changes.
 processors, real-time analytics – typically build custom threading and IPC from scratch.
 Areg SDK replaces that infrastructure with a generated, typed service layer that handles
 thread safety, message dispatch, and inter-process routing automatically. With stable
-consumer dispatch at 300–600K msg/s on a single machine (platform-dependent), the
-framework does not constrain throughput for any realistic backend workload.
+dispatch at 1.5M-2.5M msg/s on a single machine (platform-dependent, see
+[Performance](#performance)), the framework does not constrain throughput for any
+realistic backend workload.
 
 **What this means in practice:** Define service interfaces, generate the infrastructure,
 implement the logic. Services scale from in-process components to distributed nodes
@@ -574,7 +590,6 @@ in embedded deployments works in backend deployments.
 
 **In progress (2026):**
 - RTOS platform support (FreeRTOS, Zephyr)
-- Enhanced serialization throughput (targeting 500K+ stable msg/s consumer dispatch)
 - Python-based code generator (replaces Java dependency)
 - Shared memory transport (zero-copy for same-machine IPC)
 - Secure communication (optional TLS for `mtrouter` connections)

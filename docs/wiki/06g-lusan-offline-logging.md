@@ -539,4 +539,4 @@ Together, live and offline logging provide a complete observability solution for
 
 ---
 
-Copyright © 2026, Aregtech, www.areg.tech, email: info[at]areg.tech
+Copyright © 2026, Aregtech (Artak Avetyan), www.areg.tech, email: info[at]areg.tech

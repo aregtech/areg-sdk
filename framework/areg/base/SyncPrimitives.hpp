@@ -8,7 +8,7 @@
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech (Artak Avetyan)
  * \file        areg/base/SyncPrimitives.hpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
@@ -1163,11 +1163,11 @@ private:
     /**
      * \brief   List of synchronization objects passed on initialization
      **/
-    SyncObject* const*  mSyncObjArray;
+    SyncObject**        mSyncObjArray;
     /**
      * \brief   Size of synchronization object. Cannot be more than MAX_SIZE_OF_ARRAY (64)
      **/
-    const int32_t       mSizeCount;
+    int32_t             mSizeCount;
     /**
      * \brief   Flag, indicating whether auto-locking is enabled or disabled.
      **/

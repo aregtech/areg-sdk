@@ -2,7 +2,7 @@
 
 ```
 This document contains the release notes of Areg SDK project.
-Copyright © Aregtech UG, 2021-2026
+Copyright © Aregtech (Artak Avetyan), 2021-2026
 Contact: info[at]areg.tech
 ```
 

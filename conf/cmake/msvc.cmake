@@ -1,6 +1,6 @@
 # ###########################################################################
 # MSVC compiler and linker options for Win32 API
-# Copyright 2022-2026 Aregtech
+# Copyright 2022-2026 Aregtech (Artak Avetyan)
 # ###########################################################################
 
 message(STATUS "Areg: >>> Preparing settings for MSVC compiler under \'${AREG_OS}\' platform, WIN32 = \'${WIN32}\'")

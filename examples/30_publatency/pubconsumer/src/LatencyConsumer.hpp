@@ -28,6 +28,7 @@
 #include <atomic>
 #include <chrono>
 #include <climits>
+#include <vector>
 
 //////////////////////////////////////////////////////////////////////////
 // LatencySample -- one measured round-trip record
@@ -49,8 +50,13 @@ struct LatencySample
 struct ResultEntry
 {
     uint32_t        run_no  { 0u };
+    areg::String    timestamp{    };
     areg::String    mode    {    };
+    areg::String    stop    {    };
     uint32_t        count   { 0u };
+    uint32_t        warmup  { 0u };
+    uint32_t        req_dur_ms { 0u };
+    double          target_mps { 0.0 };
     double          min_us  { 0.0 };
     double          p50_us  { 0.0 };
     double          p95_us  { 0.0 };
@@ -82,13 +88,18 @@ struct CmdData
     bool                    set_count   { false };
     bool                    set_warmup  { false };
     bool                    set_duration{ false };
+    bool                    set_pause   { false };
     bool                    set_output  { false };
+    bool                    begin_benchmark { false };
+    bool                    end_benchmark   { false };
     bool                    enable_file { false };  //!< -f: enable CSV output (optionally with path)
     bool                    error       { false };
+    uint32_t                start_runs  { 1u };
     Latency::LatencyMode    mode        { Latency::LatencyMode::Request0 };
     uint32_t                count       { 0u };
     uint32_t                warmup      { 0u };
     uint32_t                duration_ms { 0u };  //!< -d value, milliseconds (run duration)
+    uint32_t                pause_ms    { 0u };  //!< -p value, milliseconds (pause between batch cycles)
     areg::String            csv_path    {    };  //!< path from -o=<path>
     areg::String            csv_file    {    };  //!< path from -f=<path> (empty = auto)
 
@@ -172,6 +183,8 @@ class LatencyConsumer final : public    areg::Component
         , Duration = 9
         , Output   = 10
         , File     = 11
+        , Begin    = 12
+        , End      = 13
     };
 
     //!< Selects how a measured run is bounded and (optionally) paced, chosen from the bounds given
@@ -188,18 +201,22 @@ class LatencyConsumer final : public    areg::Component
 // Internal constants
 //////////////////////////////////////////////////////////////////////////
 private:
-    static constexpr uint32_t MAX_RESULT_ROWS { 8u };
+    static constexpr uint32_t MAX_RESULT_ROWS { 10u };
 
     static constexpr std::string_view THREAD_INPUT   { "LatencyConsumerInputThread" };
     static constexpr std::string_view THREAD_DISPLAY { "LatencyConsumerDisplayThread" };
     static constexpr std::string_view TIMER_PACE     { "LatencyConsumerPaceTimer" };
+    static constexpr std::string_view TIMER_BATCH    { "LatencyConsumerBatchTimer" };
     static constexpr uint32_t DEFAULT_COUNT         { 5000u };
     static constexpr uint32_t DEFAULT_WARMUP        { 1000u };
+    static constexpr uint32_t DEFAULT_PAUSE_MS      { 1000u };
     static constexpr uint64_t DEFAULT_DURATION_NS   { 0u };
     //!< Pre-reservation estimate for duration runs
     static constexpr uint32_t DURATION_RESERVE_PER_SEC { 200000u };
     //!< Upper bound on pre-reserved samples, to keep memory bounded for long duration runs.
     static constexpr uint32_t MAX_SAMPLE_RESERVE    { 4000000u };
+    //!< Benchmark-mode result list size
+    static constexpr uint32_t BENCHMARK_RESERVE     { 512u };
 
 //////////////////////////////////////////////////////////////////////////
 // Console layout coordinates  (col=1, rows 2-32)
@@ -230,7 +247,7 @@ private:
     static constexpr areg::ext::Console::Coord COORD_TBL_HDR  { 1, 24 };
     static constexpr areg::ext::Console::Coord COORD_TBL_SEP  { 1, 25 };
     static constexpr areg::ext::Console::Coord COORD_TBL_ROW0 { 1, 26 };  //!< First data row
-    static constexpr areg::ext::Console::Coord COORD_TBL_BOT  { 1, 34 };  //!< 26 + MAX_RESULT_ROWS
+    static constexpr areg::ext::Console::Coord COORD_TBL_BOT  { 1, COORD_TBL_ROW0.posY + MAX_RESULT_ROWS };  //!< 26 + MAX_RESULT_ROWS
 
 //////////////////////////////////////////////////////////////////////////
 // Console message strings
@@ -241,17 +258,17 @@ private:
     static constexpr std::string_view MSG_LIVE_1    { " Mode: %-6s  Status: %-8s  Samples: %-6u  Rate: %8.1f msg/sec" };
     static constexpr std::string_view MSG_LIVE_2    { " Min: %9.3f us   Mean: %9.3f us   Max: %9.3f us" };
     static constexpr std::string_view MSG_LIVE_FINAL{ " Min:%9.3f  P50:%9.3f  P95:%9.3f  P99:%9.3f  Max:%9.3f  Mean:%9.3f  (us)" };
-    static constexpr std::string_view MSG_PROMPT    { " Commands: start | stop | -q | -q=1 | -h | -m=<mode> -c=<n> -w=<n> -d=<ms> -f[=<path>] -o=<path>" };
+    static constexpr std::string_view MSG_PROMPT    { " Commands: -s[=N] | -p[=ms] | -b (`begin`) | -e (`end`) | -q | -q=1 | -h" };
     static constexpr std::string_view MSG_EX_HDR    { " Examples (short or long form, combinable on one line):" };
     static constexpr std::string_view MSG_EX1       { "   -s (or `start`)" };
     static constexpr std::string_view MSG_EX2       { "   -s -m=pp0 -c=1000 -w=50           (or `start mode=pp0 count=1000 warmup=50`)" };
     static constexpr std::string_view MSG_EX3       { "   -s -m=pp64 -d=2000 -w=500         (run pp64 for 2000 ms at max rate; report count and msg/s)" };
-    static constexpr std::string_view MSG_EX4       { "   -s -m=pp64 -c=2000 -d=2000        (paced: send 2000 msgs spread over 2000 ms = ~1000 msg/s)" };
-    static constexpr std::string_view MSG_EX5       { "   -s -m=bc8 -c=1000 -f=results.csv  (or `start mode=bc8 count=1000 file=results.csv`)" };
+    static constexpr std::string_view MSG_EX4       { "   -s=10 -p=2000 -m=pp64 -c=2000     (run 10 sequential cycles; 2000 ms pause between cycles)" };
+    static constexpr std::string_view MSG_EX5       { "   -b (`begin`)   /   -e (`end`)  // benchmark mode begin / end" };
     static constexpr std::string_view MSG_EX6       { " PP Modes: pp0 | pp8 | pp16 | pp32 | pp64 | pp128 | pp512 | pp1024 | pp4096 | pp65536" };
     static constexpr std::string_view MSG_EX7       { " BC Modes: bc0 | bc8 | bc16 | bc32 | bc64 | bc128 | bc512 | bc1024 | bc4096 | bc65536" };
-    static constexpr std::string_view MSG_EX8       { " Other Opt: -p (`stop`) | -i (`info`) | -h (`help`) | -q (global `quit`) | -q=1 (local `quit`)" };
-    static constexpr std::string_view MSG_SETTINGS  { " mode=%-6s  stop=%-5s  count=%-6u  dur=%-6u ms  warmup=%-3u  connected=%-3s  running=%-3s  csv: %s" };
+    static constexpr std::string_view MSG_EX8       { " Other Opt: -i (`info`) | -h (`help`) | -q (global `quit`) | -q=1 (local `quit`) | -f/-o (`csv`)" };
+    static constexpr std::string_view MSG_SETTINGS  { " mode=%-6s stop=%-5s count=%-6u dur=%-6u warmup=%-3u pause=%-5u bench=%-3s connected=%-3s running=%-3s" };
     static constexpr std::string_view MSG_RES_HDR   { " Test Results (last 8 runs):" };
     // Table strings -- all 115 chars wide (1 leading space + 114 table chars)
     static constexpr std::string_view MSG_TBL_SEP   { " +-----+---------+--------+----------+----------+----------+----------+----------+----------+----------+----------+" };
@@ -279,11 +296,6 @@ protected:
 protected:
     /**
      * \brief   Triggered when the service provider connects or disconnects.
-     *          When the service provider connects, set listeners here.
-     *          When the service provider disconnects, clean the listeners.
-     *          Once connected, the consumer can subscribe and unsubscribe on updates,
-     *          responses and broadcasts, and trigger requests. Before connection,
-     *          the consumer cannot trigger requests or receive data update messages.
      * \param   status  The service connection status.
      * \param   proxy   The Service Interface Proxy object reporting the connection.
      * \return  Returns true if this service connection notification was relevant to this consumer.
@@ -520,8 +532,13 @@ private:
     void _run_input_thread();
     void _run_display_thread();
     void _on_cmd_event(const CmdData & data);
-    void _start_test();
+    bool _start_test();
     void _stop_test();
+    void _cancel_batch();
+    void _start_next_batch_cycle();
+    void _begin_benchmark_mode();
+    void _end_benchmark_mode();
+    void _flush_benchmark_on_exit();    //!< On quit, dumps buffered benchmark results to CSV if any (as if `-e`).
     void _send_next_ping();
     void _send_next_oneway();   //!< Broadcast/one-way: pull the next message from the provider.
     void _send_next_paced();    //!< Dispatch the next ping/one-way send (used by the pacing timer).
@@ -542,9 +559,12 @@ private:
      *          with run parameters and final summary statistics.
      **/
     void _save_csv(const ResultEntry & result) const;
+    void _save_benchmark_results() const;
 
     [[nodiscard]]
     areg::String _default_csv_path() const;
+    [[nodiscard]]
+    areg::String _default_benchmark_path() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -562,7 +582,10 @@ private:
     uint64_t                mDurationNs;    //!< -d run duration in nanoseconds (0 = unset)
     StopMode                mStopMode;      //!< Active run regime: count-, duration-bounded, or paced
     uint64_t                mPacingIntervalNs;  //!< Paced mode: target ns between measured sends (mDurationNs/mCount)
+    uint32_t                mPauseMs;       //!< -p run pause in milliseconds for batch execution
+    uint32_t                mBatchRunsLeft; //!< Remaining batch cycles to execute after the current run
     bool                    mCsvEnabled;    //!< true only when -f was given; gates all CSV writes
+    bool                    mBenchmarkMode; //!< true if benchmark mode is active
     areg::String            mCsvPath;
 
     uint32_t                mCurrentSeq;    //!< Total arrivals since test start (warmup + measured)
@@ -572,6 +595,7 @@ private:
 
     areg::ArrayList<LatencySample>  mSamples;
     std::atomic<uint32_t>   mSampleCount;   //!< Atomic count of mSamples; safe to read from display thread
+    std::vector<int64_t>    mSortBuffer;    //!< Reused rtt scratch buffer for percentile sort (no per-run alloc)
 
     int64_t                 mRunMin;
     int64_t                 mRunMax;
@@ -579,8 +603,10 @@ private:
     uint32_t                mLastRateCount;
 
     areg::Timer             mPaceTimer;     //!< One-shot timer gating the next paced send (no CPU spin)
+    areg::Timer             mBatchTimer;    //!< One-shot timer to start the next batch cycle
 
     ResultEntry             mResults[MAX_RESULT_ROWS];  //!< Circular results buffer
+    areg::ArrayList<ResultEntry> mBenchmarkResults;     //!< Benchmark-mode run snapshots
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

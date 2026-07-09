@@ -8,7 +8,7 @@
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech (Artak Avetyan)
  * \file        areg/base/SyncObject.hpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
@@ -47,7 +47,6 @@ public:
         , SoSemaphore           //!< Synchronization object is a Semaphore.
         , SoCritical            //!< Synchronization object is a Critical Section
         , SoSpinlock            //!< Synchronization object is a Spin-Lock.
-        , SoReslock             //!< A synchronization object to use to access resources.
         , SoNolock              //!< Empty / Dummy Synchronization object, no real locking operations are supported
         , SoTimer               //!< Synchronization object is a Waiting Timer.
     };

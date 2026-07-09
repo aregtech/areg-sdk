@@ -330,4 +330,4 @@ If you do not want to share the framework's `areg.init`, point `read_config()`/`
 
 ---
 
-Copyright © 2026, Aregtech, www.areg.tech, email: info[at]areg.tech
+Copyright © 2026, Aregtech (Artak Avetyan), www.areg.tech, email: info[at]areg.tech

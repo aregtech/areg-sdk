@@ -663,4 +663,4 @@ If you encounter issues not covered here, open a [discussion](https://github.com
 
 ---
 
-Copyright © 2026, Aregtech, www.areg.tech, email: info[at]areg.tech
+Copyright © 2026, Aregtech (Artak Avetyan), www.areg.tech, email: info[at]areg.tech

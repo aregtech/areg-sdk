@@ -56,9 +56,13 @@ Example of an optional header:
 ```cpp
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual licensed under Apache 2.0 and commercial licenses.
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the Areg SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2026 Your Name or Aregtech UG
+ * \copyright   (c) 2017-2026 Aregtech (Artak Avetyan)
  * \file        path/to/YourFile.hpp
  * \ingroup     Areg SDK
  * \author      Your Full Name or GitHub ID
@@ -67,6 +71,9 @@ Example of an optional header:
 ```
 
 Minor edits such as typo fixes, grammar corrections, formatting cleanup, comment updates, CMake changes, and YAML updates do not require contributor copyright headers.
+
+> [!NOTE]
+> Contributors retain copyright in their own contributions. Under the DCO (Section 2) and the license grant in Section 6, maintainers already hold an irrevocable right to use, modify, sublicense, and distribute all contributions, including under commercial terms. Once Aregtech UG is registered, maintainers may assign or license this existing right to Aregtech UG; no further action or additional grant from contributors is required.
 
 ---
 

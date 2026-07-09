@@ -769,6 +769,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wiki", "wiki", "{C33D0DF1-A
 		docs\wiki\08b-areg-sdk-performance-benchmarks.md = docs\wiki\08b-areg-sdk-performance-benchmarks.md
 		docs\wiki\08c-areg-vs-hitachi-benchmark.md = docs\wiki\08c-areg-vs-hitachi-benchmark.md
 		docs\wiki\08d-areg-framework-rankings.md = docs\wiki\08d-areg-framework-rankings.md
+		docs\wiki\areg-latency-benchmark-20260705.csv = docs\wiki\areg-latency-benchmark-20260705.csv
+		docs\wiki\areg-latency-benchmark-20260629.txt = docs\wiki\areg-latency-benchmark-20260629.txt
 		docs\wiki\README.md = docs\wiki\README.md
 	EndProjectSection
 EndProject
@@ -852,6 +854,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "toolchains", "toolchains", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "30_publatency", "30_publatency", "{F8205CA0-E4C7-4043-A35E-7A137B11A6E9}"
 	ProjectSection(SolutionItems) = preProject
+		docs\wiki\areg-latency-benchmark-20260705.csv = docs\wiki\areg-latency-benchmark-20260705.csv
+		docs\wiki\areg-latency-benchmark-20260629.txt = docs\wiki\areg-latency-benchmark-20260629.txt
 		examples\30_publatency\CMakeLists.txt = examples\30_publatency\CMakeLists.txt
 		examples\30_publatency\ReadMe.md = examples\30_publatency\ReadMe.md
 	EndProjectSection

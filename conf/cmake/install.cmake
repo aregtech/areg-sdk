@@ -1,6 +1,6 @@
 # ###########################################################################
 # Configuration file to install Areg SDK modules.
-# Copyright 2022-2026 Aregtech
+# Copyright 2022-2026 Aregtech (Artak Avetyan)
 # ###########################################################################
 
 message(STATUS "Areg: >>> Preparing Areg SDK installation settings, Package name = '${AREG_PACKAGE_NAME}', Destination = '${CMAKE_INSTALL_PREFIX}'")

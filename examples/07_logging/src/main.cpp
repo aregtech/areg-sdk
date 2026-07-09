@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2026 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2026 Aregtech (Artak Avetyan).
 // Description : This project demonstrates use of logging (tracing). The 
 //               logging requires source code compilation with AREG_LOGGING=1
 //               preprocessor definition to enable logging macro. It as well
