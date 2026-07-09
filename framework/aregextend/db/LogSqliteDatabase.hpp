@@ -590,9 +590,16 @@ public:
      *
      * \param[out]  stmt    The SQLite statement object bound with SQLite logging database.
      * \param       instId  The ID of instance to filter. If `areg::TARGET_ALL` is specified, it applies filter for all instances.
+     * \param       limit   The maximum number of rows to return. A negative value means no limit.
+     * \param       offset  The zero-based row offset for pagination.
      * \return  Returns number of log messages of specified instance ID.
      **/
-    uint32_t setup_statement_read_logs(areg::ext::SqliteStatement& stmt, ITEM_ID instId = areg::TARGET_ALL);
+    uint32_t setup_statement_read_logs(
+        areg::ext::SqliteStatement& stmt,
+        ITEM_ID instId = areg::TARGET_ALL,
+        int32_t limit = -1,
+        uint32_t offset = 0
+    );
 
     /**
      * \brief   Sets up the log filters.
