@@ -521,4 +521,4 @@ For arbitrary keys (including your own), use the generic `property_value()` / `s
 
 ---
 
-Copyright © 2026, Aregtech, www.areg.tech, email: info[at]areg.tech
+Copyright © 2026, Aregtech (Artak Avetyan), www.areg.tech, email: info[at]areg.tech

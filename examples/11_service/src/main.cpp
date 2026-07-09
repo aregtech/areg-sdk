@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2026 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2026 Aregtech (Artak Avetyan).
 // Description : This project demonstrates the use of simple local servicing 
 //               objects to create multithreading applications.It instantiates
 //               a dummy ( empty ) local service interface, which is not 

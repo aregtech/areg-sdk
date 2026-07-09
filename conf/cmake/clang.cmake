@@ -1,6 +1,6 @@
 # ###########################################################################
 # LLVM compiler and linker options for POSIX and Windows API
-# Copyright 2022-2026 Aregtech
+# Copyright 2022-2026 Aregtech (Artak Avetyan)
 # ###########################################################################
 
 message(STATUS "Areg: >>> Preparing settings for CLang compiler under \'${AREG_OS}\' platform, WIN32 = \'${WIN32}\'")

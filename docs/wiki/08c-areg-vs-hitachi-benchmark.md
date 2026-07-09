@@ -39,12 +39,13 @@ No cross-machine or real-network numbers appear anywhere in this document.
 | Hardware | Lenovo ThinkBook 16 G6, i7-13700H mobile (14C/20T, 5.0 GHz P-core boost), 32 GB DDR4 |
 | OS tested | Ubuntu 26.04 LTS (`Performance` power mode) / Windows 11 (native SSD) / macOS M3 Pro (native) |
 | Core isolation | Pinned via `taskset` (not kernel-isolated) |
+| Terminal | Bare TTY, no desktop session (primary dataset, this document); `gnome-terminal` desktop session (secondary dataset, ~0.9–1.4 μs higher) – see [08b §2.1](./08b-areg-sdk-performance-benchmarks.md#21-measurement-environment-terminal-restart-protocol-and-absolute-floor) |
 | Transport | TCP loopback (127.0.0.1), through centralized mtrouter broker (2 hops) |
 | Send mode | Closed-loop sequential pipeline – 1 message in flight at all times |
 | Artificial spacing | None – next message fires immediately on receipt; component thread idle during transit |
 | Queue depth | Pinned to 1 by construction (confirmed by source code analysis) |
 | Latency type | One-way (bc): provider embeds timestamp; consumer records delta. Same-machine clock. |
-| Sample count | 5000 per run (bc) / 10000 per run (pp), warmup=1000, 8 consecutive runs averaged |
+| Sample count | 5000 per run (bc) / 5000–10000 per run (pp), warmup=1000. Primary (TTY) dataset: 10 cycles per mode, full process restart before each mode switch. Secondary (`gnome-terminal`) dataset: 8 runs, no restart. |
 | Metrics | Min / P50 (median) / P95 / P99 / Mean |
 | Build | Release, AREG_LOGGING=OFF |
 | Framework scope | Full stack: serialize → TCP send → broker route → TCP send → dispatch → deserialize → method call |
@@ -184,7 +185,7 @@ The suffix `n` in mode names denotes additional parameter bytes.
 
 All competitor values from Hitachi CSV: TCP, T=1000 μs, 1 subscriber, Xeon w3-2435, isolated cores.
 areg-sdk: Ubuntu 26.04 LTS, `Performance` power mode, i7-13700H, cores pinned via `taskset`
-(not kernel-isolated), T=0 continuous, warmed (w=1000).
+(not kernel-isolated), bare TTY (primary dataset), T=0 continuous, warmed (w=1000).
 All values in **μs**. **Bold** = wins against nearest competitor at similar message size.
 Tables are sorted best-to-worst by Min (or Avg where Min is skewed by a transport anomaly).
 
@@ -192,13 +193,13 @@ Tables are sorted best-to-worst by Min (or Avg where Min is skewed by a transpor
 
 | Framework | Mode | Total size | Min | P50 | P95 | P99 | Mean |
 |-----------|------|-----------|-----|-----|-----|-----|------|
-| **areg-sdk Linux** | bc0 | 140 B | **10.4** | **10.7** | 10.9 | 11.9 | **10.8** |
-| **areg-sdk Linux** | bc64 | 204 B | **10.5** | **11.2** | 11.8 | 21.4 | **11.5** |
-| **areg-sdk Linux** | bc128 | 268 B | **10.5** | **11.3** | 12.1 | 25.4 | **11.7** |
-| **areg-sdk Linux** | bc512 | 652 B | **11.0** | 11.8 | 13.0 | 28.1 | 12.3 |
+| **areg-sdk Linux** | bc0 | 140 B | **9.4** | **9.7** | 9.8 | 10.8 | **9.7** |
+| **areg-sdk Linux** | bc64 | 204 B | **9.6** | **9.9** | 10.1 | 11.0 | **9.9** |
+| **areg-sdk Linux** | bc128 | 268 B | **9.6** | **9.9** | 10.1 | 11.0 | **9.9** |
+| **areg-sdk Linux** | bc512 | 652 B | **10.1** | 10.4 | 11.1 | 11.6 | 10.5 |
 
 > No competitor data below 1 KB exists in the reference benchmark.
-> areg bc0 Min (10.4 μs) is already faster than NanoMsg at 1 KB (18.0 μs),
+> areg bc0 Min (9.4 μs) is already faster than NanoMsg at 1 KB (18.0 μs),
 > with full service dispatch and an additional TCP broker hop included.
 
 ---
@@ -207,14 +208,15 @@ Tables are sorted best-to-worst by Min (or Avg where Min is skewed by a transpor
 
 | Framework          | Transport  | Size   | Min      | Avg/Mean        | P90/P95        | P99      | Conditions                         |
 |--------------------|------------|--------|----------|-----------------|----------------|----------|------------------------------------|
-| **areg-sdk Linux** | TCP bc1024 | 1164 B | **11.0** | **13.1** (Mean) | **20.3** (P95) | 31.8     | Perf. mode, T=0, pinned, 2-hop, full stack |
-| NanoMsg            | TCP direct | 1000 B | 18.0     | 21.9 (Avg)      | 22.3 (P90)     | **24.8** | Xeon, T=1000μs, isolated, raw      |
+| **areg-sdk Linux** | TCP bc1024 | 1164 B | **10.0** | **10.5** (Mean) | **11.4** (P95) | **11.6** | Perf. mode, T=0, TTY, pinned, 2-hop, full stack |
+| NanoMsg            | TCP direct | 1000 B | 18.0     | 21.9 (Avg)      | 22.3 (P90)     | 24.8     | Xeon, T=1000μs, isolated, raw      |
 | ZMQ                | TCP direct | 1000 B | 22.0     | 27.5 (Avg)      | 28.5 (P90)     | 31.6     | same                               |
 | NNG                | TCP direct | 1000 B | 24.3     | 34.9 (Avg)      | 39.7 (P90)     | 48.4     | same                               |
 
-**areg-sdk wins:** Min (−7.0 μs), Mean vs Avg (−8.8 μs), P95 vs P90 (−2.0 μs)
-**areg-sdk loses:** P99 (+7.0 μs) – tighter than before; raw socket still keeps a slim tail edge
-> bc1024 Min spread across 8 runs: 10.87–11.10 μs (0.23 μs total).
+**areg-sdk wins every metric**: Min (−8.0 μs), Mean vs Avg (−11.4 μs), P95 vs P90 (−10.9 μs),
+P99 (−13.2 μs). No caveat remains at this size – the earlier tail-latency trade-off is gone
+with the TTY dataset (§2.2).
+> bc1024 Min spread across 10 cycles: 9.84–10.20 μs (0.36 μs total).
 
 ---
 
@@ -222,14 +224,15 @@ Tables are sorted best-to-worst by Min (or Avg where Min is skewed by a transpor
 
 | Framework | Transport | Size | Min | Avg/Mean | P90/P95 | P99 | Conditions |
 |-----------|-----------|------|-----|----------|---------|-----|-----------|
-| **areg-sdk Linux** | TCP bc4096 | 4236 B | **11.6** | **15.4** (Mean) | 29.5 (P95) | 40.7 | Perf. mode, T=0, pinned, 2-hop, full stack |
-| NanoMsg | TCP direct | 4000 B | 19.3 | 24.5 (Avg) | **26.3** (P90) | **28.0** | Xeon, T=1000μs, isolated, raw |
+| **areg-sdk Linux** | TCP bc4096 | 4236 B | **10.6** | **11.2** (Mean) | **12.3** (P95) | **13.0** | Perf. mode, T=0, TTY, pinned, 2-hop, full stack |
+| NanoMsg | TCP direct | 4000 B | 19.3 | 24.5 (Avg) | 26.3 (P90) | 28.0 | Xeon, T=1000μs, isolated, raw |
 | ZMQ | TCP direct | 4000 B | 23.9 | 29.3 (Avg) | 31.0 (P90) | 34.1 | same |
 | NNG | TCP direct | 4000 B | 27.0 | 35.6 (Avg) | 39.8 (P90) | 50.2 | same |
 
-**areg-sdk wins:** Min (−7.7 μs), Mean vs Avg (−9.1 μs)
-**areg-sdk loses:** P90/P95 (+3.2 μs), P99 (+12.7 μs) – raw socket keeps the tighter tail at this size
-> bc4096 Min spread across 8 runs: 11.49–11.81 μs (0.32 μs total).
+**areg-sdk wins every metric**: Min (−8.7 μs), Mean vs Avg (−13.3 μs), P95 vs P90 (−14.0 μs),
+P99 (−15.0 μs). The tail-latency trade-off at 4 KB reported in earlier rounds no longer
+holds with the TTY dataset (§2.2).
+> bc4096 Min spread across 10 cycles: 10.54–10.80 μs (0.26 μs total).
 
 ---
 
@@ -237,15 +240,15 @@ Tables are sorted best-to-worst by Min (or Avg where Min is skewed by a transpor
 
 | Framework | Transport | Size | Min | Avg/Mean | P90/P95 | P99 | Conditions |
 |-----------|-----------|------|-----|----------|---------|-----|-----------|
-| **areg-sdk Linux** | TCP bc65536 | 65676 B | **28.8** | **30.2** (Mean) | **32.7** (P95) | **34.6** | Perf. mode, T=0, pinned, 2-hop, full stack |
+| **areg-sdk Linux** | TCP bc65536 | 65676 B | **26.0** | **26.9** (Mean) | **28.2** (P95) | **31.0** | Perf. mode, T=0, TTY, pinned, 2-hop, full stack |
 | NNG | TCP direct | 64000 B | 39.9 | 49.4 (Avg) | 55.6 (P90) | 65.2 | Xeon, T=1000μs, isolated, raw |
 | ZMQ | TCP direct | 64000 B | 43.6 | 52.6 (Avg) | 53.4 (P90) | 59.5 | same |
 | NanoMsg | TCP direct | 64000 B | 32.1 | 171.1 ⚠️ | 303.9 ⚠️ | 307.3 ⚠️ | Nagle failure |
 
 **areg-sdk wins outright at every metric**, including Min vs NanoMsg's clean pre-Nagle reading
-(28.8 vs 32.1, −3.3 μs) – the one size/metric combination where areg previously trailed.
+(26.0 vs 32.1, −6.1 μs).
 **NanoMsg at 64 KB:** Nagle algorithm failure – Avg=171 μs vs Min=32.1 μs (5.3× degradation).
-areg-sdk Mean (30.2 μs) is 5.7× better than NanoMsg average at this size.
+areg-sdk Mean (26.9 μs) is 6.4× better than NanoMsg average at this size.
 
 ---
 
@@ -253,15 +256,17 @@ areg-sdk Mean (30.2 μs) is 5.7× better than NanoMsg average at this size.
 
 | Size | areg vs best competitor | Min | Mean/Avg | P90/P95 | P99 |
 |------|------------------------|-----|----------|---------|-----|
-| ~1 KB | vs NanoMsg TCP | ✅ areg −7.0 μs | ✅ areg −8.8 μs | ✅ areg −2.0 μs | ❌ areg +7.0 μs |
-| ~4 KB | vs NanoMsg TCP | ✅ areg −7.7 μs | ✅ areg −9.1 μs | ❌ areg +3.2 μs | ❌ areg +12.7 μs |
-| ~64 KB | vs NNG/ZMQ/NanoMsg | ✅ areg −3.3 μs (vs NanoMsg) | ✅ areg −19.2 μs (vs NNG) | ✅ areg −20.7 μs (vs ZMQ) | ✅ areg −24.9 μs (vs ZMQ) |
+| ~1 KB | vs NanoMsg TCP | ✅ areg −8.0 μs | ✅ areg −11.4 μs | ✅ areg −10.9 μs | ✅ areg −13.2 μs |
+| ~4 KB | vs NanoMsg TCP | ✅ areg −8.7 μs | ✅ areg −13.3 μs | ✅ areg −14.0 μs | ✅ areg −15.0 μs |
+| ~64 KB | vs NNG/ZMQ/NanoMsg | ✅ areg −6.1 μs (vs NanoMsg) | ✅ areg −22.5 μs (vs NNG) | ✅ areg −25.2 μs (vs ZMQ) | ✅ areg −28.5 μs (vs ZMQ) |
 
-**Pattern:** with cores pinned, areg now wins Min and Mean at all sizes, wins every metric outright
-at 64 KB, and only trails on tail latency (P90/P95, P99) at 1 KB and 4 KB – where a raw, unbrokered
-socket still keeps a structural edge on worst-case timing under the paper's low-load (T=1000 μs)
-test design. True kernel core isolation (vs the `taskset` pinning used here) is expected to close
-most of the remaining gap.
+**Pattern:** with the TTY dataset (§2.2), areg-sdk now wins every metric – Min, Mean/Avg,
+P90/P95, and P99 – at every size tested, with no remaining tail-latency caveat. This holds
+under conditions still harder than the competitors': max send rate vs T=1000 μs, 2-hop
+broker vs direct, full dispatch vs raw, mobile CPU vs Xeon workstation, pinned-but-not-
+isolated cores vs isolated cores. The earlier `gnome-terminal` dataset still trails NanoMsg's
+P99 at 1 KB and 4 KB – see [08b §2.1](./08b-areg-sdk-performance-benchmarks.md#21-measurement-environment-terminal-restart-protocol-and-absolute-floor)
+for why the two datasets differ.
 
 ---
 
@@ -270,24 +275,27 @@ most of the remaining gap.
 Full round-trip: Consumer → mtrouter → Provider → mtrouter → Consumer (4 TCP hops).
 Both sides fully processed: serialize, dispatch, method call, response.
 
-### Linux (Ubuntu 26.04, `Performance` power mode, i7-13700H, DDR4)
+### Linux (Ubuntu 26.04, `Performance` power mode, i7-13700H, DDR4, bare TTY, pinned cores)
 
 | Mode | Total size | Min | P50 | P95 | P99 | Mean |
 |------|-----------|-----|-----|-----|-----|------|
-| pp0 | 140+148 B | **21.0 μs** | 21.4 μs | 22.0 μs | 23.0 μs | 21.5 μs |
-| pp64 | 204+212 B | **21.2 μs** | **21.7 μs** | 22.5 μs | 23.5 μs | 22.0 μs |
-| pp128 | 268+276 B | **21.2 μs** | 21.8 μs | 22.8 μs | 23.8 μs | 22.0 μs |
-| pp512 | 652+660 B | 22.3 μs | 22.9 μs | 24.0 μs | 24.9 μs | 23.1 μs |
-| pp1024 | 1164+1172 B | **22.4 μs** | 22.9 μs | 24.1 μs | 25.1 μs | 23.1 μs |
-| pp4096 | 4236+4244 B | 23.4 μs | 24.5 μs | 26.1 μs | 26.9 μs | 24.7 μs |
+| pp0 | 140+148 B | **18.7 μs** | 19.2 μs | 19.6 μs | 20.6 μs | 19.3 μs |
+| pp64 | 204+212 B | **19.1 μs** | **19.5 μs** | 20.1 μs | 20.9 μs | 19.6 μs |
+| pp128 | 268+276 B | **19.2 μs** | 19.6 μs | 20.5 μs | 21.1 μs | 19.7 μs |
+| pp512 | 652+660 B | 20.2 μs | 20.6 μs | 21.8 μs | 22.3 μs | 20.8 μs |
+| pp1024 | 1164+1172 B | **19.8 μs** | 20.6 μs | 21.8 μs | 22.5 μs | 20.8 μs |
+| pp4096 | 4236+4244 B | 21.3 μs | 22.2 μs | 24.0 μs | 24.6 μs | 22.5 μs |
 
-> pp0 RTT Min (21.0 μs) and pp64 RTT Min (21.2 μs) are the confirmed floor for this hardware,
-> cores pinned via `taskset`. From `bc1024`/`pp1024` upward the provider uses pre-allocated
-> buffers, eliminating heap allocation from the hot path.
+> pp0 RTT Min (18.7 μs) and pp64 RTT Min (19.1 μs) are the confirmed average-of-10-cycles
+> floor for this hardware, bare TTY, cores pinned via `taskset` – see
+> [08b §2.1](./08b-areg-sdk-performance-benchmarks.md#21-measurement-environment-terminal-restart-protocol-and-absolute-floor).
+> The single lowest RTT sample observed across all cycles is **18.34 μs** (`pp0`).
+> From `bc1024`/`pp1024` upward the provider uses pre-allocated buffers, eliminating
+> heap allocation from the hot path.
 >
-> pp1024 RTT Min (22.4 μs) = full 4-hop round-trip at ~1 KB.
+> pp1024 RTT Min (19.8 μs) = full 4-hop round-trip at ~1 KB.
 > NanoMsg OWT at 1 KB = 18.0 μs. 2 × NanoMsg OWT = 36 μs.
-> **areg full 4-hop brokered RTT (22.4 μs) < 2 × NanoMsg direct OWT (36 μs).**
+> **areg full 4-hop brokered RTT (19.8 μs) < 2 × NanoMsg direct OWT (36 μs).**
 
 ---
 
@@ -297,15 +305,15 @@ Provided for context. areg-sdk does not use IPC/Unix socket transport.
 
 | Framework | Min | Avg | P90/P95 | P99 | Source |
 |-----------|-----|-----|-----|-----|--------|
-| **areg-sdk Linux TCP** | **10.5** | **11.5** | **11.8** | 21.4 | ✅ Measured, pinned cores |
-| NanoMsg IPC | 13.0 | 16.2 | 16.5 | **17.9** | ✅ Hitachi CSV, T=1000 μs, Xeon |
+| **areg-sdk Linux TCP** | **9.6** | **9.9** | **10.1** | **11.0** | ✅ Measured, TTY, pinned cores |
+| NanoMsg IPC | 13.0 | 16.2 | 16.5 | 17.9 | ✅ Hitachi CSV, T=1000 μs, Xeon |
 | ZMQ IPC | 20.4 | 25.8 | 26.4 | 28.4 | ✅ Hitachi CSV |
 | NNG IPC | 20.0 | 28.4 | 32.9 | 43.3 | ✅ Hitachi CSV |
 
-**areg-sdk TCP now beats NanoMsg IPC, ZMQ IPC, and NNG IPC on Min, Mean/Avg, and P90/P95** – despite
-TCP vs Unix domain socket, 2-hop broker vs direct, full dispatch vs raw transport, and max send
-rate vs low load (T=1000 μs). NanoMsg IPC keeps a tighter P99 (17.9 vs 21.4 μs) – the one place
-raw IPC still holds the tail-latency edge.
+**areg-sdk TCP now beats NanoMsg IPC, ZMQ IPC, and NNG IPC on every metric – Min, Mean/Avg,
+P90/P95, and P99** – despite TCP vs Unix domain socket, 2-hop broker vs direct, full dispatch
+vs raw transport, and max send rate vs low load (T=1000 μs). No caveat remains against IPC/UDS
+transports at this size, including on tail latency.
 
 ---
 
@@ -316,15 +324,15 @@ Hitachi CSV shows severe reliability problems:
 
 | Framework | 1 KB T=0 Avg | 1 KB T=0 P99 | Status |
 |-----------|-------------|-------------|--------|
-| **areg-sdk Linux** | **13.1 μs** | 31.8 μs | **✅ Stable** |
-| ZMQ TCP | 25.3 μs | **30.3 μs** | ✅ Stable |
+| **areg-sdk Linux** | **10.5 μs** | **11.6 μs** | **✅ Stable** |
+| ZMQ TCP | 25.3 μs | 30.3 μs | ✅ Stable |
 | NNG TCP | 42.8 μs | 542.8 μs | ❌ P99 broken |
 | NanoMsg TCP | 452.8 μs | 867.1 μs | ❌ Nagle broken |
 
 At the same send rate: areg-sdk is both the fastest and the most reliable framework of the four.
 NanoMsg loses TCP_NODELAY effectiveness at high rates – Avg becomes 452 μs despite Min=21 μs.
-areg-sdk Mean (13.1 μs) beats ZMQ Mean (25.3 μs) at maximum load; ZMQ keeps a slightly
-tighter P99 (30.3 vs 31.8 μs) – the gap has narrowed substantially.
+areg-sdk now beats ZMQ on both Mean (10.5 vs 25.3 μs) and P99 (11.6 vs 30.3 μs) – no caveat
+remains at maximum load.
 
 ---
 
@@ -334,17 +342,18 @@ areg-sdk latency is nearly flat from 140 B to 4 KB. Framework overhead dominates
 
 | areg mode | Total size | Min | Mean | Delta Min from bc64 |
 |-----------|-----------|-----|------|---------------------|
-| bc64 | 204 B | 10.5 μs | 11.5 μs | baseline |
-| bc128 | 268 B | 10.5 μs | 11.7 μs | +0.0 μs |
-| bc512 | 652 B | 11.0 μs | 12.3 μs | +0.5 μs (+5%) |
-| bc1024 | 1164 B | 11.0 μs | 13.1 μs | +0.5 μs (+5%) |
-| bc4096 | 4236 B | 11.6 μs | 15.4 μs | +1.1 μs (+10%) |
-| bc65536 | 65676 B | 28.8 μs | 30.2 μs | +18.3 μs (+174%) |
+| bc64 | 204 B | 9.6 μs | 9.9 μs | baseline |
+| bc128 | 268 B | 9.6 μs | 9.9 μs | +0.0 μs |
+| bc512 | 652 B | 10.1 μs | 10.5 μs | +0.5 μs (+5%) |
+| bc1024 | 1164 B | 10.0 μs | 10.5 μs | +0.4 μs (+4%) |
+| bc4096 | 4236 B | 10.6 μs | 11.2 μs | +1.0 μs (+10%) |
+| bc65536 | 65676 B | 26.0 μs | 26.9 μs | +16.4 μs (+171%) |
 
-From 204 B to 4236 B (20× size increase): Min increases only 1.1 μs.
+From 204 B to 4236 B (20× size increase): Min increases only 1.0 μs.
 Jump at 65 KB is due to TCP segmentation (~45 segments per message).
+Same shape as the earlier `gnome-terminal` dataset – only the absolute floor shifted (§2.2).
 
-NanoMsg comparison (T=1000 μs): 1 KB → 4 KB: +1.3 μs (+7%). areg: +0.6 μs (+5%) over the same range.
+NanoMsg comparison (T=1000 μs): 1 KB → 4 KB: +1.3 μs (+7%). areg: +0.6 μs (+6%) over the same range.
 
 ---
 
@@ -369,7 +378,11 @@ NanoMsg comparison (T=1000 μs): 1 KB → 4 KB: +1.3 μs (+7%). areg: +0.6 μs (
 >
 > **The actual throughput ceiling is measured separately**, in the dedicated `23_pubdatarate`
 > benchmark with parallel channels: up to **~8.0 GB/s** and **~2.5M msg/s** on the same Linux
-> hardware (Performance power mode) – see [areg-sdk Performance Benchmarks](./08b-areg-sdk-performance-benchmarks.md).
+> hardware (Performance power mode, cores **not** pinned) – see
+> [areg-sdk Performance Benchmarks](./08b-areg-sdk-performance-benchmarks.md).
+> Pinning cores for the latency measurements above (as this document's numbers use) costs
+> roughly **3×** on this throughput ceiling – the two are not simultaneously achievable; see
+> [08b §2.1](./08b-areg-sdk-performance-benchmarks.md#21-measurement-environment-terminal-restart-protocol-and-absolute-floor).
 > Note: paper throughput is also bounded by a polling architecture (10 ms poll timeout) –
 > not representative of ZMQ/NNG's maximum throughput potential either.
 
@@ -384,7 +397,7 @@ macOS on MacBook Pro M3 Pro, LPDDR5.
 
 | Platform | OS | Min | P50 | P95 | P99 | Mean | Notes |
 |----------|----|-----|-----|-----|-----|------|-------|
-| **Linux Ubuntu** | `Performance` mode, pinned cores | **10.4–11.0** | **10.7–11.8** | **10.9–13.0** | **11.9–28.1** | **10.8–12.3** | Min and P50 are stable. |
+| **Linux Ubuntu** | `Performance` mode, bare TTY, pinned cores | **9.4–10.1** | **9.7–10.4** | **9.8–11.1** | **10.8–11.6** | **9.7–10.5** | Min and P50 are stable across cycles. |
 | **macOS M3 Pro** | Native LPDDR5 | 21.6 | 31.4 | 37.8 | 40.6 | 31.6 | Excellent consistency |
 | **Windows 11** | Native SSD | ~32 | ~40 | ~44 | ~47–64 | ~41 | Stable |
 
@@ -392,7 +405,7 @@ macOS on MacBook Pro M3 Pro, LPDDR5.
 
 | Platform | Min | P50 | P95 | P99 | Mean |
 |----------|-----|-----|-----|-----|------|
-| **Linux** (`Performance` mode, pinned cores) | **21.2 μs** | **21.7 μs** | **22.5 μs** | **23.5 μs** | **22.0 μs** |
+| **Linux** (`Performance` mode, bare TTY, pinned cores) | **19.1 μs** | **19.5 μs** | **20.1 μs** | **20.9 μs** | **19.6 μs** |
 | **macOS M3 Pro** | 46.0 μs | 62.5 μs | 74.6 μs | 78.3 μs | 62.9 μs |
 | **Windows 11** | ~64 μs | ~83 μs | ~86 μs | ~108 μs | ~83 μs |
 
@@ -406,10 +419,10 @@ macOS on MacBook Pro M3 Pro, LPDDR5.
 
 ### 10.4 Platform Profiles
 
-**Linux (Ubuntu 26.04, `Performance` power mode, pinned cores):**
-- Strongest latency: Min 10.5 μs, P50 11.2 μs – fastest single-message delivery
-- P99 (21.4 μs) now the lowest of all three platforms, well below macOS (40.6 μs)
-- Highest peak throughput of all three platforms: ~8.0 GB/s / ~2.5M msg/s
+**Linux (Ubuntu 26.04, `Performance` power mode, bare TTY, pinned cores):**
+- Strongest latency: Min 9.6 μs, P50 9.9 μs – fastest single-message delivery
+- P99 (11.0 μs) now the lowest of all three platforms, well below macOS (40.6 μs)
+- Highest peak throughput of all three platforms: ~8.0 GB/s / ~2.5M msg/s (unpinned; §2.2)
 - Best for: latency-critical applications, maximum responsiveness
 
 **macOS M3 Pro (LPDDR5, native):**
@@ -428,12 +441,13 @@ macOS on MacBook Pro M3 Pro, LPDDR5.
 
 | Comparison | Linux | macOS M3 | Windows |
 |------------|-------|----------|---------|
-| vs NanoMsg TCP Min (18.0 μs) | **wins −7.5 μs** | **loses +3.6 μs** | **loses +14 μs** |
-| vs NanoMsg TCP Avg (21.9 μs) | **wins −10.4 μs** | **loses +9.7 μs** | **loses +18 μs** |
-| vs ZMQ TCP Avg (27.5 μs) | **wins −16.0 μs** | **loses +4.1 μs** | **loses +12.5 μs** |
-| vs NNG TCP Avg (34.9 μs) | **wins −23.4 μs** | **wins −3.3 μs** | **wins −5.1 μs** |
+| vs NanoMsg TCP Min (18.0 μs) | **wins −8.4 μs** | **loses +3.6 μs** | **loses +14 μs** |
+| vs NanoMsg TCP Avg (21.9 μs) | **wins −12.0 μs** | **loses +9.7 μs** | **loses +18 μs** |
+| vs ZMQ TCP Avg (27.5 μs) | **wins −17.6 μs** | **loses +4.1 μs** | **loses +12.5 μs** |
+| vs NNG TCP Avg (34.9 μs) | **wins −25.0 μs** | **wins −3.3 μs** | **wins −5.1 μs** |
 
-Linux areg-sdk (pinned cores) beats all three competitors at all metrics, by a wider margin than in earlier rounds.
+Linux areg-sdk (bare TTY, pinned cores) beats all three competitors at all metrics, by the
+widest margin measured to date.
 macOS M3 areg-sdk beats ZMQ and NNG; is close to NanoMsg.
 Windows areg-sdk beats NNG; is slower than ZMQ and NanoMsg.
 
@@ -443,21 +457,25 @@ Windows areg-sdk beats NNG; is slower than ZMQ and NanoMsg.
 
 The following claims are directly supported by measured data:
 
-> *"areg-sdk on Linux TCP achieves Min 10.5 μs and Mean 11.5 μs one-way for 204-byte
+> *"areg-sdk on Linux TCP achieves Min 9.6 μs and Mean 9.9 μs one-way for 204-byte
 > messages – faster than ZMQ (27.5 μs Avg), NanoMsg (21.9 μs Avg) on TCP, and even
 > NanoMsg's Unix-domain-socket IPC (16.2 μs Avg) – despite routing through a centralized
 > broker, full service dispatch, TCP (not UDS), maximum send rate, and cores pinned but
 > not kernel-isolated. Competitor numbers: Hitachi Energy Research, arXiv:2508.07934v1
 > (August 2025), TCP T=1000 μs, Xeon w3-2435, isolated cores."*
 
-> *"Full 4-hop brokered RTT (21.2 μs Min, Linux, pinned cores) is lower than 2× NanoMsg
-> direct one-way (36 μs). The complete areg-sdk service framework adds less overhead
+> *"Full 4-hop brokered RTT (19.1 μs Min, Linux, bare TTY, pinned cores) is lower than 2×
+> NanoMsg direct one-way (36 μs). The complete areg-sdk service framework adds less overhead
 > than a second raw TCP hop."*
 
 > *"At maximum send rate (T=0): areg-sdk is both the fastest and the most stable
 > framework among ZMQ, NanoMsg, NNG, and areg-sdk. NanoMsg and NNG show P99 of
-> 542–867 μs at 1 KB; areg-sdk P99 remains at 31.8 μs with a Mean of 13.1 μs.
+> 542–867 μs at 1 KB; areg-sdk P99 remains at 11.6 μs with a Mean of 10.5 μs.
 > (Source: Hitachi CSV, T=0 data.)"*
+
+> *"The absolute lowest single-sample latency observed to date is 9.14 μs (OWT) and
+> 18.34 μs (RTT), measured from a bare TTY session with cores pinned and processes
+> restarted before each mode switch – see 08b §2.1 for full methodology."*
 
 ---
 
@@ -467,7 +485,8 @@ The following claims are directly supported by measured data:
 |------|--------|
 | Competitor latency / IPC data | arXiv:2508.07934v1, CSV: github.com/hitachienergy/messaging-libraries-benchmark |
 | Competitor architecture | utils.c, source: github.com/hitachienergy/messaging-libraries-benchmark |
-| areg-sdk Linux latency | Measured June 2026, i7-13700H, 32 GB DDR4, Ubuntu 26.04, `Performance` power mode, pinned cores via `taskset` – [raw output](./benchmark-test-results.txt) |
+| areg-sdk Linux latency (primary, this document) | Measured July 2026, i7-13700H, 32 GB DDR4, Ubuntu 26.04, `Performance` power mode, bare TTY, pinned cores via `taskset`, restart before each mode switch – [raw CSV](./areg-latency-benchmark-20260705.csv) |
+| areg-sdk Linux latency (secondary, earlier round) | Measured June 2026, same hardware, `gnome-terminal` desktop session, pinned cores, no restart – [raw output](./areg-latency-benchmark-20260629.txt) |
 | areg-sdk Windows latency | Measured June 2026, i7-13700H, 32 GB DDR4, Windows 11 SSD |
 | areg-sdk macOS latency | Measured June 2026, MacBook Pro M3 Pro, 32 GB LPDDR5 |
 | areg-sdk queuing model | Example 30 source code analysis (closed-loop, reactive push confirmed) |

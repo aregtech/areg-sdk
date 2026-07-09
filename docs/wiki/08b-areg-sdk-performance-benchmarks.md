@@ -3,8 +3,10 @@
 
 > **Scope:** All measurements are same-machine TCP loopback (`127.0.0.1`) only.
 > No cross-machine or real-network numbers appear in this document.
-> All benchmark code is open-source and reproducible. Raw output of the latency runs
-> behind every number in this document: [`benchmark-test-results.txt`](./benchmark-test-results.txt).
+> All benchmark code is open-source and reproducible. Two raw-output datasets are published:
+> [`areg-latency-benchmark-20260629.txt`](./areg-latency-benchmark-20260629.txt) (gnome-terminal, June 2026) and
+> [`areg-latency-benchmark-20260705.csv`](./areg-latency-benchmark-20260705.csv) (bare TTY, July 2026,
+> the current lowest-latency reference). See Section 2.1 for why the two differ.
 
 ---
 
@@ -39,6 +41,57 @@ cmake --build ./build -j$(nproc)
 > with the **Performance** power profile active. `mtrouter`, provider, and consumer
 > are each pinned to a dedicated physical core via `taskset` for the latency results
 > in Sections 4–6 and 9.1. Throughput figures (Section 7) were not re-tested with pinning.
+---
+
+### 2.1 Measurement Environment: Terminal, Restart Protocol, and Absolute Floor
+
+Two independently measured Linux latency datasets exist for this hardware, and they
+produce **different absolute numbers** for a documented reason – stated here explicitly
+so a third party reproducing these results on their own machine is not confused or made
+skeptical by a mismatch.
+
+| Dataset | Terminal | Core pinning | Restart protocol | Result |
+|---------|----------|--------------|-------------------|--------|
+| [`areg-latency-benchmark-20260629.txt`](./areg-latency-benchmark-20260629.txt) (June 2026) | `gnome-terminal` (desktop GUI) | Pinned via `taskset` | No restart between the 8 runs of a session | Higher baseline – used in Sections 4.1/5.1 as "gnome-terminal" table |
+| [`areg-latency-benchmark-20260705.csv`](./areg-latency-benchmark-20260705.csv) (July 2026) | Bare TTY (`Ctrl+Alt+F4`, no desktop session running) | Pinned via `taskset` | Full process restart (`mtrouter`, provider, consumer) before switching to a new mode | **Lower baseline – current reference, used as primary in Sections 4.1/5.1** |
+
+**Why the TTY figures are lower:** a bare TTY has no desktop compositor, window manager,
+or GUI terminal emulator process competing for scheduler attention and cache space on the
+same machine. `gnome-terminal` itself is a running process with its own rendering and event
+loop – it does not touch the benchmark's pinned cores directly, but it adds background
+scheduler and memory-bus pressure that a bare TTY session does not have. The gap is small
+but consistent: roughly **0.9–1.4 μs** on OWT Min/P50 and a similar amount on RTT, comparing
+the two datasets at the same mode (e.g. `bc64` Min: 10.5 μs gnome-terminal vs 9.6 μs TTY).
+
+**Why the TTY dataset restarts all three processes before every mode switch:** repeated
+cycles of the *same* mode, run back-to-back without a process restart, show a small but
+real upward drift. Within the TTY dataset's own 10-cycle blocks (no restart *between*
+cycles of the same mode, only *before* switching to the next mode), Min drifts upward by
+typically **+0.1 to +0.3 μs** from the first cycle to the tenth (e.g. `bc0` Min: 9.26 μs on
+cycle 1 vs 9.47 μs on cycle 10; `bc65536` Min: 25.96 μs vs 26.36 μs). Left to run for many
+more cycles without a restart, this drift is expected to continue climbing – restarting all
+three processes before each new mode is what keeps every mode's measurement anchored to a
+fresh baseline rather than an already-drifted one.
+
+**Absolute floor observed to date:** the single lowest OWT sample across all TTY runs is
+**9.14 μs** (`bc0` and `bc16`, best of 10 cycles each); the single lowest RTT sample is
+**18.34 μs** (`pp0`). These are best-single-sample figures, distinct from the *representative*
+averaged Min/P50 figures used in the tables below – both are reported so neither is mistaken
+for the other.
+
+**Unpinned cores:** per the author's own testing, not pinning `mtrouter`, provider, and
+consumer to dedicated cores adds roughly **+2 to +4 μs** on top of the TTY-pinned baseline
+above. This has not been captured in a separately published raw file as of this writing;
+it is reported here as a measured observation, not a formal dataset.
+
+**Pinning's cost to throughput:** the same core pinning that lowers latency measurably
+*reduces* `23_pubdatarate` throughput by roughly **3×** on both data rate and message rate
+compared to the unpinned figures in Section 7 – pinning three benchmark processes to three
+cores leaves the throughput test far less parallelism to work with than an unpinned run
+using all available cores. Section 7's throughput figures are deliberately **unpinned** for
+this reason; they are not simultaneously achievable alongside the pinned latency figures
+above on the same running configuration.
+
 ---
 
 ## 3. Measurement Methodology
@@ -152,11 +205,36 @@ field-by-field serialization, not a flat `memcpy`.
 
 ## 4. One-Way Latency Results (OWT, `bcX` modes)
 
-Configuration: `count=5000`, `warmup=1000`, T=0, 8 consecutive runs.
-Averages reported; outlier runs are noted where identified.
+Configuration: `count=5000`, `warmup=1000`, T=0. TTY dataset (primary): 10 consecutive
+cycles per mode, full process restart between modes (§2.1). `gnome-terminal` dataset
+(secondary): 8 consecutive runs, no restart between runs.
 All values in **μs**.
 
 ### 4.1 Linux – Ubuntu 26.04 LTS (Performance mode, i7-13700H, 32 GB DDR4, pinned cores)
+
+#### Bare TTY, restart-per-mode (current reference – lowest measured)
+
+| Mode    | Payload struct                | Total msg size | Min  | P50  | P95  | P99  | Mean |
+|---------|-------------------------------|----------------|------|------|------|------|------|
+| bc0     | None                          | 140 B          | 9.4  | 9.7  | 9.8  | 10.8 | 9.7  |
+| bc8     | Latency8 (1×u64)              | 148 B          | 9.4  | 9.7  | 9.9  | 10.9 | 9.8  |
+| bc16    | Latency16 (2×u64)             | 156 B          | 9.4  | 9.7  | 9.9  | 10.8 | 9.8  |
+| bc32    | Latency32 (4×u64)             | 172 B          | 9.4  | 9.7  | 9.9  | 10.8 | 9.8  |
+| bc64    | Latency64 (8×u64)             | 204 B          | 9.6  | 9.9  | 10.1 | 11.0 | 9.9  |
+| bc128   | Latency128 (8×u64 + String)   | 268 B          | 9.6  | 9.9  | 10.1 | 11.0 | 9.9  |
+| bc256   | Latency256 (2×Lat128)         | 396 B          | 9.8  | 10.1 | 10.4 | 11.2 | 10.1 |
+| bc512   | Latency512 (4×Lat128)         | 652 B          | 10.1 | 10.4 | 11.1 | 11.6 | 10.5 |
+| bc1024  | Lat64 + Lat128 + SharedBuffer | 1164 B         | 10.0 | 10.4 | 11.4 | 11.6 | 10.5 |
+| bc4096  | Lat64 + Lat128 + SharedBuffer | 4236 B         | 10.6 | 11.0 | 12.3 | 13.0 | 11.2 |
+| bc65536 | u64 + Lat128 + SharedBuffer   | 65676 B        | 26.0 | 26.7 | 28.2 | 31.0 | 26.9 |
+
+> `mtrouter`, provider, and consumer each pinned to a dedicated physical core via `taskset`,
+> measured from a bare TTY session (no desktop GUI), with a full process restart before
+> each mode switch – see §2.1. Values are averages across 10 consecutive cycles per mode.
+> **Absolute minimum single-sample observed: 9.14 μs** (`bc0`/`bc16`).
+> Raw data: [`areg-latency-benchmark-20260705.csv`](./areg-latency-benchmark-20260705.csv).
+
+#### `gnome-terminal` desktop session, pinned cores (earlier dataset, higher baseline)
 
 | Mode    | Payload struct                | Total msg size | Min  | P50  | P95  | P99  | Mean |
 |---------|-------------------------------|----------------|------|------|------|------|------|
@@ -172,11 +250,9 @@ All values in **μs**.
 | bc4096  | Lat64 + Lat128 + SharedBuffer | 4236 B         | 11.6 | 12.8 | 29.5 | 40.7 | 15.4 |
 | bc65536 | u64 + Lat128 + SharedBuffer   | 65676 B        | 28.8 | 29.9 | 32.7 | 34.6 | 30.2 |
 
-> `mtrouter`, provider, and consumer each pinned to a dedicated physical core via `taskset`.
-> Values are averages across 8 consecutive runs (`Performance` Power Mode).
-> Min and P50 are tight and stable across runs. bc1024–bc4096 show the largest P50–P99
-> gaps of any mode (a single elevated message per run in the raw per-run data); bc65536's
-> P50–P99 gap is proportionally the tightest of any mode tested.
+> Same hardware and pinning, measured inside a `gnome-terminal` desktop session, no restart
+> between the 8 runs of a session – see §2.1 for why this differs from the TTY table above.
+> Raw data: [`areg-latency-benchmark-20260629.txt`](./areg-latency-benchmark-20260629.txt).
 
 ### 4.2 macOS – Apple M3 Pro, 32 GB LPDDR5
 
@@ -191,9 +267,10 @@ All values in **μs**.
 | bc4096  | Lat64 + Lat128 + SharedBuffer | 4236 B         | 23.2 | 34.5 | 40.1 | 43.2 | 34.0 |
 | bc65536 | u64 + Lat128 + SharedBuffer   | 65676 B        | 41.8 | 49.5 | 53.8 | 56.6 | 49.7 |
 
-> bc65536 P99 spread across 8 runs = 0.8 μs on macOS vs 0.6 μs on Linux (pinned cores) –
-> both platforms are tight at this mode. Higher P50 than Linux reflects macOS TCP stack
-> overhead; macOS was not re-tested with core pinning.
+> bc65536 P99 spread across 8 runs = 0.8 μs on macOS. The TTY Linux dataset (§2.1) shows
+> a similarly tight bc65536 P99 spread of 1.5 μs across its 10 cycles – both platforms are
+> tight at this mode. Higher P50 than Linux reflects macOS TCP stack overhead; macOS was
+> not re-tested with core pinning.
 
 ### 4.3 Windows 11 – same i7-13700H, 32 GB DDR4
 
@@ -208,7 +285,7 @@ All values in **μs**.
 | bc4096  | Lat64 + Lat128 + SharedBuffer | 4236 B         | 36.4 | 46.7 | 49.8 | 67.4  | 46.1 |
 | bc65536 | u64 + Lat128 + SharedBuffer   | 65676 B        | 57.6 | 72.8 | 76.9 | 104.3 | 73.7 |
 
-> Windows OWT is approximately 3.6× higher than Linux at the same hardware (bc64 P50: 40.3 vs 11.2 μs, pinned cores).
+> Windows OWT is approximately 4.1× higher than Linux at the same hardware (bc64 P50: 40.3 vs 9.9 μs, TTY, pinned cores).
 > The Windows TCP loopback stack has higher per-message overhead than Linux.
 > No bimodal distribution – all 8 runs land in the same cluster.
 
@@ -216,10 +293,36 @@ All values in **μs**.
 
 ## 5. Round-Trip Latency Results (RTT, `ppX` modes)
 
-Configuration: `count=5000–10000`, `warmup=1000`, T=0.
+Configuration: `count=5000–10000`, `warmup=1000`, T=0. TTY dataset (primary): 10
+consecutive cycles per mode, full process restart between modes (§2.1). `gnome-terminal`
+dataset (secondary): 8 consecutive runs, no restart between runs.
 All values in **μs**.
 
 ### 5.1 Linux – Ubuntu 26.04 LTS (Performance mode, i7-13700H, 32 GB DDR4, pinned cores)
+
+#### Bare TTY, restart-per-mode (current reference – lowest measured)
+
+| Mode    | Payload struct                | Request / Response total | Min  | P50  | P95  | P99  |
+|---------|-------------------------------|---------------------------|------|------|------|------|
+| pp0     | None                          | 140 / 148 B               | 18.7 | 19.2 | 19.6 | 20.6 |
+| pp8     | Latency8                      | 148 / 156 B                | 18.9 | 19.2 | 19.7 | 20.7 |
+| pp16    | Latency16                     | 156 / 164 B                | 18.8 | 19.2 | 19.7 | 20.6 |
+| pp32    | Latency32                     | 172 / 180 B                | 19.0 | 19.3 | 19.8 | 20.7 |
+| pp64    | Latency64                     | 204 / 212 B                | 19.1 | 19.5 | 20.1 | 20.9 |
+| pp128   | Latency128                    | 268 / 276 B                | 19.2 | 19.6 | 20.5 | 21.1 |
+| pp256   | Latency256                    | 396 / 404 B                | 19.6 | 20.0 | 21.0 | 21.5 |
+| pp512   | Latency512                    | 652 / 660 B                | 20.2 | 20.6 | 21.8 | 22.3 |
+| pp1024  | Lat64 + Lat128 + SharedBuffer | 1164 / 1172 B              | 19.8 | 20.6 | 21.8 | 22.5 |
+| pp4096  | Lat64 + Lat128 + SharedBuffer | 4236 / 4244 B              | 21.3 | 22.2 | 24.0 | 24.6 |
+| pp65536 | u64 + Lat128 + SharedBuffer   | 65676 / 65684 B            | 60.7 | 63.4 | 65.0 | 67.3 |
+
+> `mtrouter`, provider, and consumer each pinned to a dedicated physical core via `taskset`,
+> measured from a bare TTY session with a full process restart before each mode switch –
+> see §2.1. Values are averages across 10 consecutive cycles per mode.
+> **Absolute minimum single-sample observed: 18.34 μs** (`pp0`).
+> Raw data: [`areg-latency-benchmark-20260705.csv`](./areg-latency-benchmark-20260705.csv).
+
+#### `gnome-terminal` desktop session, pinned cores (earlier dataset, higher baseline)
 
 | Mode    | Payload struct                | Request / Response total | Min  | P50  | P95  | P99  |
 |---------|-------------------------------|---------------------------|------|------|------|------|
@@ -235,9 +338,9 @@ All values in **μs**.
 | pp4096  | Lat64 + Lat128 + SharedBuffer | 4236 / 4244 B              | 23.4 | 24.5 | 26.1 | 26.9 |
 | pp65536 | u64 + Lat128 + SharedBuffer   | 65676 / 65684 B            | 62.6 | 65.5 | 68.7 | 70.9 |
 
-> pp0 Min (21.0 μs) and pp64 Min (21.2 μs) are the confirmed floor for this hardware,
-> cores pinned via `taskset`. These represent full 4-hop RTT including two serialization +
-> two deserialization cycles. Values are averages across 8 consecutive runs.
+> Same hardware and pinning, measured inside a `gnome-terminal` desktop session, no restart
+> between the 8 runs of a session – see §2.1.
+> Raw data: [`areg-latency-benchmark-20260629.txt`](./areg-latency-benchmark-20260629.txt).
 
 ### 5.2 macOS – Apple M3 Pro, 32 GB LPDDR5
 
@@ -254,7 +357,8 @@ All values in **μs**.
 
 > macOS P99 is extremely stable: pp65536 P99 spread = 0.8 μs across 8 runs.
 > Consistent with native SSD, well-behaved macOS scheduler.
-> Linux (pinned cores) is similarly tight at this mode: pp65536 P99 spread = 0.6 μs.
+> The TTY Linux dataset (§2.1) is similarly tight at this mode: pp65536 P99 spread = 2.4 μs
+> across its 10 cycles.
 
 ### 5.3 Windows 11 – i7-13700H, 32 GB DDR4
 
@@ -270,7 +374,7 @@ All values in **μs**.
 | pp4096  | Lat64 + Lat128 + SharedBuffer | 4236 / 4244 B            | 69.1  | 85.3  | 89.6  | 114.1 | 86.7  |
 | pp65536 | u64 + Lat128 + SharedBuffer   | 65676 / 65684 B          | 115.6 | 142.5 | 204.8 | 242.9 | 152.8 |
 
-> Windows RTT is approximately 3.8× higher than Linux at the same hardware (pp64 P50: 82.5 vs 21.7 μs, pinned cores).
+> Windows RTT is approximately 4.2× higher than Linux at the same hardware (pp64 P50: 82.5 vs 19.5 μs, TTY, pinned cores).
 > No bimodal distribution – results are stable and predictable across all runs.
 > pp65536 shows higher tail (P99 242 μs) due to TCP segmentation overhead on the Windows loopback stack.
 
@@ -282,26 +386,28 @@ areg-sdk latency is nearly flat from 140 B to 4 KB. Framework overhead (routing,
 dispatch, thread wakeup) dominates – payload serialization adds minimal overhead
 for messages below the TCP segment boundary (~1460 B).
 
-### Linux OWT (bc modes, Min values)
+### Linux OWT (bc modes, Min values) – TTY dataset
 
 | Total msg size    | Min (μs) | Delta from bc0   |
 |-------------------|----------|-------------------|
-| 140 B (bc0)       | 10.4     | baseline          |
-| 148 B (bc8)       | 10.5     | +0.1 μs           |
-| 156 B (bc16)      | 10.4     | +0.0 μs           |
-| 172 B (bc32)      | 10.4     | +0.0 μs           |
-| 204 B (bc64)      | 10.5     | +0.1 μs           |
-| 268 B (bc128)     | 10.5     | +0.1 μs           |
-| 396 B (bc256)     | 10.6     | +0.2 μs           |
-| 652 B (bc512)     | 11.0     | +0.6 μs (+6%)     |
-| 1164 B (bc1024)   | 11.0     | +0.6 μs (+6%)     |
-| 4236 B (bc4096)   | 11.6     | +1.2 μs (+12%)    |
-| 65676 B (bc65536) | 28.8     | +18.4 μs (+177%)  |
+| 140 B (bc0)       | 9.4      | baseline          |
+| 148 B (bc8)       | 9.4      | +0.0 μs           |
+| 156 B (bc16)      | 9.4      | +0.0 μs           |
+| 172 B (bc32)      | 9.4      | +0.0 μs           |
+| 204 B (bc64)      | 9.6      | +0.2 μs           |
+| 268 B (bc128)     | 9.6      | +0.2 μs           |
+| 396 B (bc256)     | 9.8      | +0.4 μs           |
+| 652 B (bc512)     | 10.1     | +0.7 μs (+7%)     |
+| 1164 B (bc1024)   | 10.0     | +0.6 μs (+6%)     |
+| 4236 B (bc4096)   | 10.6     | +1.2 μs (+13%)    |
+| 65676 B (bc65536) | 26.0     | +16.6 μs (+177%)  |
 
-From 204 B (bc64) to 4236 B (bc4096) (~21× size increase): Min increases only 1.1 μs.
+From 204 B (bc64) to 4236 B (bc4096) (~21× size increase): Min increases only 1.0 μs.
 Below 4 KB, payload size has effectively no measurable impact on Min latency.
 The jump at 65 KB is due to TCP segmentation: a 65 KB message requires approximately
 45 TCP segments (at 1460 B MTU), each requiring a separate kernel write.
+This pattern is identical in shape to the earlier `gnome-terminal` dataset – only the
+absolute floor shifts (see §2.1), not the flatness-below-4KB conclusion.
 
 ### macOS OWT (bc modes, Min values)
 
@@ -320,7 +426,10 @@ with the same TCP-segmentation jump at 65 KB (+20.2 μs from bc4096 to bc65536).
 | Data rate     | ~3 MB   | **~8.0 GB/s**   | ~6.0–6.5 GB/s   |
 
 > Peak is the best short-run reading; sustained is the stable 5-minute rate.
-> Both measured under Ubuntu 26.04, **Performance** power mode.
+> Both measured under Ubuntu 26.04, **Performance** power mode, **cores not pinned**.
+> Pinning `mtrouter`/provider/consumer to dedicated cores for latency measurement (§2.1,
+> §4.1) reduces these throughput figures by roughly **3×** on both data rate and message
+> rate – the two configurations are not simultaneously achievable.
 
 ### 7.2 macOS – Apple M3 Pro, 32 GB LPDDR5
 
@@ -351,17 +460,22 @@ due to higher per-message TCP overhead on the Windows loopback stack.
 
 | Platform         | Min         | P50         | P95         | P99         | Mean        |
 |------------------|-------------|-------------|-------------|-------------|-------------|
-| **Linux Ubuntu** | **10.5 μs** | **11.2 μs** | **11.8 μs** | **21.4 μs** | **11.5 μs** |
+| **Linux Ubuntu** ¹ | **9.6 μs** | **9.9 μs** | **10.1 μs** | **11.0 μs** | **9.9 μs** |
 | **macOS M3 Pro** | 21.6 μs     | 31.4 μs     | 37.8 μs     | 40.6 μs     | 31.6 μs     |
 | **Windows 11**   | 32.5 μs     | 40.3 μs     | 43.3 μs     | 60.0 μs     | 41.2 μs     |
+
+¹ TTY dataset, restart-per-mode (§2.1) – the current reference. `gnome-terminal` dataset
+reads ~0.9–1.4 μs higher; see §4.1.
 
 ### RTT Latency (pp64, 204+212 B)
 
 | Platform         | Min         | P50         | P95         | P99         |
 |------------------|-------------|-------------|-------------|-------------|
-| **Linux Ubuntu** | **21.2 μs** | **21.7 μs** | **22.5 μs** | **23.5 μs** |
+| **Linux Ubuntu** ¹ | **19.1 μs** | **19.5 μs** | **20.1 μs** | **20.9 μs** |
 | **macOS M3 Pro** | 46.0 μs     | 62.5 μs     | 74.6 μs     | 78.3 μs     |
 | **Windows 11**   | 64.0 μs     | 82.5 μs     | 85.2 μs     | 107.8 μs    |
+
+¹ TTY dataset, restart-per-mode (§2.1) – the current reference.
 
 ### Throughput
 
@@ -373,9 +487,9 @@ due to higher per-message TCP overhead on the Windows loopback stack.
 
 ### Platform Profiles
 
-**Linux** (pinned cores) offers the lowest OWT Min and RTT Min latency (10.5 μs / 21.2 μs),
-the lowest P99 of all three platforms (21.4 μs bc64 OWT), and the
-highest peak data rate and message rate of all three platforms.
+**Linux** (TTY, pinned cores) offers the lowest OWT Min and RTT Min latency (9.6 μs / 19.1 μs),
+the lowest P99 of all three platforms (11.0 μs bc64 OWT), and the
+highest peak data rate and message rate of all three platforms (unpinned, see §2.1).
 
 **macOS M3 Pro** offers the highest confirmed *sustained* message rate (2.5M msg/s) versus
 Linux's 2.0M. The higher P50 latency vs Linux reflects macOS TCP stack per-packet overhead;
@@ -407,8 +521,8 @@ PUB/SUB pattern, 1 subscriber, 5000 messages. Raw transport only – no service 
 
 | Framework          | Min         | Avg         | P90/P95     | P99         | Transport        | Scope      |
 |--------------------|-------------|-------------|-------------|-------------|------------------|------------|
-| **areg-sdk Linux** | **11.0 μs** | **13.1 μs** | **20.3 μs** | 31.8 μs     | TCP 2-hop broker | Full stack |
-| NanoMsg            | 18.0 μs     | 21.9 μs     | 22.3 μs     | **24.8 μs** | TCP direct       | Raw        |
+| **areg-sdk Linux** | **10.0 μs** | **10.5 μs** | **11.4 μs** | **11.6 μs** | TCP 2-hop broker | Full stack |
+| NanoMsg            | 18.0 μs     | 21.9 μs     | 22.3 μs     | 24.8 μs     | TCP direct       | Raw        |
 | ZMQ                | 22.0 μs     | 27.5 μs     | 28.5 μs     | 31.6 μs     | TCP direct       | Raw        |
 | NNG                | 24.3 μs     | 34.9 μs     | 39.7 μs     | 48.4 μs     | TCP direct       | Raw        |
 
@@ -416,8 +530,8 @@ PUB/SUB pattern, 1 subscriber, 5000 messages. Raw transport only – no service 
 
 | Framework | Min | Avg | P90/P95 | P99 |
 |-----------|-----|-----|-----|-----|
-| **areg-sdk Linux** | **11.6 μs** | **15.4 μs** | 29.5 μs | 40.7 μs |
-| NanoMsg | 19.3 μs | 24.5 μs | **26.3 μs** | **28.0 μs** |
+| **areg-sdk Linux** | **10.6 μs** | **11.2 μs** | **12.3 μs** | **13.0 μs** |
+| NanoMsg | 19.3 μs | 24.5 μs | 26.3 μs | 28.0 μs |
 | ZMQ | 23.9 μs | 29.3 μs | 31.0 μs | 34.1 μs |
 | NNG | 27.0 μs | 35.6 μs | 39.8 μs | 50.2 μs |
 
@@ -425,24 +539,27 @@ PUB/SUB pattern, 1 subscriber, 5000 messages. Raw transport only – no service 
 
 | Framework | Min | Avg | P90/P95 | P99 |
 |-----------|-----|-----|-----|-----|
-| **areg-sdk Linux** | **28.8 μs** | **30.2 μs** | **32.7 μs** | **34.6 μs** |
+| **areg-sdk Linux** | **26.0 μs** | **26.9 μs** | **28.2 μs** | **31.0 μs** |
 | NNG | 39.9 μs | 49.4 μs | 55.6 μs | 65.2 μs |
 | ZMQ | 43.6 μs | 52.6 μs | 53.4 μs | 59.5 μs |
 | NanoMsg | 32.1 μs | 171.1 μs ⚠️ | 303.9 μs ⚠️ | 307.3 μs ⚠️ |
 
+> Figures use the TTY dataset (§2.1), the current reference. Using the `gnome-terminal`
+> dataset instead, areg-sdk still wins Min/Avg at every size but trails NanoMsg's P99 at
+> 1 KB and 4 KB – see the archived comparison in this document's revision history if needed.
+>
 > **NanoMsg 64 KB anomaly (T=1000 μs):** Nagle's algorithm fires at this payload size.
 > Min (32.1 μs) remains clean but Avg jumps to 171 μs – a 5.3× degradation.
 > areg-sdk shows near-flat latency across all sizes (no Nagle issue).
 >
-> areg-sdk **wins Min and Avg at all three sizes** under significantly harder conditions:
-> max send rate vs T=1000 μs (1 msg/ms), 2-hop broker vs direct, full dispatch vs raw,
-> mobile CPU vs workstation, pinned-but-not-isolated cores vs isolated cores.
-> areg-sdk **also wins P90/P95 at 1 KB and 64 KB, and P99 at 64 KB**.
-> At 1 KB and 4 KB, NanoMsg's raw socket keeps a tighter P99 – the one place
-> raw transport still holds an edge over the full service-dispatch path.
+> **areg-sdk now wins every metric – Min, Avg, P90/P95, and P99 – at all three payload sizes**,
+> under conditions still harder than the competitors': max send rate (T=0) vs T=1000 μs
+> (1 msg/ms), 2-hop broker vs direct, full dispatch vs raw, mobile CPU vs Xeon workstation,
+> pinned-but-not-isolated cores vs isolated cores. No caveat remains on the tail-latency
+> comparison at any size.
 >
 > **RTT floor vs 2× NanoMsg OWT:**
-> areg-sdk pp64 RTT Min (21.2 μs) < 2 × NanoMsg TCP OWT Min (18.0 × 2 = 36.0 μs).
+> areg-sdk pp64 RTT Min (19.1 μs) < 2 × NanoMsg TCP OWT Min (18.0 × 2 = 36.0 μs).
 > The complete areg-sdk service framework – 4-hop brokered RTT, both-sides serialization,
 > dispatch, and method call – adds less overhead than a second raw NanoMsg TCP one-way hop.
 
@@ -450,14 +567,13 @@ PUB/SUB pattern, 1 subscriber, 5000 messages. Raw transport only – no service 
 
 | Framework          | 1 KB T=0 Avg | 1 KB T=0 P99  | Stable?            |
 |--------------------|--------------|---------------|--------------------|
-| **areg-sdk Linux** | **13.1 μs**  | 31.8 μs       | **✅**             |
-| ZMQ                | 25.3 μs      | **30.3 μs**   | ✅                 |
+| **areg-sdk Linux** | **10.5 μs**  | **11.6 μs**   | **✅**             |
+| ZMQ                | 25.3 μs      | 30.3 μs       | ✅                 |
 | NNG                | 42.8 μs      | 542.8 μs      | ❌ P99 collapsed   |
 | NanoMsg            | 452.8 μs     | 867.1 μs      | ❌ Broken (Nagle)  |
 
-At the same send rate as areg-sdk: NanoMsg and NNG become unreliable.
-areg-sdk Mean (13.1 μs) beats ZMQ Mean (25.3 μs) at equal load; ZMQ keeps a slightly
-lower P99 (30.3 vs 31.8 μs) – the gap has narrowed to 1.5 μs.
+At the same send rate as areg-sdk: NanoMsg and NNG become unreliable. areg-sdk now beats
+ZMQ on both Mean (10.5 vs 25.3 μs) and P99 (11.6 vs 30.3 μs) – no caveat remains at equal load.
 
 > **NanoMsg maintenance status:** 0 commits and 2 open issues recorded
 > January–April 2025 per the Hitachi Energy paper. The library is effectively unmaintained.
@@ -477,10 +593,14 @@ These are raw pub-sub transport numbers (no service dispatch, no method call).
 Zenoh P2P uses shared memory when publisher and subscriber are on the same machine.
 areg-sdk uses TCP through a centralized broker regardless of topology.
 
-**Context:** areg-sdk Linux bc64 OWT Mean (11.5 μs, pinned cores) is now lower than Zenoh brokered
-(21 μs raw) despite TCP vs UDP and full dispatch vs raw pub-sub, and is closing in on
-Zenoh P2P (10 μs) and CycloneDDS (~8 μs) – both of which use shared memory and bypass
-the kernel TCP stack entirely, a different transport category from areg-sdk's TCP path.
+**Context:** areg-sdk Linux bc64 OWT Mean (9.9 μs, TTY, pinned cores – §2.1) is now lower
+than Zenoh brokered (21 μs raw) by a wide margin, and is essentially at parity with –
+fractionally below – Zenoh P2P's own **~10 μs** figure, despite running on TCP with full
+service dispatch against Zenoh P2P's raw SHM/UDP pub-sub path. One caveat on precision:
+the source for Zenoh's "~10 μs" does not state which statistic (Min, Avg, P50) it
+represents, so this should be read as "now essentially tied, marginally ahead" rather than
+a decisively verified rank flip. CycloneDDS (~8 μs) and Aeron IPC (~7.978 μs mean) – both
+also SHM – remain measurably lower than areg-sdk's TCP path.
 
 
 ### 9.3 Aeron – UDP loopback
@@ -501,9 +621,9 @@ Test rate: up to 10K msg/s. Raw transport, no service dispatch.
 > uses OS yields and sleeps between sends. Switching to `spin` eliminates this jitter.
 > Aeron IPC default also showed max latencies >100 ms (fixed by increasing `IPC_MTU_LENGTH`).
 >
-> **Context:** areg-sdk Linux bc64 P50 (~11.2 μs, full TCP dispatch, pinned cores) is approximately
-> 4.5× lower than Aeron UDP P50 (~50 μs, raw transport) at comparable message rates.
-> Hardware is different and tuning matters significantly for Aeron.
+> **Context:** areg-sdk Linux bc64 P50 (~9.9 μs, full TCP dispatch, TTY, pinned cores) is
+> approximately 5.1× lower than Aeron UDP P50 (~50 μs, raw transport) at comparable message
+> rates. Hardware is different and tuning matters significantly for Aeron.
 > Comparison is indicative, not conclusive.
 
 ### 9.4 gRPC C++ – Unix domain socket, sequential single-client
@@ -527,8 +647,8 @@ single client thread, no concurrency. Sequential – one call completes before t
 > TCP header processing). gRPC over TCP loopback would be equal or higher than these values.
 >
 > **areg-sdk RTT comparison (pp64, TCP, 4-hop broker, full dispatch):**
-> areg-sdk Linux P50 ~21.7 μs (pinned cores) vs gRPC UDS median ~116 μs (other core) –
-> areg-sdk full-stack RTT is approximately 5.3× lower despite more hops,
+> areg-sdk Linux P50 ~19.5 μs (TTY, pinned cores) vs gRPC UDS median ~116 μs (other core) –
+> areg-sdk full-stack RTT is approximately 6.0× lower despite more hops,
 > full typed serialization both sides, and TCP vs Unix domain socket.
 
 ### 9.5 Notes on Other Frameworks
@@ -583,12 +703,16 @@ with both message size and available memory bandwidth.
 
 ### 30_publatency – Latency
 
-Raw output of the actual runs behind every latency number in this document is published
-here: [`benchmark-test-results.txt`](./benchmark-test-results.txt) – including the exact
-`taskset` commands used.
+Two raw datasets are published, reflecting the two environments in §2.1:
+→ **[areg-latency-benchmark-20260705.csv](./areg-latency-benchmark-20260705.csv)** (bare TTY, current reference)
+→ **[areg-latency-benchmark-20260629.txt](./areg-latency-benchmark-20260629.txt)** (gnome-terminal, earlier baseline)
+
+Both include the exact `taskset` commands used.
 
 Start three processes in order. On Linux, pin each to a dedicated physical core
-(not hyperthread siblings) to match the published Linux numbers:
+(not hyperthread siblings) to match the published Linux numbers. For the lowest published
+numbers, run from a bare TTY (`Ctrl+Alt+F2`–`F6` on most distros, no desktop session active)
+rather than a desktop terminal emulator – see §2.1 for the measured difference:
 
 ```bash
 # Terminal 1
@@ -605,7 +729,9 @@ taskset -c 1 ./30_pubconsumer.elf  # Linux
 ./30_pubconsumer.elf               # macOS / Windows
 ```
 
-In the consumer console, set parameters once and run 8 times with `-s`:
+In the consumer console, set parameters once and run 8–10 times with `-s`. If reproducing
+the TTY methodology, restart all three processes before switching to a different `-m` mode
+(§2.1) – do not just change `-m` and continue in the same session:
 
 ```
 # OWT (broadcast)
@@ -643,6 +769,6 @@ Watch `mtrouter` output – it shows the highest-accuracy throughput signal
 
 ---
 
-*Measurements taken June 2026.*
+*Measurements taken June 2026 (`gnome-terminal` dataset) and July 2026 (bare TTY dataset, current reference – see §2.1).*
 *areg-sdk build: Release, `AREG_LOGGING=OFF`.*
 *All latency values: TCP loopback (127.0.0.1) only. No cross-machine data.*

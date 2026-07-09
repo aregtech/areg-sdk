@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2026 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2026 Aregtech (Artak Avetyan).
 // Description : The application provides network discoverable Public service,
 //               which predefined methods are called from remote clients.
 //============================================================================

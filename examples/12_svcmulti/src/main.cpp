@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2026 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2026 Aregtech (Artak Avetyan).
 // Description : This project demonstrates how to instantiate multiple 
 //               instances of the same service differing by names. It is an
 //               extension of 11_service, uses empty services and instantiates

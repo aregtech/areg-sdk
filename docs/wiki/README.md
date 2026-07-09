@@ -410,7 +410,7 @@ Help improve the documentation:
 ### Stay Updated
 
 - **GitHub**: [github.com/aregtech/areg-sdk](https://github.com/aregtech/areg-sdk)
-- **LinkedIn**: [Aregtech](https://www.linkedin.com/company/aregtech)
+- **LinkedIn**: [Aregtech (Artak Avetyan)](https://www.linkedin.com/in/artak-avetyan/)
 - **Releases**: [GitHub Releases](https://github.com/aregtech/areg-sdk/releases)
 
 ---
@@ -473,6 +473,6 @@ Start with **[Quick Project Setup](./02a-quick-project-setup.md)** or explore **
 
 ---
 
-Copyright © 2023–2026 Aregtech  
+Copyright © 2023–2026 Aregtech (Artak Avetyan)  
 https://www.areg.tech  
 Contact: info[at]areg.tech
