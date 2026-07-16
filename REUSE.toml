@@ -27,7 +27,7 @@ path = [
   "thirdparty/**",
 ]
 precedence = "aggregate"
-SPDX-FileCopyrightText = "2017-2026 Aregtech UG"
+SPDX-FileCopyrightText = "2017-2026 Aregtech (Artak Avetyan)"
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
