@@ -1,7 +1,7 @@
 version = 1
 
 SPDX-PackageName = "areg-sdk"
-SPDX-PackageSupplier = "Aregtech UG"
+SPDX-PackageSupplier = "Aregtech (Artak Avetyan)"
 SPDX-PackageDownloadLocation = "https://github.com/aregtech/areg-sdk"
 
 [[annotations]]
