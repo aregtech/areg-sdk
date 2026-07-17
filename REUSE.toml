@@ -1,0 +1,42 @@
+version = 1
+
+SPDX-PackageName = "areg-sdk"
+SPDX-PackageSupplier = "Aregtech (Artak Avetyan)"
+SPDX-PackageDownloadLocation = "https://github.com/aregtech/areg-sdk"
+
+[[annotations]]
+path = [
+  ".github/**",
+  ".gitignore",
+  "CMakeLists.txt",
+  "CODE_OF_CONDUCT.md",
+  "CONTRIBUTING.md",
+  "README.md",
+  "Releases.md",
+  "areg.cmake",
+  "areg-sdk.sln",
+  "msvc_setup.props",
+  "nuget.config",
+
+  "conf/**",
+  "docs/**",
+  "examples/**",
+  "framework/**",
+  "tests/**",
+  "tools/**",
+  "thirdparty/**",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2017-2026 Aregtech (Artak Avetyan)"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = [
+  "thirdparty/sqlite3/amalgamation/shell.c",
+  "thirdparty/sqlite3/amalgamation/sqlite3.c",
+  "thirdparty/sqlite3/amalgamation/sqlite3.h",
+  "thirdparty/sqlite3/amalgamation/sqlite3ext.h",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "NONE"
+SPDX-License-Identifier = "LicenseRef-SQLite-Public-Domain"
