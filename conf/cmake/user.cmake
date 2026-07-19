@@ -29,6 +29,7 @@
 #  19. AREG_LOGGER_LIB_TYPE -- Specifies the type of the Log Observer API library ('shared' or 'static'). Defaults to 'shared'.
 #  20. AREG_ARCH            -- The processor architect. Ignore if need to use system default.
 #  21. AREG_TARGET          -- Specifies the compiler and library architecture target. Defaults to the system-defined compiler and architecture.
+#  22. AREG_ARCH_NATIVE     -- Optimizes GNU/Clang Release builds for the build machine CPU ('-march=native'). Defaults to 'disabled'.
 #
 # Default Values:
 #   1. AREG_LIB_TYPE        = shared    (possible values: shared, static)
@@ -52,6 +53,7 @@
 #  19. AREG_LOGGER_LIB_TYPE = shared    (possible values: shared, static)
 #  20. AREG_ARCH            = System    (possible values: x86 (i386, i486), x64 (x86_64, x86-64, amd64, ia64), arm (arm32, armv7), aarch64 (arm64))
 #  21. AREG_TARGET          = <default> (possible values: 'i386-linux-gnu', 'x86_64-linux-gnu', 'arm-linux-gnueabihf', 'aarch64-linux-gnu')
+#  22. AREG_ARCH_NATIVE     = OFF       (possible values: ON, OFF)
 #
 # Hints:
 #   - AREG_COMPILER_FAMILY is an easy way to set compilers:
@@ -266,6 +268,9 @@ macro_create_option(AREG_LOGGING ON "Compile with logs")
 
 # Modify 'AREG_INSTALL' to enable or disable installation of Areg SDK
 macro_create_option(AREG_INSTALL ON "Enable installation")
+
+# Modify 'AREG_ARCH_NATIVE' to enable or disable '-march=native' optimization for Release builds (GNU/Clang only)
+macro_create_option(AREG_ARCH_NATIVE OFF "Optimize Release builds for the build machine CPU (GNU/Clang only)")
 
 # Check the request of using installed packages
 if (NOT DEFINED AREG_SYSTEM_PACKAGES)

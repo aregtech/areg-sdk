@@ -353,6 +353,34 @@ macro(macro_create_option var_name var_value var_describe)
 endmacro(macro_create_option)
 
 # ---------------------------------------------------------------------------
+# Macro ......: macro_check_sse42
+# Purpose ....: Verifies that the build host can compile AND execute SSE4.2
+#               CRC32C intrinsics when compiled with '-msse4.2'. Used by the
+#               GNU and Clang Release configurations to select a portable
+#               hardware-accelerated ISA baseline when 'AREG_ARCH_NATIVE' is disabled.
+#               The check runs once, the result is cached.
+# Parameters .: ${var_name} [out] -- Name of the cached result variable (TRUE/FALSE).
+# Usage ......: macro_check_sse42(<out-var>)
+# Example ....: macro_check_sse42(AREG_SSE42_HW)
+# ---------------------------------------------------------------------------
+macro(macro_check_sse42 var_name)
+    if (NOT DEFINED ${var_name})
+        include(CheckCXXSourceRuns)
+        set(CMAKE_REQUIRED_FLAGS "-msse4.2")
+        check_cxx_source_runs("
+            #include <nmmintrin.h>
+            int main()
+            {
+                volatile unsigned char byte = 42;
+                volatile unsigned int crc = _mm_crc32_u8(0xFFFFFFFFu, byte);
+                return (crc == 0u) ? 1 : 0;
+            }
+        " ${var_name})
+        unset(CMAKE_REQUIRED_FLAGS)
+    endif()
+endmacro(macro_check_sse42)
+
+# ---------------------------------------------------------------------------
 # Macro ......: macro_add_source
 # Purpose ....: Adds existing source files to a list based on a base directory. Checks file existence.
 # Parameters .: ${result_list}  -- Name of variable that on output will contain the list of source files.

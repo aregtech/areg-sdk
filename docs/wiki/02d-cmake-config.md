@@ -65,7 +65,7 @@ sudo cmake --install ./build
 
 ## Complete Options Reference
 
-All 21 CMake configuration options for Areg SDK:
+All 22 CMake configuration options for Areg SDK:
 
 | #  | Option | Values | Default | Description |
 |----|--------|--------|---------|-------------|
@@ -90,6 +90,7 @@ All 21 CMake configuration options for Areg SDK:
 | 19 | [AREG_LOGGER_LIB_TYPE](#19-areg_logger_lib_type) | `shared`, `static` | `shared` | Logger library type |
 | 20 | [AREG_TARGET](#20-areg_target) | Architecture string | System default | Compiler architecture target |
 | 21 | [AREG_ARCH](#21-areg_arch) | `x86`, `x64`, `arm`, `aarch64` | System default | Target CPU architecture |
+| 22 | [AREG_ARCH_NATIVE](#22-areg_arch_native) | `ON`, `OFF` | `OFF` | Optimize Release builds for the build machine CPU (GNU/Clang) |
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -107,6 +108,7 @@ For easier navigation, options are grouped by purpose:
 |  3 | [AREG_COMPILER](#3-areg_compiler) | Select compiler by name or path |
 | 20 | [AREG_TARGET](#20-areg_target) | Compiler architecture target |
 | 21 | [AREG_ARCH](#21-areg_arch) | Target processor and bitness |
+| 22 | [AREG_ARCH_NATIVE](#22-areg_arch_native) | Build machine CPU optimization (GNU/Clang) |
 
 ### Build Configuration Options
 
@@ -546,6 +548,26 @@ cmake -B ./build -DAREG_ARCH=x86
 > ```
 >
 > For more information, see [ELF Header documentation](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format#File_header).
+
+<div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
+
+---
+
+### 22. AREG_ARCH_NATIVE
+
+**Description:** Optimize Release builds for the CPU of the build machine by passing `-march=native -mtune=native` to GNU and Clang compilers. Has no effect on MSVC, Debug builds, or cross-compiled builds.
+**Possible Values:** `ON`, `OFF`
+**Default:** `OFF`
+**Example:**
+```bash
+cmake -B ./build -DCMAKE_BUILD_TYPE=Release -DAREG_ARCH_NATIVE=ON
+```
+
+> [!IMPORTANT]
+> Binaries built with `AREG_ARCH_NATIVE=ON` are tuned to the exact CPU model of the build machine. They are not portable (they may crash with an illegal-instruction error on a different CPU) and not reproducible (two machines can produce different code from the same sources). Enable it only when the binaries run on the same machine that builds them, for example for local development or benchmarking.
+
+> [!NOTE]
+> When this option is `OFF` (default), x86/x64 Release builds use a portable SSE4.2 baseline (`-msse4.2`) instead, if the build host supports it. This keeps hardware-accelerated CRC32C checksum calculation -- the same instruction-set assumption the MSVC build makes -- while producing binaries that run on any x86-64 CPU from approximately 2009 onward.
 
 <div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
 
