@@ -12,7 +12,7 @@ jobs:
   reuse:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: REUSE Compliance Check
         uses: fsfe/reuse-action@v6
