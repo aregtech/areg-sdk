@@ -44,6 +44,7 @@
   <ItemGroup>
     <None Include="services\PowerManager.siml" />
     <None Include="services\TrafficController.siml" />
+    <None Include="services\TrafficLight.fsml" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManager.cpp" />
@@ -56,6 +57,9 @@
     <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficControllerEvents.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficControllerProxy.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficControllerProviderBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficLightDefs.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficLightFSM.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficLightActionHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\PowerManager.hpp" />
@@ -68,6 +72,9 @@
     <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManagerProxy.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficControllerEvents.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficControllerProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\TrafficLightDefs.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\TrafficLightFSM.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\TrafficLightActionHandler.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

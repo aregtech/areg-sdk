@@ -51,6 +51,8 @@ call java -jar %AREG_SDK_ROOT%/tools/codegen.jar --root=%AREG_PRODUCT% --doc=%EX
 @echo "Generating service interface files of 19_pubfsm example"
 call java -jar %AREG_SDK_ROOT%/tools/codegen.jar --root=%AREG_PRODUCT% --doc=%EXAMPLE_ROOT%\19_pubfsm\services\PowerManager.siml        --target=examples\19_pubfsm\services
 call java -jar %AREG_SDK_ROOT%/tools/codegen.jar --root=%AREG_PRODUCT% --doc=%EXAMPLE_ROOT%\19_pubfsm\services\TrafficController.siml   --target=examples\19_pubfsm\services
+@echo "Generating state machine files of 19_pubfsm example"
+call java -jar %AREG_SDK_ROOT%/tools/codegen.jar --root=%AREG_PRODUCT% --doc=%EXAMPLE_ROOT%\19_pubfsm\services\TrafficLight.fsml        --target=examples\19_pubfsm\services
 
 :: Generate codes for example 20_winchat
 @echo "Generating service interface files of 20_winchat example"

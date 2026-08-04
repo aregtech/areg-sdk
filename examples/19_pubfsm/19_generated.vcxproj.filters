@@ -21,6 +21,9 @@
     <None Include="services\TrafficController.siml">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="services\TrafficLight.fsml">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManager.cpp">
@@ -53,6 +56,15 @@
     <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficControllerProviderBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficLightActionHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficLightDefs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficLightFSM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManagerEvents.hpp">
@@ -83,6 +95,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\TrafficControllerProviderBase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\TrafficLightActionHandler.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\TrafficLightFSM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\TrafficLightDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

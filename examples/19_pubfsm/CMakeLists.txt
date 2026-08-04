@@ -3,6 +3,11 @@
 addServiceInterface(19_generated examples/19_pubfsm/services/PowerManager.siml)
 addServiceInterface(19_generated examples/19_pubfsm/services/TrafficController.siml)
 
+# add the state machine. The traffic light FSM used to be six files checked in under
+# pubservice/src; they are generated from the document below now, like every other
+# generated file in this example.
+addStateMachine(19_generated examples/19_pubfsm/services/TrafficLight.fsml)
+
 # add projects
 macro_declare_executable(19_pubclient   19_generated
     pubclient/src/main.cpp
@@ -10,11 +15,8 @@ macro_declare_executable(19_pubclient   19_generated
 )
 
 macro_declare_executable(19_pubservice  19_generated
-    pubservice/src/TrafficLightActionHandler.cpp
     pubservice/src/main.cpp
-    pubservice/src/TrafficLightDefs.cpp
     pubservice/src/PowerControllerClient.cpp
-    pubservice/src/TrafficLightFSM.cpp
     pubservice/src/TrafficLightService.cpp
 )
 
