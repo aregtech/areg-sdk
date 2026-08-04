@@ -53,10 +53,36 @@ macro(macro_normalize_path normal_path os_path)
     if (CYGWIN)
         execute_process(COMMAND cygpath.exe -m "${os_path}" OUTPUT_VARIABLE _normalized_path OUTPUT_STRIP_TRAILING_WHITESPACE)
         set(${normal_path} "${_normalized_path}")
+        unset(_normalized_path)
     else()
         set(${normal_path} "${os_path}")
     endif()
 endmacro(macro_normalize_path)
+
+# ---------------------------------------------------------------------------
+# Macro ......: macro_cmake_path
+# Purpose ....: The counterpart of 'macro_normalize_path'. Converts a path back into the
+#               form CMake itself works with.
+# Note .......: Under Cygwin a path that starts with a drive letter is understood by the
+#               compilers and by the Windows tools, but not by CMake: file(GLOB) and the
+#               other commands that take a path apart read it as a relative path and look
+#               for it under the current directory, where it is not. Anything that a CMake
+#               command has to open or match must go through this macro first. Only a drive
+#               letter path is converted, so a path that is already the right one costs
+#               nothing here and on the other platforms nothing is converted at all.
+# Parameters .: ${cmake_path} [out] -- Name of variable to hold the converted path.
+#               ${any_path}   [in]  -- The path to convert.
+# Usage ......: macro_cmake_path(<out-var> <path>)
+# ---------------------------------------------------------------------------
+macro(macro_cmake_path cmake_path any_path)
+    if (CYGWIN AND "${any_path}" MATCHES "^[A-Za-z]:")
+        execute_process(COMMAND cygpath.exe -u "${any_path}" OUTPUT_VARIABLE _converted_path OUTPUT_STRIP_TRAILING_WHITESPACE)
+        set(${cmake_path} "${_converted_path}")
+        unset(_converted_path)
+    else()
+        set(${cmake_path} "${any_path}")
+    endif()
+endmacro(macro_cmake_path)
 
 # ---------------------------------------------------------------------------
 # Macro ......: macro_document_key
@@ -1140,7 +1166,8 @@ endfunction(addSharedLib)
 #               its own copy, with a warning that says both exist.
 #
 # Parameters .: ${lib_name}         -- Library to receive the generated files. Created if it does not exist.
-#               ${model_doc}        -- Full path to the model document (.siml, .fsml, ...).
+#               ${model_doc}        -- Full path to the model document (.siml, .fsml, ...), in the
+#                                      form CMake uses. Converting it for the generator happens here.
 #               ${codegen_root}     -- Root directory the generated files are written under.
 #               ${output_path}      -- Path relative to ${codegen_root} for this document's output.
 #               ${codegen_tool}     -- Full path to codegen.jar.
@@ -1162,12 +1189,19 @@ macro(macro_add_generated_document lib_name model_doc codegen_root output_path c
         return()
     endif()
 
-    if (NOT EXISTS "${model_doc}")
+    # Two forms of the same paths, and they differ only under Cygwin. The generator is a
+    # Windows program there, so it is handed the drive letter form, while the manifest
+    # lookup, the source list and the configure dependency stay on the form CMake can open.
+    # Feeding one form to the other side finds nothing and says nothing.
+    macro_cmake_path(_doc_path "${model_doc}")
+    macro_cmake_path(_gen_root "${codegen_root}")
+    file(TO_CMAKE_PATH "${output_path}" _gen_target)
+
+    if (NOT EXISTS "${_doc_path}")
         message(FATAL_ERROR "Areg Setup: The model document \'${model_doc}\' does not exist. Cannot generate files.")
         return()
     endif()
 
-    set(_doc_path "${model_doc}")
     cmake_path(GET _doc_path STEM _doc_name)
     if ("${_doc_name}" STREQUAL "")
         message(FATAL_ERROR "Areg Setup: The path \'${model_doc}\' has no file name. Cannot generate files.")
@@ -1187,7 +1221,7 @@ macro(macro_add_generated_document lib_name model_doc codegen_root output_path c
     # Has some earlier call in this configure already generated this document, because it
     # imports it? Then this call has nothing to do -- see the header. Skipping is only right
     # when the library is the same one; a different library is a different program.
-    macro_document_key(_doc_id "${model_doc}")
+    macro_document_key(_doc_id "${_doc_path}")
     get_property(_doc_owner GLOBAL PROPERTY AREG_GENDOC_${_doc_id}_LIB)
     set(_doc_skip FALSE)
     if (_doc_owner)
@@ -1202,12 +1236,16 @@ macro(macro_add_generated_document lib_name model_doc codegen_root output_path c
     if (NOT _doc_skip)
 
         # Set path for generated files
-        set(_generate "${codegen_root}/${output_path}")
+        set(_generate "${_gen_root}/${_gen_target}")
 
         # Run the code generator tool. The export keyword is passed only when it was asked for:
         # a machine used inside its own library needs no keyword, and a static library must
         # never be given one.
-        set(_codegen_args --doc=${model_doc} --root=${codegen_root} --target=${output_path})
+        macro_normalize_path(_tool_doc  "${_doc_path}")
+        macro_normalize_path(_tool_root "${_gen_root}")
+        macro_normalize_path(_tool_jar  "${codegen_tool}")
+
+        set(_codegen_args --doc=${_tool_doc} --root=${_tool_root} --target=${_gen_target})
         if (NOT "${_export_keyword}" STREQUAL "")
             list(APPEND _codegen_args --export=${_export_keyword})
         endif()
@@ -1215,7 +1253,7 @@ macro(macro_add_generated_document lib_name model_doc codegen_root output_path c
         # RESULT_VARIABLE is not optional. A refused document that reaches the compiler instead
         # of CMake reports itself as a missing header, which names neither the document nor the
         # rule that refused it.
-        execute_process(COMMAND ${Java_JAVA_EXECUTABLE} -jar ${codegen_tool} ${_codegen_args}
+        execute_process(COMMAND ${Java_JAVA_EXECUTABLE} -jar ${_tool_jar} ${_codegen_args}
                         RESULT_VARIABLE _codegen_result)
         if (NOT _codegen_result EQUAL 0)
             message(FATAL_ERROR "Areg Setup: The code generator refused or failed on \'${model_doc}\' (exit ${_codegen_result}). See the output above for the rule and the element.")
@@ -1235,13 +1273,13 @@ macro(macro_add_generated_document lib_name model_doc codegen_root output_path c
 
         list(LENGTH _manifests _manifest_count)
         if (_manifest_count GREATER 1)
-            macro_document_key(_doc_id "${model_doc}")
             set(_manifests_kept)
             foreach(_manifest IN LISTS _manifests)
                 file(STRINGS "${_manifest}" _in_lines REGEX "^in:")
                 foreach(_line IN LISTS _in_lines)
                     string(REGEX REPLACE "^in:" "" _line "${_line}")
-                    macro_document_key(_in_id "${_line}")
+                    macro_cmake_path(_in_path "${_line}")
+                    macro_document_key(_in_id "${_in_path}")
                     if ("${_in_id}" STREQUAL "${_doc_id}")
                         list(APPEND _manifests_kept "${_manifest}")
                         break()
@@ -1261,13 +1299,14 @@ macro(macro_add_generated_document lib_name model_doc codegen_root output_path c
             file(STRINGS "${_manifest}" _out_lines REGEX "^out:")
             foreach(_line IN LISTS _out_lines)
                 string(REGEX REPLACE "^out:" "" _line "${_line}")
-                list(APPEND _sources "${codegen_root}/${_line}")
+                list(APPEND _sources "${_gen_root}/${_line}")
             endforeach()
 
             file(STRINGS "${_manifest}" _in_lines REGEX "^in:")
             foreach(_line IN LISTS _in_lines)
                 string(REGEX REPLACE "^in:" "" _line "${_line}")
-                list(APPEND _inputs "${_line}")
+                macro_cmake_path(_in_path "${_line}")
+                list(APPEND _inputs "${_in_path}")
             endforeach()
         endforeach()
 
@@ -1340,9 +1379,14 @@ macro(macro_add_generated_document lib_name model_doc codegen_root output_path c
     unset(_input_dir)
     unset(_doc_path)
     unset(_doc_name)
+    unset(_gen_root)
+    unset(_gen_target)
     unset(_lib_type)
     unset(_export_keyword)
     unset(_generate)
+    unset(_tool_doc)
+    unset(_tool_root)
+    unset(_tool_jar)
     unset(_codegen_args)
     unset(_codegen_result)
     unset(_manifests)
@@ -1350,6 +1394,7 @@ macro(macro_add_generated_document lib_name model_doc codegen_root output_path c
     unset(_out_lines)
     unset(_in_lines)
     unset(_line)
+    unset(_in_path)
     unset(_sources)
     unset(_inputs)
 
@@ -1368,8 +1413,8 @@ endmacro(macro_add_service_interface)
 
 # ---------------------------------------------------------------------------
 # Function ...: addGeneratedDocumentImpl
-# Purpose ....: The shared body of addServiceInterfaceEx and addStateMachineEx: normalize the
-#               paths, default the output path to the document's own parent, and call
+# Purpose ....: The shared body of addServiceInterfaceEx and addStateMachineEx: default the
+#               output path to the document's own parent and call
 #               macro_add_generated_document. It is separate only so the two public functions
 #               cannot drift apart -- there is nothing document-type specific in here, which
 #               is the point.
@@ -1387,16 +1432,13 @@ function(addGeneratedDocumentImpl lib_name source_root doc_path generate_path)
         cmake_path(GET doc_path PARENT_PATH _gen_path)
     endif()
 
-    macro_normalize_path(_model_doc     "${source_root}/${doc_path}")
-    macro_normalize_path(_codegen_root  "${AREG_GENERATE_DIR}")
-    macro_normalize_path(_output_path   "${_gen_path}")
-    macro_normalize_path(_codegen_tool  "${AREG_SDK_TOOLS}/codegen.jar")
-
+    # The paths are handed over as CMake knows them. Converting them for the generator is
+    # the job of the macro, which is the only place that talks to it.
     macro_add_generated_document(${lib_name}
-                                 "${_model_doc}"
-                                 "${_codegen_root}"
-                                 "${_output_path}"
-                                 "${_codegen_tool}"
+                                 "${source_root}/${doc_path}"
+                                 "${AREG_GENERATE_DIR}"
+                                 "${_gen_path}"
+                                 "${AREG_SDK_TOOLS}/codegen.jar"
                                  ${ARGN})
 endfunction(addGeneratedDocumentImpl)
 
