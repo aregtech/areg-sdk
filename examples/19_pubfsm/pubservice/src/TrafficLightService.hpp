@@ -16,10 +16,10 @@
 #include "areg/component/Component.hpp"
 #include "examples/19_pubfsm/services/PowerManagerProviderBase.hpp"
 #include "examples/19_pubfsm/services/TrafficControllerProviderBase.hpp"
-#include "pubservice/src/TrafficLightActionHandler.hpp"
+#include "examples/19_pubfsm/services/TrafficLightActionHandler.hpp"
 
 #include "pubservice/src/PowerControllerClient.hpp"
-#include "pubservice/src/TrafficLightFSM.hpp"
+#include "examples/19_pubfsm/services/TrafficLightFSM.hpp"
 
 /**
  * \brief   The traffic light controller, which is an implementation

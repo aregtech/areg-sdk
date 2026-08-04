@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<StateMachine FormatVersion="1.1.0">
+    <Overview ID="1" Name="TrafficLight" Version="0.1.0" Threading="Local">
+        <Description>A simple traffic light state-machine</Description>
+    </Overview>
+    <EventList>
+        <Event ID="2" Name="StartTrafficLight">
+            <Description>An event automatically triggered then traffic light starts to run</Description>
+        </Event>
+    </EventList>
+    <TimerList>
+        <Timer ID="3" Name="Red" Timeout="10000" Repeat="1">
+            <Description>Timer to switch to red light</Description>
+        </Timer>
+        <Timer ID="4" Name="YellowRed" Timeout="3000" Repeat="1">
+            <Description>Timer to jump from yellow to red</Description>
+        </Timer>
+        <Timer ID="5" Name="Green" Timeout="10000" Repeat="1"/>
+        <Timer ID="6" Name="YellowGreen" Timeout="3000" Repeat="1"/>
+        <Timer ID="7" Name="PedestrianWalk" Timeout="5000" Repeat="1"/>
+        <Timer ID="8" Name="VehicleWait" Timeout="1000" Repeat="1"/>
+    </TimerList>
+    <MethodList>
+        <Method ID="9" Name="power_off" MethodType="Trigger">
+            <Description>Triggered to power off the traffic light.</Description>
+        </Method>
+        <Method ID="10" Name="power_off" MethodType="Action">
+            <Description>Action to perform when traffic light is off.</Description>
+        </Method>
+        <Method ID="11" Name="power_on" MethodType="Trigger">
+            <Description>Triggered to power on the traffic light.</Description>
+        </Method>
+        <Method ID="12" Name="power_on" MethodType="Action">
+            <Description>Acton to perform when power on the traffic light.</Description>
+        </Method>
+        <Method ID="13" Name="start_traffic_control" MethodType="Trigger">
+            <Description>Triggered to start controlling the traffic light.</Description>
+        </Method>
+        <Method ID="14" Name="stop_traffic_control" MethodType="Trigger">
+            <Description>Triggered to stop the traffic light controller.</Description>
+        </Method>
+        <Method ID="15" Name="vehicle_yellow" MethodType="Action">
+            <Description>Action to perform when vehicle light is yellow.</Description>
+        </Method>
+        <Method ID="16" Name="vehicle_red" MethodType="Action">
+            <Description>Action to perform when vehicle light is red.</Description>
+        </Method>
+        <Method ID="17" Name="pedestrian_red" MethodType="Action">
+            <Description>Action to perform when pedestrian light is red.</Description>
+        </Method>
+        <Method ID="18" Name="vehicle_green" MethodType="Action">
+            <Description>Action to perform when vehicle light is green.</Description>
+            <ParamList>
+                <Parameter ID="19" Name="isEastWest" DataType="bool">
+                    <Description>Flag, indicating whether this action is triggered for East-West or South-North direction. The default direction is South-North.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="20" Name="pedestrian_green" MethodType="Action">
+            <Description>Action to perform when pedestrian light state is green.</Description>
+            <ParamList>
+                <Parameter ID="21" Name="isEastWest" DataType="bool">
+                    <Description>Flag, indicating whether this action is triggered for East-West or South-North direction. The default direction is South-North.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+    </MethodList>
+    <StateList>
+        <State ID="22" Name="Start" Kind="Start">
+            <TransitionList>
+                <Transition ID="23" Kind="Initial" To="24"/>
+            </TransitionList>
+        </State>
+        <State ID="24" Name="TRAFFIC_LIGHT_OFF" Kind="Normal">
+            <Description>All lamps off. The first state of the machine.</Description>
+            <EntryList>
+                <ActionCall ID="25" Action="power_off"/>
+            </EntryList>
+            <TransitionList>
+                <Transition ID="26" Kind="External" StimulusKind="Trigger" Stimulus="power_on" To="27"/>
+            </TransitionList>
+        </State>
+        <State ID="27" Name="TRAFFIC_LIGHT_ON" Kind="Normal">
+            <Description>The light is powered. Composite: initialization and the control cycle. Its powerOff transition fires from anywhere inside the subtree.</Description>
+            <TransitionList>
+                <Transition ID="28" Kind="External" StimulusKind="Trigger" Stimulus="power_off" To="24"/>
+            </TransitionList>
+            <StateList>
+                <State ID="29" Name="Start1" Kind="Start">
+                    <TransitionList>
+                        <Transition ID="30" Kind="Initial" To="31"/>
+                    </TransitionList>
+                </State>
+                <State ID="31" Name="TRAFFIC_LIGHT_INITIALIZE" Kind="Normal">
+                    <Description>Lamps initialized, the control cycle is not running.</Description>
+                    <EntryList>
+                        <ActionCall ID="32" Action="power_on"/>
+                    </EntryList>
+                    <TransitionList>
+                        <Transition ID="33" Kind="External" StimulusKind="Trigger" Stimulus="start_traffic_control" To="35">
+                            <OperationList>
+                                <TimerStart ID="34" Timer="YellowGreen"/>
+                            </OperationList>
+                        </Transition>
+                    </TransitionList>
+                </State>
+                <State ID="35" Name="TRAFFIC_LIGHT_FUNCTION" Kind="Normal">
+                    <Description>The control cycle is running. Composite: the phase cycle yellow / red / green.</Description>
+                    <ExitList>
+                        <TimerStop ID="36" Timer="Red"/>
+                        <TimerStop ID="37" Timer="YellowRed"/>
+                        <TimerStop ID="38" Timer="Green"/>
+                        <TimerStop ID="39" Timer="YellowGreen"/>
+                    </ExitList>
+                    <TransitionList>
+                        <Transition ID="40" Kind="External" StimulusKind="Trigger" Stimulus="stop_traffic_control" To="31"/>
+                    </TransitionList>
+                    <StateList>
+                        <State ID="41" Name="Start2" Kind="Start">
+                            <TransitionList>
+                                <Transition ID="42" Kind="Initial" To="87"/>
+                            </TransitionList>
+                        </State>
+                        <State ID="43" Name="TRAFFIC_LIGHT_YELLOW" Kind="Normal">
+                            <Description>Vehicle lamps are yellow. Which timer is pending decides where the cycle goes next; the incoming transition started it.</Description>
+                            <EntryList>
+                                <ActionCall ID="44" Action="vehicle_yellow"/>
+                            </EntryList>
+                            <TransitionList>
+                                <Transition ID="45" Kind="External" StimulusKind="Timer" Stimulus="YellowRed" To="47"/>
+                                <Transition ID="46" Kind="External" StimulusKind="Timer" Stimulus="YellowGreen" To="67"/>
+                            </TransitionList>
+                        </State>
+                        <State ID="47" Name="TRAFFIC_LIGHT_RED" Kind="Normal">
+                            <Description>Vehicle lamps are red. Composite: the east-west pedestrians are served.</Description>
+                            <EntryList>
+                                <TimerStart ID="48" Timer="Red"/>
+                                <ActionCall ID="49" Action="vehicle_red"/>
+                            </EntryList>
+                            <ExitList>
+                                <TimerStop ID="50" Timer="PedestrianWalk"/>
+                                <TimerStop ID="51" Timer="VehicleWait"/>
+                            </ExitList>
+                            <TransitionList>
+                                <Transition ID="52" Kind="External" StimulusKind="Timer" Stimulus="Red" To="43">
+                                    <Description>Red phase over: through yellow to green.</Description>
+                                    <OperationList>
+                                        <TimerStart ID="53" Timer="YellowGreen"/>
+                                    </OperationList>
+                                </Transition>
+                                <Transition ID="54" Kind="Internal" StimulusKind="Timer" Stimulus="PedestrianWalk">
+                                    <Description>Internal self-loop: the walk window closes inside the phase.</Description>
+                                    <OperationList>
+                                        <ActionCall ID="55" Action="pedestrian_red"/>
+                                    </OperationList>
+                                </Transition>
+                            </TransitionList>
+                            <StateList>
+                                <State ID="56" Name="Start3" Kind="Start">
+                                    <TransitionList>
+                                        <Transition ID="57" Kind="Initial" To="58"/>
+                                    </TransitionList>
+                                </State>
+                                <State ID="58" Name="TRAFFIC_LIGHT_VEHICLE_RED" Kind="Normal">
+                                    <Description>Vehicles stopped, east-west pedestrians walk.</Description>
+                                    <EntryList>
+                                        <TimerStart ID="59" Timer="VehicleWait"/>
+                                        <TimerStart ID="60" Timer="PedestrianWalk"/>
+                                        <ActionCall ID="61" Action="pedestrian_green">
+                                            <ArgumentList>
+                                                <Argument ID="62" Name="isEastWest" Source="Value" Value="true"/>
+                                            </ArgumentList>
+                                        </ActionCall>
+                                    </EntryList>
+                                    <TransitionList>
+                                        <Transition ID="63" Kind="External" StimulusKind="Timer" Stimulus="VehicleWait" To="64"/>
+                                    </TransitionList>
+                                </State>
+                                <State ID="64" Name="OPPOSITE_PEDESTRIAN_GREEN" Kind="Normal">
+                                    <Description>The opposite direction gets a green vehicle lamp.</Description>
+                                    <EntryList>
+                                        <ActionCall ID="65" Action="vehicle_green">
+                                            <ArgumentList>
+                                                <Argument ID="66" Name="isEastWest" Source="Value" Value="true"/>
+                                            </ArgumentList>
+                                        </ActionCall>
+                                    </EntryList>
+                                </State>
+                            </StateList>
+                        </State>
+                        <State ID="67" Name="TRAFFIC_LIGHT_GREEN" Kind="Normal">
+                            <Description>Vehicle lamps are green. Composite: the south-north pedestrians are served.</Description>
+                            <EntryList>
+                                <TimerStart ID="68" Timer="Green"/>
+                            </EntryList>
+                            <ExitList>
+                                <TimerStop ID="69" Timer="PedestrianWalk"/>
+                                <TimerStop ID="70" Timer="VehicleWait"/>
+                                <ActionCall ID="71" Action="pedestrian_red"/>
+                            </ExitList>
+                            <TransitionList>
+                                <Transition ID="72" Kind="External" StimulusKind="Timer" Stimulus="Green" To="43">
+                                    <Description>Green phase over: through yellow to red.</Description>
+                                    <OperationList>
+                                        <TimerStart ID="73" Timer="YellowRed"/>
+                                    </OperationList>
+                                </Transition>
+                                <Transition ID="74" Kind="Internal" StimulusKind="Timer" Stimulus="PedestrianWalk">
+                                    <Description>Internal self-loop: the walk window closes inside the phase.</Description>
+                                    <OperationList>
+                                        <ActionCall ID="75" Action="pedestrian_red"/>
+                                    </OperationList>
+                                </Transition>
+                            </TransitionList>
+                            <StateList>
+                                <State ID="76" Name="Start4" Kind="Start">
+                                    <TransitionList>
+                                        <Transition ID="77" Kind="Initial" To="78"/>
+                                    </TransitionList>
+                                </State>
+                                <State ID="78" Name="TRAFFIC_PEDESTRIAN_GREEN" Kind="Normal">
+                                    <Description>South-north pedestrians walk while vehicles hold.</Description>
+                                    <EntryList>
+                                        <TimerStart ID="79" Timer="VehicleWait"/>
+                                        <TimerStart ID="80" Timer="PedestrianWalk"/>
+                                        <ActionCall ID="81" Action="pedestrian_green">
+                                            <ArgumentList>
+                                                <Argument ID="82" Name="isEastWest" Source="Value" Value="false"/>
+                                            </ArgumentList>
+                                        </ActionCall>
+                                    </EntryList>
+                                    <TransitionList>
+                                        <Transition ID="83" Kind="External" StimulusKind="Timer" Stimulus="VehicleWait" To="84"/>
+                                    </TransitionList>
+                                </State>
+                                <State ID="84" Name="TRAFFIC_VEHICLE_GREEN" Kind="Normal">
+                                    <Description>South-north vehicles get a green lamp.</Description>
+                                    <EntryList>
+                                        <ActionCall ID="85" Action="vehicle_green">
+                                            <ArgumentList>
+                                                <Argument ID="86" Name="isEastWest" Source="Value" Value="false"/>
+                                            </ArgumentList>
+                                        </ActionCall>
+                                    </EntryList>
+                                </State>
+                            </StateList>
+                        </State>
+                        <State ID="87" Name="TRAFFIC_LIGHT_START" Kind="Normal">
+                            <Description>Kick-off state of the control cycle: it sends the event it then reacts to.</Description>
+                            <EntryList>
+                                <EventSend ID="88" Event="StartTrafficLight"/>
+                            </EntryList>
+                            <TransitionList>
+                                <Transition ID="89" Kind="External" StimulusKind="Event" Stimulus="StartTrafficLight" To="43"/>
+                            </TransitionList>
+                        </State>
+                    </StateList>
+                </State>
+            </StateList>
+        </State>
+    </StateList>
+    <Layout GridSize="16" GridVisible="true">
+        <ViewList>
+            <View Owner="1" Zoom="100" X="0" Y="0"/>
+            <View Owner="27" Zoom="100" X="-35" Y="-1"/>
+            <View Owner="35" Zoom="100" X="-58" Y="8"/>
+            <View Owner="47" Zoom="100" X="-342" Y="-71"/>
+            <View Owner="67" Zoom="100" X="0" Y="0"/>
+        </ViewList>
+        <NodeList>
+            <Node Owner="22" X="-224" Y="-224" Width="64" Height="32"/>
+            <Node Owner="24" X="-336" Y="-144" Width="320" Height="100"/>
+            <Node Owner="27" X="-336" Y="48" Width="320" Height="100"/>
+            <Node Owner="29" X="-240" Y="-240" Width="64" Height="32"/>
+            <Node Owner="31" X="-368" Y="-160" Width="320" Height="96"/>
+            <Node Owner="35" X="-368" Y="48" Width="320" Height="112"/>
+            <Node Owner="41" X="-464" Y="0" Width="64" Height="32"/>
+            <Node Owner="43" X="-16" Y="-32" Width="288" Height="96"/>
+            <Node Owner="47" X="-16" Y="-240" Width="288" Height="128"/>
+            <Node Owner="56" X="-384" Y="-240" Width="64" Height="32"/>
+            <Node Owner="58" X="-490" Y="-158" Width="300" Height="94"/>
+            <Node Owner="64" X="-490" Y="10" Width="300" Height="102"/>
+            <Node Owner="67" X="-16" Y="144" Width="280" Height="120"/>
+            <Node Owner="76" X="-368" Y="-240" Width="64" Height="32"/>
+            <Node Owner="78" X="-496" Y="-160" Width="320" Height="96"/>
+            <Node Owner="84" X="-496" Y="16" Width="320" Height="96"/>
+            <Node Owner="87" X="-368" Y="-32" Width="210" Height="96"/>
+        </NodeList>
+        <EdgeList>
+            <Edge Owner="23">
+                <Point X="-192" Y="-192"/>
+                <Point X="-192" Y="-136"/>
+            </Edge>
+            <Edge Owner="26">
+                <Point X="-288" Y="-44"/>
+                <Point X="-288" Y="84"/>
+            </Edge>
+            <Edge Owner="28">
+                <Point X="-64" Y="84"/>
+                <Point X="-64" Y="-44"/>
+            </Edge>
+            <Edge Owner="30">
+                <Point X="-208" Y="-208"/>
+                <Point X="-208" Y="-160"/>
+            </Edge>
+            <Edge Owner="33">
+                <Point X="-80" Y="-64"/>
+                <Point X="-80" Y="48"/>
+            </Edge>
+            <Edge Owner="40">
+                <Point X="-336" Y="64"/>
+                <Point X="-336" Y="-64"/>
+            </Edge>
+            <Edge Owner="42">
+                <Point X="-416" Y="16"/>
+                <Point X="-368" Y="16"/>
+            </Edge>
+            <Edge Owner="45">
+                <Point X="240" Y="-32"/>
+                <Point X="240" Y="-112"/>
+            </Edge>
+            <Edge Owner="46">
+                <Point X="16" Y="64"/>
+                <Point X="16" Y="144"/>
+            </Edge>
+            <Edge Owner="52">
+                <Point X="16" Y="-112"/>
+                <Point X="16" Y="-32"/>
+            </Edge>
+            <Edge Owner="54">
+                <Point X="740" Y="40"/>
+                <Point X="840" Y="40"/>
+                <Point X="840" Y="90"/>
+                <Point X="740" Y="90"/>
+            </Edge>
+            <Edge Owner="57">
+                <Point X="-352" Y="-208"/>
+                <Point X="-352" Y="-158"/>
+            </Edge>
+            <Edge Owner="63">
+                <Point X="-352" Y="-64"/>
+                <Point X="-352" Y="10"/>
+            </Edge>
+            <Edge Owner="72">
+                <Point X="240" Y="144"/>
+                <Point X="240" Y="64"/>
+            </Edge>
+            <Edge Owner="74">
+                <Point X="740" Y="520"/>
+                <Point X="840" Y="520"/>
+                <Point X="840" Y="570"/>
+                <Point X="740" Y="570"/>
+            </Edge>
+            <Edge Owner="77">
+                <Point X="-336" Y="-208"/>
+                <Point X="-336" Y="-160"/>
+            </Edge>
+            <Edge Owner="83">
+                <Point X="-336" Y="-64"/>
+                <Point X="-336" Y="48"/>
+            </Edge>
+            <Edge Owner="89">
+                <Point X="-158" Y="16"/>
+                <Point X="-16" Y="16"/>
+            </Edge>
+        </EdgeList>
+    </Layout>
+</StateMachine>
