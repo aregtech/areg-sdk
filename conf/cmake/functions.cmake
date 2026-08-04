@@ -1128,46 +1128,32 @@ endfunction(addSharedLib)
 
 # ---------------------------------------------------------------------------
 # Macro ......: macro_add_generated_document
-# Purpose ....: Runs the code generator over one model document and adds everything it
-#               produced to a library. It serves EVERY document type -- Service Interface
-#               (.siml), State Machine (.fsml), and the Data Model (.dtml) that is coming --
-#               because the tool already picks its generator from the file extension and the
-#               file list comes from the generator rather than from this file.
+# Purpose ....: Runs the code generator on a single model document and adds the produced
+#               files to a library. Any document type is accepted, like Service Interface
+#               (.siml) or State Machine (.fsml), because the tool picks the generator by
+#               file extension. The named wrappers below (addServiceInterface,
+#               addStateMachine, macro_add_service_interface) only forward to this macro.
 #
-#               The wrappers below (addServiceInterface, addStateMachine, ...) carry no
-#               behaviour at all. They exist so the call site reads correctly, which means
-#               adding a document type later is one wrapper and no new logic here.
+#               The list of generated files comes from the manifest, not from this file.
+#               The generator writes '<Name>.<kind>.files' next to the output, one tagged
+#               entry per line: 'out:' for a generated file, 'in:' for a document that was
+#               read. A missing manifest aborts the configuration, since it means the tool
+#               did not run or rejected the document.
 #
-#               THE FILE LIST COMES FROM THE MANIFEST. Every generated document writes
-#               '<Name>.<kind>.files' beside its headers, one tagged entry per line: 'out:'
-#               for a file it generated, 'in:' for a document it read. Nothing here may
-#               hard-code a file name -- a state machine generates the machines it imports
-#               too, so the count is not knowable from the document's own name, and the ten
-#               .siml names that used to be listed here were a copy of a decision that lives
-#               in the generator.
+#               Put the generated files of one project in one library. Calling this macro
+#               several times with the same target is the normal usage, and CMake drops
+#               repeated file paths on its own.
 #
-#               A MISSING MANIFEST IS AN ERROR, never a fallback to a hard-coded list. It
-#               means the tool did not run or refused the document. The jar ships inside this
-#               SDK beside this file, so the two cannot skew.
-#
-#               ALL GENERATED FILES OF A PROJECT BELONG IN ONE LIBRARY. Two calls naming the
-#               same target is the normal case, and a document reached twice (once directly,
-#               once as somebody's import) contributes the same paths twice -- CMake
-#               de-duplicates them, so that is a no-op rather than a conflict.
-#
-#               NAMING AN IMPORT IS A NO-OP. A state machine generates the machines it
-#               imports, so a call naming a document that another call has already pulled in
-#               generates nothing and adds nothing: its files are in the library already,
-#               listed by the manifest of the document that imports it. The call is skipped
-#               rather than obeyed, because obeying it would generate a SECOND copy of the
-#               same classes -- under this document's own parent path instead of its host's --
-#               and the library would fail to link on duplicate symbols. Only a call into the
-#               same library is skipped; a different library is a different program and gets
-#               its own copy, with a warning that says both exist.
+#               A document that is imported by another document is generated together with
+#               its host. Naming such an import in a separate call to the same library is
+#               therefore skipped: generating it again would place a second copy of the same
+#               classes under another path and the library would not link. A call for a
+#               different library is a different program, so it gets its own copy and a
+#               warning that both exist.
 #
 # Parameters .: ${lib_name}         -- Library to receive the generated files. Created if it does not exist.
 #               ${model_doc}        -- Full path to the model document (.siml, .fsml, ...), in the
-#                                      form CMake uses. Converting it for the generator happens here.
+#                                      form CMake uses. The conversion for the generator happens here.
 #               ${codegen_root}     -- Root directory the generated files are written under.
 #               ${output_path}      -- Path relative to ${codegen_root} for this document's output.
 #               ${codegen_tool}     -- Full path to codegen.jar.
@@ -1181,18 +1167,16 @@ endfunction(addSharedLib)
 # ---------------------------------------------------------------------------
 macro(macro_add_generated_document lib_name model_doc codegen_root output_path codegen_tool)
 
-    # NOTE: return() inside a macro exits the *calling function*, not the macro.
-    # These guards all use FATAL_ERROR which aborts CMake, so return() is dead code
-    # but kept for clarity. Do not soften these to WARNING without removing return().
+    # return() in a macro exits the calling function, not the macro. The guards below
+    # rely on FATAL_ERROR to stop the configuration. Do not lower them to WARNING.
     if (NOT ${Java_FOUND})
         message(FATAL_ERROR "Areg Setup: Java not found! Install Java 17 or higher to run the code generator.")
         return()
     endif()
 
-    # Two forms of the same paths, and they differ only under Cygwin. The generator is a
-    # Windows program there, so it is handed the drive letter form, while the manifest
-    # lookup, the source list and the configure dependency stay on the form CMake can open.
-    # Feeding one form to the other side finds nothing and says nothing.
+    # Two forms of the same path, differing only under Cygwin. The generator runs there as
+    # a Windows program and gets the drive letter form, while the manifest lookup, the
+    # source list and the configure dependency keep the form CMake can open.
     macro_cmake_path(_doc_path "${model_doc}")
     macro_cmake_path(_gen_root "${codegen_root}")
     file(TO_CMAKE_PATH "${output_path}" _gen_target)
@@ -1218,9 +1202,8 @@ macro(macro_add_generated_document lib_name model_doc codegen_root output_path c
         set(_export_keyword "${ARGV6}")
     endif()
 
-    # Has some earlier call in this configure already generated this document, because it
-    # imports it? Then this call has nothing to do -- see the header. Skipping is only right
-    # when the library is the same one; a different library is a different program.
+    # Nothing to do if an earlier call already generated this document into the same
+    # library as an import. A different library gets its own copy.
     macro_document_key(_doc_id "${_doc_path}")
     get_property(_doc_owner GLOBAL PROPERTY AREG_GENDOC_${_doc_id}_LIB)
     set(_doc_skip FALSE)
@@ -1238,9 +1221,8 @@ macro(macro_add_generated_document lib_name model_doc codegen_root output_path c
         # Set path for generated files
         set(_generate "${_gen_root}/${_gen_target}")
 
-        # Run the code generator tool. The export keyword is passed only when it was asked for:
-        # a machine used inside its own library needs no keyword, and a static library must
-        # never be given one.
+        # Run the code generator. The export keyword is passed only when requested: a document
+        # used inside its own library needs none, and a static library must never get one.
         macro_normalize_path(_tool_doc  "${_doc_path}")
         macro_normalize_path(_tool_root "${_gen_root}")
         macro_normalize_path(_tool_jar  "${codegen_tool}")
@@ -1250,9 +1232,8 @@ macro(macro_add_generated_document lib_name model_doc codegen_root output_path c
             list(APPEND _codegen_args --export=${_export_keyword})
         endif()
 
-        # RESULT_VARIABLE is not optional. A refused document that reaches the compiler instead
-        # of CMake reports itself as a missing header, which names neither the document nor the
-        # rule that refused it.
+        # Check the exit code here. A rejected document that reaches the compiler shows up as
+        # a missing header, naming neither the document nor the reason.
         execute_process(COMMAND ${Java_JAVA_EXECUTABLE} -jar ${_tool_jar} ${_codegen_args}
                         RESULT_VARIABLE _codegen_result)
         if (NOT _codegen_result EQUAL 0)
@@ -1260,11 +1241,9 @@ macro(macro_add_generated_document lib_name model_doc codegen_root output_path c
             return()
         endif()
 
-        # The manifest. Its name carries the document KIND as well as the document name, because
-        # two documents of different types may share a name and an output folder: 'HelloWorld.siml'
-        # beside 'HelloWorld.fsml' must not fight over one file. When both are there, the one that
-        # READ this document is the one to use -- asking the manifests rather than mapping the
-        # extension to a kind here keeps this file free of per-document-type knowledge.
+        # The manifest name carries the document kind next to the document name, so that
+        # 'HelloWorld.siml' and 'HelloWorld.fsml' can share an output folder. If both are
+        # there, keep the manifest of the document that read this one.
         file(GLOB _manifests "${_generate}/${_doc_name}.*.files")
         if (NOT _manifests)
             message(FATAL_ERROR "Areg Setup: The code generator wrote no manifest for \'${model_doc}\'. Expected \'${_generate}/${_doc_name}.<kind>.files\'.")
@@ -1315,12 +1294,10 @@ macro(macro_add_generated_document lib_name model_doc codegen_root output_path c
             return()
         endif()
 
-        # Remember every document this run READ, so that a later call naming one of them --
-        # an import, typically -- knows it has nothing to do. A document that was already
-        # generated into the same library under a DIFFERENT path is the case the skip above
-        # cannot catch: it happens when the import is named BEFORE the document that imports
-        # it, and it ends as two copies of one class in one library. Say so here, where the
-        # documents are still named, rather than leaving it to the linker.
+        # Remember every document this run read, so that a later call naming one of them,
+        # normally an import, knows it has nothing to do. The skip above cannot catch the
+        # case where the import is named before the document that imports it, which leaves
+        # two copies of one class in the library. Report it here, where the names are known.
         foreach(_input IN LISTS _inputs)
             macro_document_key(_input_id "${_input}")
             get_property(_input_lib GLOBAL PROPERTY AREG_GENDOC_${_input_id}_LIB)
@@ -1332,11 +1309,9 @@ macro(macro_add_generated_document lib_name model_doc codegen_root output_path c
             set_property(GLOBAL PROPERTY AREG_GENDOC_${_input_id}_DIR "${_generate}")
         endforeach()
 
-        # Re-run CMake when any document the generator actually READ is edited, not only the one
-        # this call named. Without the 'in:' lines, editing an IMPORT regenerates nothing and the
-        # build silently compiles the previous code -- and the import is precisely the document
-        # the user did NOT have to name, so that would be the common case rather than the corner.
-        # This now covers .siml too, which fixes the same silent staleness there.
+        # Re-run CMake when any document the generator read is edited, not only the one this
+        # call named. Otherwise editing an import regenerates nothing and the build quietly
+        # compiles the previous code.
         set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${_inputs})
 
         # Add to build targets if in generate-only mode
@@ -1346,17 +1321,16 @@ macro(macro_add_generated_document lib_name model_doc codegen_root output_path c
                 add_library(${lib_name} INTERFACE)
             endif()
         elseif (TARGET ${lib_name})
-            # Somebody else's target, of whatever kind. The generated sources join it and the
-            # requested library type no longer applies -- say so rather than ignoring it quietly.
+            # The target already exists, so the generated sources join it and the requested
+            # library type does not apply. Report it instead of ignoring it quietly.
             if (NOT "${_lib_type}" STREQUAL "static")
                 message(STATUS "Areg Setup: Target '${lib_name}' already exists; the requested '${_lib_type}' library type is ignored.")
             endif()
 
             target_sources(${lib_name} PRIVATE "${_sources}")
 
-            # On the SOURCES and not on the target. A warning in generated code is a defect the
-            # developer cannot fix, because they must not edit the file it is in -- but the rest
-            # of somebody else's library must keep compiling at that project's own warning level.
+            # Set on the sources and not on the target. Warnings in generated code cannot be
+            # fixed by the developer, while the rest of the target keeps its own warning level.
             set_source_files_properties(${_sources} PROPERTIES COMPILE_OPTIONS "${AREG_OPT_DISABLE_WARN_CODEGEN}")
         elseif ("${_lib_type}" STREQUAL "shared")
             message(STATUS "Areg Setup: Adding new generated shared library ${lib_name}")
