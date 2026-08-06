@@ -6,10 +6,10 @@
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech. All rights reserved.
  * \file        units/StringTest.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
- * \author      Artak Avetyan
+ * \author      Apoorv Darshan
  * \brief       Areg Platform, Areg framework unit test file.
  *              The unit test for String class methods.
  ************************************************************************/
