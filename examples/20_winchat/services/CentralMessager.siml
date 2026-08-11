@@ -82,8 +82,7 @@ It as well broadcasts own text message to all connected clients.</Description>
         </Method>
     </MethodList>
     <ConstantList>
-        <Constant ID="23" Name="MessageMaxLen" DataType="uint32">
-            <Value>chat::MaxlenMessage</Value>
+        <Constant ID="23" Name="MessageMaxLen" DataType="uint32" Value="chat::MaxlenMessage">
             <Description>The maximum length of messages.</Description>
         </Constant>
     </ConstantList>

@@ -56,23 +56,36 @@ java -jar <areg-sdk-root>/tools/codegen.jar \
 
 #### Parameters
 
-| Parameter                   | Description                                       |
-| --------------------------- | ------------------------------------------------- |
-| `<areg-sdk-root>`           | Root directory of the Areg SDK source             |
-| `<project-root>`            | Root directory of your application                |
-| `<relative-path-to-siml>`   | Path to `.siml` file **relative to project root** |
-| `<relative-path-to-output>` | Directory where generated code will be placed     |
+| Parameter                   | Description                                                                     |
+| --------------------------- | ------------------------------------------------------------------------------- |
+| `<areg-sdk-root>`           | Root directory of the Areg SDK source                                           |
+| `<project-root>`            | Root directory of your application. **Absolute**                                |
+| `<path-to-document>`        | Path to the `.siml`, `.fsml` or `.dtml` document. Absolute, or relative to `--root` |
+| `<path-to-output>`          | The generate root, one folder for all generated code. Absolute, or relative to `--root` |
+
+Inside the generate root, each document gets the folder its own path names. A document at
+`src/services/HelloService.siml` with `--target=generated` is written to `generated/src/services`,
+with the public headers there and the matching sources in a `private` subfolder. The generate root
+is what belongs on the compiler's include path.
 
 #### Example
 
 ```bash
 java -jar ~/areg-sdk/tools/codegen.jar   \
-    --root=./my_project                  \
+    --root=/home/dev/my_project          \
     --doc=src/services/HelloService.siml \
-    --target=src/services
+    --target=generated
 ```
 
-This generates C++ headers and sources next to your `.siml` file.
+This writes the generated headers and sources into `/home/dev/my_project/generated/src/services`.
+
+> [!TIP]
+> A document that **includes** another one is generated together with it. Name the `.siml` or the
+> `.fsml` and the `.dtml` it includes comes with it, into the folder that `.dtml`'s own path names --
+> so two service interfaces sharing one data type document produce a single copy of it.
+
+Ready-made templates for both platforms are in this directory: `codegenerate.sh` and
+`codegenerate.bat`. Copy one into your project, set `AREG_SDK_ROOT` and `DOCUMENT`, and run it.
 
 ---
 
@@ -83,17 +96,37 @@ Instead of running the generator manually, Areg recommends **using CMake integra
 ### Add Service Interface in `CMakeLists.txt`
 
 ```cmake
-addServiceInterface(
-    gen_my_project
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/services/HelloService.siml
-)
+addServiceInterface(gen_my_project src/services/HelloService.siml)
 ```
+
+The path is relative to `${PROJECT_SOURCE_DIR}`; an absolute one works too.
 
 This:
 
 * Runs the code generator automatically
 * Produces a **static library** (`gen_my_project`)
 * Ensures consistency and reproducibility across builds
+
+### State Machines and Data Types
+
+The `.fsml` and `.dtml` documents have the same call shapes:
+
+```cmake
+addStateMachine(gen_my_project src/fsm/TrafficLight.fsml)
+addDataType(gen_my_project     src/common/SharedTypes.dtml)
+```
+
+> [!IMPORTANT]
+> A `.dtml` that a `.siml` or a `.fsml` **includes** must not be listed separately: the generator
+> produces it together with the document that includes it. Call `addDataType` only for a data type
+> document that nothing includes.
+
+Each of the three has an `Ex` form taking an explicit source root, for sources that do not live under
+`${PROJECT_SOURCE_DIR}`:
+
+```cmake
+addServiceInterfaceEx(gen_my_project "/home/dev/shared" "services/HelloService.siml")
+```
 
 ---
 

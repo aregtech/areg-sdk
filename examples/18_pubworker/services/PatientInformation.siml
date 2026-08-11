@@ -30,8 +30,7 @@
         </Attribute>
     </AttributeList>
     <ConstantList>
-        <Constant ID="8" Name="Timeout" DataType="uint32">
-            <Value>500</Value>
+        <Constant ID="8" Name="Timeout" DataType="uint32" Value="500">
             <Description>The timeout in milliseconds to apply the patient information.</Description>
         </Constant>
     </ConstantList>

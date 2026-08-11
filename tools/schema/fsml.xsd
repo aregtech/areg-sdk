@@ -1,0 +1,995 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    fsml.xsd - schema of the Lusan State Machine document format (.fsml),
+    FormatVersion 1.1.0. Checked against the Lusan readers and writers on 2026-08-11
+    (data/sm/*, data/common/*, common/XmlSM.hpp): every element and attribute below is one
+    the editor writes or the reader accepts, and nothing else is.
+
+    Structural rules only. Rules the schema cannot express (XSD 1.0) are enforced by
+    the editor's validation (spec Section 10):
+      - document-wide name uniqueness and the shared stimulus name space
+      - cross-references resolving (To, Stimulus in the registry selected by
+        StimulusKind, Action, Timer, Event, Attribute, Submachine, OnFinal,
+        condition LHS/RHS, Argument names)
+      - "To" targets a sibling state; exactly one Start state per level
+      - every Kind="Start" pseudo-state rule (see tStateKind): no operations, nothing targets
+        it, at least one outgoing transition, all guarded when there are two or more, exactly
+        one unguarded at the root level
+      - the transition Kind contract (see tTransitionKind): which of To and Stimulus is
+        required and which is forbidden for each kind, and which kind of state may own it
+      - Submachine XOR nested StateList; History/OnFinal only on composite states
+      - per-Type shape of DataType (Enumeration -> EnumEntry, Structure -> Field,
+        Imported -> no FieldList)
+      - type compatibility, literal syntax, implicit widening
+      - Value attribute XOR Expression child (Source/LHSKind = "Expression");
+        expression condition rows carry no LHS/Operator/RHS
+      - LHSKind = "Lambda": a Body child (verbatim multi-statement boolean), no
+        LHS/Operator/RHS; one Combine per condition group (mix via an explicit sub-group)
+      - Body required iff Implement="Embedded"
+      - Arc edges (Shape="Arc") have exactly two Points
+      - import cycles and version pinning severities
+ -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified">
+
+    <!-- ==================================================================  -->
+    <!-- Simple types                                                        -->
+    <!-- ==================================================================  -->
+
+    <xs:simpleType name="tId">
+        <xs:annotation><xs:documentation>Document-unique numeric identity; one counter, never reused.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:unsignedInt"/>
+    </xs:simpleType>
+
+    <xs:simpleType name="tIdentifier">
+        <xs:annotation><xs:documentation>Element name: C identifier.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[A-Za-z_][A-Za-z0-9_]*"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tTypeName">
+        <xs:annotation><xs:documentation>A declared type as a document spells it: a plain name for
+            a type of this document or a predefined one, or Space::Type for a type of an included
+            data type document. Space is the included document's Overview@Name.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[A-Za-z_][A-Za-z0-9_]*(::[A-Za-z_][A-Za-z0-9_]*)*"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tIdentifierOrEmpty">
+        <xs:annotation><xs:documentation>
+            A C identifier, or the empty string. On a Transition the attribute is now OMITTED
+            rather than emptied when there is nothing to say -- an Initial transition names no
+            stimulus at all, so it carries neither Stimulus nor StimulusKind. Absent or empty on
+            an External or Internal transition is error 28; present on an Initial one is error 28
+            as well. Elsewhere the empty value keeps its old meaning of "none".
+            An Initial transition is not a UML completion transition -- .fsml has no stimulus-less
+            transition that fires when an ordinary state finishes.
+        </xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="([A-Za-z_][A-Za-z0-9_]*)?"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tStateRef">
+        <xs:annotation><xs:documentation>A transition target. The editor always writes the target
+            state's numeric ID; a name is accepted so documents written before SM-26 still
+            validate, and is rewritten as an ID on the next save.</xs:documentation></xs:annotation>
+        <xs:union memberTypes="tId tIdentifier"/>
+    </xs:simpleType>
+
+    <xs:simpleType name="tVersion">
+        <xs:annotation><xs:documentation>Semantic version: major.minor.patch.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9]+\.[0-9]+\.[0-9]+"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tColor">
+        <xs:annotation><xs:documentation>Display color #RRGGBB; semantically inert.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="#[0-9A-Fa-f]{6}"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tThreading">
+        <xs:annotation><xs:documentation>Shared: thread-safe generated code (default). Local: single-thread guarantee, no locking.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Shared"/>
+            <xs:enumeration value="Local"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tStateKind">
+        <xs:annotation><xs:documentation>
+            "Start" is a PSEUDO-state, not a state: a marker saying where a level begins. It never
+            becomes an entry in the generated state enum and the machine never occupies it, so it
+            carries NO EntryList or ExitList, nothing may target it, and everything it owns
+            is a Kind="Initial" transition -- no Stimulus, an optional Guard, document order being
+            priority order. It must have at least one; with two or more every one must carry a
+            Guard; at the ROOT level it must have exactly one, unguarded. When no guard holds the
+            machine rests in the parent state with no child active, which is legal.
+            The schema cannot express any of this: it is spec 6.2 rule 5, error 27 -- except that a
+            Start owning an External or Internal transition is error 28 (see tTransitionKind).
+        </xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Start"/>
+            <xs:enumeration value="Normal"/>
+            <xs:enumeration value="Final"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tHistory">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="None"/>
+            <xs:enumeration value="Shallow"/>
+            <xs:enumeration value="Deep"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tDataTypeKind">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Enumeration"/>
+            <xs:enumeration value="Structure"/>
+            <xs:enumeration value="Imported"/>
+            <xs:enumeration value="Container"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tMethodType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Trigger"/>
+            <xs:enumeration value="Action"/>
+            <xs:enumeration value="Condition"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tStimulusKind">
+        <xs:annotation><xs:documentation>Kind of the stimulus a transition reacts to; Stimulus resolves in the registry this selects.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Trigger"/>
+            <xs:enumeration value="Event"/>
+            <xs:enumeration value="Timer"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tTransitionKind">
+        <xs:annotation><xs:documentation>What the transition IS. The default is External.
+
+            | Kind     | To        | Stimulus / StimulusKind | Guard    | allowed on       |
+            |----------|-----------|-------------------------|----------|------------------|
+            | External | required  | required                | optional | a real state     |
+            | Internal | forbidden | required                | optional | a real state     |
+            | Initial  | required  | forbidden               | optional | a Kind="Start"   |
+
+            External moves the machine to To on its stimulus. Internal runs its operations in
+            place: the state is neither exited nor re-entered. Initial is the level's entry
+            transition, taken as the machine enters the level, so nothing fires it and only a
+            Kind="Start" pseudo-state owns one.
+
+            A self-transition -- an External whose To is its own owner -- is a SECOND SPELLING of
+            Internal and behaves identically: both generators skip exit and entry when the target
+            is the owner, and always have. The two differ in how the document draws and reads,
+            never in what runs.
+
+            None of the above can be expressed in this schema (the requirement depends on the
+            attribute's own value, and "allowed on" depends on the owning element): all of it is
+            validation rule 28, and the code generator files the same faults under the same
+            number.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="External"/>
+            <xs:enumeration value="Internal"/>
+            <xs:enumeration value="Initial"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tImplement">
+        <xs:annotation><xs:documentation>Condition implementation: Handler = pure virtual, user implements; Embedded = Body generated verbatim.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Handler"/>
+            <xs:enumeration value="Embedded"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tSource">
+        <xs:annotation><xs:documentation>Value source of an Argument or AttributeSet. Expression = verbatim C++ in an Expression child.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Value"/>
+            <xs:enumeration value="Param"/>
+            <xs:enumeration value="Attribute"/>
+            <xs:enumeration value="Constant"/>
+            <xs:enumeration value="Condition"/>
+            <xs:enumeration value="Expression"/>
+            <xs:enumeration value="Lambda"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tLhsKind">
+        <xs:annotation><xs:documentation>Expression = the whole row is a verbatim boolean C++ expression (Expression child).
+            Lambda = the whole row is a verbatim multi-statement boolean body (Body child), generated as an immediately-invoked lambda.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Param"/>
+            <xs:enumeration value="Attribute"/>
+            <xs:enumeration value="Constant"/>
+            <xs:enumeration value="Condition"/>
+            <xs:enumeration value="Expression"/>
+            <xs:enumeration value="Lambda"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tRhsKind">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Param"/>
+            <xs:enumeration value="Attribute"/>
+            <xs:enumeration value="Constant"/>
+            <xs:enumeration value="Condition"/>
+            <xs:enumeration value="Value"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tOperator">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Equal"/>
+            <xs:enumeration value="NotEqual"/>
+            <xs:enumeration value="Less"/>
+            <xs:enumeration value="LessEqual"/>
+            <xs:enumeration value="Greater"/>
+            <xs:enumeration value="GreaterEqual"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tCombine">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="And"/>
+            <xs:enumeration value="Or"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tTimeout">
+        <xs:annotation><xs:documentation>Timer timeout in milliseconds; minimum 1, a zero timeout is invalid.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:unsignedInt">
+            <xs:minInclusive value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tEdgeShape">
+        <xs:annotation><xs:documentation>Edge geometry: Line = polyline through all points (default), Arc = circular arc through exactly two points with Bulge.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Line"/>
+            <xs:enumeration value="Arc"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tGridSize">
+        <xs:annotation><xs:documentation>Canvas grid size in pixels; minimum 4 (a 1-px grid is meaningless).</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:unsignedInt">
+            <xs:minInclusive value="4"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- ==================================================================  -->
+    <!-- Shared complex types                                                -->
+    <!-- ==================================================================  -->
+
+    <xs:complexType name="cDescription">
+        <xs:simpleContent>
+            <xs:extension base="xs:string"/>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="cBody">
+        <xs:annotation><xs:documentation>Verbatim C++ code; stored as CDATA, never parsed by editor or generator.</xs:documentation></xs:annotation>
+        <xs:simpleContent>
+            <xs:extension base="xs:string"/>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="cParameter">
+        <xs:annotation><xs:documentation>A default value is the Default attribute here. The
+            Value child is the service interface's spelling of the same thing; the reader accepts
+            it in either document, so it is allowed, but this editor never writes one into a
+            .fsml.</xs:documentation></xs:annotation>
+        <xs:all>
+            <xs:element name="DeprecateHint" type="cDescription" minOccurs="0"/>
+            <xs:element name="Value" type="cFieldValue" minOccurs="0"/>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="DataType" type="tTypeName" use="required"/>
+        <xs:attribute name="Default" type="xs:string"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:complexType name="cParamList">
+        <xs:sequence>
+            <xs:element name="Parameter" type="cParameter" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="cArgument">
+        <xs:sequence>
+            <xs:element name="Expression" type="cBody" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="Source" type="tSource" use="required"/>
+        <xs:attribute name="Value" type="xs:string"/>
+        <!-- Source="Expression": Expression child required, Value absent;
+             any other Source: Value required (editor-enforced)  -->
+    </xs:complexType>
+
+    <xs:complexType name="cArgumentList">
+        <xs:sequence>
+            <xs:element name="Argument" type="cArgument" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ==================================================================  -->
+    <!-- Operations (EntryList / ExitList / OperationList members)           -->
+    <!-- ==================================================================  -->
+
+    <xs:complexType name="cActionCall">
+        <xs:sequence>
+            <xs:element name="ArgumentList" type="cArgumentList" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Action" type="tIdentifier" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="cAttributeSet">
+        <xs:sequence>
+            <xs:element name="Expression" type="cBody" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Attribute" type="tIdentifier" use="required"/>
+        <xs:attribute name="Source" type="tSource" use="required"/>
+        <xs:attribute name="Value" type="xs:string"/>
+        <!-- Source="Expression": Expression child required, Value absent;
+             any other Source: Value required (editor-enforced)  -->
+    </xs:complexType>
+
+    <xs:complexType name="cTimerStart">
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Timer" type="tIdentifier" use="required"/>
+        <xs:attribute name="Timeout" type="tTimeout"/>
+        <xs:attribute name="Repeat" type="xs:unsignedInt"/>
+    </xs:complexType>
+
+    <xs:complexType name="cTimerStop">
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Timer" type="tIdentifier" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="cEventSend">
+        <xs:sequence>
+            <xs:element name="ArgumentList" type="cArgumentList" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Event" type="tIdentifier" use="required"/>
+    </xs:complexType>
+
+    <!-- gOperation is a closed set: these five operations are the whole vocabulary of an
+         EntryList, an ExitList and a transition's OperationList. Anything else is error 34.
+         InlineCode was removed from the format on 2026-08-09. -->
+    <xs:group name="gOperation">
+        <xs:choice>
+            <xs:element name="ActionCall" type="cActionCall"/>
+            <xs:element name="AttributeSet" type="cAttributeSet"/>
+            <xs:element name="TimerStart" type="cTimerStart"/>
+            <xs:element name="TimerStop" type="cTimerStop"/>
+            <xs:element name="EventSend" type="cEventSend"/>
+        </xs:choice>
+    </xs:group>
+
+    <xs:complexType name="cOperationList">
+        <xs:sequence>
+            <xs:group ref="gOperation" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ==================================================================  -->
+    <!-- Transitions and conditions                                          -->
+    <!-- ==================================================================  -->
+
+    <xs:complexType name="cCondition">
+        <xs:sequence>
+            <xs:element name="Expression" type="cBody" minOccurs="0"/>
+            <xs:element name="Body" type="cBody" minOccurs="0"/>
+            <xs:element name="ArgumentList" type="cArgumentList" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="LHSKind" type="tLhsKind" use="required"/>
+        <xs:attribute name="LHS" type="tIdentifier"/>
+        <xs:attribute name="Operator" type="tOperator"/>
+        <xs:attribute name="RHSKind" type="tRhsKind"/>
+        <xs:attribute name="RHS" type="xs:string"/>
+        <xs:attribute name="Negate" type="xs:boolean"/>
+        <!-- LHSKind="Expression": Expression child required; LHSKind="Lambda": Body child
+             required; neither carries LHS/Operator/RHS (Negate still applies).
+             Any other kind: LHS required (editor-enforced)  -->
+    </xs:complexType>
+
+    <!-- A branch node in the condition tree: an ordered, mixed set of leaf Conditions
+         and nested ConditionGroups combined with one Combine (And default / Or), with an
+         optional group-level Negate. Mixing And and Or at one level requires an explicit
+         sub-group (editor-enforced).  -->
+    <xs:complexType name="cConditionGroup">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="Condition" type="cCondition"/>
+            <xs:element name="ConditionGroup" type="cConditionGroup"/>
+        </xs:choice>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Combine" type="tCombine"/>
+        <xs:attribute name="Negate" type="xs:boolean"/>
+    </xs:complexType>
+
+    <!-- The root of a transition's condition tree. A depth-1, non-negated tree is written
+         as the legacy flat form (Condition children only, no Negate); a real sub-group or a
+         group-negate adds the Negate attribute and nested ConditionGroup children. The root
+         carries no ID (byte-stable with pre-nesting documents).  -->
+    <xs:complexType name="cConditionList">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="Condition" type="cCondition"/>
+            <xs:element name="ConditionGroup" type="cConditionGroup"/>
+        </xs:choice>
+        <xs:attribute name="Combine" type="tCombine"/>
+        <xs:attribute name="Negate" type="xs:boolean"/>
+    </xs:complexType>
+
+    <!-- ==================================================================  -->
+    <!-- Guard (SM-21 redesign): the transition's ID-bound resolved expression tree.         -->
+    <!-- Element name = AST node kind; the only reference attribute is the lowercase "id"     -->
+    <!-- (a symbol's document ID); child order = operand order. Reference nodes store no       -->
+    <!-- names (names live at declarations). Absence of <Guard> means no guard.                -->
+    <!-- ==================================================================  -->
+
+    <xs:simpleType name="tGuardState">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="ok"/>
+            <xs:enumeration value="draft"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tGuardOp">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="eq"/>
+            <xs:enumeration value="ne"/>
+            <xs:enumeration value="lt"/>
+            <xs:enumeration value="le"/>
+            <xs:enumeration value="gt"/>
+            <xs:enumeration value="ge"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Optional line-layout hints (SM-21 R18): user-owned surface layout that the renderer
+         restores and the code generator ignores, so generated C++ is unaffected. Absent means a
+         single line with zero indent; present on any operand node that opens a new line. `brk`
+         is written as "1"; `indent` is the count of leading spaces on that operand's line.  -->
+    <xs:attributeGroup name="agGuardLayout">
+        <xs:attribute name="brk" type="xs:string" use="optional"/>
+        <xs:attribute name="indent" type="xs:nonNegativeInteger" use="optional"/>
+    </xs:attributeGroup>
+
+    <!-- ADVISORY name (R19): the human-readable display name of the symbol a refid node points
+         to, written on every save purely so a person can read the .fsml. It is WRITE-ONLY: the
+         `id` is the sole binding, the loader NEVER reads `name`, and it is refreshed from the id
+         on the next save. It can therefore never drift into behaviour. Present only on nodes that
+         carry an `id` (Call / Attr / Const / Param).  -->
+    <xs:attributeGroup name="agGuardName">
+        <xs:attribute name="name" type="xs:string" use="optional"/>
+    </xs:attributeGroup>
+
+    <!-- Any guard node: the recursion point of the tree.  -->
+    <xs:group name="gGuardNode">
+        <xs:choice>
+            <xs:element name="And" type="cGuardGroup"/>
+            <xs:element name="Or" type="cGuardGroup"/>
+            <xs:element name="Not" type="cGuardNot"/>
+            <xs:element name="Cmp" type="cGuardCmp"/>
+            <xs:element name="Call" type="cGuardCall"/>
+            <xs:element name="Attr" type="cGuardRef"/>
+            <xs:element name="Const" type="cGuardRef"/>
+            <xs:element name="Param" type="cGuardRef"/>
+            <xs:element name="Lit" type="cGuardVerbatim"/>
+            <xs:element name="Lambda" type="cGuardVerbatim"/>
+            <xs:element name="Raw" type="cGuardVerbatim"/>
+        </xs:choice>
+    </xs:group>
+
+    <!-- And / Or: 2 or more operands, order = expression order.  -->
+    <xs:complexType name="cGuardGroup">
+        <xs:group ref="gGuardNode" minOccurs="2" maxOccurs="unbounded"/>
+        <xs:attributeGroup ref="agGuardLayout"/>
+    </xs:complexType>
+
+    <!-- Not: exactly one operand.  -->
+    <xs:complexType name="cGuardNot">
+        <xs:group ref="gGuardNode"/>
+        <xs:attributeGroup ref="agGuardLayout"/>
+    </xs:complexType>
+
+    <!-- Cmp: exactly two operands (lhs, rhs), operator in tGuardOp.  -->
+    <xs:complexType name="cGuardCmp">
+        <xs:group ref="gGuardNode" minOccurs="2" maxOccurs="2"/>
+        <xs:attribute name="op" type="tGuardOp" use="required"/>
+        <xs:attributeGroup ref="agGuardLayout"/>
+    </xs:complexType>
+
+    <!-- Call: 0+ Arg children in declared-parameter order; id = the method's document ID.  -->
+    <xs:complexType name="cGuardCall">
+        <xs:sequence>
+            <xs:element name="Arg" type="cGuardArg" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="tId" use="required"/>
+        <xs:attributeGroup ref="agGuardLayout"/>
+        <xs:attributeGroup ref="agGuardName"/>
+    </xs:complexType>
+
+    <!-- Arg: wraps exactly one operand node; id = the bound formal parameter's document ID
+         (SM-21-02 Option A). Optional for back-compat: a legacy Arg without id is matched to
+         a formal by declared position.  -->
+    <xs:complexType name="cGuardArg">
+        <xs:group ref="gGuardNode"/>
+        <xs:attribute name="id" type="tId" use="optional"/>
+    </xs:complexType>
+
+    <!-- Attr / Const / Param: a leaf reference to a symbol's document ID.  -->
+    <xs:complexType name="cGuardRef">
+        <xs:attribute name="id" type="tId" use="required"/>
+        <xs:attributeGroup ref="agGuardLayout"/>
+        <xs:attributeGroup ref="agGuardName"/>
+    </xs:complexType>
+
+    <!-- Lit / Lambda / Raw: verbatim text as XML-escaped element content (byte-exact).  -->
+    <xs:complexType name="cGuardVerbatim">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attributeGroup ref="agGuardLayout"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <!-- Expr: the single root node of the resolved tree.  -->
+    <xs:complexType name="cGuardExpr">
+        <xs:group ref="gGuardNode"/>
+    </xs:complexType>
+
+    <!-- The transition guard. state="ok": Expr required; state="draft": Draft required, Expr
+         optional (the last-good tree). Rendered is a human-readable cache: written on save,
+         IGNORED on load (the tree is the truth).  -->
+    <xs:complexType name="cGuard">
+        <xs:sequence>
+            <xs:element name="Draft" type="xs:string" minOccurs="0"/>
+            <xs:element name="Expr" type="cGuardExpr" minOccurs="0"/>
+            <xs:element name="Rendered" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="state" type="tGuardState" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="cTransition">
+        <xs:sequence>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+            <!-- At most one of ConditionList (legacy read-shim) or Guard (canonical).  -->
+            <xs:element name="ConditionList" type="cConditionList" minOccurs="0"/>
+            <xs:element name="Guard" type="cGuard" minOccurs="0"/>
+            <xs:element name="OperationList" type="cOperationList" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Kind" type="tTransitionKind"/>
+        <xs:attribute name="StimulusKind" type="tStimulusKind"/>
+        <xs:attribute name="Stimulus" type="tIdentifierOrEmpty"/>
+        <xs:attribute name="To" type="tStateRef"/>
+        <!-- "Kind" says what the transition IS; "To" and "Stimulus" then mean only what they
+             say, and which of them is required follows from the kind (see tTransitionKind).
+             Neither can be marked "required" here, because each is forbidden for one of the
+             three kinds; rule 28 enforces the table.
+
+             "Kind" absent is a document written before the attribute existed, and the reader
+             restores the meaning it used to be given: absent To -> Internal, To present ->
+             External, and a transition owned by a Kind="Start" that names no stimulus ->
+             Initial, whose StimulusKind/Stimulus placeholders are dropped. The next save
+             writes Kind explicitly, always - omitting it at its External default would put
+             an unconnected external edge and an internal transition back into the same bytes.
+
+             "To" is the target state's element ID, not its name: a rename never rewrites a
+             transition. Documents written before SM-26 carry a state name here; the reader
+             resolves those by name once and the next save emits the ID.  -->
+    </xs:complexType>
+
+    <xs:complexType name="cTransitionList">
+        <xs:sequence>
+            <!-- Document order is priority order  -->
+            <xs:element name="Transition" type="cTransition" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ==================================================================  -->
+    <!-- States (recursive)                                                  -->
+    <!-- ==================================================================  -->
+
+    <xs:complexType name="cState">
+        <xs:sequence>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+            <xs:element name="EntryList" type="cOperationList" minOccurs="0"/>
+            <xs:element name="ExitList" type="cOperationList" minOccurs="0"/>
+            <xs:element name="TransitionList" type="cTransitionList" minOccurs="0"/>
+            <xs:element name="StateList" type="cStateList" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="Kind" type="tStateKind" use="required"/>
+        <xs:attribute name="History" type="tHistory"/>
+        <xs:attribute name="Submachine" type="tIdentifier"/>
+        <xs:attribute name="OnFinal" type="tIdentifier"/>
+    </xs:complexType>
+
+    <xs:complexType name="cStateList">
+        <xs:sequence>
+            <xs:element name="State" type="cState" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ==================================================================  -->
+    <!-- Registries                                                          -->
+    <!-- ==================================================================  -->
+
+    <xs:complexType name="cEnumEntry">
+        <xs:annotation><xs:documentation>An enumerator. Its Value is a child element and carries
+            no IsDefault: an empty or absent one means the enumeration continues from the previous
+            entry, exactly as C++ does.</xs:documentation></xs:annotation>
+        <xs:all>
+            <xs:element name="DeprecateHint" type="cDescription" minOccurs="0"/>
+            <xs:element name="Value" type="xs:string" minOccurs="0"/>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:complexType name="cFieldValue">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="IsDefault" type="xs:boolean"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="cField">
+        <xs:all>
+            <xs:element name="DeprecateHint" type="cDescription" minOccurs="0"/>
+            <xs:element name="Value" type="cFieldValue" minOccurs="0"/>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="DataType" type="tTypeName" use="required"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:complexType name="cFieldList">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="EnumEntry" type="cEnumEntry"/>
+            <xs:element name="Field" type="cField"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="cDataType">
+        <xs:annotation><xs:documentation>Same structure as the .siml DataTypeList entries.
+            Enumeration uses EnumEntry children, Structure uses Field children.
+            Imported carries Location / Namespace / ImportedObject children.
+            Container carries Container plus BaseTypeValue, and BaseTypeKey for the keyed
+            containers (HashMap, Map, Pair). The children are written in the writer's fixed
+            order, so the choice is unordered here only to keep older documents loadable.</xs:documentation></xs:annotation>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="DeprecateHint" type="cDescription"/>
+            <xs:element name="Description" type="cDescription"/>
+            <xs:element name="FieldList" type="cFieldList"/>
+            <xs:element name="Location" type="xs:string"/>
+            <xs:element name="Namespace" type="xs:string"/>
+            <xs:element name="ImportedObject" type="xs:string"/>
+            <xs:element name="Container" type="xs:string"/>
+            <xs:element name="BaseTypeValue" type="xs:string"/>
+            <xs:element name="BaseTypeKey" type="xs:string"/>
+        </xs:choice>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="Type" type="tDataTypeKind" use="required"/>
+        <xs:attribute name="Values" type="xs:string"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:complexType name="cAttribute">
+        <xs:all>
+            <xs:element name="DeprecateHint" type="cDescription" minOccurs="0"/>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="DataType" type="tTypeName" use="required"/>
+        <xs:attribute name="Value" type="xs:string"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+        <!-- Value is the attribute's initial value and the editor always writes it, empty
+             included. Absent reads as empty, so a hand-written document still loads.  -->
+    </xs:complexType>
+
+    <xs:complexType name="cEvent">
+        <xs:all>
+            <xs:element name="DeprecateHint" type="cDescription" minOccurs="0"/>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+            <xs:element name="ParamList" type="cParamList" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:complexType name="cTimer">
+        <xs:all>
+            <xs:element name="DeprecateHint" type="cDescription" minOccurs="0"/>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="Timeout" type="tTimeout" use="required"/>
+        <xs:attribute name="Repeat" type="xs:unsignedInt"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+        <!-- Timeout in milliseconds, minimum 1. Repeat 0 = continuous, and an absent Repeat
+             reads as 0, so a document written before the attribute existed still loads.  -->
+    </xs:complexType>
+
+    <xs:complexType name="cMethod">
+        <xs:all>
+            <xs:element name="DeprecateHint" type="cDescription" minOccurs="0"/>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+            <xs:element name="ParamList" type="cParamList" minOccurs="0"/>
+            <xs:element name="Body" type="cBody" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="MethodType" type="tMethodType" use="required"/>
+        <xs:attribute name="Return" type="tTypeName"/>
+        <xs:attribute name="Implement" type="tImplement"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+        <!-- Return/Implement/Body: Condition methods only (editor-enforced)  -->
+    </xs:complexType>
+
+    <xs:complexType name="cConstant">
+        <xs:annotation><xs:documentation>The one element whose deprecation hint is an attribute
+            rather than a child: a constant carries no other child than its description, so the
+            hint costs a parser token it does not have to.</xs:documentation></xs:annotation>
+        <xs:all>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="DataType" type="tTypeName" use="required"/>
+        <xs:attribute name="Value" type="xs:string" use="required"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+        <xs:attribute name="DeprecateHint" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="cLocation">
+        <xs:all>
+            <xs:element name="DeprecateHint" type="cDescription" minOccurs="0"/>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="xs:string" use="required"/>
+        <!-- Name is the include path, e.g. "common/FsmDefs.hpp"  -->
+        <xs:attribute name="Alias" type="tIdentifier"/>
+        <!-- Alias: written only for a .fsml entry; the name a State@Submachine uses  -->
+        <xs:attribute name="Version" type="tVersion"/>
+        <!-- Version: the imported document's Overview@Version, pinned at import/update time  -->
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+    </xs:complexType>
+
+    <!-- DEPRECATED as of FormatVersion 1.1.0, still accepted for legacy reads.
+         Machine imports are now Location entries of IncludeList carrying Alias and Version.
+         Nothing writes MachineImport any more; a 1.0.0 document that is opened and saved is
+         rewritten in the folded form.  -->
+    <xs:complexType name="cMachineImport">
+        <xs:sequence>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="Location" type="xs:string" use="required"/>
+        <xs:attribute name="Version" type="tVersion" use="required"/>
+        <!-- Version = imported document's Overview@Version, pinned at import/update  -->
+    </xs:complexType>
+
+    <!-- ==================================================================  -->
+    <!-- Layout (editor-only; ignored by validators and generators)          -->
+    <!-- ==================================================================  -->
+
+    <xs:complexType name="cView">
+        <xs:attribute name="Owner" type="tId" use="required"/>
+        <xs:attribute name="Zoom" type="xs:unsignedInt" use="required"/>
+        <xs:attribute name="X" type="xs:int" use="required"/>
+        <xs:attribute name="Y" type="xs:int" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="cNode">
+        <xs:attribute name="Owner" type="tId" use="required"/>
+        <xs:attribute name="X" type="xs:int" use="required"/>
+        <xs:attribute name="Y" type="xs:int" use="required"/>
+        <xs:attribute name="Width" type="xs:unsignedInt" use="required"/>
+        <xs:attribute name="Height" type="xs:unsignedInt" use="required"/>
+        <xs:attribute name="Color" type="tColor"/>
+        <xs:attribute name="HeaderColor" type="tColor"/>
+        <xs:attribute name="Expanded" type="xs:boolean"/>
+        <!-- Color: state box body. HeaderColor: header part; absent = the editor derives
+             a darker shade of Color so the light name text stays readable.
+             Expanded absent = true (body visible)  -->
+    </xs:complexType>
+
+    <xs:complexType name="cPoint">
+        <xs:attribute name="X" type="xs:int" use="required"/>
+        <xs:attribute name="Y" type="xs:int" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="cEdge">
+        <xs:sequence>
+            <!-- First Point = begin, anchored on the source state border; last Point =
+                 end, anchored on the target state border, drawn as the arrowhead  -->
+            <xs:element name="Point" type="cPoint" minOccurs="2" maxOccurs="unbounded"/>
+            <xs:element name="Label" type="cPoint" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="Owner" type="tId" use="required"/>
+        <xs:attribute name="Shape" type="tEdgeShape"/>
+        <xs:attribute name="Bulge" type="xs:double"/>
+        <xs:attribute name="Color" type="tColor"/>
+        <!-- Shape absent = Line. Shape="Arc": exactly two Points plus Bulge, the signed
+             ratio of arc height to half chord (tan of a quarter of the included angle):
+             0 = straight, sign = side of the begin-to-end chord, 1 = semicircle  -->
+    </xs:complexType>
+
+    <xs:complexType name="cNote">
+        <xs:sequence>
+            <xs:element name="Text" type="xs:string"/>
+        </xs:sequence>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Level" type="tId" use="required"/>
+        <!-- Level: Overview ID for the root level, composite state ID for a sublevel  -->
+        <xs:attribute name="Owner" type="tId"/>
+        <!-- Owner: the element the note is pinned to; absent = free-floating on the level  -->
+        <xs:attribute name="X" type="xs:int" use="required"/>
+        <xs:attribute name="Y" type="xs:int" use="required"/>
+        <xs:attribute name="Width" type="xs:unsignedInt" use="required"/>
+        <xs:attribute name="Height" type="xs:unsignedInt" use="required"/>
+        <xs:attribute name="Color" type="tColor"/>
+    </xs:complexType>
+
+    <xs:complexType name="cLayout">
+        <xs:sequence>
+            <xs:element name="ViewList" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="View" type="cView" minOccurs="0" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="NodeList" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Node" type="cNode" minOccurs="0" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="EdgeList" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Edge" type="cEdge" minOccurs="0" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="NoteList" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Note" type="cNote" minOccurs="0" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="GridSize" type="tGridSize"/>
+        <xs:attribute name="GridVisible" type="xs:boolean"/>
+        <!-- Per-document grid settings; absent = application defaults  -->
+    </xs:complexType>
+
+    <!-- ==================================================================  -->
+    <!-- Root                                                                -->
+    <!-- ==================================================================  -->
+
+    <xs:complexType name="cOverview">
+        <xs:all>
+            <xs:element name="DeprecateHint" type="cDescription" minOccurs="0"/>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="Version" type="tVersion" use="required"/>
+        <xs:attribute name="Threading" type="tThreading"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+        <!-- Threading absent = Shared (safe default). Name is the machine's own name and does
+             not have to match the file name; everything generated follows this value.  -->
+    </xs:complexType>
+
+    <xs:element name="StateMachine">
+        <xs:complexType>
+            <xs:all>
+                <xs:element name="Overview" type="cOverview"/>
+                <xs:element name="DataTypeList" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="DataType" type="cDataType" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="AttributeList" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Attribute" type="cAttribute" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="EventList" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Event" type="cEvent" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="TimerList" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Timer" type="cTimer" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="MethodList" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Method" type="cMethod" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="ConstantList" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Constant" type="cConstant" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="IncludeList" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Location" type="cLocation" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <!-- DEPRECATED as of 1.1.0: read for legacy documents, never written.  -->
+                <xs:element name="ImportList" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="MachineImport" type="cMachineImport" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="StateList" type="cStateList"/>
+                <xs:element name="Layout" type="cLayout" minOccurs="0"/>
+            </xs:all>
+            <xs:attribute name="FormatVersion" type="tVersion" use="required"/>
+        </xs:complexType>
+
+        <!-- Document-wide ID uniqueness (elements without ID are not constrained)  -->
+        <xs:unique name="uniqueElementId">
+            <xs:selector xpath=".//*"/>
+            <xs:field xpath="@ID"/>
+        </xs:unique>
+    </xs:element>
+
+</xs:schema>

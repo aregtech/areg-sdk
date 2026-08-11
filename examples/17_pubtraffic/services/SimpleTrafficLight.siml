@@ -31,16 +31,13 @@
         </Attribute>
     </AttributeList>
     <ConstantList>
-        <Constant ID="10" Name="TimeoutRed" DataType="uint32">
-            <Value>3000</Value>
+        <Constant ID="10" Name="TimeoutRed" DataType="uint32" Value="3000">
             <Description>The red light timeout in milliseconds.</Description>
         </Constant>
-        <Constant ID="11" Name="TimeoutYellow" DataType="uint32">
-            <Value>1000</Value>
+        <Constant ID="11" Name="TimeoutYellow" DataType="uint32" Value="1000">
             <Description>The yellow light timeout in milliseconds.</Description>
         </Constant>
-        <Constant ID="13" Name="TimeoutGreen" DataType="uint32">
-            <Value>3000</Value>
+        <Constant ID="13" Name="TimeoutGreen" DataType="uint32" Value="3000">
             <Description>The green light timeout in milliseconds.</Description>
         </Constant>
     </ConstantList>

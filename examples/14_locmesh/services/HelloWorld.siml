@@ -44,8 +44,7 @@
         </Method>
     </MethodList>
     <ConstantList>
-        <Constant ID="18" Name="MaxMessages" DataType="int16">
-            <Value>37</Value>
+        <Constant ID="18" Name="MaxMessages" DataType="int16" Value="37">
             <Description>The maximum number of messages to output.</Description>
         </Constant>
     </ConstantList>
