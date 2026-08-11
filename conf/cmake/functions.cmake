@@ -85,6 +85,28 @@ macro(macro_cmake_path cmake_path any_path)
 endmacro(macro_cmake_path)
 
 # ---------------------------------------------------------------------------
+# Macro ......: macro_absolute_path
+# Purpose ....: Makes a path absolute and leaves one that already is alone. A relative path is
+#               taken from ${base_dir}.
+# Note .......: The code generator takes every path either absolute or relative to the project
+#               root, while CMake takes a relative path from the directory being configured.
+#               The two disagree on what a relative path means, so a path is made absolute
+#               before it is handed over and the question does not arise.
+# Parameters .: ${abs_path} [out] -- Name of variable to hold the absolute path.
+#               ${any_path} [in]  -- The path to convert.
+#               ${base_dir} [in]  -- The directory a relative path is taken from.
+# Usage ......: macro_absolute_path(<out-var> <path> <base-dir>)
+# ---------------------------------------------------------------------------
+macro(macro_absolute_path abs_path any_path base_dir)
+    set(${abs_path} "${any_path}")
+    cmake_path(IS_ABSOLUTE ${abs_path} _path_is_absolute)
+    if (NOT _path_is_absolute)
+        cmake_path(ABSOLUTE_PATH ${abs_path} BASE_DIRECTORY "${base_dir}" NORMALIZE)
+    endif()
+    unset(_path_is_absolute)
+endmacro(macro_absolute_path)
+
+# ---------------------------------------------------------------------------
 # Macro ......: macro_document_key
 # Purpose ....: Turns the path of a model document into a stable key, so that the same
 #               document reached by two different calls -- once because the user named it,
@@ -1129,10 +1151,11 @@ endfunction(addSharedLib)
 # ---------------------------------------------------------------------------
 # Macro ......: macro_add_generated_document
 # Purpose ....: Runs the code generator on a single model document and adds the produced
-#               files to a library. Any document type is accepted, like Service Interface
-#               (.siml) or State Machine (.fsml), because the tool picks the generator by
-#               file extension. The named wrappers below (addServiceInterface,
-#               addStateMachine, macro_add_service_interface) only forward to this macro.
+#               files to a library. Any document type is accepted, Service Interface
+#               (.siml), State Machine (.fsml) or Data Type (.dtml), because the tool picks
+#               the generator by file extension. The named wrappers below
+#               (addServiceInterface, addStateMachine, addDataType,
+#               macro_add_service_interface) only forward to this macro.
 #
 #               The list of generated files comes from the manifest, not from this file.
 #               The generator writes '<Name>.<kind>.files' next to the output, one tagged
@@ -1146,26 +1169,35 @@ endfunction(addSharedLib)
 #
 #               A document that is imported by another document is generated together with
 #               its host. Naming such an import in a separate call to the same library is
-#               therefore skipped: generating it again would place a second copy of the same
-#               classes under another path and the library would not link. A call for a
-#               different library is a different program, so it gets its own copy and a
-#               warning that both exist.
+#               therefore skipped: the generator has already written its files. A call for a
+#               different library is a different program, so it gets its own copy.
+#
+#               Every document a run touches is placed by its own location: the generate root
+#               plus the document's parent path under the project root. Two documents that
+#               import a third one therefore produce one copy of it, at one path.
 #
 # Parameters .: ${lib_name}         -- Library to receive the generated files. Created if it does not exist.
-#               ${model_doc}        -- Full path to the model document (.siml, .fsml, ...), in the
-#                                      form CMake uses. The conversion for the generator happens here.
-#               ${codegen_root}     -- Root directory the generated files are written under.
-#               ${output_path}      -- Path relative to ${codegen_root} for this document's output.
+#               ${model_doc}        -- Path to the model document (.siml, .fsml, .dtml), in the form
+#                                      CMake uses, absolute or relative to ${source_root}. The
+#                                      conversion for the generator happens here.
+#               ${source_root}      -- The project root the document belongs to, absolute or relative to
+#                                      the directory being configured. The generator resolves every path
+#                                      against it, including the imports a document names.
+#               ${codegen_root}     -- The generate root: the single folder the generated files of the
+#                                      whole project are written under, absolute or relative to
+#                                      ${source_root}.
+#               ${output_path}      -- The document's own parent path, relative to ${source_root}. That is
+#                                      where the generator writes this document's files and its manifest.
 #               ${codegen_tool}     -- Full path to codegen.jar.
 #               ${lib_type}         -- Optional: 'static' (default) or 'shared'. Ignored, with a note, if the target already exists.
 #               ${export_keyword}   -- Optional: passed to the tool as --export=<KEYWORD>, and only when non-empty.
 #
-# Usage ......: macro_add_generated_document(<name-lib> <full-path-doc> <root-gen> <relative-path> <codegen-tool> [<lib-type>] [<export>])
+# Usage ......: macro_add_generated_document(<name-lib> <full-path-doc> <source-root> <root-gen> <doc-parent-path> <codegen-tool> [<lib-type>] [<export>])
 # Example ....:
-#   macro_add_generated_document(funlib "/home/dev/fun/src/service/HelloWorld.siml" "/home/dev/fun/product" "generate/service" /tools/areg/codegen.jar)
-#   macro_add_generated_document(funlib "/home/dev/fun/src/fsm/TrafficLight.fsml"   "/home/dev/fun/product" "generate/fsm"     /tools/areg/codegen.jar)
+#   macro_add_generated_document(funlib "/home/dev/fun/src/service/HelloWorld.siml" "/home/dev/fun/src" "/home/dev/fun/product/generate" "service" /tools/areg/codegen.jar)
+#   macro_add_generated_document(funlib "/home/dev/fun/src/fsm/TrafficLight.fsml"   "/home/dev/fun/src" "/home/dev/fun/product/generate" "fsm"     /tools/areg/codegen.jar)
 # ---------------------------------------------------------------------------
-macro(macro_add_generated_document lib_name model_doc codegen_root output_path codegen_tool)
+macro(macro_add_generated_document lib_name model_doc source_root codegen_root output_path codegen_tool)
 
     # return() in a macro exits the calling function, not the macro. The guards below
     # rely on FATAL_ERROR to stop the configuration. Do not lower them to WARNING.
@@ -1178,8 +1210,16 @@ macro(macro_add_generated_document lib_name model_doc codegen_root output_path c
     # a Windows program and gets the drive letter form, while the manifest lookup, the
     # source list and the configure dependency keep the form CMake can open.
     macro_cmake_path(_doc_path "${model_doc}")
+    macro_cmake_path(_src_root "${source_root}")
     macro_cmake_path(_gen_root "${codegen_root}")
     file(TO_CMAKE_PATH "${output_path}" _gen_target)
+
+    # Absolute or relative is the caller's choice on all three. The project root is taken from
+    # the directory being configured, the document and the generate root from the project root,
+    # which is the rule the generator states for its own arguments.
+    macro_absolute_path(_src_root "${_src_root}" "${CMAKE_CURRENT_SOURCE_DIR}")
+    macro_absolute_path(_doc_path "${_doc_path}" "${_src_root}")
+    macro_absolute_path(_gen_root "${_gen_root}" "${_src_root}")
 
     if (NOT EXISTS "${_doc_path}")
         message(FATAL_ERROR "Areg Setup: The model document \'${model_doc}\' does not exist. Cannot generate files.")
@@ -1193,13 +1233,13 @@ macro(macro_add_generated_document lib_name model_doc codegen_root output_path c
     endif()
 
     set(_lib_type "static")
-    if (${ARGC} GREATER 5 AND NOT "${ARGV5}" STREQUAL "")
-        set(_lib_type "${ARGV5}")
+    if (${ARGC} GREATER 6 AND NOT "${ARGV6}" STREQUAL "")
+        set(_lib_type "${ARGV6}")
     endif()
 
     set(_export_keyword "")
-    if (${ARGC} GREATER 6)
-        set(_export_keyword "${ARGV6}")
+    if (${ARGC} GREATER 7)
+        set(_export_keyword "${ARGV7}")
     endif()
 
     # Nothing to do if an earlier call already generated this document into the same
@@ -1218,16 +1258,22 @@ macro(macro_add_generated_document lib_name model_doc codegen_root output_path c
 
     if (NOT _doc_skip)
 
-        # Set path for generated files
+        # Where this document's own files and its manifest land.
         set(_generate "${_gen_root}/${_gen_target}")
 
         # Run the code generator. The export keyword is passed only when requested: a document
         # used inside its own library needs none, and a static library must never get one.
-        macro_normalize_path(_tool_doc  "${_doc_path}")
-        macro_normalize_path(_tool_root "${_gen_root}")
-        macro_normalize_path(_tool_jar  "${codegen_tool}")
+        #
+        # '--root' is the project root and not the generate folder: an import is named by a path
+        # anchored there, and the tool cannot find it otherwise. '--target' is the generate root
+        # for the whole project, absolute, because an out-of-source build can put it on another
+        # drive. The tool gives each document the folder its own path names underneath it.
+        macro_normalize_path(_tool_doc    "${_doc_path}")
+        macro_normalize_path(_tool_root   "${_src_root}")
+        macro_normalize_path(_tool_target "${_gen_root}")
+        macro_normalize_path(_tool_jar    "${codegen_tool}")
 
-        set(_codegen_args --doc=${_tool_doc} --root=${_tool_root} --target=${_gen_target})
+        set(_codegen_args --doc=${_tool_doc} --root=${_tool_root} --target=${_tool_target})
         if (NOT "${_export_keyword}" STREQUAL "")
             list(APPEND _codegen_args --export=${_export_keyword})
         endif()
@@ -1241,36 +1287,46 @@ macro(macro_add_generated_document lib_name model_doc codegen_root output_path c
             return()
         endif()
 
-        # The manifest name carries the document kind next to the document name, so that
-        # 'HelloWorld.siml' and 'HelloWorld.fsml' can share an output folder. If both are
-        # there, keep the manifest of the document that read this one.
-        file(GLOB _manifests "${_generate}/${_doc_name}.*.files")
+        # Find the manifest this run wrote. It is named after the document's declared name and
+        # not after the file, and the two are allowed to differ, so the file name cannot be the
+        # search key. Read the manifests of the folder instead and let each one say what it is.
+        #
+        # A manifest lists the documents its run read in 'in:' lines, the imports first and the
+        # named document last. That last entry tells this run's manifest from the manifest of
+        # another document sharing the folder, and from the manifest of a run that read this
+        # document only as an import. The kind in the name ('.si', '.fsm', '.dt') is what lets
+        # 'HelloWorld.siml' and 'HelloWorld.fsml' live side by side.
+        file(GLOB _manifests "${_generate}/*.files")
+        set(_manifests_kept)
+        foreach(_manifest IN LISTS _manifests)
+            file(STRINGS "${_manifest}" _in_lines REGEX "^in:")
+            list(LENGTH _in_lines _in_count)
+            if (_in_count GREATER 0)
+                math(EXPR _in_count "${_in_count} - 1")
+                list(GET _in_lines ${_in_count} _line)
+                string(REGEX REPLACE "^in:" "" _line "${_line}")
+                macro_cmake_path(_in_path "${_line}")
+                macro_document_key(_in_id "${_in_path}")
+                if ("${_in_id}" STREQUAL "${_doc_id}")
+                    list(APPEND _manifests_kept "${_manifest}")
+                endif()
+            endif()
+        endforeach()
+
+        if (_manifests_kept)
+            set(_manifests "${_manifests_kept}")
+        else()
+            # No manifest claimed the document. Fall back to the file name, which is the
+            # manifest name whenever the author did not give the document a different one.
+            file(GLOB _manifests "${_generate}/${_doc_name}.*.files")
+        endif()
+        unset(_manifests_kept)
+        unset(_in_count)
+
         if (NOT _manifests)
-            message(FATAL_ERROR "Areg Setup: The code generator wrote no manifest for \'${model_doc}\'. Expected \'${_generate}/${_doc_name}.<kind>.files\'.")
+            message(FATAL_ERROR "Areg Setup: The code generator wrote no manifest for \'${model_doc}\'. Expected a \'<name>.<kind>.files\' file under \'${_generate}\'.")
             return()
         endif()
-
-        list(LENGTH _manifests _manifest_count)
-        if (_manifest_count GREATER 1)
-            set(_manifests_kept)
-            foreach(_manifest IN LISTS _manifests)
-                file(STRINGS "${_manifest}" _in_lines REGEX "^in:")
-                foreach(_line IN LISTS _in_lines)
-                    string(REGEX REPLACE "^in:" "" _line "${_line}")
-                    macro_cmake_path(_in_path "${_line}")
-                    macro_document_key(_in_id "${_in_path}")
-                    if ("${_in_id}" STREQUAL "${_doc_id}")
-                        list(APPEND _manifests_kept "${_manifest}")
-                        break()
-                    endif()
-                endforeach()
-            endforeach()
-            if (_manifests_kept)
-                set(_manifests "${_manifests_kept}")
-            endif()
-            unset(_manifests_kept)
-        endif()
-        unset(_manifest_count)
 
         set(_sources)
         set(_inputs)
@@ -1295,18 +1351,25 @@ macro(macro_add_generated_document lib_name model_doc codegen_root output_path c
         endif()
 
         # Remember every document this run read, so that a later call naming one of them,
-        # normally an import, knows it has nothing to do. The skip above cannot catch the
-        # case where the import is named before the document that imports it, which leaves
-        # two copies of one class in the library. Report it here, where the names are known.
+        # normally an import, knows it has nothing to do. The folder of a document follows the
+        # document and not the caller, so two calls that reach one import agree on where its
+        # files are. They disagree only if the two calls gave different project roots, and that
+        # does put two copies of the same classes in one library. Report it here.
         foreach(_input IN LISTS _inputs)
+            cmake_path(RELATIVE_PATH _input BASE_DIRECTORY "${_src_root}" OUTPUT_VARIABLE _input_rel)
+            cmake_path(GET _input_rel PARENT_PATH _input_gen)
+            # A document above the project root keeps its files inside the generate root.
+            string(REGEX REPLACE "^(\\.\\./)+" "" _input_gen "${_input_gen}")
+            set(_input_gen "${_gen_root}/${_input_gen}")
+
             macro_document_key(_input_id "${_input}")
             get_property(_input_lib GLOBAL PROPERTY AREG_GENDOC_${_input_id}_LIB)
             get_property(_input_dir GLOBAL PROPERTY AREG_GENDOC_${_input_id}_DIR)
-            if (_input_lib AND "${_input_lib}" STREQUAL "${lib_name}" AND NOT "${_input_dir}" STREQUAL "${_generate}")
-                message(WARNING "Areg Setup: \'${_input}\' is generated into \'${lib_name}\' twice, under \'${_input_dir}\' and under \'${_generate}\'. That is two copies of the same classes in one library. Name the document that IMPORTS it and drop the call that names it directly, or put the two calls in this order.")
+            if (_input_lib AND "${_input_lib}" STREQUAL "${lib_name}" AND NOT "${_input_dir}" STREQUAL "${_input_gen}")
+                message(WARNING "Areg Setup: \'${_input}\' is generated into \'${lib_name}\' twice, under \'${_input_dir}\' and under \'${_input_gen}\'. That is two copies of the same classes in one library. The two calls that reach this document gave different project roots; give them one root so the document keeps one place.")
             endif()
             set_property(GLOBAL PROPERTY AREG_GENDOC_${_input_id}_LIB "${lib_name}")
-            set_property(GLOBAL PROPERTY AREG_GENDOC_${_input_id}_DIR "${_generate}")
+            set_property(GLOBAL PROPERTY AREG_GENDOC_${_input_id}_DIR "${_input_gen}")
         endforeach()
 
         # Re-run CMake when any document the generator read is edited, not only the one this
@@ -1351,8 +1414,11 @@ macro(macro_add_generated_document lib_name model_doc codegen_root output_path c
     unset(_input_id)
     unset(_input_lib)
     unset(_input_dir)
+    unset(_input_rel)
+    unset(_input_gen)
     unset(_doc_path)
     unset(_doc_name)
+    unset(_src_root)
     unset(_gen_root)
     unset(_gen_target)
     unset(_lib_type)
@@ -1360,6 +1426,7 @@ macro(macro_add_generated_document lib_name model_doc codegen_root output_path c
     unset(_generate)
     unset(_tool_doc)
     unset(_tool_root)
+    unset(_tool_target)
     unset(_tool_jar)
     unset(_codegen_args)
     unset(_codegen_result)
@@ -1369,6 +1436,7 @@ macro(macro_add_generated_document lib_name model_doc codegen_root output_path c
     unset(_in_lines)
     unset(_line)
     unset(_in_path)
+    unset(_in_id)
     unset(_sources)
     unset(_inputs)
 
@@ -1379,37 +1447,57 @@ endmacro(macro_add_generated_document)
 # Purpose ....: A thin forwarder to macro_add_generated_document, kept because projects call
 #               it directly. It adds nothing of its own; see that macro for what happens.
 # Parameters .: The same, with ${interface_doc} being a Service Interface document (.siml).
-# Usage ......: macro_add_service_interface(<name-lib> <full-path-siml> <root-gen> <relative-path> <codegen-tool> [<lib-type>] [<export>])
+# Usage ......: macro_add_service_interface(<name-lib> <full-path-siml> <source-root> <root-gen> <doc-parent-path> <codegen-tool> [<lib-type>] [<export>])
 # ---------------------------------------------------------------------------
-macro(macro_add_service_interface lib_name interface_doc codegen_root output_path codegen_tool)
-    macro_add_generated_document(${lib_name} "${interface_doc}" "${codegen_root}" "${output_path}" "${codegen_tool}" ${ARGN})
+macro(macro_add_service_interface lib_name interface_doc source_root codegen_root output_path codegen_tool)
+    macro_add_generated_document(${lib_name} "${interface_doc}" "${source_root}" "${codegen_root}" "${output_path}" "${codegen_tool}" ${ARGN})
 endmacro(macro_add_service_interface)
 
 # ---------------------------------------------------------------------------
 # Function ...: addGeneratedDocumentImpl
-# Purpose ....: The shared body of addServiceInterfaceEx and addStateMachineEx: default the
-#               output path to the document's own parent and call
-#               macro_add_generated_document. It is separate only so the two public functions
+# Purpose ....: The shared body of addServiceInterfaceEx, addStateMachineEx and addDataTypeEx:
+#               take the document's own parent path as the output path and call
+#               macro_add_generated_document. It is separate only so the public functions
 #               cannot drift apart -- there is nothing document-type specific in here, which
 #               is the point.
 #
 #               A FUNCTION and not a macro, deliberately: 'cmake_path(GET <var> ...)' needs a
 #               real variable to read, and a macro parameter is a text substitution rather
 #               than a variable.
-# Parameters .: As addServiceInterfaceEx / addStateMachineEx, with the optional <lib-type> and
-#               <export> arriving in ${ARGN}.
-# Usage ......: addGeneratedDocumentImpl(<library-name> <source-root> <doc-relative-path> <generate-path> [<lib-type>] [<export>])
+# Parameters .: As addServiceInterfaceEx / addStateMachineEx / addDataTypeEx, with the optional
+#               <lib-type> and <export> arriving in ${ARGN}.
+# Usage ......: addGeneratedDocumentImpl(<library-name> <source-root> <doc-relative-path> [<lib-type>] [<export>])
 # ---------------------------------------------------------------------------
-function(addGeneratedDocumentImpl lib_name source_root doc_path generate_path)
-    set(_gen_path "${generate_path}")
-    if ("${_gen_path}" STREQUAL "")
-        cmake_path(GET doc_path PARENT_PATH _gen_path)
+function(addGeneratedDocumentImpl lib_name source_root doc_path)
+
+    # The Ex functions used to take a generate path in this position. The output folder now
+    # follows the document, so a fourth argument can only be the library type. Catch the old
+    # call shape here instead of letting a path be read as a library type.
+    set(_first_option "")
+    if (${ARGC} GREATER 3)
+        set(_first_option "${ARGV3}")
     endif()
+    if (NOT "${_first_option}" STREQUAL "" AND NOT "${_first_option}" STREQUAL "static" AND NOT "${_first_option}" STREQUAL "shared")
+        message(FATAL_ERROR "Areg Setup: \'${_first_option}\' is not a library type. The generate path argument of addServiceInterfaceEx, addStateMachineEx and addDataTypeEx was removed, because a document's generated files now go under the document's own path. Drop that argument. The call reads: addServiceInterfaceEx(<library> <source-root> <document> [static|shared] [<export>]).")
+        return()
+    endif()
+
+    # The document is named relative to the source root, or by an absolute path. Both reach
+    # the same generated files: the output folder mirrors where the document sits under the
+    # source root either way.
+    macro_absolute_path(_src_root "${source_root}" "${CMAKE_CURRENT_SOURCE_DIR}")
+    macro_absolute_path(_doc_full "${doc_path}" "${_src_root}")
+    cmake_path(RELATIVE_PATH _doc_full BASE_DIRECTORY "${_src_root}" OUTPUT_VARIABLE _doc_rel)
+    cmake_path(GET _doc_rel PARENT_PATH _gen_path)
+
+    # A document above the source root keeps its generated files inside the generate root.
+    string(REGEX REPLACE "^(\\.\\./)+" "" _gen_path "${_gen_path}")
 
     # The paths are handed over as CMake knows them. Converting them for the generator is
     # the job of the macro, which is the only place that talks to it.
     macro_add_generated_document(${lib_name}
-                                 "${source_root}/${doc_path}"
+                                 "${_doc_full}"
+                                 "${_src_root}"
                                  "${AREG_GENERATE_DIR}"
                                  "${_gen_path}"
                                  "${AREG_SDK_TOOLS}/codegen.jar"
@@ -1420,22 +1508,21 @@ endfunction(addGeneratedDocumentImpl)
 # Function ...: addServiceInterfaceEx
 # Purpose ....: Generates the code of one Service Interface document (.siml) into a library.
 #               The code generator tool is assumed to be at ${AREG_SDK_TOOLS}/codegen.jar and
-#               the generated files are placed under ${AREG_GENERATE_DIR}, in the
-#               subdirectory named by ${generate_path}.
+#               the generated files are placed under ${AREG_GENERATE_DIR}, in the folder the
+#               document's own path names under ${source_root}.
 # Parameters .: ${lib_name}         -- The name of the library to receive the generated code.
 #               ${source_root}      -- The root directory containing the project's source files.
 #               ${siml_path}        -- Path to the Service Interface document (.siml), relative to ${source_root}.
-#               ${generate_path}    -- Subdirectory within ${AREG_GENERATE_DIR} for the generated files.
 #               ${lib_type}         -- Optional: 'static' (default) or 'shared'.
 #               ${export_keyword}   -- Optional: the symbol export keyword. Empty by default for BOTH library
 #                                      types, including shared: an interface used only inside its own library
 #                                      needs no keyword, and a static library must never be given one.
-# Usage ......: addServiceInterfaceEx(<library-name> <source-root> <siml-relative-path> <generate-path> [<lib-type>] [<export>])
+# Usage ......: addServiceInterfaceEx(<library-name> <source-root> <siml-relative-path> [<lib-type>] [<export>])
 # Example ....:
-#   addServiceInterfaceEx(fun_library "/home/dev/project/fun/src" "fun/service/interfaces/FunService.siml" "fun/service/interfaces")
+#   addServiceInterfaceEx(fun_library "/home/dev/project/fun/src" "fun/service/interfaces/FunService.siml")
 # ---------------------------------------------------------------------------
-function(addServiceInterfaceEx lib_name source_root siml_path generate_path)
-    addGeneratedDocumentImpl("${lib_name}" "${source_root}" "${siml_path}" "${generate_path}" ${ARGN})
+function(addServiceInterfaceEx lib_name source_root siml_path)
+    addGeneratedDocumentImpl("${lib_name}" "${source_root}" "${siml_path}" ${ARGN})
 endfunction(addServiceInterfaceEx)
 
 # ---------------------------------------------------------------------------
@@ -1450,7 +1537,7 @@ endfunction(addServiceInterfaceEx)
 #   addServiceInterface(fun_library fun/service/interface/FunService.siml)
 # ---------------------------------------------------------------------------
 function(addServiceInterface lib_name siml_path)
-    addServiceInterfaceEx(${lib_name} "${PROJECT_SOURCE_DIR}" "${siml_path}" "")
+    addServiceInterfaceEx(${lib_name} "${PROJECT_SOURCE_DIR}" "${siml_path}")
 endfunction(addServiceInterface)
 
 # ---------------------------------------------------------------------------
@@ -1467,15 +1554,14 @@ endfunction(addServiceInterface)
 # Parameters .: ${lib_name}         -- The name of the library to receive the generated code.
 #               ${source_root}      -- The root directory containing the project's source files.
 #               ${fsml_path}        -- Path to the State Machine document (.fsml), relative to ${source_root}.
-#               ${generate_path}    -- Subdirectory within ${AREG_GENERATE_DIR} for the generated files.
 #               ${lib_type}         -- Optional: 'static' (default) or 'shared'.
 #               ${export_keyword}   -- Optional: the symbol export keyword, empty by default.
-# Usage ......: addStateMachineEx(<library-name> <source-root> <fsml-relative-path> <generate-path> [<lib-type>] [<export>])
+# Usage ......: addStateMachineEx(<library-name> <source-root> <fsml-relative-path> [<lib-type>] [<export>])
 # Example ....:
-#   addStateMachineEx(fun_library "/home/dev/project/fun/src" "fun/fsm/TrafficLight.fsml" "fun/fsm")
+#   addStateMachineEx(fun_library "/home/dev/project/fun/src" "fun/fsm/TrafficLight.fsml")
 # ---------------------------------------------------------------------------
-function(addStateMachineEx lib_name source_root fsml_path generate_path)
-    addGeneratedDocumentImpl("${lib_name}" "${source_root}" "${fsml_path}" "${generate_path}" ${ARGN})
+function(addStateMachineEx lib_name source_root fsml_path)
+    addGeneratedDocumentImpl("${lib_name}" "${source_root}" "${fsml_path}" ${ARGN})
 endfunction(addStateMachineEx)
 
 # ---------------------------------------------------------------------------
@@ -1491,8 +1577,47 @@ endfunction(addStateMachineEx)
 #   addStateMachine(fun_library fun/fsm/TrafficLight.fsml)
 # ---------------------------------------------------------------------------
 function(addStateMachine lib_name fsml_path)
-    addStateMachineEx(${lib_name} "${PROJECT_SOURCE_DIR}" "${fsml_path}" "")
+    addStateMachineEx(${lib_name} "${PROJECT_SOURCE_DIR}" "${fsml_path}")
 endfunction(addStateMachine)
+
+# ---------------------------------------------------------------------------
+# Function ...: addDataTypeEx
+# Purpose ....: Generates the code of one Data Type document (.dtml) into a library.
+#               The same jar, the same generated tree and the same rules as
+#               addServiceInterfaceEx -- only the document type differs.
+#
+#               A .dtml that is INCLUDED by a service interface or a state machine needs no
+#               call of its own: the generator produces it together with the document that
+#               includes it and lists it in the manifest. Call this only for a data type
+#               document that nothing includes, or to place one in the build before the
+#               documents that use it.
+# Parameters .: ${lib_name}         -- The name of the library to receive the generated code.
+#               ${source_root}      -- The root directory containing the project's source files.
+#               ${dtml_path}        -- Path to the Data Type document (.dtml), relative to ${source_root}.
+#               ${lib_type}         -- Optional: 'static' (default) or 'shared'.
+#               ${export_keyword}   -- Optional: the symbol export keyword, empty by default.
+# Usage ......: addDataTypeEx(<library-name> <source-root> <dtml-relative-path> [<lib-type>] [<export>])
+# Example ....:
+#   addDataTypeEx(fun_library "/home/dev/project/fun/src" "fun/common/SharedTypes.dtml")
+# ---------------------------------------------------------------------------
+function(addDataTypeEx lib_name source_root dtml_path)
+    addGeneratedDocumentImpl("${lib_name}" "${source_root}" "${dtml_path}" ${ARGN})
+endfunction(addDataTypeEx)
+
+# ---------------------------------------------------------------------------
+# Function ...: addDataType
+# Purpose ....: Simplified wrapper for addDataTypeEx, taking the source root to be
+#               ${PROJECT_SOURCE_DIR}. The .dtml counterpart of addServiceInterface, and
+#               deliberately the same call shape.
+# Parameters .: ${lib_name}     -- The name of the library to receive the generated code.
+#               ${dtml_path}    -- Path to the Data Type document (.dtml), relative to PROJECT_SOURCE_DIR.
+# Usage ......: addDataType(<library-name> <dtml-relative-path>)
+# Example ....:
+#   addDataType(fun_library fun/common/SharedTypes.dtml)
+# ---------------------------------------------------------------------------
+function(addDataType lib_name dtml_path)
+    addDataTypeEx(${lib_name} "${PROJECT_SOURCE_DIR}" "${dtml_path}")
+endfunction(addDataType)
 
 # ---------------------------------------------------------------------------
 # Function ...: removeEmptyDirs

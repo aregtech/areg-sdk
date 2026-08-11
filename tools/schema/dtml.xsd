@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    dtml.xsd - schema of the Lusan Data Type document format (.dtml),
+    FormatVersion 1.0.0. Checked against the Lusan readers and writers on 2026-08-11
+    (data/dt/*, data/common/*, common/XmlDT.hpp): every element and attribute below is one
+    the editor writes or the reader accepts, and nothing else is.
+
+    A data type document declares types that more than one service interface or state machine
+    needs, so that one declaration generates one header instead of each host repeating it. It
+    carries three sections, each of them tag for tag the section the other two document kinds
+    carry: Overview, DataTypeList and IncludeList. It has no attributes, no methods and no
+    constants, its Overview names neither a service category nor a threading mode, and its
+    IncludeList holds C++ headers only: a data type document may not include another one.
+
+    The document element is DataTypeDocument rather than DataType, because DataType is already
+    one declared type inside DataTypeList.
+
+    A host refers to these types qualified and unprefixed, as Space::Type, where Space is this
+    document's Overview@Name. That name is also the generated namespace and the generated file
+    name, so it is the author's to choose and does not have to match the file name.
+
+    Structural rules only. Rules the schema cannot express (XSD 1.0) are left to validation:
+      - document-wide name uniqueness, and the document name being a usable namespace
+      - every declared type resolving, including a structure's fields and a container's key
+        and value
+      - two enumerators of one enumeration carrying the same value
+      - literal syntax and type compatibility of a default value
+      - per-Type shape of DataType (Enumeration -> EnumEntry, Structure -> Field,
+        Imported -> Location/Namespace/ImportedObject, Container -> Container/BaseType*)
+      - an include naming another data type document, which is an error here
+ -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified">
+
+    <!-- ==================================================================  -->
+    <!-- Simple types                                                        -->
+    <!-- ==================================================================  -->
+
+    <xs:simpleType name="tId">
+        <xs:annotation><xs:documentation>Document-unique numeric identity; one counter, never reused.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:unsignedInt"/>
+    </xs:simpleType>
+
+    <xs:simpleType name="tIdentifier">
+        <xs:annotation><xs:documentation>Element name: C identifier.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[A-Za-z_][A-Za-z0-9_]*"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tTypeName">
+        <xs:annotation><xs:documentation>A declared type as this document spells it: a plain name
+            for a type declared here or a predefined one. A qualified name would name another data
+            type document, which this document kind may not include.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[A-Za-z_][A-Za-z0-9_]*(::[A-Za-z_][A-Za-z0-9_]*)*"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tVersion">
+        <xs:annotation><xs:documentation>Semantic version: major.minor.patch.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9]+\.[0-9]+\.[0-9]+"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tDataTypeKind">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Enumeration"/>
+            <xs:enumeration value="Structure"/>
+            <xs:enumeration value="Imported"/>
+            <xs:enumeration value="Container"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- ==================================================================  -->
+    <!-- Shared complex types                                                -->
+    <!-- ==================================================================  -->
+
+    <xs:complexType name="cDescription">
+        <xs:simpleContent>
+            <xs:extension base="xs:string"/>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="cFieldValue">
+        <xs:annotation><xs:documentation>A value, and whether it is the declaration's default.
+            The flag is what the document stores, so a default with no literal yet still comes
+            back as a default.</xs:documentation></xs:annotation>
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="IsDefault" type="xs:boolean"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <!-- Every declaration below takes its children in any order: the readers dispatch on the
+         element name rather than on position.  -->
+
+    <xs:complexType name="cEnumEntry">
+        <xs:annotation><xs:documentation>An enumerator. Its Value is a child element and carries
+            no IsDefault: an empty or absent one means the enumeration continues from the previous
+            entry, exactly as C++ does. A Value attribute here is not read, so a value written
+            that way is silently lost.</xs:documentation></xs:annotation>
+        <xs:all>
+            <xs:element name="DeprecateHint" type="cDescription" minOccurs="0"/>
+            <xs:element name="Value" type="xs:string" minOccurs="0"/>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:complexType name="cField">
+        <xs:annotation><xs:documentation>One member of a structure. Its default is the Value
+            child; a Value attribute here is not read.</xs:documentation></xs:annotation>
+        <xs:all>
+            <xs:element name="DeprecateHint" type="cDescription" minOccurs="0"/>
+            <xs:element name="Value" type="cFieldValue" minOccurs="0"/>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="DataType" type="tTypeName" use="required"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:complexType name="cFieldList">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="EnumEntry" type="cEnumEntry"/>
+            <xs:element name="Field" type="cField"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="cDataType">
+        <xs:annotation><xs:documentation>One declared type. Enumeration uses EnumEntry children,
+            Structure uses Field children, Imported carries Location / Namespace / ImportedObject,
+            and Container carries Container plus BaseTypeValue, with BaseTypeKey for the keyed
+            containers (HashMap, Map, Pair). The children are written in the writer's fixed order,
+            so the choice is unordered here only to keep hand-edited documents
+            loadable.</xs:documentation></xs:annotation>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="DeprecateHint" type="cDescription"/>
+            <xs:element name="Description" type="cDescription"/>
+            <xs:element name="FieldList" type="cFieldList"/>
+            <xs:element name="Location" type="xs:string"/>
+            <xs:element name="Namespace" type="xs:string"/>
+            <xs:element name="ImportedObject" type="xs:string"/>
+            <xs:element name="Container" type="xs:string"/>
+            <xs:element name="BaseTypeValue" type="xs:string"/>
+            <xs:element name="BaseTypeKey" type="xs:string"/>
+        </xs:choice>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="Type" type="tDataTypeKind" use="required"/>
+        <xs:attribute name="Values" type="xs:string"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+        <!-- Values: the integral type an enumeration derives from; "default" means the
+             generator picks one. Meaningless on every other kind.  -->
+    </xs:complexType>
+
+    <xs:complexType name="cLocation">
+        <xs:annotation><xs:documentation>One C++ header the declared types need, emitted as an
+            include line of the generated header. Name is the path as spelled under a workspace
+            root. Nothing here carries an alias or a pinned version: those belong to a state
+            machine importing another state machine.</xs:documentation></xs:annotation>
+        <xs:all>
+            <xs:element name="DeprecateHint" type="cDescription" minOccurs="0"/>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="xs:string" use="required"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+    </xs:complexType>
+
+    <!-- ==================================================================  -->
+    <!-- Root                                                                -->
+    <!-- ==================================================================  -->
+
+    <xs:complexType name="cOverview">
+        <xs:annotation><xs:documentation>What the document says about itself. Name is the
+            generated namespace and the generated file name, and the spelling a host uses in
+            front of the two colons.</xs:documentation></xs:annotation>
+        <xs:all>
+            <xs:element name="DeprecateHint" type="cDescription" minOccurs="0"/>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="Version" type="tVersion" use="required"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:element name="DataTypeDocument">
+        <xs:complexType>
+            <xs:all>
+                <xs:element name="Overview" type="cOverview"/>
+                <xs:element name="DataTypeList" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="DataType" type="cDataType" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="IncludeList" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Location" type="cLocation" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:all>
+            <xs:attribute name="FormatVersion" type="tVersion" use="required"/>
+        </xs:complexType>
+
+        <!-- Document-wide ID uniqueness (elements without ID are not constrained)  -->
+        <xs:unique name="uniqueElementId">
+            <xs:selector xpath=".//*"/>
+            <xs:field xpath="@ID"/>
+        </xs:unique>
+    </xs:element>
+
+</xs:schema>
