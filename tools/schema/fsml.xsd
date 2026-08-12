@@ -372,8 +372,7 @@
     </xs:complexType>
 
     <!-- gOperation is a closed set: these five operations are the whole vocabulary of an
-         EntryList, an ExitList and a transition's OperationList. Anything else is error 34.
-         InlineCode was removed from the format on 2026-08-09. -->
+         EntryList, an ExitList and a transition's OperationList. Anything else is error 34. -->
     <xs:group name="gOperation">
         <xs:choice>
             <xs:element name="ActionCall" type="cActionCall"/>
