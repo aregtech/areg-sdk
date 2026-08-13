@@ -296,6 +296,18 @@ if (NOT ${Java_FOUND})
     find_package(Java COMPONENTS Development)
 endif()
 
+# Short-lived JVM options for the code generator, probed once. 
+# Empty if the runtime rejects them: an unknown -XX option stops the JVM instead of warning.
+set(AREG_JAVA_FAST_OPT "")
+if (Java_FOUND)
+    execute_process(COMMAND ${Java_JAVA_EXECUTABLE} -XX:TieredStopAtLevel=1 -XX:+UseSerialGC -version
+                    OUTPUT_QUIET ERROR_QUIET RESULT_VARIABLE _java_fast)
+    if (_java_fast EQUAL 0)
+        set(AREG_JAVA_FAST_OPT -XX:TieredStopAtLevel=1 -XX:+UseSerialGC)
+    endif()
+    unset(_java_fast)
+endif()
+
 # Check and setup variables for installation
 if (AREG_INSTALL)
     option(INSTALL_GTEST "Disable Googletest installation" OFF)

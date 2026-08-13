@@ -1150,49 +1150,43 @@ endfunction(addSharedLib)
 
 # ---------------------------------------------------------------------------
 # Macro ......: macro_add_generated_document
-# Purpose ....: Runs the code generator on a single model document and adds the produced
-#               files to a library. Any document type is accepted, Service Interface
-#               (.siml), State Machine (.fsml) or Data Type (.dtml), because the tool picks
-#               the generator by file extension. The named wrappers below
-#               (addServiceInterface, addStateMachine, addDataType,
-#               macro_add_service_interface) only forward to this macro.
+# Purpose ....: Registers one model document (.siml, .fsml, .dtml) for code generation and binds
+#               its generated sources to a library target. The generator is picked by extension.
+#               Backend of macro_add_service_interface, addServiceInterface, addStateMachine
+#               and addDataType.
 #
-#               The list of generated files comes from the manifest, not from this file.
-#               The generator writes '<Name>.<kind>.files' next to the output, one tagged
-#               entry per line: 'out:' for a generated file, 'in:' for a document that was
-#               read. A missing manifest aborts the configuration, since it means the tool
-#               did not run or rejected the document.
+#               Steps:
+#                 - Resolves ${source_root} against CMAKE_CURRENT_SOURCE_DIR, then ${model_doc}
+#                   and ${codegen_root} against ${source_root}.
+#                 - Creates ${lib_name} with no sources if it does not exist, so target_*() calls
+#                   work right after this macro. An existing target is reused and ${lib_type}
+#                   is ignored.
+#                 - Appends the document to the global properties AREG_GENDOC_<index>_* and
+#                   increments AREG_GENDOC_COUNT.
+#                 - On the first call, defers areg_generate_documents to the end of
+#                   CMAKE_SOURCE_DIR, guarded by AREG_GENDOC_ARMED.
 #
-#               Put the generated files of one project in one library. Calling this macro
-#               several times with the same target is the normal usage, and CMake drops
-#               repeated file paths on its own.
+#               Generates nothing itself. areg_generate_documents runs the tool, reads the
+#               manifest '<Name>.<kind>.files' from ${codegen_root}/${output_path} ('out:' lines
+#               are generated files, 'in:' lines are documents read) and adds the 'out:' files to
+#               ${lib_name}. Repeated calls with the same target are expected, CMake drops
+#               duplicate paths. An imported document is generated with its host, once per library.
 #
-#               A document that is imported by another document is generated together with
-#               its host. Naming such an import in a separate call to the same library is
-#               therefore skipped: the generator has already written its files. A call for a
-#               different library is a different program, so it gets its own copy.
+#               FATAL_ERROR on: Java not found, ${model_doc} does not exist, ${model_doc} has no
+#               file name, manifest absent after the run.
 #
-#               Every document a run touches is placed by its own location: the generate root
-#               plus the document's parent path under the project root. Two documents that
-#               import a third one therefore produce one copy of it, at one path.
-#
-# Parameters .: ${lib_name}         -- Library to receive the generated files. Created if it does not exist.
-#               ${model_doc}        -- Path to the model document (.siml, .fsml, .dtml), in the form
-#                                      CMake uses, absolute or relative to ${source_root}. The
-#                                      conversion for the generator happens here.
-#               ${source_root}      -- The project root the document belongs to, absolute or relative to
-#                                      the directory being configured. The generator resolves every path
-#                                      against it, including the imports a document names.
-#               ${codegen_root}     -- The generate root: the single folder the generated files of the
-#                                      whole project are written under, absolute or relative to
-#                                      ${source_root}.
-#               ${output_path}      -- The document's own parent path, relative to ${source_root}. That is
-#                                      where the generator writes this document's files and its manifest.
+# Parameters .: ${lib_name}         -- Target to receive the generated sources. Created if absent.
+#               ${model_doc}        -- Model document path, absolute or relative to ${source_root}.
+#               ${source_root}      -- Project root, absolute or relative to CMAKE_CURRENT_SOURCE_DIR.
+#                                      Every path in the document, imports included, resolves against it.
+#               ${codegen_root}     -- Root of the generated output, absolute or relative to ${source_root}.
+#               ${output_path}      -- Subdirectory under ${codegen_root} for this document, given as
+#                                      the document's parent path relative to ${source_root}.
 #               ${codegen_tool}     -- Full path to codegen.jar.
-#               ${lib_type}         -- Optional: 'static' (default) or 'shared'. Ignored, with a note, if the target already exists.
-#               ${export_keyword}   -- Optional: passed to the tool as --export=<KEYWORD>, and only when non-empty.
+#               ${lib_type}         -- Optional, ARGV6: 'static' (default) or 'shared'.
+#               ${export_keyword}   -- Optional, ARGV7: passed as --export=<KEYWORD> when not empty.
 #
-# Usage ......: macro_add_generated_document(<name-lib> <full-path-doc> <source-root> <root-gen> <doc-parent-path> <codegen-tool> [<lib-type>] [<export>])
+# Usage ......: macro_add_generated_document(<lib-name> <document> <source-root> <codegen-root> <output-path> <codegen-tool> [<lib-type>] [<export>])
 # Example ....:
 #   macro_add_generated_document(funlib "/home/dev/fun/src/service/HelloWorld.siml" "/home/dev/fun/src" "/home/dev/fun/product/generate" "service" /tools/areg/codegen.jar)
 #   macro_add_generated_document(funlib "/home/dev/fun/src/fsm/TrafficLight.fsml"   "/home/dev/fun/src" "/home/dev/fun/product/generate" "fsm"     /tools/areg/codegen.jar)
@@ -1242,60 +1236,185 @@ macro(macro_add_generated_document lib_name model_doc source_root codegen_root o
         set(_export_keyword "${ARGV7}")
     endif()
 
-    # Nothing to do if an earlier call already generated this document into the same
-    # library as an import. A different library gets its own copy.
     macro_document_key(_doc_id "${_doc_path}")
-    get_property(_doc_owner GLOBAL PROPERTY AREG_GENDOC_${_doc_id}_LIB)
-    set(_doc_skip FALSE)
-    if (_doc_owner)
-        if ("${_doc_owner}" STREQUAL "${lib_name}")
-            set(_doc_skip TRUE)
-            message(STATUS "Areg Setup: \'${model_doc}\' is already generated into \'${lib_name}\' by the document that imports it. Nothing to do.")
-        else()
-            message(WARNING "Areg Setup: \'${model_doc}\' is generated into \'${_doc_owner}\' and now into \'${lib_name}\' as well. Linking both libraries into one program is a duplicate symbol error. All generated documents of a project belong in one library.")
+
+    # Create the library target empty. Callers name it right after this call and detect a
+    # library by 'if (TARGET)'. Its sources are added by areg_generate_documents.
+    if (AREG_GENERATE_ONLY)
+        if (NOT TARGET ${lib_name})
+            message(STATUS "Areg: >>> AREG_GENERATE_ONLY=ON: Skipping library '${lib_name}'")
+            add_library(${lib_name} INTERFACE)
         endif()
+    elseif (TARGET ${lib_name})
+        # The sources join the existing target and the requested library type does not apply.
+        if (NOT "${_lib_type}" STREQUAL "static")
+            message(STATUS "Areg Setup: Target '${lib_name}' already exists; the requested '${_lib_type}' library type is ignored.")
+        endif()
+    elseif ("${_lib_type}" STREQUAL "shared")
+        message(STATUS "Areg Setup: Adding new generated shared library ${lib_name}")
+        set(_no_sources "")
+        addSharedLib(${lib_name} "${_no_sources}")
+        target_compile_options(${lib_name} PRIVATE "${AREG_OPT_DISABLE_WARN_CODEGEN}")
+        unset(_no_sources)
+    else()
+        message(STATUS "Areg Setup: Adding new generated static library ${lib_name}")
+        set(_no_sources "")
+        addStaticLib(${lib_name} "${_no_sources}")
+        target_compile_options(${lib_name} PRIVATE "${AREG_OPT_DISABLE_WARN_CODEGEN}")
+        unset(_no_sources)
     endif()
 
-    if (NOT _doc_skip)
+    # Record the document for areg_generate_documents. '_DIR' is the calling directory, needed
+    # because source file and directory properties are set there, not where the generate runs.
+    get_property(_doc_index GLOBAL PROPERTY AREG_GENDOC_COUNT)
+    if (NOT _doc_index)
+        set(_doc_index 0)
+    endif()
+    set_property(GLOBAL PROPERTY AREG_GENDOC_${_doc_index}_LIB     "${lib_name}")
+    set_property(GLOBAL PROPERTY AREG_GENDOC_${_doc_index}_MODEL   "${model_doc}")
+    set_property(GLOBAL PROPERTY AREG_GENDOC_${_doc_index}_DOC     "${_doc_path}")
+    set_property(GLOBAL PROPERTY AREG_GENDOC_${_doc_index}_NAME    "${_doc_name}")
+    set_property(GLOBAL PROPERTY AREG_GENDOC_${_doc_index}_ID      "${_doc_id}")
+    set_property(GLOBAL PROPERTY AREG_GENDOC_${_doc_index}_SRCROOT "${_src_root}")
+    set_property(GLOBAL PROPERTY AREG_GENDOC_${_doc_index}_GENROOT "${_gen_root}")
+    set_property(GLOBAL PROPERTY AREG_GENDOC_${_doc_index}_GENDIR  "${_gen_root}/${_gen_target}")
+    set_property(GLOBAL PROPERTY AREG_GENDOC_${_doc_index}_EXPORT  "${_export_keyword}")
+    set_property(GLOBAL PROPERTY AREG_GENDOC_${_doc_index}_JAR     "${codegen_tool}")
+    set_property(GLOBAL PROPERTY AREG_GENDOC_${_doc_index}_DIR     "${CMAKE_CURRENT_SOURCE_DIR}")
+    math(EXPR _doc_index "${_doc_index} + 1")
+    set_property(GLOBAL PROPERTY AREG_GENDOC_COUNT ${_doc_index})
 
-        # Where this document's own files and its manifest land.
-        set(_generate "${_gen_root}/${_gen_target}")
+    # Arm the generate step once, deferred to the end of the top level directory.
+    get_property(_doc_armed GLOBAL PROPERTY AREG_GENDOC_ARMED)
+    if (NOT _doc_armed)
+        set_property(GLOBAL PROPERTY AREG_GENDOC_ARMED TRUE)
+        cmake_language(DEFER DIRECTORY "${CMAKE_SOURCE_DIR}" CALL areg_generate_documents)
+    endif()
 
-        # Run the code generator. The export keyword is passed only when requested: a document
-        # used inside its own library needs none, and a static library must never get one.
-        #
-        # '--root' is the project root and not the generate folder: an import is named by a path
-        # anchored there, and the tool cannot find it otherwise. '--target' is the generate root
-        # for the whole project, absolute, because an out-of-source build can put it on another
-        # drive. The tool gives each document the folder its own path names underneath it.
-        macro_normalize_path(_tool_doc    "${_doc_path}")
-        macro_normalize_path(_tool_root   "${_src_root}")
-        macro_normalize_path(_tool_target "${_gen_root}")
-        macro_normalize_path(_tool_jar    "${codegen_tool}")
+    unset(_doc_armed)
+    unset(_doc_index)
+    unset(_doc_id)
+    unset(_doc_owner)
+    unset(_doc_path)
+    unset(_doc_name)
+    unset(_src_root)
+    unset(_gen_root)
+    unset(_gen_target)
+    unset(_lib_type)
+    unset(_export_keyword)
 
-        set(_codegen_args --doc=${_tool_doc} --root=${_tool_root} --target=${_tool_target})
-        if (NOT "${_export_keyword}" STREQUAL "")
-            list(APPEND _codegen_args --export=${_export_keyword})
+endmacro(macro_add_generated_document)
+
+# ---------------------------------------------------------------------------
+# Function ...: areg_generate_documents
+# Purpose ....: Generates every document collected by macro_add_generated_document, then adds
+#               the generated files to the library each document was declared for.
+#
+#               Documents sharing project root, generate root, export keyword and tool are
+#               generated by one run of the tool: '--docs' takes a list file and applies one
+#               command line to all of it. One JVM per project instead of one per document.
+#
+#               Runs once. Deferred by the first macro_add_generated_document call to the end
+#               of the top level directory, where the whole set is known.
+# Parameters .: None. Reads the AREG_GENDOC_* global properties written by the collect step.
+# Usage ......: Not called directly.
+# ---------------------------------------------------------------------------
+function(areg_generate_documents)
+
+    get_property(_count GLOBAL PROPERTY AREG_GENDOC_COUNT)
+    if (NOT _count)
+        return()
+    endif()
+    math(EXPR _last "${_count} - 1")
+
+    # Group the documents by everything a single run cannot vary inside itself.
+    set(_group_ids)
+    foreach(_i RANGE 0 ${_last})
+        get_property(_src    GLOBAL PROPERTY AREG_GENDOC_${_i}_SRCROOT)
+        get_property(_gen    GLOBAL PROPERTY AREG_GENDOC_${_i}_GENROOT)
+        get_property(_export GLOBAL PROPERTY AREG_GENDOC_${_i}_EXPORT)
+        get_property(_jar    GLOBAL PROPERTY AREG_GENDOC_${_i}_JAR)
+        get_property(_doc    GLOBAL PROPERTY AREG_GENDOC_${_i}_DOC)
+
+        string(MD5 _gid "${_src}|${_gen}|${_export}|${_jar}")
+        if (NOT "${_gid}" IN_LIST _group_ids)
+            list(APPEND _group_ids "${_gid}")
+            set(_grp_${_gid}_SRCROOT "${_src}")
+            set(_grp_${_gid}_GENROOT "${_gen}")
+            set(_grp_${_gid}_EXPORT  "${_export}")
+            set(_grp_${_gid}_JAR     "${_jar}")
+        endif()
+        list(APPEND _grp_${_gid}_DOCS "${_doc}")
+    endforeach()
+
+    # Run the tool, once per group.
+    set(_group_nr 0)
+    foreach(_gid IN LISTS _group_ids)
+        set(_src    "${_grp_${_gid}_SRCROOT}")
+        set(_gen    "${_grp_${_gid}_GENROOT}")
+        set(_export "${_grp_${_gid}_EXPORT}")
+        set(_jar    "${_grp_${_gid}_JAR}")
+        set(_docs   "${_grp_${_gid}_DOCS}")
+
+        macro_normalize_path(_tool_root   "${_src}")
+        macro_normalize_path(_tool_target "${_gen}")
+        macro_normalize_path(_tool_jar    "${_jar}")
+
+        # The list the tool reads: one document per line, in the order they were declared.
+        file(MAKE_DIRECTORY "${_gen}")
+        set(_list_file "${_gen}/codegen-documents-${_group_nr}.lst")
+        set(_list_text "")
+        foreach(_doc IN LISTS _docs)
+            macro_normalize_path(_tool_doc "${_doc}")
+            string(APPEND _list_text "${_tool_doc}\n")
+        endforeach()
+        file(WRITE "${_list_file}" "${_list_text}")
+        macro_normalize_path(_tool_list "${_list_file}")
+
+        set(_codegen_args --docs=${_tool_list} --root=${_tool_root} --target=${_tool_target})
+        if (NOT "${_export}" STREQUAL "")
+            list(APPEND _codegen_args --export=${_export})
         endif()
 
-        # Check the exit code here. A rejected document that reaches the compiler shows up as
-        # a missing header, naming neither the document nor the reason.
-        execute_process(COMMAND ${Java_JAVA_EXECUTABLE} -jar ${_tool_jar} ${_codegen_args}
+        # A rejected document reaches the compiler as a missing header, naming neither the
+        # document nor the reason. The tool output names them, this only stops the configure.
+        execute_process(COMMAND ${Java_JAVA_EXECUTABLE} ${AREG_JAVA_FAST_OPT} -jar ${_tool_jar} ${_codegen_args}
                         RESULT_VARIABLE _codegen_result)
         if (NOT _codegen_result EQUAL 0)
-            message(FATAL_ERROR "Areg Setup: The code generator refused or failed on \'${model_doc}\' (exit ${_codegen_result}). See the output above for the rule and the element.")
+            message(FATAL_ERROR "Areg Setup: The code generator refused or failed on the documents of \'${_list_file}\' (exit ${_codegen_result}). See the output above for the document, the rule and the element.")
             return()
         endif()
 
-        # Find the manifest this run wrote. It is named after the document's declared name and
-        # not after the file, and the two are allowed to differ, so the file name cannot be the
-        # search key. Read the manifests of the folder instead and let each one say what it is.
-        #
-        # A manifest lists the documents its run read in 'in:' lines, the imports first and the
-        # named document last. That last entry tells this run's manifest from the manifest of
-        # another document sharing the folder, and from the manifest of a run that read this
-        # document only as an import. The kind in the name ('.si', '.fsm', '.dt') is what lets
-        # 'HelloWorld.siml' and 'HelloWorld.fsml' live side by side.
+        math(EXPR _group_nr "${_group_nr} + 1")
+    endforeach()
+
+    # Give every library the files its own documents produced, in the order they were declared.
+    foreach(_i RANGE 0 ${_last})
+        get_property(_lib       GLOBAL PROPERTY AREG_GENDOC_${_i}_LIB)
+        get_property(_model     GLOBAL PROPERTY AREG_GENDOC_${_i}_MODEL)
+        get_property(_doc       GLOBAL PROPERTY AREG_GENDOC_${_i}_DOC)
+        get_property(_doc_name  GLOBAL PROPERTY AREG_GENDOC_${_i}_NAME)
+        get_property(_doc_id    GLOBAL PROPERTY AREG_GENDOC_${_i}_ID)
+        get_property(_src_root  GLOBAL PROPERTY AREG_GENDOC_${_i}_SRCROOT)
+        get_property(_gen_root  GLOBAL PROPERTY AREG_GENDOC_${_i}_GENROOT)
+        get_property(_generate  GLOBAL PROPERTY AREG_GENDOC_${_i}_GENDIR)
+        get_property(_call_dir  GLOBAL PROPERTY AREG_GENDOC_${_i}_DIR)
+
+        # Skip if an earlier document of this run already generated it as an import into the
+        # same library. A different library gets its own copy.
+        get_property(_doc_owner GLOBAL PROPERTY AREG_GENDOC_${_doc_id}_LIB)
+        if (_doc_owner)
+            if ("${_doc_owner}" STREQUAL "${_lib}")
+                message(STATUS "Areg Setup: \'${_model}\' is already generated into \'${_lib}\' by the document that imports it. Nothing to do.")
+                continue()
+            else()
+                message(WARNING "Areg Setup: \'${_model}\' is generated into \'${_doc_owner}\' and now into \'${_lib}\' as well. Linking both libraries into one program is a duplicate symbol error. All generated documents of a project belong in one library.")
+            endif()
+        endif()
+
+        # Find this document's manifest. It is named after the document's declared name, which
+        # may differ from the file name, match on content: the last 'in:' line of a manifest
+        # is the document it was written for, the earlier ones are its imports.
         file(GLOB _manifests "${_generate}/*.files")
         set(_manifests_kept)
         foreach(_manifest IN LISTS _manifests)
@@ -1316,15 +1435,12 @@ macro(macro_add_generated_document lib_name model_doc source_root codegen_root o
         if (_manifests_kept)
             set(_manifests "${_manifests_kept}")
         else()
-            # No manifest claimed the document. Fall back to the file name, which is the
-            # manifest name whenever the author did not give the document a different one.
+            # No manifest claimed it. Fall back to the file name.
             file(GLOB _manifests "${_generate}/${_doc_name}.*.files")
         endif()
-        unset(_manifests_kept)
-        unset(_in_count)
 
         if (NOT _manifests)
-            message(FATAL_ERROR "Areg Setup: The code generator wrote no manifest for \'${model_doc}\'. Expected a \'<name>.<kind>.files\' file under \'${_generate}\'.")
+            message(FATAL_ERROR "Areg Setup: The code generator wrote no manifest for \'${_model}\'. Expected a \'<name>.<kind>.files\' file under \'${_generate}\'.")
             return()
         endif()
 
@@ -1346,15 +1462,13 @@ macro(macro_add_generated_document lib_name model_doc source_root codegen_root o
         endforeach()
 
         if (NOT _sources)
-            message(FATAL_ERROR "Areg Setup: The manifest for \'${model_doc}\' lists no generated file.")
+            message(FATAL_ERROR "Areg Setup: The manifest for \'${_model}\' lists no generated file.")
             return()
         endif()
 
-        # Remember every document this run read, so that a later call naming one of them,
-        # normally an import, knows it has nothing to do. The folder of a document follows the
-        # document and not the caller, so two calls that reach one import agree on where its
-        # files are. They disagree only if the two calls gave different project roots, and that
-        # does put two copies of the same classes in one library. Report it here.
+        # Claim every document read, imports included, so a later one naming it skips. The
+        # generated folder follows the document, so it differs only on a different project root,
+        # which would put two copies of the same classes in one library.
         foreach(_input IN LISTS _inputs)
             cmake_path(RELATIVE_PATH _input BASE_DIRECTORY "${_src_root}" OUTPUT_VARIABLE _input_rel)
             cmake_path(GET _input_rel PARENT_PATH _input_gen)
@@ -1365,82 +1479,26 @@ macro(macro_add_generated_document lib_name model_doc source_root codegen_root o
             macro_document_key(_input_id "${_input}")
             get_property(_input_lib GLOBAL PROPERTY AREG_GENDOC_${_input_id}_LIB)
             get_property(_input_dir GLOBAL PROPERTY AREG_GENDOC_${_input_id}_DIR)
-            if (_input_lib AND "${_input_lib}" STREQUAL "${lib_name}" AND NOT "${_input_dir}" STREQUAL "${_input_gen}")
-                message(WARNING "Areg Setup: \'${_input}\' is generated into \'${lib_name}\' twice, under \'${_input_dir}\' and under \'${_input_gen}\'. That is two copies of the same classes in one library. The two calls that reach this document gave different project roots; give them one root so the document keeps one place.")
+            if (_input_lib AND "${_input_lib}" STREQUAL "${_lib}" AND NOT "${_input_dir}" STREQUAL "${_input_gen}")
+                message(WARNING "Areg Setup: \'${_input}\' is generated into \'${_lib}\' twice, under \'${_input_dir}\' and under \'${_input_gen}\'. That is two copies of the same classes in one library. The two calls that reach this document gave different project roots; give them one root so the document keeps one place.")
             endif()
-            set_property(GLOBAL PROPERTY AREG_GENDOC_${_input_id}_LIB "${lib_name}")
+            set_property(GLOBAL PROPERTY AREG_GENDOC_${_input_id}_LIB "${_lib}")
             set_property(GLOBAL PROPERTY AREG_GENDOC_${_input_id}_DIR "${_input_gen}")
         endforeach()
 
-        # Re-run CMake when any document the generator read is edited, not only the one this
-        # call named. Otherwise editing an import regenerates nothing and the build quietly
-        # compiles the previous code.
-        set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${_inputs})
+        # Re-configure when any document read is edited, imports included.
+        set_property(DIRECTORY "${_call_dir}" APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${_inputs})
 
-        # Add to build targets if in generate-only mode
-        if (AREG_GENERATE_ONLY)
-            message(STATUS "Areg: >>> AREG_GENERATE_ONLY=ON: Skipping library '${lib_name}'")
-            if (NOT TARGET ${lib_name})
-                add_library(${lib_name} INTERFACE)
-            endif()
-        elseif (TARGET ${lib_name})
-            # The target already exists, so the generated sources join it and the requested
-            # library type does not apply. Report it instead of ignoring it quietly.
-            if (NOT "${_lib_type}" STREQUAL "static")
-                message(STATUS "Areg Setup: Target '${lib_name}' already exists; the requested '${_lib_type}' library type is ignored.")
-            endif()
+        if (NOT AREG_GENERATE_ONLY)
+            target_sources(${_lib} PRIVATE "${_sources}")
 
-            target_sources(${lib_name} PRIVATE "${_sources}")
-
-            # Set on the sources and not on the target. Warnings in generated code cannot be
-            # fixed by the developer, while the rest of the target keeps its own warning level.
-            set_source_files_properties(${_sources} PROPERTIES COMPILE_OPTIONS "${AREG_OPT_DISABLE_WARN_CODEGEN}")
-        elseif ("${_lib_type}" STREQUAL "shared")
-            message(STATUS "Areg Setup: Adding new generated shared library ${lib_name}")
-            addSharedLib(${lib_name} "${_sources}")
-            target_compile_options(${lib_name} PRIVATE "${AREG_OPT_DISABLE_WARN_CODEGEN}")
-        else()
-            message(STATUS "Areg Setup: Adding new generated static library ${lib_name}")
-            addStaticLib(${lib_name} "${_sources}")
-            target_compile_options(${lib_name} PRIVATE "${AREG_OPT_DISABLE_WARN_CODEGEN}")
+            # On the sources, so the rest of the target keeps its own warning level.
+            set_source_files_properties(${_sources} DIRECTORY "${_call_dir}"
+                                        PROPERTIES COMPILE_OPTIONS "${AREG_OPT_DISABLE_WARN_CODEGEN}")
         endif()
+    endforeach()
 
-    endif()
-
-    unset(_doc_id)
-    unset(_doc_owner)
-    unset(_doc_skip)
-    unset(_input)
-    unset(_input_id)
-    unset(_input_lib)
-    unset(_input_dir)
-    unset(_input_rel)
-    unset(_input_gen)
-    unset(_doc_path)
-    unset(_doc_name)
-    unset(_src_root)
-    unset(_gen_root)
-    unset(_gen_target)
-    unset(_lib_type)
-    unset(_export_keyword)
-    unset(_generate)
-    unset(_tool_doc)
-    unset(_tool_root)
-    unset(_tool_target)
-    unset(_tool_jar)
-    unset(_codegen_args)
-    unset(_codegen_result)
-    unset(_manifests)
-    unset(_manifest)
-    unset(_out_lines)
-    unset(_in_lines)
-    unset(_line)
-    unset(_in_path)
-    unset(_in_id)
-    unset(_sources)
-    unset(_inputs)
-
-endmacro(macro_add_generated_document)
+endfunction(areg_generate_documents)
 
 # ---------------------------------------------------------------------------
 # Macro ......: macro_add_service_interface
@@ -1810,7 +1868,15 @@ function(printAregConfigStatus var_make_print var_prefix var_header var_footer)
     message(STATUS "${var_prefix}: >>> Generated Files Dir : '${AREG_GENERATE_DIR}'")
     message(STATUS "${var_prefix}: >>> Packages Dir .......: '${FETCHCONTENT_BASE_DIR}'")
     message(STATUS "${var_prefix}: >>> Build Modules ......: areg = '${AREG_LIB_TYPE}', aregextend = static, areglogger = '${AREG_LOGGER_LIB_TYPE}', executable extension '${CMAKE_EXECUTABLE_SUFFIX}'")
+    if (AREG_JAVA_FAST_OPT)
+        set(_java_fast_state "on")
+    elseif (Java_FOUND)
+        set(_java_fast_state "off, this runtime does not accept them")
+    else()
+        set(_java_fast_state "off, no Java runtime")
+    endif()
     message(STATUS "${var_prefix}: >>> Java Version .......: '${Java_VERSION_STRING}', Java executable = '${Java_JAVA_EXECUTABLE}', minimum version required = 17")
+    message(STATUS "${var_prefix}: >>> Java Launch Options : fast start of the code generator = '${_java_fast_state}'")
     message(STATUS "${var_prefix}: >>> Packages Use .......: SQLite3 package use = '${AREG_SYSTEM_SQLITE}', GTest package use = '${AREG_SYSTEM_GTEST}'")
     message(STATUS "${var_prefix}: >>> Feature Options ....: Logs = '${AREG_LOGGING}', Extended = '${AREG_EXTENDED}'")
     message(STATUS "${var_prefix}: >>> Other Options ......: Examples = '${AREG_EXAMPLES}', Unit Tests = '${AREG_TESTS}'")
