@@ -90,8 +90,7 @@ Before using services, the clients should be registered.</Description>
         </Method>
     </MethodList>
     <ConstantList>
-        <Constant ID="36" Name="MaximumOutputs" DataType="uint32">
-            <Value>50</Value>
+        <Constant ID="36" Name="MaximumOutputs" DataType="uint32" Value="50">
             <Description>The maximum numbers of outputs.</Description>
         </Constant>
     </ConstantList>

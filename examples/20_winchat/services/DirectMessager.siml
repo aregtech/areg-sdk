@@ -139,16 +139,13 @@
         </Method>
     </MethodList>
     <ConstantList>
-        <Constant ID="40" Name="MessageMaxLen" DataType="uint32">
-            <Value>chat::MaxlenMessage</Value>
+        <Constant ID="40" Name="MessageMaxLen" DataType="uint32" Value="chat::MaxlenMessage">
             <Description>The maximum length of a message.</Description>
         </Constant>
-        <Constant ID="41" Name="InvalidSession" DataType="uint64">
-            <Value>chat::InvalidSession</Value>
+        <Constant ID="41" Name="InvalidSession" DataType="uint64" Value="chat::InvalidSession">
             <Description>Identifies invalid session value.</Description>
         </Constant>
-        <Constant ID="42" Name="InvalidCookie" DataType="uint32">
-            <Value>chat::InvalidCookie</Value>
+        <Constant ID="42" Name="InvalidCookie" DataType="uint32" Value="chat::InvalidCookie">
             <Description>Identifies the invalid cookie.</Description>
         </Constant>
     </ConstantList>

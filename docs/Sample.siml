@@ -129,18 +129,14 @@
         </Method>
     </MethodList>
     <ConstantList>
-        <Constant DataType="uint16" ID="35" Name="SomeTimeout">
-            <Value>100</Value>
+        <Constant DataType="uint16" ID="35" Name="SomeTimeout" Value="100">
             <Description>define a constant if need.</Description>
         </Constant>
-        <Constant DataType="String" ID="41" Name="SomeStringConstant">
-            <Value>"This is a constant"</Value>
+        <Constant DataType="String" ID="41" Name="SomeStringConstant" Value="&quot;This is a constant&quot;">
             <Description>A constant, which is a string.</Description>
         </Constant>
-        <Constant DataType="bool" ID="42" Name="SomeDeprecatedConst" IsDeprecated="true">
-            <Value>false</Value>
+        <Constant DataType="bool" ID="42" Name="SomeDeprecatedConst" IsDeprecated="true" Value="false" DeprecateHint="Deprecate sample.">
             <Description>This is a constant, which we mark as deprecated.</Description>
-            <DeprecateHint>Deprecate sample.</DeprecateHint>
         </Constant>
     </ConstantList>
     <IncludeList>

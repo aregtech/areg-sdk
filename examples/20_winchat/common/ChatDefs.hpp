@@ -26,7 +26,7 @@ namespace chat
     const TCHAR* const  SERVER_NAME                         = _T( "<Register>" );
 
     const char * const  DAY_FORMAT                          = "YYYY-MM-DD ";
-    const int32_t           DAY_FORMAT_LEN                      = 11;
+    const int32_t       DAY_FORMAT_LEN                      = 11;
 
     struct ChatParticipant
     {

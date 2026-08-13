@@ -83,6 +83,10 @@ This document provides a comprehensive reference for CMake functions and macros 
 | [addSharedLib](#addsharedlib) | Create simple shared library |
 | [addServiceInterfaceEx](#addserviceinterfaceex) | Generate service interface (extended) |
 | [addServiceInterface](#addserviceinterface) | Generate service interface (simple) |
+| [addStateMachineEx](#addstatemachineex) | Generate state machine (extended) |
+| [addStateMachine](#addstatemachine) | Generate state machine (simple) |
+| [addDataTypeEx](#adddatatypeex) | Generate data types (extended) |
+| [addDataType](#adddatatype) | Generate data types (simple) |
 | [removeEmptyDirs](#removeemptydirs) | Remove empty directories |
 | [printAregConfigStatus](#printaregconfigstatus) | Print configuration status |
 
@@ -457,23 +461,25 @@ macro_setup_compilers_data_by_family("gnu"
 
 ### macro_add_service_interface
 
-**Syntax:** `macro_add_service_interface(lib_name interface_doc codegen_root output_path codegen_tool)`
+**Syntax:** `macro_add_service_interface(lib_name interface_doc source_root codegen_root output_path codegen_tool)`
 
 **Purpose:** Generates and adds service-specific files to static library from Service Interface document (`.siml`).
 
 **Parameters:**
 - `lib_name` [in] - Name of static library
 - `interface_doc` [in] - Full path to Service Interface document (`.siml`)
-- `codegen_root` [in] - Root directory for file generation
-- `output_path` [in] - Relative path from `${codegen_root}` for generated files
+- `source_root` [in] - Project root. The code generator resolves every path against it, including the documents a `.siml` includes
+- `codegen_root` [in] - The generate root: one directory for all generated files of the project
+- `output_path` [in] - The document's own parent path relative to `${source_root}`, where its generated files land
 - `codegen_tool` [in] - Full path to code generator (`codegen.jar`)
 
 **Usage:**
 ```cmake
 macro_add_service_interface(funlib 
                            "/home/dev/fun/src/service/HelloWorld.siml" 
-                           "/home/dev/fun/product" 
-                           "generate/service" 
+                           "/home/dev/fun/src" 
+                           "/home/dev/fun/product/generate" 
+                           "service" 
                            "/tools/areg/codegen.jar")
 ```
 
@@ -775,7 +781,7 @@ addSharedLib(mysharedlib "${LIB_SOURCES}")
 
 ### addServiceInterfaceEx
 
-**Syntax:** `addServiceInterfaceEx(lib_name source_root siml_path generate_path)`
+**Syntax:** `addServiceInterfaceEx(lib_name source_root siml_path [lib_type] [export_keyword])`
 
 **Purpose:** Wrapper for `macro_add_service_interface`, generates code for Service Interface document (`.siml`) within static library.
 
@@ -783,17 +789,20 @@ addSharedLib(mysharedlib "${LIB_SOURCES}")
 - `lib_name` [in] - Name of static library
 - `source_root` [in] - Root directory containing source files
 - `siml_path` [in] - Path to `.siml` file relative to `${source_root}`
-- `generate_path` [in] - Subdirectory within `${AREG_GENERATE_DIR}` for generated files
+- `lib_type` [in, optional] - `static` (default) or `shared`
+- `export_keyword` [in, optional] - Symbol export keyword, empty by default
 
 > [!NOTE]
 > Assumes code generator is at `${AREG_SDK_TOOLS}/codegen.jar`.
+
+> [!IMPORTANT]
+> The generated files of a document are placed under `${AREG_GENERATE_DIR}` in the folder the document's own path names, so this function no longer takes a generate path. A call that still passes one stops the configuration with an error.
 
 **Usage:**
 ```cmake
 addServiceInterfaceEx(fun_library 
                      "/home/dev/project/fun/src" 
-                     "fun/service/interfaces/FunService.siml" 
-                     "fun/service/interfaces")
+                     "fun/service/interfaces/FunService.siml")
 ```
 
 <div align="right"><kbd><a href="#cmake-functions">↑ Back to functions ↑</a></kbd></div>
@@ -813,6 +822,95 @@ addServiceInterfaceEx(fun_library
 **Usage:**
 ```cmake
 addServiceInterface(fun_library "fun/service/interface/FunService.siml")
+```
+
+<div align="right"><kbd><a href="#cmake-functions">↑ Back to functions ↑</a></kbd></div>
+
+---
+
+### addStateMachineEx
+
+**Syntax:** `addStateMachineEx(lib_name source_root fsml_path [lib_type] [export_keyword])`
+
+**Purpose:** The `.fsml` counterpart of `addServiceInterfaceEx`. Generates code for a State Machine document within a library. Same jar, same generated tree, same rules; only the document type differs.
+
+**Parameters:**
+- `lib_name` [in] - Name of static library
+- `source_root` [in] - Root directory containing source files
+- `fsml_path` [in] - Path to `.fsml` file relative to `${source_root}`
+- `lib_type` [in, optional] - `static` (default) or `shared`
+- `export_keyword` [in, optional] - Symbol export keyword, empty by default
+
+**Usage:**
+```cmake
+addStateMachineEx(fun_library 
+                 "/home/dev/project/fun/src" 
+                 "fun/fsm/TrafficLight.fsml")
+```
+
+<div align="right"><kbd><a href="#cmake-functions">↑ Back to functions ↑</a></kbd></div>
+
+---
+
+### addStateMachine
+
+**Syntax:** `addStateMachine(lib_name fsml_path)`
+
+**Purpose:** Simplified wrapper for `addStateMachineEx`, uses `PROJECT_SOURCE_DIR` as source root.
+
+**Parameters:**
+- `lib_name` [in] - Name of static library
+- `fsml_path` [in] - Path to `.fsml` file relative to `${PROJECT_SOURCE_DIR}`
+
+**Usage:**
+```cmake
+addStateMachine(fun_library "fun/fsm/TrafficLight.fsml")
+```
+
+<div align="right"><kbd><a href="#cmake-functions">↑ Back to functions ↑</a></kbd></div>
+
+---
+
+### addDataTypeEx
+
+**Syntax:** `addDataTypeEx(lib_name source_root dtml_path [lib_type] [export_keyword])`
+
+**Purpose:** The `.dtml` counterpart of `addServiceInterfaceEx`. Generates the types declared in a Data Type document into a library.
+
+**Parameters:**
+- `lib_name` [in] - Name of static library
+- `source_root` [in] - Root directory containing source files
+- `dtml_path` [in] - Path to `.dtml` file relative to `${source_root}`
+- `lib_type` [in, optional] - `static` (default) or `shared`
+- `export_keyword` [in, optional] - Symbol export keyword, empty by default
+
+> [!IMPORTANT]
+> A `.dtml` that is **included** by a `.siml` or a `.fsml` must not be listed separately: the code generator produces it together with the document that includes it, into the folder the `.dtml`'s own path names. Call this only for a data type document that nothing includes, or to place one in the build ahead of the documents that use it.
+
+**Usage:**
+```cmake
+addDataTypeEx(fun_library 
+             "/home/dev/project/fun/src" 
+             "fun/common/SharedTypes.dtml")
+```
+
+<div align="right"><kbd><a href="#cmake-functions">↑ Back to functions ↑</a></kbd></div>
+
+---
+
+### addDataType
+
+**Syntax:** `addDataType(lib_name dtml_path)`
+
+**Purpose:** Simplified wrapper for `addDataTypeEx`, uses `PROJECT_SOURCE_DIR` as source root.
+
+**Parameters:**
+- `lib_name` [in] - Name of static library
+- `dtml_path` [in] - Path to `.dtml` file relative to `${PROJECT_SOURCE_DIR}`
+
+**Usage:**
+```cmake
+addDataType(fun_library "fun/common/SharedTypes.dtml")
 ```
 
 <div align="right"><kbd><a href="#cmake-functions">↑ Back to functions ↑</a></kbd></div>

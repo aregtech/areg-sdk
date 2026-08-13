@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    siml.xsd - schema of the Lusan Service Interface document format (.siml),
+    FormatVersion 1.1.0. Checked against the Lusan readers and writers on 2026-08-11
+    (data/si/*, data/common/*, common/XmlSI.hpp): every element and attribute below is one
+    the editor writes or the reader accepts, and nothing else is.
+
+    A service interface shares its Overview, DataTypeList, AttributeList, MethodList,
+    ConstantList and IncludeList with the state machine document, element for element: the
+    two are read and written by the same classes. Where the shapes differ, the difference is
+    named at the type: an attribute carries a notification kind instead of a value, a method
+    is a Request, a Response or a Broadcast and names the response that answers it, and an
+    include never carries an alias or a pinned version, because a service interface imports
+    no other service interface.
+
+    Older spellings this still accepts, all of them from the first published format (1.0.0):
+      - Overview/@isRemote instead of @Category
+      - DataType/@Type "Enumerate" for Enumeration and "DefinedType" for Container
+      - lower-case Method/@MethodType ("request", "response", "broadcast")
+    One 1.0.0 spelling is NOT accepted any more and has to be migrated: a constant's value is
+    the Value attribute, never a <Value> child.
+
+    Structural rules only. Rules the schema cannot express (XSD 1.0) are left to validation:
+      - document-wide name uniqueness, and a method name being unique per kind
+      - every declared type resolving, including a structure's fields and a container's key
+        and value
+      - a request naming a response that exists and is declared as a response
+      - literal syntax and type compatibility of a default value or a constant value
+      - a parameter with a default being followed only by parameters with defaults
+      - per-Type shape of DataType (Enumeration -> EnumEntry, Structure -> Field,
+        Imported -> Location/Namespace/ImportedObject, Container -> Container/BaseType*)
+      - the include being a C++ header or a data type document, and resolving under a
+        workspace root
+ -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified">
+
+    <!-- ==================================================================  -->
+    <!-- Simple types                                                        -->
+    <!-- ==================================================================  -->
+
+    <xs:simpleType name="tId">
+        <xs:annotation><xs:documentation>Document-unique numeric identity; one counter, never reused.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:unsignedInt"/>
+    </xs:simpleType>
+
+    <xs:simpleType name="tIdentifier">
+        <xs:annotation><xs:documentation>Element name: C identifier.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[A-Za-z_][A-Za-z0-9_]*"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tTypeName">
+        <xs:annotation><xs:documentation>A declared type as a document spells it: a plain name for
+            a type of this document or a predefined one, or Space::Type for a type of an included
+            data type document. Space is the included document's Overview@Name.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[A-Za-z_][A-Za-z0-9_]*(::[A-Za-z_][A-Za-z0-9_]*)*"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tVersion">
+        <xs:annotation><xs:documentation>Semantic version: major.minor.patch.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9]+\.[0-9]+\.[0-9]+"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tCategory">
+        <xs:annotation><xs:documentation>How far the service reaches. Private: inside one process.
+            Public: across processes on one machine. Internet: across machines. Unknown is the
+            value of a service whose category was never set, and it generates nothing.
+            A 1.0.0 document says isRemote="true" instead, which reads as Public.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Unknown"/>
+            <xs:enumeration value="Private"/>
+            <xs:enumeration value="Public"/>
+            <xs:enumeration value="Internet"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tDataTypeKind">
+        <xs:annotation><xs:documentation>Enumerate and DefinedType are the 1.0.0 spellings of
+            Enumeration and Container. They are read, never written.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Enumeration"/>
+            <xs:enumeration value="Structure"/>
+            <xs:enumeration value="Imported"/>
+            <xs:enumeration value="Container"/>
+            <xs:enumeration value="Enumerate"/>
+            <xs:enumeration value="DefinedType"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tMethodType">
+        <xs:annotation><xs:documentation>The kind is matched without regard to case, so the
+            lower-case spelling of a 1.0.0 document is read as well.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Request"/>
+            <xs:enumeration value="Response"/>
+            <xs:enumeration value="Broadcast"/>
+            <xs:enumeration value="request"/>
+            <xs:enumeration value="response"/>
+            <xs:enumeration value="broadcast"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tNotify">
+        <xs:annotation><xs:documentation>When a subscriber hears about an attribute: OnChange
+            only when the value differs, Always on every set. Absent reads as OnChange.</xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="OnChange"/>
+            <xs:enumeration value="Always"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- ==================================================================  -->
+    <!-- Shared complex types                                                -->
+    <!-- ==================================================================  -->
+
+    <xs:complexType name="cDescription">
+        <xs:simpleContent>
+            <xs:extension base="xs:string"/>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="cFieldValue">
+        <xs:annotation><xs:documentation>A value, and whether it is the declaration's default.
+            The flag is what the document stores, so a default with no literal yet still comes
+            back as a default.</xs:documentation></xs:annotation>
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="IsDefault" type="xs:boolean"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <!-- Every declaration below takes its children in any order: the readers dispatch on the
+         element name rather than on position, and documents written by earlier versions do
+         differ in order.  -->
+
+    <xs:complexType name="cParameter">
+        <xs:annotation><xs:documentation>A default value is the Value child here. The Default
+            attribute is the state machine's spelling of the same thing; the reader accepts it in
+            either document, so it is allowed, but this editor never writes one into a
+            .siml.</xs:documentation></xs:annotation>
+        <xs:all>
+            <xs:element name="DeprecateHint" type="cDescription" minOccurs="0"/>
+            <xs:element name="Value" type="cFieldValue" minOccurs="0"/>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="DataType" type="tTypeName" use="required"/>
+        <xs:attribute name="Default" type="xs:string"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:complexType name="cParamList">
+        <xs:sequence>
+            <xs:element name="Parameter" type="cParameter" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ==================================================================  -->
+    <!-- Data types                                                          -->
+    <!-- ==================================================================  -->
+
+    <xs:complexType name="cEnumEntry">
+        <xs:annotation><xs:documentation>An enumerator. Its Value is a child element and carries
+            no IsDefault: an empty or absent one means the enumeration continues from the previous
+            entry, exactly as C++ does.</xs:documentation></xs:annotation>
+        <xs:all>
+            <xs:element name="DeprecateHint" type="cDescription" minOccurs="0"/>
+            <xs:element name="Value" type="xs:string" minOccurs="0"/>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:complexType name="cField">
+        <xs:all>
+            <xs:element name="DeprecateHint" type="cDescription" minOccurs="0"/>
+            <xs:element name="Value" type="cFieldValue" minOccurs="0"/>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="DataType" type="tTypeName" use="required"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:complexType name="cFieldList">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="EnumEntry" type="cEnumEntry"/>
+            <xs:element name="Field" type="cField"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="cDataType">
+        <xs:annotation><xs:documentation>One declared type. Enumeration uses EnumEntry children,
+            Structure uses Field children, Imported carries Location / Namespace / ImportedObject,
+            and Container carries Container plus BaseTypeValue, with BaseTypeKey for the keyed
+            containers (HashMap, Map, Pair). The children are written in the writer's fixed order,
+            so the choice is unordered here only to keep older documents loadable.</xs:documentation></xs:annotation>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="DeprecateHint" type="cDescription"/>
+            <xs:element name="Description" type="cDescription"/>
+            <xs:element name="FieldList" type="cFieldList"/>
+            <xs:element name="Location" type="xs:string"/>
+            <xs:element name="Namespace" type="xs:string"/>
+            <xs:element name="ImportedObject" type="xs:string"/>
+            <xs:element name="Container" type="xs:string"/>
+            <xs:element name="BaseTypeValue" type="xs:string"/>
+            <xs:element name="BaseTypeKey" type="xs:string"/>
+        </xs:choice>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="Type" type="tDataTypeKind" use="required"/>
+        <xs:attribute name="Values" type="xs:string"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+        <!-- Values: the integral type an enumeration derives from; "default" means the
+             generator picks one. Meaningless on every other kind.  -->
+    </xs:complexType>
+
+    <!-- ==================================================================  -->
+    <!-- Attributes, methods, constants, includes                            -->
+    <!-- ==================================================================  -->
+
+    <xs:complexType name="cAttribute">
+        <xs:annotation><xs:documentation>A published value a subscriber can watch. It carries no
+            initial value: a service interface attribute is set by the service, and the state
+            machine's Value attribute has no meaning here.</xs:documentation></xs:annotation>
+        <xs:all>
+            <xs:element name="DeprecateHint" type="cDescription" minOccurs="0"/>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="DataType" type="tTypeName" use="required"/>
+        <xs:attribute name="Notify" type="tNotify"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:complexType name="cMethod">
+        <xs:annotation><xs:documentation>A request names the response that answers it in the
+            Response attribute; a response and a broadcast carry none. Nothing here returns a
+            value, so a service interface method has neither Return nor Implement -- those belong
+            to a state machine condition.</xs:documentation></xs:annotation>
+        <xs:all>
+            <xs:element name="DeprecateHint" type="cDescription" minOccurs="0"/>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+            <xs:element name="ParamList" type="cParamList" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="MethodType" type="tMethodType" use="required"/>
+        <xs:attribute name="Response" type="tIdentifier"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:complexType name="cConstant">
+        <xs:annotation><xs:documentation>The one element whose deprecation hint is an attribute
+            rather than a child: a constant carries no other child than its description, so the
+            hint costs a parser token it does not have to. The value is the Value attribute; the
+            1.0.0 Value child is not read and has to be migrated.</xs:documentation></xs:annotation>
+        <xs:all>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="DataType" type="tTypeName" use="required"/>
+        <xs:attribute name="Value" type="xs:string" use="required"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+        <xs:attribute name="DeprecateHint" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="cLocation">
+        <xs:annotation><xs:documentation>One include: a C++ header the declared types need, or a
+            data type document whose types this interface refers to as Space::Type. Name is the
+            path as spelled under a workspace root. A service interface includes no other service
+            interface, so nothing here carries an alias or a pinned version.</xs:documentation></xs:annotation>
+        <xs:all>
+            <xs:element name="DeprecateHint" type="cDescription" minOccurs="0"/>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="xs:string" use="required"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+    </xs:complexType>
+
+    <!-- ==================================================================  -->
+    <!-- Root                                                                -->
+    <!-- ==================================================================  -->
+
+    <xs:complexType name="cOverview">
+        <xs:annotation><xs:documentation>What the interface says about itself. Name is the
+            author's and does not have to match the file name; every generated file, namespace and
+            class follows this value.</xs:documentation></xs:annotation>
+        <xs:all>
+            <xs:element name="DeprecateHint" type="cDescription" minOccurs="0"/>
+            <xs:element name="Description" type="cDescription" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="ID" type="tId" use="required"/>
+        <xs:attribute name="Name" type="tIdentifier" use="required"/>
+        <xs:attribute name="Version" type="tVersion" use="required"/>
+        <xs:attribute name="Category" type="tCategory"/>
+        <xs:attribute name="IsDeprecated" type="xs:boolean"/>
+        <xs:attribute name="isRemote" type="xs:boolean"/>
+        <!-- Category absent = Private. isRemote is the 1.0.0 spelling and is read only in a
+             1.0.0 document, where true means Public; it is never written.  -->
+    </xs:complexType>
+
+    <xs:element name="ServiceInterface">
+        <xs:complexType>
+            <xs:all>
+                <xs:element name="Overview" type="cOverview"/>
+                <xs:element name="DataTypeList" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="DataType" type="cDataType" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="AttributeList" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Attribute" type="cAttribute" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="MethodList" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Method" type="cMethod" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="ConstantList" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Constant" type="cConstant" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="IncludeList" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Location" type="cLocation" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:all>
+            <xs:attribute name="FormatVersion" type="tVersion" use="required"/>
+        </xs:complexType>
+
+        <!-- Document-wide ID uniqueness (elements without ID are not constrained)  -->
+        <xs:unique name="uniqueElementId">
+            <xs:selector xpath=".//*"/>
+            <xs:field xpath="@ID"/>
+        </xs:unique>
+    </xs:element>
+
+</xs:schema>
