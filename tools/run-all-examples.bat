@@ -14,6 +14,9 @@ rem      tools\run-all-examples.bat                       :: default set
 rem      tools\run-all-examples.bat --tier smoke          :: single process only
 rem      tools\run-all-examples.bat --only 12_svcmulti --repeat 20
 rem      tools\run-all-examples.bat --list
+rem      tools\run-all-examples.bat --bin-dir path\to\bin :: explicit build to test,
+rem                                                        :: e.g. to pick between an
+rem                                                        :: MSVC and a Ninja build
 rem
 rem  Run it after the build and before the unit tests. Exit code 0 means every
 rem  scenario passed.

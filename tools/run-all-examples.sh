@@ -14,6 +14,9 @@
 #      tools/run-all-examples.sh --tier smoke          # single process only
 #      tools/run-all-examples.sh --only 12_svcmulti --repeat 20
 #      tools/run-all-examples.sh --list
+#      tools/run-all-examples.sh --bin-dir path/to/bin  # explicit build to test,
+#                                                       # e.g. to pick between a
+#                                                       # Clang and a GCC build
 #
 #  Run it after the build and before the unit tests. Exit code 0 means every
 #  scenario passed.
