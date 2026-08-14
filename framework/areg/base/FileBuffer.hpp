@@ -56,7 +56,7 @@ public:
     
     /**
      * \brief   Constructs a FileBuffer with specified open mode and block size. Default mode is
-     *          write in binary; blockSize defaults to 4 × BLOCK_SIZE (256 bytes).
+     *          write in binary; blockSize defaults to 4 x BLOCK_SIZE (256 bytes).
      *
      * \param   mode            File open mode flags (default: Write | Binary).
      * \param   blockSize       Block size for allocation increments (default: 256 bytes).

@@ -36,7 +36,38 @@ LogCollectorServerService::LogCollectorServerService()
     , mLoggerProcessor          ( self() )
     , mObservers                ( )
     , mSaveTimer                ( static_cast<areg::TimerConsumer &>(self()), "ConfigSaveTimer", LogCollectorServerService::TIMEOUT_SAVE_CONFIG)
+    , mDatabase                 ( )
 {
+}
+
+areg::String LogCollectorServerService::database_path() const
+{
+    return mDatabase.database_path();
+}
+
+bool LogCollectorServerService::start_database_logging(const areg::String & dbPath)
+{
+    areg::Lock lock(mLock);
+
+    if (mDatabase.start(dbPath) == false)
+        return false;
+
+    // Register the already connected log sources, the scopes are re-registered on request.
+    for (const auto & entry : instances().data())
+    {
+        if (LogCollectorMessageProcessor::is_log_source(entry.second.ciSource))
+        {
+            mDatabase.save_instance_connected(entry.second);
+        }
+    }
+
+    return true;
+}
+
+void LogCollectorServerService::stop_database_logging()
+{
+    areg::Lock lock(mLock);
+    mDatabase.stop();
 }
 
 void LogCollectorServerService::add_instance(const ITEM_ID& cookie, const areg::ConnectedInstance& instance)
@@ -57,6 +88,7 @@ void LogCollectorServerService::add_instance(const ITEM_ID& cookie, const areg::
         areg::log_local(logMsgHello);
 
         mLoggerProcessor.notify_connected_instances(instances(), areg::TARGET_ALL);
+        mDatabase.save_instance_connected(instance);
     }
     else if (LogCollectorMessageProcessor::is_log_observer(instance.ciSource))
     {
@@ -88,6 +120,7 @@ void LogCollectorServerService::remove_instance(const ITEM_ID & cookie)
 
         listIds.add(instance.ciCookie);
         mLoggerProcessor.notify_disconnected_instances(listIds, areg::TARGET_ALL);
+        mDatabase.save_instance_disconnected(instance.ciCookie);
     }
     else if (LogCollectorMessageProcessor::is_log_observer(instance.ciSource))
     {
@@ -109,6 +142,7 @@ void LogCollectorServerService::remove_all_instances()
             if (LogCollectorMessageProcessor::is_log_source(entry.second.ciSource))
             {
                 listIds.add(entry.second.ciCookie);
+                mDatabase.save_instance_disconnected(entry.second.ciCookie);
             }
         }
 
@@ -200,6 +234,7 @@ void LogCollectorServerService::on_message_received(const areg::MessageEnvelope 
 
     case areg::FuncIdRange::ServiceLogRegisterScopes:
         mLoggerProcessor.register_scopes_at_observer(msgReceived);
+        mDatabase.save_scopes(static_cast<ITEM_ID>(msgReceived.source()), msgReceived);
         break;
 
     case areg::FuncIdRange::ServiceLogUpdateScopes:
@@ -212,6 +247,7 @@ void LogCollectorServerService::on_message_received(const areg::MessageEnvelope 
 
     case areg::FuncIdRange::ServiceLogScopesUpdated:
         mLoggerProcessor.log_source_scopes_updated(msgReceived);
+        mDatabase.save_scopes(static_cast<ITEM_ID>(msgReceived.source()), msgReceived);
         break;
 
     case areg::FuncIdRange::ServiceSaveLogConfiguration:
@@ -223,8 +259,9 @@ void LogCollectorServerService::on_message_received(const areg::MessageEnvelope 
         break;
 
     case areg::FuncIdRange::ServiceLogMessage:
+        // Forward first, the database write is queued and handled by the writer thread.
         mLoggerProcessor.log_message(msgReceived);
-        areg::log_message(msgReceived);
+        mDatabase.save_log_message(msgReceived);
         break;
 
     case areg::FuncIdRange::SystemServiceConnect:

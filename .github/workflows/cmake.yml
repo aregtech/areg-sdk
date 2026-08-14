@@ -423,7 +423,6 @@ jobs:
         if: matrix.config.os == 'ubuntu-latest'
         run: |
             echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
-            echo "BUILD_DEST=./product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/linux-64-x86_64-release-${{matrix.config.lib}}" >> "$GITHUB_ENV"
             echo "INSTALL_DEST=./product/install/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
 
       - name: Set cmake cache destination for macOS
@@ -431,14 +430,12 @@ jobs:
         run: |
             ARCH=$(uname -m)
             echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
-            echo "BUILD_DEST=./product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/darwin-64-${ARCH}-release-${{matrix.config.lib}}" >> "$GITHUB_ENV"
             echo "INSTALL_DEST=./product/install/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
 
       - name: Set cmake cache destination for Windows
         if: matrix.config.os == 'windows-latest'
         run: |
             echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> $env:GITHUB_ENV
-            echo "BUILD_DEST=./product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/windows-64-amd64-release-${{matrix.config.lib}}" >> $env:GITHUB_ENV
             echo "INSTALL_DEST=./product/install/${{matrix.config.family}}-${{matrix.config.cxx}}" >> $env:GITHUB_ENV
 
       - name: Ensure Xcode CLI Tools
@@ -481,17 +478,42 @@ jobs:
         # Build your program with the given configuration
         run: cmake --build ${{env.CACHE_DEST}} --config ${{env.BUILD_TYPE}} -j16
 
+      - name: Locate the build output directory
+        working-directory: ${{github.workspace}}
+        shell: bash
+        # The folder name is built from the compiler and the target platform, so it
+        # cannot be spelled out per runner. Take it from the build that just finished.
+        run: |
+          BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
+          if [ -n "${BIN_DIR}" ]; then
+            echo "BUILD_DEST=$(dirname "${BIN_DIR}")" >> "${GITHUB_ENV}"
+          else
+            echo "BUILD_DEST=${{env.CACHE_DEST}}" >> "${GITHUB_ENV}"
+          fi
+
       - name: Install with CMake
         working-directory: ${{github.workspace}}
         # Install the binaries and headers
         run: cmake --install ${{env.CACHE_DEST}} --config ${{env.BUILD_TYPE}}
+
+      - name: Run example applications. Ignore if examples are not compiled
+        if: matrix.config.test == 'ON'
+        working-directory: ${{github.workspace}}
+        shell: bash
+        timeout-minutes: 25
+        run: |
+          if [ "${RUNNER_OS}" = "Windows" ]; then PY=python; else PY=python3; fi
+          BIN_DIR="${{env.BUILD_DEST}}/bin"
+          if [ -d "${BIN_DIR}" ]; then BIN_ARG="--bin-dir ${BIN_DIR}"; else BIN_ARG=""; fi
+          "${PY}" tools/run-all-examples.py ${BIN_ARG} --tier all \
+                  --out-dir "./example-results/${{matrix.config.name}}"
 
       - name: Run Unit Tests. Ignore if unit tests are not compiled
         if: matrix.config.test == 'ON'
         working-directory: ${{github.workspace}}
         run: ctest --test-dir ${{env.CACHE_DEST}} --output-on-failure --output-junit test_results.xml
 
-      - name: Copy test artifacts if unit tests fail. Ignore if unit tests are not compiled
+      - name: Copy test artifacts if tests fail. Ignore if tests are not compiled
         if: failure() && matrix.config.test == 'ON'
         working-directory: ${{github.workspace}}
         shell: bash
@@ -499,6 +521,7 @@ jobs:
           mkdir ./${{matrix.config.name}}/
           cp -R ./${{env.BUILD_DEST}}/bin/ ./${{matrix.config.name}}/
           cp -R ./${{env.INSTALL_DEST}}/   ./${{matrix.config.name}}/
+          cp -R ./example-results/${{matrix.config.name}}/ ./${{matrix.config.name}}/example-results/ || true
 
       - name: Upload artifacts if tests fail. Ignore if unit tests are not compiled
         if: failure() && matrix.config.test == 'ON'

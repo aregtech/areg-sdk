@@ -184,20 +184,22 @@ private:
 //////////////////////////////////////////////////////////////////////////
 //  OS specific hidden methods
 //////////////////////////////////////////////////////////////////////////
-private:
-
 #ifdef _WIN32
 
+public:
     /**
-     * \brief   Windows timer callback when watchdog expires.
+     * \brief   Windows timer callback when watchdog expires. Called from the
+     *          thread pool, therefore it has to be reachable from outside.
      *
-     * \param   argPtr              Timer callback argument pointer.
+     * \param   argPtr              The OS timer handle of the expired watchdog.
      * \param   timerLowValue       Low value of expiration time.
      * \param   timerHighValue      High value of expiration time.
      **/
     static void _windows_watchdog_expired( void * argPtr, unsigned long timerLowValue, unsigned long timerHighValue ) noexcept;
 
 #endif // _WIN32
+
+private:
 
 #if defined(_POSIX) || defined(POSIX)
 

@@ -1,4 +1,4 @@
-﻿// example.cpp : Checks availability and compilation with 'areg' library.
+// example.cpp : Checks availability and compilation with 'areg' library.
 //
 
 #include <iostream>

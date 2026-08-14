@@ -72,9 +72,10 @@ namespace
     {
           {"Usage of Areg Log collector (logcollector) :"}
         , areg::ext::MSG_SEPARATOR
-        , {"-a, --save      : Command to save logs in the file. Used in console application. Usage: --save"}
-        , {"-b, --unsave    : Command to stop saving logs in the file. Used in console application. Usage: --unsave"}
+        , {"-a, --save      : Command to start saving the collected logs in the database. Used in console application. Usage: --save [<db-file-path>]"}
+        , {"-b, --unsave    : Command to stop saving the collected logs in the database. Used in console application. Usage: --unsave"}
         , {"-c, --console   : Command to run Log Collector as a console application (default option). Usage: \'logcollector --console\'"}
+        , {"-d, --log       : Command to select where the collected logs are saved, overrides the configuration file. Usage: \'logcollector --log=db [<db-file-path>]\' or \'logcollector --log=nodb\'"}
         , {"-e, --query     : Command to query the list of logging scopes. Used in console application. Usage (\'*\' can be a cookie number): --query *"}
         , {"-f, --config    : Command to save current configuration, including log scopes in the config file. Used in console application. Usage: --config"}
         , {"-h, --help      : Command to display this message on console."}
@@ -102,6 +103,7 @@ const OptionParser::OptionSetup LogCollector::ValidOptions[ ]
       { "-a", "--save"      , static_cast<int32_t>(LoggerOption::CMD_LogSaveLogs)     , OptionParser::STRING_NO_RANGE , {}, {}, {} }
     , { "-b", "--unsave"    , static_cast<int32_t>(LoggerOption::CMD_LogSaveLogsStop) , OptionParser::NO_DATA         , {}, {}, {} }
     , { "-c", "--console"   , static_cast<int32_t>(LoggerOption::CMD_LogConsole)      , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-d", "--log"       , static_cast<int32_t>(LoggerOption::CMD_LogTarget)       , OptionParser::STRING_NO_RANGE , {}, {}, {} }
     , { "-e", "--query"     , static_cast<int32_t>(LoggerOption::CMD_LogQueryScopes)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
     , { "-f", "--config"    , static_cast<int32_t>(LoggerOption::CMD_LogSaveConfig)   , OptionParser::STRING_NO_RANGE , {}, {}, {} }
     , { "-h", "--help"      , static_cast<int32_t>(LoggerOption::CMD_LogPrintHelp)    , OptionParser::NO_DATA         , {}, {}, {} }
@@ -146,7 +148,67 @@ void LogCollector::print_status(const String& /* status */)
 LogCollector::LogCollector()
     : ServiceApplicationBase( mServiceServer )
     , mServiceServer        ( )
+    , mDbOption             ( DatabaseOption::OptionNotSet )
+    , mDbPath               ( )
 {
+}
+
+bool LogCollector::dispatch_option(const OptionParser::InputOption & opt)
+{
+    switch (static_cast<LoggerOption>(opt.inCommand))
+    {
+    case LoggerOption::CMD_LogTarget:
+        return _process_log_target(opt);
+
+    case LoggerOption::CMD_LogPause:        // fall through
+    case LoggerOption::CMD_LogRestart:      // fall through
+    case LoggerOption::CMD_LogInstances:    // fall through
+    case LoggerOption::CMD_LogSilent:       // fall through
+    case LoggerOption::CMD_LogQuit:         // fall through
+    case LoggerOption::CMD_LogQueryScopes:  // fall through
+    case LoggerOption::CMD_LogUpdateScope:  // fall through
+    case LoggerOption::CMD_LogSaveLogs:     // fall through
+    case LoggerOption::CMD_LogSaveLogsStop: // fall through
+    case LoggerOption::CMD_LogSaveConfig:
+        printf("This option is available only on the console prompt of a running Log Collector.\n");
+        print_help(true);
+        return false;
+
+    default:
+        return ServiceApplicationBase::dispatch_option(opt);
+    }
+}
+
+bool LogCollector::service_start()
+{
+    bool result{ ServiceApplicationBase::service_start() };
+    if (result)
+    {
+        const bool saveInDb{ mDbOption == DatabaseOption::OptionNotSet
+                                ? LogCollectorDatabase::is_configured()
+                                : (mDbOption == DatabaseOption::OptionEnable) };
+        if (saveInDb)
+        {
+            if (mServiceServer.start_database_logging(mDbPath))
+            {
+                String status;
+                status.format("Saving the collected logs in the database [ %s ]", mServiceServer.database_path().as_string());
+                LogCollector::print_status(status);
+            }
+            else
+            {
+                LogCollector::print_status("Failed to open the logging database, the collected logs are not saved");
+            }
+        }
+    }
+
+    return result;
+}
+
+void LogCollector::service_stop()
+{
+    ServiceApplicationBase::service_stop();
+    mServiceServer.stop_database_logging();
 }
 
 Console::CallBack LogCollector::option_check_callback() const
@@ -281,8 +343,19 @@ void LogCollector::on_setup_configuration(const areg::ListProperties& /* listRea
     _enable_local_logs(config, false);
 }
 
-void LogCollector::print_help( bool /* isCmdLine */ )
+void LogCollector::print_help( bool isCmdLine )
 {
+    if (isCmdLine)
+    {
+        // No console screen is set up yet, output the plain text.
+        for (const auto& text : _msgHelp)
+        {
+            printf("%s\n", text.data());
+        }
+
+        return;
+    }
+
 #if     AREG_EXTENDED
 
     Console::Coord line{ areg::ext::COORD_INFO_MSG };
@@ -389,10 +462,20 @@ bool LogCollector::_check_command(const String& cmd)
                 LogCollector::_process_query_scopes(opt);
                 break;
 
-            case LoggerOption::CMD_LogSaveLogs:       // fall through
-            case LoggerOption::CMD_LogSaveConfig:     // fall through
+            case LoggerOption::CMD_LogSaveLogs:
+                LogCollector::_process_save_logs(opt.inString.empty() ? String::empty_string() : opt.inString[0]);
+                break;
+
             case LoggerOption::CMD_LogSaveLogsStop:
+                LogCollector::_process_unsave_logs();
+                break;
+
+            case LoggerOption::CMD_LogSaveConfig:
                 LogCollector::_output_info("The feature is not implemented yet!!!");
+                break;
+
+            case LoggerOption::CMD_LogTarget:
+                LogCollector::_output_info("This command should be used in command line, use \'--save\' or \'--unsave\' here ...");
                 break;
 
             case LoggerOption::CMD_LogUndefined:
@@ -819,6 +902,70 @@ areg::MessageEnvelope LogCollector::_create_scope_update_message(const String& s
     }
 
     return result;
+}
+
+bool LogCollector::_process_log_target(const OptionParser::InputOption& opt)
+{
+    const OptionParser::StrList& values{ opt.inString };
+    if (values.empty())
+    {
+        printf("The option \'--log\' requires a target, either \'%s\' or \'%s\'.\n", LogCollector::TARGET_DATABASE.data(), LogCollector::TARGET_NO_DATABASE.data());
+        return false;
+    }
+
+    const String& target{ values[0] };
+    if (target.compare(LogCollector::TARGET_DATABASE, false) == areg::Ordering::Equal)
+    {
+        mDbOption = DatabaseOption::OptionEnable;
+        mDbPath = values.size() > 1u ? values[1] : String::empty_string();
+        return true;
+    }
+    else if (target.compare(LogCollector::TARGET_NO_DATABASE, false) == areg::Ordering::Equal)
+    {
+        mDbOption = DatabaseOption::OptionDisable;
+        mDbPath.clear();
+        return true;
+    }
+
+    printf("Unknown target [ %s ] of the option \'--log\', expected either \'%s\' or \'%s\'.\n"
+          , target.as_string()
+          , LogCollector::TARGET_DATABASE.data()
+          , LogCollector::TARGET_NO_DATABASE.data());
+    return false;
+}
+
+void LogCollector::_process_save_logs(const String& dbPath)
+{
+    LogCollector& logger{ LogCollector::instance() };
+    String status;
+    if (logger.mServiceServer.is_database_logging())
+    {
+        status.format("The collected logs are already saved in the database [ %s ]", logger.mServiceServer.database_path().as_string());
+    }
+    else if (logger.mServiceServer.start_database_logging(dbPath))
+    {
+        status.format("Started to save the collected logs in the database [ %s ]", logger.mServiceServer.database_path().as_string());
+    }
+    else
+    {
+        status = "Failed to open the logging database, the collected logs are not saved";
+    }
+
+    LogCollector::_output_info(status);
+}
+
+void LogCollector::_process_unsave_logs()
+{
+    LogCollector& logger{ LogCollector::instance() };
+    if (logger.mServiceServer.is_database_logging())
+    {
+        logger.mServiceServer.stop_database_logging();
+        LogCollector::_output_info("Stopped saving the collected logs in the database");
+    }
+    else
+    {
+        LogCollector::_output_info("The collected logs are not saved in a database");
+    }
 }
 
 inline void LogCollector::_enable_local_logs(ConfigManager& config, bool enable)

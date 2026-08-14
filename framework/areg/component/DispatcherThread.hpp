@@ -195,6 +195,13 @@ public:
     void trigger_exit() final;
 
     /**
+     * \brief   Requests the thread to exit after the queued events are dispatched.
+     *          Unlike trigger_exit(), the pending events are delivered first. Use it
+     *          to stop a thread whose queue still holds events that must not be lost.
+     **/
+    void trigger_exit_drained();
+
+    /**
      * \brief   Shuts down the thread and frees resources. If waiting timeout is not 'DO_NOT_WAIT
      *          and it expires, the function terminates the thread. The shutdown thread can be
      *          re-created again. The calling thread (current thread) may be blocked until target

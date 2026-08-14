@@ -572,6 +572,8 @@ public:
 
     /**
      * \brief   Clears all notifications for the specified listener and unregisters it.
+     *          The service connection notification is not affected, the caller keeps
+     *          being informed when the service provider goes down and comes back.
      * \param   caller      The notification consumer object to unregister.
      **/
     inline void clear_all_notifications(NotificationConsumer& caller);
@@ -700,7 +702,8 @@ protected:
 
     /**
      * \brief   Removes a listener and all its associated notifications. Notifies the stub to stop
-     *          sending events if no other listeners remain.
+     *          sending events if no other listeners remain. The service connection notification
+     *          is kept, it belongs to acquire_proxy() and free_proxy().
      *
      * \param   consumer    The listener to unregister.
      **/

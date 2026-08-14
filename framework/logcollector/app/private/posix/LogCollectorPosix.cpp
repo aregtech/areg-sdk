@@ -31,7 +31,11 @@
 int main(int argc, char* argv[], char* envp[])
 {
     LogCollector& logger = LogCollector::instance();
-    logger.parse_options(argc, argv, areg::ext::ServiceOptionSetup, std::size(areg::ext::ServiceOptionSetup));
+    if (logger.parse_options(argc, argv) == false)
+    {
+        return areg::ext::ServiceApplicationBase::RESULT_FAILED_INIT;
+    }
+
     return logger.service_main(logger.current_option(), nullptr);
 }
 

@@ -24,6 +24,8 @@
 #include "areg/component/EventConsumer.hpp"
 #include "areg/ipc/DataRateStats.hpp"
 
+#include <atomic>
+
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -96,6 +98,15 @@ public:
      **/
     inline void accumulate_sent(uint64_t bytes, uint32_t msgs) noexcept;
 
+    /**
+     * \brief   Tells the thread that the connection is being closed on purpose, so a
+     *          send that fails from here on is expected and must not be reported.
+     *          Reporting it would ask for a reconnect and deliver failure events into
+     *          a connection that is already going away. Set from the dispatcher thread
+     *          before the drain, read by this thread only when a send fails.
+     **/
+    inline void set_closing() noexcept;
+
 protected:
 /************************************************************************/
 // DispatcherThread overrides
@@ -161,6 +172,11 @@ private:
      *          Constructed once; ClientSendThread context only.
      **/
     areg::Event                     mEvents[areg::DEFAULT_DRAIN_LIMIT];
+    /**
+     * \brief   Set while the connection is closing on purpose. Suppresses the send
+     *          failure callback, which is off the successful send path.
+     **/
+    std::atomic_bool                mIsClosing;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -192,6 +208,11 @@ inline void ClientSendThread::set_data_rate_enabled(bool enable) noexcept
 inline bool ClientSendThread::is_data_rate_enabled() const noexcept
 {
     return mSendStats.is_enabled();
+}
+
+inline void ClientSendThread::set_closing() noexcept
+{
+    mIsClosing.store(true, std::memory_order_relaxed);
 }
 
 inline void ClientSendThread::accumulate_sent(uint64_t bytes, uint32_t msgs) noexcept

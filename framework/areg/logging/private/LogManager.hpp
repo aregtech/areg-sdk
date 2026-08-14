@@ -343,6 +343,13 @@ private:
     void wait_thread_end();
 
     /**
+     * \brief   Waits until the queued log messages are written and the thread ends. If they
+     *          are not written within the shutdown drain timeout, stops the thread and gives
+     *          up on the rest.
+     **/
+    inline void _wait_logs_written();
+
+    /**
      * \brief   Returns true if remote logging is enabled in the configuration.
      **/
     [[nodiscard]]

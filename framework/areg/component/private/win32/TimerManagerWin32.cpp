@@ -25,25 +25,15 @@
 #include "areg/component/Timer.hpp"
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/base/MathDefs.hpp"
-
-#ifndef NOMINMAX
-    #define NOMINMAX
-#endif
-#include <Windows.h>
+#include "areg/component/private/win32/Win32Timer.hpp"
 
 namespace {
-
-struct Win32TimerHandle
-{
-    HANDLE      timerHandle { nullptr };    //!< Standard WaitableTimer for WatchdogManager APC delivery.
-    PTP_TIMER   timerPool   { nullptr };    //!< Thread-pool timer for TimerManager (created lazily).
-};
 
 /************************************************************************
  * \brief   Thread-pool timer callback. Runs in a Windows thread-pool
  *          thread when a timer fires.
  *
- *  pv is the Win32TimerHandle* that was passed as context to
+ *  pv is the areg::os::Win32TimerHandle* that was passed as context to
  *  CreateThreadpoolTimer -- identical to the TIMERHANDLE stored as the
  *  key in TimerManager::mTimerResource, so the timer lookup works
  *  without an extra map.
@@ -81,7 +71,7 @@ void TimerManager::_windows_timer_expired( void * argPtr,
 
 void TimerManager::_os_timer_stop( TIMERHANDLE timerHandle )
 {
-    Win32TimerHandle * h = static_cast<Win32TimerHandle *>(timerHandle);
+    areg::os::Win32TimerHandle * h = static_cast<areg::os::Win32TimerHandle *>(timerHandle);
     if ( (h != nullptr) && (h->timerPool != nullptr) )
     {
         // Disarm: passing nullptr due-time stops the timer without closing it
@@ -91,10 +81,10 @@ void TimerManager::_os_timer_stop( TIMERHANDLE timerHandle )
 
 bool TimerManager::_os_timer_start( Timer & timer )
 {
-    Win32TimerHandle * h = static_cast<Win32TimerHandle *>(timer.handle());
+    areg::os::Win32TimerHandle * h = static_cast<areg::os::Win32TimerHandle *>(timer.handle());
     ASSERT(h != nullptr);
 
-    // Context = the TIMERHANDLE (Win32TimerHandle*), used for lookup in the callback
+    // Context = the TIMERHANDLE (areg::os::Win32TimerHandle *), used for lookup in the callback
     if (h->timerPool == nullptr)
     {
         h->timerPool = ::CreateThreadpoolTimer(_tp_timer_callback, timer.handle(), nullptr);

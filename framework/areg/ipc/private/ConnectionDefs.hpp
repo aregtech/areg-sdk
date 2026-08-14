@@ -77,6 +77,13 @@ namespace areg {
      *          Default connect retry timer timeout value in milliseconds
      **/
     constexpr uint32_t      DEFAULT_RETRY_CONNECT_TIMEOUT       { TIMEOUT_500_MS };  // 500 ms
+    /**
+     * \brief   areg::SEND_QUEUE_FLUSH_TIMEOUT
+     *          How long a graceful disconnect waits for the queued outgoing messages
+     *          to reach the socket, in milliseconds. A peer that stopped reading must
+     *          not hold the shutdown, so the wait is bounded and what is left is dropped.
+     **/
+    constexpr uint32_t      SEND_QUEUE_FLUSH_TIMEOUT            { TIMEOUT_1_SEC };   // 1 sec
 
 } // namespace areg
 #endif  // AREG_IPC_PRIVATE_CONNECTIONDEFS_HPP

@@ -94,6 +94,10 @@ private:
 
     static constexpr uint32_t   RING_WAIT_RECHECK_MS  { 1u };     //!< Producer block re-check interval.
 
+    static constexpr uint8_t    EXIT_NONE     { 0u };     //!< The queue keeps running.
+    static constexpr uint8_t    EXIT_NOW      { 1u };     //!< Stop at once, queued events are dropped.
+    static constexpr uint8_t    EXIT_DRAINED  { 2u };     //!< Stop when the lanes are empty.
+
     //////////////////////////////////////////////////////////////////////////
     // 128 bytes separates the producer written enqueue cursor from the
     // consumer written dequeue cursor. This covers the widest hardware cache
@@ -168,7 +172,17 @@ public:
     inline void trigger_exit() noexcept;
 
     /**
-     * \brief   Clears the sticky exit flag. Must be called only when the owner
+     * \brief   Requests exit, but only after the queued events are processed.
+     *          pop_event() keeps handing out events and returns the singleton
+     *          ExitEvent when both lanes are empty. Use it to stop a dispatcher
+     *          whose queued events still have to be delivered, for example an
+     *          outgoing message queue on a graceful disconnect. trigger_exit()
+     *          stays the immediate stop and overrides this one.
+     **/
+    inline void trigger_exit_drained() noexcept;
+
+    /**
+     * \brief   Clears the sticky exit flags. Must be called only when the owner
      *          dispatcher (re)starts, single-threaded with respect to the queue.
      **/
     inline void reset_exit() noexcept;
@@ -315,8 +329,8 @@ private:
     //!< Set by the consumer while parked in wait_event(); read by producers so the doorbell
     //!< is rung only when a waiter actually needs it (eventcount discipline, lost-wakeup-free).
     std::atomic<bool>       mConsumerParked;
-    //!< Sticky exit state. When set, pop_event() returns the singleton ExitEvent.
-    std::atomic<bool>       mExitTriggered;
+    //!< Sticky exit state, a combination of EXIT_NOW and EXIT_DRAINED.
+    std::atomic_uint8_t     mExitState;
 
     //!< Producer wake-up (auto-reset): signalled by the consumer when a slot is freed.
     SimpleEvent             mSlotEvent;
@@ -351,7 +365,7 @@ inline void EventQueue::unlock_queue() noexcept
 
 inline bool EventQueue::is_exit_triggered() const noexcept
 {
-    return mExitTriggered.load(std::memory_order_acquire);
+    return (mExitState.load(std::memory_order_acquire) & EventQueue::EXIT_NOW) != 0u;
 }
 
 inline bool EventQueue::has_pending() const noexcept
@@ -362,12 +376,20 @@ inline bool EventQueue::has_pending() const noexcept
     const size_t pos{ mDequeuePos.load(std::memory_order_relaxed) };
     return (mRing[pos & mMask].sequence.load(std::memory_order_acquire) == (pos + 1u))
         || (mPrioCount.load(std::memory_order_relaxed) != 0u)
-        || is_exit_triggered();
+        || (mExitState.load(std::memory_order_acquire) != EventQueue::EXIT_NONE);
 }
 
 inline void EventQueue::trigger_exit() noexcept
 {
-    mExitTriggered.store(true, std::memory_order_release);
+    mExitState.store(EventQueue::EXIT_NOW, std::memory_order_release);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    mQueueEvent.set_signaled();     // wake the consumer
+    mSlotEvent.set_signaled();      // wake any producer blocked on a full ring
+}
+
+inline void EventQueue::trigger_exit_drained() noexcept
+{
+    static_cast<void>(mExitState.fetch_or(EventQueue::EXIT_DRAINED, std::memory_order_release));
     std::atomic_thread_fence(std::memory_order_seq_cst);
     mQueueEvent.set_signaled();     // wake the consumer
     mSlotEvent.set_signaled();      // wake any producer blocked on a full ring
@@ -375,7 +397,7 @@ inline void EventQueue::trigger_exit() noexcept
 
 inline void EventQueue::reset_exit() noexcept
 {
-    mExitTriggered.store(false, std::memory_order_release);
+    mExitState.store(EventQueue::EXIT_NONE, std::memory_order_release);
 }
 
 } // namespace areg

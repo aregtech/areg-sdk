@@ -45,7 +45,7 @@ EventQueue::EventQueue(uint32_t maxQueue, bool dropOnFull /*= false*/, uint32_t 
     , mPrioCount        ( 0u )
     , mQueueEvent       ( true, false )     // manual-reset, initially non-signaled
     , mConsumerParked   ( false )
-    , mExitTriggered    ( false )
+    , mExitState        ( EventQueue::EXIT_NONE )
     , mSlotEvent        ( true, true )      // auto-reset, initially non-signaled
     , mProducersWaiting ( 0u )
 {
@@ -67,7 +67,7 @@ EventQueue::EventQueue( areg::NullTag ) noexcept
     , mPrioCount        ( 0u )
     , mQueueEvent       ( areg::NullTag{} )     // no OS handle
     , mConsumerParked   ( false )
-    , mExitTriggered    ( false )
+    , mExitState        ( EventQueue::EXIT_NONE )
     , mSlotEvent        ( areg::NullTag{} )     // no OS handle
     , mProducersWaiting ( 0u )
 {
@@ -237,8 +237,8 @@ Event EventQueue::pop_event() noexcept
     if (mRing == nullptr)
         return Event{};
 
-    // Exit preempts everything
-    if (mExitTriggered.load(std::memory_order_acquire))
+    // Immediate exit preempts everything
+    if (is_exit_triggered())
         return ExitEvent::exit_event();
 
     // Priority lane: always drained before the ring.
@@ -258,6 +258,9 @@ Event EventQueue::pop_event() noexcept
     if (_ring_try_dequeue(result))
         return result;
 
+    if ((mExitState.load(std::memory_order_acquire) & EventQueue::EXIT_DRAINED) != 0u)
+        return ExitEvent::exit_event();
+
     return Event{};
 }
 
@@ -266,8 +269,8 @@ uint32_t EventQueue::pop_events(Event* eventElems, uint32_t count)
     if ((eventElems == nullptr) || (count == 0u) || (mRing == nullptr))
         return 0u;
 
-    // Exit preempts every lane
-    if (mExitTriggered.load(std::memory_order_acquire))
+    // Immediate exit preempts every lane
+    if (is_exit_triggered())
     {
         eventElems[0] = ExitEvent::exit_event();
         return 1u;
@@ -294,6 +297,12 @@ uint32_t EventQueue::pop_events(Event* eventElems, uint32_t count)
         if (!_ring_try_dequeue(eventElems[popped]))
             break;
         ++popped;
+    }
+
+    if ((popped == 0u) && ((mExitState.load(std::memory_order_acquire) & EventQueue::EXIT_DRAINED) != 0u))
+    {
+        eventElems[0] = ExitEvent::exit_event();
+        popped = 1u;
     }
 
     return popped;
@@ -424,7 +433,8 @@ bool EventQueue::_ring_enqueue(Event& eventElem) noexcept
     bool enqueued{ false };
     for (;;)
     {
-        if (mExitTriggered.load(std::memory_order_acquire))
+        // Only the immediate exit aborts the wait.
+        if (is_exit_triggered())
             break;
         if (_ring_try_enqueue(eventElem))
         {

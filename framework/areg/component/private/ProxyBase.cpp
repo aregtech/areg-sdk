@@ -135,13 +135,16 @@ std::shared_ptr<ProxyBase> ProxyBase::acquire_proxy( const String & roleName
         return proxy;
     }
     
-    if (!proxy->mListConnect.add_if_unique(&connect))
+    // Whether the client is already attached is answered by the connection listener
+    // list, which holds it from acquire_proxy() to free_proxy().
+    if (proxy->is_listener_registered(static_cast<NotificationConsumer &>(connect)))
     {
         LOG_WARN("The client [ %p ] is already registered for service connection notification", &connect);
         return proxy;
     }
 
     LOG_DBG("Add Service Connect notification for client [ %p ]", &connect);
+    proxy->mListConnect.add_if_unique(&connect);
     static_cast<void>(proxy->add_listener( CONNECTION_ID, areg::SEQUENCE_NUMBER_NOTIFY, static_cast<NotificationConsumer *>(&connect), true ));
     ++ proxy->mProxyInstCount;
     proxy->mIsStopped = false;
@@ -460,6 +463,14 @@ void ProxyBase::unregister_listener( NotificationConsumer *consumer )
         {
             ProxyListenerList & subVec = mapPos->second;
             const uint32_t msgId = mapPos->first;
+            if (msgId == ProxyBase::CONNECTION_ID)
+            {
+                // The service connection listener is owned by acquire_proxy and
+                // released by free_proxy, it must not be stopped
+                mapPos = mListenerMap.next_position(mapPos);
+                continue;
+            }
+
             bool removed { false };
             uint32_t i = 0;
             while (i < subVec.size())

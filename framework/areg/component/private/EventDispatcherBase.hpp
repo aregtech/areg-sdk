@@ -90,7 +90,7 @@ protected:
 
     /**
      * \brief   Null constructor: creates a hollow dispatcher with no ring buffer and no OS sync handles.
-     *          Used only by the NullDispatcherThread sentinel — zero heap traffic.
+     *          Used only by the NullDispatcherThread sentinel, zero heap traffic.
      **/
     explicit EventDispatcherBase( areg::NullTag ) noexcept;
 
@@ -113,6 +113,14 @@ public:
      * \brief   Stops running dispatcher.
      **/
     virtual void stop_dispatcher() noexcept;
+
+    /**
+     * \brief   Stops the dispatcher after the queued events are dispatched. Use it
+     *          when the pending events still have to be delivered, for example an
+     *          outgoing message queue on a graceful disconnect. stop_dispatcher()
+     *          remains the immediate stop and overrides this one.
+     **/
+    void stop_dispatcher_drained() noexcept;
 
     /**
      * \brief   Called when dispatcher completed the job and exit. The cleanups should be done here.

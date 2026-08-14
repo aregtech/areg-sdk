@@ -1,4 +1,4 @@
-﻿/************************************************************************
+/************************************************************************
  * This file is part of the Areg SDK core engine.
  * Areg SDK is dual-licensed under Free open source (Apache version 2.0
  * License) and Commercial (with various pricing models) licenses, depending
@@ -209,7 +209,7 @@ TEST(StringDefsTest1, lower_upper_numeric_case)
                  (ch == static_cast<char>(0x8E)) ||
                  (ch == static_cast<char>(0x9F)) )
         {
-            // is upper, control --> 138 (Š), 140 (Œ), 142 (Ž), 159 (Ÿ)
+            // is upper, control --> 138, 140, 142, 159
             EXPECT_TRUE(areg::is_upper<char>(ch));
             EXPECT_FALSE(areg::is_lower<char>(ch));
             EXPECT_EQ(ch, upper);
@@ -223,7 +223,7 @@ TEST(StringDefsTest1, lower_upper_numeric_case)
                  (ch == static_cast<char>(0x9C)) ||
                  (ch == static_cast<char>(0x9E)) )
         {
-            // is lower, control --> 154 (š), 156 (œ), 158 (ž)
+            // is lower, control --> 154, 156, 158
             EXPECT_TRUE(areg::is_lower<char>(ch));
             EXPECT_FALSE(areg::is_upper<char>(ch));
             EXPECT_EQ(ch, lower);
@@ -235,7 +235,7 @@ TEST(StringDefsTest1, lower_upper_numeric_case)
         }
         else if (ch == static_cast<char>(0xDF))
         {
-            // is German letter 'ss' --> 223 (ß), has no upper case
+            // is German letter 'ss' --> 223, has no upper case
             EXPECT_FALSE(areg::is_numeric<char>(ch));
             EXPECT_TRUE(areg::is_letter<char>(ch));
             EXPECT_TRUE(areg::is_alphanumeric<char>(ch));

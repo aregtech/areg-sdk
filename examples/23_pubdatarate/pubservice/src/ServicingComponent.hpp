@@ -331,7 +331,7 @@ private:
 private:
     //!< Bitmap object to generate data.
     SimpleBitmap            mBitmap;
-    //!< Pre-built flat send queue of size `blocks × channels`.
+    //!< Pre-built flat send queue of size `blocks x channels`.
     std::vector<ImageBlock> mSendList;
     //!< Snapshot of connected proxy addresses used to rebuild mPrebuiltMessages.
     std::vector<areg::ProxyAddress>     mActiveProxies;

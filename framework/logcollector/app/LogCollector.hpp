@@ -69,7 +69,24 @@ private:
         , CMD_LogSaveLogs                                                                               //!< Log Collector save logs in the file.
         , CMD_LogSaveLogsStop                                                                           //!< Stop saving logs in the file.
         , CMD_LogSaveConfig                                                                             //!< Save the log configuration in the config file.
+        , CMD_LogTarget                                                                                 //!< Select where the collected logs are saved, overrides the configuration file.
     };
+
+    /**
+     * \brief   The state of the command line instruction to save the collected logs in the database.
+     **/
+    enum class DatabaseOption : uint8_t
+    {
+          OptionNotSet  //!< No command line instruction, the configuration file decides.
+        , OptionEnable  //!< Save the collected logs in the database.
+        , OptionDisable //!< Do not save the collected logs in the database.
+    };
+
+    //!< The value of the '--log' option to save the collected logs in the database.
+    static constexpr std::string_view   TARGET_DATABASE     { "db" };
+
+    //!< The value of the '--log' option to stop saving the collected logs in the database.
+    static constexpr std::string_view   TARGET_NO_DATABASE  { "nodb" };
 
     /**
      * \brief   The setup to validate input options of the log collector.
@@ -142,6 +159,25 @@ protected:
      * \brief   Runs the application as a background process without console input or output.
      **/
     void run_service() final;
+
+    /**
+     * \brief   Applies a single command line option. Handles the options specific to the Log
+     *          Collector and passes the remaining ones to the base class.
+     *
+     * \param   opt     The parsed command line option.
+     * \return  Returns true if the option is accepted and the application can continue.
+     **/
+    bool dispatch_option(const areg::ext::OptionParser::InputOption & opt) override;
+
+    /**
+     * \brief   Starts the connection service and, if requested, the logging database.
+     **/
+    bool service_start() override;
+
+    /**
+     * \brief   Stops the connection service and closes the logging database.
+     **/
+    void service_stop() override;
 
 /************************************************************************/
 // ServiceApplicationBase protected overrides
@@ -326,6 +362,29 @@ private:
      **/
     static areg::MessageEnvelope _create_scope_update_message(const areg::String& scope);
 
+    /**
+     * \brief   Reads the target of the '--log' option and remembers the instruction to apply when
+     *          the service starts.
+     *
+     * \param   opt     The parsed '--log' option. The first value is the target, the optional
+     *                  second value is the path of the database file.
+     * \return  Returns true if the target is recognized.
+     **/
+    bool _process_log_target(const areg::ext::OptionParser::InputOption & opt);
+
+    /**
+     * \brief   Starts saving the collected logs in the database and reports the result on console.
+     *
+     * \param   dbPath      The path of the database file. If empty, the path is taken from the
+     *                      configuration.
+     **/
+    static void _process_save_logs(const areg::String & dbPath);
+
+    /**
+     * \brief   Stops saving the collected logs in the database and reports the result on console.
+     **/
+    static void _process_unsave_logs();
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
@@ -334,6 +393,16 @@ private:
      * \brief   The service connection object to communicate with processes.
      **/
     LogCollectorServerService mServiceServer;
+
+    /**
+     * \brief   The command line instruction to save the collected logs in the database.
+     **/
+    DatabaseOption            mDbOption;
+
+    /**
+     * \brief   The database file path given in the command line. May contain masks like `%time%`.
+     **/
+    areg::String              mDbPath;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

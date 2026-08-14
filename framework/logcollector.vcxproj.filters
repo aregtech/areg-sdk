@@ -33,6 +33,9 @@
     <ClInclude Include="logcollector\service\LogCollectorServerService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="logcollector\service\private\LogCollectorDatabase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="logcollector\service\private\LogCollectorMessageProcessor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -72,6 +75,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="logcollector\service\private\LogCollectorServerService.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="logcollector\service\private\LogCollectorDatabase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="logcollector\service\private\LogCollectorMessageProcessor.cpp">

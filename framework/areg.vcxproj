@@ -233,6 +233,7 @@
     <ClInclude Include="areg\component\private\EventStack.hpp" />
     <ClInclude Include="areg\component\private\EventQueue.hpp" />
     <ClInclude Include="areg\component\private\SimpleEvent.hpp" />
+    <ClInclude Include="areg\component\private\win32\Win32Timer.hpp" />
     <ClInclude Include="areg\ipc\ConnectionConsumer.hpp" />
     <ClInclude Include="areg\ipc\DataRateStats.hpp" />
     <ClInclude Include="areg\ipc\RegistrationProvider.hpp" />

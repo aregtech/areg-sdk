@@ -322,6 +322,14 @@ namespace areg {
     constexpr uint32_t  TIMEOUT_1_SEC               { WAIT_1_SECOND };
 
     /**
+     * \brief   areg::SHUTDOWN_DRAIN_TIMEOUT
+     *          How long a dispatcher may keep working off its queue after it was asked to
+     *          stop. Whatever is left when it expires is dropped, so that a slow handler
+     *          cannot hold the shutdown open.
+     **/
+    constexpr uint32_t  SHUTDOWN_DRAIN_TIMEOUT      { WAIT_1_SECOND };
+
+    /**
      * \brief   areg::TIMEOUT_1_MIN
      *          Timeout 1 minute
      **/

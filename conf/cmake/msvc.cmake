@@ -13,6 +13,10 @@ if (${AREG_BITNESS} EQUAL 64)
     add_definitions(-DWIN64 -D_WIN64)
 endif()
 
+# Match the conformance mode of the Visual Studio projects, so that both build systems
+# accept and reject the same code.
+list(APPEND AREG_COMPILER_OPTIONS /permissive-)
+
 get_property(_areg_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if (_areg_multi_config)
     # Multi-config generator (Visual Studio): scope flags per-configuration using

@@ -168,18 +168,6 @@ public:
      **/
     Thread::ThreadCompletion shutdown( uint32_t waitForStopMs = areg::DO_NOT_WAIT ) final;
 
-    /**
-     * \brief   Wait for thread completion. It will neither sent exit message, nor terminate thread.
-     *          The function waits as long, until the thread is not completed. It will return true
-     *          if thread has been completed or waiting timeout is areg::DO_NOT_WAIT. If thread
-     *          exists normally, it will return true.
-     *
-     * \param   waitForCompleteMs       The timeout to wait for completion.
-     * \return  Returns true if either thread completed or the waiting timeout is
-     *          areg::DO_NOT_WAIT.
-     **/
-    bool wait_completion( uint32_t waitForCompleteMs = areg::WAIT_INFINITE ) final;
-
 /************************************************************************/
 // EventRouter interface overrides
 /************************************************************************/
@@ -254,11 +242,26 @@ protected:
     void shutdown_components();
 
     /**
+     * \brief   Gives every component the chance to wait for its worker threads to finish.
+     *          Called from on_exit() between shutdown_components() and destroy_components(),
+     *          so the components are still alive and run on the thread that owns them.
+     **/
+    void wait_components_completion();
+
+    /**
      * \brief   Invokes the registered delete function for every component, or calls delete
      *          directly if no delete function is registered.
-     *          Called from on_exit() after shutdown_components().
+     *          Called from on_exit() after wait_components_completion().
      **/
     void destroy_components();
+
+    /**
+     * \brief   Moves every component off the shared list into \a result under the list lock,
+     *          so that the caller can destroy them with no lock held.
+     *
+     * \param[out]  result  Receives the components taken off the list.
+     **/
+    inline void _detach_components( ListComponent & result );
 
 /************************************************************************/
 // EventDispatcherBase overrides
@@ -331,6 +334,13 @@ private:
 #if defined(_MSC_VER)
     #pragma warning(pop)
 #endif  // _MSC_VER
+
+    /**
+     * \brief   Guards the component list. This thread fills it and empties it, while any
+     *          thread that looks for an event consumer walks it. Held only for the walk
+     *          and for the list operation itself, never across a thread shutdown.
+     **/
+    mutable SpinLock    mListLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

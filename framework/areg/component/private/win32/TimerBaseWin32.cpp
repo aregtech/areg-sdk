@@ -21,44 +21,20 @@
  * Include files.
  ************************************************************************/
 #include "areg/component/TimerBase.hpp"
-#ifndef NOMINMAX
-    #define NOMINMAX
-#endif // !NOMINMAX
-#include <Windows.h>
+#include "areg/component/private/win32/Win32Timer.hpp"
 #include <new>
-
-namespace {
-
-struct Win32TimerHandle
-{
-    HANDLE      timerHandle { nullptr };    //!< Standard WaitableTimer for WatchdogManager APC delivery.
-    PTP_TIMER   timerPool   { nullptr };    //!< Thread-pool timer for TimerManager (created lazily).
-};
-
-} // namespace
 
 namespace areg {
 
 TIMERHANDLE TimerBase::_os_create() noexcept
 {
-    Win32TimerHandle * h = new(std::nothrow) Win32TimerHandle{};
-    if (h == nullptr)
-        return nullptr;
-
-    // Standard (non-high-res) WaitableTimer
-    h->timerHandle = ::CreateWaitableTimer(nullptr, FALSE, nullptr);
-    if (h->timerHandle == nullptr)
-    {
-        delete h;
-        return nullptr;
-    }
-
+    areg::os::Win32TimerHandle * h = new(std::nothrow) areg::os::Win32TimerHandle{};
     return static_cast<TIMERHANDLE>(h);
 }
 
 void TimerBase::_os_destroy( TIMERHANDLE handle ) noexcept
 {
-    Win32TimerHandle * h = static_cast<Win32TimerHandle *>(handle);
+    areg::os::Win32TimerHandle * h = static_cast<areg::os::Win32TimerHandle *>(handle);
     if (h == nullptr)
         return;
 
@@ -68,13 +44,6 @@ void TimerBase::_os_destroy( TIMERHANDLE handle ) noexcept
         ::WaitForThreadpoolTimerCallbacks(h->timerPool, TRUE);
         ::CloseThreadpoolTimer(h->timerPool);
         h->timerPool = nullptr;
-    }
-
-    if (h->timerHandle != nullptr)
-    {
-        ::CancelWaitableTimer(h->timerHandle);
-        ::CloseHandle(h->timerHandle);
-        h->timerHandle = nullptr;
     }
 
     delete h;

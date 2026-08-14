@@ -33,6 +33,7 @@ ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientCo
     , mSendStats        ( )
     , mDrain            ( )
     , mIoBuffer         ( )
+    , mIsClosing        ( false )
 {
 }
 
@@ -117,7 +118,7 @@ void ClientSendThread::start_event_processing( Event & eventElem )
 
         if ( sentBytes > 0 )
             accumulate_sent( static_cast<uint64_t>(sentBytes), bufCount );
-        else
+        else if ( !mIsClosing.load(std::memory_order_relaxed) )
             mRemoteService.failed_send_message( eventElem.envelope(), mConnection.socket() );
     }
     else
@@ -140,7 +141,7 @@ void ClientSendThread::start_event_processing( Event & eventElem )
 
             if ( sentBytes > 0 )
                 accumulate_sent( static_cast<uint64_t>(sentBytes), end - start );
-            else
+            else if ( !mIsClosing.load(std::memory_order_relaxed) )
                 mRemoteService.failed_send_message( eventElem.envelope(), mConnection.socket() );
 
             start = end;
