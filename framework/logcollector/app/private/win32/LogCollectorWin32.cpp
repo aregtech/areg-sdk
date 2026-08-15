@@ -19,9 +19,14 @@
 
         #pragma comment(lib, "areg")
         #pragma comment(lib, "aregextend")
-        #pragma comment(lib, "sqlite3")
         #pragma comment(lib, "advapi32")
         #pragma comment(lib, "kernel32")
+        // Use these options if compile for Windows with MSVC
+        #if defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
+            #pragma comment(lib, "sqlite3")
+        #else   // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
+            #pragma comment(lib, "aregsqlite3")
+        #endif  //defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
     #endif  // _MSC_VER
 
 #include "areg/appbase/Application.hpp"
