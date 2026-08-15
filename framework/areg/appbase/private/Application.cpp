@@ -47,7 +47,7 @@ areg::ConfigProperty  _defaultReadonlyProperties[]
     , { {"log"      , "*"   , "file"    , "append"  }, "false"                          }   //!< The flag to append logs into the file.
     , { {"log"      , "*"   , "remote"  , "queue"   }, "100"                            }   //!< The queue size of remote logging.
     , { {"log"      , "*"   , "remote"  , "service" }, "logger"                         }   //!< The service name of the remote logging.
-    , { {"log"      , "*"   , "layout"  , "enter"   }, areg::DEFAULT_LAYOUT_SCOPE_EXIT  }   //!< The layout of enter scope message.
+    , { {"log"      , "*"   , "layout"  , "enter"   }, areg::DEFAULT_LAYOUT_SCOPE_ENTER  }   //!< The layout of enter scope message.
     , { {"log"      , "*"   , "layout"  , "message" }, areg::DEFAULT_LAYOUT_LOG_MESSAGE }   //!< The layout of log message.
     , { {"log"      , "*"   , "layout"  , "exit"    }, areg::DEFAULT_LAYOUT_SCOPE_EXIT  }   //!< The layout of exit scope message.
 
