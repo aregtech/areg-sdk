@@ -22,6 +22,8 @@
 #      --repeat N                  Run the selection N times, report every failure
 #      --only NAME[,NAME...]       Run only the named scenarios
 #      --list                      Print the scenarios and exit
+#      --no-pty                    Capture into the log file instead of a terminal
+#      --no-stacks                 Do not photograph a process that has to be killed
 #      --out-dir DIR               Where to write the captured output
 #      --timestamp                 Put the output in a time stamped sub-directory
 #      --junit FILE                Write the results as a JUnit report
@@ -275,6 +277,83 @@ def describe_exit(code):
 
 
 # ---------------------------------------------------------------------------
+# Photography of a process that has to be killed.
+#
+# A process that has to be killed is a process that hung, and its stack is the only
+# thing that says where. The moment before the kill is the last moment it exists, so
+# the backtrace of every thread is taken there, twice: a stack that moved between the
+# two snapshots is a live lock, an identical one is a dead lock.
+# ---------------------------------------------------------------------------
+
+STACK_SNAPSHOTS  = 2        #!< snapshots taken of every process that has to be killed
+STACK_GAP        = 4.0      #!< seconds between two snapshots
+STACK_TOOL_WAIT  = 90       #!< seconds a debugger may take before it is given up on
+CAPTURE_STACKS   = True     #!< '--no-stacks' turns the photography off
+
+
+def _run_tool(command, seconds=STACK_TOOL_WAIT):
+    """Runs a diagnostic tool and returns its output. Never raises, never fails."""
+    try:
+        done = subprocess.run(command, stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT, timeout=seconds)
+        return done.stdout.decode('utf-8', 'replace')
+    except subprocess.TimeoutExpired:
+        return '<%s did not answer within %d s>\n' % (command[0], seconds)
+    except Exception as error:                  # the evidence path may never break the run
+        return '<%s failed: %s>\n' % (command[0], error)
+
+
+def _stack_tools(pid):
+    """Returns the debuggers to run per snapshot and the state tools to run once."""
+    if IS_WINDOWS:
+        # cdb is part of the Debugging Tools for Windows and is not on every runner.
+        repeated = [['cdb', '-p', str(pid), '-pv', '-c', '~*k;q']]
+        once = []
+    elif platform.system() == 'Darwin':
+        # 'sample' needs no debugging right and always works; lldb gives the richer text.
+        repeated = [['sample', str(pid), '3', '-mayDie'],
+                    ['lldb', '--batch', '-p', str(pid),
+                     '-o', 'thread backtrace all', '-o', 'detach']]
+        once = [['ps', '-M', '-p', str(pid)], ['lsof', '-p', str(pid)]]
+    else:
+        repeated = [['gdb', '-p', str(pid), '--batch', '-nx',
+                     '-ex', 'thread apply all bt full'],
+                    ['eu-stack', '-p', str(pid)]]
+        once = [['lsof', '-p', str(pid)]]
+
+    available = [cmd for cmd in repeated if shutil.which(cmd[0]) is not None]
+    return available, [cmd for cmd in once if shutil.which(cmd[0]) is not None]
+
+
+def capture_stacks(pid, name, dest):
+    """Photographs a live process and writes the report next to its log."""
+    repeated, once = _stack_tools(pid)
+    if not repeated:
+        return 'no debugger is installed to photograph %s (pid %d)' % (name, pid)
+
+    parts = []
+    for snapshot in range(STACK_SNAPSHOTS):
+        if snapshot:
+            time.sleep(STACK_GAP)
+        parts.append('==== %s, pid %d, snapshot %d of %d ====\n'
+                     % (name, pid, snapshot + 1, STACK_SNAPSHOTS))
+        for command in repeated:
+            parts.append('---- %s ----\n' % ' '.join(command))
+            parts.append(_run_tool(command))
+    for command in once:
+        parts.append('---- %s ----\n' % ' '.join(command))
+        parts.append(_run_tool(command))
+
+    report = ''.join(parts)
+    try:
+        with open(dest, 'w') as target:
+            target.write(report)
+    except OSError:
+        pass
+    return report
+
+
+# ---------------------------------------------------------------------------
 # Process handling.
 # ---------------------------------------------------------------------------
 
@@ -296,6 +375,8 @@ class Runner:
         self.log_path = log_path
         self.output = ''
         self.killed = False
+        self.stacks = ''
+        self.stack_path = log_path + '.stacks.txt'
         self._quit_script = quit_script or []
         self._stdin_script = stdin_script
         self._log = open(log_path, 'wb')
@@ -421,12 +502,26 @@ class Runner:
             time.sleep(0.2)
         return self.proc.poll() is not None
 
+    def _photograph(self):
+        """Takes the backtraces of a process that is about to be killed.
+
+        Printed as well as written, so that the job log of a build server carries the
+        stack even when nobody downloads the artifact.
+        """
+        if not CAPTURE_STACKS:
+            return
+        self.stacks = capture_stacks(self.proc.pid, self.name, self.stack_path)
+        print('%s did not leave on request, this is where it stands:\n%s'
+              % (self.name, self.stacks))
+        sys.stdout.flush()
+
     def stop(self):
         """Ends the process, preferring its own exit point over a kill."""
         if self.proc.poll() is None:
             self.request_quit()
         if self.proc.poll() is None:
             self.killed = True
+            self._photograph()
             if IS_WINDOWS:
                 subprocess.run(['taskkill', '/PID', str(self.proc.pid), '/T', '/F'],
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -543,8 +638,9 @@ def one_line(text):
     return ' | '.join(part.strip() for part in str(text).splitlines() if part.strip())
 
 
-CAPTURE_EXCERPT_BYTES = 1024    #!< head and tail of the captured stream kept in a report
+CAPTURE_EXCERPT_BYTES = 700     #!< head and tail of the captured stream kept in a report
 CAPTURE_HEXDUMP_BYTES = 256     #!< bytes of the hexdump added when the stream is not text
+CAPTURE_ANNOTATIONS   = 10      #!< build server limit of annotations of one level per step
 
 
 def describe_capture(runner):
@@ -592,6 +688,8 @@ class Result:
         self.name = name
         self.status = 'PASS'
         self.notes = []
+        self.captures = []
+        self.stacks = []
         self.seconds = 0.0
 
     def fail(self, note):
@@ -755,16 +853,21 @@ def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs, use
     for index, entry in enumerate(scenario['procs']):
         if index >= len(runners):
             break
-        missed = False
         for pattern in entry['expect']:
             if re.search(pattern, runners[index].output) is None:
                 result.fail('%s output does not contain %r' % (runners[index].name, pattern))
-                missed = True
-        if missed:
-            # "does not contain" alone does not say whether the text was never printed,
-            # was printed and lost, or arrived damaged. The captured stream answers that,
-            # so it goes into the report and not only into the artifact.
-            result.notes.append(describe_capture(runners[index]))
+
+    # A failure is read from the output of every application of the scenario, not only
+    # of the one that reported it. The applications are connected: a consumer that waits
+    # forever is explained by what its provider printed, and an expectation that did not
+    # match is explained by whether the text was never printed, was printed and lost, or
+    # arrived damaged. So the whole capture is carried into the report, where it survives
+    # without the artifact having to be downloaded.
+    if result.status == 'FAIL':
+        for runner in ([router] if router is not None else []) + runners:
+            result.captures.append(describe_capture(runner))
+            if runner.stacks:
+                result.stacks.append((runner.name, runner.stacks))
 
     result.seconds = time.time() - started
 
@@ -841,16 +944,74 @@ def markdown_report(results, seconds, tier, bin_dir):
     return '\n'.join(lines)
 
 
+ANNOTATION_CHARS = 3500     #!< characters of one annotation message that survive
+
+
+def annotation_text(text):
+    """Encodes a multi line report so that a build server keeps the line breaks."""
+    return (text[:ANNOTATION_CHARS].replace('%', '%25')
+                                   .replace('\r', '%0D')
+                                   .replace('\n', '%0A'))
+
+
+def stack_digest(report):
+    """Keeps the part of a photograph that names the defect.
+
+    A full report holds a call graph, a backtrace of every thread, the descriptors and
+    a second snapshot, which is far more than an annotation can carry. The symbolic
+    backtrace is the part worth publishing; the rest stays in the artifact.
+    """
+    sections = re.split(r'^---- (.*?) ----$', report, flags=re.M)
+    # re.split with one group gives [prologue, header, body, header, body, ...]
+    best = None
+    for index in range(1, len(sections) - 1, 2):
+        header, body = sections[index], sections[index + 1]
+        if ('lldb' in header) or ('gdb' in header) or ('cdb' in header):
+            best = body
+            break
+    if best is None:
+        best = sections[2] if len(sections) > 2 else report
+    lines = [line for line in best.splitlines() if line.strip()]
+    return '\n'.join(lines[:140])
+
+
 def annotate(results):
-    """Prints build server annotations, so failures show up next to the job."""
+    """Prints build server annotations, so failures show up next to the job.
+
+    The captured output goes out as annotations of its own and not as part of the
+    failure text: an annotation is truncated when it grows too long, and the reason
+    of the failure must not be the part that is cut off. Annotations are also the
+    only part of a build server result that is readable without downloading the job
+    log or the artifact, which is why the captures are worth the space.
+    """
     if os.environ.get('GITHUB_ACTIONS') != 'true':
         return
+
+    budget = CAPTURE_ANNOTATIONS
     for result in results:
         note = '; '.join(one_line(n) for n in result.notes) or result.status
         if result.status in ('FAIL', 'XPASS'):
             print('::error title=%s::%s' % (result.name, note))
         elif result.status == 'XFAIL':
             print('::warning title=%s::%s' % (result.name, note))
+
+        # The stack of a process that hung comes before its captured output: it names
+        # the defect, while the output only describes the symptom.
+        for name, report in result.stacks:
+            if budget == 0:
+                break
+            budget -= 1
+            print('::error title=%s stack of %s::%s'
+                  % (result.name, name, annotation_text(stack_digest(report))))
+
+        for capture in result.captures:
+            if budget == 0:
+                print('::error title=%s::further captures are in the artifact only,'
+                      ' the annotation limit of %d is reached'
+                      % (result.name, CAPTURE_ANNOTATIONS))
+                return
+            budget -= 1
+            print('::notice title=%s::%s' % (result.name, one_line(capture)))
 
 
 # ---------------------------------------------------------------------------
@@ -881,6 +1042,10 @@ def main():
                         help='capture the output by redirecting it into the log file instead'
                              ' of through a pseudo terminal (POSIX only). The output of a'
                              ' process that has to be terminated is then lost.')
+    parser.add_argument('--no-stacks', action='store_true',
+                        help='do not photograph a process that has to be killed. The'
+                             ' backtraces are taken with the debugger of the platform'
+                             ' and cost a few seconds per hung process.')
     parser.add_argument('--timestamp', action='store_true',
                         help='write the output into a time stamped sub-directory')
     parser.add_argument('--junit', default=None,
@@ -889,6 +1054,9 @@ def main():
     parser.add_argument('--summary', default=os.environ.get('GITHUB_STEP_SUMMARY'),
                         help='append a Markdown report to this file')
     args = parser.parse_args()
+
+    global CAPTURE_STACKS
+    CAPTURE_STACKS = not args.no_stacks
 
     selection = SCENARIOS
     if args.tier != 'all':

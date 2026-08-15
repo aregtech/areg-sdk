@@ -3,7 +3,11 @@
 
 name: REUSE compliance check
 
-on: [push, pull_request]
+# TEMPORARY, bug-fixing phase: this workflow runs on request only, so that a push
+# spends the build server on the example runs. Restore by putting back
+# 'on: [push, pull_request]'.
+on:
+  workflow_dispatch:
 
 permissions:
   contents: read

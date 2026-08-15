@@ -22,31 +22,37 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # TEMPORARY, bug-fixing phase. Only the configurations that actually run the
+        # example applications on Linux and macOS are active. A configuration that only
+        # compiles says nothing about the failures under investigation and costs the same
+        # build server time, and Windows and cygwin are held back on purpose -- see
+        # product/2026-08-14-crash-1/3/SESSION-STATE.md. Every entry below that is
+        # commented out is restored by removing the leading '#' of its lines.
         config: # Create matrix with combinations
 
             # compile Areg engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable Areg extensions and logs
-          - { name  : linux-gnu-shared-ext-log,
-              os    : ubuntu-latest,
-              lib   : shared,
-              family: gnu,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : ON,
-              test  : OFF
-            }
+#          - { name  : linux-gnu-shared-ext-log,
+#              os    : ubuntu-latest,
+#              lib   : shared,
+#              family: gnu,
+#              cxx   : g++,
+#              cc    : gcc,
+#              extend: ON,
+#              logs  : ON,
+#              test  : OFF
+#            }
 
             # compile Areg engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable Areg extensions and no logs
-          - { name  : linux-gnu-shared-ext-nolog,
-              os    : ubuntu-latest,
-              lib   : shared,
-              family: gnu,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : OFF,
-              test  : OFF
-            }
+#          - { name  : linux-gnu-shared-ext-nolog,
+#              os    : ubuntu-latest,
+#              lib   : shared,
+#              family: gnu,
+#              cxx   : g++,
+#              cc    : gcc,
+#              extend: ON,
+#              logs  : OFF,
+#              test  : OFF
+#            }
 
             # compile Areg engine as a static library with GNU g++ / gcc on Ubuntu Linux, enable Areg extensions, logs, examples and tests
           - { name  : linux-gnu-static-all-test,
@@ -73,40 +79,40 @@ jobs:
             }
 
             # compile Areg engine as a shared library with GNU g++ / gcc on Ubuntu Linux, disable Areg extensions and no logs
-          - { name  : linux-gnu-shared-noext-nolog,
-              os    : ubuntu-latest,
-              lib   : shared,
-              family: gnu,
-              cxx   : g++,
-              cc    : gcc,
-              extend: OFF,
-              logs  : OFF,
-              test  : OFF
-            }
+#          - { name  : linux-gnu-shared-noext-nolog,
+#              os    : ubuntu-latest,
+#              lib   : shared,
+#              family: gnu,
+#              cxx   : g++,
+#              cc    : gcc,
+#              extend: OFF,
+#              logs  : OFF,
+#              test  : OFF
+#            }
 
             # compile Areg engine as a shared library with clang on Ubuntu Linux, enable Areg extensions and logs
-          - { name  : linux-clang-shared-ext-log,
-              os    : ubuntu-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang++,
-              cc    : clang,
-              extend: ON,
-              logs  : ON,
-              test  : OFF
-            }
+#          - { name  : linux-clang-shared-ext-log,
+#              os    : ubuntu-latest,
+#              lib   : shared,
+#              family: llvm,
+#              cxx   : clang++,
+#              cc    : clang,
+#              extend: ON,
+#              logs  : ON,
+#              test  : OFF
+#            }
 
             # compile Areg engine as a shared library with clang on Ubuntu Linux, enable Areg extensions and no logs
-          - { name  : linux-clang-shared-ext-nolog,
-              os    : ubuntu-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang++,
-              cc    : clang,
-              extend: ON,
-              logs  : OFF,
-              test  : OFF
-            }
+#          - { name  : linux-clang-shared-ext-nolog,
+#              os    : ubuntu-latest,
+#              lib   : shared,
+#              family: llvm,
+#              cxx   : clang++,
+#              cc    : clang,
+#              extend: ON,
+#              logs  : OFF,
+#              test  : OFF
+#            }
 
             # compile Areg engine as a static library with clang on Ubuntu Linux, enable Areg extensions, logs, examples and tests
           - { name  : linux-clang-static-all-test,
@@ -133,16 +139,16 @@ jobs:
             }
 
             # compile Areg engine as a shared library with clang on Ubuntu Linux, disable Areg extensions and no logs
-          - { name  : linux-clang-shared-noext-nolog,
-              os    : ubuntu-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang++,
-              cc    : clang,
-              extend: OFF,
-              logs  : OFF,
-              test  : OFF
-            }
+#          - { name  : linux-clang-shared-noext-nolog,
+#              os    : ubuntu-latest,
+#              lib   : shared,
+#              family: llvm,
+#              cxx   : clang++,
+#              cc    : clang,
+#              extend: OFF,
+#              logs  : OFF,
+#              test  : OFF
+#            }
 
             # compile Areg engine as a shared library with clang on macOS, enable logs and tests, disable Areg extensions
           - { name  : macos-clang-shared-noext,
@@ -169,16 +175,16 @@ jobs:
             }
 
             # compile Areg engine as a shared library with clang on macOS, enable tests, disable Areg extensions and no logs
-          - { name  : macos-clang-shared-noext-nolog-notest,
-              os    : macos-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang++,
-              cc    : clang,
-              extend: OFF,
-              logs  : OFF,
-              test  : OFF
-            }
+#          - { name  : macos-clang-shared-noext-nolog-notest,
+#              os    : macos-latest,
+#              lib   : shared,
+#              family: llvm,
+#              cxx   : clang++,
+#              cc    : clang,
+#              extend: OFF,
+#              logs  : OFF,
+#              test  : OFF
+#            }
 
             # compile Areg engine as a static library with clang on macOS, enable logs and tests, disable Areg extensions
           - { name  : macos-clang-static-noext,
@@ -205,207 +211,207 @@ jobs:
             }
 
             # compile Areg engine as a static library with clang on macOS, enable tests, disable Areg extensions and no logs
-          - { name  : macos-clang-static-noext-nolog-notest,
-              os    : macos-latest,
-              lib   : static,
-              family: llvm,
-              cxx   : clang++,
-              cc    : clang,
-              extend: OFF,
-              logs  : OFF,
-              test  : OFF
-            }
+#          - { name  : macos-clang-static-noext-nolog-notest,
+#              os    : macos-latest,
+#              lib   : static,
+#              family: llvm,
+#              cxx   : clang++,
+#              cc    : clang,
+#              extend: OFF,
+#              logs  : OFF,
+#              test  : OFF
+#            }
 
             # compile Areg engine as a shared with CYGWIN g++ / gcc on Windows, enable Areg extensions and logs
-          - { name  : win-cygwin-shared-ext-log,
-              os    : windows-latest,
-              lib   : shared,
-              family: cygwin,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : ON,
-              test  : OFF}
+#          - { name  : win-cygwin-shared-ext-log,
+#              os    : windows-latest,
+#              lib   : shared,
+#              family: cygwin,
+#              cxx   : g++,
+#              cc    : gcc,
+#              extend: ON,
+#              logs  : ON,
+#              test  : OFF}
 
             # compile Areg engine as a shared with CYGWIN g++ / gcc on Windows, enable Areg extensions and no logs
-          - { name  : win-cygwin-shared-ext-nolog,
-              os    : windows-latest,
-              lib   : shared,
-              family: cygwin,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : OFF,
-              test  : OFF
-            }
+#          - { name  : win-cygwin-shared-ext-nolog,
+#              os    : windows-latest,
+#              lib   : shared,
+#              family: cygwin,
+#              cxx   : g++,
+#              cc    : gcc,
+#              extend: ON,
+#              logs  : OFF,
+#              test  : OFF
+#            }
 
             # compile Areg engine as a static with CYGWIN g++ / gcc on Windows, enable Areg extensions, logs, examples and tests
-          - { name  : win-cygwin-static-all-test,
-              os    : windows-latest,
-              lib   : static,
-              family: cygwin,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : ON,
-              test  : ON
-            }
+#          - { name  : win-cygwin-static-all-test,
+#              os    : windows-latest,
+#              lib   : static,
+#              family: cygwin,
+#              cxx   : g++,
+#              cc    : gcc,
+#              extend: ON,
+#              logs  : ON,
+#              test  : ON
+#            }
 
             # compile Areg engine as a static with CYGWIN g++ / gcc on Windows, enable Areg extensions, logs, examples and tests
-          - { name  : win-cygwin-shared-all-test,
-              os    : windows-latest,
-              lib   : shared,
-              family: cygwin,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : ON,
-              test  : ON
-            }
+#          - { name  : win-cygwin-shared-all-test,
+#              os    : windows-latest,
+#              lib   : shared,
+#              family: cygwin,
+#              cxx   : g++,
+#              cc    : gcc,
+#              extend: ON,
+#              logs  : ON,
+#              test  : ON
+#            }
 
             # compile Areg engine as a shared with CYGWIN g++ / gcc on Windows, disable Areg extensions and no logs
-          - { name  : win-cygwin-shared-noext-nolog,
-              os    : windows-latest,
-              lib   : shared,
-              family: cygwin,
-              cxx   : g++,
-              cc    : gcc,
-              extend: OFF,
-              logs  : OFF,
-              test  : OFF
-            }
+#          - { name  : win-cygwin-shared-noext-nolog,
+#              os    : windows-latest,
+#              lib   : shared,
+#              family: cygwin,
+#              cxx   : g++,
+#              cc    : gcc,
+#              extend: OFF,
+#              logs  : OFF,
+#              test  : OFF
+#            }
 
           # compile Areg engine as a shared library with clang on Windows, enable Areg extensions and logs
-          - { name  : win-clang-shared-ext-log,
-              os    : windows-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang-cl,
-              cc    : clang-cl,
-              extend: ON,
-              logs  : ON,
-              test  : OFF
-            }
+#          - { name  : win-clang-shared-ext-log,
+#              os    : windows-latest,
+#              lib   : shared,
+#              family: llvm,
+#              cxx   : clang-cl,
+#              cc    : clang-cl,
+#              extend: ON,
+#              logs  : ON,
+#              test  : OFF
+#            }
 
             # compile Areg engine as a shared library with clang on Windows, enable Areg extensions and no logs
-          - { name  : win-clang-shared-ext-nolog,
-              os    : windows-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang-cl,
-              cc    : clang-cl,
-              extend: ON,
-              logs  : OFF,
-              test  : OFF
-            }
+#          - { name  : win-clang-shared-ext-nolog,
+#              os    : windows-latest,
+#              lib   : shared,
+#              family: llvm,
+#              cxx   : clang-cl,
+#              cc    : clang-cl,
+#              extend: ON,
+#              logs  : OFF,
+#              test  : OFF
+#            }
 
             # compile Areg engine as a static library with clang on Windows, enable Areg extensions, logs, examples and tests
-          - { name  : win-clang-static-all-test,
-              os    : windows-latest,
-              lib   : static,
-              family: llvm,
-              cxx   : clang-cl,
-              cc    : clang-cl,
-              extend: ON,
-              logs  : ON,
-              test  : ON
-            }
+#          - { name  : win-clang-static-all-test,
+#              os    : windows-latest,
+#              lib   : static,
+#              family: llvm,
+#              cxx   : clang-cl,
+#              cc    : clang-cl,
+#              extend: ON,
+#              logs  : ON,
+#              test  : ON
+#            }
 
             # compile Areg engine as a static library with clang on Windows, enable Areg extensions, logs, examples and tests
-          - { name  : win-clang-shared-all-test,
-              os    : windows-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang-cl,
-              cc    : clang-cl,
-              extend: ON,
-              logs  : ON,
-              test  : ON
-            }
+#          - { name  : win-clang-shared-all-test,
+#              os    : windows-latest,
+#              lib   : shared,
+#              family: llvm,
+#              cxx   : clang-cl,
+#              cc    : clang-cl,
+#              extend: ON,
+#              logs  : ON,
+#              test  : ON
+#            }
 
             # compile Areg engine as a shared library with clang on Windows, disable Areg extensions and no logs
-          - { name  : win-clang-shared-noext-nolog,
-              os    : windows-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang-cl,
-              cc    : clang-cl,
-              extend: OFF,
-              logs  : OFF,
-              test  : OFF
-            }
+#          - { name  : win-clang-shared-noext-nolog,
+#              os    : windows-latest,
+#              lib   : shared,
+#              family: llvm,
+#              cxx   : clang-cl,
+#              cc    : clang-cl,
+#              extend: OFF,
+#              logs  : OFF,
+#              test  : OFF
+#            }
 
             # compile Areg engine as a shared with MSVC on Windows, enable Areg extensions and logs
-          - { name  : win-msvc-shared-ext-log,
-              os    : windows-latest,
-              lib   : shared,
-              family: msvc,
-              cxx   : cl,
-              cc    : cl,
-              extend: ON,
-              logs  : ON,
-              test  : OFF
-            }
+#          - { name  : win-msvc-shared-ext-log,
+#              os    : windows-latest,
+#              lib   : shared,
+#              family: msvc,
+#              cxx   : cl,
+#              cc    : cl,
+#              extend: ON,
+#              logs  : ON,
+#              test  : OFF
+#            }
 
             # compile Areg engine as a shared with MSVC on Windows, enable Areg extensions and no logs
-          - { name  : win-msvc-shared-ext-nolog,
-              os    : windows-latest,
-              lib   : shared,
-              family: msvc,
-              cxx   : cl,
-              cc    : cl,
-              extend: ON,
-              logs  : OFF,
-              test  : OFF
-            }
+#          - { name  : win-msvc-shared-ext-nolog,
+#              os    : windows-latest,
+#              lib   : shared,
+#              family: msvc,
+#              cxx   : cl,
+#              cc    : cl,
+#              extend: ON,
+#              logs  : OFF,
+#              test  : OFF
+#            }
 
             # compile Areg engine as a static with MSVC on Windows, enable Areg extensions, logs, examples and tests
-          - { name  : win-msvc-static-all-test,
-              os    : windows-latest,
-              lib   : static,
-              family: msvc,
-              cxx   : cl,
-              cc    : cl,
-              extend: ON,
-              logs  : ON,
-              test  : ON
-            }
+#          - { name  : win-msvc-static-all-test,
+#              os    : windows-latest,
+#              lib   : static,
+#              family: msvc,
+#              cxx   : cl,
+#              cc    : cl,
+#              extend: ON,
+#              logs  : ON,
+#              test  : ON
+#            }
 
             # compile Areg engine as a static with MSVC on Windows, enable Areg extensions, logs, examples and tests
-          - { name  : win-msvc-shared-all-test,
-              os    : windows-latest,
-              lib   : shared,
-              family: msvc,
-              cxx   : cl,
-              cc    : cl,
-              extend: ON,
-              logs  : ON,
-              test  : ON
-            }
+#          - { name  : win-msvc-shared-all-test,
+#              os    : windows-latest,
+#              lib   : shared,
+#              family: msvc,
+#              cxx   : cl,
+#              cc    : cl,
+#              extend: ON,
+#              logs  : ON,
+#              test  : ON
+#            }
 
             # compile Areg engine as a shared with MSVC on Windows, enable Areg extensions and logs
-          - { name  : win-msvc-shared-noext-log,
-              os    : windows-latest,
-              lib   : shared,
-              family: msvc,
-              cxx   : cl,
-              cc    : cl,
-              extend: OFF,
-              logs  : ON,
-              test  : OFF
-            }
+#          - { name  : win-msvc-shared-noext-log,
+#              os    : windows-latest,
+#              lib   : shared,
+#              family: msvc,
+#              cxx   : cl,
+#              cc    : cl,
+#              extend: OFF,
+#              logs  : ON,
+#              test  : OFF
+#            }
 
             # compile Areg engine as a shared with MSVC on Windows, enable Areg extensions and no logs
-          - { name  : win-msvc-shared-noext-nolog,
-              os    : windows-latest,
-              lib   : shared,
-              family: msvc,
-              cxx   : cl,
-              cc    : cl,
-              extend: OFF,
-              logs  : OFF,
-              test  : OFF
-            }
+#          - { name  : win-msvc-shared-noext-nolog,
+#              os    : windows-latest,
+#              lib   : shared,
+#              family: msvc,
+#              cxx   : cl,
+#              cc    : cl,
+#              extend: OFF,
+#              logs  : OFF,
+#              test  : OFF
+#            }
 
     steps:
 
@@ -527,6 +533,10 @@ jobs:
       - name: Write core dumps into the workspace
         # A crashing example leaves a core next to the binaries, so the uploaded artifact
         # carries the stack of the failure and not only the captured output.
+        #
+        # ptrace_scope is lowered for the same reason: a process that hangs instead of
+        # crashing is photographed by the driver with gdb before it is killed, and the
+        # default Ubuntu setting lets a debugger attach only to its own descendants.
         if: runner.os == 'Linux' && matrix.config.test == 'ON'
         working-directory: ${{github.workspace}}
         shell: bash
@@ -534,6 +544,8 @@ jobs:
           mkdir -p ./cores
           sudo sysctl -w kernel.core_pattern="${{github.workspace}}/cores/core.%e.%p" > /dev/null
           sudo sysctl -w kernel.core_uses_pid=0 > /dev/null
+          sudo sysctl -w kernel.yama.ptrace_scope=0 > /dev/null || true
+          which gdb || sudo apt-get install -y -qq gdb || true
 
       - name: Run example applications. Ignore if examples are not compiled
         if: matrix.config.test == 'ON'
@@ -565,6 +577,20 @@ jobs:
         if: matrix.config.test == 'ON'
         working-directory: ${{github.workspace}}
         run: ctest --test-dir ${{env.CACHE_DEST}} --output-on-failure --output-junit test_results.xml
+
+      - name: Report the failed unit tests
+        # ctest prints the failure into the job log, which is not readable without a
+        # credential. An annotation is, so the names of the failed tests and the tail of
+        # their output are published as one.
+        if: failure() && matrix.config.test == 'ON'
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          LOG="${{env.CACHE_DEST}}/Testing/Temporary/LastTest.log"
+          if [ ! -f "${LOG}" ]; then echo "::warning title=ctest::no ${LOG}"; exit 0; fi
+          NAMES="$(grep -E '^[0-9]+/[0-9]+ Test .*(Failed|Exception)' "${LOG}" | tr '\n' ';')"
+          echo "::error title=ctest::${NAMES:-no failed test line in LastTest.log}"
+          tail -n 60 "${LOG}" | tr '\n' '|' | sed 's/^/::notice title=ctest-tail::/'
 
       - name: Collect the macOS crash reports
         # macOS does not write core files, it writes a crash report per process into the
@@ -689,3 +715,198 @@ jobs:
         with:
           name: repro-debug
           path: ./repro-debug/
+
+  watchdog-hunt:
+    name: watchdog-hunt (macos-clang-shared)
+    # TEMPORARY, bug-fixing phase. Delete together with the macOS watchdog defect.
+    #
+    # 21_locwatchdog and 22_pubwatchdog hang on the macOS build server at random, one of
+    # the two per job, and on no other platform. The artifacts of a normal run do not say
+    # why: the captured output of the hung application is zero bytes, yet in one of the
+    # cases the message router recorded real traffic, so the application clearly ran.
+    #
+    # This job runs only those two scenarios, several times, in both capture modes:
+    # through a pseudo terminal, the way the normal run does it, and by redirecting into
+    # the log file. That separates a defect of the framework from a defect of the capture:
+    #
+    #   hangs with a terminal only   -> the capture is at fault, the framework is not
+    #   hangs in both modes          -> the framework is at fault, and the backtraces
+    #                                   taken before the kill name the place
+    #   hangs in neither             -> the trigger needs the whole suite, widen the hunt
+    #
+    # It runs on every push and does not gate anything: it never fails the workflow, it
+    # only collects. Logging is left on so that a run that writes no framework log at all
+    # is visible as such, which by itself separates a hang before 'main' from every other.
+    runs-on: macos-latest
+    continue-on-error: true
+
+    steps:
+
+      - name: Checkout Areg SDK source codes
+        uses: actions/checkout@v7
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v5.6.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      - name: Report the state of the debugger
+        continue-on-error: true
+        run: |
+          xcrun lldb --version || true
+          /usr/sbin/DevToolsSecurity -status || true
+
+      - name: Configure CMake
+        working-directory: ${{github.workspace}}
+        run: |
+          cmake -B ./product/cache/hunt -DAREG_COMPILER_FAMILY=llvm -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+                -DAREG_LIB_TYPE=shared -DAREG_EXTENDED:BOOL=OFF -DAREG_LOGGING:BOOL=ON \
+                -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=OFF
+
+      - name: Build with CMake
+        working-directory: ${{github.workspace}}
+        run: cmake --build ./product/cache/hunt -j16
+
+      - name: Locate the build output directory
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
+          if [ -z "${BIN_DIR}" ]; then echo "::error title=watchdog-hunt::nothing was built"; exit 1; fi
+          echo "HUNT_BIN=${BIN_DIR}" >> "${GITHUB_ENV}"
+
+      - name: Let the framework log its own scopes
+        # The shipped configuration silences 'areg_*', the scopes of the framework itself.
+        # They are the ones worth reading here: the watchdog expiry, the termination and
+        # the recreation of a component thread and the registration of a service provider
+        # are all framework scopes, and their trace says how far a hung run really got.
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          CONF="${{env.HUNT_BIN}}/config/areg.init"
+          if [ ! -f "${CONF}" ]; then echo "::warning title=watchdog-hunt::no ${CONF}"; exit 0; fi
+          perl -pi -e 's{^log::\*::scope::areg_\*.*$}{log::*::scope::areg_* = DEBUG | SCOPE ;}' "${CONF}"
+          grep -n 'scope::areg_' "${CONF}" || true
+
+      - name: Hunt with a pseudo terminal
+        working-directory: ${{github.workspace}}
+        shell: bash
+        timeout-minutes: 30
+        continue-on-error: true
+        run: |
+          python3 tools/run-all-examples.py --bin-dir "${{env.HUNT_BIN}}" \
+                  --only 21_locwatchdog,22_pubwatchdog --repeat 4 --keep-logs \
+                  --out-dir ./watchdog-hunt/with-terminal
+
+      - name: Hunt without a pseudo terminal
+        working-directory: ${{github.workspace}}
+        shell: bash
+        timeout-minutes: 30
+        continue-on-error: true
+        run: |
+          python3 tools/run-all-examples.py --bin-dir "${{env.HUNT_BIN}}" --no-pty \
+                  --only 21_locwatchdog,22_pubwatchdog --repeat 4 --keep-logs \
+                  --out-dir ./watchdog-hunt/without-terminal
+
+      - name: Collect what the framework itself logged
+        if: always()
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          mkdir -p ./watchdog-hunt/areg-logs
+          cp -R "${{env.HUNT_BIN}}/logs/." ./watchdog-hunt/areg-logs/ 2>/dev/null || true
+          for dir in "${HOME}/Library/Logs/DiagnosticReports" /Library/Logs/DiagnosticReports; do
+            if [ -d "${dir}" ]; then cp -R "${dir}/." ./watchdog-hunt/areg-logs/ || true; fi
+          done
+          find ./watchdog-hunt -maxdepth 3 | head -n 60
+
+      - name: Upload the hunt
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: watchdog-hunt
+          path: ./watchdog-hunt/
+
+  ubsan-linux:
+    name: ubsan (linux-gnu-static)
+    # TEMPORARY, bug-fixing phase.
+    #
+    # The defect that broke 18_pubworker was an invalid downcast of an event to a type it
+    # never had. The undefined behaviour sanitizer detects exactly that, through its
+    # 'vptr' check, which is why this job exists and why the build is static: 'vptr'
+    # needs every translation unit of the program instrumented, and reports of a shared
+    # build are dominated by false positives from the uninstrumented library boundary.
+    #
+    # The sanitizer writes into files and not to standard error on purpose. Its reports
+    # would otherwise land in the middle of the captured output of the examples and turn
+    # every expectation into a false failure.
+    #
+    # Reports only, it never fails the workflow.
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+
+      - name: Checkout Areg SDK source codes
+        uses: actions/checkout@v7
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v5.6.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      - name: Configure CMake with the undefined behaviour sanitizer
+        working-directory: ${{github.workspace}}
+        run: |
+          cmake -B ./product/cache/ubsan -DAREG_COMPILER_FAMILY=gnu -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+                -DAREG_LIB_TYPE=static -DAREG_EXTENDED:BOOL=ON -DAREG_LOGGING:BOOL=ON \
+                -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=OFF \
+                -DCMAKE_CXX_FLAGS="-fsanitize=undefined -fno-omit-frame-pointer -g" \
+                -DCMAKE_C_FLAGS="-fsanitize=undefined -fno-omit-frame-pointer -g" \
+                -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=undefined" \
+                -DCMAKE_SHARED_LINKER_FLAGS="-fsanitize=undefined"
+
+      - name: Build with CMake
+        working-directory: ${{github.workspace}}
+        run: cmake --build ./product/cache/ubsan -j16
+
+      - name: Run the examples under the sanitizer
+        working-directory: ${{github.workspace}}
+        shell: bash
+        timeout-minutes: 45
+        continue-on-error: true
+        env:
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=0:log_path=${{github.workspace}}/ubsan/report
+        run: |
+          mkdir -p ./ubsan
+          sudo sysctl -w kernel.yama.ptrace_scope=0 > /dev/null || true
+          BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
+          python3 tools/run-all-examples.py --bin-dir "${BIN_DIR}" --tier all \
+                  --out-dir ./ubsan/example-results
+
+      - name: Report what the sanitizer found
+        if: always()
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          COUNT="$(cat ./ubsan/report.* 2>/dev/null | grep -c 'runtime error:' || true)"
+          if [ "${COUNT}" = "0" ] || [ -z "${COUNT}" ]; then
+            echo "::notice title=ubsan::the sanitizer reported nothing"
+            exit 0
+          fi
+          echo "::warning title=ubsan::${COUNT} report(s), see the artifact"
+          # One annotation per distinct place, so that the same report repeated by every
+          # iteration of a loop does not use up the annotation budget of the step.
+          cat ./ubsan/report.* 2>/dev/null | grep 'runtime error:' | sort -u | head -n 8 \
+            | while IFS= read -r line; do echo "::error title=ubsan::${line}"; done
+
+      - name: Upload the sanitizer reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ubsan-linux
+          path: ./ubsan/

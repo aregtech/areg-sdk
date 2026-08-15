@@ -1,15 +1,20 @@
 name: Accessibility-alt-text-bot
-on: 
-  issues:
-    types: [opened, edited]
-  pull_request:
-    types: [opened, edited]
-  issue_comment:
-    types: [created, edited]
-  discussion:
-    types: [created, edited]
-  discussion_comment:
-    types: [created, edited]
+# TEMPORARY, bug-fixing phase: this workflow runs on request only, so that a push
+# spends the build server on the example runs. Restore by deleting the
+# 'workflow_dispatch' line and uncommenting the block below it.
+on:
+  workflow_dispatch:
+# on:
+#   issues:
+#     types: [opened, edited]
+#   pull_request:
+#     types: [opened, edited]
+#   issue_comment:
+#     types: [created, edited]
+#   discussion:
+#     types: [created, edited]
+#   discussion_comment:
+#     types: [created, edited]
 
 permissions:
   issues: write

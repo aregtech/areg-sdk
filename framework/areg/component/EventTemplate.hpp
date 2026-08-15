@@ -245,8 +245,10 @@ AREG_IMPLEMENT_EVENT_REGISTRATION_TEMPLATE(template <class DATA_CLASS>, AregImpl
 template <class DATA_CLASS>                                                                                             \
 void AregImpl_##ConsumerClass<DATA_CLASS>::start_event_processing(areg::Event& eventElem)                               \
 {                                                                                                                       \
+    /* The queue stores and dispatches areg::Event by value, so the original derived      */                            \
+    /* type is unavailable here. Access the payload through Event::data() instead.        */                            \
     if (eventElem.event_id() == EventClass::CLASS_ID)                                                                   \
-    {   process_event(static_cast<EventClass&>(eventElem).data()); }                                                    \
+    {   process_event(*reinterpret_cast<const DATA_CLASS*>(eventElem.event_payload())); }                               \
 }                                                                                                                       \
 template <class DATA_CLASS>                                                                                             \
 AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass(areg::EventPriority prio)                                      \
