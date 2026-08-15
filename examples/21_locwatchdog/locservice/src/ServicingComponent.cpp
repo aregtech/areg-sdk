@@ -22,7 +22,7 @@ DEF_LOG_SCOPE(examples_21_locwatchdog_ServicingComponent, request_start_sleep);
 
 ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component         ( entry, owner )
-    , HelloWatchdogProviderBase ( static_cast<areg::Component &>(self()) )
+    , HelloWatchdogProviderBase ( static_cast<areg::Component &>(*this) )
 {
 }
 

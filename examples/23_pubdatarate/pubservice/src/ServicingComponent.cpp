@@ -56,7 +56,7 @@ void ServicingComponent::ServicingTimerConsumer::process_timer(areg::Timer& time
 
 ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component       ( entry, owner )
-    , LargeDataProviderBase ( static_cast<areg::Component &>(self()) )
+    , LargeDataProviderBase ( static_cast<areg::Component &>(*this) )
     , areg::ThreadConsumer  ( )
 
     , mBitmap           ( )

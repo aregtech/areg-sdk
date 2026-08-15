@@ -9,7 +9,7 @@
 
 ServiceComponent::ServiceComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component         ( entry, owner )
-    , HelloServiceProviderBase  ( static_cast<areg::Component &>(self()) )
+    , HelloServiceProviderBase  ( static_cast<areg::Component &>(*this) )
 {
 }
 

@@ -947,6 +947,15 @@ def markdown_report(results, seconds, tier, bin_dir):
 ANNOTATION_CHARS = 3500     #!< characters of one annotation message that survive
 
 
+STACK_ANNOTATIONS = 3       #!< annotations one photograph may spend
+
+#!< The lines of a debugger report that carry the answer: which thread, and where it
+#!< stands. Everything else a debugger prints -- the disassembly around the program
+#!< counter, the local variables of every frame, the command echo, the library load
+#!< notices -- is an order of magnitude larger and says nothing about a hang.
+STACK_KEEP = re.compile(r'^\s*\**\s*(?:thread\s+#\d|frame\s+#\d|Thread\s+\d|#\d+\s)')
+
+
 def annotation_text(text):
     """Encodes a multi line report so that a build server keeps the line breaks."""
     return (text[:ANNOTATION_CHARS].replace('%', '%25')
@@ -958,8 +967,9 @@ def stack_digest(report):
     """Keeps the part of a photograph that names the defect.
 
     A full report holds a call graph, a backtrace of every thread, the descriptors and
-    a second snapshot, which is far more than an annotation can carry. The symbolic
-    backtrace is the part worth publishing; the rest stays in the artifact.
+    a second snapshot, which is far more than an annotation can carry. The thread list
+    and the frames of the first snapshot are the part worth publishing; the rest stays
+    in the artifact.
     """
     sections = re.split(r'^---- (.*?) ----$', report, flags=re.M)
     # re.split with one group gives [prologue, header, body, header, body, ...]
@@ -971,8 +981,18 @@ def stack_digest(report):
             break
     if best is None:
         best = sections[2] if len(sections) > 2 else report
-    lines = [line for line in best.splitlines() if line.strip()]
-    return '\n'.join(lines[:140])
+    lines = [line.rstrip() for line in best.splitlines()
+             if line.strip() and STACK_KEEP.match(line) is not None]
+    if not lines:                       # an unknown debugger, publish it unfiltered
+        lines = [line.rstrip() for line in best.splitlines() if line.strip()]
+    return '\n'.join(lines)
+
+
+def annotation_chunks(text, count):
+    """Splits a report into at most 'count' pieces an annotation can carry."""
+    pieces = [text[at:at + ANNOTATION_CHARS]
+              for at in range(0, len(text), ANNOTATION_CHARS)]
+    return pieces[:count] if pieces else ['']
 
 
 def annotate(results):
@@ -1001,8 +1021,11 @@ def annotate(results):
             if budget == 0:
                 break
             budget -= 1
-            print('::error title=%s stack of %s::%s'
-                  % (result.name, name, annotation_text(stack_digest(report))))
+            chunks = annotation_chunks(stack_digest(report), STACK_ANNOTATIONS)
+            for index, chunk in enumerate(chunks):
+                print('::error title=%s stack of %s %d/%d::%s'
+                      % (result.name, name, index + 1, len(chunks),
+                         annotation_text(chunk)))
 
         for capture in result.captures:
             if budget == 0:

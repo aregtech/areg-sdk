@@ -22,7 +22,7 @@ DEF_LOG_SCOPE(examples_22_pubservice_ServicingComponent, request_stop_service);
 
 ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component         ( entry, owner )
-    , HelloWatchdogProviderBase ( static_cast<areg::Component &>(self()) )
+    , HelloWatchdogProviderBase ( static_cast<areg::Component &>(*this) )
 {
 }
 

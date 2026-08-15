@@ -823,6 +823,20 @@ private:
      **/
     inline uint32_t count_param_space(const uint32_t* params, uint32_t count) noexcept;
 
+    /**
+     * \brief   Returns the number of bytes one entry of the parameter buffer occupies:
+     *          the StateArray itself followed by its states, rounded up so that the
+     *          entry that follows starts on an address a StateArray may live at.
+     *
+     *          areg::DataState is two bytes wide and a StateArray holds a pointer, so
+     *          without the rounding an odd parameter count places every following entry
+     *          on an address that does not satisfy alignof(StateArray). The reservation
+     *          and the placement must use this one function, never the raw sum.
+     *
+     * \param   paramCount  The number of states of the entry.
+     **/
+    static constexpr uint32_t param_entry_space(uint32_t paramCount) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -1258,15 +1272,23 @@ inline void areg::ParameterArray::set_param_state(uint32_t whichParam, areg::Dat
     mParamList[whichParam]->set_all_state(newState);
 }
 
+constexpr uint32_t areg::ParameterArray::param_entry_space(uint32_t paramCount) noexcept
+{
+    constexpr uint32_t align{ static_cast<uint32_t>(alignof(areg::StateArray)) };
+    const uint32_t used{ static_cast<uint32_t>(sizeof(areg::StateArray)
+                                               + paramCount * sizeof(areg::DataState)) };
+    return (used + align - 1u) & ~(align - 1u);
+}
+
 inline uint32_t areg::ParameterArray::count_param_space(const uint32_t* params, uint32_t count) noexcept
 {
     uint32_t result = 0;
-    // space for size of class areg::StateArray + 
+    // space for size of class areg::StateArray +
     // space for size of areg::DataState multiplied on number of parameters.
     // If number of parameters is zero, do not reserve.
     for (uint32_t i = 0; i < count; ++i)
     {
-        result += params[i] != 0 ? static_cast<uint32_t>(sizeof(areg::StateArray) + params[i] * sizeof(areg::DataState)) : 0;
+        result += params[i] != 0 ? param_entry_space(params[i]) : 0;
     }
 
     return result;

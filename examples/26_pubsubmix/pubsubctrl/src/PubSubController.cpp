@@ -55,7 +55,7 @@ const areg::ext::OptionParser::OptionSetup PubSubController::ValidOptions[]
 
 PubSubController::PubSubController( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : areg::Component         ( entry, owner )
-    , Publisher         ( static_cast<areg::Component &>(self()) )
+    , Publisher         ( static_cast<areg::Component &>(*this) )
     , areg::ThreadConsumer  ( )
 
     , mSubscriber       ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()), 0 )

@@ -24,7 +24,7 @@ DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient, broadcast_service_stoppi
 
 ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component       ( entry, owner )
-    , LargeDataConsumerBase ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
+    , LargeDataConsumerBase ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(*this) )
     , areg::TimerConsumer   ( )
     , mTimer                    ( static_cast<areg::TimerConsumer&>(self()), TIMER_NAME, areg::INVALID_TIMEOUT, areg::Timer::IGNORE_TIMER_QUEUE, areg::EventPriority::HighPrio )
     , mReceivedBlocks           ( 0u )

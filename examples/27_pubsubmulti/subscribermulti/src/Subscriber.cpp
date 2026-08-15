@@ -19,7 +19,7 @@ DEF_LOG_SCOPE(examples_27_pubsubmulti_subscribermulti_Subscriber, on_service_pro
 
 Subscriber::Subscriber( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : areg::Component         (entry, owner)
-    , SubscriberBase    (entry.mDependencyServices[0], static_cast<areg::Component &>(self()), pubsub::Coord1Integer, pubsub::Coord1String)
+    , SubscriberBase    (entry.mDependencyServices[0], static_cast<areg::Component &>(*this), pubsub::Coord1Integer, pubsub::Coord1String)
     , mStateEventCount  ( 0 )
     , mSecond           ( entry.mDependencyServices[1], static_cast<areg::Component &>(self()) )
 {

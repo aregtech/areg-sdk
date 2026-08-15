@@ -42,8 +42,8 @@ namespace
 
 ConnectionController::ConnectionController( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread )
     : areg::Component             ( entry, ownerThread )
-    , ConnectionManagerProviderBase ( static_cast<areg::Component &>(self()) )
-    , CentralMessagerProviderBase   ( static_cast<areg::Component &>(self()) )
+    , ConnectionManagerProviderBase ( static_cast<areg::Component &>(*this) )
+    , CentralMessagerProviderBase   ( static_cast<areg::Component &>(*this) )
 
     , mWnd                  ( std::any_cast<HWND>(entry.data()) )
     , mCookies              ( ConnectionManager::InvalidCookie )

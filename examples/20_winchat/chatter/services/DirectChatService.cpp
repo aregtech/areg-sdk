@@ -56,7 +56,7 @@ areg::Model DirectChatService::GetModel( const DirectMessager::Participant & ini
 
 DirectChatService::DirectChatService( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread)
     : areg::Component           ( entry, ownerThread )
-    , DirectMessagerProviderBase  ( static_cast<areg::Component &>(self()) )
+    , DirectMessagerProviderBase  ( static_cast<areg::Component &>(*this) )
 
     , mPaticipantsHandler   (std::any_cast<ChatPrticipantHandler*>(entry.data()))
     , mListClients          ( )

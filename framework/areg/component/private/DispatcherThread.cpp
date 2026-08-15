@@ -188,14 +188,14 @@ DispatcherThread & DispatcherThread::_null_dispather_thread() noexcept
 // DispatcherThread class Constructor / Destructor.
 //////////////////////////////////////////////////////////////////////////
 DispatcherThread::DispatcherThread (const String & threadName, uint32_t stackSizeKb, uint32_t maxQeueue, areg::Bool dropOnFull /*= areg::Bool::Undefined*/, uint32_t waitMs /*= areg::WAIT_INFINITE*/)
-    : Thread          ( static_cast<ThreadConsumer &>(self()), threadName, stackSizeKb )
+    : Thread          ( static_cast<ThreadConsumer &>(*this), threadName, stackSizeKb )
     , EventDispatcher ( threadName, maxQeueue, dropOnFull, waitMs )
     , mEventStarted   ( true, false )
 {
 }
 
 DispatcherThread::DispatcherThread( areg::NullTag, const String & threadName ) noexcept
-    : Thread          ( areg::NullTag{}, static_cast<ThreadConsumer &>(self()), threadName )
+    : Thread          ( areg::NullTag{}, static_cast<ThreadConsumer &>(*this), threadName )
     , EventDispatcher ( areg::NullTag{} )
     , mEventStarted   ( areg::NullTag{} )
 {

@@ -69,7 +69,7 @@ ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
                                                         , const String & prefixName)
     : ConnectionProvider    ( )
     , ServiceEventConsumer  ( )
-    , ReconnectTimerConsumer(static_cast<ServiceEventConsumer&>(self()))
+    , ReconnectTimerConsumer(static_cast<ServiceEventConsumer&>(*this))
 
     , mTarget               (target)
     , mService              (service)

@@ -36,8 +36,8 @@ NetTcpLogger::NetTcpLogger(LogConfiguration & logConfig, ScopeController & scope
                                     , areg::RemoteServiceKind::Logger
                                     , static_cast<uint32_t>(areg::ConnectionType::Tcpip)
                                     , areg::MessageSource::SourceClient
-                                    , static_cast<ConnectionConsumer &>(self())
-                                    , static_cast<RemoteMessageHandler &>(self())
+                                    , static_cast<ConnectionConsumer &>(*this)
+                                    , static_cast<RemoteMessageHandler &>(*this)
                                     , dispatchThread
                                     , NetTcpLogger::PREFIX_THREAD)
     , ConnectionConsumer    ( )

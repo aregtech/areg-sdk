@@ -25,7 +25,7 @@ DEF_LOG_SCOPE(examples_24_pubservice_ServiceClient, process_timer);
 
 ServiceClient::ServiceClient( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : areg::Component             ( entry, owner )
-    , HelloUnblockConsumerBase( entry.mDependencyServices[0], static_cast<areg::Component &>(self()) )
+    , HelloUnblockConsumerBase( entry.mDependencyServices[0], static_cast<areg::Component &>(*this) )
     , areg::TimerConsumer       ( )
 
     , mClientId             ( HelloUnblock::InvalidId )

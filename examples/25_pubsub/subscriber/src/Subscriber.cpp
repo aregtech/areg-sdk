@@ -44,7 +44,7 @@ namespace
 
 Subscriber::Subscriber( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : areg::Component         ( entry, owner )
-    , PubSubConsumerBase  ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()) )
+    , PubSubConsumerBase  ( entry.mDependencyServices[0], static_cast<areg::Component &>(*this) )
     , mOldInteger       ( 0 )
     , mOldState         ( false )
     , mOldString        (_invalid )

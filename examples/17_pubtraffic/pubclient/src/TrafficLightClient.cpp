@@ -14,7 +14,7 @@
 
 TrafficLightClient::TrafficLightClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component                     ( entry, owner )
-    , SimpleTrafficLightConsumerBase  ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()) )
+    , SimpleTrafficLightConsumerBase  ( entry.mDependencyServices[0], static_cast<areg::Component &>(*this) )
 
     , mTrafficDirection             ( std::any_cast<traffic::TrafficDirection>(entry.data()) )
 {

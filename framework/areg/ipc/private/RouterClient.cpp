@@ -55,8 +55,8 @@ RouterClient::RouterClient(ConnectionConsumer& connectionConsumer, RegistrationC
                                     , static_cast<uint32_t>(areg::ConnectionType::Tcpip)
                                     , areg::MessageSource::SourceClient
                                     , connectionConsumer
-                                    , static_cast<RemoteMessageHandler &>(self())
-                                    , static_cast<DispatcherThread &>(self())
+                                    , static_cast<RemoteMessageHandler &>(*this)
+                                    , static_cast<DispatcherThread &>(*this)
                                     , RouterClient::PREFIX_THREAD)
     , RegistrationProvider  ( )
     , DispatcherThread      (String(RouterClient::PREFIX_THREAD) + areg::CLIENT_DISPATCH_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_SIZE_MAXIMUM)

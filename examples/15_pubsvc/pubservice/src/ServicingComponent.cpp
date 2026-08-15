@@ -22,7 +22,7 @@ DEF_LOG_SCOPE(examples_15_pubservice_ServicingComponent, request_shutdown_servic
 
 ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component     ( entry, owner )
-    , HelloWorldProviderBase( static_cast<areg::Component &>(self()) )
+    , HelloWorldProviderBase( static_cast<areg::Component &>(*this) )
     , mClientList   ( )
     , mRemainRequest( HelloWorld::MaxMessages )
 {
