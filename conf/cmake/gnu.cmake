@@ -84,6 +84,21 @@ else()
         # LTO is disabled on Cygwin.
         if (NOT CYGWIN)
             set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+            # GCC 13 and earlier emit wrong code for a speculatively devirtualized call
+            # when link time optimization inlines the target: the body of the callee is
+            # dropped, its tail call is kept, and the argument setup of that tail call is
+            # lost, so it runs with whatever the inlined this-adjustment left in the
+            # first argument register. The shape it needs -- one override of a virtual
+            # function, reached through a non-virtual thunk because the interface is a
+            # secondary base -- is the shape of every event consumer and every single
+            # provider service of this SDK. Fixed in GCC 14. Without link time
+            # optimization the same compiler is correct, and so is the same build with
+            # this option, which costs one indirect call where GCC would have guessed.
+            if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 14)
+                list(APPEND AREG_COMPILER_OPTIONS -fno-devirtualize-speculatively)
+                list(APPEND AREG_LDFLAGS -fno-devirtualize-speculatively)
+                message(STATUS "AREG: GCC ${CMAKE_CXX_COMPILER_VERSION} with LTO, speculative devirtualization is switched off")
+            endif()
         endif()
     else()
         list(APPEND AREG_COMPILER_OPTIONS -O0 -g3)

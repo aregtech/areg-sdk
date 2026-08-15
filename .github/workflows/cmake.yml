@@ -756,20 +756,27 @@ jobs:
     #
     # Run 1500 answered the first question this job was written to ask. The two scenarios
     # on their own, four times each, in both capture modes, did not hang; the full suite
-    # of the same run did. So the trigger is not in those two applications alone, and the
-    # hunt now runs the whole suite first and the focused repeats afterwards.
+    # of the same run did. So the trigger is not in those two applications alone.
     #
-    # The two capture modes are kept because they still separate a defect of the framework
-    # from a defect of the capture:
+    # Run 1501 answered the second and cost this job its build type. All four macOS matrix
+    # jobs hung, all four on 22_pubwatchdog, while this job passed again. The matrix builds
+    # Release and logs nothing; this job built RelWithDebInfo and logged ten scope groups
+    # at DEBUG|SCOPE, 'areg_ipc_*' among them, which is a record per dispatched event. The
+    # hunt was slower than the race it was hunting. It is now the matrix configuration --
+    # Release, extensions off, shared -- and it runs the whole suite twice:
+    #
+    #   pass 1, shipped configuration -> does this build reproduce at all?
+    #   pass 2, narrow scope set      -> the framework's own account of the hang
+    #
+    # If pass 1 hangs and pass 2 does not, the logging is still too heavy and the next step
+    # is to narrow tools/enable-framework-logs.py further, not to widen it.
+    #
+    # The two focused capture modes are kept at the end because they still separate a
+    # defect of the framework from a defect of the capture:
     #
     #   hangs with a terminal only   -> the capture is at fault, the framework is not
     #   hangs in both modes          -> the framework is at fault, and the backtraces
     #                                   taken before the kill name the place
-    #
-    # The framework writes no log file at all in the shipped configuration
-    # ('log::*::enable::file = false'), which is why earlier runs produced none. The step
-    # below switches the file target on together with the scopes of the subsystems a
-    # watchdog restart passes through.
     #
     # It runs on every push and does not gate anything: it never fails the workflow, it
     # only collects.
@@ -797,7 +804,9 @@ jobs:
       - name: Configure CMake
         working-directory: ${{github.workspace}}
         run: |
-          cmake -B ./product/cache/hunt -DAREG_COMPILER_FAMILY=llvm -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+          # Deliberately identical to the macos-clang-shared-noext matrix entry, which is
+          # the configuration that reproduces. RelWithDebInfo did not.
+          cmake -B ./product/cache/hunt -DAREG_COMPILER_FAMILY=llvm -DCMAKE_BUILD_TYPE=Release \
                 -DAREG_LIB_TYPE=shared -DAREG_EXTENDED:BOOL=OFF -DAREG_LOGGING:BOOL=ON \
                 -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=OFF
 
@@ -813,21 +822,31 @@ jobs:
           if [ -z "${BIN_DIR}" ]; then echo "::error title=watchdog-hunt::nothing was built"; exit 1; fi
           echo "HUNT_BIN=${BIN_DIR}" >> "${GITHUB_ENV}"
 
-      - name: Let the framework write and log its own scopes
-        working-directory: ${{github.workspace}}
-        shell: bash
-        run: python3 tools/enable-framework-logs.py "${{env.HUNT_BIN}}/config/areg.init"
-
-      - name: Hunt with the whole suite
-        # This is the run that reproduced in run 1500 while the focused repeats below did
-        # not, so it goes first and gets the framework log of a hung process.
+      - name: Pass 1, the whole suite exactly as it is shipped
+        # No logging, nothing changed. The only question this pass asks is whether this
+        # build reproduces what the matrix job of the same run reproduces. If it does not,
+        # the difference is the build type or the machine, and pass 2 proves nothing.
         working-directory: ${{github.workspace}}
         shell: bash
         timeout-minutes: 45
         continue-on-error: true
         run: |
           python3 tools/run-all-examples.py --bin-dir "${{env.HUNT_BIN}}" --tier all \
-                  --out-dir ./watchdog-hunt/whole-suite
+                  --out-dir ./watchdog-hunt/pass1-shipped
+
+      - name: Let the framework write and log its own scopes
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: python3 tools/enable-framework-logs.py "${{env.HUNT_BIN}}/config/areg.init"
+
+      - name: Pass 2, the whole suite with the framework logging its own restarts
+        working-directory: ${{github.workspace}}
+        shell: bash
+        timeout-minutes: 45
+        continue-on-error: true
+        run: |
+          python3 tools/run-all-examples.py --bin-dir "${{env.HUNT_BIN}}" --tier all \
+                  --out-dir ./watchdog-hunt/pass2-logged
 
       - name: Publish what the framework logged about the watchdog applications
         # The artifact needs a credential to download, an annotation does not, and the
@@ -882,83 +901,6 @@ jobs:
         with:
           name: watchdog-hunt
           path: ./watchdog-hunt/
-
-  devirt-linux:
-    name: no-devirt (linux-gnu-shared)
-    # TEMPORARY, bug-fixing phase. Delete once 18_pubworker is understood.
-    #
-    # This is a controlled experiment, not a build. It repeats exactly the configuration
-    # that fails -- gnu, shared, Release, extensions and logs on -- and changes one thing:
-    # the compiler is forbidden to devirtualize.
-    #
-    # The reason to suspect devirtualization is that the sanitizer job reports an invalid
-    # downcast on the service dispatch path (StubEvent.cpp and the generated
-    # *ProviderBase / *Proxy / *ConsumerBase). A dispatched 'areg::Event' is cast back to
-    # a derived event type that the object at that address never had, which tells the
-    # compiler a dynamic type that is not true, and devirtualization is the pass that
-    # acts on it. The captured output of the failing run contains a pointer printed as a
-    # string, which is what a call resolved to the wrong target looks like.
-    #
-    #   18_pubworker passes here and fails in the matrix -> the downcast is the cause
-    #   18_pubworker fails here as well                  -> it is not, look elsewhere
-    #
-    # Reports only, it never gates the workflow.
-    runs-on: ubuntu-latest
-    continue-on-error: true
-
-    steps:
-
-      - name: Checkout Areg SDK source codes
-        uses: actions/checkout@v7
-
-      - name: Setup Java JDK to run code generator
-        uses: actions/setup-java@v5.6.0
-        with:
-          java-version: 17
-          java-package: jre
-          distribution: temurin
-
-      - name: Configure CMake without devirtualization
-        working-directory: ${{github.workspace}}
-        run: |
-          g++ --version | head -n 1
-          cmake -B ./product/cache/devirt -DAREG_COMPILER_FAMILY=gnu -DCMAKE_BUILD_TYPE=Release \
-                -DAREG_LIB_TYPE=shared -DAREG_EXTENDED:BOOL=ON -DAREG_LOGGING:BOOL=ON \
-                -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=OFF \
-                -DCMAKE_CXX_FLAGS="-fno-devirtualize -fno-devirtualize-speculatively"
-
-      - name: Build with CMake
-        working-directory: ${{github.workspace}}
-        run: cmake --build ./product/cache/devirt -j16
-
-      - name: Show how the compiler translated the custom event dispatch
-        working-directory: ${{github.workspace}}
-        shell: bash
-        continue-on-error: true
-        run: |
-          BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
-          python3 tools/dump-symbol-asm.py "${BIN_DIR}/18_pubclient.elf" \
-                  "start_event_processing" --title asm-no-devirt
-
-      - name: Run the example that fails in the matrix
-        working-directory: ${{github.workspace}}
-        shell: bash
-        timeout-minutes: 25
-        continue-on-error: true
-        run: |
-          sudo sysctl -w kernel.yama.ptrace_scope=0 > /dev/null || true
-          which gdb || sudo apt-get install -y -qq gdb || true
-          BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
-          python3 tools/run-all-examples.py --bin-dir "${BIN_DIR}" \
-                  --only 18_pubworker --repeat 3 --keep-logs \
-                  --out-dir ./devirt/example-results
-
-      - name: Upload the experiment
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: devirt-linux
-          path: ./devirt/
 
   ubsan-linux:
     name: ubsan (linux-gnu-static)

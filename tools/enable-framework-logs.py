@@ -40,17 +40,22 @@ import sys
 #!< stands before the '*' ends in '_' or '.' (ScopeController::set_group_priority). A
 #!< pattern such as 'areg_component_ProxyBase*' is silently ignored, which is why every
 #!< entry below ends in '.*' or '_*'.
+#!<
+#!< 'areg_ipc_*' and the dispatcher were in this list until run 1501 and are deliberately
+#!< out of it now. They produce a record per dispatched event, and the job that used them
+#!< has failed to reproduce the macOS hang twice while the matrix jobs, which log nothing,
+#!< reproduced it eight times out of eight. What is left is one record per restart, not
+#!< per message.
 TARGETED_SCOPES = [
     'areg_component_private_WatchdogManager.*',
     'areg_component_private_ServiceManager.*',
     'areg_component_private_ServiceManagerEventProcessor.*',
-    'areg_component_private_DispatcherThread.*',
     'areg_component_private_ServerList.*',
-    'areg_component_private_ProxyAddress.*',
     'areg_component_ProxyBase.*',
     'areg_component_StubBase.*',
-    'areg_component_RemoteEventFactory.*',
-    'areg_ipc_*',
+    'areg_ipc_private_ServiceClientConnectionBase.*',
+    'examples_21_*',
+    'examples_22_*',
 ]
 
 
