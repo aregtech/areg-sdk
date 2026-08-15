@@ -145,6 +145,8 @@ Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
             ::TerminateThread(static_cast<HANDLE>(handle), static_cast<DWORD>(ThreadConsumer::ExitCode::Terminated));
             this->mWaitForRun.reset();
             this->mWaitForExit.set_signaled();
+            // The terminated routine never reaches its own exit state, release the waits here.
+            this->_set_run_state(Thread::RunState::NotRunning);
 #ifdef _MSC_VER
     #pragma warning(default: 6258)
 #endif // _MSC_VER

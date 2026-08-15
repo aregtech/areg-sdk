@@ -95,6 +95,11 @@ unsigned long Thread::_default_thread_function(void* data)
         // delete thread local storage.
         Thread::_thread_local_storage(nullptr);
         threadObj->mWaitForExit.set_signaled();
+
+        // set_signaled() releases the waiter before it has left the event object, so the
+        // waiter may delete this object at once. This store is the last access to it and
+        // it is what _wait_exit_completed() waits for.
+        threadObj->_set_run_state(Thread::RunState::NotRunning);
     }
 
     return static_cast<unsigned long>(result);
@@ -144,7 +149,7 @@ Thread::Thread(ThreadConsumer &threadConsumer, const String & threadName, uint32
     , mThreadId         (Thread::INVALID_THREAD_ID)
     , mThreadAddress    (threadName.is_empty() == false ? threadName : areg::generate_name(DEFAULT_THREAD_PREFIX.data()))
     , mThreadPriority   (Thread::ThreadPriority::Undefined)
-    , mIsRunning        ( false )
+    , mRunState         ( Thread::RunState::NotRunning )
     , mStackSizeKB      ( stackSizeKb )
     , mSyncObject       ( )
     , mWaitForRun       (false, false)
@@ -160,7 +165,7 @@ Thread::Thread( areg::NullTag, ThreadConsumer & threadConsumer, const String & t
     , mThreadId         ( Thread::INVALID_THREAD_ID )
     , mThreadAddress    ( threadName )
     , mThreadPriority   ( Thread::ThreadPriority::Undefined )
-    , mIsRunning        ( false )
+    , mRunState         ( Thread::RunState::NotRunning )
     , mStackSizeKB      ( 0u )
     , mSyncObject       ( )
     , mWaitForRun       ( areg::NullTag{} )
@@ -171,6 +176,8 @@ Thread::Thread( areg::NullTag, ThreadConsumer & threadConsumer, const String & t
 
 Thread::~Thread()
 {
+    // The routine may still be inside the exit sequence of this object.
+    _wait_exit_completed();
     _clean_resources(false);
 }
 
@@ -187,10 +194,15 @@ bool Thread::start(uint32_t waitForStartMs /* = areg::DO_NOT_WAIT */)
 {
     bool result = false;
 
-    do 
+    do
     {
         Lock  lock(mSyncObject);
+        _set_run_state(Thread::RunState::Starting);
         result = _os_create();
+        if (result == false)
+        {
+            _set_run_state(Thread::RunState::NotRunning);
+        }
     } while (false);
 
     if ( result )
@@ -236,9 +248,17 @@ bool Thread::wait_completion( uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE
     THREADHANDLE  handle = mThreadHandle;
     mSyncObject.unlock();  // unlock, to let thread complete exit task.
 
-    return (handle == Thread::INVALID_THREAD_HANDLE)
-        || (waitForCompleteMs == areg::DO_NOT_WAIT)
-        || mWaitForExit.lock(waitForCompleteMs);
+    if (waitForCompleteMs == areg::DO_NOT_WAIT)
+        return true;
+
+    const bool completed{ (handle == Thread::INVALID_THREAD_HANDLE) || mWaitForExit.lock(waitForCompleteMs) };
+    if (completed)
+    {
+        // The handle is reset and the exit event is signaled while the routine still runs.
+        _wait_exit_completed();
+    }
+
+    return completed;
 }
 
 bool Thread::on_pre_run()
@@ -325,11 +345,33 @@ void Thread::_clean_resources(bool unregister)
         handle          = mThreadHandle;
         mThreadHandle   = Thread::INVALID_THREAD_HANDLE;
         mThreadId       = Thread::INVALID_THREAD_ID;
-        mIsRunning      = false;
         mThreadPriority = Thread::ThreadPriority::Undefined;
     } while (false);
 
     Thread::_os_close_handle(handle);
+}
+
+void Thread::_wait_exit_completed() const noexcept
+{
+    constexpr uint32_t  SPIN_COUNT{ 64u };   //!< Pause spins before the first yield.
+
+    // Only the 'Exiting' state is waited for. It is the state the routine reaches on its
+    // own and leaves without any help, so the loop always ends. A thread that still runs
+    // its consumer was never stopped, waiting for it here would never end.
+    uint32_t spin{ 0u };
+    while (mRunState.load(std::memory_order_acquire) == Thread::RunState::Exiting)
+    {
+        if (spin < SPIN_COUNT)
+        {
+            ++ spin;
+            Thread::cpu_pause();
+        }
+        else
+        {
+            // Hand the CPU to the routine that has to leave, no timed wait.
+            Thread::switch_thread();
+        }
+    }
 }
 
 bool Thread::_register_thread()

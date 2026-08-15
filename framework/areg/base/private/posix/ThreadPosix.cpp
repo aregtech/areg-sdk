@@ -166,6 +166,8 @@ Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
         pthread_cancel(threadId);
         mWaitForRun.reset();
         mWaitForExit.set_signaled();
+        // The cancelled routine never reaches its own exit state, release the waits here.
+        _set_run_state(Thread::RunState::NotRunning);
     }
     else
     {

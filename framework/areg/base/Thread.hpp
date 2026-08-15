@@ -32,6 +32,7 @@
 #include "areg/base/String.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 
+#include <atomic>
 #include <string_view>
 #include <limits>
 
@@ -106,6 +107,20 @@ public:
 
     [[nodiscard]]
     inline static constexpr const char * as_string( Thread::ThreadPriority threadPriority ) noexcept;
+
+    /**
+     * \brief   Thread::RunState
+     *          The states of the thread routine with respect to the thread object.
+     *          The object may be released only in the 'NotRunning' state, because in
+     *          every other state the routine may still access it.
+     **/
+    enum class RunState : uint8_t
+    {
+          NotRunning    = 0   //!< No routine runs on the object, it may be released.
+        , Starting      = 1   //!< The OS thread is requested, the routine did not enter yet.
+        , Running       = 2   //!< The routine runs the thread consumer.
+        , Exiting       = 3   //!< The consumer returned, the routine still uses the object.
+    };
 
     /**
      * \brief   Thread::INVALID_THREAD_ID
@@ -510,9 +525,11 @@ protected:
      **/
     Thread::ThreadPriority mThreadPriority;
     /**
-     * \brief   Flag indicating whether thread is running or not.
+     * \brief   The state of the thread routine. Written by the routine itself and by the
+     *          call that forces the thread to terminate. Read without the lock, because
+     *          the object may be released only after it is back to 'NotRunning'.
      **/
-    bool                    mIsRunning;
+    std::atomic<RunState>   mRunState;
     /**
      * \brief   The thread stack size in kilobytes.
      **/
@@ -552,6 +569,13 @@ private:
     void _clean_resources( bool unregister);
 
     /**
+     * \brief   Spins and yields while the thread routine is in the 'Exiting' state, i.e.
+     *          until it made its last access to this object. Returns at once in every
+     *          other state.
+     **/
+    void _wait_exit_completed() const noexcept;
+
+    /**
      * \brief   Registers the thread in resource maps.
      *
      * \return  Returns true if registration succeeds.
@@ -571,11 +595,20 @@ private:
     int32_t  _thread_entry();
 
     /**
-     * \brief   Sets the running state of the thread.
+     * \brief   Sets the running state of the thread. Marks the thread 'Running' when the
+     *          consumer starts and 'Exiting' when it returns, since the routine keeps
+     *          using the object after that.
      *
      * \param   is_running      True to mark thread as running; false otherwise.
      **/
     inline void _set_running(bool is_running) noexcept;
+
+    /**
+     * \brief   Sets the state of the thread routine.
+     *
+     * \param   state       The state to set.
+     **/
+    inline void _set_run_state(Thread::RunState state) noexcept;
 
     /**
      * \brief   Checks whether the thread is valid without acquiring synchronization locks.
@@ -745,8 +778,7 @@ inline bool Thread::_is_valid_no_lock() const noexcept
 
 inline bool Thread::is_running() const noexcept
 {
-    Lock lock(mSyncObject);
-    return mIsRunning;
+    return (mRunState.load(std::memory_order_acquire) == Thread::RunState::Running);
 }
 
 inline bool Thread::is_valid() const noexcept
@@ -805,8 +837,12 @@ inline const ThreadAddress& Thread::address_by_number(const UniqueNumber threadN
 
 inline void Thread::_set_running( bool is_running ) noexcept
 {
-    Lock lock(mSyncObject);
-    mIsRunning  = is_running;
+    _set_run_state(is_running ? Thread::RunState::Running : Thread::RunState::Exiting);
+}
+
+inline void Thread::_set_run_state( Thread::RunState state ) noexcept
+{
+    mRunState.store(state, std::memory_order_release);
 }
 
 inline Thread * Thread::current_thread() noexcept

@@ -496,12 +496,24 @@ jobs:
         # Install the binaries and headers
         run: cmake --install ${{env.CACHE_DEST}} --config ${{env.BUILD_TYPE}}
 
+      - name: Write core dumps into the workspace
+        # A crashing example leaves a core next to the binaries, so the uploaded artifact
+        # carries the stack of the failure and not only the captured output.
+        if: runner.os == 'Linux' && matrix.config.test == 'ON'
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          mkdir -p ./cores
+          sudo sysctl -w kernel.core_pattern="${{github.workspace}}/cores/core.%e.%p" > /dev/null
+          sudo sysctl -w kernel.core_uses_pid=0 > /dev/null
+
       - name: Run example applications. Ignore if examples are not compiled
         if: matrix.config.test == 'ON'
         working-directory: ${{github.workspace}}
         shell: bash
         timeout-minutes: 25
         run: |
+          ulimit -c unlimited || true
           if [ "${RUNNER_OS}" = "Windows" ]; then PY=python; else PY=python3; fi
           BIN_DIR="${{env.BUILD_DEST}}/bin"
           if [ -d "${BIN_DIR}" ]; then BIN_ARG="--bin-dir ${BIN_DIR}"; else BIN_ARG=""; fi
@@ -522,6 +534,7 @@ jobs:
           cp -R ./${{env.BUILD_DEST}}/bin/ ./${{matrix.config.name}}/
           cp -R ./${{env.INSTALL_DEST}}/   ./${{matrix.config.name}}/
           cp -R ./example-results/${{matrix.config.name}}/ ./${{matrix.config.name}}/example-results/ || true
+          cp -R ./cores/                                   ./${{matrix.config.name}}/cores/           || true
 
       - name: Upload artifacts if tests fail. Ignore if unit tests are not compiled
         if: failure() && matrix.config.test == 'ON'
@@ -529,3 +542,86 @@ jobs:
         with:
           name: ${{matrix.config.name}}
           path: ./${{matrix.config.name}}/
+
+  repro-debug:
+    name: repro-debug (linux-gnu-static)
+    # Runs only after the matrix above failed. It rebuilds one Linux configuration with
+    # debug information, repeats the example run and the unit tests, and uploads the
+    # binaries, the debug information and the core dumps of whatever crashed, so that
+    # the failure can be replayed and read in a debugger locally.
+    #
+    # RelWithDebInfo and not Debug on purpose: the failures that reach this job are
+    # timing dependent, and an unoptimized build changes the timing enough to hide them.
+    needs: build-tests
+    if: failure()
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Areg SDK source codes
+        uses: actions/checkout@v7
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v5.6.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      - name: Configure CMake with debug information
+        working-directory: ${{github.workspace}}
+        run: |
+          cmake -B ./product/cache/repro -DAREG_COMPILER_FAMILY=gnu -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+                -DAREG_LIB_TYPE=static -DAREG_EXTENDED:BOOL=ON -DAREG_LOGGING:BOOL=ON \
+                -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=ON
+
+      - name: Build with CMake
+        working-directory: ${{github.workspace}}
+        run: cmake --build ./product/cache/repro -j16
+
+      - name: Locate the build output directory
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
+          echo "REPRO_DEST=$(dirname "${BIN_DIR}")" >> "${GITHUB_ENV}"
+
+      - name: Write core dumps into the workspace
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          mkdir -p ./cores
+          sudo sysctl -w kernel.core_pattern="${{github.workspace}}/cores/core.%e.%p" > /dev/null
+          sudo sysctl -w kernel.core_uses_pid=0 > /dev/null
+
+      - name: Repeat the example applications
+        working-directory: ${{github.workspace}}
+        shell: bash
+        timeout-minutes: 60
+        continue-on-error: true
+        run: |
+          ulimit -c unlimited || true
+          python3 tools/run-all-examples.py --bin-dir "${{env.REPRO_DEST}}/bin" --tier all --repeat 3 \
+                  --out-dir ./example-results/repro-debug
+
+      - name: Run Unit Tests
+        working-directory: ${{github.workspace}}
+        continue-on-error: true
+        run: ctest --test-dir ./product/cache/repro --output-on-failure --output-junit test_results.xml
+
+      - name: Collect the reproduction artifacts
+        if: always()
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          mkdir -p ./repro-debug
+          cp -R "${{env.REPRO_DEST}}/bin/"        ./repro-debug/bin/            || true
+          cp -R ./example-results/repro-debug/    ./repro-debug/example-results/ || true
+          cp -R ./cores/                          ./repro-debug/cores/           || true
+
+      - name: Upload the reproduction artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: repro-debug
+          path: ./repro-debug/
