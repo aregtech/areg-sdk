@@ -38,15 +38,6 @@ namespace
 
     //!< Delay before a helper thread signals, long enough for the waiter to park.
     constexpr uint32_t  SIGNAL_DELAY_MS { 120u };
-
-    // Local copies of the MultiLock result indexes. EXPECT_EQ binds its arguments to a
-    // constant reference, which odr-uses the member and asks the linker for its address.
-    // On the targets where 'areg' is a shared library with an imported class -- cygwin
-    // and MinGW mark every member of a dllimport class as '__imp_' -- that address does
-    // not exist, because a constexpr member is never emitted as data. Comparing against
-    // a local constant keeps the check a pure compile time value.
-    constexpr int32_t   INDEX_TIMEOUT   { MultiLock::LOCK_INDEX_TIMEOUT };
-    constexpr int32_t   INDEX_ALL       { MultiLock::LOCK_INDEX_ALL };
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -94,7 +85,7 @@ TEST(MultiLockTest, WaitAnyTimesOutWhenNothingIsSignaled)
     SyncObject * objects[]{ static_cast<SyncObject *>(&evtOne), static_cast<SyncObject *>(&evtTwo) };
     MultiLock multi(objects, 2, false);
 
-    EXPECT_EQ(multi.lock(SHORT_WAIT_MS, false), INDEX_TIMEOUT);
+    EXPECT_EQ(multi.lock(SHORT_WAIT_MS, false), MultiLock::LOCK_INDEX_TIMEOUT);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -115,7 +106,7 @@ TEST(MultiLockTest, WaitAllSucceedsWhenEveryObjectIsSignaled)
                           , static_cast<SyncObject *>(&evtThree) };
     MultiLock multi(objects, 3, false);
 
-    EXPECT_EQ(multi.lock(SHORT_WAIT_MS, true), INDEX_ALL);
+    EXPECT_EQ(multi.lock(SHORT_WAIT_MS, true), MultiLock::LOCK_INDEX_ALL);
     EXPECT_TRUE(multi.unlock());
 }
 
@@ -130,7 +121,7 @@ TEST(MultiLockTest, WaitAllTimesOutWhenOneObjectIsMissing)
     SyncObject * objects[]{ static_cast<SyncObject *>(&evtOne), static_cast<SyncObject *>(&evtTwo) };
     MultiLock multi(objects, 2, false);
 
-    EXPECT_EQ(multi.lock(SHORT_WAIT_MS, true), INDEX_TIMEOUT);
+    EXPECT_EQ(multi.lock(SHORT_WAIT_MS, true), MultiLock::LOCK_INDEX_TIMEOUT);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -287,7 +278,7 @@ TEST(MultiLockTest, WaitAllWakesOnlyAfterTheLastSignal)
     SyncObject * objects[]{ static_cast<SyncObject *>(&evtOne), static_cast<SyncObject *>(&evtTwo) };
     MultiLock multi(objects, 2, false);
 
-    EXPECT_EQ(multi.lock(areg::WAIT_INFINITE, true), INDEX_ALL);
+    EXPECT_EQ(multi.lock(areg::WAIT_INFINITE, true), MultiLock::LOCK_INDEX_ALL);
     signaller.join();
 
     EXPECT_TRUE(multi.unlock());

@@ -47,6 +47,20 @@ import time
 IS_WINDOWS = platform.system() == 'Windows'
 EXE_SUFFIXES = ('', '.exe', '.elf', '.mac', '.out')
 
+if IS_WINDOWS:
+    pty = None
+else:
+    import fcntl
+    import pty
+    import struct
+    import termios
+
+# Size reported to a process that runs on a pseudo terminal. The applications lay their
+# output out in columns and rows, and a terminal of 0 x 0 -- what openpty gives by default
+# -- makes them write everything into the first cell.
+PTY_ROWS = 40
+PTY_COLS = 120
+
 # Router settings have to match 'framework/areg/resources/areg.init'.
 ROUTER_HOST = '127.0.0.1'
 ROUTER_PORT = 8181
@@ -265,9 +279,18 @@ def describe_exit(code):
 # ---------------------------------------------------------------------------
 
 class Runner:
-    """Starts one process, feeds its standard input and captures its output."""
+    """Starts one process, feeds its standard input and captures its output.
 
-    def __init__(self, path, args, stdin_script, log_path, quit_script=None):
+    On POSIX the output is captured through a pseudo terminal rather than by writing
+    straight into the log file. The reason is that the C library buffers a redirected
+    standard output in blocks of 4 KB, and a process that has to be terminated -- which is
+    exactly the case that has to be investigated -- dies with that buffer still unwritten.
+    Every log of a killed process was therefore empty. A terminal makes the library switch
+    to line buffering, so every completed line is in the log the moment it is printed and
+    at most the current partial line is lost.
+    """
+
+    def __init__(self, path, args, stdin_script, log_path, quit_script=None, use_pty=True):
         self.path = path
         self.name = os.path.basename(path)
         self.log_path = log_path
@@ -276,9 +299,10 @@ class Runner:
         self._quit_script = quit_script or []
         self._stdin_script = stdin_script
         self._log = open(log_path, 'wb')
+        self._log_lock = threading.Lock()
+        self._pty_master = None
+        self._drainer = None
         kwargs = {
-            'stdout': self._log,
-            'stderr': subprocess.STDOUT,
             'stdin': subprocess.PIPE,
             'cwd': os.path.dirname(path),
         }
@@ -286,9 +310,67 @@ class Runner:
             kwargs['creationflags'] = subprocess.CREATE_NEW_PROCESS_GROUP
         else:
             kwargs['start_new_session'] = True
-        self.proc = subprocess.Popen([path] + args, **kwargs)
+
+        slave = None
+        if (pty is not None) and use_pty:
+            self._pty_master, slave = pty.openpty()
+            _set_pty_size(slave, PTY_ROWS, PTY_COLS)
+            kwargs['stdout'] = slave
+            kwargs['stderr'] = slave
+            # A terminal without TERM makes the curses based applications give up. The
+            # value is only a default: an environment that already sets it is left alone.
+            environment = os.environ.copy()
+            environment.setdefault('TERM', 'xterm-256color')
+            kwargs['env'] = environment
+        else:
+            kwargs['stdout'] = self._log
+            kwargs['stderr'] = subprocess.STDOUT
+
+        try:
+            self.proc = subprocess.Popen([path] + args, **kwargs)
+        finally:
+            if slave is not None:
+                os.close(slave)
+
+        if self._pty_master is not None:
+            self._drainer = threading.Thread(target=self._drain, daemon=True)
+            self._drainer.start()
+
         self._feeder = threading.Thread(target=self._feed, daemon=True)
         self._feeder.start()
+
+    def _drain(self):
+        """Copies the pseudo terminal into the log file until the process closes it.
+
+        The line discipline turns every '\\n' into '\\r\\n' on the way out. The pair is
+        folded back, so that the captured output stays comparable with the output of the
+        runs that write into the log file directly.
+        """
+        pending = b''
+        try:
+            while True:
+                chunk = os.read(self._pty_master, 65536)
+                if not chunk:
+                    break
+                data = pending + chunk
+                pending = b''
+                if data.endswith(b'\r'):
+                    # A '\r' at the very end may be the first half of a '\r\n' pair that
+                    # has not arrived yet. Hold it back until the next read.
+                    data, pending = data[:-1], b'\r'
+                self._write_log(data.replace(b'\r\n', b'\n'))
+        except OSError:
+            # EIO on Linux once the last writing end of the terminal is closed.
+            pass
+        finally:
+            if pending:
+                self._write_log(pending)
+
+    def _write_log(self, data):
+        with self._log_lock:
+            if not self._log.closed:
+                self._log.write(data)
+                self._log.flush()
 
     def _feed(self):
         """Writes the scripted input lines, then leaves the pipe open.
@@ -385,10 +467,37 @@ class Runner:
                 self.proc.stdin.close()
         except OSError:
             pass
-        if not self._log.closed:
-            self._log.close()
+
+        if self._drainer is not None:
+            # The terminal reaches the end of file when the process and everything it
+            # started have closed it. A grandchild that outlives the parent would keep the
+            # reader waiting, so the wait is bounded.
+            self._drainer.join(timeout=5.0)
+            self._drainer = None
+        if self._pty_master is not None:
+            try:
+                os.close(self._pty_master)
+            except OSError:
+                pass
+            self._pty_master = None
+
+        with self._log_lock:
+            if not self._log.closed:
+                self._log.close()
+                closed = True
+            else:
+                closed = False
+        if closed:
             with open(self.log_path, 'rb') as src:
                 self.output = src.read().decode('utf-8', 'replace')
+
+
+def _set_pty_size(fd, rows, cols):
+    """Gives the pseudo terminal a usable geometry. Failure is not fatal."""
+    try:
+        fcntl.ioctl(fd, termios.TIOCSWINSZ, struct.pack('HHHH', rows, cols, 0, 0))
+    except OSError:
+        pass
 
 
 def is_router_listening():
@@ -446,7 +555,7 @@ class Result:
             self.notes.append(note)
 
 
-def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs):
+def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs, use_pty=True):
     result = Result(scenario['name'])
     started = time.time()
 
@@ -473,7 +582,7 @@ def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs):
             return result
         else:
             router = Runner(router_bin, [], [], os.path.join(scenario_dir, 'mtrouter.log'),
-                            ['-q'])
+                            ['-q'], use_pty)
             deadline = time.time() + ROUTER_READY_SECONDS
             while (time.time() < deadline) and not is_router_listening():
                 if not router.is_running():
@@ -489,7 +598,7 @@ def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs):
         for index, entry in enumerate(scenario['procs']):
             log = os.path.join(scenario_dir, '%d_%s.log' % (index, entry['bin']))
             runners.append(Runner(paths[index], entry['args'], entry['stdin'], log,
-                                  entry['quit']))
+                                  entry['quit'], use_pty))
             if index + 1 < len(scenario['procs']):
                 time.sleep(1.0)      # let the provider register before the consumer looks it up
 
@@ -705,6 +814,10 @@ def main():
     parser.add_argument('--list', action='store_true', help='print the scenarios and exit')
     parser.add_argument('--keep-logs', action='store_true',
                         help='keep the captured output of the scenarios that passed')
+    parser.add_argument('--no-pty', action='store_true',
+                        help='capture the output by redirecting it into the log file instead'
+                             ' of through a pseudo terminal (POSIX only). The output of a'
+                             ' process that has to be terminated is then lost.')
     parser.add_argument('--timestamp', action='store_true',
                         help='write the output into a time stamped sub-directory')
     parser.add_argument('--junit', default=None,
@@ -779,7 +892,8 @@ def main():
             sys.stdout.write('%-16s ' % scenario['name'])
             sys.stdout.flush()
             timeout = scenario.get('timeout', args.timeout)
-            result = run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, args.keep_logs)
+            result = run_scenario(scenario, bin_dir, out_dir, timeout, router_bin,
+                                  args.keep_logs, not args.no_pty)
             print('%-5s %6.1fs %s' % (result.status, result.seconds, '; '.join(result.notes)))
             sys.stdout.flush()
             results.append(result)

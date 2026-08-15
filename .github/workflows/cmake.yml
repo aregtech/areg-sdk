@@ -444,11 +444,18 @@ jobs:
 
       - name: Set Windows PATH environment variable
         if: matrix.config.family == 'cygwin'
-        # The cygwin directories go in front, the cygwin toolchain wins, but the
-        # PATH of the runner has to be kept: '%PATH%' and '%SYSTEMROOT%' are not expanded
-        # when they are written into GITHUB_ENV. Spelling them literally deletes the
-        # runner PATH and with it every pre-installed tool, python included.
-        run: echo "PATH=C:\cygwin;C:\cygwin\bin;C:\cygwin\lib;$env:PATH" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        # The cygwin jobs see the cygwin toolchain and the Windows system directories,
+        # and nothing else.
+        #
+        # '%PATH%' and '%SYSTEMROOT%' are not expanded when they are written into
+        # GITHUB_ENV, so they are spelled out here through the PowerShell environment.
+        # Appending the whole runner PATH instead is not an option: the run that did so
+        # reported 'Detecting CXX compiler ABI info - failed' for both compilers, which
+        # leaves CMAKE_SIZEOF_VOID_P undefined and stops the configuration. The runner
+        # image carries three further GNU toolchains -- 'C:\mingw64\bin',
+        # 'C:\Strawberry\c\bin' and 'C:\Program Files\Git\usr\bin' -- that have no
+        # business being visible to a cygwin build.
+        run: echo "PATH=C:\cygwin;C:\cygwin\bin;C:\cygwin\lib;$env:SYSTEMROOT\system32;$env:SYSTEMROOT;$env:SYSTEMROOT\System32\Wbem" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Install cygwin on Windows
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
@@ -476,6 +483,23 @@ jobs:
         working-directory: ${{github.workspace}}
         run: |
           cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER=${{matrix.config.cc}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
+
+      - name: Dump the CMake logs of a failed configuration
+        if: failure()
+        working-directory: ${{github.workspace}}
+        shell: bash
+        # A failed compiler check writes the command line and the compiler output into
+        # these files and into nothing else. Without them a message such as
+        # 'Detecting CXX compiler ABI info - failed' carries no cause.
+        run: |
+          for f in "${{env.CACHE_DEST}}/CMakeFiles/CMakeConfigureLog.yaml" \
+                   "${{env.CACHE_DEST}}/CMakeFiles/CMakeError.log" \
+                   "${{env.CACHE_DEST}}/CMakeFiles/CMakeOutput.log"; do
+            if [ -f "${f}" ]; then
+              echo "===== ${f} ====="
+              tail -n 300 "${f}"
+            fi
+          done
 
       - name: Build with CMake
         working-directory: ${{github.workspace}}
@@ -521,8 +545,10 @@ jobs:
           # A candidate has to be executable from this shell, not only present. The cygwin
           # 'python3' is a cygwin symlink, which the Git bash of the runner sees as a plain
           # file and cannot start, so the candidate is verified by actually running it.
+          # The versioned cygwin interpreters are real executables and are picked up by
+          # the glob; it is empty everywhere except on the cygwin runners.
           PY=""
-          for candidate in python3 python py python3.9; do
+          for candidate in python3 python py $(ls /c/cygwin/bin/python3*.exe 2>/dev/null); do
             if "${candidate}" -c "import sys; sys.exit(0 if sys.version_info[0] == 3 else 1)" > /dev/null 2>&1; then
               PY="${candidate}"
               break
@@ -539,6 +565,20 @@ jobs:
         if: matrix.config.test == 'ON'
         working-directory: ${{github.workspace}}
         run: ctest --test-dir ${{env.CACHE_DEST}} --output-on-failure --output-junit test_results.xml
+
+      - name: Collect the macOS crash reports
+        # macOS does not write core files, it writes a crash report per process into the
+        # diagnostic directory. Without this step a SIGSEGV on macOS leaves nothing to read
+        # but the exit status.
+        if: failure() && runner.os == 'macOS' && matrix.config.test == 'ON'
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          mkdir -p ./cores
+          for dir in "${HOME}/Library/Logs/DiagnosticReports" /Library/Logs/DiagnosticReports; do
+            if [ -d "${dir}" ]; then cp -R "${dir}/." ./cores/ || true; fi
+          done
+          ls -l ./cores/ || true
 
       - name: Copy test artifacts if tests fail. Ignore if tests are not compiled
         if: failure() && matrix.config.test == 'ON'

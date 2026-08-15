@@ -551,23 +551,70 @@ endmacro(macro_guess_processor_architecture)
 
 # ---------------------------------------------------------------------------
 # Macro ......: macro_system_bitness
-# Purpose ....: Extracts the system default bitness.
+# Purpose ....: Extracts the system default bitness. The macro always sets a usable
+#               value, it never leaves the variable empty.
 # Parameters  : ${var_bitness} [out] -- The name of variable to set the bitness.
 # Usage ......: macro_system_bitness(<var-name>)
-# Example ....: 
+# Example ....:
 #   macro_system_bitness(_sys_bitness)
+# Note .......: Three sources are consulted, in this order:
+#                 1. CMAKE_SIZEOF_VOID_P -- the result of the compiler ABI detection.
+#                 2. The name of the target architecture, which carries the bitness.
+#                 3. The architecture of the machine that runs CMake.
+#               The first source is the most accurate one, but it is not always
+#               available: the ABI detection of CMake is allowed to fail, and with a
+#               Cygwin toolchain it does ('Detecting CXX compiler ABI info - failed').
+#               CMAKE_SIZEOF_VOID_P then stays undefined. An empty bitness reaches
+#               'if(${AREG_BITNESS} EQUAL 32)' of the compiler specific files and stops
+#               the configuration with 'if given arguments: EQUAL 32', which says nothing
+#               about the real cause. The other two sources keep the configuration alive.
 # ---------------------------------------------------------------------------
 macro(macro_system_bitness var_bitness)
-    # Detect and set bitness here
-    # 8 bytes ==> 64-bits (x64) and 4 bytes ==> 32-nit (x86)
-    if (DEFINED CMAKE_SIZEOF_VOID_P)
-        if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    # 8 bytes ==> 64-bits (x64) and 4 bytes ==> 32-bit (x86)
+    set(${var_bitness} 0)
+    if (DEFINED CMAKE_SIZEOF_VOID_P AND NOT "${CMAKE_SIZEOF_VOID_P}" STREQUAL "")
+        if (CMAKE_SIZEOF_VOID_P EQUAL 8)
             set(${var_bitness} 64)
-        elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+        elseif (CMAKE_SIZEOF_VOID_P EQUAL 4)
             set(${var_bitness} 32)
-        else()
-            set(${var_bitness} 0)
         endif()
+    endif()
+
+    if ("${${var_bitness}}" STREQUAL "0")
+        # The compiler did not report the size of a pointer. Take the bitness that
+        # belongs to the name of the target architecture.
+        set(_bitness_arch "${AREG_ARCH}")
+        if ("${_bitness_arch}" STREQUAL "")
+            set(_bitness_arch "${CMAKE_SYSTEM_PROCESSOR}")
+        endif()
+
+        set(_bitness_value 0)
+        macro_get_processor("${_bitness_arch}" _bitness_proc _bitness_value _bitness_found)
+        if (_bitness_found)
+            set(${var_bitness} ${_bitness_value})
+        endif()
+
+        unset(_bitness_arch)
+        unset(_bitness_proc)
+        unset(_bitness_value)
+        unset(_bitness_found)
+    endif()
+
+    if ("${${var_bitness}}" STREQUAL "0")
+        # Neither the compiler nor the name of the target architecture answered. The
+        # machine that runs CMake is the last source, and 64 is the fallback of that:
+        # every platform that Areg supports is 64-bit unless it says otherwise.
+        set(_bitness_value 0)
+        macro_get_processor("${CMAKE_HOST_SYSTEM_PROCESSOR}" _bitness_proc _bitness_value _bitness_found)
+        if (_bitness_found)
+            set(${var_bitness} ${_bitness_value})
+        else()
+            set(${var_bitness} 64)
+        endif()
+        unset(_bitness_proc)
+        unset(_bitness_value)
+        unset(_bitness_found)
+        message(WARNING "Areg: >>> Neither the compiler nor the architecture '${AREG_ARCH}' reported the bitness, assuming ${${var_bitness}}-bit")
     endif()
 endmacro(macro_system_bitness)
 
