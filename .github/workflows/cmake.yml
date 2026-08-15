@@ -450,7 +450,7 @@ jobs:
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
         uses: cygwin/cygwin-install-action@v6
         with:
-          packages: cmake, dos2unix, flexdll, gcc-g++, git, libncurses-devel, make
+          packages: cmake, dos2unix, flexdll, gcc-g++, git, libncurses-devel, make, python3
           install-dir: 'C:\cygwin'
           add-to-path: false
           work-vol: 'C:'
@@ -514,7 +514,11 @@ jobs:
         timeout-minutes: 25
         run: |
           ulimit -c unlimited || true
-          if [ "${RUNNER_OS}" = "Windows" ]; then PY=python; else PY=python3; fi
+          PY=""
+          for candidate in python3 python py; do
+            if command -v "${candidate}" > /dev/null 2>&1; then PY="${candidate}"; break; fi
+          done
+          if [ -z "${PY}" ]; then echo "python 3 is required to run the examples" >&2; exit 1; fi
           BIN_DIR="${{env.BUILD_DEST}}/bin"
           if [ -d "${BIN_DIR}" ]; then BIN_ARG="--bin-dir ${BIN_DIR}"; else BIN_ARG=""; fi
           "${PY}" tools/run-all-examples.py ${BIN_ARG} --tier all \

@@ -350,13 +350,24 @@ class Runner:
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             else:
                 import signal as sig
+                # SIGABRT first: a process that has to be killed is a process that hung,
+                # and the core dump is the only record of where it hung. SIGTERM and
+                # SIGKILL leave nothing behind, not even the buffered output.
                 try:
-                    os.killpg(os.getpgid(self.proc.pid), sig.SIGTERM)
+                    os.killpg(os.getpgid(self.proc.pid), sig.SIGABRT)
                 except OSError:
                     pass
                 deadline = time.time() + 5.0
                 while (self.proc.poll() is None) and (time.time() < deadline):
                     time.sleep(0.1)
+                if self.proc.poll() is None:
+                    try:
+                        os.killpg(os.getpgid(self.proc.pid), sig.SIGTERM)
+                    except OSError:
+                        pass
+                    deadline = time.time() + 5.0
+                    while (self.proc.poll() is None) and (time.time() < deadline):
+                        time.sleep(0.1)
                 if self.proc.poll() is None:
                     try:
                         os.killpg(os.getpgid(self.proc.pid), sig.SIGKILL)

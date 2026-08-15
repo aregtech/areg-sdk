@@ -19,6 +19,7 @@
 
         #pragma comment(lib, "areg")
         #pragma comment(lib, "aregextend")
+        #pragma comment(lib, "sqlite3")
         #pragma comment(lib, "advapi32")
         #pragma comment(lib, "kernel32")
     #endif  // _MSC_VER

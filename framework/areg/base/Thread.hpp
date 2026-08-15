@@ -524,12 +524,19 @@ protected:
      * \brief   The thread current priority level.
      **/
     Thread::ThreadPriority mThreadPriority;
+#if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
     /**
      * \brief   The state of the thread routine. Written by the routine itself and by the
      *          call that forces the thread to terminate. Read without the lock, because
      *          the object may be released only after it is back to 'NotRunning'.
      **/
     std::atomic<RunState>   mRunState;
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif  // _MSC_VER
     /**
      * \brief   The thread stack size in kilobytes.
      **/
