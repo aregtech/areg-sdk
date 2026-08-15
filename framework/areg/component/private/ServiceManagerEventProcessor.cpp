@@ -430,6 +430,8 @@ void ServiceManagerEventProcessor::_send_disconnected( const ProxyAddress & clie
                    , ProxyAddress::to_path( client ).as_string( ) );
 
         {
+            // High priority on purpose: the provider has to learn that the consumer is gone
+            // even when its own queue is backed up, which is what the watchdog relies on.
             StubConnectEvent clientConnect( client, server, status );
             clientConnect.set_event_priority(areg::EventPriority::HighPrio);
             server.deliver_service_event( clientConnect );
@@ -443,8 +445,10 @@ void ServiceManagerEventProcessor::_send_disconnected( const ProxyAddress & clie
                    , StubAddress::to_path( server ).as_string( ) );
 
         {
+            // Normal priority, like the connect notification. A prioritized event overtakes
+            // the responses and the data updates that the consumer already received, and a
+            // client that unsubscribes on disconnect then never gets them.
             ProxyConnectEvent proxyConnect( client, server, status );
-            proxyConnect.set_event_priority(areg::EventPriority::HighPrio);
             client.deliver_service_event( proxyConnect );
         }
     }
