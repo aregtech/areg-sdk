@@ -444,7 +444,11 @@ jobs:
 
       - name: Set Windows PATH environment variable
         if: matrix.config.family == 'cygwin'
-        run: echo "PATH=C:\cygwin;C:\cygwin\bin;C:\cygwin\lib;%SYSTEMROOT%\system32;%PATH%" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        # The cygwin directories go in front, the cygwin toolchain wins, but the
+        # PATH of the runner has to be kept: '%PATH%' and '%SYSTEMROOT%' are not expanded
+        # when they are written into GITHUB_ENV. Spelling them literally deletes the
+        # runner PATH and with it every pre-installed tool, python included.
+        run: echo "PATH=C:\cygwin;C:\cygwin\bin;C:\cygwin\lib;$env:PATH" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Install cygwin on Windows
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
@@ -514,11 +518,18 @@ jobs:
         timeout-minutes: 25
         run: |
           ulimit -c unlimited || true
+          # A candidate has to be executable from this shell, not only present. The cygwin
+          # 'python3' is a cygwin symlink, which the Git bash of the runner sees as a plain
+          # file and cannot start, so the candidate is verified by actually running it.
           PY=""
-          for candidate in python3 python py; do
-            if command -v "${candidate}" > /dev/null 2>&1; then PY="${candidate}"; break; fi
+          for candidate in python3 python py python3.9; do
+            if "${candidate}" -c "import sys; sys.exit(0 if sys.version_info[0] == 3 else 1)" > /dev/null 2>&1; then
+              PY="${candidate}"
+              break
+            fi
           done
           if [ -z "${PY}" ]; then echo "python 3 is required to run the examples" >&2; exit 1; fi
+          echo "example driver interpreter: ${PY} ($(${PY} --version 2>&1))"
           BIN_DIR="${{env.BUILD_DEST}}/bin"
           if [ -d "${BIN_DIR}" ]; then BIN_ARG="--bin-dir ${BIN_DIR}"; else BIN_ARG=""; fi
           "${PY}" tools/run-all-examples.py ${BIN_ARG} --tier all \
@@ -533,12 +544,21 @@ jobs:
         if: failure() && matrix.config.test == 'ON'
         working-directory: ${{github.workspace}}
         shell: bash
+        # Nothing here may fail the job: this step runs because something else already failed,
+        # and its only purpose is to save whatever evidence exists. When the build itself failed, 
+        # BUILD_DEST was never set and the binary directory is looked up again instead of expanding to './/bin/'.
         run: |
-          mkdir ./${{matrix.config.name}}/
-          cp -R ./${{env.BUILD_DEST}}/bin/ ./${{matrix.config.name}}/
-          cp -R ./${{env.INSTALL_DEST}}/   ./${{matrix.config.name}}/
-          cp -R ./example-results/${{matrix.config.name}}/ ./${{matrix.config.name}}/example-results/ || true
-          cp -R ./cores/                                   ./${{matrix.config.name}}/cores/           || true
+          DEST="./${{matrix.config.name}}"
+          mkdir -p "${DEST}"
+          BIN_DIR="${{env.BUILD_DEST}}/bin"
+          if [ ! -d "${BIN_DIR}" ]; then
+            BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
+          fi
+          if [ -n "${BIN_DIR}" ] && [ -d "${BIN_DIR}" ]; then cp -R "${BIN_DIR}/" "${DEST}/bin/" || true; fi
+          cp -R ./${{env.INSTALL_DEST}}/                   "${DEST}/"                 || true
+          cp -R ./example-results/${{matrix.config.name}}/ "${DEST}/example-results/"  || true
+          cp -R ./cores/                                   "${DEST}/cores/"            || true
+          find "${DEST}" -maxdepth 2 | head -n 40
 
       - name: Upload artifacts if tests fail. Ignore if unit tests are not compiled
         if: failure() && matrix.config.test == 'ON'

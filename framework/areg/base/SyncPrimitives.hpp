@@ -1068,28 +1068,27 @@ private:
 
 public:
     /**
-     * \brief   MultiLock::LOCK_INDEX_INVALID
-     *          Invalid index of synchronization list
+     * \brief   The values that MultiLock::lock() returns instead of an object index.
+     *
+     *          These are enumerators and not static data members on purpose. MultiLock is
+     *          exported, so on the targets that import a class as a whole -- cygwin and
+     *          MinGW mark every member of a dllimport class as '__imp_' -- a static
+     *          constexpr member turns into an import that no library exports, and any
+     *          expression that binds it to a reference fails to link. An enumerator is not
+     *          an object: it cannot be odr-used, it never reaches the ABI, and it stays a
+     *          pure compile time value on every target.
      **/
-    static constexpr int32_t    LOCK_INDEX_INVALID      { -1 };
-
-    /**
-     * \brief   MultiLock::LOCK_INDEX_COMPLETION
-     *          The completion routine index.
-     *          Returned if waiting function returns WAIT_IO_COMPLETION
-     **/
-    static constexpr int32_t    LOCK_INDEX_COMPLETION   { -2 };
-    /**
-     * \brief   MultiLock::LOCK_INDEX_TIMEOUT
-     *          The index, indicating waiting timeout.
-     **/
-    static constexpr int32_t    LOCK_INDEX_TIMEOUT      { -3 };
-    /**
-     * \brief   MultiLock::LOCK_INDEX_ALL
-     *          All synchronization objects are locked.
-     *          Same as MAX_SIZE_OF_ARRAY (64)
-     **/
-    static constexpr int32_t    LOCK_INDEX_ALL          { areg::MAXIMUM_WAITING_OBJECTS };
+    enum : int32_t
+    {
+        //!< Invalid index of synchronization list.
+          LOCK_INDEX_INVALID    = -1
+        //!< The completion routine index. Returned if the waiting function returns WAIT_IO_COMPLETION.
+        , LOCK_INDEX_COMPLETION = -2
+        //!< The index, indicating waiting timeout.
+        , LOCK_INDEX_TIMEOUT    = -3
+        //!< All synchronization objects are locked. Same as MAX_SIZE_OF_ARRAY (64).
+        , LOCK_INDEX_ALL        = areg::MAXIMUM_WAITING_OBJECTS
+    };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
