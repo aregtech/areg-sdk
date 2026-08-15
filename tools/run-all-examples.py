@@ -538,6 +538,55 @@ def find_bin_dirs(root):
 # Scenario execution.
 # ---------------------------------------------------------------------------
 
+def one_line(text):
+    """Folds a note into a single line, for the places that need one."""
+    return ' | '.join(part.strip() for part in str(text).splitlines() if part.strip())
+
+
+CAPTURE_EXCERPT_BYTES = 1024    #!< head and tail of the captured stream kept in a report
+CAPTURE_HEXDUMP_BYTES = 256     #!< bytes of the hexdump added when the stream is not text
+
+
+def describe_capture(runner):
+    """Renders what the harness really received from one process.
+
+    An expectation that does not match has three possible causes, and they need
+    different work: the text was never printed, it was printed and the capture lost
+    it, or it was printed and arrived damaged. Only the bytes tell them apart, so the
+    report carries them instead of pointing at an artifact that has to be downloaded.
+    """
+    try:
+        with open(runner.log_path, 'rb') as src:
+            data = src.read()
+    except OSError as err:
+        return 'captured output of %s is unreadable: %s' % (runner.name, err)
+
+    lines = ['captured %u bytes from %s (%s)' % (len(data), runner.name, runner.log_path)]
+    if len(data) <= 2 * CAPTURE_EXCERPT_BYTES:
+        excerpt = repr(data)
+    else:
+        excerpt = '%r ... %r' % (data[:CAPTURE_EXCERPT_BYTES], data[-CAPTURE_EXCERPT_BYTES:])
+    lines.append('  text: ' + excerpt)
+
+    # Bytes outside the printable ASCII range plus tab, newline and escape mean the
+    # stream is not what a console application prints. The hexdump makes the shape of
+    # the damage readable: a pointer, a run of zeros, a truncated line.
+    printable = set(range(0x20, 0x7F)) | {0x09, 0x0A, 0x0D, 0x1B}
+    odd = [i for i, b in enumerate(data) if b not in printable]
+    if odd:
+        first = odd[0]
+        start = max(0, (first - 16) & ~0x0F)
+        block = data[start:start + CAPTURE_HEXDUMP_BYTES]
+        lines.append('  %u byte(s) outside printable ASCII, first at offset %u' % (len(odd), first))
+        for offset in range(0, len(block), 16):
+            row = block[offset:offset + 16]
+            hexpart = ' '.join('%02x' % b for b in row)
+            txtpart = ''.join(chr(b) if 0x20 <= b < 0x7F else '.' for b in row)
+            lines.append('  %08x  %-47s  %s' % (start + offset, hexpart, txtpart))
+
+    return '\n       '.join(lines)
+
+
 class Result:
     def __init__(self, name):
         self.name = name
@@ -555,7 +604,8 @@ class Result:
             self.notes.append(note)
 
 
-def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs, use_pty=True):
+def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs, use_pty=True,
+                 round_index=0, rounds=1):
     result = Result(scenario['name'])
     started = time.time()
 
@@ -567,7 +617,12 @@ def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs, use
             return result
         paths.append(path)
 
+    # Every round owns its directory. A defect that is hunted with --repeat shows up in
+    # one round out of many, and a shared directory means the round after it overwrites
+    # the only evidence there was.
     scenario_dir = os.path.join(out_dir, scenario['name'])
+    if rounds > 1:
+        scenario_dir = os.path.join(scenario_dir, 'round-%03d' % (round_index + 1))
     os.makedirs(scenario_dir, exist_ok=True)
 
     router = None
@@ -700,9 +755,16 @@ def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs, use
     for index, entry in enumerate(scenario['procs']):
         if index >= len(runners):
             break
+        missed = False
         for pattern in entry['expect']:
             if re.search(pattern, runners[index].output) is None:
                 result.fail('%s output does not contain %r' % (runners[index].name, pattern))
+                missed = True
+        if missed:
+            # "does not contain" alone does not say whether the text was never printed,
+            # was printed and lost, or arrived damaged. The captured stream answers that,
+            # so it goes into the report and not only into the artifact.
+            result.notes.append(describe_capture(runners[index]))
 
     result.seconds = time.time() - started
 
@@ -739,7 +801,7 @@ def write_junit(path, results, seconds):
              '  <testsuite name="areg-examples" tests="%d" failures="%d" skipped="%d" time="%.3f">'
              % (len(results), failed, skipped, seconds)]
     for result in results:
-        note = _xml_text('; '.join(result.notes))
+        note = _xml_text('; '.join(one_line(n) for n in result.notes))
         lines.append('    <testcase classname="areg.examples" name="%s" time="%.3f">'
                      % (_xml_text(result.name), result.seconds))
         if result.status in ('FAIL', 'XPASS'):
@@ -773,7 +835,8 @@ def markdown_report(results, seconds, tier, bin_dir):
     for result in results:
         lines.append('| %s | %s | %.1f s | %s |'
                      % (result.name, icons.get(result.status, result.status),
-                        result.seconds, '; '.join(result.notes).replace('|', '/')))
+                        result.seconds,
+                        '; '.join(one_line(n) for n in result.notes).replace('|', '/')))
     lines.append('')
     return '\n'.join(lines)
 
@@ -783,7 +846,7 @@ def annotate(results):
     if os.environ.get('GITHUB_ACTIONS') != 'true':
         return
     for result in results:
-        note = '; '.join(result.notes) or result.status
+        note = '; '.join(one_line(n) for n in result.notes) or result.status
         if result.status in ('FAIL', 'XPASS'):
             print('::error title=%s::%s' % (result.name, note))
         elif result.status == 'XFAIL':
@@ -893,8 +956,11 @@ def main():
             sys.stdout.flush()
             timeout = scenario.get('timeout', args.timeout)
             result = run_scenario(scenario, bin_dir, out_dir, timeout, router_bin,
-                                  args.keep_logs, not args.no_pty)
-            print('%-5s %6.1fs %s' % (result.status, result.seconds, '; '.join(result.notes)))
+                                  args.keep_logs, not args.no_pty,
+                                  round_index, args.repeat)
+            print('%-5s %6.1fs %s'
+                  % (result.status, result.seconds,
+                     '; '.join(one_line(n) for n in result.notes)))
             sys.stdout.flush()
             results.append(result)
             if result.status in ('FAIL', 'XPASS'):
