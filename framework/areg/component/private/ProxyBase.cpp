@@ -241,6 +241,12 @@ bool ProxyBase::has_notification_listener( uint32_t msgId ) const noexcept
 
 bool ProxyBase::add_listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer * caller, bool unique )
 {
+    // A stored null consumer is a null call later, in another thread, out of any context that
+    // could name the caller that made the mistake. Refuse it here instead.
+    ASSERT(caller != nullptr);
+    if (caller == nullptr)
+        return false;
+
     Lock lock(mListenerLock);
     ProxyBase::Listener listener{ seqNr, caller };
     ProxyListenerList & subVec = mListenerMap[msgId];
@@ -569,7 +575,10 @@ void ProxyBase::notify_listeners( uint32_t respId, areg::ResultType result, cons
     for (uint32_t i = 0; i < listenerList.size(); ++ i)
     {
         const ProxyBase::Listener & elem = listenerList.value_at(i);
-        elem.mListener->process_notification(respId, result, seqNrToSearch);
+        if (elem.mListener != nullptr)
+        {
+            elem.mListener->process_notification(respId, result, seqNrToSearch);
+        }
     }
 }
 
@@ -606,10 +615,15 @@ void ProxyBase::send_request_event(ServiceRequestEvent& reqEvent, NotificationCo
         return;
 
     const uint32_t msgId{ reqEvent.message_id() };
-    uint32_t respId = proxy_data().response_id(msgId);
-    ASSERT(areg::is_response_id(respId) || (respId == areg::RESPONSE_ID_NONE));
+    const uint32_t respId{ proxy_data().response_id(msgId) };
+
+    // A request that declares no response maps to areg::INVALID_MESSAGE_ID, not to
+    // RESPONSE_ID_NONE, and is_response_id() is a bit test that accepts INVALID_MESSAGE_ID.
+    // Only the range check tells the two apart. Getting this wrong registers a listener whose
+    // consumer is null -- a no-response request is called with no consumer by construction.
+    const bool hasResponse{ areg::is_valid_response_id(respId) };
     SequenceNumber seqNr{ areg::SEQUENCE_NUMBER_ANY };
-    if (respId != areg::RESPONSE_ID_NONE)
+    if (hasResponse)
     {
         Lock lock(mListenerLock);
         ++mSequenceCount;
@@ -621,13 +635,19 @@ void ProxyBase::send_request_event(ServiceRequestEvent& reqEvent, NotificationCo
     if (mProxyAddress.deliver_service_event(reqEvent) == false)
     {
         // The provider is gone. Without this the listener stays registered and the consumer
-        // waits for a response that is never sent.
-        LOG_WARN("Failed to deliver request [ %u ] of proxy [ %s ], failing it"
-                    , msgId, ProxyAddress::to_path(mProxyAddress).as_string());
-        ServiceResponseEvent failure{ create_request_failed(mProxyAddress, msgId, areg::ResultType::MessageUndelivered, seqNr) };
-        if (failure.is_valid())
+        // waits for a response that is never sent. A request without a response has no
+        // listener and nobody waiting, so there is nothing to fail.
+        LOG_WARN("Failed to deliver request [ %u ] of proxy [ %s ]%s"
+                    , msgId
+                    , ProxyAddress::to_path(mProxyAddress).as_string()
+                    , hasResponse ? ", failing it" : ", it expects no response");
+        if (hasResponse)
         {
-            failure.deliver_event();
+            ServiceResponseEvent failure{ create_request_failed(mProxyAddress, msgId, areg::ResultType::MessageUndelivered, seqNr) };
+            if (failure.is_valid())
+            {
+                failure.deliver_event();
+            }
         }
     }
 }

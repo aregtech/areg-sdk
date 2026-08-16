@@ -984,9 +984,12 @@ jobs:
             | sed -e 's/0x[0-9a-f]*/<address>/g' -e 's#^.*/areg-sdk/##' \
             | sort | uniq -c | sort -rn > ./ubsan/by-place.txt
           echo "distinct places: $(wc -l < ./ubsan/by-place.txt)"
-          grep '/framework/' ./ubsan/by-place.txt | head -n 6 \
+          # 'grep' exits 1 when it matches nothing, which under 'set -e' kills the step and
+          # throws away every list below it. An empty framework list is the good outcome, not
+          # a failure, so neither grep may decide the exit status of this step.
+          { grep '/framework/' ./ubsan/by-place.txt || true; } | head -n 6 \
             | while IFS= read -r line; do echo "::error title=ubsan-framework::${line}"; done
-          grep -v '/framework/' ./ubsan/by-place.txt | head -n 8 \
+          { grep -v '/framework/' ./ubsan/by-place.txt || true; } | head -n 8 \
             | while IFS= read -r line; do echo "::warning title=ubsan-example::${line}"; done
           # The kinds of check that fired, whatever the place. A kind that appears here and
           # nowhere in the two lists above is a place that lost the budget, not a place that
