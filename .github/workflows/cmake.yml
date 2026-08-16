@@ -5,53 +5,45 @@ on:
     branches: [ master ]
   pull_request: # Set to master to run only when merge with master branch
     branches: [ master ]
+  workflow_dispatch:
+
+# A newer push to the same branch makes the run already in flight obsolete.
+concurrency:
+  group: ${{github.workflow}}-${{github.ref}}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
 
-# The CMake configure and build commands are platform agnostic and should work equally well on Windows or Linux.
-# You can convert this to a matrix build if you need cross-platform coverage.
-# See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-
 jobs:
   build-tests:
     name: ${{matrix.config.name}}
     runs-on: ${{matrix.config.os}}
+    timeout-minutes: 120
 
     strategy:
       fail-fast: false
       matrix:
-        # Only the configurations that actually run the example applications and the unit
-        # tests are active: a configuration that only compiles costs the same build server
-        # time and says nothing about run time behaviour. Windows and cygwin were held back
-        # during the crash investigation and are back in. Every entry below that is still
-        # commented out is restored by removing the leading '#' of its lines.
+        # Two kinds of entry, and every entry is one or the other:
+        #
+        #   '*-all-test'  builds the framework, the extensions, the examples and the unit
+        #                 tests, then runs all of them. This is what proves run time
+        #                 behaviour, so both library types are covered on every platform.
+        #   '*-nolog',    builds and installs only. These exist because 'AREG_LOGGING=OFF'
+        #   '*-noext'     and 'AREG_EXTENDED=OFF' remove code from every translation unit
+        #                 of the framework and no '*-all-test' entry compiles them, so
+        #                 without these a configuration that a user can select would break
+        #                 unnoticed. They also select the compiler by name rather than by
+        #                 family (see the two configure steps), which is the second way the
+        #                 build system can be driven.
+        #
+        # An entry that only repeats an active one with fewer things switched on is not
+        # here: it costs a build server as much as the entry it duplicates and proves less.
         config: # Create matrix with combinations
-
-            # compile Areg engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable Areg extensions and logs
-#          - { name  : linux-gnu-shared-ext-log,
-#              os    : ubuntu-latest,
-#              lib   : shared,
-#              family: gnu,
-#              cxx   : g++,
-#              cc    : gcc,
-#              extend: ON,
-#              logs  : ON,
-#              test  : OFF
-#            }
-
-            # compile Areg engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable Areg extensions and no logs
-#          - { name  : linux-gnu-shared-ext-nolog,
-#              os    : ubuntu-latest,
-#              lib   : shared,
-#              family: gnu,
-#              cxx   : g++,
-#              cc    : gcc,
-#              extend: ON,
-#              logs  : OFF,
-#              test  : OFF
-#            }
 
             # compile Areg engine as a static library with GNU g++ / gcc on Ubuntu Linux, enable Areg extensions, logs, examples and tests
           - { name  : linux-gnu-static-all-test,
@@ -62,7 +54,7 @@ jobs:
               cc    : gcc,
               extend: ON,
               logs  : ON,
-              test: ON
+              test  : ON
             }
 
             # compile Areg engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable Areg extensions, logs, examples and tests
@@ -77,41 +69,29 @@ jobs:
               test  : ON
             }
 
+            # compile Areg engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable Areg extensions and no logs
+          - { name  : linux-gnu-shared-ext-nolog,
+              os    : ubuntu-latest,
+              lib   : shared,
+              family: gnu,
+              cxx   : g++,
+              cc    : gcc,
+              extend: ON,
+              logs  : OFF,
+              test  : OFF
+            }
+
             # compile Areg engine as a shared library with GNU g++ / gcc on Ubuntu Linux, disable Areg extensions and no logs
-#          - { name  : linux-gnu-shared-noext-nolog,
-#              os    : ubuntu-latest,
-#              lib   : shared,
-#              family: gnu,
-#              cxx   : g++,
-#              cc    : gcc,
-#              extend: OFF,
-#              logs  : OFF,
-#              test  : OFF
-#            }
-
-            # compile Areg engine as a shared library with clang on Ubuntu Linux, enable Areg extensions and logs
-#          - { name  : linux-clang-shared-ext-log,
-#              os    : ubuntu-latest,
-#              lib   : shared,
-#              family: llvm,
-#              cxx   : clang++,
-#              cc    : clang,
-#              extend: ON,
-#              logs  : ON,
-#              test  : OFF
-#            }
-
-            # compile Areg engine as a shared library with clang on Ubuntu Linux, enable Areg extensions and no logs
-#          - { name  : linux-clang-shared-ext-nolog,
-#              os    : ubuntu-latest,
-#              lib   : shared,
-#              family: llvm,
-#              cxx   : clang++,
-#              cc    : clang,
-#              extend: ON,
-#              logs  : OFF,
-#              test  : OFF
-#            }
+          - { name  : linux-gnu-shared-noext-nolog,
+              os    : ubuntu-latest,
+              lib   : shared,
+              family: gnu,
+              cxx   : g++,
+              cc    : gcc,
+              extend: OFF,
+              logs  : OFF,
+              test  : OFF
+            }
 
             # compile Areg engine as a static library with clang on Ubuntu Linux, enable Areg extensions, logs, examples and tests
           - { name  : linux-clang-static-all-test,
@@ -125,7 +105,7 @@ jobs:
               test  : ON
             }
 
-            # compile Areg engine as a static library with clang on Ubuntu Linux, enable Areg extensions, logs, examples and tests
+            # compile Areg engine as a shared library with clang on Ubuntu Linux, enable Areg extensions, logs, examples and tests
           - { name  : linux-clang-shared-all-test,
               os    : ubuntu-latest,
               lib   : shared,
@@ -137,17 +117,29 @@ jobs:
               test  : ON
             }
 
+            # compile Areg engine as a shared library with clang on Ubuntu Linux, enable Areg extensions and no logs
+          - { name  : linux-clang-shared-ext-nolog,
+              os    : ubuntu-latest,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang++,
+              cc    : clang,
+              extend: ON,
+              logs  : OFF,
+              test  : OFF
+            }
+
             # compile Areg engine as a shared library with clang on Ubuntu Linux, disable Areg extensions and no logs
-#          - { name  : linux-clang-shared-noext-nolog,
-#              os    : ubuntu-latest,
-#              lib   : shared,
-#              family: llvm,
-#              cxx   : clang++,
-#              cc    : clang,
-#              extend: OFF,
-#              logs  : OFF,
-#              test  : OFF
-#            }
+          - { name  : linux-clang-shared-noext-nolog,
+              os    : ubuntu-latest,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang++,
+              cc    : clang,
+              extend: OFF,
+              logs  : OFF,
+              test  : OFF
+            }
 
             # compile Areg engine as a shared library with clang on macOS, enable logs and tests, disable Areg extensions
           - { name  : macos-clang-shared-noext,
@@ -173,18 +165,6 @@ jobs:
               test  : ON
             }
 
-            # compile Areg engine as a shared library with clang on macOS, enable tests, disable Areg extensions and no logs
-#          - { name  : macos-clang-shared-noext-nolog-notest,
-#              os    : macos-latest,
-#              lib   : shared,
-#              family: llvm,
-#              cxx   : clang++,
-#              cc    : clang,
-#              extend: OFF,
-#              logs  : OFF,
-#              test  : OFF
-#            }
-
             # compile Areg engine as a static library with clang on macOS, enable logs and tests, disable Areg extensions
           - { name  : macos-clang-static-noext,
               os    : macos-latest,
@@ -209,42 +189,7 @@ jobs:
               test  : ON
             }
 
-            # compile Areg engine as a static library with clang on macOS, enable tests, disable Areg extensions and no logs
-#          - { name  : macos-clang-static-noext-nolog-notest,
-#              os    : macos-latest,
-#              lib   : static,
-#              family: llvm,
-#              cxx   : clang++,
-#              cc    : clang,
-#              extend: OFF,
-#              logs  : OFF,
-#              test  : OFF
-#            }
-
-            # compile Areg engine as a shared with CYGWIN g++ / gcc on Windows, enable Areg extensions and logs
-#          - { name  : win-cygwin-shared-ext-log,
-#              os    : windows-latest,
-#              lib   : shared,
-#              family: cygwin,
-#              cxx   : g++,
-#              cc    : gcc,
-#              extend: ON,
-#              logs  : ON,
-#              test  : OFF}
-
-            # compile Areg engine as a shared with CYGWIN g++ / gcc on Windows, enable Areg extensions and no logs
-#          - { name  : win-cygwin-shared-ext-nolog,
-#              os    : windows-latest,
-#              lib   : shared,
-#              family: cygwin,
-#              cxx   : g++,
-#              cc    : gcc,
-#              extend: ON,
-#              logs  : OFF,
-#              test  : OFF
-#            }
-
-            # compile Areg engine as a static with CYGWIN g++ / gcc on Windows, enable Areg extensions, logs, examples and tests
+            # compile Areg engine as a static library with CYGWIN g++ / gcc on Windows, enable Areg extensions, logs, examples and tests
           - { name  : win-cygwin-static-all-test,
               os    : windows-latest,
               lib   : static,
@@ -256,7 +201,7 @@ jobs:
               test  : ON
             }
 
-            # compile Areg engine as a static with CYGWIN g++ / gcc on Windows, enable Areg extensions, logs, examples and tests
+            # compile Areg engine as a shared library with CYGWIN g++ / gcc on Windows, enable Areg extensions, logs, examples and tests
           - { name  : win-cygwin-shared-all-test,
               os    : windows-latest,
               lib   : shared,
@@ -268,41 +213,29 @@ jobs:
               test  : ON
             }
 
-            # compile Areg engine as a shared with CYGWIN g++ / gcc on Windows, disable Areg extensions and no logs
-#          - { name  : win-cygwin-shared-noext-nolog,
-#              os    : windows-latest,
-#              lib   : shared,
-#              family: cygwin,
-#              cxx   : g++,
-#              cc    : gcc,
-#              extend: OFF,
-#              logs  : OFF,
-#              test  : OFF
-#            }
+            # compile Areg engine as a shared library with CYGWIN g++ / gcc on Windows, enable Areg extensions and no logs
+          - { name  : win-cygwin-shared-ext-nolog,
+              os    : windows-latest,
+              lib   : shared,
+              family: cygwin,
+              cxx   : g++,
+              cc    : gcc,
+              extend: ON,
+              logs  : OFF,
+              test  : OFF
+            }
 
-          # compile Areg engine as a shared library with clang on Windows, enable Areg extensions and logs
-#          - { name  : win-clang-shared-ext-log,
-#              os    : windows-latest,
-#              lib   : shared,
-#              family: llvm,
-#              cxx   : clang-cl,
-#              cc    : clang-cl,
-#              extend: ON,
-#              logs  : ON,
-#              test  : OFF
-#            }
-
-            # compile Areg engine as a shared library with clang on Windows, enable Areg extensions and no logs
-#          - { name  : win-clang-shared-ext-nolog,
-#              os    : windows-latest,
-#              lib   : shared,
-#              family: llvm,
-#              cxx   : clang-cl,
-#              cc    : clang-cl,
-#              extend: ON,
-#              logs  : OFF,
-#              test  : OFF
-#            }
+            # compile Areg engine as a shared library with CYGWIN g++ / gcc on Windows, disable Areg extensions and no logs
+          - { name  : win-cygwin-shared-noext-nolog,
+              os    : windows-latest,
+              lib   : shared,
+              family: cygwin,
+              cxx   : g++,
+              cc    : gcc,
+              extend: OFF,
+              logs  : OFF,
+              test  : OFF
+            }
 
             # compile Areg engine as a static library with clang on Windows, enable Areg extensions, logs, examples and tests
           - { name  : win-clang-static-all-test,
@@ -316,7 +249,7 @@ jobs:
               test  : ON
             }
 
-            # compile Areg engine as a static library with clang on Windows, enable Areg extensions, logs, examples and tests
+            # compile Areg engine as a shared library with clang on Windows, enable Areg extensions, logs, examples and tests
           - { name  : win-clang-shared-all-test,
               os    : windows-latest,
               lib   : shared,
@@ -328,43 +261,31 @@ jobs:
               test  : ON
             }
 
+            # compile Areg engine as a shared library with clang on Windows, enable Areg extensions and no logs
+          - { name  : win-clang-shared-ext-nolog,
+              os    : windows-latest,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang-cl,
+              cc    : clang-cl,
+              extend: ON,
+              logs  : OFF,
+              test  : OFF
+            }
+
             # compile Areg engine as a shared library with clang on Windows, disable Areg extensions and no logs
-#          - { name  : win-clang-shared-noext-nolog,
-#              os    : windows-latest,
-#              lib   : shared,
-#              family: llvm,
-#              cxx   : clang-cl,
-#              cc    : clang-cl,
-#              extend: OFF,
-#              logs  : OFF,
-#              test  : OFF
-#            }
+          - { name  : win-clang-shared-noext-nolog,
+              os    : windows-latest,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang-cl,
+              cc    : clang-cl,
+              extend: OFF,
+              logs  : OFF,
+              test  : OFF
+            }
 
-            # compile Areg engine as a shared with MSVC on Windows, enable Areg extensions and logs
-#          - { name  : win-msvc-shared-ext-log,
-#              os    : windows-latest,
-#              lib   : shared,
-#              family: msvc,
-#              cxx   : cl,
-#              cc    : cl,
-#              extend: ON,
-#              logs  : ON,
-#              test  : OFF
-#            }
-
-            # compile Areg engine as a shared with MSVC on Windows, enable Areg extensions and no logs
-#          - { name  : win-msvc-shared-ext-nolog,
-#              os    : windows-latest,
-#              lib   : shared,
-#              family: msvc,
-#              cxx   : cl,
-#              cc    : cl,
-#              extend: ON,
-#              logs  : OFF,
-#              test  : OFF
-#            }
-
-            # compile Areg engine as a static with MSVC on Windows, enable Areg extensions, logs, examples and tests
+            # compile Areg engine as a static library with MSVC on Windows, enable Areg extensions, logs, examples and tests
           - { name  : win-msvc-static-all-test,
               os    : windows-latest,
               lib   : static,
@@ -376,7 +297,7 @@ jobs:
               test  : ON
             }
 
-            # compile Areg engine as a static with MSVC on Windows, enable Areg extensions, logs, examples and tests
+            # compile Areg engine as a shared library with MSVC on Windows, enable Areg extensions, logs, examples and tests
           - { name  : win-msvc-shared-all-test,
               os    : windows-latest,
               lib   : shared,
@@ -388,29 +309,29 @@ jobs:
               test  : ON
             }
 
-            # compile Areg engine as a shared with MSVC on Windows, enable Areg extensions and logs
-#          - { name  : win-msvc-shared-noext-log,
-#              os    : windows-latest,
-#              lib   : shared,
-#              family: msvc,
-#              cxx   : cl,
-#              cc    : cl,
-#              extend: OFF,
-#              logs  : ON,
-#              test  : OFF
-#            }
+            # compile Areg engine as a shared library with MSVC on Windows, enable Areg extensions and no logs
+          - { name  : win-msvc-shared-ext-nolog,
+              os    : windows-latest,
+              lib   : shared,
+              family: msvc,
+              cxx   : cl,
+              cc    : cl,
+              extend: ON,
+              logs  : OFF,
+              test  : OFF
+            }
 
-            # compile Areg engine as a shared with MSVC on Windows, enable Areg extensions and no logs
-#          - { name  : win-msvc-shared-noext-nolog,
-#              os    : windows-latest,
-#              lib   : shared,
-#              family: msvc,
-#              cxx   : cl,
-#              cc    : cl,
-#              extend: OFF,
-#              logs  : OFF,
-#              test  : OFF
-#            }
+            # compile Areg engine as a shared library with MSVC on Windows, disable Areg extensions and no logs
+          - { name  : win-msvc-shared-noext-nolog,
+              os    : windows-latest,
+              lib   : shared,
+              family: msvc,
+              cxx   : cl,
+              cc    : cl,
+              extend: OFF,
+              logs  : OFF,
+              test  : OFF
+            }
 
     steps:
 
@@ -419,32 +340,19 @@ jobs:
 
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v5.6.0
-        with: 
+        with:
           java-version: 17
           java-package: jre
           distribution: temurin
 
-      - name: Set cmake cache destination for Linux
-        if: matrix.config.os == 'ubuntu-latest'
+      - name: Set the cmake cache and install destinations
+        shell: bash
         run: |
-            echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
-            echo "INSTALL_DEST=./product/install/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
-
-      - name: Set cmake cache destination for macOS
-        if: matrix.config.os == 'macos-latest'
-        run: |
-            ARCH=$(uname -m)
-            echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
-            echo "INSTALL_DEST=./product/install/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
-
-      - name: Set cmake cache destination for Windows
-        if: matrix.config.os == 'windows-latest'
-        run: |
-            echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> $env:GITHUB_ENV
-            echo "INSTALL_DEST=./product/install/${{matrix.config.family}}-${{matrix.config.cxx}}" >> $env:GITHUB_ENV
+          echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}"     >> "${GITHUB_ENV}"
+          echo "INSTALL_DEST=./product/install/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "${GITHUB_ENV}"
 
       - name: Ensure Xcode CLI Tools
-        if: matrix.config.os == 'macos-latest'
+        if: runner.os == 'macOS'
         run: sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
 
       - name: Set Windows PATH environment variable
@@ -463,23 +371,39 @@ jobs:
         run: echo "PATH=C:\cygwin;C:\cygwin\bin;C:\cygwin\lib;$env:SYSTEMROOT\system32;$env:SYSTEMROOT;$env:SYSTEMROOT\System32\Wbem" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Install cygwin on Windows
-        if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
+        if: matrix.config.family == 'cygwin'
         uses: cygwin/cygwin-install-action@v6
         with:
-          # 'gdb' is here for the evidence path only. A cygwin python reports the system
-          # as CYGWIN_NT, not as Windows, so the harness photographs a hung process with
-          # gdb -- and run 1508 had to report 'no debugger is installed to photograph
-          # 26_pubsubdyn.exe' for the one failure whose stack would have explained it.
+          # 'gdb' is for the evidence path: a cygwin python reports the system as
+          # CYGWIN_NT and not as Windows, so the example driver photographs a hung
+          # process with gdb rather than with a Windows debugger.
           packages: cmake, dos2unix, flexdll, gcc-g++, gdb, git, libncurses-devel, make, python3
           install-dir: 'C:\cygwin'
           add-to-path: false
           work-vol: 'C:'
 
-      - name: create build and product directories
-        working-directory: ${{github.workspace}}
+      - name: Resolve the python 3 interpreter
+        if: matrix.config.test == 'ON'
+        shell: bash
+        # Resolved once and passed on, because the example driver, the benchmarks and the
+        # ctest report all need it and the answer differs per runner.
+        #
+        # A candidate has to be executable from this shell, not only present. The cygwin
+        # 'python3' is a cygwin symlink, which the Git bash of the runner sees as a plain
+        # file and cannot start, so a candidate is verified by actually running it. The
+        # versioned cygwin interpreters are real executables and are picked up by the
+        # glob, which is empty everywhere except on the cygwin runners.
         run: |
-            mkdir build
-            mkdir product
+          PY=""
+          for candidate in python3 python py $(ls /c/cygwin/bin/python3*.exe 2>/dev/null); do
+            if "${candidate}" -c "import sys; sys.exit(0 if sys.version_info[0] == 3 else 1)" > /dev/null 2>&1; then
+              PY="${candidate}"
+              break
+            fi
+          done
+          if [ -z "${PY}" ]; then echo "python 3 is required to run the examples" >&2; exit 1; fi
+          echo "PY=${PY}" >> "${GITHUB_ENV}"
+          echo "example driver interpreter: ${PY} ($("${PY}" --version 2>&1))"
 
       - name: Configure CMake by selecting compiler family
         if: matrix.config.extend == 'ON'
@@ -512,7 +436,6 @@ jobs:
 
       - name: Build with CMake
         working-directory: ${{github.workspace}}
-        # Build your program with the given configuration
         run: cmake --build ${{env.CACHE_DEST}} --config ${{env.BUILD_TYPE}} -j16
 
       - name: Locate the build output directory
@@ -528,33 +451,31 @@ jobs:
             echo "BUILD_DEST=${{env.CACHE_DEST}}" >> "${GITHUB_ENV}"
           fi
 
-      - name: Show how the compiler translated the custom event dispatch
-        # TEMPORARY, bug-fixing phase. Delete together with the 18_pubworker defect.
-        #
-        # 18_pubworker fails on one Linux configuration and passes on the three others
-        # built from the same source, and the captured output of the failing one contains
-        # six bytes that read as a pointer where a formatted line is expected. A failure
-        # of that shape is a difference in code generation, and the only place it can be
-        # read is the binary that produced it. The dump is taken from every Linux
-        # configuration, failing or not, so that the two can be compared directly.
-        #
-        # It runs before the examples so that the annotation budget of the job is spent
-        # on it first. Nothing here may fail the job.
-        if: runner.os == 'Linux' && matrix.config.test == 'ON'
-        working-directory: ${{github.workspace}}
-        shell: bash
-        continue-on-error: true
-        run: |
-          ${{matrix.config.cxx}} --version | head -n 1
-          echo "::notice title=compiler-${{matrix.config.name}}::$(${{matrix.config.cxx}} --version | head -n 1)"
-          python3 tools/dump-symbol-asm.py "${{env.BUILD_DEST}}/bin/18_pubclient.elf" \
-                  "start_event_processing" \
-                  --title "asm-${{matrix.config.name}}"
-
       - name: Install with CMake
         working-directory: ${{github.workspace}}
-        # Install the binaries and headers
         run: cmake --install ${{env.CACHE_DEST}} --config ${{env.BUILD_TYPE}}
+
+      - name: Build the exported example against the installed package
+        # Every job installs the SDK and, until this step, nothing checked that what was
+        # installed can be consumed. This builds 'conf/exports/example' -- the project
+        # that conf/exports/example/ReadMe.md hands to a user -- against the install that
+        # was just produced, so a broken 'areg-config.cmake', a header that is not
+        # installed or a renamed exported target fails here and not in the first build of
+        # somebody who downloaded a release.
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          # CMAKE_PREFIX_PATH has to be an absolute path in the form the cmake of this
+          # runner understands: the Git bash of the Windows runners drives a native cmake,
+          # which wants 'D:/a/...', while a cygwin cmake wants '/cygdrive/d/a/...'.
+          case "$(uname -s)" in
+            MINGW*|MSYS*) PREFIX="$(cd "${{env.INSTALL_DEST}}" && pwd -W)" ;;
+            *)            PREFIX="$(cd "${{env.INSTALL_DEST}}" && pwd)"    ;;
+          esac
+          echo "installed package prefix: ${PREFIX}"
+          cmake -S ./conf/exports/example -B ./product/cache/export-example \
+                -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_PREFIX_PATH="${PREFIX}"
+          cmake --build ./product/cache/export-example --config ${{env.BUILD_TYPE}}
 
       - name: Write core dumps into the workspace
         # A crashing example leaves a core next to the binaries, so the uploaded artifact
@@ -580,23 +501,9 @@ jobs:
         timeout-minutes: 25
         run: |
           ulimit -c unlimited || true
-          # A candidate has to be executable from this shell, not only present. The cygwin
-          # 'python3' is a cygwin symlink, which the Git bash of the runner sees as a plain
-          # file and cannot start, so the candidate is verified by actually running it.
-          # The versioned cygwin interpreters are real executables and are picked up by
-          # the glob; it is empty everywhere except on the cygwin runners.
-          PY=""
-          for candidate in python3 python py $(ls /c/cygwin/bin/python3*.exe 2>/dev/null); do
-            if "${candidate}" -c "import sys; sys.exit(0 if sys.version_info[0] == 3 else 1)" > /dev/null 2>&1; then
-              PY="${candidate}"
-              break
-            fi
-          done
-          if [ -z "${PY}" ]; then echo "python 3 is required to run the examples" >&2; exit 1; fi
-          echo "example driver interpreter: ${PY} ($(${PY} --version 2>&1))"
           BIN_DIR="${{env.BUILD_DEST}}/bin"
           if [ -d "${BIN_DIR}" ]; then BIN_ARG="--bin-dir ${BIN_DIR}"; else BIN_ARG=""; fi
-          "${PY}" tools/run-all-examples.py ${BIN_ARG} --tier all \
+          "${{env.PY}}" tools/run-all-examples.py ${BIN_ARG} --tier all \
                   --out-dir "./example-results/${{matrix.config.name}}"
 
       - name: Run Unit Tests. Ignore if unit tests are not compiled
@@ -610,17 +517,9 @@ jobs:
         #     add_test(NAME areg-release-unload-test COMMAND areg-release-unload-test)
         #
         # -- tests/release-unload/CMakeLists.txt -- has no command until a configuration
-        # is named. A ctest that is not given one answers
-        #
-        #     Test not available without configuration.  (Missing "-C <config>"?)
-        #
-        # reports the case as 'Not Run' and exits 8. That is what the four Windows entries
-        # of run 1508 did, in under two seconds each, while Linux and macOS passed on
-        # their single configuration generators. Reproduced locally with the Visual Studio
-        # generator: exit 8 without the option, exit 0 with it.
-        #
-        # A single configuration generator has no configuration to filter by, so the
-        # option changes nothing there.
+        # is named. A ctest that is not given one reports the case as 'Not Run' and exits
+        # 8 without running a single test. A single configuration generator has no
+        # configuration to filter by, so the option changes nothing there.
         run: ctest --test-dir ${{env.CACHE_DEST}} -C ${{env.BUILD_TYPE}} --output-on-failure --output-junit test_results.xml
 
       - name: Run the benchmarks and publish the measured rates
@@ -635,17 +534,9 @@ jobs:
         timeout-minutes: 40
         continue-on-error: true
         run: |
-          PY=""
-          for candidate in python3 python py $(ls /c/cygwin/bin/python3*.exe 2>/dev/null); do
-            if "${candidate}" -c "import sys; sys.exit(0 if sys.version_info[0] == 3 else 1)" > /dev/null 2>&1; then
-              PY="${candidate}"
-              break
-            fi
-          done
-          if [ -z "${PY}" ]; then echo 'python 3 is required to run the benchmarks' >&2; exit 0; fi
           BIN_DIR="${{env.BUILD_DEST}}/bin"
           if [ -d "${BIN_DIR}" ]; then BIN_ARG="--bin-dir ${BIN_DIR}"; else BIN_ARG=""; fi
-          "${PY}" tools/run-all-examples.py ${BIN_ARG} --tier perf \
+          "${{env.PY}}" tools/run-all-examples.py ${BIN_ARG} --tier perf \
                   --out-dir "./example-results/${{matrix.config.name}}-benchmarks"
 
       - name: Report the failed unit tests
@@ -655,26 +546,13 @@ jobs:
         #
         # This step must never fail and must never be skipped by a non-zero status of its
         # own: it runs because something else already failed, and it is the only evidence
-        # that leaves the job. 'shell: bash' is '-eo pipefail' on a build server, so every
-        # command that may legitimately return non-zero -- a search that finds nothing is
-        # the usual one -- has to be kept out of the top level.
+        # that leaves the job.
         if: failure() && matrix.config.test == 'ON'
         working-directory: ${{github.workspace}}
         shell: bash
         continue-on-error: true
         run: |
-          PY=""
-          for candidate in python3 python py $(ls /c/cygwin/bin/python3*.exe 2>/dev/null); do
-            if "${candidate}" -c "import sys; sys.exit(0 if sys.version_info[0] == 3 else 1)" > /dev/null 2>&1; then
-              PY="${candidate}"
-              break
-            fi
-          done
-          if [ -z "${PY}" ]; then
-            echo "::warning title=ctest::python 3 is required to report the failed tests"
-            exit 0
-          fi
-          "${PY}" tools/report-ctest.py "${{env.CACHE_DEST}}"
+          "${{env.PY}}" tools/report-ctest.py "${{env.CACHE_DEST}}"
 
       - name: Collect the macOS crash reports
         # macOS does not write core files, it writes a crash report per process into the
@@ -694,9 +572,10 @@ jobs:
         if: failure() && matrix.config.test == 'ON'
         working-directory: ${{github.workspace}}
         shell: bash
-        # Nothing here may fail the job: this step runs because something else already failed,
-        # and its only purpose is to save whatever evidence exists. When the build itself failed, 
-        # BUILD_DEST was never set and the binary directory is looked up again instead of expanding to './/bin/'.
+        # Nothing here may fail the job: this step runs because something else already
+        # failed, and its only purpose is to save whatever evidence exists. When the build
+        # itself failed, BUILD_DEST was never set and the binary directory is looked up
+        # again instead of expanding to './/bin/'.
         run: |
           DEST="./${{matrix.config.name}}"
           mkdir -p "${DEST}"
@@ -705,7 +584,7 @@ jobs:
             BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
           fi
           if [ -n "${BIN_DIR}" ] && [ -d "${BIN_DIR}" ]; then cp -R "${BIN_DIR}/" "${DEST}/bin/" || true; fi
-          cp -R ./${{env.INSTALL_DEST}}/                   "${DEST}/"                 || true
+          cp -R ./${{env.INSTALL_DEST}}/                   "${DEST}/"                  || true
           cp -R ./example-results/${{matrix.config.name}}/ "${DEST}/example-results/"  || true
           cp -R ./cores/                                   "${DEST}/cores/"            || true
           find "${DEST}" -maxdepth 2 | head -n 40
@@ -717,269 +596,28 @@ jobs:
           name: ${{matrix.config.name}}
           path: ./${{matrix.config.name}}/
 
-  repro-debug:
-    name: repro-debug (linux-gnu-static)
-    # Runs only after the matrix above failed. It rebuilds one Linux configuration with
-    # debug information, repeats the example run and the unit tests, and uploads the
-    # binaries, the debug information and the core dumps of whatever crashed, so that
-    # the failure can be replayed and read in a debugger locally.
-    #
-    # RelWithDebInfo and not Debug on purpose: the failures that reach this job are
-    # timing dependent, and an unoptimized build changes the timing enough to hide them.
-    #
-    # SWITCHED OFF. It rebuilds linux-gnu-static, the configuration that passes, and in
-    # run 1500 it reproduced nothing and reported success while two other jobs failed.
-    # The evidence now comes from the disassembly step, the sanitizer job and the
-    # backtraces the driver takes itself, none of which needs a second build.
-    # Restore by putting 'failure()' back in place of 'false'.
-    needs: build-tests
-    if: false
-    runs-on: ubuntu-latest
-
-    steps:
-
-      - name: Checkout Areg SDK source codes
-        uses: actions/checkout@v7
-
-      - name: Setup Java JDK to run code generator
-        uses: actions/setup-java@v5.6.0
-        with:
-          java-version: 17
-          java-package: jre
-          distribution: temurin
-
-      - name: Configure CMake with debug information
-        working-directory: ${{github.workspace}}
-        run: |
-          cmake -B ./product/cache/repro -DAREG_COMPILER_FAMILY=gnu -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-                -DAREG_LIB_TYPE=static -DAREG_EXTENDED:BOOL=ON -DAREG_LOGGING:BOOL=ON \
-                -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=ON
-
-      - name: Build with CMake
-        working-directory: ${{github.workspace}}
-        run: cmake --build ./product/cache/repro -j16
-
-      - name: Locate the build output directory
-        working-directory: ${{github.workspace}}
-        shell: bash
-        run: |
-          BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
-          echo "REPRO_DEST=$(dirname "${BIN_DIR}")" >> "${GITHUB_ENV}"
-
-      - name: Write core dumps into the workspace
-        working-directory: ${{github.workspace}}
-        shell: bash
-        run: |
-          mkdir -p ./cores
-          sudo sysctl -w kernel.core_pattern="${{github.workspace}}/cores/core.%e.%p" > /dev/null
-          sudo sysctl -w kernel.core_uses_pid=0 > /dev/null
-
-      - name: Repeat the example applications
-        working-directory: ${{github.workspace}}
-        shell: bash
-        timeout-minutes: 60
-        continue-on-error: true
-        run: |
-          ulimit -c unlimited || true
-          python3 tools/run-all-examples.py --bin-dir "${{env.REPRO_DEST}}/bin" --tier all --repeat 3 \
-                  --out-dir ./example-results/repro-debug
-
-      - name: Run Unit Tests
-        working-directory: ${{github.workspace}}
-        continue-on-error: true
-        run: ctest --test-dir ./product/cache/repro --output-on-failure --output-junit test_results.xml
-
-      - name: Collect the reproduction artifacts
-        if: always()
-        working-directory: ${{github.workspace}}
-        shell: bash
-        run: |
-          mkdir -p ./repro-debug
-          cp -R "${{env.REPRO_DEST}}/bin/"        ./repro-debug/bin/            || true
-          cp -R ./example-results/repro-debug/    ./repro-debug/example-results/ || true
-          cp -R ./cores/                          ./repro-debug/cores/           || true
-
-      - name: Upload the reproduction artifacts
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: repro-debug
-          path: ./repro-debug/
-
-  watchdog-hunt:
-    name: watchdog-hunt (macos-clang-shared)
-    # TEMPORARY, bug-fixing phase. Delete together with the macOS watchdog defect.
-    #
-    # 21_locwatchdog and 22_pubwatchdog hang on the macOS build server at random, one of
-    # the two per job, and on no other platform. The artifacts of a normal run do not say
-    # why: the captured output of the hung application is zero bytes, yet in one of the
-    # cases the message router recorded real traffic, so the application clearly ran.
-    #
-    # Run 1500 answered the first question this job was written to ask. The two scenarios
-    # on their own, four times each, in both capture modes, did not hang; the full suite
-    # of the same run did. So the trigger is not in those two applications alone.
-    #
-    # Run 1501 answered the second and cost this job its build type. All four macOS matrix
-    # jobs hung, all four on 22_pubwatchdog, while this job passed again. The matrix builds
-    # Release and logs nothing; this job built RelWithDebInfo and logged ten scope groups
-    # at DEBUG|SCOPE, 'areg_ipc_*' among them, which is a record per dispatched event. The
-    # hunt was slower than the race it was hunting. It is now the matrix configuration --
-    # Release, extensions off, shared -- and it runs the whole suite twice:
-    #
-    #   pass 1, shipped configuration -> does this build reproduce at all?
-    #   pass 2, narrow scope set      -> the framework's own account of the hang
-    #
-    # If pass 1 hangs and pass 2 does not, the logging is still too heavy and the next step
-    # is to narrow tools/enable-framework-logs.py further, not to widen it.
-    #
-    # The two focused capture modes are kept at the end because they still separate a
-    # defect of the framework from a defect of the capture:
-    #
-    #   hangs with a terminal only   -> the capture is at fault, the framework is not
-    #   hangs in both modes          -> the framework is at fault, and the backtraces
-    #                                   taken before the kill name the place
-    #
-    # It runs on every push and does not gate anything: it never fails the workflow, it
-    # only collects.
-    runs-on: macos-latest
-    continue-on-error: true
-
-    steps:
-
-      - name: Checkout Areg SDK source codes
-        uses: actions/checkout@v7
-
-      - name: Setup Java JDK to run code generator
-        uses: actions/setup-java@v5.6.0
-        with:
-          java-version: 17
-          java-package: jre
-          distribution: temurin
-
-      - name: Report the state of the debugger
-        continue-on-error: true
-        run: |
-          xcrun lldb --version || true
-          /usr/sbin/DevToolsSecurity -status || true
-
-      - name: Configure CMake
-        working-directory: ${{github.workspace}}
-        run: |
-          # Deliberately identical to the macos-clang-shared-noext matrix entry, which is
-          # the configuration that reproduces. RelWithDebInfo did not.
-          cmake -B ./product/cache/hunt -DAREG_COMPILER_FAMILY=llvm -DCMAKE_BUILD_TYPE=Release \
-                -DAREG_LIB_TYPE=shared -DAREG_EXTENDED:BOOL=OFF -DAREG_LOGGING:BOOL=ON \
-                -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=OFF
-
-      - name: Build with CMake
-        working-directory: ${{github.workspace}}
-        run: cmake --build ./product/cache/hunt -j16
-
-      - name: Locate the build output directory
-        working-directory: ${{github.workspace}}
-        shell: bash
-        run: |
-          BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
-          if [ -z "${BIN_DIR}" ]; then echo "::error title=watchdog-hunt::nothing was built"; exit 1; fi
-          echo "HUNT_BIN=${BIN_DIR}" >> "${GITHUB_ENV}"
-
-      - name: Pass 1, the whole suite exactly as it is shipped
-        # No logging, nothing changed. The only question this pass asks is whether this
-        # build reproduces what the matrix job of the same run reproduces. If it does not,
-        # the difference is the build type or the machine, and pass 2 proves nothing.
-        working-directory: ${{github.workspace}}
-        shell: bash
-        timeout-minutes: 45
-        continue-on-error: true
-        run: |
-          python3 tools/run-all-examples.py --bin-dir "${{env.HUNT_BIN}}" --tier all \
-                  --out-dir ./watchdog-hunt/pass1-shipped
-
-      - name: Let the framework write and log its own scopes
-        working-directory: ${{github.workspace}}
-        shell: bash
-        run: python3 tools/enable-framework-logs.py "${{env.HUNT_BIN}}/config/areg.init"
-
-      - name: Pass 2, the whole suite with the framework logging its own restarts
-        working-directory: ${{github.workspace}}
-        shell: bash
-        timeout-minutes: 45
-        continue-on-error: true
-        run: |
-          python3 tools/run-all-examples.py --bin-dir "${{env.HUNT_BIN}}" --tier all \
-                  --out-dir ./watchdog-hunt/pass2-logged
-
-      - name: Publish what the framework logged about the watchdog applications
-        # The artifact needs a credential to download, an annotation does not, and the
-        # last lines of the log of a process that was killed are what says whether the
-        # provider ever registered again and whether the consumer ever heard of it.
-        if: always()
-        working-directory: ${{github.workspace}}
-        shell: bash
-        continue-on-error: true
-        run: |
-          # A job publishes roughly ten annotations per level, so the tail is kept short
-          # enough that three files fit. The whole log is in the artifact.
-          python3 tools/annotate-file.py --title hunt-log --tail 80 --level warning \
-                  --max-annotations 3 --max-files 3 \
-                  "${{env.HUNT_BIN}}/logs/"'2[12]_*.log'
-
-      - name: Hunt with a pseudo terminal
-        working-directory: ${{github.workspace}}
-        shell: bash
-        timeout-minutes: 25
-        continue-on-error: true
-        run: |
-          python3 tools/run-all-examples.py --bin-dir "${{env.HUNT_BIN}}" \
-                  --only 21_locwatchdog,22_pubwatchdog --repeat 4 --keep-logs \
-                  --out-dir ./watchdog-hunt/with-terminal
-
-      - name: Hunt without a pseudo terminal
-        working-directory: ${{github.workspace}}
-        shell: bash
-        timeout-minutes: 25
-        continue-on-error: true
-        run: |
-          python3 tools/run-all-examples.py --bin-dir "${{env.HUNT_BIN}}" --no-pty \
-                  --only 21_locwatchdog,22_pubwatchdog --repeat 4 --keep-logs \
-                  --out-dir ./watchdog-hunt/without-terminal
-
-      - name: Collect what the framework itself logged
-        if: always()
-        working-directory: ${{github.workspace}}
-        shell: bash
-        run: |
-          mkdir -p ./watchdog-hunt/areg-logs
-          cp -R "${{env.HUNT_BIN}}/logs/." ./watchdog-hunt/areg-logs/ 2>/dev/null || true
-          for dir in "${HOME}/Library/Logs/DiagnosticReports" /Library/Logs/DiagnosticReports; do
-            if [ -d "${dir}" ]; then cp -R "${dir}/." ./watchdog-hunt/areg-logs/ || true; fi
-          done
-          find ./watchdog-hunt -maxdepth 3 | head -n 60
-
-      - name: Upload the hunt
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: watchdog-hunt
-          path: ./watchdog-hunt/
-
   ubsan-linux:
     name: ubsan (linux-gnu-static)
-    # TEMPORARY, bug-fixing phase.
+    # The undefined behaviour sanitizer over the whole example suite.
     #
-    # The defect that broke 18_pubworker was an invalid downcast of an event to a type it
-    # never had. The undefined behaviour sanitizer detects exactly that, through its
-    # 'vptr' check, which is why this job exists and why the build is static: 'vptr'
-    # needs every translation unit of the program instrumented, and reports of a shared
-    # build are dominated by false positives from the uninstrumented library boundary.
+    # It is here permanently, and not only for the defect that introduced it. Its 'vptr'
+    # check is what detects a downcast of an object to a type it never had -- the defect
+    # class that broke 18_pubworker and that no compiler warning and no unit test finds.
+    # The count is at zero for the framework and this job is what keeps it there.
+    #
+    # The build is static because 'vptr' needs every translation unit of the program
+    # instrumented; reports of a shared build are dominated by false positives raised at
+    # the uninstrumented library boundary.
     #
     # The sanitizer writes into files and not to standard error on purpose. Its reports
     # would otherwise land in the middle of the captured output of the examples and turn
     # every expectation into a false failure.
     #
-    # Reports only, it never fails the workflow.
+    # Reports only, it never fails the workflow: a report names a place to look at, and a
+    # sanitizer finding is not by itself a reason to hold a release.
     runs-on: ubuntu-latest
     continue-on-error: true
+    timeout-minutes: 120
 
     steps:
 
@@ -1045,11 +683,11 @@ jobs:
             | sed -e 's/0x[0-9a-f]*/<address>/g' -e 's#^.*/areg-sdk/##' \
             | sort | uniq -c | sort -rn > ./ubsan/by-place.txt
           echo "distinct places: $(wc -l < ./ubsan/by-place.txt)"
-          # Two defects were fixed here, both of which hid the whole report in run 1504:
+          # Two traps that once hid the whole report, do not reintroduce them:
           #
           # 1. The sed above strips everything up to and including the last '/areg-sdk/', so a
-          #    framework line reads 'framework/areg/...' with NO leading slash. The pattern
-          #    '/framework/' therefore never matched and every framework report was filed as an
+          #    framework line reads 'framework/areg/...' with NO leading slash. A pattern
+          #    '/framework/' therefore never matches and every framework report is filed as an
           #    example report.
           # 2. 'grep' exits 1 when it matches nothing, which under 'set -e' kills the step and
           #    throws away every list below it. An empty framework list is the good outcome, not

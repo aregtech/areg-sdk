@@ -1,18 +1,14 @@
 name: "CodeQL"
 
-# TEMPORARY, bug-fixing phase: this workflow runs on request only, so that a push
-# spends the build server on the example runs. Restore by deleting the
-# 'workflow_dispatch' line and uncommenting the block below it.
 on:
+  push:
+    branches: [ master ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ master ]
+  schedule:
+    - cron: '32 22 * * 1'
   workflow_dispatch:
-# on:
-#   push:
-#     branches: [ master ]
-#   pull_request:
-#     # The branches below must be a subset of the branches above
-#     branches: [ master ]
-#   schedule:
-#     - cron: '32 22 * * 1'
 
 jobs:
   analyze:
