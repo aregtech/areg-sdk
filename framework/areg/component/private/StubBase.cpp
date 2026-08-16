@@ -387,7 +387,6 @@ void StubBase::shutdown_service_interface( Component & holder ) noexcept
     LOG_SCOPE( areg_component_StubBase, shutdown_service_intrface );
     LOG_INFO( "Service with role [ %s ] and interface [ %s ] is stopped", service_role().as_string(), service_name().as_string() );
     mIsStarted = false;
-    error_all_requests();
     StubConnectEvent::remove_listener( static_cast<StubEventConsumer &>(self()), holder.master_thread() );
 }
 

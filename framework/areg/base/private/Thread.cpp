@@ -203,6 +203,14 @@ bool Thread::start(uint32_t waitForStartMs /* = areg::DO_NOT_WAIT */)
     do
     {
         Lock  lock(mSyncObject);
+        // Reclaims the handle of a previous run that ended without a shutdown() call,
+        // otherwise _os_create() refuses to start the object again.
+        if ((mThreadHandle != Thread::INVALID_THREAD_HANDLE) &&
+            (mRunState.load(std::memory_order_acquire) == Thread::RunState::NotRunning))
+        {
+            _clean_resources(false, true);
+        }
+
         // Clears the exit request of the previous run.
         mExitRequested.store(false, std::memory_order_release);
         mExitRequest.reset();
@@ -258,12 +266,11 @@ Thread::ThreadCompletion Thread::shutdown( uint32_t waitForStopMs /* = areg::DO_
 
     Thread::ThreadCompletion result{ _os_destroy_thread( waitForStopMs ) };
 
-    // 'NotRunning' is set by the routine as its last access, so the handle may be released
-    // only then. Otherwise the thread is unregistered and the handle is left to the destructor.
-    const bool confirmed{ mRunState.load(std::memory_order_acquire) == Thread::RunState::NotRunning };
+    // The handle is always released, so that the object can be started again. Whether the
+    // release joins or detaches is decided by the run state inside _clean_resources().
     if ( mSyncObject.try_lock( ) )
     {
-        _clean_resources( true, confirmed );
+        _clean_resources( true, true );
         mSyncObject.unlock( );
     }
 
