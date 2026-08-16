@@ -413,6 +413,15 @@ protected:
     void process_registered_event( const areg::StubAddress & stubTarget, areg::ServiceConnectionState status ) override;
 
     /**
+     * \brief   Returns true if this provider is registered and may process requests, which is
+     *          the case only when its connection status is 'Connected'. Before the registration,
+     *          while it is in progress, and after the provider unregistered, a request is refused
+     *          and answered with a failure instead of being served.
+     **/
+    [[nodiscard]]
+    bool can_process_requests( ) const override;
+
+    /**
      * \brief   Called when a client requests connection or disconnection.
      *
      * \param   proxyAddress    The address of the client proxy.
@@ -733,6 +742,14 @@ protected:
      * \brief   The service connection status
      **/
     areg::ServiceConnectionState    mConnectionStatus;
+    /**
+     * \brief   True between startup_service_interface() and shutdown_service_interface(),
+     *          which is the only window in which this provider may serve requests. A request
+     *          that arrives outside it is refused with a failure reply, so that a request
+     *          addressed to a provider that went away is never served by a fresh incarnation
+     *          of it -- the two carry identical addresses and cannot be told apart otherwise.
+     **/
+    bool                            mIsStarted;
 
 #if defined(_MSC_VER)
     #pragma warning(push)

@@ -192,6 +192,30 @@ protected:
     virtual void process_registered_event( const StubAddress & stubTarget, areg::ServiceConnectionState status ) = 0;
 
     /**
+     * \brief   Pure virtual; returns true if the service provider is registered and may process
+     *          requests. A request that arrives while it is not -- before the registration, while
+     *          the registration is in progress, or after the provider unregistered -- is refused
+     *          and answered with a failure, so that the consumer is never left waiting.
+     *
+     *          This is what keeps a request addressed to a provider that went away from being
+     *          served by a fresh incarnation of it. A recreated provider carries a byte for byte
+     *          identical address, so the incarnations cannot be told apart by address; the
+     *          registration state is what distinguishes them.
+     **/
+    [[nodiscard]]
+    virtual bool can_process_requests( ) const = 0;
+
+private:
+    /**
+     * \brief   Answers a refused request with a failure addressed to the consumer that sent it,
+     *          so that the consumer is released instead of waiting for a response forever.
+     *
+     * \param   reqEvent    The request event that is refused.
+     **/
+    inline void _refuse_request( ServiceRequestEvent & reqEvent );
+protected:
+
+    /**
      * \brief   Pure virtual; processes a notification that a client is requesting connection or disconnection.
      *
      * \param   proxyAddress    Address of the service consumer proxy.

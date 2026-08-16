@@ -84,7 +84,18 @@ public:
      **/
     enum class ThreadCompletion : int32_t
     {
-          Terminated = -1   //!< The thread was terminate because waiting timeout expired
+          Stuck      = -2   //!< The waiting timeout expired and the thread could NOT be stopped.
+                            //!< It keeps running and keeps using its objects, so neither the
+                            //!< thread object nor anything it owns may be released. It is out
+                            //!< of the thread maps in any case, so nothing reaches it any more.
+                            //!< POSIX reports this for a thread that does not return on its own:
+                            //!< there is no way to terminate it, because a cancellation unwinds
+                            //!< C++ frames and 'noexcept' anywhere on that path turns the unwind
+                            //!< into std::terminate, which would kill the whole process.
+        , Terminated = -1   //!< The waiting timeout expired and the thread was forcibly killed.
+                            //!< It is dead on return, so releasing its objects is safe, but it
+                            //!< never unwound: whatever it held, locks included, is not released.
+                            //!< Reported on Windows only, where TerminateThread() is available.
         , Completed  = 0    //!< The thread was valid and normally completed
         , Invalid    = 1    //!< The thread handle is invalid and is not running, nothing to do
     };
@@ -205,17 +216,27 @@ public:
     virtual void trigger_exit();
 
     /**
-     * \brief   Shuts down the thread and frees resources. If waiting timeout expires, the function
-     *          terminates the thread. A shutdown thread can be re-created. The calling thread may
-     *          be blocked until the target thread completes.
+     * \brief   Requests the thread to exit, waits for it, and frees its resources. The thread is
+     *          removed from the resource maps in every case, so nothing reaches it afterwards,
+     *          and a shut down thread object can be started again.
+     *
+     *          If the waiting timeout expires the thread is terminated where the platform can do
+     *          it, which is Windows only. The returned status says which of the three outcomes
+     *          happened, and the caller MUST honour it: on 'Stuck' the thread is still running
+     *          and still uses its objects, so neither the thread object nor anything it owns may
+     *          be deleted. Ignoring that is a use-after-free.
      *
      * \param   waitForStopMs       Waiting timeout in milliseconds until target thread finishes.
-     *                              Set DO_NOT_WAIT to trigger exit and return immediately. Set
-     *                              WAIT_INFINITE to trigger exit and wait until thread completes.
-     *                              Set other values in milliseconds for specific timeout.
-     * \return  Thread completion status: Terminated if waiting timeout expired and thread was
-     *          terminated; Completed if thread completed normally; Invalid if thread was not valid
+     *                              Set DO_NOT_WAIT to request the exit and terminate the thread
+     *                              at once if it did not already finish. Set WAIT_INFINITE to
+     *                              request the exit and wait until the thread completes. Set
+     *                              other values in milliseconds for a specific timeout.
+     * \return  Thread completion status: Completed if the thread completed normally; Terminated
+     *          if the timeout expired and the thread was forcibly killed; Stuck if the timeout
+     *          expired and the thread could not be stopped; Invalid if the thread was not valid
      *          and not running.
+     *
+     * \see     ThreadCompletion, request_exit
      **/
     virtual Thread::ThreadCompletion shutdown( uint32_t waitForStopMs = areg::DO_NOT_WAIT );
 
@@ -230,12 +251,14 @@ public:
     virtual bool wait_completion( uint32_t waitForCompleteMs = areg::WAIT_INFINITE );
 
     /**
-     * \brief   Terminates the thread with a 10 ms timeout. Use only if thread is unresponsive and
-     *          immediate termination is required. Does not guarantee graceful resource cleanup.
+     * \brief   Shuts the thread down with a 10 ms timeout. Use only if the thread is unresponsive
+     *          and immediate termination is required. Does not guarantee graceful resource cleanup,
+     *          and on POSIX an unresponsive thread cannot be terminated at all.
      *
-     * \return  Thread completion status: Terminated if timeout expired and thread was terminated;
-     *          Completed if thread completed normally; Invalid if thread was not valid and not
-     *          running.
+     * \return  The same status as shutdown(), and it must be honoured the same way: on 'Stuck'
+     *          nothing that belongs to the thread may be released.
+     *
+     * \see     shutdown, ThreadCompletion
      **/
     virtual Thread::ThreadCompletion terminate();
 
@@ -360,9 +383,42 @@ public:
      * \brief   Suspends the current thread in sleep mode for the specified duration in
      *          milliseconds.
      *
+     *          The sleep is interruptible. If the calling thread is an areg thread and an
+     *          exit is requested for it by request_exit() while it sleeps, the call returns
+     *          at once instead of waiting the timeout out. This is what makes a sleeping
+     *          thread stoppable: it leaves by a normal return, so its destructors run and
+     *          its objects are released by the thread that owns them.
+     *
+     *          A thread that is not an areg thread, and any thread for which no exit was
+     *          requested, sleeps the full duration.
+     *
      * \param   msTimeout       Timeout in milliseconds.
      **/
-    inline static void sleep( uint32_t msTimeout );
+    static void sleep( uint32_t msTimeout );
+
+    /**
+     * \brief   Requests the thread to leave its routine at the next opportunity and releases
+     *          the blocking calls of the framework that it may be waiting in, so that they
+     *          return immediately. Currently this is Thread::sleep().
+     *
+     *          The request is sticky: it stays set until the thread object is started again.
+     *          It is a request and not a termination, and it cannot release a thread that
+     *          blocks outside the framework. Call shutdown() to learn whether the thread
+     *          actually left.
+     *
+     * \see     shutdown, is_exit_requested
+     **/
+    void request_exit() noexcept;
+
+    /**
+     * \brief   Returns true if an exit was requested for this thread by request_exit() and
+     *          the thread object did not start again since. The blocking calls of the
+     *          framework check it to return early.
+     *
+     * \see     request_exit
+     **/
+    [[nodiscard]]
+    inline bool is_exit_requested() const noexcept;
 
     /**
      * \brief   Yields thread processing time to allow other threads to run.
@@ -553,6 +609,35 @@ protected:
      * \brief   Synchronization Event object, signaled when thread completes running and going to exist
      **/
     SyncEvent               mWaitForExit;
+    /**
+     * \brief   Manual reset event, signaled while an exit is requested for this thread and
+     *          reset when the thread object starts again. The blocking calls of the framework
+     *          wait on it so that they return at once instead of waiting their timeout out.
+     *          Manual reset on purpose: every blocking call has to see the request, not only
+     *          the first one that wakes.
+     **/
+    SyncEvent               mExitRequest;
+#if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+    /**
+     * \brief   The state of mExitRequest, readable without entering the event object. Kept
+     *          in step with it: the event is what a waiter blocks on, this is what a caller
+     *          polls through is_exit_requested().
+     **/
+    std::atomic<bool>       mExitRequested;
+    /**
+     * \brief   True while this object is present in the thread maps. It makes the removal
+     *          from them happen exactly once per run, because both the thread routine and
+     *          shutdown() reach it. The maps are keyed by the thread name, which a restarted
+     *          thread of the same name reuses, so a second removal arriving after the
+     *          replacement registered would evict the replacement instead of this object.
+     **/
+    std::atomic<bool>       mRegistered;
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////
 // Private / Hidden types, variables and methods
@@ -570,10 +655,16 @@ private:
     /**
      * \brief   Cleans up thread data including reset running flag and thread info invalidation.
      *
-     * \param   unregister      If true, removes thread from resource maps and closes handles. If
-     *                          false, only closes handles and resets variables.
+     * \param   unregister      If true, removes the thread from the resource maps.
+     * \param   releaseHandle   If true, releases the OS handle and invalidates the thread data.
+     *                          Allowed only when the thread routine is proven to have left the
+     *                          object, which is the 'NotRunning' state. On POSIX the release
+     *                          joins the thread, so passing true while the routine still runs
+     *                          would block. The running thread itself must always pass false,
+     *                          because a thread cannot join itself; its handle is released
+     *                          later by shutdown() or by the destructor.
      **/
-    void _clean_resources( bool unregister);
+    void _clean_resources( bool unregister, bool releaseHandle );
 
     /**
      * \brief   Spins and yields while the thread routine is in the 'Exiting' state, i.e.
@@ -680,8 +771,13 @@ private:
      * \brief   Closes the OS-level thread handle and invalidates thread data.
      *
      * \param   handle      The thread handle to close.
+     * \param   joinThread  If true, waits for the OS thread before releasing the handle.
+     *                      Allowed only when the thread routine is known to have finished,
+     *                      otherwise the call blocks. When false, the OS thread is detached
+     *                      and the system reclaims it when it ends. Ignored on Windows,
+     *                      where closing a handle never waits.
      **/
-    static void _os_close_handle( THREADHANDLE handle );
+    static void _os_close_handle( THREADHANDLE handle, bool joinThread );
 
     /**
      * \brief   OS-specific implementation to put the thread in sleep mode for specified duration in
@@ -878,9 +974,9 @@ inline uint32_t Thread::stack_size() const noexcept
     return mStackSizeKB;
 }
 
-inline void Thread::sleep( uint32_t ms )
+inline bool Thread::is_exit_requested() const noexcept
 {
-    _os_sleep( ms );
+    return mExitRequested.load(std::memory_order_acquire);
 }
 
 inline void Thread::switch_thread() noexcept

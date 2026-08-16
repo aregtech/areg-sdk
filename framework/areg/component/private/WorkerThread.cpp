@@ -92,14 +92,20 @@ ComponentThread & WorkerThread::binding_component_thread() const
     return mBindingComponent.master_thread();
 }
 
-void WorkerThread::terminate_self()
+bool WorkerThread::terminate_self()
 {
     mHasStarted = false;
     remove_all_events();
     signal_exit_event();
-    Thread::shutdown(areg::TIMEOUT_10_MS);
+
+    // Released only when the thread is proven to be out of it.
+    if (Thread::shutdown(areg::TIMEOUT_500_MS) == Thread::ThreadCompletion::Stuck)
+    {
+        return false;
+    }
 
     delete this;
+    return true;
 }
 
 } // namespace areg

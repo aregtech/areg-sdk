@@ -231,6 +231,10 @@ enum class DisconnectReason : uint16_t
     , SystemShutdown        = 512   //!< The system is shutting down.
     , ClientConnectionLost  = 1024  //!< The system lost connection with the client. General reason.
     , ClientConnectionClosed= 2048  //!< The client requested to disconnect. General reason.
+    , ProviderRestarting    = 4096  //!< The service provider is being restarted by the watchdog.
+                                    //!< Unlike ProviderDisconnected, it announces that the same
+                                    //!< provider is expected back, so a consumer can persist its
+                                    //!< state and wait for the reconnect instead of giving up.
 };
 
 /**
@@ -1093,6 +1097,7 @@ inline constexpr areg::ServiceConnectionState areg::service_connection( areg::Di
     case areg::DisconnectReason::ConsumerDisconnected:
     case areg::DisconnectReason::ProviderDisconnected:
     case areg::DisconnectReason::ClientConnectionClosed:
+    case areg::DisconnectReason::ProviderRestarting:
         return areg::ServiceConnectionState::Disconnected;
 
     case areg::DisconnectReason::SystemShutdown:
@@ -1553,6 +1558,8 @@ inline constexpr const char* areg::as_string( areg::DisconnectReason reason ) no
         return "areg::DisconnectReason::ClientConnectionLost";
     case areg::DisconnectReason::ClientConnectionClosed:
         return "areg::DisconnectReason::ClientConnectionClosed";
+    case areg::DisconnectReason::ProviderRestarting:
+        return "areg::DisconnectReason::ProviderRestarting";
     default:
         ASSERT( false );
         return "ERR: Undefined areg::DisconnectReason value!";

@@ -87,7 +87,7 @@ void Thread::_os_set_name( id_type threadId, const char* threadName)
 #endif // _MSC_VER
 }
 
-void Thread::_os_close_handle(  THREADHANDLE handle )
+void Thread::_os_close_handle(  THREADHANDLE handle, bool /* joinThread */ )
 {
     if ( handle != nullptr )
     {
@@ -121,32 +121,30 @@ Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
         _unregister_thread();
         mSyncObject.unlock();  // unlock, to let thread complete exit task.
 
-        if ((waitForStopMs != areg::DO_NOT_WAIT) && (mWaitForExit.lock(waitForStopMs) == false))
+        if (mWaitForExit.lock(waitForStopMs == areg::DO_NOT_WAIT ? 0u : waitForStopMs) == false)
         {
-#ifdef  _DEBUG
-            //////////////////////////////////////////////////////////////////////////
-            // AAvetyan:    In case if thread does not exit properly, 
-            //              uncomment these lines to raise assertion
-            //              and see the point where the thread is suspended
-            //////////////////////////////////////////////////////////////////////////
-            ::SuspendThread(handle);
-            // ASSERT(false);  // <== raise assertion
-            // ::ResumeThread(handle);
-            //////////////////////////////////////////////////////////////////////////
-            //
-            //////////////////////////////////////////////////////////////////////////
-#endif  // _DEBUG
+            // ::SuspendThread(handle);    // <== uncomment to inspect where the thread is stuck
+            // ASSERT(false);
 
 #ifdef _MSC_VER
     #pragma warning(disable: 6258)
 #endif // _MSC_VER
-            // force to terminate thread and close handles due to waiting timeout expire
-            result = Thread::ThreadCompletion::Terminated;
+            // TerminateThread does not unwind and releases nothing the victim holds.
             ::TerminateThread(static_cast<HANDLE>(handle), static_cast<DWORD>(ThreadConsumer::ExitCode::Terminated));
-            this->mWaitForRun.reset();
-            this->mWaitForExit.set_signaled();
-            // The terminated routine never reaches its own exit state, release the waits here.
-            this->_set_run_state(Thread::RunState::NotRunning);
+
+            // TerminateThread is asynchronous, so the death is confirmed on the handle.
+            constexpr DWORD TERMINATE_CONFIRM_MS{ 1000u };
+            if (::WaitForSingleObject(static_cast<HANDLE>(handle), TERMINATE_CONFIRM_MS) == WAIT_OBJECT_0)
+            {
+                result = Thread::ThreadCompletion::Terminated;
+                this->mWaitForRun.reset();
+                this->mWaitForExit.set_signaled();
+                this->_set_run_state(Thread::RunState::NotRunning);
+            }
+            else
+            {
+                result = Thread::ThreadCompletion::Stuck;
+            }
 #ifdef _MSC_VER
     #pragma warning(default: 6258)
 #endif // _MSC_VER
@@ -195,7 +193,7 @@ bool Thread::_os_create() noexcept
 
     if (!_register_thread())
     {
-        _clean_resources(true);
+        _clean_resources(true, true);
         return false;
     }
 

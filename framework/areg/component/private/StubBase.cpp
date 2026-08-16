@@ -78,6 +78,7 @@ StubBase::StubBase( Component & masterComp, const areg::InterfaceData & siData )
     , mInterface            (siData)
     , mAddress              (siData, masterComp.address().role_name(), masterComp.address().thread_address().name())
     , mConnectionStatus     ( areg::ServiceConnectionState::Disconnected )
+    , mIsStarted            ( false )
     , mListenerMap          ( )
     , mCurrMsgId            ( INVALID_MESSAGE_ID )
     , mCurrIndex            ( 0 )
@@ -377,6 +378,7 @@ void StubBase::startup_service_interface( Component&  holder )
     LOG_SCOPE( areg_component_StubBase, startup_service_interface );
     LOG_DBG( "Service with role [ %s ] and interface [ %s ] is started", service_role( ).as_string( ), service_name( ).as_string( ) );
 
+    mIsStarted = true;
     StubConnectEvent::add_listener( static_cast<StubEventConsumer &>(self()), holder.master_thread() );
 }
 
@@ -384,6 +386,8 @@ void StubBase::shutdown_service_interface( Component & holder ) noexcept
 {
     LOG_SCOPE( areg_component_StubBase, shutdown_service_intrface );
     LOG_INFO( "Service with role [ %s ] and interface [ %s ] is stopped", service_role().as_string(), service_name().as_string() );
+    mIsStarted = false;
+    error_all_requests();
     StubConnectEvent::remove_listener( static_cast<StubEventConsumer &>(self()), holder.master_thread() );
 }
 
@@ -619,6 +623,11 @@ bool StubBase::consumer_connected(const ProxyAddress & client, areg::ServiceConn
 void StubBase::process_connect_event( const ProxyAddress & proxyAddress, areg::ServiceConnectionState status )
 {
     consumer_connected( proxyAddress, status );
+}
+
+bool StubBase::can_process_requests( ) const
+{
+    return mIsStarted;
 }
 
 void StubBase::process_registered_event(const StubAddress & stubTarget, areg::ServiceConnectionState status )

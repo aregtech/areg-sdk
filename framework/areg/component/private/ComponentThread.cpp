@@ -20,8 +20,18 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/Model.hpp"
 #include "areg/component/private/ServiceManager.hpp"
+#include "areg/logging/areg_log.h"
+
+namespace {
+
+//!< Time given to a component thread to leave before it is declared unable to stop.
+constexpr uint32_t  TERMINATE_WAIT_MS   { areg::TIMEOUT_500_MS };
+
+}
 
 namespace areg {
+
+DEF_LOG_SCOPE(areg_component_ComponentThread, terminate_self);
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentThread class implementation
@@ -70,6 +80,7 @@ ComponentThread::ComponentThread( const String & threadName
 
     , mCurrentComponent ( nullptr )
     , mWatchdog         ( self(), watchdogTimeout )
+    , mIsRestarting     ( false )
     , mListComponent    ( )
 {
 }
@@ -212,17 +223,64 @@ DispatcherThread* ComponentThread::event_consumer_thread( const uint32_t whichCl
     return result;
 }
 
-void ComponentThread::terminate_self()
+bool ComponentThread::terminate_self()
 {
+    LOG_SCOPE( areg_component_ComponentThread, terminate_self );
+
+    mIsRestarting = true;
     mHasStarted = false;
     remove_all_events();
     signal_exit_event();
 
-    _shutdown_proxies();
+    // The thread is stopped first and its objects are released only afterwards. Its exit
+    // sequence destroys the components it owns, so nothing is destroyed from this thread.
+    const Thread::ThreadCompletion status{ DispatcherThread::shutdown(TERMINATE_WAIT_MS) };
+    if (status == Thread::ThreadCompletion::Stuck)
+    {
+        // The thread runs on and keeps using its objects, so none of them may be released.
+        // It is out of every registry already, so nothing reaches it and the replacement starts clean.
+        LOG_ERR("The component thread [ %s ] did not stop. Its components are abandoned, not deleted"
+                    , name().as_string());
+        return false;
+    }
+
+    // A thread killed by the OS never ran its exit sequence, so its objects are released here.
+    if (status == Thread::ThreadCompletion::Terminated)
+    {
+        _release_abandoned_objects();
+    }
+
+    _detach_thread_proxies();
+
+    delete this;
+    return true;
+}
+
+inline void ComponentThread::_detach_thread_proxies()
+{
+    // ProxyBase::mDispatcherThread is a reference to this object, which is about to be
+    // deleted. A proxy left in the maps would be handed out with a released thread behind it.
+    ArrayList<std::shared_ptr<ProxyBase>> proxyList;
+    ProxyBase::find_thread_proxies(self(), proxyList);
+    for (uint32_t i = 0; i < proxyList.size(); ++i)
+    {
+        ASSERT(proxyList[i] != nullptr);
+        proxyList[i]->detach_from_registry();
+    }
+}
+
+inline void ComponentThread::_release_abandoned_objects()
+{
+    ArrayList<std::shared_ptr<ProxyBase>> proxyList;
+    ProxyBase::find_thread_proxies(self(), proxyList);
+    for (uint32_t i = 0; i < proxyList.size(); ++i)
+    {
+        ASSERT(proxyList[i] != nullptr);
+        proxyList[i]->terminate_self();
+    }
 
     ListComponent doomed;
     _detach_components(doomed);
-
     while (doomed.is_empty() == false)
     {
         Component * component{ nullptr };
@@ -231,19 +289,6 @@ void ComponentThread::terminate_self()
 
         component->terminate_self();
     }
-
-    ArrayList<std::shared_ptr<ProxyBase>> proxyList;
-    ProxyBase::find_thread_proxies(self(), proxyList);
-    for (uint32_t i = 0; i < proxyList.size(); ++i)
-    {
-        std::shared_ptr<ProxyBase> proxy = proxyList[i];
-        ASSERT(proxy != nullptr);
-        proxy->terminate_self();
-    }
-
-    DispatcherThread::shutdown(areg::TIMEOUT_10_MS);
-
-    delete this;
 }
 
 inline void ComponentThread::_shutdown_proxies()

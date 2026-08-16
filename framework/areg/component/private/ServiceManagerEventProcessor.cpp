@@ -465,8 +465,10 @@ bool ServiceManagerEventProcessor::_terminate_component_thread( const String & t
     if ( compThread != nullptr )
     {
         LOG_WARN( "Terminating component thread [ %s ]", compThread->name( ).as_string( ) );
+        // Restarts in either case: the thread is out of every registry, so the replacement
+        // is reachable even when the old one could not be stopped and stays alive.
         result = true;
-        compThread->terminate_self( );
+        static_cast<void>(compThread->terminate_self( ));
     }
     else
     {

@@ -35,9 +35,14 @@ namespace areg {
  *          classes. It also contains NullDispatcher object used in case if by request to dispatch
  *          event no appropriate dispatcher was found in system. The event dispatching thread is a
  *          base class for Worker thread and Component thread.
+ *
+ *          EventDispatcher is listed first on purpose. Thread is constructed with a reference
+ *          to the ThreadConsumer of this object, and ThreadConsumer is a base of EventDispatcher,
+ *          so EventDispatcher has to be initialized first: converting to a base whose
+ *          construction has not started yet is undefined behaviour, see C++17 [class.cdtor]/3.
  **/
-class AREG_API DispatcherThread : public Thread
-                                , public EventDispatcher
+class AREG_API DispatcherThread : public EventDispatcher
+                                , public Thread
 {
     /**
      * \brief   EventDispatcher needs this to access NullDispatcher.

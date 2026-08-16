@@ -45,6 +45,7 @@ DEF_LOG_SCOPE(areg_component_ProxyBase, unregister_listener);
 DEF_LOG_SCOPE(areg_component_ProxyBase, prepare_listeners);
 DEF_LOG_SCOPE(areg_component_ProxyBase, process_available_event);
 DEF_LOG_SCOPE(areg_component_ProxyBase, stop_proxy);
+DEF_LOG_SCOPE(areg_component_ProxyBase, send_request_event);
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase::ImplProxyMap class implementation
@@ -314,13 +315,11 @@ void ProxyBase::free_proxy( ProxyListener & connect )
 
 void ProxyBase::terminate_self()
 {
-    if (mProxyInstCount == 0)
-        return;
-
     {
         Lock lock(mListenerLock);
         mListenerMap.clear();
     }
+
     if (!mIsStopped)
     {
         ServiceManager::request_unregister_consumer(proxy_address(), areg::DisconnectReason::ConsumerDisconnected );
@@ -329,8 +328,19 @@ void ProxyBase::terminate_self()
     set_connection_status( areg::ServiceConnectionState::Disconnected );
     mIsStopped      = true;
     mProxyInstCount = 0;
+    mListConnect.clear();
 
-    delete this;
+    detach_from_registry();
+}
+
+void ProxyBase::detach_from_registry()
+{
+    std::shared_ptr<ProxyBase> proxy{ ProxyBase::find_proxy(mProxyAddress) };
+    if (proxy.get() != nullptr)
+    {
+        map_proxies().unregister_resource_object(static_cast<uint32_t>(mProxyAddress));
+        thread_proxies().unregister_resource_object( static_cast<uint32_t>(mDispatcherThread.address( )), proxy, true );
+    }
 }
 
 void ProxyBase::service_connection_updated( const StubAddress & server, const Channel & channel, areg::ServiceConnectionState status )
@@ -348,9 +358,20 @@ void ProxyBase::service_connection_updated( const StubAddress & server, const Ch
 
     const bool wasConnected{ mIsConnected };
     const bool nowConnected{ areg::is_service_connected(status) };
-    if ( (nowConnected == wasConnected) && (status != areg::ServiceConnectionState::Rejected) )
+    // Only an exactly repeated notification may be dropped. Comparing the connected flag
+    // alone is not enough: 'Disconnected' followed by 'Shutdown' are two different facts
+    // and the second is the terminal one a consumer waits for, yet both clear the flag.
+    //
+    // This filter can not recognise a provider that was recreated. A recreated stub carries
+    // a byte for byte identical address -- the magic number is a CRC over the service, the
+    // role and the thread *names*, all unchanged, and the process cookie is unchanged too --
+    // so 'the same provider' and 'a fresh incarnation of it' are indistinguishable here.
+    // What makes the filter safe is therefore not the comparison but the order: the
+    // disconnect of the old incarnation is published before the new one registers, so the
+    // connect that follows a restart is always an edge. See _terminate_component_thread.
+    if ( (nowConnected == wasConnected) && (status == connection_status()) )
     {
-        LOG_DBG("Ignored no-op connection update [ %s ]: not a connect/disconnect edge", areg::as_string(status));
+        LOG_DBG("Ignored repeated connection update [ %s ]", areg::as_string(status));
         return;
     }
 
@@ -579,20 +600,36 @@ void ProxyBase::process_generic_event( Event& eventElem )
 
 void ProxyBase::send_request_event(ServiceRequestEvent& reqEvent, NotificationConsumer* caller)
 {
+    LOG_SCOPE( areg_component_ProxyBase, send_request_event );
+
     if (!reqEvent.is_valid())
         return;
 
-    uint32_t respId = proxy_data().response_id(reqEvent.message_id());
+    const uint32_t msgId{ reqEvent.message_id() };
+    uint32_t respId = proxy_data().response_id(msgId);
     ASSERT(areg::is_response_id(respId) || (respId == areg::RESPONSE_ID_NONE));
+    SequenceNumber seqNr{ areg::SEQUENCE_NUMBER_ANY };
     if (respId != areg::RESPONSE_ID_NONE)
     {
         Lock lock(mListenerLock);
         ++mSequenceCount;
         static_cast<void>(add_listener(respId, mSequenceCount, caller, true));  // recursive lock: safe
         reqEvent.set_sequence_number(mSequenceCount);
+        seqNr = mSequenceCount;
     }
 
-    mProxyAddress.deliver_service_event(reqEvent);
+    if (mProxyAddress.deliver_service_event(reqEvent) == false)
+    {
+        // The provider is gone. Without this the listener stays registered and the consumer
+        // waits for a response that is never sent.
+        LOG_WARN("Failed to deliver request [ %u ] of proxy [ %s ], failing it"
+                    , msgId, ProxyAddress::to_path(mProxyAddress).as_string());
+        ServiceResponseEvent failure{ create_request_failed(mProxyAddress, msgId, areg::ResultType::MessageUndelivered, seqNr) };
+        if (failure.is_valid())
+        {
+            failure.deliver_event();
+        }
+    }
 }
 
 void ProxyBase::send_notify_request( uint32_t msgId, areg::RequestType reqType )

@@ -132,12 +132,23 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Terminates the component thread and makes cleanups. This method cleans up all
-     *          components and worker threads bind with the component thread. After calling this
-     *          method the component thread is not valid and not operable anymore. The method does
-     *          not automatically delete the component thread object.
+     * \brief   Stops the component thread, releases its components and worker threads, and
+     *          deletes the thread object. The thread is out of every registry in any case.
+     *
+     * \return  True if the thread stopped and the object was deleted. False if the thread
+     *          could not be stopped: it keeps running and neither it nor anything it owns
+     *          is released.
      **/
-    void terminate_self();
+    bool terminate_self();
+
+    /**
+     * \brief   Returns true while this thread is being torn down in order to be recreated by
+     *          the watchdog, as opposed to a plain shutdown. Its providers use it to announce
+     *          DisconnectReason::ProviderRestarting, so that a consumer knows the same provider
+     *          is expected back and can keep its state instead of giving up.
+     **/
+    [[nodiscard]]
+    inline bool is_restarting() const noexcept;
 
     /**
      * \brief   Returns the watchdog timeout value in milliseconds. The value 0
@@ -303,6 +314,18 @@ private:
      **/
     inline void _shutdown_components();
 
+    /**
+     * \brief   Releases the proxies and the components of this thread. Called only when the
+     *          thread was killed by the OS and never ran its own exit sequence.
+     **/
+    inline void _release_abandoned_objects();
+
+    /**
+     * \brief   Removes the proxies of this thread from the proxy registries, so that none of
+     *          them survives with a reference to this thread object after it is deleted.
+     **/
+    inline void _detach_thread_proxies();
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
@@ -320,6 +343,11 @@ private:
      * \brief   The watchdog object to track the event processing.
      **/
     Watchdog        mWatchdog;
+
+    /**
+     * \brief   Set while terminate_self() tears the thread down for a watchdog restart.
+     **/
+    bool            mIsRestarting;
 
 #if defined(_MSC_VER)
     #pragma warning(push)
@@ -353,6 +381,11 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // ComponentThread inline methods.
 //////////////////////////////////////////////////////////////////////////
+
+inline bool ComponentThread::is_restarting() const noexcept
+{
+    return mIsRestarting;
+}
 
 inline uint32_t ComponentThread::watchdog_timeout() const noexcept
 {

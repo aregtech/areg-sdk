@@ -552,6 +552,15 @@ public:
     void terminate_self();
 
     /**
+     * \brief   Removes this proxy from the proxy map and from the thread proxy map, so that
+     *          acquire_proxy() can no longer hand it out. Called when the owner dispatcher
+     *          thread is released: mDispatcherThread is a reference to it, and a proxy left
+     *          in the maps would carry a released thread behind it. Does nothing if the
+     *          proxy is not registered. The last shared reference destroys the object.
+     **/
+    void detach_from_registry();
+
+    /**
      * \brief   Registers or updates a notification listener. Requests the stub to start notifications
      *          if this is the first listener, or sends an immediate update if listeners already exist.
      *

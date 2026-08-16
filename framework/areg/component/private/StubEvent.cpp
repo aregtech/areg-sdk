@@ -20,7 +20,13 @@
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/RequestEvents.hpp"
 #include "areg/component/private/StubConnectEvent.hpp"
+#include "areg/component/ProxyBase.hpp"
+#include "areg/component/ServiceResponseEvent.hpp"
+#include "areg/logging/areg_log.h"
+
 namespace areg {
+
+DEF_LOG_SCOPE(areg_component_StubEventConsumer, refuse_request);
 
 //////////////////////////////////////////////////////////////////////////
 // StubEventConsumer class, methods
@@ -33,8 +39,31 @@ StubEventConsumer::StubEventConsumer( const StubAddress & stubAddress )
 {
 }
 
+inline void StubEventConsumer::_refuse_request(ServiceRequestEvent& reqEvent)
+{
+    LOG_SCOPE( areg_component_StubEventConsumer, refuse_request );
+
+    LOG_WARN("Provider [ %s ] is not ready, refusing request [ %u ]"
+                , StubAddress::to_path(mStubAddress).as_string(), reqEvent.request_id());
+
+    ServiceResponseEvent failure{ ProxyBase::request_failure_event( reqEvent.event_source()
+                                                                 , reqEvent.request_id()
+                                                                 , areg::ResultType::MessageUndelivered
+                                                                 , reqEvent.sequence_number()) };
+    if (failure.is_valid())
+    {
+        failure.deliver_event();
+    }
+}
+
 inline void StubEventConsumer::_local_request(ServiceRequestEvent& reqEvent )
 {
+    if (can_process_requests() == false)
+    {
+        _refuse_request(reqEvent);
+        return;
+    }
+
     Component* curComponent = Component::find_by_name(mStubAddress.role_name());
     ComponentThread::set_current_component(curComponent);
 

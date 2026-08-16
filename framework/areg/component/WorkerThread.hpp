@@ -98,9 +98,12 @@ public:
     ComponentThread & binding_component_thread() const;
 
     /**
-     * \brief   Terminates the worker thread in an emergency; use only when necessary.
+     * \brief   Stops the worker thread and deletes the thread object.
+     *
+     * \return  True if the thread stopped and the object was deleted. False if it could not
+     *          be stopped: it keeps running and is not released.
      **/
-    void terminate_self();
+    bool terminate_self();
 
     /**
      * \brief   Returns the watchdog timeout in milliseconds; 0 means watchdog is disabled.
