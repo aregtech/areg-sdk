@@ -420,6 +420,7 @@ class Runner:
         self.name = os.path.basename(path)
         self.log_path = log_path
         self.output = ''
+        self.screen = ''
         self.killed = False
         self.stacks = ''
         self.stack_path = log_path + '.stacks.txt'
@@ -441,13 +442,17 @@ class Runner:
         slave = None
         if (pty is not None) and use_pty:
             self._pty_master, slave = pty.openpty()
-            _set_pty_size(slave, PTY_ROWS, PTY_COLS)
+            _set_pty_size(self._pty_master, slave, PTY_ROWS, PTY_COLS)
             kwargs['stdout'] = slave
             kwargs['stderr'] = slave
             # A terminal without TERM makes the curses based applications give up. The
             # value is only a default: an environment that already sets it is left alone.
             environment = os.environ.copy()
             environment.setdefault('TERM', 'xterm-256color')
+            # ncurses trusts LINES and COLUMNS over the window size of the terminal, so
+            # these say what the geometry is even where the ioctl above did not take.
+            environment['LINES'] = str(PTY_ROWS)
+            environment['COLUMNS'] = str(PTY_COLS)
             kwargs['env'] = environment
         else:
             kwargs['stdout'] = self._log
@@ -630,15 +635,303 @@ class Runner:
                 closed = False
         if closed:
             with open(self.log_path, 'rb') as src:
-                self.output = src.read().decode('utf-8', 'replace')
+                data = src.read()
+            self.output = data.decode('utf-8', 'replace')
+            self.screen = render_terminal(self.output)
 
 
-def _set_pty_size(fd, rows, cols):
-    """Gives the pseudo terminal a usable geometry. Failure is not fatal."""
-    try:
-        fcntl.ioctl(fd, termios.TIOCSWINSZ, struct.pack('HHHH', rows, cols, 0, 0))
-    except OSError:
-        pass
+def _set_pty_size(master, slave, rows, cols):
+    """Gives the pseudo terminal a usable geometry. Failure is not fatal.
+
+    The geometry is written through both ends. Linux and macOS share one window size
+    between the two, so either end would do, but on cygwin a size written into the slave
+    before the child opened it does not survive -- a run there came back as the default
+    24 x 80, and the applications laid their output out for a screen they did not have.
+    """
+    size = struct.pack('HHHH', rows, cols, 0, 0)
+    for fd in (master, slave):
+        try:
+            fcntl.ioctl(fd, termios.TIOCSWINSZ, size)
+        except (OSError, ValueError):
+            pass
+
+
+# ---------------------------------------------------------------------------
+#  Terminal rendering
+# ---------------------------------------------------------------------------
+#  What a curses application sends down a terminal is not what it printed. ncurses
+#  compares the screen it wants with the screen it believes is already there and sends
+#  the difference, so a line whose tail changed arrives as a cursor address plus the tail
+#  alone. A message the application composed as one string is therefore never present as
+#  one string in the stream, and where it is cut apart depends on what was on the screen
+#  before -- that is, on timing.
+#
+#  Searching the raw stream for an expected message is that unreliable. A run on cygwin
+#  made it visible: '25_subscriber' printed 'INVALID => 0 { changed }' and the stream
+#  carried '\x1b[6;39H0 { changed }', because the first 38 columns had not changed. The
+#  same expectation matched on Linux in the same run, by luck.
+#
+#  So the stream is replayed into a screen and the expectations are matched against what
+#  a person would have seen. The raw capture is kept as well: a corrupted stream is
+#  evidence, and rendering it would hide the corruption.
+
+_CSI_PATTERN = re.compile(r'\x1b\[([0-?]*)([ -/]*)([@-~])')
+_ESC_CHARSET = re.compile(r'\x1b[()*+][\x20-\x7E]')
+_OSC_PATTERN = re.compile(r'\x1b][^\x07\x1b]*(?:\x07|\x1b\\)')
+
+
+class Screen:
+    """A very small terminal that only has to be good enough to read a log back.
+
+    Colours, fonts and character sets are dropped; addressing, erasing, repeating and
+    scrolling are kept, because those are what take a printed line apart.
+
+    The result is a transcript rather than the final screen: a line is written out as
+    soon as the application moves on to another one, so a value that was displayed and
+    then replaced is still in the report.
+    """
+
+    def __init__(self, rows=PTY_ROWS, cols=PTY_COLS):
+        self.rows = max(1, rows)
+        self.cols = max(1, cols)
+        self._grid = [[' '] * self.cols for _ in range(self.rows)]
+        self._row = 0
+        self._col = 0
+        self._last_char = ' '
+        self._live = None       #!< row that is being written, not yet in the transcript
+        self._sent = {}         #!< last text written out per row, to drop repetitions
+        self._lines = []
+
+    # -- transcript ---------------------------------------------------------
+
+    def _text_of(self, row):
+        return ''.join(self._grid[row]).rstrip()
+
+    def _publish(self, row):
+        """Puts one row into the transcript unless it is what that row said last."""
+        text = self._text_of(row)
+        if text and self._sent.get(row) != text:
+            self._sent[row] = text
+            self._lines.append(text)
+
+    def _touch(self, row):
+        """Marks a row as the one being written, writing out the one before it."""
+        if self._live is not None and self._live != row:
+            self._publish(self._live)
+        self._live = row
+
+    def _commit(self):
+        """Writes out the row that was being written, because the cursor was addressed.
+
+        A curses library sends a cursor address and then the text that belongs at that
+        spot, so an address is where one displayed state ends and the next begins. Without
+        this, a line that is rewritten in place while no other line is touched would reach
+        the report in its last state only, and every value it showed before would be lost.
+        """
+        if self._live is not None:
+            self._publish(self._live)
+            self._live = None
+
+    def transcript(self):
+        """Everything that was displayed, in the order in which it appeared.
+
+        What is still on the screen when the stream ends is added at the end, in screen
+        order. A row that already said the same thing when it was written out is not
+        repeated -- otherwise the last state of every row would appear twice.
+        """
+        if self._live is not None:
+            self._publish(self._live)
+            self._live = None
+        for row in range(self.rows):
+            self._publish(row)
+        return '\n'.join(self._lines)
+
+    # -- primitives ---------------------------------------------------------
+
+    def _put(self, char):
+        if self._col >= self.cols:
+            self._col = self.cols - 1
+        self._touch(self._row)
+        self._grid[self._row][self._col] = char
+        self._last_char = char
+        self._col += 1
+
+    def _scroll(self):
+        self._publish(0)
+        self._sent.pop(0, None)
+        self._grid.pop(0)
+        self._grid.append([' '] * self.cols)
+        # Every row moved up by one, so the memory of what a row said last no longer
+        # belongs to it. Shifting it keeps a redrawn but unchanged line out of the report.
+        self._sent = {row - 1: text for row, text in self._sent.items() if row > 0}
+        if self._live is not None:
+            self._live = max(0, self._live - 1)
+
+    def _newline(self, to_margin=True):
+        """Moves one row down, scrolling at the bottom.
+
+        A line feed on its own does not move the cursor to the left margin, but by the
+        time a capture is rendered there are no lone line feeds left: the line discipline
+        turned every '\\n' the application wrote into '\\r\\n' and the drainer folded the
+        pair back into '\\n', so the carriage return belongs to it again. The escape
+        sequence for a plain index (ESC D) is the one case that keeps the column.
+        """
+        if self._row + 1 >= self.rows:
+            self._scroll()
+        else:
+            self._row += 1
+        if to_margin:
+            self._col = 0
+
+    def _erase_line(self, mode):
+        self._touch(self._row)
+        if mode == 1:
+            span = range(0, min(self._col + 1, self.cols))
+        elif mode == 2:
+            span = range(0, self.cols)
+        else:
+            span = range(min(self._col, self.cols), self.cols)
+        for col in span:
+            self._grid[self._row][col] = ' '
+
+    def _erase_display(self, mode):
+        if mode == 2 or mode == 3:
+            for row in range(self.rows):
+                self._publish(row)
+            self._live = None
+            self._sent = {}
+            self._grid = [[' '] * self.cols for _ in range(self.rows)]
+        elif mode == 1:
+            for row in range(0, self._row):
+                self._grid[row] = [' '] * self.cols
+            self._erase_line(1)
+        else:
+            self._erase_line(0)
+            for row in range(self._row + 1, self.rows):
+                self._grid[row] = [' '] * self.cols
+
+    # -- the stream ---------------------------------------------------------
+
+    def feed(self, text):
+        at = 0
+        size = len(text)
+        while at < size:
+            char = text[at]
+            if char == '\x1b':
+                at = self._escape(text, at)
+                continue
+            at += 1
+            if char == '\n':
+                self._newline()
+            elif char == '\r':
+                self._commit()
+                self._col = 0
+            elif char == '\b':
+                self._col = max(0, self._col - 1)
+            elif char == '\t':
+                self._col = min(self.cols - 1, (self._col // 8 + 1) * 8)
+            elif char in ('\x07', '\x00'):
+                pass
+            elif char >= ' ':
+                self._put(char)
+        return self
+
+    def _escape(self, text, at):
+        match = _CSI_PATTERN.match(text, at)
+        if match is not None:
+            self._control(match.group(1), match.group(3))
+            return match.end()
+        for pattern in (_OSC_PATTERN, _ESC_CHARSET):
+            match = pattern.match(text, at)
+            if match is not None:
+                return match.end()
+        if at + 1 < len(text):
+            if text[at + 1] == 'M':                 # reverse index
+                self._row = max(0, self._row - 1)
+            elif text[at + 1] in ('D', 'E'):        # index, next line
+                self._newline(to_margin=text[at + 1] == 'E')
+            return at + 2
+        return at + 1                               # a truncated capture ends here
+
+    def _control(self, params, final):
+        private = params.startswith('?')
+        numbers = []
+        for piece in (params[1:] if private else params).split(';'):
+            numbers.append(int(piece) if piece.isdigit() else 0)
+        first = numbers[0] if numbers else 0
+
+        if private:
+            # The alternate screen buffer is entered and left with a screen of its own.
+            if final in ('h', 'l') and 1049 in numbers:
+                self._erase_display(2)
+                self._row = 0
+                self._col = 0
+            return
+
+        if final in ('H', 'f', 'd', 'G', '`', 'E', 'F'):
+            self._commit()
+
+        if final in ('H', 'f'):
+            column = numbers[1] if len(numbers) > 1 else 1
+            self._row = min(self.rows - 1, max(0, (first or 1) - 1))
+            self._col = min(self.cols - 1, max(0, (column or 1) - 1))
+        elif final == 'A':
+            self._row = max(0, self._row - max(1, first))
+        elif final == 'B':
+            self._row = min(self.rows - 1, self._row + max(1, first))
+        elif final == 'C':
+            self._col = min(self.cols - 1, self._col + max(1, first))
+        elif final == 'D':
+            self._col = max(0, self._col - max(1, first))
+        elif final == 'd':
+            self._row = min(self.rows - 1, max(0, (first or 1) - 1))
+        elif final in ('G', '`'):
+            self._col = min(self.cols - 1, max(0, (first or 1) - 1))
+        elif final in ('E', 'F'):
+            self._col = 0
+            step = max(1, first)
+            self._row = (min(self.rows - 1, self._row + step) if final == 'E'
+                         else max(0, self._row - step))
+        elif final == 'b':
+            for _ in range(max(1, first)):
+                self._put(self._last_char)
+        elif final == 'K':
+            self._erase_line(first)
+        elif final == 'J':
+            self._erase_display(first)
+        elif final == 'P':
+            self._touch(self._row)
+            row = self._grid[self._row]
+            del row[self._col:self._col + max(1, first)]
+            row.extend([' '] * (self.cols - len(row)))
+        elif final == '@':
+            self._touch(self._row)
+            row = self._grid[self._row]
+            row[self._col:self._col] = [' '] * max(1, first)
+            del row[self.cols:]
+        elif final in ('L', 'M'):
+            self._touch(self._row)
+            count = max(1, first)
+            if final == 'L':
+                for _ in range(count):
+                    self._grid.insert(self._row, [' '] * self.cols)
+            else:
+                for _ in range(count):
+                    if self._row < len(self._grid):
+                        self._publish(self._row)
+                        del self._grid[self._row]
+            del self._grid[self.rows:]
+            while len(self._grid) < self.rows:
+                self._grid.append([' '] * self.cols)
+            self._sent = {}
+        # 'm', 'r', 't' and the rest change how the screen looks, not what it says.
+
+
+def render_terminal(data, rows=PTY_ROWS, cols=PTY_COLS):
+    """Replays a captured terminal stream and returns what was displayed."""
+    if isinstance(data, bytes):
+        data = data.decode('utf-8', 'replace')
+    return Screen(rows, cols).feed(data).transcript()
 
 
 def is_router_listening():
@@ -686,6 +979,7 @@ def one_line(text):
 
 CAPTURE_EXCERPT_BYTES = 700     #!< head and tail of the captured stream kept in a report
 CAPTURE_HEXDUMP_BYTES = 256     #!< bytes of the hexdump added when the stream is not text
+CAPTURE_SCREEN_LINES  = 40      #!< lines of the rendered screen kept in a report
 CAPTURE_ANNOTATIONS   = 10      #!< build server limit of annotations of one level per step
 
 
@@ -704,6 +998,17 @@ def describe_capture(runner):
         return 'captured output of %s is unreadable: %s' % (runner.name, err)
 
     lines = ['captured %u bytes from %s (%s)' % (len(data), runner.name, runner.log_path)]
+
+    # The stream of a curses application is unreadable as bytes, and it is the screen it
+    # draws that says whether the application did its work. Both are reported: the screen
+    # to be read, the bytes to tell a message that was never printed apart from one that
+    # was printed and damaged.
+    screen = runner.screen or render_terminal(data)
+    if screen:
+        shown = screen.splitlines()[-CAPTURE_SCREEN_LINES:]
+        lines.append('  screen, last %u line(s):' % len(shown))
+        lines.extend('    | ' + text for text in shown)
+
     if len(data) <= 2 * CAPTURE_EXCERPT_BYTES:
         excerpt = repr(data)
     else:
@@ -901,8 +1206,14 @@ def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs, use
         if index >= len(runners):
             break
         for pattern in entry['expect']:
-            if re.search(pattern, runners[index].output) is None:
-                result.fail('%s output does not contain %r' % (runners[index].name, pattern))
+            # Both the stream as it arrived and the screen it draws are searched. A
+            # message that a curses application composed as one string reaches the stream
+            # in pieces, so only the screen has it whole; a message printed by an
+            # application that draws nothing is in the stream and needs no screen.
+            runner = runners[index]
+            if (re.search(pattern, runner.output) is None
+                    and re.search(pattern, runner.screen) is None):
+                result.fail('%s output does not contain %r' % (runner.name, pattern))
 
     # A failure is read from the output of every application of the scenario, not only
     # of the one that reported it. The applications are connected: a consumer that waits

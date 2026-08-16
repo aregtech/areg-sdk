@@ -466,7 +466,11 @@ jobs:
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
         uses: cygwin/cygwin-install-action@v6
         with:
-          packages: cmake, dos2unix, flexdll, gcc-g++, git, libncurses-devel, make, python3
+          # 'gdb' is here for the evidence path only. A cygwin python reports the system
+          # as CYGWIN_NT, not as Windows, so the harness photographs a hung process with
+          # gdb -- and run 1508 had to report 'no debugger is installed to photograph
+          # 26_pubsubdyn.exe' for the one failure whose stack would have explained it.
+          packages: cmake, dos2unix, flexdll, gcc-g++, gdb, git, libncurses-devel, make, python3
           install-dir: 'C:\cygwin'
           add-to-path: false
           work-vol: 'C:'
@@ -598,7 +602,26 @@ jobs:
       - name: Run Unit Tests. Ignore if unit tests are not compiled
         if: matrix.config.test == 'ON'
         working-directory: ${{github.workspace}}
-        run: ctest --test-dir ${{env.CACHE_DEST}} --output-on-failure --output-junit test_results.xml
+        # '-C' is what makes this work on Windows. No generator is named when the project
+        # is configured, so the Windows runners get the Visual Studio generator, which is
+        # a multi configuration one. There, the executable of a target lives in a
+        # per configuration directory, so a test registered as
+        #
+        #     add_test(NAME areg-release-unload-test COMMAND areg-release-unload-test)
+        #
+        # -- tests/release-unload/CMakeLists.txt -- has no command until a configuration
+        # is named. A ctest that is not given one answers
+        #
+        #     Test not available without configuration.  (Missing "-C <config>"?)
+        #
+        # reports the case as 'Not Run' and exits 8. That is what the four Windows entries
+        # of run 1508 did, in under two seconds each, while Linux and macOS passed on
+        # their single configuration generators. Reproduced locally with the Visual Studio
+        # generator: exit 8 without the option, exit 0 with it.
+        #
+        # A single configuration generator has no configuration to filter by, so the
+        # option changes nothing there.
+        run: ctest --test-dir ${{env.CACHE_DEST}} -C ${{env.BUILD_TYPE}} --output-on-failure --output-junit test_results.xml
 
       - name: Run the benchmarks and publish the measured rates
         # Runs last and cannot fail the job. A shared build server is a noisy place to
@@ -627,17 +650,31 @@ jobs:
 
       - name: Report the failed unit tests
         # ctest prints the failure into the job log, which is not readable without a
-        # credential. An annotation is, so the names of the failed tests and the tail of
-        # their output are published as one.
+        # credential. An annotation is, so the names of the failed tests and the output
+        # each of them produced are published as annotations.
+        #
+        # This step must never fail and must never be skipped by a non-zero status of its
+        # own: it runs because something else already failed, and it is the only evidence
+        # that leaves the job. 'shell: bash' is '-eo pipefail' on a build server, so every
+        # command that may legitimately return non-zero -- a search that finds nothing is
+        # the usual one -- has to be kept out of the top level.
         if: failure() && matrix.config.test == 'ON'
         working-directory: ${{github.workspace}}
         shell: bash
+        continue-on-error: true
         run: |
-          LOG="${{env.CACHE_DEST}}/Testing/Temporary/LastTest.log"
-          if [ ! -f "${LOG}" ]; then echo "::warning title=ctest::no ${LOG}"; exit 0; fi
-          NAMES="$(grep -E '^[0-9]+/[0-9]+ Test .*(Failed|Exception)' "${LOG}" | tr '\n' ';')"
-          echo "::error title=ctest::${NAMES:-no failed test line in LastTest.log}"
-          tail -n 60 "${LOG}" | tr '\n' '|' | sed 's/^/::notice title=ctest-tail::/'
+          PY=""
+          for candidate in python3 python py $(ls /c/cygwin/bin/python3*.exe 2>/dev/null); do
+            if "${candidate}" -c "import sys; sys.exit(0 if sys.version_info[0] == 3 else 1)" > /dev/null 2>&1; then
+              PY="${candidate}"
+              break
+            fi
+          done
+          if [ -z "${PY}" ]; then
+            echo "::warning title=ctest::python 3 is required to report the failed tests"
+            exit 0
+          fi
+          "${PY}" tools/report-ctest.py "${{env.CACHE_DEST}}"
 
       - name: Collect the macOS crash reports
         # macOS does not write core files, it writes a crash report per process into the
