@@ -132,8 +132,14 @@ void EventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullptr*/)
     if (prio >= areg::EventPriority::HighPrio)
     {
         Lock lock(mPrioLock);
+        // '>=' and not '>': the scan must skip the events of the SAME priority as well,
+        // so that the new one lands behind them. Stopping at the first equal-priority
+        // event inserts in front of it, which dispatches equal-priority events in the
+        // reverse of the order they were posted. Two control messages that must keep
+        // their order -- a provider unregistration followed by its re-registration --
+        // then reach the peer swapped, and the peer treats the pair as a no-op.
         auto it = mPrioQueue.begin();
-        while (it != mPrioQueue.end() && it->event_priority() > prio)
+        while (it != mPrioQueue.end() && it->event_priority() >= prio)
             ++it;
 
         mPrioQueue.insert(it, std::move(eventElem));
@@ -180,8 +186,9 @@ uint32_t EventQueue::push_events(Event* eventElems, uint32_t count)
             }
             else if (prio >= areg::EventPriority::HighPrio)
             {
+                // '>=' keeps equal priorities in posting order -- see push_event().
                 auto it = mPrioQueue.begin();
-                while (it != mPrioQueue.end() && it->event_priority() > prio)
+                while (it != mPrioQueue.end() && it->event_priority() >= prio)
                     ++it;
 
                 mPrioQueue.insert(it, std::move(evt));

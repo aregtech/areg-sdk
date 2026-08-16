@@ -34,6 +34,11 @@ bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg
     LOG_SCOPE( examples_22_pubclient_ServiceClient, service_connected );
     bool result = HelloWatchdogConsumerBase::service_connected(status, proxy);
 
+    // Every availability change of the provider must reach the consumer. Printed and not
+    // only logged, so that a missed notification is visible in the captured output.
+    printf("Service connection update [ %s ], connected [ %s ]\n"
+               , areg::as_string(status), is_connected() ? "yes" : "no");
+
     if (is_connected())
     {
         // dynamic subscribe on messages.
@@ -96,20 +101,23 @@ void ServiceClient::response_start_sleep( uint32_t timeoutSleep )
     }
 }
 
-void ServiceClient::request_start_sleep_failed( [[maybe_unused]] areg::ResultType FailureReason )
+void ServiceClient::request_start_sleep_failed( areg::ResultType FailureReason )
 {
     LOG_SCOPE( examples_22_pubclient_ServiceClient, request_start_sleep_failed );
+    printf("REQUEST FAILED: request_start_sleep_failed, reason [ %s ]\n", areg::as_string(FailureReason));
     LOG_WARN("Request to sleep service failed with reason [ %s ]", areg::as_string(FailureReason));
 }
 
-void ServiceClient::request_stop_service_failed( [[maybe_unused]] areg::ResultType FailureReason )
+void ServiceClient::request_stop_service_failed( areg::ResultType FailureReason )
 {
     LOG_SCOPE( examples_22_pubclient_ServiceClient, request_stop_service_failed );
+    printf("REQUEST FAILED: request_stop_service_failed, reason [ %s ]\n", areg::as_string(FailureReason));
     LOG_WARN( "Request to stop the service failed with reason [ %s ]", areg::as_string( FailureReason ) );
 }
 
-void ServiceClient::request_shutdown_service_failed( [[maybe_unused]] areg::ResultType FailureReason )
+void ServiceClient::request_shutdown_service_failed( areg::ResultType FailureReason )
 {
     LOG_SCOPE( examples_22_pubclient_ServiceClient, request_shutdown_service_failed );
+    printf("REQUEST FAILED: request_shutdown_service_failed, reason [ %s ]\n", areg::as_string(FailureReason));
     LOG_WARN( "Request to shutdown service failed with reason [ %s ]", areg::as_string( FailureReason ) );
 }
