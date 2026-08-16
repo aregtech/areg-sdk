@@ -32,11 +32,6 @@ namespace
 class ProbeComponent : public areg::Component
 {
 public:
-    // The model registers the component through a static 'destroy', which otherwise hides the
-    // inherited virtual areg::RuntimeObject::destroy() and makes the class warn under
-    // -Woverloaded-virtual. Bringing the base name into scope keeps both callable.
-    using areg::Component::destroy;
-
     static areg::Component * create(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     {
         return new ProbeComponent(entry, owner);

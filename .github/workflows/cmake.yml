@@ -22,11 +22,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # TEMPORARY, bug-fixing phase. Only the configurations that actually run the
-        # example applications on Linux and macOS are active. A configuration that only
-        # compiles says nothing about the failures under investigation and costs the same
-        # build server time, and Windows and cygwin are held back on purpose -- see
-        # product/2026-08-14-crash-1/3/SESSION-STATE.md. Every entry below that is
+        # Only the configurations that actually run the example applications and the unit
+        # tests are active: a configuration that only compiles costs the same build server
+        # time and says nothing about run time behaviour. Windows and cygwin were held back
+        # during the crash investigation and are back in. Every entry below that is still
         # commented out is restored by removing the leading '#' of its lines.
         config: # Create matrix with combinations
 
@@ -246,28 +245,28 @@ jobs:
 #            }
 
             # compile Areg engine as a static with CYGWIN g++ / gcc on Windows, enable Areg extensions, logs, examples and tests
-#          - { name  : win-cygwin-static-all-test,
-#              os    : windows-latest,
-#              lib   : static,
-#              family: cygwin,
-#              cxx   : g++,
-#              cc    : gcc,
-#              extend: ON,
-#              logs  : ON,
-#              test  : ON
-#            }
+          - { name  : win-cygwin-static-all-test,
+              os    : windows-latest,
+              lib   : static,
+              family: cygwin,
+              cxx   : g++,
+              cc    : gcc,
+              extend: ON,
+              logs  : ON,
+              test  : ON
+            }
 
             # compile Areg engine as a static with CYGWIN g++ / gcc on Windows, enable Areg extensions, logs, examples and tests
-#          - { name  : win-cygwin-shared-all-test,
-#              os    : windows-latest,
-#              lib   : shared,
-#              family: cygwin,
-#              cxx   : g++,
-#              cc    : gcc,
-#              extend: ON,
-#              logs  : ON,
-#              test  : ON
-#            }
+          - { name  : win-cygwin-shared-all-test,
+              os    : windows-latest,
+              lib   : shared,
+              family: cygwin,
+              cxx   : g++,
+              cc    : gcc,
+              extend: ON,
+              logs  : ON,
+              test  : ON
+            }
 
             # compile Areg engine as a shared with CYGWIN g++ / gcc on Windows, disable Areg extensions and no logs
 #          - { name  : win-cygwin-shared-noext-nolog,
@@ -306,28 +305,28 @@ jobs:
 #            }
 
             # compile Areg engine as a static library with clang on Windows, enable Areg extensions, logs, examples and tests
-#          - { name  : win-clang-static-all-test,
-#              os    : windows-latest,
-#              lib   : static,
-#              family: llvm,
-#              cxx   : clang-cl,
-#              cc    : clang-cl,
-#              extend: ON,
-#              logs  : ON,
-#              test  : ON
-#            }
+          - { name  : win-clang-static-all-test,
+              os    : windows-latest,
+              lib   : static,
+              family: llvm,
+              cxx   : clang-cl,
+              cc    : clang-cl,
+              extend: ON,
+              logs  : ON,
+              test  : ON
+            }
 
             # compile Areg engine as a static library with clang on Windows, enable Areg extensions, logs, examples and tests
-#          - { name  : win-clang-shared-all-test,
-#              os    : windows-latest,
-#              lib   : shared,
-#              family: llvm,
-#              cxx   : clang-cl,
-#              cc    : clang-cl,
-#              extend: ON,
-#              logs  : ON,
-#              test  : ON
-#            }
+          - { name  : win-clang-shared-all-test,
+              os    : windows-latest,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang-cl,
+              cc    : clang-cl,
+              extend: ON,
+              logs  : ON,
+              test  : ON
+            }
 
             # compile Areg engine as a shared library with clang on Windows, disable Areg extensions and no logs
 #          - { name  : win-clang-shared-noext-nolog,
@@ -366,28 +365,28 @@ jobs:
 #            }
 
             # compile Areg engine as a static with MSVC on Windows, enable Areg extensions, logs, examples and tests
-#          - { name  : win-msvc-static-all-test,
-#              os    : windows-latest,
-#              lib   : static,
-#              family: msvc,
-#              cxx   : cl,
-#              cc    : cl,
-#              extend: ON,
-#              logs  : ON,
-#              test  : ON
-#            }
+          - { name  : win-msvc-static-all-test,
+              os    : windows-latest,
+              lib   : static,
+              family: msvc,
+              cxx   : cl,
+              cc    : cl,
+              extend: ON,
+              logs  : ON,
+              test  : ON
+            }
 
             # compile Areg engine as a static with MSVC on Windows, enable Areg extensions, logs, examples and tests
-#          - { name  : win-msvc-shared-all-test,
-#              os    : windows-latest,
-#              lib   : shared,
-#              family: msvc,
-#              cxx   : cl,
-#              cc    : cl,
-#              extend: ON,
-#              logs  : ON,
-#              test  : ON
-#            }
+          - { name  : win-msvc-shared-all-test,
+              os    : windows-latest,
+              lib   : shared,
+              family: msvc,
+              cxx   : cl,
+              cc    : cl,
+              extend: ON,
+              logs  : ON,
+              test  : ON
+            }
 
             # compile Areg engine as a shared with MSVC on Windows, enable Areg extensions and logs
 #          - { name  : win-msvc-shared-noext-log,
@@ -600,6 +599,31 @@ jobs:
         if: matrix.config.test == 'ON'
         working-directory: ${{github.workspace}}
         run: ctest --test-dir ${{env.CACHE_DEST}} --output-on-failure --output-junit test_results.xml
+
+      - name: Run the benchmarks and publish the measured rates
+        # Runs last and cannot fail the job. A shared build server is a noisy place to
+        # measure, so these numbers are a trend line and not an acceptance criterion --
+        # but they are printed into the job log and published as annotations, so a
+        # regression is visible in a browser without downloading an artifact.
+        # The raw console streams stay in the artifact next to 'benchmarks.csv'.
+        if: matrix.config.test == 'ON'
+        working-directory: ${{github.workspace}}
+        shell: bash
+        timeout-minutes: 40
+        continue-on-error: true
+        run: |
+          PY=""
+          for candidate in python3 python py $(ls /c/cygwin/bin/python3*.exe 2>/dev/null); do
+            if "${candidate}" -c "import sys; sys.exit(0 if sys.version_info[0] == 3 else 1)" > /dev/null 2>&1; then
+              PY="${candidate}"
+              break
+            fi
+          done
+          if [ -z "${PY}" ]; then echo 'python 3 is required to run the benchmarks' >&2; exit 0; fi
+          BIN_DIR="${{env.BUILD_DEST}}/bin"
+          if [ -d "${BIN_DIR}" ]; then BIN_ARG="--bin-dir ${BIN_DIR}"; else BIN_ARG=""; fi
+          "${PY}" tools/run-all-examples.py ${BIN_ARG} --tier perf \
+                  --out-dir "./example-results/${{matrix.config.name}}-benchmarks"
 
       - name: Report the failed unit tests
         # ctest prints the failure into the job log, which is not readable without a

@@ -456,7 +456,15 @@ void StubBase::send_update_event( uint32_t msgId, const SharedBuffer & data, are
     if (find_listeners(msgId, listeners) > 0)
     {
         const ProxyAddress proxy{ listeners.first_entry().proxy() };
-        LOG_WARN( "Sends busy message to proxy [ %s ] for the request [ %u ]", ProxyAddress::to_path( proxy).as_string(), msgId);
+        // This is the ordinary update broadcast, not a busy reply: the text used to be copied
+        // from send_busy_response() and reported a warning for every attribute update, which
+        // is the most routine thing a provider does. The update reaches every listener, so the
+        // count is what matters; the first one is named only to identify the subscription.
+        LOG_DBG( "Sending update of message [ %u ] with result [ %s ] to [ %u ] subscribed consumer(s), first is [ %s ]"
+                   , msgId
+                   , areg::as_string( result )
+                   , listeners.size()
+                   , ProxyAddress::to_path( proxy ).as_string() );
 
         ServiceResponseEvent eventElem = create_response(proxy, msgId, result, data);
         if (eventElem.is_valid())
@@ -495,11 +503,11 @@ void StubBase::send_busy_response( const Listener & whichListener )
     ServiceResponseEvent eventElem = create_response(proxy, whichListener.mMessageId, areg::ResultType::RequestBusy, SharedBuffer{});
     if (eventElem.is_valid())
     {
-        LOG_WARN("Sending busy response for request message [ %p ] from source [ %p ] to target [ %p ], sequence [ %llu ]"
+        LOG_WARN("Sending busy response for request message [ %u ] from source [ %u ] to target [ %u ], sequence [ %llu ]"
                     , whichListener.mMessageId
-                    , proxy.target()
-                    , proxy.source()
-                    , whichListener.mSequenceNr);
+                    , static_cast<uint32_t>(proxy.target())
+                    , static_cast<uint32_t>(proxy.source())
+                    , static_cast<uint64_t>(whichListener.mSequenceNr));
 
         eventElem.set_sequence_number(whichListener.mSequenceNr);
         send_service_response(eventElem);

@@ -23,6 +23,8 @@
 #      --only NAME[,NAME...]       Run only the named scenarios
 #      --list                      Print the scenarios and exit
 #      --no-pty                    Capture into the log file instead of a terminal
+#      --perf                      Append the benchmarks after the selected tier and
+#                                  print/save the measured data, message and latency rates
 #      --no-stacks                 Do not photograph a process that has to be killed
 #      --out-dir DIR               Where to write the captured output
 #      --timestamp                 Put the output in a time stamped sub-directory
@@ -118,6 +120,9 @@ QUIT_SECONDS = 12.0
 #   expect    Regular expressions that all have to match the captured output.
 # ---------------------------------------------------------------------------
 
+import areg_benchmarks
+
+
 def proc(binary, args=None, stdin=None, must_exit=True, expect=None, quit=None,
          has_exit=True):
     return {
@@ -129,6 +134,27 @@ def proc(binary, args=None, stdin=None, must_exit=True, expect=None, quit=None,
         'has_exit': has_exit,
         'expect': expect or [],
     }
+
+
+# The data-rate ramp differs by platform: Windows reaches its ceiling with far fewer
+# channels than Linux and macOS, where 7 GB/sec and more is expected.
+_RAMP_DATA_FROM = 16 if os.name == 'nt' else 40
+_RAMP_DATA_STEP = 2  if os.name == 'nt' else 4
+_RAMP_SECONDS   = 10.0    # how long each channel count is held
+_RAMP_STEPS     = 12      # how many times the channel count is raised (max is 256 channels)
+
+
+def _datarate_script(shape, first, step):
+    """
+    Builds the console script of a 23_pubdatarate run: set the block shape and the first
+    channel count, start, then raise the channel count every _RAMP_SECONDS without stopping
+    the run, and quit. The peak reached on the way is what the benchmark reports.
+    """
+    script = [(4.0, '%s -c=%d' % (shape, first)), (4.0, '-s')]
+    for index in range(1, _RAMP_STEPS + 1):
+        script.append((_RAMP_SECONDS, '-c=%d' % (first + index * step)))
+    script.append((_RAMP_SECONDS, '-q'))
+    return script
 
 
 SCENARIOS = [
@@ -216,19 +242,39 @@ SCENARIOS = [
      'procs': [proc('27_subscribermulti', expect=[r'=> \d+ \{ changed \}']),
                proc('27_publisher', stdin=[(3.0, 's'), (10.0, 'i'), (5.0, 'q')])]},
 
-    # -- benchmarks, not part of the regular run ----------------------------
-    # The client has no command of its own, it leaves when the provider leaves.
-    {'name': '23_pubdatarate', 'tier': 'perf', 'timeout': 180,
+    # -- benchmarks, always last -------------------------------------------
+    # Both drive the console of the application exactly as it is driven by hand. The
+    # channel count '-c' is raised while the run is going, which the applications accept
+    # without a pause, and the peak the run reaches is the number that is reported.
+    #
+    # 'measure' names the reader in tools/areg_benchmarks.py that turns the captured
+    # console stream into numbers.
+    {'name': '23_datarate', 'tier': 'perf', 'timeout': 300, 'measure': 'datarate',
      'procs': [proc('23_pubclient'),
                proc('23_pubservice',
-                    stdin=[(4.0, '-w=1024 -h=1024 -l=1024 -c=25 -t=28'),
-                           (4.0, '-s'), (40.0, '-q')],
+                    stdin=_datarate_script('-w=1024 -h=1024 -l=1024 -t=25',
+                                           _RAMP_DATA_FROM, _RAMP_DATA_STEP),
                     expect=[r'Network sent rate'])]},
-    {'name': '30_publatency', 'tier': 'perf', 'timeout': 240,
+
+    {'name': '23_msgrate', 'tier': 'perf', 'timeout': 300, 'measure': 'datarate',
+     'procs': [proc('23_pubclient'),
+               proc('23_pubservice',
+                    stdin=_datarate_script('-w=128 -h=128 -l=1 -t=25', 4, 1),
+                    expect=[r'Network sent rate'])]},
+
+    # One way trip: broadcast mode, five runs. Round trip: ping pong mode, five runs.
+    {'name': '30_owt', 'tier': 'perf', 'timeout': 420, 'measure': 'latency',
      'procs': [proc('30_pubprovider', must_exit=False, quit=['-q']),
                proc('30_pubconsumer',
-                    stdin=[(4.0, '-m=pp64 -c=10000 -w=1000'),
-                           (4.0, '-s=3'), (90.0, '-q')],
+                    stdin=[(4.0, '-m=bc64 -c=5000 -w=1000'), (4.0, '-s=5'),
+                           (300.0, '-q')],
+                    expect=[r'P50'])]},
+
+    {'name': '30_rtt', 'tier': 'perf', 'timeout': 420, 'measure': 'latency',
+     'procs': [proc('30_pubprovider', must_exit=False, quit=['-q']),
+               proc('30_pubconsumer',
+                    stdin=[(4.0, '-m=pp64 -c=10000 -w=1000'), (4.0, '-s=5'),
+                           (300.0, '-q')],
                     expect=[r'P50'])]},
 ]
 
@@ -689,6 +735,7 @@ class Result:
         self.status = 'PASS'
         self.notes = []
         self.captures = []
+        self.measures = []
         self.stacks = []
         self.seconds = 0.0
 
@@ -881,7 +928,22 @@ def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs, use
             result.notes.append('passed although marked as a known defect (%s),'
                                 ' remove the marker' % known)
 
-    if (result.status == 'PASS') and not keep_logs:
+    measure = scenario.get('measure')
+    if measure is not None:
+        logs = []
+        for runner in runners:
+            try:
+                with open(runner.log_path, 'rb') as src:
+                    logs.append((runner.name, src.read()))
+            except OSError:
+                pass
+        result.measures = areg_benchmarks.extract(measure, scenario['name'], logs)
+        for item in result.measures:
+            result.notes.append('%s = %s' % (item['metric'], item['display']))
+
+    # A benchmark keeps its output: the numbers are only trustworthy next to the stream
+    # they were read from.
+    if (result.status == 'PASS') and not keep_logs and (measure is None):
         shutil.rmtree(scenario_dir, ignore_errors=True)
     return result
 
@@ -1065,6 +1127,9 @@ def main():
                         help='capture the output by redirecting it into the log file instead'
                              ' of through a pseudo terminal (POSIX only). The output of a'
                              ' process that has to be terminated is then lost.')
+    parser.add_argument('--perf', action='store_true',
+                        help='append the benchmarks after the selected tier and report'
+                             ' the measured data, message and latency rates')
     parser.add_argument('--no-stacks', action='store_true',
                         help='do not photograph a process that has to be killed. The'
                              ' backtraces are taken with the debugger of the platform'
@@ -1086,6 +1151,9 @@ def main():
         selection = [s for s in selection if s['tier'] == args.tier]
     else:
         selection = [s for s in selection if s['tier'] != 'perf']
+    if args.perf and (args.tier != 'perf'):
+        # Always appended, never interleaved: a benchmark shares the machine with nothing.
+        selection = selection + [s for s in SCENARIOS if s['tier'] == 'perf']
     if args.only:
         wanted = {n.strip() for n in args.only.split(',') if n.strip()}
         selection = [s for s in SCENARIOS if s['name'] in wanted]
@@ -1162,6 +1230,8 @@ def main():
                 skipped += 1
             else:
                 passed += 1
+
+    areg_benchmarks.report([m for r in results for m in r.measures], out_dir)
 
     elapsed = time.time() - started
     report = markdown_report(results, elapsed, args.tier, bin_dir)

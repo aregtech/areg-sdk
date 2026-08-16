@@ -19,6 +19,7 @@
 DEF_LOG_SCOPE(examples_22_pubservice_ServicingComponent, startup_service_interface);
 DEF_LOG_SCOPE(examples_22_pubservice_ServicingComponent, request_start_sleep);
 DEF_LOG_SCOPE(examples_22_pubservice_ServicingComponent, request_stop_service);
+DEF_LOG_SCOPE(examples_22_pubservice_ServicingComponent, request_shutdown_service);
 
 ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component         ( entry, owner )
@@ -77,7 +78,7 @@ void ServicingComponent::request_stop_service()
 
 void ServicingComponent::request_shutdown_service()
 {
-    LOG_SCOPE( examples_22_pubservice_ServicingComponent, request_stop_service );
+    LOG_SCOPE( examples_22_pubservice_ServicingComponent, request_shutdown_service );
     LOG_DBG("Shutdown the service");
     printf( "Shutdown the service and quit application.\n" );
     set_service_state( HelloWatchdog::ComponentState::Stopped );
