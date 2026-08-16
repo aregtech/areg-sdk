@@ -68,7 +68,7 @@ inline void StubEventConsumer::_local_request(ServiceRequestEvent& reqEvent )
     ComponentThread::set_current_component(curComponent);
 
     if (areg::is_request_id(reqEvent.request_id()))
-        process_request_event(static_cast<ServiceRequestEvent&>(reqEvent));
+        process_request_event(reqEvent);
     else
         process_stub_event(static_cast<StubEvent&>(reqEvent));
 
@@ -120,24 +120,46 @@ void StubEventConsumer::start_event_processing( Event & eventElem )
         return;
 
     mCurEvent = &eventElem;
+
+    // A dispatched areg::Event is type erased -- EventQueue holds it by value, so its dynamic
+    // type is areg::Event and nothing else. Casting the reference down to a typed event is
+    // undefined behaviour, and every member call made through such a reference is undefined
+    // too, here and in the generated code this hands it to. The typed events add no state --
+    // all of them are exactly sizeof(Event) and read the EventHeader -- so a real object is
+    // built over the same envelope instead. The envelope shares the payload through a shared
+    // pointer: one reference count, no copy, and the temporary destructor is a no-op because
+    // Event::~Event() returns early while the original still holds a reference.
     switch (eventType)
     {
     case areg::EventType::EventLocalProviderConnect:    // fall through
     case areg::EventType::EventRemoteProviderConnect:
-        _local_connect(static_cast<StubConnectEvent&>(eventElem));
-        break;
+    {
+        StubConnectEvent connectEvent{ eventElem.envelope() };
+        _local_connect(connectEvent);
+    }
+    break;
     case areg::EventType::EventLocalRequest:            // fall through
     case areg::EventType::EventRemoteRequest:
-        _local_request(static_cast<ServiceRequestEvent&>(eventElem));
-        break;
+    {
+        ServiceRequestEvent reqEvent{ eventElem.envelope() };
+        _local_request(reqEvent);
+    }
+    break;
     case areg::EventType::EventLocalNotifyRequest:      // fall through
     case areg::EventType::EventRemoteNotifyRequest:
-        _local_notify_request(static_cast<ServiceRequestEvent&>(eventElem));
-        break;
-    default:
-        process_stub_event(static_cast<StubEvent&>(eventElem));
-        break;
+    {
+        ServiceRequestEvent notifyRequest{ eventElem.envelope() };
+        _local_notify_request(notifyRequest);
     }
+    break;
+    default:
+    {
+        StubEvent stubEvent{ eventElem.envelope() };
+        process_stub_event(stubEvent);
+    }
+    break;
+    }
+
     mCurEvent = nullptr;
 }
 

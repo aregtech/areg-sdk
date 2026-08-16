@@ -31,6 +31,7 @@ Watchdog::GUARD_ID Watchdog::_generate_id()
 Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
     : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.name(), msTimeout, TimerBase::ONE_TIME)
     , mGuardId          (_generate_id())
+    , mDisarmed         (false)
     , mSequence         (0u)
     , mComponentThread  (thread)
 {
@@ -39,6 +40,7 @@ Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= areg::WATCHDO
 Watchdog::Watchdog(WorkerThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
     : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.name(), msTimeout, TimerBase::ONE_TIME)
     , mGuardId          (_generate_id())
+    , mDisarmed         (false)
     , mSequence         (0u)
     , mComponentThread  (thread.binding_component_thread())
 {
@@ -51,7 +53,7 @@ Watchdog::~Watchdog()
 
 void Watchdog::start_guard()
 {
-    if (mTimeoutInMs != areg::WATCHDOG_IGNORE)
+    if ((mTimeoutInMs != areg::WATCHDOG_IGNORE) && (mDisarmed.load(std::memory_order_acquire) == false))
     {
         Lock lock(mLock);
         ASSERT(mHandle != nullptr);
@@ -67,6 +69,22 @@ void Watchdog::stop_guard()
         Lock lock(mLock);
         ASSERT(mHandle != nullptr);
         mActive = false;
+        WatchdogManager::stop_timer(*this);
+    }
+}
+
+void Watchdog::disarm()
+{
+    if (mDisarmed.exchange(true, std::memory_order_acq_rel))
+        return;
+
+    if (mTimeoutInMs != areg::WATCHDOG_IGNORE)
+    {
+        // Watchdog::mLock is deliberately not taken: the global order is manager lock first,
+        // and taking mLock here, as stop_guard() does, would be an ABBA deadlock with the
+        // manager thread. Dropping the registry entry is enough -- an expiry of an entry that
+        // is gone is ignored by WatchdogManager::_process_expired_timer(), and mDisarmed
+        // stops the owning thread from arming it again.
         WatchdogManager::stop_timer(*this);
     }
 }

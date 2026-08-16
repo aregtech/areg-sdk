@@ -92,6 +92,15 @@ ComponentThread & WorkerThread::binding_component_thread() const
     return mBindingComponent.master_thread();
 }
 
+void WorkerThread::detach_from_registry()
+{
+    // The watchdog of an abandoned worker binds the component thread by name, so if it fired
+    // it would order the restart of the replacement that now owns that name.
+    mWatchdog.disarm();
+    mHasStarted = false;
+    Thread::detach_from_registry();
+}
+
 bool WorkerThread::terminate_self()
 {
     mHasStarted = false;

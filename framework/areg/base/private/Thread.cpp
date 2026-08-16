@@ -18,6 +18,8 @@
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/base/ThreadLocalStorage.hpp"
 
+#include <algorithm>
+
 namespace
 {
 /**
@@ -237,30 +239,43 @@ bool Thread::start(uint32_t waitForStartMs /* = areg::DO_NOT_WAIT */)
     return result;
 }
 
-void Thread::trigger_exit()
-{
-}
-
 void Thread::request_exit() noexcept
 {
     mExitRequested.store(true, std::memory_order_release);
     mExitRequest.set_signaled();
 }
 
-void Thread::sleep( uint32_t msTimeout )
+void Thread::detach_from_registry()
 {
-    Thread * current = Thread::current_thread();
-    if ((current != nullptr) && current->mExitRequest.is_valid())
-    {
-        static_cast<void>(current->mExitRequest.lock(msTimeout));
-    }
-    else
-    {
-        Thread::_os_sleep(msTimeout);
-    }
+    // Ask it to leave first, so that a thread that is only sleeping still has a way out, then
+    // make it undiscoverable. _unregister_thread() is one-shot and also stops the dispatcher.
+    request_exit();
+
+    Lock lock(mSyncObject);
+    _unregister_thread();
 }
 
-Thread::ThreadCompletion Thread::shutdown( uint32_t waitForStopMs /* = areg::DO_NOT_WAIT */ )
+void Thread::sleep( uint32_t msTimeout )
+{
+    Thread::_os_sleep(msTimeout);
+}
+
+bool Thread::wait_exit( uint32_t msTimeout )
+{
+    Thread * current = Thread::current_thread();
+    if ((current == nullptr) || (current->mExitRequest.is_valid() == false))
+    {
+        // Not an areg thread: there is no exit request to wait for, so this degrades to a sleep.
+        Thread::_os_sleep(msTimeout);
+        return true;
+    }
+
+    // Ends either on the timeout, or at once when an exit was requested for this thread.
+    // lock() reports true when the exit event fired, false when the timeout elapsed.
+    return (current->mExitRequest.lock(msTimeout) == false);
+}
+
+Thread::ThreadCompletion Thread::shutdown( uint32_t waitForStopMs /* = areg::WAIT_INFINITE */ )
 {
     request_exit();
 
@@ -268,18 +283,17 @@ Thread::ThreadCompletion Thread::shutdown( uint32_t waitForStopMs /* = areg::DO_
 
     // The handle is always released, so that the object can be started again. Whether the
     // release joins or detaches is decided by the run state inside _clean_resources().
-    if ( mSyncObject.try_lock( ) )
-    {
-        _clean_resources( true, true );
-        mSyncObject.unlock( );
-    }
+    //
+    // This must not be guarded by try_lock(). areg::Mutex is recursive and _clean_resources()
+    // takes mSyncObject itself, so a guard buys no protection -- it only introduces a silent
+    // path that skips the release when another thread happens to hold the lock. A skipped
+    // release leaves mThreadHandle valid, and _os_create() refuses to start an object whose
+    // handle is still valid, so the thread object could never run again. Blocking here is
+    // bounded: every holder of mSyncObject releases it without waiting on anything, and the
+    // longest of them, _unregister_thread(), only signals the dispatcher to stop.
+    _clean_resources( true, true );
 
     return result;
-}
-
-Thread::ThreadCompletion Thread::terminate()
-{
-    return shutdown( areg::WAIT_10_MILLISECONDS );
 }
 
 bool Thread::wait_completion( uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE*/ )

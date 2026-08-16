@@ -177,7 +177,7 @@ public:
      *          Thread::Completed -- The thread was valid and completed normally; Thread::Invalid --
      *          The thread was not valid and was not running, nothing was done.
      **/
-    Thread::ThreadCompletion shutdown( uint32_t waitForStopMs = areg::DO_NOT_WAIT ) final;
+    Thread::ThreadCompletion shutdown( uint32_t waitForStopMs = areg::WAIT_INFINITE ) final;
 
 /************************************************************************/
 // EventRouter interface overrides
@@ -319,6 +319,16 @@ private:
      *          thread was killed by the OS and never ran its own exit sequence.
      **/
     inline void _release_abandoned_objects();
+
+    /**
+     * \brief   Takes everything this thread owns -- proxies, components, their providers and
+     *          their worker threads -- out of every global registry, and releases nothing.
+     *
+     *          Called only when the thread could not be stopped. The objects stay alive because
+     *          the thread may still use them; they stop being reachable so that no lookup and
+     *          no event can find a ghost, and so that the replacement starts on clean maps.
+     **/
+    inline void _detach_abandoned_objects();
 
     /**
      * \brief   Removes the proxies of this thread from the proxy registries, so that none of

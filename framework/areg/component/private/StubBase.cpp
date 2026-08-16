@@ -22,6 +22,7 @@
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/private/StubConnectEvent.hpp"
+#include "areg/component/private/ServiceManager.hpp"
 
 #include "areg/logging/areg_log.h"
 namespace areg {
@@ -92,6 +93,14 @@ StubBase::StubBase( Component & masterComp, const areg::InterfaceData & siData )
 StubBase::~StubBase()
 {
     map_providers().unregister_resource_object(static_cast<uint32_t>(mAddress));
+}
+
+void StubBase::detach_from_registry()
+{
+    // Idempotent with the destructor: removing a key that is already gone is a no-op, and the
+    // destructor of an abandoned stub may still run later if its thread ever finishes.
+    map_providers().unregister_resource_object(static_cast<uint32_t>(mAddress));
+    ServiceManager::request_unregister_provider(mAddress, areg::DisconnectReason::ProviderDisconnected);
 }
 
 bool StubBase::is_busy( uint32_t reqId ) const noexcept

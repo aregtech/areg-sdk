@@ -238,8 +238,12 @@ bool ComponentThread::terminate_self()
     if (status == Thread::ThreadCompletion::Stuck)
     {
         // The thread runs on and keeps using its objects, so none of them may be released.
-        // It is out of every registry already, so nothing reaches it and the replacement starts clean.
-        LOG_ERR("The component thread [ %s ] did not stop. Its components are abandoned, not deleted"
+        // Reachability is a separate question from ownership: a ghost must answer no lookup and
+        // must receive no event, or the replacement would share the registries with it. The
+        // thread itself is already out of the thread maps -- _os_destroy_thread() unregisters
+        // before it waits -- but everything it owns is not, so it is unregistered here.
+        _detach_abandoned_objects();
+        LOG_ERR("The component thread [ %s ] did not stop. Its components are unregistered and abandoned, not deleted"
                     , name().as_string());
         return false;
     }
@@ -254,6 +258,33 @@ bool ComponentThread::terminate_self()
 
     delete this;
     return true;
+}
+
+inline void ComponentThread::_detach_abandoned_objects()
+{
+    // The consumers of this thread go first: a proxy left in the maps would be handed to the
+    // replacement's clients with mDispatcherThread referring to a thread nobody controls.
+    _detach_thread_proxies();
+
+    // Take the components off the shared list before touching them, so that the abandoned
+    // thread finds an empty list if it ever reaches its own exit sequence and therefore
+    // destroys nothing twice. The objects themselves are deliberately not deleted.
+    ListComponent abandoned;
+    _detach_components(abandoned);
+    while (abandoned.is_empty() == false)
+    {
+        Component * component{ nullptr };
+        if (!abandoned.remove_last(component) || (component == nullptr))
+            break;
+
+        component->detach_from_registry();
+    }
+
+    // The watchdog of a thread nobody controls must never fire again. It names its thread by
+    // name, and the replacement is about to take that name, so a guard armed by one more
+    // dispatch of the abandoned thread would order the restart of the replacement instead.
+    // disarm() is the only Watchdog call that is safe from a foreign thread -- see its comment.
+    mWatchdog.disarm();
 }
 
 inline void ComponentThread::_detach_thread_proxies()
@@ -314,7 +345,7 @@ inline void ComponentThread::_shutdown_components()
     }
 }
 
-Thread::ThreadCompletion ComponentThread::shutdown( uint32_t waitForStopMs /*= areg::DO_NOT_WAIT*/ )
+Thread::ThreadCompletion ComponentThread::shutdown( uint32_t waitForStopMs /*= areg::WAIT_INFINITE*/ )
 {
     // The component list belongs to this thread, which empties it and deletes the
     // components when it exits. Another thread that asks for the shutdown must not walk

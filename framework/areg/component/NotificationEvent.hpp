@@ -212,6 +212,20 @@ public:
      **/
     explicit NotificationEvent(const NotificationEventData& data);
 
+    /**
+     * \brief   Binds this typed event to an already dispatched envelope, sharing its buffer.
+     *
+     *          A dispatched areg::Event is type erased: its dynamic type is areg::Event and
+     *          never a derived one, so casting the reference down and calling a member through
+     *          it is undefined behaviour. The consumer builds a real object of this type over
+     *          the same bytes instead. This class adds no state -- the notification data lives
+     *          in the payload -- and the envelope shares the payload through a shared pointer,
+     *          so this costs one reference count and copies nothing.
+     *
+     * \see     NotificationConsumer::start_event_processing
+     **/
+    explicit inline NotificationEvent(const MessageEnvelope & envelope) noexcept;
+
     NotificationEvent(const NotificationEvent& /*src*/) = default;
     NotificationEvent(NotificationEvent&& /*src*/) noexcept = default;
     ~NotificationEvent() override = default;
@@ -375,6 +389,11 @@ inline void NotificationEventData::set_sequence(const SequenceNumber & seqNr ) n
 //////////////////////////////////////////////////////////////////////////
 // class NotificationEvent inline function implementation
 //////////////////////////////////////////////////////////////////////////
+inline NotificationEvent::NotificationEvent( const MessageEnvelope & envelope ) noexcept
+    : Event ( envelope )
+{
+}
+
 inline const NotificationEventData & NotificationEvent::data() const noexcept
 {
     ASSERT(is_valid());

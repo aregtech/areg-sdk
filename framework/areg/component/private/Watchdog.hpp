@@ -20,6 +20,8 @@
   ************************************************************************/
 #include "areg/component/TimerBase.hpp"
 #include "areg/base/MathDefs.hpp"
+
+#include <atomic>
 namespace areg {
 
 /************************************************************************
@@ -107,6 +109,22 @@ public:
     void stop_guard();
 
     /**
+     * \brief   Disarms this watchdog permanently. It stops any armed timer and makes every
+     *          later start_guard() a no-op, so the guard can never fire again.
+     *
+     *          Used on the abandoned-thread path, and it is the only Watchdog method that may
+     *          be called from another thread. An abandoned component thread keeps its Watchdog
+     *          object, and its watchdog names the thread by *name*: if that thread ever wakes
+     *          and dispatches one more event it would arm the guard again, and the restart the
+     *          guard asks for would hit the replacement thread that now owns the name.
+     *
+     *          Deliberately lock free. stop_guard() takes Watchdog::mLock and then the watchdog
+     *          manager lock, which is the reverse of the global order and is an ABBA deadlock
+     *          when called from a foreign thread. This takes the manager lock only.
+     **/
+    void disarm();
+
+    /**
      * \brief   Returns true if the watchdog is valid and enabled (timeout is not zero).
      **/
     [[nodiscard]]
@@ -184,6 +202,11 @@ private:
      * \brief   The unique identifier of the Watchdog object.
      **/
     const GUARD_ID      mGuardId;
+    /**
+     * \brief   Set once the guard is permanently disarmed. Read by start_guard() and written
+     *          by disarm(), possibly from another thread, so it is atomic and never reset.
+     **/
+    std::atomic_bool    mDisarmed;
     /**
      * \brief   The sequence number of the Watchdog. The number is changed each time when timer starts.
      */

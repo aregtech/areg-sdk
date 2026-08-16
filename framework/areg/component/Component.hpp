@@ -270,6 +270,23 @@ public:
     void terminate_self();
 
     /**
+     * \brief   Takes this component, its providers and its worker threads out of every global
+     *          registry, without releasing anything.
+     *
+     *          Used on the abandoned-thread path: the owning component thread could not be
+     *          stopped, so it keeps running and keeps using these objects and none of them may
+     *          be freed. They must stop being reachable all the same -- find_by_name() must not
+     *          return this component, find_stub() must not return its providers, and its worker
+     *          thread names must be free again.
+     *
+     *          Only global registries are touched, never the internal state of the objects,
+     *          because the abandoned thread may be using it at the same moment.
+     *
+     * \see     ComponentThread::terminate_self, StubBase::detach_from_registry
+     **/
+    void detach_from_registry();
+
+    /**
      * \brief   Registers a stub (service provider) object with this component.
      *
      * \param   server      The stub object to register.

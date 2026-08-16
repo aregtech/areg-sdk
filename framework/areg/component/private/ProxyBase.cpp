@@ -705,9 +705,12 @@ void ProxyBase::process_available_event( NotificationConsumer & consumer, uint32
     if (is_connected() && is_listener_registered( consumer ) )
     {
         LOG_DBG("Notifying client [ %p ] the service connection status [ %s ]", &consumer, areg::as_string(connection_status()));
-        if (delayEvent != areg::DO_NOT_WAIT)
+        // An ordering delay, not a sleep: if this thread is asked to leave while it waits, it
+        // must leave rather than notify a client whose component is already being torn down.
+        if ((delayEvent != areg::DO_NOT_WAIT) && (Thread::wait_exit(delayEvent) == false))
         {
-            Thread::sleep(delayEvent);
+            LOG_DBG("The thread was asked to exit while delaying the notification, dropping it");
+            return;
         }
 
         static_cast<ProxyListener&>(consumer).service_connected(connection_status(), self());

@@ -197,7 +197,7 @@ public:
      * \brief   Sets exit event in the queue. When all messages are dispatched, the dispatcher will
      *          be stopped and exit loop.
      **/
-    void trigger_exit() final;
+    void trigger_exit();
 
     /**
      * \brief   Requests the thread to exit after the queued events are dispatched.
@@ -223,7 +223,7 @@ public:
      *          Thread::Completed -- The thread was valid and completed normally; Thread::Invalid --
      *          The thread was not valid and was not running, nothing was done.
      **/
-    Thread::ThreadCompletion shutdown( uint32_t waitForStopMs = areg::DO_NOT_WAIT ) override;
+    Thread::ThreadCompletion shutdown( uint32_t waitForStopMs = areg::WAIT_INFINITE ) override;
 
 protected:
 /************************************************************************/

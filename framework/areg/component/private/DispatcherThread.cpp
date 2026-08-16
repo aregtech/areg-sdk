@@ -228,7 +228,7 @@ void DispatcherThread::trigger_exit_drained()
     stop_dispatcher_drained();
 }
 
-Thread::ThreadCompletion DispatcherThread::shutdown( uint32_t waitForStopMs /*= areg::DO_NOT_WAIT*/ )
+Thread::ThreadCompletion DispatcherThread::shutdown( uint32_t waitForStopMs /*= areg::WAIT_INFINITE*/ )
 {
     LOG_SCOPE( areg_component_private_DispatcherThread, destroy_thread );
     LOG_DBG("Shutting down the thread [ %s ] with ID [ %p ]. The current state is [ %s ]"

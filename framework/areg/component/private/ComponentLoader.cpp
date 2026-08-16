@@ -474,10 +474,10 @@ void ComponentLoader::unload_model( bool waitComplete, areg::Model & whichModel 
     ThreadList threadList( modelThreads.mListThreads.size( ) );
     for ( uint32_t i = 0; i < modelThreads.mListThreads.size( ); ++ i )
     {
-        Thread * compThread = Thread::find_by_address(ThreadAddress(modelThreads.mListThreads.value_at(i).mThreadName));
+        Thread * thrObject = Thread::find_by_address(ThreadAddress(modelThreads.mListThreads.value_at(i).mThreadName));
+        ComponentThread * compThread = AREG_RUNTIME_CAST(thrObject, ComponentThread);
         if (compThread != nullptr)
         {
-            ASSERT(AREG_RUNTIME_CAST(compThread, ComponentThread));
             threadList.add(compThread);
         }
     }
@@ -536,10 +536,10 @@ void ComponentLoader::wait_threads(areg::Model & whichModel)
     ThreadList threadList(modelThreads.mListThreads.size());
     for (uint32_t i = 0; i < modelThreads.mListThreads.size(); ++ i)
     {
-        Thread * compThread = Thread::find_by_address(ThreadAddress(modelThreads.mListThreads.value_at(i).mThreadName));
+        Thread * thrObject = Thread::find_by_address(ThreadAddress(modelThreads.mListThreads.value_at(i).mThreadName));
+        ComponentThread * compThread = AREG_RUNTIME_CAST(thrObject, ComponentThread);
         if (compThread != nullptr)
         {
-            ASSERT(AREG_RUNTIME_CAST(compThread, ComponentThread) != nullptr);
             threadList.add(compThread);
         }
     }
@@ -547,7 +547,7 @@ void ComponentLoader::wait_threads(areg::Model & whichModel)
     // Pick up the threads of this model that an earlier unload asked to exit without waiting.
     for ( uint32_t i = 0; i < mExitingThreads.size( ); )
     {
-        Thread * thrObject = mExitingThreads[i];
+        ComponentThread * thrObject = mExitingThreads[i];
         if (whichModel.find_thread(thrObject->address().name()) >= 0)
         {
             if (threadList.find(thrObject) < 0)
@@ -575,18 +575,9 @@ void ComponentLoader::_exit_threads( const ThreadList & threadList ) const noexc
 {
     for (uint32_t i = 0; i < threadList.size(); ++ i )
     {
-        Thread* thrObject = threadList[i];
-        ASSERT( thrObject != nullptr );
-
-        ComponentThread * comThread = AREG_RUNTIME_CAST(thrObject, ComponentThread);
-        if (comThread != nullptr)
-        {
-            comThread->trigger_exit_drained( );
-        }
-        else
-        {
-            thrObject->trigger_exit( );
-        }
+        ComponentThread * comThread = threadList[i];
+        ASSERT( comThread != nullptr );
+        comThread->trigger_exit_drained( );
     }
 }
 
@@ -594,7 +585,7 @@ void ComponentLoader::_wait_threads( const ThreadList & threadList ) const
 {
     for ( uint32_t i = 0; i < threadList.size(); ++ i )
     {
-        Thread * thrObject = threadList[i];
+        ComponentThread * thrObject = threadList[i];
         ASSERT( thrObject != nullptr );
 
         if ( thrObject->wait_completion( areg::SHUTDOWN_DRAIN_TIMEOUT ) )
@@ -609,9 +600,16 @@ void ComponentLoader::_shutdown_threads( const ThreadList & threadList ) const
 {
     for ( uint32_t i = 0; i < threadList.size(); ++ i )
     {
-        Thread* thrObject = threadList[i];
+        ComponentThread * thrObject = threadList[i];
         ASSERT( thrObject != nullptr );
-        thrObject->shutdown( areg::DO_NOT_WAIT );
+        // _wait_threads() has already waited for this thread with WAIT_INFINITE, so it is
+        // out of its routine and the status can only be Completed or Invalid. It is still
+        // checked, because deleting a thread reported Stuck would be a use after free.
+        if ( thrObject->shutdown( areg::DO_NOT_WAIT ) == Thread::ThreadCompletion::Stuck )
+        {
+            continue;
+        }
+
         delete thrObject;
     }
 }

@@ -139,6 +139,7 @@ public:
      **/
     static constexpr id_type            INVALID_THREAD_ID       { 0 };
 
+
 private:
 /************************************************************************/
 // Private constants
@@ -211,11 +212,6 @@ public:
     virtual bool start( uint32_t waitForStartMs = areg::DO_NOT_WAIT );
 
     /**
-     * \brief   Triggers exit event for the thread.
-     **/
-    virtual void trigger_exit();
-
-    /**
      * \brief   Requests the thread to exit, waits for it, and frees its resources. The thread is
      *          removed from the resource maps in every case, so nothing reaches it afterwards,
      *          and a shut down thread object can be started again.
@@ -226,11 +222,17 @@ public:
      *          and still uses its objects, so neither the thread object nor anything it owns may
      *          be deleted. Ignoring that is a use-after-free.
      *
-     * \param   waitForStopMs       Waiting timeout in milliseconds until target thread finishes.
-     *                              Set DO_NOT_WAIT to request the exit and terminate the thread
-     *                              at once if it did not already finish. Set WAIT_INFINITE to
-     *                              request the exit and wait until the thread completes. Set
-     *                              other values in milliseconds for a specific timeout.
+     *          **A bounded timeout is what makes 'Stuck' possible.** With the default,
+     *          WAIT_INFINITE, the call waits until the thread is out and can only report
+     *          Completed or Invalid, so there is nothing the caller has to handle. Pass a
+     *          bounded timeout only when the caller is prepared to deal with 'Stuck'.
+     *
+     * \param   waitForStopMs       Waiting timeout in milliseconds until the target thread
+     *                              finishes. WAIT_INFINITE (the default) asks and waits until
+     *                              the thread is out. DO_NOT_WAIT asks and does not wait, which
+     *                              terminates the thread at once where the platform can and
+     *                              reports Stuck where it cannot. Other values are a specific
+     *                              timeout with the same two outcomes.
      * \return  Thread completion status: Completed if the thread completed normally; Terminated
      *          if the timeout expired and the thread was forcibly killed; Stuck if the timeout
      *          expired and the thread could not be stopped; Invalid if the thread was not valid
@@ -238,7 +240,7 @@ public:
      *
      * \see     ThreadCompletion, request_exit
      **/
-    virtual Thread::ThreadCompletion shutdown( uint32_t waitForStopMs = areg::DO_NOT_WAIT );
+    virtual Thread::ThreadCompletion shutdown( uint32_t waitForStopMs = areg::WAIT_INFINITE );
 
     /**
      * \brief   Waits for thread completion without sending exit message or terminating the thread.
@@ -249,18 +251,6 @@ public:
      *          areg::DO_NOT_WAIT.
      **/
     virtual bool wait_completion( uint32_t waitForCompleteMs = areg::WAIT_INFINITE );
-
-    /**
-     * \brief   Shuts the thread down with a 10 ms timeout. Use only if the thread is unresponsive
-     *          and immediate termination is required. Does not guarantee graceful resource cleanup,
-     *          and on POSIX an unresponsive thread cannot be terminated at all.
-     *
-     * \return  The same status as shutdown(), and it must be honoured the same way: on 'Stuck'
-     *          nothing that belongs to the thread may be released.
-     *
-     * \see     shutdown, ThreadCompletion
-     **/
-    virtual Thread::ThreadCompletion terminate();
 
 /************************************************************************
  * Attributes
@@ -380,21 +370,40 @@ public:
     inline static const ThreadAddress & address_by_number( const UniqueNumber threadNumber ) noexcept;
 
     /**
-     * \brief   Suspends the current thread in sleep mode for the specified duration in
-     *          milliseconds.
+     * \brief   Suspends the calling thread for the given duration. A plain, uninterruptible
+     *          OS sleep -- nanosleep() on POSIX, Sleep() on Windows -- with no framework state
+     *          involved, exactly like std::this_thread::sleep_for(). It works on any thread,
+     *          areg owned or not, and it always sleeps the full duration.
      *
-     *          The sleep is interruptible. If the calling thread is an areg thread and an
-     *          exit is requested for it by request_exit() while it sleeps, the call returns
-     *          at once instead of waiting the timeout out. This is what makes a sleeping
-     *          thread stoppable: it leaves by a normal return, so its destructors run and
-     *          its objects are released by the thread that owns them.
-     *
-     *          A thread that is not an areg thread, and any thread for which no exit was
-     *          requested, sleeps the full duration.
+     *          A thread parked here cannot be released: POSIX has no way to terminate a thread,
+     *          so a component that sleeps longer than its watchdog timeout becomes an abandoned
+     *          thread. Use wait_exit() instead wherever the thread has to stay stoppable.
      *
      * \param   msTimeout       Timeout in milliseconds.
+     * \see     wait_exit
      **/
     static void sleep( uint32_t msTimeout );
+
+    /**
+     * \brief   Waits up to the given duration, and returns at once if an exit was requested
+     *          for the calling thread by request_exit(). This is the stoppable form of sleep():
+     *          a thread waiting here leaves by a normal return when it is asked to, so its
+     *          destructors run and it releases its own objects instead of being abandoned.
+     *
+     *          The result MUST be honoured. The exit request is sticky, so once it returns
+     *          false every later call of that thread returns false as well -- a loop that keeps
+     *          going would busy-spin. Return, do not retry.
+     *
+     *          On a thread areg does not own there is no exit request to wait for, and the call
+     *          degrades to a full sleep and reports true.
+     *
+     * \param   msTimeout       Timeout in milliseconds.
+     * \return  True if the full timeout elapsed. False if an exit was requested for the calling
+     *          thread, in which case the caller must stop what it is doing and return.
+     * \see     sleep, request_exit, is_exit_requested
+     **/
+    [[nodiscard]]
+    static bool wait_exit( uint32_t msTimeout );
 
     /**
      * \brief   Requests the thread to leave its routine at the next opportunity and releases
@@ -409,6 +418,22 @@ public:
      * \see     shutdown, is_exit_requested
      **/
     void request_exit() noexcept;
+
+    /**
+     * \brief   Takes this thread out of the thread name and thread ID maps and asks it to leave,
+     *          without waiting for it and without releasing anything it owns.
+     *
+     *          Used on the abandoned-thread path. A thread that could not be stopped keeps
+     *          running and keeps using its objects, so nothing may be freed -- but it must stop
+     *          being discoverable: find_by_name(), find_by_id() and find_by_address() must not
+     *          hand it out, and its name must be free for a replacement to take.
+     *
+     *          The removal is one-shot, so calling it on a thread that already unregistered,
+     *          or whose routine unregisters later, is harmless.
+     *
+     * \see     shutdown, ThreadCompletion::Stuck
+     **/
+    void detach_from_registry();
 
     /**
      * \brief   Returns true if an exit was requested for this thread by request_exit() and

@@ -106,6 +106,19 @@ public:
     bool terminate_self();
 
     /**
+     * \brief   Takes this worker thread out of the thread maps and stops its watchdog, without
+     *          waiting for it and without deleting it.
+     *
+     *          Used when the binding component thread could not be stopped: the worker cannot
+     *          be released either, because the abandoned thread may still post to it, but its
+     *          name must be free and it must answer no lookup, so that the workers the
+     *          replacement creates are the only ones the system can see.
+     *
+     * \see     ComponentThread::terminate_self, Thread::detach_from_registry
+     **/
+    void detach_from_registry();
+
+    /**
      * \brief   Returns the watchdog timeout in milliseconds; 0 means watchdog is disabled.
      **/
     [[nodiscard]]

@@ -232,6 +232,24 @@ protected:
 public:
 
     /**
+     * \brief   Takes this provider out of every global registry, without releasing anything.
+     *
+     *          Used on the abandoned-thread path: a component thread that could not be stopped
+     *          keeps running and keeps using its objects, so none of them may be freed -- but
+     *          none of them may stay reachable either, or a lookup would hand out a provider
+     *          that this process can no longer serve, and events would be routed to a ghost.
+     *
+     *          Only global registries are touched. The internal state of the stub is left
+     *          alone on purpose: the abandoned thread may be inside a request handler, and
+     *          rewriting its listener maps from another thread would be a data race for no
+     *          gain. Removing the address from the provider map is enough to make it
+     *          unreachable, and it is idempotent with the destructor.
+     *
+     * \see     ComponentThread::terminate_self
+     **/
+    void detach_from_registry();
+
+    /**
      * \brief   Returns the component thread that owns this stub.
      **/
     [[nodiscard]]

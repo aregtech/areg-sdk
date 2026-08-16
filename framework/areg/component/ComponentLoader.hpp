@@ -378,7 +378,7 @@ private:
      * \brief   ComponentLoader::ThreadList
      *          Array of component threads.
      **/
-    using ThreadList    = ArrayList<Thread *>;
+    using ThreadList    = ArrayList<ComponentThread *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Static members
