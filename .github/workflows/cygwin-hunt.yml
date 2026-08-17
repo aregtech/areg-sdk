@@ -72,7 +72,11 @@ jobs:
         uses: cygwin/cygwin-install-action@v6
         with:
           # 'gdb' is what the example driver uses to photograph a hung process.
-          packages: cmake, dos2unix, flexdll, gcc-g++, gdb, git, libncurses-devel, make, python3
+          # 'cygwin-debuginfo' resolves the cygwin1.dll frames. Run 1 showed the areg frames
+          # by name but everything below them as 'cygwin1!.assert', which is the nearest
+          # exported symbol and not the real one -- and the two threads that matter are
+          # blocked inside cygwin.
+          packages: cmake, cygwin-debuginfo, dos2unix, flexdll, gcc-g++, gdb, git, libncurses-devel, make, python3
           install-dir: 'C:\cygwin'
           add-to-path: false
           work-vol: 'C:'
@@ -108,6 +112,10 @@ jobs:
         # AREG_TESTS=OFF only removes the Google Test fetch and the unit test targets; it
         # changes nothing in the framework or in the examples. AREG_INSTALL=OFF because
         # nothing here installs.
+        #
+        # '-g' is added on top of Release rather than switching to RelWithDebInfo: the hang
+        # is a race, and changing the optimisation level would change the timing that
+        # reproduces it. '-g' only adds DWARF, it does not change a single instruction.
         run: >
           cmake -B ${{env.CACHE_DEST}}
           -DAREG_COMPILER_FAMILY=cygwin
@@ -118,6 +126,8 @@ jobs:
           -DAREG_EXAMPLES:BOOL=ON
           -DAREG_TESTS:BOOL=OFF
           -DAREG_INSTALL:BOOL=OFF
+          -DCMAKE_C_FLAGS=-g
+          -DCMAKE_CXX_FLAGS=-g
 
       - name: Dump the CMake logs of a failed configuration
         if: failure()

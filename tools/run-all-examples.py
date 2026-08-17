@@ -366,7 +366,10 @@ def _stack_tools(pid):
         # and gdb attaches by cygwin pid. That only holds while this driver is itself a
         # cygwin interpreter -- a Windows python spawns Windows pids and takes the
         # branch above, which is why the interpreter is pinned per platform in CI.
+        # 'info threads' first: it is the only place the thread numbers, the OS ids and the
+        # names appear together, and telling one parked dispatcher from another needs it.
         repeated = [['gdb', '-p', str(pid), '--batch', '-nx',
+                     '-ex', 'info threads',
                      '-ex', 'thread apply all bt full'],
                     ['eu-stack', '-p', str(pid)]]
         once = [['lsof', '-p', str(pid)]]
