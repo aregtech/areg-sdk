@@ -115,6 +115,7 @@
     <ClCompile Include="areg\component\private\posix\SimpleEventPosix.cpp" />
     <ClCompile Include="areg\component\private\ServiceManagerEventProcessor.cpp" />
     <ClCompile Include="areg\component\private\posix\TimerBasePosix.cpp" />
+    <ClCompile Include="areg\component\private\posix\TimerManagerBasePosix.cpp" />
     <ClCompile Include="areg\component\private\posix\TimerManagerPosix.cpp" />
     <ClCompile Include="areg\component\private\posix\TimerPosix.cpp" />
     <ClCompile Include="areg\component\private\posix\WatchdogManagerPosix.cpp" />

@@ -26,7 +26,7 @@ on:
       scenario:
         description: 'Scenario name for tools/run-all-examples.py --only'
         required: false
-        default: '26_pubsubmix'
+        default: '26_pubsubmix,timer_churn'
       libtype:
         description: 'static or shared (the hang is static only)'
         required: false
@@ -42,7 +42,7 @@ permissions:
 env:
   BUILD_TYPE: Release
   ROUNDS: ${{github.event.inputs.rounds   || '3'}}
-  SCENARIO: ${{github.event.inputs.scenario || '26_pubsubmix'}}
+  SCENARIO: ${{github.event.inputs.scenario || '26_pubsubmix,timer_churn'}}
   LIB_TYPE: ${{github.event.inputs.libtype  || 'static'}}
   CACHE_DEST: ./product/cache/cygwin-hunt
 
@@ -109,9 +109,9 @@ jobs:
 
       - name: Configure CMake
         working-directory: ${{github.workspace}}
-        # AREG_TESTS=OFF only removes the Google Test fetch and the unit test targets; it
-        # changes nothing in the framework or in the examples. AREG_INSTALL=OFF because
-        # nothing here installs.
+        # AREG_TESTS=ON only so that areg-timer-churn-test exists; the Google Test fetch
+        # costs a download at configure time and nothing is built from it, because only the
+        # named targets are built below. AREG_INSTALL=OFF because nothing here installs.
         #
         # '-g' is added on top of Release rather than switching to RelWithDebInfo: the hang
         # is a race, and changing the optimisation level would change the timing that
@@ -124,7 +124,7 @@ jobs:
           -DAREG_EXTENDED:BOOL=ON
           -DAREG_LOGGING:BOOL=ON
           -DAREG_EXAMPLES:BOOL=ON
-          -DAREG_TESTS:BOOL=OFF
+          -DAREG_TESTS:BOOL=ON
           -DAREG_INSTALL:BOOL=OFF
           -DCMAKE_C_FLAGS=-g
           -DCMAKE_CXX_FLAGS=-g
@@ -142,9 +142,9 @@ jobs:
 
       - name: Build only what the scenario needs
         working-directory: ${{github.workspace}}
-        # Three targets instead of the whole suite. 26_generated and 26_common are pulled
+        # Four targets instead of the whole suite. 26_generated and 26_common are pulled
         # in as dependencies.
-        run: cmake --build ${{env.CACHE_DEST}} -j16 --target mtrouter 26_pubsubctrl 26_pubsubdyn
+        run: cmake --build ${{env.CACHE_DEST}} -j16 --target mtrouter 26_pubsubctrl 26_pubsubdyn areg-timer-churn-test
 
       - name: Locate the build output directory
         working-directory: ${{github.workspace}}

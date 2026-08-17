@@ -33,94 +33,102 @@
 
 //////////////////////////////////////////////////////////////////////////
 // Generic POSIX private helpers: _create_timer, _start_timer, _stop_timer,
-// _destroy_timer -- using POSIX timer_create + SIGEV_THREAD.
+// _destroy_timer -- a deadline, no OS timer object.
 // Covers Cygwin, FreeBSD, and any other non-Linux non-Apple POSIX platform.
+//
+// This used to be a 'timer_create' + 'SIGEV_THREAD' backend. The OS then ran the
+// expiry on a thread it created and destroyed itself, and that thread took this
+// object's lock, the manager's resource lock, the timer lock and the event queue of
+// the owning dispatcher, and allocated memory on the way. A thread destroyed inside
+// any of those regions leaves the lock owned by a thread that no longer exists: on
+// Cygwin that hung 'Application::release()' in 'TimerManager::wait_timer_manager()',
+// with the manager thread blocked on the first line of TimerPosix::stop_timer().
+//
+// The deadline is now kept here and watched by the manager loop -- see
+// posix/TimerManagerBasePosix.cpp -- so every one of those locks is taken only by a
+// thread areg creates and stops. Nothing here calls into the OS while holding a lock,
+// because nothing here calls into the OS at all.
 //////////////////////////////////////////////////////////////////////////
 
 #if !defined(__linux__) && !defined(__APPLE__)
 
-#include <signal.h>
-
 namespace areg::os {
 
-void _posix_timer_expired_cb(union sigval si)
+void deadline_now(struct timespec & out_time) noexcept
 {
-    TimerPosix * timer = reinterpret_cast<TimerPosix *>(si.sival_ptr);
-    if (timer != nullptr)
+    if (areg::RETURNED_OK != ::clock_gettime(CLOCK_MONOTONIC, &out_time))
     {
-        timer->timer_expired();
-        if (timer->mTimerCallback != nullptr)
-        {
-            timer->mTimerCallback(static_cast<void *>(timer));
-        }
+        out_time.tv_sec  = 0;
+        out_time.tv_nsec = 0;
     }
 }
 
-bool TimerPosix::_create_timer(FuncPosixTimerRoutine funcTimer) noexcept
+bool deadline_earlier(const struct timespec & first, const struct timespec & second) noexcept
 {
-    if (mTimerId != static_cast<timer_t>(0))
-        return true;    // already created
+    return (first.tv_sec != second.tv_sec) ? (first.tv_sec < second.tv_sec)
+                                           : (first.tv_nsec < second.tv_nsec);
+}
 
-    struct sigevent sigEvent;
-    areg::mem_zero(static_cast<void *>(&sigEvent), sizeof(struct sigevent));
-    sigEvent.sigev_notify            = SIGEV_THREAD;
-    sigEvent.sigev_value.sival_ptr   = static_cast<void *>(this);
-    sigEvent.sigev_notify_function   = &_posix_timer_expired_cb;
-    sigEvent.sigev_notify_attributes = nullptr;
+bool deadline_reached(const struct timespec & due, const struct timespec & now) noexcept
+{
+    return !deadline_earlier(now, due);
+}
 
-    if (areg::RETURNED_OK != ::timer_create(CLOCK_MONOTONIC, &sigEvent, &mTimerId))
-    {
-        mTimerId = static_cast<timer_t>(0);
-        return false;
-    }
+uint32_t deadline_remaining_ms(const struct timespec & now, const struct timespec & due) noexcept
+{
+    if (deadline_reached(due, now))
+        return 0u;
 
-    mTimerCallback = funcTimer;
+    // The areg time constants are unsigned, so they are converted first: mixing them into
+    // the signed difference below would turn the whole expression unsigned.
+    constexpr int64_t NS_PER_SEC { static_cast<int64_t>(areg::SEC_TO_NS) };
+    constexpr int64_t NS_PER_MS  { static_cast<int64_t>(areg::MILLISEC_TO_NS) };
+
+    const int64_t ns{ (static_cast<int64_t>(due.tv_sec)  - static_cast<int64_t>(now.tv_sec)) * NS_PER_SEC +
+                      (static_cast<int64_t>(due.tv_nsec) - static_cast<int64_t>(now.tv_nsec)) };
+
+    // Rounded up: a wait that returns before the deadline only costs another loop pass,
+    // but it must never make the loop spin, and 'remaining == 0' means 'fire now'.
+    const int64_t ms{ (ns + NS_PER_MS - 1) / NS_PER_MS };
+    if (ms <= 0)
+        return 1u;
+
+    return ms < static_cast<int64_t>(areg::WAIT_INFINITE) ? static_cast<uint32_t>(ms)
+                                                          : (areg::WAIT_INFINITE - 1u);
+}
+
+bool TimerPosix::_create_timer(FuncPosixTimerRoutine /* funcTimer */) noexcept
+{
+    // Nothing to create: the deadline is the timer. The callback is unused, the manager
+    // loop fires the expiry on its own thread.
     return true;
 }
 
 bool TimerPosix::_start_timer() noexcept
 {
-    if ((mTimerId == static_cast<timer_t>(0)) || (mContext == nullptr))
+    if (mContext == nullptr)
         return false;
 
+    // An absolute point on the monotonic clock. TimerPosix::timer_expired() advances it by
+    // one period for a continuous timer, so a periodic timer keeps its phase instead of
+    // drifting by the dispatching delay of every single expiry.
+    areg::os::deadline_now(mDueTime);
     areg::os::conv_timeout(mDueTime, mContext->timeout());
+    mArmed = true;
 
-    struct itimerspec spec;
-    areg::mem_zero(static_cast<void *>(&spec), sizeof(spec));
-    spec.it_value.tv_sec  = mDueTime.tv_sec;
-    spec.it_value.tv_nsec = mDueTime.tv_nsec;
-
-    if (mContext->event_count() > TimerBase::ONE_TIME)
-    {
-        spec.it_interval.tv_sec  = mDueTime.tv_sec;
-        spec.it_interval.tv_nsec = mDueTime.tv_nsec;
-    }
-
-    return (areg::RETURNED_OK == ::timer_settime(mTimerId, 0, &spec, nullptr));
+    return true;
 }
 
 void TimerPosix::_stop_timer() noexcept
 {
-    if (mTimerId != static_cast<timer_t>(0))
-    {
-        struct itimerspec cancelSpec;
-        areg::mem_zero(static_cast<void *>(&cancelSpec), sizeof(cancelSpec));
-        ::timer_settime(mTimerId, 0, &cancelSpec, nullptr);
-    }
-
+    mArmed           = false;
     mDueTime.tv_sec  = 0;
     mDueTime.tv_nsec = 0;
 }
 
 void TimerPosix::_destroy_timer() noexcept
 {
-    if (mTimerId != static_cast<timer_t>(0))
-    {
-        _stop_timer();
-        ::timer_delete(mTimerId);
-        mTimerId       = static_cast<timer_t>(0);
-        mTimerCallback = nullptr;
-    }
+    _stop_timer();
 }
 
 } // namespace areg::os
@@ -141,8 +149,7 @@ TimerPosix::TimerPosix()
 #elif defined(__linux__)
     : mTimerFd      ( -1      )
 #else   // Generic POSIX
-    : mTimerId      ( static_cast<timer_t>(0) )
-    , mTimerCallback( nullptr )
+    : mArmed        ( false   )
 #endif  // __APPLE__ / __linux__ / POSIX
     , mContext      ( nullptr )
     , mContextId    ( 0u      )
@@ -167,12 +174,12 @@ bool TimerPosix::create_timer(FuncPosixTimerRoutine funcTimer) noexcept
     // funcTimer is unused on Linux -- timerfd is polled via epoll, no callback needed.
     return (mTimerFd >= 0) || _create_timer(funcTimer);
 #else   // Generic POSIX
-    return (mTimerId != static_cast<timer_t>(0)) ||
-           ((funcTimer != nullptr) && _create_timer(funcTimer));
+    // funcTimer is unused: the manager loop owns the deadlines and fires them itself.
+    return _create_timer(funcTimer);
 #endif  // __APPLE__ / __linux__ / POSIX
 }
 
-bool TimerPosix::start_timer(TimerBase& context, id_type contextId, FuncPosixTimerRoutine funcTimer) noexcept
+bool TimerPosix::start_timer(TimerBase& context, id_type contextId, [[maybe_unused]] FuncPosixTimerRoutine funcTimer) noexcept
 {
     SpinAutolockPosix lock(mLock);
 
@@ -194,12 +201,7 @@ bool TimerPosix::start_timer(TimerBase& context, id_type contextId, FuncPosixTim
 
     return (mTimerFd >= 0) && _start_timer();
 #else   // Generic POSIX
-    if ((mTimerId == static_cast<timer_t>(0)) && (funcTimer != nullptr))
-    {
-        _create_timer(funcTimer);
-    }
-
-    return (mTimerId != static_cast<timer_t>(0)) && _start_timer();
+    return _start_timer();
 #endif  // __APPLE__ / __linux__ / POSIX
 }
 
@@ -223,7 +225,8 @@ bool TimerPosix::pause_timer() noexcept
 #elif defined(__linux__)
     return (mTimerFd >= 0);
 #else   // Generic POSIX
-    return (mTimerId != static_cast<timer_t>(0));
+    // No OS timer object: the timer stays usable and can be armed again.
+    return true;
 #endif  // __APPLE__ / __linux__ / POSIX
 }
 
@@ -241,7 +244,8 @@ bool TimerPosix::stop_timer() noexcept
 #elif defined(__linux__)
     return (mTimerFd >= 0);
 #else   // Generic POSIX
-    return (mTimerId != static_cast<timer_t>(0));
+    // No OS timer object: the timer stays usable and can be armed again.
+    return true;
 #endif  // __APPLE__ / __linux__ / POSIX
 }
 

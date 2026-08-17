@@ -220,12 +220,22 @@ private:
     void _on_timerfd_expired(TIMERHANDLE handle) final;
 #elif defined(_POSIX) || defined(POSIX)
     /**
-     * \brief   Generic POSIX SIGEV_THREAD callback triggered when a watchdog expires.
-     *          Called with the TimerPosix pointer cast to void*.
+     * \brief   Fires every watchdog that reached its due time and reports the nearest
+     *          deadline that is still armed. Called by the manager loop, on the manager
+     *          thread. Kept in step with TimerManager::_check_deadlines().
      *
-     * \param   timerPtr    Pointer to the expired areg::os::TimerPosix object (as void*).
+     * \param   now             The current time, read from the deadline clock.
+     * \param   out_nextDue     On return, the earliest due time that is still armed.
+     * \return  Returns true when at least one watchdog stays armed.
      **/
-    static void _posix_watchdog_expired( void * timerPtr ) noexcept;
+    bool _check_deadlines( const timespec & now, timespec & out_nextDue ) final;
+
+    /**
+     * \brief   Processes one expired watchdog guard: disarms it and hands the expiry over.
+     *
+     * \param   handle      The OS timer handle (areg::os::TimerPosix *) that expired.
+     **/
+    void _fire_expired( TIMERHANDLE handle );
 #endif  // __APPLE__ / __linux__ / POSIX
 
 #endif // defined(_POSIX) || defined(POSIX)

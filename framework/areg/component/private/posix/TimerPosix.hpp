@@ -28,8 +28,6 @@
 
 #ifdef __APPLE__
     #include <dispatch/dispatch.h>
-#else   // !__APPLE__
-    using signal_value = union sigval;
 #endif  // __APPLE__
 
 //////////////////////////////////////////////////////////////////////////
@@ -56,10 +54,41 @@ typedef void (*FuncPosixTimerRoutine)(areg::os::TimerPosix* timerPtr);
 typedef void (*FuncPosixTimerRoutine)( void * );
 #else   // Generic POSIX (Cygwin, FreeBSD, etc.)
 /**
- * \brief   Generic POSIX callback type: called from SIGEV_THREAD with the TimerPosix*
- *          cast to void* (timer_create path).
+ * \brief   Generic POSIX callback type: unused, the manager owns the deadlines and fires
+ *          them on its own thread. Kept so that the signatures stay common to all POSIX.
  */
 typedef void (*FuncPosixTimerRoutine)( void * );
+
+/**
+ * \brief   Reads the clock the deadlines of this platform are expressed in. Monotonic, so
+ *          a wall clock adjustment can neither delay nor duplicate an expiry.
+ *
+ * \param   out_time    On return, the current time.
+ **/
+void deadline_now( struct timespec & out_time ) noexcept;
+
+/**
+ * \brief   Milliseconds from \a now until \a due, rounded up so that a wait never returns
+ *          before the deadline. Returns 0 when the due time has been reached already.
+ *
+ * \param   now         The current time, read with deadline_now().
+ * \param   due         The due time to measure to.
+ **/
+[[nodiscard]]
+uint32_t deadline_remaining_ms( const struct timespec & now, const struct timespec & due ) noexcept;
+
+/**
+ * \brief   Returns true if \a due has been reached at \a now.
+ **/
+[[nodiscard]]
+bool deadline_reached( const struct timespec & due, const struct timespec & now ) noexcept;
+
+/**
+ * \brief   Returns true if \a first is earlier than \a second.
+ **/
+[[nodiscard]]
+bool deadline_earlier( const struct timespec & first, const struct timespec & second ) noexcept;
+
 #endif  // __APPLE__ / __linux__ / POSIX
 
 //////////////////////////////////////////////////////////////////////////
@@ -75,9 +104,6 @@ class TimerPosix
 //////////////////////////////////////////////////////////////////////////
     friend class areg::TimerManager;
     friend class areg::WatchdogManager;
-#if !defined(__linux__) && !defined(__APPLE__)
-    friend void _posix_timer_expired_cb(signal_value si);
-#endif
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor.
@@ -114,6 +140,19 @@ public:
      * \brief   Returns the due date and time for the next timer expiration.
      **/
     inline const timespec & due_time() const noexcept;
+
+#if !defined(__linux__) && !defined(__APPLE__)
+    /**
+     * \brief   Reports whether the timer is armed and, when it is, the due time to watch.
+     *          Both are read under one lock, so the caller can never see an armed flag that
+     *          belongs to a different due time.
+     *
+     * \param   out_dueTime     On return, the due time. Untouched when the timer is not armed.
+     * \return  Returns true when the timer is armed.
+     **/
+    [[nodiscard]]
+    inline bool armed_due_time( struct timespec & out_dueTime ) const noexcept;
+#endif  // generic POSIX
 
     /**
      * \brief   Returns true if the timer is valid (has valid ID and context).
@@ -230,13 +269,10 @@ private:
     int                     mTimerFd;
 #else   // Generic POSIX (Cygwin, FreeBSD, etc.)
     /**
-     * \brief   POSIX timer handle (timer_create path).
+     * \brief   True while the timer is armed, i.e. while mDueTime carries a deadline the
+     *          manager loop has to watch. There is no OS timer object on this platform.
      */
-    timer_t                 mTimerId;
-    /**
-     * \brief   Callback invoked via SIGEV_THREAD when the timer expires.
-     */
-    FuncPosixTimerRoutine   mTimerCallback;
+    bool                    mArmed;
 #endif  // __APPLE__ / __linux__ / POSIX
 
     /**
@@ -306,13 +342,33 @@ inline bool TimerPosix::is_valid() const noexcept
 #elif defined(__linux__)
     return (((mContext != nullptr) || (mContextId != 0u)) && (mTimerFd >= 0));
 #else   // Generic POSIX
-    return (((mContext != nullptr) || (mContextId != 0u)) && (mTimerId != static_cast<timer_t>(0)));
+    // There is no OS timer object to check: a timer with a context is usable as it is.
+    return ((mContext != nullptr) || (mContextId != 0u));
 #endif  // __APPLE__ / __linux__ / POSIX
 }
 
+#if !defined(__linux__) && !defined(__APPLE__)
+inline bool TimerPosix::armed_due_time( struct timespec & out_dueTime ) const noexcept
+{
+    SpinAutolockPosix lock(mLock);
+    if (mArmed)
+    {
+        out_dueTime = mDueTime;
+    }
+
+    return mArmed;
+}
+#endif  // generic POSIX
+
 inline bool TimerPosix::_is_started() const noexcept
 {
+#if !defined(__linux__) && !defined(__APPLE__)
+    // The due time is an absolute point on a monotonic clock here, so 'not zero' is not a
+    // statement about being armed. The flag is.
+    return mArmed;
+#else   // !generic POSIX
     return ((mDueTime.tv_sec != 0) || (mDueTime.tv_nsec != 0));
+#endif  // generic POSIX
 }
 
 } // namespace areg::os

@@ -189,6 +189,9 @@
     <ClCompile Include="areg\base\private\posix\SyncPrimitivesPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="areg\component\private\posix\TimerManagerBasePosix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="areg\component\private\posix\TimerManagerPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

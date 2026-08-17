@@ -159,6 +159,12 @@ def _datarate_script(shape, first, step):
 
 SCENARIOS = [
     # -- single process, no router ------------------------------------------
+    # Not an example: the regression test of the timer and watchdog teardown hang. It is
+    # driven from here rather than from ctest so that a hang is photographed like any other,
+    # which is the failure this test exists to catch. Needs AREG_TESTS=ON to be built.
+    {'name': 'timer_churn', 'tier': 'smoke', 'timeout': 240,
+     'procs': [proc('areg-timer-churn-test', expect=[r'timer churn test passed'])]},
+
     {'name': '01_minimalrpc', 'tier': 'smoke', 'procs': [proc('01_minimalrpc')]},
     {'name': '03_onethread', 'tier': 'smoke', 'procs': [proc('03_onethread')]},
     {'name': '03_twothreads', 'tier': 'smoke', 'procs': [proc('03_twothreads')]},

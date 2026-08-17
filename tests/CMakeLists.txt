@@ -115,8 +115,9 @@ if (AREG_TESTS)
     include_directories(${AREG_TESTS_DIR})
     include(${AREG_UNIT_TEST_BASE}/CMakeLists.txt)
 
-    # Drives the whole application lifecycle, so it runs as its own executable.
+    # Drive the whole application lifecycle, so they run as their own executables.
     include(${AREG_TESTS_DIR}/release-unload/CMakeLists.txt)
+    include(${AREG_TESTS_DIR}/timer-churn/CMakeLists.txt)
 
     # Reuses the generated service interface of example 01, so it needs the examples.
     if (AREG_EXAMPLES AND TARGET 01_generated)
