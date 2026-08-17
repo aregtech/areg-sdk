@@ -173,11 +173,6 @@ public:
 
     /**
      * \brief   Requests exit, but only after the queued events are processed.
-     *          pop_event() keeps handing out events and returns the singleton
-     *          ExitEvent when both lanes are empty. Use it to stop a dispatcher
-     *          whose queued events still have to be delivered, for example an
-     *          outgoing message queue on a graceful disconnect. trigger_exit()
-     *          stays the immediate stop and overrides this one.
      **/
     inline void trigger_exit_drained() noexcept;
 
@@ -266,7 +261,6 @@ private:
      * \brief   One producer attempt to publish \a eventElem into the ring.
      *          Lock-free, safe from any producer. Returns false when the ring is full.
      **/
-    [[nodiscard]]
     bool _ring_try_enqueue(Event& eventElem) noexcept;
 
     /**
@@ -279,7 +273,6 @@ private:
      * \brief   Consumer-only dequeue of the next ring event into \a result.
      *          Returns false when the head slot is not yet published (ring empty).
      **/
-    [[nodiscard]]
     bool _ring_try_dequeue(Event& result) noexcept;
 
     /**

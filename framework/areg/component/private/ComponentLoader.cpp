@@ -602,9 +602,6 @@ void ComponentLoader::_shutdown_threads( const ThreadList & threadList ) const
     {
         ComponentThread * thrObject = threadList[i];
         ASSERT( thrObject != nullptr );
-        // _wait_threads() has already waited for this thread with WAIT_INFINITE, so it is
-        // out of its routine and the status can only be Completed or Invalid. It is still
-        // checked, because deleting a thread reported Stuck would be a use after free.
         if ( thrObject->shutdown( areg::DO_NOT_WAIT ) == Thread::ThreadCompletion::Stuck )
         {
             continue;

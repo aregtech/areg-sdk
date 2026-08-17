@@ -79,16 +79,12 @@ uint32_t deadline_remaining_ms(const struct timespec & now, const struct timespe
     if (deadline_reached(due, now))
         return 0u;
 
-    // The areg time constants are unsigned, so they are converted first: mixing them into
-    // the signed difference below would turn the whole expression unsigned.
     constexpr int64_t NS_PER_SEC { static_cast<int64_t>(areg::SEC_TO_NS) };
     constexpr int64_t NS_PER_MS  { static_cast<int64_t>(areg::MILLISEC_TO_NS) };
 
     const int64_t ns{ (static_cast<int64_t>(due.tv_sec)  - static_cast<int64_t>(now.tv_sec)) * NS_PER_SEC +
                       (static_cast<int64_t>(due.tv_nsec) - static_cast<int64_t>(now.tv_nsec)) };
 
-    // Rounded up: a wait that returns before the deadline only costs another loop pass,
-    // but it must never make the loop spin, and 'remaining == 0' means 'fire now'.
     const int64_t ms{ (ns + NS_PER_MS - 1) / NS_PER_MS };
     if (ms <= 0)
         return 1u;
@@ -99,9 +95,7 @@ uint32_t deadline_remaining_ms(const struct timespec & now, const struct timespe
 
 bool TimerPosix::_create_timer(FuncPosixTimerRoutine /* funcTimer */) noexcept
 {
-    // Nothing to create: the deadline is the timer. The callback is unused, the manager
-    // loop fires the expiry on its own thread.
-    return true;
+    return true;    // Nothing to create
 }
 
 bool TimerPosix::_start_timer() noexcept
@@ -109,9 +103,7 @@ bool TimerPosix::_start_timer() noexcept
     if (mContext == nullptr)
         return false;
 
-    // An absolute point on the monotonic clock. TimerPosix::timer_expired() advances it by
-    // one period for a continuous timer, so a periodic timer keeps its phase instead of
-    // drifting by the dispatching delay of every single expiry.
+    // An absolute point on the monotonic clock
     areg::os::deadline_now(mDueTime);
     areg::os::conv_timeout(mDueTime, mContext->timeout());
     mArmed = true;

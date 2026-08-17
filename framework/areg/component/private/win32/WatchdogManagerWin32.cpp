@@ -77,9 +77,7 @@ bool WatchdogManager::_os_timer_start( Watchdog & watchdog )
             return false;
     }
 
-    // The callback context is fixed when the pool timer is created, while the
-    // watchdog identifier carries a sequence number that changes on every
-    // arming, so the identifier travels in the handle.
+    // The callback context is fixed when the pool timer is created
     h->contextId = static_cast<uintptr_t>(watchdog.make_watchdog_id(watchdog.id(), watchdog.sequence()));
 
     // Relative due time: a negative 100-ns value means "fire that long from now".

@@ -80,11 +80,6 @@ void Watchdog::disarm()
 
     if (mTimeoutInMs != areg::WATCHDOG_IGNORE)
     {
-        // Watchdog::mLock is deliberately not taken: the global order is manager lock first,
-        // and taking mLock here, as stop_guard() does, would be an ABBA deadlock with the
-        // manager thread. Dropping the registry entry is enough -- an expiry of an entry that
-        // is gone is ignored by WatchdogManager::_process_expired_timer(), and mDisarmed
-        // stops the owning thread from arming it again.
         WatchdogManager::stop_timer(*this);
     }
 }

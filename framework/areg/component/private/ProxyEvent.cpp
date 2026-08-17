@@ -45,12 +45,6 @@ void ProxyEventConsumer::start_event_processing( Event & eventElem )
     const MessageEnvelope& envelope{ eventElem.envelope() };
     ASSERT(envelope.is_valid());
 
-    // A dispatched areg::Event is type erased -- its dynamic type is areg::Event and never
-    // a derived one, so casting the reference down and calling a member through it is
-    // undefined behaviour. The typed events add no state (all are exactly sizeof(Event) and
-    // read the EventHeader), so a real object is built over the same envelope instead. The
-    // envelope shares the payload through a shared pointer: one reference count, no copy,
-    // and the temporary destructor is a no-op while the original still holds a reference.
     switch (eventType)
     {
     case areg::EventType::EventLocalConsumerConnect:

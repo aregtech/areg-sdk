@@ -136,16 +136,13 @@ public:
      *          deletes the thread object. The thread is out of every registry in any case.
      *
      * \return  True if the thread stopped and the object was deleted. False if the thread
-     *          could not be stopped: it keeps running and neither it nor anything it owns
-     *          is released.
+     *          could not be stopped and it keeps running
      **/
     bool terminate_self();
 
     /**
      * \brief   Returns true while this thread is being torn down in order to be recreated by
-     *          the watchdog, as opposed to a plain shutdown. Its providers use it to announce
-     *          DisconnectReason::ProviderRestarting, so that a consumer knows the same provider
-     *          is expected back and can keep its state instead of giving up.
+     *          the watchdog, as opposed to a plain shutdown.
      **/
     [[nodiscard]]
     inline bool is_restarting() const noexcept;
@@ -174,8 +171,8 @@ public:
      *                              waiting time until thread completes the job or timeout expires.
      * \return  Returns the thread completion status. The following statuses are defined:
      *          Thread::Terminated -- The waiting timeout expired and thread was terminated;
-     *          Thread::Completed -- The thread was valid and completed normally; Thread::Invalid --
-     *          The thread was not valid and was not running, nothing was done.
+     *          Thread::Completed  -- The thread was valid and completed normally;
+     *          Thread::Invalid    -- The thread was not valid and was not running, nothing was done.
      **/
     Thread::ThreadCompletion shutdown( uint32_t waitForStopMs = areg::WAIT_INFINITE ) final;
 
@@ -321,12 +318,11 @@ private:
     inline void _release_abandoned_objects();
 
     /**
-     * \brief   Takes everything this thread owns -- proxies, components, their providers and
-     *          their worker threads -- out of every global registry, and releases nothing.
-     *
+     * \brief   Takes everything this thread owns (proxies, components, their providers and
+     *          their worker threads) out of every global registry, and releases nothing.
      *          Called only when the thread could not be stopped. The objects stay alive because
-     *          the thread may still use them; they stop being reachable so that no lookup and
-     *          no event can find a ghost, and so that the replacement starts on clean maps.
+     *          the thread may still use them, but they stop being reachable. No lookup and
+     *          no event can find a ghost.
      **/
     inline void _detach_abandoned_objects();
 
@@ -374,9 +370,7 @@ private:
 #endif  // _MSC_VER
 
     /**
-     * \brief   Guards the component list. This thread fills it and empties it, while any
-     *          thread that looks for an event consumer walks it. Held only for the walk
-     *          and for the list operation itself, never across a thread shutdown.
+     * \brief   Guards the component list
      **/
     mutable SpinLock    mListLock;
 

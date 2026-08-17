@@ -97,8 +97,7 @@ StubBase::~StubBase()
 
 void StubBase::detach_from_registry()
 {
-    // Idempotent with the destructor: removing a key that is already gone is a no-op, and the
-    // destructor of an abandoned stub may still run later if its thread ever finishes.
+    // removing a key that is already gone is a no-op
     map_providers().unregister_resource_object(static_cast<uint32_t>(mAddress));
     ServiceManager::request_unregister_provider(mAddress, areg::DisconnectReason::ProviderDisconnected);
 }
@@ -456,10 +455,6 @@ void StubBase::send_update_event( uint32_t msgId, const SharedBuffer & data, are
     if (find_listeners(msgId, listeners) > 0)
     {
         const ProxyAddress proxy{ listeners.first_entry().proxy() };
-        // This is the ordinary update broadcast, not a busy reply: the text used to be copied
-        // from send_busy_response() and reported a warning for every attribute update, which
-        // is the most routine thing a provider does. The update reaches every listener, so the
-        // count is what matters; the first one is named only to identify the subscription.
         LOG_DBG( "Sending update of message [ %u ] with result [ %s ] to [ %u ] subscribed consumer(s), first is [ %s ]"
                    , msgId
                    , areg::as_string( result )
@@ -699,17 +694,17 @@ const uint32_t * StubBase::attribute_ids() const noexcept
 }
 
 ServiceResponseEvent StubBase::create_response( const ProxyAddress &    /* proxy  */
-                                              , uint32_t               /* msgId  */
-                                              , areg::ResultType       /* result */
-                                              , const SharedBuffer &   /* data   */ ) const
+                                              , uint32_t                /* msgId  */
+                                              , areg::ResultType        /* result */
+                                              , const SharedBuffer &    /* data   */ ) const
 {
     return ServiceResponseEvent(MessageEnvelope{});  // invalid; derived stubs override to produce real events
 }
 
-ServiceResponseEvent StubBase::create_response_event( const ProxyAddress &    /* proxy  */
-                                                    , uint32_t               /* msgId  */
-                                                    , areg::ResultType       /* result */
-                                                    , uint32_t               /* reserve */ ) const
+ServiceResponseEvent StubBase::create_response_event( const ProxyAddress &  /* proxy  */
+                                                    , uint32_t              /* msgId  */
+                                                    , areg::ResultType      /* result */
+                                                    , uint32_t              /* reserve */ ) const
 {
     return ServiceResponseEvent(MessageEnvelope{});  // invalid; derived stubs override to produce real events
 }

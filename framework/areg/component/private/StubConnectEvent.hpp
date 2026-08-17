@@ -67,12 +67,6 @@ public:
 
     /**
      * \brief   Binds this typed event to an already dispatched envelope, sharing its buffer.
-     *
-     *          A dispatched areg::Event is type erased: its dynamic type is areg::Event, never a
-     *          derived one, so casting the reference down is undefined behaviour. The consumer
-     *          builds a real object of this type over the same bytes instead. The envelope holds
-     *          the payload through a shared pointer, so this costs one reference count and copies
-     *          nothing. See StubEventConsumer::start_event_processing().
      **/
     explicit inline StubConnectEvent( const MessageEnvelope & envelope ) noexcept;
 

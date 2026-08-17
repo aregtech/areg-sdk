@@ -49,8 +49,7 @@ void WatchdogManager::_fire_expired(TIMERHANDLE handle)
         const uint32_t highValue = static_cast<uint32_t>(due.tv_sec);
         const uint32_t lowValue  = static_cast<uint32_t>(due.tv_nsec);
 
-        // A watchdog guard is one-shot: disarm it before it is processed, so the loop
-        // cannot pick the same expiry a second time.
+        // A watchdog guard is one-shot. Disarm it before it is processed
         posixTimer->stop_timer();
         _process_expired_timer(watchdog, watchdog_id, highValue, lowValue);
     }
@@ -58,18 +57,11 @@ void WatchdogManager::_fire_expired(TIMERHANDLE handle)
 
 bool WatchdogManager::_check_deadlines(const timespec & now, timespec & out_nextDue)
 {
-    // Collected under the resource lock and fired outside it: _process_expired_timer()
-    // takes the same lock and asks the service manager to recreate a component thread.
-    // Same discipline as TimerManager::_check_deadlines(): the walk is done under the
-    // recursive resource lock so that nothing can be unregistered and deleted between two
-    // steps of it, and the expiries are fired after the lock is released.
     std::vector<TIMERHANDLE> expired;
 
     mWatchdogResource.lock();
     Watchdog::GUARD_ID guardId{ 0 };
-    for (const Watchdog * watchdog = mWatchdogResource.resource_first_key(guardId)
-        ; watchdog != nullptr
-        ; watchdog = mWatchdogResource.resource_next_key(guardId))
+    for (const Watchdog * watchdog = mWatchdogResource.resource_first_key(guardId); watchdog != nullptr; watchdog = mWatchdogResource.resource_next_key(guardId))
     {
         TIMERHANDLE handle{ watchdog->handle() };
         areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(handle);
@@ -91,9 +83,7 @@ bool WatchdogManager::_check_deadlines(const timespec & now, timespec & out_next
 
     mWatchdogResource.lock();
     guardId = 0;
-    for (const Watchdog * watchdog = mWatchdogResource.resource_first_key(guardId)
-        ; watchdog != nullptr
-        ; watchdog = mWatchdogResource.resource_next_key(guardId))
+    for (const Watchdog * watchdog = mWatchdogResource.resource_first_key(guardId); watchdog != nullptr; watchdog = mWatchdogResource.resource_next_key(guardId))
     {
         areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(watchdog->handle());
 
@@ -126,8 +116,7 @@ bool WatchdogManager::_os_timer_start(Watchdog & watchdog)
     areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(watchdog.handle());
     if (posixTimer != nullptr)
     {
-        // Runs on the watchdog manager thread, from WatchdogManager::process_event(), so
-        // the loop reads the new deadline on its next pass, before it waits again.
+        // Runs on the watchdog manager thread
         const Watchdog::WATCHDOG_ID watchdog_id = watchdog.watchdog_id();
         return posixTimer->start_timer(watchdog, watchdog_id, nullptr);
     }

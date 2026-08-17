@@ -43,8 +43,6 @@ void TimerManager::_fire_expired(TIMERHANDLE handle)
         const uint32_t highValue = static_cast<uint32_t>(due.tv_sec);
         const uint32_t lowValue  = static_cast<uint32_t>(due.tv_nsec);
 
-        // Exactly once per expiry. It advances the due time of a continuous timer by one
-        // period and disarms a one-shot, so the loop cannot pick the same expiry twice.
         posixTimer->timer_expired();
         _process_expired_timer(timer, handle, highValue, lowValue);
     }
@@ -52,18 +50,12 @@ void TimerManager::_fire_expired(TIMERHANDLE handle)
 
 bool TimerManager::_check_deadlines(const timespec & now, timespec & out_nextDue)
 {
-    // The resource lock is held across the walk so that nothing can be unregistered and
-    // deleted between two steps of it. It is recursive, so the lock that resource_*_key()
-    // takes for itself costs a counter. The expiries are fired after it is released:
-    // _process_expired_timer() takes the same lock and delivers an event to the dispatcher
-    // that owns the timer.
+    // The resource lock is held across the walk so that nothing can be unregistered
     std::vector<TIMERHANDLE> expired;
 
     mTimerResource.lock();
     TIMERHANDLE handle{ nullptr };
-    for (const Timer * timer = mTimerResource.resource_first_key(handle)
-        ; timer != nullptr
-        ; timer = mTimerResource.resource_next_key(handle))
+    for (const Timer * timer = mTimerResource.resource_first_key(handle); timer != nullptr; timer = mTimerResource.resource_next_key(handle))
     {
         areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(handle);
 
@@ -80,15 +72,11 @@ bool TimerManager::_check_deadlines(const timespec & now, timespec & out_nextDue
         _fire_expired(expiredHandle);
     }
 
-    // The nearest deadline is taken after firing: a continuous timer that just expired
-    // carries its next due time by now, and a one-shot is no longer armed.
     bool hasNext{ false };
 
     mTimerResource.lock();
     handle = nullptr;
-    for (const Timer * timer = mTimerResource.resource_first_key(handle)
-        ; timer != nullptr
-        ; timer = mTimerResource.resource_next_key(handle))
+    for (const Timer* timer = mTimerResource.resource_first_key(handle); timer != nullptr; timer = mTimerResource.resource_next_key(handle))
     {
         areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(handle);
 
@@ -102,8 +90,8 @@ bool TimerManager::_check_deadlines(const timespec & now, timespec & out_nextDue
             hasNext     = true;
         }
     }
-    mTimerResource.unlock();
 
+    mTimerResource.unlock();
     return hasNext;
 }
 
@@ -125,8 +113,7 @@ bool TimerManager::_os_timer_start(Timer & timer)
     ::clock_gettime(CLOCK_REALTIME, &startTime);
     timer.timer_starting(startTime.tv_sec, startTime.tv_nsec, reinterpret_cast<ptr_type>(posixTimer));
 
-    // Runs on the manager thread, from TimerManager::process_event(), so the loop reads the
-    // new deadline on its next pass, before it waits again.
+    // Runs on the manager thread
     return posixTimer->start_timer(timer, 0, nullptr);
 }
 

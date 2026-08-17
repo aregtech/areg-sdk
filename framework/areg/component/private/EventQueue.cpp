@@ -88,8 +88,7 @@ bool EventQueue::wait_event(uint32_t timeout /*= areg::WAIT_INFINITE*/) noexcept
     if (has_pending())
         return true;
 
-    // Lost-wakeup-free eventcount: reset the doorbell, then re-check under a full
-    // fence so a push that raced the reset is never missed.
+    // Lost-wakeup-free eventcount: reset the doorbell, then re-check
     mQueueEvent.reset();
     mConsumerParked.store(true, std::memory_order_relaxed);
     std::atomic_thread_fence(std::memory_order_seq_cst);
@@ -132,12 +131,6 @@ void EventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullptr*/)
     if (prio >= areg::EventPriority::HighPrio)
     {
         Lock lock(mPrioLock);
-        // '>=' and not '>': the scan must skip the events of the SAME priority as well,
-        // so that the new one lands behind them. Stopping at the first equal-priority
-        // event inserts in front of it, which dispatches equal-priority events in the
-        // reverse of the order they were posted. Two control messages that must keep
-        // their order -- a provider unregistration followed by its re-registration --
-        // then reach the peer swapped, and the peer treats the pair as a no-op.
         auto it = mPrioQueue.begin();
         while (it != mPrioQueue.end() && it->event_priority() >= prio)
             ++it;
@@ -343,9 +336,7 @@ void EventQueue::remove_events(const uint32_t eventClassId) noexcept
         mPrioCount.store(static_cast<uint32_t>(mPrioQueue.size()), std::memory_order_relaxed);
     }
 
-    // Drain the ring: keep non-matching events; a matching event is released by the Event
-    // destructor at the end of its iteration. 'evt' MUST stay loop-scoped -- hoisting it out
-    // would let the next move-assignment overwrite a match without running its destructor.
+    // Drain the ring, keep non-matching events
     std::vector<Event> kept;
     for (;;)
     {
@@ -359,10 +350,7 @@ void EventQueue::remove_events(const uint32_t eventClassId) noexcept
 
     for (Event& e : kept)
     {
-        // The ring was just fully drained and no producer runs concurrently, so a free
-        // slot is guaranteed -- the enqueue cannot fail.
-        [[maybe_unused]] const bool ok{ _ring_try_enqueue(e) };
-        ASSERT(ok);
+        VERIFY(_ring_try_enqueue(e));
     }
 }
 

@@ -139,10 +139,6 @@ void areg::ParameterArray::construct( const uint32_t * params, uint32_t count ) 
         {
             param = reinterpret_cast<areg::StateArray *>(paramElem);
             new (param) areg::StateArray(paramElem + sizeof(areg::StateArray), static_cast<int32_t>(params[i]));
-
-            // The stride is the one count_param_space reserved, alignment included.
-            // Advancing by the plain sum places the next StateArray on an address that
-            // does not satisfy its alignment as soon as one parameter count is odd.
             paramElem += param_entry_space(params[i]);
         }
 

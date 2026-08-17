@@ -225,13 +225,6 @@ public:
     /**
      * \brief   Deletes this object through its most derived type. Override to release
      *          resources before the deletion happens.
-     *
-     *          Named 'self_destruct' and not 'destroy': a component registered in a model
-     *          supplies a static 'destroy(Component &, const ComponentEntry &)' to the
-     *          loader, and that name hides this virtual in every such class. The compiler
-     *          reports it as -Woverloaded-virtual, and a caller that means one can silently
-     *          reach the other. The two have nothing to do with each other, so they no
-     *          longer share a name.
      **/
     virtual void self_destruct();
 

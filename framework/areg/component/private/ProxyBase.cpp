@@ -112,7 +112,8 @@ std::shared_ptr<ProxyBase> ProxyBase::acquire_proxy( const String & roleName
     std::shared_ptr<ProxyBase> proxy{ nullptr };
     if (!ownerThread.is_valid())
     {
-        ASSERT( false );                // owner dispatcher thread did not resolve (unnamed or unknown)
+        // owner dispatcher thread did not resolve (unnamed or unknown)
+        ASSERT( false );
         return proxy;
     }
 
@@ -136,8 +137,7 @@ std::shared_ptr<ProxyBase> ProxyBase::acquire_proxy( const String & roleName
         return proxy;
     }
     
-    // Whether the client is already attached is answered by the connection listener
-    // list, which holds it from acquire_proxy() to free_proxy().
+    // Whether the client is already attached is answered by the connection listener list
     if (proxy->is_listener_registered(static_cast<NotificationConsumer &>(connect)))
     {
         LOG_WARN("The client [ %p ] is already registered for service connection notification", &connect);
@@ -241,8 +241,6 @@ bool ProxyBase::has_notification_listener( uint32_t msgId ) const noexcept
 
 bool ProxyBase::add_listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer * caller, bool unique )
 {
-    // A stored null consumer is a null call later, in another thread, out of any context that
-    // could name the caller that made the mistake. Refuse it here instead.
     ASSERT(caller != nullptr);
     if (caller == nullptr)
         return false;
@@ -364,17 +362,10 @@ void ProxyBase::service_connection_updated( const StubAddress & server, const Ch
 
     const bool wasConnected{ mIsConnected };
     const bool nowConnected{ areg::is_service_connected(status) };
+
     // Only an exactly repeated notification may be dropped. Comparing the connected flag
     // alone is not enough: 'Disconnected' followed by 'Shutdown' are two different facts
     // and the second is the terminal one a consumer waits for, yet both clear the flag.
-    //
-    // This filter can not recognise a provider that was recreated. A recreated stub carries
-    // a byte for byte identical address -- the magic number is a CRC over the service, the
-    // role and the thread *names*, all unchanged, and the process cookie is unchanged too --
-    // so 'the same provider' and 'a fresh incarnation of it' are indistinguishable here.
-    // What makes the filter safe is therefore not the comparison but the order: the
-    // disconnect of the old incarnation is published before the new one registers, so the
-    // connect that follows a restart is always an edge. See _terminate_component_thread.
     if ( (nowConnected == wasConnected) && (status == connection_status()) )
     {
         LOG_DBG("Ignored repeated connection update [ %s ]", areg::as_string(status));
@@ -617,10 +608,6 @@ void ProxyBase::send_request_event(ServiceRequestEvent& reqEvent, NotificationCo
     const uint32_t msgId{ reqEvent.message_id() };
     const uint32_t respId{ proxy_data().response_id(msgId) };
 
-    // A request that declares no response maps to areg::INVALID_MESSAGE_ID, not to
-    // RESPONSE_ID_NONE, and is_response_id() is a bit test that accepts INVALID_MESSAGE_ID.
-    // Only the range check tells the two apart. Getting this wrong registers a listener whose
-    // consumer is null -- a no-response request is called with no consumer by construction.
     const bool hasResponse{ areg::is_valid_response_id(respId) };
     SequenceNumber seqNr{ areg::SEQUENCE_NUMBER_ANY };
     if (hasResponse)
@@ -634,9 +621,7 @@ void ProxyBase::send_request_event(ServiceRequestEvent& reqEvent, NotificationCo
 
     if (mProxyAddress.deliver_service_event(reqEvent) == false)
     {
-        // The provider is gone. Without this the listener stays registered and the consumer
-        // waits for a response that is never sent. A request without a response has no
-        // listener and nobody waiting, so there is nothing to fail.
+        // The provider is gone
         LOG_WARN("Failed to deliver request [ %u ] of proxy [ %s ]%s"
                     , msgId
                     , ProxyAddress::to_path(mProxyAddress).as_string()
@@ -705,8 +690,7 @@ void ProxyBase::process_available_event( NotificationConsumer & consumer, uint32
     if (is_connected() && is_listener_registered( consumer ) )
     {
         LOG_DBG("Notifying client [ %p ] the service connection status [ %s ]", &consumer, areg::as_string(connection_status()));
-        // An ordering delay, not a sleep: if this thread is asked to leave while it waits, it
-        // must leave rather than notify a client whose component is already being torn down.
+        // An ordering delay, not a sleep. if this thread is asked to leave while it waits
         if ((delayEvent != areg::DO_NOT_WAIT) && (Thread::wait_exit(delayEvent) == false))
         {
             LOG_DBG("The thread was asked to exit while delaying the notification, dropping it");

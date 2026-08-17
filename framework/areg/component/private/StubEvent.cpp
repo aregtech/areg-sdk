@@ -121,14 +121,6 @@ void StubEventConsumer::start_event_processing( Event & eventElem )
 
     mCurEvent = &eventElem;
 
-    // A dispatched areg::Event is type erased -- EventQueue holds it by value, so its dynamic
-    // type is areg::Event and nothing else. Casting the reference down to a typed event is
-    // undefined behaviour, and every member call made through such a reference is undefined
-    // too, here and in the generated code this hands it to. The typed events add no state --
-    // all of them are exactly sizeof(Event) and read the EventHeader -- so a real object is
-    // built over the same envelope instead. The envelope shares the payload through a shared
-    // pointer: one reference count, no copy, and the temporary destructor is a no-op because
-    // Event::~Event() returns early while the original still holds a reference.
     switch (eventType)
     {
     case areg::EventType::EventLocalProviderConnect:    // fall through

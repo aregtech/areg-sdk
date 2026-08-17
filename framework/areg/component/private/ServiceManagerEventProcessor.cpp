@@ -429,13 +429,9 @@ void ServiceManagerEventProcessor::_send_disconnected( const ProxyAddress & clie
                    , StubAddress::to_path( server ).as_string( )
                    , ProxyAddress::to_path( client ).as_string( ) );
 
-        {
-            // High priority on purpose: the provider has to learn that the consumer is gone
-            // even when its own queue is backed up, which is what the watchdog relies on.
-            StubConnectEvent clientConnect( client, server, status );
-            clientConnect.set_event_priority(areg::EventPriority::HighPrio);
-            server.deliver_service_event( clientConnect );
-        }
+        StubConnectEvent clientConnect(client, server, status);
+        clientConnect.set_event_priority(areg::EventPriority::HighPrio);
+        server.deliver_service_event(clientConnect);
     }
 
     if ( client.is_local_address( ) )
@@ -444,13 +440,8 @@ void ServiceManagerEventProcessor::_send_disconnected( const ProxyAddress & clie
                    , ProxyAddress::to_path( client ).as_string( )
                    , StubAddress::to_path( server ).as_string( ) );
 
-        {
-            // Normal priority, like the connect notification. A prioritized event overtakes
-            // the responses and the data updates that the consumer already received, and a
-            // client that unsubscribes on disconnect then never gets them.
-            ProxyConnectEvent proxyConnect( client, server, status );
-            client.deliver_service_event( proxyConnect );
-        }
+        ProxyConnectEvent proxyConnect(client, server, status);
+        client.deliver_service_event(proxyConnect);
     }
 }
 
@@ -465,8 +456,6 @@ bool ServiceManagerEventProcessor::_terminate_component_thread( const String & t
     if ( compThread != nullptr )
     {
         LOG_WARN( "Terminating component thread [ %s ]", compThread->name( ).as_string( ) );
-        // Restarts in either case: the thread is out of every registry, so the replacement
-        // is reachable even when the old one could not be stopped and stays alive.
         result = true;
         static_cast<void>(compThread->terminate_self( ));
     }

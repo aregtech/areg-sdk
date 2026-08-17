@@ -232,9 +232,6 @@ enum class DisconnectReason : uint16_t
     , ClientConnectionLost  = 1024  //!< The system lost connection with the client. General reason.
     , ClientConnectionClosed= 2048  //!< The client requested to disconnect. General reason.
     , ProviderRestarting    = 4096  //!< The service provider is being restarted by the watchdog.
-                                    //!< Unlike ProviderDisconnected, it announces that the same
-                                    //!< provider is expected back, so a consumer can persist its
-                                    //!< state and wait for the reconnect instead of giving up.
 };
 
 /**

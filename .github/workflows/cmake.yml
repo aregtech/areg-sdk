@@ -340,14 +340,6 @@ jobs:
         shell: bash
         # A candidate is verified by running it: the cygwin 'python3' is a cygwin symlink
         # that the Git bash of the runner cannot start. The glob picks the real one.
-        #
-        # On a cygwin job the interpreter is not searched for, it is named and verified.
-        # Picking a Windows python there costs three things at once: the driver then runs
-        # the example processes without a pseudo terminal, it spawns Windows pids that a
-        # cygwin gdb cannot attach to, and _stack_tools() reports platform 'Windows' and
-        # looks for 'cdb' -- absent on the runner -- so a hung process is reported as
-        # "no debugger is installed" instead of being photographed. That is what hid the
-        # cygwin teardown hang across runs 1508 and 1509.
         run: |
           PY=""
           if [ "${{matrix.config.family}}" = "cygwin" ]; then

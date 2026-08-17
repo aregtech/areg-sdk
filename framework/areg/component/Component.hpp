@@ -199,8 +199,8 @@ public:
     virtual void shutdown_component( ComponentThread & comThread );
 
     /**
-     * \brief   Called when the master thread of the component is notified to shut down. Not
-     *          thread-safe. Called primarily by the Service Manager.
+     * \brief   Called when the master thread of the component is notified to shut down.
+     *          Not thread-safe. Called primarily by the Service Manager.
      *
      * \param   comThread       The component thread triggering shutdown notification.
      **/
@@ -272,12 +272,6 @@ public:
     /**
      * \brief   Takes this component, its providers and its worker threads out of every global
      *          registry, without releasing anything.
-     *
-     *          Used on the abandoned-thread path: the owning component thread could not be
-     *          stopped, so it keeps running and keeps using these objects and none of them may
-     *          be freed. They must stop being reachable all the same -- find_by_name() must not
-     *          return this component, find_stub() must not return its providers, and its worker
-     *          thread names must be free again.
      *
      *          Only global registries are touched, never the internal state of the objects,
      *          because the abandoned thread may be using it at the same moment.

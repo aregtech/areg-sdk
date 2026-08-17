@@ -129,11 +129,6 @@ void NotificationConsumer::start_event_processing( Event& eventElem )
 {
     if (eventElem.event_type() == areg::EventType::EventNotifyClient)
     {
-        // A dispatched areg::Event is type erased -- casting the reference down to the
-        // typed event and calling a member through it is undefined behaviour. The typed
-        // event adds no state, so a real object is built over the same envelope: one
-        // reference count, no copy, and a destructor that is a no-op while the original
-        // still holds a reference.
         NotificationEvent notifyEvent{ eventElem.envelope() };
         process_notification_event(notifyEvent);
     }

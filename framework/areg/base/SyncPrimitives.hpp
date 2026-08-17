@@ -1069,25 +1069,13 @@ private:
 public:
     /**
      * \brief   The values that MultiLock::lock() returns instead of an object index.
-     *
-     *          These are enumerators and not static data members on purpose. MultiLock is
-     *          exported, so on the targets that import a class as a whole -- cygwin and
-     *          MinGW mark every member of a dllimport class as '__imp_' -- a static
-     *          constexpr member turns into an import that no library exports, and any
-     *          expression that binds it to a reference fails to link. An enumerator is not
-     *          an object: it cannot be odr-used, it never reaches the ABI, and it stays a
-     *          pure compile time value on every target.
      **/
     enum : int32_t
     {
-        //!< Invalid index of synchronization list.
-          LOCK_INDEX_INVALID    = -1
-        //!< The completion routine index. Returned if the waiting function returns WAIT_IO_COMPLETION.
-        , LOCK_INDEX_COMPLETION = -2
-        //!< The index, indicating waiting timeout.
-        , LOCK_INDEX_TIMEOUT    = -3
-        //!< All synchronization objects are locked. Same as MAX_SIZE_OF_ARRAY (64).
-        , LOCK_INDEX_ALL        = areg::MAXIMUM_WAITING_OBJECTS
+          LOCK_INDEX_INVALID    = -1    //!< Invalid index of synchronization list.
+        , LOCK_INDEX_COMPLETION = -2    //!< The completion routine index. Returned if the waiting function returns WAIT_IO_COMPLETION.
+        , LOCK_INDEX_TIMEOUT    = -3    //!< The index, indicating waiting timeout.
+        , LOCK_INDEX_ALL        = areg::MAXIMUM_WAITING_OBJECTS //!< All synchronization objects are locked. Same as MAX_SIZE_OF_ARRAY (64).
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1095,8 +1083,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes multi-lock with list of synchronization objects. Optionally locks all
-     *          objects immediately.
+     * \brief   Initializes multi-lock with list of synchronization objects. Optionally locks all objects immediately.
      *
      * \param   pObjects    List of synchronization objects (no CriticalSection, no SpinLock, no NolockSyncObject).
      *                      The list belongs to the caller and must outlive this object.

@@ -85,17 +85,8 @@ public:
     enum class ThreadCompletion : int32_t
     {
           Stuck      = -2   //!< The waiting timeout expired and the thread could NOT be stopped.
-                            //!< It keeps running and keeps using its objects, so neither the
-                            //!< thread object nor anything it owns may be released. It is out
-                            //!< of the thread maps in any case, so nothing reaches it any more.
-                            //!< POSIX reports this for a thread that does not return on its own:
-                            //!< there is no way to terminate it, because a cancellation unwinds
-                            //!< C++ frames and 'noexcept' anywhere on that path turns the unwind
-                            //!< into std::terminate, which would kill the whole process.
+                            //!< It keeps running and using its objects, no way to terminate it.
         , Terminated = -1   //!< The waiting timeout expired and the thread was forcibly killed.
-                            //!< It is dead on return, so releasing its objects is safe, but it
-                            //!< never unwound: whatever it held, locks included, is not released.
-                            //!< Reported on Windows only, where TerminateThread() is available.
         , Completed  = 0    //!< The thread was valid and normally completed
         , Invalid    = 1    //!< The thread handle is invalid and is not running, nothing to do
     };
@@ -216,27 +207,19 @@ public:
      *          removed from the resource maps in every case, so nothing reaches it afterwards,
      *          and a shut down thread object can be started again.
      *
-     *          If the waiting timeout expires the thread is terminated where the platform can do
-     *          it, which is Windows only. The returned status says which of the three outcomes
-     *          happened, and the caller MUST honour it: on 'Stuck' the thread is still running
-     *          and still uses its objects, so neither the thread object nor anything it owns may
-     *          be deleted. Ignoring that is a use-after-free.
+     *          If the waiting timeout expires the thread is terminated where the platform can do it,
+     *          which is Windows only. The returned status says which of the three outcomes happened.
      *
-     *          **A bounded timeout is what makes 'Stuck' possible.** With the default,
-     *          WAIT_INFINITE, the call waits until the thread is out and can only report
-     *          Completed or Invalid, so there is nothing the caller has to handle. Pass a
-     *          bounded timeout only when the caller is prepared to deal with 'Stuck'.
-     *
-     * \param   waitForStopMs       Waiting timeout in milliseconds until the target thread
-     *                              finishes. WAIT_INFINITE (the default) asks and waits until
-     *                              the thread is out. DO_NOT_WAIT asks and does not wait, which
-     *                              terminates the thread at once where the platform can and
-     *                              reports Stuck where it cannot. Other values are a specific
-     *                              timeout with the same two outcomes.
-     * \return  Thread completion status: Completed if the thread completed normally; Terminated
-     *          if the timeout expired and the thread was forcibly killed; Stuck if the timeout
-     *          expired and the thread could not be stopped; Invalid if the thread was not valid
-     *          and not running.
+     * \param   waitForStopMs       Waiting timeout in milliseconds until the target thread finishes.
+     *                              WAIT_INFINITE (the default) asks and waits until the thread is out.
+     *                              DO_NOT_WAIT asks and does not wait, which terminates the thread
+     *                              at once where the platform can and reports Stuck where it cannot.
+     *                              Other values are a specific timeout with the same two outcomes.
+     * \return  Thread completion status: 
+     *              - Completed if the thread completed normally;
+     *              - Terminated if the timeout expired and the thread was forcibly killed;
+     *              - Stuck if the timeout expired and the thread could not be stopped;
+     *              - Invalid if the thread was not valid and not running.
      *
      * \see     ThreadCompletion, request_exit
      **/
@@ -341,11 +324,9 @@ public:
     inline static Thread * find_by_id( const id_type threadId ) noexcept;
 
     /**
-     * \brief   Searches for thread by address and returns its pointer. Returns nullptr if not
-     *          found.
+     * \brief   Searches for thread by address and returns its pointer. Returns nullptr if not found.
      *
-     * \param   threadAddres    The unique address of the thread containing the name, process ID,
-     *                          and thread ID.
+     * \param   threadAddres    The unique address of the thread containing the name, process ID, and thread ID.
      * \return  Pointer to the thread object if found; nullptr otherwise.
      **/
     [[nodiscard]]
@@ -376,8 +357,8 @@ public:
      *          areg owned or not, and it always sleeps the full duration.
      *
      *          A thread parked here cannot be released: POSIX has no way to terminate a thread,
-     *          so a component that sleeps longer than its watchdog timeout becomes an abandoned
-     *          thread. Use wait_exit() instead wherever the thread has to stay stoppable.
+     *          so a component that sleeps longer than its watchdog timeout becomes an abandoned thread.
+     *          Use wait_exit() instead wherever the thread has to stay stoppable.
      *
      * \param   msTimeout       Timeout in milliseconds.
      * \see     wait_exit
@@ -393,9 +374,6 @@ public:
      *          The result MUST be honoured. The exit request is sticky, so once it returns
      *          false every later call of that thread returns false as well -- a loop that keeps
      *          going would busy-spin. Return, do not retry.
-     *
-     *          On a thread areg does not own there is no exit request to wait for, and the call
-     *          degrades to a full sleep and reports true.
      *
      * \param   msTimeout       Timeout in milliseconds.
      * \return  True if the full timeout elapsed. False if an exit was requested for the calling
@@ -424,12 +402,9 @@ public:
      *          without waiting for it and without releasing anything it owns.
      *
      *          Used on the abandoned-thread path. A thread that could not be stopped keeps
-     *          running and keeps using its objects, so nothing may be freed -- but it must stop
+     *          running and keeps using its objects, nothing may be freed, but it must stop
      *          being discoverable: find_by_name(), find_by_id() and find_by_address() must not
      *          hand it out, and its name must be free for a replacement to take.
-     *
-     *          The removal is one-shot, so calling it on a thread that already unregistered,
-     *          or whose routine unregisters later, is harmless.
      *
      * \see     shutdown, ThreadCompletion::Stuck
      **/
@@ -453,7 +428,7 @@ public:
     /**
      * \brief   Emits a CPU spin-wait hint (PAUSE / YIELD). Relaxes the core during a
      *          short busy-wait so a hyper-thread sibling gets resources and the loop
-     *          burns less power. Does NOT yield to the OS scheduler -- intended for
+     *          burns less power. Does NOT yield to the OS scheduler. Intended for
      *          bounded spins (e.g. SpinLock).
      *          On architectures with no pause hint it falls back to switch_thread().
      **/
@@ -466,8 +441,7 @@ public:
     inline static id_type current_thread_id() noexcept;
 
     /**
-     * \brief   Returns the thread object of the current thread. The current thread must be
-     *          registered.
+     * \brief   Returns the thread object of the current thread. The current thread must be registered.
      **/
     [[nodiscard]]
     inline static Thread * current_thread() noexcept;
@@ -517,8 +491,7 @@ public:
     static String thread_name( id_type threadId ) noexcept;
 
     /**
-     * \brief   Returns the address of thread by specified ID. Returns invalid address if not
-     *          registered.
+     * \brief   Returns the address of thread by specified ID. Returns invalid address if not registered.
      *
      * \param   threadId    The ID of the thread.
      **/
@@ -536,8 +509,7 @@ public:
 /************************************************************************/
 #ifdef _DEBUG
     /**
-     * \brief   Dumps all created threads information to the output window. Valid only in debug
-     *          builds.
+     * \brief   Dumps all created threads information to the output window. Valid only in debug builds.
      **/
     static void dump_threads();
 #endif // _DEBUG
@@ -638,8 +610,7 @@ protected:
      * \brief   Manual reset event, signaled while an exit is requested for this thread and
      *          reset when the thread object starts again. The blocking calls of the framework
      *          wait on it so that they return at once instead of waiting their timeout out.
-     *          Manual reset on purpose: every blocking call has to see the request, not only
-     *          the first one that wakes.
+     *          Manual reset on purpose: every blocking call has to see the request.
      **/
     SyncEvent               mExitRequest;
 #if defined(_MSC_VER)
@@ -647,17 +618,11 @@ protected:
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     /**
-     * \brief   The state of mExitRequest, readable without entering the event object. Kept
-     *          in step with it: the event is what a waiter blocks on, this is what a caller
-     *          polls through is_exit_requested().
+     * \brief   The state of mExitRequest, readable without entering the event object.
      **/
     std::atomic<bool>       mExitRequested;
     /**
-     * \brief   True while this object is present in the thread maps. It makes the removal
-     *          from them happen exactly once per run, because both the thread routine and
-     *          shutdown() reach it. The maps are keyed by the thread name, which a restarted
-     *          thread of the same name reuses, so a second removal arriving after the
-     *          replacement registered would evict the replacement instead of this object.
+     * \brief   True while this object is present in the thread maps.
      **/
     std::atomic<bool>       mRegistered;
 #if defined(_MSC_VER)
@@ -682,12 +647,6 @@ private:
      *
      * \param   unregister      If true, removes the thread from the resource maps.
      * \param   releaseHandle   If true, releases the OS handle and invalidates the thread data.
-     *                          Allowed only when the thread routine is proven to have left the
-     *                          object, which is the 'NotRunning' state. On POSIX the release
-     *                          joins the thread, so passing true while the routine still runs
-     *                          would block. The running thread itself must always pass false,
-     *                          because a thread cannot join itself; its handle is released
-     *                          later by shutdown() or by the destructor.
      **/
     void _clean_resources( bool unregister, bool releaseHandle );
 
@@ -805,8 +764,7 @@ private:
     static void _os_close_handle( THREADHANDLE handle, bool joinThread );
 
     /**
-     * \brief   OS-specific implementation to put the thread in sleep mode for specified duration in
-     *          milliseconds.
+     * \brief   OS-specific implementation to put the thread in sleep mode for specified duration in milliseconds.
      *
      * \param   timeout     Sleep duration in milliseconds.
      **/

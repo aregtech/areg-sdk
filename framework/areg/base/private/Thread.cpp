@@ -89,7 +89,6 @@ unsigned long Thread::_default_thread_function(void* data)
         } while (false);
 
         // instantiate thread local storage before starting running
-        // it should be created in the thread context
         Thread::_thread_local_storage(threadObj);
 
         result = static_cast<ThreadConsumer::ExitCode>( threadObj->_thread_entry() );
@@ -97,10 +96,6 @@ unsigned long Thread::_default_thread_function(void* data)
         // delete thread local storage.
         Thread::_thread_local_storage(nullptr);
         threadObj->mWaitForExit.set_signaled();
-
-        // set_signaled() releases the waiter before it has left the event object, so the
-        // waiter may delete this object at once. This store is the last access to it and
-        // it is what _wait_exit_completed() waits for.
         threadObj->_set_run_state(Thread::RunState::NotRunning);
     }
 
@@ -205,8 +200,7 @@ bool Thread::start(uint32_t waitForStartMs /* = areg::DO_NOT_WAIT */)
     do
     {
         Lock  lock(mSyncObject);
-        // Reclaims the handle of a previous run that ended without a shutdown() call,
-        // otherwise _os_create() refuses to start the object again.
+        // Reclaims the handle of a previous run that ended without a shutdown() call
         if ((mThreadHandle != Thread::INVALID_THREAD_HANDLE) &&
             (mRunState.load(std::memory_order_acquire) == Thread::RunState::NotRunning))
         {
@@ -247,8 +241,6 @@ void Thread::request_exit() noexcept
 
 void Thread::detach_from_registry()
 {
-    // Ask it to leave first, so that a thread that is only sleeping still has a way out, then
-    // make it undiscoverable. _unregister_thread() is one-shot and also stops the dispatcher.
     request_exit();
 
     Lock lock(mSyncObject);
@@ -270,8 +262,6 @@ bool Thread::wait_exit( uint32_t msTimeout )
         return true;
     }
 
-    // Ends either on the timeout, or at once when an exit was requested for this thread.
-    // lock() reports true when the exit event fired, false when the timeout elapsed.
     return (current->mExitRequest.lock(msTimeout) == false);
 }
 
@@ -280,17 +270,6 @@ Thread::ThreadCompletion Thread::shutdown( uint32_t waitForStopMs /* = areg::WAI
     request_exit();
 
     Thread::ThreadCompletion result{ _os_destroy_thread( waitForStopMs ) };
-
-    // The handle is always released, so that the object can be started again. Whether the
-    // release joins or detaches is decided by the run state inside _clean_resources().
-    //
-    // This must not be guarded by try_lock(). areg::Mutex is recursive and _clean_resources()
-    // takes mSyncObject itself, so a guard buys no protection -- it only introduces a silent
-    // path that skips the release when another thread happens to hold the lock. A skipped
-    // release leaves mThreadHandle valid, and _os_create() refuses to start an object whose
-    // handle is still valid, so the thread object could never run again. Blocking here is
-    // bounded: every holder of mSyncObject releases it without waiting on anything, and the
-    // longest of them, _unregister_thread(), only signals the dispatcher to stop.
     _clean_resources( true, true );
 
     return result;
@@ -407,8 +386,6 @@ void Thread::_clean_resources(bool unregister, bool releaseHandle)
 
     if (releaseHandle)
     {
-        // Joins only a routine that is proven to have left, otherwise the call would block
-        // until a thread that was never asked to stop decides to end.
         const bool joinThread{ mRunState.load(std::memory_order_acquire) == Thread::RunState::NotRunning };
         Thread::_os_close_handle(handle, joinThread);
     }
@@ -418,9 +395,7 @@ void Thread::_wait_exit_completed() const noexcept
 {
     constexpr uint32_t  SPIN_COUNT{ 64u };   //!< Pause spins before the first yield.
 
-    // Only the 'Exiting' state is waited for. It is the state the routine reaches on its
-    // own and leaves without any help, so the loop always ends. A thread that still runs
-    // its consumer was never stopped, waiting for it here would never end.
+    // Only the 'Exiting' state is waited for.
     uint32_t spin{ 0u };
     while (mRunState.load(std::memory_order_acquire) == Thread::RunState::Exiting)
     {

@@ -108,8 +108,7 @@ bool ComponentThread::run_dispatcher()
 
     start_components();
 
-    // All components are started. Now register all proxies accumulated during startup so
-    // that ProxyConnectEvent can only arrive after startup_component() has been called.
+    // All components are started. Now register all proxies accumulated during startup
     ArrayList<std::shared_ptr<ProxyBase>> proxyList;
     ProxyBase::find_thread_proxies(self(), proxyList);
     for (uint32_t i = 0; i < proxyList.size(); ++i)
@@ -148,9 +147,7 @@ int32_t ComponentThread::create_components()
 
 void ComponentThread::destroy_components()
 {
-    // Take the components off the shared list first, so that nothing else can reach one
-    // while it is being deleted. Deleting them stops their worker threads, which is a
-    // wait, and no lock is held across it.
+    // Take the components off the shared list first. Deleting them stops their worker threads
     ListComponent doomed;
     _detach_components(doomed);
 
@@ -209,8 +206,6 @@ DispatcherThread* ComponentThread::event_consumer_thread( const uint32_t whichCl
     if (result != nullptr)
         return result;
 
-    // Any thread may look for a consumer here, while this thread fills or empties the
-    // list. The lookups below only read short maps, so nothing blocks under the lock.
     Lock lock(mListLock);
     ListComponent::LISTPOS pos = mListComponent.first_position();
     while (mListComponent.is_valid_position(pos) && (result == nullptr))
@@ -232,16 +227,12 @@ bool ComponentThread::terminate_self()
     remove_all_events();
     signal_exit_event();
 
-    // The thread is stopped first and its objects are released only afterwards. Its exit
-    // sequence destroys the components it owns, so nothing is destroyed from this thread.
+    // The thread is stopped first and its objects are released only afterwards.
     const Thread::ThreadCompletion status{ DispatcherThread::shutdown(TERMINATE_WAIT_MS) };
     if (status == Thread::ThreadCompletion::Stuck)
     {
-        // The thread runs on and keeps using its objects, so none of them may be released.
-        // Reachability is a separate question from ownership: a ghost must answer no lookup and
-        // must receive no event, or the replacement would share the registries with it. The
-        // thread itself is already out of the thread maps -- _os_destroy_thread() unregisters
-        // before it waits -- but everything it owns is not, so it is unregistered here.
+        // The thread runs on and keeps using its objects, none of them may be released.
+        // A ghost must answer no lookup and must receive no event
         _detach_abandoned_objects();
         LOG_ERR("The component thread [ %s ] did not stop. Its components are unregistered and abandoned, not deleted"
                     , name().as_string());
@@ -262,13 +253,9 @@ bool ComponentThread::terminate_self()
 
 inline void ComponentThread::_detach_abandoned_objects()
 {
-    // The consumers of this thread go first: a proxy left in the maps would be handed to the
-    // replacement's clients with mDispatcherThread referring to a thread nobody controls.
+    // The consumers of this thread go first
     _detach_thread_proxies();
 
-    // Take the components off the shared list before touching them, so that the abandoned
-    // thread finds an empty list if it ever reaches its own exit sequence and therefore
-    // destroys nothing twice. The objects themselves are deliberately not deleted.
     ListComponent abandoned;
     _detach_components(abandoned);
     while (abandoned.is_empty() == false)
@@ -280,17 +267,12 @@ inline void ComponentThread::_detach_abandoned_objects()
         component->detach_from_registry();
     }
 
-    // The watchdog of a thread nobody controls must never fire again. It names its thread by
-    // name, and the replacement is about to take that name, so a guard armed by one more
-    // dispatch of the abandoned thread would order the restart of the replacement instead.
-    // disarm() is the only Watchdog call that is safe from a foreign thread -- see its comment.
+    // The watchdog of a thread nobody controls must never fire again
     mWatchdog.disarm();
 }
 
 inline void ComponentThread::_detach_thread_proxies()
 {
-    // ProxyBase::mDispatcherThread is a reference to this object, which is about to be
-    // deleted. A proxy left in the maps would be handed out with a released thread behind it.
     ArrayList<std::shared_ptr<ProxyBase>> proxyList;
     ProxyBase::find_thread_proxies(self(), proxyList);
     for (uint32_t i = 0; i < proxyList.size(); ++i)
@@ -347,9 +329,8 @@ inline void ComponentThread::_shutdown_components()
 
 Thread::ThreadCompletion ComponentThread::shutdown( uint32_t waitForStopMs /*= areg::WAIT_INFINITE*/ )
 {
-    // The component list belongs to this thread, which empties it and deletes the
-    // components when it exits. Another thread that asks for the shutdown must not walk
-    // it. The components are notified and stopped by the exit sequence of this thread.
+    // Another thread that asks for the shutdown must not walk it.
+    // The components are notified and stopped by the exit sequence of this thread.
     if ( id( ) == Thread::current_thread_id( ) )
     {
         ListComponent::LISTPOS pos = mListComponent.first_position( );

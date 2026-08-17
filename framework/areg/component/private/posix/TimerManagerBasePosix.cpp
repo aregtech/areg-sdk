@@ -16,16 +16,7 @@
  *
  *              The loop keeps the deadlines itself and waits for the nearest one on the
  *              queue of the manager, so an expiry is processed on the manager thread. It is
- *              the same shape as the Linux loop, which waits on a set of timerfd handles --
- *              see linux/TimerManagerBaseLinux.cpp -- with a computed timeout in place of
- *              epoll, because this platform has no timerfd.
- *
- *              It replaces a 'timer_create' + 'SIGEV_THREAD' backend, where the OS ran the
- *              expiry on a thread it created and destroyed itself. That thread took several
- *              areg locks and allocated memory, and a thread destroyed inside one of those
- *              regions leaves the lock owned forever: on Cygwin it hung
- *              'Application::release()' in 'TimerManager::wait_timer_manager()'. No thread
- *              outside areg runs any of this code now.
+ *              the same shape as the Linux loop, which waits on a set of timerfd handles.
  *
  *              Windows and macOS: TimerManagerBase.cpp
  *              Linux:             linux/TimerManagerBaseLinux.cpp
@@ -85,8 +76,6 @@ bool TimerManagerBase::run_dispatcher()
         if (isExit)
             break;
 
-        // Fire whatever is due and learn when the next one is. Both happen on this thread,
-        // so a timer object is never touched by two threads at once through this path.
         timespec now{};
         areg::os::deadline_now(now);
 
@@ -96,10 +85,6 @@ bool TimerManagerBase::run_dispatcher()
         uint32_t waitMs{ areg::WAIT_INFINITE };
         if (armed)
         {
-            // _check_deadlines() has already fired everything that was due, so the nearest
-            // deadline is in the future. A timer that is still overdue -- a periodic one
-            // that the process could not keep up with -- asks for the shortest wait rather
-            // than for none, so a backlog can never turn this loop into a spin.
             const uint32_t remain{ areg::os::deadline_remaining_ms(now, nextDue) };
             waitMs = remain != 0u ? remain : 1u;
         }

@@ -39,8 +39,7 @@
 /**
  * \brief   Modeling of application should start by declaration of model
  *          and giving model name. Application can have only one model.
- *          Model starts by calling MACRO BEGIN_MODEL and ends by calling
- *          END_MODEL
+ *          Model starts by calling MACRO BEGIN_MODEL and ends by calling END_MODEL
  * \param   modelName   The name of model.
  **/
 #define BEGIN_MODEL(model_name)                                                                             \
@@ -549,8 +548,8 @@ protected:
     /**
      * \brief   Unloads the specified model, deletes components, and stops threads.
      *
-     * \param   waitComplete    If true, waits for Component Loader to complete jobs and exit
-     *                          threads. Otherwise, triggers exit and returns immediately and
+     * \param   waitComplete    If true, waits for Component Loader to complete jobs and exit threads.
+     *                          Otherwise, triggers exit and returns immediately and
      *                          the model stays loaded until wait_threads() joins the threads.
      * \param   whichModel      The model object to unload.
      **/
@@ -646,9 +645,7 @@ private:
     ModelList       mModelList;
 
     /**
-     * \brief   Threads that were asked to exit without waiting. A thread takes itself out
-     *          of the thread registry on its way out, so it can no longer be looked up by
-     *          name. It is held here until wait_threads() joins and deletes it.
+     * \brief   Threads that were asked to exit without waiting
      **/
     ThreadList      mExitingThreads;
 
