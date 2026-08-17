@@ -318,6 +318,14 @@ jobs:
         if: runner.os == 'macOS'
         run: sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
 
+      - name: Let every git of the job trust the checkout directory
+        if: matrix.config.family == 'cygwin'
+        shell: bash
+        run: |
+          echo "GIT_CONFIG_COUNT=1"              >> "${GITHUB_ENV}"
+          echo "GIT_CONFIG_KEY_0=safe.directory" >> "${GITHUB_ENV}"
+          echo "GIT_CONFIG_VALUE_0=*"            >> "${GITHUB_ENV}"
+
       - name: Set Windows PATH environment variable
         if: matrix.config.family == 'cygwin'
         # Only the cygwin toolchain and the Windows system directories. The runner image
