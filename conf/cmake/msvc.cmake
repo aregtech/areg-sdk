@@ -9,9 +9,13 @@ message(STATUS "Areg: >>> Preparing settings for MSVC compiler under \'${AREG_OS
 set(AREG_DEVELOP_ENV "Win32")
 
 add_definitions(-DWINDOWS -D_WINDOWS -DWIN32 -D_WIN32)
-if (${AREG_BITNESS} EQUAL 64)
+if (AREG_BITNESS EQUAL 64)
     add_definitions(-DWIN64 -D_WIN64)
 endif()
+
+# Match the conformance mode of the Visual Studio projects, so that both build systems
+# accept and reject the same code.
+list(APPEND AREG_COMPILER_OPTIONS /permissive-)
 
 get_property(_areg_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if (_areg_multi_config)
@@ -31,7 +35,7 @@ if (_areg_multi_config)
     set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /OPT:REF /OPT:ICF")
 else()
     # Single-config generator (Ninja, NMake): CMAKE_BUILD_TYPE is reliable.
-    if(${CMAKE_BUILD_TYPE} MATCHES "Release")
+    if ("${CMAKE_BUILD_TYPE}" MATCHES "Release")
         list(APPEND AREG_COMPILER_OPTIONS /O2 /GL /Gy /fp:fast /c)
         set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
         set(CMAKE_EXE_LINKER_FLAGS_RELEASE    "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /OPT:REF /OPT:ICF")

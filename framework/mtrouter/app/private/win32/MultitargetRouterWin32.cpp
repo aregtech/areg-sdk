@@ -52,8 +52,15 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
     int32_t result{ areg::ext::ServiceApplicationBase::RESULT_FAILED_RUN };
     char** argvTemp = areg::ext::convert_arguments<TCHAR>(argv, argc);
     MultitargetRouter& router = MultitargetRouter::instance();
-    router.parse_options(static_cast<int32_t>(argc), argvTemp, areg::ext::ServiceOptionSetup, std::size(areg::ext::ServiceOptionSetup));
-    result = router.service_main(router.current_option(), nullptr);
+    if (router.parse_options(static_cast<int32_t>(argc), argvTemp))
+    {
+        result = router.service_main(router.current_option(), nullptr);
+    }
+    else
+    {
+        result = areg::ext::ServiceApplicationBase::RESULT_FAILED_INIT;
+    }
+
     areg::ext::delete_arguments(argvTemp, argc);
 
     return result;
@@ -62,7 +69,11 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 int main(int argc, char* argv[], char* envp[])
 {
     MultitargetRouter& router = MultitargetRouter::instance();
-    router.parse_options(argc, argv, areg::ext::ServiceOptionSetup, std::size(areg::ext::ServiceOptionSetup));
+    if (router.parse_options(argc, argv) == false)
+    {
+        return areg::ext::ServiceApplicationBase::RESULT_FAILED_INIT;
+    }
+
     return router.service_main(router.current_option(), nullptr);
 }
 #endif  // _MINGW

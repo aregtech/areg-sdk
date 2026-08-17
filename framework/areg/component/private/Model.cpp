@@ -1086,9 +1086,19 @@ bool areg::Model::is_model_loaded() const noexcept
     return (mLoadState == areg::Model::ModelState::Loaded);
 }
 
+bool areg::Model::is_model_unloading() const noexcept
+{
+    return (mLoadState == areg::Model::ModelState::Unloading);
+}
+
 void areg::Model::mark_model_loaded( bool isLoaded /*= true */ ) noexcept
 {
     mLoadState = isLoaded ? Model::ModelState::Loaded : Model::ModelState::Unloaded;
+}
+
+void areg::Model::mark_model_unloading() noexcept
+{
+    mLoadState = Model::ModelState::Unloading;
 }
 
 void areg::Model::mark_model_alive( bool is_alive ) noexcept

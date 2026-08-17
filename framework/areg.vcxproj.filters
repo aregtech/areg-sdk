@@ -189,6 +189,9 @@
     <ClCompile Include="areg\base\private\posix\SyncPrimitivesPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="areg\component\private\posix\TimerManagerBasePosix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="areg\component\private\posix\TimerManagerPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1044,6 +1047,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\private\SimpleEvent.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\component\private\win32\Win32Timer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

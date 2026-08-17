@@ -285,20 +285,30 @@ bool LogManager::start_logging_thread()
 
 void LogManager::stop_logging_thread(bool waitComplete)
 {
-    send_log_event( LoggingEventData(LoggingEventData::LogAction::StopLogs), areg::EventPriority::ExitPrio );
+    send_log_event( LoggingEventData(LoggingEventData::LogAction::StopLogs) );
     mIsStarted = false;
 
     if (waitComplete)
     {
-        wait_completion(areg::WAIT_INFINITE);
-        shutdown(areg::DO_NOT_WAIT);
+        _wait_logs_written();
     }
 }
 
 void LogManager::wait_thread_end()
 {
     mIsStarted = false;
-    wait_completion(areg::WAIT_INFINITE);
+    _wait_logs_written();
+}
+
+inline void LogManager::_wait_logs_written()
+{
+    if (!wait_completion( areg::SHUTDOWN_DRAIN_TIMEOUT ))
+    {
+        // The queue did not empty in time. Stop the thread, the rest is given up on.
+        trigger_exit( );
+        wait_completion( areg::WAIT_INFINITE );
+    }
+
     shutdown(areg::DO_NOT_WAIT);
 }
 

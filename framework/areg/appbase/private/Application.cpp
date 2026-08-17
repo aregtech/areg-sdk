@@ -153,11 +153,11 @@ void Application::release()
     WatchdogManager::stop_watchdog_manager(false);
     TimerManager::stop_timer_manager(false);
     ComponentLoader::unload_component_model(false, String::EmptyString);
-    ServiceManager::_stop_service_manager(false); // the message routing client is automatically stopped.
 
     WatchdogManager::wait_watchdog_manager();
     TimerManager::wait_timer_manager();
     ComponentLoader::wait_model_unload(String::EmptyString);
+    ServiceManager::_stop_service_manager(false); // the message routing client is automatically stopped.
     ServiceManager::_wait_service_manager();
     // Stop the last to collect logs.
     areg::stop_logging(false); 

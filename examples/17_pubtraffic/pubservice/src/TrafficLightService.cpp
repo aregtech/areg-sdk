@@ -46,7 +46,7 @@ void TrafficLightService::TrafficLightTimerConsumer::process_timer( areg::Timer 
 
 TrafficLightService::TrafficLightService(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component                 ( entry, owner )
-    , SimpleTrafficLightProviderBase    ( static_cast<areg::Component &>(self()) )
+    , SimpleTrafficLightProviderBase    ( static_cast<areg::Component &>(*this) )
 
     , mTimer                    ( static_cast<areg::TimerConsumer &>(mTimerConsumer), "SimpleTrafficTimer")
     , mPrevState                ( SimpleTrafficLight::TrafficLight::LightOff )

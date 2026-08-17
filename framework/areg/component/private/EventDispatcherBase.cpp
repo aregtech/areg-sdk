@@ -119,6 +119,11 @@ void EventDispatcherBase::stop_dispatcher() noexcept
     mExternalEvents.trigger_exit();
 }
 
+void EventDispatcherBase::stop_dispatcher_drained() noexcept
+{
+    mExternalEvents.trigger_exit_drained();
+}
+
 void EventDispatcherBase::exit_dispatcher() noexcept
 {
     mInternalEvents.remove_all_events();

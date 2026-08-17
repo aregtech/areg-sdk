@@ -132,12 +132,20 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Terminates the component thread and makes cleanups. This method cleans up all
-     *          components and worker threads bind with the component thread. After calling this
-     *          method the component thread is not valid and not operable anymore. The method does
-     *          not automatically delete the component thread object.
+     * \brief   Stops the component thread, releases its components and worker threads, and
+     *          deletes the thread object. The thread is out of every registry in any case.
+     *
+     * \return  True if the thread stopped and the object was deleted. False if the thread
+     *          could not be stopped and it keeps running
      **/
-    void terminate_self();
+    bool terminate_self();
+
+    /**
+     * \brief   Returns true while this thread is being torn down in order to be recreated by
+     *          the watchdog, as opposed to a plain shutdown.
+     **/
+    [[nodiscard]]
+    inline bool is_restarting() const noexcept;
 
     /**
      * \brief   Returns the watchdog timeout value in milliseconds. The value 0
@@ -163,22 +171,10 @@ public:
      *                              waiting time until thread completes the job or timeout expires.
      * \return  Returns the thread completion status. The following statuses are defined:
      *          Thread::Terminated -- The waiting timeout expired and thread was terminated;
-     *          Thread::Completed -- The thread was valid and completed normally; Thread::Invalid --
-     *          The thread was not valid and was not running, nothing was done.
+     *          Thread::Completed  -- The thread was valid and completed normally;
+     *          Thread::Invalid    -- The thread was not valid and was not running, nothing was done.
      **/
-    Thread::ThreadCompletion shutdown( uint32_t waitForStopMs = areg::DO_NOT_WAIT ) final;
-
-    /**
-     * \brief   Wait for thread completion. It will neither sent exit message, nor terminate thread.
-     *          The function waits as long, until the thread is not completed. It will return true
-     *          if thread has been completed or waiting timeout is areg::DO_NOT_WAIT. If thread
-     *          exists normally, it will return true.
-     *
-     * \param   waitForCompleteMs       The timeout to wait for completion.
-     * \return  Returns true if either thread completed or the waiting timeout is
-     *          areg::DO_NOT_WAIT.
-     **/
-    bool wait_completion( uint32_t waitForCompleteMs = areg::WAIT_INFINITE ) final;
+    Thread::ThreadCompletion shutdown( uint32_t waitForStopMs = areg::WAIT_INFINITE ) final;
 
 /************************************************************************/
 // EventRouter interface overrides
@@ -254,11 +250,26 @@ protected:
     void shutdown_components();
 
     /**
+     * \brief   Gives every component the chance to wait for its worker threads to finish.
+     *          Called from on_exit() between shutdown_components() and destroy_components(),
+     *          so the components are still alive and run on the thread that owns them.
+     **/
+    void wait_components_completion();
+
+    /**
      * \brief   Invokes the registered delete function for every component, or calls delete
      *          directly if no delete function is registered.
-     *          Called from on_exit() after shutdown_components().
+     *          Called from on_exit() after wait_components_completion().
      **/
     void destroy_components();
+
+    /**
+     * \brief   Moves every component off the shared list into \a result under the list lock,
+     *          so that the caller can destroy them with no lock held.
+     *
+     * \param[out]  result  Receives the components taken off the list.
+     **/
+    inline void _detach_components( ListComponent & result );
 
 /************************************************************************/
 // EventDispatcherBase overrides
@@ -300,6 +311,27 @@ private:
      **/
     inline void _shutdown_components();
 
+    /**
+     * \brief   Releases the proxies and the components of this thread. Called only when the
+     *          thread was killed by the OS and never ran its own exit sequence.
+     **/
+    inline void _release_abandoned_objects();
+
+    /**
+     * \brief   Takes everything this thread owns (proxies, components, their providers and
+     *          their worker threads) out of every global registry, and releases nothing.
+     *          Called only when the thread could not be stopped. The objects stay alive because
+     *          the thread may still use them, but they stop being reachable. No lookup and
+     *          no event can find a ghost.
+     **/
+    inline void _detach_abandoned_objects();
+
+    /**
+     * \brief   Removes the proxies of this thread from the proxy registries, so that none of
+     *          them survives with a reference to this thread object after it is deleted.
+     **/
+    inline void _detach_thread_proxies();
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
@@ -318,6 +350,11 @@ private:
      **/
     Watchdog        mWatchdog;
 
+    /**
+     * \brief   Set while terminate_self() tears the thread down for a watchdog restart.
+     **/
+    bool            mIsRestarting;
+
 #if defined(_MSC_VER)
     #pragma warning(push)
     #pragma warning(disable: 4251)
@@ -332,6 +369,11 @@ private:
     #pragma warning(pop)
 #endif  // _MSC_VER
 
+    /**
+     * \brief   Guards the component list
+     **/
+    mutable SpinLock    mListLock;
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
@@ -343,6 +385,11 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // ComponentThread inline methods.
 //////////////////////////////////////////////////////////////////////////
+
+inline bool ComponentThread::is_restarting() const noexcept
+{
+    return mIsRestarting;
+}
 
 inline uint32_t ComponentThread::watchdog_timeout() const noexcept
 {

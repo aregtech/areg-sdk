@@ -35,9 +35,14 @@ namespace areg {
  *          classes. It also contains NullDispatcher object used in case if by request to dispatch
  *          event no appropriate dispatcher was found in system. The event dispatching thread is a
  *          base class for Worker thread and Component thread.
+ *
+ *          EventDispatcher is listed first on purpose. Thread is constructed with a reference
+ *          to the ThreadConsumer of this object, and ThreadConsumer is a base of EventDispatcher,
+ *          so EventDispatcher has to be initialized first: converting to a base whose
+ *          construction has not started yet is undefined behaviour, see C++17 [class.cdtor]/3.
  **/
-class AREG_API DispatcherThread : public Thread
-                                , public EventDispatcher
+class AREG_API DispatcherThread : public EventDispatcher
+                                , public Thread
 {
     /**
      * \brief   EventDispatcher needs this to access NullDispatcher.
@@ -192,7 +197,14 @@ public:
      * \brief   Sets exit event in the queue. When all messages are dispatched, the dispatcher will
      *          be stopped and exit loop.
      **/
-    void trigger_exit() final;
+    void trigger_exit();
+
+    /**
+     * \brief   Requests the thread to exit after the queued events are dispatched.
+     *          Unlike trigger_exit(), the pending events are delivered first. Use it
+     *          to stop a thread whose queue still holds events that must not be lost.
+     **/
+    void trigger_exit_drained();
 
     /**
      * \brief   Shuts down the thread and frees resources. If waiting timeout is not 'DO_NOT_WAIT
@@ -211,7 +223,7 @@ public:
      *          Thread::Completed -- The thread was valid and completed normally; Thread::Invalid --
      *          The thread was not valid and was not running, nothing was done.
      **/
-    Thread::ThreadCompletion shutdown( uint32_t waitForStopMs = areg::DO_NOT_WAIT ) override;
+    Thread::ThreadCompletion shutdown( uint32_t waitForStopMs = areg::WAIT_INFINITE ) override;
 
 protected:
 /************************************************************************/

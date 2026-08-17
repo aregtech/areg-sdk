@@ -18,6 +18,8 @@
   ************************************************************************/
 #include "aregextend/console/Console.hpp"
 
+#include <stdio.h>
+
 namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
@@ -67,6 +69,10 @@ String Console::wait_for_input(Console::CallBack callback) const
 
     if (mIsReady)
     {
+        // Stop reading if the input keeps failing without reaching the end of the stream.
+        constexpr uint32_t MAX_INPUT_FAILURES{ 1000u };
+        uint32_t failures{ 0u };
+
         do
         {
             result.clear();
@@ -74,15 +80,26 @@ String Console::wait_for_input(Console::CallBack callback) const
             char buffer[512]{ 0 };
             if (Console::_os_wait_input_string(buffer, 512))
             {
+                failures = 0u;
                 result = buffer;
                 if ((static_cast<bool>(callback) == false) || callback(result))
                 {
                     break;
                 }
             }
-            else if (mInterrupted.load(std::memory_order_relaxed))
+            else if (mInterrupted.load(std::memory_order_relaxed) || (::feof(stdin) != 0))
             {
+                // No more input to read. Redirected or closed input would otherwise spin here.
                 break;
+            }
+            else
+            {
+                // A read error on an interactive console is not a reason to quit.
+                ::clearerr(stdin);
+                if (++failures >= MAX_INPUT_FAILURES)
+                {
+                    break;
+                }
             }
         } while (true);
     }

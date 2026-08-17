@@ -45,6 +45,7 @@ DEF_LOG_SCOPE(areg_component_ProxyBase, unregister_listener);
 DEF_LOG_SCOPE(areg_component_ProxyBase, prepare_listeners);
 DEF_LOG_SCOPE(areg_component_ProxyBase, process_available_event);
 DEF_LOG_SCOPE(areg_component_ProxyBase, stop_proxy);
+DEF_LOG_SCOPE(areg_component_ProxyBase, send_request_event);
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase::ImplProxyMap class implementation
@@ -111,7 +112,8 @@ std::shared_ptr<ProxyBase> ProxyBase::acquire_proxy( const String & roleName
     std::shared_ptr<ProxyBase> proxy{ nullptr };
     if (!ownerThread.is_valid())
     {
-        ASSERT( false );                // owner dispatcher thread did not resolve (unnamed or unknown)
+        // owner dispatcher thread did not resolve (unnamed or unknown)
+        ASSERT( false );
         return proxy;
     }
 
@@ -135,13 +137,15 @@ std::shared_ptr<ProxyBase> ProxyBase::acquire_proxy( const String & roleName
         return proxy;
     }
     
-    if (!proxy->mListConnect.add_if_unique(&connect))
+    // Whether the client is already attached is answered by the connection listener list
+    if (proxy->is_listener_registered(static_cast<NotificationConsumer &>(connect)))
     {
         LOG_WARN("The client [ %p ] is already registered for service connection notification", &connect);
         return proxy;
     }
 
     LOG_DBG("Add Service Connect notification for client [ %p ]", &connect);
+    proxy->mListConnect.add_if_unique(&connect);
     static_cast<void>(proxy->add_listener( CONNECTION_ID, areg::SEQUENCE_NUMBER_NOTIFY, static_cast<NotificationConsumer *>(&connect), true ));
     ++ proxy->mProxyInstCount;
     proxy->mIsStopped = false;
@@ -237,6 +241,10 @@ bool ProxyBase::has_notification_listener( uint32_t msgId ) const noexcept
 
 bool ProxyBase::add_listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer * caller, bool unique )
 {
+    ASSERT(caller != nullptr);
+    if (caller == nullptr)
+        return false;
+
     Lock lock(mListenerLock);
     ProxyBase::Listener listener{ seqNr, caller };
     ProxyListenerList & subVec = mListenerMap[msgId];
@@ -311,13 +319,11 @@ void ProxyBase::free_proxy( ProxyListener & connect )
 
 void ProxyBase::terminate_self()
 {
-    if (mProxyInstCount == 0)
-        return;
-
     {
         Lock lock(mListenerLock);
         mListenerMap.clear();
     }
+
     if (!mIsStopped)
     {
         ServiceManager::request_unregister_consumer(proxy_address(), areg::DisconnectReason::ConsumerDisconnected );
@@ -326,8 +332,19 @@ void ProxyBase::terminate_self()
     set_connection_status( areg::ServiceConnectionState::Disconnected );
     mIsStopped      = true;
     mProxyInstCount = 0;
+    mListConnect.clear();
 
-    delete this;
+    detach_from_registry();
+}
+
+void ProxyBase::detach_from_registry()
+{
+    std::shared_ptr<ProxyBase> proxy{ ProxyBase::find_proxy(mProxyAddress) };
+    if (proxy.get() != nullptr)
+    {
+        map_proxies().unregister_resource_object(static_cast<uint32_t>(mProxyAddress));
+        thread_proxies().unregister_resource_object( static_cast<uint32_t>(mDispatcherThread.address( )), proxy, true );
+    }
 }
 
 void ProxyBase::service_connection_updated( const StubAddress & server, const Channel & channel, areg::ServiceConnectionState status )
@@ -345,9 +362,13 @@ void ProxyBase::service_connection_updated( const StubAddress & server, const Ch
 
     const bool wasConnected{ mIsConnected };
     const bool nowConnected{ areg::is_service_connected(status) };
-    if ( (nowConnected == wasConnected) && (status != areg::ServiceConnectionState::Rejected) )
+
+    // Only an exactly repeated notification may be dropped. Comparing the connected flag
+    // alone is not enough: 'Disconnected' followed by 'Shutdown' are two different facts
+    // and the second is the terminal one a consumer waits for, yet both clear the flag.
+    if ( (nowConnected == wasConnected) && (status == connection_status()) )
     {
-        LOG_DBG("Ignored no-op connection update [ %s ]: not a connect/disconnect edge", areg::as_string(status));
+        LOG_DBG("Ignored repeated connection update [ %s ]", areg::as_string(status));
         return;
     }
 
@@ -460,6 +481,14 @@ void ProxyBase::unregister_listener( NotificationConsumer *consumer )
         {
             ProxyListenerList & subVec = mapPos->second;
             const uint32_t msgId = mapPos->first;
+            if (msgId == ProxyBase::CONNECTION_ID)
+            {
+                // The service connection listener is owned by acquire_proxy and
+                // released by free_proxy, it must not be stopped
+                mapPos = mListenerMap.next_position(mapPos);
+                continue;
+            }
+
             bool removed { false };
             uint32_t i = 0;
             while (i < subVec.size())
@@ -537,7 +566,10 @@ void ProxyBase::notify_listeners( uint32_t respId, areg::ResultType result, cons
     for (uint32_t i = 0; i < listenerList.size(); ++ i)
     {
         const ProxyBase::Listener & elem = listenerList.value_at(i);
-        elem.mListener->process_notification(respId, result, seqNrToSearch);
+        if (elem.mListener != nullptr)
+        {
+            elem.mListener->process_notification(respId, result, seqNrToSearch);
+        }
     }
 }
 
@@ -568,20 +600,41 @@ void ProxyBase::process_generic_event( Event& eventElem )
 
 void ProxyBase::send_request_event(ServiceRequestEvent& reqEvent, NotificationConsumer* caller)
 {
+    LOG_SCOPE( areg_component_ProxyBase, send_request_event );
+
     if (!reqEvent.is_valid())
         return;
 
-    uint32_t respId = proxy_data().response_id(reqEvent.message_id());
-    ASSERT(areg::is_response_id(respId) || (respId == areg::RESPONSE_ID_NONE));
-    if (respId != areg::RESPONSE_ID_NONE)
+    const uint32_t msgId{ reqEvent.message_id() };
+    const uint32_t respId{ proxy_data().response_id(msgId) };
+
+    const bool hasResponse{ areg::is_valid_response_id(respId) };
+    SequenceNumber seqNr{ areg::SEQUENCE_NUMBER_ANY };
+    if (hasResponse)
     {
         Lock lock(mListenerLock);
         ++mSequenceCount;
         static_cast<void>(add_listener(respId, mSequenceCount, caller, true));  // recursive lock: safe
         reqEvent.set_sequence_number(mSequenceCount);
+        seqNr = mSequenceCount;
     }
 
-    mProxyAddress.deliver_service_event(reqEvent);
+    if (mProxyAddress.deliver_service_event(reqEvent) == false)
+    {
+        // The provider is gone
+        LOG_WARN("Failed to deliver request [ %u ] of proxy [ %s ]%s"
+                    , msgId
+                    , ProxyAddress::to_path(mProxyAddress).as_string()
+                    , hasResponse ? ", failing it" : ", it expects no response");
+        if (hasResponse)
+        {
+            ServiceResponseEvent failure{ create_request_failed(mProxyAddress, msgId, areg::ResultType::MessageUndelivered, seqNr) };
+            if (failure.is_valid())
+            {
+                failure.deliver_event();
+            }
+        }
+    }
 }
 
 void ProxyBase::send_notify_request( uint32_t msgId, areg::RequestType reqType )
@@ -637,9 +690,11 @@ void ProxyBase::process_available_event( NotificationConsumer & consumer, uint32
     if (is_connected() && is_listener_registered( consumer ) )
     {
         LOG_DBG("Notifying client [ %p ] the service connection status [ %s ]", &consumer, areg::as_string(connection_status()));
-        if (delayEvent != areg::DO_NOT_WAIT)
+        // An ordering delay, not a sleep. if this thread is asked to leave while it waits
+        if ((delayEvent != areg::DO_NOT_WAIT) && (Thread::wait_exit(delayEvent) == false))
         {
-            Thread::sleep(delayEvent);
+            LOG_DBG("The thread was asked to exit while delaying the notification, dropping it");
+            return;
         }
 
         static_cast<ProxyListener&>(consumer).service_connected(connection_status(), self());

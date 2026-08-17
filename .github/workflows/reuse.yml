@@ -3,7 +3,16 @@
 
 name: REUSE compliance check
 
-on: [push, pull_request]
+on:
+  push:         # Keep empty to run on each branch when push the code. Otherwise use branches: [ master ]
+    branches: [ master ]
+  pull_request: # Set to master to run only when merge with master branch
+    branches: [ master ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{github.workflow}}-${{github.ref}}
+  cancel-in-progress: true
 
 permissions:
   contents: read

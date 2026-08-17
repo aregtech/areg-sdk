@@ -25,19 +25,27 @@
 #include "areg/component/private/Watchdog.hpp"
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/base/MathDefs.hpp"
-
-#ifndef NOMINMAX
-    #define NOMINMAX
-#endif
-#include <Windows.h>
+#include "areg/component/private/win32/Win32Timer.hpp"
 
 namespace {
 
-struct Win32TimerHandle
+/************************************************************************
+ * \brief   Thread-pool timer callback. Runs in a Windows thread-pool
+ *          thread when a watchdog expires.
+ *
+ *  pv is the areg::os::Win32TimerHandle* given as context to CreateThreadpoolTimer.
+ *  A completion routine of a waitable timer cannot be used here: it is
+ *  delivered as an APC to the thread that armed the timer, and that thread
+ *  waits on the event queue, which is not an alertable wait.
+ ************************************************************************/
+VOID CALLBACK _tp_watchdog_callback( PTP_CALLBACK_INSTANCE /*instance*/,
+                                     PVOID                  pv,
+                                     PTP_TIMER              /*timer*/ ) noexcept
 {
-    HANDLE      timerHandle { nullptr };    //!< Standard WaitableTimer for APC delivery.
-    PTP_TIMER   timerPool   { nullptr };    //!< Thread-pool timer (unused by WatchdogManager).
-};
+    FILETIME ft;
+    ::GetSystemTimeAsFileTime(&ft);
+    areg::WatchdogManager::_windows_watchdog_expired(pv, ft.dwLowDateTime, ft.dwHighDateTime);
+}
 
 } // namespace
 
@@ -49,32 +57,37 @@ namespace areg {
 
 void WatchdogManager::_os_timer_stop( TIMERHANDLE handle )
 {
-    const Win32TimerHandle * h = static_cast<const Win32TimerHandle *>(handle);
-    if ( (h != nullptr) && (h->timerHandle != nullptr) )
+    areg::os::Win32TimerHandle * h = static_cast<areg::os::Win32TimerHandle *>(handle);
+    if ( (h != nullptr) && (h->timerPool != nullptr) )
     {
-        ::CancelWaitableTimer(h->timerHandle);
+        // Disarm: a null due-time stops the timer without closing it.
+        ::SetThreadpoolTimer(h->timerPool, nullptr, 0, 0);
     }
 }
 
 bool WatchdogManager::_os_timer_start( Watchdog & watchdog )
 {
-    Win32TimerHandle * h = static_cast<Win32TimerHandle *>(watchdog.handle());
-    ASSERT( (h != nullptr) && (h->timerHandle != nullptr) );
+    areg::os::Win32TimerHandle * h = static_cast<areg::os::Win32TimerHandle *>(watchdog.handle());
+    ASSERT( h != nullptr );
 
-    const int64_t due_time = -(static_cast<int64_t>(watchdog.timeout() * areg::MILLISEC_TO_100NS));
-    LARGE_INTEGER timeTrigger{};
-    timeTrigger.LowPart  = static_cast<DWORD>(areg::lo_dword(static_cast<uint64_t>(due_time)));
-    timeTrigger.HighPart = static_cast<LONG >(areg::hi_dword(static_cast<uint64_t>(due_time)));
+    if (h->timerPool == nullptr)
+    {
+        h->timerPool = ::CreateThreadpoolTimer(_tp_watchdog_callback, h, nullptr);
+        if (h->timerPool == nullptr)
+            return false;
+    }
 
-    // Standard WaitableTimer supports APC callbacks (unlike HIGH_RES handles).
-    return (::SetWaitableTimerEx( h->timerHandle
-                                , &timeTrigger
-                                , 0     // one-shot: no period
-                                , (PTIMERAPCROUTINE)(&WatchdogManager::_windows_watchdog_expired)
-                                , reinterpret_cast<void*>(watchdog.make_watchdog_id(watchdog.id(), watchdog.sequence()))
-                                , nullptr   // WakeContext: unused
-                                , 0         // TolerableDelay: 0 = maximum precision
-                                ) == TRUE);
+    // The callback context is fixed when the pool timer is created
+    h->contextId = static_cast<uintptr_t>(watchdog.make_watchdog_id(watchdog.id(), watchdog.sequence()));
+
+    // Relative due time: a negative 100-ns value means "fire that long from now".
+    const int64_t due = -(static_cast<int64_t>(watchdog.timeout() * areg::MILLISEC_TO_100NS));
+    FILETIME dueTime;
+    dueTime.dwLowDateTime  = static_cast<DWORD>(areg::lo_dword(static_cast<uint64_t>(due)));
+    dueTime.dwHighDateTime = static_cast<DWORD>(areg::hi_dword(static_cast<uint64_t>(due)));
+
+    ::SetThreadpoolTimer(h->timerPool, &dueTime, 0, 0);
+    return true;
 }
 
 void WatchdogManager::_windows_watchdog_expired( void * argPtr,
@@ -83,7 +96,8 @@ void WatchdogManager::_windows_watchdog_expired( void * argPtr,
 {
     ASSERT(argPtr != nullptr);
     WatchdogManager & watchdogManager = WatchdogManager::instance();
-    const Watchdog::WATCHDOG_ID watchdog_id = reinterpret_cast<Watchdog::WATCHDOG_ID>(argPtr);
+    const areg::os::Win32TimerHandle * h = static_cast<const areg::os::Win32TimerHandle *>(argPtr);
+    const Watchdog::WATCHDOG_ID watchdog_id = static_cast<Watchdog::WATCHDOG_ID>(h->contextId);
     const Watchdog::GUARD_ID    guardId     = Watchdog::make_guard_id(watchdog_id);
     Watchdog * watchdog = watchdogManager.mWatchdogResource.find_resource_object(guardId);
     if (watchdog != nullptr)

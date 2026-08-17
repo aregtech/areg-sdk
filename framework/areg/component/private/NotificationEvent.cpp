@@ -129,7 +129,8 @@ void NotificationConsumer::start_event_processing( Event& eventElem )
 {
     if (eventElem.event_type() == areg::EventType::EventNotifyClient)
     {
-        process_notification_event(static_cast<NotificationEvent&>(eventElem));
+        NotificationEvent notifyEvent{ eventElem.envelope() };
+        process_notification_event(notifyEvent);
     }
 }
 

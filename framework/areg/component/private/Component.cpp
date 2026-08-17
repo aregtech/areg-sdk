@@ -225,7 +225,40 @@ void Component::terminate_self()
         workThread->terminate_self();
     }
 
-    delete this;
+    // Destroyed through the delete function of the model, like the normal exit path does.
+    const areg::ComponentEntry & entry = ComponentLoader::find_component_entry(role_name(), master_thread().name());
+    if (entry.is_valid() && (entry.mFuncDelete != nullptr))
+    {
+        Component::unload_component(*this, entry);
+    }
+    else
+    {
+        delete this;
+    }
+}
+
+void Component::detach_from_registry()
+{
+    for (ListServers::LISTPOS pos = mServerList.first_position(); mServerList.is_valid_position(pos); pos = mServerList.next_position(pos))
+    {
+        StubBase * stub = mServerList.value_at(pos);
+        ASSERT(stub != nullptr);
+        stub->detach_from_registry();
+    }
+
+    // The worker threads of an abandoned component are abandoned too: out of the thread maps
+    // and asked to leave, but not stopped and not deleted. They are taken off the component
+    // list so that nothing walks them afterwards.
+    ThreadAddress threadAddress;
+    while (mComponentInfo.has_worker_threads())
+    {
+        WorkerThread * workThread = mComponentInfo.remove_worker_thread(threadAddress);
+        ASSERT(workThread != nullptr);
+        workThread->detach_from_registry();
+    }
+
+    // Idempotent with the destructor, which may still run later if the thread ever finishes.
+    Component::resource_map().unregister_resource_object(mMagicNum);
 }
 
 StubBase* Component::find_provider( const String & serviceName ) noexcept
@@ -272,13 +305,17 @@ uint32_t Component::_magic_number(Component & comp) noexcept
 
 inline void Component::_shutdown_services()
 {
+    const areg::DisconnectReason reason{ master_thread().is_restarting()
+                                            ? areg::DisconnectReason::ProviderRestarting
+                                            : areg::DisconnectReason::ProviderDisconnected };
+
     for (ListServers::LISTPOS pos = mServerList.first_position(); mServerList.is_valid_position(pos); pos = mServerList.next_position(pos))
     {
         StubBase* stub = mServerList.value_at(pos);
         ASSERT(stub != nullptr);
 
         stub->shutdown_service_interface(self());
-        ServiceManager::request_unregister_provider(stub->address(), areg::DisconnectReason::ProviderDisconnected);
+        ServiceManager::request_unregister_provider(stub->address(), reason);
     }
 }
 

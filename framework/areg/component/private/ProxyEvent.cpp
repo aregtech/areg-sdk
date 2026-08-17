@@ -66,7 +66,8 @@ void ProxyEventConsumer::start_event_processing( Event & eventElem )
     {
         if (envelope.consumer_number() == static_cast<uint32_t>(mProxyAddress))
         {
-            process_response_event(static_cast<ServiceResponseEvent&>(eventElem));
+            ServiceResponseEvent respEvent{ eventElem.envelope() };
+            process_response_event(respEvent);
         }
     }
     break;
@@ -76,7 +77,8 @@ void ProxyEventConsumer::start_event_processing( Event & eventElem )
     {
         if (envelope.consumer_number() == static_cast<uint32_t>(mProxyAddress))
         {
-            process_broadcast_event(static_cast<ServiceResponseEvent&>(eventElem));
+            ServiceResponseEvent respEvent{ eventElem.envelope() };
+            process_broadcast_event(respEvent);
         }
     }
     break;
@@ -86,7 +88,8 @@ void ProxyEventConsumer::start_event_processing( Event & eventElem )
     {
         if (envelope.consumer_number() == static_cast<uint32_t>(mProxyAddress))
         {
-            process_attribute_event(static_cast<ServiceResponseEvent&>(eventElem));
+            ServiceResponseEvent respEvent{ eventElem.envelope() };
+            process_attribute_event(respEvent);
         }
     }
     break;
@@ -96,7 +99,8 @@ void ProxyEventConsumer::start_event_processing( Event & eventElem )
     {
         if (envelope.consumer_number() == static_cast<uint32_t>(mProxyAddress))
         {
-            process_request_failed_event(static_cast<ServiceResponseEvent&>(eventElem));
+            ServiceResponseEvent respEvent{ eventElem.envelope() };
+            process_request_failed_event(respEvent);
         }
     }
     break;
@@ -111,9 +115,14 @@ void ProxyEventConsumer::start_event_processing( Event & eventElem )
     default:
     {
         if (is_to_consumer(eventType))
-            process_proxy_event(static_cast<ProxyEvent&>(eventElem));
+        {
+            ProxyEvent proxyEvent{ eventElem.envelope() };
+            process_proxy_event(proxyEvent);
+        }
         else
+        {
             process_generic_event(eventElem);
+        }
     }
     break;
     }

@@ -31,6 +31,7 @@ Watchdog::GUARD_ID Watchdog::_generate_id()
 Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
     : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.name(), msTimeout, TimerBase::ONE_TIME)
     , mGuardId          (_generate_id())
+    , mDisarmed         (false)
     , mSequence         (0u)
     , mComponentThread  (thread)
 {
@@ -39,6 +40,7 @@ Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= areg::WATCHDO
 Watchdog::Watchdog(WorkerThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
     : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.name(), msTimeout, TimerBase::ONE_TIME)
     , mGuardId          (_generate_id())
+    , mDisarmed         (false)
     , mSequence         (0u)
     , mComponentThread  (thread.binding_component_thread())
 {
@@ -51,7 +53,7 @@ Watchdog::~Watchdog()
 
 void Watchdog::start_guard()
 {
-    if (mTimeoutInMs != areg::WATCHDOG_IGNORE)
+    if ((mTimeoutInMs != areg::WATCHDOG_IGNORE) && (mDisarmed.load(std::memory_order_acquire) == false))
     {
         Lock lock(mLock);
         ASSERT(mHandle != nullptr);
@@ -67,6 +69,17 @@ void Watchdog::stop_guard()
         Lock lock(mLock);
         ASSERT(mHandle != nullptr);
         mActive = false;
+        WatchdogManager::stop_timer(*this);
+    }
+}
+
+void Watchdog::disarm()
+{
+    if (mDisarmed.exchange(true, std::memory_order_acq_rel))
+        return;
+
+    if (mTimeoutInMs != areg::WATCHDOG_IGNORE)
+    {
         WatchdogManager::stop_timer(*this);
     }
 }

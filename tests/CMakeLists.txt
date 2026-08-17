@@ -115,6 +115,15 @@ if (AREG_TESTS)
     include_directories(${AREG_TESTS_DIR})
     include(${AREG_UNIT_TEST_BASE}/CMakeLists.txt)
 
+    # Drive the whole application lifecycle, so they run as their own executables.
+    include(${AREG_TESTS_DIR}/release-unload/CMakeLists.txt)
+    include(${AREG_TESTS_DIR}/timer-churn/CMakeLists.txt)
+
+    # Reuses the generated service interface of example 01, so it needs the examples.
+    if (AREG_EXAMPLES AND TARGET 01_generated)
+        include(${AREG_TESTS_DIR}/proxy-churn/CMakeLists.txt)
+    endif()
+
 else(AREG_TESTS)
     option(AREG_SYSTEM_GTEST  "Use GTest package" FALSE)
 endif(AREG_TESTS)

@@ -43,6 +43,7 @@
     <ClCompile Include="logcollector\app\private\LogCollectorNames.cpp" />
     <ClCompile Include="logcollector\app\private\posix\LogCollectorPosix.cpp" />
     <ClCompile Include="logcollector\app\private\win32\LogCollectorWin32.cpp" />
+    <ClCompile Include="logcollector\service\private\LogCollectorDatabase.cpp" />
     <ClCompile Include="logcollector\service\private\LogCollectorMessageProcessor.cpp" />
     <ClCompile Include="logcollector\service\private\LogCollectorServerService.cpp" />
   </ItemGroup>
@@ -51,6 +52,7 @@
     <ClInclude Include="logcollector\app\LogCollectorNames.hpp" />
     <ClInclude Include="logcollector\app\private\LogCollectorConsoleService.hpp" />
     <ClInclude Include="logcollector\service\LogCollectorServerService.hpp" />
+    <ClInclude Include="logcollector\service\private\LogCollectorDatabase.hpp" />
     <ClInclude Include="logcollector\service\private\LogCollectorMessageProcessor.hpp" />
     <ClInclude Include="logcollector\resources\resource.h" />
     <ClInclude Include="logcollector\resources\targetver.h" />

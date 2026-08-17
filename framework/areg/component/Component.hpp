@@ -199,8 +199,8 @@ public:
     virtual void shutdown_component( ComponentThread & comThread );
 
     /**
-     * \brief   Called when the master thread of the component is notified to shut down. Not
-     *          thread-safe. Called primarily by the Service Manager.
+     * \brief   Called when the master thread of the component is notified to shut down.
+     *          Not thread-safe. Called primarily by the Service Manager.
      *
      * \param   comThread       The component thread triggering shutdown notification.
      **/
@@ -268,6 +268,17 @@ public:
      * \brief   Terminates the component, deletes all worker threads, and cleans up resources.
      **/
     void terminate_self();
+
+    /**
+     * \brief   Takes this component, its providers and its worker threads out of every global
+     *          registry, without releasing anything.
+     *
+     *          Only global registries are touched, never the internal state of the objects,
+     *          because the abandoned thread may be using it at the same moment.
+     *
+     * \see     ComponentThread::terminate_self, StubBase::detach_from_registry
+     **/
+    void detach_from_registry();
 
     /**
      * \brief   Registers a stub (service provider) object with this component.

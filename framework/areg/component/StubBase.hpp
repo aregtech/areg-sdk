@@ -186,8 +186,8 @@ protected:
     using StubListenerList  = ArrayList<StubBase::Listener>;
 
     /**
-     * \brief   HashMap keyed by message ID mapping to its listener list. Provides O(1) average
-     *          lookup, replacing the O(n) linked-list scan.
+     * \brief   HashMap keyed by message ID mapping to its listener list.
+     *          Provides O(1) average lookup, replacing the O(n) linked-list scan.
      **/
     using StubListenerMap   = HashMap<uint32_t, StubListenerList>;
 
@@ -230,6 +230,17 @@ protected:
 // Operations. Public
 //////////////////////////////////////////////////////////////////////////
 public:
+
+    /**
+     * \brief   Takes this provider out of every global registry, without releasing anything.
+     *
+     *          Only global registries are touched. The internal state of the stub is left
+     *          alone on purpose: the abandoned thread may be inside a request handler, and
+     *          rewriting its listener maps from another thread would be a data race for no gain.
+     *
+     * \see     ComponentThread::terminate_self
+     **/
+    void detach_from_registry();
 
     /**
      * \brief   Returns the component thread that owns this stub.
@@ -311,8 +322,7 @@ public:
 // StubBase overrides. 
 /************************************************************************/
     /**
-     * \brief   Unblocks the current pending request and returns a unique session ID for manual
-     *          response delivery.
+     * \brief   Unblocks the current pending request and returns a unique session ID for manual response delivery.
      *
      * \return  Returns a session ID to use with prepare_response() for sending the response.
      **/
@@ -337,12 +347,11 @@ public:
     virtual bool consumer_connected( const areg::ProxyAddress & client, areg::ServiceConnectionState status );
 
 /************************************************************************/
-// StubBase overrides. Public pure virtual methods 
+// StubBase overrides
 /************************************************************************/
 
     /**
-     * \brief   Sends an attribute update notification to all subscribed clients. Must be overridden
-     *          by derived classes.
+     * \brief   Sends an attribute update notification to all subscribed clients. Must be overridden by derived classes.
      *
      * \param   msgId       The ID of the attribute to notify.
      **/
@@ -411,6 +420,15 @@ protected:
      * \param   status          The registration status. Connected indicates successful registration.
      **/
     void process_registered_event( const areg::StubAddress & stubTarget, areg::ServiceConnectionState status ) override;
+
+    /**
+     * \brief   Returns true if this provider is registered and may process requests, which is
+     *          the case only when its connection status is 'Connected'. Before the registration,
+     *          while it is in progress, and after the provider unregistered, a request is refused
+     *          and answered with a failure instead of being served.
+     **/
+    [[nodiscard]]
+    bool can_process_requests( ) const override;
 
     /**
      * \brief   Called when a client requests connection or disconnection.
@@ -558,11 +576,8 @@ protected:
     void clear_all_listeners(const ProxyAddress & whichProxy) noexcept;
 
     /**
-     * \brief   Dispatches a response event to all specified listeners. For the first listener the
-     *          master event is sent directly (no clone), eliminating one heap allocation per
-     *          dispatch. Clones are created for remaining listeners before the master is sent.
-     *          Ownership of masterEvent is transferred to the dispatcher; callers must NOT call
-     *          destroy() on it after this returns.
+     * \brief   Sends a response event to all specified listeners.
+     *          Ownership of masterEvent is transferred to the dispatcher.
      *
      * \param   whichListeners      The list of listeners containing target proxy addresses.
      * \param   masterEvent         The event to dispatch; targeted at whichListeners[0] by the
@@ -572,8 +587,6 @@ protected:
 
     /**
      * \brief   Sends an error response for a failed attribute request to specified listeners.
-     *          The master event is cloned for each listener; the caller retains ownership and must
-     *          call destroy() on masterEvent after this returns.
      *
      * \param   whichListeners      The list of listeners to receive the error notification.
      * \param   masterEvent         The template event; cloned per listener. Caller destroys it.
@@ -581,14 +594,11 @@ protected:
     void send_error_notification( const StubBase::StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent );
 
     /**
-     * \brief   Broadcasts an attribute update to all specified listeners. For the first listener
-     *          the master event is sent directly; subsequent listeners receive clones.
-     *          Ownership of masterEvent is transferred to the dispatcher; callers must NOT call
-     *          destroy() on it after this returns.
+     * \brief   Broadcasts an attribute update to all specified listeners.
+     *          Ownership of masterEvent is transferred to the dispatcher
      *
      * \param   whichListeners      The list of listeners containing proxy addresses.
-     * \param   masterEvent         The event to broadcast. Ownership is transferred to the
-     *                              dispatcher.
+     * \param   masterEvent         The event to broadcast. Ownership is transferred to the dispatcher.
      **/
     void send_update_notification( const StubBase::StubListenerList & whichListeners, ServiceResponseEvent & masterEvent ) const;
 
@@ -605,8 +615,7 @@ protected:
     void cancel_current_request() noexcept;
 
     /**
-     * \brief   Marks an attribute as invalid and sends error notifications to all subscribed
-     *          clients.
+     * \brief   Marks an attribute as invalid and sends error notifications to all subscribed clients.
      *
      * \param   attrId      The ID of the attribute to invalidate.
      * \note    Does not validate the attribute ID.
@@ -656,8 +665,7 @@ protected:
      * \param   whichListener       The listener containing the message ID and proxy address.
      * \param   whichResponse       The associated response message ID.
      * \param   seqNr               The sequence number of the request call.
-     * \return  Returns true if the request can proceed; false if it is blocked due to pending
-     *          response.
+     * \return  Returns true if the request can proceed; false if it is blocked due to pending response.
      **/
     [[nodiscard]]
     bool can_execute_request( StubBase::Listener & whichListener, uint32_t whichResponse, const SequenceNumber & seqNr);
@@ -689,8 +697,8 @@ private:
 
     /**
      * \brief   Removes one listener matching toRemove from an already resolved sub-vector using swap-and-pop. 
-     *          It performs NO map lookup and acquires NO lock, so it must be called by a caller that
-     *          already holds the Lock and the target sub-vector.
+     *          It performs NO map lookup and acquires NO lock, it must be called by a caller that already
+     *          holds the Lock and the target sub-vector.
      *
      * \param   subVec      The sub-vector to search and compact in place.
      * \param   toRemove    The listener to find and remove (matched via Listener::operator==).
@@ -698,12 +706,7 @@ private:
     static void remove_from_list( StubListenerList & subVec, const StubBase::Listener & toRemove ) noexcept;
 
     /**
-     * \brief   Collects all listeners for respId into listeners and, in the same locked
-     *          region, removes the one-shot entries that the response path would consume:
-     *          - seqNr > 0 (one-shot request): removed from the map.
-     *          - seqNr < 0 (unblocked request with existing notify): the matching seqNr==0
-     *            (notify subscription) entry is removed; the negated entry itself is kept.
-     *          - seqNr == 0 (notify subscription): kept in the map.
+     * \brief   Collects all listeners for respId into listeners.
      *
      * \param   respId          The response / broadcast message ID to collect listeners for.
      * \param[out] listeners    Receives all listeners for respId.
@@ -733,6 +736,10 @@ protected:
      * \brief   The service connection status
      **/
     areg::ServiceConnectionState    mConnectionStatus;
+    /**
+     * \brief   True if started (between startup_service_interface() and shutdown_service_interface())
+     **/
+    bool                            mIsStarted;
 
 #if defined(_MSC_VER)
     #pragma warning(push)

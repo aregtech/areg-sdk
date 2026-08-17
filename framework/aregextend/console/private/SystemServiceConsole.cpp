@@ -30,7 +30,7 @@ namespace areg::ext {
 //////////////////////////////////////////////////////////////////////////
 SystemServiceConsole::SystemServiceConsole(DataRateHelper* dataRate, const areg::ComponentEntry & entry, ComponentThread & owner)
     : Component         ( entry, owner )
-    , StubBase          ( self( ), areg::empty_interface( ) )
+    , StubBase          ( *this, areg::empty_interface( ) )
     , TimerConsumer     ( )
 
     , mDataRateHelper   ( dataRate )

@@ -32,6 +32,7 @@
 #include "areg/base/String.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 
+#include <atomic>
 #include <string_view>
 #include <limits>
 
@@ -83,7 +84,9 @@ public:
      **/
     enum class ThreadCompletion : int32_t
     {
-          Terminated = -1   //!< The thread was terminate because waiting timeout expired
+          Stuck      = -2   //!< The waiting timeout expired and the thread could NOT be stopped.
+                            //!< It keeps running and using its objects, no way to terminate it.
+        , Terminated = -1   //!< The waiting timeout expired and the thread was forcibly killed.
         , Completed  = 0    //!< The thread was valid and normally completed
         , Invalid    = 1    //!< The thread handle is invalid and is not running, nothing to do
     };
@@ -108,10 +111,25 @@ public:
     inline static constexpr const char * as_string( Thread::ThreadPriority threadPriority ) noexcept;
 
     /**
+     * \brief   Thread::RunState
+     *          The states of the thread routine with respect to the thread object.
+     *          The object may be released only in the 'NotRunning' state, because in
+     *          every other state the routine may still access it.
+     **/
+    enum class RunState : uint8_t
+    {
+          NotRunning    = 0   //!< No routine runs on the object, it may be released.
+        , Starting      = 1   //!< The OS thread is requested, the routine did not enter yet.
+        , Running       = 2   //!< The routine runs the thread consumer.
+        , Exiting       = 3   //!< The consumer returned, the routine still uses the object.
+    };
+
+    /**
      * \brief   Thread::INVALID_THREAD_ID
      *          Invalid thread ID.
      **/
     static constexpr id_type            INVALID_THREAD_ID       { 0 };
+
 
 private:
 /************************************************************************/
@@ -185,24 +203,27 @@ public:
     virtual bool start( uint32_t waitForStartMs = areg::DO_NOT_WAIT );
 
     /**
-     * \brief   Triggers exit event for the thread.
-     **/
-    virtual void trigger_exit();
-
-    /**
-     * \brief   Shuts down the thread and frees resources. If waiting timeout expires, the function
-     *          terminates the thread. A shutdown thread can be re-created. The calling thread may
-     *          be blocked until the target thread completes.
+     * \brief   Requests the thread to exit, waits for it, and frees its resources. The thread is
+     *          removed from the resource maps in every case, so nothing reaches it afterwards,
+     *          and a shut down thread object can be started again.
      *
-     * \param   waitForStopMs       Waiting timeout in milliseconds until target thread finishes.
-     *                              Set DO_NOT_WAIT to trigger exit and return immediately. Set
-     *                              WAIT_INFINITE to trigger exit and wait until thread completes.
-     *                              Set other values in milliseconds for specific timeout.
-     * \return  Thread completion status: Terminated if waiting timeout expired and thread was
-     *          terminated; Completed if thread completed normally; Invalid if thread was not valid
-     *          and not running.
+     *          If the waiting timeout expires the thread is terminated where the platform can do it,
+     *          which is Windows only. The returned status says which of the three outcomes happened.
+     *
+     * \param   waitForStopMs       Waiting timeout in milliseconds until the target thread finishes.
+     *                              WAIT_INFINITE (the default) asks and waits until the thread is out.
+     *                              DO_NOT_WAIT asks and does not wait, which terminates the thread
+     *                              at once where the platform can and reports Stuck where it cannot.
+     *                              Other values are a specific timeout with the same two outcomes.
+     * \return  Thread completion status: 
+     *              - Completed if the thread completed normally;
+     *              - Terminated if the timeout expired and the thread was forcibly killed;
+     *              - Stuck if the timeout expired and the thread could not be stopped;
+     *              - Invalid if the thread was not valid and not running.
+     *
+     * \see     ThreadCompletion, request_exit
      **/
-    virtual Thread::ThreadCompletion shutdown( uint32_t waitForStopMs = areg::DO_NOT_WAIT );
+    virtual Thread::ThreadCompletion shutdown( uint32_t waitForStopMs = areg::WAIT_INFINITE );
 
     /**
      * \brief   Waits for thread completion without sending exit message or terminating the thread.
@@ -213,16 +234,6 @@ public:
      *          areg::DO_NOT_WAIT.
      **/
     virtual bool wait_completion( uint32_t waitForCompleteMs = areg::WAIT_INFINITE );
-
-    /**
-     * \brief   Terminates the thread with a 10 ms timeout. Use only if thread is unresponsive and
-     *          immediate termination is required. Does not guarantee graceful resource cleanup.
-     *
-     * \return  Thread completion status: Terminated if timeout expired and thread was terminated;
-     *          Completed if thread completed normally; Invalid if thread was not valid and not
-     *          running.
-     **/
-    virtual Thread::ThreadCompletion terminate();
 
 /************************************************************************
  * Attributes
@@ -313,11 +324,9 @@ public:
     inline static Thread * find_by_id( const id_type threadId ) noexcept;
 
     /**
-     * \brief   Searches for thread by address and returns its pointer. Returns nullptr if not
-     *          found.
+     * \brief   Searches for thread by address and returns its pointer. Returns nullptr if not found.
      *
-     * \param   threadAddres    The unique address of the thread containing the name, process ID,
-     *                          and thread ID.
+     * \param   threadAddres    The unique address of the thread containing the name, process ID, and thread ID.
      * \return  Pointer to the thread object if found; nullptr otherwise.
      **/
     [[nodiscard]]
@@ -342,12 +351,74 @@ public:
     inline static const ThreadAddress & address_by_number( const UniqueNumber threadNumber ) noexcept;
 
     /**
-     * \brief   Suspends the current thread in sleep mode for the specified duration in
-     *          milliseconds.
+     * \brief   Suspends the calling thread for the given duration. A plain, uninterruptible
+     *          OS sleep -- nanosleep() on POSIX, Sleep() on Windows -- with no framework state
+     *          involved, exactly like std::this_thread::sleep_for(). It works on any thread,
+     *          areg owned or not, and it always sleeps the full duration.
+     *
+     *          A thread parked here cannot be released: POSIX has no way to terminate a thread,
+     *          so a component that sleeps longer than its watchdog timeout becomes an abandoned thread.
+     *          Use wait_exit() instead wherever the thread has to stay stoppable.
      *
      * \param   msTimeout       Timeout in milliseconds.
+     * \see     wait_exit
      **/
-    inline static void sleep( uint32_t msTimeout );
+    static void sleep( uint32_t msTimeout );
+
+    /**
+     * \brief   Waits up to the given duration, and returns at once if an exit was requested
+     *          for the calling thread by request_exit(). This is the stoppable form of sleep():
+     *          a thread waiting here leaves by a normal return when it is asked to, so its
+     *          destructors run and it releases its own objects instead of being abandoned.
+     *
+     *          The result MUST be honoured. The exit request is sticky, so once it returns
+     *          false every later call of that thread returns false as well -- a loop that keeps
+     *          going would busy-spin. Return, do not retry.
+     *
+     * \param   msTimeout       Timeout in milliseconds.
+     * \return  True if the full timeout elapsed. False if an exit was requested for the calling
+     *          thread, in which case the caller must stop what it is doing and return.
+     * \see     sleep, request_exit, is_exit_requested
+     **/
+    [[nodiscard]]
+    static bool wait_exit( uint32_t msTimeout );
+
+    /**
+     * \brief   Requests the thread to leave its routine at the next opportunity and releases
+     *          the blocking calls of the framework that it may be waiting in, so that they
+     *          return immediately. Currently this is Thread::sleep().
+     *
+     *          The request is sticky: it stays set until the thread object is started again.
+     *          It is a request and not a termination, and it cannot release a thread that
+     *          blocks outside the framework. Call shutdown() to learn whether the thread
+     *          actually left.
+     *
+     * \see     shutdown, is_exit_requested
+     **/
+    void request_exit() noexcept;
+
+    /**
+     * \brief   Takes this thread out of the thread name and thread ID maps and asks it to leave,
+     *          without waiting for it and without releasing anything it owns.
+     *
+     *          Used on the abandoned-thread path. A thread that could not be stopped keeps
+     *          running and keeps using its objects, nothing may be freed, but it must stop
+     *          being discoverable: find_by_name(), find_by_id() and find_by_address() must not
+     *          hand it out, and its name must be free for a replacement to take.
+     *
+     * \see     shutdown, ThreadCompletion::Stuck
+     **/
+    void detach_from_registry();
+
+    /**
+     * \brief   Returns true if an exit was requested for this thread by request_exit() and
+     *          the thread object did not start again since. The blocking calls of the
+     *          framework check it to return early.
+     *
+     * \see     request_exit
+     **/
+    [[nodiscard]]
+    inline bool is_exit_requested() const noexcept;
 
     /**
      * \brief   Yields thread processing time to allow other threads to run.
@@ -357,7 +428,7 @@ public:
     /**
      * \brief   Emits a CPU spin-wait hint (PAUSE / YIELD). Relaxes the core during a
      *          short busy-wait so a hyper-thread sibling gets resources and the loop
-     *          burns less power. Does NOT yield to the OS scheduler -- intended for
+     *          burns less power. Does NOT yield to the OS scheduler. Intended for
      *          bounded spins (e.g. SpinLock).
      *          On architectures with no pause hint it falls back to switch_thread().
      **/
@@ -370,8 +441,7 @@ public:
     inline static id_type current_thread_id() noexcept;
 
     /**
-     * \brief   Returns the thread object of the current thread. The current thread must be
-     *          registered.
+     * \brief   Returns the thread object of the current thread. The current thread must be registered.
      **/
     [[nodiscard]]
     inline static Thread * current_thread() noexcept;
@@ -421,8 +491,7 @@ public:
     static String thread_name( id_type threadId ) noexcept;
 
     /**
-     * \brief   Returns the address of thread by specified ID. Returns invalid address if not
-     *          registered.
+     * \brief   Returns the address of thread by specified ID. Returns invalid address if not registered.
      *
      * \param   threadId    The ID of the thread.
      **/
@@ -440,8 +509,7 @@ public:
 /************************************************************************/
 #ifdef _DEBUG
     /**
-     * \brief   Dumps all created threads information to the output window. Valid only in debug
-     *          builds.
+     * \brief   Dumps all created threads information to the output window. Valid only in debug builds.
      **/
     static void dump_threads();
 #endif // _DEBUG
@@ -509,10 +577,19 @@ protected:
      * \brief   The thread current priority level.
      **/
     Thread::ThreadPriority mThreadPriority;
+#if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
     /**
-     * \brief   Flag indicating whether thread is running or not.
+     * \brief   The state of the thread routine. Written by the routine itself and by the
+     *          call that forces the thread to terminate. Read without the lock, because
+     *          the object may be released only after it is back to 'NotRunning'.
      **/
-    bool                    mIsRunning;
+    std::atomic<RunState>   mRunState;
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif  // _MSC_VER
     /**
      * \brief   The thread stack size in kilobytes.
      **/
@@ -529,6 +606,28 @@ protected:
      * \brief   Synchronization Event object, signaled when thread completes running and going to exist
      **/
     SyncEvent               mWaitForExit;
+    /**
+     * \brief   Manual reset event, signaled while an exit is requested for this thread and
+     *          reset when the thread object starts again. The blocking calls of the framework
+     *          wait on it so that they return at once instead of waiting their timeout out.
+     *          Manual reset on purpose: every blocking call has to see the request.
+     **/
+    SyncEvent               mExitRequest;
+#if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+    /**
+     * \brief   The state of mExitRequest, readable without entering the event object.
+     **/
+    std::atomic<bool>       mExitRequested;
+    /**
+     * \brief   True while this object is present in the thread maps.
+     **/
+    std::atomic<bool>       mRegistered;
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////
 // Private / Hidden types, variables and methods
@@ -546,10 +645,17 @@ private:
     /**
      * \brief   Cleans up thread data including reset running flag and thread info invalidation.
      *
-     * \param   unregister      If true, removes thread from resource maps and closes handles. If
-     *                          false, only closes handles and resets variables.
+     * \param   unregister      If true, removes the thread from the resource maps.
+     * \param   releaseHandle   If true, releases the OS handle and invalidates the thread data.
      **/
-    void _clean_resources( bool unregister);
+    void _clean_resources( bool unregister, bool releaseHandle );
+
+    /**
+     * \brief   Spins and yields while the thread routine is in the 'Exiting' state, i.e.
+     *          until it made its last access to this object. Returns at once in every
+     *          other state.
+     **/
+    void _wait_exit_completed() const noexcept;
 
     /**
      * \brief   Registers the thread in resource maps.
@@ -571,11 +677,20 @@ private:
     int32_t  _thread_entry();
 
     /**
-     * \brief   Sets the running state of the thread.
+     * \brief   Sets the running state of the thread. Marks the thread 'Running' when the
+     *          consumer starts and 'Exiting' when it returns, since the routine keeps
+     *          using the object after that.
      *
      * \param   is_running      True to mark thread as running; false otherwise.
      **/
     inline void _set_running(bool is_running) noexcept;
+
+    /**
+     * \brief   Sets the state of the thread routine.
+     *
+     * \param   state       The state to set.
+     **/
+    inline void _set_run_state(Thread::RunState state) noexcept;
 
     /**
      * \brief   Checks whether the thread is valid without acquiring synchronization locks.
@@ -640,12 +755,16 @@ private:
      * \brief   Closes the OS-level thread handle and invalidates thread data.
      *
      * \param   handle      The thread handle to close.
+     * \param   joinThread  If true, waits for the OS thread before releasing the handle.
+     *                      Allowed only when the thread routine is known to have finished,
+     *                      otherwise the call blocks. When false, the OS thread is detached
+     *                      and the system reclaims it when it ends. Ignored on Windows,
+     *                      where closing a handle never waits.
      **/
-    static void _os_close_handle( THREADHANDLE handle );
+    static void _os_close_handle( THREADHANDLE handle, bool joinThread );
 
     /**
-     * \brief   OS-specific implementation to put the thread in sleep mode for specified duration in
-     *          milliseconds.
+     * \brief   OS-specific implementation to put the thread in sleep mode for specified duration in milliseconds.
      *
      * \param   timeout     Sleep duration in milliseconds.
      **/
@@ -745,8 +864,7 @@ inline bool Thread::_is_valid_no_lock() const noexcept
 
 inline bool Thread::is_running() const noexcept
 {
-    Lock lock(mSyncObject);
-    return mIsRunning;
+    return (mRunState.load(std::memory_order_acquire) == Thread::RunState::Running);
 }
 
 inline bool Thread::is_valid() const noexcept
@@ -805,8 +923,12 @@ inline const ThreadAddress& Thread::address_by_number(const UniqueNumber threadN
 
 inline void Thread::_set_running( bool is_running ) noexcept
 {
-    Lock lock(mSyncObject);
-    mIsRunning  = is_running;
+    _set_run_state(is_running ? Thread::RunState::Running : Thread::RunState::Exiting);
+}
+
+inline void Thread::_set_run_state( Thread::RunState state ) noexcept
+{
+    mRunState.store(state, std::memory_order_release);
 }
 
 inline Thread * Thread::current_thread() noexcept
@@ -835,9 +957,9 @@ inline uint32_t Thread::stack_size() const noexcept
     return mStackSizeKB;
 }
 
-inline void Thread::sleep( uint32_t ms )
+inline bool Thread::is_exit_requested() const noexcept
 {
-    _os_sleep( ms );
+    return mExitRequested.load(std::memory_order_acquire);
 }
 
 inline void Thread::switch_thread() noexcept

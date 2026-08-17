@@ -23,6 +23,7 @@ build-*/
 out/*
 product/*
 tools/*.zip
+__pycache__/
 
 areg-sdk.code-workspace
 

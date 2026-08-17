@@ -20,7 +20,7 @@ DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient, process_timer);
 
 ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component             ( areg::generate_name(entry.mRoleName), owner )
-    , HelloWorldConsumerBase  ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
+    , HelloWorldConsumerBase  ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(*this) )
     , areg::TimerConsumer       ( )
 
     , mTimer                (static_cast<areg::TimerConsumer &>(self()), entry.mRoleName)

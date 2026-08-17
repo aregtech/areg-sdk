@@ -1,4 +1,4 @@
-﻿#ifndef AREG_AREGEXTEND_SERVICE_SERVICEAPPLICATIONBASE_HPP
+#ifndef AREG_AREGEXTEND_SERVICE_SERVICEAPPLICATIONBASE_HPP
 #define AREG_AREGEXTEND_SERVICE_SERVICEAPPLICATIONBASE_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
@@ -71,6 +71,18 @@ public:
      * \return  Returns true if succeeded to read data from the console.
      **/
     bool input_console_data(char* buffer, uint32_t bufSize);
+
+    /**
+     * \brief   Parses the command line options of the application using the option setup returned
+     *          by `app_options()`.
+     *
+     * \param   argc    The number of options to parse.
+     * \param   argv    The options to parse.
+     * \return  Returns true if the options are accepted and the application can continue.
+     **/
+    bool parse_options(int32_t argc, char** argv);
+
+    using SystemServiceBase::parse_options;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

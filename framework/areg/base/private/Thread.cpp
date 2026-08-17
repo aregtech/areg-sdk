@@ -18,6 +18,8 @@
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/base/ThreadLocalStorage.hpp"
 
+#include <algorithm>
+
 namespace
 {
 /**
@@ -87,7 +89,6 @@ unsigned long Thread::_default_thread_function(void* data)
         } while (false);
 
         // instantiate thread local storage before starting running
-        // it should be created in the thread context
         Thread::_thread_local_storage(threadObj);
 
         result = static_cast<ThreadConsumer::ExitCode>( threadObj->_thread_entry() );
@@ -95,6 +96,7 @@ unsigned long Thread::_default_thread_function(void* data)
         // delete thread local storage.
         Thread::_thread_local_storage(nullptr);
         threadObj->mWaitForExit.set_signaled();
+        threadObj->_set_run_state(Thread::RunState::NotRunning);
     }
 
     return static_cast<unsigned long>(result);
@@ -144,11 +146,14 @@ Thread::Thread(ThreadConsumer &threadConsumer, const String & threadName, uint32
     , mThreadId         (Thread::INVALID_THREAD_ID)
     , mThreadAddress    (threadName.is_empty() == false ? threadName : areg::generate_name(DEFAULT_THREAD_PREFIX.data()))
     , mThreadPriority   (Thread::ThreadPriority::Undefined)
-    , mIsRunning        ( false )
+    , mRunState         ( Thread::RunState::NotRunning )
     , mStackSizeKB      ( stackSizeKb )
     , mSyncObject       ( )
     , mWaitForRun       (false, false)
     , mWaitForExit      (false, false)
+    , mExitRequest      (true, false)
+    , mExitRequested    ( false )
+    , mRegistered       ( false )
 {
     mWaitForExit.set_signaled();
 }
@@ -160,18 +165,23 @@ Thread::Thread( areg::NullTag, ThreadConsumer & threadConsumer, const String & t
     , mThreadId         ( Thread::INVALID_THREAD_ID )
     , mThreadAddress    ( threadName )
     , mThreadPriority   ( Thread::ThreadPriority::Undefined )
-    , mIsRunning        ( false )
+    , mRunState         ( Thread::RunState::NotRunning )
     , mStackSizeKB      ( 0u )
     , mSyncObject       ( )
     , mWaitForRun       ( areg::NullTag{} )
     , mWaitForExit      ( areg::NullTag{} )
+    , mExitRequest      ( areg::NullTag{} )
+    , mExitRequested    ( false )
+    , mRegistered       ( false )
 {
     // Null thread: not registered in thread maps, no OS handle, no sync events allocated.
 }
 
 Thread::~Thread()
 {
-    _clean_resources(false);
+    // The routine may still be inside the exit sequence of this object.
+    _wait_exit_completed();
+    _clean_resources(false, true);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -187,10 +197,25 @@ bool Thread::start(uint32_t waitForStartMs /* = areg::DO_NOT_WAIT */)
 {
     bool result = false;
 
-    do 
+    do
     {
         Lock  lock(mSyncObject);
+        // Reclaims the handle of a previous run that ended without a shutdown() call
+        if ((mThreadHandle != Thread::INVALID_THREAD_HANDLE) &&
+            (mRunState.load(std::memory_order_acquire) == Thread::RunState::NotRunning))
+        {
+            _clean_resources(false, true);
+        }
+
+        // Clears the exit request of the previous run.
+        mExitRequested.store(false, std::memory_order_release);
+        mExitRequest.reset();
+        _set_run_state(Thread::RunState::Starting);
         result = _os_create();
+        if (result == false)
+        {
+            _set_run_state(Thread::RunState::NotRunning);
+        }
     } while (false);
 
     if ( result )
@@ -208,26 +233,46 @@ bool Thread::start(uint32_t waitForStartMs /* = areg::DO_NOT_WAIT */)
     return result;
 }
 
-void Thread::trigger_exit()
+void Thread::request_exit() noexcept
 {
+    mExitRequested.store(true, std::memory_order_release);
+    mExitRequest.set_signaled();
 }
 
-Thread::ThreadCompletion Thread::shutdown( uint32_t waitForStopMs /* = areg::DO_NOT_WAIT */ )
+void Thread::detach_from_registry()
 {
-    Thread::ThreadCompletion result{ _os_destroy_thread( waitForStopMs ) };
+    request_exit();
 
-    if ( mSyncObject.try_lock( ) )
+    Lock lock(mSyncObject);
+    _unregister_thread();
+}
+
+void Thread::sleep( uint32_t msTimeout )
+{
+    Thread::_os_sleep(msTimeout);
+}
+
+bool Thread::wait_exit( uint32_t msTimeout )
+{
+    Thread * current = Thread::current_thread();
+    if ((current == nullptr) || (current->mExitRequest.is_valid() == false))
     {
-        _clean_resources( true );
-        mSyncObject.unlock( );
+        // Not an areg thread: there is no exit request to wait for, so this degrades to a sleep.
+        Thread::_os_sleep(msTimeout);
+        return true;
     }
 
-    return result;
+    return (current->mExitRequest.lock(msTimeout) == false);
 }
 
-Thread::ThreadCompletion Thread::terminate()
+Thread::ThreadCompletion Thread::shutdown( uint32_t waitForStopMs /* = areg::WAIT_INFINITE */ )
 {
-    return shutdown( areg::WAIT_10_MILLISECONDS );
+    request_exit();
+
+    Thread::ThreadCompletion result{ _os_destroy_thread( waitForStopMs ) };
+    _clean_resources( true, true );
+
+    return result;
 }
 
 bool Thread::wait_completion( uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE*/ )
@@ -236,9 +281,17 @@ bool Thread::wait_completion( uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE
     THREADHANDLE  handle = mThreadHandle;
     mSyncObject.unlock();  // unlock, to let thread complete exit task.
 
-    return (handle == Thread::INVALID_THREAD_HANDLE)
-        || (waitForCompleteMs == areg::DO_NOT_WAIT)
-        || mWaitForExit.lock(waitForCompleteMs);
+    if (waitForCompleteMs == areg::DO_NOT_WAIT)
+        return true;
+
+    const bool completed{ (handle == Thread::INVALID_THREAD_HANDLE) || mWaitForExit.lock(waitForCompleteMs) };
+    if (completed)
+    {
+        // The handle is reset and the exit event is signaled while the routine still runs.
+        _wait_exit_completed();
+    }
+
+    return completed;
 }
 
 bool Thread::on_pre_run()
@@ -305,11 +358,11 @@ int32_t Thread::_thread_entry()
         tls.remove_item(STORAGE_STARTUP_PHASE);
     }
 
-    _clean_resources( true );
+    _clean_resources( true, false );
     return static_cast<int32_t>(result);
 }
 
-void Thread::_clean_resources(bool unregister)
+void Thread::_clean_resources(bool unregister, bool releaseHandle)
 {
     THREADHANDLE handle{ Thread::INVALID_THREAD_HANDLE };
 
@@ -322,20 +375,48 @@ void Thread::_clean_resources(bool unregister)
             _unregister_thread();
         }
 
-        handle          = mThreadHandle;
-        mThreadHandle   = Thread::INVALID_THREAD_HANDLE;
-        mThreadId       = Thread::INVALID_THREAD_ID;
-        mIsRunning      = false;
-        mThreadPriority = Thread::ThreadPriority::Undefined;
+        if (releaseHandle)
+        {
+            handle          = mThreadHandle;
+            mThreadHandle   = Thread::INVALID_THREAD_HANDLE;
+            mThreadId       = Thread::INVALID_THREAD_ID;
+            mThreadPriority = Thread::ThreadPriority::Undefined;
+        }
     } while (false);
 
-    Thread::_os_close_handle(handle);
+    if (releaseHandle)
+    {
+        const bool joinThread{ mRunState.load(std::memory_order_acquire) == Thread::RunState::NotRunning };
+        Thread::_os_close_handle(handle, joinThread);
+    }
+}
+
+void Thread::_wait_exit_completed() const noexcept
+{
+    constexpr uint32_t  SPIN_COUNT{ 64u };   //!< Pause spins before the first yield.
+
+    // Only the 'Exiting' state is waited for.
+    uint32_t spin{ 0u };
+    while (mRunState.load(std::memory_order_acquire) == Thread::RunState::Exiting)
+    {
+        if (spin < SPIN_COUNT)
+        {
+            ++ spin;
+            Thread::cpu_pause();
+        }
+        else
+        {
+            // Hand the CPU to the routine that has to leave, no timed wait.
+            Thread::switch_thread();
+        }
+    }
 }
 
 bool Thread::_register_thread()
 {
     Thread::_map_thread_name().register_resource_object(static_cast<uint32_t>(mThreadAddress), this);
     Thread::_map_thread_id().register_resource_object(mThreadId, this);
+    mRegistered.store(true, std::memory_order_release);
 
     _os_set_name(mThreadId, mThreadAddress.name());
     return mThreadConsumer.on_thread_registered(this);
@@ -343,19 +424,16 @@ bool Thread::_register_thread()
 
 void Thread::_unregister_thread()
 {
-    if (_is_valid_no_lock())
+    // Once per run: the maps are keyed by name, which a restarted thread reuses.
+    if (mRegistered.exchange(false, std::memory_order_acq_rel) == false)
     {
-        mThreadConsumer.on_thread_unregistering();
-        
-        Thread::_map_thread_name().unregister_resource_object(static_cast<uint32_t>(mThreadAddress));
-        Thread::_map_thread_id().unregister_resource_object(mThreadId);
+        return;
     }
-#ifdef _DEBUG
-    else
-    {
-        ASSERT(mThreadHandle == Thread::INVALID_THREAD_HANDLE);
-    }
-#endif  // _DEBUG
+
+    mThreadConsumer.on_thread_unregistering();
+
+    Thread::_map_thread_name().unregister_resource_object(static_cast<uint32_t>(mThreadAddress));
+    Thread::_map_thread_id().unregister_resource_object(mThreadId);
 }
 
 bool Thread::startup_phase() const noexcept

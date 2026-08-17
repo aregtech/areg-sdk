@@ -77,6 +77,11 @@ namespace areg {
      *          Default connect retry timer timeout value in milliseconds
      **/
     constexpr uint32_t      DEFAULT_RETRY_CONNECT_TIMEOUT       { TIMEOUT_500_MS };  // 500 ms
+    /**
+     * \brief   areg::SEND_QUEUE_FLUSH_TIMEOUT
+     *          The timeout in milliseconds to wait for a graceful disconnect
+     **/
+    constexpr uint32_t      SEND_QUEUE_FLUSH_TIMEOUT            { TIMEOUT_1_SEC };   // 1 sec
 
 } // namespace areg
 #endif  // AREG_IPC_PRIVATE_CONNECTIONDEFS_HPP

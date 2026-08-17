@@ -20,7 +20,13 @@
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/RequestEvents.hpp"
 #include "areg/component/private/StubConnectEvent.hpp"
+#include "areg/component/ProxyBase.hpp"
+#include "areg/component/ServiceResponseEvent.hpp"
+#include "areg/logging/areg_log.h"
+
 namespace areg {
+
+DEF_LOG_SCOPE(areg_component_StubEventConsumer, refuse_request);
 
 //////////////////////////////////////////////////////////////////////////
 // StubEventConsumer class, methods
@@ -33,13 +39,36 @@ StubEventConsumer::StubEventConsumer( const StubAddress & stubAddress )
 {
 }
 
+inline void StubEventConsumer::_refuse_request(ServiceRequestEvent& reqEvent)
+{
+    LOG_SCOPE( areg_component_StubEventConsumer, refuse_request );
+
+    LOG_WARN("Provider [ %s ] is not ready, refusing request [ %u ]"
+                , StubAddress::to_path(mStubAddress).as_string(), reqEvent.request_id());
+
+    ServiceResponseEvent failure{ ProxyBase::request_failure_event( reqEvent.event_source()
+                                                                 , reqEvent.request_id()
+                                                                 , areg::ResultType::MessageUndelivered
+                                                                 , reqEvent.sequence_number()) };
+    if (failure.is_valid())
+    {
+        failure.deliver_event();
+    }
+}
+
 inline void StubEventConsumer::_local_request(ServiceRequestEvent& reqEvent )
 {
+    if (can_process_requests() == false)
+    {
+        _refuse_request(reqEvent);
+        return;
+    }
+
     Component* curComponent = Component::find_by_name(mStubAddress.role_name());
     ComponentThread::set_current_component(curComponent);
 
     if (areg::is_request_id(reqEvent.request_id()))
-        process_request_event(static_cast<ServiceRequestEvent&>(reqEvent));
+        process_request_event(reqEvent);
     else
         process_stub_event(static_cast<StubEvent&>(reqEvent));
 
@@ -91,24 +120,38 @@ void StubEventConsumer::start_event_processing( Event & eventElem )
         return;
 
     mCurEvent = &eventElem;
+
     switch (eventType)
     {
     case areg::EventType::EventLocalProviderConnect:    // fall through
     case areg::EventType::EventRemoteProviderConnect:
-        _local_connect(static_cast<StubConnectEvent&>(eventElem));
-        break;
+    {
+        StubConnectEvent connectEvent{ eventElem.envelope() };
+        _local_connect(connectEvent);
+    }
+    break;
     case areg::EventType::EventLocalRequest:            // fall through
     case areg::EventType::EventRemoteRequest:
-        _local_request(static_cast<ServiceRequestEvent&>(eventElem));
-        break;
+    {
+        ServiceRequestEvent reqEvent{ eventElem.envelope() };
+        _local_request(reqEvent);
+    }
+    break;
     case areg::EventType::EventLocalNotifyRequest:      // fall through
     case areg::EventType::EventRemoteNotifyRequest:
-        _local_notify_request(static_cast<ServiceRequestEvent&>(eventElem));
-        break;
-    default:
-        process_stub_event(static_cast<StubEvent&>(eventElem));
-        break;
+    {
+        ServiceRequestEvent notifyRequest{ eventElem.envelope() };
+        _local_notify_request(notifyRequest);
     }
+    break;
+    default:
+    {
+        StubEvent stubEvent{ eventElem.envelope() };
+        process_stub_event(stubEvent);
+    }
+    break;
+    }
+
     mCurEvent = nullptr;
 }
 

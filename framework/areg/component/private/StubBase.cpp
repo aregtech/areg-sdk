@@ -22,6 +22,7 @@
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/private/StubConnectEvent.hpp"
+#include "areg/component/private/ServiceManager.hpp"
 
 #include "areg/logging/areg_log.h"
 namespace areg {
@@ -78,6 +79,7 @@ StubBase::StubBase( Component & masterComp, const areg::InterfaceData & siData )
     , mInterface            (siData)
     , mAddress              (siData, masterComp.address().role_name(), masterComp.address().thread_address().name())
     , mConnectionStatus     ( areg::ServiceConnectionState::Disconnected )
+    , mIsStarted            ( false )
     , mListenerMap          ( )
     , mCurrMsgId            ( INVALID_MESSAGE_ID )
     , mCurrIndex            ( 0 )
@@ -91,6 +93,13 @@ StubBase::StubBase( Component & masterComp, const areg::InterfaceData & siData )
 StubBase::~StubBase()
 {
     map_providers().unregister_resource_object(static_cast<uint32_t>(mAddress));
+}
+
+void StubBase::detach_from_registry()
+{
+    // removing a key that is already gone is a no-op
+    map_providers().unregister_resource_object(static_cast<uint32_t>(mAddress));
+    ServiceManager::request_unregister_provider(mAddress, areg::DisconnectReason::ProviderDisconnected);
 }
 
 bool StubBase::is_busy( uint32_t reqId ) const noexcept
@@ -377,6 +386,7 @@ void StubBase::startup_service_interface( Component&  holder )
     LOG_SCOPE( areg_component_StubBase, startup_service_interface );
     LOG_DBG( "Service with role [ %s ] and interface [ %s ] is started", service_role( ).as_string( ), service_name( ).as_string( ) );
 
+    mIsStarted = true;
     StubConnectEvent::add_listener( static_cast<StubEventConsumer &>(self()), holder.master_thread() );
 }
 
@@ -384,6 +394,7 @@ void StubBase::shutdown_service_interface( Component & holder ) noexcept
 {
     LOG_SCOPE( areg_component_StubBase, shutdown_service_intrface );
     LOG_INFO( "Service with role [ %s ] and interface [ %s ] is stopped", service_role().as_string(), service_name().as_string() );
+    mIsStarted = false;
     StubConnectEvent::remove_listener( static_cast<StubEventConsumer &>(self()), holder.master_thread() );
 }
 
@@ -444,7 +455,11 @@ void StubBase::send_update_event( uint32_t msgId, const SharedBuffer & data, are
     if (find_listeners(msgId, listeners) > 0)
     {
         const ProxyAddress proxy{ listeners.first_entry().proxy() };
-        LOG_WARN( "Sends busy message to proxy [ %s ] for the request [ %u ]", ProxyAddress::to_path( proxy).as_string(), msgId);
+        LOG_DBG( "Sending update of message [ %u ] with result [ %s ] to [ %u ] subscribed consumer(s), first is [ %s ]"
+                   , msgId
+                   , areg::as_string( result )
+                   , listeners.size()
+                   , ProxyAddress::to_path( proxy ).as_string() );
 
         ServiceResponseEvent eventElem = create_response(proxy, msgId, result, data);
         if (eventElem.is_valid())
@@ -483,11 +498,11 @@ void StubBase::send_busy_response( const Listener & whichListener )
     ServiceResponseEvent eventElem = create_response(proxy, whichListener.mMessageId, areg::ResultType::RequestBusy, SharedBuffer{});
     if (eventElem.is_valid())
     {
-        LOG_WARN("Sending busy response for request message [ %p ] from source [ %p ] to target [ %p ], sequence [ %llu ]"
+        LOG_WARN("Sending busy response for request message [ %u ] from source [ %u ] to target [ %u ], sequence [ %llu ]"
                     , whichListener.mMessageId
-                    , proxy.target()
-                    , proxy.source()
-                    , whichListener.mSequenceNr);
+                    , static_cast<uint32_t>(proxy.target())
+                    , static_cast<uint32_t>(proxy.source())
+                    , static_cast<uint64_t>(whichListener.mSequenceNr));
 
         eventElem.set_sequence_number(whichListener.mSequenceNr);
         send_service_response(eventElem);
@@ -621,6 +636,11 @@ void StubBase::process_connect_event( const ProxyAddress & proxyAddress, areg::S
     consumer_connected( proxyAddress, status );
 }
 
+bool StubBase::can_process_requests( ) const
+{
+    return mIsStarted;
+}
+
 void StubBase::process_registered_event(const StubAddress & stubTarget, areg::ServiceConnectionState status )
 {
     if ( areg::is_service_connected( status) )
@@ -674,17 +694,17 @@ const uint32_t * StubBase::attribute_ids() const noexcept
 }
 
 ServiceResponseEvent StubBase::create_response( const ProxyAddress &    /* proxy  */
-                                              , uint32_t               /* msgId  */
-                                              , areg::ResultType       /* result */
-                                              , const SharedBuffer &   /* data   */ ) const
+                                              , uint32_t                /* msgId  */
+                                              , areg::ResultType        /* result */
+                                              , const SharedBuffer &    /* data   */ ) const
 {
     return ServiceResponseEvent(MessageEnvelope{});  // invalid; derived stubs override to produce real events
 }
 
-ServiceResponseEvent StubBase::create_response_event( const ProxyAddress &    /* proxy  */
-                                                    , uint32_t               /* msgId  */
-                                                    , areg::ResultType       /* result */
-                                                    , uint32_t               /* reserve */ ) const
+ServiceResponseEvent StubBase::create_response_event( const ProxyAddress &  /* proxy  */
+                                                    , uint32_t              /* msgId  */
+                                                    , areg::ResultType      /* result */
+                                                    , uint32_t              /* reserve */ ) const
 {
     return ServiceResponseEvent(MessageEnvelope{});  // invalid; derived stubs override to produce real events
 }

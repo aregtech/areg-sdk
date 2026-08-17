@@ -26,10 +26,22 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{7D57975F-814D-4F13-9F2F-87B667937FC7}"
 	ProjectSection(SolutionItems) = preProject
+		tools\annotate-file.py = tools\annotate-file.py
+		tools\areg_benchmarks.py = tools\areg_benchmarks.py
+		tools\check-ascii.py = tools\check-ascii.py
 		tools\codegen.jar = tools\codegen.jar
 		tools\codegenerate.bat = tools\codegenerate.bat
 		tools\codegenerate.sh = tools\codegenerate.sh
+		tools\dump-symbol-asm.py = tools\dump-symbol-asm.py
+		tools\enable-framework-logs.py = tools\enable-framework-logs.py
+		tools\extract_types.py = tools\extract_types.py
+		tools\hunt-crash.py = tools\hunt-crash.py
 		tools\README.md = tools\README.md
+		tools\report-ctest.py = tools\report-ctest.py
+		tools\run-all-examples.bat = tools\run-all-examples.bat
+		tools\run-all-examples.py = tools\run-all-examples.py
+		tools\run-all-examples.sh = tools\run-all-examples.sh
+		tools\sanitize.sh = tools\sanitize.sh
 		tools\setup-project.bat = tools\setup-project.bat
 		tools\setup-project.sh = tools\setup-project.sh
 	EndProjectSection
@@ -700,6 +712,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "github-workflows", "github-
 		.github\workflows\codeql-analysis.yml = .github\workflows\codeql-analysis.yml
 		.github\copilot-instructions.md = .github\copilot-instructions.md
 		.github\workflows\msbuild.yml = .github\workflows\msbuild.yml
+		.github\workflows\reuse.yml = .github\workflows\reuse.yml
 		.github\workflows\validate-pr.yml = .github\workflows\validate-pr.yml
 	EndProjectSection
 EndProject
@@ -769,8 +782,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wiki", "wiki", "{C33D0DF1-A
 		docs\wiki\08b-areg-sdk-performance-benchmarks.md = docs\wiki\08b-areg-sdk-performance-benchmarks.md
 		docs\wiki\08c-areg-vs-hitachi-benchmark.md = docs\wiki\08c-areg-vs-hitachi-benchmark.md
 		docs\wiki\08d-areg-framework-rankings.md = docs\wiki\08d-areg-framework-rankings.md
-		docs\wiki\areg-latency-benchmark-20260705.csv = docs\wiki\areg-latency-benchmark-20260705.csv
 		docs\wiki\areg-latency-benchmark-20260629.txt = docs\wiki\areg-latency-benchmark-20260629.txt
+		docs\wiki\areg-latency-benchmark-20260705.csv = docs\wiki\areg-latency-benchmark-20260705.csv
 		docs\wiki\README.md = docs\wiki\README.md
 	EndProjectSection
 EndProject
@@ -854,8 +867,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "toolchains", "toolchains", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "30_publatency", "30_publatency", "{F8205CA0-E4C7-4043-A35E-7A137B11A6E9}"
 	ProjectSection(SolutionItems) = preProject
-		docs\wiki\areg-latency-benchmark-20260705.csv = docs\wiki\areg-latency-benchmark-20260705.csv
 		docs\wiki\areg-latency-benchmark-20260629.txt = docs\wiki\areg-latency-benchmark-20260629.txt
+		docs\wiki\areg-latency-benchmark-20260705.csv = docs\wiki\areg-latency-benchmark-20260705.csv
 		examples\30_publatency\CMakeLists.txt = examples\30_publatency\CMakeLists.txt
 		examples\30_publatency\ReadMe.md = examples\30_publatency\ReadMe.md
 	EndProjectSection
@@ -882,6 +895,21 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "30_pubprovider", "examples\
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 		{79F26804-27E3-40AE-BBD9-34A708B4BFD5} = {79F26804-27E3-40AE-BBD9-34A708B4BFD5}
 		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "schema", "schema", "{793EBD87-DA69-4C1A-BA89-5E0EFEA1424F}"
+	ProjectSection(SolutionItems) = preProject
+		tools\schema\datatype.xml = tools\schema\datatype.xml
+		tools\schema\dtml.xsd = tools\schema\dtml.xsd
+		tools\schema\fsml.xsd = tools\schema\fsml.xsd
+		tools\schema\siml.xsd = tools\schema\siml.xsd
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LICENSES", "LICENSES", "{E04267FE-3809-4B6B-B619-A60420AA71BE}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSES\Apache-2.0.txt = LICENSES\Apache-2.0.txt
+		LICENSES\CC0-1.0.txt = LICENSES\CC0-1.0.txt
+		LICENSES\LicenseRef-SQLite-Public-Domain.txt = LICENSES\LicenseRef-SQLite-Public-Domain.txt
 	EndProjectSection
 EndProject
 Global
@@ -1646,6 +1674,8 @@ Global
 		{5244DA40-A041-4264-A821-16869D1A1C70} = {F8205CA0-E4C7-4043-A35E-7A137B11A6E9}
 		{9A2DB163-D2EE-4733-9DC0-ADBF575B14C6} = {F8205CA0-E4C7-4043-A35E-7A137B11A6E9}
 		{B4F4512C-CAEC-4EB8-9C31-8A4FFFDE83CB} = {F8205CA0-E4C7-4043-A35E-7A137B11A6E9}
+		{793EBD87-DA69-4C1A-BA89-5E0EFEA1424F} = {7D57975F-814D-4F13-9F2F-87B667937FC7}
+		{E04267FE-3809-4B6B-B619-A60420AA71BE} = {FD549A95-E734-4E26-A5B2-2330FC310C8D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1034084F-74DD-4B33-86E3-D8038C748F48}

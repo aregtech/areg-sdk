@@ -10,10 +10,11 @@
  * \file        areg/component/private/posix/WatchdogManagerPosix.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Areg Platform, The Thread Watchdog Manager.
- *              Controlling, triggering and stopping timer to check threads.
- *              Generic POSIX implementation using timer_create + SIGEV_THREAD
- *              (Cygwin, FreeBSD, and any other non-Linux non-Apple POSIX platform).
+ * \brief       Areg Platform, Watchdog manager, generic POSIX implementation.
+ *              The watchdog uses the same TimerPosix object and the same manager loop as
+ *              the timer, so it is kept in step with posix/TimerManagerPosix.cpp: the
+ *              deadline lives in the watchdog timer, the loop watches it, and the expiry
+ *              is processed on the watchdog manager thread. No OS timer object is created.
  *              Linux:  areg/component/private/linux/WatchdogManagerLinux.cpp
  *              macOS:  areg/component/private/macos/WatchdogManagerMacOS.cpp
  *
@@ -28,26 +29,77 @@
 #include "areg/component/private/WatchdogManager.hpp"
 #include "areg/component/private/posix/TimerPosix.hpp"
 #include "areg/component/private/Watchdog.hpp"
-#include <time.h>
+
+#include <vector>
 
 namespace areg {
 
-void WatchdogManager::_posix_watchdog_expired(void * ptr) noexcept
+void WatchdogManager::_fire_expired(TIMERHANDLE handle)
 {
-    areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(ptr);
-    WatchdogManager & watchdogManager = WatchdogManager::instance();
+    areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(handle);
     ASSERT(posixTimer != nullptr);
+
     Watchdog::WATCHDOG_ID watchdog_id = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->context_id());
     Watchdog::GUARD_ID    guardId     = Watchdog::make_guard_id(watchdog_id);
-    Watchdog *            watchdog    = watchdogManager.mWatchdogResource.find_resource_object(guardId);
+    Watchdog *            watchdog    = mWatchdogResource.find_resource_object(guardId);
 
     if (watchdog != nullptr)
     {
-        const uint32_t highValue = static_cast<uint32_t>(posixTimer->mDueTime.tv_sec);
-        const uint32_t lowValue  = static_cast<uint32_t>(posixTimer->mDueTime.tv_nsec);
+        const timespec due{ posixTimer->due_time() };
+        const uint32_t highValue = static_cast<uint32_t>(due.tv_sec);
+        const uint32_t lowValue  = static_cast<uint32_t>(due.tv_nsec);
+
+        // A watchdog guard is one-shot. Disarm it before it is processed
         posixTimer->stop_timer();
-        watchdogManager._process_expired_timer(watchdog, watchdog_id, highValue, lowValue);
+        _process_expired_timer(watchdog, watchdog_id, highValue, lowValue);
     }
+}
+
+bool WatchdogManager::_check_deadlines(const timespec & now, timespec & out_nextDue)
+{
+    std::vector<TIMERHANDLE> expired;
+
+    mWatchdogResource.lock();
+    Watchdog::GUARD_ID guardId{ 0 };
+    for (const Watchdog * watchdog = mWatchdogResource.resource_first_key(guardId); watchdog != nullptr; watchdog = mWatchdogResource.resource_next_key(guardId))
+    {
+        TIMERHANDLE handle{ watchdog->handle() };
+        areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(handle);
+
+        timespec due{};
+        if ((posixTimer != nullptr) && posixTimer->armed_due_time(due) && areg::os::deadline_reached(due, now))
+        {
+            expired.push_back(handle);
+        }
+    }
+    mWatchdogResource.unlock();
+
+    for (TIMERHANDLE expiredHandle : expired)
+    {
+        _fire_expired(expiredHandle);
+    }
+
+    bool hasNext{ false };
+
+    mWatchdogResource.lock();
+    guardId = 0;
+    for (const Watchdog * watchdog = mWatchdogResource.resource_first_key(guardId); watchdog != nullptr; watchdog = mWatchdogResource.resource_next_key(guardId))
+    {
+        areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(watchdog->handle());
+
+        timespec due{};
+        if ((posixTimer == nullptr) || !posixTimer->armed_due_time(due))
+            continue;
+
+        if (!hasNext || areg::os::deadline_earlier(due, out_nextDue))
+        {
+            out_nextDue = due;
+            hasNext     = true;
+        }
+    }
+    mWatchdogResource.unlock();
+
+    return hasNext;
 }
 
 void WatchdogManager::_os_timer_stop(TIMERHANDLE handle)
@@ -64,8 +116,9 @@ bool WatchdogManager::_os_timer_start(Watchdog & watchdog)
     areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(watchdog.handle());
     if (posixTimer != nullptr)
     {
+        // Runs on the watchdog manager thread
         const Watchdog::WATCHDOG_ID watchdog_id = watchdog.watchdog_id();
-        return posixTimer->start_timer(watchdog, watchdog_id, &WatchdogManager::_posix_watchdog_expired);
+        return posixTimer->start_timer(watchdog, watchdog_id, nullptr);
     }
 
     return false;

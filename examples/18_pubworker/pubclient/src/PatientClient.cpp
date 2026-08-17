@@ -14,7 +14,7 @@
 
 PatientClient::PatientClient(const areg::ComponentEntry & entry, areg::ComponentThread & /* owner */)
     : areg::Component                     ( entry.mRoleName )
-    , PatientInformationConsumerBase  ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
+    , PatientInformationConsumerBase  ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(*this) )
 
     , mHwWorker ( entry.mWorkerThreads[0].mConsumerName )
 {

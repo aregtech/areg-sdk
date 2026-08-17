@@ -69,7 +69,7 @@ ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
                                                         , const String & prefixName)
     : ConnectionProvider    ( )
     , ServiceEventConsumer  ( )
-    , ReconnectTimerConsumer(static_cast<ServiceEventConsumer&>(self()))
+    , ReconnectTimerConsumer(static_cast<ServiceEventConsumer&>(*this))
 
     , mTarget               (target)
     , mService              (service)
@@ -249,9 +249,22 @@ void ServiceClientConnectionBase::on_service_start()
 {
     LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, on_service_start );
 
-    if (connection_state() == ConnectionPhase::ConnectionStopping || !Application::is_servicing_available())
+    if (connection_state() == ConnectionPhase::ConnectionStopping)
     {
-        LOG_WARN("Ignoring start event: connection is stopping or application is releasing.");
+        LOG_WARN("Ignoring start event: the connection is stopping.");
+        return;
+    }
+
+    if (!Application::is_servicing_available())
+    {
+        // The application did not reach the servicing state yet. Retry later
+        LOG_WARN("The application cannot service yet, retrying to start the connection later.");
+        mTimerConnect.stop_timer();
+        if (!mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1))
+        {
+            LOG_ERR("Failed to start the retry timer, the remote connection stays down.");
+        }
+
         return;
     }
 
@@ -285,10 +298,16 @@ void ServiceClientConnectionBase::on_service_stop()
         send_message(disconnect_message(channel.cookie(), mTarget));
     }
 
-    mThreadSend.trigger_exit();
-    mClientConnection.close_socket( );
+    mThreadSend.set_closing();
+    mThreadSend.trigger_exit_drained();
+    if (!mThreadSend.wait_completion( areg::SEND_QUEUE_FLUSH_TIMEOUT ))
+    {
+        LOG_WARN("The outgoing messages did not leave within [ %u ] ms, closing the connection", areg::SEND_QUEUE_FLUSH_TIMEOUT);
+        mThreadSend.trigger_exit();
+        mThreadSend.wait_completion( areg::WAIT_INFINITE );
+    }
 
-    mThreadSend.wait_completion( areg::WAIT_INFINITE );
+    mClientConnection.close_socket( );
     mThreadSend.shutdown( areg::DO_NOT_WAIT );
     mThreadReceive.shutdown( areg::WAIT_INFINITE );
 

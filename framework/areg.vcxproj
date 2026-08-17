@@ -115,6 +115,7 @@
     <ClCompile Include="areg\component\private\posix\SimpleEventPosix.cpp" />
     <ClCompile Include="areg\component\private\ServiceManagerEventProcessor.cpp" />
     <ClCompile Include="areg\component\private\posix\TimerBasePosix.cpp" />
+    <ClCompile Include="areg\component\private\posix\TimerManagerBasePosix.cpp" />
     <ClCompile Include="areg\component\private\posix\TimerManagerPosix.cpp" />
     <ClCompile Include="areg\component\private\posix\TimerPosix.cpp" />
     <ClCompile Include="areg\component\private\posix\WatchdogManagerPosix.cpp" />
@@ -233,6 +234,7 @@
     <ClInclude Include="areg\component\private\EventStack.hpp" />
     <ClInclude Include="areg\component\private\EventQueue.hpp" />
     <ClInclude Include="areg\component\private\SimpleEvent.hpp" />
+    <ClInclude Include="areg\component\private\win32\Win32Timer.hpp" />
     <ClInclude Include="areg\ipc\ConnectionConsumer.hpp" />
     <ClInclude Include="areg\ipc\DataRateStats.hpp" />
     <ClInclude Include="areg\ipc\RegistrationProvider.hpp" />

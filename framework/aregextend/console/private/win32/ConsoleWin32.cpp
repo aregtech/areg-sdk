@@ -31,6 +31,7 @@
 #endif // !NOMINMAX
 #include <Windows.h>
 #include <stdio.h>
+#include <string.h>
 
 namespace {
 
@@ -38,12 +39,31 @@ namespace {
     thread_local bool _hasSavedCursorPos{ false };
 
     /**
-     * \brief   Writes text at the given position WITHOUT moving the visible
-     *          cursor.  First clears the line from posX to the right edge,
-     *          then writes the text.  The cursor stays wherever it was (e.g.
-     *          at the input prompt), so gets_s / fgets are not disturbed.
-     *          Newline and carriage-return characters are replaced with spaces
-     *          because WriteConsoleOutputCharacterA renders them as glyphs (?).
+     * \brief   True when the standard output of the process is attached to a real Windows console.
+     **/
+    bool _isConsole{ false };
+
+    /**
+     * \brief   Writes the text to the standard output stream. Used when the process has no console:
+     *          positioned output degrades to one line per call, and the stream is flushed.
+     **/
+    void _write_stream(const char* data, uint32_t len, bool newLine)
+    {
+        if ((data != nullptr) && (len != 0u))
+        {
+            ::fwrite(data, 1u, static_cast<size_t>(len), stdout);
+        }
+
+        if (newLine)
+        {
+            ::fputc('\n', stdout);
+        }
+
+        ::fflush(stdout);
+    }
+
+    /**
+     * \brief   Writes text at the given position WITHOUT moving the visible cursor.
      **/
     void _write_at(HANDLE hOut, SHORT posX, SHORT posY, const char* data, DWORD len)
     {
@@ -84,7 +104,15 @@ bool Console::_os_setup() noexcept
     {
         HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
         DWORD mode = 0;
-        if ((hStdOut != nullptr) && (GetConsoleMode(hStdOut, &mode) == TRUE))
+        _isConsole = (hStdOut != nullptr) && (hStdOut != INVALID_HANDLE_VALUE) &&
+                     (GetConsoleMode(hStdOut, &mode) == TRUE);
+        if (_isConsole == false)
+        {
+            // The output is redirected
+            mContext = 0;
+            mIsReady = true;
+        }
+        else
         {
             mContext = static_cast<ptr_type>(mode);
             mode |= ENABLE_PROCESSED_OUTPUT;
@@ -116,7 +144,13 @@ bool Console::_os_setup() noexcept
 
 void Console::_os_release() noexcept
 {
-    if (mIsReady)
+    if (mIsReady && (_isConsole == false))
+    {
+        ::fflush(stdout);
+        mContext = 0;
+        mIsReady = false;
+    }
+    else if (mIsReady)
     {
         HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
@@ -148,9 +182,16 @@ void Console::_os_release() noexcept
 void Console::_os_output_text(Console::Coord pos, const String& text) const noexcept
 {
     Lock lock(mLock);
-    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD len = static_cast<DWORD>(text.length());
-    _write_at(hStdOut, static_cast<SHORT>(pos.posX), static_cast<SHORT>(pos.posY), text.as_string(), len);
+    if (_isConsole)
+    {
+        HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+        _write_at(hStdOut, static_cast<SHORT>(pos.posX), static_cast<SHORT>(pos.posY), text.as_string(), len);
+    }
+    else
+    {
+        _write_stream(text.as_string(), static_cast<uint32_t>(len), true);
+    }
 
     if (static_cast<int32_t>(pos.posY) > mMaxUsedRow)
     {
@@ -161,10 +202,17 @@ void Console::_os_output_text(Console::Coord pos, const String& text) const noex
 void Console::_os_output_text(Console::Coord pos, std::string_view text) const noexcept
 {
     Lock lock(mLock);
-    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD len = static_cast<DWORD>(text.length());
-    _write_at(hStdOut, static_cast<SHORT>(pos.posX), static_cast<SHORT>(pos.posY),
-              text.data(), len);
+    if (_isConsole)
+    {
+        HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+        _write_at(hStdOut, static_cast<SHORT>(pos.posX), static_cast<SHORT>(pos.posY),
+                  text.data(), len);
+    }
+    else
+    {
+        _write_stream(text.data(), static_cast<uint32_t>(len), true);
+    }
 
     if (static_cast<int32_t>(pos.posY) > mMaxUsedRow)
     {
@@ -176,6 +224,12 @@ void Console::_os_output_text(const String& text) const noexcept
 {
     Lock lock(mLock);
 
+    if (_isConsole == false)
+    {
+        _write_stream(text.as_string(), static_cast<uint32_t>(text.length()), false);
+        return;
+    }
+
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleA(hStdOut, text.as_string(), static_cast<DWORD>(text.length()), &written, nullptr);
@@ -185,6 +239,12 @@ void Console::_os_output_text(std::string_view text) const noexcept
 {
     Lock lock(mLock);
 
+    if (_isConsole == false)
+    {
+        _write_stream(text.data(), static_cast<uint32_t>(text.length()), false);
+        return;
+    }
+
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleA(hStdOut, text.data(), static_cast<DWORD>(text.length()), &written, nullptr);
@@ -193,6 +253,11 @@ void Console::_os_output_text(std::string_view text) const noexcept
 Console::Coord Console::_os_get_cursor_position() const noexcept
 {
     Lock lock(mLock);
+
+    if (_isConsole == false)
+    {
+        return mSavedPos;
+    }
 
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
@@ -208,13 +273,35 @@ void Console::_os_set_cursor_cur_position(Console::Coord pos) const noexcept
 {
     Lock lock(mLock);
 
-    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     mSavedPos = { static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) };
-    SetConsoleCursorPosition(hStdOut, COORD{ static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) });
+    if (_isConsole)
+    {
+        HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+        SetConsoleCursorPosition(hStdOut, COORD{ static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) });
+    }
 }
 
 bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 {
+    if (_isConsole == false)
+    {
+        // Redirected input. 'gets_s' aborts the process when the line does not fit;
+        // a redirected stream is read with 'fgets', which keeps the line separator,
+        // which is removed here.
+        if (::fgets(buffer, static_cast<int>(size), stdin) == nullptr)
+        {
+            return false;
+        }
+
+        size_t len = ::strlen(buffer);
+        while ((len > 0u) && ((buffer[len - 1u] == '\n') || (buffer[len - 1u] == '\r')))
+        {
+            buffer[--len] = '\0';
+        }
+
+        return true;
+    }
+
 #if !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
     #if defined(_WIN32) && !defined(_MINGW)
         return (::gets_s(buffer, size) != nullptr);
@@ -228,6 +315,11 @@ bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 
 void Console::_os_interrupt_input() noexcept
 {
+    if (_isConsole == false)
+    {
+        return;
+    }
+
     HANDLE hIn = ::GetStdHandle(STD_INPUT_HANDLE);
     if ((hIn == INVALID_HANDLE_VALUE) || (hIn == nullptr))
         return;
@@ -324,6 +416,12 @@ void Console::_os_save_cursor_position() const noexcept
 void Console::_os_restore_cursor_position() const noexcept
 {
     Lock lock(mLock);
+    if (_isConsole == false)
+    {
+        _hasSavedCursorPos = false;
+        return;
+    }
+
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     const Console::Coord target = _hasSavedCursorPos ? _savedCursorPos : mSavedPos;
 

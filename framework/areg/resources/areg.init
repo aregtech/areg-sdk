@@ -206,16 +206,20 @@ log::*::enable              = true                          # Master logging ena
 log::*::enable::remote      = true                          # Remote logging enable/disable flag
 log::*::enable::file        = false                         # File logging enable/disable flag
 log::*::enable::debug       = false                         # Debug console output enable/disable flag
-log::*::enable::db          = false                         # Database logging enable/disable flag (not implemented)
+log::*::enable::db          = false                         # Database logging enable/disable flag (log collector and log observer only)
 log::*::file::location      = ./logs/%appname%_%time%.log   # Log file path with masks (supports %appname%, %time%, %user%)
 log::*::file::append        = false                         # Append mode: true = append to existing file, false = create new file
 log::*::remote::queue       = 100                           # Remote logging queue size. 0 = no queuing, >0 = buffered async logging
 log::*::remote::service     = logger                        # Name of remote logging service (see service configuration below)
 
 # ---------------------------------------------------------------------------
-# Database Logging Settings (Feature Not Implemented)
+# Database Logging Settings
 # ---------------------------------------------------------------------------
-log::*::db::engine          =                               # Database engine type (e.g., sqlite3, mysql, postgresql)
+# Applications write logs to a database only when a database engine is set in
+# the code. The log collector and the log observer set it themselves, see the
+# module-specific sections below.
+# ---------------------------------------------------------------------------
+log::*::db::engine          =                               # Database engine type (currently: sqlite3)
 log::*::db::name            =                               # Database name
 log::*::db::location        =                               # Database file location or connection string
 log::*::db::driver          =                               # Database driver library
@@ -263,7 +267,19 @@ log::logobserver::db::location      = ./logs                        # Database f
 # ---------------------------------------------------------------------------
 log::logcollector::enable::file     = false     # Log Collector: disable file output
 log::logcollector::enable::debug    = false     # Log Collector: disable debug console output
-log::logcollector::enable::db       = false     # Log Collector: disable database logging
+
+# ---------------------------------------------------------------------------
+# Log Collector Database Settings
+# ---------------------------------------------------------------------------
+# The log collector can store the collected logs in a database file. The
+# command line option '--log=db' switches it on and '--log=nodb' switches it
+# off regardless of the 'enable::db' flag below. An optional file path may
+# follow the option: 'logcollector --log=db ./logs/session_%time%.sqlog'.
+# ---------------------------------------------------------------------------
+log::logcollector::enable::db       = false                             # Log Collector: save the collected logs in the database
+log::logcollector::db::engine       = sqlite3                           # Database engine: SQLite 3
+log::logcollector::db::name         = logcollector_%time%.sqlog         # Database file name with timestamp mask
+log::logcollector::db::location     = ./logs                            # Database file directory
 log::mtrouter::enable::file         = false     # Message Router: disable file logging
 log::mtrouter::enable::db           = false     # Message Router: disable database logging
 log::mtrouter::enable::debug        = false     # Message Router: disable debug console output
