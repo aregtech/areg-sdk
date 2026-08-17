@@ -3,13 +3,7 @@
 
 name: REUSE compliance check
 
-# >>> TEMPORARY 2026-08-17 -- disabled while cygwin-hunt.yml is investigating the
-#     26_pubsubmix teardown hang. REVERT: delete this block and restore the original
-#     trigger kept verbatim below. See SESSION-STATE.md, "Temporary CI state".
-#
-# on: [push, pull_request, workflow_dispatch]
-on: [workflow_dispatch]
-# <<< TEMPORARY 2026-08-17
+on: [push, pull_request, workflow_dispatch]
 
 permissions:
   contents: read

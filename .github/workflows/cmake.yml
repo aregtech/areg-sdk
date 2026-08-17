@@ -1,18 +1,11 @@
 name: CMake
 
-# >>> TEMPORARY 2026-08-17 -- disabled while cygwin-hunt.yml is investigating the
-#     26_pubsubmix teardown hang. REVERT: delete this block and restore the original
-#     triggers kept verbatim below. See SESSION-STATE.md, "Temporary CI state".
-#
-# on:
-#   push:         # Keep empty to run on each branch when push the code. Otherwise use branches: [ master ]
-#     branches: [ master ]
-#   pull_request: # Set to master to run only when merge with master branch
-#     branches: [ master ]
-#   workflow_dispatch:
 on:
+  push:         # Keep empty to run on each branch when push the code. Otherwise use branches: [ master ]
+    branches: [ master ]
+  pull_request: # Set to master to run only when merge with master branch
+    branches: [ master ]
   workflow_dispatch:
-# <<< TEMPORARY 2026-08-17
 
 concurrency:
   group: ${{github.workflow}}-${{github.ref}}
@@ -347,14 +340,37 @@ jobs:
         shell: bash
         # A candidate is verified by running it: the cygwin 'python3' is a cygwin symlink
         # that the Git bash of the runner cannot start. The glob picks the real one.
+        #
+        # On a cygwin job the interpreter is not searched for, it is named and verified.
+        # Picking a Windows python there costs three things at once: the driver then runs
+        # the example processes without a pseudo terminal, it spawns Windows pids that a
+        # cygwin gdb cannot attach to, and _stack_tools() reports platform 'Windows' and
+        # looks for 'cdb' -- absent on the runner -- so a hung process is reported as
+        # "no debugger is installed" instead of being photographed. That is what hid the
+        # cygwin teardown hang across runs 1508 and 1509.
         run: |
           PY=""
-          for candidate in python3 python py $(ls /c/cygwin/bin/python3*.exe 2>/dev/null); do
-            if "${candidate}" -c "import sys; sys.exit(0 if sys.version_info[0] == 3 else 1)" > /dev/null 2>&1; then
-              PY="${candidate}"
-              break
+          if [ "${{matrix.config.family}}" = "cygwin" ]; then
+            for candidate in /c/cygwin/bin/python3.*.exe /c/cygwin/bin/python3.exe; do
+              [ -x "${candidate}" ] || continue
+              if "${candidate}" -c "import platform,sys; sys.exit(0 if platform.system().startswith('CYGWIN') else 1)"; then
+                PY="${candidate}"
+                break
+              fi
+            done
+            if [ -z "${PY}" ]; then
+              echo "no cygwin python 3 interpreter found under /c/cygwin/bin" >&2
+              ls -l /c/cygwin/bin/python3* || true
+              exit 1
             fi
-          done
+          else
+            for candidate in python3 python py; do
+              if "${candidate}" -c "import sys; sys.exit(0 if sys.version_info[0] == 3 else 1)" > /dev/null 2>&1; then
+                PY="${candidate}"
+                break
+              fi
+            done
+          fi
           if [ -z "${PY}" ]; then echo "python 3 is required to run the examples" >&2; exit 1; fi
           echo "PY=${PY}" >> "${GITHUB_ENV}"
           echo "example driver interpreter: ${PY} ($("${PY}" --version 2>&1))"
