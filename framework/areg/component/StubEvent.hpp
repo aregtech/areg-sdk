@@ -156,35 +156,35 @@ protected:
 protected:
 
     /**
-     * \brief   Pure virtual; processes a request to invoke a service function.
+     * \brief   Processes a request to invoke a service function.
      *
      * \param   eventElem       Service request event containing the request ID and serialized parameters.
      **/
     virtual void process_request_event( ServiceRequestEvent & eventElem ) = 0;
 
     /**
-     * \brief   Pure virtual; processes a request to get attribute data.
+     * \brief   Processes a request to get attribute data.
      *
      * \param   eventElem       Service request event containing the attribute ID.
      **/
     virtual void process_attribute_event( ServiceRequestEvent & eventElem ) = 0;
 
     /**
-     * \brief   Pure virtual; processes a component event that is not a service request.
+     * \brief   Processes a component event that is not a service request.
      *
      * \param   eventElem       Component event to process.
      **/
     virtual void process_stub_event( StubEvent & eventElem ) = 0;
 
     /**
-     * \brief   Pure virtual; processes a generic event.
+     * \brief   Processes a generic event.
      *
      * \param   eventElem       Generic event to process.
      **/
     virtual void process_generic_event( Event & eventElem ) = 0;
 
     /**
-     * \brief   Pure virtual; processes a notification that the stub has been registered with the service.
+     * \brief   Processes a notification that the stub has been registered with the service.
      *
      * \param   stubTarget      Address of the registered service provider.
      * \param   status          Connection status (Connected on success).
@@ -192,31 +192,21 @@ protected:
     virtual void process_registered_event( const StubAddress & stubTarget, areg::ServiceConnectionState status ) = 0;
 
     /**
-     * \brief   Pure virtual; returns true if the service provider is registered and may process
-     *          requests. A request that arrives while it is not -- before the registration, while
-     *          the registration is in progress, or after the provider unregistered -- is refused
-     *          and answered with a failure, so that the consumer is never left waiting.
-     *
-     *          This is what keeps a request addressed to a provider that went away from being
-     *          served by a fresh incarnation of it. A recreated provider carries a byte for byte
-     *          identical address, so the incarnations cannot be told apart by address; the
-     *          registration state is what distinguishes them.
+     * \brief   Returns true if the service provider is registered and may process requests.
      **/
     [[nodiscard]]
     virtual bool can_process_requests( ) const = 0;
 
 private:
     /**
-     * \brief   Answers a refused request with a failure addressed to the consumer that sent it,
-     *          so that the consumer is released instead of waiting for a response forever.
-     *
+     * \brief   Answers a refused request with a failure addressed to the consumer that sent it
      * \param   reqEvent    The request event that is refused.
      **/
     inline void _refuse_request( ServiceRequestEvent & reqEvent );
 protected:
 
     /**
-     * \brief   Pure virtual; processes a notification that a client is requesting connection or disconnection.
+     * \brief   Processes a notification that a client is requesting connection or disconnection.
      *
      * \param   proxyAddress    Address of the service consumer proxy.
      * \param   status          Service consumer connection status.

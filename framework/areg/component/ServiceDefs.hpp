@@ -512,13 +512,6 @@ inline constexpr bool is_request_id(uint32_t msgId) noexcept;
 /**
  * \brief   Returns true if the message ID is a real service response ID, i.e. it lies inside
  *          the response ID range [RESPONSE_ID_FIRST .. RESPONSE_ID_LAST].
- *
- *          Unlike is_response_id(), which is a single bit test and therefore reports true for
- *          areg::INVALID_MESSAGE_ID (0xFFFFFFFF has every bit set), this rejects the invalid ID
- *          and every ID outside the range. Use it wherever the ID comes from a request to
- *          response lookup: the code generator spells "this request has no response" as
- *          areg::INVALID_MESSAGE_ID, and areg::ProxyData::response_id() returns the same value
- *          for an index out of range.
  **/
 [[nodiscard]]
 inline constexpr bool is_valid_response_id(uint32_t msgId) noexcept;

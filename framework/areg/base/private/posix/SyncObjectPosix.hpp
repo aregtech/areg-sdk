@@ -93,8 +93,7 @@ public:
 /************************************************************************/
     
     /**
-     * \brief   Returns true if the synchronization object is valid. Pure virtual; must be
-     *          implemented by subclasses.
+     * \brief   Returns true if the synchronization object is valid.
      **/
     [[nodiscard]]
     virtual bool is_valid() const noexcept = 0;

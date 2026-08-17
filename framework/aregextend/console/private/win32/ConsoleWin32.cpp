@@ -39,19 +39,13 @@ namespace {
     thread_local bool _hasSavedCursorPos{ false };
 
     /**
-     * \brief   True when the standard output of the process is attached to a real Windows
-     *          console. When it is redirected to a file or to a pipe -- a build server, a
-     *          system service, a shell pipeline -- none of the console API calls succeed,
-     *          so every screen operation falls back to plain stream output. The flag is a
-     *          property of the process, and Console is a singleton, so it is set once in
-     *          Console::_os_setup() and read without synchronization afterwards.
+     * \brief   True when the standard output of the process is attached to a real Windows console.
      **/
     bool _isConsole{ false };
 
     /**
-     * \brief   Writes the text to the standard output stream. Used when the process has no
-     *          console: positioned output degrades to one line per call, and the stream is
-     *          flushed so that the output survives a termination of the process.
+     * \brief   Writes the text to the standard output stream. Used when the process has no console:
+     *          positioned output degrades to one line per call, and the stream is flushed.
      **/
     void _write_stream(const char* data, uint32_t len, bool newLine)
     {
@@ -69,12 +63,7 @@ namespace {
     }
 
     /**
-     * \brief   Writes text at the given position WITHOUT moving the visible
-     *          cursor.  First clears the line from posX to the right edge,
-     *          then writes the text.  The cursor stays wherever it was (e.g.
-     *          at the input prompt), so gets_s / fgets are not disturbed.
-     *          Newline and carriage-return characters are replaced with spaces
-     *          because WriteConsoleOutputCharacterA renders them as glyphs (?).
+     * \brief   Writes text at the given position WITHOUT moving the visible cursor.
      **/
     void _write_at(HANDLE hOut, SHORT posX, SHORT posY, const char* data, DWORD len)
     {
@@ -119,10 +108,7 @@ bool Console::_os_setup() noexcept
                      (GetConsoleMode(hStdOut, &mode) == TRUE);
         if (_isConsole == false)
         {
-            // The output is redirected. There is no screen to control, but the object must
-            // still report itself ready: Console::enable_console_input() refuses to enable
-            // the input of an object that is not ready, and an application that cannot read
-            // its input never reaches its own exit point.
+            // The output is redirected
             mContext = 0;
             mIsReady = true;
         }
@@ -299,9 +285,9 @@ bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 {
     if (_isConsole == false)
     {
-        // Redirected input. 'gets_s' aborts the process when the line does not fit, and it
-        // is a console function; a redirected stream is read with 'fgets', which keeps the
-        // line separator that the callers do not expect, so it is removed here.
+        // Redirected input. 'gets_s' aborts the process when the line does not fit;
+        // a redirected stream is read with 'fgets', which keeps the line separator,
+        // which is removed here.
         if (::fgets(buffer, static_cast<int>(size), stdin) == nullptr)
         {
             return false;
@@ -331,8 +317,6 @@ void Console::_os_interrupt_input() noexcept
 {
     if (_isConsole == false)
     {
-        // Nothing to inject: there is no console input queue. A reader that is parked in
-        // 'fgets' leaves when the writing end of the redirected input is closed.
         return;
     }
 

@@ -298,9 +298,6 @@ void ServiceClientConnectionBase::on_service_stop()
         send_message(disconnect_message(channel.cookie(), mTarget));
     }
 
-    // The queue still holds messages the application handed over before it asked to
-    // stop, and the disconnect notification queued right above. Let the send thread
-    // write them out, then close.
     mThreadSend.set_closing();
     mThreadSend.trigger_exit_drained();
     if (!mThreadSend.wait_completion( areg::SEND_QUEUE_FLUSH_TIMEOUT ))

@@ -192,10 +192,17 @@ private:
      * \brief   The unique identifier of the Watchdog object.
      **/
     const GUARD_ID      mGuardId;
+#if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
     /**
      * \brief   Set once the guard is permanently disarmed.
      **/
     std::atomic_bool    mDisarmed;
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif  // _MSC_VER
     /**
      * \brief   The sequence number of the Watchdog. The number is changed each time when timer starts.
      */

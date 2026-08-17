@@ -523,7 +523,7 @@ namespace areg {
     /**
      * \brief   The invalid message ID
      **/
-    constexpr uint32_t  INVALID_MESSAGE_ID          { areg::INVALID_VALUE };    /*0xFFFFFFFF*/
+    constexpr uint32_t  INVALID_MESSAGE_ID          { 0x80000000u };
 
     /**
      * \brief   Unknown cookie

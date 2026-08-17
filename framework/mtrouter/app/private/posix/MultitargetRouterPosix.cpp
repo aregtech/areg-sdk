@@ -31,7 +31,7 @@
 int main(int argc, char* argv[], char* envp[])
 {
     MultitargetRouter& router = MultitargetRouter::instance();
-    if (router.parse_options(argc, argv) == false)
+    if (!router.parse_options(argc, argv))
     {
         return areg::ext::ServiceApplicationBase::RESULT_FAILED_INIT;
     }

@@ -142,14 +142,7 @@ void RouterClient::unregister_service_provider(const StubAddress & stubService, 
                    , StubAddress::to_path(stubService).as_string()
                    , mClientConnection.cookie());
 
-        // HighPrio, the same lane as register_service_provider(). These two messages carry the
-        // whole availability contract and are only meaningful in the order they were issued.
-        // Sending the registration on the priority lane and the unregistration on the normal
-        // lane lets the registration of a restarted provider overtake the unregistration of
-        // the one it replaces. The router then sees a registration for an address it still
-        // holds as connected, drops it in silence, and honours the unregistration that
-        // arrives next -- so every consumer is told the provider is gone and is never told
-        // that it came back.
+        // HighPrio, the same lane as register_service_provider()
         send_message(areg::router_unregister_service(stubService, reason, mClientConnection.cookie(), areg::COOKIE_ROUTER), areg::EventPriority::HighPrio );
     }
 }
