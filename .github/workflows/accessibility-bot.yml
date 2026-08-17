@@ -1,15 +1,22 @@
 name: Accessibility-alt-text-bot
+# >>> TEMPORARY 2026-08-17 -- disabled while cygwin-hunt.yml is investigating the
+#     26_pubsubmix teardown hang. REVERT: delete this block and restore the original
+#     triggers kept verbatim below. See SESSION-STATE.md, "Temporary CI state".
+#
+# on:
+#   issues:
+#     types: [opened, edited]
+#   pull_request:
+#     types: [opened, edited]
+#   issue_comment:
+#     types: [created, edited]
+#   discussion:
+#     types: [created, edited]
+#   discussion_comment:
+#     types: [created, edited]
 on:
-  issues:
-    types: [opened, edited]
-  pull_request:
-    types: [opened, edited]
-  issue_comment:
-    types: [created, edited]
-  discussion:
-    types: [created, edited]
-  discussion_comment:
-    types: [created, edited]
+  workflow_dispatch:
+# <<< TEMPORARY 2026-08-17
 
 permissions:
   issues: write

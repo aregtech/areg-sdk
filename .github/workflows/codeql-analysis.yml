@@ -1,14 +1,21 @@
 name: "CodeQL"
 
+# >>> TEMPORARY 2026-08-17 -- disabled while cygwin-hunt.yml is investigating the
+#     26_pubsubmix teardown hang. REVERT: delete this block and restore the original
+#     triggers kept verbatim below. See SESSION-STATE.md, "Temporary CI state".
+#
+# on:
+#   push:
+#     branches: [ master ]
+#   pull_request:
+#     # The branches below must be a subset of the branches above
+#     branches: [ master ]
+#   schedule:
+#     - cron: '32 22 * * 1'
+#   workflow_dispatch:
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    # The branches below must be a subset of the branches above
-    branches: [ master ]
-  schedule:
-    - cron: '32 22 * * 1'
   workflow_dispatch:
+# <<< TEMPORARY 2026-08-17
 
 jobs:
   analyze:

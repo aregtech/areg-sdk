@@ -1,0 +1,185 @@
+name: Cygwin hunt (TEMPORARY)
+
+# ===========================================================================
+#  TEMPORARY -- bug hunting workflow, created 2026-08-17.
+#
+#  Purpose: photograph the teardown hang of '26_pubsubdyn' on the cygwin static
+#  configuration, which is the only entry that reproduces it. See
+#  product/2026-08-14-crash-1/3/2026-08-17-run1509-26pubsubmix-teardown-hang.md
+#
+#  It exists to cut the turnaround: one job instead of twenty-five, and only the
+#  three binaries the scenario needs instead of the whole example suite.
+#
+#  Every other workflow in this directory is disabled for the duration. Delete this
+#  file and restore their triggers when the defect is closed -- SESSION-STATE.md,
+#  section "Temporary CI state", carries the exact revert instructions.
+# ===========================================================================
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      rounds:
+        description: 'How many times the scenario is repeated per run'
+        required: false
+        default: '3'
+      scenario:
+        description: 'Scenario name for tools/run-all-examples.py --only'
+        required: false
+        default: '26_pubsubmix'
+      libtype:
+        description: 'static or shared (the hang is static only)'
+        required: false
+        default: 'static'
+
+concurrency:
+  group: ${{github.workflow}}-${{github.ref}}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  BUILD_TYPE: Release
+  ROUNDS: ${{github.event.inputs.rounds   || '3'}}
+  SCENARIO: ${{github.event.inputs.scenario || '26_pubsubmix'}}
+  LIB_TYPE: ${{github.event.inputs.libtype  || 'static'}}
+  CACHE_DEST: ./product/cache/cygwin-hunt
+
+jobs:
+  cygwin-hunt:
+    name: cygwin-static hunt
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout Areg SDK source codes
+        uses: actions/checkout@v7
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v5.6.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      - name: Set Windows PATH environment variable
+        # Only the cygwin toolchain and the Windows system directories. The runner image
+        # carries further GNU toolchains that must not be visible to a cygwin build.
+        run: echo "PATH=C:\cygwin;C:\cygwin\bin;C:\cygwin\lib;$env:SYSTEMROOT\system32;$env:SYSTEMROOT;$env:SYSTEMROOT\System32\Wbem" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Install cygwin on Windows
+        uses: cygwin/cygwin-install-action@v6
+        with:
+          # 'gdb' is what the example driver uses to photograph a hung process.
+          packages: cmake, dos2unix, flexdll, gcc-g++, gdb, git, libncurses-devel, make, python3
+          install-dir: 'C:\cygwin'
+          add-to-path: false
+          work-vol: 'C:'
+
+      - name: Pin the example driver to the cygwin interpreter
+        shell: bash
+        # This is the whole reason no cygwin hang has ever been photographed. The shared
+        # workflow resolves 'python3' and gets the Windows interpreter, and then
+        # _stack_tools() reports platform 'Windows', looks for 'cdb' -- absent on the
+        # runner -- and answers "no debugger is installed". A Windows interpreter also
+        # spawns Windows pids that a cygwin gdb cannot attach to, and disables the pty.
+        # So the interpreter is not searched for here, it is named, and it is verified.
+        run: |
+          PY=""
+          for candidate in /c/cygwin/bin/python3.*.exe /c/cygwin/bin/python3.exe; do
+            [ -x "${candidate}" ] || continue
+            if "${candidate}" -c "import platform,sys; sys.exit(0 if platform.system().startswith('CYGWIN') else 1)"; then
+              PY="${candidate}"
+              break
+            fi
+          done
+          if [ -z "${PY}" ]; then
+            echo "no cygwin python 3 interpreter found under /c/cygwin/bin" >&2
+            ls -l /c/cygwin/bin/python3* || true
+            exit 1
+          fi
+          echo "PY=${PY}" >> "${GITHUB_ENV}"
+          echo "driver: ${PY} ($("${PY}" --version 2>&1))"
+          "${PY}" -c "import platform, shutil, sys; print('platform:', platform.system()); print('gdb     :', shutil.which('gdb'))"
+
+      - name: Configure CMake
+        working-directory: ${{github.workspace}}
+        # AREG_TESTS=OFF only removes the Google Test fetch and the unit test targets; it
+        # changes nothing in the framework or in the examples. AREG_INSTALL=OFF because
+        # nothing here installs.
+        run: >
+          cmake -B ${{env.CACHE_DEST}}
+          -DAREG_COMPILER_FAMILY=cygwin
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+          -DAREG_LIB_TYPE=${{env.LIB_TYPE}}
+          -DAREG_EXTENDED:BOOL=ON
+          -DAREG_LOGGING:BOOL=ON
+          -DAREG_EXAMPLES:BOOL=ON
+          -DAREG_TESTS:BOOL=OFF
+          -DAREG_INSTALL:BOOL=OFF
+
+      - name: Dump the CMake logs of a failed configuration
+        if: failure()
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          for f in "${{env.CACHE_DEST}}/CMakeFiles/CMakeConfigureLog.yaml" \
+                   "${{env.CACHE_DEST}}/CMakeFiles/CMakeError.log" \
+                   "${{env.CACHE_DEST}}/CMakeFiles/CMakeOutput.log"; do
+            if [ -f "${f}" ]; then echo "===== ${f} ====="; tail -n 300 "${f}"; fi
+          done
+
+      - name: Build only what the scenario needs
+        working-directory: ${{github.workspace}}
+        # Three targets instead of the whole suite. 26_generated and 26_common are pulled
+        # in as dependencies.
+        run: cmake --build ${{env.CACHE_DEST}} -j16 --target mtrouter 26_pubsubctrl 26_pubsubdyn
+
+      - name: Locate the build output directory
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
+          if [ -z "${BIN_DIR}" ]; then echo "no bin directory was produced" >&2; exit 1; fi
+          echo "BIN_DEST=${BIN_DIR}" >> "${GITHUB_ENV}"
+          ls -l "${BIN_DIR}"
+
+      - name: Run the scenario and photograph anything that hangs
+        working-directory: ${{github.workspace}}
+        shell: bash
+        timeout-minutes: 30
+        # Never fails the step: the evidence steps below must run either way, and a
+        # reproduction is the expected outcome here, not an accident.
+        continue-on-error: true
+        run: |
+          "${{env.PY}}" tools/run-all-examples.py \
+                  --bin-dir "${{env.BIN_DEST}}" \
+                  --only "${{env.SCENARIO}}" \
+                  --repeat "${{env.ROUNDS}}" \
+                  --keep-logs \
+                  --out-dir "./example-results/cygwin-hunt"
+
+      - name: Publish every stack that was taken
+        if: always()
+        working-directory: ${{github.workspace}}
+        shell: bash
+        continue-on-error: true
+        # Annotations are the only part of a run that is readable without a credential.
+        run: |
+          shopt -s globstar nullglob
+          FOUND=0
+          for f in ./example-results/cygwin-hunt/**/*.stacks.txt; do
+            FOUND=1
+            "${{env.PY}}" tools/annotate-file.py --title "stack $(basename "${f}")" \
+                    --level error --tail 400 --max-annotations 8 "${f}"
+          done
+          if [ "${FOUND}" = "0" ]; then echo "::warning title=cygwin-hunt::no stack file was produced"; fi
+
+      - name: Upload everything the run captured
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cygwin-hunt
+          path: ./example-results/cygwin-hunt/
+          if-no-files-found: warn

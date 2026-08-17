@@ -47,12 +47,6 @@ void ServicingComponent::request_start_sleep( uint32_t timeoutSleep )
     {
         printf( "Hello Watchdog! Sleep [ %u ] ms, watchdog timeout [ %u ]\n", timeoutSleep, HelloWatchdog::TimeoutWatchdog );
         set_service_state( HelloWatchdog::ComponentState::Started );
-
-        // wait_exit() and not sleep(): the point of this example is that the watchdog notices a
-        // handler that blocks longer than its timeout and restarts the component thread. A plain
-        // sleep() cannot be interrupted -- POSIX has no way to terminate a thread -- so the
-        // thread would be abandoned and its objects leaked. wait_exit() returns the moment the
-        // restart is ordered, so the thread leaves by a normal return and destroys what it owns.
         if ( areg::Thread::wait_exit( timeoutSleep ) == false )
         {
             LOG_WARN("The component thread was asked to exit while sleeping, leaving the request");

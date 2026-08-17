@@ -1,8 +1,15 @@
 name: PR Validation
 
+# >>> TEMPORARY 2026-08-17 -- disabled while cygwin-hunt.yml is investigating the
+#     26_pubsubmix teardown hang. REVERT: delete this block and restore the original
+#     triggers kept verbatim below. See SESSION-STATE.md, "Temporary CI state".
+#
+# on:
+#   pull_request:
+#     types: [opened, edited, reopened, synchronize]
 on:
-  pull_request:
-    types: [opened, edited, reopened, synchronize]
+  workflow_dispatch:
+# <<< TEMPORARY 2026-08-17
 
 jobs:
   pr-check:

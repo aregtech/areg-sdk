@@ -945,12 +945,6 @@ AREG_API_IMPL uint32_t areg::recv_data_available(SOCKETHANDLE hSocket) noexcept
     if (tc.unread < static_cast<uint32_t>(sizeof(areg::EventHeader)))
         return 0u;
 
-    // Messages are packed into the receive cache back to back with no padding, so the
-    // cursor of the next one lands on any byte offset. Reading the header through a
-    // 'const EventHeader *' is therefore an access to an object at an address that does
-    // not satisfy its alignment -- undefined, and a fault on a target that does not
-    // tolerate an unaligned load. Only the length is needed here, so the header bytes
-    // are copied out instead of being read in place.
     areg::BufferHeader bufHeader{ };
     std::memcpy(&bufHeader, tc.buffer.get() + tc.head, sizeof(areg::BufferHeader));
     const uint32_t msg_total = static_cast<uint32_t>(sizeof(areg::EventHeader)) + bufHeader.biUsed;

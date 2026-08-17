@@ -362,6 +362,10 @@ def _stack_tools(pid):
                      '-o', 'thread backtrace all', '-o', 'detach']]
         once = [['ps', '-M', '-p', str(pid)], ['lsof', '-p', str(pid)]]
     else:
+        # cygwin lands here: platform.system() is 'CYGWIN_NT-...', os.name is 'posix',
+        # and gdb attaches by cygwin pid. That only holds while this driver is itself a
+        # cygwin interpreter -- a Windows python spawns Windows pids and takes the
+        # branch above, which is why the interpreter is pinned per platform in CI.
         repeated = [['gdb', '-p', str(pid), '--batch', '-nx',
                      '-ex', 'thread apply all bt full'],
                     ['eu-stack', '-p', str(pid)]]
@@ -371,11 +375,29 @@ def _stack_tools(pid):
     return available, [cmd for cmd in once if shutil.which(cmd[0]) is not None]
 
 
+def describe_stack_tools():
+    """Names the debuggers this driver can and cannot reach.
+
+    A missing debugger is only discovered when something already hung, and the report
+    then said no more than 'none installed'. Naming the interpreter, the platform it
+    reports and every candidate turns that dead end into a fixable statement.
+    """
+    repeated, once = _stack_tools(0)
+    found = [cmd[0] for cmd in repeated] + [cmd[0] for cmd in once]
+    missing = [name for name in ('cdb', 'gdb', 'eu-stack', 'lldb', 'sample', 'lsof')
+               if (name not in found) and shutil.which(name) is None]
+    return ('debuggers : %s (platform %s, interpreter %s); not found: %s'
+            % (', '.join(found) if found else 'NONE',
+               platform.system(), sys.executable,
+               ', '.join(missing) if missing else '-'))
+
+
 def capture_stacks(pid, name, dest):
     """Photographs a live process and writes the report next to its log."""
     repeated, once = _stack_tools(pid)
     if not repeated:
-        return 'no debugger is installed to photograph %s (pid %d)' % (name, pid)
+        return ('no debugger is installed to photograph %s (pid %d) -- %s'
+                % (name, pid, describe_stack_tools()))
 
     parts = []
     for snapshot in range(STACK_SNAPSHOTS):
@@ -1503,6 +1525,8 @@ def main():
     print('binaries : %s' % bin_dir)
     print('output   : %s' % out_dir)
     print('scenarios: %d, tier %s, timeout %d s' % (len(selection), args.tier, args.timeout))
+    if CAPTURE_STACKS:
+        print(describe_stack_tools())
     for other in others:
         print('note     : another build is present, not used: %s' % other)
     if others:
