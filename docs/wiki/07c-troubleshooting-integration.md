@@ -274,7 +274,7 @@ cmake --build ./product/cache/gnu-arm32 -j
 
 > [!TIP]
 > **Example Toolchain Files Available**:
-> - Working examples: [`toolchains`](../../conf/exports/example/toolchains/) directory
+> - Working examples: [`toolchains`](../../conf/toolchains/) directory
 > - More examples: [`areg-sdk-demo`](https://github.com/aregtech/areg-sdk-demo) repository
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
@@ -451,7 +451,7 @@ cmake -B build \
 
 > [!TIP]
 > **Reference Examples**:
-> - Example toolchain files: [`toolchains`](../../conf/exports/example/toolchains/) directory
+> - Example toolchain files: [`toolchains`](../../conf/toolchains/) directory
 > - Complete examples: [`areg-sdk-demo`](https://github.com/aregtech/areg-sdk-demo) repository
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>

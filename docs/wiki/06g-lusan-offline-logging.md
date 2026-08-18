@@ -100,11 +100,25 @@ log::logcollector::db::name     = log_%time%.sqlog  # Log Collector: database na
 log::logcollector::db::location = ./logs            # Log Collector: database location
 ```
 
+The same can be switched on without editing the file, which is useful when you only want to capture one session:
+
+```bash
+logcollector --log=db                                 # record, path taken from areg.init
+logcollector --log=db ./logs/session_%time%.sqlog     # record into an explicit file
+logcollector --log=nodb                               # do not record, whatever areg.init says
+```
+
+In console mode, recording can also be started and stopped while the collector runs, with the commands `--save [<path>]` and `--unsave`. Every `--save` after an `--unsave` creates a new file when the configured name contains `%time%`.
+
 **Benefits:**
 - Automatic recording of all aggregated logs
 - Structured storage in database format
 - No application code changes required
 - Centralized log collection point
+- Records even when no observer and no Lusan instance is connected
+
+> [!TIP]
+> Details of the recording, including the file contents and the behaviour under high load, are described in the [Log Collector Guide](./04d-logcollector.md#saving-collected-logs-in-a-database).
 
 ### Method 2: Using `logobserver`
 

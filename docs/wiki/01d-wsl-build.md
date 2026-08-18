@@ -649,7 +649,7 @@ wsl --shutdown
 - [WSL Troubleshooting](https://learn.microsoft.com/en-us/windows/wsl/troubleshooting)
 
 **Areg SDK Build Guides:**
-- [CMake Build Guide](./02b-cmake-build.md) - Complete CMake build instructions
+- [CMake Build Guide](./01b-cmake-build.md) - Complete CMake build instructions
 - [CMake Configuration](./02d-cmake-config.md) - Configuration options
 - [Linux Build Troubleshooting](./07b-troubleshooting-cmake-linux-builds.md)
 

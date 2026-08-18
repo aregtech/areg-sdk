@@ -14,8 +14,10 @@ The Areg SDK Log Collector is a centralized service that gathers and routes log 
 3. [Installation](#installation)
 4. [Running as System Service](#running-as-system-service)
 5. [Configuration](#configuration)
-6. [Application Integration](#application-integration)
-7. [Troubleshooting](#troubleshooting)
+6. [Saving Collected Logs in a Database](#saving-collected-logs-in-a-database)
+7. [Command Line and Console Commands](#command-line-and-console-commands)
+8. [Application Integration](#application-integration)
+9. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -110,6 +112,11 @@ The Log Collector is a centralized network service that:
 - ✅ Aggregates logs from all sources
 - ✅ Routes logs to connected log observers
 
+**Persistence (optional):**
+- ✅ Saves the collected logs in an SQLite database file (`.sqlog`)
+- ✅ Records the connect and disconnect time of every log source
+- ✅ Records the log scopes and priorities of every log source
+
 **Dynamic Control:**
 - ✅ Forwards scope control commands from observers to applications
 - ✅ Enables runtime log filtering
@@ -130,18 +137,20 @@ The Log Collector is a centralized network service that:
 │ Application │────────►│              │────────►│    Lusan     │
 │     B       │  Logs   │              │  Logs   │  Application │
 └─────────────┘         └──────────────┘         └──────────────┘
-                               ▲
-                               │ Control
-                               │ Commands
-                               │
-                        (Scope changes,
-                         priority updates)
+                         ▲          │
+                 Control │          │ optional
+                commands │          ▼
+            (scope and   │  ┌──────────────────┐
+             priority    │  │  ./logs/*.sqlog  │
+             updates)    │  │ SQLite database  │
+                         │  └──────────────────┘
 ```
 
 **Components:**
 1. **Applications** - Send logs to Log Collector
 2. **Log Collector** - Central aggregation and routing service (this guide)
 3. **Log Observers** - Receive logs, store data, control scopes
+4. **Database file** - Optional local copy of everything the collector received
 
 > [!NOTE]
 > Log Collector supports multiple applications sending logs and multiple log observers receiving logs simultaneously. Each observer receives all log messages, enabling independent storage and analysis.
@@ -153,12 +162,17 @@ The Log Collector is a centralized network service that:
 **Log Flow:**
 ```
 Application → Log Collector → Log Observer(s) → Storage (File/Database)
+                     │
+                     └─────────► Database file (.sqlog), if enabled
 ```
 
 **Control Flow:**
 ```
 Log Observer → Log Collector → Application (scope/priority updates)
 ```
+
+> [!NOTE]
+> Forwarding to the observers always happens first. The database write is queued and performed by a separate thread, so it never delays the delivery of the logs to the observers.
 
 ---
 
@@ -170,6 +184,7 @@ Log Observer → Log Collector → Application (scope/priority updates)
 - ✅ Multiple applications logging simultaneously
 - ✅ Runtime scope control required
 - ✅ Using Log Observer or Lusan for log analysis
+- ✅ Logs must be kept on disk even when no observer is connected
 
 **Not needed when:**
 - ❌ Single application logging to file
@@ -602,6 +617,247 @@ logger::someapp::enable::tcpip = false
 
 **See:** [Areg Configuration Reference](./05b-areg-configuration-file.md) for the complete property list
 
+**See also:** [Saving Collected Logs in a Database](#saving-collected-logs-in-a-database) for the `log::logcollector::db::*` properties
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## Saving Collected Logs in a Database
+
+Forwarding logs to observers is a live stream. If no observer is connected, the logs are gone. The Log Collector can additionally write every collected log into a local **SQLite database file** with the extension `.sqlog`.
+
+The file has the same structure as the database written by the Log Observer, so the same tools read both files, including [Lusan](./06f-lusan-live-logging.md) and the plain `sqlite3` command line tool.
+
+> [!TIP]
+> The database is **off by default**. Nothing changes for an existing deployment until you switch it on.
+
+---
+
+### What Is Stored
+
+| Table | Content |
+| --- | --- |
+| `version` | One row that describes the file: name, schema version, creator, and the time the file was created and closed. |
+| `instances` | One row per log source: cookie ID, process name, location, bitness, connect time, disconnect time. |
+| `scopes` | The log scopes of every log source: scope ID, scope name, priority, owner cookie, and the time the scope became active or inactive. |
+| `logs` | Every collected log message: cookie ID, scope ID, priority, message text, module and thread name and ID, the time the message was created by the source, and the time the collector received it. |
+
+Every log keeps the identity of the **log source that produced it**, not the identity of the collector. The module name, thread name, and cookie stored in the file are the ones of the originating application.
+
+---
+
+### Three Ways to Switch the Database On
+
+| Way | Scope of the decision | Use case |
+| --- | --- | --- |
+| `log::logcollector::enable::db = true` in `areg.init` | Every start of the collector | Permanent setup, service deployment |
+| `logcollector --log=db [<path>]` | This process only | Capture one session, no file editing |
+| Console command `--save [<path>]` | Immediately, on a running collector | Start recording while a problem happens |
+
+**The command line overrides the configuration file.** The order of precedence is:
+
+```
+--log=db  or  --log=nodb        ← wins, if present
+        ↓
+log::logcollector::enable::db   ← used when no --log option is given
+```
+
+Use `--log=nodb` to make sure that no database is created, even when the configuration file enables it.
+
+---
+
+### Configuration Properties
+
+The properties live in [`areg.init`](../../framework/areg/resources/areg.init):
+
+```ini
+# ---------------------------------------------------------------------------
+# Log Collector Database Settings
+# ---------------------------------------------------------------------------
+log::logcollector::enable::db       = false                         # save the collected logs in the database
+log::logcollector::db::engine       = sqlite3                       # database engine: SQLite 3
+log::logcollector::db::name         = logcollector_%time%.sqlog     # database file name with timestamp mask
+log::logcollector::db::location     = ./logs                        # database file directory
+```
+
+| Property | Default in the shipped file | Value if the key is missing | Description |
+| --- | --- | --- | --- |
+| `log::logcollector::enable::db` | `false` | `false` | Switches the database on when the collector starts. |
+| `log::logcollector::db::engine` | `sqlite3` | `sqlite3` | The only supported engine. An empty value is treated as `sqlite3`, any other value switches the database off. |
+| `log::logcollector::db::name` | `logcollector_%time%.sqlog` | `logcollector_%time%.sqlog` | File name. Masks are allowed. |
+| `log::logcollector::db::location` | `./logs` | `./logs` | Directory of the file. Created if it does not exist. |
+
+**File name masks**
+
+| Mask | Expands to |
+| --- | --- |
+| `%time%` | The current timestamp, in the form `yyyy_mm_dd_hh_mm_ss_ms` |
+| `%appname%` | The name of the process, that is `logcollector` |
+| `%user%` | The home directory of the account that runs the collector |
+
+Because the shipped file name contains `%time%`, every start writes a new file and no earlier file is overwritten.
+
+> [!IMPORTANT]
+> A relative path such as `./logs` is resolved against the **working directory of the collector process**, not against the location of the executable. When the collector runs as a system service, the working directory is set by the service manager. Use an absolute path such as `/var/log/areg` on Linux to avoid surprises. `%user%` is also absolute, but for a system service it resolves to the home of the service account (`SYSTEM` on Windows, `root` under systemd), not of the interactive user.
+
+> [!NOTE]
+> The master switch `log::logcollector::enable` must stay `true`. Setting it to `false` disables all log targets of the process, including the database. The command line option `--log=db` starts the database regardless of both switches.
+
+---
+
+### Command Line Examples
+
+```bash
+# Save the collected logs, path taken from areg.init
+logcollector --log=db
+
+# Save the collected logs in an explicit file, masks are allowed
+logcollector --log=db ./logs/session_%time%.sqlog
+
+# Never save, even if areg.init enables the database
+logcollector --log=nodb
+
+# No option: areg.init decides
+logcollector
+```
+
+An unknown value is rejected. The collector prints a message and exits **without starting the service**:
+
+```bash
+logcollector --log=text
+# Unknown target [ text ] of the option '--log', expected either 'db' or 'nodb'.
+```
+
+---
+
+### Controlling the Database on a Running Collector
+
+In console mode, two commands start and stop the recording without restarting the process:
+
+| Command | Short | Effect |
+| --- | --- | --- |
+| `--save [<path>]` | `-a` | Opens the database file and starts saving. Without a path, the path from `areg.init` is used. |
+| `--unsave` | `-b` | Writes what is still pending, closes the file, and stops saving. |
+
+```
+--save
+Started to save the collected logs in the database [ .../logs/logcollector_2026_08_18_11_20_35_120.sqlog ]
+
+--unsave
+Stopped saving the collected logs in the database
+```
+
+Two points worth knowing:
+
+- When the database starts on a running collector, the **already connected log sources are written into the new file** at once, so their names are known. Their scope lists are not resent automatically; request them with `--query *`.
+- If the configured file name contains `%time%`, calling `--save` again after `--unsave` creates a **new file**. The previous file stays untouched.
+
+---
+
+### Behaviour Under High Load
+
+The collected messages are handed to a dedicated writer thread and are written in batches inside a single SQLite transaction. This keeps the network path free.
+
+If logs arrive faster than the disk can absorb them for a long time, the queue grows. It is limited to **200 000 pending entries**. Beyond that limit:
+
+1. New entries are dropped and counted, instead of growing the memory of the process without limit.
+2. As soon as the writer catches up, one row is written into the `logs` table with priority `ERROR` and the text `Dropped [ N ] log messages, the logging database cannot keep up with the incoming data rate.`
+
+So a gap in the file is always visible in the file itself.
+
+---
+
+### Reading the File
+
+```bash
+# List the log sources that were recorded
+sqlite3 ./logs/logcollector_2026_08_18_11_20_35_120.sqlog \
+        "SELECT cookie_id, inst_name, time_connected, time_disconnected FROM instances;"
+
+# Show the last 20 messages with their source
+sqlite3 ./logs/logcollector_2026_08_18_11_20_35_120.sqlog \
+        "SELECT msg_module, msg_thread, msg_prio, msg_log FROM logs ORDER BY id DESC LIMIT 20;"
+```
+
+The file can also be opened with [Lusan](./06f-lusan-live-logging.md), which reads the same format.
+
+---
+
+### Limitations
+
+- ❌ The **collected** logs cannot be written into a plain text file. The property `log::logcollector::enable::file` controls only the own logs of the `logcollector` process, not the logs it receives from other applications.
+- ❌ `sqlite3` is the only supported engine. The remaining `db::*` properties (`driver`, `address`, `port`, `username`, `password`) are reserved for future engines and are ignored.
+- ❌ The console command `--config`, which is meant to save the current configuration back into the file, is not implemented yet.
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## Command Line and Console Commands
+
+The Log Collector accepts two different sets of commands:
+
+- **Command line options** are passed when the process starts.
+- **Console commands** are typed at the prompt of a running collector in console mode.
+
+Some names appear in both sets, but the meaning is not always the same. `logcollector --help` prints the list and exits.
+
+---
+
+### Command Line Options
+
+| Option | Short | Argument | Description |
+| --- | --- | --- | --- |
+| `--console` | `-c` | none | Run as a console application. This is the default. |
+| `--service` | `-s` | none | Run as an OS managed service (systemd, Windows service). |
+| `--install` | `-i` | none | Register as a Windows service. Windows only. |
+| `--uninstall` | `-u` | none | Remove the Windows service registration. Windows only. |
+| `--load=<path>` | `-l` | path | Read the configuration from the given file instead of the default one. |
+| `--log=<target>` | `-d` | `db` or `nodb`, plus an optional file path | Decide whether the collected logs are saved in a database. Overrides `areg.init`. |
+| `--help` | `-h` | none | Print the list of options and exit without starting the service. |
+
+```bash
+logcollector --console
+logcollector --service
+logcollector --load=./config/mycollector.init --log=db
+```
+
+---
+
+### Console Commands
+
+| Command | Short | Description |
+| --- | --- | --- |
+| `--save [<path>]` | `-a` | Start saving the collected logs in the database. |
+| `--unsave` | `-b` | Stop saving the collected logs in the database. |
+| `--query <target>` | `-e` | Ask the log sources for their list of scopes. `*` means all sources, a number means one cookie ID. |
+| `--scope <update>` | `-o` | Change the priority of a scope or a group of scopes on a running application. |
+| `--instances` | `-n` | Print the list of connected instances with their cookie ID and bitness. |
+| `--pause` | `-p` | Close the server connection. Connected applications keep running. |
+| `--restart` | `-r` | Open the server connection again. |
+| `--verbose` | `-v` | Show the data rate rows. Requires a build with extended features. |
+| `--silent` | `-t` | Hide the data rate rows. Requires a build with extended features. |
+| `--help` | `-h` | Print the list of commands on the console. |
+| `--quit` | `-q` | Stop the Log Collector and exit. |
+| `--config` | `-f` | Save the current configuration in the file. **Not implemented yet.** |
+
+**Scope update syntax**
+
+```
+--scope <cookie>::<scope-name>=<priority>
+```
+
+```
+--scope *::areg_base_NESocket=NOTSET     # silence one scope in every application
+--scope 257::myapp_Component_*=DEBUG     # full detail for a scope group of one application
+--query *                                # list the scopes of every connected application
+--query 257                              # list the scopes of one application
+```
+
+> [!NOTE]
+> The options `--console`, `--service`, `--install`, `--uninstall`, `--load` and `--log` are command line only. Typing them at the console prompt prints a hint instead of doing anything.
+
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
@@ -895,6 +1151,70 @@ Restart service.
 
 ---
 
+### No Database File Is Created
+
+**Problem:** The collector runs, but no `.sqlog` file appears  
+**Solution:**
+1. *Check that the database is switched on.* Start the collector with the explicit option, which ignores the configuration file:
+    ```bash
+    logcollector --console --log=db
+    ```
+    In console mode the collector prints the path it uses:
+    ```
+    Saving the collected logs in the database [ .../logs/logcollector_<time>.sqlog ]
+    ```
+2. *Check the configuration keys.* All four keys belong to the `logcollector` module, not to `*`:
+    ```ini
+    log::logcollector::enable::db   = true
+    log::logcollector::db::engine   = sqlite3
+    log::logcollector::db::name     = logcollector_%time%.sqlog
+    log::logcollector::db::location = ./logs
+    ```
+3. *Check the master switch.* `log::logcollector::enable = false` disables every log target of the collector, the database included.
+4. *Check the engine value.* Only `sqlite3` is supported. A different value switches the database off silently.
+5. *Check where you are looking.* A relative `location` is resolved against the working directory of the process. For a systemd service that is not the directory of the executable:
+    ```bash
+    sudo find / -name "logcollector_*.sqlog" 2>/dev/null
+    ```
+    Set an absolute path to make this predictable:
+    ```ini
+    log::logcollector::db::location = /var/log/areg
+    ```
+6. *Check the write permission* of the target directory. The service user must be allowed to create files there.
+
+---
+
+### The Database File Exists but Stays Empty
+
+**Problem:** The `.sqlog` file is created, but the `logs` table has no rows  
+**Solution:**
+1. *Check that log sources are connected:* type `--instances` on the console. An empty list means the applications never reached the collector, see "Applications Cannot Connect" above.
+2. *Check that the applications actually log:* their scopes must be enabled.
+    ```ini
+    # In the application's areg.init
+    log::*::enable::remote = true
+    log::myapp::scope::*   = DEBUG | SCOPE
+    ```
+3. *Do not expect the collector's own logs there.* The collector does not send its own logs to itself. Apart from the report about dropped messages, the file contains only the logs it received from other applications.
+
+---
+
+### Messages Are Missing from the Database
+
+**Problem:** Fewer rows than expected  
+**Solution:**  
+  Search the `logs` table for the report the collector writes itself:
+  ```bash
+  sqlite3 <file>.sqlog "SELECT msg_log FROM logs WHERE msg_log LIKE 'Dropped%';"
+  ```
+  A row such as `Dropped [ 1523 ] log messages, ...` means the incoming data rate was higher than the disk could absorb for a long time and the queue limit was reached. Reduce the log volume at the source, or write the file to a faster disk.
+  ```ini
+  # In the application's areg.init
+  log::*::scope::* = WARN
+  ```
+
+---
+
 ### Service Crashes or Stops Unexpectedly
 
 **Problem:** Service stops running  
@@ -937,8 +1257,9 @@ Restart service.
 
 **Related Guides:**
 - [Log Observer Guide](./04c-logobserver.md) - Log monitoring and control tool
+- [Log Database Format](./04e-log-database-format.md) - Schema of the recorded `.sqlog` files and SQL queries
 - [Logging Configuration Guide](./04a-logging-config.md) - Configure application logging
-- [Logging Development Guide](./04b-logging-development.md) - Add logging to code
+- [Logging Development Guide](./04b-logging-develop.md) - Add logging to code
 - [Lusan Live Log Viewer](./06f-lusan-live-logging.md) - GUI log viewer
 
 **Configuration:**

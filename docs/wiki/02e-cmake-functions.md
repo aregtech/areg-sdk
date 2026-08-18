@@ -3,7 +3,7 @@
 This document provides a comprehensive reference for CMake functions and macros defined in [functions.cmake](../../conf/cmake/functions.cmake) for projects built with Areg Framework.
 
 > [!IMPORTANT]
-> Include [areg.cmake](../../conf/cmake/areg.cmake) (not functions.cmake directly) in your `CMakeLists.txt` after setting `AREG_SDK_ROOT` to the Areg SDK installation directory. See [CMake Integration Guide](./02b-cmake-integrate.md) for details.
+> Include [areg.cmake](../../areg.cmake) (not functions.cmake directly) in your `CMakeLists.txt` after setting `AREG_SDK_ROOT` to the Areg SDK installation directory. See [CMake Integration Guide](./02b-cmake-integrate.md) for details.
 
 ---
 
@@ -976,11 +976,11 @@ Areg: >>> Build Modules ......: areg = 'shared', areglogger = 'shared'
 **Integration Guides:**
 - [CMake Integration](./02b-cmake-integrate.md) - Using Areg Framework in your projects
 - [CMake Configuration](./02d-cmake-config.md) - Configuration options
-- [CMake Build Guide](./02b-cmake-build.md) - Building Areg SDK
+- [CMake Build Guide](./01b-cmake-build.md) - Building Areg SDK
 
 **Configuration Files:**
 - [functions.cmake](../../conf/cmake/functions.cmake) - Source file
-- [areg.cmake](../../conf/cmake/areg.cmake) - Main include file
+- [areg.cmake](../../areg.cmake) - Main include file
 - [setup.cmake](../../conf/cmake/setup.cmake) - Setup utilities
 
 **Examples:**

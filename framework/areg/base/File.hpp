@@ -60,6 +60,13 @@ public:
 #endif  // _MSC_VER
 
     /**
+     * \brief   File::FILE_MASK_USER
+     *          The mask in a file path to replace with the home directory of the current user.
+     *          Expanded by File::normalize_path().
+     **/
+    static constexpr std::string_view   FILE_MASK_USER      { "%user%" };
+
+    /**
      * \brief   File::SPEACIAL_MASKS
      *          The list of masked names to replace with special folders.
      */
@@ -451,10 +458,24 @@ public:
     static bool has_dir(const String& dirPath);
 
     /**
-     * \brief   Normalizes path by resolving . and .. symbols, expanding %time% placeholders, and
-     *          resolving special folder masks.
+     * \brief   Normalizes the path by expanding the supported masks, resolving the . and ..
+     *          entries, and making the result absolute.
      *
-     * \param   fileName    File path to normalize, may include . .. and special masks.
+     *          The following masks are expanded, each of them as often as it appears:
+     *
+     *          - File::FILE_MASK_USER      ("%user%")      the home directory of the current user.
+     *          - File::FILE_MASK_TIMESTAMP ("%time%")      the current time, as yyyy_mm_dd_hh_mm_ss_ms.
+     *          - File::FILE_MASK_APPNAME   ("%appname%")   the name of the running process.
+     *
+     *          On a system that has no user home directory, or when the directory cannot be
+     *          determined, "%user%" is replaced with the current directory, so that the returned
+     *          path never contains the mask itself.
+     *
+     *          A relative path is resolved against the current working directory of the process.
+     *
+     * \param   fileName    File path to normalize, may contain the masks listed above.
+     * \return  The absolute path with the masks expanded. Returns an empty string if 'fileName'
+     *          is empty.
      **/
     [[nodiscard]]
     static String normalize_path( const String& fileName );

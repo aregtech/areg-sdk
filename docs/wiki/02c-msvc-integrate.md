@@ -469,7 +469,7 @@ msbuild /m /p:Configuration=Debug /p:Platform=x64 /p:AregExtended=0 MyAregApp.sl
 msbuild /m /p:Configuration=Release /p:Platform=x64 /p:AregExtended=1 /p:AregLogs=1 MyAregApp.sln -t:restore,build -p:RestorePackagesConfig=true
 ```
 
-For detailed MSBuild options, see [Building with MSBuild](./02c-msbuild-build.md).
+For detailed MSBuild options, see [Building with MSBuild](./01c-msvc-build.md).
 
 ---
 
@@ -673,11 +673,11 @@ Verify `msvc_setup.props` doesn't override command-line options.
 **Integration Guides:**
 - [vcpkg Installation](./02e-cmake-vcpkg.md) - Detailed vcpkg setup
 - [CMake Integration](./02b-cmake-integrate.md) - Alternative integration method
-- [MSBuild Build Guide](./02c-msbuild-build.md) - MSBuild options
+- [MSBuild Build Guide](./01c-msvc-build.md) - MSBuild options
 
 **Build Guides:**
-- [Building with MSBuild](./02c-msbuild-build.md)
-- [Building with CMake](./02b-cmake-build.md)
+- [Building with MSBuild](./01c-msvc-build.md)
+- [Building with CMake](./01b-cmake-build.md)
 
 **Examples:**
 - [Areg SDK Examples](../../examples/README.md) - Sample applications

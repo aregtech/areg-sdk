@@ -1048,7 +1048,7 @@ sudo ./myapp
 
 **Related Guides:**
 - [Logging Configuration Guide](./04a-logging-config.md) - Detailed configuration options
-- [Log Collector Guide](./XX-logcollector.md) - Remote log collection
+- [Log Collector Guide](./04d-logcollector.md) - Remote log collection
 - [Log Observer Guide](./04c-logobserver.md) - Runtime scope control
 - [Lusan Live Log Viewer](./06f-lusan-live-logging.md) - GUI log viewer
 

@@ -86,7 +86,7 @@ Create a `.siml` file defining your service interface. A service interface consi
 </ServiceInterface>
 ```
 
-For detailed `.siml` syntax, see [Service Interface Documentation](./ServiceInterface.md).
+For detailed `.siml` syntax, see [Service Interface Documentation](../ServiceInterface.md).
 
 ### Command-Line Invocation
 
@@ -213,7 +213,7 @@ Manual integration steps:
 
 **Step 1: Create Service Interface**
 
-Define `services/HelloService.siml` following the [Service Interface structure](./ServiceInterface.md).
+Define `services/HelloService.siml` following the [Service Interface structure](../ServiceInterface.md).
 
 **Step 2: Configure CMake Build**
 
@@ -266,7 +266,7 @@ Code generation happens automatically during the build process.
 
 **Step 1: Create Service Interface**
 
-Define `services/HelloService.siml` following the [Service Interface structure](./ServiceInterface.md).
+Define `services/HelloService.siml` following the [Service Interface structure](../ServiceInterface.md).
 
 **Step 2: Run Code Generator**
 

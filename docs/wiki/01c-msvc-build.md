@@ -364,7 +364,7 @@ MSBuild /m /t:Rebuild /v:minimal /property:Configuration=Release /property:Platf
 
 **Integration Guides:**
 - [Integrating Areg with Visual Studio](./02c-msvc-integrate.md) - Using Areg SDK in your projects
-- [CMake Build Guide](./02b-cmake-build.md) - Alternative build method
+- [CMake Build Guide](./01b-cmake-build.md) - Alternative build method
 - [vcpkg Installation](./02e-cmake-vcpkg.md) - Package manager installation
 
 **Microsoft Documentation:**
@@ -373,7 +373,7 @@ MSBuild /m /t:Rebuild /v:minimal /property:Configuration=Release /property:Platf
 
 **Areg SDK Resources:**
 - [GitHub Repository](https://github.com/aregtech/areg-sdk)
-- [MSBuild Workflow](https://github.com/aregtech/areg-sdk/blob/master/.github/workflows/msbuild.yml) - CI/CD examples
+- [MSBuild Workflow](../../.github/workflows/msbuild.yml) - CI/CD examples
 - [Discussions](https://github.com/aregtech/areg-sdk/discussions) - Get help from community
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>

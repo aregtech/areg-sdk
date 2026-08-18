@@ -115,6 +115,9 @@ Centralized logging for distributed systems:
 - **[Log Observer](./04c-logobserver.md)** - Console-based log monitoring
 - **[Log Collector](./04d-logcollector.md)** - Centralized log aggregation service
 
+**Recorded Logs:**
+- **[Log Database Format (`.sqlog`)](./04e-log-database-format.md)** - Schema of the recorded log files and ready made SQL queries
+
 ---
 
 ### 💾 Persistence
@@ -165,11 +168,11 @@ Hands-on learning resources:
 
 **Official Examples:**
 - **[Building and Running Examples](./08a-examples-and-tests.md)** - 17+ example projects
-- **[Examples Source Code](https://github.com/aregtech/areg-sdk/tree/master/examples)** - GitHub repository
+- **[Examples Source Code](../../examples)** - The `examples` directory of this repository
 
 **Benchmark Examples:**
-- **[30_publatency](https://github.com/aregtech/areg-sdk/tree/master/examples/30_publatency)** – Latency benchmark: ping-pong RTT and broadcast OWT across all payload sizes. → [View measured results](./08b-areg-sdk-performance-benchmarks.md)
-- **[23_pubdatarate](https://github.com/aregtech/areg-sdk/tree/master/examples/23_pubdatarate)** – Throughput benchmark: data rate and message rate at scale. → [View measured results](./08b-areg-sdk-performance-benchmarks.md)
+- **[30_publatency](../../examples/30_publatency)** – Latency benchmark: ping-pong RTT and broadcast OWT across all payload sizes. → [View measured results](./08b-areg-sdk-performance-benchmarks.md)
+- **[23_pubdatarate](../../examples/23_pubdatarate)** – Throughput benchmark: data rate and message rate at scale. → [View measured results](./08b-areg-sdk-performance-benchmarks.md)
 
 **Demo Projects:**
 - **[Areg SDK Demo](https://github.com/aregtech/areg-sdk-demo)** - Real-world project examples
@@ -192,8 +195,8 @@ Areg SDK is built on a performance mandate: **latency, throughput, stability, an
 > 📁 *Prefix note:* These files use the `08` prefix alongside examples, since benchmarks run via examples 23 and 30. If additional benchmark documents are added, a dedicated `09` prefix is recommended.
 
 **Reproduce the results:**
-- **[30_publatency](https://github.com/aregtech/areg-sdk/tree/master/examples/30_publatency)** – Run latency measurements on your machine
-- **[23_pubdatarate](https://github.com/aregtech/areg-sdk/tree/master/examples/23_pubdatarate)** – Run throughput measurements on your machine
+- **[30_publatency](../../examples/30_publatency)** – Run latency measurements on your machine
+- **[23_pubdatarate](../../examples/23_pubdatarate)** – Run throughput measurements on your machine
 
 ---
 
@@ -226,6 +229,7 @@ Areg SDK is built on a performance mandate: **latency, throughput, stability, an
 
 ### ...debug a problem
 → **[Log Analysis](./06g-lusan-offline-logging.md)** (offline logs)  
+→ **[Log Database Format](./04e-log-database-format.md)** (query recorded logs with SQL)  
 → **[Troubleshooting Guides](./07c-troubleshooting-integration.md)** (common issues)
 
 ### ...configure logging and services
@@ -243,8 +247,8 @@ Areg SDK is built on a performance mandate: **latency, throughput, stability, an
 → **[Performance Benchmarks](./08b-areg-sdk-performance-benchmarks.md)** – latency and throughput data with methodology  
 → **[vs ZMQ / NanoMsg / NNG](./08c-areg-vs-hitachi-benchmark.md)** – direct TCP comparison (Hitachi paper)  
 → **[Framework Rankings](./08d-areg-framework-rankings.md)** – competitive position table  
-→ **[Run 30_publatency](https://github.com/aregtech/areg-sdk/tree/master/examples/30_publatency)** – reproduce latency measurements  
-→ **[Run 23_pubdatarate](https://github.com/aregtech/areg-sdk/tree/master/examples/23_pubdatarate)** – reproduce throughput measurements  
+→ **[Run 30_publatency](../../examples/30_publatency)** – reproduce latency measurements  
+→ **[Run 23_pubdatarate](../../examples/23_pubdatarate)** – reproduce throughput measurements  
 
 ---
 
@@ -419,7 +423,7 @@ Help improve the documentation:
 
 ### Example Projects
 
-- **[Areg SDK Examples](https://github.com/aregtech/areg-sdk/tree/master/examples)** - 17+ examples from basic to advanced
+- **[Areg SDK Examples](../../examples)** - 17+ examples from basic to advanced
 - **[Areg SDK Demo](https://github.com/aregtech/areg-sdk-demo)** - Real-world project templates
 - **[Edge AI Demo](https://github.com/aregtech/areg-edgeai)** - LLM inference with Areg SDK
 
@@ -432,7 +436,7 @@ Help improve the documentation:
 
 - **[API Reference](https://aregtech.github.io/areg-sdk/)** - Doxygen-generated API docs
 - **[Release Notes](https://github.com/aregtech/areg-sdk/releases)** - Version history
-- **[License](https://github.com/aregtech/areg-sdk/blob/master/LICENSE.txt)** - Apache License 2.0
+- **[License](../../LICENSE.txt)** - Apache License 2.0
 
 ---
 
@@ -463,8 +467,8 @@ Help improve the documentation:
 
 1. ✅ **[Low-Latency TCP Network Tuning](./07d-troubleshooting-network-tunning.md)** - Guide for High-Performance Networking
 2. ✅ **[Performance Benchmarks](./08b-areg-sdk-performance-benchmarks.md)** - Reference results and methodology
-3. ✅ **[Run 30_publatency](https://github.com/aregtech/areg-sdk/tree/master/examples/30_publatency)** - Reproduce latency on your hardware
-4. ✅ **[Run 23_pubdatarate](https://github.com/aregtech/areg-sdk/tree/master/examples/23_pubdatarate)** - Reproduce throughput on your hardware
+3. ✅ **[Run 30_publatency](../../examples/30_publatency)** - Reproduce latency on your hardware
+4. ✅ **[Run 23_pubdatarate](../../examples/23_pubdatarate)** - Reproduce throughput on your hardware
 
 ---
 

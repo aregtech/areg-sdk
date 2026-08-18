@@ -666,17 +666,17 @@ cmake -B ./build -DAREG_LIB_TYPE=static
 ## Additional Resources
 
 **Configuration Guides:**
-- [CMake Configuration Options](./02a-cmake-config.md) - Complete CMake options
-- [CMake Integration](./02c-cmake-integrate.md) - Using Areg in projects
-- [Visual Studio Integration](./02d-msvc-integrate.md) - MSVC setup
+- [CMake Configuration Options](./02d-cmake-config.md) - Complete CMake options
+- [CMake Integration](./02b-cmake-integrate.md) - Using Areg in projects
+- [Visual Studio Integration](./02c-msvc-integrate.md) - MSVC setup
 
 **Configuration Files:**
 - [user.cmake](../../conf/cmake/user.cmake) - CMake configuration
 - [msvc_setup.props](../../msvc_setup.props) - Visual Studio properties
 
 **Build Guides:**
-- [CMake Build Guide](./02b-cmake-build.md)
-- [MSBuild Build Guide](./02c-msbuild-build.md)
+- [CMake Build Guide](./01b-cmake-build.md)
+- [MSBuild Build Guide](./01c-msvc-build.md)
 
 **Help:**
 For questions, open a [discussion](https://github.com/aregtech/areg-sdk/discussions) or [issue](https://github.com/aregtech/areg-sdk/issues) on GitHub.
