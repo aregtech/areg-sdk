@@ -88,6 +88,45 @@ Three terminals are required. Start them in this order.
 .\30_pubconsumer.exe    # Windows
 ```
 
+### Run without a console (for scripts)
+
+The three terminals above are for looking at the benchmark while it runs. To measure from a
+script there is a second way of running, called **headless**: nothing is drawn, no key is
+read, and both applications end by themselves.
+
+```bash
+./mtrouter.elf &                                    # still needed: this is an IPC benchmark
+./30_pubprovider.elf -n &                           # -n: no console, just serve
+./30_pubconsumer.elf -m=pp64 -c=20000 -w=2000 -s=3  # measure, print, quit
+```
+
+The consumer takes exactly the text that would be typed into its console (see
+[Consumer Commands](#consumer-commands)), runs it as soon as the provider is reachable,
+prints one plain line per finished run, and then quits. It also asks the provider to quit, so
+nothing is left running.
+
+```
+run 1   mode pp64    samples 20000   min   151.923 p50   160.295 p95   208.798 ...
+run 2   mode pp64    samples 20000   min   149.111 p50   160.085 p95   202.753 ...
+run 3   mode pp64    samples 20000   min   150.571 p50   160.290 p95   207.840 ...
+```
+
+Exit code `0` means the runs finished, `2` means something went wrong: the command line was
+not understood, the provider never became reachable within 30 seconds, or the benchmark got
+stuck. An unattended run can therefore never wait for ever.
+
+> [!IMPORTANT]
+> Headless is also the **more accurate** way to measure. With the console, both applications
+> repaint the screen and run a display thread once per second, next to the very messages that
+> are being timed. Measured on WSL2, `bc64` reports about 113 us with the console and about
+> 80 us without it. Never compare a number taken with the console against one taken without.
+
+To run it as part of the example test suite, together with example 31:
+
+```bash
+python3 tools/run-all-examples.py --tier perf --only 30_owt,30_rtt,31_locsame,31_loccross --perf
+```
+
 ### Running Tests
 
 All test parameters are set interactively in the consumer console.

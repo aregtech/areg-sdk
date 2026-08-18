@@ -17,6 +17,7 @@
 
 #include "pubprovider/src/LatencyProvider.hpp"
 #include "examples/30_publatency/services/Latency.hpp"
+#include "common/headless.hpp"
 #include "common/latency_common.hpp"
 
 #ifdef _MSC_VER
@@ -70,22 +71,24 @@ int main(int argc, char* argv[])
     timeBeginPeriod(1u);    // raise Windows timer resolution to 1 ms for the benchmark duration
 #endif // _WIN32
 
-    // Parse command-line arguments so the benchmark can start unattended.
-    // Example: 23_pubservice -t=0 -l=1 -c=10 -s
-    if (argc > 1)
+    // Started with '-n' the provider runs without the console, so it can be used from a
+    // script. Anything else on the command line is refused instead of silently ignored.
+    const areg::String args{ Latency::join_arguments(argc, argv) };
+    if (args.is_empty() == false)
     {
-        areg::String cmd;
-        for (int i = 1; i < argc; ++i)
+        if ((args == "-n") || (args == "--headless"))
         {
-            if (i > 1)
-            {
-                cmd += " ";
-            }
-
-            cmd += argv[i];
+            Latency::startup_command() = args;
         }
-
-        cmd.make_lower();
+        else
+        {
+            printf("Usage: 30_pubprovider [-n]\n"
+                   "  -n, --headless   Run without the console: draw nothing, read no key, and\n"
+                   "                   simply serve until the consumer asks everybody to quit.\n"
+                   "                   Use it together with a headless 30_pubconsumer.\n"
+                   "  no option        Run with the full screen console, as before.\n");
+            return (args == "-h") || (args == "--help") ? 0 : 1;
+        }
     }
 
     // force to start logging with default settings
@@ -117,7 +120,9 @@ int main(int argc, char* argv[])
 
     // Release the console before writing directly to stdout so the final message
     // appears at the right position (just below the last output row), not mid-screen.
-    areg::ext::Console::instance().uninitialize();
+    if (Latency::is_headless() == false)
+        areg::ext::Console::instance().uninitialize();
+
     printf("Completed testing latency service provider component. Check the logs...\n");
 
 #if defined(_WIN32)

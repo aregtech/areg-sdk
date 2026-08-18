@@ -88,6 +88,10 @@ QUIT_SECONDS = 12.0
 #   procs     Processes of the scenario, started in the listed order. The last
 #             one is the leading process: the scenario ends when it ends.
 #   timeout   Per-scenario deadline in seconds, overrides '--timeout'.
+#   router    Whether the scenario needs the message router. Left out it follows the
+#             tier: 'ipc' and 'perf' need it, 'smoke' does not. Set it to False for a
+#             benchmark that stays inside one process, so that no router competes for
+#             the processor while latencies are being measured.
 #   soak      Seconds to keep a scenario without a natural end running. Some
 #             examples are demonstrations that run until the user stops them.
 #             For those the test is: stay alive for that long, do not crash and
@@ -268,20 +272,55 @@ SCENARIOS = [
                     stdin=_datarate_script('-w=128 -h=128 -l=1 -t=25', 4, 1),
                     expect=[r'Network sent rate'])]},
 
+    # ---- latency, two processes through the router (topologies T-C and T-D) ----
+    # Both applications are started with a command line, so they run headless: nothing is
+    # drawn, the consumer runs the measurement and then quits, and it asks the provider to
+    # quit with it. A scenario therefore ends when the work is done, and no waiting time has
+    # to be guessed. The provider needs '-n' to leave its console switched off.
+    #
+    # Headless is also the more honest measurement: with the console, the screen repaint and
+    # the one-second display thread of both applications run next to the messages that are
+    # being timed.
+    #
     # One way trip: broadcast mode, five runs. Round trip: ping pong mode, five runs.
-    {'name': '30_owt', 'tier': 'perf', 'timeout': 420, 'measure': 'latency',
-     'procs': [proc('30_pubprovider', must_exit=False, quit=['-q']),
+    {'name': '30_owt', 'tier': 'perf', 'timeout': 300, 'measure': 'latency',
+     'procs': [proc('30_pubprovider', args=['-n']),
                proc('30_pubconsumer',
-                    stdin=[(4.0, '-m=bc64 -c=5000 -w=1000'), (4.0, '-s=5'),
-                           (300.0, '-q')],
-                    expect=[r'P50'])]},
+                    args=['-m=bc64', '-c=5000', '-w=1000', '-s=5'],
+                    expect=[r'run\s+1\s+mode'])]},
 
-    {'name': '30_rtt', 'tier': 'perf', 'timeout': 420, 'measure': 'latency',
-     'procs': [proc('30_pubprovider', must_exit=False, quit=['-q']),
+    {'name': '30_rtt', 'tier': 'perf', 'timeout': 300, 'measure': 'latency',
+     'procs': [proc('30_pubprovider', args=['-n']),
                proc('30_pubconsumer',
-                    stdin=[(4.0, '-m=pp64 -c=10000 -w=1000'), (4.0, '-s=5'),
-                           (300.0, '-q')],
-                    expect=[r'P50'])]},
+                    args=['-m=pp64', '-c=10000', '-w=1000', '-s=5'],
+                    expect=[r'run\s+1\s+mode'])]},
+
+    # ---- latency inside one process (topologies T-A and T-B) -------------------
+    # The same trips as above, but never leaving the process, so the router is not needed
+    # and one program is the whole scenario. It is not interactive: it measures, prints its
+    # table and ends.
+    #
+    #   same  = provider and consumer are two components of ONE component thread. The event
+    #           queue never runs empty while the test runs, so the thread never sleeps and no
+    #           thread wake-up happens at all. This is the floor of the framework.
+    #   cross = each component has its own component thread, so every message crosses one
+    #           thread boundary and costs one wake-up.
+    #
+    # The difference between the two is the price of that wake-up, and the difference to
+    # example 30 is the price of leaving the process.
+    {'name': '31_locsame', 'tier': 'perf', 'timeout': 300, 'measure': 'loclatency',
+     'router': False,
+     'procs': [proc('31_loclatency',
+                    args=['-t=same', '-m=bc0,pp0,bc64,pp64,bc1024,pp1024',
+                          '-c=20000', '-w=2000'],
+                    expect=[r'same\s+\|\s+bc0'])]},
+
+    {'name': '31_loccross', 'tier': 'perf', 'timeout': 300, 'measure': 'loclatency',
+     'router': False,
+     'procs': [proc('31_loclatency',
+                    args=['-t=cross', '-m=bc0,pp0,bc64,pp64,bc1024,pp1024',
+                          '-c=20000', '-w=2000'],
+                    expect=[r'cross\s+\|\s+bc0'])]},
 ]
 
 # Exit codes that mean the process was terminated abnormally.
@@ -1108,7 +1147,7 @@ def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs, use
 
     router = None
     router_was_running = False
-    if scenario['tier'] in ('ipc', 'perf'):
+    if scenario.get('router', scenario['tier'] in ('ipc', 'perf')):
         router_was_running = is_router_listening()
         if router_was_running:
             # Somebody else owns this router. Use it and never touch it.
