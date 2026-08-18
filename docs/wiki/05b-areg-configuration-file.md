@@ -87,12 +87,20 @@ The `*` module is used for almost every key in the shipped file. You add process
 | `log::*::enable::remote` | bool | `true` | Enable remote (TCP) logging |
 | `log::*::enable::file` | bool | `false` | Enable file logging |
 | `log::*::enable::debug` | bool | `false` | Enable debug-console output |
-| `log::*::enable::db` | bool | `false` | Enable database logging (*not implemented in core*) |
+| `log::*::enable::db` | bool | `false` | Enable database logging (effective for `logcollector` and `logobserver`, see §5.7) |
 | `log::*::file::location` | path + masks | `./logs/%appname%_%time%.log` | Log file path |
 | `log::*::file::append` | bool | `false` | Append vs. create-new on open |
 | `log::*::remote::queue` | count | `100` (0 = no queue) | Buffered messages while collector offline |
 | `log::*::remote::service` | service alias | `logger` | Which `service` block names the collector |
 | `log::*::db::engine` … `password` | strings | (empty) | Database logging connection (see §5.7) |
+| `log::logcollector::enable::db` | bool | `false` | Save the **collected** logs in a `.sqlog` database |
+| `log::logcollector::db::engine` | engine name | `sqlite3` | Engine of the collector database |
+| `log::logcollector::db::name` | file name + masks | `logcollector_%time%.sqlog` | File name of the collector database |
+| `log::logcollector::db::location` | path | `./logs` | Directory of the collector database |
+| `log::logobserver::enable::db` | bool | `true` | Save the observed logs in a `.sqlog` database |
+| `log::logobserver::db::engine` | engine name | `sqlite3` | Engine of the observer database |
+| `log::logobserver::db::name` | file name + masks | `log_%time%.sqlog` | File name of the observer database |
+| `log::logobserver::db::location` | path | `./logs` | Directory of the observer database |
 | `log::*::layout::enter` | format string | see §5.8 | Scope-entry line format |
 | `log::*::layout::message` | format string | see §5.8 | Message line format |
 | `log::*::layout::exit` | format string | see §5.8 | Scope-exit line format |
@@ -203,7 +211,7 @@ log::*::target = remote | file | debug | db
 | `log::*::enable::remote` | Send logs to the remote log collector over TCP (`log_enabled(LogTarget::Remote)`). |
 | `log::*::enable::file` | Write logs to a file (`log_enabled(LogTarget::File)`). |
 | `log::*::enable::debug` | Emit to the platform debug console (Windows `OutputDebugString`, etc.). |
-| `log::*::enable::db` | Database target — **not implemented** for the core logger; reserved. |
+| `log::*::enable::db` | Write logs into a database (`log_enabled(LogTarget::Database)`). Effective for the **log collector** and the **log observer**; for an ordinary application see §5.7. |
 
 ```text
 log::*::enable          = true     # master on
@@ -234,26 +242,59 @@ log::*::file::location = ./logs/%appname%_%time%.log
 
 ### 5.7 Database logging: `log::*::db::*`
 
-> **Not implemented for the core file/remote logger** — these keys are reserved/planned. The shipped file leaves them empty for `*`, and uses them only under the `logobserver` module, where SQLite-backed storage *is* available (see [Log Collector](./04d-logcollector.md) / [Log Observer](./04c-logobserver.md)).
+Database logging writes log records into an SQLite file with the extension `.sqlog` instead of a plain text file. The same key shape is used by three different kinds of process, and the outcome is **not** the same for all of them.
 
-| Position | Meaning |
-|---|---|
-| `engine` | DB engine (`sqlite3`, …) |
-| `name` | Database name (supports `%time%` mask, e.g. `log_%time%.sqlog`) |
-| `location` | Directory / connection string |
-| `driver` | Driver library |
-| `address` / `port` | DB server endpoint |
-| `username` / `password` | Credentials |
+| Module | Effect of `enable::db = true` | Who writes the file |
+|---|---|---|
+| `logcollector` | ✅ Works. The **collected** logs of all connected applications are saved. | The log collector, see [Log Collector](./04d-logcollector.md) |
+| `logobserver` | ✅ Works. The logs the observer received are saved. | The log observer, see [Log Observer](./04c-logobserver.md) |
+| any other module | ⚠️ Nothing happens, unless the application registers a database engine itself in code with `areg::set_db_engine()`. The framework never registers one on its own. | Your application |
+
+**Key positions**
+
+| Position | Meaning | Used today |
+|---|---|---|
+| `engine` | Database engine. Only `sqlite3` is implemented, so always set it to `sqlite3`. Any other value switches the database off. | ✅ |
+| `name` | File name of the database. Masks are allowed, e.g. `log_%time%.sqlog`. | ✅ |
+| `location` | Directory of the file. Created if it is missing. Relative paths are resolved against the working directory of the process. | ✅ |
+| `driver` | Driver library of a future engine. | ❌ reserved |
+| `address` / `port` | Endpoint of a future database server. | ❌ reserved |
+| `username` / `password` | Credentials of a future database server. | ❌ reserved |
 
 Accessors: `log_database_property(position)` / `set_db_property(position, value)`.
 
+> [!NOTE]
+> The master switch of the module gates the database as well. If `log::<module>::enable = false`, then `enable::db = true` has no effect.
+
+**Log collector: saving the collected logs**
+
 ```text
-# Example (log observer storing to a local SQLite file):
+log::logcollector::enable::db   = true                        # switch the database on
+log::logcollector::db::engine   = sqlite3                     # the only supported engine
+log::logcollector::db::name     = logcollector_%time%.sqlog   # a new file on every start
+log::logcollector::db::location = ./logs                      # directory of the file
+```
+
+The collector accepts a command line option that **overrides** `enable::db` for one run:
+
+```bash
+logcollector --log=db                                 # save, path taken from the file above
+logcollector --log=db ./logs/session_%time%.sqlog     # save, explicit path
+logcollector --log=nodb                               # never save, whatever the file says
+```
+
+Recording can also be started and stopped on a running collector with the console commands `--save [<path>]` and `--unsave`.
+
+**Log observer: saving the observed logs**
+
+```text
 log::logobserver::enable::db   = true
 log::logobserver::db::engine   = sqlite3
 log::logobserver::db::name     = log_%time%.sqlog
 log::logobserver::db::location = ./logs
 ```
+
+Both files use the same table layout (`version`, `instances`, `scopes`, `logs`), so the same tools read both.
 
 ### 5.8 Layouts: `log::*::layout::{enter,message,exit}`
 
@@ -318,18 +359,27 @@ This means `areg_*` matches every scope beginning with `areg_`, and `*` is the c
 
 ### 5.10 File path masks
 
-Paths and file names in `file::location` (and DB `name`) expand these at runtime:
+Paths and file names in `file::location` and in the database `name` / `location` expand these at runtime:
 
-| Mask | Expands to |
-|---|---|
-| `%appname%` | Application/module name |
-| `%time%` | Current timestamp |
-| `%user%` | User profile directory |
+| Mask | Expands to | Example result |
+|---|---|---|
+| `%appname%` | Application / module name | `myapp` |
+| `%time%` | Current timestamp, `yyyy_mm_dd_hh_mm_ss_ms` | `2026_08_18_11_20_35_120` |
+| `%user%` | Home directory of the current user | `C:\Users\alice`, `/home/alice` |
+
+Each mask is expanded as often as it appears. They are the only three the framework expands; any other `%name%` is written into the path unchanged.
 
 ```text
+./logs/%appname%_%time%.log          # relative, per-app, timestamped
 %user%/logs/%appname%_%time%.log     # per-user, timestamped
 /var/log/areg/%appname%.log          # absolute, per-app
 ```
+
+> [!IMPORTANT]
+> A relative path is resolved against the **working directory of the process**, not against the location of the executable. For a process started by systemd or by the Windows service manager, prefer an absolute path or `%user%`.
+
+> [!NOTE]
+> `%user%` resolves to the home directory of the account that **runs the process**. For a system service this is the service account (`SYSTEM` on Windows, `root` under systemd), not the interactive user. On a system that has no user home directory, `%user%` falls back to the current directory, so the mask never survives into the final path.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -440,6 +490,16 @@ log::myapp::scope::myapp_*  = DEBUG | SCOPE     # full detail for your own scope
 log::myapp::scope::areg_*   = NOTSET            # keep framework internals quiet
 ```
 
+### Keep a permanent copy of all collected logs on disk
+```text
+# The log collector saves everything it receives, even when no observer is connected.
+log::logcollector::enable::db   = true
+log::logcollector::db::engine   = sqlite3
+log::logcollector::db::name     = logcollector_%time%.sqlog
+log::logcollector::db::location = /var/log/areg       # absolute: the service has its own working directory
+```
+For a single session, without editing the file: `logcollector --log=db ./logs/session_%time%.sqlog`.
+
 ### Point a process at a router on another host
 ```text
 # Only this process talks to a remote router; others keep the localhost default.
@@ -498,7 +558,8 @@ For arbitrary keys (including your own), use the generic `property_value()` / `s
 - **Comment not recognized / line ignored** — comments must be `# ` (hash **+ space**). `#comment` is treated as a blank line. Inline comments need a space too: `port = 8181 # ok`.
 - **My module's setting is ignored** — only `*` (global) and entries for the *running* process are loaded. A `log::otherapp::…` line is invisible to every process except `otherapp`.
 - **My change wasn't saved** — entries set with `temporary = true` are intentionally excluded from `save_config()`. Also, setting a value *equal* to the read-only default removes the override (override-collapse) — that is expected and keeps the file minimal.
-- **`db` logging does nothing** — database logging is not implemented for the core logger; the `log::*::db::*` keys are reserved (the log observer's SQLite storage is separate).
+- **`db` logging does nothing in my application** — the `log::*::db::*` keys take effect only for `logcollector` and `logobserver`, which register an SQLite engine themselves. Any other process needs `areg::set_db_engine()` in its own code. See §5.7.
+- **No `.sqlog` file appears for the collector** — check that the keys use the `logcollector` module and not `*`, that `db::engine` is `sqlite3`, that the master switch `log::logcollector::enable` is not `false`, and that the relative `location` points where you are looking. `logcollector --log=db` switches it on without editing the file.
 - **Socket buffer size seems wrong on Windows** — `sndbuf`/`rcvbuf` are ignored there (OS autotuning). On Linux the kernel doubles your value.
 - **Disconnects while debugging on Windows** — raise `net::*::tcpip::timeout` so a paused breakpoint doesn't trip `SO_SNDTIMEO`.
 - **Values as lists** — use `|` for multi-value entries (`DEBUG | SCOPE`, `remote | file`). A trailing `;` is allowed but optional.

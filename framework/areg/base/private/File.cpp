@@ -278,6 +278,17 @@ String File::normalize_path(const String& fileName)
         return String::empty_string();
 
     String result(fileName);
+    if (result.is_valid_position(result.find_first(File::FILE_MASK_USER.data())))
+    {
+        String userDir{ File::special_dir(File::SpecialFolder::UserHome) };
+        if (userDir.is_empty())
+        {
+            userDir = File::DIR_CURRENT;
+        }
+
+        result.replace(File::FILE_MASK_USER, userDir, areg::START_POS, true);
+    }
+
     FileBase::normalize_name(result);
     std::error_code err;
     std::filesystem::path fp = std::filesystem::absolute(result.data(), err);

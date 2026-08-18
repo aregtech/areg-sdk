@@ -327,7 +327,7 @@ Use `macro_check_module_architect` in your CMake scripts to validate library com
 
 **Toolchain Files:**
 
-For complex cross-compilation, use CMake toolchain files. Examples available in [conf/export/example/toolchains/](../../conf/export/example/toolchains/).
+For complex cross-compilation, use CMake toolchain files. Ready made files are available in [conf/toolchains/](../../conf/toolchains/).
 
 ### Cross-Compile for 32-bit x86
 
@@ -551,7 +551,7 @@ Should output Java version 17 or higher. Install from [Adoptium](https://adoptiu
 2. Check target dependencies are available
 3. Use toolchain file for complex setups:
    ```bash
-   cmake -B ./build -DCMAKE_TOOLCHAIN_FILE=conf/export/example/toolchains/arm-linux.cmake
+   cmake -B ./build -DCMAKE_TOOLCHAIN_FILE=conf/toolchains/gnu-linux-arm32.cmake
    ```
 
 ### Windows Build Issues

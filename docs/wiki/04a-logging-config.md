@@ -72,7 +72,7 @@ int main()
 ./myapp
 ```
 
-**Expected output in `./logs/myapp_20260127_103045.log`:**
+**Expected output in `./logs/myapp_2026_01_27_10_30_45_123.log`:**
 
 ```
 2026-01-27 10:30:45.123: [ 12345  myapp.exe: Enter -->]
@@ -177,11 +177,13 @@ log::*::file::location = ./logs/%appname%_%time%.log
 
 **File naming masks:**
 
-| Mask        | Replaced With               | Example           |
-| ----------- | --------------------------- | ----------------- |
-| `%appname%` | Application name            | `myapp`           |
-| `%time%`    | Timestamp (YYYYMMDD_HHMMSS) | `20260127_103045` |
-| `%pid%`     | Process ID                  | `12345`           |
+| Mask        | Replaced With                          | Example                     |
+| ----------- | -------------------------------------- | --------------------------- |
+| `%appname%` | Application name                       | `myapp`                     |
+| `%time%`    | Timestamp, `yyyy_mm_dd_hh_mm_ss_ms`    | `2026_01_27_10_30_45_123`   |
+| `%user%`    | Home directory of the current user     | `/home/alice`               |
+
+These three are the only masks the framework expands. Any other `%name%` is written into the path unchanged.
 
 **Examples:**
 
@@ -192,12 +194,15 @@ Result: ./logs/myapp.log
 
 # Separate log per run
 log::*::file::location = ./logs/%appname%_%time%.log
-Result: ./logs/myapp_20260127_103045.log
+Result: ./logs/myapp_2026_01_27_10_30_45_123.log
 
-# Include process ID
-log::*::file::location = ./logs/%appname%_pid%pid%.log
-Result: ./logs/myapp_pid12345.log
+# In the home directory of the user, independent of the working directory
+log::*::file::location = %user%/logs/%appname%_%time%.log
+Result: /home/alice/logs/myapp_2026_01_27_10_30_45_123.log
 ```
+
+> [!IMPORTANT]
+> A relative path is resolved against the **working directory of the process**, not against the location of the executable. Use an absolute path or `%user%` for a process started by systemd or by the Windows service manager. For a system service, `%user%` is the home of the service account, not of the interactive user.
 
 **Log file output:**
 
@@ -238,7 +243,7 @@ log::*::remote::queue = 100
 - `logcollector` service must be running
 - Network connectivity to log collector
 
-**See:** [Log Collector Guide](./XX-logcollector.md) for setup
+**See:** [Log Collector Guide](./04d-logcollector.md) for setup
 
 ---
 
@@ -271,15 +276,34 @@ log::*::enable::debug = true
 
 ### Database Logging
 
-**Configuration:**
+Logs are written into an SQLite file with the extension `.sqlog`. This target is implemented by the **Log Collector** and the **Log Observer**, which register the SQLite engine themselves.
+
+**Configuration for the Log Collector** (saves everything it collects from all applications):
 
 ```ini
-# Enable database logging
-log::*::target = db
-log::*::enable::db = true
+log::logcollector::enable::db   = true                        # switch the database on
+log::logcollector::db::engine   = sqlite3                     # the only supported engine
+log::logcollector::db::name     = logcollector_%time%.sqlog   # a new file on every start
+log::logcollector::db::location = ./logs                      # directory of the file
+```
 
-# Database connection (example)
-log::*::db::connection = ./logs/application.db
+**Configuration for the Log Observer** (saves what the observer receives):
+
+```ini
+log::logobserver::enable::db    = true
+log::logobserver::db::engine    = sqlite3
+log::logobserver::db::name      = log_%time%.sqlog
+log::logobserver::db::location  = ./logs
+```
+
+> [!IMPORTANT]
+> Setting `log::*::enable::db = true` for an ordinary application has **no effect**. The application would have to register a database engine in its own code with `areg::set_db_engine()`. To keep the logs of your application in a database, let the Log Collector or the Log Observer record them.
+
+The Log Collector also accepts a command line option that overrides the configuration for one run:
+
+```bash
+logcollector --log=db      # save the collected logs
+logcollector --log=nodb    # never save them
 ```
 
 **Use cases:**
@@ -287,6 +311,8 @@ log::*::db::connection = ./logs/application.db
 - SQL queries on logs
 - Long-term log retention
 - Complex filtering and reporting
+
+**See:** [Log Collector Guide](./04d-logcollector.md) for the complete description
 
 ---
 

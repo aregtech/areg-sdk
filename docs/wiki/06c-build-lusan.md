@@ -303,7 +303,7 @@ Edit `areg.init` to configure:
 - Message router IP address and port (default: `localhost:8181`)
 - Logging scopes and priorities
 
-See [Key-Value Data Persistence](./key-value-persistence.md) for configuration syntax.
+See [Key-Value Data Persistence](./05a-persistence-syntax.md) for configuration syntax.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
