@@ -7,22 +7,19 @@
     <Import Project="$(AregConfigDir)compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{79F26804-27E3-40AE-BBD9-34A708B4BFD5}</ProjectGuid>
-    <ProjectName>30_generated</ProjectName>
-    <RootNamespace>30_generated</RootNamespace>
+    <ProjectGuid>{1A57C730-ADEA-42D5-AE8F-AF8E2AF38979}</ProjectGuid>
+    <ProjectName>31_loclatency</ProjectName>
+    <RootNamespace>31_loclatency</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(AregConfigDir)project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup>
-    <OutDir>$(OutLibDir)</OutDir>
-  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
       <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -42,21 +39,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\30_publatency\services\private\LatencyConsumerBase.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\30_publatency\services\private\LatencyEvents.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\30_publatency\services\private\LatencyProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\30_publatency\services\private\LatencyProviderBase.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\30_publatency\services\private\Latency.cpp" />
+    <ClCompile Include="src\LatencyOptions.cpp" />
+    <ClCompile Include="src\LatencyReport.cpp" />
+    <ClCompile Include="src\LocalLatencyConsumer.cpp" />
+    <ClCompile Include="src\LocalLatencyProvider.cpp" />
+    <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)examples\30_publatency\services\LatencyConsumerBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\30_publatency\services\LatencyProviderBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\30_publatency\services\Latency.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\30_publatency\services\private\LatencyEvents.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\30_publatency\services\private\LatencyProxy.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="services\Latency.siml" />
+    <ClInclude Include="common\common.hpp" />
+    <ClInclude Include="src\LatencyOptions.hpp" />
+    <ClInclude Include="src\LatencyReport.hpp" />
+    <ClInclude Include="src\LocalLatencyConsumer.hpp" />
+    <ClInclude Include="src\LocalLatencyProvider.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

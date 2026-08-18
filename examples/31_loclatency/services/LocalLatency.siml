@@ -1,0 +1,645 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1000" Name="LocalLatency" Version="1.0.0" Category="Private">
+        <Description>Local (in-process) latency benchmark service. The service is Private, so the provider and the consumer always live in the same process and the messages never reach the message router. This is the counterpart of the Public "Latency" interface used by example 30.</Description>
+    </Overview>
+    <DataTypeList>
+        <DataType ID="1001" Name="LatencyMode" Type="Enumeration" Values="uint16">
+            <Description>Selects which message is measured. The names and the order are identical to the "Latency" interface of example 30, so the results of the two examples can be compared one to one.</Description>
+            <FieldList>
+                <EnumEntry ID="1002" Name="Stop">
+                    <Value>0</Value>
+                    <Description>No measurement is running.</Description>
+                </EnumEntry>
+                <EnumEntry ID="1003" Name="Broadcast0">
+                    <Description>One-way trip, id and timestamp only, no extra data.</Description>
+                </EnumEntry>
+                <EnumEntry ID="1004" Name="Broadcast8">
+                    <Description>One-way trip, plus 8 bytes of extra data.</Description>
+                </EnumEntry>
+                <EnumEntry ID="1005" Name="Broadcast16">
+                    <Description>One-way trip, plus 16 bytes of extra data.</Description>
+                </EnumEntry>
+                <EnumEntry ID="1006" Name="Broadcast32">
+                    <Description>One-way trip, plus 32 bytes of extra data.</Description>
+                </EnumEntry>
+                <EnumEntry ID="1007" Name="Broadcast64">
+                    <Description>One-way trip, plus 64 bytes of extra data.</Description>
+                </EnumEntry>
+                <EnumEntry ID="1008" Name="Broadcast128">
+                    <Description>One-way trip, plus 128 bytes of extra data.</Description>
+                </EnumEntry>
+                <EnumEntry ID="1009" Name="Broadcast256">
+                    <Description>One-way trip, plus 256 bytes of extra data.</Description>
+                </EnumEntry>
+                <EnumEntry ID="1010" Name="Broadcast512">
+                    <Description>One-way trip, plus 512 bytes of extra data.</Description>
+                </EnumEntry>
+                <EnumEntry ID="1011" Name="Broadcast1024">
+                    <Description>One-way trip, plus 1024 bytes of extra data.</Description>
+                </EnumEntry>
+                <EnumEntry ID="1012" Name="Broadcast4096">
+                    <Description>One-way trip, plus 4096 bytes of extra data.</Description>
+                </EnumEntry>
+                <EnumEntry ID="1013" Name="Broadcast65536">
+                    <Description>One-way trip, plus 65536 bytes of extra data.</Description>
+                </EnumEntry>
+                <EnumEntry ID="1014" Name="Request0">
+                    <Description>Round trip (request and response), id and timestamp only.</Description>
+                </EnumEntry>
+                <EnumEntry ID="1015" Name="Request8">
+                    <Description>Round trip, plus 8 bytes of extra data.</Description>
+                </EnumEntry>
+                <EnumEntry ID="1016" Name="Request16">
+                    <Description>Round trip, plus 16 bytes of extra data.</Description>
+                </EnumEntry>
+                <EnumEntry ID="1017" Name="Request32">
+                    <Description>Round trip, plus 32 bytes of extra data.</Description>
+                </EnumEntry>
+                <EnumEntry ID="1018" Name="Request64">
+                    <Description>Round trip, plus 64 bytes of extra data.</Description>
+                </EnumEntry>
+                <EnumEntry ID="1019" Name="Request128">
+                    <Description>Round trip, plus 128 bytes of extra data.</Description>
+                </EnumEntry>
+                <EnumEntry ID="1020" Name="Request256">
+                    <Description>Round trip, plus 256 bytes of extra data.</Description>
+                </EnumEntry>
+                <EnumEntry ID="1021" Name="Request512">
+                    <Description>Round trip, plus 512 bytes of extra data.</Description>
+                </EnumEntry>
+                <EnumEntry ID="1022" Name="Request1024">
+                    <Description>Round trip, plus 1024 bytes of extra data.</Description>
+                </EnumEntry>
+                <EnumEntry ID="1023" Name="Request4096">
+                    <Description>Round trip, plus 4096 bytes of extra data.</Description>
+                </EnumEntry>
+                <EnumEntry ID="1024" Name="Request65536">
+                    <Description>Round trip, plus 65536 bytes of extra data.</Description>
+                </EnumEntry>
+                <EnumEntry ID="1025" Name="Undefined">
+                    <Description>The mode is not known. Returned when a mode name cannot be parsed.</Description>
+                </EnumEntry>
+            </FieldList>
+        </DataType>
+        <DataType ID="1030" Name="Data8" Type="Imported">
+            <Location>common/common.hpp</Location>
+            <Namespace>Latency</Namespace>
+            <ImportedObject>Latency8</ImportedObject>
+            <Description>8 bytes of extra payload.</Description>
+        </DataType>
+        <DataType ID="1031" Name="Data16" Type="Imported">
+            <Location>common/common.hpp</Location>
+            <Namespace>Latency</Namespace>
+            <ImportedObject>Latency16</ImportedObject>
+            <Description>16 bytes of extra payload.</Description>
+        </DataType>
+        <DataType ID="1032" Name="Data32" Type="Imported">
+            <Location>common/common.hpp</Location>
+            <Namespace>Latency</Namespace>
+            <ImportedObject>Latency32</ImportedObject>
+            <Description>32 bytes of extra payload.</Description>
+        </DataType>
+        <DataType ID="1033" Name="Data64" Type="Imported">
+            <Location>common/common.hpp</Location>
+            <Namespace>Latency</Namespace>
+            <ImportedObject>Latency64</ImportedObject>
+            <Description>64 bytes of extra payload.</Description>
+        </DataType>
+        <DataType ID="1034" Name="Data128" Type="Imported">
+            <Location>common/common.hpp</Location>
+            <Namespace>Latency</Namespace>
+            <ImportedObject>Latency128</ImportedObject>
+            <Description>128 bytes of extra payload.</Description>
+        </DataType>
+        <DataType ID="1035" Name="Data256" Type="Imported">
+            <Location>common/common.hpp</Location>
+            <Namespace>Latency</Namespace>
+            <ImportedObject>Latency256</ImportedObject>
+            <Description>256 bytes of extra payload.</Description>
+        </DataType>
+        <DataType ID="1036" Name="Data512" Type="Imported">
+            <Location>common/common.hpp</Location>
+            <Namespace>Latency</Namespace>
+            <ImportedObject>Latency512</ImportedObject>
+            <Description>512 bytes of extra payload.</Description>
+        </DataType>
+        <DataType ID="1037" Name="Data1024" Type="Imported">
+            <Location>common/common.hpp</Location>
+            <Namespace>Latency</Namespace>
+            <ImportedObject>Latency1024</ImportedObject>
+            <Description>1024 bytes of extra payload.</Description>
+        </DataType>
+        <DataType ID="1038" Name="Data4096" Type="Imported">
+            <Location>common/common.hpp</Location>
+            <Namespace>Latency</Namespace>
+            <ImportedObject>Latency4096</ImportedObject>
+            <Description>4096 bytes of extra payload.</Description>
+        </DataType>
+        <DataType ID="1039" Name="Data65536" Type="Imported">
+            <Location>common/common.hpp</Location>
+            <Namespace>Latency</Namespace>
+            <ImportedObject>Latency65536</ImportedObject>
+            <Description>65536 bytes of extra payload.</Description>
+        </DataType>
+    </DataTypeList>
+    <MethodList>
+        <Method ID="1100" Name="message_next" MethodType="Request">
+            <Description>Pull token for the one-way trip. The consumer calls it to ask the provider for exactly one broadcast of the given size. The provider never sends on its own, so the test can never run away and there is never more than one message in flight.</Description>
+            <ParamList>
+                <Parameter ID="1101" Name="mode" DataType="LatencyMode">
+                    <Description>Which broadcast to emit. Only the Broadcast* values are accepted; any other value is ignored.</Description>
+                </Parameter>
+                <Parameter ID="1102" Name="id" DataType="uint32">
+                    <Description>Sequence number of the message the consumer expects. Used only to detect lost messages.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1110" Name="message_0" MethodType="Broadcast">
+            <Description>One-way message, id and send timestamp only.</Description>
+            <ParamList>
+                <Parameter ID="1111" Name="id" DataType="uint32">
+                    <Description>Sequence number stamped by the provider.</Description>
+                </Parameter>
+                <Parameter ID="1112" Name="begin" DataType="uint64">
+                    <Description>Send timestamp in nanoseconds, taken by the provider.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1113" Name="message_8" MethodType="Broadcast">
+            <Description>One-way message with 8 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1114" Name="id" DataType="uint32">
+                    <Description>Sequence number stamped by the provider.</Description>
+                </Parameter>
+                <Parameter ID="1115" Name="begin" DataType="uint64">
+                    <Description>Send timestamp in nanoseconds, taken by the provider.</Description>
+                </Parameter>
+                <Parameter ID="1116" Name="data8" DataType="Data8">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1117" Name="message_16" MethodType="Broadcast">
+            <Description>One-way message with 16 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1118" Name="id" DataType="uint32">
+                    <Description>Sequence number stamped by the provider.</Description>
+                </Parameter>
+                <Parameter ID="1119" Name="begin" DataType="uint64">
+                    <Description>Send timestamp in nanoseconds, taken by the provider.</Description>
+                </Parameter>
+                <Parameter ID="1120" Name="data16" DataType="Data16">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1121" Name="message_32" MethodType="Broadcast">
+            <Description>One-way message with 32 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1122" Name="id" DataType="uint32">
+                    <Description>Sequence number stamped by the provider.</Description>
+                </Parameter>
+                <Parameter ID="1123" Name="begin" DataType="uint64">
+                    <Description>Send timestamp in nanoseconds, taken by the provider.</Description>
+                </Parameter>
+                <Parameter ID="1124" Name="data32" DataType="Data32">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1125" Name="message_64" MethodType="Broadcast">
+            <Description>One-way message with 64 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1126" Name="id" DataType="uint32">
+                    <Description>Sequence number stamped by the provider.</Description>
+                </Parameter>
+                <Parameter ID="1127" Name="begin" DataType="uint64">
+                    <Description>Send timestamp in nanoseconds, taken by the provider.</Description>
+                </Parameter>
+                <Parameter ID="1128" Name="data64" DataType="Data64">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1129" Name="message_128" MethodType="Broadcast">
+            <Description>One-way message with 128 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1130" Name="id" DataType="uint32">
+                    <Description>Sequence number stamped by the provider.</Description>
+                </Parameter>
+                <Parameter ID="1131" Name="begin" DataType="uint64">
+                    <Description>Send timestamp in nanoseconds, taken by the provider.</Description>
+                </Parameter>
+                <Parameter ID="1132" Name="data128" DataType="Data128">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1133" Name="message_256" MethodType="Broadcast">
+            <Description>One-way message with 256 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1134" Name="id" DataType="uint32">
+                    <Description>Sequence number stamped by the provider.</Description>
+                </Parameter>
+                <Parameter ID="1135" Name="begin" DataType="uint64">
+                    <Description>Send timestamp in nanoseconds, taken by the provider.</Description>
+                </Parameter>
+                <Parameter ID="1136" Name="data256" DataType="Data256">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1137" Name="message_512" MethodType="Broadcast">
+            <Description>One-way message with 512 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1138" Name="id" DataType="uint32">
+                    <Description>Sequence number stamped by the provider.</Description>
+                </Parameter>
+                <Parameter ID="1139" Name="begin" DataType="uint64">
+                    <Description>Send timestamp in nanoseconds, taken by the provider.</Description>
+                </Parameter>
+                <Parameter ID="1140" Name="data512" DataType="Data512">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1141" Name="message_1024" MethodType="Broadcast">
+            <Description>One-way message with 1024 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1142" Name="id" DataType="uint32">
+                    <Description>Sequence number stamped by the provider.</Description>
+                </Parameter>
+                <Parameter ID="1143" Name="begin" DataType="uint64">
+                    <Description>Send timestamp in nanoseconds, taken by the provider.</Description>
+                </Parameter>
+                <Parameter ID="1144" Name="data1024" DataType="Data1024">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1145" Name="message_4096" MethodType="Broadcast">
+            <Description>One-way message with 4096 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1146" Name="id" DataType="uint32">
+                    <Description>Sequence number stamped by the provider.</Description>
+                </Parameter>
+                <Parameter ID="1147" Name="begin" DataType="uint64">
+                    <Description>Send timestamp in nanoseconds, taken by the provider.</Description>
+                </Parameter>
+                <Parameter ID="1148" Name="data4096" DataType="Data4096">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1149" Name="message_65536" MethodType="Broadcast">
+            <Description>One-way message with 65536 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1150" Name="id" DataType="uint32">
+                    <Description>Sequence number stamped by the provider.</Description>
+                </Parameter>
+                <Parameter ID="1151" Name="begin" DataType="uint64">
+                    <Description>Send timestamp in nanoseconds, taken by the provider.</Description>
+                </Parameter>
+                <Parameter ID="1152" Name="data65536" DataType="Data65536">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1200" Name="ping_pong_0" MethodType="Request" Response="ping_pong_0">
+            <Description>Round trip request, id and timestamp only.</Description>
+            <ParamList>
+                <Parameter ID="1201" Name="id" DataType="uint32">
+                    <Description>Sequence number stamped by the consumer.</Description>
+                </Parameter>
+                <Parameter ID="1202" Name="begin" DataType="uint64">
+                    <Description>Send timestamp in nanoseconds, taken by the consumer.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1203" Name="ping_pong_0" MethodType="Response">
+            <Description>Round trip response, id and timestamps only.</Description>
+            <ParamList>
+                <Parameter ID="1204" Name="id" DataType="uint32">
+                    <Description>Sequence number copied from the request.</Description>
+                </Parameter>
+                <Parameter ID="1205" Name="begin" DataType="uint64">
+                    <Description>Send timestamp copied from the request.</Description>
+                </Parameter>
+                <Parameter ID="1206" Name="replied" DataType="uint64">
+                    <Description>Timestamp in nanoseconds taken by the provider when the request arrived.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1210" Name="ping_pong_8" MethodType="Request" Response="ping_pong_8">
+            <Description>Round trip request with 8 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1211" Name="id" DataType="uint32">
+                    <Description>Sequence number stamped by the consumer.</Description>
+                </Parameter>
+                <Parameter ID="1212" Name="begin" DataType="uint64">
+                    <Description>Send timestamp in nanoseconds, taken by the consumer.</Description>
+                </Parameter>
+                <Parameter ID="1213" Name="data8" DataType="Data8">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1214" Name="ping_pong_8" MethodType="Response">
+            <Description>Round trip response with 8 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1215" Name="id" DataType="uint32">
+                    <Description>Sequence number copied from the request.</Description>
+                </Parameter>
+                <Parameter ID="1216" Name="begin" DataType="uint64">
+                    <Description>Send timestamp copied from the request.</Description>
+                </Parameter>
+                <Parameter ID="1217" Name="replied" DataType="uint64">
+                    <Description>Timestamp in nanoseconds taken by the provider when the request arrived.</Description>
+                </Parameter>
+                <Parameter ID="1218" Name="data8" DataType="Data8">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1220" Name="ping_pong_16" MethodType="Request" Response="ping_pong_16">
+            <Description>Round trip request with 16 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1221" Name="id" DataType="uint32">
+                    <Description>Sequence number stamped by the consumer.</Description>
+                </Parameter>
+                <Parameter ID="1222" Name="begin" DataType="uint64">
+                    <Description>Send timestamp in nanoseconds, taken by the consumer.</Description>
+                </Parameter>
+                <Parameter ID="1223" Name="data16" DataType="Data16">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1224" Name="ping_pong_16" MethodType="Response">
+            <Description>Round trip response with 16 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1225" Name="id" DataType="uint32">
+                    <Description>Sequence number copied from the request.</Description>
+                </Parameter>
+                <Parameter ID="1226" Name="begin" DataType="uint64">
+                    <Description>Send timestamp copied from the request.</Description>
+                </Parameter>
+                <Parameter ID="1227" Name="replied" DataType="uint64">
+                    <Description>Timestamp in nanoseconds taken by the provider when the request arrived.</Description>
+                </Parameter>
+                <Parameter ID="1228" Name="data16" DataType="Data16">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1230" Name="ping_pong_32" MethodType="Request" Response="ping_pong_32">
+            <Description>Round trip request with 32 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1231" Name="id" DataType="uint32">
+                    <Description>Sequence number stamped by the consumer.</Description>
+                </Parameter>
+                <Parameter ID="1232" Name="begin" DataType="uint64">
+                    <Description>Send timestamp in nanoseconds, taken by the consumer.</Description>
+                </Parameter>
+                <Parameter ID="1233" Name="data32" DataType="Data32">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1234" Name="ping_pong_32" MethodType="Response">
+            <Description>Round trip response with 32 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1235" Name="id" DataType="uint32">
+                    <Description>Sequence number copied from the request.</Description>
+                </Parameter>
+                <Parameter ID="1236" Name="begin" DataType="uint64">
+                    <Description>Send timestamp copied from the request.</Description>
+                </Parameter>
+                <Parameter ID="1237" Name="replied" DataType="uint64">
+                    <Description>Timestamp in nanoseconds taken by the provider when the request arrived.</Description>
+                </Parameter>
+                <Parameter ID="1238" Name="data32" DataType="Data32">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1240" Name="ping_pong_64" MethodType="Request" Response="ping_pong_64">
+            <Description>Round trip request with 64 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1241" Name="id" DataType="uint32">
+                    <Description>Sequence number stamped by the consumer.</Description>
+                </Parameter>
+                <Parameter ID="1242" Name="begin" DataType="uint64">
+                    <Description>Send timestamp in nanoseconds, taken by the consumer.</Description>
+                </Parameter>
+                <Parameter ID="1243" Name="data64" DataType="Data64">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1244" Name="ping_pong_64" MethodType="Response">
+            <Description>Round trip response with 64 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1245" Name="id" DataType="uint32">
+                    <Description>Sequence number copied from the request.</Description>
+                </Parameter>
+                <Parameter ID="1246" Name="begin" DataType="uint64">
+                    <Description>Send timestamp copied from the request.</Description>
+                </Parameter>
+                <Parameter ID="1247" Name="replied" DataType="uint64">
+                    <Description>Timestamp in nanoseconds taken by the provider when the request arrived.</Description>
+                </Parameter>
+                <Parameter ID="1248" Name="data64" DataType="Data64">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1250" Name="ping_pong_128" MethodType="Request" Response="ping_pong_128">
+            <Description>Round trip request with 128 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1251" Name="id" DataType="uint32">
+                    <Description>Sequence number stamped by the consumer.</Description>
+                </Parameter>
+                <Parameter ID="1252" Name="begin" DataType="uint64">
+                    <Description>Send timestamp in nanoseconds, taken by the consumer.</Description>
+                </Parameter>
+                <Parameter ID="1253" Name="data128" DataType="Data128">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1254" Name="ping_pong_128" MethodType="Response">
+            <Description>Round trip response with 128 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1255" Name="id" DataType="uint32">
+                    <Description>Sequence number copied from the request.</Description>
+                </Parameter>
+                <Parameter ID="1256" Name="begin" DataType="uint64">
+                    <Description>Send timestamp copied from the request.</Description>
+                </Parameter>
+                <Parameter ID="1257" Name="replied" DataType="uint64">
+                    <Description>Timestamp in nanoseconds taken by the provider when the request arrived.</Description>
+                </Parameter>
+                <Parameter ID="1258" Name="data128" DataType="Data128">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1260" Name="ping_pong_256" MethodType="Request" Response="ping_pong_256">
+            <Description>Round trip request with 256 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1261" Name="id" DataType="uint32">
+                    <Description>Sequence number stamped by the consumer.</Description>
+                </Parameter>
+                <Parameter ID="1262" Name="begin" DataType="uint64">
+                    <Description>Send timestamp in nanoseconds, taken by the consumer.</Description>
+                </Parameter>
+                <Parameter ID="1263" Name="data256" DataType="Data256">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1264" Name="ping_pong_256" MethodType="Response">
+            <Description>Round trip response with 256 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1265" Name="id" DataType="uint32">
+                    <Description>Sequence number copied from the request.</Description>
+                </Parameter>
+                <Parameter ID="1266" Name="begin" DataType="uint64">
+                    <Description>Send timestamp copied from the request.</Description>
+                </Parameter>
+                <Parameter ID="1267" Name="replied" DataType="uint64">
+                    <Description>Timestamp in nanoseconds taken by the provider when the request arrived.</Description>
+                </Parameter>
+                <Parameter ID="1268" Name="data256" DataType="Data256">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1270" Name="ping_pong_512" MethodType="Request" Response="ping_pong_512">
+            <Description>Round trip request with 512 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1271" Name="id" DataType="uint32">
+                    <Description>Sequence number stamped by the consumer.</Description>
+                </Parameter>
+                <Parameter ID="1272" Name="begin" DataType="uint64">
+                    <Description>Send timestamp in nanoseconds, taken by the consumer.</Description>
+                </Parameter>
+                <Parameter ID="1273" Name="data512" DataType="Data512">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1274" Name="ping_pong_512" MethodType="Response">
+            <Description>Round trip response with 512 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1275" Name="id" DataType="uint32">
+                    <Description>Sequence number copied from the request.</Description>
+                </Parameter>
+                <Parameter ID="1276" Name="begin" DataType="uint64">
+                    <Description>Send timestamp copied from the request.</Description>
+                </Parameter>
+                <Parameter ID="1277" Name="replied" DataType="uint64">
+                    <Description>Timestamp in nanoseconds taken by the provider when the request arrived.</Description>
+                </Parameter>
+                <Parameter ID="1278" Name="data512" DataType="Data512">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1280" Name="ping_pong_1024" MethodType="Request" Response="ping_pong_1024">
+            <Description>Round trip request with 1024 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1281" Name="id" DataType="uint32">
+                    <Description>Sequence number stamped by the consumer.</Description>
+                </Parameter>
+                <Parameter ID="1282" Name="begin" DataType="uint64">
+                    <Description>Send timestamp in nanoseconds, taken by the consumer.</Description>
+                </Parameter>
+                <Parameter ID="1283" Name="data1024" DataType="Data1024">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1284" Name="ping_pong_1024" MethodType="Response">
+            <Description>Round trip response with 1024 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1285" Name="id" DataType="uint32">
+                    <Description>Sequence number copied from the request.</Description>
+                </Parameter>
+                <Parameter ID="1286" Name="begin" DataType="uint64">
+                    <Description>Send timestamp copied from the request.</Description>
+                </Parameter>
+                <Parameter ID="1287" Name="replied" DataType="uint64">
+                    <Description>Timestamp in nanoseconds taken by the provider when the request arrived.</Description>
+                </Parameter>
+                <Parameter ID="1288" Name="data1024" DataType="Data1024">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1290" Name="ping_pong_4096" MethodType="Request" Response="ping_pong_4096">
+            <Description>Round trip request with 4096 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1291" Name="id" DataType="uint32">
+                    <Description>Sequence number stamped by the consumer.</Description>
+                </Parameter>
+                <Parameter ID="1292" Name="begin" DataType="uint64">
+                    <Description>Send timestamp in nanoseconds, taken by the consumer.</Description>
+                </Parameter>
+                <Parameter ID="1293" Name="data4096" DataType="Data4096">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1294" Name="ping_pong_4096" MethodType="Response">
+            <Description>Round trip response with 4096 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1295" Name="id" DataType="uint32">
+                    <Description>Sequence number copied from the request.</Description>
+                </Parameter>
+                <Parameter ID="1296" Name="begin" DataType="uint64">
+                    <Description>Send timestamp copied from the request.</Description>
+                </Parameter>
+                <Parameter ID="1297" Name="replied" DataType="uint64">
+                    <Description>Timestamp in nanoseconds taken by the provider when the request arrived.</Description>
+                </Parameter>
+                <Parameter ID="1298" Name="data4096" DataType="Data4096">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1300" Name="ping_pong_65536" MethodType="Request" Response="ping_pong_65536">
+            <Description>Round trip request with 65536 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1301" Name="id" DataType="uint32">
+                    <Description>Sequence number stamped by the consumer.</Description>
+                </Parameter>
+                <Parameter ID="1302" Name="begin" DataType="uint64">
+                    <Description>Send timestamp in nanoseconds, taken by the consumer.</Description>
+                </Parameter>
+                <Parameter ID="1303" Name="data65536" DataType="Data65536">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="1304" Name="ping_pong_65536" MethodType="Response">
+            <Description>Round trip response with 65536 bytes of extra data.</Description>
+            <ParamList>
+                <Parameter ID="1305" Name="id" DataType="uint32">
+                    <Description>Sequence number copied from the request.</Description>
+                </Parameter>
+                <Parameter ID="1306" Name="begin" DataType="uint64">
+                    <Description>Send timestamp copied from the request.</Description>
+                </Parameter>
+                <Parameter ID="1307" Name="replied" DataType="uint64">
+                    <Description>Timestamp in nanoseconds taken by the provider when the request arrived.</Description>
+                </Parameter>
+                <Parameter ID="1308" Name="data65536" DataType="Data65536">
+                    <Description>The extra payload.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>

@@ -338,6 +338,14 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   True when the application was started with a command line, so it runs without
+     *          the full screen console: nothing is drawn, no key is read, and neither the
+     *          input thread nor the display thread is started. The service itself behaves
+     *          exactly the same in both modes. See common/headless.hpp.
+     **/
+    const bool                          mHeadless;
+
     areg::Thread                        mInputThread;
     std::atomic_bool                    mQuit;
     std::atomic_bool                    mQuitInput;

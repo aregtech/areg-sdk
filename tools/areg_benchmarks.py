@@ -16,6 +16,12 @@ What is measured
                 message rate the peak block (message) rate, in blocks per second
 30_publatency   OWT          one way trip, broadcast mode, the P50/P95/P99 of the run
                 RTT          round trip time, ping pong mode, the same percentiles
+                             (between two processes, through the message router)
+31_loclatency   OWT and RTT  the same trips inside ONE process: once with provider and
+                             consumer in one thread, once with each in its own thread.
+                             The difference between the two is the price of one thread
+                             wake-up; the difference to example 30 is the price of
+                             leaving the process.
 
 Nothing here is specific to a machine or a checkout: every path is derived from the
 arguments, and the module is imported, never executed on its own.
@@ -52,10 +58,30 @@ _SVC_RATE = re.compile(
 _IDEAL_RATE = re.compile(
     r'Theoretical rate[ .]*:\s*ideal\s*\[\s*([0-9.]+)\s*\]\s*(\w+)\s*/\s*sec')
 
-# " Min:%9.3f  P50:%9.3f  P95:%9.3f  P99:%9.3f  Max:%9.3f  Mean:%9.3f  (us)"
+# 30_publatency with the console: " Min:%9.3f  P50:%9.3f  P95:%9.3f  P99:%9.3f  Max:%9.3f  Mean:%9.3f  (us)"
 _LATENCY = re.compile(
     r'Min:\s*([0-9.]+)\s+P50:\s*([0-9.]+)\s+P95:\s*([0-9.]+)\s+P99:\s*([0-9.]+)'
     r'\s+Max:\s*([0-9.]+)\s+Mean:\s*([0-9.]+)')
+
+# 30_publatency started with a command line, so without the console. One line per finished
+# run: "run 1 mode pp64 samples 20000 min ... p50 ... p95 ... p99 ... max ... mean ... dur ... ms rate ... msg/s"
+# This form is preferred when both are present: it names the mode and cannot be a partly
+# repainted screen row.
+_LATENCY_PLAIN = re.compile(
+    r'run\s+(\d+)\s+mode\s+(\w+)\s+samples\s+(\d+)\s+min\s+([0-9.]+)\s+p50\s+([0-9.]+)'
+    r'\s+p95\s+([0-9.]+)\s+p99\s+([0-9.]+)\s+max\s+([0-9.]+)\s+mean\s+([0-9.]+)'
+    r'\s+dur\s+([0-9.]+)\s+ms\s+rate\s+([0-9.]+)\s+msg/s')
+
+# 31_loclatency result table row. The columns are, in order:
+# topology, mode, payload bytes, repetition, samples, then min p50 p90 p99 p99.9 max mean
+# stddev in-leg msg/s.
+# Metric names produced above, read back by _derive_ladder to build the latency ladder.
+_LEVEL_LOCAL = re.compile(r'^(same|cross) (\w+) P50$')
+_LEVEL_PROC  = re.compile(r'^run \d+ (\w+) P50$')
+
+_LOCLATENCY = re.compile(
+    r'(same|cross)\s*\|\s*(\w+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|'
+    + r'\s*([0-9.]+)\s*\|' * 9 + r'\s*([0-9.]+)')
 
 # The unit names come from areg::STR_ONE_BYTE and friends in CommonDefs.hpp, which are
 # SINGULAR ("Byte", "KByte", "MByte", "GByte"). The plural and short spellings are accepted
@@ -152,31 +178,139 @@ def _extract_datarate(logs, scenario):
     return out
 
 
-def _extract_latency(logs, scenario):
-    """Every completed latency run of the consumer, in order, plus the median of their P50s."""
-    logs = _select(logs, 'consumer')
-    out = []
-    runs = []
-    for _, data in logs:
-        runs.extend(_LATENCY.findall(_plain(data)))
+def _median(values):
+    ordered = sorted(values)
+    return ordered[len(ordered) // 2]
 
-    for index, (mn, p50, p95, p99, mx, mean) in enumerate(runs, start=1):
+
+def _extract_latency(logs, scenario):
+    """
+    Every completed run of 30_publatency, in order, plus the median of their P50s.
+
+    Two output forms are accepted. When the application was started with a command line it
+    runs headless and prints one plain line per run, which also names the mode. When it was
+    started without one, the numbers come from the live line of its console. The plain form
+    wins when both are present.
+    """
+    logs = _select(logs, 'consumer')
+    plain, console = [], []
+    for _, data in logs:
+        text = _plain(data)
+        plain.extend(_LATENCY_PLAIN.findall(text))
+        console.extend(_LATENCY.findall(text))
+
+    out = []
+    if plain:
+        for run, mode, samples, mn, p50, p95, p99, mx, mean, _dur, rate in plain:
+            label = 'run %s %s' % (run, mode)
+            out.append(_measure(scenario, label + ' P50', 'us', float(p50), '%s us' % p50))
+            out.append(_measure(scenario, label + ' P95', 'us', float(p95), '%s us' % p95))
+            out.append(_measure(scenario, label + ' P99', 'us', float(p99), '%s us' % p99))
+            out.append(_measure(scenario, label + ' min/max/mean', 'us', float(mean),
+                                'min %s / max %s / mean %s us over %s samples' % (mn, mx, mean, samples)))
+            out.append(_measure(scenario, label + ' rate', 'msg/sec', float(rate),
+                                human_count(float(rate)) + ' msg/sec'))
+        median = _median(float(r[4]) for r in plain)
+        out.append(_measure(scenario, 'median of the run P50s', 'us', median, '%.3f us' % median))
+        return out
+
+    for index, (mn, p50, p95, p99, mx, mean) in enumerate(console, start=1):
         out.append(_measure(scenario, 'run %d P50' % index, 'us', float(p50), '%s us' % p50))
         out.append(_measure(scenario, 'run %d P95' % index, 'us', float(p95), '%s us' % p95))
         out.append(_measure(scenario, 'run %d P99' % index, 'us', float(p99), '%s us' % p99))
         out.append(_measure(scenario, 'run %d min/max/mean' % index, 'us', float(mean),
                             'min %s / max %s / mean %s us' % (mn, mx, mean)))
 
-    if runs:
-        p50s = sorted(float(r[1]) for r in runs)
-        median = p50s[len(p50s) // 2]
+    if console:
+        median = _median(float(r[1]) for r in console)
         out.append(_measure(scenario, 'median of the run P50s', 'us', median, '%.3f us' % median))
     return out
+
+
+def _extract_loclatency(logs, scenario):
+    """
+    Every row of the 31_loclatency result table.
+
+    The example prints one row per finished run and then ends, so the captured output holds
+    each row exactly once and nothing has to be de-duplicated. Every row already says which
+    topology and which mode it belongs to, so the numbers are reported under that name and
+    two runs of the same session never get mixed up.
+    """
+    out = []
+    rows = []
+    for _, data in logs:
+        rows.extend(_LOCLATENCY.findall(_plain(data)))
+
+    per_topology = {}
+    for row in rows:
+        topo, mode, payload, repeat, samples = row[0], row[1], row[2], row[3], row[4]
+        mn, p50, p90, p99, p999, mx, mean, stddev, inleg, rate = row[5:15]
+        label = '%s %s' % (topo, mode)
+        if int(repeat) > 1:
+            label += ' rep %s' % repeat
+
+        out.append(_measure(scenario, label + ' min', 'us', float(mn), '%s us' % mn))
+        out.append(_measure(scenario, label + ' P50', 'us', float(p50), '%s us' % p50))
+        out.append(_measure(scenario, label + ' P99', 'us', float(p99), '%s us' % p99))
+        out.append(_measure(scenario, label + ' P99.9/max', 'us', float(p999),
+                            'p99.9 %s / max %s us' % (p999, mx)))
+        out.append(_measure(scenario, label + ' mean/stddev', 'us', float(mean),
+                            'mean %s / stddev %s us over %s samples of %s bytes'
+                            % (mean, stddev, samples, payload)))
+        if float(inleg) > 0.0:
+            out.append(_measure(scenario, label + ' in-leg P50', 'us', float(inleg),
+                                '%s us (consumer to provider)' % inleg))
+        out.append(_measure(scenario, label + ' rate', 'msg/sec', float(rate),
+                            human_count(float(rate)) + ' msg/sec'))
+        per_topology.setdefault(topo, []).append(float(p50))
+
+    for topo, values in sorted(per_topology.items()):
+        median = _median(values)
+        out.append(_measure(scenario, '%s median of the P50s' % topo, 'us', median,
+                            '%.3f us' % median))
+    return out
+
+
+def _derive_ladder(measures):
+    """
+    Adds the two numbers this whole set of benchmarks exists for.
+
+    The two topologies of example 31 are measured one after the other, in separate runs, so
+    that neither competes with the other for the processor. Their difference can therefore
+    only be worked out here, once both are in. The same is done for the step from one process
+    to two, when example 30 was measured in the same session.
+    """
+    # Only the very same mode may be compared: a round trip carries two messages and a one
+    # way trip carries one, so mixing them would invent a number that was never measured.
+    levels = {'same': {}, 'cross': {}, 'proc': {}}
+    for m in measures:
+        local = _LEVEL_LOCAL.match(m['metric'])
+        if local is not None:
+            levels[local.group(1)].setdefault(local.group(2), []).append(m['value'])
+            continue
+
+        remote = _LEVEL_PROC.match(m['metric'])
+        if remote is not None:
+            levels['proc'].setdefault(remote.group(1), []).append(m['value'])
+
+    steps = (('same', 'cross', 'price of one thread wake-up',
+              'two threads minus one thread'),
+             ('cross', 'proc', 'price of leaving the process',
+              'two processes minus two threads: both sockets and the router'))
+
+    extra = []
+    for lower, upper, title, explanation in steps:
+        for mode in sorted(set(levels[lower]) & set(levels[upper])):
+            step = _median(levels[upper][mode]) - _median(levels[lower][mode])
+            extra.append(_measure('ladder', '%s, %s' % (title, mode), 'us', step,
+                                  '%.3f us (%s)' % (step, explanation)))
+    return extra
 
 
 _EXTRACTORS = {
     'datarate': _extract_datarate,
     'latency': _extract_latency,
+    'loclatency': _extract_loclatency,
 }
 
 
@@ -206,6 +340,8 @@ def report(measures, out_dir, annotate=True):
     """
     if not measures:
         return
+
+    measures = list(measures) + _derive_ladder(measures)
 
     lines = ['', '=' * 78, 'BENCHMARK RESULTS', '=' * 78]
     width = max(len(m['scenario']) + len(m['metric']) for m in measures) + 4

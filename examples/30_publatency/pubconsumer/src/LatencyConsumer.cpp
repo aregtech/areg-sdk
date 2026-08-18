@@ -10,6 +10,7 @@
  * Include files.
  ************************************************************************/
 #include "pubconsumer/src/LatencyConsumer.hpp"
+#include "common/headless.hpp"
 #include "common/latency_common.hpp"
 
 #include "areg/appbase/Application.hpp"
@@ -26,6 +27,17 @@
 // LatencyConsumer::CmdConsumer implementation
 //////////////////////////////////////////////////////////////////////////
 
+namespace
+{
+    //!< Set when a headless run ends badly. Read by main() to pick the exit code.
+    std::atomic_bool _theFailed{ false };
+}
+
+bool LatencyConsumer::has_failed() noexcept
+{
+    return _theFailed.load(std::memory_order_relaxed);
+}
+
 void LatencyConsumer::CmdConsumer::process_event(const CmdData & data)
 {
     mOwner._on_cmd_event(data);
@@ -41,6 +53,9 @@ LatencyConsumer::LatencyConsumer(const areg::ComponentEntry & entry, areg::Compo
     , areg::TimerConsumer   ( )
     , areg::ThreadConsumer  ( )
 
+    , mHeadless     ( Latency::is_headless() )
+    , mStartupCmd   ( )
+    , mStartupCmdSent( false )
     , mInputThread  ( static_cast<areg::ThreadConsumer &>(*this), THREAD_INPUT )
     , mQuit         ( false )
     , mCmdConsumer  ( *this )
@@ -103,10 +118,23 @@ void LatencyConsumer::startup_component(areg::ComponentThread & /* comThread */)
         mResults[i] = ResultEntry {};
 
     mSampleCount.store(0u, std::memory_order_relaxed);
-    areg::ext::Console::instance().enable_console_input(true);
-    _redraw_layout();
-    mDisplayThread.start(areg::WAIT_INFINITE);
-    mInputThread.start(areg::WAIT_INFINITE);
+    mStartupCmdSent.store(false, std::memory_order_relaxed);
+
+    if (mHeadless == false)
+    {
+        areg::ext::Console::instance().enable_console_input(true);
+        _redraw_layout();
+        mDisplayThread.start(areg::WAIT_INFINITE);
+        mInputThread.start(areg::WAIT_INFINITE);
+        return;
+    }
+
+    // Headless: the command waits here until the provider is reachable, because a
+    // measurement cannot be started before there is somebody to measure against.
+    if (_parse_command(Latency::startup_command(), mStartupCmd) == false)
+        mStartupCmd.error = true;
+
+    mInputThread.start(areg::WAIT_INFINITE);   // runs the watchdog, not the console reader
 }
 
 void LatencyConsumer::shutdown_component(areg::ComponentThread & /* comThread */) noexcept
@@ -115,9 +143,14 @@ void LatencyConsumer::shutdown_component(areg::ComponentThread & /* comThread */
     mPaceTimer.stop_timer();
     mBatchTimer.stop_timer();
     mQuit.store(true, std::memory_order_relaxed);
-    areg::ext::Console::instance().enable_console_input(false);
+
+    if (mHeadless == false)
+        areg::ext::Console::instance().enable_console_input(false);
+
     mInputThread.shutdown(areg::WAIT_INFINITE);
-    mDisplayThread.shutdown(areg::WAIT_INFINITE);
+
+    if (mHeadless == false)
+        mDisplayThread.shutdown(areg::WAIT_INFINITE);
 }
 
 bool LatencyConsumer::service_connected(areg::ServiceConnectionState status, areg::ProxyBase & proxy)
@@ -138,6 +171,12 @@ bool LatencyConsumer::service_connected(areg::ServiceConnectionState status, are
         notify_on_broadcast_message_1024(true);
         notify_on_broadcast_message_4096(true);
         notify_on_broadcast_message_65536(true);
+
+        if (mHeadless && (mStartupCmdSent.load(std::memory_order_relaxed) == false))
+        {
+            mStartupCmdSent.store(true, std::memory_order_relaxed);
+            EventCommand::send_event(mStartupCmd, static_cast<IECmdConsumer &>(mCmdConsumer), master_thread());
+        }
     }
     else
     {
@@ -310,7 +349,10 @@ void LatencyConsumer::process_timer(areg::Timer & timer)
 
 void LatencyConsumer::on_run()
 {
-    _run_input_thread();
+    if (mHeadless)
+        _run_headless_watchdog();
+    else
+        _run_input_thread();
 }
 
 void LatencyConsumer::DisplayConsumer::on_run()
@@ -320,6 +362,9 @@ void LatencyConsumer::DisplayConsumer::on_run()
 
 void LatencyConsumer::_redraw_layout()
 {
+    if (mHeadless)
+        return;
+
     areg::ext::Console & console = areg::ext::Console::instance();
     console.clear_screen();
     console.output_txt(COORD_TITLE,   MSG_TITLE);
@@ -348,6 +393,9 @@ void LatencyConsumer::_redraw_layout()
 
 void LatencyConsumer::_update_live()
 {
+    if (mHeadless)
+        return;
+
     const uint32_t samples = mSampleCount.load(std::memory_order_relaxed);
     const uint32_t delta   = (samples >= mLastRateCount) ? (samples - mLastRateCount) : 0u;
     mLastRateCount          = samples;
@@ -379,6 +427,9 @@ void LatencyConsumer::_update_live()
 
 void LatencyConsumer::_update_settings() const
 {
+    if (mHeadless)
+        return;
+
     areg::ext::Console & console = areg::ext::Console::instance();
     const areg::String path = !mCsvEnabled ? areg::String("off")
                             : mCsvPath.is_empty() ? areg::String("auto")
@@ -404,7 +455,7 @@ void LatencyConsumer::_update_settings() const
     console.refresh_screen();
 }
 
-void LatencyConsumer::_run_input_thread()
+bool LatencyConsumer::_parse_command(const areg::String & line, CmdData & data)
 {
     static const areg::ext::OptionParser::OptionSetup opts[]
     {
@@ -423,35 +474,16 @@ void LatencyConsumer::_run_input_thread()
         , { "-f", "file",   static_cast<int32_t>(ConsumerCmd::File),     areg::ext::OptionParser::FREESTYLE_DATA,   {}, {}, {} }
     };
 
-    areg::ext::OptionParser parser(opts, static_cast<uint32_t>(sizeof(opts) / sizeof(opts[0])));
-    areg::ext::Console & console = areg::ext::Console::instance();
+    static areg::ext::OptionParser parser(opts, static_cast<uint32_t>(sizeof(opts) / sizeof(opts[0])));
 
-    while (!mQuit.load(std::memory_order_relaxed))
+    areg::String trimmed(line);
+    trimmed.trim_all();
+    if (trimmed.is_empty())
+        return false;
+
+    parser.parse_option_line(trimmed.as_string());
+
     {
-        console.output_msg(COORD_INPUT, " > %-100s", "");
-        console.set_cursor_cur_position({ 4, COORD_INPUT.posY });
-        console.refresh_screen();
-
-        const areg::String line = console.wait_for_input(nullptr);
-
-        // Erase the echoed command and reset cursor, prevents the typed text
-        // from drifting down to the next row after Enter.
-        console.output_msg(COORD_INPUT, " > %-100s", "");
-        console.set_cursor_cur_position({ 4, COORD_INPUT.posY });
-        console.refresh_screen();
-
-        if (mQuit.load(std::memory_order_relaxed))
-            break;
-
-        areg::String trimmed(line);
-        trimmed.trim_all();
-        if (trimmed.is_empty())
-            continue;
-
-        parser.parse_option_line(trimmed.as_string());
-
-        CmdData data;
-
         const areg::ext::OptionParser::InputOptionList & parsed = parser.options();
         for (uint32_t i = 0u; i < parsed.size(); ++i)
         {
@@ -592,14 +624,94 @@ void LatencyConsumer::_run_input_thread()
 
         if (data.quit || data.quit_local)
             mQuit.store(true, std::memory_order_relaxed);
+    }
 
-        const bool has_any = data.quit || data.quit_local || data.help || data.info
-                           || data.start || data.stop || data.set_mode || data.set_count
-                           || data.set_warmup || data.set_duration || data.set_pause
-                           || data.set_output || data.begin_benchmark || data.end_benchmark
-                           || data.enable_file || data.error;
+    return data.quit || data.quit_local || data.help || data.info
+        || data.start || data.stop || data.set_mode || data.set_count
+        || data.set_warmup || data.set_duration || data.set_pause
+        || data.set_output || data.begin_benchmark || data.end_benchmark
+        || data.enable_file || data.error;
+}
 
-        if (has_any)
+void LatencyConsumer::_run_headless_watchdog()
+{
+    uint32_t waited{ 0u };
+    while ((mQuit.load(std::memory_order_relaxed) == false) && (waited < CONNECT_TIMEOUT_MS))
+    {
+        if (mStartupCmdSent.load(std::memory_order_relaxed))
+            break;
+
+        areg::Thread::sleep(WATCHDOG_TICK_MS);
+        waited += WATCHDOG_TICK_MS;
+    }
+
+    if (mQuit.load(std::memory_order_relaxed))
+        return;
+
+    if (mStartupCmdSent.load(std::memory_order_relaxed) == false)
+    {
+        printf("ERROR: the service provider did not become reachable within %u seconds.\n"
+               "       Is the message router running, and is 30_pubprovider started?\n"
+             , CONNECT_TIMEOUT_MS / 1000u);
+        fflush(stdout);
+        _theFailed.store(true, std::memory_order_relaxed);
+        areg::Application::signal_quit();
+        return;
+    }
+
+    uint32_t lastSeen{ mSampleCount.load(std::memory_order_relaxed) };
+    uint32_t idle{ 0u };
+    while (mQuit.load(std::memory_order_relaxed) == false)
+    {
+        areg::Thread::sleep(WATCHDOG_TICK_MS);
+
+        const uint32_t seen{ mSampleCount.load(std::memory_order_relaxed) };
+        if (seen != lastSeen)
+        {
+            lastSeen = seen;
+            idle     = 0u;
+            continue;
+        }
+
+        idle += WATCHDOG_TICK_MS;
+        if (idle < STALL_TIMEOUT_MS)
+            continue;
+
+        if (mQuit.load(std::memory_order_relaxed))
+            break;
+
+        printf("ERROR: no message arrived for %u seconds -- the benchmark is stuck.\n"
+             , STALL_TIMEOUT_MS / 1000u);
+        fflush(stdout);
+        _theFailed.store(true, std::memory_order_relaxed);
+        areg::Application::signal_quit();
+        break;
+    }
+}
+
+void LatencyConsumer::_run_input_thread()
+{
+    areg::ext::Console & console = areg::ext::Console::instance();
+
+    while (!mQuit.load(std::memory_order_relaxed))
+    {
+        console.output_msg(COORD_INPUT, " > %-100s", "");
+        console.set_cursor_cur_position({ 4, COORD_INPUT.posY });
+        console.refresh_screen();
+
+        const areg::String line = console.wait_for_input(nullptr);
+
+        // Erase the echoed command and reset cursor, prevents the typed text
+        // from drifting down to the next row after Enter.
+        console.output_msg(COORD_INPUT, " > %-100s", "");
+        console.set_cursor_cur_position({ 4, COORD_INPUT.posY });
+        console.refresh_screen();
+
+        if (mQuit.load(std::memory_order_relaxed))
+            break;
+
+        CmdData data;
+        if (_parse_command(line, data))
         {
             EventCommand::send_event(data, static_cast<IECmdConsumer &>(mCmdConsumer), master_thread());
         }
@@ -610,11 +722,16 @@ void LatencyConsumer::_on_cmd_event(const CmdData & data)
 {
     if (data.error)
     {
-        areg::ext::Console & console = areg::ext::Console::instance();
-        console.save_cursor_position();
-        console.output_msg(COORD_SETTINGS, " ERROR: unknown command or bad value. Type -h for help.%-50s", "");
-        console.restore_cursor_position();
-        console.refresh_screen();
+        if (mHeadless)
+        {
+            printf("ERROR: unknown command or bad value in '%s'.\n\n", Latency::startup_command().as_string());
+            _print_usage();
+            _theFailed.store(true, std::memory_order_relaxed);
+            _quit_all();
+            return;
+        }
+
+        _status(areg::String("ERROR: unknown command or bad value. Type -h for help."));
         return;
     }
 
@@ -652,13 +769,7 @@ void LatencyConsumer::_on_cmd_event(const CmdData & data)
 
     if (data.quit)
     {
-        _cancel_batch();
-        mTestRunning = false;
-        _flush_benchmark_on_exit();     // quitting mid-benchmark still dumps the CSV, as if `-e` was typed
-        if (is_connected())
-            request_start_mode(Latency::LatencyMode::QuitApp, 0u, 0u, 0u);
-
-        areg::Application::signal_quit();
+        _quit_all();
     }
     else if (data.quit_local)
     {
@@ -669,7 +780,15 @@ void LatencyConsumer::_on_cmd_event(const CmdData & data)
     }
     else if (data.help)
     {
-        _redraw_layout();
+        if (mHeadless)
+        {
+            _print_usage();
+            _quit_all();
+        }
+        else
+        {
+            _redraw_layout();
+        }
     }
     else if (data.info)
     {
@@ -693,7 +812,15 @@ void LatencyConsumer::_on_cmd_event(const CmdData & data)
         _cancel_batch();
         mBatchRunsLeft = (data.start_runs > 0u ? data.start_runs : 1u) - 1u;
         if (_start_test() == false)
+        {
             mBatchRunsLeft = 0u;
+            if (mHeadless)
+            {
+                printf("ERROR: the measurement could not be started.\n");
+                _theFailed.store(true, std::memory_order_relaxed);
+                _quit_all();
+            }
+        }
     }
     else
     {
@@ -703,23 +830,15 @@ void LatencyConsumer::_on_cmd_event(const CmdData & data)
 
 bool LatencyConsumer::_start_test()
 {
-    areg::ext::Console & console = areg::ext::Console::instance();
-
     if (mTestRunning)
     {
-        console.save_cursor_position();
-        console.output_msg(COORD_SETTINGS, " ERROR: test is already running.%-60s", "");
-        console.restore_cursor_position();
-        console.refresh_screen();
+        _status(areg::String("ERROR: test is already running."));
         return false;
     }
 
     if (!is_connected())
     {
-        console.save_cursor_position();
-        console.output_msg(COORD_SETTINGS, " ERROR: not connected to service provider.%-50s", "");
-        console.restore_cursor_position();
-        console.refresh_screen();
+        _status(areg::String("ERROR: not connected to service provider."));
         return false;
     }
 
@@ -728,18 +847,12 @@ bool LatencyConsumer::_start_test()
 
     if (need_count && mCount == 0u)
     {
-        console.save_cursor_position();
-        console.output_msg(COORD_SETTINGS, " ERROR: count must be > 0. Use -c=N or count=N.%-40s", "");
-        console.restore_cursor_position();
-        console.refresh_screen();
+        _status(areg::String("ERROR: count must be > 0. Use -c=N or count=N."));
         return false;
     }
     if (need_dur && mDurationNs == 0u)
     {
-        console.save_cursor_position();
-        console.output_msg(COORD_SETTINGS, " ERROR: duration must be > 0. Use -d=<ms>.%-40s", "");
-        console.restore_cursor_position();
-        console.refresh_screen();
+        _status(areg::String("ERROR: duration must be > 0. Use -d=<ms>."));
         return false;
     }
 
@@ -776,11 +889,7 @@ void LatencyConsumer::_stop_test()
 {
     if (!mTestRunning)
     {
-        areg::ext::Console & console = areg::ext::Console::instance();
-        console.save_cursor_position();
-        console.output_msg(COORD_SETTINGS, " No test is running.%-80s", "");
-        console.restore_cursor_position();
-        console.refresh_screen();
+        _status(areg::String("No test is running."));
         return;
     }
 
@@ -792,6 +901,71 @@ void LatencyConsumer::_stop_test()
 
     if (!mSamples.is_empty())
         _finish_test();
+}
+
+void LatencyConsumer::_quit_all()
+{
+    _cancel_batch();
+    mTestRunning = false;
+    _flush_benchmark_on_exit();     // quitting mid-benchmark still dumps the CSV, as if `-e` was typed
+    if (is_connected())
+        request_start_mode(Latency::LatencyMode::QuitApp, 0u, 0u, 0u);
+
+    areg::Application::signal_quit();
+}
+
+void LatencyConsumer::_status(const areg::String & text) const
+{
+    if (mHeadless)
+    {
+        printf("%s\n", text.as_string());
+        fflush(stdout);
+        return;
+    }
+
+    areg::ext::Console & console = areg::ext::Console::instance();
+    console.save_cursor_position();
+    console.output_msg(COORD_SETTINGS, " %-118s", text.as_string());
+    console.restore_cursor_position();
+    console.refresh_screen();
+}
+
+void LatencyConsumer::_print_usage() const
+{
+    printf("Usage: 30_pubconsumer [command]\n"
+           "\n"
+           "Without a command the application draws its console and waits for the user.\n"
+           "With a command it runs headless: it draws nothing, runs the command as soon as\n"
+           "the service provider is reachable, prints one line per finished run, and then\n"
+           "quits. It also asks the provider to quit, so nothing is left running.\n"
+           "\n"
+           "The command is exactly the text that would be typed into the console:\n"
+           "  -m=<mode>     pp0 pp8 pp16 pp32 pp64 pp128 pp256 pp512 pp1024 pp4096 pp65536\n"
+           "                bc0 bc8 bc16 bc32 bc64 bc128 bc256 bc512 bc1024 bc4096 bc65536\n"
+           "  -c=<number>   measured messages per run\n"
+           "  -w=<number>   messages sent before measuring starts\n"
+           "  -d=<ms>       run for this many milliseconds instead of a message count\n"
+           "  -s[=<runs>]   start; with a number, run that many times in a row\n"
+           "  -p=<ms>       pause between the runs of a batch\n"
+           "  -f[=<path>]   write the samples of every run into a CSV file\n"
+           "  -b / -e       begin / end benchmark mode (one CSV for the whole batch)\n"
+           "  -h            print this text\n"
+           "\n"
+           "Example:\n"
+           "  30_pubprovider -n &\n"
+           "  30_pubconsumer -m=pp64 -c=20000 -w=2000 -s=3\n");
+}
+
+void LatencyConsumer::_print_result(const ResultEntry & r) const
+{
+    if (r.valid == false)
+        return;
+
+    printf("run %-3u mode %-7s samples %-7u min %9.3f p50 %9.3f p95 %9.3f p99 %9.3f"
+           " max %10.3f mean %9.3f dur %8.0f ms rate %9.0f msg/s\n"
+         , r.run_no, r.mode.as_string(), r.count
+         , r.min_us, r.p50_us, r.p95_us, r.p99_us, r.max_us, r.mean_us, r.dur_ms, r.mps);
+    fflush(stdout);
 }
 
 void LatencyConsumer::_cancel_batch()
@@ -816,11 +990,7 @@ void LatencyConsumer::_begin_benchmark_mode()
     mBenchmarkResults.clear();
     mBenchmarkResults.reserve(BENCHMARK_RESERVE);
 
-    areg::ext::Console & console = areg::ext::Console::instance();
-    console.save_cursor_position();
-    console.output_msg(COORD_SETTINGS, " Benchmark mode enabled.%-90s", "");
-    console.restore_cursor_position();
-    console.refresh_screen();
+    _status(areg::String("Benchmark mode enabled."));
     _update_settings();
 }
 
@@ -951,6 +1121,11 @@ void LatencyConsumer::_record_sample(uint64_t t1, uint64_t t2, uint64_t t4)
 
         if (is_connected())
             request_start_mode(Latency::LatencyMode::Stop, 0u, 0u, 0u);
+
+        // Headless has nobody to type the next command, so the last run of the batch ends
+        // the whole benchmark, this application and the provider with it.
+        if (mHeadless && (mBatchRunsLeft == 0u))
+            _quit_all();
     }
     else if (mStopMode == StopMode::Paced)
     {
@@ -984,12 +1159,7 @@ void LatencyConsumer::_finish_test()
     const uint32_t N = mSamples.size();
     if (N == 0u)
     {
-        areg::ext::Console & console = areg::ext::Console::instance();
-        console.save_cursor_position();
-        console.output_msg(COORD_LIVE_1, MSG_LIVE_1.data(), Latency::mode_as_str(mMode), "done", 0u, 0.0);
-        console.output_msg(COORD_LIVE_2, "%-120s", " No samples collected.");
-        console.restore_cursor_position();
-        console.refresh_screen();
+        _status(areg::String("No samples collected."));
         return;
     }
 
@@ -1023,15 +1193,18 @@ void LatencyConsumer::_finish_test()
     const double   dur_ms  = (endNs > startNs) ? static_cast<double>(endNs - startNs) / 1.0e6 : 0.0;
     const double   mps     = (dur_ms > 0.0)    ? (static_cast<double>(N) * 1000.0 / dur_ms)  : 0.0;
 
-    areg::ext::Console & console = areg::ext::Console::instance();
-    console.save_cursor_position();
-    console.output_msg(COORD_LIVE_1, "%-120s", "");
-    console.output_msg(COORD_LIVE_2, "%-120s", "");
-    console.output_msg(COORD_LIVE_1, " Mode: %-6s  Status: done   Samples: %-6u   Dur: %.0f ms   Rate: %.0f msg/s"
-                     , Latency::mode_as_str(mMode), N, dur_ms, mps);
-    console.output_msg(COORD_LIVE_2, MSG_LIVE_FINAL.data(), min_us, p50_us, p95_us, p99_us, max_us, mean_us);
-    console.restore_cursor_position();
-    console.refresh_screen();
+    if (mHeadless == false)
+    {
+        areg::ext::Console & console = areg::ext::Console::instance();
+        console.save_cursor_position();
+        console.output_msg(COORD_LIVE_1, "%-120s", "");
+        console.output_msg(COORD_LIVE_2, "%-120s", "");
+        console.output_msg(COORD_LIVE_1, " Mode: %-6s  Status: done   Samples: %-6u   Dur: %.0f ms   Rate: %.0f msg/s"
+                         , Latency::mode_as_str(mMode), N, dur_ms, mps);
+        console.output_msg(COORD_LIVE_2, MSG_LIVE_FINAL.data(), min_us, p50_us, p95_us, p99_us, max_us, mean_us);
+        console.restore_cursor_position();
+        console.refresh_screen();
+    }
 
     ++mTotalRuns;
     const uint32_t slot = (mTotalRuns - 1u) % MAX_RESULT_ROWS;
@@ -1092,6 +1265,12 @@ void LatencyConsumer::_finish_test()
 
 void LatencyConsumer::_draw_result_row(uint32_t slot) const
 {
+    if (mHeadless)
+    {
+        _print_result(mResults[slot]);
+        return;
+    }
+
     const areg::ext::Console::Coord coord
     {
           COORD_TBL_ROW0.posX
@@ -1120,6 +1299,9 @@ void LatencyConsumer::_draw_result_row(uint32_t slot) const
 
 void LatencyConsumer::_redraw_results_table() const
 {
+    if (mHeadless)
+        return;
+
     areg::ext::Console & console = areg::ext::Console::instance();
     console.save_cursor_position();
 
@@ -1186,11 +1368,9 @@ void LatencyConsumer::_save_csv(const ResultEntry & result) const
     areg::File csv;
     if (!csv.open(output_path, mode))
     {
-        areg::ext::Console & console = areg::ext::Console::instance();
-        console.save_cursor_position();
-        console.output_msg(COORD_SETTINGS, " WARNING: could not write CSV to '%s'%-20s", output_path.as_string(), "");
-        console.restore_cursor_position();
-        console.refresh_screen();
+        areg::String note;
+        note.format("WARNING: could not write CSV to '%s'", output_path.as_string());
+        _status(note);
         return;
     }
 
@@ -1224,11 +1404,9 @@ void LatencyConsumer::_save_csv(const ResultEntry & result) const
 
     csv.close();
 
-    areg::ext::Console & console = areg::ext::Console::instance();
-    console.save_cursor_position();
-    console.output_msg(COORD_SETTINGS, " Saved: %s%-40s", output_path.as_string(), "");
-    console.restore_cursor_position();
-    console.refresh_screen();
+    areg::String note;
+    note.format("Saved: %s", output_path.as_string());
+    _status(note);
 }
 
 void LatencyConsumer::_save_benchmark_results() const
@@ -1241,11 +1419,9 @@ void LatencyConsumer::_save_benchmark_results() const
     areg::File csv;
     if (!csv.open(output_path, mode))
     {
-        areg::ext::Console & console = areg::ext::Console::instance();
-        console.save_cursor_position();
-        console.output_msg(COORD_SETTINGS, " WARNING: could not write benchmark export to '%s'%-2s", output_path.as_string(), "");
-        console.restore_cursor_position();
-        console.refresh_screen();
+        areg::String note;
+        note.format("WARNING: could not write benchmark export to '%s'", output_path.as_string());
+        _status(note);
         return;
     }
 
@@ -1281,11 +1457,9 @@ void LatencyConsumer::_save_benchmark_results() const
 
     csv.close();
 
-    areg::ext::Console & console = areg::ext::Console::instance();
-    console.save_cursor_position();
-    console.output_msg(COORD_SETTINGS, " Benchmark saved: %s%-15s", output_path.as_string(), "");
-    console.restore_cursor_position();
-    console.refresh_screen();
+    areg::String note;
+    note.format("Benchmark saved: %s", output_path.as_string());
+    _status(note);
 }
 
 void LatencyConsumer::_run_display_thread()

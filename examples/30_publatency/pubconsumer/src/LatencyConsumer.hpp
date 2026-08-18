@@ -207,6 +207,16 @@ private:
     static constexpr std::string_view THREAD_DISPLAY { "LatencyConsumerDisplayThread" };
     static constexpr std::string_view TIMER_PACE     { "LatencyConsumerPaceTimer" };
     static constexpr std::string_view TIMER_BATCH    { "LatencyConsumerBatchTimer" };
+    //!< Headless only: how long to wait for the service provider to become reachable before
+    //!< giving up. Without this an unattended run would wait for ever when the provider or
+    //!< the message router is missing.
+    static constexpr uint32_t CONNECT_TIMEOUT_MS    { 30000u };
+    //!< Headless only: how long the benchmark may make no progress at all before it is
+    //!< declared stuck. Keep it larger than the pause between batch cycles (`-p`).
+    static constexpr uint32_t STALL_TIMEOUT_MS      { 60000u };
+    //!< How often the headless watchdog looks at the progress.
+    static constexpr uint32_t WATCHDOG_TICK_MS      { 250u };
+
     static constexpr uint32_t DEFAULT_COUNT         { 5000u };
     static constexpr uint32_t DEFAULT_WARMUP        { 1000u };
     static constexpr uint32_t DEFAULT_PAUSE_MS      { 1000u };
@@ -282,6 +292,14 @@ private:
 public:
     LatencyConsumer(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
     ~LatencyConsumer() = default;
+
+    /**
+     * \brief   Tells whether a headless run ended badly: the provider never became
+     *          reachable, the command line was wrong, or the benchmark got stuck.
+     *          `main()` uses it to choose the exit code, so a script notices the problem.
+     **/
+    [[nodiscard]]
+    static bool has_failed() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Component lifecycle overrides
@@ -530,6 +548,63 @@ private:
     void _update_live();
     void _update_settings() const;
     void _run_input_thread();
+
+    /**
+     * \brief   Body of the watchdog that guards a headless run.
+     *
+     *          It runs on the thread that reads the console when there is one. First it waits
+     *          for the service provider to appear; then it watches that the benchmark keeps
+     *          making progress. If either fails it prints the reason and ends the
+     *          application, so an unattended run can never wait for ever.
+     **/
+    void _run_headless_watchdog();
+
+    /**
+     * \brief   Turns one typed or given command line into a command record.
+     *
+     *          The same text is accepted from the console and from the command line of the
+     *          process, so both ways behave exactly alike. Called only from the input thread,
+     *          or once from the component thread when the process runs headless; never from
+     *          both at the same time.
+     *
+     * \param   line    The command line, for example "-m=pp64 -c=10000 -w=1000".
+     * \param   out     Receives the parsed command.
+     * \return  Returns true when the line asked for at least one thing. A line that asked
+     *          for nothing is ignored by the caller.
+     **/
+    bool _parse_command(const areg::String & line, CmdData & out);
+
+    /**
+     * \brief   Shows one short status line, for example "Saved: result.csv".
+     *
+     *          With the console it is written into the settings row of the screen. Without
+     *          the console it is written as a plain line to the standard output, so that a
+     *          script sees it too. Every status message of this component goes through here,
+     *          so neither mode can be forgotten.
+     *
+     * \param   text    The message. Format it before calling if it needs values.
+     **/
+    void _status(const areg::String & text) const;
+
+    /**
+     * \brief   Prints the usage text of the command line to the standard output.
+     *          Used in headless mode, where there is no console to draw the help into.
+     **/
+    void _print_usage() const;
+
+    /**
+     * \brief   Prints one finished run as a single line of plain text.
+     *          Used in headless mode instead of the result table of the console.
+     **/
+    void _print_result(const ResultEntry & result) const;
+
+    /**
+     * \brief   Ends the whole benchmark: stops the batch, writes a pending benchmark export,
+     *          asks the service provider to quit as well, and quits this application.
+     *          This is what the console command `-q` does, and what headless mode does by
+     *          itself once the last run is finished.
+     **/
+    void _quit_all();
     void _run_display_thread();
     void _on_cmd_event(const CmdData & data);
     bool _start_test();
@@ -570,6 +645,23 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   True when the application was started with a command line, so it runs without
+     *          the full screen console. In that mode nothing is drawn, no key is read, the
+     *          given command is executed as soon as the provider is reachable, every finished
+     *          run is printed as one line of plain text, and the application quits by itself
+     *          when the last run is done. See common/headless.hpp.
+     **/
+    const bool              mHeadless;
+
+    //!< The command taken from the command line, waiting for the provider to become
+    //!< reachable. Only used in headless mode.
+    CmdData                 mStartupCmd;
+
+    //!< Set once the start-up command has been handed over, so that a reconnect cannot start
+    //!< the same measurement a second time. Also read by the watchdog thread.
+    std::atomic_bool        mStartupCmdSent;
+
     areg::Thread            mInputThread;   //!< Console input thread
     std::atomic_bool        mQuit;          //!< Set to true to stop input and display threads
     CmdConsumer             mCmdConsumer;   //!< Receives EventCommand on component thread
