@@ -47,9 +47,17 @@ msbuild /m /property:Configuration=Debug /property:Platform=x64 /property:AregEx
 
 | Feature | Minimum Windows Version |
 |---------|------------------------|
-| Standard build | Windows XP |
+| **Standard build** | **Windows 8** |
 | Extended features | Windows 2000 |
 | Service support | Windows XP |
+
+**Windows 8 is the minimum supported version.** The internal event queue parks a waiting
+thread with `WaitOnAddress` and releases it with `WakeByAddressSingle` or `WakeByAddressAll`
+(`areg/component/private/win32/SimpleEventWin32.cpp`). Those functions were introduced in
+Windows 8, so `areg.dll` imports `api-ms-win-core-synch-l1-2-0.dll` and cannot be loaded on
+Windows 7 or earlier. On Windows 8 and newer they cost far less than a kernel event object:
+a signal that nobody waits for, and a wait that finds the event already signaled, are both
+answered in user space with no system call at all.
 
 ---
 
@@ -60,6 +68,7 @@ The following Win32 API functions are used in Areg SDK (including the Multitarge
 ### Threading and Synchronization
 
 ```
+WaitOnAddress           WakeByAddressSingle     WakeByAddressAll
 CreateThread            ExitThread              GetCurrentThreadId
 SetThreadPriority       SuspendThread           ResumeThread
 TerminateThread         TlsAlloc                TlsFree
