@@ -279,6 +279,22 @@ private:
     static DispatcherThread & _null_dispather_thread() noexcept;
 
     /**
+     * \brief   Searches the dispatcher thread that owns the given unique CRC32 thread number.
+     *
+     *          The result of the search is kept per calling thread, so that a thread that keeps
+     *          sending events to the same few dispatchers pays the process wide map lookup only
+     *          once. The stored result is used again only while the thread registry counter of
+     *          Thread::registry_generation() is unchanged, so a thread that starts or stops
+     *          discards every stored pointer of the process before it can be used again.
+     *
+     * \param   threadNumber    The unique CRC32 number of the thread to search.
+     * \return  The dispatcher thread with this number, or nullptr when the process has no such
+     *          thread or the thread is not a dispatcher thread.
+     **/
+    [[nodiscard]]
+    static DispatcherThread * _find_dispatcher_thread( const UniqueNumber threadNumber ) noexcept;
+
+    /**
      * \brief   Returns reference to self object.
      **/
     [[nodiscard]]
@@ -309,13 +325,13 @@ private:
 
 inline DispatcherThread & DispatcherThread::dispatcher_thread( const UniqueNumber threadNumber ) noexcept
 {
-    DispatcherThread * dispThread = AREG_RUNTIME_CAST(Thread::find_by_number(threadNumber), DispatcherThread);
+    DispatcherThread * dispThread = DispatcherThread::_find_dispatcher_thread(threadNumber);
     return ( dispThread != nullptr ? *dispThread : DispatcherThread::current_dispatcher_thread() );
 }
 
 inline DispatcherThread & DispatcherThread::dispatcher_thread(const ThreadAddress & threadAddr ) noexcept
 {
-    DispatcherThread* dispThread = AREG_RUNTIME_CAST(Thread::find_by_address(threadAddr), DispatcherThread);
+    DispatcherThread * dispThread = DispatcherThread::_find_dispatcher_thread(static_cast<UniqueNumber>(threadAddr));
     return ( dispThread != nullptr ? *dispThread : DispatcherThread::_null_dispather_thread() );
 }
 

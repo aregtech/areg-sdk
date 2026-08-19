@@ -32,6 +32,28 @@ namespace {
      * \brief   Predefined fixed name of invalid Null Dispatcher Thread.
      **/
     static constexpr std::string_view   NullDispatcherName{ "_NullDispatcherThread_" };
+
+    /**
+     * \brief   How many resolved dispatcher threads one thread keeps. Must be a power of two.
+     **/
+    constexpr uint32_t                  DISPATCHER_CACHE_SIZE{ 8u };
+
+    /**
+     * \brief   One resolved dispatcher thread, valid while mGeneration matches the thread
+     *          registry counter of Thread::registry_generation().
+     **/
+    struct DispatcherCacheEntry
+    {
+        UniqueNumber                mNumber;        //!< The unique CRC32 number that was searched.
+        uint32_t                    mGeneration;    //!< Registry counter value of the search.
+        areg::DispatcherThread *    mThread;        //!< The result, nullptr when nothing was found.
+    };
+
+    /**
+     * \brief   The resolved dispatcher threads of the calling thread. Private to each thread,
+     *          so it needs no lock and shares no cache line with any other thread.
+     **/
+    AREG_THREAD_LOCAL DispatcherCacheEntry  _dispatcherCache[DISPATCHER_CACHE_SIZE]{};
 } // namespace
 
 namespace areg {
@@ -182,6 +204,22 @@ AREG_IMPLEMENT_RUNTIME(DispatcherThread, Thread)
 DispatcherThread & DispatcherThread::_null_dispather_thread() noexcept
 {
     return static_cast<DispatcherThread &>(NullDispatcherThread::sSelfNullDispatcher);
+}
+
+DispatcherThread * DispatcherThread::_find_dispatcher_thread( const UniqueNumber threadNumber ) noexcept
+{
+    const uint32_t generation{ Thread::registry_generation() };
+    DispatcherCacheEntry & entry{ _dispatcherCache[threadNumber & (DISPATCHER_CACHE_SIZE - 1u)] };
+    if ((entry.mGeneration != generation) || (entry.mNumber != threadNumber))
+    {
+        // The counter is advanced before a thread leaves the maps, so a kept pointer can never
+        // outlive its thread object: a changed counter forces the lookup to be made again.
+        entry.mThread       = AREG_RUNTIME_CAST(Thread::find_by_number(threadNumber), DispatcherThread);
+        entry.mNumber       = threadNumber;
+        entry.mGeneration   = generation;
+    }
+
+    return entry.mThread;
 }
 
 //////////////////////////////////////////////////////////////////////////

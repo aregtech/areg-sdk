@@ -333,6 +333,20 @@ public:
     inline static Thread * find_by_address( const ThreadAddress & threadAddres ) noexcept;
 
     /**
+     * \brief   Returns the current value of the thread registry counter.
+     *
+     *          The counter changes every time a thread object is added to or removed from the
+     *          thread maps, and it is never zero. Code that keeps a resolved thread pointer can
+     *          store this value next to the pointer and reuse the pointer only while the counter
+     *          still returns the same value. As soon as any thread of the process starts or
+     *          stops, the value differs and the pointer has to be resolved again.
+     *
+     * \return  A non-zero number that changes on every thread registration and unregistration.
+     **/
+    [[nodiscard]]
+    inline static uint32_t registry_generation() noexcept;
+
+    /**
      * \brief   Searches for thread by ID and returns its address containing process and thread IDs.
      *
      * \param   threadId    The ID of thread to get address.
@@ -625,6 +639,11 @@ protected:
      * \brief   True while this object is present in the thread maps.
      **/
     std::atomic<bool>       mRegistered;
+    /**
+     * \brief   Counts every thread registration and unregistration of the process.
+     *          See registry_generation().
+     **/
+    static std::atomic<uint32_t> mRegistryGeneration;
 #if defined(_MSC_VER)
     #pragma warning(pop)
 #endif  // _MSC_VER
@@ -711,6 +730,30 @@ private:
      * \return  Pointer to current thread-local storage object.
      **/
     static ThreadLocalStorage * _thread_local_storage( Thread* ownThread );
+
+    /**
+     * \brief   Returns the thread object of the calling thread, taken from the thread local
+     *          storage. Returns nullptr when the calling thread was not started by the framework
+     *          or when its thread routine has already ended.
+     **/
+    [[nodiscard]]
+    static Thread * _self_thread() noexcept;
+
+    /**
+     * \brief   Stores the thread object of the calling thread in the thread local storage. The
+     *          thread routine calls it with its own object when it starts and with nullptr when
+     *          it ends.
+     *
+     * \param   ownThread   The thread object of the calling thread, or nullptr to clear the slot.
+     **/
+    static void _set_self_thread( Thread * ownThread ) noexcept;
+
+    /**
+     * \brief   Advances the thread registry counter. Called after a thread object was added to
+     *          the thread maps and before it is removed from them. The counter skips the value
+     *          zero, so a stored counter value of zero always means "nothing resolved yet".
+     **/
+    static void _bump_registry_generation() noexcept;
 
     /**
      * \brief   Searches for thread by ID and returns its handle. Returns nullptr if not found or
@@ -933,7 +976,15 @@ inline void Thread::_set_run_state( Thread::RunState state ) noexcept
 
 inline Thread * Thread::current_thread() noexcept
 {
-    return Thread::find_by_id(Thread::_os_thread_id());
+    Thread * result{ Thread::_self_thread() };
+    return ((result != nullptr) && result->mRegistered.load(std::memory_order_acquire)
+                ? result
+                : Thread::find_by_id(Thread::_os_thread_id()));
+}
+
+inline uint32_t Thread::registry_generation() noexcept
+{
+    return Thread::mRegistryGeneration.load(std::memory_order_acquire);
 }
 
 inline String Thread::current_thread_name() noexcept
