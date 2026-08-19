@@ -32,6 +32,7 @@
 namespace
 {
     constexpr uint32_t      HEAP_TRIM_EVENT_THRESHOLD   { 100000u };    //!< events drained since last trim
+    constexpr uint32_t      HEAP_TRIM_IDLE_TIMEOUT_MS   { 100u };       //!< idle time that must pass before a due trim runs
 
     //!< Returns freed heap pages to the OS.
     //!< glibc keeps a slow consumer's drained backlog mapped at the RSS high-water mark (per-arena retention);
@@ -258,14 +259,22 @@ bool EventDispatcherBase::run_dispatcher()
         }
 
         // Queue drained, this dispatcher is going idle.
-        if ( isExit || processedSinceTrim >= HEAP_TRIM_EVENT_THRESHOLD )
+        if ( isExit )
         {
+            _release_heap();
+            break;
+        }
+
+        // A due trim runs only after a proven idle period, so its stall cannot land
+        // between two messages. A message arriving first keeps the trim pending.
+        if ( processedSinceTrim >= HEAP_TRIM_EVENT_THRESHOLD )
+        {
+            if ( mExternalEvents.wait_event( HEAP_TRIM_IDLE_TIMEOUT_MS ) )
+                continue;
+
             _release_heap();
             processedSinceTrim = 0u;
         }
-
-        if (isExit)
-            break;
 
         // Block until a producer pushes or exit is triggered (queue owns the wake-up).
         mExternalEvents.wait_event(areg::WAIT_INFINITE);

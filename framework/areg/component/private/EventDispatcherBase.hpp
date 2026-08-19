@@ -267,6 +267,19 @@ protected:
 
     /**
      * \brief   Runs the main dispatching loop.
+     *
+     *          The loop drains every queued event, then parks the thread until a producer
+     *          pushes a new event or the exit is triggered.
+     *
+     *          The loop also returns free heap pages to the operating system, because the
+     *          C library keeps the pages of a drained backlog mapped. This is done only
+     *          after two conditions are both true: a large number of events has been
+     *          dispatched since the last release, and the queue has then stayed empty for
+     *          a full idle period. The second condition keeps the release, which costs
+     *          several microseconds, away from the moment a new message arrives. While
+     *          messages keep coming the release stays pending and costs nothing.
+     *
+     * \return  Returns true if the loop ended because the exit event was dispatched.
      **/
     virtual bool run_dispatcher();
 
