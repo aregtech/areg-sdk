@@ -76,7 +76,18 @@ struct LtAccum
     std::atomic<uint64_t> maxNs { 0u };
 };
 
-inline std::array<LtAccum, static_cast<size_t>(LtStage::Count)> g_lt_accum {};
+/**
+ * \brief   Returns the one and only accumulator table of the process. The table has
+ *          LtStage::Count entries, one per instrumented stage.
+ *
+ *          The function is exported by the areg library on purpose. The library is built with
+ *          hidden symbol visibility, so a table defined in this header would exist once inside
+ *          the shared library and once more inside every static library that includes the
+ *          header. Every such copy would collect its own samples and print its own report, and
+ *          the stages of the two halves would never appear in the same table.
+ **/
+[[nodiscard]]
+AREG_API LtAccum * lt_accumulators() noexcept;
 
 inline const char* lt_stage_name(LtStage s) noexcept
 {
@@ -110,11 +121,12 @@ inline uint64_t lt_now_ns() noexcept
  **/
 inline void lt_dump() noexcept
 {
+    const LtAccum * const table{ areg::lt_accumulators() };
     std::fprintf(stderr, "\n==================== AREG LATENCY TRACE (per-stage, microseconds) ====================\n");
     std::fprintf(stderr, "%-32s %12s %10s %10s %10s\n", "stage", "count", "min", "mean", "max");
     for (uint32_t i = 0u; i < static_cast<uint32_t>(LtStage::Count); ++i)
     {
-        const LtAccum& a = g_lt_accum[i];
+        const LtAccum& a = table[i];
         const uint64_t c = a.count.load(std::memory_order_relaxed);
         if (c == 0u)
             continue;
@@ -132,11 +144,12 @@ inline void lt_dump() noexcept
     std::fprintf(stderr, "======================================================================================\n");
 }
 
-inline void lt_ensure_atexit() noexcept
-{
-    static std::once_flag _once;
-    std::call_once(_once, []() noexcept { std::atexit(&areg::lt_dump); });
-}
+/**
+ * \brief   Registers the exit-time report once per process. Defined in the areg library so
+ *          that a process linking the library and a static library that also uses the trace
+ *          prints exactly one report.
+ **/
+AREG_API void lt_ensure_atexit() noexcept;
 
 /**
  * \brief   Records one duration sample (nanoseconds) for the given stage. Lock-free; safe from
@@ -144,7 +157,7 @@ inline void lt_ensure_atexit() noexcept
  **/
 inline void lt_add_sample(LtStage s, uint64_t ns) noexcept
 {
-    LtAccum& a = g_lt_accum[static_cast<size_t>(s)];
+    LtAccum& a = areg::lt_accumulators()[static_cast<size_t>(s)];
     a.count.fetch_add(1u, std::memory_order_relaxed);
     a.sumNs.fetch_add(ns, std::memory_order_relaxed);
 

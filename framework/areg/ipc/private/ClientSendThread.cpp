@@ -108,6 +108,9 @@ void ClientSendThread::start_event_processing( Event & eventElem )
         evt.destroy_event();                               // release the mEvents slot; mDrain keeps the buffer alive
     }
 
+    // Single writer per socket: the whole batch below must reach the wire uninterrupted.
+    areg::SocketWriteGuard writeGuard{ mConnection.socket().handle() };
+
     if ( totalSize <= areg::MAX_SEND_BATCH_BYTES )
     {
         int32_t sentBytes{ 0 };

@@ -142,6 +142,40 @@ int32_t _os_send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t d
     return total;
 }
 
+int32_t _os_try_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t totalSize)
+{
+    ASSERT(count <= areg::DEFAULT_DRAIN_LIMIT);
+
+    // Windows sockets stay in blocking mode, so writability is asked for first: an unwritable
+    // socket is declined before a single byte is written, which is what the caller relies on.
+    fd_set writeSet;
+    FD_ZERO(&writeSet);
+    FD_SET(hSocket, &writeSet);
+    timeval noWait{ 0, 0 };
+    const int ready{ ::select(0, nullptr, &writeSet, nullptr, &noWait) };
+    if (ready == 0)
+        return 0;
+    else if (ready < 0)
+        return -1;
+
+    WSABUF wsaBuffers[areg::DEFAULT_DRAIN_LIMIT];
+    for (uint32_t i = 0u; i < count; ++i)
+    {
+        wsaBuffers[i].buf = reinterpret_cast<CHAR *>(const_cast<uint8_t *>(buffers[i].data));
+        wsaBuffers[i].len = static_cast<ULONG>(buffers[i].size);
+    }
+
+    DWORD sent{ 0u };
+    if (::WSASend(hSocket, wsaBuffers, static_cast<DWORD>(count), &sent, 0, nullptr, nullptr) != 0)
+    {
+        const int error{ ::WSAGetLastError() };
+        return ((error == WSAEWOULDBLOCK) && (sent == 0u)) ? 0 : -1;
+    }
+
+    static_cast<void>(totalSize);
+    return static_cast<int32_t>(sent);
+}
+
 int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t totalSize)
 {
     // Single buffer, bypass setup entirely.

@@ -57,6 +57,7 @@ void ServerSendThread::ready_for_events( bool is_ready )
 void ServerSendThread::start_event_processing( areg::Event & eventElem )
 {
     DEBUG_LOG_SCOPE(areg_aregextend_service_ServerSendThread, start_event_processing);
+    AREG_LT_SCOPE(areg::LtStage::SendNode);     // drain + resolve + sort + writev
 
     if ( eventElem.is_exit_prio() )
     {

@@ -16,6 +16,7 @@
 
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/SocketMultiplexer.hpp"
+#include "areg/base/Thread.hpp"
 #include "areg/appbase/Application.hpp"
 
 #include "areg/logging/areg_log.h"
@@ -86,6 +87,14 @@ namespace areg::os {
      * \return  Returns total bytes sent; negative on error.
      **/
     int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t totalSize);
+
+    /**
+     * \brief   OS specific non-blocking scatter/gather send. All checkups and validations should
+     *          be done before calling the method.
+     * \return  Returns the number of bytes sent, which is the complete data, on success; zero
+     *          when the socket would have blocked and nothing was written; negative on error.
+     **/
+    int32_t _os_try_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t totalSize);
 
     /**
      * \brief   OS specific receive data implementation. All checkups and validations should
@@ -909,6 +918,53 @@ AREG_API_IMPL int32_t areg::send_data_v(SOCKETHANDLE hSocket, const areg::IoBuff
         return 0;
 
     return areg::os::_os_send_data_v(hSocket, buffers, count, totalSize);
+}
+
+AREG_API_IMPL int32_t areg::try_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t totalSize) noexcept
+{
+    if (!areg::is_valid_socket(hSocket))
+        return -1;
+
+    if ((buffers == nullptr) || (count == 0u))
+        return 0;
+
+    return areg::os::_os_try_send_data_v(hSocket, buffers, count, totalSize);
+}
+
+areg::SocketWriter & AREG_API_IMPL areg::SocketWriter::writer_of(SOCKETHANDLE hSocket) noexcept
+{
+    static areg::SocketWriter _writers[areg::SOCKET_WRITER_SLOTS];
+    return _writers[static_cast<uint32_t>(hSocket) & (areg::SOCKET_WRITER_SLOTS - 1u)];
+}
+
+bool AREG_API_IMPL areg::SocketWriter::try_acquire() noexcept
+{
+    return (mBusy.exchange(true, std::memory_order_acquire) == false);
+}
+
+void AREG_API_IMPL areg::SocketWriter::acquire() noexcept
+{
+    constexpr uint32_t SPIN_COUNT{ 64u };
+
+    uint32_t spin{ 0u };
+    while (mBusy.exchange(true, std::memory_order_acquire))
+    {
+        if (spin < SPIN_COUNT)
+        {
+            ++spin;
+            Thread::cpu_pause();
+        }
+        else
+        {
+            // The owner may be inside a write syscall, so waiting here must not keep a core busy.
+            Thread::switch_thread();
+        }
+    }
+}
+
+void AREG_API_IMPL areg::SocketWriter::release() noexcept
+{
+    mBusy.store(false, std::memory_order_release);
 }
 
 AREG_API_IMPL int32_t areg::receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength) noexcept

@@ -93,6 +93,10 @@ inline void send_pending_groups( areg::ext::PendingSend * batch
 
         const uint32_t groupSize{ j - i };
 
+        // Single writer per socket: every write below belongs to one message group and must not
+        // be split by another thread writing the same socket.
+        areg::SocketWriteGuard writeGuard{ hSocket };
+
         areg::IoBuffer ioBuffer[areg::DEFAULT_DRAIN_LIMIT];
         uint32_t bufCount  { 0u };
         uint64_t totalSize { 0u };  // 64-bit: sum of up to DEFAULT_DRAIN_LIMIT wire sizes cannot overflow.
