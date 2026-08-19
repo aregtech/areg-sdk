@@ -27,6 +27,7 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/EventConsumer.hpp"
 #include "aregextend/service/SystemServiceDefs.hpp"
+#include "areg/ipc/private/ConnectionDefs.hpp"
 
 #include <string_view>
 
@@ -84,6 +85,20 @@ public:
 
     virtual ~PoolSendThread() = default;
 
+/************************************************************************/
+// Actions and attributes.
+/************************************************************************/
+public:
+    /**
+     * \brief   Returns the gate of the send queue of this thread.
+     *
+     *          A producer that wants to write a message into the socket itself, instead of
+     *          handing it to this thread, must first see the gate clear and must announce the
+     *          message with SendQueueGate::enter() when it decides to queue it after all.
+     **/
+    [[nodiscard]]
+    inline areg::SendQueueGate & send_gate() noexcept;
+
 protected:
 /************************************************************************/
 // DispatcherThread overrides
@@ -134,6 +149,8 @@ private:
     std::array<SOCKETHANDLE, areg::DEFAULT_DRAIN_LIMIT>  mSockets;
     //!< Reusable single-window drain buffer (pop_events); constructed once.
     std::array<areg::Event, areg::DEFAULT_DRAIN_LIMIT>   mEvents;
+    //!< Tells the producers whether this queue still owes a message to a socket.
+    areg::SendQueueGate                                  mSendGate;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -142,6 +159,15 @@ private:
     PoolSendThread() = delete;
     AREG_NOCOPY_NOMOVE( PoolSendThread );
 };
+
+//////////////////////////////////////////////////////////////////////////
+// PoolSendThread class inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline areg::SendQueueGate & PoolSendThread::send_gate() noexcept
+{
+    return mSendGate;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // PoolSendThread inline methods

@@ -44,6 +44,7 @@ PoolSendThread::PoolSendThread( ClientConnectionPair & owner
     , mConnection       ( connection )
     , mGlobalStats      ( globalStats )
     , mBatch            ( )
+    , mSendGate         ( )
 {
 }
 
@@ -97,6 +98,7 @@ void PoolSendThread::start_event_processing( areg::Event & eventElem )
             for ( uint32_t i{ 0u }; i < batchCount; ++i )
                 mBatch[i].msg.destroy_event();
 
+            mSendGate.leave(batchCount);
             trigger_exit();
             return;
         }
@@ -156,6 +158,10 @@ void PoolSendThread::start_event_processing( areg::Event & eventElem )
     // Phase 5: release every wire buffer
     for ( uint32_t i{ 0u }; i < batchCount; ++i )
         mBatch[i].msg.destroy_event();
+
+    // The gate opens only here: an inline writer must not overtake a message that is still on
+    // its way from this queue to the socket.
+    mSendGate.leave(batchCount);
 }
 
 bool PoolSendThread::post_event( Event & eventElem )

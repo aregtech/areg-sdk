@@ -594,6 +594,45 @@ private:
     bool do_send_pool(areg::MessageEnvelope && data, areg::EventPriority prio);
 
     /**
+     * \brief   Tries to write the message into the socket of the target right here, on the
+     *          calling thread, instead of handing it to the send thread.
+     *
+     *          Handing a message to the send thread costs a thread wake-up on the way out and
+     *          another one when the send thread is woken. Writing the message here saves both.
+     *          The attempt is given up, and the caller must queue the message as usual, unless
+     *          all of the following hold:
+     *
+     *          - the target cookie resolves to a valid socket;
+     *          - the send queue of that target owes nothing to the socket, see SendQueueGate;
+     *          - the message is not larger than areg::INLINE_SEND_MAX_BYTES;
+     *          - the writer lock of the socket is free, see areg::SocketWriter;
+     *          - the socket accepts the whole message without waiting.
+     *
+     *          Together the gate and the writer lock keep the order of the messages: nothing
+     *          older can be on its way to the same socket while this write happens, and no
+     *          other thread can write into that socket at the same time.
+     *
+     * \param   data        The message to write. Its local-only header fields are cleared
+     *                      before the write, because the message goes to the wire.
+     * \param   hSocket     The socket of the target, already resolved by the caller.
+     * \param   gate        The gate of the send queue that serves this target.
+     * \return  True when the message has been dealt with and must not be queued: either it was
+     *          written, or the socket failed and the connection was closed. False when the
+     *          caller must queue the message as before.
+     **/
+    bool try_send_inline(areg::MessageEnvelope & data, SOCKETHANDLE hSocket, areg::SendQueueGate & gate);
+
+    /**
+     * \brief   Tries to forward a received message to its target right here, on the receive
+     *          thread, instead of handing it to the send thread. Works out which send queue
+     *          serves the target and calls try_send_inline().
+     *
+     * \param   data    The received message, ready for the wire.
+     * \return  True when the message has been dealt with and must not be queued.
+     **/
+    bool try_forward_inline(areg::MessageEnvelope & data);
+
+    /**
      * \brief   New-client-accepted implementation for shared-thread path.
      *          Always returns false -- socket stays on the global mThreadReceive.
      **/

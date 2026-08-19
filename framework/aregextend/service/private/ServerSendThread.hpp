@@ -109,6 +109,16 @@ public:
      **/
     inline void accumulate_sent(uint64_t bytes, uint32_t msgs) noexcept;
 
+    /**
+     * \brief   Returns the gate of the send queue of this thread.
+     *
+     *          A producer that wants to write a message into the socket itself, instead of
+     *          handing it to this thread, must first see the gate clear and must announce the
+     *          message with SendQueueGate::enter() when it decides to queue it after all.
+     **/
+    [[nodiscard]]
+    inline areg::SendQueueGate & send_gate() noexcept;
+
 protected:
 /************************************************************************/
 // DispatcherThread overrides
@@ -172,6 +182,10 @@ private:
      * \brief   Atomic stats (bytes + messages sent + enabled flag).
      **/
     DataRateStats                   mSendStats;
+    /**
+     * \brief   Tells the producers whether this queue still owes a message to a socket.
+     **/
+    areg::SendQueueGate             mSendGate;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -208,6 +222,11 @@ inline bool ServerSendThread::is_data_rate_enabled() const noexcept
 inline void ServerSendThread::accumulate_sent(uint64_t bytes, uint32_t msgs) noexcept
 {
     mSendStats.accumulate(bytes, msgs);
+}
+
+inline areg::SendQueueGate & ServerSendThread::send_gate() noexcept
+{
+    return mSendGate;
 }
 
 } // namespace areg::ext

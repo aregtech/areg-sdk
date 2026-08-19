@@ -36,6 +36,7 @@ ServerSendThread::ServerSendThread(RemoteMessageHandler& remoteService, ServerCo
     , mConnection       ( connection )
     , mBatch            ( )
     , mSendStats        ( )
+    , mSendGate         ( )
 {
 }
 
@@ -93,6 +94,7 @@ void ServerSendThread::start_event_processing( areg::Event & eventElem )
             for ( uint32_t i{ 0u }; i < batchCount; ++i )
                 mBatch[i].msg.destroy_event();
 
+            mSendGate.leave(batchCount);
             mConnection.close_all_connections();
             mConnection.close_socket();
             trigger_exit();
@@ -154,6 +156,10 @@ void ServerSendThread::start_event_processing( areg::Event & eventElem )
     // Phase 5: release every wire buffer
     for ( uint32_t i{ 0u }; i < batchCount; ++i )
         mBatch[i].msg.destroy_event();
+
+    // The gate opens only here: an inline writer must not overtake a message that is still on
+    // its way from this queue to the socket.
+    mSendGate.leave(batchCount);
 }
 
 bool ServerSendThread::post_event( Event & eventElem )

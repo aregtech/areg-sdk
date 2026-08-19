@@ -931,18 +931,18 @@ AREG_API_IMPL int32_t areg::try_send_data_v(SOCKETHANDLE hSocket, const areg::Io
     return areg::os::_os_try_send_data_v(hSocket, buffers, count, totalSize);
 }
 
-areg::SocketWriter & AREG_API_IMPL areg::SocketWriter::writer_of(SOCKETHANDLE hSocket) noexcept
+AREG_API_IMPL areg::SocketWriter & areg::SocketWriter::writer_of(SOCKETHANDLE hSocket) noexcept
 {
     static areg::SocketWriter _writers[areg::SOCKET_WRITER_SLOTS];
     return _writers[static_cast<uint32_t>(hSocket) & (areg::SOCKET_WRITER_SLOTS - 1u)];
 }
 
-bool AREG_API_IMPL areg::SocketWriter::try_acquire() noexcept
+AREG_API_IMPL bool areg::SocketWriter::try_acquire() noexcept
 {
     return (mBusy.exchange(true, std::memory_order_acquire) == false);
 }
 
-void AREG_API_IMPL areg::SocketWriter::acquire() noexcept
+AREG_API_IMPL void areg::SocketWriter::acquire() noexcept
 {
     constexpr uint32_t SPIN_COUNT{ 64u };
 
@@ -962,7 +962,7 @@ void AREG_API_IMPL areg::SocketWriter::acquire() noexcept
     }
 }
 
-void AREG_API_IMPL areg::SocketWriter::release() noexcept
+AREG_API_IMPL void areg::SocketWriter::release() noexcept
 {
     mBusy.store(false, std::memory_order_release);
 }
