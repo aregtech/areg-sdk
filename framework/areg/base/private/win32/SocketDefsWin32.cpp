@@ -180,61 +180,103 @@ int32_t _os_try_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers,
 
 // Scatter-gather write, see AREG_WIN_SCATTER_SEND in 'areg/base/SocketDefs.hpp'. The batch is
 // handed to WSASend() as it stands, so no byte is copied before it reaches the socket.
+//
+// The list is written in slices of at most MAX_SCATTER_SEND_BYTES. Without that bound a batch
+// of large messages becomes one blocking WSASend() carrying the whole drain window - up to
+// DEFAULT_DRAIN_LIMIT messages - which parks the send thread in the kernel until the last byte
+// reaches the peer, stalls the producer behind it, and can outlive SO_SNDTIMEO. Slicing keeps
+// one call bounded exactly as _os_send_data_window() bounds send() on the staging path, so the
+// worst case blocking time of a batch is unchanged while the copy is still avoided.
 int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t totalSize)
 {
-    // Single buffer, bypass setup entirely.
-    if (count == 1u)
-    {
-        return _os_send_data(hSocket, buffers->data, static_cast<int32_t>(buffers->size));
-    }
-
+    ASSERT(areg::is_valid_socket(hSocket));
     ASSERT(count <= areg::DEFAULT_DRAIN_LIMIT);
+    static_cast<void>(totalSize);
 
-    WSABUF wsaBuffers[areg::DEFAULT_DRAIN_LIMIT];
+    WSABUF pending[areg::DEFAULT_DRAIN_LIMIT];
     for (uint32_t i = 0u; i < count; ++i)
     {
-        wsaBuffers[i].buf = reinterpret_cast<CHAR *>(const_cast<uint8_t *>(buffers[i].data));
-        wsaBuffers[i].len = static_cast<ULONG>(buffers[i].size);
+        pending[i].buf = reinterpret_cast<CHAR *>(const_cast<uint8_t *>(buffers[i].data));
+        pending[i].len = static_cast<ULONG>(buffers[i].size);
     }
 
-    // WSASend is not obliged to take everything: the socket blocks, but SO_SNDTIMEO bounds
-    // how long it may block, so a full send window can leave a partial write behind. What is
-    // left, including the remainder of the buffer that was cut in half, is offered again.
-    uint32_t index{ 0u };   // first buffer not yet fully sent
+    uint32_t index { 0u };  // first buffer not yet fully sent
     int32_t  result{ 0 };
     while (index < count)
     {
-        DWORD sent{ 0u };
-        if (::WSASend(hSocket, wsaBuffers + index, static_cast<DWORD>(count - index), &sent, 0, nullptr, nullptr) != 0)
+        // Cut a slice of at most MAX_SCATTER_SEND_BYTES. A buffer that straddles the limit is
+        // taken in part, and what is left of it heads the next slice.
+        WSABUF   slice[areg::DEFAULT_DRAIN_LIMIT];
+        uint32_t sliceCount{ 0u };
+        uint32_t sliceBytes{ 0u };
+        for (uint32_t i = index; (i < count) && (sliceBytes < areg::MAX_SCATTER_SEND_BYTES); ++i)
         {
-            if (::WSAGetLastError() == WSAEINTR)
-                continue;
-
-            return -1;
+            const uint32_t room{ areg::MAX_SCATTER_SEND_BYTES - sliceBytes };
+            const uint32_t take{ pending[i].len <= room ? static_cast<uint32_t>(pending[i].len) : room };
+            slice[sliceCount].buf = pending[i].buf;
+            slice[sliceCount].len = static_cast<ULONG>(take);
+            ++sliceCount;
+            sliceBytes += take;
+            if (take < pending[i].len)
+                break;  // the limit fell inside this buffer, the rest of it goes next time
         }
-        else if (sent == 0u)
+
+        ASSERT((sliceCount != 0u) && (sliceBytes != 0u));
+
+        // WSASend is not obliged to take everything: the socket blocks, but SO_SNDTIMEO bounds
+        // how long it may block, so a full send window can leave a partial write behind. What is
+        // left, including the buffer that was cut in half, is offered again.
+        uint32_t sliceSent { 0u };
+        uint32_t sliceIndex{ 0u };
+        while (sliceSent < sliceBytes)
         {
-            // Nothing moved and nothing failed. Retrying would spin on a socket that is not
-            // taking bytes, so the batch is abandoned exactly as a failed send would be.
-            return -1;
+            DWORD sent{ 0u };
+            if (::WSASend(hSocket, slice + sliceIndex, static_cast<DWORD>(sliceCount - sliceIndex), &sent, 0, nullptr, nullptr) != 0)
+            {
+                if (::WSAGetLastError() == WSAEINTR)
+                    continue;
+
+                return -1;
+            }
+            else if (sent == 0u)
+            {
+                // Nothing moved and nothing failed. Retrying would spin on a socket that is not
+                // taking bytes, so the batch is abandoned exactly as a failed send would be.
+                return -1;
+            }
+
+            sliceSent += static_cast<uint32_t>(sent);
+            result    += static_cast<int32_t>(sent);
+
+            DWORD advance{ sent };
+            while ((sliceIndex < sliceCount) && (advance >= slice[sliceIndex].len))
+            {
+                advance -= slice[sliceIndex].len;
+                ++sliceIndex;
+            }
+
+            if ((sliceIndex < sliceCount) && (advance > 0u))
+            {
+                slice[sliceIndex].buf += advance;
+                slice[sliceIndex].len -= static_cast<ULONG>(advance);
+            }
         }
 
-        result += static_cast<int32_t>(sent);
-        DWORD advance{ sent };
-        while ((index < count) && (advance >= wsaBuffers[index].len))
+        // The slice is on the wire: step the master list over exactly those bytes.
+        uint32_t advance{ sliceBytes };
+        while ((index < count) && (advance >= pending[index].len))
         {
-            advance -= wsaBuffers[index].len;
+            advance -= pending[index].len;
             ++index;
         }
 
         if ((index < count) && (advance > 0u))
         {
-            wsaBuffers[index].buf += advance;
-            wsaBuffers[index].len -= static_cast<ULONG>(advance);
+            pending[index].buf += advance;
+            pending[index].len -= static_cast<ULONG>(advance);
         }
     }
 
-    static_cast<void>(totalSize);
     return result;
 }
 
