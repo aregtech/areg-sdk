@@ -32,7 +32,7 @@ class LogCollectorConsoleService  : public areg::ext::SystemServiceConsole
 {
 public:
     //!< The console service role name
-    static constexpr std::string_view   SERVICE_NAME    { "LoggerConcoleService" };
+    static constexpr std::string_view   SERVICE_NAME    { "LoggerConsoleService" };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

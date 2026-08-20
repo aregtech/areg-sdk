@@ -267,7 +267,7 @@ log::logobserver::db::location      = ./logs                        # Database f
 # ---------------------------------------------------------------------------
 log::logcollector::enable::file     = false     # Log Collector: disable file output
 log::logcollector::enable::debug    = false     # Log Collector: disable debug console output
-log::logcollector::enable::remote   = true      # Log Collector: disable remote logging (it would log to itself)
+log::logcollector::enable::remote   = false     # Log Collector: disable remote logging (it would log to itself)
 
 # ---------------------------------------------------------------------------
 # Log Collector Database Settings

@@ -19,7 +19,7 @@
  ************************************************************************/
 #include "aregextend/service/ServiceApplicationBase.hpp"
 
-#ifdef _POSIX
+#if	defined(_POSIX) || defined(POSIX)
 namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
@@ -106,4 +106,4 @@ int32_t ServiceApplicationBase::_os_start_service_dispatcher()
 
 } // namespace areg::ext
 
-#endif  // _POSIX
+#endif	// defined(_POSIX) || defined(POSIX)
