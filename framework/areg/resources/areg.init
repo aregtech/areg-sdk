@@ -267,6 +267,7 @@ log::logobserver::db::location      = ./logs                        # Database f
 # ---------------------------------------------------------------------------
 log::logcollector::enable::file     = false     # Log Collector: disable file output
 log::logcollector::enable::debug    = false     # Log Collector: disable debug console output
+log::logcollector::enable::remote   = true      # Log Collector: disable remote logging (it would log to itself)
 
 # ---------------------------------------------------------------------------
 # Log Collector Database Settings
@@ -339,7 +340,7 @@ logger::*::connect          = tcpip			                # Supported connection pro
 logger::*::enable::tcpip    = true			                # TCP/IP protocol enable/disable flag
 logger::*::address::tcpip   = localhost                     # Log collector IP address (127.0.0.1). Change for remote collector.
 logger::*::port::tcpip      = 8282			                # Log collector TCP port number (default: 8282)
-# Logger socket buffers configured in net::logger::... section above.
+# Logger socket buffers configured in net::logcollector::... section above.
 
 # ###########################################################################
 # APPLICATION-SPECIFIC LOG SCOPES

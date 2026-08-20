@@ -23,6 +23,7 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/EventConsumer.hpp"
 #include "areg/ipc/DataRateStats.hpp"
+#include "areg/ipc/private/ConnectionDefs.hpp"
 
 #include <atomic>
 
@@ -107,6 +108,25 @@ public:
      **/
     inline void set_closing() noexcept;
 
+    /**
+     * \brief   Returns the gate of this send queue. A producer thread that wants to write its
+     *          message into the socket itself must find the gate clear first, because a clear
+     *          gate is the proof that this queue owes no older message to the same socket.
+     **/
+    [[nodiscard]]
+    inline areg::SendQueueGate & send_gate() noexcept;
+
+    /**
+     * \brief   Reports a message that a producer thread failed to write into the socket itself.
+     *          The report is passed to the message handler, exactly as this thread would do for
+     *          its own failed batch, and it is suppressed while the connection is closing on
+     *          purpose.
+     *
+     * \param   msgFailed   The message whose write failed.
+     * \param   whichTarget The socket the write was attempted on.
+     **/
+    void report_failed_send(const areg::MessageEnvelope & msgFailed, areg::Socket & whichTarget);
+
 protected:
 /************************************************************************/
 // DispatcherThread overrides
@@ -177,6 +197,11 @@ private:
      *          failure callback, which is off the successful send path.
      **/
     std::atomic_bool                mIsClosing;
+    /**
+     * \brief   The gate of this send queue. Counts the messages that were handed to this
+     *          thread and have not reached the socket yet.
+     **/
+    areg::SendQueueGate             mSendGate;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -218,6 +243,11 @@ inline void ClientSendThread::set_closing() noexcept
 inline void ClientSendThread::accumulate_sent(uint64_t bytes, uint32_t msgs) noexcept
 {
     mSendStats.accumulate(bytes, msgs);
+}
+
+inline areg::SendQueueGate & ClientSendThread::send_gate() noexcept
+{
+    return mSendGate;
 }
 
 } // namespace areg

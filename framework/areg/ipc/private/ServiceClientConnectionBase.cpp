@@ -21,6 +21,8 @@
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/logging/areg_log.h"
+
+#include "areg/base/private/DebugDefs.hpp"
 namespace areg {
 
 DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_reconnect_timer);
@@ -93,6 +95,62 @@ ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
 
 ServiceClientConnectionBase::~ServiceClientConnectionBase()
 {
+}
+
+bool ServiceClientConnectionBase::try_send_inline( MessageEnvelope & data )
+{
+    if ( mThreadSend.send_gate().is_clear() == false )
+        return false;
+
+    areg::EventHeader * hdr{ data.header() };
+    if ( hdr == nullptr )
+        return false;
+
+    const uint32_t wireSize{ static_cast<uint32_t>(sizeof(areg::EventHeader)) + hdr->bufHeader.biUsed };
+    if ( wireSize > areg::INLINE_SEND_MAX_BYTES )
+        return false;
+
+    const SOCKETHANDLE hSocket{ mClientConnection.socket().handle() };
+    if ( areg::is_valid_socket(hSocket) == false )
+        return false;
+
+    // A thread that has just run out of work has nothing left to batch this message with.
+    // Any other message goes to the send thread, where a batch can still form.
+    if ( areg::take_inline_send_credit() == false )
+        return false;
+
+    areg::SocketWriter & writer{ areg::SocketWriter::writer_of(hSocket) };
+    if ( writer.try_acquire() == false )
+        return false;
+
+    hdr->internal1 = 0u;
+    hdr->internal2 = 0u;
+    hdr->custom    = 0u;
+    data.buffer_completion_fix();
+
+    int32_t sent{ 0 };
+    {
+        AREG_LT_SCOPE(areg::LtStage::SendSyscall);
+        const areg::IoBuffer ioBuffer{ reinterpret_cast<const uint8_t *>(hdr), wireSize };
+        sent = areg::try_send_data_v(hSocket, &ioBuffer, 1u, wireSize);
+    }
+
+    writer.release();
+
+    if ( sent > 0 )
+    {
+        mThreadSend.accumulate_sent(static_cast<uint64_t>(sent), 1u);
+        return true;
+    }
+    else if ( sent == 0 )
+    {
+        return false;
+    }
+
+    // A negative result may follow a partial write, so the message can never be queued again:
+    // its first bytes are already on the wire and the connection has to go.
+    mThreadSend.report_failed_send(data, mClientConnection.socket());
+    return true;
 }
 
 void ServiceClientConnectionBase::service_connection_event(const MessageEnvelope& msgReceived)

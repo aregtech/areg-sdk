@@ -25,13 +25,13 @@
 #include <cstdlib>
 #include <mutex>
 
-areg::LtAccum * AREG_API_IMPL areg::lt_accumulators() noexcept
+AREG_API_IMPL areg::LtAccum * areg::lt_accumulators() noexcept
 {
     static areg::LtAccum _accumulators[static_cast<size_t>(areg::LtStage::Count)];
     return _accumulators;
 }
 
-void AREG_API_IMPL areg::lt_ensure_atexit() noexcept
+AREG_API_IMPL void areg::lt_ensure_atexit() noexcept
 {
     static std::once_flag _once;
     std::call_once(_once, []() noexcept { std::atexit(&areg::lt_dump); });

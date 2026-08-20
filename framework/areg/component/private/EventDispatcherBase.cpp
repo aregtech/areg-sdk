@@ -215,6 +215,34 @@ int32_t EventDispatcherBase::remove_consumer( EventConsumer & whichConsumer )
     return result;
 }
 
+namespace {
+
+    /**
+     * The credit lives in the thread, not in a connection: it describes the thread that
+     * produces the message. A function-local variable keeps it correct across the library
+     * boundary and free of static initialization order.
+     */
+    inline bool & _inline_send_credit() noexcept
+    {
+        static thread_local bool _credit{ false };
+        return _credit;
+    }
+
+} // namespace
+
+AREG_API_IMPL void grant_inline_send_credit() noexcept
+{
+    _inline_send_credit() = true;
+}
+
+AREG_API_IMPL bool take_inline_send_credit() noexcept
+{
+    bool & credit{ _inline_send_credit() };
+    const bool granted{ credit };
+    credit = false;
+    return granted;
+}
+
 bool EventDispatcherBase::run_dispatcher()
 {
     ready_for_events( true );
@@ -264,6 +292,9 @@ bool EventDispatcherBase::run_dispatcher()
             _release_heap();
             break;
         }
+
+        // Out of work, so the next message this thread produces has nothing to be batched with.
+        grant_inline_send_credit();
 
         // A due trim runs only after a proven idle period, so its stall cannot land
         // between two messages. A message arriving first keeps the trim pending.

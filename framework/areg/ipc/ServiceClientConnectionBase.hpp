@@ -373,6 +373,34 @@ protected:
     inline bool send_received_message(areg::MessageEnvelope&& msg, areg::EventPriority eventPrio = areg::EventPriority::HighPrio);
 
     /**
+     * \brief   Tries to write the message into the connection socket on the calling thread,
+     *          instead of handing it to the send thread. Taking the message here saves one
+     *          thread wake-up, which is the largest single cost of one outgoing message.
+     *
+     *          The attempt is given up, and the caller must queue the message as usual, unless
+     *          all of the following hold:
+     *          - the send queue owes nothing to the socket (areg::SendQueueGate is clear), so
+     *            this message cannot overtake an older one;
+     *          - the message is not larger than areg::INLINE_SEND_MAX_BYTES, so that the calling
+     *            thread cannot be held up by a slow reader on the other side;
+     *          - the connection socket is valid;
+     *          - the calling thread holds an inline send credit, see areg::take_inline_send_credit(),
+     *            which means it has just run out of work and has nothing left to batch;
+     *          - the writer lock of the socket is free, so that nobody else is writing;
+     *          - the socket takes the whole message without waiting.
+     *
+     *          The write never waits. A message that was only partly written is finished under
+     *          the writer lock and can never be queued again; such a failure is reported exactly
+     *          as a failure of the send thread would be.
+     *
+     * \param   data    The message to write. Its local-only header fields are cleared and its
+     *                  checksum is computed before the write, the same way the send thread does.
+     * \return  True when the message has been dealt with and must not be queued. False when the
+     *          caller must queue the message for the send thread.
+     **/
+    bool try_send_inline( MessageEnvelope & data );
+
+    /**
      * \brief   Queues a message for sending with optional priority (copy).
      *
      * \param   data            The data of the message.
@@ -682,6 +710,10 @@ inline bool ServiceClientConnectionBase::send_message(const MessageEnvelope & da
 
 inline bool ServiceClientConnectionBase::send_message(MessageEnvelope && data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
+    if ( try_send_inline(data) )
+        return true;
+
+    mThreadSend.send_gate().enter();
     areg::Event evt(std::move(data));
     evt.set_event_priority(eventPrio);
     evt.set_event_consumer(static_cast<areg::EventConsumer *>(&mThreadSend));

@@ -34,6 +34,7 @@ ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientCo
     , mDrain            ( )
     , mIoBuffer         ( )
     , mIsClosing        ( false )
+    , mSendGate         ( )
 {
 }
 
@@ -89,6 +90,7 @@ void ClientSendThread::start_event_processing( Event & eventElem )
             for ( uint32_t i{ 1u }; i < bufCount; ++i )
                 mDrain[i].reset();
 
+            mSendGate.leave(bufCount);
             mConnection.close_socket();
             trigger_exit();
             return;
@@ -154,6 +156,18 @@ void ClientSendThread::start_event_processing( Event & eventElem )
     // Release retained drained buffers (slot 0 is owned by the caller). Keeps mDrain allocated for reuse.
     for ( uint32_t i{ 1u }; i < bufCount; ++i )
         mDrain[i].reset();
+
+    // The gate opens only here: an inline writer must not overtake a message that is still on
+    // its way from this queue to the socket.
+    mSendGate.leave(bufCount);
+}
+
+void ClientSendThread::report_failed_send(const areg::MessageEnvelope & msgFailed, areg::Socket & whichTarget)
+{
+    if ( mIsClosing.load(std::memory_order_relaxed) == false )
+    {
+        mRemoteService.failed_send_message( msgFailed, whichTarget );
+    }
 }
 
 bool ClientSendThread::post_event( Event & eventElem )

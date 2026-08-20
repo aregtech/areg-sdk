@@ -919,8 +919,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "31_loclatency", "31_loclate
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "31_generated", "examples\31_loclatency\31_generated.vcxproj", "{4DF013A6-BCA4-43BD-9088-315DA065212F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{98743716-82FC-4B02-96AF-E6F649403A0A} = {98743716-82FC-4B02-96AF-E6F649403A0A}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "31_loclatency", "examples\31_loclatency\31_loclatency.vcxproj", "{1A57C730-ADEA-42D5-AE8F-AF8E2AF38979}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+		{4DF013A6-BCA4-43BD-9088-315DA065212F} = {4DF013A6-BCA4-43BD-9088-315DA065212F}
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
