@@ -161,6 +161,14 @@ def _datarate_script(shape, first, step):
     return script
 
 
+# Examples deliberately kept out of the automation, with the reason they are out. They are
+# not defects and they are not skipped scenarios: there is nothing here a console harness
+# could drive. The summary prints them so that a gap in the example numbering explains
+# itself to a reader who does not know the history.
+EXCLUDED_EXAMPLES = {
+    '20_winchat': 'MFC desktop application with a graphical user interface, Windows only',
+}
+
 SCENARIOS = [
     # -- single process, no router ------------------------------------------
     # Not an example: the regression test of the timer and watchdog teardown hang. It is
@@ -1376,6 +1384,10 @@ def markdown_report(results, seconds, tier, bin_dir):
     lines.append('')
     lines.append('Binaries: `%s`' % bin_dir)
     lines.append('')
+    for name in sorted(EXCLUDED_EXAMPLES):
+        lines.append('Excluded from automation: `%s` -- %s' % (name, EXCLUDED_EXAMPLES[name]))
+    if EXCLUDED_EXAMPLES:
+        lines.append('')
     lines.append('| Scenario | Result | Time | Details |')
     lines.append('|---|---|---|---|')
     for result in results:
@@ -1629,6 +1641,8 @@ def main():
     print('')
     print('passed %d, failed %d, known defects %d, skipped %d'
           % (passed, len(failures), len(known), skipped))
+    for name in sorted(EXCLUDED_EXAMPLES):
+        print('excluded %s -- %s' % (name, EXCLUDED_EXAMPLES[name]))
     if known:
         print('')
         for result in known:

@@ -401,6 +401,23 @@ protected:
     bool try_send_inline( MessageEnvelope & data );
 
     /**
+     * \brief   Starts the send thread if it does not run yet, and returns when it is ready to
+     *          take events.
+     *
+     *          The send thread is a fallback: a message reaches it only when the sending
+     *          thread could not write it into the socket itself, see try_send_inline(). A
+     *          connection that never needs the fallback therefore never pays for the thread,
+     *          which on Windows is an immediate commit of its whole stack.
+     *
+     *          Called by producers, so it must tolerate concurrent calls. Thread::start()
+     *          cannot be used for that on its own: called for a thread that already runs, it
+     *          resets the run state of the running thread. The mutex below is what makes the
+     *          start happen exactly once, and it is entered only after the lock-free check
+     *          says the thread is not running.
+     **/
+    void ensure_send_thread();
+
+    /**
      * \brief   Queues a message for sending with optional priority (copy).
      *
      * \param   data            The data of the message.
@@ -558,6 +575,10 @@ private:
      * \brief   Message sender thread
      **/
     areg::ClientSendThread          mThreadSend;
+    /**
+     * \brief   Guards the lazy start of the send thread, see ensure_send_thread().
+     **/
+    areg::Mutex                     mSendStartLock;
 
 #if defined(_MSC_VER)
     #pragma warning(pop)
@@ -712,6 +733,10 @@ inline bool ServiceClientConnectionBase::send_message(MessageEnvelope && data, a
 {
     if ( try_send_inline(data) )
         return true;
+
+    // The fallback is the first user of the send thread, so this is where it comes to life.
+    if ( mThreadSend.is_running() == false )
+        ensure_send_thread();
 
     mThreadSend.send_gate().enter();
     areg::Event evt(std::move(data));

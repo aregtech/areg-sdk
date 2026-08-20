@@ -47,6 +47,7 @@ namespace areg {
 /************************************************************************
  * Dependencies
  ************************************************************************/
+class Component;
 class ServiceRequestEvent;
 class StubConnectEvent;
 
@@ -231,6 +232,17 @@ private:
 // Hidden operations
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   Returns the component that owns the stub served by this consumer.
+     *
+     *          StubBase is the only class derived from StubEventConsumer, and a stub exists
+     *          only as a part of its component, so the owner is reached directly instead of
+     *          being looked up in the component registry on every message. The lookup used to
+     *          hash the role name and search the registry for a pointer the stub already holds.
+     **/
+    [[nodiscard]]
+    Component & owner_component() const noexcept;
+
     /**
      * \brief   Processes a local request event.
      *

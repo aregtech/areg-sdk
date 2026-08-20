@@ -339,6 +339,27 @@ constexpr uint32_t          MAX_SEND_BATCH_BYTES    { 0x7000'0000u };   // 1.75 
 //!< The minimum size of the block to send without copying to the cache.
 constexpr uint32_t          MIN_BIG_BLOCK           { 64 * areg::ONE_KILOBYTE };
 
+/**
+ * \brief   Selects how a batch of messages is written into a socket on Windows. It has no
+ *          effect on POSIX, where the batch always goes through writev() or the staging
+ *          cache, whichever fits the block size.
+ *
+ *          0   the batch is copied into the per-thread staging cache and written with one
+ *              send(), and blocks not smaller than MIN_BIG_BLOCK are written one by one.
+ *              This is the behavior that has been measured so far.
+ *          1   the batch is handed to WSASend() as a scatter-gather list, so that no byte
+ *              is copied before it reaches the socket.
+ *
+ *          Both paths are kept side by side on purpose: which one wins depends on the
+ *          message sizes and on the machine, and the answer is a measurement, not an
+ *          opinion. Change the value here and rebuild - no build option is involved, so
+ *          it works the same from the command line and from the IDE. Compare latency,
+ *          data rate and message rate, and keep the value that wins all three.
+ **/
+#ifndef AREG_WIN_SCATTER_SEND
+    #define AREG_WIN_SCATTER_SEND   0
+#endif  // AREG_WIN_SCATTER_SEND
+
 //!< Number of per-socket writer locks. Must be a power of two. Two sockets whose descriptors
 //!< fall on the same slot share one lock, which costs speed but never correctness.
 constexpr uint32_t          SOCKET_WRITER_SLOTS     { 128u };

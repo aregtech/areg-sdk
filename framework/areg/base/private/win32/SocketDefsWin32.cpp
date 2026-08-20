@@ -176,6 +176,73 @@ int32_t _os_try_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers,
     return static_cast<int32_t>(sent);
 }
 
+#if AREG_WIN_SCATTER_SEND
+
+// Scatter-gather write, see AREG_WIN_SCATTER_SEND in 'areg/base/SocketDefs.hpp'. The batch is
+// handed to WSASend() as it stands, so no byte is copied before it reaches the socket.
+int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t totalSize)
+{
+    // Single buffer, bypass setup entirely.
+    if (count == 1u)
+    {
+        return _os_send_data(hSocket, buffers->data, static_cast<int32_t>(buffers->size));
+    }
+
+    ASSERT(count <= areg::DEFAULT_DRAIN_LIMIT);
+
+    WSABUF wsaBuffers[areg::DEFAULT_DRAIN_LIMIT];
+    for (uint32_t i = 0u; i < count; ++i)
+    {
+        wsaBuffers[i].buf = reinterpret_cast<CHAR *>(const_cast<uint8_t *>(buffers[i].data));
+        wsaBuffers[i].len = static_cast<ULONG>(buffers[i].size);
+    }
+
+    // WSASend is not obliged to take everything: the socket blocks, but SO_SNDTIMEO bounds
+    // how long it may block, so a full send window can leave a partial write behind. What is
+    // left, including the remainder of the buffer that was cut in half, is offered again.
+    uint32_t index{ 0u };   // first buffer not yet fully sent
+    int32_t  result{ 0 };
+    while (index < count)
+    {
+        DWORD sent{ 0u };
+        if (::WSASend(hSocket, wsaBuffers + index, static_cast<DWORD>(count - index), &sent, 0, nullptr, nullptr) != 0)
+        {
+            if (::WSAGetLastError() == WSAEINTR)
+                continue;
+
+            return -1;
+        }
+        else if (sent == 0u)
+        {
+            // Nothing moved and nothing failed. Retrying would spin on a socket that is not
+            // taking bytes, so the batch is abandoned exactly as a failed send would be.
+            return -1;
+        }
+
+        result += static_cast<int32_t>(sent);
+        DWORD advance{ sent };
+        while ((index < count) && (advance >= wsaBuffers[index].len))
+        {
+            advance -= wsaBuffers[index].len;
+            ++index;
+        }
+
+        if ((index < count) && (advance > 0u))
+        {
+            wsaBuffers[index].buf += advance;
+            wsaBuffers[index].len -= static_cast<ULONG>(advance);
+        }
+    }
+
+    static_cast<void>(totalSize);
+    return result;
+}
+
+#else   // !AREG_WIN_SCATTER_SEND
+
+// Staging-cache write, see AREG_WIN_SCATTER_SEND in 'areg/base/SocketDefs.hpp'. Small messages
+// are copied together into the per-thread cache and leave in one send(), which has measured
+// better than a per-buffer loop on this platform.
 int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t totalSize)
 {
     // Single buffer, bypass setup entirely.
@@ -248,6 +315,8 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
 
     return result;
 }
+
+#endif  // AREG_WIN_SCATTER_SEND
 
 int32_t _os_recv_data_window(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
 {

@@ -255,6 +255,7 @@ log::logobserver::layout::exit      = %d: [ %a.%x.%t.%z: Exit <-- ]%n   # Exit: 
 # ---------------------------------------------------------------------------
 log::logobserver::enable::file      = false                         # Log observer: disable file logging
 log::logobserver::enable::db        = true                          # Log observer: enable database logging
+log::logobserver::enable::remote    = false                         # Log observer: disable remote logging. Keep ALWAYS false: it observes the log collector
 log::logobserver::db::engine        = sqlite3                       # Database engine: SQLite 3
 log::logobserver::db::name          = log_%time%.sqlog              # Database file name with timestamp mask
 log::logobserver::db::location      = ./logs                        # Database file directory
@@ -267,7 +268,7 @@ log::logobserver::db::location      = ./logs                        # Database f
 # ---------------------------------------------------------------------------
 log::logcollector::enable::file     = false     # Log Collector: disable file output
 log::logcollector::enable::debug    = false     # Log Collector: disable debug console output
-log::logcollector::enable::remote   = false     # Log Collector: disable remote logging (it would log to itself)
+log::logcollector::enable::remote   = false     # Log Collector: disable remote logging. Keep ALWAYS false: it would log to itself
 
 # ---------------------------------------------------------------------------
 # Log Collector Database Settings
@@ -284,7 +285,7 @@ log::logcollector::db::location     = ./logs                            # Databa
 log::mtrouter::enable::file         = false     # Message Router: disable file logging
 log::mtrouter::enable::db           = false     # Message Router: disable database logging
 log::mtrouter::enable::debug        = false     # Message Router: disable debug console output
-log::mtrouter::enable::remote       = false     # Message Router: disable remote logging
+log::mtrouter::enable::remote       = false     # Message Router: disable remote logging. Keep ALWAYS false
 
 # ###########################################################################
 # REMOTE SERVICES CONFIGURATION

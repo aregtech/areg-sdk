@@ -60,106 +60,39 @@ void ServerSendThread::start_event_processing( areg::Event & eventElem )
     DEBUG_LOG_SCOPE(areg_aregextend_service_ServerSendThread, start_event_processing);
     AREG_LT_SCOPE(areg::LtStage::SendNode);     // drain + resolve + sort + writev
 
-    if ( eventElem.is_exit_prio() )
-    {
-        DEBUG_LOG_DBG("Going to quit send message thread");
-        mConnection.close_all_connections();
-        mConnection.close_socket();
-        trigger_exit();
-        return;
-    }
+    const areg::ext::SendBatchContext context{ mBatch.data()
+                                             , mEvents.data()
+                                             , mTargets.data()
+                                             , mSockets.data()
+                                             , &mSendGate
+                                             , &mConnection
+                                             , &mRemoteService };
 
-    // Zero local-only routing fields before wire transmission.
-    areg::EventHeader * hdr0{ eventElem.header() };
-    ASSERT( hdr0 != nullptr );
-    hdr0->internal1 = 0u;
-    hdr0->internal2 = 0u;
-    hdr0->custom    = 0u;
-
-    uint32_t batchCount{ 0u };
-
-    mTargets[batchCount]      = static_cast<ITEM_ID>(hdr0->target);
-    mBatch[batchCount].socket = areg::InvalidSocketHandle;
-    mBatch[batchCount].msg    = eventElem.envelope();  // O(1) shared_ptr copy; fields already zeroed
-    ++batchCount;
-
-    // Phase 1: drain additional queued events into mBatch via a single dequeue window.
-    const uint32_t drained{ pop_events(mEvents.data(), areg::DEFAULT_DRAIN_LIMIT - batchCount) };
-    for ( uint32_t k{ 0u }; k < drained; ++k )
-    {
-        areg::Event& evt{ mEvents[k] };
-        if ( evt.is_exit_prio() )
-        {
-            DEBUG_LOG_DBG("Received exit event during batch-drain, stopping send thread");
-            for ( uint32_t i{ 0u }; i < batchCount; ++i )
-                mBatch[i].msg.destroy_event();
-
-            mSendGate.leave(batchCount);
-            mConnection.close_all_connections();
-            mConnection.close_socket();
-            trigger_exit();
-            return;
-        }
-
-        areg::EventHeader * hdr{ evt.header() };
-        ASSERT( hdr != nullptr );
-        hdr->internal1 = 0u;
-        hdr->internal2 = 0u;
-        hdr->custom    = 0u;
-
-        mTargets[batchCount]      = static_cast<ITEM_ID>(hdr->target);
-        mBatch[batchCount].socket = areg::InvalidSocketHandle;
-        mBatch[batchCount].msg    = evt.envelope();  // O(1) shared_ptr copy; mBatch keeps the buffer alive
-        evt.destroy_event();                         // release the mEvents slot; mBatch keeps the buffer alive
-        ++batchCount;
-    }
-
-    // Phase 2: resolve all cookies in one lock window.
-    mConnection.batch_handles_by_cookies(mTargets.data(), mSockets.data(), batchCount);
-
-    // Phase 3: compact + insertion-sort by socket handle in one pass.
-    uint32_t validCount{ 0u };
-    for ( uint32_t i{ 0u }; i < batchCount; ++i )
-    {
-        if ( !areg::is_valid_socket(mSockets[i]) )
-        {
-            DEBUG_LOG_WARN("Discarding message (ID = [ %u ]) for disconnected target [ %u ]"
-                            , mBatch[i].msg.message_id()
-                            , static_cast<uint32_t>(mTargets[i]));
-            continue;
-        }
-
-        areg::ext::PendingSend entry{ mSockets[i], std::move(mBatch[i].msg) };
-        uint32_t lo{ 0u }, hi{ validCount };
-        while ( lo < hi )
-        {
-            const uint32_t mid{ lo + ((hi - lo) >> 1) };
-            mBatch[mid].socket <= entry.socket ? lo = mid + 1u : hi = mid;
-        }
-
-        // Shift right using move-assignment
-        for ( uint32_t j{ validCount }; j > lo; --j )
-            mBatch[j] = std::move(mBatch[j - 1]);
-
-        mBatch[lo] = std::move(entry);
-        ++validCount;
-    }
-
-    if ( validCount != 0u )
-    {
-        // Phase 4: batch is already sorted -- send groups directly.
-        AREG_LT_SCOPE(areg::LtStage::SendSyscall);  // isolate the ::send() from resolve+sort
-        areg::ext::send_pending_groups(mBatch.data(), validCount, mConnection, mRemoteService,
-            [this](uint64_t bytes, uint32_t msgs) { accumulate_sent(bytes, msgs); });
-    }
-
-    // Phase 5: release every wire buffer
-    for ( uint32_t i{ 0u }; i < batchCount; ++i )
-        mBatch[i].msg.destroy_event();
-
-    // The gate opens only here: an inline writer must not overtake a message that is still on
-    // its way from this queue to the socket.
-    mSendGate.leave(batchCount);
+    areg::ext::run_send_batch( *this
+                             , eventElem
+                             , context
+                             , [this]( ITEM_ID * targets, SOCKETHANDLE * sockets, uint32_t count )
+                               {
+                                   mConnection.batch_handles_by_cookies(targets, sockets, count);
+                               }
+                             , [this]( uint64_t bytes, uint32_t msgs )
+                               {
+                                   accumulate_sent(bytes, msgs);
+                               }
+                             , [&]( )
+                               {
+                                   // This thread owns the listening socket of the service, so it
+                                   // takes the whole connection down with it.
+                                   DEBUG_LOG_DBG("Going to quit send message thread");
+                                   mConnection.close_all_connections();
+                                   mConnection.close_socket();
+                               }
+                             , [&]([[maybe_unused]]  uint32_t messageId, [[maybe_unused]] ITEM_ID target )
+                               {
+                                   DEBUG_LOG_WARN("Discarding message (ID = [ %u ]) for disconnected target [ %u ]"
+                                                   , messageId
+                                                   , static_cast<uint32_t>(target));
+                               } );
 }
 
 bool ServerSendThread::post_event( Event & eventElem )

@@ -49,8 +49,19 @@ target_compile_options(areg PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}" "${AREG_OP
 # Linker options
 target_link_libraries(areg PRIVATE ${AREG_LDFLAGS})
 
-# copying log and router init files to 'bin/config'
-add_custom_command( TARGET areg POST_BUILD 
-                    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/config
-                    COMMAND ${CMAKE_COMMAND} -E copy ${AREG_FRAMEWORK}/areg/resources/areg.init ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/config/areg.init
+# Copying the framework configuration file to 'bin/config'.
+# This is an OUTPUT rule and not a POST_BUILD step on purpose: a POST_BUILD step runs
+# only when the target is relinked, so editing 'areg.init' alone never reached the build
+# output and the binaries silently kept the previous configuration. With OUTPUT + DEPENDS
+# the copy is refreshed whenever the source file is newer than the copy, and
+# 'copy_if_different' leaves the destination untouched when the contents are equal.
+set(AREG_INIT_SOURCE "${AREG_FRAMEWORK}/areg/resources/areg.init")
+set(AREG_INIT_TARGET "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/config/areg.init")
+add_custom_command( OUTPUT  "${AREG_INIT_TARGET}"
+                    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/config"
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${AREG_INIT_SOURCE}" "${AREG_INIT_TARGET}"
+                    DEPENDS "${AREG_INIT_SOURCE}"
+                    COMMENT "AREG: updating '${AREG_INIT_TARGET}'"
                     VERBATIM)
+add_custom_target(areg-config ALL DEPENDS "${AREG_INIT_TARGET}")
+add_dependencies(areg areg-config)

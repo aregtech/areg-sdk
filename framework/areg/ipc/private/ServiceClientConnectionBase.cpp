@@ -35,6 +35,7 @@ DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_channel_connected
 DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, service_connection_event);
 DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, start_connection);
 DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, cancel_connection);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, ensure_send_thread);
 
 //////////////////////////////////////////////////////////////////////////
 // Local helper methods
@@ -89,12 +90,36 @@ ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
     , mTimerConnect         ( static_cast<TimerConsumer &>(self()), prefixName + areg::CLIENT_CONNECT_TIMER_NAME, areg::INVALID_TIMEOUT, Timer::IGNORE_TIMER_QUEUE, areg::EventPriority::HighPrio )
     , mThreadReceive        (messageHandler, mClientConnection, prefixName)
     , mThreadSend           (messageHandler, mClientConnection, prefixName)
+    , mSendStartLock        ( false )
 {
     ASSERT((target > areg::TARGET_LOCAL) && (target < areg::COOKIE_REMOTE_SERVICE));
 }
 
 ServiceClientConnectionBase::~ServiceClientConnectionBase()
 {
+}
+
+void ServiceClientConnectionBase::ensure_send_thread()
+{
+    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, ensure_send_thread );
+
+    Lock lock( mSendStartLock );
+    if ( mThreadSend.is_running() )
+        return;
+
+    // The readiness poll stays inside the lock: a second producer must find the thread
+    // ready, not merely created, before it delivers its message.
+    if ( mThreadSend.start( areg::WAIT_INFINITE ) && _wait_io_thread_ready( mThreadSend ) )
+    {
+        LOG_DBG( "The send thread is started on demand by the message it could not send inline" );
+    }
+    else
+    {
+        // Nothing is torn down here. The message is delivered to the queue of a thread that
+        // does not run, exactly as it would be if the thread had died, and the connection is
+        // restarted by the receive side, which owns that decision.
+        LOG_ERR( "Failed to start the send thread on demand" );
+    }
 }
 
 bool ServiceClientConnectionBase::try_send_inline( MessageEnvelope & data )
@@ -511,7 +536,18 @@ bool ServiceClientConnectionBase::start_connection()
     ASSERT(mClientConnection.address().is_valid());
     ASSERT(!mClientConnection.is_valid());
     ASSERT(!mThreadReceive.is_running());
-    ASSERT(!mThreadSend.is_running());
+
+    // The send thread is normally stopped here, but it does not have to be: a component that
+    // sent a message while the previous connection was already gone started it through
+    // ensure_send_thread(). Whatever such a thread still holds is addressed to a socket that
+    // is closed, which is exactly what the shutdown of the previous connection dropped, so it
+    // is stopped here as well and starts again on the first fallback of the new connection.
+    if ( mThreadSend.is_running() )
+    {
+        LOG_DBG("The send thread was started while the connection was down, stopping it before the new one");
+        mThreadSend.set_closing();
+        mThreadSend.shutdown( areg::WAIT_INFINITE );
+    }
 
     mTimerConnect.stop_timer();
 
@@ -535,10 +571,11 @@ bool ServiceClientConnectionBase::start_connection()
     // Store handshake in the receive thread before starting it.
     mThreadReceive.set_handshake(connect_message(areg::COOKIE_UNKNOWN, mTarget, mMessageSource));
 
+    // The send thread is not started here. It is a fallback for the messages that their own
+    // thread could not write into the socket, and a connection that never needs it never
+    // creates it. The first message that has to be queued starts it, see ensure_send_thread().
     bool result{ mThreadReceive.start(areg::WAIT_INFINITE) &&
-                 mThreadSend.start(areg::WAIT_INFINITE)    &&
-                 _wait_io_thread_ready(mThreadReceive)     &&
-                 _wait_io_thread_ready(mThreadSend) };
+                 _wait_io_thread_ready(mThreadReceive) };
 
     if (result)
     {

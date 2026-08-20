@@ -28,11 +28,11 @@
  * \brief   Service component that outputs statistics and provides console interaction for the
  *          LogCollector application.
  **/
-class LogCollectorConsoleService  : public areg::ext::SystemServiceConsole
+class LogCollectorConsoleService final : public areg::ext::SystemServiceConsole
 {
 public:
     //!< The console service role name
-    static constexpr std::string_view   SERVICE_NAME    { "LoggerConsoleService" };
+    static constexpr std::string_view   SERVICE_NAME    { "LogCollectorConsoleService" };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

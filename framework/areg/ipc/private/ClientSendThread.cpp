@@ -42,6 +42,10 @@ void ClientSendThread::ready_for_events( bool is_ready )
 {
     if ( is_ready )
     {
+        // The closing flag belongs to the connection this thread is about to serve, not to the
+        // one it served before. Without this reset a thread that was told to close once would
+        // never report a failed send again, and a lost connection would go unnoticed.
+        mIsClosing.store(false, std::memory_order_relaxed);
         areg::set_receive_mode(areg::ReceiveMode::MonoCache);
         DispatcherThread::ready_for_events( true );
     }
