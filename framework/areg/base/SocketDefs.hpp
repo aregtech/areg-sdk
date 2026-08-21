@@ -353,6 +353,26 @@ extern AREG_API const int32_t MAXIMUM_LISTEN_QUEUE_SIZE /*= SOMAXCONN*/;
 
 AREG_API uint32_t   thread_cache_size() noexcept;
 
+/**
+ * \brief   Returns the send batch limit: the largest number of messages a send thread may take
+ *          out of its queue and write to the socket in one go. Read from `areg.init`
+ *          (`net::*::tcpip::drain`), where `0` means "use `areg::DEFAULT_DRAIN_LIMIT`".
+ *
+ *          The result is clamped to `1 .. areg::DEFAULT_DRAIN_LIMIT`, because the batch arrays
+ *          of every send thread are fixed at that size. A configured value can therefore only
+ *          make the batch smaller, never larger, and no allocation is involved.
+ *
+ *          This is a **memory** setting, not a speed setting. One batch keeps every message in
+ *          it alive until the whole batch has reached the socket, so the memory a send thread
+ *          pins is `limit x message size` - 402 MiB for 128 messages of 3 MiB. Lowering the
+ *          limit bounds that, and costs data rate: measured end to end on example 23, a limit
+ *          of 21 costs about 2.6 %, 5 costs 3.6 % and 1 costs 14 %.
+ *
+ * \note    This reads the configuration under a lock. Resolve it **once**, when the send thread
+ *          becomes ready, and keep the result in a member. It must never be called per message.
+ **/
+AREG_API uint32_t   send_batch_limit() noexcept;
+
 //!< Thread local cache to send / receive data
 struct ThreadCache
 {

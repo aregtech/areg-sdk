@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="MixedTraffic" Version="1.0.0" Category="Public">
+        <Description>Service Interface to measure what a bulk stream does to the latency of small
+messages that share the same connection. The provider broadcasts large blocks from several
+worker threads at once, and answers small ping requests on the same socket.</Description>
+    </Overview>
+    <MethodList>
+        <Method ID="10" Name="bulk_block" MethodType="Broadcast">
+            <Description>Carries one large block of the bulk stream to every consumer.</Description>
+            <ParamList>
+                <Parameter ID="11" Name="block" DataType="BinaryBuffer">
+                    <Description>The bulk payload.</Description>
+                </Parameter>
+                <Parameter ID="12" Name="producer" DataType="uint32">
+                    <Description>Index of the worker thread that produced the block.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="20" Name="ping" MethodType="Request" Response="pong">
+            <Description>Small request used to measure the round-trip time while the bulk stream runs.</Description>
+            <ParamList>
+                <Parameter ID="21" Name="stamp" DataType="uint64">
+                    <Description>Opaque value echoed back unchanged; the consumer uses it as a timestamp.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="30" Name="pong" MethodType="Response">
+            <Description>Answer to ping, echoing the stamp unchanged.</Description>
+            <ParamList>
+                <Parameter ID="31" Name="stamp" DataType="uint64">
+                    <Description>The value received in the request.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="40" Name="service_stopping" MethodType="Broadcast">
+            <Description>Tells the consumers that the provider is shutting down.</Description>
+        </Method>
+    </MethodList>
+</ServiceInterface>

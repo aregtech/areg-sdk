@@ -164,6 +164,20 @@ public:
     inline bool is_exit_triggered() const noexcept;
 
     /**
+     * \brief   Returns the longest time, in milliseconds, that any producer had to wait for a
+     *          free slot since this was last called, and resets the record to zero.
+     *
+     *          The queue records the wait but never reports it itself: this class is used by
+     *          every dispatcher, the log manager included, so logging from inside it could feed
+     *          the log manager's own queue and recurse. A layer that knows it is safe to log -
+     *          a send thread, for instance - reads this value and reports it.
+     *
+     * \return  The high-water wait in milliseconds, or 0 if no producer had to wait.
+     **/
+    [[nodiscard]]
+    inline uint32_t extract_max_wait_ms() noexcept;
+
+    /**
      * \brief   Requests exit: sets the sticky exit flag, wakes the consumer
      *          blocked in wait_event() and any producers blocked on a full ring.
      *          After this, pop_event() returns the singleton ExitEvent until
@@ -202,8 +216,12 @@ public:
      * \param   eventElem       Event to queue (moved in on success).
      * \param[out] removedEvent If non-null, receives the event on overflow/failure instead of
      *                          discarding it. Pass nullptr to discard automatically.
+     * \return  true if the queue took the event, false if it could not. An ExitPrio event counts
+     *          as taken: it is never queued, it sets the sticky exit flag instead.
+     *          A false result is the only signal a producer gets that its message was not
+     *          accepted, so it must be propagated, never swallowed.
      **/
-    void push_event(Event& eventElem, Event* removedEvent = nullptr);
+    bool push_event(Event& eventElem, Event* removedEvent = nullptr);
 
     /**
      * \brief   Dequeues the next event. Priority lane is always drained first.
@@ -328,6 +346,10 @@ private:
     //!< Producer wake-up (auto-reset): signalled by the consumer when a slot is freed.
     SimpleEvent             mSlotEvent;
     //!< Number of producers blocked on a full ring (so the consumer signals only when needed).
+    //!< Longest producer wait, in milliseconds, since it was last read. Written by the producer
+    //!< that waited, read and cleared by whoever reports it.
+    std::atomic<uint32_t>   mMaxWaitMs;
+
     std::atomic<uint32_t>   mProducersWaiting;
 
 //////////////////////////////////////////////////////////////////////////
@@ -354,6 +376,16 @@ inline void EventQueue::lock_queue() noexcept
 inline void EventQueue::unlock_queue() noexcept
 {
     mPrioLock.unlock();
+}
+
+inline uint32_t EventQueue::extract_max_wait_ms() noexcept
+{
+    // Cheap in the common case. While no producer waits the value stays zero, the cache line
+    // stays clean and shared, and this is a plain load. The read-modify-write - which dirties a
+    // line shared with every producer - happens only after a producer really had to wait.
+    return (mMaxWaitMs.load(std::memory_order_relaxed) != 0u)
+                ? mMaxWaitMs.exchange(0u, std::memory_order_relaxed)
+                : 0u;
 }
 
 inline bool EventQueue::is_exit_triggered() const noexcept

@@ -146,14 +146,12 @@ bool EventDispatcherBase::queue_event( Event& eventElem )
     {
         if (areg::is_external(eventType))
         {
-            mExternalEvents.push_event(eventElem);
-            return true;
+            return mExternalEvents.push_event(eventElem);
         }
 
         if (areg::is_internal(eventType))
         {
-            mInternalEvents.push_event(eventElem);
-            return true;
+            return mInternalEvents.push_event(eventElem);
         }
     }
 

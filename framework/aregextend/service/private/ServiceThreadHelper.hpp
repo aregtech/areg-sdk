@@ -246,7 +246,7 @@ inline void run_send_batch( ThreadT & thread
     ++batchCount;
 
     // Phase 1: drain additional queued events into the batch via a single dequeue window.
-    const uint32_t drained{ thread.pop_events(context.events, areg::DEFAULT_DRAIN_LIMIT - batchCount) };
+    const uint32_t drained{ thread.pop_events(context.events, thread.drain_limit() - batchCount) };
     for ( uint32_t k{ 0u }; k < drained; ++k )
     {
         areg::Event & evt{ context.events[k] };

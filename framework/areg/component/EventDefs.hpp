@@ -29,7 +29,39 @@ namespace areg {
     constexpr uint32_t  QUEUE_MIN_RING_CAPACITY     {                 32u };    //!< Smallest ring size.
     constexpr uint32_t  QUEUE_MAX_RING_CAPACITY     {           16777216u };    //! explicit-size upper bound (keeps round-up safe)
     constexpr uint32_t  QUEUE_DEFAULT_RING_CAPACITY {               1024u };    //!< Default Ring size to use.
-    constexpr uint32_t  QUEUE_DEFAULT_FULL_WAIT_MS  { areg::WAIT_1_SECOND };    //!< Default lossless block timeout.
+    /**
+     * \brief   Lossless full-queue producer wait in a release build.
+     *          This is a backstop for a consumer that has stopped, not a normal path:
+     *          SO_SNDTIMEO is 2500 ms, so a healthy but slow socket never needs more than about
+     *          three seconds. The previous value of one second was too close to normal operation
+     *          - a producer was measured waiting 889 ms in an ordinary run, which is 89 % of the
+     *          way to losing a message.
+     **/
+    constexpr uint32_t  QUEUE_FULL_WAIT_RELEASE_MS  {   10 * areg::WAIT_1_SECOND };
+
+    /**
+     * \brief   Lossless full-queue producer wait in a debug build: about 24 days, which is
+     *          "never give up" in practice. Suspending a thread in the debugger must not make
+     *          the application lose a message.
+     *
+     * \note    This must NOT be areg::WAIT_INFINITE. That value is already the sentinel meaning
+     *          "ignore the caller and read the value from areg.init", see _resolve_queue_wait().
+     *          Using it here would silently turn a debug build into "read the configuration".
+     **/
+    constexpr uint32_t  QUEUE_FULL_WAIT_DEBUG_MS    { 0x7FFF'FFFFu };
+
+#ifdef DEBUG
+    constexpr uint32_t  QUEUE_DEFAULT_FULL_WAIT_MS  { areg::QUEUE_FULL_WAIT_DEBUG_MS };   //!< Default lossless block timeout.
+#else   // DEBUG
+    constexpr uint32_t  QUEUE_DEFAULT_FULL_WAIT_MS  { areg::QUEUE_FULL_WAIT_RELEASE_MS }; //!< Default lossless block timeout.
+#endif  // DEBUG
+
+    /**
+     * \brief   A producer that waited at least this long for a free slot is worth reporting.
+     *          It is how a long pause caused by a debugger is told apart from a consumer that is
+     *          genuinely too slow.
+     **/
+    constexpr uint32_t  QUEUE_WAIT_WARN_MS          { areg::WAIT_1_SECOND };
     constexpr bool      QUEUE_DROP_WHEN_FULL        {               false };    //!< Default action if queue is full, wait for free slot.
 
 /************************************************************************

@@ -21,8 +21,11 @@
 #include "areg/base/MessageEnvelope.hpp"
 
 #include "areg/base/private/DebugDefs.hpp"
+#include "areg/logging/areg_log.h"
 
 namespace areg {
+
+DEF_LOG_SCOPE(areg_ipc_private_ClientSendThread, report_producer_wait);
 
 ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String& namePrefix )
     : DispatcherThread  ( namePrefix + areg::CLIENT_SEND_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_BIG, areg::SEND_THREAD_QUEUE_LIMIT )
@@ -35,6 +38,7 @@ ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientCo
     , mIoBuffer         ( )
     , mIsClosing        ( false )
     , mSendGate         ( )
+    , mDrainLimit       ( areg::DEFAULT_DRAIN_LIMIT )
 {
 }
 
@@ -46,6 +50,7 @@ void ClientSendThread::ready_for_events( bool is_ready )
         // one it served before. Without this reset a thread that was told to close once would
         // never report a failed send again, and a lost connection would go unnoticed.
         mIsClosing.store(false, std::memory_order_relaxed);
+        mDrainLimit = areg::send_batch_limit();
         areg::set_receive_mode(areg::ReceiveMode::MonoCache);
         DispatcherThread::ready_for_events( true );
     }
@@ -85,7 +90,7 @@ void ClientSendThread::start_event_processing( Event & eventElem )
 
     // Drain further queued events into the same batch (one OS send) via a single dequeue window.
     // The single-message ping-pong case drains nothing and touches no mDrain slot.
-    const uint32_t drained{ pop_events(mEvents, areg::DEFAULT_DRAIN_LIMIT - bufCount) };
+    const uint32_t drained{ pop_events(mEvents, mDrainLimit - bufCount) };
     for ( uint32_t k{ 0u }; k < drained; ++k, ++bufCount )
     {
         Event& evt{ mEvents[k] };
@@ -164,6 +169,13 @@ void ClientSendThread::start_event_processing( Event & eventElem )
     // The gate opens only here: an inline writer must not overtake a message that is still on
     // its way from this queue to the socket.
     mSendGate.leave(bufCount);
+
+    const uint32_t waitedMs{ extract_max_producer_wait_ms() };
+    if ( waitedMs >= areg::QUEUE_WAIT_WARN_MS )
+    {
+        LOG_SCOPE(areg_ipc_private_ClientSendThread, report_producer_wait);
+        LOG_WARN("Send queue was full: a producer waited [ %u ] ms for a free slot", waitedMs);
+    }
 }
 
 void ClientSendThread::report_failed_send(const areg::MessageEnvelope & msgFailed, areg::Socket & whichTarget)

@@ -43,6 +43,7 @@ PoolSendThread::PoolSendThread( ClientConnectionPair & owner
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
     , mGlobalStats      ( globalStats )
+    , mDrainLimit       ( areg::DEFAULT_DRAIN_LIMIT )
     , mBatch            ( )
     , mSendGate         ( )
 {
@@ -52,6 +53,7 @@ void PoolSendThread::ready_for_events( bool is_ready )
 {
     if ( is_ready )
     {
+        mDrainLimit = areg::send_batch_limit();
         areg::set_receive_mode(areg::ReceiveMode::MonoCache);
         DispatcherThread::ready_for_events( true );
     }

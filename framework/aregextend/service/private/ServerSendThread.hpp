@@ -75,6 +75,14 @@ public:
 /************************************************************************/
 public:
     /**
+     * \brief   Returns the send batch limit resolved for this thread, in messages.
+     *          A plain member read - the configuration is consulted once, when the thread
+     *          becomes ready, never on the message path.
+     **/
+    [[nodiscard]]
+    inline uint32_t drain_limit() const noexcept { return mDrainLimit; }
+
+    /**
      * \brief   Returns accumulative value of sent data size and resets the existing value to zero.
      *          The operations are atomic. The value can be used to display data rate, for example.
      **/
@@ -132,6 +140,7 @@ protected:
      **/
     void ready_for_events( bool is_ready ) final;
 
+
 /************************************************************************/
 // EventRouter class overrides
 /************************************************************************/
@@ -172,6 +181,13 @@ private:
     /**
      * \brief   Pre-allocated batch work list reused across every drain cycle.
      **/
+
+    /**
+     * \brief   How many messages this thread may put into one batch. Resolved from the
+     *          configuration when the thread becomes ready and never touched afterwards, so
+     *          reading it costs one load. Always within 1 .. areg::DEFAULT_DRAIN_LIMIT.
+     **/
+    uint32_t                        mDrainLimit;
     BatchEntries                    mBatch;
     //!< Reused scratch: per-slot target cookies and resolved socket handles (POD; off the stack).
     std::array<ITEM_ID, areg::DEFAULT_DRAIN_LIMIT>       mTargets;

@@ -444,6 +444,16 @@ AREG_API_IMPL uint32_t areg::thread_cache_size() noexcept
     return Application::config_manager().network_cache();
 }
 
+AREG_API_IMPL uint32_t areg::send_batch_limit() noexcept
+{
+    const uint32_t configured{ Application::config_manager().network_drain_limit() };
+
+    if ( (configured == 0u) || (configured > areg::DEFAULT_DRAIN_LIMIT) )
+        return areg::DEFAULT_DRAIN_LIMIT;
+
+    return configured;
+}
+
 
 AREG_API_IMPL SOCKETHANDLE areg::socket_create() noexcept
 {

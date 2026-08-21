@@ -117,6 +117,26 @@ public:
     inline areg::SendQueueGate & send_gate() noexcept;
 
     /**
+     * \brief   Hands one outbound message to this send thread and reports whether the queue took
+     *          it. This is the entry point a producer uses instead of Event::deliver_event(),
+     *          which discards that answer. A false result means the message was NOT queued and
+     *          will never reach the socket, so the caller must release whatever it reserved for
+     *          it and report the failure onwards.
+     *
+     * \param   eventElem   The event to queue. Its target dispatcher must already be this thread.
+     * \return  true if the queue took the event, false if it did not.
+     **/
+    inline bool queue_message( areg::Event & eventElem );
+
+    /**
+     * \brief   Returns the send batch limit resolved for this thread, in messages.
+     *          A plain member read - the configuration is consulted once, when the thread
+     *          becomes ready, never on the message path.
+     **/
+    [[nodiscard]]
+    inline uint32_t drain_limit() const noexcept;
+
+    /**
      * \brief   Reports a message that a producer thread failed to write into the socket itself.
      *          The report is passed to the message handler, exactly as this thread would do for
      *          its own failed batch, and it is suppressed while the connection is closing on
@@ -203,6 +223,13 @@ private:
      **/
     areg::SendQueueGate             mSendGate;
 
+    /**
+     * \brief   How many messages this thread may put into one batch. Resolved from the
+     *          configuration when the thread becomes ready and never touched afterwards, so
+     *          reading it costs one load. Always within 1 .. areg::DEFAULT_DRAIN_LIMIT.
+     **/
+    uint32_t                        mDrainLimit;
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
@@ -248,6 +275,16 @@ inline void ClientSendThread::accumulate_sent(uint64_t bytes, uint32_t msgs) noe
 inline areg::SendQueueGate & ClientSendThread::send_gate() noexcept
 {
     return mSendGate;
+}
+
+inline bool ClientSendThread::queue_message( areg::Event & eventElem )
+{
+    return EventDispatcher::post_event( eventElem );
+}
+
+inline uint32_t ClientSendThread::drain_limit() const noexcept
+{
+    return mDrainLimit;
 }
 
 } // namespace areg

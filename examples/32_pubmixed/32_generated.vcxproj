@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)msvc_setup.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AregConfigDir)compile.props" Label="LocalAppCompileSettings" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{625163DE-17D6-4AAC-B230-7D6B7411CB35}</ProjectGuid>
+    <ProjectName>32_generated</ProjectName>
+    <RootNamespace>32_generated</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AregConfigDir)project.props" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir>$(OutLibDir)</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="$(AregGenerateDir)examples\32_pubmixed\services\private\MixedTrafficConsumerBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\32_pubmixed\services\private\MixedTrafficEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\32_pubmixed\services\private\MixedTrafficProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\32_pubmixed\services\private\MixedTrafficProviderBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\32_pubmixed\services\private\MixedTraffic.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(AregGenerateDir)examples\32_pubmixed\services\MixedTrafficConsumerBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\32_pubmixed\services\MixedTrafficProviderBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\32_pubmixed\services\MixedTraffic.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\32_pubmixed\services\private\MixedTrafficEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\32_pubmixed\services\private\MixedTrafficProxy.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="services\MixedTraffic.siml" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

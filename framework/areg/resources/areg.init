@@ -189,9 +189,9 @@ config::*::version          = 2.0.0                         # Configuration sche
 # Global Runtime Settings
 # ---------------------------------------------------------------------------
 config::*::default::blocksize       = 64                    # Default block size (bytes) for shared buffer allocation to minimize fragmentation. 0 = ignore
-config::*::queue::capacity          = 0                     # Dispatcher event-queue ring capacity (rounded up to power of two, min 32). 0 = built-in default (1024)
-config::*::queue::timeout           = 0                     # Dispatcher full-ring block timeout (ms) in lossless mode. 0 = built-in default (1000 ms)
-config::*::queue::drop              = false                 # Dispatcher full-ring policy. false = lossless (producer blocks); true = drop-newest (best-effort, never blocks)
+config::*::queue::capacity          = 0                     # Ring capacity in messages. Sets memory AND small-message latency. 0 = default (1024). See wiki 05b.
+config::*::queue::timeout           = 0                     # Full-queue producer wait, ms. 0 = default (10000 release, unlimited debug). See wiki 05b.
+config::*::queue::drop              = false                 # false = never lose a message (producer blocks). true drops silently. See wiki 05b.
 
 # ###########################################################################
 # APPLICATION LOGGING SETTINGS
@@ -325,7 +325,7 @@ net::logcollector::tcpip::sndbuf    = 2048                  # Logger SO_SNDBUF (
 net::logcollector::tcpip::rcvbuf    = 2048                  # Logger SO_RCVBUF (2048 KB = 2 MB).
 net::*::tcpip::sndbuf               = 8192                  # Default SO_SNDBUF for all services (uncomment to set a global default).
 net::*::tcpip::rcvbuf               = 8192                  # Default SO_RCVBUF for all services (uncomment to set a global default).
-net::*::tcpip::drain                = 128                   # Send/drain batch size per dispatcher wake-up. 0 = use compile-time DEFAULT_DRAIN_LIMIT.
+net::*::tcpip::drain                = 128                   # Send batch in messages, 0..128. A MEMORY setting: lowering it costs data rate. See wiki 05b.
 net::*::tcpip::pairs                = 0                     # Pool thread-pair count. 0 = disabled (shared send/recv threads). >0 = dedicated pool pairs per N clients.
 net::*::tcpip::timeout              = 2500                  # SO_SNDTIMEO in ms. Raise (e.g. 30000) when debugging on Windows to prevent breakpoint-pause disconnects.
 net::*::tcpip::cache                = 256                   # The size per-socket cache to receive data. Same value is used to initialize send cache.

@@ -34,6 +34,7 @@ ServerSendThread::ServerSendThread(RemoteMessageHandler& remoteService, ServerCo
 
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
+    , mDrainLimit       ( areg::DEFAULT_DRAIN_LIMIT )
     , mBatch            ( )
     , mSendStats        ( )
     , mSendGate         ( )
@@ -44,6 +45,7 @@ void ServerSendThread::ready_for_events( bool is_ready )
 {
     if ( is_ready )
     {
+        mDrainLimit = areg::send_batch_limit();
         areg::set_receive_mode(areg::ReceiveMode::MonoCache);
         DispatcherThread::ready_for_events( true );
     }

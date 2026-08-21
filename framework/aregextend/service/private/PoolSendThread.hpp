@@ -90,6 +90,14 @@ public:
 /************************************************************************/
 public:
     /**
+     * \brief   Returns the send batch limit resolved for this thread, in messages.
+     *          A plain member read - the configuration is consulted once, when the thread
+     *          becomes ready, never on the message path.
+     **/
+    [[nodiscard]]
+    inline uint32_t drain_limit() const noexcept { return mDrainLimit; }
+
+    /**
      * \brief   Returns the gate of the send queue of this thread.
      *
      *          A producer that wants to write a message into the socket itself, instead of
@@ -110,6 +118,7 @@ protected:
      * \param   is_ready    True when the thread is ready to receive events; false on shutdown.
      **/
     void ready_for_events( bool is_ready ) final;
+
 
 /************************************************************************/
 // EventRouter overrides
@@ -143,6 +152,13 @@ private:
     areg::RemoteMessageHandler& mRemoteService; //!< Failure callbacks.
     ServerConnection &          mConnection;    //!< Server connection (socket lookup + send API).
     ServerSendThread &          mGlobalStats;   //!< Global counters accumulated here.
+
+    /**
+     * \brief   How many messages this thread may put into one batch. Resolved from the
+     *          configuration when the thread becomes ready and never touched afterwards, so
+     *          reading it costs one load. Always within 1 .. areg::DEFAULT_DRAIN_LIMIT.
+     **/
+    uint32_t                    mDrainLimit;
     BatchEntries                mBatch;         //!< Pre-allocated batch work list reused each drain cycle.
     //!< Reused scratch: per-slot target cookies and resolved socket handles (POD; off the stack).
     std::array<ITEM_ID, areg::DEFAULT_DRAIN_LIMIT>       mTargets;
