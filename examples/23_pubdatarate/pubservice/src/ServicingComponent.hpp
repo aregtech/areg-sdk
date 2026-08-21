@@ -31,6 +31,7 @@
 #include "pubservice/src/UtilityDefs.hpp"
 
 #include <atomic>
+#include <chrono>
 #include <string_view>
 
 //!< Declare as a class to use in namespace.
@@ -144,7 +145,7 @@ class ServicingComponent final  : public    areg::Component
     //!< Coordinates to output data rate
     static constexpr areg::ext::Console::Coord     COORD_DATA_RATE { 1,  6 };
 
-    //!< Coordinates to output item rate
+    //!< Coordinates to output how much the send pipeline held the generator back
     static constexpr areg::ext::Console::Coord     COORD_ITEM_RATE { 1,  7 };
 
     //!< Coordinates to output on-time / late statistics (blank row 8 before this)
@@ -180,10 +181,13 @@ class ServicingComponent final  : public    areg::Component
     //!< The message to output broadcast data rate information (actual bytes broadcast per second).
     static constexpr std::string_view   MSG_QUEUE_RATE_SENT { " Broadcast rate .....: sent   [ %8.2f ] %s / sec, [ %u ] blocks/sec." };
 
+    //!< The message to output how much the generator was held back by the send pipeline.
+    static constexpr std::string_view   MSG_SEND_PRESSURE   { " Send back-pressure .: producer blocked [ %6.2f ] %% of the time, skipped [ %u ] blocks/sec." };
+
     //!< The message to output the theoretical (ideal) data rate based on image parameters.
     static constexpr std::string_view   MSG_IDEAL_RATE_SENT { " Theoretical rate ...: ideal  [ %8.2f ] %s / sec, [ %8u ] blocks/sec." };
     //!< The message to output on-time / late delivery statistics
-    static constexpr std::string_view   MSG_STATS_RATE      { " Stats on data ......: ontime [ %u ] msg, delayed [ %u ] msg." };
+    static constexpr std::string_view   MSG_STATS_RATE      { " Stats on data ......: ontime [ %u ] msg/sec, delayed [ %u ] msg/sec." };
 
     //!< Short separator drawn below the rate block
     static constexpr std::string_view   MSG_SEP2            { " ---------------------------------------" };
@@ -242,17 +246,33 @@ class ServicingComponent final  : public    areg::Component
         uint32_t    ontimeBlocks{ 0u };
         //!< Number of blocks sent late (past their target deadline).
         uint32_t    lateBlocks  { 0u };
+        //!< Number of blocks that were dropped because the schedule had already moved past them.
+        uint32_t    skippedBlocks{ 0u };
+        //!< Time, in nanoseconds, the generator spent inside send_raw_message(). A non-zero
+        //!< value means the send pipeline pushed back on the generator.
+        uint64_t    blockedNs   { 0u };
+        //!< Length of the interval these counters were collected over. The generator hands its
+        //!< counters over in chunks of its own cadence, which does not line up with the display
+        //!< timer, so every chunk carries the span it covers. Rates are divided by the sum of
+        //!< those spans, never by the time between two display ticks -- otherwise a window that
+        //!< happens to catch one chunk more or less than the previous one shows a rate jump
+        //!< that the generator never had.
+        uint64_t    spanNs      { 0u };
     };
 
-    //!< Use a coarse sleep chunk and a busy loop for the final gap. This keeps the long-run
-    //!< rate locked to the absolute block schedule while avoiding sub-millisecond sleeps.
-#if defined(_WIN32)
-    static constexpr int64_t COARSE_SLEEP_NS{ 15'000'000LL };   // 15 ms
-#elif defined(__APPLE__)
-    static constexpr int64_t COARSE_SLEEP_NS{ 2'000'000LL };    //  2 ms
-#else
-    static constexpr int64_t COARSE_SLEEP_NS{ 500'000LL };      //  0.5 ms (was 4 ms)
-#endif
+    //!< The generator is paced in message slots, not in whole block rows: one slot is one
+    //!< (image block, channel) pair and `channels` slots fill exactly one block period. The
+    //!< offered load per block period is unchanged - `channels * bytesPerBlock()` - but it
+    //!< leaves the generator as one message every `nsPerBlock() / channels` instead of as a
+    //!< single burst of `channels` messages. Sleeping is always done against the absolute
+    //!< slot deadline, so the schedule cannot drift.
+    //!<
+    //!< A wait is chopped into chunks of this size so that an option change, a stop request and
+    //!< the statistics flush stay responsive even when one slot period is very long.
+    static constexpr int64_t MAX_WAIT_CHUNK_NS{ 20'000'000LL };  // 20 ms
+
+    //!< Statistics are handed over to the console this often.
+    static constexpr uint64_t STATS_FLUSH_NS  { 100'000'000ULL };  // 100 ms
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -339,6 +359,9 @@ private:
     PrebuildMessages        mPrebuiltMessages;
     //!< Data rates
     DataRate                mDataRate;
+    //!< Start of the window the values in `mDataRate` were collected over. Every printed
+    //!< value is divided by the measured length of that window, never by an assumed second.
+    std::chrono::steady_clock::time_point mRateStamp;
     //!< The timer to trigger to output data
     areg::Timer             mTimer;
     //!< The thread to input from console.
@@ -388,16 +411,38 @@ private:
     void _init_block_list();
 
     /**
-     * \brief   Updates the statistics  to output on console. Called each time when
-     *          when image block is generated.
-     * 
-     * \param genData       The information of generated data rate.
-     * \param genBlocks     The information of generated image blocks.
-     * \param waitResult    The flag, indicating whether thread went to sleep after generating
-     *                      data or ignored. It is used to compute blocks that were put in 
-     *                      sleep or ignored.
+     * \brief   Adds one collected sample to the statistics shown on the console. The generator
+     *          calls it from its own thread every `STATS_FLUSH_NS`, so the console never has to
+     *          reach into the generator's counters.
+     *
+     * \param   sample  The counters collected since the previous call, together with the span
+     *                  of time they cover. The span is what the console divides by, so a sample
+     *                  that covers more or less than the display period still reads correctly.
      */
-    void _update_data(uint64_t sendData, uint32_t sentBlocks, uint32_t ontimeBlocks, uint32_t lateBlocks);
+    void _update_data(const DataRate & sample);
+
+    /**
+     * \brief   Returns the absolute time, in nanoseconds from the start of the stream, at which
+     *          the given message slot is due. A slot is one (image block, channel) pair and
+     *          `channels` consecutive slots cover one block period, so the slots of a block
+     *          period are spread evenly over it.
+     *
+     * \param   slot        The absolute slot number since the stream started.
+     * \param   blockTimeNs Duration of one image block in nanoseconds.
+     * \param   channels    Number of channels, i.e. slots per image block.
+     **/
+    [[nodiscard]]
+    static inline uint64_t _slot_due_ns(uint64_t slot, uint64_t blockTimeNs, uint32_t channels) noexcept;
+
+    /**
+     * \brief   The inverse of _slot_due_ns(): the slot that is due at the given time.
+     *
+     * \param   timeNs      Time in nanoseconds from the start of the stream.
+     * \param   blockTimeNs Duration of one image block in nanoseconds.
+     * \param   channels    Number of channels, i.e. slots per image block.
+     **/
+    [[nodiscard]]
+    static inline uint64_t _slot_at_ns(uint64_t timeNs, uint64_t blockTimeNs, uint32_t channels) noexcept;
 
     [[nodiscard]]
     inline bool _is_running() const noexcept;
@@ -444,6 +489,22 @@ inline bool ServicingComponent::_can_loop() const noexcept
 inline void ServicingComponent::_broadcast_block(areg::SharedBuffer& entry)
 {
     broadcast_image_block_acquired(entry);
+}
+
+inline uint64_t ServicingComponent::_slot_due_ns(uint64_t slot, uint64_t blockTimeNs, uint32_t channels) noexcept
+{
+    ASSERT(channels != 0u);
+    const uint64_t block{ slot / channels };
+    const uint64_t phase{ slot % channels };
+    return ((block * blockTimeNs) + ((phase * blockTimeNs) / channels));
+}
+
+inline uint64_t ServicingComponent::_slot_at_ns(uint64_t timeNs, uint64_t blockTimeNs, uint32_t channels) noexcept
+{
+    ASSERT((channels != 0u) && (blockTimeNs != 0u));
+    const uint64_t block{ timeNs / blockTimeNs };
+    const uint64_t rest { timeNs % blockTimeNs };
+    return ((block * channels) + ((rest * channels) / blockTimeNs));
 }
 
 inline uint64_t ServicingComponent::time_passed(const std::chrono::steady_clock::time_point& time_begin) const

@@ -119,6 +119,16 @@ namespace util {
     static constexpr uint32_t CHANNELS_SOURCE   { 12 };
     static constexpr uint64_t TIME_IN_DEPTH     {200'000'000u};
 
+    //!< Lower bound of the prebuilt rotation: a buffer must not be re-patched while an
+    //!< earlier send of it may still be queued.
+    static constexpr uint32_t MIN_PREBUILT_DEPTH{ 2u };
+
+    //!< Upper bound of the prebuilt rotation, in generations.
+    static constexpr uint32_t MAX_PREBUILT_DEPTH{ 32u };
+
+    //!< Upper bound of the prebuilt rotation, in bytes.
+    static constexpr uint64_t MAX_PREBUILT_BYTES{ 192ull * 1024ull * 1024ull };
+
     //! The option data class
     struct OptionValues
     {

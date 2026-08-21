@@ -176,115 +176,12 @@ int32_t _os_try_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers,
     return static_cast<int32_t>(sent);
 }
 
-#if AREG_WIN_SCATTER_SEND
-
-// Scatter-gather write, see AREG_WIN_SCATTER_SEND in 'areg/base/SocketDefs.hpp'. The batch is
-// handed to WSASend() as it stands, so no byte is copied before it reaches the socket.
-//
-// The list is written in slices of at most MAX_SCATTER_SEND_BYTES. Without that bound a batch
-// of large messages becomes one blocking WSASend() carrying the whole drain window - up to
-// DEFAULT_DRAIN_LIMIT messages - which parks the send thread in the kernel until the last byte
-// reaches the peer, stalls the producer behind it, and can outlive SO_SNDTIMEO. Slicing keeps
-// one call bounded exactly as _os_send_data_window() bounds send() on the staging path, so the
-// worst case blocking time of a batch is unchanged while the copy is still avoided.
-int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t totalSize)
-{
-    ASSERT(areg::is_valid_socket(hSocket));
-    ASSERT(count <= areg::DEFAULT_DRAIN_LIMIT);
-    static_cast<void>(totalSize);
-
-    WSABUF pending[areg::DEFAULT_DRAIN_LIMIT];
-    for (uint32_t i = 0u; i < count; ++i)
-    {
-        pending[i].buf = reinterpret_cast<CHAR *>(const_cast<uint8_t *>(buffers[i].data));
-        pending[i].len = static_cast<ULONG>(buffers[i].size);
-    }
-
-    uint32_t index { 0u };  // first buffer not yet fully sent
-    int32_t  result{ 0 };
-    while (index < count)
-    {
-        // Cut a slice of at most MAX_SCATTER_SEND_BYTES. A buffer that straddles the limit is
-        // taken in part, and what is left of it heads the next slice.
-        WSABUF   slice[areg::DEFAULT_DRAIN_LIMIT];
-        uint32_t sliceCount{ 0u };
-        uint32_t sliceBytes{ 0u };
-        for (uint32_t i = index; (i < count) && (sliceBytes < areg::MAX_SCATTER_SEND_BYTES); ++i)
-        {
-            const uint32_t room{ areg::MAX_SCATTER_SEND_BYTES - sliceBytes };
-            const uint32_t take{ pending[i].len <= room ? static_cast<uint32_t>(pending[i].len) : room };
-            slice[sliceCount].buf = pending[i].buf;
-            slice[sliceCount].len = static_cast<ULONG>(take);
-            ++sliceCount;
-            sliceBytes += take;
-            if (take < pending[i].len)
-                break;  // the limit fell inside this buffer, the rest of it goes next time
-        }
-
-        ASSERT((sliceCount != 0u) && (sliceBytes != 0u));
-
-        // WSASend is not obliged to take everything: the socket blocks, but SO_SNDTIMEO bounds
-        // how long it may block, so a full send window can leave a partial write behind. What is
-        // left, including the buffer that was cut in half, is offered again.
-        uint32_t sliceSent { 0u };
-        uint32_t sliceIndex{ 0u };
-        while (sliceSent < sliceBytes)
-        {
-            DWORD sent{ 0u };
-            if (::WSASend(hSocket, slice + sliceIndex, static_cast<DWORD>(sliceCount - sliceIndex), &sent, 0, nullptr, nullptr) != 0)
-            {
-                if (::WSAGetLastError() == WSAEINTR)
-                    continue;
-
-                return -1;
-            }
-            else if (sent == 0u)
-            {
-                // Nothing moved and nothing failed. Retrying would spin on a socket that is not
-                // taking bytes, so the batch is abandoned exactly as a failed send would be.
-                return -1;
-            }
-
-            sliceSent += static_cast<uint32_t>(sent);
-            result    += static_cast<int32_t>(sent);
-
-            DWORD advance{ sent };
-            while ((sliceIndex < sliceCount) && (advance >= slice[sliceIndex].len))
-            {
-                advance -= slice[sliceIndex].len;
-                ++sliceIndex;
-            }
-
-            if ((sliceIndex < sliceCount) && (advance > 0u))
-            {
-                slice[sliceIndex].buf += advance;
-                slice[sliceIndex].len -= static_cast<ULONG>(advance);
-            }
-        }
-
-        // The slice is on the wire: step the master list over exactly those bytes.
-        uint32_t advance{ sliceBytes };
-        while ((index < count) && (advance >= pending[index].len))
-        {
-            advance -= pending[index].len;
-            ++index;
-        }
-
-        if ((index < count) && (advance > 0u))
-        {
-            pending[index].buf += advance;
-            pending[index].len -= static_cast<ULONG>(advance);
-        }
-    }
-
-    return result;
-}
-
-#else   // !AREG_WIN_SCATTER_SEND
-
-// Staging-cache write, see AREG_WIN_SCATTER_SEND in 'areg/base/SocketDefs.hpp'. Small messages
-// are copied together into the per-thread cache and leave in one send(), which has measured
-// better than a per-buffer loop on this platform.
+// Batch write. Small messages are copied together into the per-thread staging cache and leave
+// in one send(); blocks not smaller than MIN_BIG_BLOCK are written one by one, windowed by
+// _os_send_data_window(). A WSASend() scatter-gather variant of this function was built and
+// measured against it on example 23 (see product/tasks/lessons.md, T8): it won neither the
+// data rate nor the message rate, so it was removed rather than left as untested code on a
+// path ctest never exercises. Do not reintroduce it without repeating that comparison.
 int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t totalSize)
 {
     // Single buffer, bypass setup entirely.
@@ -358,7 +255,6 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
     return result;
 }
 
-#endif  // AREG_WIN_SCATTER_SEND
 
 int32_t _os_recv_data_window(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
 {

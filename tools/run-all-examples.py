@@ -153,7 +153,16 @@ def _datarate_script(shape, first, step):
     Builds the console script of a 23_pubdatarate run: set the block shape and the first
     channel count, start, then raise the channel count every _RAMP_SECONDS without stopping
     the run, and quit. The peak reached on the way is what the benchmark reports.
+
+    AREG_FIXED_CHANNELS pins the channel count instead of ramping, and AREG_FIXED_SECONDS
+    says how long to hold it. A ramp never sustains one load long enough to show whether the
+    rate is steady, which is the thing a data-rate benchmark is actually asked to deliver.
     """
+    fixed = os.environ.get('AREG_FIXED_CHANNELS')
+    if fixed:
+        hold = float(os.environ.get('AREG_FIXED_SECONDS', '40'))
+        return [(4.0, '%s -c=%s' % (shape, fixed)), (4.0, '-s'), (hold, '-q')]
+
     script = [(4.0, '%s -c=%d' % (shape, first)), (4.0, '-s')]
     for index in range(1, _RAMP_STEPS + 1):
         script.append((_RAMP_SECONDS, '-c=%d' % (first + index * step)))
