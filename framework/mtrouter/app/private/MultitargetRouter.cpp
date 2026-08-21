@@ -14,11 +14,9 @@
  ************************************************************************/
 
 #include "mtrouter/app/MultitargetRouter.hpp"
-#include "mtrouter/app/private/RouterConsoleService.hpp"
 
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/AppDefs.hpp"
-#include "areg/component/ComponentLoader.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/String.hpp"
 #include "areg/logging/areg_log.h"
@@ -32,32 +30,6 @@
 #include <thread>
 #include <stdio.h>
 
-//////////////////////////////////////////////////////////////////////////
-// The model used only in console mode.
-//////////////////////////////////////////////////////////////////////////
-
-// This model defines a areg::ext::Console Service to run to make data rate outputs.
-// The areg::ext::Console Service runs only in verbose mode.
-
-static areg::String _modelName("mtrouterModel");
-
-// Describe mode, set model name
-BEGIN_MODEL(_modelName)
-
-    // define console service thread.
-    BEGIN_REGISTER_THREAD( "RouterConsoleServiceThread" )
-        // Define the console service
-        BEGIN_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME, RouterConsoleService)
-            // register dummy 'empty service'.
-            REGISTER_IMPLEMENT_SERVICE( areg::EmptyServiceName, areg::EmptyServiceVersion )
-        // end of component description
-        END_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME )
-    // end of thread description
-    END_REGISTER_THREAD( "RouterConsoleServiceThread" )
-
-// end of model description
-END_MODEL(_modelName)
-        
 namespace
 {
     constexpr std::string_view _msgHelp []
@@ -82,7 +54,6 @@ namespace
 }
 
 DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter, _check_command);
-DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter, stop_console_service);
 DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter, run_console_io);
 
 //////////////////////////////////////////////////////////////////////////
@@ -284,19 +255,6 @@ void MultitargetRouter::print_help( bool /* isCmdLine */ )
     }
 
 #endif  // AREG_EXTENDED
-}
-
-void MultitargetRouter::start_console_service()
-{
-    // areg::Application::load_model( _modelName );
-}
-
-void MultitargetRouter::stop_console_service()
-{
-    LOG_SCOPE(mtrouter_app_MultitargetRouter, stop_console_service);
-    LOG_DBG("Stopping console service, unloading model [ %s ]", _modelName.as_string());
-    // areg::Application::unload_model( _modelName );
-    LOG_DBG("Console service is unloaded...");
 }
 
 bool MultitargetRouter::_check_command(const areg::String& cmd)
