@@ -248,27 +248,15 @@ class ServicingComponent final  : public    areg::Component
         uint32_t    lateBlocks  { 0u };
         //!< Number of blocks that were dropped because the schedule had already moved past them.
         uint32_t    skippedBlocks{ 0u };
-        //!< Time, in nanoseconds, the generator spent inside send_raw_message(). A non-zero
-        //!< value means the send pipeline pushed back on the generator.
+        //!< Time, in nanoseconds, the generator spent inside send_raw_message().
         uint64_t    blockedNs   { 0u };
-        //!< Length of the interval these counters were collected over. The generator hands its
-        //!< counters over in chunks of its own cadence, which does not line up with the display
-        //!< timer, so every chunk carries the span it covers. Rates are divided by the sum of
-        //!< those spans, never by the time between two display ticks -- otherwise a window that
-        //!< happens to catch one chunk more or less than the previous one shows a rate jump
-        //!< that the generator never had.
+        //!< Length of the interval these counters were collected over. Rates are divided by the
+        //!< sum of the spans, not by the time between two display ticks.
         uint64_t    spanNs      { 0u };
     };
 
-    //!< The generator is paced in message slots, not in whole block rows: one slot is one
-    //!< (image block, channel) pair and `channels` slots fill exactly one block period. The
-    //!< offered load per block period is unchanged - `channels * bytesPerBlock()` - but it
-    //!< leaves the generator as one message every `nsPerBlock() / channels` instead of as a
-    //!< single burst of `channels` messages. Sleeping is always done against the absolute
-    //!< slot deadline, so the schedule cannot drift.
-    //!<
-    //!< A wait is chopped into chunks of this size so that an option change, a stop request and
-    //!< the statistics flush stay responsive even when one slot period is very long.
+    //!< Longest single wait of the generator. A longer wait is split into chunks of this size,
+    //!< so that an option change, a stop request and the statistics flush stay responsive.
     static constexpr int64_t MAX_WAIT_CHUNK_NS{ 20'000'000LL };  // 20 ms
 
     //!< Statistics are handed over to the console this often.
@@ -359,8 +347,7 @@ private:
     PrebuildMessages        mPrebuiltMessages;
     //!< Data rates
     DataRate                mDataRate;
-    //!< Start of the window the values in `mDataRate` were collected over. Every printed
-    //!< value is divided by the measured length of that window, never by an assumed second.
+    //!< Start of the window the values in mDataRate were collected over.
     std::chrono::steady_clock::time_point mRateStamp;
     //!< The timer to trigger to output data
     areg::Timer             mTimer;
@@ -412,20 +399,17 @@ private:
 
     /**
      * \brief   Adds one collected sample to the statistics shown on the console. The generator
-     *          calls it from its own thread every `STATS_FLUSH_NS`, so the console never has to
-     *          reach into the generator's counters.
+     *          thread calls it every STATS_FLUSH_NS.
      *
-     * \param   sample  The counters collected since the previous call, together with the span
-     *                  of time they cover. The span is what the console divides by, so a sample
-     *                  that covers more or less than the display period still reads correctly.
+     * \param   sample  The counters collected since the previous call, together with the span of
+     *                  time they cover. The console divides the counters by that span.
      */
     void _update_data(const DataRate & sample);
 
     /**
      * \brief   Returns the absolute time, in nanoseconds from the start of the stream, at which
-     *          the given message slot is due. A slot is one (image block, channel) pair and
-     *          `channels` consecutive slots cover one block period, so the slots of a block
-     *          period are spread evenly over it.
+     *          the given message slot is due. A slot is one (image block, channel) pair, and the
+     *          slots of one block period are spread evenly over it.
      *
      * \param   slot        The absolute slot number since the stream started.
      * \param   blockTimeNs Duration of one image block in nanoseconds.

@@ -77,14 +77,9 @@ struct LtAccum
 };
 
 /**
- * \brief   Returns the one and only accumulator table of the process. The table has
- *          LtStage::Count entries, one per instrumented stage.
- *
- *          The function is exported by the areg library on purpose. The library is built with
- *          hidden symbol visibility, so a table defined in this header would exist once inside
- *          the shared library and once more inside every static library that includes the
- *          header. Every such copy would collect its own samples and print its own report, and
- *          the stages of the two halves would never appear in the same table.
+ * \brief   Returns the accumulator table of the process, with one entry per instrumented stage.
+ *          Exported by the areg library, so that a process and every static library linked into
+ *          it share one table and print one report.
  **/
 [[nodiscard]]
 AREG_API LtAccum * lt_accumulators() noexcept;
@@ -145,9 +140,7 @@ inline void lt_dump() noexcept
 }
 
 /**
- * \brief   Registers the exit-time report once per process. Defined in the areg library so
- *          that a process linking the library and a static library that also uses the trace
- *          prints exactly one report.
+ * \brief   Registers the exit-time report. Called any number of times, registers once.
  **/
 AREG_API void lt_ensure_atexit() noexcept;
 

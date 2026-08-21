@@ -23,6 +23,7 @@
 #include "areg/logging/areg_log.h"
 
 #include "areg/base/private/DebugDefs.hpp"
+
 namespace areg {
 
 DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_reconnect_timer);
@@ -107,17 +108,15 @@ void ServiceClientConnectionBase::ensure_send_thread()
     if ( mThreadSend.is_running() )
         return;
 
-    // The readiness poll stays inside the lock: a second producer must find the thread
-    // ready, not merely created, before it delivers its message.
+    // The readiness poll stays inside the lock, so that a second producer finds the thread
+    // ready, not merely created.
     if ( mThreadSend.start( areg::WAIT_INFINITE ) && _wait_io_thread_ready( mThreadSend ) )
     {
         LOG_DBG( "The send thread is started on demand by the message it could not send inline" );
     }
     else
     {
-        // Nothing is torn down here. The message is delivered to the queue of a thread that
-        // does not run, exactly as it would be if the thread had died, and the connection is
-        // restarted by the receive side, which owns that decision.
+        // Nothing is torn down here: the receive side restarts the connection.
         LOG_ERR( "Failed to start the send thread on demand" );
     }
 }
@@ -139,9 +138,7 @@ bool ServiceClientConnectionBase::try_send_inline( MessageEnvelope & data )
     if ( areg::is_valid_socket(hSocket) == false )
         return false;
 
-    // A thread that has just run out of work has nothing left to batch this message with.
-    // Any other message goes to the send thread, where a batch can still form.
-    if ( areg::take_inline_send_credit() == false )
+    if ( areg::EventDispatcherBase::take_inline_send_credit() == false )
         return false;
 
     areg::SocketWriter & writer{ areg::SocketWriter::writer_of(hSocket) };
@@ -172,8 +169,8 @@ bool ServiceClientConnectionBase::try_send_inline( MessageEnvelope & data )
         return false;
     }
 
-    // A negative result may follow a partial write, so the message can never be queued again:
-    // its first bytes are already on the wire and the connection has to go.
+    // A negative result may follow a partial write: the first bytes are already on the wire,
+    // so the message cannot be queued again and the connection has to go.
     mThreadSend.report_failed_send(data, mClientConnection.socket());
     return true;
 }
@@ -537,11 +534,8 @@ bool ServiceClientConnectionBase::start_connection()
     ASSERT(!mClientConnection.is_valid());
     ASSERT(!mThreadReceive.is_running());
 
-    // The send thread is normally stopped here, but it does not have to be: a component that
-    // sent a message while the previous connection was already gone started it through
-    // ensure_send_thread(). Whatever such a thread still holds is addressed to a socket that
-    // is closed, which is exactly what the shutdown of the previous connection dropped, so it
-    // is stopped here as well and starts again on the first fallback of the new connection.
+    // The send thread may still run, started by a message sent while the previous connection was
+    // already gone. Whatever it holds is addressed to a closed socket, so it is stopped here.
     if ( mThreadSend.is_running() )
     {
         LOG_DBG("The send thread was started while the connection was down, stopping it before the new one");
@@ -571,9 +565,8 @@ bool ServiceClientConnectionBase::start_connection()
     // Store handshake in the receive thread before starting it.
     mThreadReceive.set_handshake(connect_message(areg::COOKIE_UNKNOWN, mTarget, mMessageSource));
 
-    // The send thread is not started here. It is a fallback for the messages that their own
-    // thread could not write into the socket, and a connection that never needs it never
-    // creates it. The first message that has to be queued starts it, see ensure_send_thread().
+    // The send thread is not started here: it is a fallback, and the first message that has to
+    // be queued starts it, see ensure_send_thread().
     bool result{ mThreadReceive.start(areg::WAIT_INFINITE) &&
                  _wait_io_thread_ready(mThreadReceive) };
 

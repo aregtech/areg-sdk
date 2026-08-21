@@ -49,12 +49,9 @@ target_compile_options(areg PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}" "${AREG_OP
 # Linker options
 target_link_libraries(areg PRIVATE ${AREG_LDFLAGS})
 
-# Copying the framework configuration file to 'bin/config'.
-# This is an OUTPUT rule and not a POST_BUILD step on purpose: a POST_BUILD step runs
-# only when the target is relinked, so editing 'areg.init' alone never reached the build
-# output and the binaries silently kept the previous configuration. With OUTPUT + DEPENDS
-# the copy is refreshed whenever the source file is newer than the copy, and
-# 'copy_if_different' leaves the destination untouched when the contents are equal.
+# Copy the framework configuration file to 'bin/config'.
+# OUTPUT + DEPENDS, not POST_BUILD: a POST_BUILD step runs only when the target is relinked,
+# so editing 'areg.init' alone would never reach the build output.
 set(AREG_INIT_SOURCE "${AREG_FRAMEWORK}/areg/resources/areg.init")
 set(AREG_INIT_TARGET "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/config/areg.init")
 add_custom_command( OUTPUT  "${AREG_INIT_TARGET}"

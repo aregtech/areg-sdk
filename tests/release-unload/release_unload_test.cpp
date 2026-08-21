@@ -1,8 +1,6 @@
 /************************************************************************
- * Checks that Application::release() joins and deletes the component
- * threads when the application never calls Application::unload_model().
- *
- * Not part of the CMake build. Build it with release-unload.bat.
+ * Checks that Application::release() joins and deletes the component threads when
+ * the application never calls Application::unload_model().
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"

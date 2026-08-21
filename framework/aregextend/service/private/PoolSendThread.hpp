@@ -90,19 +90,16 @@ public:
 /************************************************************************/
 public:
     /**
-     * \brief   Returns the send batch limit resolved for this thread, in messages.
-     *          A plain member read - the configuration is consulted once, when the thread
-     *          becomes ready, never on the message path.
+     * \brief   Returns the send batch limit of this thread, in messages. Resolved once, when the
+     *          thread becomes ready, so reading it costs one load.
      **/
     [[nodiscard]]
-    inline uint32_t drain_limit() const noexcept { return mDrainLimit; }
+    inline uint32_t drain_limit() const noexcept;
 
     /**
-     * \brief   Returns the gate of the send queue of this thread.
-     *
-     *          A producer that wants to write a message into the socket itself, instead of
-     *          handing it to this thread, must first see the gate clear and must announce the
-     *          message with SendQueueGate::enter() when it decides to queue it after all.
+     * \brief   Returns the gate of the send queue of this thread. A producer that wants to write
+     *          a message into the socket itself must find the gate clear first, and must announce
+     *          the message with SendQueueGate::enter() when it queues it instead.
      **/
     [[nodiscard]]
     inline areg::SendQueueGate & send_gate() noexcept;
@@ -118,7 +115,6 @@ protected:
      * \param   is_ready    True when the thread is ready to receive events; false on shutdown.
      **/
     void ready_for_events( bool is_ready ) final;
-
 
 /************************************************************************/
 // EventRouter overrides
@@ -154,9 +150,8 @@ private:
     ServerSendThread &          mGlobalStats;   //!< Global counters accumulated here.
 
     /**
-     * \brief   How many messages this thread may put into one batch. Resolved from the
-     *          configuration when the thread becomes ready and never touched afterwards, so
-     *          reading it costs one load. Always within 1 .. areg::DEFAULT_DRAIN_LIMIT.
+     * \brief   How many messages this thread may put into one batch, within the range
+     *          1 .. areg::DEFAULT_DRAIN_LIMIT. Resolved when the thread becomes ready.
      **/
     uint32_t                    mDrainLimit;
     BatchEntries                mBatch;         //!< Pre-allocated batch work list reused each drain cycle.
@@ -177,17 +172,18 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// PoolSendThread class inline methods
+// PoolSendThread inline methods
 //////////////////////////////////////////////////////////////////////////
+
+inline uint32_t PoolSendThread::drain_limit() const noexcept
+{
+    return mDrainLimit;
+}
 
 inline areg::SendQueueGate & PoolSendThread::send_gate() noexcept
 {
     return mSendGate;
 }
-
-//////////////////////////////////////////////////////////////////////////
-// PoolSendThread inline methods
-//////////////////////////////////////////////////////////////////////////
 
 } // namespace areg::ext
 

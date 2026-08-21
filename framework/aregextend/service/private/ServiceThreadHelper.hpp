@@ -94,8 +94,8 @@ inline void send_pending_groups( areg::ext::PendingSend * batch
 
         const uint32_t groupSize{ j - i };
 
-        // Single writer per socket: every write below belongs to one message group and must not
-        // be split by another thread writing the same socket.
+        // Single writer per socket: the writes below belong to one message group and must not
+        // be split by another thread writing into the same socket.
         areg::SocketWriteGuard writeGuard{ hSocket };
 
         areg::IoBuffer ioBuffer[areg::DEFAULT_DRAIN_LIMIT];
@@ -176,8 +176,8 @@ inline void send_pending_groups( areg::ext::PendingSend * batch
 
 /**
  * \brief   The working set a send thread hands to run_send_batch(). Every array holds
- *          areg::DEFAULT_DRAIN_LIMIT entries and belongs to the thread, which reuses it for
- *          every drain cycle instead of allocating one.
+ *          areg::DEFAULT_DRAIN_LIMIT entries and belongs to the thread, which reuses it in
+ *          every drain cycle.
  **/
 struct SendBatchContext
 {
@@ -192,17 +192,9 @@ struct SendBatchContext
 
 /**
  * \brief   The body of a system service send thread: takes the event that woke the thread up,
- *          drains whatever is queued behind it, resolves every target cookie to a socket,
- *          groups the messages by socket and writes each group with a single syscall.
- *
- *          ServerSendThread and PoolSendThread run exactly this algorithm. They differ only in
- *          how a cookie is resolved, where the statistics are accumulated, and what has to be
- *          closed when the thread is asked to leave, which is what the three callables carry.
- *          Keeping the algorithm in one place is the point: the T4 writer lock and the order in
- *          which the gate is opened are invariants that must never drift apart between the two.
- *
- *          Everything is a template so that the callables are inlined at both call sites: this
- *          is the throughput path of the message router and of the log collector.
+ *          drains whatever is queued behind it, resolves every target cookie to a socket, groups
+ *          the messages by socket and writes each group with a single system call. Used by both
+ *          ServerSendThread and PoolSendThread, which differ only in the callables they pass.
  *
  * \param   thread      The send thread, used for pop_events() and trigger_exit().
  * \param   eventElem   The event that started this processing round.
@@ -212,8 +204,7 @@ struct SendBatchContext
  * \param   accumulate  Callable(uint64_t bytes, uint32_t msgs), counts what left the socket.
  * \param   onExit      Callable() invoked before the thread leaves, to close what it owns.
  * \param   onDiscard   Callable(uint32_t messageId, ITEM_ID target) for a message whose target
- *                      is gone. It stays at the call site because the logging macros need the
- *                      log scope of the calling thread.
+ *                      is gone. It stays at the call site, where the log scope is defined.
  **/
 template<typename ThreadT, typename ResolveFn, typename AccumFn, typename ExitFn, typename DiscardFn>
 inline void run_send_batch( ThreadT & thread
@@ -278,7 +269,7 @@ inline void run_send_batch( ThreadT & thread
     resolve(context.targets, context.sockets, batchCount);
 
     // Phase 3: compact + insertion-sort by socket handle in one pass. A message whose target is
-    // gone is dropped here: there is no socket left to write it into.
+    // gone is dropped, there is no socket left to write it into.
     uint32_t validCount{ 0u };
     for ( uint32_t i{ 0u }; i < batchCount; ++i )
     {
@@ -316,8 +307,7 @@ inline void run_send_batch( ThreadT & thread
     for ( uint32_t i{ 0u }; i < batchCount; ++i )
         context.batch[i].msg.destroy_event();
 
-    // The gate opens only here: an inline writer must not overtake a message that is still on
-    // its way from this queue to the socket.
+    // The gate opens only after the write, never before it.
     context.gate->leave(batchCount);
 }
 

@@ -85,41 +85,26 @@ namespace areg {
     constexpr uint32_t      SEND_QUEUE_FLUSH_TIMEOUT            { TIMEOUT_1_SEC };   // 1 sec
 
     /**
-     * \brief   areg::INLINE_SEND_MAX_BYTES
-     *          The largest message, in bytes on the wire, that a producer thread may write into
+     * \brief   The largest message, in bytes on the wire, that a producer thread may write into
      *          the socket itself instead of handing it to the send thread. A bigger message is
      *          always queued, because writing it may have to wait for the reader on the other
-     *          side and a producer thread must not be held up for that long.
+     *          side.
      **/
     constexpr uint32_t      INLINE_SEND_MAX_BYTES               { 64u * 1024u };     // 64 KB
-
 
 //////////////////////////////////////////////////////////////////////////
 // areg::SendQueueGate class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The gate of one send queue: it tells whether that queue still owes a message to
- *          the socket.
+ * \brief   The gate of one send queue: it tells whether that queue still owes a message to the
+ *          socket. A producer calls enter() before it puts a message into the queue, the send
+ *          thread calls leave() after the messages reached the socket. A producer may write a
+ *          message into the socket itself only while the gate is clear, otherwise the new
+ *          message would overtake an older one.
  *
- *          A message normally travels from the thread that produced it to a send thread, and
- *          the send thread writes it into the socket. Handing the message over costs a thread
- *          wake-up. The producer can save that wake-up by writing the message itself, but only
- *          when it is sure that no older message of the same queue is still on its way to the
- *          same socket. Otherwise the new message would overtake the old one and the receiver
- *          would get them in the wrong order.
- *
- *          The gate answers exactly that question. The producer calls enter() before it puts a
- *          message into the queue, and the send thread calls leave() after the messages have
- *          been written into the socket. While the count is zero the queue owes nothing, and
- *          only then may a producer write a message itself.
- *
- *          The gate does not replace the writer lock of the socket, see areg::SocketWriter. The
- *          gate says that nothing older is waiting; the writer lock says that nobody else is
- *          writing at this moment. A producer needs both before it writes.
- *
- *          The gate never waits and never allocates. It is one atomic counter, and it is safe
- *          in the direction that matters: when it is wrong it says "not clear", and the message
- *          simply takes the ordinary queued path.
+ * \note    The gate does not replace the writer lock of the socket, see areg::SocketWriter. The
+ *          gate says that nothing older is waiting, the writer lock says that nobody else is
+ *          writing at this moment. A producer needs both.
  **/
 class SendQueueGate
 {
@@ -141,9 +126,8 @@ public:
     inline void enter() noexcept;
 
     /**
-     * \brief   Announces that the given number of messages have left the send queue and have
-     *          reached the socket. Call it after the write, so that the gate stays closed while
-     *          a message is still on its way.
+     * \brief   Announces that the given number of messages left the send queue and reached the
+     *          socket. Call it after the write, never before.
      *
      * \param   count   The number of messages taken out of the queue and dealt with.
      **/
@@ -151,8 +135,8 @@ public:
 
     /**
      * \brief   Returns true when the send queue owes nothing to the socket, so a producer may
-     *          write its message itself. Returns false when at least one message is still on
-     *          its way, in which case the producer must queue its message as usual.
+     *          write its message itself. Returns false when at least one message is still on its
+     *          way and the producer must queue its message.
      **/
     [[nodiscard]]
     inline bool is_clear() const noexcept;
@@ -161,9 +145,7 @@ public:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   The number of messages announced but not yet written.
-     **/
+    //!< The number of messages announced but not yet written.
     std::atomic<uint32_t>   mPending;
 
 //////////////////////////////////////////////////////////////////////////

@@ -91,8 +91,8 @@ namespace areg::os {
     /**
      * \brief   OS specific non-blocking scatter/gather send. All checkups and validations should
      *          be done before calling the method.
-     * \return  Returns the number of bytes sent, which is the complete data, on success; zero
-     *          when the socket would have blocked and nothing was written; negative on error.
+     * \return  The number of bytes sent, which is the complete data, on success; zero when the
+     *          socket would have blocked and nothing was written; negative on error.
      **/
     int32_t _os_try_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t totalSize);
 
@@ -966,7 +966,6 @@ AREG_API_IMPL void areg::SocketWriter::acquire() noexcept
         }
         else
         {
-            // The owner may be inside a write syscall, so waiting here must not keep a core busy.
             Thread::switch_thread();
         }
     }

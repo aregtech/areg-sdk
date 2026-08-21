@@ -15,17 +15,6 @@
 #include <cstdio>
 #include <vector>
 
-namespace
-{
-    //!< Options of this process, filled by main() before the model is loaded.
-    mixed::ProviderOptions  g_options;
-}
-
-mixed::ProviderOptions& provider_options()
-{
-    return g_options;
-}
-
 //////////////////////////////////////////////////////////////////////////
 // ProviderComponent::ReportTimerConsumer
 //////////////////////////////////////////////////////////////////////////
@@ -41,6 +30,12 @@ void ProviderComponent::ReportTimerConsumer::process_timer(areg::Timer& timer)
 //////////////////////////////////////////////////////////////////////////
 // ProviderComponent
 //////////////////////////////////////////////////////////////////////////
+
+mixed::ProviderOptions & ProviderComponent::options() noexcept
+{
+    static mixed::ProviderOptions _options;
+    return _options;
+}
 
 ProviderComponent::ProviderComponent(const areg::ComponentEntry& entry, areg::ComponentThread& owner)
     : areg::Component           ( entry, owner )
@@ -59,7 +54,7 @@ ProviderComponent::ProviderComponent(const areg::ComponentEntry& entry, areg::Co
 
 void ProviderComponent::startup_service_interface(areg::Component& holder)
 {
-    const mixed::ProviderOptions& opt{ provider_options() };
+    const mixed::ProviderOptions& opt{ ProviderComponent::options() };
 
     areg::Application::enable_data_rate(true);
 
@@ -112,7 +107,7 @@ void ProviderComponent::request_ping(uint64_t stamp)
 
 void ProviderComponent::on_run()
 {
-    const uint32_t gapUs{ provider_options().gapUs };
+    const uint32_t gapUs{ ProviderComponent::options().gapUs };
     areg::Wait wait;
 
     while (mQuit.load(std::memory_order_relaxed) == false)

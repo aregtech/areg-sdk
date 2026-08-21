@@ -204,8 +204,7 @@ int32_t _os_try_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers,
     if (static_cast<size_t>(written) >= wanted)
         return static_cast<int32_t>(written);
 
-    // Part of the message is already on the wire, so the rest has to follow it: a message that
-    // stops in the middle cannot be taken back and would leave the receiver out of step.
+    // A part of the message is already on the wire and cannot be taken back.
     int32_t result{ static_cast<int32_t>(written) };
     size_t advance{ static_cast<size_t>(written) };
     uint32_t idx{ 0u };

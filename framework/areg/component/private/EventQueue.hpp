@@ -167,12 +167,10 @@ public:
      * \brief   Returns the longest time, in milliseconds, that any producer had to wait for a
      *          free slot since this was last called, and resets the record to zero.
      *
-     *          The queue records the wait but never reports it itself: this class is used by
-     *          every dispatcher, the log manager included, so logging from inside it could feed
-     *          the log manager's own queue and recurse. A layer that knows it is safe to log -
-     *          a send thread, for instance - reads this value and reports it.
+     * \note    The queue only records the wait, the caller reports it. This queue also serves
+     *          the log manager, so logging from here could feed its queue and recurse.
      *
-     * \return  The high-water wait in milliseconds, or 0 if no producer had to wait.
+     * \return  The longest wait in milliseconds, or 0 if no producer had to wait.
      **/
     [[nodiscard]]
     inline uint32_t extract_max_wait_ms() noexcept;
@@ -217,9 +215,8 @@ public:
      * \param[out] removedEvent If non-null, receives the event on overflow/failure instead of
      *                          discarding it. Pass nullptr to discard automatically.
      * \return  true if the queue took the event, false if it could not. An ExitPrio event counts
-     *          as taken: it is never queued, it sets the sticky exit flag instead.
-     *          A false result is the only signal a producer gets that its message was not
-     *          accepted, so it must be propagated, never swallowed.
+     *          as taken: it is never queued, it sets the sticky exit flag instead. A false result
+     *          is the only signal a producer gets, so the caller must pass it on.
      **/
     bool push_event(Event& eventElem, Event* removedEvent = nullptr);
 
@@ -345,11 +342,9 @@ private:
 
     //!< Producer wake-up (auto-reset): signalled by the consumer when a slot is freed.
     SimpleEvent             mSlotEvent;
-    //!< Number of producers blocked on a full ring (so the consumer signals only when needed).
-    //!< Longest producer wait, in milliseconds, since it was last read. Written by the producer
-    //!< that waited, read and cleared by whoever reports it.
+    //!< Longest producer wait, in milliseconds, since it was last read.
     std::atomic<uint32_t>   mMaxWaitMs;
-
+    //!< Number of producers blocked on a full ring (so the consumer signals only when needed).
     std::atomic<uint32_t>   mProducersWaiting;
 
 //////////////////////////////////////////////////////////////////////////
@@ -380,9 +375,8 @@ inline void EventQueue::unlock_queue() noexcept
 
 inline uint32_t EventQueue::extract_max_wait_ms() noexcept
 {
-    // Cheap in the common case. While no producer waits the value stays zero, the cache line
-    // stays clean and shared, and this is a plain load. The read-modify-write - which dirties a
-    // line shared with every producer - happens only after a producer really had to wait.
+    // While no producer waits this is a plain load and the cache line stays shared. The
+    // read-modify-write, which dirties it, happens only after a producer really had to wait.
     return (mMaxWaitMs.load(std::memory_order_relaxed) != 0u)
                 ? mMaxWaitMs.exchange(0u, std::memory_order_relaxed)
                 : 0u;

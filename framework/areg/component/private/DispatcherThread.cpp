@@ -33,14 +33,12 @@ namespace {
      **/
     static constexpr std::string_view   NullDispatcherName{ "_NullDispatcherThread_" };
 
-    /**
-     * \brief   How many resolved dispatcher threads one thread keeps. Must be a power of two.
-     **/
+    //!< How many resolved dispatcher threads one thread caches. Must be a power of two.
     constexpr uint32_t                  DISPATCHER_CACHE_SIZE{ 8u };
 
     /**
-     * \brief   One resolved dispatcher thread, valid while mGeneration matches the thread
-     *          registry counter of Thread::registry_generation().
+     * \brief   One resolved dispatcher thread, valid while mGeneration matches
+     *          Thread::registry_generation().
      **/
     struct DispatcherCacheEntry
     {
@@ -49,10 +47,7 @@ namespace {
         areg::DispatcherThread *    mThread;        //!< The result, nullptr when nothing was found.
     };
 
-    /**
-     * \brief   The resolved dispatcher threads of the calling thread. Private to each thread,
-     *          so it needs no lock and shares no cache line with any other thread.
-     **/
+    //!< The resolved dispatcher threads of the calling thread; private to it, so it needs no lock.
     AREG_THREAD_LOCAL DispatcherCacheEntry  _dispatcherCache[DISPATCHER_CACHE_SIZE]{};
 } // namespace
 
@@ -212,8 +207,8 @@ DispatcherThread * DispatcherThread::_find_dispatcher_thread( const UniqueNumber
     DispatcherCacheEntry & entry{ _dispatcherCache[threadNumber & (DISPATCHER_CACHE_SIZE - 1u)] };
     if ((entry.mGeneration != generation) || (entry.mNumber != threadNumber))
     {
-        // The counter is advanced before a thread leaves the maps, so a kept pointer can never
-        // outlive its thread object: a changed counter forces the lookup to be made again.
+        // The counter is advanced before a thread leaves the maps, so a cached pointer can
+        // never outlive its thread object.
         entry.mThread       = AREG_RUNTIME_CAST(Thread::find_by_number(threadNumber), DispatcherThread);
         entry.mNumber       = threadNumber;
         entry.mGeneration   = generation;

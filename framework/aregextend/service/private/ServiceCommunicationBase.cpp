@@ -619,8 +619,8 @@ bool ServiceCommunicationBase::try_send_inline( areg::MessageEnvelope & data, SO
         return false;
     }
 
-    // A negative result may follow a partial write, so the message can never be queued again:
-    // its first bytes are already on the wire and the connection has to go.
+    // A negative result may follow a partial write: the first bytes are already on the wire,
+    // so the message cannot be queued again and the connection has to go.
     if ( mServerConnection.is_interrupted() == false )
     {
         areg::SocketAccepted client{ mServerConnection.client_by_handle(hSocket) };
@@ -786,9 +786,8 @@ void ServiceCommunicationBase::process_received_message(areg::MessageEnvelope & 
             }
 #endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
 
-            // Only the last message of a receive burst may go inline: while more input is waiting,
-            // the send thread coalesces it into one write, which is worth more than the wake-up.
-            // A receive mode without a cache cannot answer that, and then the message is queued.
+            // Only the last message of a receive burst goes inline: while more input waits, the
+            // send thread joins it into one write, which is worth more than the wake-up.
             const bool burstPending{ (areg::receive_mode() == areg::ReceiveMode::NoCache) ||
                                      (areg::recv_data_available(whichSource.handle()) != 0u) };
 

@@ -3,12 +3,9 @@
 # Copyright 2022-2026 Aregtech (Artak Avetyan)
 # ###########################################################################
 #
-# Creates and deletes service clients on the heap while the service goes up and
-# down, so that a stale entry left in the proxy connection listener list faults
-# instead of leaking quietly.
-#
-# It reuses the generated service interface of example 01, so it is built only
-# when the examples are built. That keeps AREG_TESTS free of the code generator.
+# Creates and deletes service clients on the heap while the service goes up and down.
+# Reuses the generated service interface of example 01, so it is built only when the
+# examples are built.
 # ###########################################################################
 
 set(AREG_PROXY_CHURN_PROJECT "areg-proxy-churn-test")

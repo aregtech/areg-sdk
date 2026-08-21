@@ -53,10 +53,10 @@ void Console::_os_release() noexcept
         // Ensure cursor is visible before tearing down ncurses.
         curs_set(1);
 
-    	if (mContext != 0)
-    	{
+        if (mContext != 0)
+        {
             delwin(reinterpret_cast<WINDOW *>(mContext));
-    	}
+        }
 
         endwin();
         refresh();

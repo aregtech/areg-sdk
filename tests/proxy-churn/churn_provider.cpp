@@ -1,7 +1,7 @@
 /**
  * \file    churn_provider.cpp
- * \brief   Service provider of the proxy churn test, kept in its own model so
- *          it can be taken away while the consumer keeps running.
+ * \brief   Service provider of the proxy churn test, in its own model so that it can be
+ *          unloaded while the consumer keeps running.
  */
 
 #include "areg/base/areg_global.h"

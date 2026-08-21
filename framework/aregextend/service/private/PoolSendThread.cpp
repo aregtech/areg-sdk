@@ -90,7 +90,7 @@ void PoolSendThread::start_event_processing( areg::Event & eventElem )
                              , [&]( )
                                {
                                    // A pool thread owns none of the sockets it writes into: the
-                                   // connection pair it serves outlives it and closes them.
+                                   // connection pair it serves closes them.
                                    DEBUG_LOG_DBG("Going to quit pool send message thread");
                                }
                              , [&]( [[maybe_unused]] uint32_t messageId, [[maybe_unused]] ITEM_ID target )

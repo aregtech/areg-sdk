@@ -51,45 +51,6 @@ using ExternalQueue         = areg::EventQueue; //!< External Event queue, locka
 using InternalEventQueue    = areg::EventStack; //!< Internal Event queue, non-lockable
 
 //////////////////////////////////////////////////////////////////////////
-// Inline send credit
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Grants the calling thread the right to write one outgoing message into a socket
- *          itself, instead of handing it to a send thread.
- *
- *          A send thread turns many small messages into one write, and that is worth more than
- *          the thread wake-up it costs - but only while there are messages to collect. The
- *          credit answers exactly that question, and it answers it without measuring time, so
- *          the answer is the same on a fast desktop and on a slow embedded board.
- *
- *          The dispatcher grants one credit each time its event queue runs empty, that is, each
- *          time the thread has finished all the work it had. The first message produced after
- *          that may be written directly, because a thread that has just run out of work has
- *          nothing left to batch it with. Every further message of the same burst finds no
- *          credit and goes to the send thread, where it is collected as before.
- *
- *          The rule carries itself under load. A producer that cannot keep up builds a queue,
- *          stops running empty, stops being granted credit, and the send thread batches
- *          everything again. Nothing has to be measured or configured for that to happen.
- *
- *          Threads that are not dispatchers are never granted a credit, so they always use the
- *          send thread. That is the safe answer: such a thread cannot say whether more work is
- *          waiting for it.
- **/
-AREG_API void grant_inline_send_credit() noexcept;
-
-/**
- * \brief   Takes the inline send credit of the calling thread, if it has one. A credit can be
- *          taken only once per grant, which is what limits a handler that produces many
- *          messages to a single direct write.
- *
- * \return  True if the calling thread held a credit, which is now used up. False if it held
- *          none, in which case the message must be given to the send thread.
- **/
-[[nodiscard]]
-AREG_API bool take_inline_send_credit() noexcept;
-
-//////////////////////////////////////////////////////////////////////////
 // EventDispatcherBase class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
@@ -134,6 +95,32 @@ protected:
     explicit EventDispatcherBase( areg::NullTag ) noexcept;
 
     virtual ~EventDispatcherBase();
+
+//////////////////////////////////////////////////////////////////////////
+// Static operations
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Grants the calling thread the right to write one outgoing message into a socket
+     *          itself, instead of handing it to a send thread.
+     *
+     *          A dispatcher grants one credit every time its event queue runs empty, so the
+     *          first message produced afterwards may go straight to the socket and every further
+     *          message of the same burst goes to the send thread. A thread that is not a
+     *          dispatcher is never granted a credit.
+     **/
+    static void grant_inline_send_credit() noexcept;
+
+    /**
+     * \brief   Takes the inline send credit of the calling thread, if it has one. A credit is
+     *          taken only once per grant, so a handler that produces many messages writes at
+     *          most one of them directly.
+     *
+     * \return  True if the calling thread held a credit, which is now used up. False if it held
+     *          none, in which case the message must be given to the send thread.
+     **/
+    [[nodiscard]]
+    static bool take_inline_send_credit() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Public overrides
@@ -241,7 +228,7 @@ public:
     /**
      * \brief   Returns the longest time, in milliseconds, that any producer had to wait for a
      *          free slot in the external queue since this was last called, and resets it.
-     *          Returns 0 when nobody had to wait, which is the normal case and costs one load.
+     *          Returns 0 when nobody had to wait.
      **/
     [[nodiscard]]
     inline uint32_t extract_max_producer_wait_ms() noexcept;
@@ -313,20 +300,15 @@ protected:
     virtual void post_dispatch_event( Event & eventElem );
 
     /**
-     * \brief   Runs the main dispatching loop.
+     * \brief   Runs the main dispatching loop: drains every queued event, then parks the thread
+     *          until a producer pushes a new event or the exit is triggered.
      *
-     *          The loop drains every queued event, then parks the thread until a producer
-     *          pushes a new event or the exit is triggered.
+     *          The loop also returns free heap pages to the operating system, because the C
+     *          library keeps the pages of a drained backlog mapped. The pages are released only
+     *          after many events were dispatched and the queue then stayed empty for a full idle
+     *          period, so that the release does not delay an arriving message.
      *
-     *          The loop also returns free heap pages to the operating system, because the
-     *          C library keeps the pages of a drained backlog mapped. This is done only
-     *          after two conditions are both true: a large number of events has been
-     *          dispatched since the last release, and the queue has then stayed empty for
-     *          a full idle period. The second condition keeps the release, which costs
-     *          several microseconds, away from the moment a new message arrives. While
-     *          messages keep coming the release stays pending and costs nothing.
-     *
-     * \return  Returns true if the loop ended because the exit event was dispatched.
+     * \return  True if the loop ended because the exit event was dispatched.
      **/
     virtual bool run_dispatcher();
 

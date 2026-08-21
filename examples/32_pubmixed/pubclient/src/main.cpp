@@ -20,8 +20,6 @@
     #pragma comment(lib, "32_generated")
 #endif // _MSC_VER
 
-extern mixed::ConsumerOptions& consumer_options();
-
 constexpr char const _modelName[]{ "MixedConsumerModel" };
 
 BEGIN_MODEL(_modelName)
@@ -36,7 +34,7 @@ END_MODEL(_modelName)
 
 int main(int argc, char* argv[])
 {
-    if (consumer_options().parse(argc, argv) == false)
+    if (ConsumerComponent::options().parse(argc, argv) == false)
     {
         mixed::print_consumer_help();
         return 0;

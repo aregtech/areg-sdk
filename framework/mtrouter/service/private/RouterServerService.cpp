@@ -41,9 +41,8 @@ RouterServerService::RouterServerService()
     : areg::ext::ServiceCommunicationBase   ( areg::COOKIE_ROUTER
                                             , areg::RemoteServiceKind::Router
                                             , static_cast<uint32_t>(areg::ConnectionType::Tcpip)
-                                            // The stack size is a hard upper bound on POSIX (pthread_attr_setstacksize)
-                                            // and only the initial commit on Windows (CreateThread without
-                                            // STACK_SIZE_PARAM_IS_A_RESERVATION). Keep it in step with the log collector.
+                                            // On POSIX the stack size is a hard upper bound, on Windows only the
+                                            // initial commit. Keep it in step with the log collector.
                                             , areg::SYSTEM_THREAD_STACK_BIG
                                             , areg::SERVER_DISPATCH_MESSAGE_THREAD
                                             , ServiceCommunicationBase::ConnectionPolicy::Accept

@@ -36,10 +36,9 @@ namespace areg {
  *          event no appropriate dispatcher was found in system. The event dispatching thread is a
  *          base class for Worker thread and Component thread.
  *
- *          EventDispatcher is listed first on purpose. Thread is constructed with a reference
- *          to the ThreadConsumer of this object, and ThreadConsumer is a base of EventDispatcher,
- *          so EventDispatcher has to be initialized first: converting to a base whose
- *          construction has not started yet is undefined behaviour, see C++17 [class.cdtor]/3.
+ * \note    EventDispatcher must stay the first base. Thread is constructed with a reference to
+ *          the ThreadConsumer of this object, and ThreadConsumer is a base of EventDispatcher,
+ *          so EventDispatcher has to be initialized first, see C++17 [class.cdtor]/3.
  **/
 class AREG_API DispatcherThread : public EventDispatcher
                                 , public Thread
@@ -280,12 +279,8 @@ private:
 
     /**
      * \brief   Searches the dispatcher thread that owns the given unique CRC32 thread number.
-     *
-     *          The result of the search is kept per calling thread, so that a thread that keeps
-     *          sending events to the same few dispatchers pays the process wide map lookup only
-     *          once. The stored result is used again only while the thread registry counter of
-     *          Thread::registry_generation() is unchanged, so a thread that starts or stops
-     *          discards every stored pointer of the process before it can be used again.
+     *          The result is cached per calling thread and is reused only while
+     *          Thread::registry_generation() is unchanged.
      *
      * \param   threadNumber    The unique CRC32 number of the thread to search.
      * \return  The dispatcher thread with this number, or nullptr when the process has no such

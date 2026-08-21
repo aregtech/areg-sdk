@@ -215,11 +215,8 @@ int32_t EventDispatcherBase::remove_consumer( EventConsumer & whichConsumer )
 
 namespace {
 
-    /**
-     * The credit lives in the thread, not in a connection: it describes the thread that
-     * produces the message. A function-local variable keeps it correct across the library
-     * boundary and free of static initialization order.
-     */
+    //!< The credit of the calling thread. A function-local static is free of the static
+    //!< initialization order across the library boundary.
     inline bool & _inline_send_credit() noexcept
     {
         static thread_local bool _credit{ false };
@@ -228,12 +225,12 @@ namespace {
 
 } // namespace
 
-AREG_API_IMPL void grant_inline_send_credit() noexcept
+void EventDispatcherBase::grant_inline_send_credit() noexcept
 {
     _inline_send_credit() = true;
 }
 
-AREG_API_IMPL bool take_inline_send_credit() noexcept
+bool EventDispatcherBase::take_inline_send_credit() noexcept
 {
     bool & credit{ _inline_send_credit() };
     const bool granted{ credit };
@@ -292,10 +289,10 @@ bool EventDispatcherBase::run_dispatcher()
         }
 
         // Out of work, so the next message this thread produces has nothing to be batched with.
-        grant_inline_send_credit();
+        EventDispatcherBase::grant_inline_send_credit();
 
-        // A due trim runs only after a proven idle period, so its stall cannot land
-        // between two messages. A message arriving first keeps the trim pending.
+        // A due trim waits for a proven idle period, so its stall cannot land between two
+        // messages. A message arriving first keeps the trim pending.
         if ( processedSinceTrim >= HEAP_TRIM_EVENT_THRESHOLD )
         {
             if ( mExternalEvents.wait_event( HEAP_TRIM_IDLE_TIMEOUT_MS ) )

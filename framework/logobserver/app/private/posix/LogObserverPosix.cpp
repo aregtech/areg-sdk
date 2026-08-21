@@ -18,7 +18,7 @@
  ************************************************************************/
 #include "logobserver/app/LogObserver.hpp"
 
-#if	defined(_POSIX) || defined(POSIX)
+#if defined(_POSIX) || defined(POSIX)
 
 //////////////////////////////////////////////////////////////////////////
 // Global functions, Begin
@@ -30,4 +30,4 @@ int main(int argc, char* argv[], char* envp[])
     return 0;
 }
 
-#endif	// defined(_POSIX) || defined(POSIX)
+#endif  // defined(_POSIX) || defined(POSIX)

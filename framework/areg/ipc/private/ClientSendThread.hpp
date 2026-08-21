@@ -109,19 +109,17 @@ public:
     inline void set_closing() noexcept;
 
     /**
-     * \brief   Returns the gate of this send queue. A producer thread that wants to write its
-     *          message into the socket itself must find the gate clear first, because a clear
-     *          gate is the proof that this queue owes no older message to the same socket.
+     * \brief   Returns the gate of the send queue of this thread. A producer that wants to write
+     *          its message into the socket itself must find the gate clear first.
      **/
     [[nodiscard]]
     inline areg::SendQueueGate & send_gate() noexcept;
 
     /**
      * \brief   Hands one outbound message to this send thread and reports whether the queue took
-     *          it. This is the entry point a producer uses instead of Event::deliver_event(),
-     *          which discards that answer. A false result means the message was NOT queued and
-     *          will never reach the socket, so the caller must release whatever it reserved for
-     *          it and report the failure onwards.
+     *          it. Producers use it instead of Event::deliver_event(), which discards that
+     *          answer. When it returns false the message never reaches the socket, so the caller
+     *          must release what it reserved for it and report the failure onwards.
      *
      * \param   eventElem   The event to queue. Its target dispatcher must already be this thread.
      * \return  true if the queue took the event, false if it did not.
@@ -129,18 +127,16 @@ public:
     inline bool queue_message( areg::Event & eventElem );
 
     /**
-     * \brief   Returns the send batch limit resolved for this thread, in messages.
-     *          A plain member read - the configuration is consulted once, when the thread
-     *          becomes ready, never on the message path.
+     * \brief   Returns the send batch limit of this thread, in messages. Resolved once, when the
+     *          thread becomes ready, so reading it costs one load.
      **/
     [[nodiscard]]
     inline uint32_t drain_limit() const noexcept;
 
     /**
      * \brief   Reports a message that a producer thread failed to write into the socket itself.
-     *          The report is passed to the message handler, exactly as this thread would do for
-     *          its own failed batch, and it is suppressed while the connection is closing on
-     *          purpose.
+     *          The message handler is notified exactly as it is for a batch of this thread, and
+     *          nothing is reported while the connection is closing.
      *
      * \param   msgFailed   The message whose write failed.
      * \param   whichTarget The socket the write was attempted on.
@@ -218,15 +214,12 @@ private:
      **/
     std::atomic_bool                mIsClosing;
     /**
-     * \brief   The gate of this send queue. Counts the messages that were handed to this
-     *          thread and have not reached the socket yet.
+     * \brief   Counts the messages handed to this thread that did not reach the socket yet.
      **/
     areg::SendQueueGate             mSendGate;
-
     /**
-     * \brief   How many messages this thread may put into one batch. Resolved from the
-     *          configuration when the thread becomes ready and never touched afterwards, so
-     *          reading it costs one load. Always within 1 .. areg::DEFAULT_DRAIN_LIMIT.
+     * \brief   How many messages this thread may put into one batch, within the range
+     *          1 .. areg::DEFAULT_DRAIN_LIMIT. Resolved when the thread becomes ready.
      **/
     uint32_t                        mDrainLimit;
 

@@ -11,10 +11,8 @@
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, Watchdog manager, generic POSIX implementation.
- *              The watchdog uses the same TimerPosix object and the same manager loop as
- *              the timer, so it is kept in step with posix/TimerManagerPosix.cpp: the
- *              deadline lives in the watchdog timer, the loop watches it, and the expiry
- *              is processed on the watchdog manager thread. No OS timer object is created.
+ *              Uses the same TimerPosix object and manager loop as the timer, see
+ *              posix/TimerManagerPosix.cpp. No OS timer object is created.
  *              Linux:  areg/component/private/linux/WatchdogManagerLinux.cpp
  *              macOS:  areg/component/private/macos/WatchdogManagerMacOS.cpp
  *

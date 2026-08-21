@@ -98,10 +98,6 @@ inline void ServicingComponent::print_rates(areg::ext::Console& console)
     const uint64_t bytes_per_block_0{ mOptions.bytesPerBlock() };
     const uint32_t channels_0{ mOptions.mChannels };
 
-    // The window is measured, never assumed. The timer asks for one second, but the moment
-    // this runs is set by the dispatcher, and the generator hands its counters over in
-    // chunks of its own. Dividing a raw sum by an assumed second turns every millisecond of
-    // that jitter into a swing of the printed rate.
     const std::chrono::steady_clock::time_point now{ std::chrono::steady_clock::now() };
     const uint64_t window_ns{ static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(now - mRateStamp).count()) };
     mRateStamp = now;
@@ -112,8 +108,6 @@ inline void ServicingComponent::print_rates(areg::ext::Console& console)
 
     mLock.unlock();
 
-    // The generator's own span is the exact interval its counters cover. Only when nothing was
-    // flushed at all is the display window used, so that an idle stream still reads as zero.
     const uint64_t span_ns{ sentData.spanNs != 0u ? sentData.spanNs : window_ns };
     const double window_sec{ span_ns != 0u ? (static_cast<double>(span_ns) / static_cast<double>(areg::DURATION_1_SEC)) : 1.0 };
     const double net_sec   { window_ns != 0u ? (static_cast<double>(window_ns) / static_cast<double>(areg::DURATION_1_SEC)) : 1.0 };
@@ -200,15 +194,10 @@ void ServicingComponent::shutdown_service_interface(areg::Component& holder) noe
     mTimer.stop_timer();
     mPauseEvent.set_signaled();
 
-    // The worker threads must be joined before anything they read is destroyed. mQuitThread
-    // only takes effect where _can_loop() is tested, and send_block_row() walks every pool
-    // and channel without re-testing it, so the image thread can still be inside
-    // mPrebuiltMessages here. Freeing the pool first left it reading released vector storage
-    // and faulting in MessageEnvelope::payload_ptr().
+    // The worker threads are joined first to release memory.
     mInputThread.shutdown(areg::WAIT_INFINITE);
     mImageThread.shutdown(areg::WAIT_INFINITE);
 
-    // No thread can reach them any more.
     mPrebuiltMessages.clear();
     mBitmap.release();
 
@@ -420,11 +409,6 @@ uint32_t ServicingComponent::_build_prebuilt_messages()
     const uint32_t channels { mOptions.mChannels };
     const uint64_t frame_ns { mOptions.nsPerImage() };
     const uint32_t blocks   { mOptions.blocksCount() };
-    // The rotation only has to outlive anything still queued; a full TIME_IN_DEPTH of frames
-    // is far more. At -w=128 -h=128 -l=1 -t=25 it asks for 488 generations, ~500k envelopes
-    // (~300 MB), and the whole pool is rebuilt on every option change. Bound it by
-    // generation count and a byte budget. This changes memory only: pacing and the order
-    // messages are sent in are untouched.
     uint32_t depth{ (frame_ns != 0u) && (frame_ns <= (util::TIME_IN_DEPTH / 2))
                         ? static_cast<uint32_t>((static_cast<double>(util::TIME_IN_DEPTH) / static_cast<double>(frame_ns)) + 0.5f)
                         : util::MIN_PREBUILT_DEPTH };
@@ -542,14 +526,10 @@ void ServicingComponent::_run_image_thread()
 
         set_image_gen_setting({ mOptions.mWidth, mOptions.mHeight, mOptions.mLines, mOptions.mPixelTime, mOptions.mChannels });
 
-        // One slot is one message: one image block of one channel. `slots_per_frame` slots make
-        // a complete image, `channel_count` of them make one image block period.
+        // One slot is one message: one image block of one channel.
         const uint64_t slots_per_frame{ static_cast<uint64_t>(blocks_per_frame) * channel_count };
 
-        // A slot that is already overdue is still sent, but only while the backlog stays within
-        // one image block period. Anything older than that is dropped rather than pushed out as
-        // a burst: a burst refills the send queue immediately, which is what turns one stall
-        // into the next one. Dropped slots are counted and shown, so the loss is never silent.
+        // A backlog older than this is dropped, instead of being sent out as a burst.
         const uint64_t catchup_limit{ channel_count };
 
         DataRate stats{};
@@ -572,7 +552,6 @@ void ServicingComponent::_run_image_thread()
                 stats_begin = flushed;
             };
 
-        // Sends the single message that belongs to the given slot, to every connected consumer.
         auto send_slot = [&](uint64_t slot)
             {
                 const uint32_t frame_id    { static_cast<uint32_t>(slot / slots_per_frame) + 1u };
@@ -595,9 +574,8 @@ void ServicingComponent::_run_image_thread()
                     ++stats.sentBlocks;
                 }
 
-                // send_raw_message() is not a hand-off that always completes at once: the send
-                // queue is bounded, so a producer that outruns the socket is held here. Measuring
-                // it is the only way to tell a slow generator from a full pipe.
+                // The send queue is bounded, so send_raw_message() holds a producer that
+                // outruns the socket.
                 stats.blockedNs += static_cast<uint64_t>(std::chrono::duration_cast<Nanoseconds>(Clock::now() - send_begin).count());
             };
 
@@ -612,8 +590,7 @@ void ServicingComponent::_run_image_thread()
 
             if (block_time_ns == 0u)
             {
-                // Pixel time 0 means "as fast as the pipe takes it": there is no schedule to
-                // keep, so every message counts as on time.
+                // Pixel time 0 means "as fast as the pipe takes it": there is no schedule.
                 send_slot(slot);
                 stats.ontimeBlocks += static_cast<uint32_t>(mPrebuiltMessages.size());
                 ++slot;
@@ -631,9 +608,7 @@ void ServicingComponent::_run_image_thread()
                     remaining = MAX_WAIT_CHUNK_NS;
                 }
 
-                // Short waits (below areg::Wait::MIN_WAIT) yield instead of parking the thread,
-                // so a slot deadline of about a millisecond is met without handing the core away
-                // for a whole scheduler tick.
+                // A wait below areg::Wait::MIN_WAIT yields instead of parking the thread.
                 wait.wait_for(Nanoseconds{ remaining });
                 continue;
             }
@@ -649,8 +624,6 @@ void ServicingComponent::_run_image_thread()
 
             send_slot(slot);
 
-            // A slot is on time when it left within its own slot window; the window is the slot
-            // period itself, so this measures the schedule, not the wall clock of one call.
             const uint64_t slot_end_ns{ _slot_due_ns(slot + 1u, block_time_ns, channel_count) };
             if (time_passed(time_begin) <= slot_end_ns)
             {

@@ -75,12 +75,11 @@ public:
 /************************************************************************/
 public:
     /**
-     * \brief   Returns the send batch limit resolved for this thread, in messages.
-     *          A plain member read - the configuration is consulted once, when the thread
-     *          becomes ready, never on the message path.
+     * \brief   Returns the send batch limit of this thread, in messages. Resolved once, when the
+     *          thread becomes ready, so reading it costs one load.
      **/
     [[nodiscard]]
-    inline uint32_t drain_limit() const noexcept { return mDrainLimit; }
+    inline uint32_t drain_limit() const noexcept;
 
     /**
      * \brief   Returns accumulative value of sent data size and resets the existing value to zero.
@@ -118,11 +117,9 @@ public:
     inline void accumulate_sent(uint64_t bytes, uint32_t msgs) noexcept;
 
     /**
-     * \brief   Returns the gate of the send queue of this thread.
-     *
-     *          A producer that wants to write a message into the socket itself, instead of
-     *          handing it to this thread, must first see the gate clear and must announce the
-     *          message with SendQueueGate::enter() when it decides to queue it after all.
+     * \brief   Returns the gate of the send queue of this thread. A producer that wants to write
+     *          a message into the socket itself must find the gate clear first, and must announce
+     *          the message with SendQueueGate::enter() when it queues it instead.
      **/
     [[nodiscard]]
     inline areg::SendQueueGate & send_gate() noexcept;
@@ -139,7 +136,6 @@ protected:
      * \param   is_ready    The flag to indicate whether the dispatcher is ready for events.
      **/
     void ready_for_events( bool is_ready ) final;
-
 
 /************************************************************************/
 // EventRouter class overrides
@@ -179,15 +175,13 @@ private:
      **/
     ServerConnection &              mConnection;
     /**
-     * \brief   Pre-allocated batch work list reused across every drain cycle.
-     **/
-
-    /**
-     * \brief   How many messages this thread may put into one batch. Resolved from the
-     *          configuration when the thread becomes ready and never touched afterwards, so
-     *          reading it costs one load. Always within 1 .. areg::DEFAULT_DRAIN_LIMIT.
+     * \brief   How many messages this thread may put into one batch, within the range
+     *          1 .. areg::DEFAULT_DRAIN_LIMIT. Resolved when the thread becomes ready.
      **/
     uint32_t                        mDrainLimit;
+    /**
+     * \brief   Pre-allocated batch work list reused across every drain cycle.
+     **/
     BatchEntries                    mBatch;
     //!< Reused scratch: per-slot target cookies and resolved socket handles (POD; off the stack).
     std::array<ITEM_ID, areg::DEFAULT_DRAIN_LIMIT>       mTargets;
@@ -238,6 +232,11 @@ inline bool ServerSendThread::is_data_rate_enabled() const noexcept
 inline void ServerSendThread::accumulate_sent(uint64_t bytes, uint32_t msgs) noexcept
 {
     mSendStats.accumulate(bytes, msgs);
+}
+
+inline uint32_t ServerSendThread::drain_limit() const noexcept
+{
+    return mDrainLimit;
 }
 
 inline areg::SendQueueGate & ServerSendThread::send_gate() noexcept

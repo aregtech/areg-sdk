@@ -338,11 +338,7 @@ constexpr uint32_t          MAX_SEND_BATCH_BYTES    { 0x7000'0000u };   // 1.75 
 
 //!< The minimum size of the block to send without copying to the cache.
 constexpr uint32_t          MIN_BIG_BLOCK           { 64 * areg::ONE_KILOBYTE };
-
-
-
-//!< Number of per-socket writer locks. Must be a power of two. Two sockets whose descriptors
-//!< fall on the same slot share one lock, which costs speed but never correctness.
+//!< Number of per-socket writer locks. Must be a power of two.
 constexpr uint32_t          SOCKET_WRITER_SLOTS     { 128u };
 
 /**
@@ -354,22 +350,14 @@ extern AREG_API const int32_t MAXIMUM_LISTEN_QUEUE_SIZE /*= SOMAXCONN*/;
 AREG_API uint32_t   thread_cache_size() noexcept;
 
 /**
- * \brief   Returns the send batch limit: the largest number of messages a send thread may take
- *          out of its queue and write to the socket in one go. Read from `areg.init`
- *          (`net::*::tcpip::drain`), where `0` means "use `areg::DEFAULT_DRAIN_LIMIT`".
+ * \brief   Returns the largest number of messages a send thread may take out of its queue and
+ *          write into the socket in one batch. Read from the configuration entry
+ *          'net::*::tcpip::drain', where 0 means areg::DEFAULT_DRAIN_LIMIT, and clamped to the
+ *          range 1 .. areg::DEFAULT_DRAIN_LIMIT. A smaller limit pins less memory in a batch
+ *          and lowers the data rate.
  *
- *          The result is clamped to `1 .. areg::DEFAULT_DRAIN_LIMIT`, because the batch arrays
- *          of every send thread are fixed at that size. A configured value can therefore only
- *          make the batch smaller, never larger, and no allocation is involved.
- *
- *          This is a **memory** setting, not a speed setting. One batch keeps every message in
- *          it alive until the whole batch has reached the socket, so the memory a send thread
- *          pins is `limit x message size` - 402 MiB for 128 messages of 3 MiB. Lowering the
- *          limit bounds that, and costs data rate: measured end to end on example 23, a limit
- *          of 21 costs about 2.6 %, 5 costs 3.6 % and 1 costs 14 %.
- *
- * \note    This reads the configuration under a lock. Resolve it **once**, when the send thread
- *          becomes ready, and keep the result in a member. It must never be called per message.
+ * \note    Reads the configuration under a lock. Call it once, when the send thread becomes
+ *          ready, and keep the result in a member. Never call it per message.
  **/
 AREG_API uint32_t   send_batch_limit() noexcept;
 
@@ -655,18 +643,12 @@ AREG_API int32_t send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, uint
 AREG_API int32_t send_data_v(SOCKETHANDLE hSocket, const IoBuffer* buffers, uint32_t count, uint32_t totalSize = 0) noexcept;
 
 /**
- * \brief   Tries to send \a count buffers through \a hSocket without waiting.
+ * \brief   Sends \a count buffers through \a hSocket without waiting. Either the complete data
+ *          is written or nothing is written. If the OS accepts only a part of it, the remaining
+ *          bytes are completed as send_data_v() does.
  *
- *          The call either writes the complete data or writes nothing at all. It is meant for a
- *          thread that must not be held up by a slow or a stalled peer: when the socket cannot
- *          take the data at this moment, the call gives up at once and the caller can hand the
- *          message to its normal send queue instead.
- *
- *          One case cannot be avoided. When the operating system accepts a part of the data and
- *          then runs out of room, the first bytes of the message are already on the wire and the
- *          message must be finished. The call then completes the remaining bytes exactly like
- *          send_data_v() does and reports success. Hold the writer lock of the socket, see
- *          SocketWriter, so that no other thread can write between the two parts.
+ * \note    Hold the writer lock of the socket, see SocketWriter, so that no other thread writes
+ *          between the two parts.
  *
  * \param   hSocket     Valid connected socket descriptor.
  * \param   buffers     Array of IoBuffer descriptors; must contain \a count entries.
@@ -815,26 +797,15 @@ AREG_API uint16_t extract_port_number(const struct sockaddr_in& sockAddr) noexce
 // areg::SocketWriter class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The writer lock of one socket.
+ * \brief   The writer lock of one socket: only the thread that holds it may write into that
+ *          socket. Use acquire() to take it and wait for the current owner, or try_acquire() to
+ *          take it only when it is free.
  *
- *          Only one thread at a time may write into a socket. A message is written in one or
- *          more system calls, and if two threads interleave their calls the receiver gets two
- *          half messages and can no longer tell where one message ends. The writer lock makes
- *          the single writer a property of the code rather than a rule people have to remember.
+ *          The locks live in one fixed table, see areg::SOCKET_WRITER_SLOTS, so taking a lock
+ *          allocates nothing. Two sockets may share one lock, which costs speed but never
+ *          correctness.
  *
- *          A thread that owns the send queue of the socket takes the lock with acquire() and
- *          holds it while it writes everything it has. A thread that only wants to try to write
- *          the message itself, instead of handing it to that send queue, uses try_acquire():
- *          when the lock is taken it gets false at once, never waits, and hands the message to
- *          the send queue as before.
- *
- *          The locks live in one fixed table that is created with the program, so taking a lock
- *          allocates nothing. The table is smaller than the number of sockets a program may
- *          open, therefore two sockets can share one lock. Sharing costs a little speed, never
- *          correctness: the two sockets are then written one after the other instead of at the
- *          same time.
- *
- *          The lock is not recursive. A thread that owns it must not take it again.
+ * \note    The lock is not recursive. A thread that owns it must not take it again.
  **/
 class AREG_API SocketWriter
 {
@@ -843,9 +814,9 @@ class AREG_API SocketWriter
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Returns the writer lock that belongs to the given socket. The same socket always
-     *          gets the same lock, and the lock exists for the whole life of the program, so the
-     *          returned reference stays valid after the socket is closed.
+     * \brief   Returns the writer lock of the given socket. The same socket always gets the same
+     *          lock, and the lock lives as long as the process, so the returned reference stays
+     *          valid after the socket is closed.
      *
      * \param   hSocket     The socket descriptor to get the writer lock of.
      * \return  The writer lock of the socket.
@@ -874,9 +845,8 @@ public:
     bool try_acquire() noexcept;
 
     /**
-     * \brief   Takes the lock, waiting for the current owner if there is one. The wait spins for
-     *          a short while and then hands the processor to other threads, so it does not keep
-     *          a core busy while it waits.
+     * \brief   Takes the lock and waits for the current owner. The wait spins for a short while
+     *          and then yields the processor, so it does not keep a core busy.
      **/
     void acquire() noexcept;
 
@@ -894,9 +864,7 @@ private:
     #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
-    /**
-     * \brief   True while a thread owns the lock.
-     **/
+    //!< True while a thread owns the lock.
     std::atomic<bool>   mBusy;
 #if defined(_MSC_VER)
     #pragma warning(pop)
@@ -913,12 +881,8 @@ private:
 // areg::SocketWriteGuard class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Holds the writer lock of a socket for the length of a scope.
- *
- *          Use it where the whole scope must be the only writer of the socket, for example
- *          around the loop that writes everything a send queue has for one socket. The lock is
- *          taken when the object is created, waiting if another thread owns it, and released
- *          when the object goes out of scope, including when the scope is left early.
+ * \brief   Holds the writer lock of a socket for the length of a scope. The lock is taken in the
+ *          constructor, waiting if another thread owns it, and released in the destructor.
  **/
 class SocketWriteGuard
 {

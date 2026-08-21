@@ -449,7 +449,7 @@ bool EventQueue::_ring_enqueue(Event& eventElem) noexcept
     }
     mProducersWaiting.fetch_sub(1u, std::memory_order_relaxed);
 
-    // Recorded, never logged here: this queue also serves the log manager.
+    // Only recorded, never logged here: this queue also serves the log manager.
     const uint32_t waited{ static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(
                                std::chrono::steady_clock::now() - waitBegin).count()) };
     uint32_t recorded{ mMaxWaitMs.load(std::memory_order_relaxed) };

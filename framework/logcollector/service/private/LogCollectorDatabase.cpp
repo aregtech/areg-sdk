@@ -57,8 +57,8 @@ LogCollectorDatabase::LogCollectorDatabase()
     : areg::ThreadConsumer  ( )
 
     , mDatabase     ( )
-    // The writer thread runs SQLite, and on POSIX the stack size is a hard upper bound
-    // (pthread_attr_setstacksize), while on Windows it is only the initial commit.
+    // The writer thread runs SQLite. On POSIX the stack size is a hard upper bound
+    // (pthread_attr_setstacksize), on Windows it is only the initial commit.
     , mWriterThread ( static_cast<areg::ThreadConsumer &>(self()), areg::String(LogCollectorDatabase::WRITER_THREAD_NAME), areg::SYSTEM_THREAD_STACK_BIG )
     , mWakeEvent    ( true, true )
     , mQueueLock    ( )

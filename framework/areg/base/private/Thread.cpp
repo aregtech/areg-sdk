@@ -464,7 +464,7 @@ void Thread::_unregister_thread()
 
     mThreadConsumer.on_thread_unregistering();
 
-    // The counter is advanced first, so no cached pointer to this object survives its removal.
+    // Advanced first, so that no cached pointer to this object survives its removal.
     Thread::_bump_registry_generation();
     Thread::_map_thread_name().unregister_resource_object(static_cast<uint32_t>(mThreadAddress));
     Thread::_map_thread_id().unregister_resource_object(mThreadId);

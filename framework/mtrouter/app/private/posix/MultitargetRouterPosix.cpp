@@ -14,7 +14,7 @@
  ************************************************************************/
 #include "mtrouter/app/MultitargetRouter.hpp"
 
-#if	defined(_POSIX) || defined(POSIX)
+#if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/base/File.hpp"

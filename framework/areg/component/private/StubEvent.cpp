@@ -41,10 +41,7 @@ StubEventConsumer::StubEventConsumer( const StubAddress & stubAddress )
 
 Component & StubEventConsumer::owner_component() const noexcept
 {
-    // StubBase is the only class derived from StubEventConsumer and a stub is a part of
-    // its component, so the component is alive whenever this consumer is alive. The
-    // component registry is not consulted: it would hash the role name and search a map
-    // on every request to return the very pointer the stub already holds.
+    // StubBase is the only class derived from StubEventConsumer.
     return static_cast<const StubBase *>(this)->component();
 }
 

@@ -46,9 +46,8 @@ void ClientSendThread::ready_for_events( bool is_ready )
 {
     if ( is_ready )
     {
-        // The closing flag belongs to the connection this thread is about to serve, not to the
-        // one it served before. Without this reset a thread that was told to close once would
-        // never report a failed send again, and a lost connection would go unnoticed.
+        // The flag belongs to the connection this thread is about to serve, not to the
+        // one it served before.
         mIsClosing.store(false, std::memory_order_relaxed);
         mDrainLimit = areg::send_batch_limit();
         areg::set_receive_mode(areg::ReceiveMode::MonoCache);
@@ -166,8 +165,7 @@ void ClientSendThread::start_event_processing( Event & eventElem )
     for ( uint32_t i{ 1u }; i < bufCount; ++i )
         mDrain[i].reset();
 
-    // The gate opens only here: an inline writer must not overtake a message that is still on
-    // its way from this queue to the socket.
+    // The gate opens only after the write, never before it.
     mSendGate.leave(bufCount);
 
     const uint32_t waitedMs{ extract_max_producer_wait_ms() };

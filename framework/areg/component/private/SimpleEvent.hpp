@@ -45,18 +45,15 @@ namespace areg {
  *          per signal); callers that race for the same resource must re-check their
  *          own condition after lock() returns.
  *
- *          The object holds no operating system handle. Its whole state is one atomic
- *          word. A wait that finds the event already signaled, and a signal that nobody
- *          waits for, are answered in user space and cost no system call at all. Only a
- *          thread that really has to go to sleep enters the operating system.
- *
- *          A thread parks on that word with the lightest wait primitive the platform
- *          offers: futex on Linux, __ulock on macOS, and WaitOnAddress on Windows. A
- *          signal that arrives before a waiter is really asleep is never lost, because
+ *          The object holds no operating system handle: its whole state is one atomic word. A
+ *          wait that finds the event already signaled, and a signal nobody waits for, are
+ *          answered in user space. Only a thread that has to go to sleep enters the kernel,
+ *          where it parks on that word with futex on Linux, __ulock on macOS and WaitOnAddress
+ *          on Windows. A signal that arrives before a waiter is asleep is never lost, because
  *          the wait call compares the word once more inside the kernel.
  *
- *          Windows note: this needs Windows 8 or newer. The wait and wake calls are
- *          imported from api-ms-win-core-synch-l1-2-0.dll through Synchronization.lib.
+ * \note    On Windows this needs Windows 8 or newer. The wait and wake calls are imported from
+ *          api-ms-win-core-synch-l1-2-0.dll through Synchronization.lib.
  **/
 class AREG_API SimpleEvent
 {

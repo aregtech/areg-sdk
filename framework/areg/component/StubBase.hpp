@@ -249,9 +249,8 @@ public:
     ComponentThread & component_thread() const noexcept;
 
     /**
-     * \brief   Returns the component that owns this stub. A stub exists only as a part of
-     *          its component and cannot outlive it, so the reference is valid for the entire
-     *          lifetime of the stub object.
+     * \brief   Returns the component that owns this stub. A stub is a part of its component,
+     *          so the reference is valid for the entire lifetime of the stub.
      **/
     [[nodiscard]]
     inline Component & component() const noexcept;

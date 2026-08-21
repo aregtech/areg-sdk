@@ -89,7 +89,7 @@ void ServerSendThread::start_event_processing( areg::Event & eventElem )
                                    mConnection.close_all_connections();
                                    mConnection.close_socket();
                                }
-                             , [&]([[maybe_unused]]  uint32_t messageId, [[maybe_unused]] ITEM_ID target )
+                             , [&]( [[maybe_unused]] uint32_t messageId, [[maybe_unused]] ITEM_ID target )
                                {
                                    DEBUG_LOG_WARN("Discarding message (ID = [ %u ]) for disconnected target [ %u ]"
                                                    , messageId

@@ -16,8 +16,6 @@
 
 namespace
 {
-    mixed::ConsumerOptions  g_options;
-
     inline uint64_t now_us()
     {
         return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(
@@ -37,14 +35,15 @@ namespace
     }
 }
 
-mixed::ConsumerOptions& consumer_options()
-{
-    return g_options;
-}
-
 //////////////////////////////////////////////////////////////////////////
 // ConsumerComponent
 //////////////////////////////////////////////////////////////////////////
+
+mixed::ConsumerOptions & ConsumerComponent::options() noexcept
+{
+    static mixed::ConsumerOptions _options;
+    return _options;
+}
 
 ConsumerComponent::ConsumerComponent(const areg::ComponentEntry& entry, areg::ComponentThread& owner)
     : areg::Component           ( entry, owner )
@@ -74,11 +73,11 @@ bool ConsumerComponent::service_connected(areg::ServiceConnectionState status, a
         areg::Application::enable_data_rate(true);
         notify_on_broadcast_bulk_block(true);
 
-        const uint32_t pingMs{ consumer_options().pingUs / 1000u };
+        const uint32_t pingMs{ ConsumerComponent::options().pingUs / 1000u };
         mPingTimer.start_timer(pingMs != 0u ? pingMs : 1u, areg::Timer::CONTINUOUSLY);
         mReportTimer.start_timer(mixed::REPORT_TIMEOUT_MS, areg::Timer::CONTINUOUSLY);
 
-        ::printf("Example 32 consumer: ping every %u us\n", consumer_options().pingUs);
+        ::printf("Example 32 consumer: ping every %u us\n", ConsumerComponent::options().pingUs);
         ::fflush(stdout);
     }
     else
@@ -156,7 +155,7 @@ void ConsumerComponent::report()
     mRtt.clear();
 
     ++mSeconds;
-    const uint32_t limit{ consumer_options().runSeconds };
+    const uint32_t limit{ ConsumerComponent::options().runSeconds };
     if ((limit != 0u) && (mSeconds >= limit))
     {
         std::vector<uint32_t> all{ mRttAll };

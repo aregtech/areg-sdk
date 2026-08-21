@@ -146,8 +146,7 @@ int32_t _os_try_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers,
 {
     ASSERT(count <= areg::DEFAULT_DRAIN_LIMIT);
 
-    // Windows sockets stay in blocking mode, so writability is asked for first: an unwritable
-    // socket is declined before a single byte is written, which is what the caller relies on.
+    // Windows sockets stay in blocking mode, so writability is asked for first.
     fd_set writeSet;
     FD_ZERO(&writeSet);
     FD_SET(hSocket, &writeSet);
@@ -176,12 +175,8 @@ int32_t _os_try_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers,
     return static_cast<int32_t>(sent);
 }
 
-// Batch write. Small messages are copied together into the per-thread staging cache and leave
-// in one send(); blocks not smaller than MIN_BIG_BLOCK are written one by one, windowed by
-// _os_send_data_window(). A WSASend() scatter-gather variant of this function was built and
-// measured against it on example 23 (see product/tasks/lessons.md, T8): it won neither the
-// data rate nor the message rate, so it was removed rather than left as untested code on a
-// path ctest never exercises. Do not reintroduce it without repeating that comparison.
+// Batch write: small messages are joined in the per-thread staging cache and leave in one
+// send(), blocks of MIN_BIG_BLOCK and more go one by one through _os_send_data_window().
 int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t totalSize)
 {
     // Single buffer, bypass setup entirely.
@@ -254,7 +249,6 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
 
     return result;
 }
-
 
 int32_t _os_recv_data_window(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
 {

@@ -373,28 +373,21 @@ protected:
     inline bool send_received_message(areg::MessageEnvelope&& msg, areg::EventPriority eventPrio = areg::EventPriority::HighPrio);
 
     /**
-     * \brief   Tries to write the message into the connection socket on the calling thread,
-     *          instead of handing it to the send thread. Taking the message here saves one
-     *          thread wake-up, which is the largest single cost of one outgoing message.
+     * \brief   Writes the message into the connection socket on the calling thread, instead of
+     *          handing it to the send thread, which saves one thread wake-up.
      *
-     *          The attempt is given up, and the caller must queue the message as usual, unless
-     *          all of the following hold:
-     *          - the send queue owes nothing to the socket (areg::SendQueueGate is clear), so
-     *            this message cannot overtake an older one;
-     *          - the message is not larger than areg::INLINE_SEND_MAX_BYTES, so that the calling
-     *            thread cannot be held up by a slow reader on the other side;
+     *          The attempt is given up, and the caller must queue the message, unless all of the
+     *          following hold:
+     *          - the send queue owes nothing to the socket, see areg::SendQueueGate;
+     *          - the message is not larger than areg::INLINE_SEND_MAX_BYTES;
      *          - the connection socket is valid;
-     *          - the calling thread holds an inline send credit, see areg::take_inline_send_credit(),
-     *            which means it has just run out of work and has nothing left to batch;
-     *          - the writer lock of the socket is free, so that nobody else is writing;
+     *          - the calling thread holds an inline send credit, see
+     *            EventDispatcherBase::take_inline_send_credit();
+     *          - the writer lock of the socket is free, see areg::SocketWriter;
      *          - the socket takes the whole message without waiting.
      *
-     *          The write never waits. A message that was only partly written is finished under
-     *          the writer lock and can never be queued again; such a failure is reported exactly
-     *          as a failure of the send thread would be.
-     *
      * \param   data    The message to write. Its local-only header fields are cleared and its
-     *                  checksum is computed before the write, the same way the send thread does.
+     *                  checksum is computed before the write, as the send thread does.
      * \return  True when the message has been dealt with and must not be queued. False when the
      *          caller must queue the message for the send thread.
      **/
@@ -402,18 +395,11 @@ protected:
 
     /**
      * \brief   Starts the send thread if it does not run yet, and returns when it is ready to
-     *          take events.
+     *          take events. The send thread is a fallback: a message reaches it only when its own
+     *          thread could not write it into the socket, see try_send_inline().
      *
-     *          The send thread is a fallback: a message reaches it only when the sending
-     *          thread could not write it into the socket itself, see try_send_inline(). A
-     *          connection that never needs the fallback therefore never pays for the thread,
-     *          which on Windows is an immediate commit of its whole stack.
-     *
-     *          Called by producers, so it must tolerate concurrent calls. Thread::start()
-     *          cannot be used for that on its own: called for a thread that already runs, it
-     *          resets the run state of the running thread. The mutex below is what makes the
-     *          start happen exactly once, and it is entered only after the lock-free check
-     *          says the thread is not running.
+     * \note    Called by producers, so it tolerates concurrent calls. Thread::start() alone does
+     *          not: called for a thread that already runs, it resets its run state.
      **/
     void ensure_send_thread();
 
@@ -575,9 +561,7 @@ private:
      * \brief   Message sender thread
      **/
     areg::ClientSendThread          mThreadSend;
-    /**
-     * \brief   Guards the lazy start of the send thread, see ensure_send_thread().
-     **/
+    //!< Guards the lazy start of the send thread, see ensure_send_thread().
     areg::Mutex                     mSendStartLock;
 
 #if defined(_MSC_VER)
@@ -734,7 +718,7 @@ inline bool ServiceClientConnectionBase::send_message(MessageEnvelope && data, a
     if ( try_send_inline(data) )
         return true;
 
-    // The fallback is the first user of the send thread, so this is where it comes to life.
+    // The fallback is the first user of the send thread, so this is where it starts.
     if ( mThreadSend.is_running() == false )
         ensure_send_thread();
 

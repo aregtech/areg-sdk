@@ -4,13 +4,9 @@
  * \file        pubservice/src/ProviderComponent.hpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
- * \brief       Example 32: provider of the mixed traffic service.
- *
- *              Several worker threads broadcast large blocks on one connection while the same
- *              connection answers small ping requests. That is the case none of the other
- *              examples cover: example 30 and 31 send only small messages, so their queue never
- *              fills, and example 23 sends only large ones, so no small message ever has to wait
- *              behind a big one.
+ * \brief       Example 32: provider of the mixed traffic service. Several worker threads
+ *              broadcast large blocks on one connection, while the same connection answers
+ *              small ping requests.
  ************************************************************************/
 
 #include "areg/base/areg_global.h"
@@ -70,6 +66,17 @@ private:
 private:
     static constexpr std::string_view   TIMER_NAME      { "MixedReportTimer" };
     static constexpr std::string_view   THREAD_PREFIX   { "MixedBulkThread" };
+
+//////////////////////////////////////////////////////////////////////////
+// Static operations
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Returns the options of this process. main() fills them from the command line
+     *          before the model is loaded, the component reads them when it starts up.
+     **/
+    [[nodiscard]]
+    static mixed::ProviderOptions & options() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

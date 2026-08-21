@@ -19,8 +19,8 @@
 
 #ifdef  _WIN32
 
-// WaitOnAddress and WakeByAddress are declared for Windows 8 and newer only. The rest of the
-// framework targets Windows 7, so the level is raised for this translation unit alone.
+// WaitOnAddress and WakeByAddress are declared for Windows 8 and newer only, so the target
+// level is raised for this translation unit alone.
 #undef  _WIN32_WINNT
 #define _WIN32_WINNT    0x0602
 
@@ -31,14 +31,13 @@
 
 #include <chrono>
 
-
 namespace {
 
 /**
  * \brief   Parks the calling thread while the wait word equals zero, for up to timeoutMs.
- *          Returns when the word changes, the timeout elapses, or the call is interrupted;
- *          the caller's outer loop re-checks the word. A signaler that flips the word before
- *          this thread actually sleeps is caught by the kernel value-compare (no lost wakeup).
+ *          Returns when the word changes, the timeout elapses or the call is interrupted, and
+ *          the caller re-checks the word. A signal sent before this thread is asleep is not
+ *          lost, because the kernel compares the value again.
  *
  * \param   word        The wait state word (0 == non-signaled).
  * \param   timeoutMs   Bounded sleep in milliseconds, or areg::WAIT_INFINITE.
@@ -137,7 +136,6 @@ bool SimpleEvent::set_signaled() noexcept
     if (!mValid)
         return false;
 
-    // Only the non-signaled
     if (mState.exchange(1u, std::memory_order_release) == 0u)
         _wake_waiters(mState, !mAutoReset);
 

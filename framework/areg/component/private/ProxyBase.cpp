@@ -363,9 +363,8 @@ void ProxyBase::service_connection_updated( const StubAddress & server, const Ch
     const bool wasConnected{ mIsConnected };
     const bool nowConnected{ areg::is_service_connected(status) };
 
-    // Only an exactly repeated notification may be dropped. Comparing the connected flag
-    // alone is not enough: 'Disconnected' followed by 'Shutdown' are two different facts
-    // and the second is the terminal one a consumer waits for, yet both clear the flag.
+    // Only an exactly repeated notification may be dropped: 'Disconnected' and 'Shutdown'
+    // both clear the connected flag, but only the second one is terminal.
     if ( (nowConnected == wasConnected) && (status == connection_status()) )
     {
         LOG_DBG("Ignored repeated connection update [ %s ]", areg::as_string(status));

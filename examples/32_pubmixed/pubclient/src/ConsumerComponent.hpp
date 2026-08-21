@@ -5,11 +5,6 @@
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Example 32: consumer of the mixed traffic service.
- *
- *              Receives the bulk stream and, on the same connection, sends small pings and
- *              measures their round-trip time. The round-trip time while the bulk stream runs,
- *              compared with the same figure when the provider is started with `-q`, is the
- *              number this example exists to produce.
  ************************************************************************/
 
 #include "areg/base/areg_global.h"
@@ -26,6 +21,10 @@
 //////////////////////////////////////////////////////////////////////////
 // ConsumerComponent class declaration
 //////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Receives the bulk stream and, on the same connection, sends small pings and measures
+ *          their round-trip time. Prints the round-trip percentiles once per second.
+ **/
 class ConsumerComponent final   : public    areg::Component
                                 , protected MixedTrafficConsumerBase
                                 , protected areg::TimerConsumer
@@ -36,6 +35,17 @@ class ConsumerComponent final   : public    areg::Component
 private:
     static constexpr std::string_view   TIMER_PING      { "MixedPingTimer" };
     static constexpr std::string_view   TIMER_REPORT    { "MixedReportTimer" };
+
+//////////////////////////////////////////////////////////////////////////
+// Static operations
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Returns the options of this process. main() fills them from the command line
+     *          before the model is loaded, the component reads them when it connects.
+     **/
+    [[nodiscard]]
+    static mixed::ConsumerOptions & options() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

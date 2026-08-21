@@ -832,14 +832,11 @@ private:
     inline uint32_t count_param_space(const uint32_t* params, uint32_t count) noexcept;
 
     /**
-     * \brief   Returns the number of bytes one entry of the parameter buffer occupies:
-     *          the StateArray itself followed by its states, rounded up so that the
-     *          entry that follows starts on an address a StateArray may live at.
+     * \brief   Returns the number of bytes one entry of the parameter buffer occupies: the
+     *          StateArray followed by its states, rounded up to alignof(StateArray) so that the
+     *          next entry starts on an address a StateArray may live at.
      *
-     *          areg::DataState is two bytes wide and a StateArray holds a pointer, so
-     *          without the rounding an odd parameter count places every following entry
-     *          on an address that does not satisfy alignof(StateArray). The reservation
-     *          and the placement must use this one function, never the raw sum.
+     * \note    The reservation and the placement must both use this function, never the raw sum.
      *
      * \param   paramCount  The number of states of the entry.
      **/
