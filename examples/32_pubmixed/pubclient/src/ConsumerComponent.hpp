@@ -99,7 +99,6 @@ private:
     uint64_t                mBulkBytes;     //!< Bulk bytes since the last report.
     uint32_t                mBulkBlocks;    //!< Bulk blocks since the last report.
     uint32_t                mPingsSent;     //!< Pings sent but not yet answered plus answered.
-    uint32_t                mPingsLost;     //!< Pings that were never answered.
     uint32_t                mSeconds;       //!< Reports printed so far.
 
 //////////////////////////////////////////////////////////////////////////

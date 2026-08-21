@@ -57,7 +57,6 @@ ConsumerComponent::ConsumerComponent(const areg::ComponentEntry& entry, areg::Co
     , mBulkBytes                ( 0u )
     , mBulkBlocks               ( 0u )
     , mPingsSent                ( 0u )
-    , mPingsLost                ( 0u )
     , mSeconds                  ( 0u )
 {
     mRtt.reserve(4096u);
