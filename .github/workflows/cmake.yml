@@ -490,7 +490,7 @@ jobs:
           BIN_DIR="${{env.BUILD_DEST}}/bin"
           if [ -d "${BIN_DIR}" ]; then BIN_ARG="--bin-dir ${BIN_DIR}"; else BIN_ARG=""; fi
           "${{env.PY}}" tools/run-all-examples.py ${BIN_ARG} --tier perf \
-                  --only 23_msgrate --repeat 8 \
+                  --only 23_msgrate --repeat 8 --no-stacks \
                   --out-dir "./example-results/${{matrix.config.name}}-msgrate"
 
       - name: Report the failed unit tests

@@ -1319,7 +1319,7 @@ def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs, use
         # The quit trace of the framework is short and answers on its own whether an
         # application was asked to stop. It is lifted out of the stream into the notes,
         # where the report carries it without the artifact having to be downloaded.
-        for runner in runners:
+        for runner in runners + ([router] if router is not None else []):
             marks = [line.strip() for line in runner.output.splitlines()
                      if QUIT_TRACE_MARK in line]
             for mark in marks:

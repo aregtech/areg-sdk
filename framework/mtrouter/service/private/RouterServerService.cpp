@@ -18,6 +18,7 @@
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areg/logging/areg_log.h"
+#include "areg/base/private/DiagTrace.hpp"
 #include "aregextend/service/SystemServiceDefs.hpp"
 
 DEF_LOG_SCOPE(mtrouter_service_RouterServerService, register_service_provider);
@@ -157,6 +158,11 @@ void RouterServerService::on_message_received(const areg::MessageEnvelope &msgRe
             areg::ArrayList<areg::StubAddress>  listStubs;
             areg::ArrayList<areg::ProxyAddress> listProxies;
             mServiceRegistry.service_sources(cookie, listStubs, listProxies);
+
+            areg::diag::trace("router: disconnect cookie=%u stubs=%u proxies=%u"
+                        , static_cast<uint32_t>(cookie)
+                        , static_cast<uint32_t>(listStubs.size())
+                        , static_cast<uint32_t>(listProxies.size()));
 
             LOG_DBG("Routing service received disconnect message from cookie [ %u ], [ %d ] stubs and [ %d ] proxies are going to be disconnected"
                         , static_cast<uint32_t>(cookie)
@@ -415,6 +421,10 @@ void RouterServerService::on_provider_unregistered(const areg::StubAddress & stu
     {
         ListServiceProxies listProxies;
         mServiceRegistry.unregister_service_provider(stub, listProxies);
+
+        areg::diag::trace("router: provider_unregistered filter_cookie=%u proxies=%u"
+                    , static_cast<uint32_t>(cookie)
+                    , static_cast<uint32_t>(listProxies.size()));
         LOG_DBG("Unregistered stub [ %s ], [ %d ] proxies are going to be notified"
                         , stub.to_string().as_string()
                         , listProxies.size());
@@ -433,6 +443,8 @@ void RouterServerService::on_provider_unregistered(const areg::StubAddress & stu
                 if (sendList.add_if_unique(addrProxy.source()) )
                 {
                     send_message(areg::service_unregistered_event(stub, reason, mServerConnection.channel_id(), addrProxy.source( )), areg::EventPriority::HighPrio );
+
+                    areg::diag::trace("router: notified proxy source=%u", static_cast<uint32_t>(addrProxy.source()));
 
                     LOG_INFO("Send stub [ %s ] disconnect message to proxy [ %s ]"
                                     , stub.to_string().as_string()
@@ -455,6 +467,8 @@ void RouterServerService::on_provider_unregistered(const areg::StubAddress & stu
     }
     else
     {
+        areg::diag::trace("router: provider_unregistered SKIPPED, stub not connected");
+
         // ignore, stub is already disconnected
         LOG_DBG("Ignore unregistering stub [ %s ], it is already unregistered", stub.to_string().as_string());
     }
