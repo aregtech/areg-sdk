@@ -14,11 +14,9 @@
  ************************************************************************/
 
 #include "logcollector/app/LogCollector.hpp"
-#include "logcollector/app/private/LogCollectorConsoleService.hpp"
 
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/AppDefs.hpp"
-#include "areg/component/ComponentLoader.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/String.hpp"
 #include "areg/logging/areg_log.h"
@@ -41,31 +39,6 @@ using areg::ext::Console;
 using areg::ext::DataRateHelper;
 using areg::ext::OptionParser;
 
-//////////////////////////////////////////////////////////////////////////
-// The model used only in console mode.
-//////////////////////////////////////////////////////////////////////////
-
-// This model defines a Console Service to run to make data rate outputs.
-// The Console Service runs only in verbose mode.
-
-static String _modelName("LogCollectorModel");
-// Describe mode, set model name
-BEGIN_MODEL(_modelName)
-
-    // define console service thread.
-    BEGIN_REGISTER_THREAD( "LogCollectorConsoleServiceThread" )
-        // Define the console service
-        BEGIN_REGISTER_COMPONENT(LogCollectorConsoleService::SERVICE_NAME, LogCollectorConsoleService)
-            // register dummy 'empty service'.
-            REGISTER_IMPLEMENT_SERVICE( areg::EmptyServiceName, areg::EmptyServiceVersion )
-        // end of component description
-        END_REGISTER_COMPONENT(LogCollectorConsoleService::SERVICE_NAME )
-    // end of thread description
-    END_REGISTER_THREAD( "LogCollectorConsoleServiceThread" )
-
-// end of model description
-END_MODEL(_modelName)
-        
 namespace
 {
     constexpr std::string_view _msgHelp []
@@ -386,15 +359,6 @@ void LogCollector::print_help( bool isCmdLine )
 #endif  // AREG_EXTENDED
 }
 
-void LogCollector::start_console_service()
-{
-    areg::Application::load_model( _modelName );
-}
-
-void LogCollector::stop_console_service()
-{
-    areg::Application::unload_model( _modelName );
-}
 
 bool LogCollector::_check_command(const String& cmd)
 {

@@ -29,7 +29,27 @@ namespace areg {
     constexpr uint32_t  QUEUE_MIN_RING_CAPACITY     {                 32u };    //!< Smallest ring size.
     constexpr uint32_t  QUEUE_MAX_RING_CAPACITY     {           16777216u };    //! explicit-size upper bound (keeps round-up safe)
     constexpr uint32_t  QUEUE_DEFAULT_RING_CAPACITY {               1024u };    //!< Default Ring size to use.
-    constexpr uint32_t  QUEUE_DEFAULT_FULL_WAIT_MS  { areg::WAIT_1_SECOND };    //!< Default lossless block timeout.
+    //!< Lossless full-queue producer wait in a release build. It is a backstop for a consumer
+    //!< that stopped: a healthy but slow socket gives up after SO_SNDTIMEO, which is 2500 ms.
+    constexpr uint32_t  QUEUE_FULL_WAIT_RELEASE_MS  {   10 * areg::WAIT_1_SECOND };
+
+    /**
+     * \brief   Lossless full-queue producer wait in a debug build, about 24 days, so that a
+     *          thread suspended in the debugger does not make the application lose a message.
+     *
+     * \note    Must not be areg::WAIT_INFINITE. That value already means "ignore the caller and
+     *          read the value from the configuration", see _resolve_queue_wait().
+     **/
+    constexpr uint32_t  QUEUE_FULL_WAIT_DEBUG_MS    { 0x7FFF'FFFFu };
+
+#ifdef DEBUG
+    constexpr uint32_t  QUEUE_DEFAULT_FULL_WAIT_MS  { areg::QUEUE_FULL_WAIT_DEBUG_MS };   //!< Default lossless block timeout.
+#else   // DEBUG
+    constexpr uint32_t  QUEUE_DEFAULT_FULL_WAIT_MS  { areg::QUEUE_FULL_WAIT_RELEASE_MS }; //!< Default lossless block timeout.
+#endif  // DEBUG
+
+    //!< A producer that waited at least this long for a free slot is reported.
+    constexpr uint32_t  QUEUE_WAIT_WARN_MS          { areg::WAIT_1_SECOND };
     constexpr bool      QUEUE_DROP_WHEN_FULL        {               false };    //!< Default action if queue is full, wait for free slot.
 
 /************************************************************************

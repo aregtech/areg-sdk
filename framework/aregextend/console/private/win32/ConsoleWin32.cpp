@@ -285,9 +285,8 @@ bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 {
     if (_isConsole == false)
     {
-        // Redirected input. 'gets_s' aborts the process when the line does not fit;
-        // a redirected stream is read with 'fgets', which keeps the line separator,
-        // which is removed here.
+        // Redirected input: 'gets_s' aborts the process when the line does not fit, so
+        // 'fgets' is used and the line separator it keeps is removed below.
         if (::fgets(buffer, static_cast<int>(size), stdin) == nullptr)
         {
             return false;

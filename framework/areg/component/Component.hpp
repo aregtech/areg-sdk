@@ -271,10 +271,8 @@ public:
 
     /**
      * \brief   Takes this component, its providers and its worker threads out of every global
-     *          registry, without releasing anything.
-     *
-     *          Only global registries are touched, never the internal state of the objects,
-     *          because the abandoned thread may be using it at the same moment.
+     *          registry, and releases nothing. The internal state of the objects is never
+     *          touched, because an abandoned thread may be using it at the same moment.
      *
      * \see     ComponentThread::terminate_self, StubBase::detach_from_registry
      **/

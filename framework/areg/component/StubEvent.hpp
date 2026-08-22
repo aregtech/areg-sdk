@@ -47,6 +47,7 @@ namespace areg {
 /************************************************************************
  * Dependencies
  ************************************************************************/
+class Component;
 class ServiceRequestEvent;
 class StubConnectEvent;
 
@@ -231,6 +232,12 @@ private:
 // Hidden operations
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   Returns the component that owns the stub served by this consumer.
+     **/
+    [[nodiscard]]
+    Component & owner_component() const noexcept;
+
     /**
      * \brief   Processes a local request event.
      *

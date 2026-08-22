@@ -189,9 +189,9 @@ config::*::version          = 2.0.0                         # Configuration sche
 # Global Runtime Settings
 # ---------------------------------------------------------------------------
 config::*::default::blocksize       = 64                    # Default block size (bytes) for shared buffer allocation to minimize fragmentation. 0 = ignore
-config::*::queue::capacity          = 0                     # Dispatcher event-queue ring capacity (rounded up to power of two, min 32). 0 = built-in default (1024)
-config::*::queue::timeout           = 0                     # Dispatcher full-ring block timeout (ms) in lossless mode. 0 = built-in default (1000 ms)
-config::*::queue::drop              = false                 # Dispatcher full-ring policy. false = lossless (producer blocks); true = drop-newest (best-effort, never blocks)
+config::*::queue::capacity          = 0                     # Ring capacity in messages. Sets memory AND small-message latency. 0 = default (1024). See wiki 05b.
+config::*::queue::timeout           = 0                     # Full-queue producer wait, ms. 0 = default (10000 release, unlimited debug). See wiki 05b.
+config::*::queue::drop              = false                 # false = never lose a message (producer blocks). true drops silently. See wiki 05b.
 
 # ###########################################################################
 # APPLICATION LOGGING SETTINGS
@@ -255,6 +255,7 @@ log::logobserver::layout::exit      = %d: [ %a.%x.%t.%z: Exit <-- ]%n   # Exit: 
 # ---------------------------------------------------------------------------
 log::logobserver::enable::file      = false                         # Log observer: disable file logging
 log::logobserver::enable::db        = true                          # Log observer: enable database logging
+log::logobserver::enable::remote    = false                         # Log observer: disable remote logging. Keep ALWAYS false: it observes the log collector
 log::logobserver::db::engine        = sqlite3                       # Database engine: SQLite 3
 log::logobserver::db::name          = log_%time%.sqlog              # Database file name with timestamp mask
 log::logobserver::db::location      = ./logs                        # Database file directory
@@ -267,6 +268,7 @@ log::logobserver::db::location      = ./logs                        # Database f
 # ---------------------------------------------------------------------------
 log::logcollector::enable::file     = false     # Log Collector: disable file output
 log::logcollector::enable::debug    = false     # Log Collector: disable debug console output
+log::logcollector::enable::remote   = false     # Log Collector: disable remote logging. Keep ALWAYS false: it would log to itself
 
 # ---------------------------------------------------------------------------
 # Log Collector Database Settings
@@ -283,7 +285,7 @@ log::logcollector::db::location     = ./logs                            # Databa
 log::mtrouter::enable::file         = false     # Message Router: disable file logging
 log::mtrouter::enable::db           = false     # Message Router: disable database logging
 log::mtrouter::enable::debug        = false     # Message Router: disable debug console output
-log::mtrouter::enable::remote       = false     # Message Router: disable remote logging
+log::mtrouter::enable::remote       = false     # Message Router: disable remote logging. Keep ALWAYS false
 
 # ###########################################################################
 # REMOTE SERVICES CONFIGURATION
@@ -323,7 +325,7 @@ net::logcollector::tcpip::sndbuf    = 2048                  # Logger SO_SNDBUF (
 net::logcollector::tcpip::rcvbuf    = 2048                  # Logger SO_RCVBUF (2048 KB = 2 MB).
 net::*::tcpip::sndbuf               = 8192                  # Default SO_SNDBUF for all services (uncomment to set a global default).
 net::*::tcpip::rcvbuf               = 8192                  # Default SO_RCVBUF for all services (uncomment to set a global default).
-net::*::tcpip::drain                = 128                   # Send/drain batch size per dispatcher wake-up. 0 = use compile-time DEFAULT_DRAIN_LIMIT.
+net::*::tcpip::drain                = 128                   # Send batch in messages, 0..128. A MEMORY setting: lowering it costs data rate. See wiki 05b.
 net::*::tcpip::pairs                = 0                     # Pool thread-pair count. 0 = disabled (shared send/recv threads). >0 = dedicated pool pairs per N clients.
 net::*::tcpip::timeout              = 2500                  # SO_SNDTIMEO in ms. Raise (e.g. 30000) when debugging on Windows to prevent breakpoint-pause disconnects.
 net::*::tcpip::cache                = 256                   # The size per-socket cache to receive data. Same value is used to initialize send cache.
@@ -339,7 +341,7 @@ logger::*::connect          = tcpip			                # Supported connection pro
 logger::*::enable::tcpip    = true			                # TCP/IP protocol enable/disable flag
 logger::*::address::tcpip   = localhost                     # Log collector IP address (127.0.0.1). Change for remote collector.
 logger::*::port::tcpip      = 8282			                # Log collector TCP port number (default: 8282)
-# Logger socket buffers configured in net::logger::... section above.
+# Logger socket buffers configured in net::logcollector::... section above.
 
 # ###########################################################################
 # APPLICATION-SPECIFIC LOG SCOPES

@@ -14,7 +14,7 @@
  ************************************************************************/
 #include "mtrouter/app/MultitargetRouter.hpp"
 
-#ifdef _POSIX
+#if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/base/File.hpp"
@@ -43,4 +43,4 @@ int main(int argc, char* argv[], char* envp[])
 // Global functions, End
 //////////////////////////////////////////////////////////////////////////
 
-#endif // POSIX
+#endif // defined(_POSIX) || defined(POSIX)

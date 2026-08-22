@@ -39,6 +39,12 @@ StubEventConsumer::StubEventConsumer( const StubAddress & stubAddress )
 {
 }
 
+Component & StubEventConsumer::owner_component() const noexcept
+{
+    // StubBase is the only class derived from StubEventConsumer.
+    return static_cast<const StubBase *>(this)->component();
+}
+
 inline void StubEventConsumer::_refuse_request(ServiceRequestEvent& reqEvent)
 {
     LOG_SCOPE( areg_component_StubEventConsumer, refuse_request );
@@ -64,8 +70,7 @@ inline void StubEventConsumer::_local_request(ServiceRequestEvent& reqEvent )
         return;
     }
 
-    Component* curComponent = Component::find_by_name(mStubAddress.role_name());
-    ComponentThread::set_current_component(curComponent);
+    ComponentThread::set_current_component(&owner_component());
 
     if (areg::is_request_id(reqEvent.request_id()))
         process_request_event(reqEvent);
@@ -77,8 +82,7 @@ inline void StubEventConsumer::_local_request(ServiceRequestEvent& reqEvent )
 
 inline void StubEventConsumer::_local_notify_request(ServiceRequestEvent& notifyRequest )
 {
-    Component* curComponent = Component::find_by_name(mStubAddress.role_name());
-    ComponentThread::set_current_component(curComponent);
+    ComponentThread::set_current_component(&owner_component());
 
     const uint32_t reqId{ notifyRequest.request_id() };
     if (areg::is_attribute_id(reqId) || areg::is_response_id(reqId))

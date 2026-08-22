@@ -30,13 +30,12 @@
 namespace {
 
 /************************************************************************
- * \brief   Thread-pool timer callback. Runs in a Windows thread-pool
- *          thread when a watchdog expires.
+ * \brief   Thread-pool timer callback, run in a Windows thread-pool thread when a
+ *          watchdog expires. \a pv is the areg::os::Win32TimerHandle* passed as the
+ *          context of CreateThreadpoolTimer().
  *
- *  pv is the areg::os::Win32TimerHandle* given as context to CreateThreadpoolTimer.
- *  A completion routine of a waitable timer cannot be used here: it is
- *  delivered as an APC to the thread that armed the timer, and that thread
- *  waits on the event queue, which is not an alertable wait.
+ * \note    A waitable timer completion routine cannot be used here: it arrives as an
+ *          APC on the thread that armed the timer, which does not wait alertably.
  ************************************************************************/
 VOID CALLBACK _tp_watchdog_callback( PTP_CALLBACK_INSTANCE /*instance*/,
                                      PVOID                  pv,

@@ -142,7 +142,8 @@ void RouterClient::unregister_service_provider(const StubAddress & stubService, 
                    , StubAddress::to_path(stubService).as_string()
                    , mClientConnection.cookie());
 
-        // HighPrio, the same lane as register_service_provider()
+        // HighPrio, the same lane as register_service_provider(): a register / unregister
+        // pair split across two lanes reaches the peer swapped.
         send_message(areg::router_unregister_service(stubService, reason, mClientConnection.cookie(), areg::COOKIE_ROUTER), areg::EventPriority::HighPrio );
     }
 }
@@ -175,9 +176,7 @@ void RouterClient::unregister_service_consumer(const ProxyAddress & proxyService
                    , ProxyAddress::to_path(proxyService).as_string()
                    , mClientConnection.cookie());
 
-        // HighPrio, the same lane as register_service_consumer(), for the reason given in
-        // unregister_service_provider(): a register/unregister pair must not be split across
-        // two lanes, or the peer receives them swapped.
+        // HighPrio, the same lane as register_service_consumer().
         send_message(areg::router_unregister_consumer(proxyService, reason, mClientConnection.cookie(), areg::COOKIE_ROUTER), areg::EventPriority::HighPrio );
     }
 }

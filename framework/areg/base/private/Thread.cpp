@@ -73,6 +73,8 @@ Thread::MapThreadIDResource& Thread::_map_thread_id() noexcept
     return _mapThreadId;
 }
 
+std::atomic<uint32_t> Thread::mRegistryGeneration{ 1u };
+
 /************************************************************************/
 // Default thread procedure
 /************************************************************************/
@@ -90,10 +92,12 @@ unsigned long Thread::_default_thread_function(void* data)
 
         // instantiate thread local storage before starting running
         Thread::_thread_local_storage(threadObj);
+        Thread::_set_self_thread(threadObj);
 
         result = static_cast<ThreadConsumer::ExitCode>( threadObj->_thread_entry() );
 
         // delete thread local storage.
+        Thread::_set_self_thread(nullptr);
         Thread::_thread_local_storage(nullptr);
         threadObj->mWaitForExit.set_signaled();
         threadObj->_set_run_state(Thread::RunState::NotRunning);
@@ -105,6 +109,15 @@ unsigned long Thread::_default_thread_function(void* data)
 /************************************************************************/
 // Local static utility methods
 /************************************************************************/
+namespace
+{
+    Thread * & _self_thread_slot() noexcept
+    {
+        static AREG_THREAD_LOCAL Thread * _selfThread{ nullptr };
+        return _selfThread;
+    }
+}
+
 ThreadLocalStorage* Thread::_thread_local_storage( Thread* ownThread )
 {
     static AREG_THREAD_LOCAL ThreadLocalStorage* _localStorage {nullptr};
@@ -134,6 +147,24 @@ ThreadLocalStorage* Thread::_thread_local_storage( Thread* ownThread )
     return _localStorage;
 }
 
+Thread * Thread::_self_thread() noexcept
+{
+    return _self_thread_slot();
+}
+
+void Thread::_set_self_thread( Thread * ownThread ) noexcept
+{
+    _self_thread_slot() = ownThread;
+}
+
+void Thread::_bump_registry_generation() noexcept
+{
+    // Zero is the "nothing resolved yet" value of every cache, so the counter must skip it.
+    if (Thread::mRegistryGeneration.fetch_add(1u, std::memory_order_acq_rel) == 0xFFFFFFFFu)
+    {
+        Thread::mRegistryGeneration.fetch_add(1u, std::memory_order_acq_rel);
+    }
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -417,6 +448,7 @@ bool Thread::_register_thread()
     Thread::_map_thread_name().register_resource_object(static_cast<uint32_t>(mThreadAddress), this);
     Thread::_map_thread_id().register_resource_object(mThreadId, this);
     mRegistered.store(true, std::memory_order_release);
+    Thread::_bump_registry_generation();
 
     _os_set_name(mThreadId, mThreadAddress.name());
     return mThreadConsumer.on_thread_registered(this);
@@ -432,6 +464,8 @@ void Thread::_unregister_thread()
 
     mThreadConsumer.on_thread_unregistering();
 
+    // Advanced first, so that no cached pointer to this object survives its removal.
+    Thread::_bump_registry_generation();
     Thread::_map_thread_name().unregister_resource_object(static_cast<uint32_t>(mThreadAddress));
     Thread::_map_thread_id().unregister_resource_object(mThreadId);
 }

@@ -4,12 +4,11 @@
 # ###########################################################################
 #
 # Loads a model, then calls Application::release() without calling
-# Application::unload_model() first, and checks that the component threads are
-# joined and the components deleted.
+# Application::unload_model() first, and checks that the component threads are joined
+# and the components deleted.
 #
-# It is a separate executable rather than a case in the unit test binary,
-# because Application::setup() and Application::release() act on the whole
-# process and run once, so it cannot share a process with the other tests.
+# Application::setup() and Application::release() act on the whole process and run
+# once, so this runs as its own executable rather than as a case in the unit tests.
 # ###########################################################################
 
 set(AREG_RELEASE_UNLOAD_PROJECT "areg-release-unload-test")

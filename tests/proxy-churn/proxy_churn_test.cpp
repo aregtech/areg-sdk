@@ -1,12 +1,9 @@
 /**
  * \file    proxy_churn_test.cpp
- * \brief   Dynamic client churn against a single proxy.
- *
- *          One proxy, one long living client, and many short living clients that
- *          are created and deleted on the heap while the service is down and
- *          while it is up. Deleted clients poison their own memory, so a stale
- *          entry left in the proxy connection listener list is a hard crash on
- *          the next connect or disconnect edge instead of a silent leak.
+ * \brief   Dynamic client churn against a single proxy: one long living client and many
+ *          short living ones, created and deleted on the heap while the service goes up
+ *          and down. A deleted client poisons its own memory, so a stale entry in the
+ *          proxy connection listener list crashes instead of leaking silently.
  */
 
 #include "areg/base/areg_global.h"

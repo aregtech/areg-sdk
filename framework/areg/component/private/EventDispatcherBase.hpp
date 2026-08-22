@@ -97,6 +97,32 @@ protected:
     virtual ~EventDispatcherBase();
 
 //////////////////////////////////////////////////////////////////////////
+// Static operations
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Grants the calling thread the right to write one outgoing message into a socket
+     *          itself, instead of handing it to a send thread.
+     *
+     *          A dispatcher grants one credit every time its event queue runs empty, so the
+     *          first message produced afterwards may go straight to the socket and every further
+     *          message of the same burst goes to the send thread. A thread that is not a
+     *          dispatcher is never granted a credit.
+     **/
+    static void grant_inline_send_credit() noexcept;
+
+    /**
+     * \brief   Takes the inline send credit of the calling thread, if it has one. A credit is
+     *          taken only once per grant, so a handler that produces many messages writes at
+     *          most one of them directly.
+     *
+     * \return  True if the calling thread held a credit, which is now used up. False if it held
+     *          none, in which case the message must be given to the send thread.
+     **/
+    [[nodiscard]]
+    static bool take_inline_send_credit() noexcept;
+
+//////////////////////////////////////////////////////////////////////////
 // Public overrides
 //////////////////////////////////////////////////////////////////////////
 public:
@@ -200,6 +226,14 @@ public:
     uint32_t pop_events(Event* listEvents, uint32_t count) noexcept;
 
     /**
+     * \brief   Returns the longest time, in milliseconds, that any producer had to wait for a
+     *          free slot in the external queue since this was last called, and resets it.
+     *          Returns 0 when nobody had to wait.
+     **/
+    [[nodiscard]]
+    inline uint32_t extract_max_producer_wait_ms() noexcept;
+
+    /**
      * \brief   Picks up a single Event from the external queue.
      *          Returns an invalid Event (is_valid() == false) when the queue is empty.
      *          The ExitEvent is returned as a value copy (check with is_exit_prio()).
@@ -266,7 +300,15 @@ protected:
     virtual void post_dispatch_event( Event & eventElem );
 
     /**
-     * \brief   Runs the main dispatching loop.
+     * \brief   Runs the main dispatching loop: drains every queued event, then parks the thread
+     *          until a producer pushes a new event or the exit is triggered.
+     *
+     *          The loop also returns free heap pages to the operating system, because the C
+     *          library keeps the pages of a drained backlog mapped. The pages are released only
+     *          after many events were dispatched and the queue then stayed empty for a full idle
+     *          period, so that the release does not delay an arriving message.
+     *
+     * \return  True if the loop ended because the exit event was dispatched.
      **/
     virtual bool run_dispatcher();
 
@@ -341,6 +383,11 @@ private:
 inline uint32_t EventDispatcherBase::queue_events(Event* listEvents, uint32_t count)
 {
     return mExternalEvents.push_events(listEvents, count);
+}
+
+inline uint32_t EventDispatcherBase::extract_max_producer_wait_ms() noexcept
+{
+    return mExternalEvents.extract_max_wait_ms();
 }
 
 inline uint32_t EventDispatcherBase::pop_events(Event* listEvents, uint32_t count) noexcept

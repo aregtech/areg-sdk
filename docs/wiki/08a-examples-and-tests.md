@@ -256,7 +256,8 @@ Projects like `xx_generate` are created from **Service Interface** document file
 | **Multitasking (IPC)**    | Process-based communication   | 15_pubsvc, 16_pubmesh                         |
 | **Advanced**              | Complex scenarios             | 16_pubfsm, 20_winchat (Windows only)          |
 | **Data- & Message-Rate**  | Performance Benchmark Test    | 23_pubdatarate                                |
-| **Latency Measurement**   | Latency Benchmark Test        | 30_publatency                                 |
+| **Latency Measurement**   | Latency Benchmark Test        | 30_publatency, 31_loclatency                  |
+| **Mixed Traffic**         | Bulk vs small-message latency | 32_pubmixed                                   |
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 

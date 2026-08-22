@@ -11,11 +11,10 @@
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, POSIX specific timer information.
- *              Common methods shared by all POSIX platforms, plus generic POSIX
- *              (non-Linux, non-Apple) private helpers using timer_create + SIGEV_THREAD.
+ *              Common methods shared by all POSIX platforms, plus the generic POSIX
+ *              (non-Linux, non-Apple) helpers, which keep the deadline and use no OS timer.
  *              Linux-specific (timerfd):  linux/TimerPosixLinux.cpp
  *              macOS-specific (GCD):      macos/TimerPosixMacOS.cpp
- *
  ************************************************************************/
 
 #if defined(_POSIX) || defined(POSIX)
@@ -36,18 +35,9 @@
 // _destroy_timer -- a deadline, no OS timer object.
 // Covers Cygwin, FreeBSD, and any other non-Linux non-Apple POSIX platform.
 //
-// This used to be a 'timer_create' + 'SIGEV_THREAD' backend. The OS then ran the
-// expiry on a thread it created and destroyed itself, and that thread took this
-// object's lock, the manager's resource lock, the timer lock and the event queue of
-// the owning dispatcher, and allocated memory on the way. A thread destroyed inside
-// any of those regions leaves the lock owned by a thread that no longer exists: on
-// Cygwin that hung 'Application::release()' in 'TimerManager::wait_timer_manager()',
-// with the manager thread blocked on the first line of TimerPosix::stop_timer().
-//
-// The deadline is now kept here and watched by the manager loop -- see
-// posix/TimerManagerBasePosix.cpp -- so every one of those locks is taken only by a
-// thread areg creates and stops. Nothing here calls into the OS while holding a lock,
-// because nothing here calls into the OS at all.
+// No call here enters the OS, so no lock of this object is ever held across a
+// system call. The deadline is watched by the manager loop, see
+// posix/TimerManagerBasePosix.cpp.
 //////////////////////////////////////////////////////////////////////////
 
 #if !defined(__linux__) && !defined(__APPLE__)

@@ -249,6 +249,13 @@ public:
     ComponentThread & component_thread() const noexcept;
 
     /**
+     * \brief   Returns the component that owns this stub. A stub is a part of its component,
+     *          so the reference is valid for the entire lifetime of the stub.
+     **/
+    [[nodiscard]]
+    inline Component & component() const noexcept;
+
+    /**
      * \brief   Returns the address of this stub object.
      **/
     [[nodiscard]]
@@ -872,6 +879,11 @@ inline StubBase & StubBase::self() noexcept
 inline const StubAddress& StubBase::address() const noexcept
 {
     return mAddress;
+}
+
+inline Component & StubBase::component() const noexcept
+{
+    return mComponent;
 }
 
 inline const String & StubBase::service_role() const noexcept

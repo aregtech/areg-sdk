@@ -136,16 +136,6 @@ protected:
     void print_help( bool isCmdLine ) final;
 
     /**
-     * \brief   Starts the console service.
-     **/
-    void start_console_service() final;
-
-    /**
-     * \brief   Stops the console service.
-     **/
-    void stop_console_service() final;
-
-    /**
      * \brief   Returns a callback function to validate and check input option values.
      **/
     areg::ext::Console::CallBack option_check_callback() const final;

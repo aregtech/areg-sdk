@@ -112,9 +112,8 @@ public:
 
     /**
      * \brief   Thread::RunState
-     *          The states of the thread routine with respect to the thread object.
-     *          The object may be released only in the 'NotRunning' state, because in
-     *          every other state the routine may still access it.
+     *          The states of the thread routine with respect to the thread object. The object
+     *          may be released only in the 'NotRunning' state.
      **/
     enum class RunState : uint8_t
     {
@@ -333,6 +332,17 @@ public:
     inline static Thread * find_by_address( const ThreadAddress & threadAddres ) noexcept;
 
     /**
+     * \brief   Returns the current value of the thread registry counter, which changes every
+     *          time a thread object is added to or removed from the thread maps and is never
+     *          zero. Code that caches a resolved thread pointer stores this value next to it and
+     *          uses the pointer only while the counter is unchanged.
+     *
+     * \return  A non-zero number that changes on every thread registration and unregistration.
+     **/
+    [[nodiscard]]
+    inline static uint32_t registry_generation() noexcept;
+
+    /**
      * \brief   Searches for thread by ID and returns its address containing process and thread IDs.
      *
      * \param   threadId    The ID of thread to get address.
@@ -351,14 +361,11 @@ public:
     inline static const ThreadAddress & address_by_number( const UniqueNumber threadNumber ) noexcept;
 
     /**
-     * \brief   Suspends the calling thread for the given duration. A plain, uninterruptible
-     *          OS sleep -- nanosleep() on POSIX, Sleep() on Windows -- with no framework state
-     *          involved, exactly like std::this_thread::sleep_for(). It works on any thread,
-     *          areg owned or not, and it always sleeps the full duration.
+     * \brief   Suspends the calling thread for the full duration. A plain, uninterruptible OS
+     *          sleep on any thread, areg owned or not, like std::this_thread::sleep_for().
      *
-     *          A thread parked here cannot be released: POSIX has no way to terminate a thread,
-     *          so a component that sleeps longer than its watchdog timeout becomes an abandoned thread.
-     *          Use wait_exit() instead wherever the thread has to stay stoppable.
+     * \note    A thread parked here cannot be stopped or released. Use wait_exit() wherever the
+     *          thread has to stay stoppable.
      *
      * \param   msTimeout       Timeout in milliseconds.
      * \see     wait_exit
@@ -366,14 +373,11 @@ public:
     static void sleep( uint32_t msTimeout );
 
     /**
-     * \brief   Waits up to the given duration, and returns at once if an exit was requested
-     *          for the calling thread by request_exit(). This is the stoppable form of sleep():
-     *          a thread waiting here leaves by a normal return when it is asked to, so its
-     *          destructors run and it releases its own objects instead of being abandoned.
+     * \brief   Waits up to the given duration and returns at once when an exit was requested
+     *          for the calling thread by request_exit(). The stoppable form of sleep().
      *
-     *          The result MUST be honoured. The exit request is sticky, so once it returns
-     *          false every later call of that thread returns false as well -- a loop that keeps
-     *          going would busy-spin. Return, do not retry.
+     * \note    The result must be honoured. The exit request is sticky, so every later call of
+     *          that thread returns false as well. Return, do not retry.
      *
      * \param   msTimeout       Timeout in milliseconds.
      * \return  True if the full timeout elapsed. False if an exit was requested for the calling
@@ -384,14 +388,12 @@ public:
     static bool wait_exit( uint32_t msTimeout );
 
     /**
-     * \brief   Requests the thread to leave its routine at the next opportunity and releases
-     *          the blocking calls of the framework that it may be waiting in, so that they
-     *          return immediately. Currently this is Thread::sleep().
+     * \brief   Requests the thread to leave its routine at the next opportunity and releases the
+     *          blocking calls of the framework it may be waiting in, so that they return at once.
      *
-     *          The request is sticky: it stays set until the thread object is started again.
-     *          It is a request and not a termination, and it cannot release a thread that
-     *          blocks outside the framework. Call shutdown() to learn whether the thread
-     *          actually left.
+     * \note    The request is sticky until the thread object starts again. It is a request and
+     *          not a termination: it cannot release a thread that blocks outside the framework.
+     *          Call shutdown() to learn whether the thread left.
      *
      * \see     shutdown, is_exit_requested
      **/
@@ -399,21 +401,17 @@ public:
 
     /**
      * \brief   Takes this thread out of the thread name and thread ID maps and asks it to leave,
-     *          without waiting for it and without releasing anything it owns.
-     *
-     *          Used on the abandoned-thread path. A thread that could not be stopped keeps
-     *          running and keeps using its objects, nothing may be freed, but it must stop
-     *          being discoverable: find_by_name(), find_by_id() and find_by_address() must not
-     *          hand it out, and its name must be free for a replacement to take.
+     *          without waiting for it and without releasing anything it owns. After the call
+     *          find_by_name(), find_by_id() and find_by_address() no longer hand it out, and its
+     *          name is free for another thread to take.
      *
      * \see     shutdown, ThreadCompletion::Stuck
      **/
     void detach_from_registry();
 
     /**
-     * \brief   Returns true if an exit was requested for this thread by request_exit() and
-     *          the thread object did not start again since. The blocking calls of the
-     *          framework check it to return early.
+     * \brief   Returns true if an exit was requested for this thread by request_exit() and the
+     *          thread object did not start again since.
      *
      * \see     request_exit
      **/
@@ -581,11 +579,7 @@ protected:
     #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
-    /**
-     * \brief   The state of the thread routine. Written by the routine itself and by the
-     *          call that forces the thread to terminate. Read without the lock, because
-     *          the object may be released only after it is back to 'NotRunning'.
-     **/
+    //!< The state of the thread routine, see Thread::RunState.
     std::atomic<RunState>   mRunState;
 #if defined(_MSC_VER)
     #pragma warning(pop)
@@ -606,25 +600,18 @@ protected:
      * \brief   Synchronization Event object, signaled when thread completes running and going to exist
      **/
     SyncEvent               mWaitForExit;
-    /**
-     * \brief   Manual reset event, signaled while an exit is requested for this thread and
-     *          reset when the thread object starts again. The blocking calls of the framework
-     *          wait on it so that they return at once instead of waiting their timeout out.
-     *          Manual reset on purpose: every blocking call has to see the request.
-     **/
+    //!< Manual reset event, signaled while an exit is requested for this thread.
     SyncEvent               mExitRequest;
 #if defined(_MSC_VER)
     #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
-    /**
-     * \brief   The state of mExitRequest, readable without entering the event object.
-     **/
+    //!< The state of mExitRequest, readable without entering the event object.
     std::atomic<bool>       mExitRequested;
-    /**
-     * \brief   True while this object is present in the thread maps.
-     **/
+    //!< True while this object is present in the thread maps.
     std::atomic<bool>       mRegistered;
+    //!< Counts every thread registration and unregistration, see registry_generation().
+    static std::atomic<uint32_t> mRegistryGeneration;
 #if defined(_MSC_VER)
     #pragma warning(pop)
 #endif  // _MSC_VER
@@ -651,9 +638,8 @@ private:
     void _clean_resources( bool unregister, bool releaseHandle );
 
     /**
-     * \brief   Spins and yields while the thread routine is in the 'Exiting' state, i.e.
-     *          until it made its last access to this object. Returns at once in every
-     *          other state.
+     * \brief   Spins and yields while the thread routine is in the 'Exiting' state, that is
+     *          until its last access to this object. Returns at once in every other state.
      **/
     void _wait_exit_completed() const noexcept;
 
@@ -677,9 +663,8 @@ private:
     int32_t  _thread_entry();
 
     /**
-     * \brief   Sets the running state of the thread. Marks the thread 'Running' when the
-     *          consumer starts and 'Exiting' when it returns, since the routine keeps
-     *          using the object after that.
+     * \brief   Sets the running state of the thread. Marks it 'Running' when the consumer
+     *          starts and 'Exiting' when the consumer returns.
      *
      * \param   is_running      True to mark thread as running; false otherwise.
      **/
@@ -711,6 +696,28 @@ private:
      * \return  Pointer to current thread-local storage object.
      **/
     static ThreadLocalStorage * _thread_local_storage( Thread* ownThread );
+
+    /**
+     * \brief   Returns the thread object of the calling thread, taken from the thread local
+     *          storage, or nullptr if the calling thread was not started by the framework or its
+     *          thread routine already ended.
+     **/
+    [[nodiscard]]
+    static Thread * _self_thread() noexcept;
+
+    /**
+     * \brief   Stores the thread object of the calling thread in the thread local storage.
+     *
+     * \param   ownThread   The thread object of the calling thread, or nullptr to clear the slot.
+     **/
+    static void _set_self_thread( Thread * ownThread ) noexcept;
+
+    /**
+     * \brief   Advances the thread registry counter. Called after a thread object was added to
+     *          the thread maps and before it is removed from them. The counter never takes the
+     *          value zero, which every cache uses as "nothing resolved yet".
+     **/
+    static void _bump_registry_generation() noexcept;
 
     /**
      * \brief   Searches for thread by ID and returns its handle. Returns nullptr if not found or
@@ -933,7 +940,15 @@ inline void Thread::_set_run_state( Thread::RunState state ) noexcept
 
 inline Thread * Thread::current_thread() noexcept
 {
-    return Thread::find_by_id(Thread::_os_thread_id());
+    Thread * result{ Thread::_self_thread() };
+    return ((result != nullptr) && result->mRegistered.load(std::memory_order_acquire)
+                ? result
+                : Thread::find_by_id(Thread::_os_thread_id()));
+}
+
+inline uint32_t Thread::registry_generation() noexcept
+{
+    return Thread::mRegistryGeneration.load(std::memory_order_acquire);
 }
 
 inline String Thread::current_thread_name() noexcept

@@ -373,6 +373,37 @@ protected:
     inline bool send_received_message(areg::MessageEnvelope&& msg, areg::EventPriority eventPrio = areg::EventPriority::HighPrio);
 
     /**
+     * \brief   Writes the message into the connection socket on the calling thread, instead of
+     *          handing it to the send thread, which saves one thread wake-up.
+     *
+     *          The attempt is given up, and the caller must queue the message, unless all of the
+     *          following hold:
+     *          - the send queue owes nothing to the socket, see areg::SendQueueGate;
+     *          - the message is not larger than areg::INLINE_SEND_MAX_BYTES;
+     *          - the connection socket is valid;
+     *          - the calling thread holds an inline send credit, see
+     *            EventDispatcherBase::take_inline_send_credit();
+     *          - the writer lock of the socket is free, see areg::SocketWriter;
+     *          - the socket takes the whole message without waiting.
+     *
+     * \param   data    The message to write. Its local-only header fields are cleared and its
+     *                  checksum is computed before the write, as the send thread does.
+     * \return  True when the message has been dealt with and must not be queued. False when the
+     *          caller must queue the message for the send thread.
+     **/
+    bool try_send_inline( MessageEnvelope & data );
+
+    /**
+     * \brief   Starts the send thread if it does not run yet, and returns when it is ready to
+     *          take events. The send thread is a fallback: a message reaches it only when its own
+     *          thread could not write it into the socket, see try_send_inline().
+     *
+     * \note    Called by producers, so it tolerates concurrent calls. Thread::start() alone does
+     *          not: called for a thread that already runs, it resets its run state.
+     **/
+    void ensure_send_thread();
+
+    /**
      * \brief   Queues a message for sending with optional priority (copy).
      *
      * \param   data            The data of the message.
@@ -530,6 +561,8 @@ private:
      * \brief   Message sender thread
      **/
     areg::ClientSendThread          mThreadSend;
+    //!< Guards the lazy start of the send thread, see ensure_send_thread().
+    areg::Mutex                     mSendStartLock;
 
 #if defined(_MSC_VER)
     #pragma warning(pop)
@@ -682,12 +715,27 @@ inline bool ServiceClientConnectionBase::send_message(const MessageEnvelope & da
 
 inline bool ServiceClientConnectionBase::send_message(MessageEnvelope && data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
+    if ( try_send_inline(data) )
+        return true;
+
+    // The fallback is the first user of the send thread, so this is where it starts.
+    if ( mThreadSend.is_running() == false )
+        ensure_send_thread();
+
+    mThreadSend.send_gate().enter();
     areg::Event evt(std::move(data));
     evt.set_event_priority(eventPrio);
     evt.set_event_consumer(static_cast<areg::EventConsumer *>(&mThreadSend));
     evt.set_target_dispatcher(static_cast<areg::DispatcherThread *>(&mThreadSend));
-    evt.deliver_event();
-    return true;
+
+    // queue_message(), not deliver_event(): the latter discards whether the queue took it.
+    const bool queued{ mThreadSend.queue_message(evt) };
+    if ( queued == false )
+    {
+        mThreadSend.send_gate().leave(1u);   // balance the enter() above, or the gate never clears
+    }
+
+    return queued;
 }
 
 } // namespace areg

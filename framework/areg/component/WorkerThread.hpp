@@ -104,12 +104,8 @@ public:
 
     /**
      * \brief   Takes this worker thread out of the thread maps and stops its watchdog, without
-     *          waiting for it and without deleting it.
-     *
-     *          Used when the binding component thread could not be stopped: the worker cannot
-     *          be released either, because the abandoned thread may still post to it, but its
-     *          name must be free and it must answer no lookup, so that the workers the
-     *          replacement creates are the only ones the system can see.
+     *          waiting for it and without deleting it. After the call its name is free and it
+     *          answers no lookup, while the thread itself keeps running.
      *
      * \see     ComponentThread::terminate_self, Thread::detach_from_registry
      **/

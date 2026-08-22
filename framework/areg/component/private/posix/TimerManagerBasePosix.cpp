@@ -12,11 +12,8 @@
  * \author      Artak Avetyan
  * \brief       Areg Platform, the dispatching loop of the timer and the watchdog manager
  *              on a generic POSIX platform (Cygwin, FreeBSD, and any other POSIX that is
- *              neither Linux nor macOS).
- *
- *              The loop keeps the deadlines itself and waits for the nearest one on the
- *              queue of the manager, so an expiry is processed on the manager thread. It is
- *              the same shape as the Linux loop, which waits on a set of timerfd handles.
+ *              neither Linux nor macOS). The loop keeps the deadlines itself, waits for the
+ *              nearest one and processes the expiry on the manager thread.
  *
  *              Windows and macOS: TimerManagerBase.cpp
  *              Linux:             linux/TimerManagerBaseLinux.cpp

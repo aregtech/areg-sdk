@@ -198,7 +198,10 @@ bool PoolReceiveThread::run_dispatcher()
                 if ( drainReceived > 0 )
                 {
                     mGlobalStats.accumulate_received(static_cast<uint64_t>(drainReceived), 1u);
-                    mRemoteService.process_received_message(msgReceived, drainSocket);
+                    {
+                        AREG_LT_SCOPE(areg::LtStage::RecvNode);  // router inline route+forward
+                        mRemoteService.process_received_message(msgReceived, drainSocket);
+                    }
 
                     // Drain read-ahead cache for this socket too.
                     if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, areg::DEFAULT_DRAIN_LIMIT - 1u, drainSocket,

@@ -37,18 +37,12 @@
 // LogCollectorDatabase class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Saves the collected logs in the SQLite database file (`.sqlog`).
+ * \brief   Saves the collected logs in an SQLite database file (`.sqlog`).
  *
- *          The messages are handed over by the service dispatcher thread and are written by a
- *          dedicated writer thread, so that neither the database file I/O nor the SQLite commit
- *          delays the forwarding of logs to the observers. The writer drains the complete queue
- *          within one transaction, which keeps the cost per message close to a single prepared
- *          statement step.
- *
- *          The queue has an upper limit. When a burst of logs arrives faster than the database can
- *          absorb it, the newest entries are counted and dropped instead of growing the memory of
- *          the process. The number of dropped entries is written in the database as soon as the
- *          writer catches up.
+ *          The service dispatcher thread queues the messages and a dedicated writer thread writes
+ *          them, draining the complete queue within one transaction. When the queue reaches
+ *          MAX_QUEUE_ENTRIES the newest entries are counted and dropped, and the number of the
+ *          dropped entries is written in the database as soon as the writer catches up.
  **/
 class LogCollectorDatabase final : private areg::ThreadConsumer
 {

@@ -64,6 +64,7 @@ ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg:
     , mActiveProxies    ( )
     , mPrebuiltMessages ( )
     , mDataRate         (  )
+    , mRateStamp        ( std::chrono::steady_clock::now() )
     , mTimer            ( static_cast<areg::TimerConsumer &>(mTimerConsumer) , TIMER_NAME )
     , mInputThread      ( static_cast<areg::ThreadConsumer &>(self()), THREAD_WAITINPUT )
     , mImageThread      ( static_cast<areg::ThreadConsumer &>(self()), THREAD_GENERATE )
@@ -97,17 +98,31 @@ inline void ServicingComponent::print_rates(areg::ext::Console& console)
     const uint64_t bytes_per_block_0{ mOptions.bytesPerBlock() };
     const uint32_t channels_0{ mOptions.mChannels };
 
-    mDataRate.sentData = 0u;
-    mDataRate.sentBlocks = 0u;
-    mDataRate.ontimeBlocks = 0u;
-    mDataRate.lateBlocks = 0u;
+    const std::chrono::steady_clock::time_point now{ std::chrono::steady_clock::now() };
+    const uint64_t window_ns{ static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(now - mRateStamp).count()) };
+    mRateStamp = now;
+
+    mDataRate = DataRate();
 
     areg::Application::query_data_sent(netDataSent, netMsgSent);
 
     mLock.unlock();
 
-    const areg::DataLiteral netRate = areg::conv_data_size(netDataSent);
-    const areg::DataLiteral svcRate = areg::conv_data_size(sentData.sentData);
+    const uint64_t span_ns{ sentData.spanNs != 0u ? sentData.spanNs : window_ns };
+    const double window_sec{ span_ns != 0u ? (static_cast<double>(span_ns) / static_cast<double>(areg::DURATION_1_SEC)) : 1.0 };
+    const double net_sec   { window_ns != 0u ? (static_cast<double>(window_ns) / static_cast<double>(areg::DURATION_1_SEC)) : 1.0 };
+    const auto per_sec = [window_sec](uint64_t value) noexcept -> uint64_t
+        {
+            return static_cast<uint64_t>((static_cast<double>(value) / window_sec) + 0.5);
+        };
+
+    const auto net_per_sec = [net_sec](uint64_t value) noexcept -> uint64_t
+        {
+            return static_cast<uint64_t>((static_cast<double>(value) / net_sec) + 0.5);
+        };
+
+    const areg::DataLiteral netRate = areg::conv_data_size(net_per_sec(netDataSent));
+    const areg::DataLiteral svcRate = areg::conv_data_size(per_sec(sentData.sentData));
 
     const double ideal_bps_0 = (ns_per_block_0 > 0u) ? (static_cast<double>(areg::DURATION_1_SEC) / static_cast<double>(ns_per_block_0)) : 0.0;
 
@@ -115,10 +130,13 @@ inline void ServicingComponent::print_rates(areg::ext::Console& console)
     const uint32_t total_blocks_sec_0  = static_cast<uint32_t>(ideal_bps_0 * static_cast<double>(channels_0));
     const areg::DataLiteral idealRate0 = areg::conv_data_size(ideal_bytes_sec_0);
 
+    const double blocked_pct{ span_ns != 0u ? ((static_cast<double>(sentData.blockedNs) * 100.0) / static_cast<double>(span_ns)) : 0.0 };
+
     console.output_txt(COORD_TITLE, MSG_APP_TITLE);
     console.output_txt(COORD_SEP1, MSG_SEPARATOR);
-    console.output_msg(COORD_COMM_RATE, MSG_NET_RATE_SENT.data()    , netRate.first, netRate.second.data(), netMsgSent);
-    console.output_msg(COORD_DATA_RATE, MSG_QUEUE_RATE_SENT.data()  , svcRate.first, svcRate.second.data(), sentData.sentBlocks);
+    console.output_msg(COORD_COMM_RATE, MSG_NET_RATE_SENT.data()    , netRate.first, netRate.second.data(), static_cast<uint32_t>(net_per_sec(netMsgSent)));
+    console.output_msg(COORD_DATA_RATE, MSG_QUEUE_RATE_SENT.data()  , svcRate.first, svcRate.second.data(), static_cast<uint32_t>(per_sec(sentData.sentBlocks)));
+    console.output_msg(COORD_ITEM_RATE, MSG_SEND_PRESSURE.data()    , blocked_pct, static_cast<uint32_t>(per_sec(sentData.skippedBlocks)));
 
     if (ns_per_block_0 != 0u)
     {
@@ -129,7 +147,9 @@ inline void ServicingComponent::print_rates(areg::ext::Console& console)
         console.output_txt(COORD_IDEAL_RATE, " Theoretical rate .....: IPC-limited (pixel time = 0).");
     }
 
-    console.output_msg(COORD_STATS, MSG_STATS_RATE.data(), sentData.ontimeBlocks, sentData.lateBlocks);
+    console.output_msg(COORD_STATS, MSG_STATS_RATE.data()
+                      , static_cast<uint32_t>(per_sec(sentData.ontimeBlocks))
+                      , static_cast<uint32_t>(per_sec(sentData.lateBlocks)));
     console.output_txt(COORD_SEP2, MSG_SEP2);
 }
 
@@ -174,10 +194,12 @@ void ServicingComponent::shutdown_service_interface(areg::Component& holder) noe
     mTimer.stop_timer();
     mPauseEvent.set_signaled();
 
-    mPrebuiltMessages.clear();
-    mBitmap.release();
+    // The worker threads are joined first to release memory.
     mInputThread.shutdown(areg::WAIT_INFINITE);
     mImageThread.shutdown(areg::WAIT_INFINITE);
+
+    mPrebuiltMessages.clear();
+    mBitmap.release();
 
     LargeDataProviderBase::shutdown_service_interface(holder);
 }
@@ -387,7 +409,16 @@ uint32_t ServicingComponent::_build_prebuilt_messages()
     const uint32_t channels { mOptions.mChannels };
     const uint64_t frame_ns { mOptions.nsPerImage() };
     const uint32_t blocks   { mOptions.blocksCount() };
-    const uint32_t depth{ (frame_ns != 0u) && (frame_ns <= (util::TIME_IN_DEPTH / 2)) ? static_cast<uint32_t>((static_cast<double>(util::TIME_IN_DEPTH) / static_cast<double>(frame_ns)) + 0.5f) : 2u };
+    uint32_t depth{ (frame_ns != 0u) && (frame_ns <= (util::TIME_IN_DEPTH / 2))
+                        ? static_cast<uint32_t>((static_cast<double>(util::TIME_IN_DEPTH) / static_cast<double>(frame_ns)) + 0.5f)
+                        : util::MIN_PREBUILT_DEPTH };
+    depth = std::max(util::MIN_PREBUILT_DEPTH, std::min(depth, util::MAX_PREBUILT_DEPTH));
+
+    const uint64_t bytesPerGeneration{ static_cast<uint64_t>(blocks) * channels * mOptions.bytesPerBlock() };
+    while ((depth > util::MIN_PREBUILT_DEPTH) && ((depth * bytesPerGeneration) > util::MAX_PREBUILT_BYTES))
+    {
+        --depth;
+    }
 
     const areg::Channel& channel = areg::connection_channel();
     const std::vector<areg::ProxyAddress> proxies{ mActiveProxies };
@@ -463,8 +494,6 @@ void ServicingComponent::_run_image_thread()
     using Clock = std::chrono::steady_clock;
     using Nanoseconds = std::chrono::nanoseconds;
 
-    static constexpr uint64_t STATS_FLUSH_NS{ 100'000'000u };   // 100 ms
-
     areg::Wait wait;
 
     while (!mQuitThread.load(std::memory_order_relaxed))
@@ -480,15 +509,14 @@ void ServicingComponent::_run_image_thread()
         mOptionChanged.store(false, std::memory_order_relaxed);
         _init_block_list();
 
-        uint32_t frame_id{ 0u };
-        const uint64_t block_time_ns = mOptions.nsPerBlock();
-        const uint32_t blocks_per_frame = mOptions.blocksCount();
-        const uint32_t channel_count = mOptions.mChannels;
-        const uint32_t depth = _build_prebuilt_messages();
+        const uint64_t block_time_ns    { mOptions.nsPerBlock() };
+        const uint32_t blocks_per_frame { mOptions.blocksCount() };
+        const uint32_t channel_count    { mOptions.mChannels };
+        const uint32_t depth            { _build_prebuilt_messages() };
 
         mLock.unlock();
 
-        if (mPrebuiltMessages.empty())
+        if (mPrebuiltMessages.empty() || (blocks_per_frame == 0u) || (channel_count == 0u))
         {
             while (_can_loop())
                 wait.wait(1u);
@@ -498,141 +526,131 @@ void ServicingComponent::_run_image_thread()
 
         set_image_gen_setting({ mOptions.mWidth, mOptions.mHeight, mOptions.mLines, mOptions.mPixelTime, mOptions.mChannels });
 
-        const uint64_t blocks_per_quantum = (block_time_ns == 0u) ? 1u : std::max<uint64_t>(1u, static_cast<uint64_t>(COARSE_SLEEP_NS) / block_time_ns);
+        // One slot is one message: one image block of one channel.
+        const uint64_t slots_per_frame{ static_cast<uint64_t>(blocks_per_frame) * channel_count };
 
-        uint64_t statDataSent{ 0u };
-        uint32_t statBlockSent{ 0u };
-        uint32_t statSentOntime{ 0u };
-        uint32_t statSentLate{ 0u };
+        // A backlog older than this is dropped, instead of being sent out as a burst.
+        const uint64_t catchup_limit{ channel_count };
+
+        DataRate stats{};
 
         const Clock::time_point time_begin{ Clock::now() };
         Clock::time_point stats_begin{ time_begin };
 
         auto flush_stats = [&]()
             {
-                if (statBlockSent == 0u)
+                if ((stats.sentBlocks == 0u) && (stats.skippedBlocks == 0u))
                 {
                     return;
                 }
 
-                _update_data(statDataSent, statBlockSent, statSentOntime, statSentLate);
+                const Clock::time_point flushed{ Clock::now() };
+                stats.spanNs = static_cast<uint64_t>(std::chrono::duration_cast<Nanoseconds>(flushed - stats_begin).count());
+                _update_data(stats);
 
-                statDataSent = 0u;
-                statBlockSent = 0u;
-                statSentOntime = 0u;
-                statSentLate = 0u;
-                stats_begin = Clock::now();
+                stats = DataRate();
+                stats_begin = flushed;
             };
 
-        auto send_block_row = [&](uint32_t frame_id, uint32_t block_index)
+        auto send_slot = [&](uint64_t slot)
             {
-                const uint32_t generation = frame_id % depth;
-                const uint32_t base_index = (generation * blocks_per_frame + block_index) * channel_count;
+                const uint32_t frame_id    { static_cast<uint32_t>(slot / slots_per_frame) + 1u };
+                const uint32_t block_index { static_cast<uint32_t>((slot / channel_count) % blocks_per_frame) };
+                const uint32_t channel     { static_cast<uint32_t>(slot % channel_count) };
+                const uint32_t generation  { frame_id % depth };
+                const uint32_t index       { ((generation * blocks_per_frame) + block_index) * channel_count + channel };
+
+                const Clock::time_point send_begin{ Clock::now() };
 
                 for (auto& pool : mPrebuiltMessages)
                 {
-                    for (uint32_t ch = 0u; ch < channel_count; ++ch)
-                    {
-                        Remote& remote = pool.messages[base_index + ch];
-                        areg::MessageEnvelope& message = remote.message;
-                        uint8_t* buffer = message.buffer();
-                        ASSERT(buffer != nullptr);
-                        RawImageBlock* block = reinterpret_cast<RawImageBlock*>(buffer + remote.offset);
-                        block->frameSeqId = frame_id;
-                        statDataSent += areg::send_raw_message(message) ? message.size_used() : 0;
-                    }
-
-                    statBlockSent += channel_count;
+                    Remote& remote = pool.messages[index];
+                    areg::MessageEnvelope& message = remote.message;
+                    uint8_t* buffer = message.buffer();
+                    ASSERT(buffer != nullptr);
+                    RawImageBlock* block = reinterpret_cast<RawImageBlock*>(buffer + remote.offset);
+                    block->frameSeqId = frame_id;
+                    stats.sentData += areg::send_raw_message(message) ? message.size_used() : 0u;
+                    ++stats.sentBlocks;
                 }
+
+                // The send queue is bounded, so send_raw_message() holds a producer that
+                // outruns the socket.
+                stats.blockedNs += static_cast<uint64_t>(std::chrono::duration_cast<Nanoseconds>(Clock::now() - send_begin).count());
             };
 
-        uint64_t sent_blocks_total{ 0u };
+        uint64_t slot{ 0u };
+
         while (_can_loop())
         {
-            if (block_time_ns == 0u)
-            {
-                for (uint32_t block_index{ 0u }; (block_index < blocks_per_frame) && _is_running(); ++block_index)
-                {
-                    send_block_row(block_index == 0 ? ++frame_id : frame_id, block_index);
-                }
-
-                statSentOntime    += (channel_count * blocks_per_frame);
-
-                if (time_passed(stats_begin) >= STATS_FLUSH_NS)
-                {
-                    flush_stats();
-                }
-
-                continue;
-            }
-
-            const uint64_t elapsed_ns = time_passed(time_begin);
-            const uint64_t should_have_sent = elapsed_ns / block_time_ns;
-
-            if (should_have_sent <= sent_blocks_total)
-            {
-                const uint64_t next_deadline_ns = (sent_blocks_total + 1u) * block_time_ns;
-                const int64_t delta_ns = static_cast<int64_t>(next_deadline_ns - elapsed_ns);
-
-                if (delta_ns > COARSE_SLEEP_NS)
-                {
-                    flush_stats();
-                    wait.wait_for(Nanoseconds{ COARSE_SLEEP_NS });
-                }
-
-                continue;
-            }
-
-            uint64_t due_blocks = should_have_sent - sent_blocks_total;
-            if (due_blocks > blocks_per_quantum)
-            {
-                due_blocks = blocks_per_quantum;
-            }
-
-            if (due_blocks > 1024u)
-            {
-                due_blocks = 1024u;
-            }
-
-            while ((due_blocks != 0u) && _can_loop())
-            {
-                const uint32_t block_index = static_cast<uint32_t>(sent_blocks_total % blocks_per_frame);
-
-                send_block_row(block_index == 0 ? ++frame_id : frame_id, block_index);
-                ++sent_blocks_total;
-
-                const uint64_t target_ns = sent_blocks_total * block_time_ns;
-                const uint64_t now_ns = time_passed(time_begin);
-
-                if (now_ns <= target_ns)
-                {
-                    statSentOntime += channel_count;
-                }
-                else
-                {
-                    statSentLate += channel_count;
-                }
-
-                --due_blocks;
-            }
-
             if (time_passed(stats_begin) >= STATS_FLUSH_NS)
             {
                 flush_stats();
             }
+
+            if (block_time_ns == 0u)
+            {
+                // Pixel time 0 means "as fast as the pipe takes it": there is no schedule.
+                send_slot(slot);
+                stats.ontimeBlocks += static_cast<uint32_t>(mPrebuiltMessages.size());
+                ++slot;
+                continue;
+            }
+
+            const uint64_t now_ns{ time_passed(time_begin) };
+            const uint64_t due_ns{ _slot_due_ns(slot, block_time_ns, channel_count) };
+
+            if (now_ns < due_ns)
+            {
+                int64_t remaining{ static_cast<int64_t>(due_ns - now_ns) };
+                if (remaining > MAX_WAIT_CHUNK_NS)
+                {
+                    remaining = MAX_WAIT_CHUNK_NS;
+                }
+
+                // A wait below areg::Wait::MIN_WAIT yields instead of parking the thread.
+                wait.wait_for(Nanoseconds{ remaining });
+                continue;
+            }
+
+            const uint64_t slot_now{ _slot_at_ns(now_ns, block_time_ns, channel_count) };
+            if ((slot_now - slot) > catchup_limit)
+            {
+                const uint64_t dropped{ (slot_now - slot) - catchup_limit };
+                slot += dropped;
+                stats.skippedBlocks += static_cast<uint32_t>(dropped * mPrebuiltMessages.size());
+                continue;
+            }
+
+            send_slot(slot);
+
+            const uint64_t slot_end_ns{ _slot_due_ns(slot + 1u, block_time_ns, channel_count) };
+            if (time_passed(time_begin) <= slot_end_ns)
+            {
+                stats.ontimeBlocks += static_cast<uint32_t>(mPrebuiltMessages.size());
+            }
+            else
+            {
+                stats.lateBlocks += static_cast<uint32_t>(mPrebuiltMessages.size());
+            }
+
+            ++slot;
         }
 
         flush_stats();
     }
 }
 
-void ServicingComponent::_update_data(uint64_t sendData, uint32_t sentBlocks, uint32_t ontimeBlocks, uint32_t lateBlocks)
+void ServicingComponent::_update_data(const DataRate & sample)
 {
     areg::Lock lock(mLock);
-    mDataRate.sentData      += sendData;
-    mDataRate.sentBlocks    += sentBlocks;
-    mDataRate.ontimeBlocks  += ontimeBlocks;
-    mDataRate.lateBlocks    += lateBlocks;
+    mDataRate.sentData      += sample.sentData;
+    mDataRate.sentBlocks    += sample.sentBlocks;
+    mDataRate.ontimeBlocks  += sample.ontimeBlocks;
+    mDataRate.lateBlocks    += sample.lateBlocks;
+    mDataRate.skippedBlocks += sample.skippedBlocks;
+    mDataRate.blockedNs     += sample.blockedNs;
+    mDataRate.spanNs        += sample.spanNs;
 }
 
 void ServicingComponent::_print_info() const

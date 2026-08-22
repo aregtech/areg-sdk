@@ -36,9 +36,8 @@ TimerManagerBase::TimerManagerBase(const String& threadName, uint32_t stackSizeK
 {
 }
 
-// Windows and macOS drive their timers from an OS callback, so the loop below only has to
-// serve the event queue. Linux has its own epoll loop in linux/TimerManagerBaseLinux.cpp,
-// and every other POSIX platform its own deadline loop in posix/TimerManagerBasePosix.cpp.
+// Windows and macOS drive their timers from an OS callback, so this loop only serves the
+// event queue. Linux and the other POSIX platforms have their own loop.
 #if !defined(__linux__) && (defined(__APPLE__) || !(defined(_POSIX) || defined(POSIX)))
 
 bool TimerManagerBase::post_event(Event& eventElem)

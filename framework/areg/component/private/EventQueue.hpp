@@ -164,6 +164,18 @@ public:
     inline bool is_exit_triggered() const noexcept;
 
     /**
+     * \brief   Returns the longest time, in milliseconds, that any producer had to wait for a
+     *          free slot since this was last called, and resets the record to zero.
+     *
+     * \note    The queue only records the wait, the caller reports it. This queue also serves
+     *          the log manager, so logging from here could feed its queue and recurse.
+     *
+     * \return  The longest wait in milliseconds, or 0 if no producer had to wait.
+     **/
+    [[nodiscard]]
+    inline uint32_t extract_max_wait_ms() noexcept;
+
+    /**
      * \brief   Requests exit: sets the sticky exit flag, wakes the consumer
      *          blocked in wait_event() and any producers blocked on a full ring.
      *          After this, pop_event() returns the singleton ExitEvent until
@@ -202,8 +214,11 @@ public:
      * \param   eventElem       Event to queue (moved in on success).
      * \param[out] removedEvent If non-null, receives the event on overflow/failure instead of
      *                          discarding it. Pass nullptr to discard automatically.
+     * \return  true if the queue took the event, false if it could not. An ExitPrio event counts
+     *          as taken: it is never queued, it sets the sticky exit flag instead. A false result
+     *          is the only signal a producer gets, so the caller must pass it on.
      **/
-    void push_event(Event& eventElem, Event* removedEvent = nullptr);
+    bool push_event(Event& eventElem, Event* removedEvent = nullptr);
 
     /**
      * \brief   Dequeues the next event. Priority lane is always drained first.
@@ -327,6 +342,8 @@ private:
 
     //!< Producer wake-up (auto-reset): signalled by the consumer when a slot is freed.
     SimpleEvent             mSlotEvent;
+    //!< Longest producer wait, in milliseconds, since it was last read.
+    std::atomic<uint32_t>   mMaxWaitMs;
     //!< Number of producers blocked on a full ring (so the consumer signals only when needed).
     std::atomic<uint32_t>   mProducersWaiting;
 
@@ -354,6 +371,15 @@ inline void EventQueue::lock_queue() noexcept
 inline void EventQueue::unlock_queue() noexcept
 {
     mPrioLock.unlock();
+}
+
+inline uint32_t EventQueue::extract_max_wait_ms() noexcept
+{
+    // While no producer waits this is a plain load and the cache line stays shared. The
+    // read-modify-write, which dirties it, happens only after a producer really had to wait.
+    return (mMaxWaitMs.load(std::memory_order_relaxed) != 0u)
+                ? mMaxWaitMs.exchange(0u, std::memory_order_relaxed)
+                : 0u;
 }
 
 inline bool EventQueue::is_exit_triggered() const noexcept

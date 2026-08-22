@@ -153,13 +153,30 @@ def _datarate_script(shape, first, step):
     Builds the console script of a 23_pubdatarate run: set the block shape and the first
     channel count, start, then raise the channel count every _RAMP_SECONDS without stopping
     the run, and quit. The peak reached on the way is what the benchmark reports.
+
+    AREG_FIXED_CHANNELS pins the channel count instead of ramping, and AREG_FIXED_SECONDS
+    says how long to hold it. A ramp never sustains one load long enough to show whether the
+    rate is steady, which is the thing a data-rate benchmark is actually asked to deliver.
     """
+    fixed = os.environ.get('AREG_FIXED_CHANNELS')
+    if fixed:
+        hold = float(os.environ.get('AREG_FIXED_SECONDS', '40'))
+        return [(4.0, '%s -c=%s' % (shape, fixed)), (4.0, '-s'), (hold, '-q')]
+
     script = [(4.0, '%s -c=%d' % (shape, first)), (4.0, '-s')]
     for index in range(1, _RAMP_STEPS + 1):
         script.append((_RAMP_SECONDS, '-c=%d' % (first + index * step)))
     script.append((_RAMP_SECONDS, '-q'))
     return script
 
+
+# Examples deliberately kept out of the automation, with the reason they are out. They are
+# not defects and they are not skipped scenarios: there is nothing here a console harness
+# could drive. The summary prints them so that a gap in the example numbering explains
+# itself to a reader who does not know the history.
+EXCLUDED_EXAMPLES = {
+    '20_winchat': 'MFC desktop application with a graphical user interface, Windows only',
+}
 
 SCENARIOS = [
     # -- single process, no router ------------------------------------------
@@ -1376,6 +1393,10 @@ def markdown_report(results, seconds, tier, bin_dir):
     lines.append('')
     lines.append('Binaries: `%s`' % bin_dir)
     lines.append('')
+    for name in sorted(EXCLUDED_EXAMPLES):
+        lines.append('Excluded from automation: `%s` -- %s' % (name, EXCLUDED_EXAMPLES[name]))
+    if EXCLUDED_EXAMPLES:
+        lines.append('')
     lines.append('| Scenario | Result | Time | Details |')
     lines.append('|---|---|---|---|')
     for result in results:
@@ -1629,6 +1650,8 @@ def main():
     print('')
     print('passed %d, failed %d, known defects %d, skipped %d'
           % (passed, len(failures), len(known), skipped))
+    for name in sorted(EXCLUDED_EXAMPLES):
+        print('excluded %s -- %s' % (name, EXCLUDED_EXAMPLES[name]))
     if known:
         print('')
         for result in known:

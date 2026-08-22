@@ -246,9 +246,8 @@ void Component::detach_from_registry()
         stub->detach_from_registry();
     }
 
-    // The worker threads of an abandoned component are abandoned too: out of the thread maps
-    // and asked to leave, but not stopped and not deleted. They are taken off the component
-    // list so that nothing walks them afterwards.
+    // The worker threads of an abandoned component are abandoned too, and taken off the
+    // component list so that nothing walks them afterwards.
     ThreadAddress threadAddress;
     while (mComponentInfo.has_worker_threads())
     {

@@ -23,6 +23,7 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/EventConsumer.hpp"
 #include "areg/ipc/DataRateStats.hpp"
+#include "areg/ipc/private/ConnectionDefs.hpp"
 
 #include <atomic>
 
@@ -107,6 +108,41 @@ public:
      **/
     inline void set_closing() noexcept;
 
+    /**
+     * \brief   Returns the gate of the send queue of this thread. A producer that wants to write
+     *          its message into the socket itself must find the gate clear first.
+     **/
+    [[nodiscard]]
+    inline areg::SendQueueGate & send_gate() noexcept;
+
+    /**
+     * \brief   Hands one outbound message to this send thread and reports whether the queue took
+     *          it. Producers use it instead of Event::deliver_event(), which discards that
+     *          answer. When it returns false the message never reaches the socket, so the caller
+     *          must release what it reserved for it and report the failure onwards.
+     *
+     * \param   eventElem   The event to queue. Its target dispatcher must already be this thread.
+     * \return  true if the queue took the event, false if it did not.
+     **/
+    inline bool queue_message( areg::Event & eventElem );
+
+    /**
+     * \brief   Returns the send batch limit of this thread, in messages. Resolved once, when the
+     *          thread becomes ready, so reading it costs one load.
+     **/
+    [[nodiscard]]
+    inline uint32_t drain_limit() const noexcept;
+
+    /**
+     * \brief   Reports a message that a producer thread failed to write into the socket itself.
+     *          The message handler is notified exactly as it is for a batch of this thread, and
+     *          nothing is reported while the connection is closing.
+     *
+     * \param   msgFailed   The message whose write failed.
+     * \param   whichTarget The socket the write was attempted on.
+     **/
+    void report_failed_send(const areg::MessageEnvelope & msgFailed, areg::Socket & whichTarget);
+
 protected:
 /************************************************************************/
 // DispatcherThread overrides
@@ -177,6 +213,15 @@ private:
      *          failure callback, which is off the successful send path.
      **/
     std::atomic_bool                mIsClosing;
+    /**
+     * \brief   Counts the messages handed to this thread that did not reach the socket yet.
+     **/
+    areg::SendQueueGate             mSendGate;
+    /**
+     * \brief   How many messages this thread may put into one batch, within the range
+     *          1 .. areg::DEFAULT_DRAIN_LIMIT. Resolved when the thread becomes ready.
+     **/
+    uint32_t                        mDrainLimit;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -218,6 +263,21 @@ inline void ClientSendThread::set_closing() noexcept
 inline void ClientSendThread::accumulate_sent(uint64_t bytes, uint32_t msgs) noexcept
 {
     mSendStats.accumulate(bytes, msgs);
+}
+
+inline areg::SendQueueGate & ClientSendThread::send_gate() noexcept
+{
+    return mSendGate;
+}
+
+inline bool ClientSendThread::queue_message( areg::Event & eventElem )
+{
+    return EventDispatcher::post_event( eventElem );
+}
+
+inline uint32_t ClientSendThread::drain_limit() const noexcept
+{
+    return mDrainLimit;
 }
 
 } // namespace areg

@@ -1,23 +1,13 @@
 /************************************************************************
- * Hammers the timer and the watchdog backend: arms, disarms, restarts and
- * destroys timers from several threads while they are firing, then tears the
- * whole application down and checks that Application::release() returns.
+ * Stress test of the timer and the watchdog backend: arms, disarms, restarts and
+ * destroys timers from several threads while they are firing, then tears the whole
+ * application down and checks that Application::release() returns.
  *
- * Written for the defect that hung 26_pubsubmix on Cygwin. The generic POSIX
- * backend armed a 'timer_create' + 'SIGEV_THREAD' timer, so the OS ran the
- * expiry on a thread it created and destroyed itself. That thread took the
- * timer lock, the manager resource lock, the timer object lock and the event
- * queue of the owning dispatcher. A thread destroyed inside any of those
- * regions leaves the lock owned by a thread that no longer exists, and the next
- * caller waits for it forever: TimerManager::wait_timer_manager() never
- * returned and Application::release() never finished. The backend now keeps the
- * deadlines itself and fires them on the manager thread.
- *
- * The test fails, rather than hanging, in three ways:
- *   - the built-in watchdog thread ends the process with code 2 if any phase
- *     takes longer than TEST_WATCHDOG_MS, which is what a stranded lock does;
- *   - a cycle that produced no expiry at all fails, so a backend that never
- *     hangs because it never fires is not mistaken for a healthy one;
+ * The test fails instead of hanging in three ways:
+ *   - the built-in watchdog thread ends the process with code 2 when a phase takes
+ *     longer than TEST_WATCHDOG_MS;
+ *   - a cycle that produced no expiry at all fails, so a backend that never fires is
+ *     not mistaken for a healthy one;
  *   - a component or thread left behind after release() fails.
  ************************************************************************/
 #include "areg/base/areg_global.h"
@@ -54,13 +44,11 @@ namespace
 
     //!< Timers per component. All of them are destroyed at teardown.
     constexpr uint32_t      TIMERS_PER_COMPONENT{ 6u };
-    //!< The first ones are left alone and must keep firing: a backend that hangs is a
-    //!< failure, and so is one that never hangs because it stopped delivering.
+    //!< The first ones are never churned and must keep firing until the teardown.
     constexpr uint32_t      STABLE_TIMERS       { 2u };
-    //!< Milliseconds between two churn rounds. Without a pause the churned timers are
-    //!< re-armed faster than their shortest timeout and the churn alone proves nothing.
+    //!< Milliseconds between two churn rounds, so that a churned timer can expire at all.
     constexpr uint32_t      CHURN_PAUSE_MS      { 7u };
-    //!< Load / churn / release cycles. The defect needs a teardown to show, so several.
+    //!< Load / churn / release cycles.
     constexpr uint32_t      CYCLES              { 6u };
     //!< How long one cycle churns before the application is torn down, milliseconds.
     constexpr uint32_t      CHURN_MS            { 1200u };
@@ -79,17 +67,16 @@ namespace
     std::atomic_uint        gPhase      { 0u };      //!< last phase the run reached
 
     /**
-     * \brief   The live components, so a churn thread can reach them without asking the
-     *          framework. A component removes itself here as the first thing its destructor
-     *          does, and a churn thread holds the lock while it touches one, so 'in the
-     *          registry' means 'alive for as long as the lock is held'.
+     * \brief   The live components, so that a churn thread reaches them without asking the
+     *          framework. A component removes itself here first thing in its destructor, and
+     *          a churn thread holds the lock while it touches one.
      **/
     std::mutex                      gLiveLock;
     std::vector<ChurnComponent *>   gLive;
 
     /**
-     * \brief   Ends the process instead of hanging, so a stranded lock is a failure with a
-     *          location rather than a test that never returns.
+     * \brief   Ends the process instead of hanging, so that a stranded lock is reported as a
+     *          failure with a location.
      **/
     void start_test_watchdog()
     {
@@ -160,8 +147,7 @@ public:
             }
         }
 
-        // Destroys every timer while the manager may still be looking at it. This is the
-        // call that used to run ::timer_delete() with the timer lock held.
+        // Destroys every timer while the manager may still be looking at it.
         mTimers.clear();
         gAlive.fetch_sub(1);
     }
@@ -189,13 +175,12 @@ public:
     }
 
     /**
-     * \brief   Re-arms the timers from outside the component thread, which is what a churn
-     *          thread does. Every verb of the timer API is used, including the one-shot
-     *          path, which is the one that disarms itself from inside the expiry.
+     * \brief   Re-arms the timers from outside the component thread. Every call of the timer
+     *          API is used, including the one-shot path that disarms itself inside the expiry.
      **/
     void churn(uint32_t step)
     {
-        // The stable timers are skipped on purpose, see STABLE_TIMERS.
+        // The stable timers are skipped, see STABLE_TIMERS.
         for (uint32_t i = STABLE_TIMERS; i < mTimers.size(); ++i)
         {
             areg::Timer * timer = mTimers[i].get();
@@ -280,8 +265,8 @@ int main()
         gExpired.store(0u);
         gChurnStop.store(false);
 
-        // Watchdog on: it uses the same TimerPosix object and the same manager loop as the
-        // timer, so the watchdog backend is exercised by every dispatch below.
+        // The watchdog uses the same TimerPosix object and manager loop as the timer, so
+        // every dispatch below exercises the watchdog backend too.
         areg::Application::setup(false, true, false, true, true, nullptr);
         areg::Application::load_model(MODEL_NAME);
 
@@ -304,7 +289,7 @@ int main()
 
         const uint32_t expired{ gExpired.load() };
 
-        // The teardown the defect used to hang in. Nothing here may block.
+        // Nothing in the teardown below may block.
         gPhase.store(cycle * 10u + 4u);
         areg::Application::release();
 

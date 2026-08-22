@@ -36,10 +36,9 @@ namespace areg {
  *          event no appropriate dispatcher was found in system. The event dispatching thread is a
  *          base class for Worker thread and Component thread.
  *
- *          EventDispatcher is listed first on purpose. Thread is constructed with a reference
- *          to the ThreadConsumer of this object, and ThreadConsumer is a base of EventDispatcher,
- *          so EventDispatcher has to be initialized first: converting to a base whose
- *          construction has not started yet is undefined behaviour, see C++17 [class.cdtor]/3.
+ * \note    EventDispatcher must stay the first base. Thread is constructed with a reference to
+ *          the ThreadConsumer of this object, and ThreadConsumer is a base of EventDispatcher,
+ *          so EventDispatcher has to be initialized first, see C++17 [class.cdtor]/3.
  **/
 class AREG_API DispatcherThread : public EventDispatcher
                                 , public Thread
@@ -279,6 +278,18 @@ private:
     static DispatcherThread & _null_dispather_thread() noexcept;
 
     /**
+     * \brief   Searches the dispatcher thread that owns the given unique CRC32 thread number.
+     *          The result is cached per calling thread and is reused only while
+     *          Thread::registry_generation() is unchanged.
+     *
+     * \param   threadNumber    The unique CRC32 number of the thread to search.
+     * \return  The dispatcher thread with this number, or nullptr when the process has no such
+     *          thread or the thread is not a dispatcher thread.
+     **/
+    [[nodiscard]]
+    static DispatcherThread * _find_dispatcher_thread( const UniqueNumber threadNumber ) noexcept;
+
+    /**
      * \brief   Returns reference to self object.
      **/
     [[nodiscard]]
@@ -309,13 +320,13 @@ private:
 
 inline DispatcherThread & DispatcherThread::dispatcher_thread( const UniqueNumber threadNumber ) noexcept
 {
-    DispatcherThread * dispThread = AREG_RUNTIME_CAST(Thread::find_by_number(threadNumber), DispatcherThread);
+    DispatcherThread * dispThread = DispatcherThread::_find_dispatcher_thread(threadNumber);
     return ( dispThread != nullptr ? *dispThread : DispatcherThread::current_dispatcher_thread() );
 }
 
 inline DispatcherThread & DispatcherThread::dispatcher_thread(const ThreadAddress & threadAddr ) noexcept
 {
-    DispatcherThread* dispThread = AREG_RUNTIME_CAST(Thread::find_by_address(threadAddr), DispatcherThread);
+    DispatcherThread * dispThread = DispatcherThread::_find_dispatcher_thread(static_cast<UniqueNumber>(threadAddr));
     return ( dispThread != nullptr ? *dispThread : DispatcherThread::_null_dispather_thread() );
 }
 

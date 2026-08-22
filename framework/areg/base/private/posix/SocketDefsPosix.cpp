@@ -168,6 +168,76 @@ int32_t _os_send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t d
     return total;
 }
 
+int32_t _os_try_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t totalSize)
+{
+    ASSERT(count <= areg::DEFAULT_DRAIN_LIMIT);
+
+#if defined(MSG_NOSIGNAL)
+    constexpr int sendFlags = MSG_NOSIGNAL | MSG_DONTWAIT;
+#else
+    constexpr int sendFlags = MSG_DONTWAIT;
+#endif
+
+    struct iovec iov[areg::DEFAULT_DRAIN_LIMIT];
+    size_t wanted{ static_cast<size_t>(totalSize) };
+    for (uint32_t i = 0u; i < count; ++i)
+    {
+        iov[i].iov_base = const_cast<uint8_t*>(buffers[i].data);
+        iov[i].iov_len  = buffers[i].size;
+        if (totalSize == 0u)
+            wanted += buffers[i].size;
+    }
+
+    struct msghdr msg { };
+    msg.msg_iov     = iov;
+    msg.msg_iovlen  = count;
+
+    ssize_t written{ 0 };
+    do
+    {
+        written = ::sendmsg(static_cast<int>(hSocket), &msg, sendFlags);
+    } while ((written < 0) && (errno == EINTR));
+
+    if (written < 0)
+        return ((errno == EAGAIN) || (errno == EWOULDBLOCK)) ? 0 : -1;
+
+    if (static_cast<size_t>(written) >= wanted)
+        return static_cast<int32_t>(written);
+
+    // A part of the message is already on the wire and cannot be taken back.
+    int32_t result{ static_cast<int32_t>(written) };
+    size_t advance{ static_cast<size_t>(written) };
+    uint32_t idx{ 0u };
+    while ((idx < count) && (advance >= iov[idx].iov_len))
+    {
+        advance -= iov[idx].iov_len;
+        ++idx;
+    }
+
+    if ((idx < count) && (advance > 0u))
+    {
+        const int32_t sent = _os_send_data(hSocket, static_cast<const uint8_t*>(iov[idx].iov_base) + advance
+                                          , static_cast<int32_t>(iov[idx].iov_len - advance));
+        if (sent < 0)
+            return -1;
+
+        result += sent;
+        ++idx;
+    }
+
+    for (; idx < count; ++idx)
+    {
+        const int32_t sent = _os_send_data(hSocket, static_cast<const uint8_t*>(iov[idx].iov_base)
+                                          , static_cast<int32_t>(iov[idx].iov_len));
+        if (sent < 0)
+            return -1;
+
+        result += sent;
+    }
+
+    return result;
+}
+
 int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count, uint32_t totalSize)
 {
     // Single buffer -- bypass setup entirely

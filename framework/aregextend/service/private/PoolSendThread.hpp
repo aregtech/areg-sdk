@@ -27,6 +27,7 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/EventConsumer.hpp"
 #include "aregextend/service/SystemServiceDefs.hpp"
+#include "areg/ipc/private/ConnectionDefs.hpp"
 
 #include <string_view>
 
@@ -84,6 +85,25 @@ public:
 
     virtual ~PoolSendThread() = default;
 
+/************************************************************************/
+// Actions and attributes.
+/************************************************************************/
+public:
+    /**
+     * \brief   Returns the send batch limit of this thread, in messages. Resolved once, when the
+     *          thread becomes ready, so reading it costs one load.
+     **/
+    [[nodiscard]]
+    inline uint32_t drain_limit() const noexcept;
+
+    /**
+     * \brief   Returns the gate of the send queue of this thread. A producer that wants to write
+     *          a message into the socket itself must find the gate clear first, and must announce
+     *          the message with SendQueueGate::enter() when it queues it instead.
+     **/
+    [[nodiscard]]
+    inline areg::SendQueueGate & send_gate() noexcept;
+
 protected:
 /************************************************************************/
 // DispatcherThread overrides
@@ -128,12 +148,20 @@ private:
     areg::RemoteMessageHandler& mRemoteService; //!< Failure callbacks.
     ServerConnection &          mConnection;    //!< Server connection (socket lookup + send API).
     ServerSendThread &          mGlobalStats;   //!< Global counters accumulated here.
+
+    /**
+     * \brief   How many messages this thread may put into one batch, within the range
+     *          1 .. areg::DEFAULT_DRAIN_LIMIT. Resolved when the thread becomes ready.
+     **/
+    uint32_t                    mDrainLimit;
     BatchEntries                mBatch;         //!< Pre-allocated batch work list reused each drain cycle.
     //!< Reused scratch: per-slot target cookies and resolved socket handles (POD; off the stack).
     std::array<ITEM_ID, areg::DEFAULT_DRAIN_LIMIT>       mTargets;
     std::array<SOCKETHANDLE, areg::DEFAULT_DRAIN_LIMIT>  mSockets;
     //!< Reusable single-window drain buffer (pop_events); constructed once.
     std::array<areg::Event, areg::DEFAULT_DRAIN_LIMIT>   mEvents;
+    //!< Tells the producers whether this queue still owes a message to a socket.
+    areg::SendQueueGate                                  mSendGate;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -146,6 +174,16 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // PoolSendThread inline methods
 //////////////////////////////////////////////////////////////////////////
+
+inline uint32_t PoolSendThread::drain_limit() const noexcept
+{
+    return mDrainLimit;
+}
+
+inline areg::SendQueueGate & PoolSendThread::send_gate() noexcept
+{
+    return mSendGate;
+}
 
 } // namespace areg::ext
 

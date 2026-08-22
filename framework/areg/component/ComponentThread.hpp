@@ -133,10 +133,10 @@ public:
 
     /**
      * \brief   Stops the component thread, releases its components and worker threads, and
-     *          deletes the thread object. The thread is out of every registry in any case.
+     *          deletes the thread object. The thread leaves every registry in any case.
      *
-     * \return  True if the thread stopped and the object was deleted. False if the thread
-     *          could not be stopped and it keeps running
+     * \return  True if the thread stopped and the object was deleted. False if the thread could
+     *          not be stopped and keeps running.
      **/
     bool terminate_self();
 
@@ -250,9 +250,8 @@ protected:
     void shutdown_components();
 
     /**
-     * \brief   Gives every component the chance to wait for its worker threads to finish.
-     *          Called from on_exit() between shutdown_components() and destroy_components(),
-     *          so the components are still alive and run on the thread that owns them.
+     * \brief   Gives every component the chance to wait for its worker threads to finish. Called
+     *          from on_exit() between shutdown_components() and destroy_components().
      **/
     void wait_components_completion();
 
@@ -264,8 +263,8 @@ protected:
     void destroy_components();
 
     /**
-     * \brief   Moves every component off the shared list into \a result under the list lock,
-     *          so that the caller can destroy them with no lock held.
+     * \brief   Moves every component off the shared list into \a result under the list lock, so
+     *          that the caller destroys them with no lock held.
      *
      * \param[out]  result  Receives the components taken off the list.
      **/
@@ -318,11 +317,9 @@ private:
     inline void _release_abandoned_objects();
 
     /**
-     * \brief   Takes everything this thread owns (proxies, components, their providers and
-     *          their worker threads) out of every global registry, and releases nothing.
-     *          Called only when the thread could not be stopped. The objects stay alive because
-     *          the thread may still use them, but they stop being reachable. No lookup and
-     *          no event can find a ghost.
+     * \brief   Takes everything this thread owns -- proxies, components, their providers and
+     *          their worker threads -- out of every global registry, and releases nothing. The
+     *          objects stay alive but stop being reachable by a lookup or an event.
      **/
     inline void _detach_abandoned_objects();
 

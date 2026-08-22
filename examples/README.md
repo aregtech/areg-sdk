@@ -94,6 +94,7 @@ MSBuild ./areg-sdk.sln
 | [29_syncevent](./29_syncevent/)        | 🧵 Multithreading  | Auto-Reset Events, Signal Persistence | Demonstrates reliable Areg `SyncEvent` signaling: events stay signaled until locked, no spurious wakeups, works the same on Windows and Linux. |
 | [30_publatency](./30_publatency/)      | 🚀 Multiprocessing | Latency Benchmark, RTT, OWT           | Measures full-stack IPC latency across payload sizes using ping-pong RTT and broadcast one-way tests. → [Benchmark results](../docs/wiki/08b-areg-sdk-performance-benchmarks.md) |
 | [31_loclatency](./31_loclatency/)      | 🧵 Multithreading  | Local Latency Benchmark, RTT, OWT     | Measures in-process latency for the same payload sizes: provider and consumer in one thread, and in two threads. Needs no router, runs unattended, and is the local counterpart of `30_publatency`. |
+| [32_pubmixed](./32_pubmixed/)          | 🚀 Multiprocessing | Mixed Traffic, Head-of-Line Latency   | Runs a bulk stream and small request/response on the **same** connection and measures what the bulk costs the small messages. Shows how `queue::capacity` bounds both memory and small-message latency. |
 
 
 ---

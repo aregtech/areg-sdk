@@ -167,12 +167,14 @@ Solutions for common issues:
 Hands-on learning resources:
 
 **Official Examples:**
-- **[Building and Running Examples](./08a-examples-and-tests.md)** - 17+ example projects
+- **[Building and Running Examples](./08a-examples-and-tests.md)** - 32 example projects
 - **[Examples Source Code](../../examples)** - The `examples` directory of this repository
 
 **Benchmark Examples:**
 - **[30_publatency](../../examples/30_publatency)** – Latency benchmark: ping-pong RTT and broadcast OWT across all payload sizes. → [View measured results](./08b-areg-sdk-performance-benchmarks.md)
 - **[23_pubdatarate](../../examples/23_pubdatarate)** – Throughput benchmark: data rate and message rate at scale. → [View measured results](./08b-areg-sdk-performance-benchmarks.md)
+- **[31_loclatency](../../examples/31_loclatency)** – In-process latency benchmark: the local counterpart of `30_publatency`, needs no router.
+- **[32_pubmixed](../../examples/32_pubmixed)** – Mixed traffic: what a bulk stream costs the latency of small messages sharing the same connection.
 
 **Demo Projects:**
 - **[Areg SDK Demo](https://github.com/aregtech/areg-sdk-demo)** - Real-world project examples

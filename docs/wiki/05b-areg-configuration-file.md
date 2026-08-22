@@ -78,9 +78,9 @@ The `*` module is used for almost every key in the shipped file. You add process
 |---|---|---|---|
 | `config::*::version` | version `x.y.z` | `2.0.0` | Configuration schema version |
 | `config::*::default::blocksize` | bytes | `64` (0 = built-in) | SharedBuffer growth granularity |
-| `config::*::queue::capacity` | count | `0` (built-in: 1024) | Dispatcher event-queue ring capacity (rounded up to power of two, min 32) |
-| `config::*::queue::timeout` | ms | `0` (built-in: 1000) | Dispatcher full-ring block timeout in lossless mode |
-| `config::*::queue::drop` | bool | `false` | Full-ring policy: `false` = lossless (producer blocks); `true` = drop-newest (never blocks) |
+| `config::*::queue::capacity` | count | `0` (built-in: 1024) | Dispatcher ring capacity. Bounds queued memory **and** small-message latency |
+| `config::*::queue::timeout` | ms | `0` (built-in: 10000 release / unlimited debug) | How long a producer waits for a free slot |
+| `config::*::queue::drop` | bool | `false` | Full-ring policy. `true` drops messages silently on **every** queue - prefer the per-thread parameter |
 | `log::*::version` | version `x.y.z` | `2.0.0` | Logging schema version |
 | `log::*::target` | list of `remote\|file\|debug\|db` | `remote\|file\|debug\|db` | Known/available log targets |
 | `log::*::enable` | bool | `true` | Master logging switch for the module |
@@ -118,7 +118,7 @@ The `*` module is used for almost every key in the shipped file. You add process
 | `logger::*::port::tcpip` | port | `8282` | Collector TCP port |
 | `net::MODULE::tcpip::sndbuf` | KB | 4096 (4 MB) | `SO_SNDBUF` size |
 | `net::MODULE::tcpip::rcvbuf` | KB | 4096 (4 MB) | `SO_RCVBUF` size |
-| `net::MODULE::tcpip::drain` | count | `128` | Send batch size per dispatcher wake-up |
+| `net::MODULE::tcpip::drain` | count | `128` | Send batch size, `0..128`. Bounds pinned batch memory; lowering it costs data rate |
 | `net::MODULE::tcpip::pairs` | count | `0` (disabled) | Dedicated send/recv thread-pool pairs |
 | `net::MODULE::tcpip::timeout` | ms | `2500` | `SO_SNDTIMEO` send timeout |
 | `net::MODULE::tcpip::cache` | KB | `256` | Per-socket send/recv cache size |
@@ -157,18 +157,73 @@ config::*::queue::capacity = 0    # built-in default (1024 slots)
 config::*::queue::capacity = 512  # explicit 512-slot ring per dispatcher
 ```
 
+**Out-of-range values.** Below 32 is raised to 32. Above 16,777,216 is treated as the "unlimited"
+sentinel and resolves to the built-in default (1024) — not to the maximum. So `20000000` gives you
+1024, not a huge ring.
+
+**It is a memory setting.** The limit counts messages, not bytes, so the memory it bounds depends
+entirely on your message size:
+
+| capacity | with 1 KB messages | with 3 MB messages |
+|---|---|---|
+| 1024 (default) | ~1 MB | ~3 GB |
+
+**It is also a latency setting, and this is easy to miss.** Messages leave the queue in order, so a
+small message queued behind N large ones waits for all of them to reach the socket first:
+
+```
+worst-case delay of a small message  ~  capacity x message size / throughput
+```
+
+Measured with example 32 (`32_pubmixed`), a bulk stream of 1 MB blocks and small ping/pong on the
+same connection:
+
+| capacity | data queued ahead | bulk rate | ping p50 |
+|---|---|---|---|
+| 1024 (default) | 1 GB | 3859 MB/s | **258 ms** |
+| 64 | 64 MB | 3555 MB/s | **39 ms** |
+
+Lowering the ring 16x cut the small-message delay 6.6x and cost 7.9 % of the bulk rate.
+
+**Recommendation.** If a connection carries large messages *and* small ones, compute
+`capacity x message size / throughput` and lower `capacity` until that delay is acceptable. The
+default of 1024 suits small messages; a service streaming megabyte blocks usually wants far less.
+
 ### `config::*::queue::timeout`
 How long (in milliseconds) a producer blocks waiting for a free slot when the event queue is full, in **lossless** mode (`queue::drop = false`). After this timeout the producer is unblocked and the event is dropped as a last resort.
 
 - Shipped default: `0`.
-- `0` → use the framework's built-in default (1000 ms).
+- `0` → use the framework's built-in default: **10000 ms in a release build**, and effectively
+  unlimited (~24 days) in a **debug** build, so that pausing a thread in the debugger cannot make
+  the application lose a message.
 - Has no effect when `queue::drop = true` (producers never block in drop-newest mode).
 - Accessor: `ConfigManager::queue_wait_timeout(module)`.
 
 ```text
-config::*::queue::timeout = 0      # built-in default (1000 ms)
+config::*::queue::timeout = 0      # built-in default
 config::*::queue::timeout = 5000   # block up to 5 s before giving up
 ```
+
+**Why the release default is 10 seconds.** `SO_SNDTIMEO` is 2500 ms, so a healthy but slow socket
+never needs more than about three seconds; a longer wait means something is genuinely wrong. The
+earlier default of 1000 ms was too close to normal operation — example 32 under load recorded a
+producer waiting **4973 ms** for a free slot, which the old value would have turned into a silently
+destroyed message.
+
+**Seeing it happen.** A wait longer than one second is reported in the log with its real duration.
+Framework scopes are off by default, so enable them to see it:
+
+```text
+log::*::enable::file  = true
+log::*::scope::areg_* = WARN | SCOPE ;
+```
+
+```text
+WARN >>> Send queue was full: a producer waited [ 4973 ] ms for a free slot
+```
+
+That line is how you tell "a thread was paused in the debugger" apart from "the consumer is too
+slow".
 
 ### `config::*::queue::drop`
 Full-ring policy for every dispatcher's event queue.
@@ -184,6 +239,16 @@ Full-ring policy for every dispatcher's event queue.
 config::*::queue::drop = false   # lossless (default)
 config::*::queue::drop = true    # drop-newest, producers never block
 ```
+
+> **Leave this at `false` unless you know exactly what you are doing.** The key is global: it
+> applies to *every* dispatcher queue in the process, including the ones carrying IPC service
+> calls. Setting it to `true` to protect one high-rate telemetry stream also makes request,
+> response and broadcast messages disappear silently, with every layer still reporting success.
+>
+> When only one thread should be best-effort, set it on **that thread** instead of globally: the
+> `DispatcherThread`, `ComponentThread` and `WorkerThread` constructors take a `dropOnFull`
+> parameter (`areg::Bool::True` / `False`), and an explicit value there overrides this key. That
+> is the safe granularity; the configuration key is not.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -459,6 +524,34 @@ net::*::tcpip::pairs             = 0
 net::*::tcpip::timeout           = 2500
 net::*::tcpip::cache             = 256
 ```
+
+#### `drain` in detail - a memory setting, not a speed setting
+
+`drain` is the largest number of messages a send thread may take out of its queue and write to the
+socket in one go. Valid range is `0 .. 128`, where `0` means "use the built-in default" (128).
+A larger value is clamped, because the batch arrays are fixed at that size and are never allocated.
+
+One batch keeps **every message in it alive** until the whole batch has reached the socket, so a
+send thread pins `drain x message size` of payload:
+
+| drain | with 3 MB messages | with 64 KB messages |
+|---|---|---|
+| 128 (default) | ~400 MB | ~8 MB |
+| 8 | ~24 MB | ~512 KB |
+
+Lowering it therefore bounds memory, and **costs data rate**. Measured end to end on example 23:
+
+| drain | cost vs default |
+|---|---|
+| 21 | about -2.6 % |
+| 8 | about -3.0 % |
+| 5 | about -3.6 % |
+| 1 | about -14 % |
+
+**Recommendation.** Leave it at `128` unless a target is memory constrained. Lower it only to bound
+the pinned batch memory shown above, never in the hope of reducing latency - it does the opposite.
+The value is resolved once, when a send thread starts, so changing it takes effect on the next
+connection and costs nothing on the message path.
 
 **Platform notes**
 
