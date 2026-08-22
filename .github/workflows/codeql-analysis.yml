@@ -1,13 +1,8 @@
 name: "CodeQL"
 
+# Only the manual trigger is active while the CMake workflow is used to hunt a defect.
+# Restore the 'push', 'pull_request' and 'schedule' triggers when the hunt is over.
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    # The branches below must be a subset of the branches above
-    branches: [ master ]
-  schedule:
-    - cron: '32 22 * * 1'
   workflow_dispatch:
 
 jobs:

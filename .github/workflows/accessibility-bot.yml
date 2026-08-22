@@ -1,15 +1,9 @@
 name: Accessibility-alt-text-bot
+# Only the manual trigger is active while the CMake workflow is used to hunt a defect.
+# Restore the 'issues', 'pull_request', 'issue_comment' and 'discussion' triggers when
+# the hunt is over.
 on:
-  issues:
-    types: [opened, edited]
-  pull_request:
-    types: [opened, edited]
-  issue_comment:
-    types: [created, edited]
-  discussion:
-    types: [created, edited]
-  discussion_comment:
-    types: [created, edited]
+  workflow_dispatch:
 
 permissions:
   issues: write

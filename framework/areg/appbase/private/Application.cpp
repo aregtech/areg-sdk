@@ -27,8 +27,25 @@
 
 #include "areg/logging/private/LogManager.hpp"
 
+#include <cstdio>
 #include <vector>
 #include <utility>
+
+namespace {
+
+//! Writes one line of the application quit trace when AREG_QUIT_TRACE is set in the environment.
+//! The line goes to the standard error stream, which the example test driver captures.
+void _quit_trace(const char * text) noexcept
+{
+    static const bool enabled{ areg::Process::instance().safe_env_variable("AREG_QUIT_TRACE").is_empty() == false };
+    if (enabled)
+    {
+        std::fprintf(stderr, "\r\n[areg-quit-trace] %s\r\n", text);
+        std::fflush(stderr);
+    }
+}
+
+} // anonymous namespace
 
 namespace areg {
 
@@ -356,13 +373,18 @@ areg::Primitive Application::stored_element( const String & elemName )
 bool Application::wait_quit(uint32_t waitTimeout /*= areg::WAIT_INFINITE*/)
 {
     Application & theApp = Application::instance( );
-    return theApp.mAppQuit.lock(waitTimeout);
+    _quit_trace("wait_quit: enter");
+    const bool result{ theApp.mAppQuit.lock(waitTimeout) };
+    _quit_trace(result ? "wait_quit: left, signaled" : "wait_quit: left, not signaled");
+    return result;
 }
 
 void Application::signal_quit()
 {
     Application & theApp = Application::instance( );
+    _quit_trace("signal_quit: enter");
     theApp.mAppQuit.set_signaled();
+    _quit_trace("signal_quit: left");
 }
 
 bool Application::is_servicing_ready()
