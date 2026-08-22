@@ -120,20 +120,16 @@ the role name is a nick name of a registered application.</Description>
         </Method>
     </MethodList>
     <ConstantList>
-        <Constant ID="36" Name="InvalidSession" DataType="uint64">
-            <Value>chat::InvalidSession</Value>
+        <Constant ID="36" Name="InvalidSession" DataType="uint64" Value="chat::InvalidSession">
             <Description>Indicates Invalid session</Description>
         </Constant>
-        <Constant ID="37" Name="InvalidCookie" DataType="uint32">
-            <Value>chat::InvalidCookie</Value>
+        <Constant ID="37" Name="InvalidCookie" DataType="uint32" Value="chat::InvalidCookie">
             <Description>Indicates Invalid cookie</Description>
         </Constant>
-        <Constant ID="38" Name="ServicePrefixProvider" DataType="String">
-            <Value>&quot;ChatProvider&quot;</Value>
+        <Constant ID="38" Name="ServicePrefixProvider" DataType="String" Value="&quot;ChatProvider&quot;">
             <Description>The prefix to add when create stub instance</Description>
         </Constant>
-        <Constant ID="39" Name="ServicePrefixClient" DataType="String">
-            <Value>&quot;ChatClient&quot;</Value>
+        <Constant ID="39" Name="ServicePrefixClient" DataType="String" Value="&quot;ChatClient&quot;">
             <Description>The prefix when instantiate chat proxy.</Description>
         </Constant>
     </ConstantList>

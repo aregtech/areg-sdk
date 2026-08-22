@@ -67,20 +67,16 @@ the client can check that all sequences exist.</Description>
         </Method>
     </MethodList>
     <ConstantList>
-        <Constant ID="18" Name="MaxMessages" DataType="int16">
-            <Value>100</Value>
+        <Constant ID="18" Name="MaxMessages" DataType="int16" Value="100">
             <Description>The maximum number of messages to output.</Description>
         </Constant>
-        <Constant ID="28" Name="ClientTimeot" DataType="uint32">
-            <Value>200</Value>
+        <Constant ID="28" Name="ClientTimeot" DataType="uint32" Value="200">
             <Description>The timeout in milliseconds where the client send a request</Description>
         </Constant>
-        <Constant ID="29" Name="ServiceTimeout" DataType="uint32">
-            <Value>500</Value>
+        <Constant ID="29" Name="ServiceTimeout" DataType="uint32" Value="500">
             <Description>Timeout where the service replies with the response</Description>
         </Constant>
-        <Constant ID="32" Name="InvalidId" DataType="uint32">
-            <Value>0</Value>
+        <Constant ID="32" Name="InvalidId" DataType="uint32" Value="0">
             <Description>The invalid ID</Description>
         </Constant>
     </ConstantList>

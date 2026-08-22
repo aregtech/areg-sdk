@@ -20,8 +20,18 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/Model.hpp"
 #include "areg/component/private/ServiceManager.hpp"
+#include "areg/logging/areg_log.h"
+
+namespace {
+
+//!< Time given to a component thread to leave before it is declared unable to stop.
+constexpr uint32_t  TERMINATE_WAIT_MS   { areg::TIMEOUT_500_MS };
+
+}
 
 namespace areg {
+
+DEF_LOG_SCOPE(areg_component_ComponentThread, terminate_self);
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentThread class implementation
@@ -70,6 +80,7 @@ ComponentThread::ComponentThread( const String & threadName
 
     , mCurrentComponent ( nullptr )
     , mWatchdog         ( self(), watchdogTimeout )
+    , mIsRestarting     ( false )
     , mListComponent    ( )
 {
 }
@@ -97,8 +108,7 @@ bool ComponentThread::run_dispatcher()
 
     start_components();
 
-    // All components are started. Now register all proxies accumulated during startup so
-    // that ProxyConnectEvent can only arrive after startup_component() has been called.
+    // All components are started. Now register all proxies accumulated during startup
     ArrayList<std::shared_ptr<ProxyBase>> proxyList;
     ProxyBase::find_thread_proxies(self(), proxyList);
     for (uint32_t i = 0; i < proxyList.size(); ++i)
@@ -126,6 +136,7 @@ int32_t ComponentThread::create_components()
         Component *comObj = Component::load_component(entry, self());
         if (comObj != nullptr)
         {
+            Lock lock(mListLock);
             mListComponent.push_last(comObj);
             result ++;
         }
@@ -136,13 +147,16 @@ int32_t ComponentThread::create_components()
 
 void ComponentThread::destroy_components()
 {
-    while (mListComponent.is_empty() == false)
+    // Take the components off the shared list first. Deleting them stops their worker threads
+    ListComponent doomed;
+    _detach_components(doomed);
+
+    while (doomed.is_empty() == false)
     {
-        Component* comObj = nullptr;
-        if (!mListComponent.remove_last(comObj))
-            continue;
-        
-        ASSERT(comObj != nullptr);
+        Component * comObj{ nullptr };
+        if (!doomed.remove_last(comObj) || (comObj == nullptr))
+            break;
+
         const areg::ComponentEntry& entry = ComponentLoader::find_component_entry(comObj->role_name(), name());
         if (entry.is_valid() && entry.mFuncDelete != nullptr)
         {
@@ -152,7 +166,20 @@ void ComponentThread::destroy_components()
         {
             delete comObj;
         }
-        
+    }
+}
+
+inline void ComponentThread::_detach_components(ListComponent & result)
+{
+    Lock lock(mListLock);
+    while (mListComponent.is_empty() == false)
+    {
+        Component * comObj{ nullptr };
+        if (!mListComponent.remove_last(comObj))
+            break;
+
+        ASSERT(comObj != nullptr);
+        result.push_last(comObj);
     }
 }
 
@@ -178,7 +205,8 @@ DispatcherThread* ComponentThread::event_consumer_thread( const uint32_t whichCl
     DispatcherThread* result = has_registered_consumer(whichClass) ? static_cast<DispatcherThread *>(this) : nullptr;
     if (result != nullptr)
         return result;
-    
+
+    Lock lock(mListLock);
     ListComponent::LISTPOS pos = mListComponent.first_position();
     while (mListComponent.is_valid_position(pos) && (result == nullptr))
     {
@@ -186,38 +214,94 @@ DispatcherThread* ComponentThread::event_consumer_thread( const uint32_t whichCl
         ASSERT(comObj != nullptr);
         result = comObj->find_event_consumer(whichClass);
     }
-    
+
     return result;
 }
 
-void ComponentThread::terminate_self()
+bool ComponentThread::terminate_self()
 {
+    LOG_SCOPE( areg_component_ComponentThread, terminate_self );
+
+    mIsRestarting = true;
     mHasStarted = false;
     remove_all_events();
     signal_exit_event();
 
-    _shutdown_proxies();
-
-    while (mListComponent.is_empty() == false)
+    // The thread is stopped first and its objects are released only afterwards.
+    const Thread::ThreadCompletion status{ DispatcherThread::shutdown(TERMINATE_WAIT_MS) };
+    if (status == Thread::ThreadCompletion::Stuck)
     {
-        Component* component{ nullptr };
-        mListComponent.remove_last(component);
-        ASSERT(component != nullptr);
-        component->terminate_self();
+        // The thread runs on and keeps using its objects, none of them may be released.
+        // A ghost must answer no lookup and must receive no event
+        _detach_abandoned_objects();
+        LOG_ERR("The component thread [ %s ] did not stop. Its components are unregistered and abandoned, not deleted"
+                    , name().as_string());
+        return false;
     }
 
+    // A thread killed by the OS never ran its exit sequence, so its objects are released here.
+    if (status == Thread::ThreadCompletion::Terminated)
+    {
+        _release_abandoned_objects();
+    }
+
+    _detach_thread_proxies();
+
+    delete this;
+    return true;
+}
+
+inline void ComponentThread::_detach_abandoned_objects()
+{
+    // The consumers of this thread go first
+    _detach_thread_proxies();
+
+    ListComponent abandoned;
+    _detach_components(abandoned);
+    while (abandoned.is_empty() == false)
+    {
+        Component * component{ nullptr };
+        if (!abandoned.remove_last(component) || (component == nullptr))
+            break;
+
+        component->detach_from_registry();
+    }
+
+    // The watchdog of a thread nobody controls must never fire again
+    mWatchdog.disarm();
+}
+
+inline void ComponentThread::_detach_thread_proxies()
+{
     ArrayList<std::shared_ptr<ProxyBase>> proxyList;
     ProxyBase::find_thread_proxies(self(), proxyList);
     for (uint32_t i = 0; i < proxyList.size(); ++i)
     {
-        std::shared_ptr<ProxyBase> proxy = proxyList[i];
-        ASSERT(proxy != nullptr);
-        proxy->terminate_self();
+        ASSERT(proxyList[i] != nullptr);
+        proxyList[i]->detach_from_registry();
+    }
+}
+
+inline void ComponentThread::_release_abandoned_objects()
+{
+    ArrayList<std::shared_ptr<ProxyBase>> proxyList;
+    ProxyBase::find_thread_proxies(self(), proxyList);
+    for (uint32_t i = 0; i < proxyList.size(); ++i)
+    {
+        ASSERT(proxyList[i] != nullptr);
+        proxyList[i]->terminate_self();
     }
 
-    DispatcherThread::shutdown(areg::TIMEOUT_10_MS);
+    ListComponent doomed;
+    _detach_components(doomed);
+    while (doomed.is_empty() == false)
+    {
+        Component * component{ nullptr };
+        if (!doomed.remove_last(component) || (component == nullptr))
+            break;
 
-    delete this;
+        component->terminate_self();
+    }
 }
 
 inline void ComponentThread::_shutdown_proxies()
@@ -243,35 +327,39 @@ inline void ComponentThread::_shutdown_components()
     }
 }
 
-Thread::ThreadCompletion ComponentThread::shutdown( uint32_t waitForStopMs /*= areg::DO_NOT_WAIT*/ )
+Thread::ThreadCompletion ComponentThread::shutdown( uint32_t waitForStopMs /*= areg::WAIT_INFINITE*/ )
 {
-    ListComponent::LISTPOS pos = mListComponent.first_position( );
-    while ( mListComponent.is_valid_position( pos ) )
+    // Another thread that asks for the shutdown must not walk it.
+    // The components are notified and stopped by the exit sequence of this thread.
+    if ( id( ) == Thread::current_thread_id( ) )
     {
-        Component * comObj = mListComponent.next( pos );
-        ASSERT( comObj != nullptr );
-        comObj->notify_component_shutdown( self( ) );
+        ListComponent::LISTPOS pos = mListComponent.first_position( );
+        while ( mListComponent.is_valid_position( pos ) )
+        {
+            Component * comObj = mListComponent.next( pos );
+            ASSERT( comObj != nullptr );
+            comObj->notify_component_shutdown( self( ) );
+        }
     }
 
     return DispatcherThread::shutdown( waitForStopMs );
 }
 
-bool ComponentThread::wait_completion( uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE */ )
+void ComponentThread::wait_components_completion()
 {
     ListComponent::LISTPOS pos = mListComponent.first_position();
     while ( mListComponent.is_valid_position(pos) )
     {
         Component* comObj = mListComponent.next(pos);
         ASSERT(comObj != nullptr);
-        comObj->wait_component_completion(waitForCompleteMs);
+        comObj->wait_component_completion(areg::WAIT_INFINITE);
     }
-
-    return DispatcherThread::wait_completion(waitForCompleteMs);
 }
 
 int32_t ComponentThread::on_exit()
 {
     shutdown_components();
+    wait_components_completion();
     destroy_components();
 
     return DispatcherThread::on_exit( );

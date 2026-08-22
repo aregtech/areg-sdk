@@ -23,6 +23,11 @@
 #include "areg/base/CommonDefs.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/private/TimerManagerEvent.hpp"
+
+#if !defined(__linux__) && !defined(__APPLE__) && (defined(_POSIX) || defined(POSIX))
+    #include <time.h>
+#endif  // generic POSIX
+
 namespace areg {
 
 /************************************************************************
@@ -163,6 +168,24 @@ protected:
     int     mExitFd;
 
 #endif  // defined(__linux__)
+
+//////////////////////////////////////////////////////////////////////////
+// Generic POSIX deadline support (every POSIX platform but Linux and macOS)
+//////////////////////////////////////////////////////////////////////////
+#if !defined(__linux__) && !defined(__APPLE__) && (defined(_POSIX) || defined(POSIX))
+
+private:
+    /**
+     * \brief   Fires every armed timer that has reached its due time and reports when the
+     *          dispatching loop has to wake up next. Called on the manager thread only.
+     *
+     * \param   now             The current time, read from the deadline clock.
+     * \param   out_nextDue     On return, the earliest due time that is still armed.
+     * \return  Returns true when at least one timer stays armed, so out_nextDue is set.
+     **/
+    virtual bool _check_deadlines( const timespec & now, timespec & out_nextDue ) = 0;
+
+#endif  // generic POSIX
 
 //////////////////////////////////////////////////////////////////////////
 //  Forbidden calls

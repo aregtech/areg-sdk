@@ -22,7 +22,7 @@ DEF_LOG_SCOPE(examples_21_locwatchdog_ServicingComponent, request_start_sleep);
 
 ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component         ( entry, owner )
-    , HelloWatchdogProviderBase ( static_cast<areg::Component &>(self()) )
+    , HelloWatchdogProviderBase ( static_cast<areg::Component &>(*this) )
 {
 }
 
@@ -44,8 +44,11 @@ void ServicingComponent::request_start_sleep( uint32_t timeoutSleep )
     printf("Hello Watchdog! Sleep [ %u ] ms, watchdog timeout [ %u ]\n", timeoutSleep, HelloWatchdog::TimeoutWatchdog);
 
     set_service_state( HelloWatchdog::ComponentState::Started );
-
-    areg::Thread::sleep(timeoutSleep);
+    if (areg::Thread::wait_exit(timeoutSleep) == false)
+    {
+        LOG_WARN("The component thread was asked to exit while sleeping, leaving the request");
+        return;
+    }
 
     response_start_sleep(timeoutSleep);
 }

@@ -55,7 +55,7 @@ areg::Model DirectConnectionService::GetModel( const areg::String & nickName, ui
 
 DirectConnectionService::DirectConnectionService( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread )
     : areg::Component             ( entry, ownerThread )
-    , DirectConnectionProviderBase  ( static_cast<areg::Component &>(self()) )
+    , DirectConnectionProviderBase  ( static_cast<areg::Component &>(*this) )
 
     , mNickName             ( std::any_cast<PageConnections *>(entry.data())->GetRegisteredName() )
     , mCookie               ( std::any_cast<PageConnections *>(entry.data())->GetRegisteredCookie() )

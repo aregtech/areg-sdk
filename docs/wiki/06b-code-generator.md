@@ -86,28 +86,30 @@ Create a `.siml` file defining your service interface. A service interface consi
 </ServiceInterface>
 ```
 
-For detailed `.siml` syntax, see [Service Interface Documentation](./ServiceInterface.md).
+For detailed `.siml` syntax, see [Service Interface Documentation](../ServiceInterface.md).
 
 ### Command-Line Invocation
 
 ```bash
-java -jar codegen.jar --doc=<path-to-siml-file> --root=<output-root> --target=<relative-path>
+java -jar codegen.jar --doc=<path-to-document> --root=<project-root> --target=<generate-root>
 ```
 
 **Parameters**:
-- `--doc`: Path to `.siml` service interface definition file
-- `--root`: Root directory for generated files (typically project source directory)
-- `--target`: Relative path within root for generated code (e.g., `generated/services`)
+- `--doc`: Path to the `.siml`, `.fsml` or `.dtml` document, absolute or relative to `--root`
+- `--root`: The project root. Every path the run reads is resolved against it, including the documents a `.siml` includes
+- `--target`: The generate root, one folder for the whole project's generated sources, absolute or relative to `--root`
+
+Inside the generate root each document gets the folder its own path names, so two documents that include a third one produce one copy of it, at one path. The generate root is what belongs on the compiler's include path.
 
 **Example**:
 ```bash
 java -jar codegen.jar \
-    --doc=./services/HelloService.siml \
-    --root=./src \
-    --target=generated
+    --doc=services/HelloService.siml \
+    --root=/home/dev/project \
+    --target=product/generate
 ```
 
-Generated files appear in: `./src/generated/`
+Generated files appear in: `/home/dev/project/product/generate/services/`
 
 ### Help and Options
 
@@ -152,23 +154,44 @@ macro_declare_executable(HelloService HelloServiceLib main.cpp provider.cpp)
 
 #### `addServiceInterfaceEx`
 
-Generates code in a custom location:
+The same, for a project whose sources are not under `${PROJECT_SOURCE_DIR}`:
 
 ```cmake
-addServiceInterfaceEx(<static-lib-name> <path-to-siml-file> <custom-output-dir>)
+addServiceInterfaceEx(<static-lib-name> <source-root> <siml-path-relative-to-source-root>)
 ```
 
-Use when you need control over the output directory structure.
+The generated files still land in the folder the document's own path names, so there is no output directory to pass.
+
+#### `addStateMachine` and `addStateMachineEx`
+
+The `.fsml` counterparts, with the same call shapes:
+
+```cmake
+addStateMachine(<static-lib-name> <path-to-fsml-file>)
+addStateMachineEx(<static-lib-name> <source-root> <fsml-path-relative-to-source-root>)
+```
+
+#### `addDataType` and `addDataTypeEx`
+
+The `.dtml` counterparts, with the same call shapes:
+
+```cmake
+addDataType(<static-lib-name> <path-to-dtml-file>)
+addDataTypeEx(<static-lib-name> <source-root> <dtml-path-relative-to-source-root>)
+```
+
+> [!IMPORTANT]
+> A `.dtml` that a `.siml` or a `.fsml` **includes** is generated together with the document that includes it and must not be listed separately. Call `addDataType` only for a data type document that nothing includes.
 
 #### `macro_add_service_interface`
 
-Low-level function for advanced scenarios:
+Low-level macro for advanced scenarios:
 
 ```cmake
-macro_add_service_interface(<lib-name> <siml-path> <codegen-path> <output-dir>)
+macro_add_service_interface(<lib-name> <siml-path> <source-root> <generate-root> <output-dir> <codegen-tool>)
 ```
 
-Allows specifying custom code generator location and output directory.
+Allows specifying a custom code generator location and generate root.
 
 ### Integration with Microsoft Visual Studio
 
@@ -190,7 +213,7 @@ Manual integration steps:
 
 **Step 1: Create Service Interface**
 
-Define `services/HelloService.siml` following the [Service Interface structure](./ServiceInterface.md).
+Define `services/HelloService.siml` following the [Service Interface structure](../ServiceInterface.md).
 
 **Step 2: Configure CMake Build**
 
@@ -243,7 +266,7 @@ Code generation happens automatically during the build process.
 
 **Step 1: Create Service Interface**
 
-Define `services/HelloService.siml` following the [Service Interface structure](./ServiceInterface.md).
+Define `services/HelloService.siml` following the [Service Interface structure](../ServiceInterface.md).
 
 **Step 2: Run Code Generator**
 

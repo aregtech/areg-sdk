@@ -692,7 +692,7 @@ Lusan's live log viewer transforms distributed logging from a challenge into a p
 
 - **Explore Offline Analysis**: [Lusan Offline Log Analysis](./06g-lusan-offline-logging.md) for post-mortem debugging
 - **Configure Log Collector**: [Log Collector Service Setup](./04d-logcollector.md) for production deployment
-- **Optimize Configuration**: [Key-Value Data Persistence](./03b-key-value-persistence.md) for advanced settings
+- **Optimize Configuration**: [Key-Value Data Persistence](./05a-persistence-syntax.md) for advanced settings
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 

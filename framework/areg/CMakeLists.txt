@@ -49,8 +49,16 @@ target_compile_options(areg PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}" "${AREG_OP
 # Linker options
 target_link_libraries(areg PRIVATE ${AREG_LDFLAGS})
 
-# copying log and router init files to 'bin/config'
-add_custom_command( TARGET areg POST_BUILD 
-                    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/config
-                    COMMAND ${CMAKE_COMMAND} -E copy ${AREG_FRAMEWORK}/areg/resources/areg.init ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/config/areg.init
+# Copy the framework configuration file to 'bin/config'.
+# OUTPUT + DEPENDS, not POST_BUILD: a POST_BUILD step runs only when the target is relinked,
+# so editing 'areg.init' alone would never reach the build output.
+set(AREG_INIT_SOURCE "${AREG_FRAMEWORK}/areg/resources/areg.init")
+set(AREG_INIT_TARGET "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/config/areg.init")
+add_custom_command( OUTPUT  "${AREG_INIT_TARGET}"
+                    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/config"
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${AREG_INIT_SOURCE}" "${AREG_INIT_TARGET}"
+                    DEPENDS "${AREG_INIT_SOURCE}"
+                    COMMENT "AREG: updating '${AREG_INIT_TARGET}'"
                     VERBATIM)
+add_custom_target(areg-config ALL DEPENDS "${AREG_INIT_TARGET}")
+add_dependencies(areg areg-config)

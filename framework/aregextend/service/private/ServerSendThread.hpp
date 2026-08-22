@@ -75,6 +75,13 @@ public:
 /************************************************************************/
 public:
     /**
+     * \brief   Returns the send batch limit of this thread, in messages. Resolved once, when the
+     *          thread becomes ready, so reading it costs one load.
+     **/
+    [[nodiscard]]
+    inline uint32_t drain_limit() const noexcept;
+
+    /**
      * \brief   Returns accumulative value of sent data size and resets the existing value to zero.
      *          The operations are atomic. The value can be used to display data rate, for example.
      **/
@@ -108,6 +115,14 @@ public:
      * \param   msgs    Number of messages sent.
      **/
     inline void accumulate_sent(uint64_t bytes, uint32_t msgs) noexcept;
+
+    /**
+     * \brief   Returns the gate of the send queue of this thread. A producer that wants to write
+     *          a message into the socket itself must find the gate clear first, and must announce
+     *          the message with SendQueueGate::enter() when it queues it instead.
+     **/
+    [[nodiscard]]
+    inline areg::SendQueueGate & send_gate() noexcept;
 
 protected:
 /************************************************************************/
@@ -160,6 +175,11 @@ private:
      **/
     ServerConnection &              mConnection;
     /**
+     * \brief   How many messages this thread may put into one batch, within the range
+     *          1 .. areg::DEFAULT_DRAIN_LIMIT. Resolved when the thread becomes ready.
+     **/
+    uint32_t                        mDrainLimit;
+    /**
      * \brief   Pre-allocated batch work list reused across every drain cycle.
      **/
     BatchEntries                    mBatch;
@@ -172,6 +192,10 @@ private:
      * \brief   Atomic stats (bytes + messages sent + enabled flag).
      **/
     DataRateStats                   mSendStats;
+    /**
+     * \brief   Tells the producers whether this queue still owes a message to a socket.
+     **/
+    areg::SendQueueGate             mSendGate;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -208,6 +232,16 @@ inline bool ServerSendThread::is_data_rate_enabled() const noexcept
 inline void ServerSendThread::accumulate_sent(uint64_t bytes, uint32_t msgs) noexcept
 {
     mSendStats.accumulate(bytes, msgs);
+}
+
+inline uint32_t ServerSendThread::drain_limit() const noexcept
+{
+    return mDrainLimit;
+}
+
+inline areg::SendQueueGate & ServerSendThread::send_gate() noexcept
+{
+    return mSendGate;
 }
 
 } // namespace areg::ext

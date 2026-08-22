@@ -107,11 +107,23 @@ void Thread::_os_set_name(id_type /*threadId*/, const char* /*threadName*/)
 
 #endif // !((__GLIBC__ > 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ >= 12)))
 
-void Thread::_os_close_handle(THREADHANDLE handle)
+void Thread::_os_close_handle(THREADHANDLE handle, bool joinThread)
 {
     if (handle != nullptr)
     {
         PosixThread* pthread = reinterpret_cast<PosixThread*>(handle);
+
+        // Releases the descriptor of the joinable thread. A thread cannot join itself, and a
+        // thread that was not confirmed to have left is detached so that this never blocks.
+        if (joinThread && (::pthread_equal(pthread->pthreadId, ::pthread_self()) == 0))
+        {
+            ::pthread_join(pthread->pthreadId, nullptr);
+        }
+        else
+        {
+            ::pthread_detach(pthread->pthreadId);
+        }
+
         pthread_attr_destroy(&pthread->pthreadAttr);
         delete pthread;
     }
@@ -144,7 +156,6 @@ id_type Thread::_os_thread_id()  noexcept
 Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
 {
     Thread::ThreadCompletion result = Thread::ThreadCompletion::Invalid;
-    pthread_t threadId = to_ptr<pthread_t, id_type>(Thread::INVALID_THREAD_ID);
 
     do
     {
@@ -154,18 +165,16 @@ Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
             return Thread::ThreadCompletion::Invalid;
         }
 
-        threadId = to_ptr<pthread_t, id_type>(mThreadId);
         _unregister_thread();
 
     } while (false);
 
-    if ((waitForStopMs != DO_NOT_WAIT) && (mWaitForExit.lock(waitForStopMs) == false))
+    if (mWaitForExit.lock(waitForStopMs == DO_NOT_WAIT ? 0u : waitForStopMs) == false)
     {
-        AREG_OUTPUT_DBG("The thread [ %s ] should be terminated", mThreadAddress.name().as_string());
-        result = Thread::ThreadCompletion::Terminated;
-        pthread_cancel(threadId);
-        mWaitForRun.reset();
-        mWaitForExit.set_signaled();
+        // POSIX has no way to terminate a thread that does not return on its own: a
+        // cancellation unwinds C++ frames and 'noexcept' on that path calls std::terminate.
+        AREG_OUTPUT_DBG("The thread [ %s ] did not stop and cannot be terminated on POSIX", mThreadAddress.name().as_string());
+        result = Thread::ThreadCompletion::Stuck;
     }
     else
     {
@@ -196,7 +205,8 @@ bool Thread::_os_create() noexcept
                     ::pthread_attr_setstacksize(&handle->pthreadAttr, stackSize);
                 }
 
-                if ((RETURNED_OK == ::pthread_attr_setdetachstate(&handle->pthreadAttr, PTHREAD_CREATE_DETACHED)) &&
+                // Joinable keeps the thread id valid until _os_close_handle() joins it.
+                if ((RETURNED_OK == ::pthread_attr_setdetachstate(&handle->pthreadAttr, PTHREAD_CREATE_JOINABLE)) &&
                     (RETURNED_OK == ::pthread_create(&handle->pthreadId, &handle->pthreadAttr, &Thread::_posix_thread_routine, static_cast<void*>(this))))
                 {
                     result = true;
@@ -207,13 +217,15 @@ bool Thread::_os_create() noexcept
                     if (_register_thread() == false)
                     {
                         result = false;
-                        _clean_resources(true);
+                        // Releases the handle itself, so it must not be released again below.
+                        _clean_resources(true, true);
+                        handle = nullptr;
                     }
                 }
 
-                if (result == false)
+                if ((result == false) && (handle != nullptr))
                 {
-                    _os_close_handle(handle);
+                    _os_close_handle(handle, false);
                 }
             }
             else

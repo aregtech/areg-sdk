@@ -14,7 +14,7 @@
  ************************************************************************/
 #include "logcollector/app/LogCollector.hpp"
 
-#ifdef POSIX
+#if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/base/File.hpp"
@@ -31,7 +31,11 @@
 int main(int argc, char* argv[], char* envp[])
 {
     LogCollector& logger = LogCollector::instance();
-    logger.parse_options(argc, argv, areg::ext::ServiceOptionSetup, std::size(areg::ext::ServiceOptionSetup));
+    if (logger.parse_options(argc, argv) == false)
+    {
+        return areg::ext::ServiceApplicationBase::RESULT_FAILED_INIT;
+    }
+
     return logger.service_main(logger.current_option(), nullptr);
 }
 
@@ -39,4 +43,4 @@ int main(int argc, char* argv[], char* envp[])
 // Global functions, End
 //////////////////////////////////////////////////////////////////////////
 
-#endif // POSIX
+#endif // defined(_POSIX) || defined(POSIX)

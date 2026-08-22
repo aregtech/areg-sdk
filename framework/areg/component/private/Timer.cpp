@@ -159,8 +159,13 @@ bool Timer::timer_is_expired(uint32_t highValue, uint32_t lowValue, ptr_type /*c
     bool isDelivered{ false };
     if ((mTimeoutInMs != areg::INVALID_TIMEOUT) && (mDispatchThread != nullptr))
     {
+        // the state has to be up to date before the event is queued.
+        mActive = isContinuous || (mEventsCount != 0u);
         isDelivered = TimerEvent::send_event(*this, *mDispatchThread, mPriority);
-        mActive = isDelivered && (isContinuous || (mEventsCount != 0u));
+        if (isDelivered == false)
+        {
+            mActive = false;
+        }
     }
     else
     {

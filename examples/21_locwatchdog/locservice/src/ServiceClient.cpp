@@ -19,7 +19,7 @@ DEF_LOG_SCOPE(examples_21_locwatchdog_ServiceClient, response_start_sleep);
 
 ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component              ( entry, owner )
-    , HelloWatchdogConsumerBase( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
+    , HelloWatchdogConsumerBase( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(*this) )
 
     , mSleepTimeout          ( 0 )
     , mRestarts              ( 0 )

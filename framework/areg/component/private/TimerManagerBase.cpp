@@ -36,7 +36,9 @@ TimerManagerBase::TimerManagerBase(const String& threadName, uint32_t stackSizeK
 {
 }
 
-#ifndef __linux__
+// Windows and macOS drive their timers from an OS callback, so this loop only serves the
+// event queue. Linux and the other POSIX platforms have their own loop.
+#if !defined(__linux__) && (defined(__APPLE__) || !(defined(_POSIX) || defined(POSIX)))
 
 bool TimerManagerBase::post_event(Event& eventElem)
 {
@@ -105,7 +107,7 @@ void TimerManagerBase::stop_manager_thread(bool waitComplete)
     }
 }
 
-#endif  // !__linux__
+#endif  // Windows and macOS
 
 void TimerManagerBase::ready_for_events(bool is_ready)
 {

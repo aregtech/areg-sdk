@@ -12,8 +12,9 @@
  * \author      Artak Avetyan
  * \brief       Areg Platform, The System Timer Manager.
  *              Controlling, triggering and stopping timer.
- *              Generic POSIX implementation using timer_create + SIGEV_THREAD
- *              (Cygwin, FreeBSD, and any other non-Linux non-Apple POSIX platform).
+ *              Generic POSIX implementation: the deadlines are kept in the timers and
+ *              watched by the manager loop (posix/TimerManagerBasePosix.cpp), so every
+ *              expiry is processed on the manager thread. No OS timer object is created.
  *              Linux:  areg/component/private/linux/TimerManagerLinux.cpp
  *              macOS:  areg/component/private/macos/TimerManagerMacOS.cpp
  *
@@ -25,24 +26,73 @@
 #include "areg/component/private/TimerManager.hpp"
 #include "areg/component/private/posix/TimerPosix.hpp"
 #include "areg/component/Timer.hpp"
-#include <time.h>
+
+#include <vector>
 
 namespace areg {
 
-void TimerManager::_posix_timer_expired(void * ptr) noexcept
+void TimerManager::_fire_expired(TIMERHANDLE handle)
 {
-    areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(ptr);
-    TimerManager & timerManager = TimerManager::instance();
+    areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(handle);
     ASSERT(posixTimer != nullptr);
-    Timer * timer = timerManager.mTimerResource.find_resource_object(reinterpret_cast<TIMERHANDLE>(posixTimer));
+    Timer * timer = mTimerResource.find_resource_object(handle);
 
     if ((timer != nullptr) && posixTimer->is_valid())
     {
-        const uint32_t highValue = static_cast<uint32_t>(posixTimer->mDueTime.tv_sec);
-        const uint32_t lowValue  = static_cast<uint32_t>(posixTimer->mDueTime.tv_nsec);
+        const timespec due{ posixTimer->due_time() };
+        const uint32_t highValue = static_cast<uint32_t>(due.tv_sec);
+        const uint32_t lowValue  = static_cast<uint32_t>(due.tv_nsec);
+
         posixTimer->timer_expired();
-        timerManager._process_expired_timer(timer, reinterpret_cast<TIMERHANDLE>(posixTimer), highValue, lowValue);
+        _process_expired_timer(timer, handle, highValue, lowValue);
     }
+}
+
+bool TimerManager::_check_deadlines(const timespec & now, timespec & out_nextDue)
+{
+    // The resource lock is held across the walk so that nothing can be unregistered
+    std::vector<TIMERHANDLE> expired;
+
+    mTimerResource.lock();
+    TIMERHANDLE handle{ nullptr };
+    for (const Timer * timer = mTimerResource.resource_first_key(handle); timer != nullptr; timer = mTimerResource.resource_next_key(handle))
+    {
+        areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(handle);
+
+        timespec due{};
+        if ((posixTimer != nullptr) && posixTimer->armed_due_time(due) && areg::os::deadline_reached(due, now))
+        {
+            expired.push_back(handle);
+        }
+    }
+    mTimerResource.unlock();
+
+    for (TIMERHANDLE expiredHandle : expired)
+    {
+        _fire_expired(expiredHandle);
+    }
+
+    bool hasNext{ false };
+
+    mTimerResource.lock();
+    handle = nullptr;
+    for (const Timer* timer = mTimerResource.resource_first_key(handle); timer != nullptr; timer = mTimerResource.resource_next_key(handle))
+    {
+        areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(handle);
+
+        timespec due{};
+        if ((posixTimer == nullptr) || !posixTimer->armed_due_time(due))
+            continue;
+
+        if (!hasNext || areg::os::deadline_earlier(due, out_nextDue))
+        {
+            out_nextDue = due;
+            hasNext     = true;
+        }
+    }
+
+    mTimerResource.unlock();
+    return hasNext;
 }
 
 void TimerManager::_os_timer_stop(TIMERHANDLE timerHandle)
@@ -63,7 +113,8 @@ bool TimerManager::_os_timer_start(Timer & timer)
     ::clock_gettime(CLOCK_REALTIME, &startTime);
     timer.timer_starting(startTime.tv_sec, startTime.tv_nsec, reinterpret_cast<ptr_type>(posixTimer));
 
-    return posixTimer->start_timer(timer, 0, &TimerManager::_posix_timer_expired);
+    // Runs on the manager thread
+    return posixTimer->start_timer(timer, 0, nullptr);
 }
 
 } // namespace areg

@@ -42,7 +42,6 @@
     <ClCompile Include="mtrouter\app\private\MultitargetRouter.cpp" />
     <ClCompile Include="mtrouter\app\private\MTRouterNames.cpp" />
     <ClCompile Include="mtrouter\app\private\posix\MultitargetRouterPosix.cpp" />
-    <ClCompile Include="mtrouter\app\private\RouterConsoleService.cpp" />
     <ClCompile Include="mtrouter\app\private\win32\MultitargetRouterWin32.cpp" />
     <ClCompile Include="mtrouter\service\private\ListServiceProxies.cpp" />
     <ClCompile Include="mtrouter\service\private\RouterServerService.cpp" />
@@ -51,7 +50,6 @@
     <ClCompile Include="mtrouter\service\private\ServiceStub.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="mtrouter\app\private\RouterConsoleService.hpp" />
     <ClInclude Include="mtrouter\service\private\ListServiceProxies.hpp" />
     <ClInclude Include="mtrouter\service\private\ServiceProxy.hpp" />
     <ClInclude Include="mtrouter\service\private\ServiceRegistry.hpp" />

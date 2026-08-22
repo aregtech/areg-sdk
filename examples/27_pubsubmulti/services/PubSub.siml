@@ -40,16 +40,13 @@ subscribes on data update and get notified.</Description>
         </Attribute>
     </AttributeList>
     <ConstantList>
-        <Constant ID="14" DataType="uint32" Name="TimeoutOnChange">
-            <Value>150</Value>
+        <Constant ID="14" DataType="uint32" Name="TimeoutOnChange" Value="150">
             <Description>The timeout to make updates on change</Description>
         </Constant>
-        <Constant ID="15" DataType="uint32" Name="TimeoutAlways">
-            <Value>300</Value>
+        <Constant ID="15" DataType="uint32" Name="TimeoutAlways" Value="300">
             <Description>The timeout to update on always.</Description>
         </Constant>
-        <Constant ID="16" DataType="uint16" Name="CycleAlways">
-            <Value>3</Value>
+        <Constant ID="16" DataType="uint16" Name="CycleAlways" Value="3">
             <Description>The number of cycles to change the value when updating values.</Description>
         </Constant>
     </ConstantList>

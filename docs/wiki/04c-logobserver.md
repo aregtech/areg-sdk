@@ -686,7 +686,8 @@ Applications must be connected to Log Collector to receive scope updates.
 **Related Guides:**
 - [Log Collector Guide](./04d-logcollector.md) - Central log collection service
 - [Logging Configuration Guide](./04a-logging-config.md) - Configure application logging
-- [Logging Development Guide](./04b-logging-development.md) - Add logging to code
+- [Logging Development Guide](./04b-logging-develop.md) - Add logging to code
+- [Log Database Format](./04e-log-database-format.md) - Schema of the recorded `.sqlog` files and SQL queries
 - [Lusan Live Log Viewer](./06f-lusan-live-logging.md) - GUI log viewer alternative
 
 **Configuration Files:**

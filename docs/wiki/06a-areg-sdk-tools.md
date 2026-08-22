@@ -147,7 +147,7 @@ Configured via `areg.init` file. Key settings:
 - Log targets (file, database, debug output)
 - Message queue size and buffering behavior
 
-**Reference**: [Key-Value Data Persistence](./key-value-persistence.md)
+**Reference**: [Key-Value Data Persistence](./05a-persistence-syntax.md)
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 

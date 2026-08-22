@@ -94,5 +94,6 @@
     #pragma comment(lib, "psapi")
     #pragma comment(lib, "shell32")
     #pragma comment(lib, "ws2_32")
+    #pragma comment(lib, "Synchronization.lib")
 
 #endif  // _MSC_VER

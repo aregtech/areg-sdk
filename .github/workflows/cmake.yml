@@ -5,50 +5,33 @@ on:
     branches: [ master ]
   pull_request: # Set to master to run only when merge with master branch
     branches: [ master ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{github.workflow}}-${{github.ref}}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
 
-# The CMake configure and build commands are platform agnostic and should work equally well on Windows or Linux.
-# You can convert this to a matrix build if you need cross-platform coverage.
-# See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-
 jobs:
   build-tests:
     name: ${{matrix.config.name}}
     runs-on: ${{matrix.config.os}}
+    timeout-minutes: 120
 
     strategy:
       fail-fast: false
       matrix:
+        # '*-all-test' builds and runs the examples and the unit tests.
+        # '*-nolog' and '*-noext' build and install only: no '*-all-test' entry compiles
+        # AREG_LOGGING=OFF or AREG_EXTENDED=OFF, and both remove code from the framework.
         config: # Create matrix with combinations
 
-            # compile Areg engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable Areg extensions and logs
-          - { name  : linux-gnu-shared-ext-log,
-              os    : ubuntu-latest,
-              lib   : shared,
-              family: gnu,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : ON,
-              test  : OFF
-            }
-
-            # compile Areg engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable Areg extensions and no logs
-          - { name  : linux-gnu-shared-ext-nolog,
-              os    : ubuntu-latest,
-              lib   : shared,
-              family: gnu,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : OFF,
-              test  : OFF
-            }
-
-            # compile Areg engine as a static library with GNU g++ / gcc on Ubuntu Linux, enable Areg extensions, logs, examples and tests
           - { name  : linux-gnu-static-all-test,
               os    : ubuntu-latest,
               lib   : static,
@@ -57,10 +40,9 @@ jobs:
               cc    : gcc,
               extend: ON,
               logs  : ON,
-              test: ON
+              test  : ON
             }
 
-            # compile Areg engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable Areg extensions, logs, examples and tests
           - { name  : linux-gnu-shared-all-test,
               os    : ubuntu-latest,
               lib   : shared,
@@ -72,7 +54,17 @@ jobs:
               test  : ON
             }
 
-            # compile Areg engine as a shared library with GNU g++ / gcc on Ubuntu Linux, disable Areg extensions and no logs
+          - { name  : linux-gnu-shared-ext-nolog,
+              os    : ubuntu-latest,
+              lib   : shared,
+              family: gnu,
+              cxx   : g++,
+              cc    : gcc,
+              extend: ON,
+              logs  : OFF,
+              test  : OFF
+            }
+
           - { name  : linux-gnu-shared-noext-nolog,
               os    : ubuntu-latest,
               lib   : shared,
@@ -84,31 +76,6 @@ jobs:
               test  : OFF
             }
 
-            # compile Areg engine as a shared library with clang on Ubuntu Linux, enable Areg extensions and logs
-          - { name  : linux-clang-shared-ext-log,
-              os    : ubuntu-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang++,
-              cc    : clang,
-              extend: ON,
-              logs  : ON,
-              test  : OFF
-            }
-
-            # compile Areg engine as a shared library with clang on Ubuntu Linux, enable Areg extensions and no logs
-          - { name  : linux-clang-shared-ext-nolog,
-              os    : ubuntu-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang++,
-              cc    : clang,
-              extend: ON,
-              logs  : OFF,
-              test  : OFF
-            }
-
-            # compile Areg engine as a static library with clang on Ubuntu Linux, enable Areg extensions, logs, examples and tests
           - { name  : linux-clang-static-all-test,
               os    : ubuntu-latest,
               lib   : static,
@@ -120,7 +87,6 @@ jobs:
               test  : ON
             }
 
-            # compile Areg engine as a static library with clang on Ubuntu Linux, enable Areg extensions, logs, examples and tests
           - { name  : linux-clang-shared-all-test,
               os    : ubuntu-latest,
               lib   : shared,
@@ -132,7 +98,17 @@ jobs:
               test  : ON
             }
 
-            # compile Areg engine as a shared library with clang on Ubuntu Linux, disable Areg extensions and no logs
+          - { name  : linux-clang-shared-ext-nolog,
+              os    : ubuntu-latest,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang++,
+              cc    : clang,
+              extend: ON,
+              logs  : OFF,
+              test  : OFF
+            }
+
           - { name  : linux-clang-shared-noext-nolog,
               os    : ubuntu-latest,
               lib   : shared,
@@ -144,7 +120,6 @@ jobs:
               test  : OFF
             }
 
-            # compile Areg engine as a shared library with clang on macOS, enable logs and tests, disable Areg extensions
           - { name  : macos-clang-shared-noext,
               os    : macos-latest,
               lib   : shared,
@@ -156,7 +131,6 @@ jobs:
               test  : ON
             }
 
-            # compile Areg engine as a shared library with clang on macOS, enable tests, disable Areg extensions and no logs
           - { name  : macos-clang-shared-noext-nolog,
               os    : macos-latest,
               lib   : shared,
@@ -168,19 +142,6 @@ jobs:
               test  : ON
             }
 
-            # compile Areg engine as a shared library with clang on macOS, enable tests, disable Areg extensions and no logs
-          - { name  : macos-clang-shared-noext-nolog-notest,
-              os    : macos-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang++,
-              cc    : clang,
-              extend: OFF,
-              logs  : OFF,
-              test  : OFF
-            }
-
-            # compile Areg engine as a static library with clang on macOS, enable logs and tests, disable Areg extensions
           - { name  : macos-clang-static-noext,
               os    : macos-latest,
               lib   : static,
@@ -192,7 +153,6 @@ jobs:
               test  : ON
             }
 
-            # compile Areg engine as a static library with clang on macOS, enable tests, disable Areg extensions and no logs
           - { name  : macos-clang-static-noext-nolog,
               os    : macos-latest,
               lib   : static,
@@ -204,42 +164,6 @@ jobs:
               test  : ON
             }
 
-            # compile Areg engine as a static library with clang on macOS, enable tests, disable Areg extensions and no logs
-          - { name  : macos-clang-static-noext-nolog-notest,
-              os    : macos-latest,
-              lib   : static,
-              family: llvm,
-              cxx   : clang++,
-              cc    : clang,
-              extend: OFF,
-              logs  : OFF,
-              test  : OFF
-            }
-
-            # compile Areg engine as a shared with CYGWIN g++ / gcc on Windows, enable Areg extensions and logs
-          - { name  : win-cygwin-shared-ext-log,
-              os    : windows-latest,
-              lib   : shared,
-              family: cygwin,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : ON,
-              test  : OFF}
-
-            # compile Areg engine as a shared with CYGWIN g++ / gcc on Windows, enable Areg extensions and no logs
-          - { name  : win-cygwin-shared-ext-nolog,
-              os    : windows-latest,
-              lib   : shared,
-              family: cygwin,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : OFF,
-              test  : OFF
-            }
-
-            # compile Areg engine as a static with CYGWIN g++ / gcc on Windows, enable Areg extensions, logs, examples and tests
           - { name  : win-cygwin-static-all-test,
               os    : windows-latest,
               lib   : static,
@@ -251,7 +175,6 @@ jobs:
               test  : ON
             }
 
-            # compile Areg engine as a static with CYGWIN g++ / gcc on Windows, enable Areg extensions, logs, examples and tests
           - { name  : win-cygwin-shared-all-test,
               os    : windows-latest,
               lib   : shared,
@@ -263,7 +186,17 @@ jobs:
               test  : ON
             }
 
-            # compile Areg engine as a shared with CYGWIN g++ / gcc on Windows, disable Areg extensions and no logs
+          - { name  : win-cygwin-shared-ext-nolog,
+              os    : windows-latest,
+              lib   : shared,
+              family: cygwin,
+              cxx   : g++,
+              cc    : gcc,
+              extend: ON,
+              logs  : OFF,
+              test  : OFF
+            }
+
           - { name  : win-cygwin-shared-noext-nolog,
               os    : windows-latest,
               lib   : shared,
@@ -275,31 +208,6 @@ jobs:
               test  : OFF
             }
 
-          # compile Areg engine as a shared library with clang on Windows, enable Areg extensions and logs
-          - { name  : win-clang-shared-ext-log,
-              os    : windows-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang-cl,
-              cc    : clang-cl,
-              extend: ON,
-              logs  : ON,
-              test  : OFF
-            }
-
-            # compile Areg engine as a shared library with clang on Windows, enable Areg extensions and no logs
-          - { name  : win-clang-shared-ext-nolog,
-              os    : windows-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang-cl,
-              cc    : clang-cl,
-              extend: ON,
-              logs  : OFF,
-              test  : OFF
-            }
-
-            # compile Areg engine as a static library with clang on Windows, enable Areg extensions, logs, examples and tests
           - { name  : win-clang-static-all-test,
               os    : windows-latest,
               lib   : static,
@@ -311,7 +219,6 @@ jobs:
               test  : ON
             }
 
-            # compile Areg engine as a static library with clang on Windows, enable Areg extensions, logs, examples and tests
           - { name  : win-clang-shared-all-test,
               os    : windows-latest,
               lib   : shared,
@@ -323,7 +230,17 @@ jobs:
               test  : ON
             }
 
-            # compile Areg engine as a shared library with clang on Windows, disable Areg extensions and no logs
+          - { name  : win-clang-shared-ext-nolog,
+              os    : windows-latest,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang-cl,
+              cc    : clang-cl,
+              extend: ON,
+              logs  : OFF,
+              test  : OFF
+            }
+
           - { name  : win-clang-shared-noext-nolog,
               os    : windows-latest,
               lib   : shared,
@@ -335,31 +252,6 @@ jobs:
               test  : OFF
             }
 
-            # compile Areg engine as a shared with MSVC on Windows, enable Areg extensions and logs
-          - { name  : win-msvc-shared-ext-log,
-              os    : windows-latest,
-              lib   : shared,
-              family: msvc,
-              cxx   : cl,
-              cc    : cl,
-              extend: ON,
-              logs  : ON,
-              test  : OFF
-            }
-
-            # compile Areg engine as a shared with MSVC on Windows, enable Areg extensions and no logs
-          - { name  : win-msvc-shared-ext-nolog,
-              os    : windows-latest,
-              lib   : shared,
-              family: msvc,
-              cxx   : cl,
-              cc    : cl,
-              extend: ON,
-              logs  : OFF,
-              test  : OFF
-            }
-
-            # compile Areg engine as a static with MSVC on Windows, enable Areg extensions, logs, examples and tests
           - { name  : win-msvc-static-all-test,
               os    : windows-latest,
               lib   : static,
@@ -371,7 +263,6 @@ jobs:
               test  : ON
             }
 
-            # compile Areg engine as a static with MSVC on Windows, enable Areg extensions, logs, examples and tests
           - { name  : win-msvc-shared-all-test,
               os    : windows-latest,
               lib   : shared,
@@ -383,19 +274,17 @@ jobs:
               test  : ON
             }
 
-            # compile Areg engine as a shared with MSVC on Windows, enable Areg extensions and logs
-          - { name  : win-msvc-shared-noext-log,
+          - { name  : win-msvc-shared-ext-nolog,
               os    : windows-latest,
               lib   : shared,
               family: msvc,
               cxx   : cl,
               cc    : cl,
-              extend: OFF,
-              logs  : ON,
+              extend: ON,
+              logs  : OFF,
               test  : OFF
             }
 
-            # compile Areg engine as a shared with MSVC on Windows, enable Areg extensions and no logs
           - { name  : win-msvc-shared-noext-nolog,
               os    : windows-latest,
               lib   : shared,
@@ -414,55 +303,77 @@ jobs:
 
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v5.6.0
-        with: 
+        with:
           java-version: 17
           java-package: jre
           distribution: temurin
 
-      - name: Set cmake cache destination for Linux
-        if: matrix.config.os == 'ubuntu-latest'
+      - name: Set the cmake cache and install destinations
+        shell: bash
         run: |
-            echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
-            echo "BUILD_DEST=./product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/linux-64-x86_64-release-${{matrix.config.lib}}" >> "$GITHUB_ENV"
-            echo "INSTALL_DEST=./product/install/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
-
-      - name: Set cmake cache destination for macOS
-        if: matrix.config.os == 'macos-latest'
-        run: |
-            ARCH=$(uname -m)
-            echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
-            echo "BUILD_DEST=./product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/darwin-64-${ARCH}-release-${{matrix.config.lib}}" >> "$GITHUB_ENV"
-            echo "INSTALL_DEST=./product/install/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
-
-      - name: Set cmake cache destination for Windows
-        if: matrix.config.os == 'windows-latest'
-        run: |
-            echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> $env:GITHUB_ENV
-            echo "BUILD_DEST=./product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/windows-64-amd64-release-${{matrix.config.lib}}" >> $env:GITHUB_ENV
-            echo "INSTALL_DEST=./product/install/${{matrix.config.family}}-${{matrix.config.cxx}}" >> $env:GITHUB_ENV
+          echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}"     >> "${GITHUB_ENV}"
+          echo "INSTALL_DEST=./product/install/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "${GITHUB_ENV}"
 
       - name: Ensure Xcode CLI Tools
-        if: matrix.config.os == 'macos-latest'
+        if: runner.os == 'macOS'
         run: sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+
+      - name: Let every git of the job trust the checkout directory
+        if: matrix.config.family == 'cygwin'
+        shell: bash
+        run: |
+          echo "GIT_CONFIG_COUNT=1"              >> "${GITHUB_ENV}"
+          echo "GIT_CONFIG_KEY_0=safe.directory" >> "${GITHUB_ENV}"
+          echo "GIT_CONFIG_VALUE_0=*"            >> "${GITHUB_ENV}"
 
       - name: Set Windows PATH environment variable
         if: matrix.config.family == 'cygwin'
-        run: echo "PATH=C:\cygwin;C:\cygwin\bin;C:\cygwin\lib;%SYSTEMROOT%\system32;%PATH%" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        # Only the cygwin toolchain and the Windows system directories. The runner image
+        # carries three further GNU toolchains that must not be visible to a cygwin build;
+        # appending the whole runner PATH breaks the compiler ABI detection.
+        run: echo "PATH=C:\cygwin;C:\cygwin\bin;C:\cygwin\lib;$env:SYSTEMROOT\system32;$env:SYSTEMROOT;$env:SYSTEMROOT\System32\Wbem" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Install cygwin on Windows
-        if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
+        if: matrix.config.family == 'cygwin'
         uses: cygwin/cygwin-install-action@v6
         with:
-          packages: cmake, dos2unix, flexdll, gcc-g++, git, libncurses-devel, make
+          # 'gdb' is what the example driver uses to photograph a hung process on cygwin.
+          packages: cmake, dos2unix, flexdll, gcc-g++, gdb, git, libncurses-devel, make, python3
           install-dir: 'C:\cygwin'
           add-to-path: false
           work-vol: 'C:'
 
-      - name: create build and product directories
-        working-directory: ${{github.workspace}}
+      - name: Resolve the python 3 interpreter
+        if: matrix.config.test == 'ON'
+        shell: bash
+        # A candidate is verified by running it: the cygwin 'python3' is a cygwin symlink
+        # that the Git bash of the runner cannot start. The glob picks the real one.
         run: |
-            mkdir build
-            mkdir product
+          PY=""
+          if [ "${{matrix.config.family}}" = "cygwin" ]; then
+            for candidate in /c/cygwin/bin/python3.*.exe /c/cygwin/bin/python3.exe; do
+              [ -x "${candidate}" ] || continue
+              if "${candidate}" -c "import platform,sys; sys.exit(0 if platform.system().startswith('CYGWIN') else 1)"; then
+                PY="${candidate}"
+                break
+              fi
+            done
+            if [ -z "${PY}" ]; then
+              echo "no cygwin python 3 interpreter found under /c/cygwin/bin" >&2
+              ls -l /c/cygwin/bin/python3* || true
+              exit 1
+            fi
+          else
+            for candidate in python3 python py; do
+              if "${candidate}" -c "import sys; sys.exit(0 if sys.version_info[0] == 3 else 1)" > /dev/null 2>&1; then
+                PY="${candidate}"
+                break
+              fi
+            done
+          fi
+          if [ -z "${PY}" ]; then echo "python 3 is required to run the examples" >&2; exit 1; fi
+          echo "PY=${PY}" >> "${GITHUB_ENV}"
+          echo "example driver interpreter: ${PY} ($("${PY}" --version 2>&1))"
 
       - name: Configure CMake by selecting compiler family
         if: matrix.config.extend == 'ON'
@@ -476,29 +387,129 @@ jobs:
         run: |
           cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER=${{matrix.config.cc}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
 
+      - name: Dump the CMake logs of a failed configuration
+        if: failure()
+        working-directory: ${{github.workspace}}
+        shell: bash
+        # A failed compiler check writes its cause into these files and nowhere else.
+        run: |
+          for f in "${{env.CACHE_DEST}}/CMakeFiles/CMakeConfigureLog.yaml" \
+                   "${{env.CACHE_DEST}}/CMakeFiles/CMakeError.log" \
+                   "${{env.CACHE_DEST}}/CMakeFiles/CMakeOutput.log"; do
+            if [ -f "${f}" ]; then
+              echo "===== ${f} ====="
+              tail -n 300 "${f}"
+            fi
+          done
+
       - name: Build with CMake
         working-directory: ${{github.workspace}}
-        # Build your program with the given configuration
         run: cmake --build ${{env.CACHE_DEST}} --config ${{env.BUILD_TYPE}} -j16
+
+      - name: Locate the build output directory
+        working-directory: ${{github.workspace}}
+        shell: bash
+        # The folder name is built from the compiler and the platform, so it is taken
+        # from the build that just finished rather than spelled out per runner.
+        run: |
+          BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
+          if [ -n "${BIN_DIR}" ]; then
+            echo "BUILD_DEST=$(dirname "${BIN_DIR}")" >> "${GITHUB_ENV}"
+          else
+            echo "BUILD_DEST=${{env.CACHE_DEST}}" >> "${GITHUB_ENV}"
+          fi
 
       - name: Install with CMake
         working-directory: ${{github.workspace}}
-        # Install the binaries and headers
         run: cmake --install ${{env.CACHE_DEST}} --config ${{env.BUILD_TYPE}}
+
+      - name: Write core dumps into the workspace
+        # A crash leaves a core next to the binaries. ptrace_scope is lowered so the
+        # driver can attach gdb to a hung process that is not its own descendant.
+        if: runner.os == 'Linux' && matrix.config.test == 'ON'
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          mkdir -p ./cores
+          sudo sysctl -w kernel.core_pattern="${{github.workspace}}/cores/core.%e.%p" > /dev/null
+          sudo sysctl -w kernel.core_uses_pid=0 > /dev/null
+          sudo sysctl -w kernel.yama.ptrace_scope=0 > /dev/null || true
+          which gdb || sudo apt-get install -y -qq gdb || true
+
+      - name: Run example applications. Ignore if examples are not compiled
+        if: matrix.config.test == 'ON'
+        working-directory: ${{github.workspace}}
+        shell: bash
+        timeout-minutes: 25
+        run: |
+          ulimit -c unlimited || true
+          BIN_DIR="${{env.BUILD_DEST}}/bin"
+          if [ -d "${BIN_DIR}" ]; then BIN_ARG="--bin-dir ${BIN_DIR}"; else BIN_ARG=""; fi
+          "${{env.PY}}" tools/run-all-examples.py ${BIN_ARG} --tier all \
+                  --out-dir "./example-results/${{matrix.config.name}}"
 
       - name: Run Unit Tests. Ignore if unit tests are not compiled
         if: matrix.config.test == 'ON'
         working-directory: ${{github.workspace}}
-        run: ctest --test-dir ${{env.CACHE_DEST}} --output-on-failure --output-junit test_results.xml
+        # '-C' is required on Windows: no generator is named. The Windows runners get
+        # the multi configuration Visual Studio generator, where a test registered without
+        # a configuration has no command and ctest exits 8 without running anything.
+        run: ctest --test-dir ${{env.CACHE_DEST}} -C ${{env.BUILD_TYPE}} --output-on-failure --output-junit test_results.xml
 
-      - name: Copy test artifacts if unit tests fail. Ignore if unit tests are not compiled
+      - name: Run the benchmarks and publish the measured rates
+        # A trend line, not an acceptance criterion: a shared build server is a noisy
+        # place to measure. Published as annotations, readable without an artifact.
+        if: matrix.config.test == 'ON'
+        working-directory: ${{github.workspace}}
+        shell: bash
+        timeout-minutes: 40
+        continue-on-error: true
+        run: |
+          BIN_DIR="${{env.BUILD_DEST}}/bin"
+          if [ -d "${BIN_DIR}" ]; then BIN_ARG="--bin-dir ${BIN_DIR}"; else BIN_ARG=""; fi
+          "${{env.PY}}" tools/run-all-examples.py ${BIN_ARG} --tier perf \
+                  --out-dir "./example-results/${{matrix.config.name}}-benchmarks"
+
+      - name: Report the failed unit tests
+        # The job log needs a credential to read, an annotation does not. This step runs
+        # because something else already failed, so it must never fail itself.
         if: failure() && matrix.config.test == 'ON'
         working-directory: ${{github.workspace}}
         shell: bash
+        continue-on-error: true
         run: |
-          mkdir ./${{matrix.config.name}}/
-          cp -R ./${{env.BUILD_DEST}}/bin/ ./${{matrix.config.name}}/
-          cp -R ./${{env.INSTALL_DEST}}/   ./${{matrix.config.name}}/
+          "${{env.PY}}" tools/report-ctest.py "${{env.CACHE_DEST}}"
+
+      - name: Collect the macOS crash reports
+        # macOS writes a crash report per process instead of a core file.
+        if: failure() && runner.os == 'macOS' && matrix.config.test == 'ON'
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          mkdir -p ./cores
+          for dir in "${HOME}/Library/Logs/DiagnosticReports" /Library/Logs/DiagnosticReports; do
+            if [ -d "${dir}" ]; then cp -R "${dir}/." ./cores/ || true; fi
+          done
+          ls -l ./cores/ || true
+
+      - name: Copy test artifacts if tests fail. Ignore if tests are not compiled
+        if: failure() && matrix.config.test == 'ON'
+        working-directory: ${{github.workspace}}
+        shell: bash
+        # Saves whatever evidence exists and must never fail. When the build itself
+        # failed, BUILD_DEST was never set and the binary directory is looked up again.
+        run: |
+          DEST="./${{matrix.config.name}}"
+          mkdir -p "${DEST}"
+          BIN_DIR="${{env.BUILD_DEST}}/bin"
+          if [ ! -d "${BIN_DIR}" ]; then
+            BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
+          fi
+          if [ -n "${BIN_DIR}" ] && [ -d "${BIN_DIR}" ]; then cp -R "${BIN_DIR}/" "${DEST}/bin/" || true; fi
+          cp -R ./${{env.INSTALL_DEST}}/                   "${DEST}/"                  || true
+          cp -R ./example-results/${{matrix.config.name}}/ "${DEST}/example-results/"  || true
+          cp -R ./cores/                                   "${DEST}/cores/"            || true
+          find "${DEST}" -maxdepth 2 | head -n 40
 
       - name: Upload artifacts if tests fail. Ignore if unit tests are not compiled
         if: failure() && matrix.config.test == 'ON'
@@ -506,3 +517,87 @@ jobs:
         with:
           name: ${{matrix.config.name}}
           path: ./${{matrix.config.name}}/
+
+  ubsan-linux:
+    name: ubsan (linux-gnu-static)
+    # The undefined behaviour sanitizer over the example suite.
+    # Reports only, it never fails the workflow.
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 120
+
+    steps:
+
+      - name: Checkout Areg SDK source codes
+        uses: actions/checkout@v7
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v5.6.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      - name: Configure CMake with the undefined behaviour sanitizer
+        working-directory: ${{github.workspace}}
+        run: |
+          cmake -B ./product/cache/ubsan -DAREG_COMPILER_FAMILY=gnu -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+                -DAREG_LIB_TYPE=static -DAREG_EXTENDED:BOOL=ON -DAREG_LOGGING:BOOL=ON \
+                -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=OFF \
+                -DCMAKE_CXX_FLAGS="-fsanitize=undefined -fno-omit-frame-pointer -g" \
+                -DCMAKE_C_FLAGS="-fsanitize=undefined -fno-omit-frame-pointer -g" \
+                -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=undefined" \
+                -DCMAKE_SHARED_LINKER_FLAGS="-fsanitize=undefined"
+
+      - name: Build with CMake
+        working-directory: ${{github.workspace}}
+        run: cmake --build ./product/cache/ubsan -j16
+
+      - name: Run the examples under the sanitizer
+        working-directory: ${{github.workspace}}
+        shell: bash
+        timeout-minutes: 45
+        continue-on-error: true
+        env:
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=0:log_path=${{github.workspace}}/ubsan/report
+        run: |
+          mkdir -p ./ubsan
+          sudo sysctl -w kernel.yama.ptrace_scope=0 > /dev/null || true
+          BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
+          python3 tools/run-all-examples.py --bin-dir "${BIN_DIR}" --tier all \
+                  --out-dir ./ubsan/example-results
+
+      - name: Report what the sanitizer found
+        if: always()
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          COUNT="$(cat ./ubsan/report.* 2>/dev/null | grep -c 'runtime error:' || true)"
+          if [ "${COUNT}" = "0" ] || [ -z "${COUNT}" ]; then
+            echo "::notice title=ubsan::the sanitizer reported nothing"
+            exit 0
+          fi
+          echo "::warning title=ubsan::${COUNT} report(s), see the artifact"
+          # The address differs on every run, so it is removed before counting per place.
+          cat ./ubsan/report.* 2>/dev/null | grep 'runtime error:' \
+            | sed -e 's/0x[0-9a-f]*/<address>/g' -e 's#^.*/areg-sdk/##' \
+            | sort | uniq -c | sort -rn > ./ubsan/by-place.txt
+          echo "distinct places: $(wc -l < ./ubsan/by-place.txt)"
+          # Two traps, do not reintroduce them: the sed above leaves 'framework/...' with
+          # no leading slash, so a '/framework/' pattern never matches; and a grep that
+          # matches nothing exits 1, which under 'set -e' would discard every list below.
+          FRAMEWORK_RE='^[[:space:]]*[0-9]+[[:space:]]+framework/'
+          { grep -E "${FRAMEWORK_RE}" ./ubsan/by-place.txt || true; } | head -n 6 \
+            | while IFS= read -r line; do echo "::error title=ubsan-framework::${line}"; done
+          { grep -Ev "${FRAMEWORK_RE}" ./ubsan/by-place.txt || true; } | head -n 8 \
+            | while IFS= read -r line; do echo "::warning title=ubsan-example::${line}"; done
+          sed -e 's/^.*runtime error: //' -e 's/0x[0-9a-f]*/<address>/g' ./ubsan/by-place.txt \
+            | sed -e "s/'[^']*'/'T'/g" | sort | uniq -c | sort -rn | head -n 20 | tr '\n' '|' \
+            | sed 's/^/::notice title=ubsan-kinds::/'
+
+      - name: Upload the sanitizer reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ubsan-linux
+          path: ./ubsan/

@@ -27,6 +27,7 @@
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/String.hpp"
 
+#include <atomic>
 #include <memory>
 #include <string_view>
 
@@ -337,6 +338,8 @@ constexpr uint32_t          MAX_SEND_BATCH_BYTES    { 0x7000'0000u };   // 1.75 
 
 //!< The minimum size of the block to send without copying to the cache.
 constexpr uint32_t          MIN_BIG_BLOCK           { 64 * areg::ONE_KILOBYTE };
+//!< Number of per-socket writer locks. Must be a power of two.
+constexpr uint32_t          SOCKET_WRITER_SLOTS     { 128u };
 
 /**
  * \brief   Maximum number of pending connections the OS will queue on a
@@ -345,6 +348,18 @@ constexpr uint32_t          MIN_BIG_BLOCK           { 64 * areg::ONE_KILOBYTE };
 extern AREG_API const int32_t MAXIMUM_LISTEN_QUEUE_SIZE /*= SOMAXCONN*/;
 
 AREG_API uint32_t   thread_cache_size() noexcept;
+
+/**
+ * \brief   Returns the largest number of messages a send thread may take out of its queue and
+ *          write into the socket in one batch. Read from the configuration entry
+ *          'net::*::tcpip::drain', where 0 means areg::DEFAULT_DRAIN_LIMIT, and clamped to the
+ *          range 1 .. areg::DEFAULT_DRAIN_LIMIT. A smaller limit pins less memory in a batch
+ *          and lowers the data rate.
+ *
+ * \note    Reads the configuration under a lock. Call it once, when the send thread becomes
+ *          ready, and keep the result in a member. Never call it per message.
+ **/
+AREG_API uint32_t   send_batch_limit() noexcept;
 
 //!< Thread local cache to send / receive data
 struct ThreadCache
@@ -628,6 +643,24 @@ AREG_API int32_t send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, uint
 AREG_API int32_t send_data_v(SOCKETHANDLE hSocket, const IoBuffer* buffers, uint32_t count, uint32_t totalSize = 0) noexcept;
 
 /**
+ * \brief   Sends \a count buffers through \a hSocket without waiting. Either the complete data
+ *          is written or nothing is written. If the OS accepts only a part of it, the remaining
+ *          bytes are completed as send_data_v() does.
+ *
+ * \note    Hold the writer lock of the socket, see SocketWriter, so that no other thread writes
+ *          between the two parts.
+ *
+ * \param   hSocket     Valid connected socket descriptor.
+ * \param   buffers     Array of IoBuffer descriptors; must contain \a count entries.
+ * \param   count       Number of buffers in the array.
+ * \param   totalSize   Total number of bytes in the array. If 0, it is calculated.
+ * \return  The number of bytes sent, which is the complete data, on success.
+ *          Zero when the socket would have blocked and nothing was written.
+ *          Negative when the socket failed.
+ **/
+AREG_API int32_t try_send_data_v(SOCKETHANDLE hSocket, const IoBuffer* buffers, uint32_t count, uint32_t totalSize = 0) noexcept;
+
+/**
  * \brief   Receives up to \a dataLength bytes from \a hSocket into \a dataBuffer.
  *          Loops internally on partial receives; returns when the buffer is full,
  *          the peer closes the connection, or an error occurs.
@@ -760,6 +793,117 @@ AREG_API String extract_ip_address(const struct sockaddr_in& sockAddr);
 [[nodiscard]]
 AREG_API uint16_t extract_port_number(const struct sockaddr_in& sockAddr) noexcept;
 
+//////////////////////////////////////////////////////////////////////////
+// areg::SocketWriter class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   The writer lock of one socket: only the thread that holds it may write into that
+ *          socket. Use acquire() to take it and wait for the current owner, or try_acquire() to
+ *          take it only when it is free.
+ *
+ *          The locks live in one fixed table, see areg::SOCKET_WRITER_SLOTS, so taking a lock
+ *          allocates nothing. Two sockets may share one lock, which costs speed but never
+ *          correctness.
+ *
+ * \note    The lock is not recursive. A thread that owns it must not take it again.
+ **/
+class AREG_API SocketWriter
+{
+//////////////////////////////////////////////////////////////////////////
+// Static operations
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Returns the writer lock of the given socket. The same socket always gets the same
+     *          lock, and the lock lives as long as the process, so the returned reference stays
+     *          valid after the socket is closed.
+     *
+     * \param   hSocket     The socket descriptor to get the writer lock of.
+     * \return  The writer lock of the socket.
+     **/
+    [[nodiscard]]
+    static SocketWriter & writer_of(SOCKETHANDLE hSocket) noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    constexpr SocketWriter() noexcept;
+    ~SocketWriter() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Tries to take the lock and returns immediately in both cases. Never waits.
+     *
+     * \return  True when the calling thread now owns the lock and must release it.
+     *          False when another thread owns it.
+     **/
+    [[nodiscard]]
+    bool try_acquire() noexcept;
+
+    /**
+     * \brief   Takes the lock and waits for the current owner. The wait spins for a short while
+     *          and then yields the processor, so it does not keep a core busy.
+     **/
+    void acquire() noexcept;
+
+    /**
+     * \brief   Releases the lock. Call it exactly once for every acquire() and for every
+     *          try_acquire() that returned true.
+     **/
+    void release() noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+#if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+    //!< True while a thread owns the lock.
+    std::atomic<bool>   mBusy;
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif  // _MSC_VER
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE( SocketWriter );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// areg::SocketWriteGuard class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Holds the writer lock of a socket for the length of a scope. The lock is taken in the
+ *          constructor, waiting if another thread owns it, and released in the destructor.
+ **/
+class SocketWriteGuard
+{
+public:
+    /**
+     * \brief   Takes the writer lock of the given socket.
+     *
+     * \param   hSocket     The socket to become the single writer of.
+     **/
+    inline explicit SocketWriteGuard(SOCKETHANDLE hSocket) noexcept;
+
+    inline ~SocketWriteGuard() noexcept;
+
+private:
+    SocketWriter &  mWriter;    //!< The lock held by this object.
+
+private:
+    SocketWriteGuard() = delete;
+    AREG_NOCOPY_NOMOVE( SocketWriteGuard );
+};
+
 } // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
@@ -805,6 +949,26 @@ inline bool areg::is_valid_socket(SOCKETHANDLE hSocket) noexcept
 inline bool areg::is_local_address(const areg::String& address) noexcept
 {
     return (address == areg::LocalHost) || (address == areg::LocalAddress);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// areg::SocketWriter and areg::SocketWriteGuard inline implementations
+//////////////////////////////////////////////////////////////////////////
+
+constexpr areg::SocketWriter::SocketWriter() noexcept
+    : mBusy ( false )
+{
+}
+
+inline areg::SocketWriteGuard::SocketWriteGuard(SOCKETHANDLE hSocket) noexcept
+    : mWriter( areg::SocketWriter::writer_of(hSocket) )
+{
+    mWriter.acquire();
+}
+
+inline areg::SocketWriteGuard::~SocketWriteGuard() noexcept
+{
+    mWriter.release();
 }
 
 #endif  // AREG_BASE_SOCKETDEFS_HPP

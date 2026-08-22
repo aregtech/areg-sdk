@@ -11,8 +11,8 @@ if ((${AREG_DEVELOP_ENV} MATCHES "Win32") AND (NOT MINGW))
     list(APPEND logger_SRC "${_resourses}/logcollector.rc")
 endif()
 
-# build logcollector executable
-addExecutableEx(logcollector ${AREG_PACKAGE_NAME} "${logger_SRC}" "")
+# build logcollector executable, links SQLite to save the collected logs in the database
+addExecutableEx(logcollector ${AREG_PACKAGE_NAME} "${logger_SRC}" "${AREG_SQLITE_LIB_REF}")
 target_compile_options(logcollector PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
 
 # Copy 'logcollector' service running scripts

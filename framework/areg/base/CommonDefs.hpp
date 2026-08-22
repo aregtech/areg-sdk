@@ -322,6 +322,12 @@ namespace areg {
     constexpr uint32_t  TIMEOUT_1_SEC               { WAIT_1_SECOND };
 
     /**
+     * \brief   areg::SHUTDOWN_DRAIN_TIMEOUT
+     *          How long a dispatcher may keep working off its queue after it was asked to stop.
+     **/
+    constexpr uint32_t  SHUTDOWN_DRAIN_TIMEOUT      { WAIT_1_SECOND };
+
+    /**
      * \brief   areg::TIMEOUT_1_MIN
      *          Timeout 1 minute
      **/
@@ -517,7 +523,7 @@ namespace areg {
     /**
      * \brief   The invalid message ID
      **/
-    constexpr uint32_t  INVALID_MESSAGE_ID          { areg::INVALID_VALUE };    /*0xFFFFFFFF*/
+    constexpr uint32_t  INVALID_MESSAGE_ID          { 0x80000000u };
 
     /**
      * \brief   Unknown cookie

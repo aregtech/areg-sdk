@@ -39,8 +39,7 @@
 /**
  * \brief   Modeling of application should start by declaration of model
  *          and giving model name. Application can have only one model.
- *          Model starts by calling MACRO BEGIN_MODEL and ends by calling
- *          END_MODEL
+ *          Model starts by calling MACRO BEGIN_MODEL and ends by calling END_MODEL
  * \param   modelName   The name of model.
  **/
 #define BEGIN_MODEL(model_name)                                                                             \
@@ -378,7 +377,7 @@ private:
      * \brief   ComponentLoader::ThreadList
      *          Array of component threads.
      **/
-    using ThreadList    = ArrayList<Thread *>;
+    using ThreadList    = ArrayList<ComponentThread *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Static members
@@ -549,11 +548,12 @@ protected:
     /**
      * \brief   Unloads the specified model, deletes components, and stops threads.
      *
-     * \param   waitComplete    If true, waits for Component Loader to complete jobs and exit
-     *                          threads. Otherwise, triggers exit and returns immediately.
+     * \param   waitComplete    If true, waits for Component Loader to complete jobs and exit threads.
+     *                          Otherwise, triggers exit and returns immediately and
+     *                          the model stays loaded until wait_threads() joins the threads.
      * \param   whichModel      The model object to unload.
      **/
-    void unload_model( bool waitComplete, areg::Model & whichModel ) const;
+    void unload_model( bool waitComplete, areg::Model & whichModel );
 
     /**
      * \brief   Blocks until component threads of the specified model complete and exit.
@@ -643,6 +643,11 @@ private:
      * \brief   The list of models
      **/
     ModelList       mModelList;
+
+    /**
+     * \brief   Threads that were asked to exit without waiting
+     **/
+    ThreadList      mExitingThreads;
 
 #if defined(_MSC_VER)
     #pragma warning(pop)

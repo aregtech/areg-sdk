@@ -1,4 +1,4 @@
-﻿# CMakeList.txt : include source and link with 'areg::areg'
+# CMakeList.txt : include source and link with 'areg::areg'
 cmake_minimum_required(VERSION 3.20.0)
 
 project ("example" CXX)

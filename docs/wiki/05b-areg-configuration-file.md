@@ -78,21 +78,29 @@ The `*` module is used for almost every key in the shipped file. You add process
 |---|---|---|---|
 | `config::*::version` | version `x.y.z` | `2.0.0` | Configuration schema version |
 | `config::*::default::blocksize` | bytes | `64` (0 = built-in) | SharedBuffer growth granularity |
-| `config::*::queue::capacity` | count | `0` (built-in: 1024) | Dispatcher event-queue ring capacity (rounded up to power of two, min 32) |
-| `config::*::queue::timeout` | ms | `0` (built-in: 1000) | Dispatcher full-ring block timeout in lossless mode |
-| `config::*::queue::drop` | bool | `false` | Full-ring policy: `false` = lossless (producer blocks); `true` = drop-newest (never blocks) |
+| `config::*::queue::capacity` | count | `0` (built-in: 1024) | Dispatcher ring capacity. Bounds queued memory **and** small-message latency |
+| `config::*::queue::timeout` | ms | `0` (built-in: 10000 release / unlimited debug) | How long a producer waits for a free slot |
+| `config::*::queue::drop` | bool | `false` | Full-ring policy. `true` drops messages silently on **every** queue - prefer the per-thread parameter |
 | `log::*::version` | version `x.y.z` | `2.0.0` | Logging schema version |
 | `log::*::target` | list of `remote\|file\|debug\|db` | `remote\|file\|debug\|db` | Known/available log targets |
 | `log::*::enable` | bool | `true` | Master logging switch for the module |
 | `log::*::enable::remote` | bool | `true` | Enable remote (TCP) logging |
 | `log::*::enable::file` | bool | `false` | Enable file logging |
 | `log::*::enable::debug` | bool | `false` | Enable debug-console output |
-| `log::*::enable::db` | bool | `false` | Enable database logging (*not implemented in core*) |
+| `log::*::enable::db` | bool | `false` | Enable database logging (effective for `logcollector` and `logobserver`, see §5.7) |
 | `log::*::file::location` | path + masks | `./logs/%appname%_%time%.log` | Log file path |
 | `log::*::file::append` | bool | `false` | Append vs. create-new on open |
 | `log::*::remote::queue` | count | `100` (0 = no queue) | Buffered messages while collector offline |
 | `log::*::remote::service` | service alias | `logger` | Which `service` block names the collector |
 | `log::*::db::engine` … `password` | strings | (empty) | Database logging connection (see §5.7) |
+| `log::logcollector::enable::db` | bool | `false` | Save the **collected** logs in a `.sqlog` database |
+| `log::logcollector::db::engine` | engine name | `sqlite3` | Engine of the collector database |
+| `log::logcollector::db::name` | file name + masks | `logcollector_%time%.sqlog` | File name of the collector database |
+| `log::logcollector::db::location` | path | `./logs` | Directory of the collector database |
+| `log::logobserver::enable::db` | bool | `true` | Save the observed logs in a `.sqlog` database |
+| `log::logobserver::db::engine` | engine name | `sqlite3` | Engine of the observer database |
+| `log::logobserver::db::name` | file name + masks | `log_%time%.sqlog` | File name of the observer database |
+| `log::logobserver::db::location` | path | `./logs` | Directory of the observer database |
 | `log::*::layout::enter` | format string | see §5.8 | Scope-entry line format |
 | `log::*::layout::message` | format string | see §5.8 | Message line format |
 | `log::*::layout::exit` | format string | see §5.8 | Scope-exit line format |
@@ -110,7 +118,7 @@ The `*` module is used for almost every key in the shipped file. You add process
 | `logger::*::port::tcpip` | port | `8282` | Collector TCP port |
 | `net::MODULE::tcpip::sndbuf` | KB | 4096 (4 MB) | `SO_SNDBUF` size |
 | `net::MODULE::tcpip::rcvbuf` | KB | 4096 (4 MB) | `SO_RCVBUF` size |
-| `net::MODULE::tcpip::drain` | count | `128` | Send batch size per dispatcher wake-up |
+| `net::MODULE::tcpip::drain` | count | `128` | Send batch size, `0..128`. Bounds pinned batch memory; lowering it costs data rate |
 | `net::MODULE::tcpip::pairs` | count | `0` (disabled) | Dedicated send/recv thread-pool pairs |
 | `net::MODULE::tcpip::timeout` | ms | `2500` | `SO_SNDTIMEO` send timeout |
 | `net::MODULE::tcpip::cache` | KB | `256` | Per-socket send/recv cache size |
@@ -149,18 +157,73 @@ config::*::queue::capacity = 0    # built-in default (1024 slots)
 config::*::queue::capacity = 512  # explicit 512-slot ring per dispatcher
 ```
 
+**Out-of-range values.** Below 32 is raised to 32. Above 16,777,216 is treated as the "unlimited"
+sentinel and resolves to the built-in default (1024) — not to the maximum. So `20000000` gives you
+1024, not a huge ring.
+
+**It is a memory setting.** The limit counts messages, not bytes, so the memory it bounds depends
+entirely on your message size:
+
+| capacity | with 1 KB messages | with 3 MB messages |
+|---|---|---|
+| 1024 (default) | ~1 MB | ~3 GB |
+
+**It is also a latency setting, and this is easy to miss.** Messages leave the queue in order, so a
+small message queued behind N large ones waits for all of them to reach the socket first:
+
+```
+worst-case delay of a small message  ~  capacity x message size / throughput
+```
+
+Measured with example 32 (`32_pubmixed`), a bulk stream of 1 MB blocks and small ping/pong on the
+same connection:
+
+| capacity | data queued ahead | bulk rate | ping p50 |
+|---|---|---|---|
+| 1024 (default) | 1 GB | 3859 MB/s | **258 ms** |
+| 64 | 64 MB | 3555 MB/s | **39 ms** |
+
+Lowering the ring 16x cut the small-message delay 6.6x and cost 7.9 % of the bulk rate.
+
+**Recommendation.** If a connection carries large messages *and* small ones, compute
+`capacity x message size / throughput` and lower `capacity` until that delay is acceptable. The
+default of 1024 suits small messages; a service streaming megabyte blocks usually wants far less.
+
 ### `config::*::queue::timeout`
 How long (in milliseconds) a producer blocks waiting for a free slot when the event queue is full, in **lossless** mode (`queue::drop = false`). After this timeout the producer is unblocked and the event is dropped as a last resort.
 
 - Shipped default: `0`.
-- `0` → use the framework's built-in default (1000 ms).
+- `0` → use the framework's built-in default: **10000 ms in a release build**, and effectively
+  unlimited (~24 days) in a **debug** build, so that pausing a thread in the debugger cannot make
+  the application lose a message.
 - Has no effect when `queue::drop = true` (producers never block in drop-newest mode).
 - Accessor: `ConfigManager::queue_wait_timeout(module)`.
 
 ```text
-config::*::queue::timeout = 0      # built-in default (1000 ms)
+config::*::queue::timeout = 0      # built-in default
 config::*::queue::timeout = 5000   # block up to 5 s before giving up
 ```
+
+**Why the release default is 10 seconds.** `SO_SNDTIMEO` is 2500 ms, so a healthy but slow socket
+never needs more than about three seconds; a longer wait means something is genuinely wrong. The
+earlier default of 1000 ms was too close to normal operation — example 32 under load recorded a
+producer waiting **4973 ms** for a free slot, which the old value would have turned into a silently
+destroyed message.
+
+**Seeing it happen.** A wait longer than one second is reported in the log with its real duration.
+Framework scopes are off by default, so enable them to see it:
+
+```text
+log::*::enable::file  = true
+log::*::scope::areg_* = WARN | SCOPE ;
+```
+
+```text
+WARN >>> Send queue was full: a producer waited [ 4973 ] ms for a free slot
+```
+
+That line is how you tell "a thread was paused in the debugger" apart from "the consumer is too
+slow".
 
 ### `config::*::queue::drop`
 Full-ring policy for every dispatcher's event queue.
@@ -176,6 +239,16 @@ Full-ring policy for every dispatcher's event queue.
 config::*::queue::drop = false   # lossless (default)
 config::*::queue::drop = true    # drop-newest, producers never block
 ```
+
+> **Leave this at `false` unless you know exactly what you are doing.** The key is global: it
+> applies to *every* dispatcher queue in the process, including the ones carrying IPC service
+> calls. Setting it to `true` to protect one high-rate telemetry stream also makes request,
+> response and broadcast messages disappear silently, with every layer still reporting success.
+>
+> When only one thread should be best-effort, set it on **that thread** instead of globally: the
+> `DispatcherThread`, `ComponentThread` and `WorkerThread` constructors take a `dropOnFull`
+> parameter (`areg::Bool::True` / `False`), and an explicit value there overrides this key. That
+> is the safe granularity; the configuration key is not.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -203,7 +276,7 @@ log::*::target = remote | file | debug | db
 | `log::*::enable::remote` | Send logs to the remote log collector over TCP (`log_enabled(LogTarget::Remote)`). |
 | `log::*::enable::file` | Write logs to a file (`log_enabled(LogTarget::File)`). |
 | `log::*::enable::debug` | Emit to the platform debug console (Windows `OutputDebugString`, etc.). |
-| `log::*::enable::db` | Database target — **not implemented** for the core logger; reserved. |
+| `log::*::enable::db` | Write logs into a database (`log_enabled(LogTarget::Database)`). Effective for the **log collector** and the **log observer**; for an ordinary application see §5.7. |
 
 ```text
 log::*::enable          = true     # master on
@@ -234,26 +307,59 @@ log::*::file::location = ./logs/%appname%_%time%.log
 
 ### 5.7 Database logging: `log::*::db::*`
 
-> **Not implemented for the core file/remote logger** — these keys are reserved/planned. The shipped file leaves them empty for `*`, and uses them only under the `logobserver` module, where SQLite-backed storage *is* available (see [Log Collector](./04d-logcollector.md) / [Log Observer](./04c-logobserver.md)).
+Database logging writes log records into an SQLite file with the extension `.sqlog` instead of a plain text file. The same key shape is used by three different kinds of process, and the outcome is **not** the same for all of them.
 
-| Position | Meaning |
-|---|---|
-| `engine` | DB engine (`sqlite3`, …) |
-| `name` | Database name (supports `%time%` mask, e.g. `log_%time%.sqlog`) |
-| `location` | Directory / connection string |
-| `driver` | Driver library |
-| `address` / `port` | DB server endpoint |
-| `username` / `password` | Credentials |
+| Module | Effect of `enable::db = true` | Who writes the file |
+|---|---|---|
+| `logcollector` | ✅ Works. The **collected** logs of all connected applications are saved. | The log collector, see [Log Collector](./04d-logcollector.md) |
+| `logobserver` | ✅ Works. The logs the observer received are saved. | The log observer, see [Log Observer](./04c-logobserver.md) |
+| any other module | ⚠️ Nothing happens, unless the application registers a database engine itself in code with `areg::set_db_engine()`. The framework never registers one on its own. | Your application |
+
+**Key positions**
+
+| Position | Meaning | Used today |
+|---|---|---|
+| `engine` | Database engine. Only `sqlite3` is implemented, so always set it to `sqlite3`. Any other value switches the database off. | ✅ |
+| `name` | File name of the database. Masks are allowed, e.g. `log_%time%.sqlog`. | ✅ |
+| `location` | Directory of the file. Created if it is missing. Relative paths are resolved against the working directory of the process. | ✅ |
+| `driver` | Driver library of a future engine. | ❌ reserved |
+| `address` / `port` | Endpoint of a future database server. | ❌ reserved |
+| `username` / `password` | Credentials of a future database server. | ❌ reserved |
 
 Accessors: `log_database_property(position)` / `set_db_property(position, value)`.
 
+> [!NOTE]
+> The master switch of the module gates the database as well. If `log::<module>::enable = false`, then `enable::db = true` has no effect.
+
+**Log collector: saving the collected logs**
+
 ```text
-# Example (log observer storing to a local SQLite file):
+log::logcollector::enable::db   = true                        # switch the database on
+log::logcollector::db::engine   = sqlite3                     # the only supported engine
+log::logcollector::db::name     = logcollector_%time%.sqlog   # a new file on every start
+log::logcollector::db::location = ./logs                      # directory of the file
+```
+
+The collector accepts a command line option that **overrides** `enable::db` for one run:
+
+```bash
+logcollector --log=db                                 # save, path taken from the file above
+logcollector --log=db ./logs/session_%time%.sqlog     # save, explicit path
+logcollector --log=nodb                               # never save, whatever the file says
+```
+
+Recording can also be started and stopped on a running collector with the console commands `--save [<path>]` and `--unsave`.
+
+**Log observer: saving the observed logs**
+
+```text
 log::logobserver::enable::db   = true
 log::logobserver::db::engine   = sqlite3
 log::logobserver::db::name     = log_%time%.sqlog
 log::logobserver::db::location = ./logs
 ```
+
+Both files use the same table layout (`version`, `instances`, `scopes`, `logs`), so the same tools read both.
 
 ### 5.8 Layouts: `log::*::layout::{enter,message,exit}`
 
@@ -318,18 +424,27 @@ This means `areg_*` matches every scope beginning with `areg_`, and `*` is the c
 
 ### 5.10 File path masks
 
-Paths and file names in `file::location` (and DB `name`) expand these at runtime:
+Paths and file names in `file::location` and in the database `name` / `location` expand these at runtime:
 
-| Mask | Expands to |
-|---|---|
-| `%appname%` | Application/module name |
-| `%time%` | Current timestamp |
-| `%user%` | User profile directory |
+| Mask | Expands to | Example result |
+|---|---|---|
+| `%appname%` | Application / module name | `myapp` |
+| `%time%` | Current timestamp, `yyyy_mm_dd_hh_mm_ss_ms` | `2026_08_18_11_20_35_120` |
+| `%user%` | Home directory of the current user | `C:\Users\alice`, `/home/alice` |
+
+Each mask is expanded as often as it appears. They are the only three the framework expands; any other `%name%` is written into the path unchanged.
 
 ```text
+./logs/%appname%_%time%.log          # relative, per-app, timestamped
 %user%/logs/%appname%_%time%.log     # per-user, timestamped
 /var/log/areg/%appname%.log          # absolute, per-app
 ```
+
+> [!IMPORTANT]
+> A relative path is resolved against the **working directory of the process**, not against the location of the executable. For a process started by systemd or by the Windows service manager, prefer an absolute path or `%user%`.
+
+> [!NOTE]
+> `%user%` resolves to the home directory of the account that **runs the process**. For a system service this is the service account (`SYSTEM` on Windows, `root` under systemd), not the interactive user. On a system that has no user home directory, `%user%` falls back to the current directory, so the mask never survives into the final path.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -410,6 +525,34 @@ net::*::tcpip::timeout           = 2500
 net::*::tcpip::cache             = 256
 ```
 
+#### `drain` in detail - a memory setting, not a speed setting
+
+`drain` is the largest number of messages a send thread may take out of its queue and write to the
+socket in one go. Valid range is `0 .. 128`, where `0` means "use the built-in default" (128).
+A larger value is clamped, because the batch arrays are fixed at that size and are never allocated.
+
+One batch keeps **every message in it alive** until the whole batch has reached the socket, so a
+send thread pins `drain x message size` of payload:
+
+| drain | with 3 MB messages | with 64 KB messages |
+|---|---|---|
+| 128 (default) | ~400 MB | ~8 MB |
+| 8 | ~24 MB | ~512 KB |
+
+Lowering it therefore bounds memory, and **costs data rate**. Measured end to end on example 23:
+
+| drain | cost vs default |
+|---|---|
+| 21 | about -2.6 % |
+| 8 | about -3.0 % |
+| 5 | about -3.6 % |
+| 1 | about -14 % |
+
+**Recommendation.** Leave it at `128` unless a target is memory constrained. Lower it only to bound
+the pinned batch memory shown above, never in the hope of reducing latency - it does the opposite.
+The value is resolved once, when a send thread starts, so changing it takes effect on the next
+connection and costs nothing on the message path.
+
 **Platform notes**
 
 - `sndbuf`/`rcvbuf` are **not applied on Windows** — Windows TCP autotuning is used instead.
@@ -439,6 +582,16 @@ log::*::scope::*            = NOTSET            # silence everything by default
 log::myapp::scope::myapp_*  = DEBUG | SCOPE     # full detail for your own scopes
 log::myapp::scope::areg_*   = NOTSET            # keep framework internals quiet
 ```
+
+### Keep a permanent copy of all collected logs on disk
+```text
+# The log collector saves everything it receives, even when no observer is connected.
+log::logcollector::enable::db   = true
+log::logcollector::db::engine   = sqlite3
+log::logcollector::db::name     = logcollector_%time%.sqlog
+log::logcollector::db::location = /var/log/areg       # absolute: the service has its own working directory
+```
+For a single session, without editing the file: `logcollector --log=db ./logs/session_%time%.sqlog`.
 
 ### Point a process at a router on another host
 ```text
@@ -498,7 +651,8 @@ For arbitrary keys (including your own), use the generic `property_value()` / `s
 - **Comment not recognized / line ignored** — comments must be `# ` (hash **+ space**). `#comment` is treated as a blank line. Inline comments need a space too: `port = 8181 # ok`.
 - **My module's setting is ignored** — only `*` (global) and entries for the *running* process are loaded. A `log::otherapp::…` line is invisible to every process except `otherapp`.
 - **My change wasn't saved** — entries set with `temporary = true` are intentionally excluded from `save_config()`. Also, setting a value *equal* to the read-only default removes the override (override-collapse) — that is expected and keeps the file minimal.
-- **`db` logging does nothing** — database logging is not implemented for the core logger; the `log::*::db::*` keys are reserved (the log observer's SQLite storage is separate).
+- **`db` logging does nothing in my application** — the `log::*::db::*` keys take effect only for `logcollector` and `logobserver`, which register an SQLite engine themselves. Any other process needs `areg::set_db_engine()` in its own code. See §5.7.
+- **No `.sqlog` file appears for the collector** — check that the keys use the `logcollector` module and not `*`, that `db::engine` is `sqlite3`, that the master switch `log::logcollector::enable` is not `false`, and that the relative `location` points where you are looking. `logcollector --log=db` switches it on without editing the file.
 - **Socket buffer size seems wrong on Windows** — `sndbuf`/`rcvbuf` are ignored there (OS autotuning). On Linux the kernel doubles your value.
 - **Disconnects while debugging on Windows** — raise `net::*::tcpip::timeout` so a paused breakpoint doesn't trip `SO_SNDTIMEO`.
 - **Values as lists** — use `|` for multi-value entries (`DEBUG | SCOPE`, `remote | file`). A trailing `;` is allowed but optional.

@@ -120,11 +120,11 @@ cmake -B ./build && cmake --build ./build
 ./build/areg_hello
 ```
 
-**See:** [Quick Project Setup Guide](./wiki/02a-quick-project-setup.md)
+**See:** [Quick Project Setup Guide](./02a-quick-project-setup.md)
 
 ### Option 2: Manual Integration
 
-See [CMake Integration Guide](./wiki/02b-cmake-integrate.md)
+See [CMake Integration Guide](./02b-cmake-integrate.md)
 
 ---
 
@@ -555,10 +555,10 @@ cmake --build ./build -j
 ```
 
 **Example toolchain files available:**
-- [Areg SDK toolchains](../../conf/exports/example/toolchains/)
+- [Areg SDK toolchains](../../conf/toolchains/)
 - [Areg SDK Demo toolchains](https://github.com/aregtech/areg-sdk-demo/tree/main/toolchains)
 
-For detailed cross-compilation guide, see [CMake Build Guide - Cross-Compilation](./02b-cmake-build.md#cross-compilation).
+For detailed cross-compilation guide, see [CMake Build Guide - Cross-Compilation](./01b-cmake-build.md#cross-compilation).
 
 ---
 
@@ -732,16 +732,16 @@ option(AREG_EXAMPLES "Build examples" OFF)  # Too late
 - [vcpkg Installation](./02e-cmake-vcpkg.md) - Detailed vcpkg setup
 - [CMake Configuration](./02d-cmake-config.md) - All configuration options
 - [CMake Functions](./02e-cmake-functions.md) - Helper functions reference
-- [CMake Build Guide](./02b-cmake-build.md) - Building from source
+- [CMake Build Guide](./01b-cmake-build.md) - Building from source
 
 **Examples:**
 - [Areg SDK Examples](../../examples/README.md) - Sample applications
 - [Areg SDK Demo](https://github.com/aregtech/areg-sdk-demo) - Integration examples
 
 **Build Guides:**
-- [Building with CMake](./02b-cmake-build.md)
-- [Building with MSBuild](./02c-msbuild-build.md)
-- [Building on WSL](./02d-wsl-build.md)
+- [Building with CMake](./01b-cmake-build.md)
+- [Building with MSBuild](./01c-msvc-build.md)
+- [Building on WSL](./01d-wsl-build.md)
 
 **Help:**
 For questions, open a [discussion](https://github.com/aregtech/areg-sdk/discussions) or [issue](https://github.com/aregtech/areg-sdk/issues) on GitHub.

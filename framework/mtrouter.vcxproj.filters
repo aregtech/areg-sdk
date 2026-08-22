@@ -42,9 +42,6 @@
     <ClInclude Include="mtrouter\service\private\ServiceStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mtrouter\app\private\RouterConsoleService.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="mtrouter\resources\mtrouter.ico">
@@ -99,9 +96,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mtrouter\app\private\win32\MultitargetRouterWin32.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mtrouter\app\private\RouterConsoleService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

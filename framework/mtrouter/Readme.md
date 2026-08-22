@@ -10,7 +10,7 @@ This directory contains the source code for the Multitarget Router (`mtrouter`),
 - **[service](./service)**
   Implements the communication services for sending and receiving messages between connected applications.
 
-- **[resource](./resource)**
+- **[resource](./resources)**
   Contains resource files specific to the `mtrouter` application.
 
 ### Platform Support and Build Configurations

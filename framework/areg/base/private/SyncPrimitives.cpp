@@ -293,20 +293,20 @@ SyncTimer::~SyncTimer()
 // MultiLock class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 MultiLock::MultiLock(SyncObject* pObjects[], int32_t count, bool autoLock /* = true */)
-    : mSyncObjArray (nullptr)
+    : mSyncObjArray (pObjects)
     , mSizeCount    (std::min(count, areg::MAXIMUM_WAITING_OBJECTS))
     , mAutoLock     (autoLock)
 {
-    int32_t entry{ 0 };
+#ifdef DEBUG
     for (int32_t i = 0; i < mSizeCount; ++i)
     {
+        ASSERT(pObjects[i] != nullptr);
         switch (pObjects[i]->type())
         {
         case SyncObject::SyncKind::SoMutex:
         case SyncObject::SyncKind::SoEvent:
         case SyncObject::SyncKind::SoSemaphore:
         case SyncObject::SyncKind::SoTimer:
-            mSyncObjArray[entry++] = pObjects[i];
             break;
 
         case SyncObject::SyncKind::SoCritical:
@@ -318,8 +318,8 @@ MultiLock::MultiLock(SyncObject* pObjects[], int32_t count, bool autoLock /* = t
             break;
         }
     }
+#endif // DEBUG
 
-    mSizeCount = entry;
     areg::mem_zero(static_cast<void *>(mLockedStates), areg::MAXIMUM_WAITING_OBJECTS * sizeof(LockState)  );
     if ((mSizeCount != 0) && autoLock)
     {

@@ -32,6 +32,7 @@
 namespace
 {
     constexpr uint32_t      HEAP_TRIM_EVENT_THRESHOLD   { 100000u };    //!< events drained since last trim
+    constexpr uint32_t      HEAP_TRIM_IDLE_TIMEOUT_MS   { 100u };       //!< idle time that must pass before a due trim runs
 
     //!< Returns freed heap pages to the OS.
     //!< glibc keeps a slow consumer's drained backlog mapped at the RSS high-water mark (per-arena retention);
@@ -119,6 +120,11 @@ void EventDispatcherBase::stop_dispatcher() noexcept
     mExternalEvents.trigger_exit();
 }
 
+void EventDispatcherBase::stop_dispatcher_drained() noexcept
+{
+    mExternalEvents.trigger_exit_drained();
+}
+
 void EventDispatcherBase::exit_dispatcher() noexcept
 {
     mInternalEvents.remove_all_events();
@@ -140,14 +146,12 @@ bool EventDispatcherBase::queue_event( Event& eventElem )
     {
         if (areg::is_external(eventType))
         {
-            mExternalEvents.push_event(eventElem);
-            return true;
+            return mExternalEvents.push_event(eventElem);
         }
 
         if (areg::is_internal(eventType))
         {
-            mInternalEvents.push_event(eventElem);
-            return true;
+            return mInternalEvents.push_event(eventElem);
         }
     }
 
@@ -209,6 +213,31 @@ int32_t EventDispatcherBase::remove_consumer( EventConsumer & whichConsumer )
     return result;
 }
 
+namespace {
+
+    //!< The credit of the calling thread. A function-local static is free of the static
+    //!< initialization order across the library boundary.
+    inline bool & _inline_send_credit() noexcept
+    {
+        static thread_local bool _credit{ false };
+        return _credit;
+    }
+
+} // namespace
+
+void EventDispatcherBase::grant_inline_send_credit() noexcept
+{
+    _inline_send_credit() = true;
+}
+
+bool EventDispatcherBase::take_inline_send_credit() noexcept
+{
+    bool & credit{ _inline_send_credit() };
+    const bool granted{ credit };
+    credit = false;
+    return granted;
+}
+
 bool EventDispatcherBase::run_dispatcher()
 {
     ready_for_events( true );
@@ -253,14 +282,25 @@ bool EventDispatcherBase::run_dispatcher()
         }
 
         // Queue drained, this dispatcher is going idle.
-        if ( isExit || processedSinceTrim >= HEAP_TRIM_EVENT_THRESHOLD )
+        if ( isExit )
         {
+            _release_heap();
+            break;
+        }
+
+        // Out of work, so the next message this thread produces has nothing to be batched with.
+        EventDispatcherBase::grant_inline_send_credit();
+
+        // A due trim waits for a proven idle period, so its stall cannot land between two
+        // messages. A message arriving first keeps the trim pending.
+        if ( processedSinceTrim >= HEAP_TRIM_EVENT_THRESHOLD )
+        {
+            if ( mExternalEvents.wait_event( HEAP_TRIM_IDLE_TIMEOUT_MS ) )
+                continue;
+
             _release_heap();
             processedSinceTrim = 0u;
         }
-
-        if (isExit)
-            break;
 
         // Block until a producer pushes or exit is triggered (queue owns the wake-up).
         mExternalEvents.wait_event(areg::WAIT_INFINITE);

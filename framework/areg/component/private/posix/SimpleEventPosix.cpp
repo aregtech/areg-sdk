@@ -51,8 +51,10 @@ extern "C" {
 
 namespace {
 
+#if defined(__APPLE__)
 //! __ulock_wake flag to release every parked waiter (equal to ULF_WAKE_ALL on macOS).
 constexpr uint32_t SIMPLE_ULOCK_WAKE_ALL { 0x00000100u };
+#endif  // defined(__APPLE__)
 
 /**
  * \brief   Parks the calling thread while the futex word equals zero, for up to timeoutMs.

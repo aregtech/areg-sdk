@@ -21,6 +21,12 @@
         #pragma comment(lib, "aregextend")
         #pragma comment(lib, "advapi32")
         #pragma comment(lib, "kernel32")
+        // Use these options if compile for Windows with MSVC
+        #if defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
+            #pragma comment(lib, "sqlite3")
+        #else   // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
+            #pragma comment(lib, "aregsqlite3")
+        #endif  //defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
     #endif  // _MSC_VER
 
 #include "areg/appbase/Application.hpp"
@@ -53,8 +59,15 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
     int32_t result{ areg::ext::ServiceApplicationBase::RESULT_FAILED_RUN };
     char ** argvTemp = areg::ext::convert_arguments<TCHAR>(argv, argc);
     LogCollector& logger = LogCollector::instance();
-    logger.parse_options(static_cast<int32_t>(argc), argvTemp, areg::ext::ServiceOptionSetup, std::size(areg::ext::ServiceOptionSetup));
-    result = logger.service_main(logger.current_option(), nullptr);
+    if (logger.parse_options(static_cast<int32_t>(argc), argvTemp))
+    {
+        result = logger.service_main(logger.current_option(), nullptr);
+    }
+    else
+    {
+        result = areg::ext::ServiceApplicationBase::RESULT_FAILED_INIT;
+    }
+
     areg::ext::delete_arguments(argvTemp, argc);
 
     return result;
@@ -63,7 +76,11 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 int main(int argc, char* argv[], char* envp[])
 {
     LogCollector& logger = LogCollector::instance();
-    logger.parse_options(argc, argv, areg::ext::ServiceOptionSetup, std::size(areg::ext::ServiceOptionSetup));
+    if (logger.parse_options(argc, argv) == false)
+    {
+        return areg::ext::ServiceApplicationBase::RESULT_FAILED_INIT;
+    }
+
     return logger.service_main(logger.current_option(), nullptr);
 }
 #endif  // _MINGW

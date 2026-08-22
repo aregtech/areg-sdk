@@ -410,6 +410,13 @@ public:
     inline const MessageEnvelope& envelope() const noexcept;
 
     /**
+     * \brief   Returns a read-only pointer to the payload area, the bytes that follow the
+     *          EventHeader, or nullptr when the event carries no buffer.
+     **/
+    [[nodiscard]]
+    inline const uint8_t * event_payload() const noexcept;
+
+    /**
      * \brief   Returns the class ID stored in the EventHeader (set by final-class constructor).
      **/
     [[nodiscard]]
@@ -581,6 +588,11 @@ inline const MessageEnvelope& Event::envelope() const noexcept
 {
     static const MessageEnvelope _envelope{};
     return (is_valid() ? static_cast<const MessageEnvelope&>(*this) : _envelope);
+}
+
+inline const uint8_t * Event::event_payload() const noexcept
+{
+    return MessageEnvelope::payload_ptr();
 }
 
 inline uint32_t Event::event_id() const noexcept

@@ -25,7 +25,7 @@ DEF_LOG_SCOPE(examples_24_pubservice_ServiceComponent, process_timer);
 
 ServiceComponent::ServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : areg::Component( entry, owner )
-    , HelloUnblockProviderBase( static_cast<areg::Component &>(self()) )
+    , HelloUnblockProviderBase( static_cast<areg::Component &>(*this) )
     , areg::TimerConsumer( )
 
     , mSessionList( )

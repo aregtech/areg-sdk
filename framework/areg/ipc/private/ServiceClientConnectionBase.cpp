@@ -21,6 +21,9 @@
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/logging/areg_log.h"
+
+#include "areg/base/private/DebugDefs.hpp"
+
 namespace areg {
 
 DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_reconnect_timer);
@@ -33,6 +36,7 @@ DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_channel_connected
 DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, service_connection_event);
 DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, start_connection);
 DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, cancel_connection);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, ensure_send_thread);
 
 //////////////////////////////////////////////////////////////////////////
 // Local helper methods
@@ -69,7 +73,7 @@ ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
                                                         , const String & prefixName)
     : ConnectionProvider    ( )
     , ServiceEventConsumer  ( )
-    , ReconnectTimerConsumer(static_cast<ServiceEventConsumer&>(self()))
+    , ReconnectTimerConsumer(static_cast<ServiceEventConsumer&>(*this))
 
     , mTarget               (target)
     , mService              (service)
@@ -87,12 +91,88 @@ ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
     , mTimerConnect         ( static_cast<TimerConsumer &>(self()), prefixName + areg::CLIENT_CONNECT_TIMER_NAME, areg::INVALID_TIMEOUT, Timer::IGNORE_TIMER_QUEUE, areg::EventPriority::HighPrio )
     , mThreadReceive        (messageHandler, mClientConnection, prefixName)
     , mThreadSend           (messageHandler, mClientConnection, prefixName)
+    , mSendStartLock        ( false )
 {
     ASSERT((target > areg::TARGET_LOCAL) && (target < areg::COOKIE_REMOTE_SERVICE));
 }
 
 ServiceClientConnectionBase::~ServiceClientConnectionBase()
 {
+}
+
+void ServiceClientConnectionBase::ensure_send_thread()
+{
+    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, ensure_send_thread );
+
+    Lock lock( mSendStartLock );
+    if ( mThreadSend.is_running() )
+        return;
+
+    // The readiness poll stays inside the lock, so that a second producer finds the thread
+    // ready, not merely created.
+    if ( mThreadSend.start( areg::WAIT_INFINITE ) && _wait_io_thread_ready( mThreadSend ) )
+    {
+        LOG_DBG( "The send thread is started on demand by the message it could not send inline" );
+    }
+    else
+    {
+        // Nothing is torn down here: the receive side restarts the connection.
+        LOG_ERR( "Failed to start the send thread on demand" );
+    }
+}
+
+bool ServiceClientConnectionBase::try_send_inline( MessageEnvelope & data )
+{
+    if ( mThreadSend.send_gate().is_clear() == false )
+        return false;
+
+    areg::EventHeader * hdr{ data.header() };
+    if ( hdr == nullptr )
+        return false;
+
+    const uint32_t wireSize{ static_cast<uint32_t>(sizeof(areg::EventHeader)) + hdr->bufHeader.biUsed };
+    if ( wireSize > areg::INLINE_SEND_MAX_BYTES )
+        return false;
+
+    const SOCKETHANDLE hSocket{ mClientConnection.socket().handle() };
+    if ( areg::is_valid_socket(hSocket) == false )
+        return false;
+
+    if ( areg::EventDispatcherBase::take_inline_send_credit() == false )
+        return false;
+
+    areg::SocketWriter & writer{ areg::SocketWriter::writer_of(hSocket) };
+    if ( writer.try_acquire() == false )
+        return false;
+
+    hdr->internal1 = 0u;
+    hdr->internal2 = 0u;
+    hdr->custom    = 0u;
+    data.buffer_completion_fix();
+
+    int32_t sent{ 0 };
+    {
+        AREG_LT_SCOPE(areg::LtStage::SendSyscall);
+        const areg::IoBuffer ioBuffer{ reinterpret_cast<const uint8_t *>(hdr), wireSize };
+        sent = areg::try_send_data_v(hSocket, &ioBuffer, 1u, wireSize);
+    }
+
+    writer.release();
+
+    if ( sent > 0 )
+    {
+        mThreadSend.accumulate_sent(static_cast<uint64_t>(sent), 1u);
+        return true;
+    }
+    else if ( sent == 0 )
+    {
+        return false;
+    }
+
+    // A negative result may follow a partial write: the first bytes are already on the wire,
+    // so the message cannot be queued again and the connection has to go.
+    mThreadSend.report_failed_send(data, mClientConnection.socket());
+    return true;
 }
 
 void ServiceClientConnectionBase::service_connection_event(const MessageEnvelope& msgReceived)
@@ -249,9 +329,22 @@ void ServiceClientConnectionBase::on_service_start()
 {
     LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, on_service_start );
 
-    if (connection_state() == ConnectionPhase::ConnectionStopping || !Application::is_servicing_available())
+    if (connection_state() == ConnectionPhase::ConnectionStopping)
     {
-        LOG_WARN("Ignoring start event: connection is stopping or application is releasing.");
+        LOG_WARN("Ignoring start event: the connection is stopping.");
+        return;
+    }
+
+    if (!Application::is_servicing_available())
+    {
+        // The application did not reach the servicing state yet. Retry later
+        LOG_WARN("The application cannot service yet, retrying to start the connection later.");
+        mTimerConnect.stop_timer();
+        if (!mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1))
+        {
+            LOG_ERR("Failed to start the retry timer, the remote connection stays down.");
+        }
+
         return;
     }
 
@@ -285,10 +378,16 @@ void ServiceClientConnectionBase::on_service_stop()
         send_message(disconnect_message(channel.cookie(), mTarget));
     }
 
-    mThreadSend.trigger_exit();
-    mClientConnection.close_socket( );
+    mThreadSend.set_closing();
+    mThreadSend.trigger_exit_drained();
+    if (!mThreadSend.wait_completion( areg::SEND_QUEUE_FLUSH_TIMEOUT ))
+    {
+        LOG_WARN("The outgoing messages did not leave within [ %u ] ms, closing the connection", areg::SEND_QUEUE_FLUSH_TIMEOUT);
+        mThreadSend.trigger_exit();
+        mThreadSend.wait_completion( areg::WAIT_INFINITE );
+    }
 
-    mThreadSend.wait_completion( areg::WAIT_INFINITE );
+    mClientConnection.close_socket( );
     mThreadSend.shutdown( areg::DO_NOT_WAIT );
     mThreadReceive.shutdown( areg::WAIT_INFINITE );
 
@@ -434,7 +533,15 @@ bool ServiceClientConnectionBase::start_connection()
     ASSERT(mClientConnection.address().is_valid());
     ASSERT(!mClientConnection.is_valid());
     ASSERT(!mThreadReceive.is_running());
-    ASSERT(!mThreadSend.is_running());
+
+    // The send thread may still run, started by a message sent while the previous connection was
+    // already gone. Whatever it holds is addressed to a closed socket, so it is stopped here.
+    if ( mThreadSend.is_running() )
+    {
+        LOG_DBG("The send thread was started while the connection was down, stopping it before the new one");
+        mThreadSend.set_closing();
+        mThreadSend.shutdown( areg::WAIT_INFINITE );
+    }
 
     mTimerConnect.stop_timer();
 
@@ -458,10 +565,10 @@ bool ServiceClientConnectionBase::start_connection()
     // Store handshake in the receive thread before starting it.
     mThreadReceive.set_handshake(connect_message(areg::COOKIE_UNKNOWN, mTarget, mMessageSource));
 
+    // The send thread is not started here: it is a fallback, and the first message that has to
+    // be queued starts it, see ensure_send_thread().
     bool result{ mThreadReceive.start(areg::WAIT_INFINITE) &&
-                 mThreadSend.start(areg::WAIT_INFINITE)    &&
-                 _wait_io_thread_ready(mThreadReceive)     &&
-                 _wait_io_thread_ready(mThreadSend) };
+                 _wait_io_thread_ready(mThreadReceive) };
 
     if (result)
     {

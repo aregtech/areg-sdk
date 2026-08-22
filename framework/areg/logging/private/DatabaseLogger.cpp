@@ -76,7 +76,7 @@ void DatabaseLogger::log_message(const areg::LogEntry& logMessage)
 
 bool DatabaseLogger::is_logger_opened() const noexcept
 {
-    return false;
+    return (mDatabase != nullptr) && mDatabase->is_operable();
 }
 
 bool DatabaseLogger::create_layouts()

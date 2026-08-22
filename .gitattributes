@@ -1,0 +1,6 @@
+# The document schemas and the rule registry are mirrored between this repository and its two
+# siblings, and every copy has to be byte-comparable from any checkout. Without this a Windows
+# clone stores them with carriage returns, the comparison goes red, and the person who sees it
+# reads a line-ending artifact as the mirror having drifted.
+*.xsd   text eol=lf
+*.xml   text eol=lf
