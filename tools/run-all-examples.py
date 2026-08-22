@@ -73,6 +73,9 @@ ROUTER_PORT = 8181
 # process of a scenario has finished.
 GRACE_SECONDS = 15.0
 
+# Marker the framework prints on the quit path when AREG_QUIT_TRACE is set.
+QUIT_TRACE_MARK = '[areg-quit-trace]'
+
 # Time given to the router to accept connections after it was started.
 ROUTER_READY_SECONDS = 10.0
 
@@ -1313,6 +1316,16 @@ def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs, use
             result.captures.append(describe_capture(runner))
             if runner.stacks:
                 result.stacks.append((runner.name, runner.stacks))
+        # The quit trace of the framework is short and answers on its own whether an
+        # application was asked to stop. It is lifted out of the stream into the notes,
+        # where the report carries it without the artifact having to be downloaded.
+        for runner in runners:
+            marks = [line.strip() for line in runner.output.splitlines()
+                     if QUIT_TRACE_MARK in line]
+            for mark in marks:
+                result.notes.append('%s %s' % (runner.name, mark[mark.index(QUIT_TRACE_MARK):]))
+            if not marks:
+                result.notes.append('%s printed no quit trace' % runner.name)
 
     result.seconds = time.time() - started
 

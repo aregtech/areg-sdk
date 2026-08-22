@@ -1,21 +1,21 @@
 <#
 .SYNOPSIS
-    Phase-0 latency-trace harness driver for areg-sdk example 30 (Windows 11, MSVC Release).
+    Latency-trace harness driver for areg-sdk example 30 (Windows 11, MSVC Release).
 
 .DESCRIPTION
     Builds (optional) example 30 + mtrouter with AREG_LATENCY_TRACE enabled, then runs the
     ping-pong benchmark and collects:
       - the per-stage latency-trace tables (printed to STDERR at clean process exit), and
       - the consumer's pp result table (printed to STDOUT).
-    Results are written to a single markdown file for review / cross-agent exchange.
+    Results are written to a single markdown file for review.
 
     IMPORTANT (atexit): the trace table is emitted by std::atexit, which runs ONLY on a clean
     exit. All three processes are therefore quit via their console "-q" command, never killed.
 
 .NOTES
     Measure on native Windows only. Do NOT use WSL numbers.
-    This script is a best-effort starting point; verify behaviour on the real machine and adjust
-    timings / paths as needed (see the coordination doc 2026-06-05-4-windows-latency-coordination.md).
+    Timings and paths are best-effort defaults; verify behaviour on the real machine and adjust
+    them if a step times out before the run actually finishes.
 
 .EXAMPLE
     powershell -ExecutionPolicy Bypass -File tools\latency\win_latency_trace.ps1 -Build

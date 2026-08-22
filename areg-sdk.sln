@@ -26,15 +26,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{7D57975F-814D-4F13-9F2F-87B667937FC7}"
 	ProjectSection(SolutionItems) = preProject
-		tools\annotate-file.py = tools\annotate-file.py
 		tools\areg_benchmarks.py = tools\areg_benchmarks.py
 		tools\check-ascii.py = tools\check-ascii.py
 		tools\codegen.jar = tools\codegen.jar
 		tools\codegenerate.bat = tools\codegenerate.bat
 		tools\codegenerate.sh = tools\codegenerate.sh
-		tools\dump-symbol-asm.py = tools\dump-symbol-asm.py
-		tools\enable-framework-logs.py = tools\enable-framework-logs.py
-		tools\extract_types.py = tools\extract_types.py
 		tools\hunt-crash.py = tools\hunt-crash.py
 		tools\README.md = tools\README.md
 		tools\report-ctest.py = tools\report-ctest.py
@@ -902,6 +898,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "schema", "schema", "{793EBD
 		tools\schema\datatype.xml = tools\schema\datatype.xml
 		tools\schema\dtml.xsd = tools\schema\dtml.xsd
 		tools\schema\fsml.xsd = tools\schema\fsml.xsd
+		tools\schema\rules.xml = tools\schema\rules.xml
 		tools\schema\siml.xsd = tools\schema\siml.xsd
 	EndProjectSection
 EndProject

@@ -1,11 +1,9 @@
 ﻿
 # Areg SDK Tools
 
-This directory contains **developer tools** shipped with the **Areg SDK**, designed to help you:
-
-- Generate RPC service code from `.siml` files
-- Integrate generated code into CMake-based projects
-- Quickly bootstrap a working Areg example project
+This directory contains **developer tools** shipped with the **Areg SDK**. They fall into two
+groups: tools you use to *build an application with* the SDK, and tools used to *develop and
+verify* the SDK itself.
 
 > **Areg SDK** is a multitasking application development platform for building modular, distributed, and IPC/RPC-based systems.
 
@@ -13,14 +11,32 @@ This directory contains **developer tools** shipped with the **Areg SDK**, desig
 
 ## Contents Overview
 
-| Tool / Script        | Purpose                                                |
-|----------------------|--------------------------------------------------------|
-| `codegen.jar`        | Generates C++ service code from `.siml` files          |
-| `setup-project.bat`  | Creates a ready-to-build Areg project on Windows       |
-| `setup-project.sh`   | Creates a ready-to-build Areg project on Linux/macOS   |
-| `sanitize.sh`        | Builds/runs the SDK under a sanitizer or profiler      |
-| `sanitizer/*.supp`   | Suppression files for LeakSanitizer / ThreadSanitizer  |
-| `conf/cmake/*.cmake` | CMake helper functions used by Areg projects           |
+### Building an application with the SDK
+
+| Tool / Script         | Purpose                                                        | Section |
+|-----------------------|----------------------------------------------------------------|---------|
+| `codegen.jar`         | Generates C++ service code from `.siml`, `.fsml` and `.dtml`    | [1](#1-designing-and-generating-service-code-from-siml) |
+| `codegenerate.sh`     | Ready-made generator invocation for Linux/macOS                 | [1](#1-designing-and-generating-service-code-from-siml) |
+| `codegenerate.bat`    | Ready-made generator invocation for Windows                     | [1](#1-designing-and-generating-service-code-from-siml) |
+| `schema/*.xsd`        | Grammars of the service, state machine and data type documents  | [2](#2-document-schemas-and-the-rule-registry) |
+| `schema/rules.xml`    | The registry of validation rule numbers, shared with Lusan      | [2](#2-document-schemas-and-the-rule-registry) |
+| `setup-project.sh`    | Creates a ready-to-build Areg project on Linux/macOS            | [5](#5-project-setup-scripts-quick-start) |
+| `setup-project.bat`   | Creates a ready-to-build Areg project on Windows                | [5](#5-project-setup-scripts-quick-start) |
+
+### Developing and verifying the SDK
+
+| Tool / Script            | Purpose                                                       | Section |
+|--------------------------|---------------------------------------------------------------|---------|
+| `sanitize.sh`            | Builds and runs a target under a sanitizer or a profiler      | [8](#8-sanitizers-and-profilers) |
+| `sanitizer/*.supp`       | Suppression files for LeakSanitizer and ThreadSanitizer       | [8](#8-sanitizers-and-profilers) |
+| `run-all-examples.py`    | Runs the built examples as pass/fail scenarios                | [9](#9-running-the-examples-as-a-test-suite) |
+| `run-all-examples.sh`    | Wrapper around the driver for Linux/macOS                     | [9](#9-running-the-examples-as-a-test-suite) |
+| `run-all-examples.bat`   | Wrapper around the driver for Windows                         | [9](#9-running-the-examples-as-a-test-suite) |
+| `report-ctest.py`        | Republishes failed ctest cases as build server annotations    | [9](#9-running-the-examples-as-a-test-suite) |
+| `areg_benchmarks.py`     | Turns the console output of the benchmarks into numbers       | [10](#10-measuring-throughput-and-latency) |
+| `latency/*`              | Unattended latency measurement and A/B comparison             | [10](#10-measuring-throughput-and-latency) |
+| `check-ascii.py`         | Finds non ASCII bytes and unwanted control characters         | [11](#11-source-hygiene-check-asciipy) |
+| `hunt-crash.py`          | Repeats a run under a debugger until it crashes, saves stacks | [12](#12-debugging-a-rare-crash) |
 
 ---
 
@@ -89,7 +105,44 @@ Ready-made templates for both platforms are in this directory: `codegenerate.sh`
 
 ---
 
-## 2. Using `.siml` Files in CMake (Recommended)
+## 2. Document Schemas and the Rule Registry
+
+`tools/schema/` holds the definitions that the code generator and **Lusan** both read, so that
+the two agree on what a document may contain and on how a mistake in it is reported.
+
+| File | Contents |
+|------|----------|
+| `siml.xsd` | Grammar of a service interface document (`.siml`) |
+| `fsml.xsd` | Grammar of a state machine document (`.fsml`) |
+| `dtml.xsd` | Grammar of a data type document (`.dtml`) |
+| `datatype.xml` | The predefined data types every document may use without declaring them |
+| `rules.xml` | The registry of validation rule numbers |
+
+### Validating a document before generating
+
+Any XML validator accepts these schemas, which is the quickest way to find a malformed document
+without running the generator:
+
+```bash
+xmllint --noout --schema tools/schema/siml.xsd src/services/HelloService.siml
+```
+
+Editors that support XML catalogs can be pointed at the same files to get completion and
+validation while a document is written. Lusan does this for you.
+
+### `rules.xml`
+
+A validation rule is identified by its **number together with the severity band** it is reported
+in: an error keeps the bare number, a warning adds 100, information adds 200. So `4`, `104` and
+`204` are three unrelated rules, and a number taken in one band is still free in another.
+
+Lusan generates its rule constants from this file and the code generator generates its own, and
+each build compares what it generated against what is checked in. A rule is therefore added by
+adding a row here first. Removing a row fails a build instead of quietly dropping a check.
+
+---
+
+## 3. Using `.siml` Files in CMake (Recommended)
 
 Instead of running the generator manually, Areg recommends **using CMake integration**.
 
@@ -146,7 +199,7 @@ The executable automatically links against Areg and the generated service code.
 
 ---
 
-## 3. Best Practices for Generated Code
+## 4. Best Practices for Generated Code
 
 ### ✔ Use Static Libraries
 
@@ -174,7 +227,7 @@ If your system has multiple processes:
 
 ---
 
-## 4. Project Setup Scripts (Quick Start)
+## 5. Project Setup Scripts (Quick Start)
 
 Areg provides scripts to bootstrap a **working example project** in one step.
 
@@ -226,7 +279,7 @@ Follow the interactive prompts to set the project name and location.
 
 ---
 
-## 5. Building the Generated Project
+## 6. Building the Generated Project
 
 After project creation:
 
@@ -240,7 +293,7 @@ This produces a **fully functional Areg RPC example**.
 
 ---
 
-## 6. Examples and Advanced Usage
+## 7. Examples and Advanced Usage
 
 * **RPC (single process)**: Generated by setup scripts
 * **IPC (multi-process)**: See `examples/` folder in the Areg SDK root
@@ -248,7 +301,7 @@ This produces a **fully functional Areg RPC example**.
 
 ---
 
-## 7. Quality & Performance: Sanitizers and Profilers
+## 8. Sanitizers and Profilers
 
 `sanitize.sh` builds the SDK in an **isolated, throw-away build tree** (`build-asan/`,
 `build-tsan/`, `build-perf/`) and runs a target under a compiler sanitizer or a
@@ -380,7 +433,243 @@ or lower the entropy once with `sudo sysctl vm.mmap_rnd_bits=28`.
 
 ---
 
-## 8. Summary
+## 9. Running the Examples as a Test Suite
+
+The unit tests cover the framework in isolation. The examples cover it as it is actually used:
+several processes started together, a message router between them, and a result that depends on
+all of them behaving. `run-all-examples.py` runs them as **scenarios** -- the processes that
+belong together are started together, the driving process is given a deadline, and a scenario
+passes only if every process ends the way it is supposed to end.
+
+```bash
+tools/run-all-examples.sh                     # Linux, macOS
+tools\run-all-examples.bat                    # Windows
+python3 tools/run-all-examples.py --list      # what would run, without running it
+```
+
+Both wrappers pass every argument through to the driver.
+
+| Option | Default | Meaning |
+|--------|---------|---------|
+| `--tier smoke\|ipc\|all\|perf` | `all` | `smoke` is single process only, `ipc` needs the router |
+| `--bin-dir DIR` | `$AREG_BIN_DIR` | The build to test. Always pass it on a build server |
+| `--only NAME[,NAME...]` | all | Run only the named scenarios |
+| `--repeat N` | `1` | Run the selection N times and report every failure |
+| `--timeout SEC` | `120` | Per-scenario deadline |
+| `--perf` | off | Append the benchmarks and print the measured rates |
+| `--no-pty` | off | Capture into a log file instead of a terminal |
+| `--junit FILE` | none | Write the results as a JUnit report |
+| `--out-dir DIR` | derived | Where the captured output is written |
+
+Exit code 0 means every scenario passed.
+
+```bash
+# A single flaky scenario, twenty times, to see how often it really fails:
+tools/run-all-examples.sh --only 12_svcmulti --repeat 20
+
+# Everything, against an explicitly chosen build:
+tools/run-all-examples.sh --bin-dir product/build/gnu-g++/linux-64-x86_64-release-shared/bin
+```
+
+> [!IMPORTANT]
+> The `ipc` and `all` tiers start and stop the message router themselves. Do not leave your own
+> `mtrouter` running while the suite runs: the examples would connect to yours instead, and the
+> run would measure and prove nothing.
+
+### `report-ctest.py`
+
+The job log of a build server needs a credential to read; its annotations do not. After a failed
+`ctest` run this reads the JUnit report (or `Testing/Temporary/LastTest.log` when there is none)
+and republishes the cases that did not pass as annotations, so a red matrix entry is readable in
+a browser.
+
+```bash
+python3 tools/report-ctest.py <ctest build directory> [--title ctest]
+```
+
+It never fails the job: a missing file, an unreadable file and a file without a single failure
+are all reported and none of them is an error. `.github/workflows/cmake.yml` calls it.
+
+---
+
+## 10. Measuring Throughput and Latency
+
+Examples 23, 30 and 31 are the benchmarks of the SDK:
+
+| Example | Measures |
+|---------|----------|
+| `23_pubdatarate` | Peak network send rate and peak block rate, while the channel count is ramped up |
+| `30_publatency` | One way trip and round trip time between **two processes**, through the message router |
+| `31_loclatency` | The same trips inside **one process**: provider and consumer in one thread, then in two |
+
+The difference between the two topologies of example 31 is the price of one thread wake-up; the
+difference to example 30 is the price of leaving the process.
+
+### `areg_benchmarks.py`
+
+A module, not a script. The benchmarks print into a full screen console that repaints itself in
+place, so the captured output is a stream of ANSI escapes with the same lines rewritten hundreds
+of times. This turns that stream into a table of numbers. `run-all-examples.py --perf` imports
+it; there is nothing to run by hand.
+
+### `latency/` -- unattended measurement
+
+| Script | Platform | What it does |
+|--------|----------|--------------|
+| `run-local-latency.sh` | Linux, macOS | Example 31 in both topologies, all modes, into one CSV and one log |
+| `run-pub-latency.py` | Linux, macOS | Example 30 through the router; starts and stops the router itself |
+| `run-latency-trace.sh` | Linux, macOS | A per-stage trace build, to see where the time inside a trip goes |
+| `run-win-abba.py` | Windows | Runs two builds alternately in ABBA order and compares them |
+| `win_latency_trace.ps1` | Windows | The Windows counterpart of `run-latency-trace.sh` |
+
+```bash
+tools/latency/run-local-latency.sh --repeat 3 --label baseline
+python3 tools/latency/run-pub-latency.py --modes pp0,pp64 --count 20000
+```
+
+Results are written to `product/tasks/measurements`, which is not under version control.
+
+### The per-stage trace
+
+Building the framework with `AREG_LATENCY_TRACE=1` turns on the instrumentation in
+`framework/areg/base/private/DebugDefs.hpp`. Every instrumented stage accumulates count, minimum,
+mean and maximum, and the table is printed to standard error when the process exits:
+
+| Stage | What it times |
+|-------|---------------|
+| `SendNode` | The send thread: drain, serialize and write the batch |
+| `SendSyscall` | The send thread: only the write syscall |
+| `RecvNode` | The receive thread: deserialize and route one message |
+| `CompDispatch` | The dispatcher: the component's own handler |
+| `MpscHandoff` | The event queue, from enqueue to dequeue: handing a message to another thread, wake-up included |
+
+Instrument a new stage by adding an entry to `areg::LtStage` before `Count` and placing an
+`AREG_LT_SCOPE(areg::LtStage::YourStage)` in the scope to be timed. The macros compile to nothing
+when the option is off.
+
+> [!WARNING]
+> Three rules, or the numbers are worthless.
+> 1. The table is printed by `std::atexit`. It appears **only** when the process ends through its
+>    own exit path. Never kill the processes -- quit them with their console `-q` command.
+> 2. The instrumentation itself costs time. A traced build is slower than a normal one. Read the
+>    **share** of each stage, never its absolute value, and never mix the two builds in one table.
+> 3. Measure on a quiet machine. A build, a browser or a second benchmark running at the same time
+>    changes the result more than most of the changes worth measuring.
+
+---
+
+## 11. Source Hygiene: `check-ascii.py`
+
+Two different checks live in this one tool. Both exit 0 when nothing was found and 1 when
+something was, so either can be used as a gate.
+
+### The ASCII rule
+
+Every source, script, CMake and configuration file of the SDK must contain only bytes `0x00-0x7F`.
+Documents (`.md`, `.txt`) are exempt.
+
+```bash
+python3 tools/check-ascii.py                     # the whole repository
+python3 tools/check-ascii.py framework examples  # only these paths
+python3 tools/check-ascii.py --staged            # only what git has staged
+```
+
+The reason is the compilers, not taste. A source file without a byte order mark is read in the
+**code page of the machine that compiles it**. The same UTF-8 dash is therefore one thing on your
+machine and something else on a build server or on a user's machine in another locale -- silently,
+with no diagnostic, and inside a string literal that difference reaches the output of the program.
+
+Files whose content is character data are waived, because there the non ASCII bytes are the
+subject and not a defect. The list is `ASCII_WAIVED` at the top of the script and it is short on
+purpose:
+
+```
+framework/areg/base/TableDefs.hpp
+tests/units/String*Test.cpp
+tests/units/*Encod*Test.cpp
+```
+
+### The byte hunt
+
+`--find` reports every occurrence of the byte values given, whatever they are, and ignores the
+waiver list -- a control character is unwanted in a character test as much as anywhere else.
+
+```bash
+python3 tools/check-ascii.py --find control      # every C0 control but TAB, LF, CR, plus DEL
+python3 tools/check-ascii.py --find 0x08         # one value
+python3 tools/check-ascii.py --find 0x01-0x12    # a range
+python3 tools/check-ascii.py --find 0x08,0x1B,0x7F
+python3 tools/check-ascii.py --find control --docs   # documents searched too
+```
+
+Values are hexadecimal. `control` and `non-ascii` are accepted as names.
+
+This exists for the control characters that arrive through a text pipeline rather than through a
+keyboard. `\brief` written into a context that expands escape sequences becomes byte `0x08`
+followed by `rief`; the file still compiles, the comment still looks right in most editors, and
+Doxygen silently drops the command. The report prints the offending line with every unprintable
+byte written out, which makes the damage obvious:
+
+```
+framework/areg/base/Sample.hpp:2:4: 0x08 (BS)
+     * <0x08>rief   Does the thing.
+```
+
+### As a pre-commit hook
+
+`--staged` checks only what is about to be committed, which is the fast path -- a full walk of the
+repository is dominated by the file system, not by the check.
+
+```bash
+cat > .git/hooks/pre-commit <<'EOF'
+#!/bin/sh
+python3 tools/check-ascii.py --staged --quiet || exit 1
+python3 tools/check-ascii.py --staged --quiet --find control || exit 1
+EOF
+chmod +x .git/hooks/pre-commit
+```
+
+---
+
+## 12. Debugging a Rare Crash
+
+`hunt-crash.py` is for the defect that appears once in a few dozen runs. A core file is not always
+available -- `ptrace` is restricted in containers, macOS writes crash reports instead of cores, and
+WSL often writes neither -- so the program is started **under the debugger from the beginning** and
+the debugger is asked for the stacks at the moment it stops.
+
+```bash
+python3 tools/hunt-crash.py --runs 200 14_locmesh.elf
+python3 tools/hunt-crash.py --bin-dir <dir> --runs 50 --timeout 120 22_pubservice.elf
+python3 tools/hunt-crash.py --runs 100 --out crash.txt 30_pubprovider.elf -- --some-arg
+```
+
+| Option | Default | Meaning |
+|--------|---------|---------|
+| `--runs N` | `100` | How many times to try |
+| `--timeout SEC` | `120` | Deadline for one run |
+| `--bin-dir DIR` | newest build | Where the executable is |
+| `--out FILE` | `crash-stacks.txt` | Where the stacks are written |
+
+It uses `gdb` on Linux and cygwin and `lldb` on macOS, both in batch mode, so nothing is
+interactive and it can be left running. Exit status is 0 when a crash was captured, 1 when the runs
+finished without one, and 2 when the tool could not run at all.
+
+Stops on the first fatal signal: `SIGSEGV`, `SIGABRT`, `SIGBUS`, `SIGILL`, `SIGFPE` and, on macOS,
+`EXC_BAD_ACCESS`. A hang is not a crash -- for that, run the scenario under
+`tools/run-all-examples.py --repeat N`, which photographs a process it has to kill.
+
+> [!TIP]
+> Build with `-DCMAKE_BUILD_TYPE=RelWithDebInfo` before hunting. A Debug build changes the timing
+> enough that a race often stops reproducing, and a plain Release build has no symbols to print.
+> If the defect is a memory error rather than a race, `tools/sanitize.sh asan` finds it in one run
+> instead of fifty.
+
+---
+
+## 13. Summary
+
+Building an application with the SDK:
 
 * Use `.siml` to define services
 * Prefer **CMake integration** over manual code generation
@@ -388,5 +677,13 @@ or lower the entropy once with `sudo sysctl vm.mmap_rnd_bits=28`.
 * Use setup scripts to get started instantly
 * Leverage **Lusan** for visual service interface design and logging
 * Follow examples for real-world IPC patterns
+
+Working on the SDK itself:
+
+* `run-all-examples.sh` after every build -- it covers what the unit tests cannot
+* `sanitize.sh asan` before trusting a change that touches memory or lifetime
+* `check-ascii.py --staged` from a pre-commit hook, both checks
+* `hunt-crash.py` for a defect that reproduces rarely, `sanitize.sh` for one that reproduces
+* Measure with `latency/` on a quiet machine, and compare shares rather than absolute numbers
 
 This workflow scales from a **hello-service example** to **full distributed production systems**.
