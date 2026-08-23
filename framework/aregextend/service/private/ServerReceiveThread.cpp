@@ -121,6 +121,7 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
         if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, areg::DEFAULT_DRAIN_LIMIT - 1u, clientSocket,
                 msgReceived, [this](uint64_t bytes, uint32_t msgs) { accumulate_received(bytes, msgs); }))
         {
+            mConnection.unregister_from_multiplexer(clientSocket.handle());
             mRemoteService.failed_receive_message(clientSocket);
             areg::thread_rx_cache_release(clientSocket.handle());
         }
@@ -133,6 +134,7 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
                         , clientSocket.handle()
                         , mConnection.is_valid() ? "YES" : "NO");
 
+        mConnection.unregister_from_multiplexer(clientSocket.handle());
         mRemoteService.failed_receive_message(clientSocket);
         areg::thread_rx_cache_release(clientSocket.handle());
     }
