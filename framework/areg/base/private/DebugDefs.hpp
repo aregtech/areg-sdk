@@ -10,9 +10,41 @@
  *
  * \copyright   (c) 2017-2026 Aregtech (Artak Avetyan)
  * \file        areg/base/private/DebugDefs.hpp
- * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Areg Platform, Debugging utilities
+ * \brief       Areg Platform, Debugging and analysis utilities.
+ *
+ *              This is the scratch pad of the framework. It collects the tools
+ *              that answer a question about a running system: where the time is
+ *              spent, in which order the threads ran, whether a path was taken
+ *              at all. Everything here is built for an investigation, is turned
+ *              on by hand, and is off in every normal build.
+ *
+ *              HOW TO USE IT
+ *
+ *              Every facility sits behind its own compile time switch and every
+ *              switch is off unless it is passed on the command line, for
+ *              example '-DAREG_DIAGNOSE_TRACE=1'. No build configuration of the
+ *              project defines them. With the switch off the calls compile to
+ *              nothing, so instrumentation left in a source file costs nothing
+ *              and changes no behaviour.
+ *
+ *              This header may be included from any source file of the
+ *              framework, including one outside 'private', for the time of an
+ *              investigation. That is the one accepted exception to the rule
+ *              that a 'private' header stays inside its own module.
+ *
+ *              RULES
+ *
+ *              - Add a facility here when it helps to analyse a defect or to
+ *                measure behaviour. Keep it behind a compile time switch.
+ *              - Instrumentation is temporary. Remove the calls from the source
+ *                files once the question is answered; what stays here is the
+ *                tool, not its use.
+ *              - Nothing here is part of the public interface, is covered by
+ *                the ABI promise, or belongs in ordinary development work. Use
+ *                the logging framework ('areg/logging') for anything a released
+ *                build has to report.
  *
  ************************************************************************/
 
@@ -31,6 +63,13 @@
 #include <string>
 #include <string_view>
 
+#if defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
+    // Included only for the diagnostic trace, so that an ordinary build of the
+    // 15 sources that include this header does not pay for them.
+    #include "areg/base/Process.hpp"
+    #include <cstdarg>
+#endif  // defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
+
 /**
  * \brief   Debugging utilities.
  *          Contains some functions and constants available only in 
@@ -48,6 +87,12 @@ struct _EXCEPTION_POINTERS;
 // Debug specific methods declaration
 //////////////////////////////////////////////////////////////////////////
 namespace areg {
+
+/**
+ * \brief   areg::MAX_DEBUG_BUFFER_SIZE
+ *          The maximum buffer size for message output.
+ **/
+constexpr uint32_t  MAX_DEBUG_BUFFER_SIZE       = 1024;
 
 #if defined(AREG_LATENCY_TRACE) && (AREG_LATENCY_TRACE)
 
@@ -193,6 +238,72 @@ private:
 
 #endif  // AREG_LATENCY_TRACE
 
+#if defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
+
+/**
+ * \brief   The marker that prefixes every diagnostic line, so that a line can be
+ *          separated from the ordinary output of an application.
+ **/
+constexpr std::string_view DIAGNOSE_TRACE_MARKER{ "[areg-diag-trace]" };
+
+/**
+ * \brief   The name of the environment variable that switches the trace on at run time.
+ **/
+constexpr std::string_view DIAGNOSE_TRACE_VARIABLE{ "AREG_DIAG_TRACE" };
+
+/**
+ * \brief   Returns true when the environment variable AREG_DIAG_TRACE is set to a
+ *          non-empty value. The value is read once, on the first call.
+ *
+ * \return  Returns true when the trace is switched on.
+ **/
+inline bool is_trace_enabled() noexcept
+{
+    static const bool enabled
+    {
+        areg::Process::instance().safe_env_variable(areg::DIAGNOSE_TRACE_VARIABLE.data()).is_empty() == false
+    };
+
+    return enabled;
+}
+
+/**
+ * \brief   Writes one diagnostic line to the standard error stream when the trace is
+ *          switched on, and does nothing otherwise. The line is prefixed with
+ *          DIAGNOSE_TRACE_MARKER and is flushed at once, so that it survives a process
+ *          that is killed right after.
+ *
+ * \param   format  The printf style format of the message.
+ * \note    The formatted message is cut at MAX_DEBUG_BUFFER_SIZE characters.
+ **/
+inline void trace(const char* format, ...) noexcept
+{
+    if (!is_trace_enabled())
+        return;
+
+    char message[areg::MAX_DEBUG_BUFFER_SIZE]{};
+    va_list args;
+    va_start(args, format);
+    std::vsnprintf(message, sizeof(message), format, args);
+    va_end(args);
+
+    std::fprintf(stderr, "\r\n%s %s\r\n", areg::DIAGNOSE_TRACE_MARKER.data(), message);
+    std::fflush(stderr);
+}
+
+#else   // defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
+
+inline bool is_trace_enabled() noexcept
+{
+    return false;
+}
+
+inline void trace(const char* /*format*/, ...) noexcept
+{
+}
+
+#endif  // defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
+
 /**
  * \brief   areg::DebugPriority
  *          Defines message priority in debug output window.
@@ -209,12 +320,6 @@ enum class DebugPriority : int32_t
     , PrioDbg   = OUTPUT_DEBUG_LEVEL_DEBUG  //!< Priority Debug, outputs "DBG:" string in front of message
 
 };
-
-/**
- * \brief   areg::MAX_DEBUG_BUFFER_SIZE
- *          The maximum buffer size for message output.
- **/
-constexpr uint32_t  MAX_DEBUG_BUFFER_SIZE       = 1024;
 
 constexpr std::string_view PREFIX_DBG_PRIORITIES [] =
 {

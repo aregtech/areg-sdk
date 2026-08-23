@@ -1,8 +1,10 @@
 name: MSBuild
 
-# Only the manual trigger is active while the CMake workflow is used to hunt a defect.
-# Restore the 'push' and 'pull_request' triggers when the hunt is over.
 on:
+  push:         # Keep empty to run on each branch when push the code. Otherwise, use branches: [ master ]
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
   workflow_dispatch:
 
 # A newer push to the same branch makes the run already in flight obsolete.

@@ -3,9 +3,11 @@
 
 name: REUSE compliance check
 
-# Only the manual trigger is active while the CMake workflow is used to hunt a defect.
-# Restore the 'push' and 'pull_request' triggers when the hunt is over.
 on:
+  push:         # Keep empty to run on each branch when push the code. Otherwise use branches: [ master ]
+    branches: [ master ]
+  pull_request: # Set to master to run only when merge with master branch
+    branches: [ master ]
   workflow_dispatch:
 
 concurrency:

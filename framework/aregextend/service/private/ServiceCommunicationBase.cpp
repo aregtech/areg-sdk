@@ -29,7 +29,6 @@
 #include "aregextend/service/SystemServiceDefs.hpp"
 
 #include "areg/base/private/DebugDefs.hpp"
-#include "areg/base/private/DiagTrace.hpp"
 
 namespace areg::ext {
 
@@ -268,15 +267,12 @@ void ServiceCommunicationBase::connection_lost( SocketAccepted & clientSocket )
 
     if ( mShuttingDown.load(std::memory_order_relaxed) )
     {
-        areg::diag::trace("router: connection_lost ignored, shutting down, socket=%d", clientSocket.handle());
         LOG_DBG("Ignoring connection_lost during shutdown for socket [ %u ]", static_cast<uint32_t>(clientSocket.handle()));
         return;
     }
 
     const ITEM_ID & cookie { mServerConnection.cookie(clientSocket) };
     const ITEM_ID & channel{ mServerConnection.channel_id() };
-
-    areg::diag::trace("router: connection_lost socket=%d cookie=%u", clientSocket.handle(), static_cast<uint32_t>(cookie));
 
     LOG_WARN("Client lost connection: cookie [ %u ], socket [ %d ], host [ %s : %d ], closing connection"
                 , static_cast<uint32_t>(cookie)

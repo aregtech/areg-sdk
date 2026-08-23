@@ -27,7 +27,6 @@
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/Process.hpp"
-#include "areg/base/private/DiagTrace.hpp"
 #include "areg/logging/areg_log.h"
 namespace areg {
 
@@ -332,7 +331,6 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
         {
             StubAddress stub(*msgReceived.header());
             stub.set_source( mChannel.source() );
-            areg::diag::trace("client: UnregisterProvider received");
             mRegisterConsumer.on_provider_unregistered(stub, reason, areg::COOKIE_ANY);
         }
         break;

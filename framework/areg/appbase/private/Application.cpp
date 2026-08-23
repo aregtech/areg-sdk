@@ -27,8 +27,6 @@
 
 #include "areg/logging/private/LogManager.hpp"
 
-#include "areg/base/private/DiagTrace.hpp"
-
 #include <vector>
 #include <utility>
 
@@ -358,18 +356,13 @@ areg::Primitive Application::stored_element( const String & elemName )
 bool Application::wait_quit(uint32_t waitTimeout /*= areg::WAIT_INFINITE*/)
 {
     Application & theApp = Application::instance( );
-    areg::diag::trace("wait_quit: enter");
-    const bool result{ theApp.mAppQuit.lock(waitTimeout) };
-    areg::diag::trace(result ? "wait_quit: left, signaled" : "wait_quit: left, not signaled");
-    return result;
+    return theApp.mAppQuit.lock(waitTimeout);
 }
 
 void Application::signal_quit()
 {
     Application & theApp = Application::instance( );
-    areg::diag::trace("signal_quit: enter");
     theApp.mAppQuit.set_signaled();
-    areg::diag::trace("signal_quit: left");
 }
 
 bool Application::is_servicing_ready()

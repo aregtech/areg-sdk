@@ -1,9 +1,8 @@
 name: PR Validation
 
-# Only the manual trigger is active while the CMake workflow is used to hunt a defect.
-# Restore the 'pull_request' trigger when the hunt is over.
 on:
-  workflow_dispatch:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
 
 jobs:
   pr-check:
