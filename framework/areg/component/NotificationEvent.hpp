@@ -72,10 +72,8 @@ public:
      * \brief   Creates and sets Notification event data.
      *
      * \param   proxy           The pointer of Proxy object which triggered notification message
-     * \param   notifyType      The result flag of notification event. See details in
-     *                          areg::ResultType
-     * \param   notifyId        The call ID, usually response ID or attribute ID. If request fails,
-     *                          also request ID.
+     * \param   notifyType      The result flag of notification event. See details in areg::ResultType
+     * \param   notifyId        The call ID, usually response ID or attribute ID. If request fails, also request ID.
      * \param   seqNr           The call sequence number.
      **/
     NotificationEventData( const ProxyBase & proxy, areg::ResultType notifyType, uint32_t notifyId, const SequenceNumber & seqNr );
@@ -211,6 +209,12 @@ public:
      * \param   data    The notification event data to set.
      **/
     explicit NotificationEvent(const NotificationEventData& data);
+
+    /**
+     * \brief   Binds this typed event to an already dispatched envelope, sharing its buffer.
+     * \see     NotificationConsumer::start_event_processing
+     **/
+    explicit inline NotificationEvent(const MessageEnvelope & envelope) noexcept;
 
     NotificationEvent(const NotificationEvent& /*src*/) = default;
     NotificationEvent(NotificationEvent&& /*src*/) noexcept = default;
@@ -375,6 +379,11 @@ inline void NotificationEventData::set_sequence(const SequenceNumber & seqNr ) n
 //////////////////////////////////////////////////////////////////////////
 // class NotificationEvent inline function implementation
 //////////////////////////////////////////////////////////////////////////
+inline NotificationEvent::NotificationEvent( const MessageEnvelope & envelope ) noexcept
+    : Event ( envelope )
+{
+}
+
 inline const NotificationEventData & NotificationEvent::data() const noexcept
 {
     ASSERT(is_valid());

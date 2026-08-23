@@ -33,11 +33,20 @@
 #     --target  <name>      CMake target to build (default: areg-unit-tests).
 #     --run     <what>      What to execute after build:
 #                             ctest      -> ctest in the build dir (default for tests)
+#                             examples   -> the example scenario driver over the whole
+#                                           instrumented tree
+#                             examples:<name>[,<name>...]
+#                                        -> only the named scenarios of that driver
 #                             <path>     -> an explicit binary path
 #                             auto       -> locate the built target binary (default)
 #                             none       -> build only
 #     --lib     shared|static  Library type (default: static - robust for ASan).
 #     --examples            Also build examples (default: off, tests only).
+#     --config  <type>      CMake build type (default: Debug). Use RelWithDebInfo when
+#                           chasing a race: -O0 changes the timing enough to hide it.
+#     --repeat  N           Rounds for '--run examples' (default: 1).
+#     --leaks   on|off      LeakSanitizer, asan mode only (default: on). Turn it off when
+#                           hunting a use-after-free, so the report is not buried in leaks.
 #     --jobs N              Parallel build jobs (default: nproc).
 #     --keep                Reuse an existing build dir (skip reconfigure).
 #     --                    Everything after is forwarded to the run binary.
@@ -47,6 +56,10 @@
 #     tools/sanitize.sh tsan --run ctest             # data-race scan over the test suite
 #     tools/sanitize.sh asan --target 23_pubclient --examples -- --some-arg
 #     tools/sanitize.sh heaptrack --target mtrouter --examples -- -e
+#
+#     # multi process scenario under ASan, optimized, leak reports off, 20 rounds:
+#     tools/sanitize.sh asan --examples --target all --config RelWithDebInfo \
+#                            --leaks off --repeat 20 --run examples:18_pubworker
 # ===========================================================================
 
 set -euo pipefail
@@ -79,6 +92,9 @@ TARGET="areg-unit-tests"
 RUN="auto"
 LIBTYPE="static"
 EXAMPLES="OFF"
+CONFIG="Debug"
+REPEAT=1
+LEAKS="on"
 JOBS="$(nproc 2>/dev/null || echo 4)"
 KEEP=0
 RUN_ARGS=()
@@ -95,6 +111,9 @@ while [[ $# -gt 0 ]]; do
         --run)      RUN="$2";      shift 2;;
         --lib)      LIBTYPE="$2";  shift 2;;
         --examples) EXAMPLES="ON"; shift;;
+        --config)   CONFIG="$2";   shift 2;;
+        --repeat)   REPEAT="$2";   shift 2;;
+        --leaks)    LEAKS="$2";    shift 2;;
         --jobs)     JOBS="$2";     shift 2;;
         --keep)     KEEP=1;        shift;;
         --)         shift; RUN_ARGS=("$@"); break;;
@@ -129,7 +148,9 @@ UBSAN_FLAGS="-fsanitize=undefined -fno-sanitize-recover=all ${COMMON_DBG}"
 # --------------------------------------------------------------------------
 # Runtime option strings + suppression files.
 # --------------------------------------------------------------------------
-export ASAN_OPTIONS="detect_leaks=1:halt_on_error=0:abort_on_error=0:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:print_stats=1:log_threads=1"
+_detect_leaks=1
+[[ "${LEAKS}" == "off" ]] && _detect_leaks=0
+export ASAN_OPTIONS="detect_leaks=${_detect_leaks}:halt_on_error=0:abort_on_error=0:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:print_stats=1:log_threads=1"
 export UBSAN_OPTIONS="print_stacktrace=1:halt_on_error=0"
 export TSAN_OPTIONS="second_deadlock_stack=1:history_size=7:halt_on_error=0"
 [[ -f "${SUPP_DIR}/lsan.supp" ]] && export LSAN_OPTIONS="suppressions=${SUPP_DIR}/lsan.supp:print_suppressions=0"
@@ -151,7 +172,7 @@ configure_build() {
             -DAREG_COMPILER_FAMILY="${FAMILY}" \
             -DCMAKE_C_COMPILER="${CC_BIN}" \
             -DCMAKE_CXX_COMPILER="${CXX_BIN}" \
-            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_BUILD_TYPE="${CONFIG}" \
             -DAREG_LIB_TYPE="${LIBTYPE}" \
             -DAREG_TESTS=ON \
             -DAREG_EXAMPLES="${EXAMPLES}" \
@@ -190,6 +211,22 @@ do_run() {
         ctest)
             info "Running ctest in ${build_dir}"
             ( cd "${build_dir}" && "${prefix[@]}" ctest --output-on-failure ) ;;
+        examples|examples:*)
+            # The interesting defects live between processes, not inside one binary, so the
+            # scenario driver is what has to run under the sanitizer. Every process it
+            # starts inherits ASAN_OPTIONS, and its report goes to the captured output of
+            # that process, next to the output that shows what the application was doing.
+            local bin_dir="${build_dir}/product/bin"
+            [[ -d "${bin_dir}" ]] || bin_dir="$(dirname "$(find "${build_dir}" -type d -name bin | head -1)")/bin"
+            [[ -d "${bin_dir}" ]] || die "instrumented binaries not found; build with --examples --target all"
+            local out_dir="${build_dir}/example-results"
+            local only=()
+            [[ "${RUN}" == examples:* ]] && only=(--only "${RUN#examples:}")
+            info "Running the example scenarios from ${bin_dir}"
+            info "Reports and captured output: ${out_dir}"
+            "${prefix[@]}" python3 "${ROOT_DIR}/tools/run-all-examples.py" \
+                --bin-dir "${bin_dir}" --tier all --keep-logs \
+                --repeat "${REPEAT}" --out-dir "${out_dir}" "${only[@]}" ;;
         auto)
             local bin; bin="$(locate_binary "${build_dir}")"
             [[ -n "${bin}" ]] || die "Could not locate the '${TARGET}' binary; pass --run <path>."

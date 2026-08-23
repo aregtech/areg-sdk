@@ -50,20 +50,16 @@ This service will demonstrate how the system watchdog works in case of public se
         </Method>
     </MethodList>
     <ConstantList>
-        <Constant ID="34" Name="TimeoutWatchdog" DataType="uint32">
-            <Value>1000</Value>
+        <Constant ID="34" Name="TimeoutWatchdog" DataType="uint32" Value="1000">
             <Description>The timeout of the watchdog</Description>
         </Constant>
-        <Constant ID="35" Name="TimeoutStep" DataType="uint32">
-            <Value>300</Value>
+        <Constant ID="35" Name="TimeoutStep" DataType="uint32" Value="300">
             <Description>The step to increase sleep timeout.</Description>
         </Constant>
-        <Constant ID="36" Name="InitialSleepTimeout" DataType="uint32">
-            <Value>300</Value>
+        <Constant ID="36" Name="InitialSleepTimeout" DataType="uint32" Value="300">
             <Description>The initial timeout to sleep a thread.</Description>
         </Constant>
-        <Constant ID="38" Name="MaximumRestarts" DataType="uint32">
-            <Value>4</Value>
+        <Constant ID="38" Name="MaximumRestarts" DataType="uint32" Value="4">
             <Description>The maximum restarts of service.</Description>
         </Constant>
     </ConstantList>

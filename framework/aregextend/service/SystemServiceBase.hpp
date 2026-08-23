@@ -334,16 +334,6 @@ protected:
     virtual void print_help( bool isCmdLine ) = 0;
 
     /**
-     * \brief   Triggered to start the console service.
-     **/
-    virtual void start_console_service() = 0;
-
-    /**
-     * \brief   Stops the console service.
-     **/
-    virtual void stop_console_service() = 0;
-
-    /**
      * \brief   Triggered to receive a function to validate and check the input option values.
      **/
     virtual Console::CallBack option_check_callback() const = 0;

@@ -47,7 +47,7 @@ areg::ConfigProperty  _defaultReadonlyProperties[]
     , { {"log"      , "*"   , "file"    , "append"  }, "false"                          }   //!< The flag to append logs into the file.
     , { {"log"      , "*"   , "remote"  , "queue"   }, "100"                            }   //!< The queue size of remote logging.
     , { {"log"      , "*"   , "remote"  , "service" }, "logger"                         }   //!< The service name of the remote logging.
-    , { {"log"      , "*"   , "layout"  , "enter"   }, areg::DEFAULT_LAYOUT_SCOPE_EXIT  }   //!< The layout of enter scope message.
+    , { {"log"      , "*"   , "layout"  , "enter"   }, areg::DEFAULT_LAYOUT_SCOPE_ENTER  }   //!< The layout of enter scope message.
     , { {"log"      , "*"   , "layout"  , "message" }, areg::DEFAULT_LAYOUT_LOG_MESSAGE }   //!< The layout of log message.
     , { {"log"      , "*"   , "layout"  , "exit"    }, areg::DEFAULT_LAYOUT_SCOPE_EXIT  }   //!< The layout of exit scope message.
 
@@ -153,11 +153,11 @@ void Application::release()
     WatchdogManager::stop_watchdog_manager(false);
     TimerManager::stop_timer_manager(false);
     ComponentLoader::unload_component_model(false, String::EmptyString);
-    ServiceManager::_stop_service_manager(false); // the message routing client is automatically stopped.
 
     WatchdogManager::wait_watchdog_manager();
     TimerManager::wait_timer_manager();
     ComponentLoader::wait_model_unload(String::EmptyString);
+    ServiceManager::_stop_service_manager(false); // the message routing client is automatically stopped.
     ServiceManager::_wait_service_manager();
     // Stop the last to collect logs.
     areg::stop_logging(false); 

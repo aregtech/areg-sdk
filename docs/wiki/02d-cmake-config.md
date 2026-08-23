@@ -711,7 +711,7 @@ target_link_libraries(myapp PRIVATE areg::areg)
 
 **Target Processor:**
 - `AREG_ARCH` enables cross-compilation
-- See [Cross-Compiling Guide](./02b-cmake-build.md#cross-compilation) for details
+- See [Cross-Compiling Guide](./01b-cmake-build.md#cross-compilation) for details
 
 **Custom Output Directories:**
 - `AREG_BUILD_DIR` sets location for all build artifacts
@@ -727,7 +727,7 @@ target_link_libraries(myapp PRIVATE areg::areg)
 ## Additional Resources
 
 **Build Guides:**
-- [CMake Build Guide](./02b-cmake-build.md) - Step-by-step build instructions
+- [CMake Build Guide](./01b-cmake-build.md) - Step-by-step build instructions
 - [CMake Integration](./02b-cmake-integrate.md) - Using Areg in your projects
 - [vcpkg Installation](./02e-cmake-vcpkg.md) - Package manager installation
 

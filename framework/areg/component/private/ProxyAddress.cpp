@@ -29,12 +29,6 @@ namespace {
 // Predefined constants
 //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   The name of invalid proxy.
-     *          None of service interfaces should contain this name.
-     **/
-    constexpr std::string_view  INVALID_PROXY_NAME      { "INVALID_PROXY" };
-
-    /**
      * \brief   ProxyAddress::EXTENTION_PROXY
      *          Extension, used in the path to convert Proxy Address to string object.
      **/

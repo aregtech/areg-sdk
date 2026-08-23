@@ -9,6 +9,7 @@ This document outlines solutions to common issues encountered while updating the
 1. [Issue 1: Update Error Code](#issue-1-update-error-code)
 2. [Issue 2: Network Resolution (DNS) Issues](#issue-2-network-resolution-dns-issues)
 3. [Issue 3: Configuring Communication Between Windows and WSL](#issue-3-configuring-communication-between-windows-and-wsl)
+4. [Issue 4: WSL Networking Mode Degrades the Windows Host Network](#issue-4-wsl-networking-mode-degrades-the-windows-host-network)
 
 ---
 
@@ -454,13 +455,109 @@ For further details on configuring network communication between Windows and WSL
 
 ---
 
+## Issue 4: WSL Networking Mode Degrades the Windows Host Network
+
+### Symptoms
+
+The Windows host itself becomes slow on the network, while WSL and Areg SDK applications
+may look perfectly healthy. Typical signs:
+
+- Large ping jitter to the default gateway or to any device on the LAN (for example, a rise
+  from single-digit milliseconds to well over 100 ms).
+- Network printers, NAS shares or other LAN devices become extremely slow or time out.
+- Wi-Fi throughput drops sharply even though the adapter reports a normal link speed.
+- `mtrouter` and `logcollector` still work over `localhost`, so the problem does not look
+  like an Areg SDK issue at first.
+
+### Background
+
+WSL supports several networking modes, selected in `%USERPROFILE%\.wslconfig`. **Bridged**
+mode (and, on some systems, mirrored mode) creates a Hyper-V virtual switch and attaches it
+to a physical adapter. All host traffic for that adapter is then routed through the virtual
+switch.
+
+> [!IMPORTANT]
+> Changing `.wslconfig` back to the default NAT mode does **not** remove the virtual switch
+> or the network bridge that the previous mode created. They persist across reboots and keep
+> intercepting host traffic. This is the usual reason the problem outlives the configuration
+> change that caused it.
+
+### Diagnosing
+
+Run the following in **PowerShell as administrator**:
+
+```powershell
+# List Hyper-V virtual switches. A bridged/external switch bound to your Wi-Fi or
+# Ethernet adapter is the one to look at.
+Get-VMSwitch | Format-Table Name, SwitchType, NetAdapterInterfaceDescription -AutoSize
+
+# List network adapters, including any bridge created by Windows.
+Get-NetAdapter | Format-Table Name, InterfaceDescription, Status, LinkSpeed -AutoSize
+```
+
+Compare latency with and without the switch present:
+
+```powershell
+ping -n 20 <your-default-gateway>
+```
+
+Consistently high or erratic round-trip times, together with an external virtual switch bound
+to the adapter you actually use, confirm the diagnosis.
+
+### Solution
+
+1. Confirm the intended networking mode in `%USERPROFILE%\.wslconfig`:
+
+   ```ini
+   [wsl2]
+   networkingMode=NAT
+   ```
+
+2. Shut WSL down:
+
+   ```powershell
+   wsl --shutdown
+   ```
+
+3. Remove the leftover virtual switch (**administrator**, adjust the name to what
+   `Get-VMSwitch` reported):
+
+   ```powershell
+   Remove-VMSwitch -Name "<switch-name>" -Force
+   ```
+
+4. Remove any leftover **Network Bridge**. Open `ncpa.cpl`, right-click the adapter named
+   *Network Bridge*, and delete it. This step is separate from removing the virtual switch and
+   is easy to miss.
+
+5. Reboot, then re-measure latency to the gateway.
+
+> [!TIP]
+> If you need WSL to be reachable from other machines on the LAN, prefer mirrored mode or
+> port forwarding over bridged mode. See
+> [Issue 3](#issue-3-configuring-communication-between-windows-and-wsl) for configuring
+> Areg SDK services across the Windows and WSL boundary.
+
+### Relevance to Areg SDK
+
+A degraded host network changes what performance measurements mean. Before investigating an
+apparent throughput or latency regression in `mtrouter`, `logcollector` or any Areg SDK
+application, rule this out -- otherwise the numbers describe the host network, not the
+framework. See also
+[Network Tuning Troubleshooting](./07d-troubleshooting-network-tunning.md).
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
 ## Summary
 
-This document covered three main categories of WSL issues:
+This document covered four main categories of WSL issues:
 
 1. **Update Errors**: Service initialization failures resolved by updating or reinstalling WSL
 2. **DNS Issues**: Network resolution problems fixed by configuring DNS servers
 3. **Windows-WSL Communication**: Cross-platform service connectivity configured via IP addresses
+4. **Host Network Degradation**: Leftover virtual switches and bridges from a previous WSL networking mode slowing down the Windows host itself
 
 ### Key Takeaways
 

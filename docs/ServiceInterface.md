@@ -271,7 +271,7 @@ addServiceInterface(MyService_generated services/MyService.siml)
 
 This creates a static library containing the generated code.
 
-For details, see the [Code Generator Guide](./wiki/03a-code-generator.md).
+For details, see the [Code Generator Guide](./wiki/06b-code-generator.md).
 
 ---
 

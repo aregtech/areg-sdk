@@ -60,9 +60,6 @@
     <ClCompile Include="aregextend\service\private\SystemServiceBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="aregextend\console\private\SystemServiceConsole.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="aregextend\db\private\SqliteDatabase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -137,9 +134,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="aregextend\service\SystemServiceBase.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="aregextend\console\SystemServiceConsole.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="aregextend\db\SqliteDatabase.hpp">

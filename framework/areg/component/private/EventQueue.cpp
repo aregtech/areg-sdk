@@ -45,8 +45,9 @@ EventQueue::EventQueue(uint32_t maxQueue, bool dropOnFull /*= false*/, uint32_t 
     , mPrioCount        ( 0u )
     , mQueueEvent       ( true, false )     // manual-reset, initially non-signaled
     , mConsumerParked   ( false )
-    , mExitTriggered    ( false )
+    , mExitState        ( EventQueue::EXIT_NONE )
     , mSlotEvent        ( true, true )      // auto-reset, initially non-signaled
+    , mMaxWaitMs        ( 0u )
     , mProducersWaiting ( 0u )
 {
     mRing = new Cell[mCapacity];
@@ -67,8 +68,9 @@ EventQueue::EventQueue( areg::NullTag ) noexcept
     , mPrioCount        ( 0u )
     , mQueueEvent       ( areg::NullTag{} )     // no OS handle
     , mConsumerParked   ( false )
-    , mExitTriggered    ( false )
+    , mExitState        ( EventQueue::EXIT_NONE )
     , mSlotEvent        ( areg::NullTag{} )     // no OS handle
+    , mMaxWaitMs        ( 0u )
     , mProducersWaiting ( 0u )
 {
 }
@@ -88,8 +90,7 @@ bool EventQueue::wait_event(uint32_t timeout /*= areg::WAIT_INFINITE*/) noexcept
     if (has_pending())
         return true;
 
-    // Lost-wakeup-free eventcount: reset the doorbell, then re-check under a full
-    // fence so a push that raced the reset is never missed.
+    // Lost-wakeup-free eventcount: reset the doorbell, then re-check
     mQueueEvent.reset();
     mConsumerParked.store(true, std::memory_order_relaxed);
     std::atomic_thread_fence(std::memory_order_seq_cst);
@@ -115,10 +116,10 @@ inline void EventQueue::_wake_consumer() noexcept
 // EventQueue - push
 //////////////////////////////////////////////////////////////////////////
 
-void EventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullptr*/)
+bool EventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullptr*/)
 {
     if (mRing == nullptr)
-        return;
+        return false;
 
     const areg::EventPriority prio{ eventElem.event_priority() };
 
@@ -126,31 +127,35 @@ void EventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullptr*/)
     {
         // Exit is a sticky flag, never queued; the caller's event is dropped by its owner.
         trigger_exit();
-        return;
+        return true;
     }
 
     if (prio >= areg::EventPriority::HighPrio)
     {
         Lock lock(mPrioLock);
         auto it = mPrioQueue.begin();
-        while (it != mPrioQueue.end() && it->event_priority() > prio)
+        while (it != mPrioQueue.end() && it->event_priority() >= prio)
             ++it;
 
         mPrioQueue.insert(it, std::move(eventElem));
         mPrioCount.store(static_cast<uint32_t>(mPrioQueue.size()), std::memory_order_relaxed);
         _wake_consumer();
-        return;
+        return true;
     }
 
     // Normal-priority: bounded ring (drop or block per policy).
     if (_ring_enqueue(eventElem))
     {
         _wake_consumer();
+        return true;
     }
-    else if (removedEvent != nullptr)
+
+    if (removedEvent != nullptr)
     {
         *removedEvent = std::move(eventElem);   // not enqueued: hand back to caller
     }
+
+    return false;
 }
 
 uint32_t EventQueue::push_events(Event* eventElems, uint32_t count)
@@ -180,8 +185,9 @@ uint32_t EventQueue::push_events(Event* eventElems, uint32_t count)
             }
             else if (prio >= areg::EventPriority::HighPrio)
             {
+                // '>=' keeps equal priorities in posting order -- see push_event().
                 auto it = mPrioQueue.begin();
-                while (it != mPrioQueue.end() && it->event_priority() > prio)
+                while (it != mPrioQueue.end() && it->event_priority() >= prio)
                     ++it;
 
                 mPrioQueue.insert(it, std::move(evt));
@@ -237,8 +243,8 @@ Event EventQueue::pop_event() noexcept
     if (mRing == nullptr)
         return Event{};
 
-    // Exit preempts everything
-    if (mExitTriggered.load(std::memory_order_acquire))
+    // Immediate exit preempts everything
+    if (is_exit_triggered())
         return ExitEvent::exit_event();
 
     // Priority lane: always drained before the ring.
@@ -258,6 +264,9 @@ Event EventQueue::pop_event() noexcept
     if (_ring_try_dequeue(result))
         return result;
 
+    if ((mExitState.load(std::memory_order_acquire) & EventQueue::EXIT_DRAINED) != 0u)
+        return ExitEvent::exit_event();
+
     return Event{};
 }
 
@@ -266,8 +275,8 @@ uint32_t EventQueue::pop_events(Event* eventElems, uint32_t count)
     if ((eventElems == nullptr) || (count == 0u) || (mRing == nullptr))
         return 0u;
 
-    // Exit preempts every lane
-    if (mExitTriggered.load(std::memory_order_acquire))
+    // Immediate exit preempts every lane
+    if (is_exit_triggered())
     {
         eventElems[0] = ExitEvent::exit_event();
         return 1u;
@@ -294,6 +303,12 @@ uint32_t EventQueue::pop_events(Event* eventElems, uint32_t count)
         if (!_ring_try_dequeue(eventElems[popped]))
             break;
         ++popped;
+    }
+
+    if ((popped == 0u) && ((mExitState.load(std::memory_order_acquire) & EventQueue::EXIT_DRAINED) != 0u))
+    {
+        eventElems[0] = ExitEvent::exit_event();
+        popped = 1u;
     }
 
     return popped;
@@ -327,9 +342,7 @@ void EventQueue::remove_events(const uint32_t eventClassId) noexcept
         mPrioCount.store(static_cast<uint32_t>(mPrioQueue.size()), std::memory_order_relaxed);
     }
 
-    // Drain the ring: keep non-matching events; a matching event is released by the Event
-    // destructor at the end of its iteration. 'evt' MUST stay loop-scoped -- hoisting it out
-    // would let the next move-assignment overwrite a match without running its destructor.
+    // Drain the ring, keep non-matching events
     std::vector<Event> kept;
     for (;;)
     {
@@ -343,10 +356,7 @@ void EventQueue::remove_events(const uint32_t eventClassId) noexcept
 
     for (Event& e : kept)
     {
-        // The ring was just fully drained and no producer runs concurrently, so a free
-        // slot is guaranteed -- the enqueue cannot fail.
-        [[maybe_unused]] const bool ok{ _ring_try_enqueue(e) };
-        ASSERT(ok);
+        VERIFY(_ring_try_enqueue(e));
     }
 }
 
@@ -419,12 +429,14 @@ bool EventQueue::_ring_enqueue(Event& eventElem) noexcept
         return false;   // drop-newest
 
     // Lossless: block up to mWaitMs for a free slot; abortable by exit.
-    const auto deadline{ std::chrono::steady_clock::now() + std::chrono::milliseconds(mWaitMs) };
+    const auto waitBegin{ std::chrono::steady_clock::now() };
+    const auto deadline{ waitBegin + std::chrono::milliseconds(mWaitMs) };
     mProducersWaiting.fetch_add(1u, std::memory_order_relaxed);
     bool enqueued{ false };
     for (;;)
     {
-        if (mExitTriggered.load(std::memory_order_acquire))
+        // Only the immediate exit aborts the wait.
+        if (is_exit_triggered())
             break;
         if (_ring_try_enqueue(eventElem))
         {
@@ -436,6 +448,16 @@ bool EventQueue::_ring_enqueue(Event& eventElem) noexcept
         mSlotEvent.lock(RING_WAIT_RECHECK_MS);   // woken by a consumer pop or the re-check timeout
     }
     mProducersWaiting.fetch_sub(1u, std::memory_order_relaxed);
+
+    // Only recorded, never logged here: this queue also serves the log manager.
+    const uint32_t waited{ static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(
+                               std::chrono::steady_clock::now() - waitBegin).count()) };
+    uint32_t recorded{ mMaxWaitMs.load(std::memory_order_relaxed) };
+    while ((waited > recorded) &&
+           (mMaxWaitMs.compare_exchange_weak(recorded, waited, std::memory_order_relaxed) == false))
+    {
+    }
+
     return enqueued;
 }
 

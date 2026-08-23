@@ -78,7 +78,7 @@ const areg::ext::OptionParser::OptionSetup Publisher::ValidOptions[]
 
 Publisher::Publisher( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : areg::Component         ( entry, owner )
-    , PubSubProviderBase        ( static_cast<areg::Component &>(self()) )
+    , PubSubProviderBase        ( static_cast<areg::Component &>(*this) )
     , areg::TimerConsumer   ( )
     , areg::ThreadConsumer  ( )
 

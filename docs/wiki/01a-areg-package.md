@@ -363,9 +363,9 @@ Should output Java version 17 or higher. If not, install from [Adoptium](https:/
 
 After successfully installing Areg SDK with vcpkg:
 
-1. **Explore Examples:** [Areg SDK Examples](https://github.com/aregtech/areg-sdk/tree/master/examples)
+1. **Explore Examples:** [Areg SDK Examples](../../examples)
 2. **Learn Service Design:** [Service Interface Guide](./06d-setup-lusan.md)
-3. **Build Distributed Apps:** [IPC and Networking](./05a-mtrouter.md)
+3. **Build Distributed Apps:** [IPC and Networking](./03a-mtrouter.md)
 4. **Integration Options:** [CMake FetchContent](./02b-cmake-integrate.md) for source-based integration
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
@@ -376,8 +376,8 @@ After successfully installing Areg SDK with vcpkg:
 
 - [vcpkg Official Documentation](https://vcpkg.io/en/getting-started.html)
 - [Areg SDK GitHub Repository](https://github.com/aregtech/areg-sdk)
-- [CMake Configuration Guide](./02a-cmake-config.md)
-- [Building Areg SDK from Source](./02b-cmake-build.md)
+- [CMake Configuration Guide](./02d-cmake-config.md)
+- [Building Areg SDK from Source](./01b-cmake-build.md)
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 

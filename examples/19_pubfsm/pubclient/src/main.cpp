@@ -30,7 +30,7 @@
 
 #ifdef _WINDOWS
     #define MACRO_SCANF(fmt, data, len)     scanf_s(fmt, data, len)
-#else   // _POSIX
+#else   // POSIX
     #define MACRO_SCANF(fmt, data, len)     scanf(fmt, data)
 #endif  // _WINDOWS
 

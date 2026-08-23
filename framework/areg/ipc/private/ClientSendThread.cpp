@@ -21,8 +21,11 @@
 #include "areg/base/MessageEnvelope.hpp"
 
 #include "areg/base/private/DebugDefs.hpp"
+#include "areg/logging/areg_log.h"
 
 namespace areg {
+
+DEF_LOG_SCOPE(areg_ipc_private_ClientSendThread, report_producer_wait);
 
 ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String& namePrefix )
     : DispatcherThread  ( namePrefix + areg::CLIENT_SEND_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_BIG, areg::SEND_THREAD_QUEUE_LIMIT )
@@ -33,6 +36,9 @@ ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientCo
     , mSendStats        ( )
     , mDrain            ( )
     , mIoBuffer         ( )
+    , mIsClosing        ( false )
+    , mSendGate         ( )
+    , mDrainLimit       ( areg::DEFAULT_DRAIN_LIMIT )
 {
 }
 
@@ -40,6 +46,10 @@ void ClientSendThread::ready_for_events( bool is_ready )
 {
     if ( is_ready )
     {
+        // The flag belongs to the connection this thread is about to serve, not to the
+        // one it served before.
+        mIsClosing.store(false, std::memory_order_relaxed);
+        mDrainLimit = areg::send_batch_limit();
         areg::set_receive_mode(areg::ReceiveMode::MonoCache);
         DispatcherThread::ready_for_events( true );
     }
@@ -79,7 +89,7 @@ void ClientSendThread::start_event_processing( Event & eventElem )
 
     // Drain further queued events into the same batch (one OS send) via a single dequeue window.
     // The single-message ping-pong case drains nothing and touches no mDrain slot.
-    const uint32_t drained{ pop_events(mEvents, areg::DEFAULT_DRAIN_LIMIT - bufCount) };
+    const uint32_t drained{ pop_events(mEvents, mDrainLimit - bufCount) };
     for ( uint32_t k{ 0u }; k < drained; ++k, ++bufCount )
     {
         Event& evt{ mEvents[k] };
@@ -88,6 +98,7 @@ void ClientSendThread::start_event_processing( Event & eventElem )
             for ( uint32_t i{ 1u }; i < bufCount; ++i )
                 mDrain[i].reset();
 
+            mSendGate.leave(bufCount);
             mConnection.close_socket();
             trigger_exit();
             return;
@@ -107,6 +118,9 @@ void ClientSendThread::start_event_processing( Event & eventElem )
         evt.destroy_event();                               // release the mEvents slot; mDrain keeps the buffer alive
     }
 
+    // Single writer per socket: the whole batch below must reach the wire uninterrupted.
+    areg::SocketWriteGuard writeGuard{ mConnection.socket().handle() };
+
     if ( totalSize <= areg::MAX_SEND_BATCH_BYTES )
     {
         int32_t sentBytes{ 0 };
@@ -117,7 +131,7 @@ void ClientSendThread::start_event_processing( Event & eventElem )
 
         if ( sentBytes > 0 )
             accumulate_sent( static_cast<uint64_t>(sentBytes), bufCount );
-        else
+        else if ( !mIsClosing.load(std::memory_order_relaxed) )
             mRemoteService.failed_send_message( eventElem.envelope(), mConnection.socket() );
     }
     else
@@ -140,7 +154,7 @@ void ClientSendThread::start_event_processing( Event & eventElem )
 
             if ( sentBytes > 0 )
                 accumulate_sent( static_cast<uint64_t>(sentBytes), end - start );
-            else
+            else if ( !mIsClosing.load(std::memory_order_relaxed) )
                 mRemoteService.failed_send_message( eventElem.envelope(), mConnection.socket() );
 
             start = end;
@@ -150,6 +164,24 @@ void ClientSendThread::start_event_processing( Event & eventElem )
     // Release retained drained buffers (slot 0 is owned by the caller). Keeps mDrain allocated for reuse.
     for ( uint32_t i{ 1u }; i < bufCount; ++i )
         mDrain[i].reset();
+
+    // The gate opens only after the write, never before it.
+    mSendGate.leave(bufCount);
+
+    const uint32_t waitedMs{ extract_max_producer_wait_ms() };
+    if ( waitedMs >= areg::QUEUE_WAIT_WARN_MS )
+    {
+        LOG_SCOPE(areg_ipc_private_ClientSendThread, report_producer_wait);
+        LOG_WARN("Send queue was full: a producer waited [ %u ] ms for a free slot", waitedMs);
+    }
+}
+
+void ClientSendThread::report_failed_send(const areg::MessageEnvelope & msgFailed, areg::Socket & whichTarget)
+{
+    if ( mIsClosing.load(std::memory_order_relaxed) == false )
+    {
+        mRemoteService.failed_send_message( msgFailed, whichTarget );
+    }
 }
 
 bool ClientSendThread::post_event( Event & eventElem )

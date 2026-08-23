@@ -149,17 +149,15 @@
         </Method>
     </MethodList>
     <ConstantList>
-        <Constant ID="46" Name="InvalidCookie" DataType="uint32">
-            <Value>chat::InvalidCookie</Value>
+        <Constant ID="46" Name="InvalidCookie" DataType="uint32" Value="0">
             <Description>Indicates invalid cookie value</Description>
         </Constant>
-        <Constant ID="47" Name="NicknameMaxLen" DataType="uint32">
-            <Value>chat::MaxlenNickname</Value>
+        <Constant ID="47" Name="NicknameMaxLen" DataType="uint32" Value="64">
             <Description>The maximum length of nick name to register.</Description>
         </Constant>
     </ConstantList>
     <IncludeList>
-        <Location ID="59" Name="common/ChatDefs.hpp">
+        <Location ID="71" Name="common/ChatDefs.hpp">
             <Description>Shared data.</Description>
         </Location>
     </IncludeList>

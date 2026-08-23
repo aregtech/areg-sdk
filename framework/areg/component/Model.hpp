@@ -1515,6 +1515,7 @@ class AREG_API Model
     {
           Initialized
         , Loaded
+        , Unloading   //!< Threads were asked to exit, none of them is joined yet.
         , Unloaded
     };
 
@@ -1592,10 +1593,19 @@ public:
     bool has_registered_component( const String & roleName ) const noexcept;
 
     /**
-     * \brief   Returns true if the model is loaded; false otherwise.
+     * \brief   Returns true if the model is loaded; false otherwise. A model whose threads
+     *          were asked to exit is no longer loaded, even before they are all joined.
      **/
     [[nodiscard]]
     bool is_model_loaded() const noexcept;
+
+    /**
+     * \brief   Returns true if the threads of the model were asked to exit and are not
+     *          joined yet, which is the state between a unload that does not wait and the
+     *          call that waits for it.
+     **/
+    [[nodiscard]]
+    bool is_model_unloading() const noexcept;
 
     /**
      * \brief   Returns the list of thread entries registered in the model.
@@ -1609,6 +1619,13 @@ public:
      * \param   isLoaded    If true, marks the model as loaded; if false, marks it as unloaded.
      **/
     void mark_model_loaded( bool isLoaded = true ) noexcept;
+
+    /**
+     * \brief   Marks the model as unloading. Use it when the threads were asked to exit but
+     *          none of them is joined yet, so that the model is no longer reported as loaded
+     *          while the call that waits for the threads still has work to do.
+     **/
+    void mark_model_unloading() noexcept;
 
     /**
      * \brief   Marks the model as alive and starts the timer, or stops the timer when no longer

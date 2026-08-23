@@ -18,7 +18,7 @@
 #ifdef _WINDOWS
     #define MACRO_SCANF(fmt, data, len)     scanf_s(fmt, data, len)
     #define MACRO_SCANFX(fmt, data)         scanf_s(fmt, data)
-#else   // _POSIX
+#else   // POSIX
     #define MACRO_SCANF(fmt, data, len)     scanf(fmt, data)
     #define MACRO_SCANFX(fmt, data)         scanf(fmt, data)
 #endif  // _WINDOWS

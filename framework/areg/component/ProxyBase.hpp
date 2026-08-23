@@ -552,6 +552,15 @@ public:
     void terminate_self();
 
     /**
+     * \brief   Removes this proxy from the proxy map and from the thread proxy map, so that
+     *          acquire_proxy() can no longer hand it out. Called when the owner dispatcher
+     *          thread is released: mDispatcherThread is a reference to it, and a proxy left
+     *          in the maps would carry a released thread behind it. Does nothing if the
+     *          proxy is not registered. The last shared reference destroys the object.
+     **/
+    void detach_from_registry();
+
+    /**
      * \brief   Registers or updates a notification listener. Requests the stub to start notifications
      *          if this is the first listener, or sends an immediate update if listeners already exist.
      *
@@ -572,6 +581,8 @@ public:
 
     /**
      * \brief   Clears all notifications for the specified listener and unregisters it.
+     *          The service connection notification is not affected, the caller keeps
+     *          being informed when the service provider goes down and comes back.
      * \param   caller      The notification consumer object to unregister.
      **/
     inline void clear_all_notifications(NotificationConsumer& caller);
@@ -700,7 +711,8 @@ protected:
 
     /**
      * \brief   Removes a listener and all its associated notifications. Notifies the stub to stop
-     *          sending events if no other listeners remain.
+     *          sending events if no other listeners remain. The service connection notification
+     *          is kept, it belongs to acquire_proxy() and free_proxy().
      *
      * \param   consumer    The listener to unregister.
      **/

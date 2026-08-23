@@ -51,16 +51,13 @@ class AREG_API WorkerThread final : public DispatcherThread
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes a worker thread but does not start it; call appropriate create method to
-     *          start.
+     * \brief   Initializes a worker thread but does not start it; call appropriate create method to start
      *
      * \param   threadName          Unique thread name.
      * \param   bindingComponent    Master component that owns this worker thread.
      * \param   threadConsumer      Callback handler for thread lifecycle events.
-     * \param   watchdogTimeout     Watchdog timeout in milliseconds; 0 (WATCHDOG_IGNORE) disables
-     *                              the watchdog.
-     * \param   stackSizeKb         Stack size in kilobytes; 0 (DEFAULT_STACK_SIZE) uses system
-     *                              default.
+     * \param   watchdogTimeout     Watchdog timeout in milliseconds; 0 (WATCHDOG_IGNORE) disables the watchdog.
+     * \param   stackSizeKb         Stack size in kilobytes; 0 (DEFAULT_STACK_SIZE) uses system default.
      * \param   maxQueue            Event-queue ring capacity; areg::IGNORE_VALUE (0) reads the value
      *                              from configuration, falling back to the built-in default.
      * \param   dropOnFull          Full-ring policy. areg::Bool::True drops the incoming event when the
@@ -76,8 +73,8 @@ public:
                 , uint32_t watchdogTimeout  = areg::WATCHDOG_IGNORE
                 , uint32_t stackSizeKb      = areg::DEFAULT_STACK_SIZE
                 , uint32_t maxQueue         = areg::IGNORE_VALUE
-                , areg::Bool dropOnFull      = areg::Bool::Undefined
-                , uint32_t waitMs            = areg::WAIT_INFINITE );
+                , areg::Bool dropOnFull     = areg::Bool::Undefined
+                , uint32_t waitMs           = areg::WAIT_INFINITE );
 
     virtual ~WorkerThread() = default;
 
@@ -98,9 +95,21 @@ public:
     ComponentThread & binding_component_thread() const;
 
     /**
-     * \brief   Terminates the worker thread in an emergency; use only when necessary.
+     * \brief   Stops the worker thread and deletes the thread object.
+     *
+     * \return  True if the thread stopped and the object was deleted.
+     *          False if it could not be stopped: it keeps running and is not released.
      **/
-    void terminate_self();
+    bool terminate_self();
+
+    /**
+     * \brief   Takes this worker thread out of the thread maps and stops its watchdog, without
+     *          waiting for it and without deleting it. After the call its name is free and it
+     *          answers no lookup, while the thread itself keeps running.
+     *
+     * \see     ComponentThread::terminate_self, Thread::detach_from_registry
+     **/
+    void detach_from_registry();
 
     /**
      * \brief   Returns the watchdog timeout in milliseconds; 0 means watchdog is disabled.
@@ -155,8 +164,8 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Wraps the base dispatch with watchdog guard calls so the watchdog can detect a
-     *          stuck event handler.
+     * \brief   Wraps the base dispatch with watchdog guard calls so the watchdog can detect
+     *          a stuck event handler.
      *
      * \param   eventElem       Event to dispatch.
      * \return  True if at least one consumer processed the event; false otherwise.

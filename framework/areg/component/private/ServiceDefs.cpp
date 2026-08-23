@@ -139,9 +139,7 @@ void areg::ParameterArray::construct( const uint32_t * params, uint32_t count ) 
         {
             param = reinterpret_cast<areg::StateArray *>(paramElem);
             new (param) areg::StateArray(paramElem + sizeof(areg::StateArray), static_cast<int32_t>(params[i]));
-
-            uint32_t next = static_cast<uint32_t>(sizeof(areg::StateArray) + params[i] * sizeof(areg::DataState));
-            paramElem += next;
+            paramElem += param_entry_space(params[i]);
         }
 
         // make sure that do not jump over the buffer

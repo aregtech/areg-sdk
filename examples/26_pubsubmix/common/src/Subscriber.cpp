@@ -65,6 +65,10 @@ bool Subscriber::service_connected( areg::ServiceConnectionState status, areg::P
         else
         {
             console.output_msg(pubsub::CoordStatus, pubsub::FormatDisconnect.data(), areg::as_string(status));
+            if ((status == areg::ServiceConnectionState::Shutdown) || (status == areg::ServiceConnectionState::Rejected) )
+            {
+                areg::Application::signal_quit();
+            }
         }
     }
 

@@ -57,6 +57,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     LinkedListTest.cpp
     LogScopesTest.cpp
     MapTest.cpp
+    MultiLockTest.cpp
     OptionParserTest.cpp
     RingStackTest.cpp
     SharedBufferTest.cpp

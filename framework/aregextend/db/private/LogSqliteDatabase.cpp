@@ -53,11 +53,13 @@ namespace {
             ");"
     };
 
-    //! A string format to generate INSERT statement to insert a new entry in the version.
+    //! A statement to insert a new entry in the version table.
     //! Normally, this is the only entry in the version table.
-    constexpr std::string_view  _fmtVersion
+    //! The text values are bound, never placed in the statement: the database name comes
+    //! from the configuration and the command line, see CWE-89.
+    constexpr std::string_view  _sqlInsertVersion
     {
-        "INSERT INTO version (name, version, describe, created_by, db_name, time_created) VALUES (\'%s\', \'%s\', \'%s\', \'%s\', \'%s\', %llu);"
+        "INSERT INTO version (name, version, describe, created_by, db_name, time_created) VALUES (?, ?, ?, ?, ?, ?);"
     };
 
     //! Create a table with the information about connected log source instances.
@@ -78,25 +80,27 @@ namespace {
             ");"
     };
 
-    //! A string format to generate INSERT statement to insert a new entry in the instances table.
+    //! A statement to insert a new entry in the instances table.
     //! It is called when a new log source instance is connecting to the log collector service.
     //! Each entry is a logging source process with unique cookie ID and the field indicating
     //! when the instance was connected or disconnected.
-    constexpr std::string_view _fmtInstance
+    //! The name and the location are bound, never placed in the statement: they are sent by
+    //! the remote log source, see CWE-89.
+    constexpr std::string_view _sqlInsertInstance
     {
         "INSERT INTO instances "
         "(cookie_id, inst_connect, inst_type, inst_bits, inst_name, inst_location, time_connected, time_updated) "
         "VALUES "
-        "(%u, 1, %u, %u, \'%s\', \'%s\', %llu, %llu);"
+        "(?, 1, ?, ?, ?, ?, ?, ?);"
     };
 
-    //! A string format to generate UPDATE statement to update instance entry.
+    //! A statement to update an instance entry.
     //! It is called when a log source instance disconnects from log collector service
     //! of when the log observer disconnects / stops running.
     //! It updates the disconnect time for the instance with specified cookie ID.
-    constexpr std::string_view _fmtUpdInstance
+    constexpr std::string_view _sqlUpdInstance
     {
-        "UPDATE instances SET inst_connect = 0, time_disconnected = %llu, time_updated = %llu WHERE cookie_id = %u AND time_disconnected IS NULL;"
+        "UPDATE instances SET inst_connect = 0, time_disconnected = ?, time_updated = ? WHERE cookie_id = ? AND time_disconnected IS NULL;"
     };
 
     //! Create a table with the information about scopes of connected instances.
@@ -118,31 +122,26 @@ namespace {
             ");"
     };
 
-    //! A string format to generate INSERT statement to insert an information about scope.
-    //! It is called when registering or updating scope list of the connected application.
-    constexpr std::string_view _fmtScopes
-    {
-        "INSERT INTO scopes (scope_id, cookie_id, scope_is_active, scope_prio, scope_name, time_received)  VALUES (%u, %u, 1, %u, \'%s\', %llu);"
-    };
-
-    //! A string to generate INSERT statement to insert a new scope in the scopes table.
+    //! A statement to insert a new scope in the scopes table.
+    //! The scope name is bound, never placed in the statement: it is sent by the remote
+    //! log source, see CWE-89.
     constexpr std::string_view _sqlInsertScope
     {
         "INSERT INTO scopes (scope_id, cookie_id, scope_is_active, scope_prio, scope_name, time_received)  VALUES (?, ?, 1, ?, ?, ?);"
     };
 
-    //! A string format to generate UPDATE statement to update the scope state of a connected instance.
+    //! A statement to update the scope state of a connected instance.
     //! The script will mark all scopes of specified cookie ID as inactive.
-    constexpr std::string_view _fmtUpdScopes
+    constexpr std::string_view _sqlUpdScopes
     {
-        "UPDATE scopes SET time_inactivated = %llu, scope_is_active = 0 WHERE cookie_id = %u AND scope_is_active = 1;"
+        "UPDATE scopes SET time_inactivated = ?, scope_is_active = 0 WHERE cookie_id = ? AND scope_is_active = 1;"
     };
 
-    //! A string format to generate UPDATE statement to update the activation state of a single scope.
+    //! A statement to update the activation state of a single scope.
     //! The script will mark the specified scope of the specified cookie as inactive.
-    constexpr std::string_view _fmtUpdScope
+    constexpr std::string_view _sqlUpdScope
     {
-        "UPDATE scopes SET time_inactivated = %llu, scope_is_active = 0 WHERE cookie_id = %u AND scope_id = %u AND scope_is_active = 1;"
+        "UPDATE scopes SET time_inactivated = ?, scope_is_active = 0 WHERE cookie_id = ? AND scope_id = ? AND scope_is_active = 1;"
     };
 
     //! Create a table with logs that contain information of application cookie ID,
@@ -168,16 +167,9 @@ namespace {
             ");"
     };
 
-    //! A string format to create INSERT statement to insert new log message in the logs table.
-    constexpr std::string_view _fmtLog
-    {
-        "INSERT INTO logs "
-        "(cookie_id, scope_id, session_id, msg_type, msg_prio, msg_module_id, msg_thread_id, msg_log, msg_thread, msg_module, time_created, time_received, time_duration)"
-        "VALUES "
-        "(%u, %u, %u, %u, %u, %llu, %llu, \'%s\', \'%s\', \'%s\', %llu, %llu, %u);"
-    };
-
-    //! A string format to create INSERT statement to insert new log message in the logs table.
+    //! A statement to insert a new log message in the logs table.
+    //! The message, the thread name and the module name are bound, never placed in the
+    //! statement: they are sent by the remote log source, see CWE-89.
     constexpr std::string_view _sqlInsertLog
     {
         "INSERT INTO logs "
@@ -306,9 +298,18 @@ namespace {
         "SELECT COUNT(cookie_id) from instances;"
     };
 
+    //! A statement to check whether a table exists in the main schema.
+    //! The table name is bound, never placed in the statement, see CWE-89.
     constexpr std::string_view _sqlCheckTable
     {
-        "SELECT name FROM %s WHERE type = \'table\' AND name = \'%s\';"
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?;"
+    };
+
+    //! The same check against the temporary schema. A schema name is an SQL identifier and
+    //! cannot be bound, so the two names SQLite defines are spelled out instead.
+    constexpr std::string_view _sqlCheckTempTable
+    {
+        "SELECT name FROM sqlite_temp_master WHERE type = 'table' AND name = ?;"
     };
 
     constexpr std::string_view _sqlCreateTempScopes
@@ -403,13 +404,36 @@ namespace {
         "UPDATE filter_rules SET log_mask = 0;"
     };
 
+    //! A statement to drop a table. A table name is an SQL identifier and cannot be bound,
+    //! so it is quoted with _quote_identifier() before it is placed here, see CWE-89.
     constexpr std::string_view _sqlDropTable
     {
         "DROP TABLE IF EXISTS %s;"
     };
 
-    //! The size of the string buffer to format SQL scripts
-    constexpr uint32_t  SQL_LEN     { 768 };
+    /**
+     * \brief   Returns the given name as a quoted SQL identifier, with every embedded quote
+     *          doubled, so that the result is always a single identifier. Used where a name
+     *          cannot be bound as a parameter, see CWE-89.
+     *
+     * \param   name    The identifier to quote. Must not be empty.
+     **/
+    inline areg::String _quote_identifier(const char* name)
+    {
+        areg::String result{ "\"" };
+        for (const char* src = name; *src != '\0'; ++src)
+        {
+            if (*src == '\"')
+            {
+                result += '\"';
+            }
+
+            result += *src;
+        }
+
+        result += '\"';
+        return result;
+    }
 
     constexpr char const _master[]   { "sqlite_master" };
     constexpr char const _temp[]     { "sqlite_temp_master" };
@@ -501,33 +525,34 @@ inline void LogSqliteDatabase::_initialize() noexcept
     id_type threadId{ Thread::current_thread_id() };
     String thread{ Thread::thread_name(threadId) };
 
-    char sql[SQL_LEN]{};
-    String::format_string( sql, SQL_LEN, _fmtVersion.data()
-                        , Process::instance().name().as_string()
-                        , areg::LOG_VERSION.data()
-                        , "Areg SDK database logging module. Visit https://areg.tech for more information."
-                        , "Created by Areg log observer API module."
-                        , mDatabase.path().as_string()
-                        , static_cast<uint64_t>(now.time())
-                        );
-    VERIFY(mDatabase.execute(sql));
+    {
+        SqliteStatement stmt(mDatabase, _sqlInsertVersion);
+        stmt.bind_text(  0, proc.name());
+        stmt.bind_text(  1, String(areg::LOG_VERSION));
+        stmt.bind_text(  2, String("Areg SDK database logging module. Visit https://areg.tech for more information."));
+        stmt.bind_text(  3, String("Created by Areg log observer API module."));
+        stmt.bind_text(  4, mDatabase.path());
+        stmt.bind_uint64(5, static_cast<uint64_t>(now.time()));
+        VERIFY(stmt.execute());
+    }
 
-    String::format_string(sql, SQL_LEN, _fmtLog.data()
-                        , static_cast<uint32_t>(areg::COOKIE_LOCAL)
-                        , static_cast<uint32_t>(areg::CHECKSUM_IGNORE)
-                        , static_cast<uint32_t>(0u)
-                        , static_cast<uint32_t>(areg::LogMessageType::MessageText)
-                        , static_cast<uint32_t>(areg::LogPriority::PrioIgnore)
-                        , static_cast<uint64_t>(proc.id())
-                        , static_cast<uint64_t>(threadId)
-                        , "Starting database logging..."
-                        , thread.as_string()
-                        , module.as_string()
-                        , static_cast<uint64_t>(now.time())
-                        , static_cast<uint64_t>(now.time())
-                        , static_cast<uint32_t>(0u)
-                        );
-    VERIFY(mDatabase.execute(sql));
+    {
+        SqliteStatement stmt(mDatabase, _sqlInsertLog);
+        stmt.bind_uint32( 0, static_cast<uint32_t>(areg::COOKIE_LOCAL));
+        stmt.bind_uint32( 1, static_cast<uint32_t>(areg::CHECKSUM_IGNORE));
+        stmt.bind_uint32( 2, static_cast<uint32_t>(0u));
+        stmt.bind_uint32( 3, static_cast<uint32_t>(areg::LogMessageType::MessageText));
+        stmt.bind_uint32( 4, static_cast<uint32_t>(areg::LogPriority::PrioIgnore));
+        stmt.bind_uint64( 5, static_cast<uint64_t>(proc.id()));
+        stmt.bind_uint64( 6, static_cast<uint64_t>(threadId));
+        stmt.bind_text(   7, String("Starting database logging..."));
+        stmt.bind_text(   8, thread);
+        stmt.bind_text(   9, module);
+        stmt.bind_uint64(10, static_cast<uint64_t>(now.time()));
+        stmt.bind_uint64(11, static_cast<uint64_t>(now.time()));
+        stmt.bind_uint32(12, static_cast<uint32_t>(0u));
+        VERIFY(stmt.execute());
+    }
 }
 
 inline void LogSqliteDatabase::_copy_log_message(SqliteStatement& stmt, SharedBuffer& buf)
@@ -690,17 +715,15 @@ bool LogSqliteDatabase::log_instance_connected(const areg::ConnectedInstance& in
     id_type  threadId{ Thread::current_thread_id() };
     String   thread  { Thread::thread_name(threadId) };
 
-    char sqlInst[SQL_LEN];
-    String::format_string( sqlInst, SQL_LEN, _fmtInstance.data()
-                        , instance.ciCookie
-                        , static_cast<uint32_t>(instance.ciSource)
-                        , static_cast<uint32_t>(instance.ciBitness)
-                        , instance.ciInstance.c_str()
-                        , instance.ciLocation.c_str()
-                        , static_cast<uint64_t>(instance.ciTimestamp)
-                        , static_cast<uint64_t>(timestamp.time())
-                        );
-    return mDatabase.execute(sqlInst);
+    SqliteStatement stmt(mDatabase, _sqlInsertInstance);
+    stmt.bind_uint32(0, static_cast<uint32_t>(instance.ciCookie));
+    stmt.bind_uint32(1, static_cast<uint32_t>(instance.ciSource));
+    stmt.bind_uint32(2, static_cast<uint32_t>(instance.ciBitness));
+    stmt.bind_text(  3, String(instance.ciInstance));
+    stmt.bind_text(  4, String(instance.ciLocation));
+    stmt.bind_uint64(5, static_cast<uint64_t>(instance.ciTimestamp));
+    stmt.bind_uint64(6, static_cast<uint64_t>(timestamp.time()));
+    return stmt.execute();
 }
 
 bool LogSqliteDatabase::log_instance_disconnected(const ITEM_ID& cookie, const DateTime& timestamp)
@@ -713,13 +736,11 @@ bool LogSqliteDatabase::log_instance_disconnected(const ITEM_ID& cookie, const D
     id_type threadId{ Thread::current_thread_id() };
     String thread{ Thread::thread_name(threadId) };
 
-    char sqlInst[SQL_LEN];
-    String::format_string( sqlInst, SQL_LEN, _fmtUpdInstance.data()
-                        , static_cast<uint64_t>(timestamp.time())
-                        , static_cast<uint64_t>(DateTime::now().time())
-                        , cookie
-                        );
-    return mDatabase.execute(sqlInst);
+    SqliteStatement stmt(mDatabase, _sqlUpdInstance);
+    stmt.bind_uint64(0, static_cast<uint64_t>(timestamp.time()));
+    stmt.bind_uint64(1, static_cast<uint64_t>(DateTime::now().time()));
+    stmt.bind_uint32(2, static_cast<uint32_t>(cookie));
+    return stmt.execute();
 }
 
 bool LogSqliteDatabase::log_scope_activate(const areg::ScopeEntry & scope, const ITEM_ID& cookie, const DateTime& timestamp)
@@ -749,36 +770,30 @@ uint32_t LogSqliteDatabase::log_scopes_activate(const areg::ScopeNames& scopes, 
 
 bool LogSqliteDatabase::log_scope_activate(const String& scopeName, uint32_t scopeId, uint32_t scopePrio, const ITEM_ID& cookie, const DateTime& timestamp)
 {
-    char sql[SQL_LEN];
-    String::format_string( sql, SQL_LEN, _fmtScopes.data()
-                        , static_cast<uint32_t>(scopeId)
-                        , cookie
-                        , static_cast<uint32_t>(scopePrio)
-                        , scopeName.as_string()
-                        , static_cast<uint64_t>(timestamp.time())
-                        );
-    return execute(sql);
+    SqliteStatement stmt(mDatabase, _sqlInsertScope);
+    stmt.bind_uint32(0, static_cast<uint32_t>(scopeId));
+    stmt.bind_uint32(1, static_cast<uint32_t>(cookie));
+    stmt.bind_uint32(2, static_cast<uint32_t>(scopePrio));
+    stmt.bind_text(  3, scopeName);
+    stmt.bind_uint64(4, static_cast<uint64_t>(timestamp.time()));
+    return stmt.execute();
 }
 
 bool LogSqliteDatabase::log_scopes_deactivate(const ITEM_ID& cookie, const DateTime& timestamp)
 {
-    char sql[SQL_LEN];
-    String::format_string( sql, SQL_LEN, _fmtUpdScopes.data()
-                        , static_cast<uint64_t>(timestamp.time())
-                        , cookie
-                        );
-    return execute(sql);
+    SqliteStatement stmt(mDatabase, _sqlUpdScopes);
+    stmt.bind_uint64(0, static_cast<uint64_t>(timestamp.time()));
+    stmt.bind_uint32(1, static_cast<uint32_t>(cookie));
+    return stmt.execute();
 }
 
 bool LogSqliteDatabase::log_scope_deactivate(const ITEM_ID& cookie, uint32_t scopeId, const DateTime& timestamp)
 {
-    char sql[SQL_LEN];
-    String::format_string( sql, SQL_LEN, _fmtUpdScope.data()
-                        , static_cast<uint64_t>(timestamp.time())
-                        , cookie
-                        , static_cast<uint32_t>(scopeId)
-                        );
-    return execute(sql);
+    SqliteStatement stmt(mDatabase, _sqlUpdScope);
+    stmt.bind_uint64(0, static_cast<uint64_t>(timestamp.time()));
+    stmt.bind_uint32(1, static_cast<uint32_t>(cookie));
+    stmt.bind_uint32(2, static_cast<uint32_t>(scopeId));
+    return stmt.execute();
 }
 
 bool LogSqliteDatabase::rollback()
@@ -1455,17 +1470,15 @@ bool LogSqliteDatabase::disable_filter_mask(ITEM_ID instId)
 bool LogSqliteDatabase::table_exists(const char* table, const char* master /*= nullptr*/)
 {
     bool result{ false };
-    master = areg::is_empty<char>(master) ? "sqlite_master" : master;
-    if (is_operable() && (areg::is_empty<char>(master) == false) && (areg::is_empty<char>(table) == false))
+    if (is_operable() && (areg::is_empty<char>(table) == false))
     {
-        String sql;
-        sql.format(_sqlCheckTable.data(), master, table);
-        SqliteStatement stmt(mDatabase, sql);
+        const bool isTemp{ (areg::is_empty<char>(master) == false) && (String(master).compare(_temp) == areg::Ordering::Equal) };
+        SqliteStatement stmt(mDatabase, String(isTemp ? _sqlCheckTempTable : _sqlCheckTable));
+        stmt.bind_text(0, String(table));
         result = (SqliteStatement::QueryResult::HasMore == stmt.next());
     }
 
     return result;
-
 }
 
 bool LogSqliteDatabase::drop_table(const char* table)
@@ -1474,7 +1487,7 @@ bool LogSqliteDatabase::drop_table(const char* table)
         return false;
 
     String sql;
-    sql.format(_sqlDropTable.data(), table);
+    sql.format(_sqlDropTable.data(), _quote_identifier(table).as_string());
     SqliteStatement stmt(mDatabase, sql);
     bool result = stmt.execute();
     stmt.finalize();

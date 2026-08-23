@@ -47,6 +47,7 @@ namespace areg {
 /************************************************************************
  * Dependencies
  ************************************************************************/
+class Component;
 class ServiceRequestEvent;
 class StubConnectEvent;
 
@@ -156,35 +157,35 @@ protected:
 protected:
 
     /**
-     * \brief   Pure virtual; processes a request to invoke a service function.
+     * \brief   Processes a request to invoke a service function.
      *
      * \param   eventElem       Service request event containing the request ID and serialized parameters.
      **/
     virtual void process_request_event( ServiceRequestEvent & eventElem ) = 0;
 
     /**
-     * \brief   Pure virtual; processes a request to get attribute data.
+     * \brief   Processes a request to get attribute data.
      *
      * \param   eventElem       Service request event containing the attribute ID.
      **/
     virtual void process_attribute_event( ServiceRequestEvent & eventElem ) = 0;
 
     /**
-     * \brief   Pure virtual; processes a component event that is not a service request.
+     * \brief   Processes a component event that is not a service request.
      *
      * \param   eventElem       Component event to process.
      **/
     virtual void process_stub_event( StubEvent & eventElem ) = 0;
 
     /**
-     * \brief   Pure virtual; processes a generic event.
+     * \brief   Processes a generic event.
      *
      * \param   eventElem       Generic event to process.
      **/
     virtual void process_generic_event( Event & eventElem ) = 0;
 
     /**
-     * \brief   Pure virtual; processes a notification that the stub has been registered with the service.
+     * \brief   Processes a notification that the stub has been registered with the service.
      *
      * \param   stubTarget      Address of the registered service provider.
      * \param   status          Connection status (Connected on success).
@@ -192,7 +193,21 @@ protected:
     virtual void process_registered_event( const StubAddress & stubTarget, areg::ServiceConnectionState status ) = 0;
 
     /**
-     * \brief   Pure virtual; processes a notification that a client is requesting connection or disconnection.
+     * \brief   Returns true if the service provider is registered and may process requests.
+     **/
+    [[nodiscard]]
+    virtual bool can_process_requests( ) const = 0;
+
+private:
+    /**
+     * \brief   Answers a refused request with a failure addressed to the consumer that sent it
+     * \param   reqEvent    The request event that is refused.
+     **/
+    inline void _refuse_request( ServiceRequestEvent & reqEvent );
+protected:
+
+    /**
+     * \brief   Processes a notification that a client is requesting connection or disconnection.
      *
      * \param   proxyAddress    Address of the service consumer proxy.
      * \param   status          Service consumer connection status.
@@ -217,6 +232,12 @@ private:
 // Hidden operations
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   Returns the component that owns the stub served by this consumer.
+     **/
+    [[nodiscard]]
+    Component & owner_component() const noexcept;
+
     /**
      * \brief   Processes a local request event.
      *

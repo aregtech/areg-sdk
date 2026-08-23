@@ -60,8 +60,7 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
         {
             mServerList.clear( );
             connectProvider.disconnect_service_host( );
-            mServiceManager.remove_all_events( );
-            mServiceManager.trigger_exit( );
+            mServiceManager.trigger_exit_drained( );
         }
         break;
 
@@ -430,11 +429,9 @@ void ServiceManagerEventProcessor::_send_disconnected( const ProxyAddress & clie
                    , StubAddress::to_path( server ).as_string( )
                    , ProxyAddress::to_path( client ).as_string( ) );
 
-        {
-            StubConnectEvent clientConnect( client, server, status );
-            clientConnect.set_event_priority(areg::EventPriority::HighPrio);
-            server.deliver_service_event( clientConnect );
-        }
+        StubConnectEvent clientConnect(client, server, status);
+        clientConnect.set_event_priority(areg::EventPriority::HighPrio);
+        server.deliver_service_event(clientConnect);
     }
 
     if ( client.is_local_address( ) )
@@ -443,11 +440,8 @@ void ServiceManagerEventProcessor::_send_disconnected( const ProxyAddress & clie
                    , ProxyAddress::to_path( client ).as_string( )
                    , StubAddress::to_path( server ).as_string( ) );
 
-        {
-            ProxyConnectEvent proxyConnect( client, server, status );
-            proxyConnect.set_event_priority(areg::EventPriority::HighPrio);
-            client.deliver_service_event( proxyConnect );
-        }
+        ProxyConnectEvent proxyConnect(client, server, status);
+        client.deliver_service_event(proxyConnect);
     }
 }
 
@@ -463,7 +457,7 @@ bool ServiceManagerEventProcessor::_terminate_component_thread( const String & t
     {
         LOG_WARN( "Terminating component thread [ %s ]", compThread->name( ).as_string( ) );
         result = true;
-        compThread->terminate_self( );
+        static_cast<void>(compThread->terminate_self( ));
     }
     else
     {

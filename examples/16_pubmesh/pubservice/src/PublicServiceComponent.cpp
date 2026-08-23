@@ -20,8 +20,8 @@ DEF_LOG_SCOPE(examples_16_pubmesh_pubservice_PublicServiceComponent, request_sys
 
 PublicServiceComponent::PublicServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : areg::Component                 ( entry, owner )
-    , SystemShutdownProviderBase        ( static_cast<areg::Component &>(self()) )
-    , PublicHelloWorldService   ( static_cast<areg::Component &>(self()) )
+    , SystemShutdownProviderBase        ( static_cast<areg::Component &>(*this) )
+    , PublicHelloWorldService   ( static_cast<areg::Component &>(*this) )
     , mLocalClient              ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()), PublicServiceComponent::LOCAL_TIMEOUT )
 {
     // initially set invalid that the connected clients ignore the value.

@@ -26,7 +26,7 @@ namespace areg {
 /************************************************************************/
 AREG_IMPLEMENT_RUNTIME(RuntimeObject, RuntimeBase)
 
-void RuntimeObject::destroy()
+void RuntimeObject::self_destruct()
 {
     delete this;
 }

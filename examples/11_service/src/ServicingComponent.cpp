@@ -21,7 +21,7 @@ DEF_LOG_SCOPE(examples_11_service_ServicingComponent, process_timer);
 
 ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread)
     : areg::Component ( entry, ownerThread )
-    , areg::StubBase  ( self(), areg::empty_interface() )
+    , areg::StubBase  ( *this, areg::empty_interface() )
 
     , mTimer    ( self(), "ServicingTimer" )
     , mCount    ( 0 )

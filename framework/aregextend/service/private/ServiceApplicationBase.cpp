@@ -1,4 +1,4 @@
-﻿/************************************************************************
+/************************************************************************
  * This file is part of the Areg SDK core engine.
  * Areg SDK is dual-licensed under Free open source (Apache version 2.0
  * License) and Commercial (with various pricing models) licenses, depending
@@ -262,6 +262,12 @@ void ServiceApplicationBase::on_setup_configuration( const areg::ListProperties&
 bool ServiceApplicationBase::input_console_data(char* buffer, uint32_t bufSize)
 {
     return Console::read_console_data(buffer, bufSize);
+}
+
+bool ServiceApplicationBase::parse_options(int32_t argc, char** argv)
+{
+    const std::pair<const OptionParser::OptionSetup*, int32_t> opts{ app_options() };
+    return SystemServiceBase::parse_options(argc, argv, opts.first, static_cast<uint32_t>(opts.second));
 }
 
 } // namespace areg::ext

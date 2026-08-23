@@ -32,6 +32,23 @@ namespace {
      * \brief   Predefined fixed name of invalid Null Dispatcher Thread.
      **/
     static constexpr std::string_view   NullDispatcherName{ "_NullDispatcherThread_" };
+
+    //!< How many resolved dispatcher threads one thread caches. Must be a power of two.
+    constexpr uint32_t                  DISPATCHER_CACHE_SIZE{ 8u };
+
+    /**
+     * \brief   One resolved dispatcher thread, valid while mGeneration matches
+     *          Thread::registry_generation().
+     **/
+    struct DispatcherCacheEntry
+    {
+        UniqueNumber                mNumber;        //!< The unique CRC32 number that was searched.
+        uint32_t                    mGeneration;    //!< Registry counter value of the search.
+        areg::DispatcherThread *    mThread;        //!< The result, nullptr when nothing was found.
+    };
+
+    //!< The resolved dispatcher threads of the calling thread; private to it, so it needs no lock.
+    AREG_THREAD_LOCAL DispatcherCacheEntry  _dispatcherCache[DISPATCHER_CACHE_SIZE]{};
 } // namespace
 
 namespace areg {
@@ -184,19 +201,35 @@ DispatcherThread & DispatcherThread::_null_dispather_thread() noexcept
     return static_cast<DispatcherThread &>(NullDispatcherThread::sSelfNullDispatcher);
 }
 
+DispatcherThread * DispatcherThread::_find_dispatcher_thread( const UniqueNumber threadNumber ) noexcept
+{
+    const uint32_t generation{ Thread::registry_generation() };
+    DispatcherCacheEntry & entry{ _dispatcherCache[threadNumber & (DISPATCHER_CACHE_SIZE - 1u)] };
+    if ((entry.mGeneration != generation) || (entry.mNumber != threadNumber))
+    {
+        // The counter is advanced before a thread leaves the maps, so a cached pointer can
+        // never outlive its thread object.
+        entry.mThread       = AREG_RUNTIME_CAST(Thread::find_by_number(threadNumber), DispatcherThread);
+        entry.mNumber       = threadNumber;
+        entry.mGeneration   = generation;
+    }
+
+    return entry.mThread;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread class Constructor / Destructor.
 //////////////////////////////////////////////////////////////////////////
 DispatcherThread::DispatcherThread (const String & threadName, uint32_t stackSizeKb, uint32_t maxQeueue, areg::Bool dropOnFull /*= areg::Bool::Undefined*/, uint32_t waitMs /*= areg::WAIT_INFINITE*/)
-    : Thread          ( static_cast<ThreadConsumer &>(self()), threadName, stackSizeKb )
-    , EventDispatcher ( threadName, maxQeueue, dropOnFull, waitMs )
+    : EventDispatcher ( threadName, maxQeueue, dropOnFull, waitMs )
+    , Thread          ( static_cast<ThreadConsumer &>(*this), threadName, stackSizeKb )
     , mEventStarted   ( true, false )
 {
 }
 
 DispatcherThread::DispatcherThread( areg::NullTag, const String & threadName ) noexcept
-    : Thread          ( areg::NullTag{}, static_cast<ThreadConsumer &>(self()), threadName )
-    , EventDispatcher ( areg::NullTag{} )
+    : EventDispatcher ( areg::NullTag{} )
+    , Thread          ( areg::NullTag{}, static_cast<ThreadConsumer &>(*this), threadName )
     , mEventStarted   ( areg::NullTag{} )
 {
 }
@@ -223,7 +256,12 @@ void DispatcherThread::trigger_exit()
     stop_dispatcher();
 }
 
-Thread::ThreadCompletion DispatcherThread::shutdown( uint32_t waitForStopMs /*= areg::DO_NOT_WAIT*/ )
+void DispatcherThread::trigger_exit_drained()
+{
+    stop_dispatcher_drained();
+}
+
+Thread::ThreadCompletion DispatcherThread::shutdown( uint32_t waitForStopMs /*= areg::WAIT_INFINITE*/ )
 {
     LOG_SCOPE( areg_component_private_DispatcherThread, destroy_thread );
     LOG_DBG("Shutting down the thread [ %s ] with ID [ %p ]. The current state is [ %s ]"

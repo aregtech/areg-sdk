@@ -10,6 +10,7 @@
  * Include files.
  ************************************************************************/
 #include "pubprovider/src/LatencyProvider.hpp"
+#include "common/headless.hpp"
 #include "common/latency_common.hpp"
 
 #include "areg/appbase/Application.hpp"
@@ -18,6 +19,7 @@
 #include "areg/base/Thread.hpp"
 #include "areg/component/ComponentThread.hpp"
 
+#include <cstdio>
 #include <vector>
 
 //////////////////////////////////////////////////////////////////////////
@@ -39,6 +41,7 @@ LatencyProvider::LatencyProvider(const areg::ComponentEntry & entry, areg::Compo
     , areg::TimerConsumer   ( )
     , areg::ThreadConsumer  ( )
 
+    , mHeadless             ( Latency::is_headless() )
     , mInputThread          ( static_cast<areg::ThreadConsumer &>(*this), THREAD_INPUT )
     , mQuit                 ( false )
     , mQuitInput            ( false )
@@ -71,10 +74,18 @@ void LatencyProvider::startup_service_interface(areg::Component & holder)
     mOneWayLatencies.clear();
     mLastRate        = 0.0;
 
-    areg::ext::Console::instance().enable_console_input(true);
-    _redraw_layout();
-    mDisplayThread.start(areg::WAIT_INFINITE);
-    mInputThread.start(areg::WAIT_INFINITE);
+    if (mHeadless == false)
+    {
+        areg::ext::Console::instance().enable_console_input(true);
+        _redraw_layout();
+        mDisplayThread.start(areg::WAIT_INFINITE);
+        mInputThread.start(areg::WAIT_INFINITE);
+    }
+    else
+    {
+        std::printf("Latency service provider is running headless. Waiting for the consumer.\n");
+        std::fflush(stdout);
+    }
 
     LatencyProviderBase::startup_service_interface(holder);
 }
@@ -85,10 +96,12 @@ void LatencyProvider::shutdown_service_interface(areg::Component & holder) noexc
     mQuitInput.store(true, std::memory_order_relaxed);
     mBroadcastMode.store(Latency::LatencyMode::Stop, std::memory_order_relaxed);
 
-    areg::ext::Console::instance().enable_console_input(false);
-
-    mInputThread.shutdown(areg::WAIT_INFINITE);
-    mDisplayThread.shutdown(areg::WAIT_INFINITE);
+    if (mHeadless == false)
+    {
+        areg::ext::Console::instance().enable_console_input(false);
+        mInputThread.shutdown(areg::WAIT_INFINITE);
+        mDisplayThread.shutdown(areg::WAIT_INFINITE);
+    }
 
     LatencyProviderBase::shutdown_service_interface(holder);
 }
@@ -422,6 +435,9 @@ void LatencyProvider::_on_provider_cmd(const ProviderCmdData & data)
 
 void LatencyProvider::_redraw_layout()
 {
+    if (mHeadless)
+        return;
+
     areg::ext::Console & console = areg::ext::Console::instance();
     console.clear_screen();
     console.output_txt(COORD_TITLE,   MSG_TITLE);
@@ -438,6 +454,9 @@ void LatencyProvider::_redraw_layout()
 
 void LatencyProvider::_update_live()
 {
+    if (mHeadless)
+        return;
+
     const uint32_t served = mTotalServed.load(std::memory_order_relaxed);
     const uint32_t delta  = (served >= mLastRateCount) ? (served - mLastRateCount) : 0u;
     mLastRateCount = served;
@@ -473,6 +492,9 @@ void LatencyProvider::_record_oneway(uint64_t begin_ns, uint64_t arrival_ns) noe
 
 void LatencyProvider::_update_latency_stats()
 {
+    if (mHeadless)
+        return;
+
     areg::ext::Console & console = areg::ext::Console::instance();
     console.save_cursor_position();
 

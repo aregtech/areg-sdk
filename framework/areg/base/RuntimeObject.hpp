@@ -223,9 +223,10 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Destroys the object.  Override to release resources before deletion.
+     * \brief   Deletes this object through its most derived type. Override to release
+     *          resources before the deletion happens.
      **/
-    virtual void destroy();
+    virtual void self_destruct();
 
 //////////////////////////////////////////////////////////////////////////
 // Operators

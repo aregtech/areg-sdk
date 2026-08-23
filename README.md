@@ -390,7 +390,7 @@ notifies the consumer immediately. No polling. No manual connection management.
 | `aregextend`   | Extended services: communication, SQLite wrapper, other small utilities                                                   |
 | `areglogger`   | Log Observer API and library                                                                                              |
 | `mtrouter`     | Multi-target message router: routes IPC and network traffic                                                               |
-| `logcollector` | Distributed log aggregation service                                                                                       |
+| `logcollector` | Distributed log aggregation service, with optional SQLite recording of the collected logs                                 |
 | `logobserver`  | Log capture, storage (file + SQLite), scope control                                                                       |
 | `Lusan`        | GUI tool for service interface design, live log collection, and log analysis ([`Lusan` app](https://github.com/aregtech/areg-sdk-tools)) |
 

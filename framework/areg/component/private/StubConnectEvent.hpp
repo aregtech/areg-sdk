@@ -65,6 +65,11 @@ public:
      **/
     StubConnectEvent( const ProxyAddress & proxyClient, const StubAddress & stubTarget, areg::ServiceConnectionState connectStatus );
 
+    /**
+     * \brief   Binds this typed event to an already dispatched envelope, sharing its buffer.
+     **/
+    explicit inline StubConnectEvent( const MessageEnvelope & envelope ) noexcept;
+
     StubConnectEvent(const StubConnectEvent& /*src*/) = default;
 
     StubConnectEvent(StubConnectEvent&& /*src*/) noexcept = default;
@@ -91,6 +96,11 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // StubConnectEvent class inline methods.
 //////////////////////////////////////////////////////////////////////////
+
+inline StubConnectEvent::StubConnectEvent( const MessageEnvelope & envelope ) noexcept
+    : ServiceRequestEvent( envelope )
+{
+}
 
 inline areg::ServiceConnectionState StubConnectEvent::connection_status() const noexcept
 {

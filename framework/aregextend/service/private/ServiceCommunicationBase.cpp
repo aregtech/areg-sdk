@@ -28,6 +28,8 @@
 
 #include "aregextend/service/SystemServiceDefs.hpp"
 
+#include "areg/base/private/DebugDefs.hpp"
+
 namespace areg::ext {
 
 DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, connect_service_host);
@@ -576,8 +578,76 @@ bool ServiceCommunicationBase::do_send_shared( const areg::MessageEnvelope & dat
     return do_send_shared(std::move(copy), prio);
 }
 
+bool ServiceCommunicationBase::try_send_inline( areg::MessageEnvelope & data, SOCKETHANDLE hSocket, areg::SendQueueGate & gate )
+{
+    if ( (areg::is_valid_socket(hSocket) == false) || (gate.is_clear() == false) )
+        return false;
+
+    areg::EventHeader * hdr{ data.header() };
+    if ( hdr == nullptr )
+        return false;
+
+    const uint32_t wireSize{ static_cast<uint32_t>(sizeof(areg::EventHeader)) + hdr->bufHeader.biUsed };
+    if ( wireSize > areg::INLINE_SEND_MAX_BYTES )
+        return false;
+
+    areg::SocketWriter & writer{ areg::SocketWriter::writer_of(hSocket) };
+    if ( writer.try_acquire() == false )
+        return false;
+
+    hdr->internal1 = 0u;
+    hdr->internal2 = 0u;
+    hdr->custom    = 0u;
+    data.buffer_completion_fix();
+
+    int32_t sent{ 0 };
+    {
+        AREG_LT_SCOPE(areg::LtStage::SendSyscall);
+        const areg::IoBuffer ioBuffer{ reinterpret_cast<const uint8_t *>(hdr), wireSize };
+        sent = areg::try_send_data_v(hSocket, &ioBuffer, 1u, wireSize);
+    }
+
+    writer.release();
+
+    if ( sent > 0 )
+    {
+        mThreadSend.accumulate_sent(static_cast<uint64_t>(sent), 1u);
+        return true;
+    }
+    else if ( sent == 0 )
+    {
+        return false;
+    }
+
+    // A negative result may follow a partial write: the first bytes are already on the wire,
+    // so the message cannot be queued again and the connection has to go.
+    if ( mServerConnection.is_interrupted() == false )
+    {
+        areg::SocketAccepted client{ mServerConnection.client_by_handle(hSocket) };
+        failed_send_message(data, client);
+    }
+
+    return true;
+}
+
+bool ServiceCommunicationBase::try_forward_inline( areg::MessageEnvelope & data )
+{
+    const ITEM_ID target{ static_cast<ITEM_ID>(data.target()) };
+
+    if ( mClientPairs.empty() )
+    {
+        areg::SendQueueGate & gate{ mThreadSend.send_gate() };
+        return gate.is_clear() && try_send_inline(data, mServerConnection.handle_by_cookie(target), gate);
+    }
+
+    ClientConnectionPair & pair{ *mClientPairs[data.target() % mNumPairs] };
+    areg::SendQueueGate & gate{ pair.send_thread().send_gate() };
+    return gate.is_clear() && try_send_inline(data, pair.socket_by_cookie(target), gate);
+}
+
 bool ServiceCommunicationBase::do_send_shared( areg::MessageEnvelope && data, areg::EventPriority prio )
 {
+    mThreadSend.send_gate().enter();
     areg::Event evt(std::move(data));
     evt.set_event_priority(prio);
     evt.set_event_consumer(&mThreadSend);
@@ -602,6 +672,7 @@ bool ServiceCommunicationBase::do_send_pool( areg::MessageEnvelope && data, areg
 
     const uint32_t idx{ data.target() % mNumPairs };
     PoolSendThread & sendThread{ mClientPairs[idx]->send_thread() };
+    sendThread.send_gate().enter();
     areg::Event evt(std::move(data));
     evt.set_event_priority(prio);
     evt.set_event_consumer(&sendThread);
@@ -715,7 +786,15 @@ void ServiceCommunicationBase::process_received_message(areg::MessageEnvelope & 
             }
 #endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
 
-            send_message(std::move(msgReceived));
+            // Only the last message of a receive burst goes inline: while more input waits, the
+            // send thread joins it into one write, which is worth more than the wake-up.
+            const bool burstPending{ (areg::receive_mode() == areg::ReceiveMode::NoCache) ||
+                                     (areg::recv_data_available(whichSource.handle()) != 0u) };
+
+            if ( burstPending || (try_forward_inline(msgReceived) == false) )
+            {
+                send_message(std::move(msgReceived));
+            }
         }
 
         return;

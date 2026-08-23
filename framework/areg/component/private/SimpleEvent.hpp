@@ -44,6 +44,16 @@ namespace areg {
  *          Auto-reset still tolerates several parked waiters (one is released
  *          per signal); callers that race for the same resource must re-check their
  *          own condition after lock() returns.
+ *
+ *          The object holds no operating system handle: its whole state is one atomic word. A
+ *          wait that finds the event already signaled, and a signal nobody waits for, are
+ *          answered in user space. Only a thread that has to go to sleep enters the kernel,
+ *          where it parks on that word with futex on Linux, __ulock on macOS and WaitOnAddress
+ *          on Windows. A signal that arrives before a waiter is asleep is never lost, because
+ *          the wait call compares the word once more inside the kernel.
+ *
+ * \note    On Windows this needs Windows 8 or newer. The wait and wake calls are imported from
+ *          api-ms-win-core-synch-l1-2-0.dll through Synchronization.lib.
  **/
 class AREG_API SimpleEvent
 {
@@ -106,13 +116,15 @@ public:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-#if defined(_WIN32) && !defined(__CYGWIN__)
-    void *                  mHandle;    //!< Native auto / manual-reset event HANDLE (nullptr => hollow).
-#else
-    std::atomic<uint32_t>   mState;     //!< Futex word: 0 == non-signaled, 1 == signaled.
+#if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+    std::atomic<uint32_t>   mState;     //!< Wait word: 0 == non-signaled, 1 == signaled.
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif  // _MSC_VER
     const bool              mValid;     //!< false => hollow NullTag object (all ops no-op).
-#endif  // defined(_WIN32) && !defined(__CYGWIN__)
-
     const bool              mAutoReset; //!< true => auto-reset, false => manual-reset.
 
 //////////////////////////////////////////////////////////////////////////

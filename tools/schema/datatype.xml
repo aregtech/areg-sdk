@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<PredefinedTypes FormatVersion="1.1.0">
+    <DataTypeList>
+        <DataType ID="1" Type="Primitive" Name="bool" DefaultValue="false">
+            <Variant cpp="bool"/>
+            <Variant java="boolean"/>
+        </DataType>
+        <DataType ID="2" Type="Primitive" Name="char" DefaultValue="0">
+            <Variant cpp="char"/>
+            <Variant java="char"/>
+        </DataType>
+        <DataType ID="3" Type="Primitive" Name="uint8" DefaultValue="0">
+            <Variant cpp="uint8_t"/>
+            <Variant java="byte"/>
+        </DataType>
+        <DataType ID="4" Type="Primitive" Name="int16" DefaultValue="0">
+            <Variant cpp="int16_t"/>
+            <Variant java="short"/>
+        </DataType>
+        <DataType ID="5" Type="Primitive" Name="uint16" DefaultValue="0">
+            <Variant cpp="uint16_t"/>
+            <Variant java="short"/>
+        </DataType>
+        <DataType ID="6" Type="Primitive" Name="int32" DefaultValue="0">
+            <Variant cpp="int32_t"/>
+            <Variant java="int"/>
+        </DataType>
+        <DataType ID="7" Type="Primitive" Name="uint32" DefaultValue="0">
+            <Variant cpp="uint32_t"/>
+            <Variant java="int"/>
+        </DataType>
+        <DataType ID="8" Type="Primitive" Name="int64" DefaultValue="0">
+            <Variant cpp="int64_t"/>
+            <Variant java="long"/>
+        </DataType>
+        <DataType ID="9" Type="Primitive" Name="uint64" DefaultValue="0">
+            <Variant cpp="uint64_t"/>
+            <Variant java="long"/>
+        </DataType>
+        <DataType ID="10" Type="Primitive" Name="float" DefaultValue="0.0">
+            <Variant cpp="float"/>
+            <Variant java="float"/>
+        </DataType>
+        <DataType ID="11" Type="Primitive" Name="double" DefaultValue="0.0">
+            <Variant cpp="double"/>
+            <Variant java="double"/>
+        </DataType>
+        <DataType ID="12" Type="BasicObject" Name="String">
+            <Variant cpp="areg::String" import="areg/base/String.hpp" />
+            <Variant java="String" import="java.lang.String" />
+        </DataType>
+        <DataType ID="13" Type="BasicObject" Name="WideString">
+            <Variant cpp="areg::WideString" import="areg/base/WideString.hpp" />
+            <Variant java="String" import="java.lang.String" />
+        </DataType>
+        <DataType ID="14" Type="BasicObject" Name="BinaryBuffer">
+            <Variant cpp="areg::SharedBuffer" import="areg/base/SharedBuffer.hpp" />
+            <Variant java="ByteBuffer" import="java.nio.ByteBuffer" />
+        </DataType>
+        <DataType ID="15" Type="BasicObject" Name="DateTime">
+            <Variant cpp="areg::DateTime" import="areg/base/DateTime.hpp" />
+            <Variant java="Date" import="java.util.Date" />
+        </DataType>
+        <DataType ID="16" Type="BasicContainer" Name="Array" HasKey="false" HasValue="true">
+            <Variant cpp="areg::ArrayList" import="areg/base/ArrayList.hpp" />
+            <Variant java="ArrayList" import="java.util.ArrayList" />
+        </DataType>
+        <DataType ID="17" Type="BasicContainer" Name="LinkedList" HasKey="false" HasValue="true">
+            <Variant cpp="areg::LinkedList" import="areg/base/LinkedList.hpp" />
+            <Variant java="LinkedList" import="java.util.LinkedList" />
+        </DataType>
+        <DataType ID="18" Type="BasicContainer" Name="HashMap" HasKey="true" HasValue="true">
+            <Variant cpp="areg::HashMap" import="areg/base/HashMap.hpp" />
+            <Variant java="HashMap" import="java.util.HashMap" />
+        </DataType>
+        <DataType ID="19" Type="BasicContainer" Name="Map" HasKey="true" HasValue="true">
+            <Variant cpp="areg::OrderedMap" import="areg/base/OrderedMap.hpp" />
+            <Variant java="Map" import="java.util.Map" />
+        </DataType>
+        <DataType ID="20" Type="BasicContainer" Name="Pair" HasKey="true" HasValue="true">
+            <Variant cpp="areg::KeyValuePair" import="areg/base/KeyValuePair.hpp" />
+            <Variant java="Pair" import="javafx.util.Pair"/>
+        </DataType>
+        <DataType ID="21" Type="BasicContainer" Name="New Type" HasKey="false" HasValue="true">
+            <Variant any="*" import="" />
+        </DataType>
+        <DataType ID="50" Type="Dummy" Name="Empty" HasKey="false" HasValue="false">
+            <Variant any="*" import="" />
+        </DataType>
+    </DataTypeList>
+</PredefinedTypes>

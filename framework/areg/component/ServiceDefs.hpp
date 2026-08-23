@@ -231,6 +231,7 @@ enum class DisconnectReason : uint16_t
     , SystemShutdown        = 512   //!< The system is shutting down.
     , ClientConnectionLost  = 1024  //!< The system lost connection with the client. General reason.
     , ClientConnectionClosed= 2048  //!< The client requested to disconnect. General reason.
+    , ProviderRestarting    = 4096  //!< The service provider is being restarted by the watchdog.
 };
 
 /**
@@ -507,6 +508,13 @@ inline constexpr bool is_response_id(uint32_t msgId) noexcept;
  **/
 [[nodiscard]]
 inline constexpr bool is_request_id(uint32_t msgId) noexcept;
+
+/**
+ * \brief   Returns true if the message ID is a real service response ID, i.e. it lies inside
+ *          the response ID range [RESPONSE_ID_FIRST .. RESPONSE_ID_LAST].
+ **/
+[[nodiscard]]
+inline constexpr bool is_valid_response_id(uint32_t msgId) noexcept;
 
 /**
  * \brief   Returns true if message ID is a service registration call.
@@ -823,6 +831,17 @@ private:
      **/
     inline uint32_t count_param_space(const uint32_t* params, uint32_t count) noexcept;
 
+    /**
+     * \brief   Returns the number of bytes one entry of the parameter buffer occupies: the
+     *          StateArray followed by its states, rounded up to alignof(StateArray) so that the
+     *          next entry starts on an address a StateArray may live at.
+     *
+     * \note    The reservation and the placement must both use this function, never the raw sum.
+     *
+     * \param   paramCount  The number of states of the entry.
+     **/
+    static constexpr uint32_t param_entry_space(uint32_t paramCount) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -1079,6 +1098,7 @@ inline constexpr areg::ServiceConnectionState areg::service_connection( areg::Di
     case areg::DisconnectReason::ConsumerDisconnected:
     case areg::DisconnectReason::ProviderDisconnected:
     case areg::DisconnectReason::ClientConnectionClosed:
+    case areg::DisconnectReason::ProviderRestarting:
         return areg::ServiceConnectionState::Disconnected;
 
     case areg::DisconnectReason::SystemShutdown:
@@ -1118,6 +1138,11 @@ inline constexpr bool areg::is_request_id(uint32_t msgId) noexcept
 inline constexpr bool areg::is_response_id(uint32_t msgId) noexcept
 {
     return ((msgId & static_cast<uint32_t>(areg::ServiceCallType::ResponseFunction)) != 0);
+}
+
+inline constexpr bool areg::is_valid_response_id(uint32_t msgId) noexcept
+{
+    return ((msgId >= areg::RESPONSE_ID_FIRST) && (msgId <= areg::RESPONSE_ID_LAST));
 }
 
 inline constexpr bool areg::is_attribute_id(uint32_t msgId) noexcept
@@ -1258,15 +1283,23 @@ inline void areg::ParameterArray::set_param_state(uint32_t whichParam, areg::Dat
     mParamList[whichParam]->set_all_state(newState);
 }
 
+constexpr uint32_t areg::ParameterArray::param_entry_space(uint32_t paramCount) noexcept
+{
+    constexpr uint32_t align{ static_cast<uint32_t>(alignof(areg::StateArray)) };
+    const uint32_t used{ static_cast<uint32_t>(sizeof(areg::StateArray)
+                                               + paramCount * sizeof(areg::DataState)) };
+    return (used + align - 1u) & ~(align - 1u);
+}
+
 inline uint32_t areg::ParameterArray::count_param_space(const uint32_t* params, uint32_t count) noexcept
 {
     uint32_t result = 0;
-    // space for size of class areg::StateArray + 
+    // space for size of class areg::StateArray +
     // space for size of areg::DataState multiplied on number of parameters.
     // If number of parameters is zero, do not reserve.
     for (uint32_t i = 0; i < count; ++i)
     {
-        result += params[i] != 0 ? static_cast<uint32_t>(sizeof(areg::StateArray) + params[i] * sizeof(areg::DataState)) : 0;
+        result += params[i] != 0 ? param_entry_space(params[i]) : 0;
     }
 
     return result;
@@ -1531,6 +1564,8 @@ inline constexpr const char* areg::as_string( areg::DisconnectReason reason ) no
         return "areg::DisconnectReason::ClientConnectionLost";
     case areg::DisconnectReason::ClientConnectionClosed:
         return "areg::DisconnectReason::ClientConnectionClosed";
+    case areg::DisconnectReason::ProviderRestarting:
+        return "areg::DisconnectReason::ProviderRestarting";
     default:
         ASSERT( false );
         return "ERR: Undefined areg::DisconnectReason value!";

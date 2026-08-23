@@ -95,8 +95,7 @@ public:
     virtual ~Lockable() = default;
 
 //////////////////////////////////////////////////////////////////////////
-// Operations
-// Pure virtual functions to overwrite
+// Lockable overrides
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
@@ -459,21 +458,21 @@ public:
      * \param   timeout     The timeout in milliseconds. Use areg::WAIT_INFINITE to wait indefinitely.
      * \return  Returns true if successfully acquired; false if timeout expired.
      **/
-    inline bool lock( uint32_t timeout = areg::WAIT_INFINITE ) final;
+    bool lock( uint32_t timeout = areg::WAIT_INFINITE ) final;
 
     /**
      * \brief   Releases the semaphore by incrementing its count.
      *
      * \return  Returns true if successfully incremented.
      **/
-    inline bool unlock() final;
+    bool unlock() final;
 
     /**
      * \brief   Not implemented for semaphore. Always returns false.
      *
      * \return  Returns false.
      **/
-    inline bool try_lock() final;
+    bool try_lock() final;
 
 //////////////////////////////////////////////////////////////////////////
 //// Attributes
@@ -1068,38 +1067,25 @@ private:
 
 public:
     /**
-     * \brief   MultiLock::LOCK_INDEX_INVALID
-     *          Invalid index of synchronization list
+     * \brief   The values that MultiLock::lock() returns instead of an object index.
      **/
-    static constexpr int32_t    LOCK_INDEX_INVALID      { -1 };
-
-    /**
-     * \brief   MultiLock::LOCK_INDEX_COMPLETION
-     *          The completion routine index.
-     *          Returned if waiting function returns WAIT_IO_COMPLETION
-     **/
-    static constexpr int32_t    LOCK_INDEX_COMPLETION   { -2 };
-    /**
-     * \brief   MultiLock::LOCK_INDEX_TIMEOUT
-     *          The index, indicating waiting timeout.
-     **/
-    static constexpr int32_t    LOCK_INDEX_TIMEOUT      { -3 };
-    /**
-     * \brief   MultiLock::LOCK_INDEX_ALL
-     *          All synchronization objects are locked.
-     *          Same as MAX_SIZE_OF_ARRAY (64)
-     **/
-    static constexpr int32_t    LOCK_INDEX_ALL          { areg::MAXIMUM_WAITING_OBJECTS };
+    enum : int32_t
+    {
+          LOCK_INDEX_INVALID    = -1    //!< Invalid index of synchronization list.
+        , LOCK_INDEX_COMPLETION = -2    //!< The completion routine index. Returned if the waiting function returns WAIT_IO_COMPLETION.
+        , LOCK_INDEX_TIMEOUT    = -3    //!< The index, indicating waiting timeout.
+        , LOCK_INDEX_ALL        = areg::MAXIMUM_WAITING_OBJECTS //!< All synchronization objects are locked. Same as MAX_SIZE_OF_ARRAY (64).
+    };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes multi-lock with list of synchronization objects. Optionally locks all
-     *          objects immediately.
+     * \brief   Initializes multi-lock with list of synchronization objects. Optionally locks all objects immediately.
      *
-     * \param   pObjects    List of synchronization objects (no CriticalSection).
+     * \param   pObjects    List of synchronization objects (no CriticalSection, no SpinLock, no NolockSyncObject).
+     *                      The list belongs to the caller and must outlive this object.
      * \param   count       Number of objects in the list.
      * \param   autoLock    If true, immediately locks all objects.
      * \note    CriticalSection objects are not allowed; assertion will be raised if included.
@@ -1161,9 +1147,9 @@ private:
      **/
     LockState           mLockedStates[areg::MAXIMUM_WAITING_OBJECTS];
     /**
-     * \brief   List of synchronization objects passed on initialization
+     * \brief   List of synchronization objects passed on initialization. The caller should keep the list alive.
      **/
-    SyncObject**        mSyncObjArray;
+    SyncObject* const*  mSyncObjArray;
     /**
      * \brief   Size of synchronization object. Cannot be more than MAX_SIZE_OF_ARRAY (64)
      **/
@@ -1477,7 +1463,6 @@ inline bool SpinLock::lock()
 {
     return lock(areg::WAIT_INFINITE);
 }
-
 
 
 //////////////////////////////////////////////////////////////////////////

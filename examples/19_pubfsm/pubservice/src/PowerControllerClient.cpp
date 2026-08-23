@@ -15,7 +15,7 @@
 
 #ifdef _WINDOWS
     #define MACRO_SCANF(fmt, data, len)     scanf_s(fmt, data, len)
-#else   // _POSIX
+#else   // POSIX
     #define MACRO_SCANF(fmt, data, len)     scanf(fmt, data)
 #endif  // _WINDOWS
 
@@ -110,7 +110,7 @@ void PowerControllerClient::on_run()
         printf("\n");
     } while (loop);
 
-    printf("Quiting the Traffic Light Controller application ...\n");
+    printf("Quit the Traffic Light Controller application ...\n");
     areg::Application::signal_quit();
 }
 

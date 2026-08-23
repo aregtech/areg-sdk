@@ -18,6 +18,7 @@
 #include "aregextend/console/Console.hpp"
 
 #include "pubconsumer/src/LatencyConsumer.hpp"
+#include "common/headless.hpp"
 #include "common/latency_common.hpp"
 
 #ifdef _MSC_VER
@@ -67,9 +68,14 @@ DEF_LOG_SCOPE(examples_30_consumerlatency_main, main);
  * \brief   The main method enables logging, service manager and timer.
  *          it loads and unloads the services, releases application.
  **/
-int main()
+int main(int argc, char* argv[])
 {
-    printf("Testing remote latency ultra-small consumer...\n");
+    // With arguments the application runs headless: it executes them as one console command
+    // as soon as the provider is reachable, prints the result and quits. See common/headless.hpp.
+    Latency::startup_command() = Latency::join_arguments(argc, argv);
+
+    if (Latency::is_headless() == false)
+        printf("Testing remote latency ultra-small consumer...\n");
 
 #if defined(_WIN32)
     timeBeginPeriod(1u);    // raise Windows timer resolution to 1 ms for the benchmark duration
@@ -104,12 +110,15 @@ int main()
 
     // Release the console before writing directly to stdout so the final message
     // appears at the right position (just below the last output row), not mid-screen.
-    areg::ext::Console::instance().uninitialize();
-    printf("Completed testing remote latency consumer, check the logs...\n");
+    if (Latency::is_headless() == false)
+    {
+        areg::ext::Console::instance().uninitialize();
+        printf("Completed testing remote latency consumer, check the logs...\n");
+    }
 
 #if defined(_WIN32)
     timeEndPeriod(1u);
 #endif // _WIN32
 
-	return 0;
+    return LatencyConsumer::has_failed() ? 2 : 0;
 }
