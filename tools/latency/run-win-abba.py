@@ -9,7 +9,7 @@
 #  Keeps two builds apart -- one made from the unchanged sources and one made
 #  from the changed sources -- and runs them alternately in ABBA order inside a
 #  single session, so that the monotonic drift of the machine is charged to
-#  both of them equally (rules E7a to E7c of the prompt template).
+#  both of them equally.
 #
 #  Example 31 needs nothing but its own executable. Example 30 needs the
 #  message router and the provider, which this script starts and stops itself.

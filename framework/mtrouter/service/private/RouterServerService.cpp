@@ -415,6 +415,7 @@ void RouterServerService::on_provider_unregistered(const areg::StubAddress & stu
     {
         ListServiceProxies listProxies;
         mServiceRegistry.unregister_service_provider(stub, listProxies);
+
         LOG_DBG("Unregistered stub [ %s ], [ %d ] proxies are going to be notified"
                         , stub.to_string().as_string()
                         , listProxies.size());

@@ -31,8 +31,8 @@
         </Rule>
 
         <Rule Number="4" Name="RULE_DUPLICATE_NAME" Section="shared" Bands="error warning">
-            <Summary>A name that is already taken: two entries of the same kind in one registry, a repeated parameter name, or a stimulus name claimed by a trigger, an event and a timer at once. Reported on every entry after the first, so the finding names the copy the author has to rename.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Summary>A name that is already taken: two entries of the same kind in one registry, a repeated parameter name, or a stimulus name claimed by a trigger, an event and a timer at once. Reported on every entry after the first, so the finding names the copy the author has to rename. The code generator reports it for two included documents that declare one name.</Summary>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_DUPLICATE_NAME" CodegenBands="error"/>
         </Rule>
 
         <Rule Number="26" Name="RULE_UNREFERENCED" Section="shared" Bands="warning information">
@@ -86,8 +86,8 @@
         </Rule>
 
         <Rule Number="13" Name="RULE_ARGUMENT_TYPE" Section="shared" Bands="error warning">
-            <Summary>An argument type with no conversion to the parameter it binds to, or a comparison between two types with no implicit conversion.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Summary>An argument type with no conversion to the parameter it binds to, or a comparison between two types with no implicit conversion. A conversion that only narrows is a warning, and the generated code casts explicitly.</Summary>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_ARGUMENT_TYPE" CodegenBands="error warning"/>
         </Rule>
 
         <Rule Number="14" Name="RULE_COMPARE_OPERAND" Section="shared" Bands="error">
@@ -111,8 +111,8 @@
         </Rule>
 
         <Rule Number="17" Name="RULE_ATTRIBUTE_TYPE" Section="shared" Bands="error warning">
-            <Summary>An `AttributeSet` whose source type does not convert to the attribute's type.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Summary>An `AttributeSet` whose source type does not convert to the attribute's type. A conversion that only narrows is a warning, and the generated code casts explicitly.</Summary>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_ATTRIBUTE_TYPE" CodegenBands="error warning"/>
         </Rule>
 
         <Rule Number="18" Name="RULE_STATE_SHAPE" Section="shared" Bands="error">
@@ -121,8 +121,8 @@
         </Rule>
 
         <Rule Number="19" Name="RULE_BROKEN_IMPORT" Section="shared" Bands="error">
-            <Summary>An include that does not resolve: no file named, the file missing, unreadable, a cycle, or nested too deep. An included data type document that could not be read is the same fault -- every type it was to contribute is missing.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Summary>An include that does not resolve: no file named, the file missing, unreadable, a cycle, or nested too deep. An included data type document that could not be read is the same fault -- every type it was to contribute is missing. The editor always refuses; the code generator softens it to a warning, or to information when the generated output of the missing document is already on disk and is used as it stands.</Summary>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_IMPORT" CodegenBands="error warning information"/>
         </Rule>
 
         <Rule Number="20" Name="RULE_CONDITION_BODY" Section="shared" Bands="error">
@@ -212,7 +212,7 @@
 
         <Rule Number="40" Name="RULE_NOT_A_HEADER" Section="shared" Bands="error">
             <Summary>A data type document whose include list names another document. It declares types and nothing else, and its include list carries C++ headers.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_NOT_A_HEADER"/>
         </Rule>
 
         <Rule Number="41" Name="RULE_DUPLICATE_ENUM_VALUE" Section="shared" Bands="error">
@@ -287,6 +287,11 @@
 
         <Rule Number="12" Name="RULE_IMPORT_PATCH" Section="banded" Bands="warning information">
             <Summary>Warning 112 and information 212: an import pinned to a version the file no longer carries, where the difference is below the major version.</Summary>
+            <Implemented Lusan="true" Codegen="false"/>
+        </Rule>
+
+        <Rule Number="30" Name="RULE_RETIRED_ELEMENT" Section="shared" Bands="error">
+            <Summary>An element the format used to define in this place and no longer does. Told apart from a tag the format never had, because the author is moving something rather than correcting a spelling, and the finding can name what to do instead.</Summary>
             <Implemented Lusan="true" Codegen="false"/>
         </Rule>
 

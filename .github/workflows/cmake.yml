@@ -457,13 +457,15 @@ jobs:
         run: ctest --test-dir ${{env.CACHE_DEST}} -C ${{env.BUILD_TYPE}} --output-on-failure --output-junit test_results.xml
 
       - name: Run the benchmarks and publish the measured rates
-        # A trend line, not an acceptance criterion: a shared build server is a noisy
-        # place to measure. Published as annotations, readable without an artifact.
+        # The measured rates are a trend line, not an acceptance criterion: a shared build
+        # server is a noisy place to measure. They are published as annotations, readable
+        # without an artifact, and a slow number never fails the step.
+        # The step does fail when an application of a scenario crashes, hangs or does not
+        # print what it must, because that is a defect and not a measurement.
         if: matrix.config.test == 'ON'
         working-directory: ${{github.workspace}}
         shell: bash
         timeout-minutes: 40
-        continue-on-error: true
         run: |
           BIN_DIR="${{env.BUILD_DEST}}/bin"
           if [ -d "${BIN_DIR}" ]; then BIN_ARG="--bin-dir ${BIN_DIR}"; else BIN_ARG=""; fi
@@ -507,7 +509,8 @@ jobs:
           fi
           if [ -n "${BIN_DIR}" ] && [ -d "${BIN_DIR}" ]; then cp -R "${BIN_DIR}/" "${DEST}/bin/" || true; fi
           cp -R ./${{env.INSTALL_DEST}}/                   "${DEST}/"                  || true
-          cp -R ./example-results/${{matrix.config.name}}/ "${DEST}/example-results/"  || true
+          cp -R ./example-results/${{matrix.config.name}}/          "${DEST}/example-results/"            || true
+          cp -R ./example-results/${{matrix.config.name}}-benchmarks/ "${DEST}/example-results-benchmarks/" || true
           cp -R ./cores/                                   "${DEST}/cores/"            || true
           find "${DEST}" -maxdepth 2 | head -n 40
 
