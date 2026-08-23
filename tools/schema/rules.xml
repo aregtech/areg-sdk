@@ -15,282 +15,282 @@
 
     <RuleList>
 
-        <Rule Number="1" Name="RULE_START_STATE" Section="shared" Bands="error">
+        <Rule Number="1" Name="RULE_START_STATE" Section="shared" Bands="error" Documents="fsml">
             <Summary>A level with no `Kind="Start"` state, or with more than one of them.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_START_STATE"/>
         </Rule>
 
-        <Rule Number="2" Name="RULE_DUPLICATE_ID" Section="shared" Bands="error">
+        <Rule Number="2" Name="RULE_DUPLICATE_ID" Section="shared" Bands="error" Documents="fsml">
             <Summary>One element ID claimed by more than one element, so every reference to it binds to whichever was read first.</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_DUPLICATE_ID"/>
         </Rule>
 
-        <Rule Number="3" Name="RULE_STATE_NAME" Section="shared" Bands="error">
+        <Rule Number="3" Name="RULE_STATE_NAME" Section="shared" Bands="error" Documents="fsml">
             <Summary>A state name that is not unique in the document.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_STATE_NAME"/>
         </Rule>
 
-        <Rule Number="4" Name="RULE_DUPLICATE_NAME" Section="shared" Bands="error warning">
+        <Rule Number="4" Name="RULE_DUPLICATE_NAME" Section="shared" Bands="error warning" Documents="dtml siml fsml">
             <Summary>A name that is already taken: two entries of the same kind in one registry, a repeated parameter name, or a stimulus name claimed by a trigger, an event and a timer at once. Reported on every entry after the first, so the finding names the copy the author has to rename. The code generator reports it for two included documents that declare one name.</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_DUPLICATE_NAME" CodegenBands="error"/>
         </Rule>
 
-        <Rule Number="26" Name="RULE_UNREFERENCED" Section="shared" Bands="warning information">
+        <Rule Number="26" Name="RULE_UNREFERENCED" Section="shared" Bands="warning information" Documents="dtml siml fsml">
             <Summary>A declaration nothing in the document uses, or an included document it takes nothing from. Never an error -- code that nothing reaches still generates -- so the bare number is reserved and only the banded ids are ever reported.</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_UNREFERENCED" CodegenBands="warning"/>
         </Rule>
 
-        <Rule Number="29" Name="RULE_MISSING_VERSION" Section="shared" Bands="error">
+        <Rule Number="29" Name="RULE_MISSING_VERSION" Section="shared" Bands="error" Documents="dtml siml fsml">
             <Summary>A document that declares no version. The version reaches the generated code and tells a client which contract it was built against. Every document kind carries one, so the fault is shared rather than owned by a single kind.</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_MISSING_VERSION"/>
         </Rule>
 
-        <Rule Number="5" Name="RULE_INVALID_IDENTIFIER" Section="shared" Bands="error">
+        <Rule Number="5" Name="RULE_INVALID_IDENTIFIER" Section="shared" Bands="error" Documents="dtml siml fsml">
             <Summary>A name the generated code could not carry: it must start with a letter or an underscore and continue with letters, digits or underscores. A declaration with no name at all is the same fault and carries the same number.</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_IDENTIFIER"/>
         </Rule>
 
-        <Rule Number="6" Name="RULE_UNRESOLVED_TYPE" Section="shared" Bands="error">
+        <Rule Number="6" Name="RULE_UNRESOLVED_TYPE" Section="shared" Bands="error" Documents="dtml siml fsml">
             <Summary>A declared data type that answers to nothing: the type of an attribute, a parameter, a constant, a structure field, or a container key or value. The field to correct is the type itself, which is what tells it apart from a reference to a declared element (\a RULE_UNRESOLVED_ELEMENT).</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_DATA_TYPE"/>
         </Rule>
 
-        <Rule Number="7" Name="RULE_TARGET_SIBLING" Section="shared" Bands="error">
+        <Rule Number="7" Name="RULE_TARGET_SIBLING" Section="shared" Bands="error" Documents="fsml">
             <Summary>A transition target that is not a sibling of the state it leaves.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_TARGET_SIBLING"/>
         </Rule>
 
-        <Rule Number="8" Name="RULE_FINAL_STATE" Section="shared" Bands="error">
+        <Rule Number="8" Name="RULE_FINAL_STATE" Section="shared" Bands="error" Documents="fsml">
             <Summary>A `Final` state with outgoing transitions, or with substates.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_FINAL_STATE"/>
         </Rule>
 
-        <Rule Number="9" Name="RULE_START_SUBSTATES" Section="shared" Bands="error">
+        <Rule Number="9" Name="RULE_START_SUBSTATES" Section="shared" Bands="error" Documents="fsml">
             <Summary>A `Kind="Start"` state that owns substates.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_START_SUBSTATES"/>
         </Rule>
 
-        <Rule Number="10" Name="RULE_ARGUMENT_MAPPING" Section="shared" Bands="error">
+        <Rule Number="10" Name="RULE_ARGUMENT_MAPPING" Section="shared" Bands="error" Documents="fsml">
             <Summary>The argument-to-parameter mapping faults.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_ARGUMENT_MAPPING"/>
         </Rule>
 
-        <Rule Number="11" Name="RULE_NESTED_START" Section="shared" Bands="error">
+        <Rule Number="11" Name="RULE_NESTED_START" Section="shared" Bands="error" Documents="fsml">
             <Summary>A submachine level with no `Kind="Start"` state. The root level is \a RULE_START_STATE; a nested one is told apart so the message can name the level that is missing its beginning.</Summary>
             <Implemented Lusan="true" Codegen="false"/>
         </Rule>
 
-        <Rule Number="12" Name="RULE_SOURCE_SCOPE" Section="shared" Bands="error">
+        <Rule Number="12" Name="RULE_SOURCE_SCOPE" Section="shared" Bands="error" Documents="fsml">
             <Summary>A value source or a guard operand that is out of scope where it stands.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_SOURCE_SCOPE"/>
         </Rule>
 
-        <Rule Number="13" Name="RULE_ARGUMENT_TYPE" Section="shared" Bands="error warning">
+        <Rule Number="13" Name="RULE_ARGUMENT_TYPE" Section="shared" Bands="error warning" Documents="fsml">
             <Summary>An argument type with no conversion to the parameter it binds to, or a comparison between two types with no implicit conversion. A conversion that only narrows is a warning, and the generated code casts explicitly.</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_ARGUMENT_TYPE" CodegenBands="error warning"/>
         </Rule>
 
-        <Rule Number="14" Name="RULE_COMPARE_OPERAND" Section="shared" Bands="error">
+        <Rule Number="14" Name="RULE_COMPARE_OPERAND" Section="shared" Bands="error" Documents="fsml">
             <Summary>A structure or container operand in a comparison, or an ordering operator on `bool`, `String` or an enumeration.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_COMPARE_OPERAND"/>
         </Rule>
 
-        <Rule Number="14" Name="RULE_MISSING_DESCRIPTION" Section="shared" Bands="information">
+        <Rule Number="14" Name="RULE_MISSING_DESCRIPTION" Section="shared" Bands="information" Documents="fsml">
             <Summary>Advisory: a declaration with no description, so the generated element carries no comment. Only ever banded -- the bare number belongs to \a RULE_COMPARE_OPERAND.</Summary>
             <Implemented Lusan="true" Codegen="false"/>
         </Rule>
 
-        <Rule Number="15" Name="RULE_BAD_LITERAL" Section="shared" Bands="error">
+        <Rule Number="15" Name="RULE_BAD_LITERAL" Section="shared" Bands="error" Documents="dtml siml fsml">
             <Summary>A value that does not read as its declared type: a malformed literal, a name that is not an enumerator of its enumeration, or a literal on a type that has no literal form.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_BAD_LITERAL"/>
         </Rule>
 
-        <Rule Number="16" Name="RULE_BOOLEAN_OPERAND" Section="shared" Bands="error">
+        <Rule Number="16" Name="RULE_BOOLEAN_OPERAND" Section="shared" Bands="error" Documents="fsml">
             <Summary>A predicate operand tested on its own that is not `bool`.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_BOOLEAN_OPERAND"/>
         </Rule>
 
-        <Rule Number="17" Name="RULE_ATTRIBUTE_TYPE" Section="shared" Bands="error warning">
+        <Rule Number="17" Name="RULE_ATTRIBUTE_TYPE" Section="shared" Bands="error warning" Documents="fsml">
             <Summary>An `AttributeSet` whose source type does not convert to the attribute's type. A conversion that only narrows is a warning, and the generated code casts explicitly.</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_ATTRIBUTE_TYPE" CodegenBands="error warning"/>
         </Rule>
 
-        <Rule Number="18" Name="RULE_STATE_SHAPE" Section="shared" Bands="error">
+        <Rule Number="18" Name="RULE_STATE_SHAPE" Section="shared" Bands="error" Documents="fsml">
             <Summary>A state both painted and imported, a `Submachine` on a `Start` or a `Final` state, `History` or `OnFinal` on a state that is not composite, and an import that carries no alias.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_STATE_SHAPE"/>
         </Rule>
 
-        <Rule Number="19" Name="RULE_BROKEN_IMPORT" Section="shared" Bands="error">
+        <Rule Number="19" Name="RULE_BROKEN_IMPORT" Section="shared" Bands="error" Documents="siml fsml">
             <Summary>An include that does not resolve: no file named, the file missing, unreadable, a cycle, or nested too deep. An included data type document that could not be read is the same fault -- every type it was to contribute is missing. The editor always refuses; the code generator softens it to a warning, or to information when the generated output of the missing document is already on disk and is used as it stands.</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_IMPORT" CodegenBands="error warning information"/>
         </Rule>
 
-        <Rule Number="20" Name="RULE_CONDITION_BODY" Section="shared" Bands="error">
+        <Rule Number="20" Name="RULE_CONDITION_BODY" Section="shared" Bands="error" Documents="fsml">
             <Summary>An `Embedded` condition with an empty body, a body on a handler, or a body or a `Return` on a method that is not a condition.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_CONDITION_BODY"/>
         </Rule>
 
-        <Rule Number="21" Name="RULE_PARAMETERIZED_COND" Section="shared" Bands="error">
+        <Rule Number="21" Name="RULE_PARAMETERIZED_COND" Section="shared" Bands="error" Documents="fsml">
             <Summary>A parameterized condition named as a value source, which only a left operand may be.</Summary>
             <Implemented Lusan="true" Codegen="false"/>
         </Rule>
 
-        <Rule Number="22" Name="RULE_IMPORT_MAJOR" Section="shared" Bands="error">
+        <Rule Number="22" Name="RULE_IMPORT_MAJOR" Section="shared" Bands="error" Documents="fsml">
             <Summary>An import whose pinned version differs from the file in its MAJOR part.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_IMPORT_MAJOR"/>
         </Rule>
 
-        <Rule Number="23" Name="RULE_SOURCE_KIND" Section="shared" Bands="error">
+        <Rule Number="23" Name="RULE_SOURCE_KIND" Section="shared" Bands="error" Documents="fsml">
             <Summary>A value source the format does not define, or one written where another kind of row belongs.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_SOURCE_KIND"/>
         </Rule>
 
-        <Rule Number="24" Name="RULE_SOURCE_EMPTY" Section="shared" Bands="error">
+        <Rule Number="24" Name="RULE_SOURCE_EMPTY" Section="shared" Bands="error" Documents="fsml">
             <Summary>A value source with nothing in it.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_SOURCE_EMPTY"/>
         </Rule>
 
-        <Rule Number="25" Name="RULE_GUARD" Section="shared" Bands="error warning information">
+        <Rule Number="25" Name="RULE_GUARD" Section="shared" Bands="error warning information" Documents="fsml">
             <Summary>The rule guard findings are filed under. The guard checker owns the grammar and the symbol binding, but its findings are collected into the one document run.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_GUARD" CodegenBands="error"/>
         </Rule>
 
-        <Rule Number="27" Name="RULE_PSEUDO_START" Section="shared" Bands="error">
+        <Rule Number="27" Name="RULE_PSEUDO_START" Section="shared" Bands="error" Documents="fsml">
             <Summary>The `Kind="Start"` pseudo-state faults: operations on a Start, a stimulus on one of its initial transitions, a Start nothing leaves, a Start something enters (its own transition included), two or more initial transitions where any carries no condition, and a root Start that does not have exactly one unconditional transition. One id, because they are one rule (a Start is not a state) and because the code generator has to file the same faults under the same number.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_PSEUDO_START"/>
         </Rule>
 
-        <Rule Number="28" Name="RULE_TRANSITION_KIND" Section="shared" Bands="error">
+        <Rule Number="28" Name="RULE_TRANSITION_KIND" Section="shared" Bands="error" Documents="fsml">
             <Summary>The transition `Kind`: an `External` transition with no target (the unfinished edge that used to be indistinguishable from an internal one), an `Internal` one that names a target, an `Initial` one with no target or with a stimulus, an `External`/`Internal` one with no stimulus, an `Initial` transition on a state that is not a `Kind="Start"`, and a `Start` owning anything other than `Initial` transitions. One id, because they are one rule (`Kind` says what the transition is, and `To` and `Stimulus` then mean only what they say) and because the code generator has to file the same faults under the same number.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_TRANSITION_KIND"/>
         </Rule>
 
-        <Rule Number="31" Name="RULE_HANDLER_NAME" Section="shared" Bands="error">
+        <Rule Number="31" Name="RULE_HANDLER_NAME" Section="shared" Bands="error" Documents="fsml">
             <Summary>Two hosted machines whose action handler parameters flatten to one name.</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_HANDLER_NAME"/>
         </Rule>
 
-        <Rule Number="32" Name="RULE_ATTRIBUTE_STIMULUS" Section="shared" Bands="error">
+        <Rule Number="32" Name="RULE_ATTRIBUTE_STIMULUS" Section="shared" Bands="error" Documents="fsml">
             <Summary>An attribute and a trigger that share a name, so both reach one function.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_ATTRIBUTE_STIMULUS"/>
         </Rule>
 
-        <Rule Number="33" Name="RULE_RESERVED_PREFIX" Section="shared" Bands="error">
+        <Rule Number="33" Name="RULE_RESERVED_PREFIX" Section="shared" Bands="error" Documents="fsml">
             <Summary>A name that would place a member under a reserved prefix it does not own.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_RESERVED_PREFIX"/>
         </Rule>
 
-        <Rule Number="34" Name="RULE_UNKNOWN_ELEMENT" Section="shared" Bands="error">
-            <Summary>An element of the opened file the format does not place: an unknown tag, a real one written where the format does not allow it, or one the format has dropped. The block is kept as written, so a document carrying one still opens and still saves without losing it.</Summary>
+        <Rule Number="34" Name="RULE_UNKNOWN_ELEMENT" Section="shared" Bands="error" Documents="dtml siml fsml">
+            <Summary>An element of the opened file the format does not place: an unknown tag, a real one written where the format does not allow it, or one the format has dropped. The block is kept as written while the document is open, so a document carrying one still opens, and it is dropped when the document is saved.</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_SHAPE"/>
         </Rule>
 
-        <Rule Number="34" Name="RULE_PARAM_SHADOWS" Section="shared" Bands="warning">
+        <Rule Number="34" Name="RULE_PARAM_SHADOWS" Section="shared" Bands="warning" Documents="fsml">
             <Summary>Advisory: a parameter carrying the name of its own trigger or condition. The bare number belongs to \a RULE_UNKNOWN_ELEMENT; this one is only ever banded.</Summary>
             <Implemented Lusan="true" Codegen="false"/>
         </Rule>
 
-        <Rule Number="36" Name="RULE_UNBOUND_RESPONSE" Section="shared" Bands="warning">
+        <Rule Number="36" Name="RULE_UNBOUND_RESPONSE" Section="shared" Bands="warning" Documents="siml">
             <Summary>Advisory: a response no request leads to. Only ever banded -- the bare number is not in use.</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_UNBOUND_RESPONSE"/>
         </Rule>
 
-        <Rule Number="38" Name="RULE_DEFAULT_ORDER" Section="shared" Bands="error">
+        <Rule Number="38" Name="RULE_DEFAULT_ORDER" Section="shared" Bands="error" Documents="siml fsml">
             <Summary>A parameter carrying a default that another parameter follows.</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_DEFAULT_ORDER"/>
         </Rule>
 
-        <Rule Number="39" Name="RULE_ACTION_PREFIX" Section="shared" Bands="warning">
+        <Rule Number="39" Name="RULE_ACTION_PREFIX" Section="shared" Bands="warning" Documents="fsml">
             <Summary>Advisory: a condition whose name already begins with the prefix an action method carries. Only ever banded.</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_ACTION_PREFIX"/>
         </Rule>
 
-        <Rule Number="46" Name="RULE_UNRESOLVED_ELEMENT" Section="shared" Bands="error">
+        <Rule Number="46" Name="RULE_UNRESOLVED_ELEMENT" Section="shared" Bands="error" Documents="fsml">
             <Summary>A reference to a declared element that is not there: a trigger, an event, a timer, an action, an attribute, a constant, a condition, a parameter, or the alias of a hosted machine. The field to correct is the name that was written, which is what tells it apart from a data type that answers to nothing (\a RULE_UNRESOLVED_TYPE).</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_UNRESOLVED_ELEMENT"/>
         </Rule>
 
-        <Rule Number="40" Name="RULE_NOT_A_HEADER" Section="shared" Bands="error">
+        <Rule Number="40" Name="RULE_NOT_A_HEADER" Section="shared" Bands="error" Documents="dtml">
             <Summary>A data type document whose include list names another document. It declares types and nothing else, and its include list carries C++ headers.</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_NOT_A_HEADER"/>
         </Rule>
 
-        <Rule Number="41" Name="RULE_DUPLICATE_ENUM_VALUE" Section="shared" Bands="error">
+        <Rule Number="41" Name="RULE_DUPLICATE_ENUM_VALUE" Section="shared" Bands="error" Documents="dtml siml fsml">
             <Summary>Two enumerators of one enumeration counting the same, so a value read back cannot be told apart from the other one.</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_ENUM_VALUE"/>
         </Rule>
 
-        <Rule Number="43" Name="RULE_DEPRECATED" Section="shared" Bands="warning information">
+        <Rule Number="43" Name="RULE_DEPRECATED" Section="shared" Bands="warning information" Documents="dtml siml fsml">
             <Summary>A declaration its author marked deprecated. Never an error -- a deprecation may not block a build -- so the bare number is reserved and only the banded ids are ever reported.</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_DEPRECATED"/>
         </Rule>
 
-        <Rule Number="47" Name="RULE_EMPTY_TYPE" Section="shared" Bands="warning">
+        <Rule Number="47" Name="RULE_EMPTY_TYPE" Section="shared" Bands="warning" Documents="dtml siml">
             <Summary>Advisory: a structure or an enumeration with no members. It generates an empty declaration, which compiles, so the note stands only until the first member is added.</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_EMPTY_TYPE"/>
         </Rule>
 
-        <Rule Number="48" Name="RULE_EMPTY_DOCUMENT" Section="shared" Bands="warning">
+        <Rule Number="48" Name="RULE_EMPTY_DOCUMENT" Section="shared" Bands="warning" Documents="dtml siml">
             <Summary>Advisory: the document declares nothing at all, so what includes it or connects to it gains nothing.</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_EMPTY_DOCUMENT"/>
         </Rule>
 
-        <Rule Number="49" Name="RULE_FILE_NAME_MISMATCH" Section="shared" Bands="information">
+        <Rule Number="49" Name="RULE_FILE_NAME_MISMATCH" Section="shared" Bands="information" Documents="dtml siml fsml">
             <Summary>The document declares one name and lives in a file called another. Both are allowed -- the generated files follow the declared name -- but worth saying.</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_FILE_NAME_MISMATCH"/>
         </Rule>
 
-        <Rule Number="51" Name="RULE_RESPONSE_LINK" Section="shared" Bands="error">
+        <Rule Number="51" Name="RULE_RESPONSE_LINK" Section="shared" Bands="error" Documents="siml">
             <Summary>A request whose Response names nothing, or names a method the document declares as something other than a response. The field to correct is the response the request is answered by.</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_RESPONSE_LINK"/>
         </Rule>
 
-        <Rule Number="1" Name="RULE_UNREACHABLE_STATE" Section="banded" Bands="warning">
+        <Rule Number="1" Name="RULE_UNREACHABLE_STATE" Section="banded" Bands="warning" Documents="fsml">
             <Summary>Warning 101: a state no transition targets and no Start enters, so nothing it does ever runs.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_UNREACHABLE_STATE"/>
         </Rule>
 
-        <Rule Number="2" Name="RULE_DEAD_END_STATE" Section="banded" Bands="warning">
+        <Rule Number="2" Name="RULE_DEAD_END_STATE" Section="banded" Bands="warning" Documents="fsml">
             <Summary>Warning 102: a state with no outgoing transition. The machine stays in it once it is entered.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_DEAD_END_STATE"/>
         </Rule>
 
-        <Rule Number="3" Name="RULE_SHADOWED_TRANSITION" Section="banded" Bands="warning">
+        <Rule Number="3" Name="RULE_SHADOWED_TRANSITION" Section="banded" Bands="warning" Documents="fsml">
             <Summary>Warning 103: a transition an earlier unconditional transition on the same stimulus always takes first.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_SHADOWED_TRANSITION"/>
         </Rule>
 
-        <Rule Number="5" Name="RULE_ONE_SIDED_EVENT" Section="banded" Bands="warning">
+        <Rule Number="5" Name="RULE_ONE_SIDED_EVENT" Section="banded" Bands="warning" Documents="fsml">
             <Summary>Warning 105: an event that is sent and never reacted to, or reacted to and never sent.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_ONE_SIDED_EVENT"/>
         </Rule>
 
-        <Rule Number="6" Name="RULE_ONE_SIDED_TIMER" Section="banded" Bands="warning">
+        <Rule Number="6" Name="RULE_ONE_SIDED_TIMER" Section="banded" Bands="warning" Documents="fsml">
             <Summary>Warning 106: a timer that is started and never reacted to, or reacted to and never started.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_ONE_SIDED_TIMER"/>
         </Rule>
 
-        <Rule Number="7" Name="RULE_EMPTY_INTERNAL" Section="banded" Bands="warning">
+        <Rule Number="7" Name="RULE_EMPTY_INTERNAL" Section="banded" Bands="warning" Documents="fsml">
             <Summary>Warning 107: an internal transition that carries no operation and no condition, so reacting to the stimulus changes nothing.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_EMPTY_INTERNAL"/>
         </Rule>
 
-        <Rule Number="9" Name="RULE_CONSTANT_COMPARE" Section="banded" Bands="warning">
+        <Rule Number="9" Name="RULE_CONSTANT_COMPARE" Section="banded" Bands="warning" Documents="fsml">
             <Summary>Warning 109: a comparison whose operands are both fixed at design time, so the result is decided before the machine runs.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_CONSTANT_COMPARE"/>
         </Rule>
 
-        <Rule Number="10" Name="RULE_UNUSED_HISTORY" Section="banded" Bands="warning">
+        <Rule Number="10" Name="RULE_UNUSED_HISTORY" Section="banded" Bands="warning" Documents="fsml">
             <Summary>Warning 110: a state carrying History that no transition ever re-enters, so the remembered substate is never restored.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_UNUSED_HISTORY"/>
         </Rule>
 
-        <Rule Number="12" Name="RULE_IMPORT_PATCH" Section="banded" Bands="warning information">
+        <Rule Number="12" Name="RULE_IMPORT_PATCH" Section="banded" Bands="warning information" Documents="fsml">
             <Summary>Warning 112 and information 212: an import pinned to a version the file no longer carries, where the difference is below the major version.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_IMPORT_PATCH" CodegenBands="warning"/>
         </Rule>
 
-        <Rule Number="30" Name="RULE_RETIRED_ELEMENT" Section="shared" Bands="error">
+        <Rule Number="30" Name="RULE_RETIRED_ELEMENT" Section="shared" Bands="error" Documents="dtml siml fsml">
             <Summary>An element the format used to define in this place and no longer does. Told apart from a tag the format never had, because the author is moving something rather than correcting a spelling, and the finding can name what to do instead.</Summary>
             <Implemented Lusan="true" Codegen="false"/>
         </Rule>
@@ -298,21 +298,29 @@
         <!-- Reported by the code generator only. The editor has no schema validator and no
              request/response link check of its own, so it never raises these. -->
 
-        <Rule Number="35" Name="RULE_TWO_RESPONSES" Section="shared" Bands="error">
+        <Rule Number="35" Name="RULE_TWO_RESPONSES" Section="shared" Bands="error" Documents="siml">
             <Summary>A request that names two responses. A request has one answer, so the link binds to whichever declaration was read first and the other is orphaned without a word.</Summary>
             <Implemented Lusan="false" Codegen="true" CodegenName="RULE_TWO_RESPONSES"/>
         </Rule>
 
-        <Rule Number="37" Name="RULE_SHARED_RESPONSE" Section="shared" Bands="information">
+        <Rule Number="37" Name="RULE_SHARED_RESPONSE" Section="shared" Bands="information" Documents="siml">
             <Summary>A response that answers more than one request. Legal and sometimes meant, so it is information and never a warning.</Summary>
             <Implemented Lusan="false" Codegen="true" CodegenName="RULE_SHARED_RESPONSE"/>
         </Rule>
 
-        <Rule Number="45" Name="RULE_BAD_VALUE" Section="shared" Bands="error">
+        <Rule Number="45" Name="RULE_BAD_VALUE" Section="shared" Bands="error" Documents="dtml siml fsml">
             <Summary>A value the format cannot read where it stands. The element and the attribute are both allowed here; what they hold is not what the format says they may hold.</Summary>
             <Implemented Lusan="false" Codegen="true" CodegenName="RULE_BAD_VALUE"/>
         </Rule>
 
+        <Rule Number="52" Name="RULE_UNKNOWN_ATTRIBUTE" Section="shared" Bands="warning" Documents="dtml siml fsml">
+            <Summary>An attribute the format does not define on an element it does define. Nothing reads it, so it reaches no generated code, and it is dropped when the document is saved.</Summary>
+            <Implemented Lusan="true" Codegen="false"/>
+        </Rule>
+        <Rule Number="53" Name="RULE_DROPPED_ELEMENT" Section="shared" Bands="warning" Documents="dtml siml fsml">
+            <Summary>An element block the format does not place, kept while the document is open and dropped when it is saved. Reported beside the fault itself so the loss is stated before it happens.</Summary>
+            <Implemented Lusan="true" Codegen="false"/>
+        </Rule>
     </RuleList>
 
     <!--
