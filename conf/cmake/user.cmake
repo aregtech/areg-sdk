@@ -30,6 +30,7 @@
 #  20. AREG_ARCH            -- The processor architect. Ignore if need to use system default.
 #  21. AREG_TARGET          -- Specifies the compiler and library architecture target. Defaults to the system-defined compiler and architecture.
 #  22. AREG_ARCH_NATIVE     -- Optimizes GNU/Clang Release builds for the build machine CPU ('-march=native'). Defaults to 'disabled'.
+#  23. AREG_BENCHMARKS      -- Enables or disables building the performance benchmarks of the Areg Framework.
 #
 # Default Values:
 #   1. AREG_LIB_TYPE        = shared    (possible values: shared, static)
@@ -54,6 +55,7 @@
 #  20. AREG_ARCH            = System    (possible values: x86 (i386, i486), x64 (x86_64, x86-64, amd64, ia64), arm (arm32, armv7), aarch64 (arm64))
 #  21. AREG_TARGET          = <default> (possible values: 'i386-linux-gnu', 'x86_64-linux-gnu', 'arm-linux-gnueabihf', 'aarch64-linux-gnu')
 #  22. AREG_ARCH_NATIVE     = OFF       (possible values: ON, OFF)
+#  23. AREG_BENCHMARKS      = OFF       (possible values: ON, OFF)
 #
 # Hints:
 #   - AREG_COMPILER_FAMILY is an easy way to set compilers:
@@ -256,6 +258,9 @@ macro_create_option(AREG_TESTS ON "Build unit tests")
 
 # Build examples. By default it is disabled. To enable, set ON
 macro_create_option(AREG_EXAMPLES ON "Build examples")
+
+# Build benchmarks. By default it is disabled. To enable, set ON
+macro_create_option(AREG_BENCHMARKS OFF "Build benchmarks")
 
 # Generate only service files. By default it is disabled. To enable, set ON
 macro_create_option(AREG_GENERATE_ONLY OFF "Generate only service files")
