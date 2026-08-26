@@ -29,6 +29,12 @@ namespace areg {
     constexpr uint32_t  QUEUE_MIN_RING_CAPACITY     {                 32u };    //!< Smallest ring size.
     constexpr uint32_t  QUEUE_MAX_RING_CAPACITY     {           16777216u };    //! explicit-size upper bound (keeps round-up safe)
     constexpr uint32_t  QUEUE_DEFAULT_RING_CAPACITY {               1024u };    //!< Default Ring size to use.
+    //!< Ring size of a thread whose queue carries only control events, like a socket receive thread.
+    constexpr uint32_t  QUEUE_CONTROL_RING_CAPACITY {                 32u };
+    //!< Ring size of a thread that serves registration and lifecycle requests, like the service manager.
+    constexpr uint32_t  QUEUE_MANAGER_RING_CAPACITY {                 64u };
+    //!< Ring size of a thread that serves timer requests, like the timer manager.
+    constexpr uint32_t  QUEUE_TIMER_RING_CAPACITY   {                128u };
     //!< Lossless full-queue producer wait in a release build. It is a backstop for a consumer
     //!< that stopped: a healthy but slow socket gives up after SO_SNDTIMEO, which is 2500 ms.
     constexpr uint32_t  QUEUE_FULL_WAIT_RELEASE_MS  {   10 * areg::WAIT_1_SECOND };

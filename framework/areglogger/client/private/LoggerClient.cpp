@@ -43,7 +43,7 @@ LoggerClient::LoggerClient()
                                  , static_cast<DispatcherThread &>(self())
                                  , LoggerClient::THREAD_PREFIX)
     , ConfigListener    ( )
-    , DispatcherThread           ( LoggerClient::THREAD_NAME, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
+    , DispatcherThread           ( LoggerClient::THREAD_NAME, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_DEFAULT_RING_CAPACITY )
     , ConnectionConsumer( )
     , RemoteMessageHandler     ( )
 

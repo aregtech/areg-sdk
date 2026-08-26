@@ -603,11 +603,16 @@ macro(macro_system_bitness var_bitness)
             set(${var_bitness} ${_bitness_value})
         else()
             set(${var_bitness} 64)
+            # Called before 'project()', none of the three sources exists yet and the
+            # value is a placeholder that 'common.cmake' replaces once the compiler is
+            # known. Report only a real failure: a known host that stays unresolved.
+            if (NOT "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "")
+                message(WARNING "Areg: >>> Neither the compiler nor the architecture '${AREG_ARCH}' reported the bitness, assuming ${${var_bitness}}-bit")
+            endif()
         endif()
         unset(_bitness_proc)
         unset(_bitness_value)
         unset(_bitness_found)
-        message(WARNING "Areg: >>> Neither the compiler nor the architecture '${AREG_ARCH}' reported the bitness, assuming ${${var_bitness}}-bit")
     endif()
 endmacro(macro_system_bitness)
 

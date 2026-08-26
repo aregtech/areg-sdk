@@ -53,6 +53,16 @@ namespace
     {
         return TagEvent(tag, prio);
     }
+
+    //!< An EventQueue holding its lanes, the state a running dispatcher keeps it in.
+    struct ReadyQueue : public EventQueue
+    {
+        explicit ReadyQueue(uint32_t maxQueue, bool dropOnFull = false, uint32_t waitMs = areg::QUEUE_DEFAULT_FULL_WAIT_MS)
+            : EventQueue(maxQueue, dropOnFull, waitMs)
+        {
+            acquire_lanes();
+        }
+    };
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -61,7 +71,7 @@ namespace
 
 TEST(EventQueueTest, empty_on_construction)
 {
-    EventQueue queue(0u);
+    ReadyQueue queue(0u);
     EXPECT_FALSE(queue.has_pending());
     EXPECT_FALSE(queue.is_exit_triggered());
     EXPECT_FALSE(queue.pop_event().is_valid());
@@ -70,7 +80,7 @@ TEST(EventQueueTest, empty_on_construction)
 
 TEST(EventQueueTest, push_pop_single)
 {
-    EventQueue queue(0u);
+    ReadyQueue queue(0u);
     Event evt = makeEvent(42u);
     queue.push_event(evt);
 
@@ -87,7 +97,7 @@ TEST(EventQueueTest, push_pop_single)
 
 TEST(EventQueueTest, fifo_order_normal_lane)
 {
-    EventQueue queue(0u);
+    ReadyQueue queue(0u);
     constexpr uint32_t COUNT{ 100u };
     for (uint32_t i = 0u; i < COUNT; ++i)
     {
@@ -107,7 +117,7 @@ TEST(EventQueueTest, fifo_order_normal_lane)
 
 TEST(EventQueueTest, priority_lane_drained_first)
 {
-    EventQueue queue(0u);
+    ReadyQueue queue(0u);
     Event normal   = makeEvent(1u, EventPriority::NormalPrio);   queue.push_event(normal);
     Event high     = makeEvent(2u, EventPriority::HighPrio);     queue.push_event(high);
     Event critical = makeEvent(3u, EventPriority::CriticalPrio); queue.push_event(critical);
@@ -121,7 +131,7 @@ TEST(EventQueueTest, priority_lane_drained_first)
 
 TEST(EventQueueTest, exit_preempts_is_sticky_and_resets)
 {
-    EventQueue queue(0u);
+    ReadyQueue queue(0u);
     Event normal = makeEvent(7u);
     queue.push_event(normal);
 
@@ -146,7 +156,7 @@ TEST(EventQueueTest, push_event_exit_routes_to_sticky_flag)
 {
     // An ExitPrio event must NOT be queued: it sets the sticky exit flag so pop_event()
     // synthesizes the singleton ExitEvent and the queue itself stays empty.
-    EventQueue queue(0u);
+    ReadyQueue queue(0u);
     Event exit = makeEvent(0u, EventPriority::ExitPrio);
     queue.push_event(exit);
 
@@ -159,7 +169,7 @@ TEST(EventQueueTest, pop_events_preempts_with_exit)
 {
     // pop_events() must honor the sticky exit flag and return a single ExitEvent,
     // exactly like pop_event().
-    EventQueue queue(0u);
+    ReadyQueue queue(0u);
     Event normal = makeEvent(5u);
     queue.push_event(normal);
     queue.trigger_exit();
@@ -173,7 +183,7 @@ TEST(EventQueueTest, pop_events_preempts_with_exit)
 TEST(EventQueueTest, push_events_routes_exit_to_flag)
 {
     // A batch whose highest-priority slot is an exit must set the sticky flag, not queue it.
-    EventQueue queue(0u);
+    ReadyQueue queue(0u);
     Event batch[3] =
     {
           makeEvent(0u, EventPriority::ExitPrio)
@@ -190,7 +200,8 @@ TEST(EventQueueTest, push_events_routes_exit_to_flag)
 TEST(EventQueueTest, capacity_overflow_returns_event)
 {
     constexpr uint32_t CAPACITY{ 32u };
-    EventQueue queue(CAPACITY);
+    // A short block timeout: the test wants the event handed back, not the full wait.
+    ReadyQueue queue(CAPACITY, false, 50u);
     for (uint32_t i = 0u; i < CAPACITY; ++i)
     {
         Event evt = makeEvent(i);
@@ -206,7 +217,7 @@ TEST(EventQueueTest, capacity_overflow_returns_event)
 
 TEST(EventQueueTest, remove_all_events_empties_queue)
 {
-    EventQueue queue(0u);
+    ReadyQueue queue(0u);
     for (uint32_t i = 0u; i < 50u; ++i)
     {
         Event evt = makeEvent(i);
@@ -226,7 +237,7 @@ TEST(EventQueueTest, remove_all_events_empties_queue)
 
 TEST(EventQueueTest, wait_event_wakes_on_push)
 {
-    EventQueue queue(0u);
+    ReadyQueue queue(0u);
     std::atomic<bool> woke{ false };
     std::thread consumer([&]
     {
@@ -244,7 +255,7 @@ TEST(EventQueueTest, wait_event_wakes_on_push)
 
 TEST(EventQueueTest, wait_event_wakes_on_exit)
 {
-    EventQueue queue(0u);
+    ReadyQueue queue(0u);
     std::atomic<bool> sawExit{ false };
     std::thread consumer([&]
     {
@@ -267,7 +278,7 @@ TEST(EventQueueTest, wait_event_wakes_on_exit)
 // the watchdog exit fires, leaving consumed < ITERS and failing the test.
 TEST(EventQueueTest, blocking_consumer_no_lost_wakeup)
 {
-    EventQueue queue(0u);
+    ReadyQueue queue(0u);
     constexpr uint32_t ITERS{ 200000u };
     std::atomic<uint32_t> consumed{ 0u };
 
@@ -317,7 +328,7 @@ TEST(EventQueueTest, mpsc_stress_no_event_loss)
     constexpr uint32_t PER_PRODUCER{ 50000u };
     constexpr uint32_t TOTAL{ PRODUCERS * PER_PRODUCER };
 
-    EventQueue queue(0u);   // unlimited capacity
+    ReadyQueue queue(0u);   // unlimited capacity
     std::atomic<uint32_t> ready{ 0u };
     std::atomic<bool> go{ false };
     std::atomic<uint32_t> received{ 0u };
@@ -394,4 +405,201 @@ TEST(EventQueueTest, mpsc_stress_no_event_loss)
     EXPECT_FALSE(duplicate.load(std::memory_order_relaxed));
     EXPECT_FALSE(outOfRange.load(std::memory_order_relaxed));
     EXPECT_EQ(received.load(std::memory_order_acquire), TOTAL);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Lane lifecycle
+//////////////////////////////////////////////////////////////////////////
+
+TEST(EventQueueTest, no_lanes_before_acquire)
+{
+    EventQueue queue(0u);
+    Event evt = makeEvent(1u);
+
+    EXPECT_FALSE(queue.push_event(evt));
+    EXPECT_TRUE(evt.is_valid());            // rejected, so the caller keeps it
+    EXPECT_FALSE(queue.has_pending());
+    EXPECT_FALSE(queue.pop_event().is_valid());
+}
+
+TEST(EventQueueTest, release_lanes_stops_taking_events)
+{
+    ReadyQueue queue(0u);
+    Event queued = makeEvent(7u);
+    EXPECT_TRUE(queue.push_event(queued));
+
+    queue.release_lanes();                  // drops the queued event with the ring
+
+    Event evt = makeEvent(8u);
+    EXPECT_FALSE(queue.push_event(evt));
+    EXPECT_TRUE(evt.is_valid());
+    EXPECT_FALSE(queue.pop_event().is_valid());
+}
+
+TEST(EventQueueTest, lanes_reacquired_after_release)
+{
+    ReadyQueue queue(0u);
+    Event first = makeEvent(11u);
+    EXPECT_TRUE(queue.push_event(first));
+
+    queue.release_lanes();
+    queue.acquire_lanes();
+    queue.reset_exit();                     // the owner dispatcher does this when it restarts
+
+    Event second = makeEvent(12u);
+    EXPECT_TRUE(queue.push_event(second));
+
+    Event out = queue.pop_event();
+    ASSERT_TRUE(out.is_valid());
+    EXPECT_EQ(out.event_id(), 12u);         // the pre-release event is gone
+    EXPECT_FALSE(queue.pop_event().is_valid());
+}
+
+TEST(EventQueueTest, lanes_survive_a_restart_without_release)
+{
+    // A dispatcher that stops keeps its ring: the acquire on restart is a no-op and
+    // the queue works again once the owner cleared the exit flag.
+    ReadyQueue queue(0u);
+    Event first = makeEvent(11u);
+    EXPECT_TRUE(queue.push_event(first));
+    EXPECT_TRUE(queue.pop_event().is_valid());
+
+    queue.trigger_exit();
+    queue.reset_exit();
+    queue.acquire_lanes();
+
+    Event second = makeEvent(12u);
+    EXPECT_TRUE(queue.push_event(second));
+
+    Event out = queue.pop_event();
+    ASSERT_TRUE(out.is_valid());
+    EXPECT_EQ(out.event_id(), 12u);
+}
+
+TEST(EventQueueTest, close_lanes_shuts_out_live_producers)
+{
+    // The guarantee the owner dispatcher needs: once close_lanes() returns, no producer
+    // is inside the ring and none can get in, even under a live push storm.
+    constexpr uint32_t PRODUCERS{ 4u };
+
+    ReadyQueue               queue(64u, false, 50u);
+    std::atomic<bool>        stop { false };
+    std::atomic<uint32_t>    ready{ 0u };
+    std::atomic<uint32_t>    acceptedAfterClose{ 0u };
+    std::atomic<bool>        closed{ false };
+    std::vector<std::thread> producers;
+
+    for (uint32_t p = 0u; p < PRODUCERS; ++p)
+    {
+        producers.emplace_back([&]()
+        {
+            ready.fetch_add(1u, std::memory_order_release);
+            while (!stop.load(std::memory_order_acquire))
+            {
+                Event evt = makeEvent(1u);
+                const bool taken{ queue.push_event(evt) };
+                if (taken && closed.load(std::memory_order_acquire))
+                    acceptedAfterClose.fetch_add(1u, std::memory_order_relaxed);
+            }
+        });
+    }
+
+    while (ready.load(std::memory_order_acquire) < PRODUCERS)
+        std::this_thread::yield();
+
+    // Let the storm build, draining so the producers keep getting slots.
+    for (uint32_t i = 0u; i < 2000u; ++i)
+        static_cast<void>(queue.pop_event());
+
+    queue.close_lanes();
+    closed.store(true, std::memory_order_release);
+
+    // Give the producers ample time to try again against the closed queue.
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+    EXPECT_TRUE(queue.is_closed());
+    Event evt = makeEvent(2u);
+    EXPECT_FALSE(queue.push_event(evt));
+    EXPECT_TRUE(evt.is_valid());                // refused, so the caller keeps it
+
+    Event high = makeEvent(3u, EventPriority::HighPrio);
+    EXPECT_FALSE(queue.push_event(high));       // the priority lane is shut too
+
+    stop.store(true, std::memory_order_release);
+    for (std::thread& t : producers)
+        t.join();
+
+    EXPECT_EQ(acceptedAfterClose.load(std::memory_order_relaxed), 0u);
+
+    // Reopening restores service on the same ring.
+    queue.acquire_lanes();
+    EXPECT_FALSE(queue.is_closed());
+    queue.remove_all_events();                  // the storm left the small ring full
+    Event again = makeEvent(4u);
+    EXPECT_TRUE(queue.push_event(again));
+    EXPECT_EQ(queue.pop_event().event_id(), 4u);
+}
+
+TEST(EventQueueTest, mpsc_stress_across_lane_cycle)
+{
+    // release_lanes() is quiescent-only. Run a full many-producer round, release the
+    // lanes while nothing is inside the queue, acquire them again and repeat: the
+    // second round must lose nothing either.
+    constexpr uint32_t PRODUCERS   { 4u };
+    constexpr uint32_t PER_PRODUCER{ 20000u };
+    constexpr uint32_t TOTAL       { PRODUCERS * PER_PRODUCER };
+
+    ReadyQueue queue(0u);
+
+    auto oneRound = [&queue]() -> uint32_t
+    {
+        std::atomic<uint32_t> received{ 0u };
+        std::atomic<bool>     go      { false };
+
+        std::thread consumer([&queue, &received]()
+        {
+            while (received.load(std::memory_order_relaxed) < TOTAL)
+            {
+                Event evt{ queue.pop_event() };
+                if (evt.is_valid())
+                    received.fetch_add(1u, std::memory_order_relaxed);
+                else
+                    std::this_thread::yield();
+            }
+        });
+
+        std::vector<std::thread> producers;
+        for (uint32_t p = 0u; p < PRODUCERS; ++p)
+        {
+            producers.emplace_back([&queue, &go]()
+            {
+                while (!go.load(std::memory_order_acquire))
+                    std::this_thread::yield();
+
+                for (uint32_t i = 0u; i < PER_PRODUCER; ++i)
+                {
+                    Event evt = makeEvent(i);
+                    while (!queue.push_event(evt))
+                        std::this_thread::yield();
+                }
+            });
+        }
+
+        go.store(true, std::memory_order_release);
+        for (std::thread& t : producers)
+            t.join();
+
+        consumer.join();
+        return received.load(std::memory_order_relaxed);
+    };
+
+    EXPECT_EQ(oneRound(), TOTAL);
+
+    // Every producer joined and the consumer drained, so the queue is quiet here.
+    queue.release_lanes();
+    Event rejected = makeEvent(1u);
+    EXPECT_FALSE(queue.push_event(rejected));
+
+    queue.acquire_lanes();
+    EXPECT_EQ(oneRound(), TOTAL);
 }

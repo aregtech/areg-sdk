@@ -60,8 +60,9 @@ protected:
      *
      * \param   threadName      The name of the timer manager thread.
      * \param   stackSizeKb     The stack size for the timer manager thread in kilobytes.
+     * \param   maxQueue        The event-queue ring capacity of the timer manager thread.
      **/
-    explicit TimerManagerBase( const String & threadName, uint32_t stackSizeKb );
+    explicit TimerManagerBase( const String & threadName, uint32_t stackSizeKb, uint32_t maxQueue );
     virtual ~TimerManagerBase() = default;
 
 //////////////////////////////////////////////////////////////////////////

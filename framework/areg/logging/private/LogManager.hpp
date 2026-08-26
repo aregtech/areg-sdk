@@ -33,6 +33,7 @@
 #include "areg/logging/private/DatabaseLogger.hpp"
 #include "areg/logging/private/LogEventProcessor.hpp"
 
+#include <atomic>
 #include <string_view>
 
 #if AREG_LOGGING
@@ -441,9 +442,12 @@ private:
      **/
     ScopeController     mScopeController;
     /**
-     * \brief   Flag, indicating whether the logging is started or not
+     * \brief   Flag, indicating whether the logging is started or not.
+     *
+     * \note    The logging thread and the thread that stops it both write it,
+     *          so the accesses are atomic.
      **/
-    bool                mIsStarted;
+    std::atomic_bool    mIsStarted;
     /**
      * \brief   Logging configuration
      **/
@@ -531,7 +535,7 @@ inline LogManager & LogManager::self() noexcept
 inline bool LogManager::is_logging_started() noexcept
 {
     Lock lock(instance().mLock);
-    return instance().mIsStarted;
+    return instance().mIsStarted.load(std::memory_order_acquire);
 }
 
 } // namespace areg

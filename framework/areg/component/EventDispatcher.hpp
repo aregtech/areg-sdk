@@ -118,10 +118,13 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Returns pointer to Dispatcher Thread where current dispatcher is registered.
+     * \brief   Returns the dispatcher thread that owns this dispatcher.
+     *
+     * \note    Every dispatcher is a base of its own thread, so the result is always
+     *          valid. It stays valid for as long as the dispatcher itself does.
      **/
     [[nodiscard]]
-    inline DispatcherThread * dispatcher_thread() const noexcept;
+    DispatcherThread & dispatcher_thread() const noexcept;
 
 protected:
     /**
@@ -129,17 +132,6 @@ protected:
      **/
     [[nodiscard]]
     inline bool has_more_events() const noexcept;
-
-//////////////////////////////////////////////////////////////////////////
-// Member variables.
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Pointer to dispatcher thread, which is holding dispatcher.
-     *          The pointer is set after thread has been created and reset
-     *          when it is destroyed.
-     **/
-    DispatcherThread *  mDispatcherThread;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls.
@@ -152,11 +144,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
-inline DispatcherThread * EventDispatcher::dispatcher_thread() const noexcept
-{
-    return mDispatcherThread;
-}
-
 inline bool EventDispatcher::has_more_events() const noexcept
 {
     return mExternalEvents.has_pending();

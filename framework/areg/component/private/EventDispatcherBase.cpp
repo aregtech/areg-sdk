@@ -317,8 +317,19 @@ bool EventDispatcherBase::run_dispatcher()
 void EventDispatcherBase::ready_for_events( bool is_ready )
 {
     mExternalEvents.lock_queue( );
+    if ( is_ready )
+    {
+        mExternalEvents.acquire_lanes( );
+    }
+
     mHasStarted = is_ready;
     mExternalEvents.unlock_queue( );
+
+    // Shutting the queue is what actually stops a producer
+    if ( is_ready == false )
+    {
+        mExternalEvents.close_lanes( );
+    }
 }
 
 Event EventDispatcherBase::pick_event() noexcept

@@ -68,7 +68,7 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
     : RemoteMessageHandler  ( )
     , ConnectionConsumer    ( )
     , ConnectionProvider    ( )
-    , DispatcherThread      ( dispatcher, stackSizeKb, areg::QUEUE_SIZE_MAXIMUM )
+    , DispatcherThread      ( dispatcher, stackSizeKb, areg::QUEUE_DEFAULT_RING_CAPACITY )
     , ServiceEventConsumer  ( )
     , ConnectionHandler     ( )
 
