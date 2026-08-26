@@ -25,8 +25,8 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 AREG_IMPLEMENT_RUNTIME(TimerManagerBase, DispatcherThread)
 
-TimerManagerBase::TimerManagerBase(const String& threadName, uint32_t stackSizeKb)
-    : DispatcherThread          (threadName, stackSizeKb, areg::QUEUE_SIZE_MAXIMUM)
+TimerManagerBase::TimerManagerBase(const String& threadName, uint32_t stackSizeKb, uint32_t maxQueue)
+    : DispatcherThread          (threadName, stackSizeKb, maxQueue)
     , TimerManagerEventConsumer ( )
 #ifdef __linux__
     , mEpollFd  (-1)

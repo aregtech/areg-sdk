@@ -40,7 +40,7 @@ PoolReceiveThread::PoolReceiveThread( areg::RemoteMessageHandler & remoteService
                                     , ServerConnection & connection
                                     , ServerReceiveThread & globalStats
                                     , std::string_view threadName )
-    : DispatcherThread  ( String(threadName), areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_SIZE_MAXIMUM )
+    : DispatcherThread  ( String(threadName), areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_CONTROL_RING_CAPACITY )
 
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )

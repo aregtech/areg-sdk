@@ -99,7 +99,7 @@ bool LogManager::start_logging(const char* configFile /*= nullptr*/ )
         lock.lock();
     }
 
-    return logManager.mIsStarted;
+    return logManager.mIsStarted.load(std::memory_order_acquire);
 }
 
 bool LogManager::save_log_config(const char* configFile /*= nullptr*/ )
@@ -208,7 +208,7 @@ void LogManager::force_enable_logging()
 // LogManager class constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 LogManager::LogManager()
-    : DispatcherThread      ( LogManager::LOGGING_THREAD_NAME.data(), areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_SIZE_MAXIMUM )
+    : DispatcherThread      ( LogManager::LOGGING_THREAD_NAME.data(), areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_DEFAULT_RING_CAPACITY )
     , LoggingEventConsumer  ( )
 
     , mScopeController  ( )
@@ -280,13 +280,13 @@ bool LogManager::start_logging_thread()
     }
 #endif  // DEBUG
 
-    return mIsStarted;
+    return mIsStarted.load(std::memory_order_acquire);
 }
 
 void LogManager::stop_logging_thread(bool waitComplete)
 {
     send_log_event( LoggingEventData(LoggingEventData::LogAction::StopLogs) );
-    mIsStarted = false;
+    mIsStarted.store(false, std::memory_order_release);
 
     if (waitComplete)
     {
@@ -296,7 +296,7 @@ void LogManager::stop_logging_thread(bool waitComplete)
 
 void LogManager::wait_thread_end()
 {
-    mIsStarted = false;
+    mIsStarted.store(false, std::memory_order_release);
     _wait_logs_written();
 }
 
@@ -367,7 +367,7 @@ void LogManager::start_logs()
         }
     }
 
-    mIsStarted = true;
+    mIsStarted.store(true, std::memory_order_release);
     mLogStarted.set_signaled( );
 }
 
@@ -376,7 +376,7 @@ void LogManager::stop_logs()
     mScopeController.set_scope_activity( false );
     mLogStarted.reset( );
 
-    mIsStarted = false;
+    mIsStarted.store(false, std::memory_order_release);
 
     mLoggerDebug.close_logger( );
     mLoggerFile.close_logger( );

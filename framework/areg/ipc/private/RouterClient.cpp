@@ -59,7 +59,7 @@ RouterClient::RouterClient(ConnectionConsumer& connectionConsumer, RegistrationC
                                     , static_cast<DispatcherThread &>(*this)
                                     , RouterClient::PREFIX_THREAD)
     , RegistrationProvider  ( )
-    , DispatcherThread      (String(RouterClient::PREFIX_THREAD) + areg::CLIENT_DISPATCH_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_SIZE_MAXIMUM)
+    , DispatcherThread      (String(RouterClient::PREFIX_THREAD) + areg::CLIENT_DISPATCH_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_DEFAULT_RING_CAPACITY)
     , RemoteEventConsumer   ( )
 
     , mRegisterConsumer     (registerConsumer)

@@ -29,7 +29,7 @@ namespace areg {
 DEF_LOG_SCOPE(areg_ipc_private_ClientReceiveThread, run_dispatcher);
 
 ClientReceiveThread::ClientReceiveThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix)
-    : DispatcherThread  (namePrefix + areg::CLIENT_RECEIVE_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_SIZE_MAXIMUM)
+    : DispatcherThread  (namePrefix + areg::CLIENT_RECEIVE_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_CONTROL_RING_CAPACITY)
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
     , mRecvStats        ( )
