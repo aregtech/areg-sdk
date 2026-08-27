@@ -255,7 +255,7 @@ void ObserverMessageProcessor::notify_log_message(const areg::MessageEnvelope& m
                 msgLog.msgScopeId   = static_cast<uint32_t>(msgRemote->logScopeId);
                 msgLog.msgSessionId = static_cast<uint32_t>(msgRemote->logSessionId);
 
-                areg::mem_copy(msgLog.msgLogText, LENGTH_MESSAGE , msgRemote->logMessage , msgRemote->logMessageLen + 1);
+                areg::mem_copy(msgLog.msgLogText, LENGTH_MESSAGE , msgRemote->logMessage , areg::log_message_size(*msgRemote) + 1);
                 areg::mem_copy(msgLog.msgThread,  LENGTH_NAME    , msgRemote->logThread  , msgRemote->logThreadLen  + 1);
                 areg::mem_copy(msgLog.msgModule,  LENGTH_NAME    , msgRemote->logModule  , msgRemote->logModuleLen  + 1);
             }

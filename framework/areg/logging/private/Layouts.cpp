@@ -396,7 +396,7 @@ ScopeNameLayout::ScopeNameLayout( ScopeNameLayout && /*src*/ ) noexcept
 
 void ScopeNameLayout::log_message( const areg::LogEntry & msgLog, OutStream & stream ) const
 {
-    stream.write(reinterpret_cast<const uint8_t *>(msgLog.logMessage), msgLog.logMessageLen);
+    stream.write(reinterpret_cast<const uint8_t *>(msgLog.logMessage), areg::log_message_size(msgLog));
 }
 
 //////////////////////////////////////////////////////////////////////////

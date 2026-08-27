@@ -141,7 +141,9 @@ inline void ScopeMessage::_send_log( uint32_t scopeId, uint32_t sessionId, TIME6
         return;
 
     areg::LogEntry* log = reinterpret_cast<areg::LogEntry*>(msg.buffer());
-    log->logMessageLen = static_cast<uint32_t>(String::format_string_list(log->logMessage, areg::LOG_MSG_SIZE, format, args));
+    int32_t required{ 0 };
+    String::format_string_list(log->logMessage, static_cast<int32_t>(areg::LOG_MSG_SIZE), format, args, required);
+    log->logMessageLen = static_cast<uint32_t>(required);
     LogManager::log_message(std::move(msg));
 }
 

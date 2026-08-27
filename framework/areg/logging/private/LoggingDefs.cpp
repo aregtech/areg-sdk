@@ -267,7 +267,8 @@ AREG_API_IMPL areg::MessageEnvelope areg::make_log_message( areg::LogMessageType
 
         uint32_t len = areg::mem_copy(log->logMessage, areg::LOG_MSG_SIZE - 1u, message, msgLen);
         log->logMessage[len] = String::EmptyChar;
-        log->logMessageLen   = len;
+        // keep the length before the cut, so a reader can tell how much is missing
+        log->logMessageLen   = msgLen;
 
         msg.set_size_used(sizeof(areg::LogEntry));
         msg.move_to_end();

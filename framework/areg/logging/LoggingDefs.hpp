@@ -386,7 +386,7 @@ namespace areg {
         TIME64               logTimestamp   { 0 };  //!< [0..7]    The timestamp of generated log. HOT
         TIME64               logReceived    { 0 };  //!< [8..15]   The timestamp when the log message is updated. HOT
         uint32_t             logScopeId     { 0 };  //!< [16..19]  The ID of log scope that generated log message. HOT
-        uint32_t             logMessageLen  { 0 };  //!< [20..23]  The actual length of the log message. HOT
+        uint32_t             logMessageLen  { 0 };  //!< [20..23]  The length of the log message before it is cut. Can exceed LOG_MSG_SIZE - 1. HOT
         areg::LogPriority    logMessagePrio { areg::LogPriority::PrioInvalid };  //!< [24..25] The log message priority (uint16_t). HOT
         areg::LogMessageType logMsgType     { areg::LogMessageType::Undefined }; //!< [26]     The type of the logging message (uint8_t). HOT
         areg::LogDataType    logDataType    { areg::LogDataType::Local };        //!< [27]     The type of log message data (uint8_t). HOT
@@ -403,6 +403,33 @@ namespace areg {
         char                 logThread[LOG_NAME_SIZE]{ 0 }; //!< [576..639] The name of the thread that generated the log. Valid only for remote logging
         char                 logModule[LOG_NAME_SIZE]{ 0 }; //!< [640..703] The name of the module that generated the log. Valid only for remote logging.
     };
+
+    /**
+     * \brief   Returns the number of message characters the entry actually holds.
+     *
+     * \param   entry   The log entry to measure.
+     * \return  The length of 'logMessage', never more than LOG_MSG_SIZE - 1.
+     * \note    Use this, not 'logMessageLen', whenever the value indexes the buffer.
+     *          'logMessageLen' is the length before the message was cut and can be larger.
+     **/
+    [[nodiscard]]
+    inline constexpr uint32_t log_message_size(const LogEntry & entry) noexcept
+    {
+        constexpr uint32_t maxLen{ LOG_MSG_SIZE - 1u };
+        return entry.logMessageLen < maxLen ? entry.logMessageLen : maxLen;
+    }
+
+    /**
+     * \brief   Returns true if the message did not fit the entry and was cut.
+     *
+     * \param   entry   The log entry to check.
+     * \return  True if 'logMessageLen' exceeds what 'logMessage' can hold.
+     **/
+    [[nodiscard]]
+    inline constexpr bool is_log_message_cut(const LogEntry & entry) noexcept
+    {
+        return entry.logMessageLen > (LOG_MSG_SIZE - 1u);
+    }
 
     /**
      * \brief   Generates an ID for the given scope name.

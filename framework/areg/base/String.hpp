@@ -374,6 +374,22 @@ public:
      **/
     static int32_t format_string_list( char * strDst, int32_t count, const char * format, va_list argptr );
 
+    /**
+     * \brief   Formats a string using printf-like formatting rules and a va_list, and
+     *          reports how long the formatted text is when it does not fit the buffer.
+     *          The buffer is never written past its end and is always null-terminated.
+     *
+     * \param[out]  strDst      The destination buffer for the formatted string.
+     * \param       count       The size of the destination buffer, including the null-character.
+     * \param       format      The format string.
+     * \param       argptr      The variable argument list.
+     * \param[out]  required    The number of characters the formatted text needs, without the
+     *                          null-character. A value of 'count' or more means the text was cut.
+     * \return  Returns the number of characters copied, never more than 'count - 1';
+     *          negative if error occurred.
+     **/
+    static int32_t format_string_list( char * strDst, int32_t count, const char * format, va_list argptr, int32_t & required );
+
 /************************************************************************/
 // Non-static methods
 /************************************************************************/

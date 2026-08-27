@@ -158,6 +158,7 @@ namespace {
             "\"msg_module_id\"	    INTEGER,"
             "\"msg_thread_id\"	    INTEGER,"
             "\"msg_log\"	        TEXT,"
+            "\"msg_len\"	        INTEGER,"
             "\"msg_thread\"	        TEXT,"
             "\"msg_module\"	        TEXT,"
             "\"time_created\"	    NUMERIC,"
@@ -173,9 +174,9 @@ namespace {
     constexpr std::string_view _sqlInsertLog
     {
         "INSERT INTO logs "
-        "(cookie_id, scope_id, session_id, msg_type, msg_prio, msg_module_id, msg_thread_id, msg_log, msg_thread, msg_module, time_created, time_received, time_duration)"
+        "(cookie_id, scope_id, session_id, msg_type, msg_prio, msg_module_id, msg_thread_id, msg_log, msg_len, msg_thread, msg_module, time_created, time_received, time_duration)"
         "VALUES "
-        "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
+        "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
     };
 
     //! A script to create index of the instances table. 
@@ -194,6 +195,13 @@ namespace {
     constexpr std::string_view  _sqlCreateIdxLogs
     {
         "CREATE INDEX idx_logs ON logs(scope_id, msg_prio, cookie_id);"
+    };
+
+    //! An index to select the logs of one process, which the leading column of
+    //! idx_logs cannot serve.
+    constexpr std::string_view  _sqlCreateIdxLogsModule
+    {
+        "CREATE INDEX idx_logs_module ON logs(msg_module_id, msg_prio);"
     };
 
     //! A script to extract the names of connected log instances
@@ -264,13 +272,13 @@ namespace {
     //! A script to extract logged messages of the certain instance source
     constexpr std::string_view _sqlGetScopeLogMessages
     {
-        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, time_created, time_received, time_duration, scope_id, session_id, msg_log, msg_thread, msg_module FROM logs WHERE scope_id = ? ORDER BY time_created;"
+        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, time_created, time_received, time_duration, scope_id, session_id, msg_log, msg_thread, msg_module, msg_len FROM logs WHERE scope_id = ? ORDER BY time_created;"
     };
 
     //! A script to extract logged messages of the certain instance source
     constexpr std::string_view _sqlGetInstScopeLogMessages
     {
-        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, time_created, time_received, time_duration, scope_id, session_id, msg_log, msg_thread, msg_module FROM logs WHERE scope_id = ? AND cookie_id = ? ORDER BY time_created;"
+        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, time_created, time_received, time_duration, scope_id, session_id, msg_log, msg_thread, msg_module, msg_len FROM logs WHERE scope_id = ? AND cookie_id = ? ORDER BY time_created;"
     };
 
     constexpr std::string_view _sqlCountInstanceLogs
@@ -515,6 +523,7 @@ inline void LogSqliteDatabase::_create_indexes() noexcept
     VERIFY(mDatabase.execute(_sqlCraeteIdxCookie));
     VERIFY(mDatabase.execute(_sqlCreateIdxScopes));
     VERIFY(mDatabase.execute(_sqlCreateIdxLogs));
+    VERIFY(mDatabase.execute(_sqlCreateIdxLogsModule));
 }
 
 inline void LogSqliteDatabase::_initialize() noexcept
@@ -582,7 +591,10 @@ inline void LogSqliteDatabase::_copy_log_message(SqliteStatement& stmt, SharedBu
     String thread       = stmt.as_text(11);
     String module       = stmt.as_text(12);
 
-    log->logMessageLen  = static_cast<uint32_t>(msg.length());
+    // msg_len holds the length before the cut. A database written before the column
+    // existed reads back as zero, so fall back to the stored text length.
+    uint32_t storedLen  = static_cast<uint32_t>(stmt.as_uint32(13));
+    log->logMessageLen  = storedLen != 0u ? storedLen : static_cast<uint32_t>(msg.length());
     log->logThreadLen   = static_cast<uint32_t>(thread.length());
     log->logModuleLen   = static_cast<uint32_t>(module.length());
 
@@ -695,11 +707,13 @@ bool LogSqliteDatabase::log_message(const areg::LogEntry& message)
     mStmtLogs.bind_uint32( 5, static_cast<uint32_t>(message.logModuleId));
     mStmtLogs.bind_uint32( 6, static_cast<uint32_t>(message.logThreadId));
     mStmtLogs.bind_text(   7, message.logMessage);
-    mStmtLogs.bind_text(   8, message.logThread);
-    mStmtLogs.bind_text(   9, message.logModule);
-    mStmtLogs.bind_uint64(10, static_cast<uint64_t>(message.logTimestamp));
-    mStmtLogs.bind_uint64(11, static_cast<uint64_t>(message.logReceived));
-    mStmtLogs.bind_uint32(12, static_cast<uint32_t>(message.logDuration));
+    // the length before the cut, so a reader can tell how much the text is missing
+    mStmtLogs.bind_uint32( 8, message.logMessageLen);
+    mStmtLogs.bind_text(   9, message.logThread);
+    mStmtLogs.bind_text(  10, message.logModule);
+    mStmtLogs.bind_uint64(11, static_cast<uint64_t>(message.logTimestamp));
+    mStmtLogs.bind_uint64(12, static_cast<uint64_t>(message.logReceived));
+    mStmtLogs.bind_uint32(13, static_cast<uint32_t>(message.logDuration));
 
     bool result{ mStmtLogs.next() == SqliteStatement::QueryResult::HasNoMore };
     mStmtLogs.reset();
