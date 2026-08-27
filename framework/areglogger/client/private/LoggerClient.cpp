@@ -19,6 +19,7 @@
  ************************************************************************/
 #include "areglogger/client/private/LoggerClient.hpp"
 
+#include "areg/appbase/Application.hpp"
 #include "areg/base/File.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/logging/LogConfiguration.hpp"
@@ -464,9 +465,15 @@ bool LoggerClient::connect_service_host()
             shutdown(areg::WAIT_INFINITE);
         }
     }
+    else if (mClientConnection.is_valid() == false)
+    {
+        // The dispatcher already runs after a failed attempt, so without this a second request
+        // would report failure instead of opening the connection.
+        result = ServiceClientConnectionBase::connect_service_host();
+    }
     else
     {
-        result = mClientConnection.is_valid();
+        result = true;
     }
 
     return result;
@@ -599,7 +606,7 @@ void LoggerClient::on_service_channel_lost(const Channel& /* channel */)
     }
 }
 
-void LoggerClient::failed_send_message(const MessageEnvelope& /* msgFailed */, Socket& /* whichTarget */)
+void LoggerClient::failed_send_message(const MessageEnvelope& /* msgFailed */, Socket& whichTarget)
 {
     FuncMessagingFailed callback{ nullptr };
     do
@@ -615,6 +622,11 @@ void LoggerClient::failed_send_message(const MessageEnvelope& /* msgFailed */, S
     else if (callback != nullptr)
     {
         callback();
+    }
+
+    if (Application::is_servicing_ready() && whichTarget.is_valid() && (whichTarget.is_alive() == false))
+    {
+        notify_connection_lost();
     }
 }
 
@@ -634,6 +646,14 @@ void LoggerClient::failed_receive_message(Socket& /* whichSource */)
     else if (callback != nullptr)
     {
         callback();
+    }
+
+    // The receive thread reports both a failed connect and a failed receive here, so this is where
+    // the reconnect is armed. A deliberate disconnect and a stale notification are refused by
+    // on_connection_lost().
+    if (Application::is_servicing_ready())
+    {
+        notify_connection_lost();
     }
 }
 
