@@ -162,20 +162,22 @@ void WatchdogManager::_process_expired_timer(Watchdog* watchdog, Watchdog::WATCH
     LOG_SCOPE( areg_component_private_WatchdogManager, _process_expired_timer);
 
     const ComponentThread* componentThread{ nullptr };
+    String name;    // copied under the lock: the watchdog may be gone after it
 
     mWatchdogResource.lock();
 
-    Watchdog::SEQUENCE_ID sequence  = Watchdog::make_sequence_id(watchdog_id);
+    const Watchdog::SEQUENCE_ID sequence = Watchdog::make_sequence_id(watchdog_id);
     if ((watchdog != nullptr) && (watchdog->sequence() == sequence))
     {
-        LOG_WARN("The watchdog [ %s ] has expired, terminating component thread [ %s ]", watchdog->name().as_string(), watchdog->component_thread().name().as_string());
         componentThread = &watchdog->component_thread();
+        name = watchdog->name();
     }
 
     mWatchdogResource.unlock();
 
     if (componentThread != nullptr)
     {
+        LOG_WARN("The watchdog [ %s ] has expired, terminating component thread [ %s ]", name.as_string(), componentThread->name().as_string());
         ServiceManager::request_recreate_thread(*componentThread);
     }
 }

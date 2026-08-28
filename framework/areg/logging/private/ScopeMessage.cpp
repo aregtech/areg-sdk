@@ -27,10 +27,19 @@ namespace areg {
 
 #if AREG_LOGGING
 
+namespace
+{
+    //!< Returns true if the scope can emit a message of any priority.
+    inline bool _can_log( const areg::LogScope & logScope ) noexcept
+    {
+        return (logScope.priority() & static_cast<uint32_t>(areg::LogPriority::PrioScopeLogs)) != 0u;
+    }
+}
+
 ScopeMessage::ScopeMessage( const LogScope & logScope )
     : mScope    ( logScope )
-    , mSessionId( logScope.mScopePrio != 0u ? logScope.next_session() : 0 )
-    , mTimestamp( logScope.mScopePrio != 0u ? static_cast<TIME64>(DateTime::timestamp()) : static_cast<TIME64>(0u) )
+    , mSessionId( _can_log(logScope) ? logScope.next_session() : 0u )
+    , mTimestamp( _can_log(logScope) ? static_cast<TIME64>(DateTime::timestamp()) : static_cast<TIME64>(0u) )
 {
     if ( is_scope_enabled() )
     {
