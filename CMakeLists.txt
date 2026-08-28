@@ -71,6 +71,11 @@ else()
     option(AREG_GTEST_FOUND     "GTest package found flag"  FALSE)
 endif()
 
+# build optional Areg Framework benchmarks, if required
+if(AREG_BENCHMARKS)
+    include(${AREG_BENCHMARKS_DIR}/CMakeLists.txt)
+endif()
+
 if (AREG_INSTALL)
     include(${AREG_CMAKE_CONFIG_DIR}/install.cmake)
 endif()

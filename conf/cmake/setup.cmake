@@ -45,6 +45,11 @@ if (NOT DEFINED AREG_TESTS_DIR OR "${AREG_TESTS_DIR}" STREQUAL "")
     set(AREG_TESTS_DIR "${AREG_SDK_ROOT}/tests")
 endif()
 
+# The location of Areg Framework benchmarks
+if (NOT DEFINED AREG_BENCHMARKS_DIR OR "${AREG_BENCHMARKS_DIR}" STREQUAL "")
+    set(AREG_BENCHMARKS_DIR "${AREG_TESTS_DIR}/benchmarks")
+endif()
+
 # The location of Areg Framework specific third-party projects / source codes.
 if (NOT DEFINED AREG_THIRDPARTY OR "${AREG_THIRDPARTY}" STREQUAL "")
     set(AREG_THIRDPARTY         "${AREG_SDK_ROOT}/thirdparty")
