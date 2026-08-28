@@ -465,6 +465,31 @@ LOGGER_API bool log_observer_request_change_scope_prio(ITEM_ID target, const Sco
 LOGGER_API bool log_observer_request_save_config(ITEM_ID target);
 
 /**
+ * \brief   Call to make a log message on the observer side and save it in the logging database.
+ *          The message is not requested from any log source, it is made here and goes through the
+ *          same path as a message received from a remote source, so every observer callback sees
+ *          it and the database stores it.
+ *
+ * \param   cookie      The cookie ID of the instance the message belongs to. Use ID_IGNORE (or 0)
+ *                      for a message that belongs to the observer itself.
+ * \param   prio        The priority to give the message.
+ * \param   timestamp   The moment to stamp the message with. Zero takes the current time.
+ * \param   message     The text of the message. Can be null for an empty one. Text longer than the
+ *                      message buffer is cut, and the reported length stays the one before the cut.
+ * \return  Returns the ID the log message got in the database, which is needed to remove it again.
+ *          Returns 0 if the message was not saved.
+ **/
+LOGGER_API uint32_t log_observer_add_log(ITEM_ID cookie, uint16_t prio, uint64_t timestamp, const char * message);
+
+/**
+ * \brief   Call to delete one log message from the logging database.
+ *
+ * \param   logId   The ID of the log message, as returned by `log_observer_add_log()`.
+ * \return  Returns true if the message was deleted. Otherwise, returns false.
+ **/
+LOGGER_API bool log_observer_remove_log(uint32_t logId);
+
+/**
  * \brief   Call to get active database full path.
  * \param   dbPath  The buffer to write the full path of the active database.
  * \param   space   The length of the buffer to write the database path, inclusive the null-terminated character at the end.

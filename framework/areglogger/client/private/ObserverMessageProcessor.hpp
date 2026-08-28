@@ -27,6 +27,7 @@
 namespace areg {
     struct LogEntry;
     class MessageEnvelope;
+    enum class LogPriority : uint16_t;
 } // namespace areg
 
 namespace areg::logger {
@@ -91,11 +92,35 @@ public:
     void notify_log_update_scopes(const areg::MessageEnvelope& msgReceived);
 
     /**
-     * \brief   Handles a log message notification.
+     * \brief   Handles a log message notification. Every log message, received from a remote
+     *          source or made locally, passes through this method: it is the only place that
+     *          saves a log in the database and hands it to the observer.
      *
      * \param   msgReceived     Buffer containing the log message.
+     * \return  The identifier the log message got in the database, or 0 if it was not saved.
      **/
-    void notify_log_message(const areg::MessageEnvelope& msgReceived);
+    uint32_t notify_log_message(const areg::MessageEnvelope& msgReceived);
+
+    /**
+     * \brief   Makes a log message on the observer side and passes it through the same path as a
+     *          message received from a remote source. This is the single point of adding a log.
+     *
+     * \param   cookie      The identifier of the instance the message belongs to.
+     * \param   prio        The priority to give the message.
+     * \param   timestamp   The moment to stamp the message with. Zero takes the current time.
+     * \param   message     The text of the message. Can be nullptr for an empty one.
+     * \return  The identifier the log message got in the database, or 0 if it was not saved.
+     **/
+    uint32_t add_local_log(ITEM_ID cookie, areg::LogPriority prio, TIME64 timestamp, const char * message);
+
+    /**
+     * \brief   Deletes one log message from the database. This is the single point of removing a
+     *          log.
+     *
+     * \param   logId   The identifier of the log message to delete.
+     * \return  Returns true if the statement ran.
+     **/
+    bool remove_log(uint32_t logId);
 
 private:
 

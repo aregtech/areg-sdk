@@ -89,9 +89,9 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType)
     , logModuleLen  { 0 }
     , logTarget     { areg::COOKIE_LOGGER }
     , logCookie     { areg::COOKIE_LOCAL }
-    , logMessage    { '\0' }
     , logThread     { '\0' }
     , logModule     { '\0' }
+    , logMessage    { '\0' }
 {
 }
 
@@ -113,9 +113,9 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t scopeId, uint32_
     , logModuleLen  { 0 }
     , logTarget     { areg::COOKIE_LOGGER }
     , logCookie     { LogManager::connection_cookie() }
-    , logMessage    { '\0' }
     , logThread     { '\0' }
     , logModule     { '\0' }
+    , logMessage    { '\0' }
 {
     uint32_t len = message != nullptr ? areg::mem_copy(logMessage, areg::LOG_MSG_SIZE - 1, message, msgLen) : 0u;
     logMessage[len] = String::EmptyChar;
@@ -138,9 +138,9 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t /*scopeId*/, uin
     , logModuleLen  { 0 }
     , logTarget     { areg::COOKIE_LOGGER }
     , logCookie     { areg::COOKIE_LOCAL }
-    , logMessage    { '\0' }
     , logThread     { '\0' }
     , logModule     { '\0' }
+    , logMessage    { '\0' }
 {
 }
 #endif  // AREG_LOGGING
@@ -162,18 +162,18 @@ areg::LogEntry::LogEntry(const areg::LogEntry & src)
     , logModuleLen  { }
     , logTarget     { }
     , logCookie     { }
-    , logMessage    { }
     , logThread     { }
     , logModule     { }
+    , logMessage    { }
 {
-    areg::mem_copy(this, sizeof(areg::LogEntry), &src, sizeof(areg::LogEntry));
+    areg::mem_copy(this, sizeof(areg::LogEntry), &src, areg::log_entry_size(src));
 }
 
 areg::LogEntry & areg::LogEntry::operator = (const areg::LogEntry & src)
 {
     if (this != &src)
     {
-        areg::mem_copy(this, sizeof(areg::LogEntry), &src, sizeof(areg::LogEntry));
+        areg::mem_copy(this, sizeof(areg::LogEntry), &src, areg::log_entry_size(src));
     }
 
     return (*this);
@@ -246,8 +246,9 @@ AREG_API_IMPL areg::MessageEnvelope areg::make_log_message( areg::LogMessageType
                                                         , const char* message
                                                         , uint32_t msgLen)
 {
+    const uint32_t entrySize{ areg::log_entry_size(msgLen) };
     MessageEnvelope msg;
-    areg::LogEntry* log = reinterpret_cast<areg::LogEntry*>(msg.init_envelope(_log_message_header(), sizeof(areg::LogEntry)));
+    areg::LogEntry* log = reinterpret_cast<areg::LogEntry*>(msg.init_envelope(_log_message_header(), entrySize));
     if (log != nullptr)
     {
         const TIME64 now    = DateTime::now();
@@ -268,12 +269,13 @@ AREG_API_IMPL areg::MessageEnvelope areg::make_log_message( areg::LogMessageType
         log->logModuleLen   = 0u;
         log->logModuleId    = 0u;
 
-        uint32_t len = areg::mem_copy(log->logMessage, areg::LOG_MSG_SIZE - 1u, message, msgLen);
+        const uint32_t space{ entrySize - areg::log_entry_head() - 1u };
+        uint32_t len = areg::mem_copy(log->logMessage, space, message, msgLen);
         log->logMessage[len] = String::EmptyChar;
         // keep the length before the cut, so a reader can tell how much is missing
         log->logMessageLen   = msgLen;
 
-        msg.set_size_used(sizeof(areg::LogEntry));
+        msg.set_size_used(entrySize);
         msg.move_to_end();
     }
 
@@ -316,14 +318,15 @@ AREG_API_IMPL void areg::finalize_log_message(areg::MessageEnvelope& msg, areg::
 
 AREG_API_IMPL areg::MessageEnvelope areg::create_log_message(const areg::LogEntry& logMessage, areg::LogDataType dataType, const ITEM_ID& srcCookie)
 {
+    const uint32_t entrySize{ areg::log_entry_size(logMessage) };
     MessageEnvelope msgLog;
-    areg::LogEntry* log = reinterpret_cast<areg::LogEntry*>(msgLog.init_envelope(_log_message_header(), sizeof(areg::LogEntry)));
+    areg::LogEntry* log = reinterpret_cast<areg::LogEntry*>(msgLog.init_envelope(_log_message_header(), entrySize));
     if (log != nullptr)
     {
         constexpr uint32_t NAME_LENGTH {areg::LOG_NAME_SIZE - 1};
 
-        areg::mem_copy(log, sizeof(areg::LogEntry), &logMessage, sizeof(areg::LogEntry));
-        msgLog.set_size_used(sizeof(areg::LogEntry));
+        areg::mem_copy(log, entrySize, &logMessage, entrySize);
+        msgLog.set_size_used(entrySize);
         msgLog.move_to_end();
         msgLog.set_source(static_cast<uint32_t>(srcCookie));
         log->logCookie   = srcCookie;

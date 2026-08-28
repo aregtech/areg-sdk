@@ -265,9 +265,9 @@ void LogCollectorDatabase::_write_record(DbRecord & record)
     case RecordKind::LogMessage:
     {
         const uint8_t * data = record.recMessage.buffer();
-        if ((data != nullptr) && (record.recMessage.size_used() >= sizeof(areg::LogEntry)))
+        if ((data != nullptr) && (record.recMessage.size_used() >= areg::log_entry_head()))
         {
-            areg::mem_copy(&mScratch, sizeof(areg::LogEntry), data, sizeof(areg::LogEntry));
+            areg::mem_copy(&mScratch, sizeof(areg::LogEntry), data, record.recMessage.size_used());
             mScratch.logReceived = record.recStamp;
             mDatabase.log_message(mScratch);
         }

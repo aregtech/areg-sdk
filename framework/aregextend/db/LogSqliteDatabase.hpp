@@ -248,6 +248,24 @@ public:
     bool log_message(const areg::LogEntry & message) final;
 
     /**
+     * \brief   Returns the identifier of the log message saved by the last successful call of
+     *          `log_message()`, or 0 if no message was saved yet.
+     *
+     * \note    Read it right after the call whose identifier is needed. Any other insert on the
+     *          same connection replaces the value.
+     **/
+    [[nodiscard]]
+    uint32_t last_log_id() const noexcept;
+
+    /**
+     * \brief   Deletes one log message from the database.
+     *
+     * \param   logId   The identifier of the log message, as returned by `last_log_id()`.
+     * \return  Returns true if the statement ran. A missing identifier is not an error.
+     **/
+    bool remove_log(uint32_t logId);
+
+    /**
      * \brief   Called when need to log information about log source instance.
      *
      * \param   instance        The structure of the logging message source to save in database.

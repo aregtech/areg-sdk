@@ -226,6 +226,16 @@ bool LoggerClient::request_save_configuration(const ITEM_ID& target /*= areg::TA
     return result;
 }
 
+uint32_t LoggerClient::add_log(const ITEM_ID & cookie, areg::LogPriority prio, TIME64 timestamp, const char * message)
+{
+    return mMessageProcessor.add_local_log(cookie, prio, timestamp, message);
+}
+
+bool LoggerClient::remove_log(uint32_t logId)
+{
+    return mMessageProcessor.remove_log(logId);
+}
+
 bool LoggerClient::open_logging_database(const char* dbPath /*= nullptr*/)
 {
     String filePath (dbPath);

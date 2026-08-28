@@ -387,6 +387,35 @@ LOGGER_API_IMPL bool log_observer_request_save_config(ITEM_ID target /* = ID_IGN
     return result;
 }
 
+LOGGER_API_IMPL uint32_t log_observer_add_log(ITEM_ID cookie, uint16_t prio, uint64_t timestamp, const char * message)
+{
+    LogObserverStruct& theObserver { log_observer_data() };
+    uint32_t result{ 0 };
+    areg::Lock lock(theObserver.losLock);
+    if (_is_initialized(theObserver.losState))
+    {
+        result = areg::logger::LoggerClient::instance().add_log( cookie
+                                                               , static_cast<areg::LogPriority>(prio)
+                                                               , static_cast<TIME64>(timestamp)
+                                                               , message);
+    }
+
+    return result;
+}
+
+LOGGER_API_IMPL bool log_observer_remove_log(uint32_t logId)
+{
+    LogObserverStruct& theObserver { log_observer_data() };
+    bool result{ false };
+    areg::Lock lock(theObserver.losLock);
+    if (_is_initialized(theObserver.losState))
+    {
+        result = areg::logger::LoggerClient::instance().remove_log(logId);
+    }
+
+    return result;
+}
+
 LOGGER_API_IMPL int32_t log_observer_active_database_path(char* dbPath, int32_t space)
 {
     areg::String path{ areg::logger::LoggerClient::instance().active_database_path() };

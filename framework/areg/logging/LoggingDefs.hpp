@@ -25,6 +25,7 @@
 #include "areg/base/MathDefs.hpp"
 #include "areg/base/StringDefs.hpp"
 
+#include <cstddef>
 #include <string_view>
 
 /************************************************************************
@@ -399,9 +400,9 @@ namespace areg {
         uint32_t             logModuleLen   { 0 };  //!< [52..55]  The length of the module name. WARM
         ITEM_ID              logTarget      { 0 };  //!< [56..59]  The ID of the target to send logging message, valid only in case of TCP/IP logging. COLD
         ITEM_ID              logCookie      { 0 };  //!< [60..63]  The cookie set by the networking service, i.e. the log collector. Valid only in case of TCP/IP logging. COLD
-        char                 logMessage[LOG_MSG_SIZE]{ 0 }; //!< [64..575]  The message text to output, with maximum LOG_MSG_SIZE characters.
-        char                 logThread[LOG_NAME_SIZE]{ 0 }; //!< [576..639] The name of the thread that generated the log. Valid only for remote logging
-        char                 logModule[LOG_NAME_SIZE]{ 0 }; //!< [640..703] The name of the module that generated the log. Valid only for remote logging.
+        char                 logThread[LOG_NAME_SIZE]{ 0 }; //!< [64..127]  The name of the thread that generated the log. Valid only for remote logging
+        char                 logModule[LOG_NAME_SIZE]{ 0 }; //!< [128..191] The name of the module that generated the log. Valid only for remote logging.
+        char                 logMessage[LOG_MSG_SIZE]{ 0 }; //!< [192..703] The message text to output, with maximum LOG_MSG_SIZE characters. Always last: an entry carries only the used part of it.
     };
 
     /**
@@ -429,6 +430,43 @@ namespace areg {
     inline constexpr bool is_log_message_cut(const LogEntry & entry) noexcept
     {
         return entry.logMessageLen > (LOG_MSG_SIZE - 1u);
+    }
+
+    /**
+     * \brief   Returns the size of the fixed part of a log entry, which is everything
+     *          before the message text.
+     **/
+    [[nodiscard]]
+    inline uint32_t log_entry_head() noexcept
+    {
+        return static_cast<uint32_t>(offsetof(LogEntry, logMessage));
+    }
+
+    /**
+     * \brief   Returns the number of bytes the entry occupies, counting the fixed part and
+     *          the used part of the message text with its string terminator.
+     *
+     * \param   entry   The log entry to measure.
+     * \return  The size of the entry, never more than sizeof(LogEntry).
+     * \note    Use this, not 'sizeof(LogEntry)', to copy or to transmit an entry. An entry
+     *          holds only as much of 'logMessage' as the message needs.
+     **/
+    [[nodiscard]]
+    inline uint32_t log_entry_size(const LogEntry & entry) noexcept
+    {
+        return log_entry_head() + log_message_size(entry) + 1u;
+    }
+
+    /**
+     * \brief   Returns the number of bytes an entry with a message of the given length occupies.
+     *
+     * \param   msgLen  The length of the message text, before it is cut.
+     **/
+    [[nodiscard]]
+    inline uint32_t log_entry_size(uint32_t msgLen) noexcept
+    {
+        constexpr uint32_t maxLen{ LOG_MSG_SIZE - 1u };
+        return log_entry_head() + (msgLen < maxLen ? msgLen : maxLen) + 1u;
     }
 
     /**

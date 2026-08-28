@@ -116,15 +116,16 @@ void ScopeMessage::log( areg::LogPriority logPrio, const char * format, ... )
 
 void ScopeMessage::_send_log( uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const char * format, va_list args )
 {
-    areg::MessageEnvelope msg = areg::make_log_message(areg::LogMessageType::MessageText, scopeId, sessionId, scopeStamp, msgPrio, nullptr, 0u);
-    if (!msg.is_valid())
-        return;
-
-    areg::LogEntry* log = reinterpret_cast<areg::LogEntry*>(msg.buffer());
+    // Format first: the envelope is sized to the message, so the length must be known before it.
+    char text[areg::LOG_MSG_SIZE];
     int32_t required{ 0 };
-    String::format_string_list(log->logMessage, static_cast<int32_t>(areg::LOG_MSG_SIZE), format, args, required);
-    log->logMessageLen = static_cast<uint32_t>(required);
-    LogManager::log_message(std::move(msg));
+    String::format_string_list(text, static_cast<int32_t>(areg::LOG_MSG_SIZE), format, args, required);
+
+    areg::MessageEnvelope msg = areg::make_log_message(areg::LogMessageType::MessageText, scopeId, sessionId, scopeStamp, msgPrio, text, static_cast<uint32_t>(required));
+    if (msg.is_valid())
+    {
+        LogManager::log_message(std::move(msg));
+    }
 }
 
 #endif // AREG_LOGGING

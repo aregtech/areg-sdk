@@ -179,7 +179,13 @@ namespace {
         "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
     };
 
-    //! A script to create index of the instances table. 
+    //! A statement to delete one log message from the logs table by its identifier.
+    constexpr std::string_view _sqlDeleteLog
+    {
+        "DELETE FROM logs WHERE id = ?;"
+    };
+
+    //! A script to create index of the instances table.
     constexpr std::string_view  _sqlCraeteIdxCookie
     {
         "CREATE UNIQUE INDEX idx_inst_cookies ON instances (cookie_id, time_connected, time_disconnected);"
@@ -687,6 +693,8 @@ inline void LogSqliteDatabase::_copy_log_message(SqliteStatement& stmt, SharedBu
     areg::copy_string_fast(log->logMessage, msg.as_string(), msg.length());
     areg::copy_string_fast(log->logThread, thread.as_string(), thread.length());
     areg::copy_string_fast(log->logModule, module.as_string(), module.length());
+
+    buf.set_size_used(areg::log_entry_size(*log));
 }
 
 inline void LogSqliteDatabase::_copy_log_instances(SqliteStatement& stmt, areg::ConnectedInstance& inst)
@@ -808,6 +816,24 @@ bool LogSqliteDatabase::log_message(const areg::LogEntry& message)
     mStmtLogs.reset();
     mStmtLogs.clear_bindings();
     return result;
+}
+
+uint32_t LogSqliteDatabase::last_log_id() const noexcept
+{
+    return mDatabase.last_inserted_id();
+}
+
+bool LogSqliteDatabase::remove_log(uint32_t logId)
+{
+    Lock lock(mLock);
+    if ((logId == 0u) || (mDatabase.is_operable() == false))
+    {
+        return false;
+    }
+
+    SqliteStatement stmt(mDatabase, _sqlDeleteLog);
+    stmt.bind_uint32(0, logId);
+    return (stmt.next() == SqliteStatement::QueryResult::HasNoMore);
 }
 
 bool LogSqliteDatabase::log_instance_connected(const areg::ConnectedInstance& instance, const DateTime& timestamp)

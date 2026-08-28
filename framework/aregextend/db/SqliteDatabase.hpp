@@ -62,6 +62,16 @@ public:
     [[nodiscard]]
     inline const String & path() const noexcept;
 
+    /**
+     * \brief   Returns the row identifier of the last successful insert made on this connection,
+     *          or 0 if the connection made no insert yet.
+     *
+     * \note    The value belongs to the connection, not to a table. Read it right after the insert
+     *          whose identifier is needed.
+     **/
+    [[nodiscard]]
+    uint32_t last_inserted_id() const noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////

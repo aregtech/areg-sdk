@@ -44,39 +44,37 @@ void ObserverMessageProcessor::notify_service_connection(const areg::MessageEnve
     msgReceived >> cookie;
     msgReceived >> connection;
 
-    areg::LogEntry log;
-    _init_local_log_message(log, cookie, 0);
+    const char * text{ nullptr };
     switch (connection)
     {
     case areg::ServiceConnectionState::Connected:
-        log.logMessageLen = static_cast<uint32_t>(String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "Log observer connected to log collector service."));
+        text = "Log observer connected to log collector service.";
         break;
     case areg::ServiceConnectionState::Pending:
-        log.logMessageLen = static_cast<uint32_t>(String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "The connection to the log collector service is pending."));
+        text = "The connection to the log collector service is pending.";
         break;
     case areg::ServiceConnectionState::ConnectionLost:
-        log.logMessageLen = static_cast<uint32_t>(String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "The connection to the log collector service is lost."));
+        text = "The connection to the log collector service is lost.";
         break;
     case areg::ServiceConnectionState::Disconnected:
-        log.logMessageLen = static_cast<uint32_t>(String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "Log observer disconnected from log collector service."));
+        text = "Log observer disconnected from log collector service.";
         break;
     case areg::ServiceConnectionState::Failed:
-        log.logMessageLen = static_cast<uint32_t>(String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "Failed to connect to the log collector service."));
+        text = "Failed to connect to the log collector service.";
         break;
     case areg::ServiceConnectionState::Rejected:
-        log.logMessageLen = static_cast<uint32_t>(String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "The connection to the log collector service is rejected."));
+        text = "The connection to the log collector service is rejected.";
         break;
     case areg::ServiceConnectionState::Shutdown:
-        log.logMessageLen = static_cast<uint32_t>(String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "The log collector service is shutting down."));
+        text = "The log collector service is shutting down.";
         break;
     case areg::ServiceConnectionState::Unknown:
     default:
-        log.logMessageLen = static_cast<uint32_t>(String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "Undefined log collector service connection event..."));
+        text = "Undefined log collector service connection event...";
         break;
     }
 
-    areg::MessageEnvelope msgLog = areg::create_log_message(log, areg::LogDataType::Local, cookie);
-    notify_log_message(msgLog);
+    add_local_log(cookie, areg::LogPriority::PrioAny, 0, text);
 }
 
 void ObserverMessageProcessor::notify_connected_clients(const areg::MessageEnvelope& msgReceived)
@@ -132,15 +130,9 @@ void ObserverMessageProcessor::notify_log_register_scopes(const areg::MessageEnv
             mLoggerClient.mLogDatabase.log_scope_activate(scopeName, scopeId, scopePrio, cookie, now);
         }
 
-        areg::LogEntry log;
-        _init_local_log_message(log, areg::COOKIE_LOGGER, now);
-        log.logMessageLen = static_cast<uint32_t>(String::format_string(log.logMessage
-                                                    , areg::LOG_MSG_SIZE
-                                                    , "Log observer registered %u scopes of instance %u."
-                                                    , count
-                                                    , cookie));
-        areg::MessageEnvelope msgLog = areg::create_log_message(log, areg::LogDataType::Local, areg::COOKIE_LOGGER);
-        notify_log_message(msgLog);
+        String text;
+        text.format("Log observer registered %u scopes of instance %u.", count, cookie);
+        add_local_log(areg::COOKIE_LOGGER, areg::LogPriority::PrioAny, now, text.as_string());
 
         mLoggerClient.mLogDatabase.commit(true);
 
@@ -213,11 +205,11 @@ void ObserverMessageProcessor::notify_log_update_scopes(const areg::MessageEnvel
     }
 }
 
-void ObserverMessageProcessor::notify_log_message(const areg::MessageEnvelope& msgReceived)
+uint32_t ObserverMessageProcessor::notify_log_message(const areg::MessageEnvelope& msgReceived)
 {
+    uint32_t logId{ 0 };
     FuncLogMessage callback{ nullptr };
     FuncLogMessageEx callbackEx{ nullptr };
-    LogRecord msgLog{ };
     const uint8_t* logBuffer{ nullptr };
     uint32_t size{ 0 };
     DateTime now{ DateTime::now() };
@@ -230,6 +222,7 @@ void ObserverMessageProcessor::notify_log_message(const areg::MessageEnvelope& m
         const_cast<areg::LogEntry*>(msgRemote)->logReceived = static_cast<TIME64>(now);
         if (mLoggerClient.mLogDatabase.log_message(*msgRemote))
         {
+            logId = mLoggerClient.mLogDatabase.last_log_id();
             mLoggerClient.mLogDatabase.commit(true);
         }
 
@@ -239,43 +232,74 @@ void ObserverMessageProcessor::notify_log_message(const areg::MessageEnvelope& m
         }
         else if (mLoggerClient.mCallbacks != nullptr)
         {
-            if (mLoggerClient.mCallbacks->evtLogMessage != nullptr)
+            callback   = mLoggerClient.mCallbacks->evtLogMessage;
+            callbackEx = callback == nullptr ? mLoggerClient.mCallbacks->evtLogMessageEx : nullptr;
+            if (callbackEx != nullptr)
             {
-                callback = mLoggerClient.mCallbacks->evtLogMessage;
-
-                msgLog.msgType      = static_cast<LogType>(msgRemote->logMsgType);
-                msgLog.msgPriority  = static_cast<::LogPriority>(msgRemote->logMessagePrio);
-                msgLog.msgSource    = static_cast<uint64_t>(msgRemote->logSource);
-                msgLog.msgCookie    = static_cast<uint64_t>(msgRemote->logCookie);
-                msgLog.msgModuleId  = static_cast<uint64_t>(msgRemote->logModuleId);
-                msgLog.msgThreadId  = static_cast<uint64_t>(msgRemote->logThreadId);
-                msgLog.msgTimestamp = static_cast<uint64_t>(msgRemote->logTimestamp);
-                msgLog.msgReceived  = static_cast<uint64_t>(msgRemote->logReceived);
-                msgLog.msgDuration  = static_cast<uint32_t>(msgRemote->logDuration);
-                msgLog.msgScopeId   = static_cast<uint32_t>(msgRemote->logScopeId);
-                msgLog.msgSessionId = static_cast<uint32_t>(msgRemote->logSessionId);
-
-                areg::mem_copy(msgLog.msgLogText, LENGTH_MESSAGE , msgRemote->logMessage , areg::log_message_size(*msgRemote) + 1);
-                areg::mem_copy(msgLog.msgThread,  LENGTH_NAME    , msgRemote->logThread  , msgRemote->logThreadLen  + 1);
-                areg::mem_copy(msgLog.msgModule,  LENGTH_NAME    , msgRemote->logModule  , msgRemote->logModuleLen  + 1);
-            }
-            else if (mLoggerClient.mCallbacks->evtLogMessageEx != nullptr)
-            {
-                callbackEx = mLoggerClient.mCallbacks->evtLogMessageEx;
                 logBuffer = msgReceived.buffer();
-                size = msgReceived.size_used();
+                size      = msgReceived.size_used();
             }
         }
     } while (false);
 
     if (callback != nullptr)
     {
+        // Built here, not above: the record is large and only this callback receives it.
+        const areg::LogEntry* msgRemote = reinterpret_cast<const areg::LogEntry*>(msgReceived.buffer());
+        LogRecord msgLog{ };
+
+        msgLog.msgType      = static_cast<LogType>(msgRemote->logMsgType);
+        msgLog.msgPriority  = static_cast<::LogPriority>(msgRemote->logMessagePrio);
+        msgLog.msgSource    = static_cast<uint64_t>(msgRemote->logSource);
+        msgLog.msgCookie    = static_cast<uint64_t>(msgRemote->logCookie);
+        msgLog.msgModuleId  = static_cast<uint64_t>(msgRemote->logModuleId);
+        msgLog.msgThreadId  = static_cast<uint64_t>(msgRemote->logThreadId);
+        msgLog.msgTimestamp = static_cast<uint64_t>(msgRemote->logTimestamp);
+        msgLog.msgReceived  = static_cast<uint64_t>(msgRemote->logReceived);
+        msgLog.msgDuration  = static_cast<uint32_t>(msgRemote->logDuration);
+        msgLog.msgScopeId   = static_cast<uint32_t>(msgRemote->logScopeId);
+        msgLog.msgSessionId = static_cast<uint32_t>(msgRemote->logSessionId);
+
+        areg::mem_copy(msgLog.msgLogText, LENGTH_MESSAGE , msgRemote->logMessage , areg::log_message_size(*msgRemote) + 1);
+        areg::mem_copy(msgLog.msgThread,  LENGTH_NAME    , msgRemote->logThread  , msgRemote->logThreadLen  + 1);
+        areg::mem_copy(msgLog.msgModule,  LENGTH_NAME    , msgRemote->logModule  , msgRemote->logModuleLen  + 1);
+
         callback(&msgLog);
     }
     else if (callbackEx != nullptr)
     {
         callbackEx(logBuffer, size);
     }
+
+    return logId;
+}
+
+uint32_t ObserverMessageProcessor::add_local_log(ITEM_ID cookie, areg::LogPriority prio, TIME64 timestamp, const char * message)
+{
+    areg::LogEntry log;
+    _init_local_log_message(log, cookie, timestamp);
+    log.logMessagePrio = prio;
+    if (message != nullptr)
+    {
+        // The length is the one before the cut, so a reader can tell how much text is missing.
+        log.logMessageLen = static_cast<uint32_t>(areg::string_length<char>(message));
+        String::format_string(log.logMessage, static_cast<int32_t>(areg::LOG_MSG_SIZE), "%s", message);
+    }
+
+    areg::MessageEnvelope msgLog = areg::create_log_message(log, areg::LogDataType::Local, cookie);
+    return notify_log_message(msgLog);
+}
+
+bool ObserverMessageProcessor::remove_log(uint32_t logId)
+{
+    Lock lock(mLoggerClient.mLock);
+    bool result{ mLoggerClient.mLogDatabase.remove_log(logId) };
+    if (result)
+    {
+        mLoggerClient.mLogDatabase.commit(true);
+    }
+
+    return result;
 }
 
 void ObserverMessageProcessor::_clients_connected(const areg::MessageEnvelope& msgReceived)
@@ -304,16 +328,12 @@ void ObserverMessageProcessor::_clients_connected(const areg::MessageEnvelope& m
                 {
                     mLoggerClient.mLogDatabase.log_instance_connected(client, now);
 
-                    areg::LogEntry log;
-                    _init_local_log_message(log, areg::COOKIE_LOGGER, now);
-                    log.logMessageLen = static_cast<uint32_t>(String::format_string( log.logMessage
-                                                            , static_cast<int32_t>(areg::LOG_MSG_SIZE)
-                                                            , "Log observer have got %u-bit %s (%u) client connection event, ready to receive logs."
-                                                            , static_cast<uint32_t>(client.ciBitness)
-                                                            , client.ciInstance.c_str()
-                                                            , client.ciCookie));
-                    areg::MessageEnvelope msgLog = areg::create_log_message(log, areg::LogDataType::Local, areg::COOKIE_LOGGER);
-                    notify_log_message(msgLog);
+                    String text;
+                    text.format( "Log observer have got %u-bit %s (%u) client connection event, ready to receive logs."
+                               , static_cast<uint32_t>(client.ciBitness)
+                               , client.ciInstance.c_str()
+                               , client.ciCookie);
+                    add_local_log(areg::COOKIE_LOGGER, areg::LogPriority::PrioAny, now, text.as_string());
                 }
             }
 
@@ -332,16 +352,12 @@ void ObserverMessageProcessor::_clients_connected(const areg::MessageEnvelope& m
                 {
                     mLoggerClient.mLogDatabase.log_instance_connected(client, now);
 
-                    areg::LogEntry log;
-                    _init_local_log_message(log, areg::COOKIE_LOGGER, now);
-                    log.logMessageLen = static_cast<uint32_t>(String::format_string( log.logMessage
-                                                             , static_cast<int32_t>(areg::LOG_MSG_SIZE)
-                                                             , "Log observer have got %u-bit %s (%u) client connection event, starts receiving logs."
-                                                             , static_cast<uint32_t>(client.ciBitness)
-                                                             , client.ciInstance.c_str()
-                                                             , client.ciCookie));
-                    areg::MessageEnvelope msgLog = areg::create_log_message(log, areg::LogDataType::Local, areg::COOKIE_LOGGER);
-                    notify_log_message(msgLog);
+                    String text;
+                    text.format( "Log observer have got %u-bit %s (%u) client connection event, starts receiving logs."
+                               , static_cast<uint32_t>(client.ciBitness)
+                               , client.ciInstance.c_str()
+                               , client.ciCookie);
+                    add_local_log(areg::COOKIE_LOGGER, areg::LogPriority::PrioAny, now, text.as_string());
                 }
 
                 if (listInstances != nullptr)
