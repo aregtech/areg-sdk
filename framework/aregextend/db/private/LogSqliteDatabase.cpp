@@ -204,6 +204,91 @@ namespace {
         "CREATE INDEX idx_logs_module ON logs(msg_module_id, msg_prio);"
     };
 
+    //! An index to read the logs in the order a viewer shows them, which is the order they
+    //! were generated in and not the order they arrived in. The row id follows the time so
+    //! that the key stays unique: a reader that pages by time never repeats or skips a row
+    //! when two logs share a timestamp.
+    constexpr std::string_view  _sqlCreateIdxLogsTime
+    {
+        "CREATE INDEX IF NOT EXISTS idx_logs_time ON logs(time_created, id);"
+    };
+
+    //! The stretches of time a reader leaves out, one row per stretch. It lives in the
+    //! temporary database, so it is dropped with the connection and a read only log file
+    //! can carry it.
+    constexpr std::string_view _sqlCreateTempRefused
+    {
+        "CREATE TEMP TABLE IF NOT EXISTS refused_spans ("
+        "   scope_id      INTEGER NOT NULL DEFAULT 0,"
+        "   target_id     INTEGER NOT NULL DEFAULT 0,"
+        "   from_ts       INTEGER NOT NULL DEFAULT 0,"
+        "   to_ts         INTEGER NOT NULL DEFAULT 0);"
+    };
+
+    constexpr std::string_view _sqlCreateIdxRefused
+    {
+        "CREATE INDEX IF NOT EXISTS idx_refused_spans ON refused_spans(scope_id, target_id);"
+    };
+
+    constexpr std::string_view _sqlClearRefused
+    {
+        "DELETE FROM refused_spans;"
+    };
+
+    constexpr std::string_view _sqlInsertRefused
+    {
+        "INSERT INTO refused_spans(scope_id, target_id, from_ts, to_ts) VALUES (?, ?, ?, ?);"
+    };
+
+    //! Forward from the first log, and forward from a given place.
+    constexpr std::string_view _sqlWindowFirst
+    {
+        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, "
+        "time_created, time_received, time_duration, scope_id, session_id, "
+        "msg_log, msg_thread, msg_module, msg_len, id FROM logs "
+        "WHERE NOT EXISTS (SELECT 1 FROM refused_spans r "
+        "WHERE r.scope_id = logs.scope_id AND r.target_id = logs.cookie_id "
+        "AND logs.time_created >= r.from_ts AND (r.to_ts = 0 OR logs.time_created < r.to_ts)) "
+        "ORDER BY time_created, id LIMIT ?;"
+    };
+
+    constexpr std::string_view _sqlWindowAfter
+    {
+        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, "
+        "time_created, time_received, time_duration, scope_id, session_id, "
+        "msg_log, msg_thread, msg_module, msg_len, id FROM logs "
+        "WHERE ((time_created > ?) OR (time_created = ? AND id > ?)) AND "
+        "NOT EXISTS (SELECT 1 FROM refused_spans r "
+        "WHERE r.scope_id = logs.scope_id AND r.target_id = logs.cookie_id "
+        "AND logs.time_created >= r.from_ts AND (r.to_ts = 0 OR logs.time_created < r.to_ts)) "
+        "ORDER BY time_created, id LIMIT ?;"
+    };
+
+    //! Backward from the last log, and backward from a given place. The rows come back
+    //! newest first, so a caller that shows them in time order reverses them.
+    constexpr std::string_view _sqlWindowLast
+    {
+        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, "
+        "time_created, time_received, time_duration, scope_id, session_id, "
+        "msg_log, msg_thread, msg_module, msg_len, id FROM logs "
+        "WHERE NOT EXISTS (SELECT 1 FROM refused_spans r "
+        "WHERE r.scope_id = logs.scope_id AND r.target_id = logs.cookie_id "
+        "AND logs.time_created >= r.from_ts AND (r.to_ts = 0 OR logs.time_created < r.to_ts)) "
+        "ORDER BY time_created DESC, id DESC LIMIT ?;"
+    };
+
+    constexpr std::string_view _sqlWindowBefore
+    {
+        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, "
+        "time_created, time_received, time_duration, scope_id, session_id, "
+        "msg_log, msg_thread, msg_module, msg_len, id FROM logs "
+        "WHERE ((time_created < ?) OR (time_created = ? AND id < ?)) AND "
+        "NOT EXISTS (SELECT 1 FROM refused_spans r "
+        "WHERE r.scope_id = logs.scope_id AND r.target_id = logs.cookie_id "
+        "AND logs.time_created >= r.from_ts AND (r.to_ts = 0 OR logs.time_created < r.to_ts)) "
+        "ORDER BY time_created DESC, id DESC LIMIT ?;"
+    };
+
     //! A script to extract the names of connected log instances
     constexpr std::string_view _sqlGetInstanceName
     {
@@ -524,6 +609,7 @@ inline void LogSqliteDatabase::_create_indexes() noexcept
     VERIFY(mDatabase.execute(_sqlCreateIdxScopes));
     VERIFY(mDatabase.execute(_sqlCreateIdxLogs));
     VERIFY(mDatabase.execute(_sqlCreateIdxLogsModule));
+    VERIFY(mDatabase.execute(_sqlCreateIdxLogsTime));
 }
 
 inline void LogSqliteDatabase::_initialize() noexcept
@@ -643,6 +729,9 @@ bool LogSqliteDatabase::connect(const String& dbPath, bool readOnly)
             }
 
             mIsInitialized = true;
+            // The temporary table always exists, so that a window read can be prepared before
+            // anything is refused. It costs nothing while it is empty.
+            _create_temp_refused();
             if (readOnly == false)
             {
                 mStmtLogs.prepare(_sqlInsertLog);
@@ -1460,6 +1549,116 @@ bool LogSqliteDatabase::reset(ITEM_ID instId /*= areg::TARGET_ALL*/)
     }
 
     return stmt.execute();
+}
+
+bool LogSqliteDatabase::ensure_time_index()
+{
+    Lock lock(mLock);
+    if ((mDatabase.is_operable() == false) || (table_exists("logs", _master) == false))
+        return false;
+
+    return mDatabase.execute(_sqlCreateIdxLogsTime);
+}
+
+bool LogSqliteDatabase::setup_statement_read_window(SqliteStatement& stmt, const LogPosition& after, int32_t limit)
+{
+    Lock lock(mLock);
+    stmt.reset();
+    if ((mDatabase.is_operable() == false) || (table_exists("refused_spans", _temp) == false))
+        return false;
+
+    if (after.timeCreated == 0)
+    {
+        return stmt.prepare(_sqlWindowFirst) && stmt.bind_int32(0, limit);
+    }
+
+    return stmt.prepare(_sqlWindowAfter)
+        && stmt.bind_uint64(0, static_cast<uint64_t>(after.timeCreated))
+        && stmt.bind_uint64(1, static_cast<uint64_t>(after.timeCreated))
+        && stmt.bind_uint64(2, after.rowId)
+        && stmt.bind_int32 (3, limit);
+}
+
+bool LogSqliteDatabase::setup_statement_read_window_back(SqliteStatement& stmt, const LogPosition& before, int32_t limit)
+{
+    Lock lock(mLock);
+    stmt.reset();
+    if ((mDatabase.is_operable() == false) || (table_exists("refused_spans", _temp) == false))
+        return false;
+
+    if (before.timeCreated == 0)
+    {
+        return stmt.prepare(_sqlWindowLast) && stmt.bind_int32(0, limit);
+    }
+
+    return stmt.prepare(_sqlWindowBefore)
+        && stmt.bind_uint64(0, static_cast<uint64_t>(before.timeCreated))
+        && stmt.bind_uint64(1, static_cast<uint64_t>(before.timeCreated))
+        && stmt.bind_uint64(2, before.rowId)
+        && stmt.bind_int32 (3, limit);
+}
+
+bool LogSqliteDatabase::set_refused_spans(const ArrayList<RefusedSpan>& spans)
+{
+    Lock lock(mLock);
+    if (mDatabase.is_operable() == false)
+        return false;
+    else if (_create_temp_refused() == false)
+        return false;
+
+    if (mDatabase.execute(_sqlClearRefused) == false)
+        return false;
+    else if (spans.is_empty())
+        return true;
+
+    mDatabase.begin();
+    bool result{ true };
+    for (uint32_t i = 0; result && (i < spans.size()); ++i)
+    {
+        const RefusedSpan& span{ spans[i] };
+        SqliteStatement stmt(mDatabase, _sqlInsertRefused);
+        result = stmt.is_valid()
+              && stmt.bind_uint32(0, span.scopeId)
+              && stmt.bind_uint64(1, static_cast<uint64_t>(span.targetId))
+              && stmt.bind_uint64(2, static_cast<uint64_t>(span.fromTime))
+              && stmt.bind_uint64(3, static_cast<uint64_t>(span.toTime))
+              && stmt.execute();
+    }
+
+    mDatabase.commit(result);
+    return result;
+}
+
+int32_t LogSqliteDatabase::fill_log_window(std::vector<SharedBuffer>& logs, SqliteStatement& stmt, int32_t maxEntries, LogPosition& lastRead)
+{
+    int32_t result{ 0 };
+    if (stmt.is_valid() == false)
+        return result;
+
+    while (stmt.next() == SqliteStatement::QueryResult::HasMore)
+    {
+        SharedBuffer log;
+        _copy_log_message(stmt, log);
+        logs.push_back(log);
+
+        // The place of the last row read is where the next window continues from.
+        lastRead.timeCreated = static_cast<TIME64>(stmt.as_uint64(5));
+        lastRead.rowId       = stmt.as_uint64(14);
+
+        ++result;
+        if ((maxEntries > 0) && (result >= maxEntries))
+            break;
+    }
+
+    return result;
+}
+
+inline bool LogSqliteDatabase::_create_temp_refused() noexcept
+{
+    if (table_exists("refused_spans", _temp))
+        return true;
+
+    return mDatabase.execute(_sqlCreateTempRefused) && mDatabase.execute(_sqlCreateIdxRefused);
 }
 
 bool LogSqliteDatabase::disable_filter_mask(ITEM_ID instId)
