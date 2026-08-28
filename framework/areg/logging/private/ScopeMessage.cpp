@@ -95,7 +95,7 @@ void ScopeMessage::log_fatal( const char * format, ... ) const
     }
 }
 
-void ScopeMessage::log_message(areg::LogPriority logPrio, const char * format, ...)
+void ScopeMessage::log_message(areg::LogPriority logPrio, const char * format, ...) const
 {
     if ( is_prio_enabled(logPrio) )
     {

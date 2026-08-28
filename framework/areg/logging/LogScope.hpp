@@ -266,7 +266,7 @@ inline OutStream & operator << ( OutStream & stream, const LogScope & output )
 
 inline uint32_t LogScope::next_session() const noexcept
 {
-    return mSessionId.fetch_add(1, std::memory_order_relaxed);
+    return mSessionId.fetch_add(1, std::memory_order_relaxed) + 1u;
 }
 
 inline LogScope & LogScope::self() noexcept
@@ -333,7 +333,7 @@ inline constexpr std::string_view LogScope::name() const noexcept
 
 inline uint32_t LogScope::session() const noexcept
 {
-    return mSessionId;
+    return mSessionId.load(std::memory_order_relaxed);
 }
 
 } // namespace areg
