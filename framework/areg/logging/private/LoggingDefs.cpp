@@ -31,27 +31,30 @@
 #if AREG_LOGGING
 
 namespace {
-    inline areg::EventHeader _log_empty_header() noexcept
+    //!< Builds the event header shared by every logging message.
+    inline areg::EventHeader _make_log_header(uint32_t messageId) noexcept
     {
         areg::EventHeader hdr{};
         hdr.checksum   = areg::CHECKSUM_INVALID;
         hdr.target     = static_cast<uint32_t>(areg::COOKIE_LOGGER);
+        hdr.messageId  = messageId;
         hdr.eventType  = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
         hdr.result     = areg::MESSAGE_SUCCESS;
         hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
         return hdr;
     }
 
-    inline areg::EventHeader _log_message_header() noexcept
+    const areg::EventHeader EMPTY_HEADER  { _make_log_header(0u) };
+    const areg::EventHeader MESSAGE_HEADER{ _make_log_header(static_cast<uint32_t>(areg::FuncIdRange::ServiceLogMessage)) };
+
+    inline const areg::EventHeader & _log_empty_header() noexcept
     {
-        areg::EventHeader hdr{};
-        hdr.checksum   = areg::CHECKSUM_INVALID;
-        hdr.target     = static_cast<uint32_t>(areg::COOKIE_LOGGER);
-        hdr.messageId  = static_cast<uint32_t>(areg::FuncIdRange::ServiceLogMessage);
-        hdr.eventType  = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
-        hdr.result     = areg::MESSAGE_SUCCESS;
-        hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
-        return hdr;
+        return EMPTY_HEADER;
+    }
+
+    inline const areg::EventHeader & _log_message_header() noexcept
+    {
+        return MESSAGE_HEADER;
     }
 
     void _store_scope_list(areg::MessageEnvelope& msgEnv, const areg::ScopeList& scopeList)

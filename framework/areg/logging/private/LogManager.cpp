@@ -208,7 +208,8 @@ void LogManager::force_enable_logging()
 // LogManager class constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 LogManager::LogManager()
-    : DispatcherThread      ( LogManager::LOGGING_THREAD_NAME.data(), areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_DEFAULT_RING_CAPACITY )
+    // Drops the message when the queue is full. A log must never block the thread that writes it.
+    : DispatcherThread      ( LogManager::LOGGING_THREAD_NAME.data(), areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_DEFAULT_RING_CAPACITY, areg::Bool::True )
     , LoggingEventConsumer  ( )
 
     , mScopeController  ( )

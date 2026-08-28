@@ -47,6 +47,7 @@ class AREG_API LogScope
 // Internal types and constants
 //////////////////////////////////////////////////////////////////////////////
     using session_id    = std::atomic_uint32_t;
+    using scope_prio    = std::atomic_uint32_t;
 
 //////////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -119,6 +120,8 @@ public:
      * \brief   Adds priority level to the existing priority level of the scope. The priority level is added bitwise.
      *
      * \param   addPrio     The log message priority level to add.
+     * \note    Read and write are not one atomic step. Call only from the thread that applies
+     *          the configuration.
      **/
     inline void add_priority( areg::LogPriority addPrio ) noexcept;
 
@@ -142,6 +145,8 @@ public:
      * \brief   Removes priority level from the existing priority level of the scope. The operation is made bitwise.
      *
      * \param   remPrio     The log priority level to remove.
+     * \note    Read and write are not one atomic step. Call only from the thread that applies
+     *          the configuration.
      **/
     inline void remove_priority( areg::LogPriority remPrio ) noexcept;
 
@@ -193,15 +198,16 @@ private:
      * \brief   The ID of log scope. It cannot be changed
      **/
     const uint32_t  mScopeId;
-    /**
-     * \brief   The log message priority of the scope.
-     **/
-    uint32_t        mScopePrio;
 
 #if defined(_MSC_VER)
     #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
+    /**
+     * \brief   The log message priority of the scope. Read by every logging thread,
+     *          written by the thread that applies the configuration.
+     **/
+    scope_prio      mScopePrio;
     /**
      * \brief   The name of log scope. It cannot be changed
      **/
@@ -248,7 +254,7 @@ private:
 inline OutStream & operator << ( OutStream & stream, const LogScope & output )
 {
     stream << output.mScopeId;
-    stream << output.mScopePrio;
+    stream << output.priority();
     stream << String{ output.mScopeName.data() };
 
     return stream;
@@ -275,12 +281,13 @@ inline constexpr LogScope::operator uint32_t () const noexcept
 
 inline void LogScope::set_priority( uint32_t newPrio ) noexcept
 {
-    mScopePrio  = newPrio;
+    mScopePrio.store(newPrio, std::memory_order_relaxed);
 }
 
 inline void LogScope::add_priority( areg::LogPriority addPrio ) noexcept
 {
-    mScopePrio  |= static_cast<uint32_t>(addPrio);
+    const uint32_t prio{ mScopePrio.load(std::memory_order_relaxed) };
+    mScopePrio.store(prio | static_cast<uint32_t>(addPrio), std::memory_order_relaxed);
 }
 
 void LogScope::add_priority( const char * addPrio ) noexcept
@@ -295,7 +302,8 @@ void LogScope::add_priority( const String & addPrio ) noexcept
 
 inline void LogScope::remove_priority( areg::LogPriority remPrio ) noexcept
 {
-    mScopePrio  &= ~static_cast<uint32_t>(remPrio);
+    const uint32_t prio{ mScopePrio.load(std::memory_order_relaxed) };
+    mScopePrio.store(prio & ~static_cast<uint32_t>(remPrio), std::memory_order_relaxed);
 }
 
 void LogScope::remove_priority( const char * remPrio ) noexcept
@@ -310,7 +318,7 @@ void LogScope::remove_priority( const String & remPrio ) noexcept
 
 inline uint32_t LogScope::priority() const noexcept
 {
-    return mScopePrio;
+    return mScopePrio.load(std::memory_order_relaxed);
 }
 
 inline constexpr uint32_t LogScope::id() const noexcept

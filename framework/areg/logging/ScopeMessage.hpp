@@ -18,6 +18,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
+#include "areg/base/DateTime.hpp"
 #include "areg/logging/LoggingDefs.hpp"
 #include "areg/logging/LogScope.hpp"
 #include <stdarg.h>
@@ -178,6 +179,21 @@ private:
      **/
     static void _send_log( uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const char * format, va_list args );
 
+    /**
+     * \brief   Sends a scope enter or scope exit message to the configured logging targets.
+     *
+     * \param   msgType     Either LogMessageType::ScopeEnter or LogMessageType::ScopeExit.
+     **/
+    void _send_scope( areg::LogMessageType msgType ) const;
+
+    /**
+     * \brief   Returns true if the scope can emit a message of any priority.
+     *
+     * \param   logScope    The scope to check.
+     **/
+    [[nodiscard]]
+    static inline bool _can_log( const LogScope & logScope ) noexcept;
+
 //////////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////////
@@ -245,6 +261,40 @@ inline bool ScopeMessage::is_prio_enabled(areg::LogPriority msgPrio) const noexc
     return (msgPrio == areg::LogPriority::PrioScope 
                 ? (mScope.priority() &  static_cast<uint32_t>(areg::LogPriority::PrioScope)) != 0
                 : mScope.priority() >= static_cast<uint32_t>(msgPrio)) ;
+}
+
+inline bool ScopeMessage::_can_log( const LogScope & logScope ) noexcept
+{
+    return (logScope.priority() & static_cast<uint32_t>(areg::LogPriority::PrioScopeLogs)) != 0u;
+}
+
+inline ScopeMessage::ScopeMessage( const LogScope & logScope )
+    : mScope    ( logScope )
+    , mSessionId( _can_log(logScope) ? logScope.next_session() : 0u )
+    , mTimestamp( _can_log(logScope) ? static_cast<TIME64>(DateTime::timestamp()) : static_cast<TIME64>(0u) )
+{
+    if ( is_scope_enabled() )
+    {
+        _send_scope( areg::LogMessageType::ScopeEnter );
+    }
+}
+
+inline ScopeMessage::~ScopeMessage()
+{
+    if ( is_scope_enabled() )
+    {
+        _send_scope( areg::LogMessageType::ScopeExit );
+    }
+}
+
+#else   // AREG_LOGGING
+
+inline ScopeMessage::ScopeMessage( const LogScope & /*logScope*/ )
+{
+}
+
+inline ScopeMessage::~ScopeMessage()
+{
 }
 
 #endif  // AREG_LOGGING
