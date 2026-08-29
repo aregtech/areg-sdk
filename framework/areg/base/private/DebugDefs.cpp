@@ -39,6 +39,40 @@ AREG_API_IMPL void areg::lt_ensure_atexit() noexcept
 
 #endif  // AREG_LATENCY_TRACE
 
+#if defined(AREG_STALL_TRACE) && (AREG_STALL_TRACE)
+
+#include <cstdlib>
+#include <mutex>
+
+#ifdef _WIN32
+    #include <windows.h>
+#else
+    #include <time.h>
+#endif  // _WIN32
+
+AREG_API_IMPL uint64_t areg::st_thread_cycles() noexcept
+{
+#ifdef _WIN32
+    ULONG64 cycles{ 0u };
+    return ::QueryThreadCycleTime(::GetCurrentThread(), &cycles) != FALSE ? static_cast<uint64_t>(cycles) : 0u;
+#else
+    timespec ts{};
+    if (::clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts) != 0)
+        return 0u;
+
+    return (static_cast<uint64_t>(ts.tv_sec) * 1000000000u) + static_cast<uint64_t>(ts.tv_nsec);
+#endif  // _WIN32
+}
+
+AREG_API_IMPL void areg::st_ensure_atexit() noexcept
+{
+    static std::once_flag _once;
+    std::call_once(_once, []() noexcept { std::atexit(&areg::st_dump); });
+}
+
+#endif  // AREG_STALL_TRACE
+
+
 //////////////////////////////////////////////////////////////////////////
 // Debug functions implementation
 //////////////////////////////////////////////////////////////////////////
