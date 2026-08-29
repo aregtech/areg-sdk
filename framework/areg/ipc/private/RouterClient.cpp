@@ -342,25 +342,29 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
     }
     break;
 
-    case areg::FuncIdRange::ServiceLastId:                    // fall through
-    case areg::FuncIdRange::SystemServiceQueryInstances:      // fall through
-    case areg::FuncIdRange::SystemServiceRequestRegister:     // fall through
-    case areg::FuncIdRange::SystemServiceDisconnect:          // fall through
-    case areg::FuncIdRange::SystemServiceConnect:             // fall through
-    case areg::FuncIdRange::ResponseServiceProviderConnection:// fall through
-    case areg::FuncIdRange::RequestServiceProviderConnection: // fall through
-    case areg::FuncIdRange::ResponseServiceProviderVersion:   // fall through
-    case areg::FuncIdRange::RequestServiceProviderVersion:    // fall through
-    case areg::FuncIdRange::RequestRegisterService:           // fall through
-    case areg::FuncIdRange::ComponentCleanup:                 // fall through
-    case areg::FuncIdRange::SystemServiceNotifyInstances:     // fall through
-    case areg::FuncIdRange::ServiceLogRegisterScopes:         // fall through
-    case areg::FuncIdRange::ServiceLogUpdateScopes:           // fall through
-    case areg::FuncIdRange::ServiceLogQueryScopes:            // fall through
-    case areg::FuncIdRange::ServiceLogScopesUpdated:          // fall through
-    case areg::FuncIdRange::ServiceSaveLogConfiguration:      // fall through
-    case areg::FuncIdRange::ServiceLogConfigurationSaved:     // fall through
-    case areg::FuncIdRange::ServiceLogMessage:                // fall through
+    case areg::FuncIdRange::ServiceLastId:                      // fall through
+    case areg::FuncIdRange::SystemServiceQueryInstances:        // fall through
+    case areg::FuncIdRange::SystemServiceRequestRegister:       // fall through
+    case areg::FuncIdRange::SystemServiceDisconnect:            // fall through
+    case areg::FuncIdRange::SystemServiceConnect:               // fall through
+    case areg::FuncIdRange::ResponseServiceProviderConnection:  // fall through
+    case areg::FuncIdRange::RequestServiceProviderConnection:   // fall through
+    case areg::FuncIdRange::ResponseServiceProviderVersion:     // fall through
+    case areg::FuncIdRange::RequestServiceProviderVersion:      // fall through
+    case areg::FuncIdRange::RequestRegisterService:             // fall through
+    case areg::FuncIdRange::ComponentCleanup:                   // fall through
+    case areg::FuncIdRange::SystemServiceNotifyInstances:       // fall through
+    case areg::FuncIdRange::ServiceLogRegisterScopes:           // fall through
+    case areg::FuncIdRange::ServiceLogUpdateScopes:             // fall through
+    case areg::FuncIdRange::ServiceLogQueryScopes:              // fall through
+    case areg::FuncIdRange::ServiceLogScopesUpdated:            // fall through
+    case areg::FuncIdRange::ServiceSaveLogConfiguration:        // fall through
+    case areg::FuncIdRange::ServiceLogConfigurationSaved:       // fall through
+    case areg::FuncIdRange::ServiceLogMessage:                  // fall through
+    case areg::FuncIdRange::ServiceLogUpdateSourceState:        // fall through
+    case areg::FuncIdRange::ServiceLogSourceStateUpdated:       // fall through
+    case areg::FuncIdRange::ServiceLogRestoreConfiguration:     // fall through
+    case areg::FuncIdRange::ServiceLogConfigurationRestored:    // fall through
         break;
 
     case areg::FuncIdRange::AttributeLastId:          // fall through
@@ -374,7 +378,7 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
     {
         if ( areg::is_executable_id(static_cast<uint32_t>(msgId)) )
         {
-            // Route directly on the receive thread
+            // Route directly on the receive thread 
             if ( !RemoteEventFactory::route_incoming_message(msgReceived, mChannel) )
             {
                 failed_process_message(msgReceived);

@@ -68,6 +68,18 @@ private:
     //!< The ring buffer of logging message to queue if logging service is not available.
     using PendingQueue = RingStack<MessageEnvelope>;
 
+    //!< The state of the network logger, held as bits of a single atomic word.
+    //!< Neither enabled nor paused.
+    static constexpr uint32_t           FLAG_NONE       { 0u };
+    //!< The TCP/IP network logging is enabled.
+    static constexpr uint32_t           FLAG_ENABLED    { 1u };
+    //!< The source drops the logs it produces instead of sending them.
+    static constexpr uint32_t           FLAG_PAUSED     { 2u };
+    //!< The bits that decide whether a produced log is sent.
+    static constexpr uint32_t           FLAGS_STATE_MASK{ FLAG_ENABLED | FLAG_PAUSED };
+    //!< The value of the masked bits when the source sends its logs.
+    static constexpr uint32_t           FLAGS_SENDING   { FLAG_ENABLED };
+
     //!< A prefix to add in front of thread and timer names.
     static constexpr std::string_view   PREFIX_THREAD{ "logger_" };
 
@@ -216,14 +228,23 @@ private:
     //!< Wrapper of 'this' pointer.
     inline NetTcpLogger& self();
 
+    //!< Returns true if the network logging is enabled.
+    inline bool is_enabled() const noexcept;
+
+    //!< Returns true if the network logging is enabled and the source is not paused.
+    inline bool is_sending() const noexcept;
+
+    //!< Sets or clears the paused bit and keeps the other bits untouched.
+    inline void set_paused(bool paused) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The instance of scope controller
     ScopeController &   mScopeController;
-    //!< The flag, indicating whether the TPC/IP network logging is enabled or not.
-    std::atomic<bool>   mIsEnabled;
+    //!< The state of the network logger, held as NetTcpLogger::FLAG_* bits.
+    std::atomic<uint32_t> mFlags;
     //!< The ring stack to queue log messages if the connection setup did not complete yet.
     PendingQueue        mRingStack;
 
@@ -242,6 +263,29 @@ private:
 inline NetTcpLogger& NetTcpLogger::self()
 {
     return (*this);
+}
+
+inline bool NetTcpLogger::is_enabled() const noexcept
+{
+    return (mFlags.load(std::memory_order_acquire) & NetTcpLogger::FLAG_ENABLED) != 0u;
+}
+
+inline bool NetTcpLogger::is_sending() const noexcept
+{
+    // The acquire pairs with the release store in open_logger(), which publishes the ring stack.
+    return (mFlags.load(std::memory_order_acquire) & NetTcpLogger::FLAGS_STATE_MASK) == NetTcpLogger::FLAGS_SENDING;
+}
+
+inline void NetTcpLogger::set_paused(bool paused) noexcept
+{
+    if (paused)
+    {
+        mFlags.fetch_or(NetTcpLogger::FLAG_PAUSED, std::memory_order_acq_rel);
+    }
+    else
+    {
+        mFlags.fetch_and(~NetTcpLogger::FLAG_PAUSED, std::memory_order_acq_rel);
+    }
 }
 
 } // namespace areg

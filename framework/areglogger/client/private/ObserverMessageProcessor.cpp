@@ -153,6 +153,29 @@ void ObserverMessageProcessor::notify_log_register_scopes(const areg::MessageEnv
     }
 }
 
+void ObserverMessageProcessor::notify_log_source_state(const areg::MessageEnvelope& msgReceived)
+{
+    FuncLogSourceState callback{ nullptr };
+    ITEM_ID source    { areg::COOKIE_UNKNOWN };
+    uint8_t state     { static_cast<uint8_t>(areg::LogSourceState::Undefined) };
+    ITEM_ID byObserver{ areg::COOKIE_UNKNOWN };
+
+    do
+    {
+        Lock lock(mLoggerClient.mLock);
+        callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtLogSourceState : nullptr;
+    } while (false);
+
+    msgReceived >> source;
+    msgReceived >> state;
+    msgReceived >> byObserver;
+
+    if ((callback != nullptr) && (source != areg::COOKIE_UNKNOWN))
+    {
+        callback(source, state, byObserver);
+    }
+}
+
 void ObserverMessageProcessor::notify_log_update_scopes(const areg::MessageEnvelope& msgReceived)
 {
     FuncLogUpdateScopes callback{ nullptr };

@@ -161,6 +161,53 @@ public:
     void log_source_configuration_saved(const areg::MessageEnvelope& msgReceived);
 
     /**
+     * \brief   Called when an observer asks a log source to read its configuration file again.
+     *          The message is forwarded either to all connected log sources or to one of them.
+     *
+     * \param   msgReceived     The message to process.
+     **/
+    void restore_log_source_configuration(const areg::MessageEnvelope& msgReceived) const;
+
+    /**
+     * \brief   Called when a log source read its configuration file again. The message is
+     *          forwarded to every connected observer.
+     *
+     * \param   msgReceived     The message to process.
+     **/
+    void log_source_configuration_restored(const areg::MessageEnvelope& msgReceived) const;
+
+    /**
+     * \brief   Called when an observer asks a log source to start or stop sending its logs.
+     *          The message is forwarded either to all connected log sources or to one of them.
+     *
+     * \param   msgReceived     The message to process.
+     **/
+    void update_log_source_state(const areg::MessageEnvelope& msgReceived);
+
+    /**
+     * \brief   Called when a log source reports the state it took. The state is remembered and
+     *          the message is forwarded to every connected observer, so two observers never
+     *          disagree about which source is silent.
+     *
+     * \param   msgReceived     The message to process.
+     **/
+    void log_source_state_updated(const areg::MessageEnvelope& msgReceived);
+
+    /**
+     * \brief   Sends the state of every paused log source to the given observer, so an observer
+     *          that connects late is never out of step.
+     *
+     * \param   target  The observer to answer.
+     **/
+    void send_source_states(const ITEM_ID& target) const;
+
+    /**
+     * \brief   Puts every paused log source back to sending. Called when the last observer is
+     *          gone, because nothing may stay silenced while nobody is listening.
+     **/
+    void resume_all_sources(void);
+
+    /**
      * \brief   Processes the next log source application in the queue to save configuration.
      **/
     void process_next_save_config();
@@ -227,6 +274,9 @@ private:
 
     //!< The ID of an application pending to save the configuration.
     ITEM_ID                     mPendingSave;
+
+    //!< The paused log sources, each mapped to the observer that asked for the pause.
+    areg::OrderedMap<ITEM_ID, ITEM_ID>  mPausedSources;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

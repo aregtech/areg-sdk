@@ -192,7 +192,11 @@ void RouterServerService::on_message_received(const areg::MessageEnvelope &msgRe
     case areg::FuncIdRange::ServiceLogScopesUpdated:          // fall through
     case areg::FuncIdRange::ServiceSaveLogConfiguration:      // fall through
     case areg::FuncIdRange::ServiceLogConfigurationSaved:     // fall through
-    case areg::FuncIdRange::ServiceLogMessage:                // fall through
+case areg::FuncIdRange::ServiceLogMessage:                // fall through
+    case areg::FuncIdRange::ServiceLogUpdateSourceState:        // fall through
+    case areg::FuncIdRange::ServiceLogSourceStateUpdated:       // fall through
+    case areg::FuncIdRange::ServiceLogRestoreConfiguration:     // fall through
+    case areg::FuncIdRange::ServiceLogConfigurationRestored:    // fall through
         break;
 
     case areg::FuncIdRange::ResponseServiceProviderConnection:// fall through

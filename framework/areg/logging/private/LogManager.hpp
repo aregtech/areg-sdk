@@ -112,6 +112,17 @@ public:
     static bool read_log_config( const char * configFile = nullptr );
 
     /**
+     * \brief   Reads the logging configuration from a file and applies it to the registered
+     *          scopes, so every scope priority goes back to what the file holds.
+     *
+     * \param   configFile      Path to the configuration file (full or relative). If nullptr, loads
+     *                          the default configuration file.
+     * \return  Returns true if the configuration file was read. If it was not, the default
+     *          configuration is applied instead and the method returns false.
+     **/
+    static bool restore_log_config( const char * configFile = nullptr );
+
+    /**
      * \brief   Initializes and starts the logging thread.
      *
      * \param   configFile      Path to the logging configuration file (full or relative). If

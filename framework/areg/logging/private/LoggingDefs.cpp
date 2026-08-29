@@ -500,6 +500,73 @@ AREG_API_IMPL areg::MessageEnvelope areg::message_configuration_saved()
     return msgScope;
 }
 
+AREG_API_IMPL areg::MessageEnvelope areg::message_restore_configuration(const ITEM_ID& source, const ITEM_ID& target)
+{
+    MessageEnvelope msgRequest;
+    if ((source != areg::COOKIE_UNKNOWN) &&
+        (target != areg::COOKIE_UNKNOWN) &&
+        (msgRequest.init_envelope(_log_empty_header()) != nullptr))
+    {
+        msgRequest.set_message_id(static_cast<uint32_t>(areg::FuncIdRange::ServiceLogRestoreConfiguration));
+        msgRequest.set_target(static_cast<uint32_t>(target));
+        msgRequest.set_source(static_cast<uint32_t>(source));
+        msgRequest << target;
+    }
+
+    return msgRequest;
+}
+
+AREG_API_IMPL areg::MessageEnvelope areg::message_configuration_restored()
+{
+    MessageEnvelope msgScope;
+    if (msgScope.init_envelope(_log_empty_header()) != nullptr)
+    {
+        msgScope.set_message_id(static_cast<uint32_t>(areg::FuncIdRange::ServiceLogConfigurationRestored));
+        msgScope.set_target(static_cast<uint32_t>(areg::COOKIE_LOGGER));
+        msgScope.set_source(static_cast<uint32_t>(areg::cookie()));
+    }
+
+    return msgScope;
+}
+
+AREG_API_IMPL areg::MessageEnvelope areg::message_update_source_state(const ITEM_ID& source, const ITEM_ID& target, areg::LogSourceState state)
+{
+    MessageEnvelope msgRequest;
+    if ((source != areg::COOKIE_UNKNOWN) &&
+        (target != areg::COOKIE_UNKNOWN) &&
+        (msgRequest.init_envelope(_log_empty_header()) != nullptr))
+    {
+        msgRequest.set_message_id(static_cast<uint32_t>(areg::FuncIdRange::ServiceLogUpdateSourceState));
+        msgRequest.set_target(static_cast<uint32_t>(target));
+        msgRequest.set_source(static_cast<uint32_t>(source));
+        msgRequest << target;
+        msgRequest << static_cast<uint8_t>(state);
+    }
+
+    return msgRequest;
+}
+
+AREG_API_IMPL areg::MessageEnvelope areg::message_source_state_updated( const ITEM_ID & source
+                                                                      , const ITEM_ID & target
+                                                                      , areg::LogSourceState state
+                                                                      , const ITEM_ID & byObserver)
+{
+    MessageEnvelope msgScope;
+    if ((source != areg::COOKIE_UNKNOWN) &&
+        (target != areg::COOKIE_UNKNOWN) &&
+        (msgScope.init_envelope(_log_empty_header()) != nullptr))
+    {
+        msgScope.set_message_id(static_cast<uint32_t>(areg::FuncIdRange::ServiceLogSourceStateUpdated));
+        msgScope.set_target(static_cast<uint32_t>(target));
+        msgScope.set_source(static_cast<uint32_t>(source));
+        msgScope << source;
+        msgScope << static_cast<uint8_t>(state);
+        msgScope << byObserver;
+    }
+
+    return msgScope;
+}
+
 AREG_API_IMPL void areg::set_db_engine(LogDatabaseEngine * dbEngine)
 {
     LogManager::set_db_engine(dbEngine);
@@ -662,6 +729,29 @@ AREG_API_IMPL areg::MessageEnvelope areg::message_save_configuration(const ITEM_
 }
 
 AREG_API_IMPL areg::MessageEnvelope areg::message_configuration_saved()
+{
+    return areg::MessageEnvelope{};
+}
+
+AREG_API_IMPL areg::MessageEnvelope areg::message_restore_configuration(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/)
+{
+    return areg::MessageEnvelope{};
+}
+
+AREG_API_IMPL areg::MessageEnvelope areg::message_configuration_restored()
+{
+    return areg::MessageEnvelope{};
+}
+
+AREG_API_IMPL areg::MessageEnvelope areg::message_update_source_state(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, areg::LogSourceState /*state*/)
+{
+    return areg::MessageEnvelope{};
+}
+
+AREG_API_IMPL areg::MessageEnvelope areg::message_source_state_updated( const ITEM_ID & /*source*/
+                                                                      , const ITEM_ID & /*target*/
+                                                                      , areg::LogSourceState /*state*/
+                                                                      , const ITEM_ID & /*byObserver*/)
 {
     return areg::MessageEnvelope{};
 }

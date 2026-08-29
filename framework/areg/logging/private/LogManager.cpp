@@ -86,6 +86,21 @@ bool LogManager::read_log_config( const char* configFile /*= nullptr*/ )
     return Application::load_configuration(configFile);
 }
 
+bool LogManager::restore_log_config(const char* configFile /*= nullptr*/ )
+{
+    const bool result{ Application::load_configuration(configFile) };
+
+    LogManager& logManager = LogManager::instance();
+    Lock lock(logManager.mLock);
+    // The configuration maps are dropped first, so a scope the file no longer names falls back to
+    // the default priority instead of keeping the one an observer set.
+    logManager.mScopeController.clear_config_scopes();
+    logManager.mScopeController.configure_scopes();
+    logManager.mScopeController.set_scope_activity(true);
+
+    return result;
+}
+
 bool LogManager::start_logging(const char* configFile /*= nullptr*/ )
 {
     Application::load_configuration(configFile);

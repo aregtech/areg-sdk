@@ -274,6 +274,16 @@ typedef void (*FuncLogMessage)(const LogRecord * /*log_message*/);
 typedef void (*FuncLogMessageEx)(const unsigned char* /*logBuffer*/, uint32_t /*size*/);
 
 /**
+ * \brief   The callback of the event triggered when a log source starts or stops sending its logs.
+ *          A stopped source keeps producing its logs and drops them; its priorities are untouched.
+ * \param   cookie      The cookie ID of the log source.
+ * \param   state       The state the source is in: 1 sends the logs, 2 drops them.
+ * \param   byObserver  The cookie ID of the observer that asked for the change, or 0 when the
+ *                      log collector made it by itself.
+ **/
+typedef void (*FuncLogSourceState)(ITEM_ID /*cookie*/, unsigned char /*state*/, ITEM_ID /*byObserver*/);
+
+/**
  * \brief   The structure of the callbacks / events to set when send or receive messages.
  **/
 struct ObserverEvents
@@ -302,6 +312,8 @@ struct ObserverEvents
     FuncLogMessage          evtLogMessage;
     /* The callback to trigger when receive remote message to log. To use, set the 'evtLogMessage' callback null. */
     FuncLogMessageEx        evtLogMessageEx;
+    /* The callback to trigger when a log source started or stopped sending its logs. */
+    FuncLogSourceState      evtLogSourceState;
 };
 
 /**
@@ -463,6 +475,26 @@ LOGGER_API bool log_observer_request_change_scope_prio(ITEM_ID target, const Sco
  * \return  Returns true if processed with success. Otherwise, returns false.
  **/
 LOGGER_API bool log_observer_request_save_config(ITEM_ID target);
+
+/**
+ * \brief   Call to make the specified target read its log configuration file again, so its scope
+ *          priorities go back to what the file holds. The scopes updated callback follows.
+ * \param   target  The cookie ID of the target instance.
+ *                  If the target is ID_IGNORE (or 0), the request is sent to all connected instances.
+ * \return  Returns true if processed with success. Otherwise, returns false.
+ **/
+LOGGER_API bool log_observer_request_restore_config(ITEM_ID target);
+
+/**
+ * \brief   Call to make the specified target start or stop sending the logs it produces. A stopped
+ *          target keeps generating its logs and drops them; its priorities are not touched and the
+ *          logs produced while it is stopped are gone.
+ * \param   target  The cookie ID of the target instance.
+ *                  If the target is ID_IGNORE (or 0), the request is sent to all connected instances.
+ * \param   state   The state the target should take: 1 to send the logs, 2 to drop them.
+ * \return  Returns true if processed with success. Otherwise, returns false.
+ **/
+LOGGER_API bool log_observer_request_source_state(ITEM_ID target, unsigned char state);
 
 /**
  * \brief   Call to make a log message on the observer side and save it in the logging database.

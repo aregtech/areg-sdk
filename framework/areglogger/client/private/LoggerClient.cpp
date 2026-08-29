@@ -226,6 +226,30 @@ bool LoggerClient::request_save_configuration(const ITEM_ID& target /*= areg::TA
     return result;
 }
 
+bool LoggerClient::request_restore_configuration(const ITEM_ID& target /*= areg::TARGET_ALL*/)
+{
+    bool result{ false };
+    Lock lock(mLock);
+    if ((mChannel.cookie() != areg::COOKIE_UNKNOWN) && (target != areg::TARGET_UNKNOWN))
+    {
+        result = send_message(areg::message_restore_configuration(mChannel.cookie(), target == areg::TARGET_ALL ? LoggerClient::TARGET_ID : target));
+    }
+
+    return result;
+}
+
+bool LoggerClient::request_source_state(const ITEM_ID& target, areg::LogSourceState state)
+{
+    bool result{ false };
+    Lock lock(mLock);
+    if ((mChannel.cookie() != areg::COOKIE_UNKNOWN) && (target != areg::TARGET_UNKNOWN) && (state != areg::LogSourceState::Undefined))
+    {
+        result = send_message(areg::message_update_source_state(mChannel.cookie(), target == areg::TARGET_ALL ? LoggerClient::TARGET_ID : target, state));
+    }
+
+    return result;
+}
+
 uint32_t LoggerClient::add_log(const ITEM_ID & cookie, areg::LogPriority prio, TIME64 timestamp, const char * message)
 {
     return mMessageProcessor.add_local_log(cookie, prio, timestamp, message);
@@ -693,6 +717,10 @@ void LoggerClient::process_received_message(MessageEnvelope& msgReceived, Socket
 
         case areg::FuncIdRange::ServiceLogScopesUpdated:
             mMessageProcessor.notify_log_update_scopes(msgReceived);
+            break;
+
+        case areg::FuncIdRange::ServiceLogSourceStateUpdated:
+            mMessageProcessor.notify_log_source_state(msgReceived);
             break;
 
         case areg::FuncIdRange::ServiceLogMessage:

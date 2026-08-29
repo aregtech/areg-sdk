@@ -347,6 +347,35 @@ namespace areg {
     };
 
     /**
+     * \brief   areg::LogSourceState
+     *          Whether a log source sends the logs it produces. A paused source keeps
+     *          generating its logs and drops them; its scope priorities are untouched.
+     **/
+    enum class LogSourceState : uint8_t
+    {
+          Undefined = 0 //!< The state of the source is not known.
+        , Active    = 1 //!< The source sends its logs.
+        , Paused    = 2 //!< The source produces its logs and drops them.
+    };
+
+    /**
+     * \brief   Returns the readable name of the log source state.
+     * \param   state   The state to name.
+     **/
+    inline const char * source_state_to_string(areg::LogSourceState state)
+    {
+        switch (state)
+        {
+        case areg::LogSourceState::Active:
+            return "Active";
+        case areg::LogSourceState::Paused:
+            return "Paused";
+        default:
+            return "Undefined";
+        }
+    }
+
+    /**
      * \brief   The structure of logging message object to output on target (log collector or observer).
      **/
     struct AREG_API LogEntry
@@ -733,6 +762,49 @@ namespace areg {
      * \return  The message ready to send to the log collector.
      **/
     AREG_API MessageEnvelope message_configuration_saved();
+
+    /**
+     * \brief   Creates a message to request connected clients to read the configuration again,
+     *          so the scope priorities go back to what the configuration file holds.
+     *
+     * \param   source      The ID of the source (log observer or log collector).
+     * \param   target      The ID of the target or areg::TARGET_ALL to forward to all clients.
+     * \return  The message ready to send to client(s) via the log collector service.
+     **/
+    AREG_API MessageEnvelope message_restore_configuration(const ITEM_ID & source, const ITEM_ID & target);
+
+    /**
+     * \brief   Creates a message to notify the log collector that the configuration was read again.
+     *
+     * \return  The message ready to send to the log collector.
+     **/
+    AREG_API MessageEnvelope message_configuration_restored();
+
+    /**
+     * \brief   Creates a message to request a log source to start or stop sending its logs.
+     *          A paused source keeps producing its logs and drops them.
+     *
+     * \param   source      The ID of the source (log observer or log collector).
+     * \param   target      The ID of the target or areg::TARGET_ALL to forward to all clients.
+     * \param   state       The state the target should take.
+     * \return  The message ready to send to client(s) via the log collector service.
+     **/
+    AREG_API MessageEnvelope message_update_source_state(const ITEM_ID & source, const ITEM_ID & target, areg::LogSourceState state);
+
+    /**
+     * \brief   Creates a message to notify the state a log source took.
+     *
+     * \param   source      The ID of the log source the state belongs to.
+     * \param   target      The ID of the target or areg::COOKIE_LOGGER to forward to all observers.
+     * \param   state       The state the log source is in.
+     * \param   byObserver  The ID of the observer that asked for the state, or areg::COOKIE_UNKNOWN
+     *                      when the log collector set it by itself.
+     * \return  The message ready to send.
+     **/
+    AREG_API MessageEnvelope message_source_state_updated( const ITEM_ID & source
+                                                         , const ITEM_ID & target
+                                                         , areg::LogSourceState state
+                                                         , const ITEM_ID & byObserver);
 
     /**
      * \brief   Sets the external logging database engine.

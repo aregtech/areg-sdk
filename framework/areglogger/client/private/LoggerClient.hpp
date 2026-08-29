@@ -217,6 +217,26 @@ public:
     bool request_save_configuration(const ITEM_ID & target = areg::TARGET_ALL);
 
     /**
+     * \brief   Sends a request to read the log configuration file again, so the scope priorities
+     *          go back to what the file holds.
+     *
+     * \param   target      The ID of the target to send the message. If areg::TARGET_ALL,
+     *                      sends to all connected clients.
+     * \return  Returns true if request was processed; false otherwise.
+     **/
+    bool request_restore_configuration(const ITEM_ID & target = areg::TARGET_ALL);
+
+    /**
+     * \brief   Sends a request to start or stop sending the logs the target produces.
+     *
+     * \param   target      The ID of the target to send the message. If areg::TARGET_ALL,
+     *                      sends to all connected clients.
+     * \param   state       The state the target should take.
+     * \return  Returns true if request was processed; false otherwise.
+     **/
+    bool request_source_state(const ITEM_ID & target, areg::LogSourceState state);
+
+    /**
      * \brief   Makes a log message on the observer side and saves it in the logging database, the
      *          same way as a message received from a remote log source.
      *
