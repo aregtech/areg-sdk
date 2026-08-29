@@ -99,6 +99,13 @@ public:
     void notify_log_source_state(const areg::MessageEnvelope& msgReceived);
 
     /**
+     * \brief   Called when a log source reports that it reloaded its configuration file.
+     *
+     * \param   msgReceived     The message to process.
+     **/
+    void notify_log_configuration_restored(const areg::MessageEnvelope& msgReceived);
+
+    /**
      * \brief   Handles a log message notification. Every log message, received from a remote
      *          source or made locally, passes through this method: it is the only place that
      *          saves a log in the database and hands it to the observer.

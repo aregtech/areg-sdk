@@ -170,9 +170,40 @@ void ObserverMessageProcessor::notify_log_source_state(const areg::MessageEnvelo
     msgReceived >> state;
     msgReceived >> byObserver;
 
-    if ((callback != nullptr) && (source != areg::COOKIE_UNKNOWN))
+    if (source != areg::COOKIE_UNKNOWN)
     {
-        callback(source, state, byObserver);
+        if (LogObserverBase::_theLogObserver != nullptr)
+        {
+            LogObserverBase::_theLogObserver->on_log_source_state(source, static_cast<areg::LogSourceState>(state), byObserver);
+        }
+        else if (callback != nullptr)
+        {
+            callback(source, state, byObserver);
+        }
+    }
+}
+
+void ObserverMessageProcessor::notify_log_configuration_restored(const areg::MessageEnvelope& msgReceived)
+{
+    FuncLogConfigRestored callback{ nullptr };
+    ITEM_ID cookie{ msgReceived.source() };
+
+    do
+    {
+        Lock lock(mLoggerClient.mLock);
+        callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtLogConfigRestored : nullptr;
+    } while (false);
+
+    if (cookie != areg::COOKIE_UNKNOWN)
+    {
+        if (LogObserverBase::_theLogObserver != nullptr)
+        {
+            LogObserverBase::_theLogObserver->on_log_configuration_restored(cookie);
+        }
+        else if (callback != nullptr)
+        {
+            callback(cookie);
+        }
     }
 }
 

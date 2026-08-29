@@ -66,6 +66,8 @@ namespace {
             dstCallbacks.evtLogUpdatedScopes    = srcCallbacks->evtLogUpdatedScopes;
             dstCallbacks.evtLogMessage          = srcCallbacks->evtLogMessage;
             dstCallbacks.evtLogMessageEx        = srcCallbacks->evtLogMessageEx;
+            dstCallbacks.evtLogSourceState      = srcCallbacks->evtLogSourceState;
+            dstCallbacks.evtLogConfigRestored   = srcCallbacks->evtLogConfigRestored;
         }
         else
         {
@@ -81,6 +83,8 @@ namespace {
             dstCallbacks.evtLogUpdatedScopes    = nullptr;
             dstCallbacks.evtLogMessage          = nullptr;
             dstCallbacks.evtLogMessageEx        = nullptr;
+            dstCallbacks.evtLogSourceState      = nullptr;
+            dstCallbacks.evtLogConfigRestored   = nullptr;
         }
     }
 

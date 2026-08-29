@@ -44,7 +44,6 @@
     #include <unistd.h>
 #endif
 
-#include <regex>
 #include <unordered_map>
 
 namespace areg::os {
@@ -1070,8 +1069,6 @@ AREG_API_IMPL const areg::String & areg::hostname() noexcept
 
 AREG_API_IMPL bool areg::is_ip_address(const areg::String& ipaddress) noexcept
 {
-#if 1   // use without exception
-
     const std::string& ip = ipaddress.data();
     int32_t num{ 0 };
     int32_t dots{ 0 };
@@ -1105,31 +1102,6 @@ AREG_API_IMPL bool areg::is_ip_address(const areg::String& ipaddress) noexcept
     }
 
     return (dots == 3) && (num >= 0) && (num <= 255) && (ip.back() != '.');
-
-#else
-
-    // 25[0-5]  --> 250-255
-    // 2[0-4]\d --> 200-249
-    // 1\d{2}   --> 100-199
-    // [1-9]?\d --> 0-99
-    static const std::regex ipv4Regex(
-        R"(^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.)"
-        R"(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.)"
-        R"(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.)"
-        R"(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$)",
-        std::regex::ECMAScript | std::regex::optimize
-    );
-
-    try
-    {
-        return std::regex_match(ipaddress.data(), ipv4Regex);
-    }
-    catch (const std::regex_error&)
-    {
-        return false; // Regex failed or input caused an issue
-    }
-
-#endif
 }
 
 AREG_API_IMPL areg::String areg::host_to_ip(const areg::String& hostName)

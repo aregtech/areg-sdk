@@ -723,6 +723,10 @@ void LoggerClient::process_received_message(MessageEnvelope& msgReceived, Socket
             mMessageProcessor.notify_log_source_state(msgReceived);
             break;
 
+        case areg::FuncIdRange::ServiceLogConfigurationRestored:
+            mMessageProcessor.notify_log_configuration_restored(msgReceived);
+            break;
+
         case areg::FuncIdRange::ServiceLogMessage:
             if (mIsPaused == false)
             {
@@ -753,6 +757,8 @@ void LoggerClient::process_received_message(MessageEnvelope& msgReceived, Socket
         case areg::FuncIdRange::ServiceLogUpdateScopes:           // fall through
         case areg::FuncIdRange::ServiceLogQueryScopes:            // fall through
         case areg::FuncIdRange::ServiceSaveLogConfiguration:      // fall through
+        case areg::FuncIdRange::ServiceLogUpdateSourceState:      // fall through
+        case areg::FuncIdRange::ServiceLogRestoreConfiguration:   // fall through
         default:
             ASSERT(false);
         }

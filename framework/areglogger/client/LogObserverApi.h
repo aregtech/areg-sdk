@@ -284,6 +284,13 @@ typedef void (*FuncLogMessageEx)(const unsigned char* /*logBuffer*/, uint32_t /*
 typedef void (*FuncLogSourceState)(ITEM_ID /*cookie*/, unsigned char /*state*/, ITEM_ID /*byObserver*/);
 
 /**
+ * \brief   The callback triggered when a log source reloaded its configuration file, so its
+ *          scope priorities are back to what the file holds. The updated scope list follows.
+ * \param   cookie      The cookie ID of the log source.
+ **/
+typedef void (*FuncLogConfigRestored)(ITEM_ID /*cookie*/);
+
+/**
  * \brief   The structure of the callbacks / events to set when send or receive messages.
  **/
 struct ObserverEvents
@@ -314,6 +321,8 @@ struct ObserverEvents
     FuncLogMessageEx        evtLogMessageEx;
     /* The callback to trigger when a log source started or stopped sending its logs. */
     FuncLogSourceState      evtLogSourceState;
+    /* The callback to trigger when a log source reloaded its configuration file. */
+    FuncLogConfigRestored   evtLogConfigRestored;
 };
 
 /**

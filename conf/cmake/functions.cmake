@@ -1923,7 +1923,7 @@ function(printAregConfigStatus var_make_print var_prefix var_header var_footer)
     message(STATUS "${var_prefix}: >>> Java Version .......: '${Java_VERSION_STRING}', Java executable = '${Java_JAVA_EXECUTABLE}', minimum version required = 17")
     message(STATUS "${var_prefix}: >>> Java Launch Options : fast start of the code generator = '${_java_fast_state}'")
     message(STATUS "${var_prefix}: >>> Packages Use .......: SQLite3 package use = '${AREG_SYSTEM_SQLITE}', GTest package use = '${AREG_SYSTEM_GTEST}'")
-    message(STATUS "${var_prefix}: >>> Feature Options ....: Logs = '${AREG_LOGGING}', Extended = '${AREG_EXTENDED}'")
+    message(STATUS "${var_prefix}: >>> Feature Options ....: Logs = '${AREG_LOGGING}', Extended = '${AREG_EXTENDED}', No exceptions = '${AREG_NO_EXCEPTIONS}'")
     message(STATUS "${var_prefix}: >>> Other Options ......: Examples = '${AREG_EXAMPLES}', Unit Tests = '${AREG_TESTS}'")
     message(STATUS "${var_prefix}: >>> Installation .......: Enabled = '${AREG_INSTALL}', location = '${CMAKE_INSTALL_PREFIX}'")
 

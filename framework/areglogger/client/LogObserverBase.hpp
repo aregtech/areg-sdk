@@ -415,6 +415,26 @@ public:
     bool request_save_config(ITEM_ID target = areg::TARGET_ALL);
 
     /**
+     * \brief   Requests to restore the configuration of a specified target from its configuration
+     *          file, so the scope priorities of that target return to what the file holds.
+     *
+     * \param   target      The cookie ID of the target instance to restore the configuration. If the
+     *                      target is `areg::TARGET_ALL` (or 0xFF), the request is sent to all
+     *                      connected instances.
+     * \return  Returns true if processed with success; false otherwise.
+     **/
+    bool request_restore_config(ITEM_ID target = areg::TARGET_ALL);
+
+    /**
+     * \brief   Requests to change the state of a log source, so it starts or stops sending its logs.
+     *
+     * \param   target      The valid cookie ID of the target log source to change the state.
+     * \param   state       The new state to set for the log source.
+     * \return  Returns true if processed with success; false otherwise.
+     **/
+    bool request_source_state(ITEM_ID target, areg::LogSourceState state);
+
+    /**
      * \brief   Saves the configuration of the log observer in the configuration file.
      **/
     void save_logger_config();
@@ -524,6 +544,23 @@ protected:
      * \param   logMessage  The structure of the message to log.
      **/
     virtual void on_log_message(const areg::MessageEnvelope& logMessage) = 0;
+
+    /**
+     * \brief   Callback triggered when a log source starts or stops sending its logs.
+     *
+     * \param   cookie      The cookie ID of the log source.
+     * \param   state       The state the source is in.
+     * \param   byObserver  The cookie ID of the observer that asked for the change, or 0 when the
+     *                      log collector made it by itself.
+     **/
+    virtual void on_log_source_state(ITEM_ID cookie, areg::LogSourceState state, ITEM_ID byObserver) = 0;
+
+    /**
+     * \brief   Callback triggered when a log source reloaded its configuration file.
+     *
+     * \param   cookie      The cookie ID of the log source that restored its configuration.
+     **/
+    virtual void on_log_configuration_restored(ITEM_ID cookie) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

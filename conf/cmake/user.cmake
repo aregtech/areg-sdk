@@ -272,6 +272,11 @@ macro_create_option(AREG_INSTALL ON "Enable installation")
 # Modify 'AREG_ARCH_NATIVE' to enable or disable '-march=native' optimization for Release builds (GNU/Clang only)
 macro_create_option(AREG_ARCH_NATIVE OFF "Optimize Release builds for the build machine CPU (GNU/Clang only)")
 
+# Modify 'AREG_NO_EXCEPTIONS' to compile without C++ exceptions and RTTI (GNU/Clang only).
+# The sources use neither, so the option only removes the code and the tables the compiler
+# emits to support them. Required by projects that forbid both, such as MISRA C++ and AUTOSAR C++14.
+macro_create_option(AREG_NO_EXCEPTIONS OFF "Compile without exceptions and RTTI (GNU/Clang only)")
+
 # Check the request of using installed packages
 if (NOT DEFINED AREG_SYSTEM_PACKAGES)
     # Set default values
