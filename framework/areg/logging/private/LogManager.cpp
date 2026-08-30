@@ -184,12 +184,16 @@ bool LogManager::force_activate_logging()
     LogManager & logManager = LogManager::instance();
     if ( !logManager.is_logging_started() )
     {
-        Lock lock( logManager.mLock );
-        logManager.mLogConfig.set_status(true);
-        logManager.mLogConfig.set_log_enabled(areg::LogTarget::File, true);
-        logManager.mScopeController.force_activate_scopes(true);
-        logManager.mLogConfig.enable_scopes(std::vector<String>{ "*" }, true, true);
+        do
+        {
+            Lock lock( logManager.mLock );
+            logManager.mLogConfig.set_status(true);
+            logManager.mLogConfig.set_log_enabled(areg::LogTarget::File, true);
+            logManager.mScopeController.force_activate_scopes(true);
+            logManager.mLogConfig.enable_scopes(std::vector<String>{ "*" }, true, true);
+        } while (false);
 
+        // The lock is released here: the logging thread takes it while the call below waits.
         result = logManager.start_logging_thread( );
     }
 
@@ -423,6 +427,14 @@ void LogManager::start_logs()
         {
             mLoggerTcp.open_logger();
         }
+
+        do
+        {
+            // A start puts the source back to the active state: it produces and sends the logs.
+            Lock lock(mLock);
+            mScopeController.resume_scopes();
+            mLoggerTcp.set_paused(false);
+        } while (false);
 
         if (!mLoggerDatabase.is_logger_opened())
         {

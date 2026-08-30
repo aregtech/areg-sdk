@@ -74,10 +74,6 @@ bool NetTcpLogger::open_logger()
         apply_connection_data(host, port);
     } while (false);
 
-    // A new connection is a new state: the source comes back producing and sending. Called with
-    // mLock released, because the log manager guards the scope state with its own lock.
-    LogManager::set_source_state(areg::LogSourceState::Active);
-
     return connect_service_host();
 }
 
@@ -88,6 +84,11 @@ void NetTcpLogger::notify_source_state(areg::LogSourceState previous, const ITEM
     {
         send_message(areg::message_source_state_updated(mChannel.cookie(), areg::COOKIE_LOGGER, current, byObserver));
     }
+}
+
+bool NetTcpLogger::is_connection_allowed() const
+{
+    return true;
 }
 
 void NetTcpLogger::close_logger()

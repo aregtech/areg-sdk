@@ -355,6 +355,8 @@ private:
      * \brief   Starts the logging thread and loads scopes with configured priorities.
      *
      * \return  Returns true if started successfully.
+     * \note    Call it with mLock released. It returns when the logging thread has started the
+     *          logs, and that thread takes mLock on the way.
      **/
     bool start_logging_thread();
      
