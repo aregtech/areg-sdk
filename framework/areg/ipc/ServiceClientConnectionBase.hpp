@@ -198,6 +198,14 @@ protected:
      **/
     virtual void service_connection_event(const MessageEnvelope& msgReceived);
 
+    /**
+     * \brief   Returns true if the connection may be started or retried. The implementation of
+     *          this class allows it while the application can service. Override it in a client
+     *          that does not depend on the state of the application.
+     **/
+    [[nodiscard]]
+    virtual bool is_connection_allowed() const;
+
 /************************************************************************/
 // ConnectionProvider interface overrides
 /************************************************************************/

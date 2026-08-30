@@ -19,6 +19,7 @@
  ************************************************************************/
 #include "areglogger/client/private/LoggerClient.hpp"
 
+#include "areg/appbase/Application.hpp"
 #include "areg/base/File.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/logging/LogConfiguration.hpp"
@@ -223,6 +224,40 @@ bool LoggerClient::request_save_configuration(const ITEM_ID& target /*= areg::TA
     }
 
     return result;
+}
+
+bool LoggerClient::request_restore_configuration(const ITEM_ID& target /*= areg::TARGET_ALL*/)
+{
+    bool result{ false };
+    Lock lock(mLock);
+    if ((mChannel.cookie() != areg::COOKIE_UNKNOWN) && (target != areg::TARGET_UNKNOWN))
+    {
+        result = send_message(areg::message_restore_configuration(mChannel.cookie(), target == areg::TARGET_ALL ? LoggerClient::TARGET_ID : target));
+    }
+
+    return result;
+}
+
+bool LoggerClient::request_source_state(const ITEM_ID& target, areg::LogSourceState state)
+{
+    bool result{ false };
+    Lock lock(mLock);
+    if ((mChannel.cookie() != areg::COOKIE_UNKNOWN) && (target != areg::TARGET_UNKNOWN) && areg::is_source_state_valid(state))
+    {
+        result = send_message(areg::message_update_source_state(mChannel.cookie(), target == areg::TARGET_ALL ? LoggerClient::TARGET_ID : target, state));
+    }
+
+    return result;
+}
+
+uint32_t LoggerClient::add_log(const ITEM_ID & cookie, areg::LogPriority prio, TIME64 timestamp, const char * message)
+{
+    return mMessageProcessor.add_local_log(cookie, prio, timestamp, message);
+}
+
+bool LoggerClient::remove_log(uint32_t logId)
+{
+    return mMessageProcessor.remove_log(logId);
 }
 
 bool LoggerClient::open_logging_database(const char* dbPath /*= nullptr*/)
@@ -464,9 +499,15 @@ bool LoggerClient::connect_service_host()
             shutdown(areg::WAIT_INFINITE);
         }
     }
+    else if (mClientConnection.is_valid() == false)
+    {
+        // The dispatcher already runs after a failed attempt, so without this a second request
+        // would report failure instead of opening the connection.
+        result = ServiceClientConnectionBase::connect_service_host();
+    }
     else
     {
-        result = mClientConnection.is_valid();
+        result = true;
     }
 
     return result;
@@ -599,7 +640,7 @@ void LoggerClient::on_service_channel_lost(const Channel& /* channel */)
     }
 }
 
-void LoggerClient::failed_send_message(const MessageEnvelope& /* msgFailed */, Socket& /* whichTarget */)
+void LoggerClient::failed_send_message(const MessageEnvelope& /* msgFailed */, Socket& whichTarget)
 {
     FuncMessagingFailed callback{ nullptr };
     do
@@ -615,6 +656,11 @@ void LoggerClient::failed_send_message(const MessageEnvelope& /* msgFailed */, S
     else if (callback != nullptr)
     {
         callback();
+    }
+
+    if (Application::is_servicing_ready() && whichTarget.is_valid() && (whichTarget.is_alive() == false))
+    {
+        notify_connection_lost();
     }
 }
 
@@ -634,6 +680,14 @@ void LoggerClient::failed_receive_message(Socket& /* whichSource */)
     else if (callback != nullptr)
     {
         callback();
+    }
+
+    // The receive thread reports both a failed connect and a failed receive here, so this is where
+    // the reconnect is armed. A deliberate disconnect and a stale notification are refused by
+    // on_connection_lost().
+    if (Application::is_servicing_ready())
+    {
+        notify_connection_lost();
     }
 }
 
@@ -663,6 +717,14 @@ void LoggerClient::process_received_message(MessageEnvelope& msgReceived, Socket
 
         case areg::FuncIdRange::ServiceLogScopesUpdated:
             mMessageProcessor.notify_log_update_scopes(msgReceived);
+            break;
+
+        case areg::FuncIdRange::ServiceLogSourceStateUpdated:
+            mMessageProcessor.notify_log_source_state(msgReceived);
+            break;
+
+        case areg::FuncIdRange::ServiceLogConfigurationRestored:
+            mMessageProcessor.notify_log_configuration_restored(msgReceived);
             break;
 
         case areg::FuncIdRange::ServiceLogMessage:
@@ -695,6 +757,8 @@ void LoggerClient::process_received_message(MessageEnvelope& msgReceived, Socket
         case areg::FuncIdRange::ServiceLogUpdateScopes:           // fall through
         case areg::FuncIdRange::ServiceLogQueryScopes:            // fall through
         case areg::FuncIdRange::ServiceSaveLogConfiguration:      // fall through
+        case areg::FuncIdRange::ServiceLogUpdateSourceState:      // fall through
+        case areg::FuncIdRange::ServiceLogRestoreConfiguration:   // fall through
         default:
             ASSERT(false);
         }

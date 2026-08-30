@@ -112,6 +112,34 @@ public:
     static bool read_log_config( const char * configFile = nullptr );
 
     /**
+     * \brief   Applies the saved scope priorities held by the configuration manager to every
+     *          registered scope. The configuration file is not read again. If the application was
+     *          never configured, the built-in default configuration is applied instead.
+     *
+     * \return  Returns true if the application was configured, false if the defaults were applied.
+     **/
+    static bool restore_log_config();
+
+    /**
+     * \brief   Sets the state of the log source, which decides whether the scopes produce log
+     *          messages and whether the produced messages reach the log collector.
+     *          - areg::LogSourceState::Active  produces the messages and sends them.
+     *          - areg::LogSourceState::Paused  produces the messages and does not send them.
+     *          - areg::LogSourceState::Stopped produces no message. The priority of every scope
+     *            is saved and set to PrioNotset. Leaving that state sets the saved priorities back.
+     *
+     * \param   state   The state to take. An invalid state leaves the source untouched.
+     * \return  The state the source is in after the call.
+     **/
+    static areg::LogSourceState set_source_state(areg::LogSourceState state);
+
+    /**
+     * \brief   Returns the state of the log source.
+     **/
+    [[nodiscard]]
+    static areg::LogSourceState source_state();
+
+    /**
      * \brief   Initializes and starts the logging thread.
      *
      * \param   configFile      Path to the logging configuration file (full or relative). If
@@ -327,6 +355,8 @@ private:
      * \brief   Starts the logging thread and loads scopes with configured priorities.
      *
      * \return  Returns true if started successfully.
+     * \note    Call it with mLock released. It returns when the logging thread has started the
+     *          logs, and that thread takes mLock on the way.
      **/
     bool start_logging_thread();
      

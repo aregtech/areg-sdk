@@ -120,6 +120,32 @@ jobs:
               test  : OFF
             }
 
+          # The framework uses no exceptions, no dynamic_cast and no typeid. These two
+          # entries compile it with both disabled, so a newly added one fails the build.
+          - { name  : linux-gnu-shared-noexcept,
+              os    : ubuntu-latest,
+              lib   : shared,
+              family: gnu,
+              cxx   : g++,
+              cc    : gcc,
+              extend: ON,
+              logs  : ON,
+              test  : OFF,
+              noexc : ON
+            }
+
+          - { name  : linux-clang-shared-noexcept,
+              os    : ubuntu-latest,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang++,
+              cc    : clang,
+              extend: ON,
+              logs  : ON,
+              test  : OFF,
+              noexc : ON
+            }
+
           - { name  : macos-clang-shared-noext,
               os    : macos-latest,
               lib   : shared,
@@ -379,13 +405,13 @@ jobs:
         if: matrix.config.extend == 'ON'
         working-directory: ${{github.workspace}}
         run: |
-          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
+          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
 
       - name: Configure CMake by selecting compiler name
         if: matrix.config.extend == 'OFF'
         working-directory: ${{github.workspace}}
         run: |
-          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER=${{matrix.config.cc}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
+          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER=${{matrix.config.cc}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
 
       - name: Dump the CMake logs of a failed configuration
         if: failure()
@@ -418,6 +444,27 @@ jobs:
           else
             echo "BUILD_DEST=${{env.CACHE_DEST}}" >> "${GITHUB_ENV}"
           fi
+
+      - name: Verify the framework carries no exception tables and no RTTI
+        if: matrix.config.noexc == 'ON'
+        working-directory: ${{github.workspace}}
+        shell: bash
+        # The build already fails on a new 'throw' or 'dynamic_cast'. This also catches a
+        # build setting that quietly puts the flags back.
+        run: |
+          LIB="${{env.BUILD_DEST}}/bin/libareg.so"
+          if [ ! -f "${LIB}" ]; then echo "not found: ${LIB}" >&2; exit 1; fi
+          echo "checking ${LIB}"
+          if readelf -SW "${LIB}" | grep -q '\.gcc_except_table'; then
+            echo "FAILED: ${LIB} contains .gcc_except_table" >&2
+            exit 1
+          fi
+          COUNT="$(nm -C --defined-only "${LIB}" | grep -c 'typeinfo' || true)"
+          if [ "${COUNT}" -ne 0 ]; then
+            echo "FAILED: ${LIB} defines ${COUNT} typeinfo symbols" >&2
+            exit 1
+          fi
+          echo "OK: no exception tables, no RTTI"
 
       - name: Install with CMake
         working-directory: ${{github.workspace}}

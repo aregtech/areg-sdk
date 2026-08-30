@@ -160,6 +160,16 @@ else()
 
 endif()
 
+# Compile without exceptions and RTTI. MSVC is excluded: its standard library is not
+# supported without an exception handling model.
+if (AREG_NO_EXCEPTIONS)
+    if (MSVC)
+        message(STATUS "Areg: >>> 'AREG_NO_EXCEPTIONS' is ignored, the MSVC standard library requires an exception handling model.")
+    else()
+        list(APPEND AREG_COMPILER_OPTIONS -fno-exceptions -fno-rtti)
+    endif()
+endif()
+
 if (AREG_EXTENDED)
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
         macro_find_ncurses_package(_ncurses_includes _ncurses_lib _ncurses_found)

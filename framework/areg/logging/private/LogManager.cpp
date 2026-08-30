@@ -86,6 +86,57 @@ bool LogManager::read_log_config( const char* configFile /*= nullptr*/ )
     return Application::load_configuration(configFile);
 }
 
+bool LogManager::restore_log_config()
+{
+    const bool result{ Application::is_configured() };
+    if (!result)
+    {
+        Application::setup_default_configuration();
+    }
+
+    LogManager& logManager = LogManager::instance();
+    Lock lock(logManager.mLock);
+    // The maps are dropped first, so a scope the configuration no longer names falls back to the
+    // default priority instead of keeping the one an observer set.
+    logManager.mScopeController.clear_config_scopes();
+    logManager.mScopeController.discard_saved_scopes();
+    logManager.mScopeController.configure_scopes();
+    logManager.mScopeController.set_scope_activity(true);
+
+    return result;
+}
+
+areg::LogSourceState LogManager::set_source_state(areg::LogSourceState state)
+{
+    if (!areg::is_source_state_valid(state))
+        return LogManager::source_state();
+
+    LogManager& logManager = LogManager::instance();
+    Lock lock(logManager.mLock);
+    if (state == areg::LogSourceState::Stopped)
+    {
+        logManager.mLoggerTcp.set_paused(false);
+        logManager.mScopeController.stop_scopes();
+    }
+    else
+    {
+        logManager.mScopeController.resume_scopes();
+        logManager.mLoggerTcp.set_paused(state == areg::LogSourceState::Paused);
+    }
+
+    return state;
+}
+
+areg::LogSourceState LogManager::source_state()
+{
+    LogManager& logManager = LogManager::instance();
+    Lock lock(logManager.mLock);
+    if (logManager.mScopeController.is_stopped())
+        return areg::LogSourceState::Stopped;
+
+    return logManager.mLoggerTcp.is_paused() ? areg::LogSourceState::Paused : areg::LogSourceState::Active;
+}
+
 bool LogManager::start_logging(const char* configFile /*= nullptr*/ )
 {
     Application::load_configuration(configFile);
@@ -133,12 +184,16 @@ bool LogManager::force_activate_logging()
     LogManager & logManager = LogManager::instance();
     if ( !logManager.is_logging_started() )
     {
-        Lock lock( logManager.mLock );
-        logManager.mLogConfig.set_status(true);
-        logManager.mLogConfig.set_log_enabled(areg::LogTarget::File, true);
-        logManager.mScopeController.force_activate_scopes(true);
-        logManager.mLogConfig.enable_scopes(std::vector<String>{ "*" }, true, true);
+        do
+        {
+            Lock lock( logManager.mLock );
+            logManager.mLogConfig.set_status(true);
+            logManager.mLogConfig.set_log_enabled(areg::LogTarget::File, true);
+            logManager.mScopeController.force_activate_scopes(true);
+            logManager.mLogConfig.enable_scopes(std::vector<String>{ "*" }, true, true);
+        } while (false);
 
+        // The lock is released here: the logging thread takes it while the call below waits.
         result = logManager.start_logging_thread( );
     }
 
@@ -155,13 +210,20 @@ void LogManager::set_default_configuration(bool overwriteExisting)
 
 bool LogManager::set_scope_priority( const char * scopeName, uint32_t newPrio )
 {
-    ScopeController & ctrScope = LogManager::instance( ).mScopeController;
+    LogManager & logManager = LogManager::instance( );
+    Lock lock( logManager.mLock );
+    ScopeController & ctrScope = logManager.mScopeController;
     uint32_t scopeId = areg::make_id( scopeName );
     LogScope * scope = const_cast<LogScope *>(ctrScope.scope( scopeId ));
     bool result{ scope != nullptr };
-    if ( result && (scope->priority() != newPrio))
+    if ( result )
     {
-        scope->set_priority( newPrio );
+        // An explicit priority stays, so a later resume must not put the saved ones back.
+        ctrScope.discard_saved_scopes( );
+        if ( scope->priority( ) != newPrio )
+        {
+            scope->set_priority( newPrio );
+        }
     }
 
     return result;
@@ -169,8 +231,12 @@ bool LogManager::set_scope_priority( const char * scopeName, uint32_t newPrio )
 
 void LogManager::update_scopes(const String & scopeName, uint32_t scopeId, uint32_t newPrio)
 {
-    ScopeController & ctrScope = LogManager::instance().mScopeController;
+    LogManager & logManager = LogManager::instance();
+    Lock lock(logManager.mLock);
+    ScopeController & ctrScope = logManager.mScopeController;
     ctrScope.clear_config_scopes();
+    // An explicit priority stays, so a later resume must not put the saved ones back.
+    ctrScope.discard_saved_scopes();
     ctrScope.set_scope_activity(scopeName, scopeId, newPrio);
 }
 
@@ -208,7 +274,8 @@ void LogManager::force_enable_logging()
 // LogManager class constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 LogManager::LogManager()
-    : DispatcherThread      ( LogManager::LOGGING_THREAD_NAME.data(), areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_DEFAULT_RING_CAPACITY )
+    // Drops the message when the queue is full. A log must never block the thread that writes it.
+    : DispatcherThread      ( LogManager::LOGGING_THREAD_NAME.data(), areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_DEFAULT_RING_CAPACITY, areg::Bool::True )
     , LoggingEventConsumer  ( )
 
     , mScopeController  ( )
@@ -360,6 +427,14 @@ void LogManager::start_logs()
         {
             mLoggerTcp.open_logger();
         }
+
+        do
+        {
+            // A start puts the source back to the active state: it produces and sends the logs.
+            Lock lock(mLock);
+            mScopeController.resume_scopes();
+            mLoggerTcp.set_paused(false);
+        } while (false);
 
         if (!mLoggerDatabase.is_logger_opened())
         {

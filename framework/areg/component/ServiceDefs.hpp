@@ -462,6 +462,14 @@ enum class FuncIdRange  : uint32_t
     , ServiceLogConfigurationSaved
     //!< Sent by log collector service or client applications to log the messages.
     , ServiceLogMessage
+    //!< Sent by observer or log collector service to the log source to start or stop sending the logs.
+    , ServiceLogUpdateSourceState
+    //!< Sent by log source to notify that it started or stopped sending the logs.
+    , ServiceLogSourceStateUpdated
+    //!< Sent by observer or log collector service to the log source to read the log configuration file again.
+    , ServiceLogRestoreConfiguration
+    //!< Sent by log source to notify that the configuration file is read again.
+    , ServiceLogConfigurationRestored
     //!< The last ID of service calls.
     , ServiceLastId         = SERVICE_ID_LAST  //!< Servicing call last ID
 
@@ -1691,6 +1699,14 @@ inline constexpr const char* areg::as_string( areg::FuncIdRange value ) noexcept
         return "areg::FuncIdRange::ServiceLogConfigurationSaved";
     case areg::FuncIdRange::ServiceLogMessage:
         return "areg::FuncIdRange::ServiceLogMessage";
+    case areg::FuncIdRange::ServiceLogUpdateSourceState:
+        return "areg::FuncIdRange::ServiceLogUpdateSourceState";
+    case areg::FuncIdRange::ServiceLogSourceStateUpdated:
+        return "areg::FuncIdRange::ServiceLogSourceStateUpdated";
+    case areg::FuncIdRange::ServiceLogRestoreConfiguration:
+        return "areg::FuncIdRange::ServiceLogRestoreConfiguration";
+    case areg::FuncIdRange::ServiceLogConfigurationRestored:
+        return "areg::FuncIdRange::ServiceLogConfigurationRestored";
     case areg::FuncIdRange::RequestFirstId:
         return "areg::FuncIdRange::RequestFirstId";
     case areg::FuncIdRange::ResponseFirstId:

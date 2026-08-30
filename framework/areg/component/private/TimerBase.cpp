@@ -47,8 +47,6 @@ TimerBase::~TimerBase()
 
 bool TimerBase::create_waitable_timer() noexcept
 {
-    Lock lock( mLock );
-
     if ( (mHandle == nullptr) && (mTimeoutInMs != areg::INVALID_TIMEOUT) )
     {
         mHandle = _os_create( );

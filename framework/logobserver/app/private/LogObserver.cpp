@@ -300,7 +300,7 @@ void LogObserver::callback_log_message_ex(const uint8_t* logBuffer, uint32_t /*s
 {
     if (logBuffer != nullptr)
     {
-        ASSERT(size >= sizeof(areg::LogEntry));
+        ASSERT(size >= areg::log_entry_head());
         const areg::LogEntry & log{ reinterpret_cast<const areg::LogEntry &>(*logBuffer)};
         areg::log_any_message(log);
     }

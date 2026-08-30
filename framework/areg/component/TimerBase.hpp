@@ -176,6 +176,8 @@ protected:
      * \brief   Creates an OS-specific timer handle. Has platform-dependent implementation.
      *
      * \return  Returns true if creation succeeded or timer was already created.
+     * \note    Does not lock. The caller either owns mLock or runs before the object is
+     *          shared with another thread.
      **/
     bool create_waitable_timer() noexcept;
 

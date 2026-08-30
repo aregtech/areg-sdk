@@ -229,6 +229,11 @@ void ServiceClientConnectionBase::service_connection_event(const MessageEnvelope
     }
 }
 
+bool ServiceClientConnectionBase::is_connection_allowed() const
+{
+    return Application::is_servicing_available();
+}
+
 bool ServiceClientConnectionBase::setup_connection_data(areg::RemoteServiceKind service, uint32_t connectTypes)
 {
     Lock lock( mLock );
@@ -335,7 +340,7 @@ void ServiceClientConnectionBase::on_service_start()
         return;
     }
 
-    if (!Application::is_servicing_available())
+    if (!is_connection_allowed())
     {
         // The application did not reach the servicing state yet. Retry later
         LOG_WARN("The application cannot service yet, retrying to start the connection later.");
@@ -450,7 +455,7 @@ void ServiceClientConnectionBase::on_connection_stopped()
     mThreadSend.shutdown( areg::WAIT_INFINITE );
     mConnectionConsumer.on_service_channel_disconnected( channel );
 
-    if ( Application::is_servicing_available( ) && (prevState != ConnectionPhase::ConnectionStopping) )
+    if ( is_connection_allowed( ) && (prevState != ConnectionPhase::ConnectionStopping) )
     {
         if (!mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1))
         {
@@ -477,7 +482,7 @@ void ServiceClientConnectionBase::on_connection_lost()
     Channel channel = mChannel;
     mChannel.invalidate();
 
-    if (!Application::is_servicing_available() || !mTimerConnect.is_stopped() ||
+    if (!is_connection_allowed() || !mTimerConnect.is_stopped() ||
         (prevState == ConnectionPhase::ConnectionStopping))
     {
         LOG_WARN("Ignoring lost connection event, either servicing state is not allowed, or application is closing.");
@@ -555,7 +560,7 @@ bool ServiceClientConnectionBase::start_connection()
         if (!mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1))
         {
             LOG_WARN("Failed to start reconnect timer, retrying connection immediately.");
-            if (Application::is_servicing_available())
+            if (is_connection_allowed())
                 send_command(ServiceEventData::ServiceCommand::CMD_StartService);
         }
 
@@ -589,7 +594,7 @@ bool ServiceClientConnectionBase::start_connection()
         if (!mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1))
         {
             LOG_WARN("Failed to start reconnect timer, retrying connection immediately.");
-            if (Application::is_servicing_available())
+            if (is_connection_allowed())
                 send_command(ServiceEventData::ServiceCommand::CMD_StartService);
         }
     }

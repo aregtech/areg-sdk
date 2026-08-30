@@ -18,6 +18,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
+#include "areg/base/DateTime.hpp"
 #include "areg/logging/LoggingDefs.hpp"
 #include "areg/logging/LogScope.hpp"
 #include <stdarg.h>
@@ -109,10 +110,13 @@ public:
      * \param   logPrio     The priority level of the message.
      * \param   format      The format string.
      **/
-    void log_message( areg::LogPriority logPrio, const char * format, ...);
+    void log_message( areg::LogPriority logPrio, const char * format, ... ) const;
 
     /**
-     * \brief   Returns true if scope priority logging is enabled.
+     * \brief   Returns true if scope enter and exit messages are enabled for this object.
+     *
+     * \note    The value is captured when the object is created, so the enter and the exit
+     *          message are always sent as a pair even if the scope priority changes in between.
      **/
     [[nodiscard]]
     inline bool is_scope_enabled() const noexcept;
@@ -178,13 +182,37 @@ private:
      **/
     static void _send_log( uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const char * format, va_list args );
 
+    /**
+     * \brief   Sends a scope enter or scope exit message to the configured logging targets.
+     *
+     * \param   msgType     Either LogMessageType::ScopeEnter or LogMessageType::ScopeExit.
+     **/
+    void _send_scope( areg::LogMessageType msgType ) const;
+
+    /**
+     * \brief   Returns true if the given priority lets the scope emit a message.
+     *
+     * \param   scopePrio   The scope priority to check.
+     **/
+    [[nodiscard]]
+    static inline bool _can_log( uint32_t scopePrio ) noexcept;
+
+    /**
+     * \brief   Initializes the object from a priority that the caller read once.
+     *
+     * \param   logScope    The scope object.
+     * \param   scopePrio   The priority of the scope.
+     **/
+    ScopeMessage( const LogScope & logScope, uint32_t scopePrio );
+
 //////////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////////
 private:
-    const LogScope& mScope;     //!< The scope object to filter messages.
-    const uint32_t  mSessionId; //!< Session of the logging scope.
-    const TIME64    mTimestamp; //!< The timestamp when the scope message object was instantiated.
+    const LogScope& mScope;         //!< The scope object to filter messages.
+    const uint32_t  mSessionId;     //!< Session of the logging scope.
+    const bool      mScopeEnabled;  //!< True if the scope enter and exit messages are enabled.
+    const TIME64    mTimestamp;     //!< The timestamp when the scope message object was instantiated.
 
 #endif  // AREG_LOGGING
 
@@ -207,7 +235,7 @@ private:
 
 inline bool ScopeMessage::is_scope_enabled() const noexcept
 {
-    return (mScope.priority() & static_cast<uint32_t>(areg::LogPriority::PrioScope)) != 0;
+    return mScopeEnabled;
 }
 
 inline bool ScopeMessage::is_dbg_enabled() const noexcept
@@ -245,6 +273,46 @@ inline bool ScopeMessage::is_prio_enabled(areg::LogPriority msgPrio) const noexc
     return (msgPrio == areg::LogPriority::PrioScope 
                 ? (mScope.priority() &  static_cast<uint32_t>(areg::LogPriority::PrioScope)) != 0
                 : mScope.priority() >= static_cast<uint32_t>(msgPrio)) ;
+}
+
+inline bool ScopeMessage::_can_log( uint32_t scopePrio ) noexcept
+{
+    return (scopePrio & static_cast<uint32_t>(areg::LogPriority::PrioScopeLogs)) != 0u;
+}
+
+inline ScopeMessage::ScopeMessage( const LogScope & logScope )
+    : ScopeMessage( logScope, logScope.priority() )
+{
+}
+
+inline ScopeMessage::ScopeMessage( const LogScope & logScope, uint32_t scopePrio )
+    : mScope       ( logScope )
+    , mSessionId   ( _can_log(scopePrio) ? logScope.next_session() : 0u )
+    , mScopeEnabled( (scopePrio & static_cast<uint32_t>(areg::LogPriority::PrioScope)) != 0u )
+    , mTimestamp   ( _can_log(scopePrio) ? static_cast<TIME64>(DateTime::timestamp()) : static_cast<TIME64>(0u) )
+{
+    if ( mScopeEnabled )
+    {
+        _send_scope( areg::LogMessageType::ScopeEnter );
+    }
+}
+
+inline ScopeMessage::~ScopeMessage()
+{
+    if ( mScopeEnabled )
+    {
+        _send_scope( areg::LogMessageType::ScopeExit );
+    }
+}
+
+#else   // AREG_LOGGING
+
+inline ScopeMessage::ScopeMessage( const LogScope & /*logScope*/ )
+{
+}
+
+inline ScopeMessage::~ScopeMessage()
+{
 }
 
 #endif  // AREG_LOGGING

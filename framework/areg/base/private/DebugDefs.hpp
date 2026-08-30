@@ -238,6 +238,208 @@ private:
 
 #endif  // AREG_LATENCY_TRACE
 
+#if defined(AREG_STALL_TRACE) && (AREG_STALL_TRACE)
+
+/**
+ * \brief   Fixed set of stages measured by the stall trace. Add entries before Count.
+ **/
+enum class StStage : uint32_t
+{
+      LogCall       = 0 //!< Caller side: the whole LogManager::log_message call of one record
+    , MakeMsg           //!< Caller side: building the log message envelope
+    , RingPush          //!< Caller side: the MPSC ring enqueue of one event
+    , WakeConsumer      //!< Caller side: the set-signal that wakes a parked dispatcher
+    , TimerStart        //!< Caller side: the whole Timer::start_timer call
+    , TimerStop         //!< Caller side: the whole Timer::stop_timer call
+    , TimerMapOp        //!< Caller side: register or unregister in the timer resource map
+    , TimerOsCall       //!< Caller side: the operating system call that arms or disarms the timer
+    , TimerMutex        //!< Caller side: taking the timer state mutex
+    , Count             //!< Number of stages, keep last
+};
+
+/**
+ * \brief   Upper bound in nanoseconds of every histogram bucket. The last bucket collects
+ *          everything above the previous bound.
+ **/
+constexpr uint64_t ST_BUCKET_NS[]
+{
+    1000u, 5000u, 20000u, 100000u, 500000u, 2000000u, 10000000u, UINT64_MAX
+};
+
+constexpr size_t ST_BUCKETS{ sizeof(ST_BUCKET_NS) / sizeof(ST_BUCKET_NS[0]) };
+
+/**
+ * \brief   One bucket: how many samples fell in it, how long they took and how many CPU
+ *          cycles the calling thread actually burned while they ran.
+ **/
+struct StBucket
+{
+    std::atomic<uint64_t> count  { 0u };
+    std::atomic<uint64_t> sumNs  { 0u };
+    std::atomic<uint64_t> sumCyc { 0u };
+    std::atomic<uint64_t> maxNs  { 0u };
+};
+
+struct StStageData
+{
+    StBucket bucket[ST_BUCKETS];
+};
+
+/**
+ * \brief   Returns the per-stage histogram table of the module.
+ **/
+[[nodiscard]]
+inline StStageData * st_table() noexcept
+{
+    static StStageData table[static_cast<size_t>(StStage::Count)];
+    return table;
+}
+
+inline const char * st_stage_name(StStage s) noexcept
+{
+    switch (s)
+    {
+    case StStage::LogCall:      return "LogCall     (whole log_message)";
+    case StStage::MakeMsg:      return "MakeMsg     (build envelope)";
+    case StStage::RingPush:     return "RingPush    (mpsc enqueue)";
+    case StStage::WakeConsumer: return "WakeConsumer(set signal)";
+    case StStage::TimerStart:   return "TimerStart  (whole start_timer)";
+    case StStage::TimerStop:    return "TimerStop   (whole stop_timer)";
+    case StStage::TimerMapOp:   return "TimerMapOp  (resource map)";
+    case StStage::TimerOsCall:  return "TimerOsCall (arm/disarm)";
+    case StStage::TimerMutex:   return "TimerMutex  (state mutex)";
+    default:                    return "<unknown>";
+    }
+}
+
+/**
+ * \brief   Monotonic timestamp in nanoseconds.
+ **/
+[[nodiscard]]
+inline uint64_t st_now_ns() noexcept
+{
+    return static_cast<uint64_t>(
+        std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count());
+}
+
+/**
+ * \brief   CPU cycles consumed by the calling thread so far. A sample whose elapsed time is
+ *          large while this value barely moves means the thread was not running.
+ **/
+[[nodiscard]]
+AREG_API uint64_t st_thread_cycles() noexcept;
+
+/**
+ * \brief   Prints the per-stage histogram to stderr. Registered with std::atexit on first sample.
+ **/
+inline void st_dump() noexcept
+{
+    const StStageData * const table{ areg::st_table() };
+    std::fprintf(stderr, "\n==================== AREG STALL TRACE ====================\n");
+    std::fprintf(stderr, "%-30s %14s %10s %12s %12s %12s\n"
+                , "stage / bucket", "count", "share%", "mean us", "max us", "mean kcyc");
+    for (uint32_t s = 0u; s < static_cast<uint32_t>(StStage::Count); ++s)
+    {
+        uint64_t total{ 0u };
+        for (size_t b = 0u; b < ST_BUCKETS; ++b)
+            total += table[s].bucket[b].count.load(std::memory_order_relaxed);
+
+        if (total == 0u)
+            continue;
+
+        std::fprintf(stderr, "%s  (n=%llu)\n", st_stage_name(static_cast<StStage>(s))
+                    , static_cast<unsigned long long>(total));
+        for (size_t b = 0u; b < ST_BUCKETS; ++b)
+        {
+            const StBucket& q = table[s].bucket[b];
+            const uint64_t c = q.count.load(std::memory_order_relaxed);
+            if (c == 0u)
+                continue;
+
+            char label[64];
+            if (ST_BUCKET_NS[b] == UINT64_MAX)
+                std::snprintf(label, sizeof(label), "   > %llu us"
+                             , static_cast<unsigned long long>(ST_BUCKET_NS[b - 1u] / 1000u));
+            else
+                std::snprintf(label, sizeof(label), "   <= %llu us"
+                             , static_cast<unsigned long long>(ST_BUCKET_NS[b] / 1000u));
+
+            const double sumNs = static_cast<double>(q.sumNs.load(std::memory_order_relaxed));
+            const double sumCy = static_cast<double>(q.sumCyc.load(std::memory_order_relaxed));
+            std::fprintf(stderr, "%-30s %14llu %10.2f %12.2f %12.2f %12.1f\n"
+                        , label
+                        , static_cast<unsigned long long>(c)
+                        , (100.0 * static_cast<double>(c)) / static_cast<double>(total)
+                        , (sumNs / static_cast<double>(c)) / 1000.0
+                        , static_cast<double>(q.maxNs.load(std::memory_order_relaxed)) / 1000.0
+                        , (sumCy / static_cast<double>(c)) / 1000.0);
+        }
+    }
+    std::fprintf(stderr, "==========================================================\n");
+}
+
+/**
+ * \brief   Registers the exit-time report. Called any number of times, registers once.
+ **/
+AREG_API void st_ensure_atexit() noexcept;
+
+/**
+ * \brief   Records one sample: how long the stage took and how many cycles the thread burned.
+ **/
+inline void st_add_sample(StStage s, uint64_t ns, uint64_t cycles) noexcept
+{
+    size_t b = 0u;
+    while ((b + 1u < ST_BUCKETS) && (ns > ST_BUCKET_NS[b]))
+        ++b;
+
+    StBucket& q = areg::st_table()[static_cast<size_t>(s)].bucket[b];
+    q.count.fetch_add(1u, std::memory_order_relaxed);
+    q.sumNs.fetch_add(ns, std::memory_order_relaxed);
+    q.sumCyc.fetch_add(cycles, std::memory_order_relaxed);
+
+    uint64_t cur = q.maxNs.load(std::memory_order_relaxed);
+    while ((ns > cur) && !q.maxNs.compare_exchange_weak(cur, ns, std::memory_order_relaxed)) { }
+
+    st_ensure_atexit();
+}
+
+/**
+ * \brief   RAII helper: samples elapsed time and consumed thread cycles of the enclosing scope.
+ **/
+class StScoped
+{
+public:
+    explicit StScoped(StStage s) noexcept
+        : mStage(s), mStart(areg::st_now_ns()), mCycles(areg::st_thread_cycles())
+    {
+    }
+
+    ~StScoped() noexcept
+    {
+        areg::st_add_sample(mStage, areg::st_now_ns() - mStart, areg::st_thread_cycles() - mCycles);
+    }
+
+private:
+    StStage  mStage;
+    uint64_t mStart;
+    uint64_t mCycles;
+    StScoped() = delete;
+    StScoped(const StScoped&) = delete;
+    StScoped& operator = (const StScoped&) = delete;
+};
+
+    #define AREG_ST_CONCAT_(a, b)   a ## b
+    #define AREG_ST_CONCAT(a, b)    AREG_ST_CONCAT_(a, b)
+    #define AREG_ST_SCOPE(stage)    areg::StScoped AREG_ST_CONCAT(_areg_st_scope_, __LINE__) { stage }
+
+#else   // !AREG_STALL_TRACE
+
+    #define AREG_ST_SCOPE(stage)    ((void)0)
+
+#endif  // AREG_STALL_TRACE
+
+
 #if defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
 
 /**

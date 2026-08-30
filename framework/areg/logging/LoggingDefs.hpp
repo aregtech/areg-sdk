@@ -25,6 +25,7 @@
 #include "areg/base/MathDefs.hpp"
 #include "areg/base/StringDefs.hpp"
 
+#include <cstddef>
 #include <string_view>
 
 /************************************************************************
@@ -346,6 +347,49 @@ namespace areg {
     };
 
     /**
+     * \brief   areg::LogSourceState
+     *          What a log source does with the logs it would produce. The states are exclusive.
+     *          In every state the source stays connected and answers the scope list queries.
+     **/
+    enum class LogSourceState : uint8_t
+    {
+          Undefined = 0 //!< The state of the source is not known.
+        , Active    = 1 //!< The source produces its logs and sends them.
+        , Paused    = 2 //!< The source produces its logs and does not send them to the log collector.
+        , Stopped   = 3 //!< The source produces no log. Every scope priority is set to PrioNotset.
+    };
+
+    /**
+     * \brief   Returns true if the value names a state a log source can be asked to take.
+     * \param   state   The state to check.
+     **/
+    inline constexpr bool is_source_state_valid(areg::LogSourceState state) noexcept
+    {
+        return (state == areg::LogSourceState::Active)
+            || (state == areg::LogSourceState::Paused)
+            || (state == areg::LogSourceState::Stopped);
+    }
+
+    /**
+     * \brief   Returns the readable name of the log source state.
+     * \param   state   The state to name.
+     **/
+    inline const char * source_state_to_string(areg::LogSourceState state)
+    {
+        switch (state)
+        {
+        case areg::LogSourceState::Active:
+            return "Active";
+        case areg::LogSourceState::Paused:
+            return "Paused";
+        case areg::LogSourceState::Stopped:
+            return "Stopped";
+        default:
+            return "Undefined";
+        }
+    }
+
+    /**
      * \brief   The structure of logging message object to output on target (log collector or observer).
      **/
     struct AREG_API LogEntry
@@ -386,7 +430,7 @@ namespace areg {
         TIME64               logTimestamp   { 0 };  //!< [0..7]    The timestamp of generated log. HOT
         TIME64               logReceived    { 0 };  //!< [8..15]   The timestamp when the log message is updated. HOT
         uint32_t             logScopeId     { 0 };  //!< [16..19]  The ID of log scope that generated log message. HOT
-        uint32_t             logMessageLen  { 0 };  //!< [20..23]  The actual length of the log message. HOT
+        uint32_t             logMessageLen  { 0 };  //!< [20..23]  The length of the log message before it is cut. Can exceed LOG_MSG_SIZE - 1. HOT
         areg::LogPriority    logMessagePrio { areg::LogPriority::PrioInvalid };  //!< [24..25] The log message priority (uint16_t). HOT
         areg::LogMessageType logMsgType     { areg::LogMessageType::Undefined }; //!< [26]     The type of the logging message (uint8_t). HOT
         areg::LogDataType    logDataType    { areg::LogDataType::Local };        //!< [27]     The type of log message data (uint8_t). HOT
@@ -399,10 +443,74 @@ namespace areg {
         uint32_t             logModuleLen   { 0 };  //!< [52..55]  The length of the module name. WARM
         ITEM_ID              logTarget      { 0 };  //!< [56..59]  The ID of the target to send logging message, valid only in case of TCP/IP logging. COLD
         ITEM_ID              logCookie      { 0 };  //!< [60..63]  The cookie set by the networking service, i.e. the log collector. Valid only in case of TCP/IP logging. COLD
-        char                 logMessage[LOG_MSG_SIZE]{ 0 }; //!< [64..575]  The message text to output, with maximum LOG_MSG_SIZE characters.
-        char                 logThread[LOG_NAME_SIZE]{ 0 }; //!< [576..639] The name of the thread that generated the log. Valid only for remote logging
-        char                 logModule[LOG_NAME_SIZE]{ 0 }; //!< [640..703] The name of the module that generated the log. Valid only for remote logging.
+        char                 logThread[LOG_NAME_SIZE]{ 0 }; //!< [64..127]  The name of the thread that generated the log. Valid only for remote logging
+        char                 logModule[LOG_NAME_SIZE]{ 0 }; //!< [128..191] The name of the module that generated the log. Valid only for remote logging.
+        char                 logMessage[LOG_MSG_SIZE]{ 0 }; //!< [192..703] The message text to output, with maximum LOG_MSG_SIZE characters. Always last: an entry carries only the used part of it.
     };
+
+    /**
+     * \brief   Returns the number of message characters the entry actually holds.
+     *
+     * \param   entry   The log entry to measure.
+     * \return  The length of 'logMessage', never more than LOG_MSG_SIZE - 1.
+     * \note    Use this, not 'logMessageLen', whenever the value indexes the buffer.
+     *          'logMessageLen' is the length before the message was cut and can be larger.
+     **/
+    [[nodiscard]]
+    inline constexpr uint32_t log_message_size(const LogEntry & entry) noexcept
+    {
+        constexpr uint32_t maxLen{ LOG_MSG_SIZE - 1u };
+        return entry.logMessageLen < maxLen ? entry.logMessageLen : maxLen;
+    }
+
+    /**
+     * \brief   Returns true if the message did not fit the entry and was cut.
+     *
+     * \param   entry   The log entry to check.
+     * \return  True if 'logMessageLen' exceeds what 'logMessage' can hold.
+     **/
+    [[nodiscard]]
+    inline constexpr bool is_log_message_cut(const LogEntry & entry) noexcept
+    {
+        return entry.logMessageLen > (LOG_MSG_SIZE - 1u);
+    }
+
+    /**
+     * \brief   Returns the size of the fixed part of a log entry, which is everything
+     *          before the message text.
+     **/
+    [[nodiscard]]
+    inline uint32_t log_entry_head() noexcept
+    {
+        return static_cast<uint32_t>(offsetof(LogEntry, logMessage));
+    }
+
+    /**
+     * \brief   Returns the number of bytes the entry occupies, counting the fixed part and
+     *          the used part of the message text with its string terminator.
+     *
+     * \param   entry   The log entry to measure.
+     * \return  The size of the entry, never more than sizeof(LogEntry).
+     * \note    Use this, not 'sizeof(LogEntry)', to copy or to transmit an entry. An entry
+     *          holds only as much of 'logMessage' as the message needs.
+     **/
+    [[nodiscard]]
+    inline uint32_t log_entry_size(const LogEntry & entry) noexcept
+    {
+        return log_entry_head() + log_message_size(entry) + 1u;
+    }
+
+    /**
+     * \brief   Returns the number of bytes an entry with a message of the given length occupies.
+     *
+     * \param   msgLen  The length of the message text, before it is cut.
+     **/
+    [[nodiscard]]
+    inline uint32_t log_entry_size(uint32_t msgLen) noexcept
+    {
+        constexpr uint32_t maxLen{ LOG_MSG_SIZE - 1u };
+        return log_entry_head() + (msgLen < maxLen ? msgLen : maxLen) + 1u;
+    }
 
     /**
      * \brief   Generates an ID for the given scope name.
@@ -509,6 +617,36 @@ namespace areg {
      * \return  Returns true if succeeded to save the configuration.
      **/
     AREG_API bool save_logging( const char * configFile = nullptr );
+
+    /**
+     * \brief   Applies the saved scope priorities to every registered scope. The priorities come
+     *          from the configuration manager, the configuration file is not read again. If the
+     *          application was never configured, the built-in defaults are applied instead.
+     *
+     * \return  Returns true if the application was configured, false if the defaults were applied.
+     **/
+    AREG_API bool restore_logging();
+
+    /**
+     * \brief   Sets the state of the log source of this application.
+     *          - areg::LogSourceState::Active  produces the log messages and sends them.
+     *          - areg::LogSourceState::Paused  produces the log messages and does not send them
+     *            to the log collector. The file and the database targets keep receiving them.
+     *          - areg::LogSourceState::Stopped produces no log message. The priority of every
+     *            scope is saved and set to PrioNotset.
+     *          Leaving the stopped state sets the saved priorities back. Setting a scope priority
+     *          or restoring the configuration while stopped drops the saved ones.
+     *
+     * \param   state   The state to take. An invalid state leaves the source untouched.
+     * \return  The state the log source is in after the call.
+     **/
+    AREG_API areg::LogSourceState set_source_state( areg::LogSourceState state );
+
+    /**
+     * \brief   Returns the state of the log source of this application.
+     **/
+    [[nodiscard]]
+    AREG_API areg::LogSourceState source_state();
 
     /**
      * \brief   Sets the logging priority for a scope.
@@ -668,6 +806,47 @@ namespace areg {
      * \return  The message ready to send to the log collector.
      **/
     AREG_API MessageEnvelope message_configuration_saved();
+
+    /**
+     * \brief   Creates a message to request connected clients to apply the saved scope priorities.
+     *
+     * \param   source      The ID of the source (log observer or log collector).
+     * \param   target      The ID of the target or areg::TARGET_ALL to forward to all clients.
+     * \return  The message ready to send to client(s) via the log collector service.
+     **/
+    AREG_API MessageEnvelope message_restore_configuration(const ITEM_ID & source, const ITEM_ID & target);
+
+    /**
+     * \brief   Creates a message to notify the log collector that the saved priorities are applied.
+     *
+     * \return  The message ready to send to the log collector.
+     **/
+    AREG_API MessageEnvelope message_configuration_restored();
+
+    /**
+     * \brief   Creates a message to request a log source to take the given state.
+     *
+     * \param   source      The ID of the source (log observer or log collector).
+     * \param   target      The ID of the target or areg::TARGET_ALL to forward to all clients.
+     * \param   state       The state the target should take.
+     * \return  The message ready to send to client(s) via the log collector service.
+     **/
+    AREG_API MessageEnvelope message_update_source_state(const ITEM_ID & source, const ITEM_ID & target, areg::LogSourceState state);
+
+    /**
+     * \brief   Creates a message to notify the state a log source took.
+     *
+     * \param   source      The ID of the log source the state belongs to.
+     * \param   target      The ID of the target or areg::COOKIE_LOGGER to forward to all observers.
+     * \param   state       The state the log source is in.
+     * \param   byObserver  The ID of the observer that asked for the state, or areg::COOKIE_UNKNOWN
+     *                      when the log collector set it by itself.
+     * \return  The message ready to send.
+     **/
+    AREG_API MessageEnvelope message_source_state_updated( const ITEM_ID & source
+                                                         , const ITEM_ID & target
+                                                         , areg::LogSourceState state
+                                                         , const ITEM_ID & byObserver);
 
     /**
      * \brief   Sets the external logging database engine.
