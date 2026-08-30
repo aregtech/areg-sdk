@@ -415,8 +415,8 @@ public:
     bool request_save_config(ITEM_ID target = areg::TARGET_ALL);
 
     /**
-     * \brief   Requests to restore the configuration of a specified target from its configuration
-     *          file, so the scope priorities of that target return to what the file holds.
+     * \brief   Requests a target to apply the scope priorities it has saved. The target takes them
+     *          from its configuration manager and does not read the configuration file again.
      *
      * \param   target      The cookie ID of the target instance to restore the configuration. If the
      *                      target is `areg::TARGET_ALL` (or 0xFF), the request is sent to all
@@ -426,10 +426,15 @@ public:
     bool request_restore_config(ITEM_ID target = areg::TARGET_ALL);
 
     /**
-     * \brief   Requests to change the state of a log source, so it starts or stops sending its logs.
+     * \brief   Requests to change the way a log source produces and sends its logs. The target
+     *          stays connected and keeps answering the scope list queries in every state. The logs
+     *          produced while the target is not sending are gone, nothing is replayed.
      *
      * \param   target      The valid cookie ID of the target log source to change the state.
-     * \param   state       The new state to set for the log source.
+     * \param   state       The new state to set for the log source. A stopped source produces no
+     *                      log at all, a paused source produces the logs and does not send them.
+     *                      Leaving the stopped state sets the scope priorities back to what they
+     *                      were before the stop, and the source sends the new scope list.
      * \return  Returns true if processed with success; false otherwise.
      **/
     bool request_source_state(ITEM_ID target, areg::LogSourceState state);
@@ -546,17 +551,19 @@ protected:
     virtual void on_log_message(const areg::MessageEnvelope& logMessage) = 0;
 
     /**
-     * \brief   Callback triggered when a log source starts or stops sending its logs.
+     * \brief   Callback triggered when a log source changed the way it produces and sends its logs.
      *
      * \param   cookie      The cookie ID of the log source.
-     * \param   state       The state the source is in.
+     * \param   state       The state the source is in. A stopped source produces no log at all,
+     *                      a paused source produces the logs and does not send them.
      * \param   byObserver  The cookie ID of the observer that asked for the change, or 0 when the
      *                      log collector made it by itself.
      **/
     virtual void on_log_source_state(ITEM_ID cookie, areg::LogSourceState state, ITEM_ID byObserver) = 0;
 
     /**
-     * \brief   Callback triggered when a log source reloaded its configuration file.
+     * \brief   Callback triggered when a log source applied the saved scope priorities.
+     *          The source sends the new scope list right after this callback.
      *
      * \param   cookie      The cookie ID of the log source that restored its configuration.
      **/

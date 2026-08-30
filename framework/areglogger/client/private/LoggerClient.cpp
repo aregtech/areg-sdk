@@ -242,7 +242,7 @@ bool LoggerClient::request_source_state(const ITEM_ID& target, areg::LogSourceSt
 {
     bool result{ false };
     Lock lock(mLock);
-    if ((mChannel.cookie() != areg::COOKIE_UNKNOWN) && (target != areg::TARGET_UNKNOWN) && (state != areg::LogSourceState::Undefined))
+    if ((mChannel.cookie() != areg::COOKIE_UNKNOWN) && (target != areg::TARGET_UNKNOWN) && areg::is_source_state_valid(state))
     {
         result = send_message(areg::message_update_source_state(mChannel.cookie(), target == areg::TARGET_ALL ? LoggerClient::TARGET_ID : target, state));
     }

@@ -290,9 +290,10 @@ void LogCollectorMessageProcessor::log_source_state_updated(const areg::MessageE
 
     if (source != areg::COOKIE_UNKNOWN)
     {
-        if (static_cast<areg::LogSourceState>(state) == areg::LogSourceState::Paused)
+        const areg::LogSourceState reported{ static_cast<areg::LogSourceState>(state) };
+        if ((reported == areg::LogSourceState::Paused) || (reported == areg::LogSourceState::Stopped))
         {
-            mPausedSources.set_value_at(source, byObserver);
+            mPausedSources.set_value_at(source, SourceState{ reported, byObserver });
         }
         else
         {
@@ -309,18 +310,29 @@ void LogCollectorMessageProcessor::send_source_states(const ITEM_ID& target) con
 {
     for (const auto& entry : mPausedSources.data())
     {
-        mLoggerService.send_message(areg::message_source_state_updated(entry.first, target, areg::LogSourceState::Paused, entry.second));
+        mLoggerService.send_message(areg::message_source_state_updated(entry.first, target, entry.second.state, entry.second.byObserver));
     }
 }
 
-void LogCollectorMessageProcessor::resume_all_sources(void)
+void LogCollectorMessageProcessor::resume_all_sources(bool isExplicit)
 {
+    areg::ArrayList<ITEM_ID> toResume;
     for (const auto& entry : mPausedSources.data())
     {
-        mLoggerService.send_message(areg::message_update_source_state(areg::COOKIE_LOGGER, entry.first, areg::LogSourceState::Active));
+        // A stopped source stays stopped unless an observer asked for the resume. It was stopped
+        // to run without logs, and an observer that leaves may not restart it.
+        if (isExplicit || (entry.second.state != areg::LogSourceState::Stopped))
+        {
+            toResume.add(entry.first);
+        }
     }
 
-    mPausedSources.clear();
+    for (uint32_t i = 0; i < toResume.size(); ++ i)
+    {
+        const ITEM_ID& cookie{ toResume[i] };
+        mLoggerService.send_message(areg::message_update_source_state(areg::COOKIE_LOGGER, cookie, areg::LogSourceState::Active));
+        mPausedSources.remove_at(cookie);
+    }
 }
 
 inline void LogCollectorMessageProcessor::_forward_message_to_log_sources(const areg::MessageEnvelope& msgReceived) const

@@ -507,4 +507,126 @@ TEST( LogScopeTest, scope_priority_groupping )
     LOG_TEST_RELEASE();
 }
 
+/**
+ * \brief   Stopping the source sets every scope priority to PrioNotset and resuming sets back
+ *          exactly the priorities the scopes had before the stop.
+ **/
+DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest, source_state_stop_and_resume_first );
+DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest, source_state_stop_and_resume_second );
+TEST( LogScopeTest, source_state_stop_and_resume )
+{
+    LOG_TEST_SETUP( false );
+    ASSERT_TRUE( LOGGING_START( DEFAULT_CONFIG_FILE.data( ) ) || !AREG_LOGGING );
+
+    constexpr uint32_t prioFirst { static_cast<uint32_t>(areg::LogPriority::PrioDebug) | static_cast<uint32_t>(areg::LogPriority::PrioScope) };
+    constexpr uint32_t prioSecond{ static_cast<uint32_t>(areg::LogPriority::PrioWarning) };
+    constexpr uint32_t prioNotset{ static_cast<uint32_t>(areg::LogPriority::PrioNotset) };
+
+    SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, source_state_stop_and_resume_first , prioFirst );
+    SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, source_state_stop_and_resume_second, prioSecond );
+
+    ASSERT_EQ( areg::LogSourceState::Stopped, areg::set_source_state( areg::LogSourceState::Stopped ) );
+    ASSERT_EQ( areg::LogSourceState::Stopped, areg::source_state( ) );
+    ASSERT_EQ( prioNotset, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, source_state_stop_and_resume_first ) );
+    ASSERT_EQ( prioNotset, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, source_state_stop_and_resume_second ) );
+
+    ASSERT_EQ( areg::LogSourceState::Active, areg::set_source_state( areg::LogSourceState::Active ) );
+    ASSERT_EQ( areg::LogSourceState::Active, areg::source_state( ) );
+    ASSERT_EQ( prioFirst , SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, source_state_stop_and_resume_first ) );
+    ASSERT_EQ( prioSecond, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, source_state_stop_and_resume_second ) );
+
+    LOGGING_STOP( );
+    LOG_TEST_RELEASE( );
+}
+
+/**
+ * \brief   Pausing the source does not touch the scope priorities, stopping does.
+ **/
+DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest, source_state_pause_keeps_priority );
+TEST( LogScopeTest, source_state_pause_keeps_priority )
+{
+    LOG_TEST_SETUP( false );
+    ASSERT_TRUE( LOGGING_START( DEFAULT_CONFIG_FILE.data( ) ) || !AREG_LOGGING );
+
+    constexpr uint32_t prio{ static_cast<uint32_t>(areg::LogPriority::PrioInfo) };
+    SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, source_state_pause_keeps_priority, prio );
+
+    ASSERT_EQ( areg::LogSourceState::Paused, areg::set_source_state( areg::LogSourceState::Paused ) );
+    ASSERT_EQ( areg::LogSourceState::Paused, areg::source_state( ) );
+    ASSERT_EQ( prio, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, source_state_pause_keeps_priority ) );
+
+    ASSERT_EQ( areg::LogSourceState::Active, areg::set_source_state( areg::LogSourceState::Active ) );
+    ASSERT_EQ( prio, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, source_state_pause_keeps_priority ) );
+
+    LOGGING_STOP( );
+    LOG_TEST_RELEASE( );
+}
+
+/**
+ * \brief   An explicit priority set while the source is stopped stays, and the source leaves the
+ *          stopped state, so a later resume does not put the saved priority back.
+ **/
+DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest, source_state_priority_cancels_stop );
+TEST( LogScopeTest, source_state_priority_cancels_stop )
+{
+    LOG_TEST_SETUP( false );
+    ASSERT_TRUE( LOGGING_START( DEFAULT_CONFIG_FILE.data( ) ) || !AREG_LOGGING );
+
+    constexpr uint32_t prioBefore{ static_cast<uint32_t>(areg::LogPriority::PrioDebug) };
+    constexpr uint32_t prioAfter { static_cast<uint32_t>(areg::LogPriority::PrioError) };
+
+    SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, source_state_priority_cancels_stop, prioBefore );
+    ASSERT_EQ( areg::LogSourceState::Stopped, areg::set_source_state( areg::LogSourceState::Stopped ) );
+
+    SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, source_state_priority_cancels_stop, prioAfter );
+    ASSERT_EQ( areg::LogSourceState::Active, areg::source_state( ) );
+    ASSERT_EQ( prioAfter, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, source_state_priority_cancels_stop ) );
+
+    ASSERT_EQ( areg::LogSourceState::Active, areg::set_source_state( areg::LogSourceState::Active ) );
+    ASSERT_EQ( prioAfter, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, source_state_priority_cancels_stop ) );
+
+    LOGGING_STOP( );
+    LOG_TEST_RELEASE( );
+}
+
+/**
+ * \brief   Restoring the configuration applies the saved priorities and leaves the stopped state.
+ **/
+DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest, source_state_restore_cancels_stop );
+TEST( LogScopeTest, source_state_restore_cancels_stop )
+{
+    LOG_TEST_SETUP( false );
+    ASSERT_TRUE( LOGGING_START( DEFAULT_CONFIG_FILE.data( ) ) || !AREG_LOGGING );
+
+    const uint32_t prioSaved{ SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, source_state_restore_cancels_stop ) };
+    SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest, source_state_restore_cancels_stop, static_cast<uint32_t>(areg::LogPriority::PrioDebug) );
+
+    ASSERT_EQ( areg::LogSourceState::Stopped, areg::set_source_state( areg::LogSourceState::Stopped ) );
+    areg::restore_logging( );
+
+    ASSERT_EQ( areg::LogSourceState::Active, areg::source_state( ) );
+    ASSERT_EQ( prioSaved, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest, source_state_restore_cancels_stop ) );
+
+    LOGGING_STOP( );
+    LOG_TEST_RELEASE( );
+}
+
+/**
+ * \brief   An undefined state leaves the source untouched.
+ **/
+TEST( LogScopeTest, source_state_rejects_undefined )
+{
+    LOG_TEST_SETUP( false );
+    ASSERT_TRUE( LOGGING_START( DEFAULT_CONFIG_FILE.data( ) ) || !AREG_LOGGING );
+
+    ASSERT_EQ( areg::LogSourceState::Paused, areg::set_source_state( areg::LogSourceState::Paused ) );
+    ASSERT_EQ( areg::LogSourceState::Paused, areg::set_source_state( areg::LogSourceState::Undefined ) );
+    ASSERT_EQ( areg::LogSourceState::Paused, areg::source_state( ) );
+
+    ASSERT_EQ( areg::LogSourceState::Active, areg::set_source_state( areg::LogSourceState::Active ) );
+
+    LOGGING_STOP( );
+    LOG_TEST_RELEASE( );
+}
+
 #endif

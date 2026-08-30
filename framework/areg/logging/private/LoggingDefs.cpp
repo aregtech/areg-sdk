@@ -228,6 +228,21 @@ AREG_API_IMPL bool areg::save_logging( const char * configFile )
     return LogManager::save_log_config(configFile);
 }
 
+AREG_API_IMPL bool areg::restore_logging()
+{
+    return LogManager::restore_log_config();
+}
+
+AREG_API_IMPL areg::LogSourceState areg::set_source_state( areg::LogSourceState state )
+{
+    return LogManager::set_source_state(state);
+}
+
+AREG_API_IMPL areg::LogSourceState areg::source_state()
+{
+    return LogManager::source_state();
+}
+
 AREG_API_IMPL uint32_t areg::set_scope_priority( const char * scopeName, uint32_t newPrio )
 {
     return LogManager::set_scope_priority( scopeName, newPrio );
@@ -655,6 +670,21 @@ AREG_API_IMPL bool areg::is_enabled()
 AREG_API_IMPL bool areg::save_logging( const char * /*configFile*/ )
 {
     return true;
+}
+
+AREG_API_IMPL bool areg::restore_logging()
+{
+    return true;
+}
+
+AREG_API_IMPL areg::LogSourceState areg::set_source_state( areg::LogSourceState /*state*/ )
+{
+    return areg::LogSourceState::Undefined;
+}
+
+AREG_API_IMPL areg::LogSourceState areg::source_state()
+{
+    return areg::LogSourceState::Undefined;
 }
 
 AREG_API_IMPL uint32_t areg::set_scope_priority( const char * /*scopeName*/, uint32_t /*newPrio*/ )

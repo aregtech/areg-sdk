@@ -170,11 +170,13 @@ void ObserverMessageProcessor::notify_log_source_state(const areg::MessageEnvelo
     msgReceived >> state;
     msgReceived >> byObserver;
 
-    if (source != areg::COOKIE_UNKNOWN)
+    // The byte arrives over the network, so an unknown state never reaches the observer.
+    const areg::LogSourceState srcState{ static_cast<areg::LogSourceState>(state) };
+    if ((source != areg::COOKIE_UNKNOWN) && areg::is_source_state_valid(srcState))
     {
         if (LogObserverBase::_theLogObserver != nullptr)
         {
-            LogObserverBase::_theLogObserver->on_log_source_state(source, static_cast<areg::LogSourceState>(state), byObserver);
+            LogObserverBase::_theLogObserver->on_log_source_state(source, srcState, byObserver);
         }
         else if (callback != nullptr)
         {

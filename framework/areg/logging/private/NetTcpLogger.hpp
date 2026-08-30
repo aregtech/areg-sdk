@@ -150,6 +150,20 @@ public:
     [[nodiscard]]
     bool is_logger_opened() const noexcept final;
 
+    /**
+     * \brief   Returns true if the source is paused, so that the produced log messages are
+     *          dropped instead of being sent to the log collector.
+     **/
+    [[nodiscard]]
+    inline bool is_paused() const noexcept;
+
+    /**
+     * \brief   Sets or clears the paused state and keeps the other states untouched.
+     *
+     * \param   paused  If true, the produced log messages are dropped instead of being sent.
+     **/
+    inline void set_paused(bool paused) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
@@ -234,8 +248,13 @@ private:
     //!< Returns true if the network logging is enabled and the source is not paused.
     inline bool is_sending() const noexcept;
 
-    //!< Sets or clears the paused bit and keeps the other bits untouched.
-    inline void set_paused(bool paused) noexcept;
+    /**
+     * \brief   Sends the state of the log source to the observers if it differs from the given one.
+     *
+     * \param   previous    The state the source was in before the operation.
+     * \param   byObserver  The ID of the observer that triggered the operation.
+     **/
+    void notify_source_state(areg::LogSourceState previous, const ITEM_ID & byObserver);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -268,6 +287,11 @@ inline NetTcpLogger& NetTcpLogger::self()
 inline bool NetTcpLogger::is_enabled() const noexcept
 {
     return (mFlags.load(std::memory_order_acquire) & NetTcpLogger::FLAG_ENABLED) != 0u;
+}
+
+inline bool NetTcpLogger::is_paused() const noexcept
+{
+    return (mFlags.load(std::memory_order_acquire) & NetTcpLogger::FLAG_PAUSED) != 0u;
 }
 
 inline bool NetTcpLogger::is_sending() const noexcept

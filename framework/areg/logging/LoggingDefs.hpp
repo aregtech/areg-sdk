@@ -348,15 +348,27 @@ namespace areg {
 
     /**
      * \brief   areg::LogSourceState
-     *          Whether a log source sends the logs it produces. A paused source keeps
-     *          generating its logs and drops them; its scope priorities are untouched.
+     *          What a log source does with the logs it would produce. The states are exclusive.
+     *          In every state the source stays connected and answers the scope list queries.
      **/
     enum class LogSourceState : uint8_t
     {
           Undefined = 0 //!< The state of the source is not known.
-        , Active    = 1 //!< The source sends its logs.
-        , Paused    = 2 //!< The source produces its logs and drops them.
+        , Active    = 1 //!< The source produces its logs and sends them.
+        , Paused    = 2 //!< The source produces its logs and does not send them to the log collector.
+        , Stopped   = 3 //!< The source produces no log. Every scope priority is set to PrioNotset.
     };
+
+    /**
+     * \brief   Returns true if the value names a state a log source can be asked to take.
+     * \param   state   The state to check.
+     **/
+    inline constexpr bool is_source_state_valid(areg::LogSourceState state) noexcept
+    {
+        return (state == areg::LogSourceState::Active)
+            || (state == areg::LogSourceState::Paused)
+            || (state == areg::LogSourceState::Stopped);
+    }
 
     /**
      * \brief   Returns the readable name of the log source state.
@@ -370,6 +382,8 @@ namespace areg {
             return "Active";
         case areg::LogSourceState::Paused:
             return "Paused";
+        case areg::LogSourceState::Stopped:
+            return "Stopped";
         default:
             return "Undefined";
         }
@@ -605,6 +619,36 @@ namespace areg {
     AREG_API bool save_logging( const char * configFile = nullptr );
 
     /**
+     * \brief   Applies the saved scope priorities to every registered scope. The priorities come
+     *          from the configuration manager, the configuration file is not read again. If the
+     *          application was never configured, the built-in defaults are applied instead.
+     *
+     * \return  Returns true if the application was configured, false if the defaults were applied.
+     **/
+    AREG_API bool restore_logging();
+
+    /**
+     * \brief   Sets the state of the log source of this application.
+     *          - areg::LogSourceState::Active  produces the log messages and sends them.
+     *          - areg::LogSourceState::Paused  produces the log messages and does not send them
+     *            to the log collector. The file and the database targets keep receiving them.
+     *          - areg::LogSourceState::Stopped produces no log message. The priority of every
+     *            scope is saved and set to PrioNotset.
+     *          Leaving the stopped state sets the saved priorities back. Setting a scope priority
+     *          or restoring the configuration while stopped drops the saved ones.
+     *
+     * \param   state   The state to take. An invalid state leaves the source untouched.
+     * \return  The state the log source is in after the call.
+     **/
+    AREG_API areg::LogSourceState set_source_state( areg::LogSourceState state );
+
+    /**
+     * \brief   Returns the state of the log source of this application.
+     **/
+    [[nodiscard]]
+    AREG_API areg::LogSourceState source_state();
+
+    /**
      * \brief   Sets the logging priority for a scope.
      *
      * \param   scopeName       The name of the existing scope. Ignored if scope does not exist.
@@ -764,8 +808,7 @@ namespace areg {
     AREG_API MessageEnvelope message_configuration_saved();
 
     /**
-     * \brief   Creates a message to request connected clients to read the configuration again,
-     *          so the scope priorities go back to what the configuration file holds.
+     * \brief   Creates a message to request connected clients to apply the saved scope priorities.
      *
      * \param   source      The ID of the source (log observer or log collector).
      * \param   target      The ID of the target or areg::TARGET_ALL to forward to all clients.
@@ -774,15 +817,14 @@ namespace areg {
     AREG_API MessageEnvelope message_restore_configuration(const ITEM_ID & source, const ITEM_ID & target);
 
     /**
-     * \brief   Creates a message to notify the log collector that the configuration was read again.
+     * \brief   Creates a message to notify the log collector that the saved priorities are applied.
      *
      * \return  The message ready to send to the log collector.
      **/
     AREG_API MessageEnvelope message_configuration_restored();
 
     /**
-     * \brief   Creates a message to request a log source to start or stop sending its logs.
-     *          A paused source keeps producing its logs and drops them.
+     * \brief   Creates a message to request a log source to take the given state.
      *
      * \param   source      The ID of the source (log observer or log collector).
      * \param   target      The ID of the target or areg::TARGET_ALL to forward to all clients.

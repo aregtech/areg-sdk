@@ -131,8 +131,9 @@ void LogCollectorServerService::remove_instance(const ITEM_ID & cookie)
         mObservers.remove_at(cookie);
         if (mObservers.is_empty())
         {
-            // Nobody is listening, so nothing may stay silenced.
-            mLoggerProcessor.resume_all_sources();
+            // Nobody is listening, so a paused source is put back to sending. A stopped one is
+            // left alone, see resume_all_sources().
+            mLoggerProcessor.resume_all_sources(false);
         }
     }
 }
@@ -167,6 +168,7 @@ void LogCollectorServerService::remove_all_instances()
     }
 
     mObservers.clear();
+    mLoggerProcessor.forget_source_states();
 }
 
 void LogCollectorServerService::dispatch_and_forward_logger_message(const areg::MessageEnvelope& msgForward)

@@ -274,18 +274,23 @@ typedef void (*FuncLogMessage)(const LogRecord * /*log_message*/);
 typedef void (*FuncLogMessageEx)(const unsigned char* /*logBuffer*/, uint32_t /*size*/);
 
 /**
- * \brief   The callback of the event triggered when a log source starts or stops sending its logs.
- *          A stopped source keeps producing its logs and drops them; its priorities are untouched.
+ * \brief   The callback of the event triggered when a log source changed the way it produces and
+ *          sends the logs.
  * \param   cookie      The cookie ID of the log source.
- * \param   state       The state the source is in: 1 sends the logs, 2 drops them.
+ * \param   state       The state the source is in:
+ *                      1 (Active)  produces the logs and sends them;
+ *                      2 (Paused)  produces the logs, drops them, priorities untouched;
+ *                      3 (Stopped) produces no log, every scope priority is set to NotSet.
+ *                      A source that leaves the stopped state sends the scope list right after
+ *                      this callback, because its priorities are set back.
  * \param   byObserver  The cookie ID of the observer that asked for the change, or 0 when the
  *                      log collector made it by itself.
  **/
 typedef void (*FuncLogSourceState)(ITEM_ID /*cookie*/, unsigned char /*state*/, ITEM_ID /*byObserver*/);
 
 /**
- * \brief   The callback triggered when a log source reloaded its configuration file, so its
- *          scope priorities are back to what the file holds. The updated scope list follows.
+ * \brief   The callback triggered when a log source applied the saved scope priorities.
+ *          The updated scope list follows.
  * \param   cookie      The cookie ID of the log source.
  **/
 typedef void (*FuncLogConfigRestored)(ITEM_ID /*cookie*/);
@@ -486,8 +491,10 @@ LOGGER_API bool log_observer_request_change_scope_prio(ITEM_ID target, const Sco
 LOGGER_API bool log_observer_request_save_config(ITEM_ID target);
 
 /**
- * \brief   Call to make the specified target read its log configuration file again, so its scope
- *          priorities go back to what the file holds. The scopes updated callback follows.
+ * \brief   Call to make the specified target apply the scope priorities it has saved. The target
+ *          takes them from its configuration manager and does not read the file again. A target
+ *          that was never configured applies the built-in defaults. The scopes updated callback
+ *          follows.
  * \param   target  The cookie ID of the target instance.
  *                  If the target is ID_IGNORE (or 0), the request is sent to all connected instances.
  * \return  Returns true if processed with success. Otherwise, returns false.
@@ -495,12 +502,17 @@ LOGGER_API bool log_observer_request_save_config(ITEM_ID target);
 LOGGER_API bool log_observer_request_restore_config(ITEM_ID target);
 
 /**
- * \brief   Call to make the specified target start or stop sending the logs it produces. A stopped
- *          target keeps generating its logs and drops them; its priorities are not touched and the
- *          logs produced while it is stopped are gone.
+ * \brief   Call to change the way the specified target produces and sends the logs. The target
+ *          stays connected and keeps answering the scope list queries in every state. The logs
+ *          produced while the target is not sending are gone, nothing is replayed.
  * \param   target  The cookie ID of the target instance.
  *                  If the target is ID_IGNORE (or 0), the request is sent to all connected instances.
- * \param   state   The state the target should take: 1 to send the logs, 2 to drop them.
+ * \param   state   The state the target should take:
+ *                  1 (Active)  produce the logs and send them. Leaving the stopped state sets the
+ *                              scope priorities back to what they were before the stop;
+ *                  2 (Paused)  produce the logs and drop them, priorities untouched;
+ *                  3 (Stopped) produce no log. Every scope priority is saved and set to NotSet,
+ *                              which is the cheapest state the target can run in.
  * \return  Returns true if processed with success. Otherwise, returns false.
  **/
 LOGGER_API bool log_observer_request_source_state(ITEM_ID target, unsigned char state);
