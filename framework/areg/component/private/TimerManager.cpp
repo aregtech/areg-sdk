@@ -219,7 +219,6 @@ void TimerManager::_process_expired_timer(Timer * timer, TIMERHANDLE handle, uin
 
     bool    shouldStop{ false };    // the timer left the map and its OS timer must be disarmed
     bool    noTarget  { false };    // the timer had no dispatcher thread to deliver the event to
-    String  name;                   // copied under the lock: the timer may be gone after it
 
     mTimerResource.lock();
 
@@ -232,9 +231,17 @@ void TimerManager::_process_expired_timer(Timer * timer, TIMERHANDLE handle, uin
 
         if (shouldStop)
         {
-            name = timer->name();
             mTimerResource.unregister_resource_object(handle);
             timer->mStarted = false;
+
+            if (noTarget)
+            {
+                LOG_WARN("Timer [ %s ] target thread is not running, going to unregister timer", timer->name().as_string());
+            }
+            else
+            {
+                LOG_INFO("Timer [ %s ] should be stopped and unregistered, it should not be active anymore", timer->name().as_string());
+            }
         }
         else
         {
@@ -246,15 +253,6 @@ void TimerManager::_process_expired_timer(Timer * timer, TIMERHANDLE handle, uin
 
     if (shouldStop)
     {
-        if (noTarget)
-        {
-            LOG_WARN("Timer [ %s ] target thread is not running, going to unregister timer", name.as_string());
-        }
-        else
-        {
-            LOG_INFO("Timer [ %s ] should be stopped and unregistered, it should not be active anymore", name.as_string());
-        }
-
         TimerManager::_os_timer_stop(handle);
     }
 }
