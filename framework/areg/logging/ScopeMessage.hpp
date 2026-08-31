@@ -280,11 +280,6 @@ inline bool ScopeMessage::_can_log( uint32_t scopePrio ) noexcept
     return (scopePrio & static_cast<uint32_t>(areg::LogPriority::PrioScopeLogs)) != 0u;
 }
 
-inline ScopeMessage::ScopeMessage( const LogScope & logScope )
-    : ScopeMessage( logScope, logScope.priority() )
-{
-}
-
 inline ScopeMessage::ScopeMessage( const LogScope & logScope, uint32_t scopePrio )
     : mScope       ( logScope )
     , mSessionId   ( _can_log(scopePrio) ? logScope.next_session() : 0u )
@@ -303,6 +298,11 @@ inline ScopeMessage::~ScopeMessage()
     {
         _send_scope( areg::LogMessageType::ScopeExit );
     }
+}
+
+inline ScopeMessage::ScopeMessage( const LogScope & logScope )
+    : ScopeMessage( logScope, logScope.priority() )
+{
 }
 
 #else   // AREG_LOGGING

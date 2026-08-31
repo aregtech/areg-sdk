@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="Monitor" Version="1.0.0" Category="Private">
+        <Description>Publishes a temperature value and raises an alarm.</Description>
+    </Overview>
+    <AttributeList>
+        <Attribute ID="10" Name="Temperature" DataType="uint32" Notify="OnChange">
+            <Description>The last measured temperature.</Description>
+        </Attribute>
+    </AttributeList>
+    <MethodList>
+        <Method ID="20" Name="alarm_raised" MethodType="Broadcast">
+            <Description>Sent to every subscriber when the temperature is too high.</Description>
+            <ParamList>
+                <Parameter ID="21" Name="level" DataType="uint32">
+                    <Description>The temperature that raised the alarm.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="30" Name="measure" MethodType="Request" Response="measure">
+            <Description>Ask the provider to take one measurement.</Description>
+        </Method>
+        <Method ID="31" Name="measure" MethodType="Response">
+            <Description>Reports that the measurement was taken.</Description>
+            <ParamList>
+                <Parameter ID="32" Name="taken" DataType="bool">
+                    <Description>True when a measurement was made.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>

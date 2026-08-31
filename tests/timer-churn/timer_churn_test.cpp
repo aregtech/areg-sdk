@@ -68,8 +68,9 @@ namespace
 
     /**
      * \brief   The live components, so that a churn thread reaches them without asking the
-     *          framework. A component removes itself here first thing in its destructor, and
-     *          a churn thread holds the lock while it touches one.
+     *          framework. A component appears here once its timers exist and removes itself
+     *          first thing in its destructor. A churn thread holds the lock while it
+     *          touches one.
      **/
     std::mutex                      gLiveLock;
     std::vector<ChurnComponent *>   gLive;
@@ -124,11 +125,6 @@ public:
         , mTimers           ()
         , mSeed             (entry.mRoleName.length() + 1u)
     {
-        {
-            std::lock_guard<std::mutex> guard(gLiveLock);
-            gLive.push_back(this);
-        }
-
         gAlive.fetch_add(1);
     }
 
@@ -161,6 +157,12 @@ public:
             areg::String name{ role_name() + "_churn_" + areg::String::make_string(i) };
             mTimers.push_back(std::make_unique<areg::Timer>(static_cast<areg::TimerConsumer &>(*this), name));
             mTimers.back()->start_timer(_timeout(i), comThread, areg::Timer::CONTINUOUSLY);
+        }
+
+        // Published only now: mTimers keeps its size from here until the destructor.
+        {
+            std::lock_guard<std::mutex> guard(gLiveLock);
+            gLive.push_back(this);
         }
     }
 

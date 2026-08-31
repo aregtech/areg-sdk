@@ -1,0 +1,99 @@
+name: Agent docs
+
+# The agent documentation and its recipes are a contract asserted against the
+# framework. Nothing in an ordinary build reads them, so a framework change rots a
+# recipe silently, and a rotten recipe is worse than none: it is copied first and
+# debugged afterwards. This job is the only thing that notices.
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'framework/**'
+      - 'tools/**'
+      - 'docs/agent/**'
+      - 'conf/cmake/**'
+      - 'AGENTS.md'
+      - 'CODEBASE.md'
+      - '.github/workflows/agent-docs.yml'
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'framework/**'
+      - 'tools/**'
+      - 'docs/agent/**'
+      - 'conf/cmake/**'
+      - 'AGENTS.md'
+      - 'CODEBASE.md'
+      - '.github/workflows/agent-docs.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{github.workflow}}-${{github.ref}}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  references:
+    name: documentation references
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      # Every path named in the documentation must resolve, relative and repository
+      # form alike. A broken one makes an agent fail its first tool call.
+      - name: Check documented paths
+        run: python3 tools/check_agent_docs.py
+
+  recipes:
+    name: recipes build and run
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      # The generator is a jar. Same setup as the CMake workflow uses.
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v5.6.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      # OUTPUT_LAYOUT=OFF puts everything in build/bin, which is what the recipe
+      # check links against and where it looks for the router.
+      - name: Build the framework and the router
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release \
+                -DAREG_TESTS=OFF -DAREG_EXAMPLES=OFF -DAREG_OUTPUT_LAYOUT=OFF
+          cmake --build build -j $(nproc)
+          cmake --build build --target mtrouter -j $(nproc)
+
+      # The IPC recipe is not run without it, and check_recipes.py fails rather than
+      # reporting a green suite that skipped the one path with a silent-failure history.
+      - name: Confirm the router is where the recipe check looks
+        run: ls build/bin/mtrouter* 
+
+      # Generates, compiles and, where a recipe ends by itself, runs and checks output.
+      - name: Check recipes
+        run: python3 tools/check_recipes.py --lib build/bin
+
+      # The project setup tool is the only thing that carries the documentation into
+      # an application, so a break in it disables everything else.
+      - name: Check project setup
+        run: |
+          python3 tools/setup_project.py --name citest --root "${RUNNER_TEMP}/citest" \
+                  --mode local --sdk-root "${GITHUB_WORKSPACE}"
+          test -f "${RUNNER_TEMP}/citest/AGENTS.md"
+          test -f "${RUNNER_TEMP}/citest/src/main.cpp"

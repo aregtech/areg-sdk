@@ -244,3 +244,31 @@ install(DIRECTORY ${AREG_EXPORTS_DIR}/example
             DESTINATION share/${AREG_PACKAGE_NAME}
             COMPONENT Development   COMPONENT Runtime
 )
+
+# Copy the agent documentation, its recipes and the document schemas. The set is
+# installed with the same layout it has in the repository, so that every relative
+# link inside it resolves from an installation as it does from a clone.
+install(FILES ${AREG_SDK_ROOT}/AGENTS.md
+              ${AREG_SDK_ROOT}/CODEBASE.md
+            DESTINATION share/${AREG_PACKAGE_NAME}/sdk
+            COMPONENT Development
+)
+
+install(DIRECTORY ${AREG_SDK_ROOT}/docs/agent
+            DESTINATION share/${AREG_PACKAGE_NAME}/sdk/docs
+            COMPONENT Development
+            PATTERN "build" EXCLUDE
+            PATTERN "generated" EXCLUDE
+)
+
+install(DIRECTORY ${AREG_SDK_ROOT}/tools/schema
+            DESTINATION share/${AREG_PACKAGE_NAME}/sdk/tools
+            COMPONENT Development
+)
+
+# The pages the agent documentation refers to outside its own directory.
+install(DIRECTORY ${AREG_SDK_ROOT}/docs/wiki
+            DESTINATION share/${AREG_PACKAGE_NAME}/sdk/docs
+            COMPONENT Development
+)
+

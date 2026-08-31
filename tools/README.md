@@ -20,8 +20,12 @@ verify* the SDK itself.
 | `codegenerate.bat`    | Ready-made generator invocation for Windows                     | [1](#1-designing-and-generating-service-code-from-siml) |
 | `schema/*.xsd`        | Grammars of the service, state machine and data type documents  | [2](#2-document-schemas-and-the-rule-registry) |
 | `schema/rules.xml`    | The registry of validation rule numbers, shared with Lusan      | [2](#2-document-schemas-and-the-rule-registry) |
-| `setup-project.sh`    | Creates a ready-to-build Areg project on Linux/macOS            | [5](#5-project-setup-scripts-quick-start) |
-| `setup-project.bat`   | Creates a ready-to-build Areg project on Windows                | [5](#5-project-setup-scripts-quick-start) |
+| `setup_project.py`    | Creates a ready-to-build Areg project on any platform           | [5](#5-project-setup-scripts-quick-start) |
+| `gen_skeleton.py`     | Writes provider and consumer components from a `.siml`          | [5](#5-project-setup-scripts-quick-start) |
+| `run_scenarios.py`    | Runs an application and checks its output; one verdict          | [5](#5-project-setup-scripts-quick-start) |
+| `check_agent_docs.py` | Verifies paths named in the agent documentation resolve         | [5](#5-project-setup-scripts-quick-start) |
+| `setup-project.sh`    | Superseded by `setup_project.py`; interactive only              | [5](#5-project-setup-scripts-quick-start) |
+| `setup-project.bat`   | Superseded by `setup_project.py`; interactive only              | [5](#5-project-setup-scripts-quick-start) |
 
 ### Developing and verifying the SDK
 
@@ -235,8 +239,29 @@ Areg provides scripts to bootstrap a **working example project** in one step.
 
 | Platform      | Script              |
 | ------------- | ------------------- |
-| Windows       | `setup-project.bat` |
-| Linux / macOS | `setup-project.sh`  |
+| Any platform  | `setup_project.py` (recommended) |
+| Windows       | `setup-project.bat` (interactive only) |
+| Linux / macOS | `setup-project.sh` (interactive only)  |
+
+`setup_project.py` takes its answers on the command line, so it works unattended and
+in scripts. It copies one of the recipes in `docs/agent/recipes/`, renames it, and
+writes an `AGENTS.md` into the new project.
+
+```bash
+python3 tools/setup_project.py --name myapp --root ~/myapp --mode local
+python3 tools/setup_project.py --name myapp --root ~/myapp --mode ipc --sdk-root /opt/areg-sdk
+```
+
+| Option | Meaning |
+|---|---|
+| `--mode local` | One process, provider and consumer in two threads |
+| `--mode ipc` | Two processes; needs `mtrouter` |
+| `--mode pubsub` | Attributes and broadcasts in one process |
+| `--sdk-root` | Build against a local SDK copy instead of fetching from GitHub |
+| `--tag` | The SDK tag to fetch |
+| `--force` | Overwrite an existing directory |
+| `--no-agents` | Do not write `AGENTS.md` |
+
 
 ### What the Script Does
 
