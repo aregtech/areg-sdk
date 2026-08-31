@@ -301,6 +301,12 @@ Thread::ThreadCompletion Thread::shutdown( uint32_t waitForStopMs /* = areg::WAI
     request_exit();
 
     Thread::ThreadCompletion result{ _os_destroy_thread( waitForStopMs ) };
+    if ( result == Thread::ThreadCompletion::Completed )
+    {
+        // The exit event is signaled while the routine still runs on this object.
+        _wait_exit_completed();
+    }
+
     _clean_resources( true, true );
 
     return result;
