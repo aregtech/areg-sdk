@@ -389,7 +389,7 @@ def write(path, text, force):
     if os.path.exists(path) and not force:
         print('kept   {}'.format(path))
         return
-    with open(path, 'w', encoding='ascii') as handle:
+    with open(path, 'w', encoding='utf-8') as handle:
         handle.write(text)
     print('wrote  {}'.format(path))
 

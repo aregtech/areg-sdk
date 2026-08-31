@@ -175,7 +175,7 @@ def main():
     if not os.path.isfile(args.file):
         fail('no scenario file at {}'.format(args.file))
     try:
-        with open(args.file, encoding='ascii') as handle:
+        with open(args.file, encoding='utf-8') as handle:
             document = json.load(handle)
     except (OSError, ValueError) as error:
         fail('cannot read {}: {}'.format(args.file, error))

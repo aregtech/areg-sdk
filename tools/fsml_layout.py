@@ -187,7 +187,7 @@ def main():
         print('no such document: ' + args.document, file=sys.stderr)
         return 1
 
-    with open(args.document, encoding='ascii') as handle:
+    with open(args.document, encoding='utf-8') as handle:
         text = handle.read()
 
     try:
@@ -217,7 +217,7 @@ def main():
         text = text[:cut] + block + '\n' + text[cut:]
 
     target = args.out or args.document
-    with open(target, 'w', encoding='ascii', newline='') as handle:
+    with open(target, 'w', encoding='utf-8', newline='') as handle:
         handle.write(text)
 
     nodes = len(layout.find('NodeList'))

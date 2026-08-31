@@ -117,7 +117,7 @@ def fetch_block(sdk_root, tag):
 
 
 def rewrite_top_cmake(path, name, sdk_root, tag):
-    with open(path, encoding='ascii') as handle:
+    with open(path, encoding='utf-8') as handle:
         text = handle.read()
 
     old = ('    FetchContent_Declare(areg\n'
@@ -128,16 +128,16 @@ def rewrite_top_cmake(path, name, sdk_root, tag):
         fail('recipe CMakeLists.txt does not carry the expected FetchContent block')
     text = text.replace(old, fetch_block(sdk_root, tag))
 
-    with open(path, 'w', encoding='ascii') as handle:
+    with open(path, 'w', encoding='utf-8') as handle:
         handle.write(text)
 
 
 def substitute(path, tokens):
-    with open(path, encoding='ascii') as handle:
+    with open(path, encoding='utf-8') as handle:
         text = handle.read()
     for old, new in tokens:
         text = text.replace(old, new)
-    with open(path, 'w', encoding='ascii') as handle:
+    with open(path, 'w', encoding='utf-8') as handle:
         handle.write(text)
 
 
@@ -220,7 +220,7 @@ It starts the application, checks the output and the exit code, and returns 0 on
 when everything matched. Edit `scenarios.json` when the expected output changes.
 """.format(name=name, run=run, where=where, sdk=sdk)
 
-    with open(os.path.join(root, 'AGENTS.md'), 'w', encoding='ascii') as handle:
+    with open(os.path.join(root, 'AGENTS.md'), 'w', encoding='utf-8') as handle:
         handle.write(text)
 
 
@@ -239,13 +239,13 @@ def write_scenarios(root, mode, binaries):
                                'timeout': 60,
                                'router': MODES[mode]['router'],
                                'procs': procs}]}
-    with open(os.path.join(root, 'scenarios.json'), 'w', encoding='ascii') as handle:
+    with open(os.path.join(root, 'scenarios.json'), 'w', encoding='utf-8') as handle:
         json.dump(document, handle, indent=2)
         handle.write('\n')
 
 
 def write_gitignore(root):
-    with open(os.path.join(root, '.gitignore'), 'w', encoding='ascii') as handle:
+    with open(os.path.join(root, '.gitignore'), 'w', encoding='utf-8') as handle:
         handle.write('build/\nbuild-*/\nproduct/\n*.sqlog\n*.log\n')
 
 
@@ -270,7 +270,7 @@ def write_run_script(root, name, binaries):
              'done']
     lines += ['"$BIN/{}$SFX" &'.format(binaries[0]), 'sleep 1',
               '"$BIN/{}$SFX"'.format(binaries[1])]
-    with open(path, 'w', encoding='ascii') as handle:
+    with open(path, 'w', encoding='utf-8') as handle:
         handle.write('\n'.join(lines) + '\n')
     os.chmod(path, os.stat(path).st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 

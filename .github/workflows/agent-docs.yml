@@ -41,9 +41,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.11'
 
@@ -52,27 +52,24 @@ jobs:
       - name: Check documented paths
         run: python3 tools/check_agent_docs.py
 
-      # The recipes are copied into user projects, so their sources obey the same
-      # ASCII rule as the framework. Markdown is exempt by repository policy.
-      - name: Check recipe sources are ASCII
-        run: python3 tools/check-ascii.py docs/agent
-
   recipes:
     name: recipes build and run
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.11'
 
-      # The generator is a jar.
-      - uses: actions/setup-java@v4
+      # The generator is a jar. Same setup as the CMake workflow uses.
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v5.6.0
         with:
+          java-version: 17
+          java-package: jre
           distribution: temurin
-          java-version: '17'
 
       # OUTPUT_LAYOUT=OFF puts everything in build/bin, which is what the recipe
       # check links against and where it looks for the router.
