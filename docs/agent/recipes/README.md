@@ -22,6 +22,11 @@ cmake --build build -j
 ./build/bin/hello_local.elf
 ```
 
+On Windows, copy the folder with `xcopy /E /I`, and the last line is
+`build\bin\hello_local.exe`. The two configure and build lines are the same
+everywhere. Copying a recipe needs no Python: CMake 3.20+, a Java 17+ runtime and a
+C++17 compiler are the whole requirement.
+
 The top level `CMakeLists.txt` finds an installed areg package, or fetches the SDK
 from GitHub when there is none. Nothing else has to be set up.
 
@@ -46,6 +51,12 @@ A service reaching beyond its own process is declared `Category="Public"` and ne
 ./build/bin/mtrouter.elf --service &     # --service, not the console default
 ./build/bin/hello_provider.elf
 ./build/bin/hello_consumer.elf
+```
+
+```bat
+start "" build\bin\mtrouter.exe --service
+build\bin\hello_provider.exe
+build\bin\hello_consumer.exe
 ```
 
 `--service` is the unattended mode; the console default paints a live status display

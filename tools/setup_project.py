@@ -146,13 +146,22 @@ def write_agents(root, name, mode, sdk_root, binaries):
     where = sdk_root if sdk_root else 'the SDK fetched into build/packages/areg-src'
     sdk = sdk_root if sdk_root else 'build/packages/areg-src'
     run = '\n'.join('./build/bin/{}.elf'.format(b) for b in binaries)
+    run_win = '\n'.join(r'build\bin\{}.exe'.format(b) for b in binaries)
     if MODES[mode]['router']:
         run = './build/bin/mtrouter.elf --service &\n' + run
+        run_win = 'start "" build\\bin\\mtrouter.exe --service\n' + run_win
 
     text = """# {name}
 
 An application built on the AREG framework. AREG generates the communication code
 from a service contract; this project implements only the service logic.
+
+## What must be installed
+
+CMake 3.20 or newer, a Java 17 or newer runtime (it runs the code generator), and a
+C++17 or newer compiler: GCC, Clang, MSVC or MinGW. Tested on Linux and other POSIX,
+macOS, Windows and Cygwin. Python 3 is not needed to build or run this project, only
+for the SDK helper scripts listed below.
 
 ## Build and run
 
@@ -160,6 +169,14 @@ from a service contract; this project implements only the service logic.
 cmake -B build
 cmake --build build -j
 {run}
+```
+
+The same on Windows:
+
+```bat
+cmake -B build
+cmake --build build -j
+{run_win}
 ```
 
 Executables are written to `build/bin/`. The suffix is `.elf` on Linux, `.mac` on
@@ -197,7 +214,8 @@ python3 {sdk}/tools/run_scenarios.py
 ```
 
 `gen_skeleton.py` writes the provider and consumer with every override already in
-place, so only the logic has to be written. Both take `--help`.
+place, so only the logic has to be written. Both take `--help`. On Windows the
+interpreter is `python`, not `python3`.
 
 ## Never
 
@@ -218,7 +236,7 @@ python3 {sdk}/tools/run_scenarios.py
 
 It starts the application, checks the output and the exit code, and returns 0 only
 when everything matched. Edit `scenarios.json` when the expected output changes.
-""".format(name=name, run=run, where=where, sdk=sdk)
+""".format(name=name, run=run, run_win=run_win, where=where, sdk=sdk)
 
     with open(os.path.join(root, 'AGENTS.md'), 'w', encoding='utf-8') as handle:
         handle.write(text)

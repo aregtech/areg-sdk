@@ -99,11 +99,18 @@ Pull requests should follow these rules:
 
 All contributions must follow the Areg SDK coding style.
 
-* **Coding style guide:** `./docs/AREG_CODING_STYLE.md`
+* **Coding style guide:** `./docs/AREG_CODING_STYLE.md` -- the rules with their rationale and examples.
+* **Compact rule reference:** `./docs/AREG_AI_CODING_RULES.md` -- the same rules as numbered, normative one-liners. Give this one to an AI assistant working on the framework sources.
+
+Neither applies to an application built *with* Areg. That work is described in `./AGENTS.md`, and an application may use any style it likes.
 
 If your change touches existing code, keep changes consistent with the surrounding file style unless the change is part of a deliberate refactor that updates the whole file/module.
 
-### d. Documentation
+### d. Tool diagnostics
+
+If you change a message that a tool prints, read `./docs/CODEGEN_MESSAGE_FORMAT.md` first. It specifies the diagnostic format of the code generator and states which parts of a message are treated as API by the documentation and by the agent tooling.
+
+### e. Documentation
 
 Improvements to guides, examples, comments, and general documentation are welcome.
 Small corrections only require a Signed-off-by line.

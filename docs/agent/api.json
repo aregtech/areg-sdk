@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema#",
+  "title": "AREG agent contract",
+  "description": "Machine-readable form of the rules stated in docs/agent/. Prose remains authoritative; this file exists so a tool can check generated code mechanically instead of an agent re-reading a page. Keep in step with 20-service-interface.md section 3 and 31-consumer.md section 3.",
+  "version": "1.2.0",
+  "language_level": "C++17",
+  "namespace": "areg",
+
+  "legacy_names": {
+    "description": "areg was renamed throughout. Names an agent may recall from training data no longer exist. Never write an areg name from memory; grep for it.",
+    "removed_prefixes": ["NE", "TE"],
+    "removed": ["NEApplication", "NEApplicationPosix", "NEApplicationWin32", "NEBasicShape", "NECommon", "NEConnection", "NEDebug", "NEDebugPosix", "NEDebugWin32", "NELogCollectorSettings", "NELogConfig", "NELoggerSettings", "NELogging", "NELogObserverSettings", "NELogOptions", "NEMath", "NEMemory", "NEMulticastRouterSettings", "NEPersistence", "NERegistry", "NERemoteService", "NEService", "NESocket", "NESocketPosix", "NESocketWin32", "NEString", "NESynchTypesIX", "NESyncTypesIX", "NESystemService", "NETrace", "NEUtilities", "NEUtilitiesPosix", "NEUtilitiesWin32", "TEArrayList", "TEEvent", "TEFixedArray", "TEHashMap", "TELinkedList", "TEMap", "TEPair", "TEProperty", "TEResourceListMap", "TEResourceMap", "TERingStack", "TERuntimeResourceMap", "TESortedLinkedList", "TEStack", "TEString", "TETemplateBase"],
+    "removed_source": "the rename commits themselves: git log -M --diff-filter=R --name-status -- 'framework/*', unioned with --diff-filter=D. tools/check_contract.py rule B-05 matches this exact list.",
+    "removed_scope": "framework names only. An application is free to use any coding style and may legitimately define its own NE* name, so match these exactly rather than by prefix.",
+    "verified": "each name in \"removed\" was checked against framework/ and defines nothing there. One survivor is deliberately absent from the list: namespace NEMultitargetRouterSettings in framework/mtrouter/app/MTRouterNames.hpp is current code, not a leftover.",
+    "conventions": {
+      "types": "PascalCase",
+      "methods": "snake_case",
+      "members": "mCamelCase",
+      "namespace": "areg"
+    },
+    "renamed_method_examples": {
+      "getTime()": "to_time()",
+      "isValid()": "is_valid()",
+      "getAppName()": "app_name()"
+    },
+    "detect": "an identifier in \"removed\" above, or a camelCase call on an areg type"
+  },
+
+  "naming": {
+    "description": "How a name in a .siml document becomes a C++ name. <Name> is Overview/@Name.",
+    "rules": [
+      {
+        "applies_to": "method",
+        "transform": "snake_case",
+        "prefixed_by_kind": true,
+        "example": { "document": "hello_service", "request": "request_hello_service", "response": "response_hello_service" }
+      },
+      {
+        "applies_to": "broadcast",
+        "transform": "snake_case",
+        "prefix": "broadcast_",
+        "example": { "document": "reached_maximum", "generated": "broadcast_reached_maximum" }
+      },
+      {
+        "applies_to": "attribute",
+        "transform": "snake_case",
+        "example": { "document": "StringOnChange", "generated": ["set_string_on_change", "string_on_change", "on_string_on_change_update", "notify_on_string_on_change_update", "is_string_on_change_valid", "invalidate_string_on_change"] }
+      },
+      { "applies_to": "data_type", "transform": "verbatim", "note": "structures, enumerations and constants keep the document's spelling" },
+      { "applies_to": "parameter", "transform": "verbatim" }
+    ]
+  },
+
+  "members": [
+    {
+      "declared_as": "Request foo",
+      "provider": { "member": "request_foo", "usage": "override", "required": true, "pure_virtual": true, "returns": "void" },
+      "consumer": { "member": "request_foo", "usage": "call" }
+    },
+    {
+      "declared_as": "Request foo (failure path)",
+      "provider": null,
+      "consumer": { "member": "request_foo_failed", "usage": "override", "required": false, "parameters": ["areg::ResultType"] }
+    },
+    {
+      "declared_as": "Response foo",
+      "provider": { "member": "response_foo", "usage": "call" },
+      "consumer": { "member": "response_foo", "usage": "override", "required": false }
+    },
+    {
+      "declared_as": "Broadcast bar",
+      "provider": { "member": "broadcast_bar", "usage": "call" },
+      "consumer": { "member": "broadcast_bar", "usage": "override", "required": false, "requires_subscription": "notify_on_broadcast_bar(true)" }
+    },
+    {
+      "declared_as": "Attribute Baz",
+      "provider": { "member": ["set_baz", "is_baz_valid", "invalidate_baz"], "usage": "call" },
+      "consumer": {
+        "member": "on_baz_update",
+        "usage": "override",
+        "required": false,
+        "parameters": ["T", "areg::DataState"],
+        "read_accessor": "baz(state)",
+        "requires_subscription": "notify_on_baz_update(true)",
+        "note": "The value is meaningful only when state == areg::DataState::DataIsOK. The first callback after subscribing may report it invalid."
+      }
+    },
+    {
+      "declared_as": "Overview/@Name",
+      "provider": { "member": ["<Name>::ServiceName", "<Name>::InterfaceVersion"], "usage": "read" },
+      "consumer": { "member": ["<Name>::ServiceName", "<Name>::InterfaceVersion"], "usage": "read" }
+    }
+  ],
+
+  "parameter_passing": {
+    "by_value": ["bool", "int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64", "float", "double", "enumerations"],
+    "by_const_reference": ["String", "structures", "containers"]
+  },
+
+  "connection_states": {
+    "type": "areg::ServiceConnectionState",
+    "connected_predicate": "areg::is_service_connected(status)",
+    "values": {
+      "Connected":      { "connected": true,  "terminal": false, "action": "call requests and subscribe" },
+      "Pending":        { "connected": false, "terminal": false, "action": "none" },
+      "Unknown":        { "connected": false, "terminal": false, "action": "none" },
+      "Disconnected":   { "connected": false, "terminal": false, "action": "none, the framework reconnects" },
+      "ConnectionLost": { "connected": false, "terminal": false, "action": "none, the framework reconnects" },
+      "Failed":         { "connected": false, "terminal": false, "action": "none, the framework retries" },
+      "Rejected":       { "connected": false, "terminal": true,  "action": "report and quit" },
+      "Shutdown":       { "connected": false, "terminal": true,  "action": "clean up and quit" }
+    }
+  },
+
+  "service_connected": {
+    "signature": "bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase & proxy)",
+    "required_steps": [
+      "call <Name>ConsumerBase::service_connected(status, proxy) first",
+      "test areg::is_service_connected(status) before calling anything",
+      "return the base class result"
+    ],
+    "note": "Called again on every reconnection. Subscribe here, not in the constructor."
+  },
+
+  "lifecycle": {
+    "header": "areg/appbase/Application.hpp",
+    "order": [
+      "areg::Application::setup()",
+      "areg::Application::load_model(name)",
+      "areg::Application::wait_quit(areg::WAIT_INFINITE)",
+      "areg::Application::unload_model(name)",
+      "areg::Application::release()"
+    ],
+    "terminated_by": "areg::Application::signal_quit()"
+  },
+
+  "categories": {
+    "Private":  { "reaches": "one process",             "needs_router": false },
+    "Public":   { "reaches": "processes on one machine", "needs_router": "only when provider and consumer are in different processes" },
+    "Internet": { "reaches": "other machines",           "needs_router": true }
+  },
+
+  "logging": {
+    "description": "Logging is inert until a configuration file enables it. This is the most common cause of a correct LOG_* call producing no output.",
+    "config_file": {
+      "default_path": "./config/areg.init",
+      "relative_to": "the executable's folder",
+      "example_for_a_project": "build/bin/config/areg.init",
+      "note": "A file placed beside the executable rather than in its config/ subdirectory is never read.",
+      "override": "sixth argument of areg::Application::setup()",
+      "template": "framework/areg/resources/areg.init"
+    },
+    "scope_name": {
+      "declared_by": "DEF_LOG_SCOPE(group, method)",
+      "composed_as": "group.method",
+      "separator": ".",
+      "note": "Dot-joined, not underscore-joined. DEF_LOG_SCOPE(myapp_Worker, process_timer) is the scope myapp_Worker.process_timer."
+    },
+    "scope_key": {
+      "format": "log::<module>::scope::<pattern> = <priority>",
+      "module": "executable name without extension, or * for all applications",
+      "pattern": "scope name, with * as a trailing wildcard",
+      "priorities": ["FATAL", "ERROR", "WARN", "INFO", "DEBUG", "SCOPE", "NOTSET"],
+      "combine_with": "|",
+      "terminator": ";",
+      "terminator_note": "Optional. The parser strips a trailing ';' from any value, so its presence or absence changes nothing. The shipped areg.init writes one on every scope line."
+    },
+    "remote_logging": {
+      "purpose": "collect the logs of several processes in one place",
+      "source_change_required": false,
+      "keys": {
+        "log::*::target": "remote",
+        "log::*::enable::remote": "true",
+        "log::*::remote::service": "logger",
+        "logger::*::service": "logcollector",
+        "logger::*::enable::tcpip": "true",
+        "logger::*::address::tcpip": "localhost",
+        "logger::*::port::tcpip": "8282"
+      },
+      "note": "An application whose collector is absent runs normally and retries quietly, so silence is not evidence of a fault."
+    }
+  },
+
+  "services": {
+    "mtrouter":     { "port": 8181, "needed_when": "provider and consumer are in different processes", "configuration_required": false },
+    "logcollector": { "port": 8282, "needed_when": "you want the logs of several processes in one place", "configuration_required": true, "persistence": "Off by default. Start with --log=db to write a SQLite .sqlog into ./logs. Storing is the collector's job, not the observer's." },
+    "logobserver":  { "port": null, "needed_when": "you want to watch collected logs live and change scope priorities at run time without restarting", "configuration_required": false }
+  },
+
+  "prohibitions": [
+    { "id": "P-01", "rule": "Never edit a generated file.", "detect": "modification under the generate target" },
+    { "id": "P-02", "rule": "Never invent a member name on a generated base.", "detect": "member not derivable by the naming rules above" },
+    { "id": "P-03", "rule": "REGISTER_DEPENDENCY must equal a provider role name exactly.", "detect": "dependency string with no matching BEGIN_REGISTER_COMPONENT role name" },
+    { "id": "P-04", "rule": "Never call a request before the service is connected.", "detect": "request_* call outside service_connected or a later handler" },
+    { "id": "P-05", "rule": "Never treat Disconnected, ConnectionLost or Failed as fatal.", "detect": "signal_quit or teardown on a non-terminal state" },
+    { "id": "P-06", "rule": "Never block in a handler.", "detect": "sleep, join, or an unbounded loop inside request_*, response_*, broadcast_*, on_*_update or process_timer" },
+    { "id": "P-07", "rule": "Never include a header from a private/ folder.", "exception": "areg/base/private/DebugDefs.hpp" },
+    { "id": "P-08", "rule": "Never use exceptions.", "detect": "throw, try or catch" },
+    { "id": "P-09", "rule": "Never register two components with the same role name in one process." }
+  ],
+
+  "base_api_notes": [
+    { "id": "B-01", "rule": "areg::String passed to a printf style log macro must use .as_string()." },
+    { "id": "B-02", "rule": "areg::ArrayList, areg::HashMap and areg::LinkedList expose no begin()/end(); a range-for does not compile. Iterate by index with size() and operator[]." },
+    { "id": "B-03", "rule": "Container element count is size(); emptiness is is_empty()." },
+    { "id": "B-04", "rule": "Container headers are ArrayList.hpp, HashMap.hpp and LinkedList.hpp, with no TE prefix." },
+    { "id": "B-05", "rule": "Every framework method is snake_case and every public type is in namespace areg." }
+  ]
+}

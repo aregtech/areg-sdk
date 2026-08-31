@@ -49,7 +49,7 @@
   * \brief   No copy for class templates.
   *          ClassName   The name of class
   *          Typenames   The name of class
-  *      Example: DECLARE_NOCOPY_TEMPLATE(TEString, <CharType>)
+  *      Example: DECLARE_NOCOPY_TEMPLATE(MyTemplate, <CharType>)
   **/
 #ifndef DECLARE_NOCOPY_TEMPLATE
 #define DECLARE_NOCOPY_TEMPLATE(ClassName, Typenames)                                               \
@@ -61,7 +61,7 @@
    * \brief   No move for class templates.
    *          ClassName   The name of class
    *          Typenames   The name of class
-   *      Example: DECLARE_NOMOVE_TEMPLATE(TEString, <CharType>)
+   *      Example: DECLARE_NOMOVE_TEMPLATE(MyTemplate, <CharType>)
    **/
 #ifndef DECLARE_NOMOVE_TEMPLATE
 #define DECLARE_NOMOVE_TEMPLATE(ClassName, Typenames)                                               \

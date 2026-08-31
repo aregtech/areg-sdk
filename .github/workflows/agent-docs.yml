@@ -52,6 +52,15 @@ jobs:
       - name: Check documented paths
         run: python3 tools/check_agent_docs.py
 
+      # Every recipe is copied before it is read, so a recipe that breaks a rule
+      # teaches the rule broken. The checker must also stay quiet on code that is
+      # correct, and the recipes are the only corpus that proves it.
+      - name: Check recipes against the agent contract
+        run: |
+          for recipe in docs/agent/recipes/*/; do
+            python3 tools/check_contract.py "$recipe" --strict
+          done
+
   recipes:
     name: recipes build and run
     runs-on: ubuntu-latest
@@ -97,3 +106,4 @@ jobs:
                   --mode local --sdk-root "${GITHUB_WORKSPACE}"
           test -f "${RUNNER_TEMP}/citest/AGENTS.md"
           test -f "${RUNNER_TEMP}/citest/src/main.cpp"
+          python3 tools/check_contract.py "${RUNNER_TEMP}/citest" --strict

@@ -3,17 +3,41 @@
 Everything needed for an ordinary task, in one page. Open a task page only when the
 answer is not here.
 
-## The model in seven lines
+This page holds only what you cannot derive. The seven concepts are in `CODEBASE.md`
+section 1 and the prohibitions are in `AGENTS.md` section 6; neither is repeated here.
 
+## The document
+
+A `.siml` is the contract. This one exercises every construct; delete what you do not
+need. `Category` is `Private` (one process), `Public` (several processes, needs
+`mtrouter`) or `Internet` (other machines). Every `ID` must be unique in the file.
+
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="Monitor" Version="1.0.0" Category="Private"/>
+    <AttributeList>
+        <Attribute ID="10" Name="Temperature" DataType="uint32" Notify="OnChange"/>
+    </AttributeList>
+    <MethodList>
+        <Method ID="20" Name="alarm_raised" MethodType="Broadcast">
+            <ParamList>
+                <Parameter ID="21" Name="level" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="30" Name="measure" MethodType="Request" Response="measure"/>
+        <Method ID="31" Name="measure" MethodType="Response">
+            <ParamList>
+                <Parameter ID="32" Name="taken" DataType="bool"/>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>
 ```
-.siml            the contract; generates <Name>ProviderBase and <Name>ConsumerBase
-Component        your class; inherits areg::Component plus one or both bases
-role name        the string naming one component instance; the routing identity
-dependency       a consumer names the provider's role name; must match exactly
-thread           a named dispatcher; all handlers of its components run there, one at a time
-model            the block wiring threads, components, services and dependencies
-mtrouter         a separate process; needed only across processes
-```
+
+A `Request` names its `Response` by name; a request with no reply omits the attribute.
+The generator validates before it writes: a refused document reports a rule number,
+and `explain_rule.py <number>` says what it means.
 
 ## Generated names, from the document
 
@@ -57,8 +81,14 @@ class C final : public areg::Component, protected XConsumerBase {
         return r;                      // called again on every reconnect: resubscribe here
     }
     void response_foo(bool ok) final { areg::Application::signal_quit(); }
+    void request_foo_failed(areg::ResultType) final {
+        if (is_connected()) { request_foo(role_name()); }   // is_connected(): still usable, safe to retry
+    }
 };
 ```
+
+`mRoleName` is an `areg::String`; passing it directly or as `.as_string()` both
+compile, and the recipes and examples use each. Do not "fix" one to match the other.
 
 ## Model and lifecycle
 
@@ -97,6 +127,18 @@ DEF_LOG_SCOPE(myapp_W, process_timer);            // file scope
 void W::process_timer(areg::Timer & t) { LOG_SCOPE(myapp_W, process_timer); LOG_INFO("fired"); }
 ```
 
+Nothing is logged until `build/bin/config/areg.init` says so -- a `config/`
+subdirectory, not beside the executable. The scope above is named `myapp_W.process_timer`:
+
+```ini
+log::*::enable        = true
+log::*::enable::debug = true
+log::myapp::scope::*  = DEBUG | SCOPE ;           # every scope line ends with ';'
+```
+
+Collecting several processes' logs needs `logcollector` on port 8282 plus the remote
+keys: `34-logging.md` section 4. (`mtrouter` is a different service on 8181.)
+
 ## Connection states
 
 `areg::is_service_connected(s)` is true only for `Connected`.
@@ -105,21 +147,22 @@ Terminal, clean up and quit: `Rejected`, `Shutdown`.
 
 ## Never
 
-- Never edit generated code. Change the `.siml` and rebuild.
-- Never invent a name on a generated base. Use the table above.
-- `REGISTER_DEPENDENCY` must equal the provider's role name, character for character.
-- Never call a request before `service_connected` reports connected.
-- Never block in any handler; it stops every component in that thread.
-- Never treat `Disconnected` / `ConnectionLost` / `Failed` as fatal.
-- Never use exceptions. Return `bool`, `std::optional` or a code.
+The full list is `AGENTS.md` section 6. The two that cost the most time:
+`REGISTER_DEPENDENCY` must equal the provider's role name character for character,
+and no handler may block.
 
 ## Tools
 
 ```bash
 python3 <sdk>/tools/setup_project.py --name app --root ~/app --mode local
 python3 <sdk>/tools/gen_skeleton.py --doc src/services/X.siml --out src
+python3 <sdk>/tools/check_contract.py .        # before building
 python3 <sdk>/tools/run_scenarios.py            # exit 0 means it works
 ```
+
+On Windows the interpreter is `python`, not `python3`, and a binary is
+`build\bin\name.exe` rather than `./build/bin/name.elf`. Nothing else differs.
+Needed to build at all: CMake 3.20+, a Java 17+ runtime, a C++17 compiler.
 
 ## When this is not enough
 
@@ -127,4 +170,5 @@ python3 <sdk>/tools/run_scenarios.py            # exit 0 means it works
 `30-provider.md` providers  `31-consumer.md` consumers  `32-model.md` models
 `33-timers.md` timers  `34-logging.md` logging  `21-data-types.md` structs and enums
 `22-state-machine.md` state machines
+`40-base-api.md` String, containers, files, threads  `41-examples.md` which example shows what
 `51-debug.md` failures  `recipes/` complete projects to copy

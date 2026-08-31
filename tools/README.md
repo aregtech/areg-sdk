@@ -23,7 +23,9 @@ verify* the SDK itself.
 | `setup_project.py`    | Creates a ready-to-build Areg project on any platform           | [5](#5-project-setup-scripts-quick-start) |
 | `gen_skeleton.py`     | Writes provider and consumer components from a `.siml`          | [5](#5-project-setup-scripts-quick-start) |
 | `run_scenarios.py`    | Runs an application and checks its output; one verdict          | [5](#5-project-setup-scripts-quick-start) |
+| `check_contract.py`   | Checks sources against `docs/agent/api.json`, before a build    | [5](#5-project-setup-scripts-quick-start) |
 | `check_agent_docs.py` | Verifies paths named in the agent documentation resolve         | [5](#5-project-setup-scripts-quick-start) |
+| `explain_rule.py`     | Explains a generator validation finding, by number or `--search`| [5](#5-project-setup-scripts-quick-start) |
 | `setup-project.sh`    | Superseded by `setup_project.py`; interactive only              | [5](#5-project-setup-scripts-quick-start) |
 | `setup-project.bat`   | Superseded by `setup_project.py`; interactive only              | [5](#5-project-setup-scripts-quick-start) |
 

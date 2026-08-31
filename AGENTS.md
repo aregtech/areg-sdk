@@ -10,32 +10,98 @@ This file is the entry point. Read the one page your task needs, then stop.
 
 ---
 
-## 1. Which are you doing?
+## 1. Scope
 
-| | |
-|---|---|
-| **Building an application WITH areg** | Read `CODEBASE.md`, then the one row of the table below that matches your task. Nothing else. |
-| **Changing areg itself** | Read `CODEBASE.md` and `docs/AREG_AI_CODING_RULES.md`. The style rules bind this repository only. |
+This documentation set has one purpose: **building an application on top of areg**.
+Read `CODEBASE.md`, then the one row of the task table in section 4 that matches your
+task. Nothing else.
 
 An application you build lives **outside** this repository and is free to use any
-coding style. It must follow the API contract in section 4, nothing more.
+coding style. It must follow the API contract in section 6, nothing more.
+
+Changing the areg framework itself is a different job that this documentation set does
+not cover: no page below applies to it. Start from `CONTRIBUTING.md` instead.
 
 The library is implemented in C++17, which is the floor, not a ceiling: its public
 headers and the generated code compile as C++17, C++20 and C++23, so your application
 may pick any of them.
 
+### What you think you know about areg is probably out of date
+
+areg was renamed throughout. If you have seen this framework before, in training data
+or elsewhere, **the names you remember no longer exist** and code written from memory
+will not compile.
+
+| Gone | Now |
+|---|---|
+| `NEService`, `NECommon`, `NELogging`, and every other `NE*` name | plain names in namespace `areg`, e.g. `areg::LogPriority` |
+| `TEArrayList`, `TEHashMap`, and every other `TE*` template | plain names, e.g. `areg::TokenList`; see `docs/agent/40-base-api.md` |
+| camelCase methods: `getTime()`, `isValid()`, `getAppName()` | snake_case: `to_time()`, `is_valid()`, `app_name()` |
+
+The current conventions are: **types** PascalCase, **methods** `snake_case`,
+**members** `mCamelCase`, everything inside **namespace `areg`**. No file in the
+repository is named `NE*` or `TE*`. One legacy *namespace* does survive in current
+code -- `NEMultitargetRouterSettings` in `framework/mtrouter/app/MTRouterNames.hpp` --
+so seeing it there is not a licence to assume the others still exist.
+
+So: never write an areg name from memory. Grep for it, or take it from the page in
+section 4 that covers your task. A name that "looks right" from an older version is
+the single most likely reason your first build fails.
+
 ---
 
-## 2. Golden path
+## 2. What must be installed
 
-Six commands take you from nothing to a running application.
+Check these before the first command. A missing one fails later with a message that
+does not name the cause.
+
+| Needed | Version | Used for |
+|---|---|---|
+| CMake | 3.20 or newer | configuring and building |
+| Java runtime | 17 or newer | runs `tools/codegen.jar`, the code generator |
+| C++ compiler | C++17 or newer | GCC, Clang, MSVC or MinGW |
+| Python | 3 | **optional**, see below |
+
+Tested platforms: Linux and other POSIX, macOS, Windows, Cygwin.
+
+**Check all of this with one command**, which needs no interpreter and so still works
+when Python is the missing piece:
 
 ```bash
+tools/check-env.sh            # POSIX; tools\check-env.bat on Windows
+```
+
+It prints one line per requirement and exits non-zero when something is missing. Run
+it before the golden path rather than diagnosing a confusing failure later.
+
+**Python is not needed to build or run an areg application.** It is needed only for
+the SDK helper scripts: project setup, skeleton generation, scenario runs, rule
+lookup. Without Python, copy a recipe from `docs/agent/recipes/` by hand -- they are
+ordinary project files -- or use the interactive scaffolder `tools/setup-project.sh`
+or `tools/setup-project.bat`, which are shell and batch only.
+
+---
+
+## 3. Golden path
+
+Five commands take you from nothing to a running application.
+
+```bash
+# Linux, macOS, Cygwin
 python3 tools/setup_project.py --name myapp --root ~/myapp --mode local
 cd ~/myapp
 cmake -B build                      # fetches areg, runs the generator
 cmake --build build -j              # build
-./build/bin/myapp.elf               # run (.mac on macOS, .exe on Windows)
+./build/bin/myapp.elf               # .mac on macOS
+```
+
+```bat
+REM Windows
+python tools\setup_project.py --name myapp --root %USERPROFILE%\myapp --mode local
+cd %USERPROFILE%\myapp
+cmake -B build
+cmake --build build -j
+build\bin\myapp.exe
 ```
 
 `--mode` is `local` (one process), `ipc` (two processes) or `pubsub` (attributes and
@@ -43,15 +109,33 @@ broadcasts). The new project gets its own `AGENTS.md`. Add `--sdk-root <path>` t
 build against a local SDK copy instead of fetching one.
 
 A project needs no manual generator call: `addServiceInterface()` in the project's
-`CMakeLists.txt` runs it during configure. Call `tools/codegenerate.sh` only when
-generating outside CMake.
+`CMakeLists.txt` runs it during configure. Call `tools/codegenerate.sh`, or
+`tools/codegenerate.bat` on Windows, only when generating outside CMake.
+
+**The generator validates before it generates.** A document that breaks a rule is
+refused and nothing is written, so such a failure is a defect in the `.siml`, `.fsml`
+or `.dtml` document and never in the build. Ask `tools/explain_rule.py` what the
+finding means; do not read the schema. Pass the rule number when the message carries
+one, and `--search` with words from the message when it does not.
 
 Multi-process applications additionally need `mtrouter` running. Single-process
 applications never do.
 
+### Every command on this path, on Windows
+
+The pages below are written with POSIX commands. These four substitutions are the
+whole difference; nothing else changes.
+
+| Page shows | On Windows |
+|---|---|
+| `python3 <script>.py` | `python <script>.py` |
+| `./build/bin/name.elf` | `build\bin\name.exe` |
+| `tools/codegenerate.sh` | `tools\codegenerate.bat` |
+| `prog --service &` (background) | `start "" prog --service` |
+
 ---
 
-## 3. Task routing
+## 4. Task routing
 
 Find your task. Open that one file. Do not search the repository.
 
@@ -71,20 +155,32 @@ Find your task. Open that one file. Do not search the repository.
 | Understand the seven core concepts | `CODEBASE.md` section 1 |
 | Add custom data types (struct, enum, container, `.dtml`) | `docs/agent/21-data-types.md` |
 | Add a state machine | `docs/agent/22-state-machine.md` |
+| **Use `areg::String`, containers, files, threads in your code** | `docs/agent/40-base-api.md` |
 | Integrate areg into an existing CMake project | `docs/wiki/02b-cmake-integrate.md` |
-| Run the message router for multi-process apps | `docs/wiki/03a-mtrouter.md` |
+| Run the message router for multi-process apps | `docs/agent/51-debug.md` section "Running the pieces" |
 | Work out why it does not work | `docs/agent/51-debug.md` |
-| Turn logging on and read the logs | `docs/wiki/04a-logging-config.md` |
-| See a complete working application | `examples/03_helloservice/` |
+| Turn logging on, and collect logs from several processes with `logcollector` | `docs/agent/34-logging.md` |
+| Read or query a `.sqlog` log database | `docs/agent/35-sqlog.md` |
+| Find the example that shows a given facility | `docs/agent/41-examples.md` |
+| See a complete working application | `examples/03_helloservice/` -- it sleeps inside a response handler to keep its console output readable. That is a demo trick the contract forbids; do not copy it |
+
+Two rows above point at short agent pages that replaced long reference guides.
+`docs/wiki/03a-mtrouter.md` and `docs/wiki/04a-logging-config.md` are still correct
+and far more detailed; read them only when the agent page does not answer the
+question.
+
+`docs/wiki/` is written for people and is large. Open a page in it only when a row
+above named it, never to look around.
 
 Every row above points at a file that exists. If a path does not resolve, that is a
 defect: report it instead of searching.
 
 ---
 
-## 3a. Tools
+## 5. Tools
 
-Run these instead of writing what they produce.
+Run these instead of writing what they produce. All are Python 3 and run unchanged on
+every platform; on Windows the command is `python`, not `python3`.
 
 | Tool | Does |
 |---|---|
@@ -93,15 +189,29 @@ Run these instead of writing what they produce.
 | `tools/fsml_layout.py` | Writes the `<Layout>` of a `.fsml` so the machine opens laid out in the editor |
 | `tools/run_scenarios.py` | Runs the application and checks its output; exit 0 means it works |
 | `tools/check_agent_docs.py` | Verifies every path named in the agent documentation exists |
-| `tools/explain_rule.py` | Explains a validation rule number the generator reported, e.g. `explain_rule.py 27` |
+| `tools/check_contract.py` | Checks your sources against `docs/agent/api.json`: the mistakes in section 6 that compile cleanly and fail only at run time |
+| `tools/explain_rule.py` | Explains a validation finding: `explain_rule.py 27`, or `explain_rule.py --search "words from the message"` |
 | `tools/run_evals.py` | Grades a finished application against a task from the evaluation bank |
 | `tools/check_recipes.py` | Generates, builds and runs every recipe; catches a framework change that rots one |
 
 Each has `--help`. Read that, not a page about it.
 
+Two tools are not Python and need no interpreter:
+
+| Tool | Platform | Does |
+|---|---|---|
+| `tools/check-env.sh` / `tools/check-env.bat` | POSIX / Windows | Reports whether CMake, Java and a C++ compiler are present. Run it first |
+| `tools/codegenerate.sh` / `tools/codegenerate.bat` | POSIX / Windows | Runs the generator outside CMake; copy it and set the two paths at the top |
+| `tools/setup-project.sh` / `tools/setup-project.bat` | POSIX / Windows | The older scaffolder. It prompts, so never run it unattended |
+
+`docs/agent/api.json` states the same contract in machine-readable form: the naming
+transforms, which generated members are overridden and which are called, the
+connection states and which are terminal, and the prohibitions below with detection
+hints. Use it to check code mechanically; the prose pages stay authoritative.
+
 ---
 
-## 4. Never
+## 6. Never
 
 Each line closes off a whole class of wrong code. They are not style preferences.
 
@@ -129,7 +239,7 @@ Each line closes off a whole class of wrong code. They are not style preferences
 
 ---
 
-## 5. Definition of done
+## 7. Definition of done
 
 A task is finished when the application builds and its behaviour is observed, not
 when the code looks correct.
@@ -139,13 +249,17 @@ cmake --build build -j        # must succeed
 <run the application>         # must show the expected output and exit 0
 ```
 
+Run `tools/check_contract.py` on the sources before the build. It finds what a build
+cannot: a dependency string that matches no role, a request called before the service
+is connected, a blocking handler, a member name no `.siml` document declares.
+
 For a multi-process application, start `mtrouter` first, then the provider process,
 then the consumer process. A consumer that starts first is not an error: it waits and
 connects when the provider appears.
 
 ---
 
-## 6. Repository layout in one line each
+## 8. Repository layout in one line each
 
 ```
 framework/    the areg library and its services (mtrouter, logcollector, logobserver)

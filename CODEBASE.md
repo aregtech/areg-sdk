@@ -113,16 +113,17 @@ examples/             32 complete applications, numbered by increasing complexit
                       still runs in one process.
 docs/
   agent/              task pages written for agents; start here
-  wiki/               reference guides written for humans
-  AREG_CODING_STYLE.md        style of this repository, with rationale
-  AREG_AI_CODING_RULES.md     the same rules in compact normative form
+  wiki/               reference guides written for people. Large, and not on the
+                      agent path: open a page only when AGENTS.md named it
 tools/
-  codegen.jar         the code generator
+  codegen.jar         the code generator, which also validates the document
   schema/*.xsd        grammar of the .siml, .dtml and .fsml documents
   schema/rules.xml    numbered validation rules the generator reports
   setup_project.py    creates a ready-to-build project (use this one)
-  setup-project.sh    the older interactive scaffolder; it prompts, so never
-                      run it unattended
+  setup-project.sh    the older interactive scaffolder, shell only, no Python;
+  setup-project.bat   same for Windows. Both prompt, so never run them unattended
+  codegenerate.sh     runs the generator outside CMake, no Python;
+  codegenerate.bat    same for Windows
 conf/
   cmake/              build configuration, compiler settings, helper functions
   exports/            installation templates, service unit files, package config
@@ -164,6 +165,5 @@ Full list: `docs/wiki/02d-cmake-config.md`.
 
 ## 5. Changing areg itself
 
-Not needed to build an application. The rules, the style and the platform layout are
-in `docs/AREG_AI_CODING_RULES.md` and `docs/AREG_CODING_STYLE.md`; platform specific
-sources live in `framework/<module>/private/{posix,win32}/`.
+Out of scope for this documentation set, and not needed to build an application.
+Nothing on the agent path describes it; start from `CONTRIBUTING.md`.

@@ -24,7 +24,9 @@ Areg SDK follows modern C++ conventions optimized for cross-platform development
 6. NO `IN`/`OUT`/`INOUT` empty macros
 7. Avoid global variables. Exceptions: internal-linkage variables in anonymous namespaces and log scopes declared as `static`.
 
-**Companion document:** `./AREG_AI_CODING_RULES.md` (compact rule reference for AI agents)
+**Companion document:** `./AREG_AI_CODING_RULES.md` (the same rules as compact,
+numbered one-liners). Both bind code inside this repository only. An application
+built *with* Areg follows `../AGENTS.md` and neither of these files.
 
 ---
 

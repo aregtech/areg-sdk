@@ -11,6 +11,11 @@ cmake --build build -j
 ./build/bin/myapp.elf
 ```
 
+On Windows the same five commands are `python` instead of `python3` and
+`build\bin\myapp.exe` instead of the last line. Needed before any of it: CMake 3.20+,
+a Java 17+ runtime and a C++17 compiler. Without Python, copy a recipe from
+`recipes/` by hand instead; they are ordinary project files.
+
 It copies one of the recipes in `recipes/`, renames it, and writes the new
 project's own AGENTS.md and .gitignore.
 
@@ -136,6 +141,14 @@ are placed there too, so a multi process project needs nothing installed.
 **Several processes:** start `mtrouter` first, then the provider, then the consumer.
 It is built into your own `build/bin/`. Consumers may start before providers; they
 wait and connect.
+
+```bash
+./build/bin/mtrouter.elf --service &      # POSIX: background it
+```
+
+```bat
+start "" build\bin\mtrouter.exe --service
+```
 
 ---
 

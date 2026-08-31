@@ -5,6 +5,37 @@ by far the most common.
 
 ---
 
+## Look up the message you actually got
+
+Match the text of the error, not your guess at its meaning. Each row is a substring:
+search for it in what the tool printed.
+
+| The message contains | Cause | Go to |
+|---|---|---|
+| `is not recognized`, or `command not found`, for `java`, `cmake` or a compiler | a prerequisite is missing | `../../AGENTS.md` section 2 |
+| `CMake 3.20 or higher is required` | CMake is too old | `../../AGENTS.md` section 2 |
+| `Could not find a package configuration file provided by "areg"` | the project does not find the SDK | `10-new-project.md`, or `../wiki/02b-cmake-integrate.md` |
+| `Unknown CMake command "addServiceInterface"` | the areg CMake package was never included | `../wiki/02b-cmake-integrate.md` |
+| `Nothing is generated`, or `Nothing was generated from the document`, before the compiler ran | the generator refused the document | "The generator refused the document" below |
+| `cannot declare variable to be of abstract type` | a request is not implemented | "The provider does not compile" below |
+| `no member named 'request_`, `no member named 'broadcast_`, `no member named 'set_` | the member name is invented, not derived | `20-service-interface.md` section 3 |
+| `marked 'override' but does not override`, or `marked 'final'` on a member | the signature or the name does not match the generated one | `20-service-interface.md` section 3 |
+| `no member named 'begin'`, or `'begin' was not declared`, on an areg container | areg containers have no iterators | `40-base-api.md` |
+| `undefined reference to \`areg::` | headers and library are different builds | "The build links against the wrong framework" below |
+| `No such file or directory` for a `...Base.hpp` | the generator did not run, or the path is wrong | "The generated code does not match the document" below |
+| nothing at all: the consumer prints nothing and does not exit | it never connected | "The consumer never connects" below |
+| `Failed to bind`, or a second router that routes nothing | port 8181 is already held | "Running the pieces" below |
+
+Before building, `tools/check_contract.py` finds the mistakes that compile cleanly and
+fail only at run time -- a role name that does not match, a request called too early,
+a handler that blocks:
+
+```bash
+python3 <areg-sdk>/tools/check_contract.py .
+```
+
+---
+
 ## Running the pieces
 
 Nothing here needs installing. The framework services are built into the same
@@ -16,6 +47,19 @@ Nothing here needs installing. The framework services are built into the same
 | the application | always | `./build/bin/<name>.elf` | its own exit, or Ctrl-C |
 | `logcollector` | you want the logs of several processes in one place | `./build/bin/logcollector.elf &` | Ctrl-C |
 | `logobserver` | you want to watch those logs live | `./build/bin/logobserver.elf` | Ctrl-C |
+
+`mtrouter` needs no configuration to route. **`logcollector` does:** an application
+sends nothing to it until `config/areg.init` enables the remote target and names port
+8282. The keys are in `34-logging.md` section 4. Starting the collector alone changes
+nothing.
+
+To keep the logs rather than watch them scroll past, start the collector with
+`--log=db`; it then writes a SQLite `.sqlog` file that you can query after the run.
+The schema and ready-made queries are in `35-sqlog.md`.
+
+On Windows the same four are `build\bin\<name>.exe`, and a process is backgrounded
+with `start "" build\bin\mtrouter.exe --service` rather than a trailing `&`. They can
+also be installed as Windows services with `-i`, and removed with `-u`.
 
 **Check the port, do not assume the router started.** Only one process can hold
 8181. If a router is already running -- from an earlier scenario, or left behind by a
@@ -71,13 +115,18 @@ Take these in order. Each one costs less than the one after it.
    first section of this page. A provider that never prints was never reached.
 2. **Ask the generator.** If the build failed before the compiler ran, the generator
    refused the document and reported a number: `explain_rule.py <number>`.
-3. **Turn on a scope.** Logging is off until `areg.init` says otherwise; see
-   `34-logging.md`. Switch on the scope of the handler that should have run. If it
-   never entered, the message never arrived; if it entered, the logic is wrong.
-4. **Check the wiring, not the code.** Most silent failures are a role name that does
+3. **Check the contract.** `check_contract.py` reads the same rules the pages state
+   and reports the ones a build cannot see: a dependency string that matches no role,
+   a request called in a constructor, a blocking handler, an invented member name.
+4. **Turn on a scope.** Logging is off until a configuration file says otherwise, and
+   that file is `build/bin/config/areg.init` -- inside a `config/` subdirectory, not
+   beside the executable. See `34-logging.md`. Switch on the scope of the handler that
+   should have run. If it never entered, the message never arrived; if it entered, the
+   logic is wrong.
+5. **Check the wiring, not the code.** Most silent failures are a role name that does
    not match, a `Category` that does not reach, or a missing `mtrouter` -- none of
    which the compiler can see.
-5. **Compare with something that works.** Copy the nearest recipe from `recipes/`,
+6. **Compare with something that works.** Copy the nearest recipe from `recipes/`,
    confirm it runs, then move your document into it one piece at a time.
 
 ## A working example is the cheapest reference
@@ -101,7 +150,11 @@ sound before blaming your own code.
 
 ## The generator refused the document
 
-It reports a numbered rule. Ask what the number means instead of reading the schema:
+The generator validates a document before it generates anything, so this is a defect
+in the `.siml`, `.fsml` or `.dtml` file and never in the build. Every finding belongs
+to a rule in a registry. Ask what the rule says instead of reading the schema.
+
+When the message carries a number, pass it:
 
 ```bash
 python3 <areg-sdk>/tools/explain_rule.py 27
@@ -110,6 +163,20 @@ python3 <areg-sdk>/tools/explain_rule.py 27
 The number carries the severity: bare is an error, plus 100 a warning, plus 200
 information, so 4, 104 and 204 are different rules. `--list --document fsml` shows
 every rule for one document type.
+
+When the message carries no number, which is the common case today, give the tool the
+words of the message instead:
+
+```bash
+python3 <areg-sdk>/tools/explain_rule.py --search "a data type that resolves to nothing"
+```
+
+It answers with the rule, its number and its band. The registry and the generator do
+not always word a thing the same way, so a phrase that matches nothing exactly is
+scored word by word and the closest rules are offered. Quote the distinctive part of
+the message, not the file name or the identifiers.
+
+Without Python, the same registry is `tools/schema/rules.xml`, keyed by the number.
 
 ---
 
@@ -217,7 +284,9 @@ to the generator has the same effect.
 
 ## Getting more out of the application
 
-Logging is configured in `areg.init` next to the executable. Turn scopes on there and
-read the output. Full description: `../wiki/04a-logging-config.md`. Collected logs
-are a plain SQLite database, so any SQLite client can query them:
+Logging is configured in `config/areg.init`, in a `config/` subdirectory of the
+executable's folder -- for a project, `build/bin/config/areg.init`. Turn scopes on
+there and read the output; the key syntax is in `34-logging.md` section 3. Full
+description: `../wiki/04a-logging-config.md`. Collected logs are a plain SQLite
+database, so any SQLite client can query them:
 `../wiki/04e-log-database-format.md`.

@@ -5,8 +5,11 @@ single sentence, and where it applies. No rationale: the reasoning, the discussi
 and the longer examples are in `docs/AREG_CODING_STYLE.md`, which cites these
 identities and never restates a rule.
 
-An application built **with** areg is not bound by this file. It follows the API
-contract in `docs/agent/20-service-interface.md` and may use any style it likes.
+**This file is not on the agent path.** An agent building an application on top of
+areg is not bound by any rule here and should never open it: the entry point for that
+work is `AGENTS.md`, and the only contract it has to honour is the API contract in
+`docs/agent/20-service-interface.md`. This page is for work on the framework sources
+themselves.
 
 The language level of this repository is C++17. It is a floor for applications, not a
 limit: the public headers compile as C++17, C++20 and C++23.
@@ -157,8 +160,7 @@ const auto now{ std::chrono::steady_clock::now() };
 
 ## Still to merge
 
-These rules are the ones stated across `CLAUDE.md` and `docs/AREG_CODING_STYLE.md`.
 The C++17 pattern catalogue (`if constexpr`, structured bindings, `std::array`,
 `std::atomic` flags, comparison operator sets, the inline method pattern) is not yet
-folded in and today lives only in the modernization skill. No automated checker
-enforces these identities yet; every rule above is checked by review.
+folded in. No automated checker enforces these identities yet; every rule above is
+checked by review.
