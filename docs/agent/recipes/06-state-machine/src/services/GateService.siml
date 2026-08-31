@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="GateService" Version="1.0.0" Category="Private">
+        <Description>Gate control service. Its logic is a state machine.</Description>
+    </Overview>
+    <MethodList>
+        <Method ID="2" Name="open_gate" MethodType="Request">
+            <Description>Ask the gate to open. The gate closes itself later.</Description>
+        </Method>
+        <Method ID="3" Name="gate_changed" MethodType="Broadcast">
+            <Description>Sent every time the gate reaches a new position.</Description>
+            <ParamList>
+                <Parameter ID="4" Name="isOpen" DataType="bool">
+                    <Description>True when the gate is open.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>

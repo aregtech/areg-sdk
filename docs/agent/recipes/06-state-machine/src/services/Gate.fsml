@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<StateMachine FormatVersion="1.1.0">
+    <Overview ID="1" Name="Gate" Version="1.0.0" Threading="Local">
+        <Description>A gate that opens on request and closes itself after a hold time.</Description>
+    </Overview>
+    <TimerList>
+        <Timer ID="2" Name="Hold" Timeout="300" Repeat="1">
+            <Description>How long the gate stays open.</Description>
+        </Timer>
+    </TimerList>
+    <MethodList>
+        <Method ID="3" Name="open" MethodType="Trigger">
+            <Description>Asks the gate to open.</Description>
+        </Method>
+        <Method ID="4" Name="on_open" MethodType="Action">
+            <Description>Runs when the gate has opened.</Description>
+        </Method>
+        <Method ID="5" Name="on_close" MethodType="Action">
+            <Description>Runs when the gate has closed.</Description>
+        </Method>
+    </MethodList>
+    <StateList>
+        <State ID="6" Name="Start" Kind="Start">
+            <TransitionList>
+                <Transition ID="7" Kind="Initial" To="8"/>
+            </TransitionList>
+        </State>
+        <State ID="8" Name="GATE_CLOSED" Kind="Normal">
+            <Description>The gate is shut and waits to be opened.</Description>
+            <TransitionList>
+                <Transition ID="9" Kind="External" StimulusKind="Trigger" Stimulus="open" To="10"/>
+            </TransitionList>
+        </State>
+        <State ID="10" Name="GATE_OPEN" Kind="Normal">
+            <Description>The gate is open and the hold time is running.</Description>
+            <EntryList>
+                <TimerStart ID="11" Timer="Hold"/>
+                <ActionCall ID="12" Action="on_open"/>
+            </EntryList>
+            <TransitionList>
+                <Transition ID="13" Kind="External" StimulusKind="Timer" Stimulus="Hold" To="14"/>
+            </TransitionList>
+        </State>
+        <State ID="14" Name="GATE_DONE" Kind="Final">
+            <Description>The gate has closed. The machine stops here.</Description>
+            <EntryList>
+                <ActionCall ID="15" Action="on_close"/>
+            </EntryList>
+        </State>
+    </StateList>
+    <Layout GridSize="16" GridVisible="true">
+        <ViewList>
+            <View Owner="1" Zoom="100" X="-1" Y="321"/>
+        </ViewList>
+        <NodeList>
+            <Node Owner="6" X="0" Y="0" Width="64" Height="32"/>
+            <Node Owner="8" X="0" Y="96" Width="224" Height="96"/>
+            <Node Owner="10" X="0" Y="256" Width="224" Height="96"/>
+            <Node Owner="14" X="48" Y="416" Width="128" Height="32"/>
+        </NodeList>
+        <EdgeList>
+            <Edge Owner="7">
+                <Point X="32" Y="32"/>
+                <Point X="112" Y="96"/>
+            </Edge>
+            <Edge Owner="9">
+                <Point X="112" Y="192"/>
+                <Point X="112" Y="256"/>
+            </Edge>
+            <Edge Owner="13">
+                <Point X="112" Y="352"/>
+                <Point X="112" Y="416"/>
+            </Edge>
+        </EdgeList>
+    </Layout>
+</StateMachine>

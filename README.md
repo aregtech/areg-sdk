@@ -22,6 +22,11 @@
 
 ---
 
+> **Building an application with AREG using an AI agent?** Start at
+> [`AGENTS.md`](./AGENTS.md). The task pages for agents are in
+> [`docs/agent/`](./docs/agent/), and complete copyable projects in
+> [`docs/agent/recipes/`](./docs/agent/recipes/).
+
 ## Project Status[![](./docs/img/pin.svg)](#project-status)
 
 <table class="no-border">

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="MeterService" Version="1.0.0" Category="Private">
+        <Description>Publishes the value of a meter.</Description>
+    </Overview>
+    <AttributeList>
+        <Attribute ID="2" Name="Reading" DataType="uint32" Notify="OnChange">
+            <Description>The last value the meter measured.</Description>
+        </Attribute>
+    </AttributeList>
+</ServiceInterface>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="ReportService" Version="1.0.0" Category="Private">
+        <Description>Reports a meter value that has been checked.</Description>
+    </Overview>
+    <MethodList>
+        <Method ID="2" Name="report" MethodType="Broadcast">
+            <Description>Sent when a new reading has been accepted.</Description>
+            <ParamList>
+                <Parameter ID="3" Name="value" DataType="uint32">
+                    <Description>The accepted reading.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>
