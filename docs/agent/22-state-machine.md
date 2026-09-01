@@ -30,9 +30,13 @@ Names are kept exactly as written in the document; nothing is re-cased.
 | `Method` `MethodType="Trigger"` named `open` | `bool GateFSM::open()` -- you **call** it |
 | `Method` `MethodType="Action"` named `on_open` | `virtual void action_on_open() = 0` -- you **implement** it |
 | an action `Parameter` `DataType="bool"` | the same parameter on `action_*` |
-| `Event` named `Ready` | `Gate::FsmEventValue::Ready`, sent with `send_event()` |
+| `Event` named `Ready` | `Gate::FsmEventValue::EVENT_Ready`, sent with `send_event()` |
 | `Timer` named `Hold` | `Gate::FsmTimer::Hold`, started and stopped by the document |
 | `State` named `GATE_OPEN` | an internal enumerator; the application never names a state |
+
+The `EVENT_` prefix is added to event enumerators and to nothing else: a timer of the
+same name keeps it. The two lists are not symmetrical, and assuming they are is the
+usual reason a machine does not compile.
 
 A trigger returns `bool`: `true` when a transition was taken, `false` when the current
 state has no transition for it. A trigger the current state ignores is not an error.
@@ -44,6 +48,8 @@ Do not type this by hand. The skeleton, with every action override already in pl
 ```bash
 python3 <areg-sdk>/tools/gen_skeleton.py --doc src/services/Gate.fsml --out src
 ```
+
+On Windows the command is `python`, not `python3`; nothing else changes.
 
 It writes `<Name>Host.hpp/.cpp`. Merge it into the component that provides the
 service, or use it as it stands. What it produces:
@@ -143,7 +149,10 @@ Numbering them in reading order is enough.
 </StateMachine>
 ```
 
-`Transition/@To` names the target state by its `ID`, not by its name.
+`Transition/@To` names the target state by its `ID`, not by its name, and that state
+must be a **sibling** at the same level. A transition cannot reach into or out of a
+composite: to leave a subtree, put the transition on the composite itself, whose
+transitions fire from anywhere inside it.
 
 ### The pieces
 
@@ -152,7 +161,7 @@ Numbering them in reading order is enough.
 | `Kind="Start"` | not a state, only a marker saying where a level begins; it owns exactly one `Kind="Initial"` transition and nothing may target it |
 | `Kind="Normal"` | a state the machine occupies |
 | `Kind="Final"` | the machine stops here and reports through the final observer |
-| `EntryList` / `ExitList` | `ActionCall`, `TimerStart`, `TimerStop`, `EventSend`, run on entering or leaving |
+| `EntryList` / `ExitList` | `ActionCall`, `TimerStart`, `TimerStop`, `EventSend`, `AttributeSet`, run on entering or leaving |
 | `Kind="External"` | leaves the state, runs its exit, then the target's entry; needs `To` |
 | `Kind="Internal"` | runs its operations in place; the state is not left or re-entered; no `To` |
 | `StimulusKind` | `Trigger`, `Timer` or `Event`; `Stimulus` is the name in that list |
@@ -160,6 +169,54 @@ Numbering them in reading order is enough.
 
 A state may hold its own `StateList`. Its transitions then fire from anywhere inside
 that subtree, which is how one `power_off` trigger reaches every nested state at once.
+
+### Guarding a transition
+
+A transition can be refused unless something holds. The machine needs data of its own
+to test, declared before `MethodList`:
+
+```xml
+<AttributeList>
+    <Attribute ID="16" Name="Opened" DataType="bool" Value="false"/>
+</AttributeList>
+```
+
+That generates `bool opened() const` and `set_opened(bool)` on the machine, and the
+document can assign it wherever an `ActionCall` is allowed:
+
+```xml
+<AttributeSet ID="17" Attribute="Opened" Source="Value" Value="true"/>
+```
+
+The guard is an expression tree, not text. It hangs on the transition, after any
+`Description` and before any `OperationList`:
+
+```xml
+<Transition ID="9" Kind="External" StimulusKind="Trigger" Stimulus="open" To="10">
+    <Guard state="ok">
+        <Expr>
+            <Cmp op="eq"><Attr id="16"/><Lit>false</Lit></Cmp>
+        </Expr>
+    </Guard>
+</Transition>
+```
+
+which generates `const bool isEligible = (mAttrOpened == false);` and takes the
+transition only when it holds. A refused transition is not an error: the trigger
+returns `false`, exactly as it does for a state with no transition at all.
+
+| Node | Is |
+|---|---|
+| `Cmp op="eq\|ne\|lt\|le\|gt\|ge"` | exactly two operands |
+| `And`, `Or` | two or more operands |
+| `Not` | one operand |
+| `Attr`, `Const`, `Param` | a reference, bound by the target's `ID`, never by its name |
+| `Lit` | verbatim text, emitted as written |
+
+`state="ok"` is required, and `Expr` with it. `state="draft"` means the guard is still
+unfinished text, and the generator refuses the document rather than guess what it
+meant. The older flat `<ConditionList>` form is read as a draft, so it is refused for
+the same reason: never write one.
 
 ## Knowing when it finished
 
@@ -188,7 +245,9 @@ generator from the extension. A machine that imports others needs only one call.
 - Never keep phase state in the component beside the machine. Two sources of truth
   disagree the first time a transition is added.
 - Never raise a stimulus from inside an action. The machine is already dispatching:
-  it logs an error and asserts. Make it a transition in the document instead.
+  it logs an error and asserts. The single exception is `send_event()`, which queues
+  the event instead of dispatching it, and is the one call an action may make back
+  into the machine.
 - Never raise a stimulus before `init_fsm()`. That asserts as well.
 - Never edit `*FSM.*`, `*ActionHandler.*` or `*Defs.*`. Change the `.fsml`.
 - Never target a `Kind="Start"` state.

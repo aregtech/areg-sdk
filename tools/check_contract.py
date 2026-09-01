@@ -78,11 +78,105 @@ LEGACY_NAMES = frozenset((
     'TESortedLinkedList', 'TEStack', 'TEString', 'TETemplateBase',
 ))
 LEGACY_NAME_RE = re.compile(r'\b(?:NE|TE)[A-Z][A-Za-z0-9]*\b')
+# The interfaces that carried an IE prefix before areg was renamed, recovered the
+# same way:
+#   git log -M --diff-filter=R --name-status -- 'framework/*'
+# Two IE names survive as private implementation detail and are deliberately not
+# in this set: IEServiceEventConsumer and IETimerManagingEventConsumer. They live
+# under component/private/, so no application may include them anyway -- that is
+# P-07's job, and reporting them here as well would be telling an agent to rename
+# something that still exists.
+LEGACY_IE_NAMES = frozenset((
+    'IEByteBuffer', 'IEConfigurationListener', 'IECursorPosition',
+    'IEDatabaseEngine', 'IEEventConsumer', 'IEEventRouter', 'IEIOStream',
+    'IELogDatabaseEngine', 'IEProxyListener', 'IEQueueListener',
+    'IERemoteEventConsumer', 'IERemoteMessageHandler', 'IERemoteService',
+    'IERemoteServiceConnection', 'IERemoteServiceConsumer',
+    'IERemoteServiceHandler', 'IERemoteServiceMessageHandler',
+    'IEServerConnectionHandler', 'IEServiceConnectionConsumer',
+    'IEServiceConnectionHandler', 'IEServiceConnectionProvider',
+    'IEServiceRegisterConsumer', 'IEServiceRegisterProvider', 'IESynchObject',
+    'IESynchObjectBaseIX', 'IESyncObject', 'IESyncObjectBaseIX',
+    'IEThreadConsumer', 'IETimerConsumer', 'IEWaitableBaseIX',
+    'IEWorkerThreadConsumer',
+))
+IE_NAME_RE = re.compile(r'\bIE[A-Z][A-Za-z0-9]*\b')
+
+# The camelCase accessors that became snake_case, recovered from the commit that
+# performed the rename:
+#   git show 94d3ab57 -- 'framework/areg/base/*.hpp' 'framework/areg/component/*.hpp'
+# Only names attested by that diff, or stated in AGENTS.md, are listed. A name is
+# reported only when the receiver is demonstrably an areg object (see B-07 below),
+# because an application is free to call getName() on a type of its own and a
+# false positive on the user's own style would make this tool untrustworthy.
+LEGACY_ACCESSORS = {
+    'getAddress': 'address', 'getAppName': 'app_name', 'getAt': 'at',
+    'getBuffer': 'buffer', 'getCapacity': 'capacity', 'getChannel': 'channel',
+    'getChecksum': 'checksum', 'getConsumer': 'consumer', 'getCookie': 'cookie',
+    'getCount': 'count', 'getData': 'data', 'getDay': 'day',
+    'getElements': 'elements', 'getExtension': 'extension',
+    'getHandle': 'handle', 'getHours': 'hours', 'getId': 'id',
+    'getInstance': 'instance', 'getKey': 'key', 'getLength': 'length',
+    'getList': 'list', 'getMagic': 'magic', 'getMajor': 'major',
+    'getMinor': 'minor', 'getMode': 'mode', 'getMonth': 'month',
+    'getName': 'name', 'getNext': 'next', 'getNow': 'now',
+    'getPatch': 'patch', 'getPath': 'path', 'getPosition': 'position',
+    'getPrev': 'prev', 'getPrintable': 'printable', 'getPriority': 'priority',
+    'getProxy': 'proxy', 'getResource': 'resource', 'getResult': 'result',
+    'getSequence': 'sequence', 'getService': 'service', 'getSize': 'size',
+    'getSource': 'source', 'getSpace': 'space', 'getStart': 'start',
+    'getStop': 'stop', 'getTarget': 'target', 'getThread': 'thread',
+    'getTime': 'to_time', 'getTimeout': 'timeout', 'getTimer': 'timer',
+    'getType': 'type', 'getValue': 'value', 'getValues': 'values',
+    'getWord': 'word', 'getYear': 'year', 'isValid': 'is_valid',
+}
+LEGACY_CALL_RE = re.compile(r'(\w+)\s*(?:\.|->)\s*([A-Za-z]\w*)\s*\(')
+AREG_STATIC_CALL_RE = re.compile(r'\bareg::\w+::([A-Za-z]\w*)\s*\(')
+# A variable whose declared type is an areg one. Reused by B-01, B-03 and B-07 so
+# that all three fire only on framework objects.
+AREG_DECL_RE = re.compile(
+    r'\bareg::(\w+)\s*(?:<[^;{}]*>)?\s*(?:const\s*)?[&*]?\s*(\w+)\s*(?=[;={,)])')
+
 RANGE_FOR_RE = re.compile(r'\bfor\s*\(\s*[^;()]*\b(\w+)\s*\)\s*$')
 AREG_CONTAINER_DECL_RE = re.compile(
     r'\bareg::(ArrayList|HashMap|LinkedList)\s*<[^;]*>\s*(?:&\s*)?(\w+)')
 
+# P-01. The generator stamps every file it writes. A stamped file inside the
+# application's own sources means the generate target has been copied out of, and
+# the copy is what gets edited.
+GENERATED_BANNER = 'Created by Areg SDK code generator tool'
+
+# B-01. The printf style log macros take a C string; areg::String is a class and
+# passing it for %s is undefined behaviour that prints rubbish rather than failing.
+LOG_MACRO_RE = re.compile(r'\b(?:LOG|TRACE)_(?:DBG|INFO|WARN|ERR|FATAL|SCOPE)\s*\(')
+
+# B-03. Emptiness has its own predicate; comparing the count is slower to read and
+# is the spelling an agent reaches for out of habit.
+SIZE_EMPTY_RE = re.compile(r'(\w+)\s*(?:\.|->)\s*size\s*\(\s*\)\s*(==|!=|>)\s*0\b')
+
+# P-10. A watchdog timeout is registered per thread; it does nothing unless the
+# watchdog manager is running, and the manager is off by default.
+WATCHDOG_MACRO_RE = re.compile(
+    r'\b(BEGIN_REGISTER_THREAD_EX2?|REGISTER_WORKER_THREAD_EX2?)\s*\(')
+WATCHDOG_TIMEOUT_ARG = {'BEGIN_REGISTER_THREAD_EX': 1,
+                        'BEGIN_REGISTER_THREAD_EX2': 1,
+                        'REGISTER_WORKER_THREAD_EX': 2,
+                        'REGISTER_WORKER_THREAD_EX2': 2}
+WATCHDOG_ON_RE = re.compile(r'\bstart_watchdog_manager\s*\(')
+SETUP_RE = re.compile(r'\bApplication\s*::\s*setup\s*\(')
+
+# P-11. The consumer name in the model is matched against the string the component
+# answers to in worker_thread_consumer(). A mismatch is silent: the worker thread
+# starts and never runs a consumer.
+WORKER_MACRO_RE = re.compile(r'\b(REGISTER_WORKER_THREAD(?:_EX2?)?)\s*\(')
+
+# B8. Any finding can be silenced on the offending line or the line above. A
+# checker that cannot be quieted on a correct edge case gets switched off wholesale.
+IGNORE_RE = re.compile(r'//\s*areg-check\s*:\s*ignore(?:\s+([A-Z]-\d\d(?:\s*,\s*[A-Z]-\d\d)*))?')
+
+
 CHECKS = [
+    ('P-01', 'advice',  'a generated file copied into the application sources'),
     ('P-02', 'error',   'a member that no service document declares'),
     ('P-03', 'error',   'REGISTER_DEPENDENCY naming no registered role'),
     ('P-04', 'error',   'a request or a subscription in a component constructor'),
@@ -91,9 +185,15 @@ CHECKS = [
     ('P-07', 'error',   'including a header from a private/ folder'),
     ('P-08', 'error',   'throw, try or catch'),
     ('P-09', 'error',   'two components with one role name in one model'),
+    ('P-10', 'advice',  'a watchdog timeout registered while the watchdog is off'),
+    ('P-11', 'advice',  'a worker thread consumer name nothing answers to'),
+    ('B-01', 'advice',  'an areg::String passed to a printf style log macro'),
     ('B-02', 'advice',  'a range-for over an areg container'),
+    ('B-03', 'advice',  'size() == 0 instead of is_empty()'),
     ('B-04', 'advice',  'a container name or header with the obsolete TE prefix'),
     ('B-05', 'advice',  'a name with the obsolete NE or TE prefix'),
+    ('B-06', 'advice',  'a name with the obsolete IE prefix'),
+    ('B-07', 'advice',  'a camelCase accessor on an areg object'),
 ]
 
 
@@ -124,6 +224,71 @@ def strip_noise(line):
     line = re.sub(r"'(?:[^'\\]|\\.)*'", "''", line)
     cut = line.find('//')
     return line[:cut] if cut >= 0 else line
+
+
+def split_args(text, open_paren):
+    """The top level arguments of a call whose '(' is at open_paren.
+
+    Returns a list of stripped argument strings, or None when the parentheses do
+    not close on this text -- a macro split across lines is skipped rather than
+    guessed at.
+    """
+    depth = 0
+    current = []
+    args = []
+    for index in range(open_paren, len(text)):
+        char = text[index]
+        if char in '([{':
+            depth += 1
+            if depth == 1:
+                continue
+        elif char in ')]}':
+            depth -= 1
+            if depth == 0:
+                args.append(''.join(current).strip())
+                return args
+        if depth == 1 and char == ',':
+            args.append(''.join(current).strip())
+            current = []
+        else:
+            current.append(char)
+    return None
+
+
+def suppressed(lines, number, rule):
+    """B8. True when the finding is silenced on its own line or the one above.
+
+    `// areg-check: ignore` silences every rule on the line; naming rules after it
+    silences only those. The comment on the line above applies to the line below,
+    which is where a macro or a long call usually needs it.
+    """
+    for index in (number - 1, number - 2):
+        if index < 0 or index >= len(lines):
+            continue
+        match = IGNORE_RE.search(lines[index])
+        if match is None:
+            continue
+        named = match.group(1)
+        if named is None:
+            return True
+        if rule in [part.strip() for part in named.split(',')]:
+            return True
+    return False
+
+
+def areg_variables(lines):
+    """Variables in this file whose declared type belongs to areg.
+
+    B-01, B-03 and B-07 all report a call only on one of these, so that an
+    application calling getName() or size() on a type of its own is never touched.
+    """
+    names = {}
+    for raw in lines:
+        for kind, var in AREG_DECL_RE.findall(strip_noise(raw)):
+            if var not in ('return', 'const', 'if', 'while', 'for'):
+                names[var] = kind
+    return names
+
 
 
 def collect_sources(base):
@@ -225,6 +390,17 @@ def check_file(path, lines, known, findings):
     in_model = False
     model_roles = {}
     handled = set()
+    areg_vars = areg_variables(lines)
+
+    for number, raw in enumerate(lines[:12]):
+        if GENERATED_BANNER in raw:
+            findings.append(Finding(
+                'P-01', 'advice', path, number + 1,
+                'this file carries the generator banner, so it is a copy of a '
+                'file under the generate target. The next build rewrites the '
+                'original and the copy silently stops matching it; change the '
+                'service document instead'))
+            break
 
     for number, raw in enumerate(lines):
         line = strip_noise(raw)
@@ -276,8 +452,63 @@ def check_file(path, lines, known, findings):
                         'file or symbol exists. Names now live in namespace '
                         'areg, types are PascalCase and methods are '
                         'snake_case; grep for the replacement rather than '
-                        'recalling it' % name))
+                        'recalling it. One NE namespace does survive, '
+                        'NEMultitargetRouterSettings in '
+                        'framework/mtrouter/app/MTRouterNames.hpp, and it is '
+                        'the only one' % name))
                     break
+
+        subject = raw if stripped.startswith('#include') else line
+        for name in IE_NAME_RE.findall(subject):
+            if name in LEGACY_IE_NAMES:
+                findings.append(Finding(
+                    'B-06', 'advice', path, number + 1,
+                    '"%s" lost its IE prefix when areg was renamed; the '
+                    'interface is now areg::%s. The prefix is gone from the '
+                    'public API, not from the framework: two IE names survive '
+                    'under component/private/, which no application may include'
+                    % (name, name[2:])))
+                break
+
+        for var, method in LEGACY_CALL_RE.findall(line):
+            if method in LEGACY_ACCESSORS and var in areg_vars:
+                findings.append(Finding(
+                    'B-07', 'advice', path, number + 1,
+                    '"%s" is an areg::%s; every framework method is snake_case, '
+                    'so %s() is now %s()'
+                    % (var, areg_vars[var], method, LEGACY_ACCESSORS[method])))
+                break
+        else:
+            for method in AREG_STATIC_CALL_RE.findall(line):
+                if method in LEGACY_ACCESSORS:
+                    findings.append(Finding(
+                        'B-07', 'advice', path, number + 1,
+                        'every framework method is snake_case, so %s() is now '
+                        '%s()' % (method, LEGACY_ACCESSORS[method])))
+                    break
+
+        if LOG_MACRO_RE.search(line) and '%s' in raw:
+            for var, kind in areg_vars.items():
+                if kind != 'String':
+                    continue
+                # Only a bare argument is wrong. A cast or a conversion call
+                # spells the intent out and is how the examples pass a String.
+                if re.search(r',\s*%s\s*[,)]' % re.escape(var), line):
+                    findings.append(Finding(
+                        'B-01', 'advice', path, number + 1,
+                        '"%s" is an areg::String, not a C string; a printf style '
+                        'log macro needs %s.as_string() for %%s' % (var, var)))
+                    break
+
+        for match in SIZE_EMPTY_RE.finditer(line):
+            var, operator = match.group(1), match.group(2)
+            if var in areg_vars:
+                findings.append(Finding(
+                    'B-03', 'advice', path, number + 1,
+                    'emptiness has its own predicate: %s.is_empty() reads as what '
+                    'it tests, where %s.size() %s 0 does not'
+                    % (var, var, operator)))
+                break
 
         if known:
             match = OVERRIDE_RE.search(line) or QUALIFIED_RE.search(line)
@@ -385,6 +616,88 @@ def check_roles(sources, findings, read):
                 'for character' % dep))
 
 
+def check_threads(sources, findings, read):
+    """P-10 and P-11, both of which need the whole project to decide.
+
+    P-10. A watchdog timeout is a per thread number in the model. It is enforced
+    only while the watchdog manager runs, and the manager is off unless asked for:
+    Application::setup() takes startWatchdog as its fifth argument and defaults it
+    to false. A timeout registered with the manager off is a guard that never
+    fires, which reads in the model as though the thread is protected.
+
+    P-11. REGISTER_WORKER_THREAD names the consumer the component must answer to
+    from worker_thread_consumer(). The base implementation returns nullptr for a
+    name it does not know, so a misspelling starts the thread and runs nothing.
+    The name may be a constant, so it is reported only when its exact text appears
+    nowhere else in the project -- the same tolerance P-03 uses.
+
+    The plan asked P-11 to catch an event sent to a thread name that no thread
+    answers to. That is not detectable: send_event takes a DispatcherThread
+    reference, never a name, so the mistake cannot be written. This is the
+    adjacent defect that can.
+    """
+    timeouts = []
+    watchdog_on = False
+    consumers = []
+    literals = set()
+
+    for path in sources:
+        text = read(path)
+        if text is None:
+            continue
+        lines = text.splitlines()
+        for number, raw in enumerate(lines):
+            line = strip_noise(raw)
+
+            if WATCHDOG_ON_RE.search(line):
+                watchdog_on = True
+            setup = SETUP_RE.search(line)
+            if setup:
+                args = split_args(line, line.index('(', setup.end() - 1))
+                if args and len(args) >= 5 and args[4].strip() == 'true':
+                    watchdog_on = True
+
+            match = WATCHDOG_MACRO_RE.search(line)
+            if match:
+                args = split_args(line, match.end() - 1)
+                index = WATCHDOG_TIMEOUT_ARG[match.group(1)]
+                if args and len(args) > index:
+                    value = args[index]
+                    if value not in ('0', 'areg::WATCHDOG_IGNORE',
+                                     'WATCHDOG_IGNORE', 'NECommon::WATCHDOG_IGNORE'):
+                        timeouts.append((value, path, number + 1))
+
+            worker = WORKER_MACRO_RE.search(raw)
+            if worker:
+                # The literal is the point of this rule, so the arguments are read
+                # from the raw line, before strip_noise() blanks its strings.
+                args = split_args(raw, worker.end() - 1)
+                if args and len(args) >= 2:
+                    name = args[1].strip()
+                    if len(name) > 1 and name.startswith('"') and name.endswith('"'):
+                        consumers.append((name[1:-1], path, number + 1))
+            else:
+                literals.update(LITERAL_RE.findall(raw))
+
+    if timeouts and not watchdog_on:
+        value, path, number = timeouts[0]
+        findings.append(Finding(
+            'P-10', 'advice', path, number,
+            'a watchdog timeout of %s is registered but the watchdog manager is '
+            'never started, so nothing enforces it. Call '
+            'areg::Application::setup() with its fifth argument, startWatchdog, '
+            'set to true, or register the thread with no timeout' % value))
+
+    for name, path, number in consumers:
+        if name not in literals:
+            findings.append(Finding(
+                'P-11', 'advice', path, number,
+                'nothing in the project answers to the worker thread consumer '
+                'name "%s". The component returns it from '
+                'worker_thread_consumer(); a name it does not recognise yields '
+                'nullptr and the worker thread runs nothing' % name))
+
+
 def read_text(path, problems):
     for encoding in ('utf-8', 'latin-1'):
         try:
@@ -460,6 +773,11 @@ def main():
             continue
         check_file(path, text.splitlines(), known, findings)
     check_roles(sources, findings, read)
+    check_threads(sources, findings, read)
+
+    findings = [f for f in findings
+                if not suppressed(read(f.path).splitlines() if read(f.path) else [],
+                                  f.line, f.rule)]
 
     for note in problems:
         print('note: %s' % note)

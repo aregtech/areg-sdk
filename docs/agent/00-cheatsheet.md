@@ -32,10 +32,16 @@ need. `Category` is `Private` (one process), `Public` (several processes, needs
             </ParamList>
         </Method>
     </MethodList>
+    <ConstantList>
+        <Constant ID="40" Name="MaxLevel" DataType="uint32" Value="90"/>
+    </ConstantList>
 </ServiceInterface>
 ```
 
 A `Request` names its `Response` by name; a request with no reply omits the attribute.
+A constant's value is the `Value` **attribute**, and only there: the 1.0.0 `<Value>`
+child is no longer read and a document still using it is refused. A structure `Field`
+and an `EnumEntry` are the other way round, carrying their value as a child element.
 The generator validates before it writes: a refused document reports a rule number,
 and `explain_rule.py <number>` says what it means.
 
@@ -51,11 +57,12 @@ structure and constant names are kept as written.
 | `Response foo(b)` | **calls** `response_foo(b)` | **may override** `void response_foo(b) final` |
 | `Broadcast bar(c)` | **calls** `broadcast_bar(c)` | **overrides** `void broadcast_bar(c) final`; **subscribe** `notify_on_broadcast_bar(true)` |
 | `Attribute Baz` (`T`) | `set_baz(v)`, `is_baz_valid()`, `invalidate_baz()` | read `baz(state)`; **override** `void on_baz_update(T Baz, areg::DataState state) final`; **subscribe** `notify_on_baz_update(true)` |
-| `Constant Qux` | `<Name>::Qux` | `<Name>::Qux` |
-| `Enumeration E` | `<Name>::E`, `<Name>::as_string(E)` | same |
-| name and version | `<Name>::ServiceName`, `<Name>::InterfaceVersion` | same |
 
-Scalars pass by value; `String`, structures and containers pass as `const T &`.
+Scalars pass by value; `String`, structures and containers pass as `const T &`. A
+constant, an enumeration, a structure and the service name all keep the name the
+document gives them, reachable as `<Name>::Thing`. The full table, including the
+transform each kind of name goes through, is `20-service-interface.md` section 3;
+it is the authoritative copy and this one is the short form of it.
 
 ## Component skeletons
 

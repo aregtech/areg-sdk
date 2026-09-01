@@ -4,3 +4,11 @@
 # reads a line-ending artifact as the mirror having drifted.
 *.xsd   text eol=lf
 *.xml   text eol=lf
+
+# Scripts are executed, not compared. A shell script stored with carriage returns fails
+# on every POSIX system with an error that names the interpreter and not the line ending,
+# and a Python tool run from a shebang fails the same way. The agent documentation tells
+# an agent to run these by name, so a broken checkout breaks the first instruction.
+*.sh    text eol=lf
+*.py    text eol=lf
+*.bat   text eol=crlf

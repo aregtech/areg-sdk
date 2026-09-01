@@ -8,6 +8,11 @@
             <Description>How long the gate stays open.</Description>
         </Timer>
     </TimerList>
+    <AttributeList>
+        <Attribute ID="16" Name="Opened" DataType="bool" Value="false">
+            <Description>True once the gate has opened. The open transition is guarded on it, so the gate cannot open twice.</Description>
+        </Attribute>
+    </AttributeList>
     <MethodList>
         <Method ID="3" Name="open" MethodType="Trigger">
             <Description>Asks the gate to open.</Description>
@@ -28,12 +33,19 @@
         <State ID="8" Name="GATE_CLOSED" Kind="Normal">
             <Description>The gate is shut and waits to be opened.</Description>
             <TransitionList>
-                <Transition ID="9" Kind="External" StimulusKind="Trigger" Stimulus="open" To="10"/>
+                <Transition ID="9" Kind="External" StimulusKind="Trigger" Stimulus="open" To="10">
+                    <Guard state="ok">
+                        <Expr>
+                            <Cmp op="eq"><Attr id="16"/><Lit>false</Lit></Cmp>
+                        </Expr>
+                    </Guard>
+                </Transition>
             </TransitionList>
         </State>
         <State ID="10" Name="GATE_OPEN" Kind="Normal">
             <Description>The gate is open and the hold time is running.</Description>
             <EntryList>
+                <AttributeSet ID="17" Attribute="Opened" Source="Value" Value="true"/>
                 <TimerStart ID="11" Timer="Hold"/>
                 <ActionCall ID="12" Action="on_open"/>
             </EntryList>

@@ -115,6 +115,45 @@ If you change a message that a tool prints, read `./docs/CODEGEN_MESSAGE_FORMAT.
 Improvements to guides, examples, comments, and general documentation are welcome.
 Small corrections only require a Signed-off-by line.
 
+### f. Agent documentation
+
+`./AGENTS.md` is the single entry point for an agent building an application on top of Areg, and `./docs/agent/` is the corpus it routes to. Both are **agent-neutral**: no harness is named in them, and no harness gets its own copy of their contents.
+
+Do not add a tracked instruction file for a particular coding agent. One exists already, `./.github/copilot-instructions.md`, and it is permitted only because it holds no guidance of its own: it is three sentences pointing at `AGENTS.md`. Any new redirect must be generated locally and left untracked:
+
+```
+python tools/setup_agent_redirect.py --list
+python tools/setup_agent_redirect.py --harness claude
+python tools/setup_agent_redirect.py --check     # fails if a redirect grew content
+```
+
+The reason is drift. Guidance duplicated per harness stops agreeing with `AGENTS.md` within a release or two, and the copies disagree with each other, so an agent's behaviour then depends on which file its harness happened to read.
+
+Two further rules apply to changes in `AGENTS.md` and `docs/agent/`:
+
+- **Every claim must be true of this commit.** A page that names a file, a method, a macro or a rule number is asserting it exists. `tools/check_agent_docs.py` verifies the paths; the rest is on the author. A wrong name costs an agent more than a missing one, because it is followed before it is doubted.
+- **The corpus is measured.** `./docs/ai-readiness.md` defines the rubric and `tools/ai_score.py` implements it. Run it before and after your change; a pull request that lowers a score should say why in its description.
+
+### g. Agent session knowledge
+
+Work on this repository runs across many sessions, and each one otherwise begins by rediscovering what the last one established: how the tools are invoked on this machine, which invariants a plausible-looking edit breaks, why a decision was taken the way it was. Two local indexes hold that knowledge:
+
+| File | Holds |
+|---|---|
+| `product/agent/memory/memory.md` | durable facts, indexing the files beside it |
+| `product/agent/lessons/lessons.md` | mistakes made, and the rule that would have prevented each |
+
+`product/copilot.md` is the session bootstrap that points at both; load it at the start of a session. Create the tree with:
+
+```
+python tools/setup_agent_memory.py --init
+python tools/setup_agent_memory.py --check    # fails if a file is missing or unlisted
+```
+
+**The protocol is tracked; the content is not.** `product/*` is in `.gitignore` and nothing under it may enter a commit. The knowledge is local to one machine and one line of work, it would go stale inside a release, and an application author who found it would be misled by it. For the same reason it is **not** linked from `AGENTS.md`: that file is the entry point for building an application on top of Areg, it must resolve for every reader, and a path that exists only on one machine does not.
+
+Update the indexes at the end of any session that established a durable fact or made a mistake worth not repeating. Each index states its own criteria for what belongs in it; the short form is that a fact the repository already states is not a memory, and a general principle nobody got wrong is not a lesson.
+
 ---
 
 ## 5. Areas Where Help Is Needed

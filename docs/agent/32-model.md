@@ -51,11 +51,15 @@ int main()
 |---|---|---|
 | `BEGIN_MODEL(name)` | model name | Opens the model. The same string goes to `load_model`. |
 | `BEGIN_REGISTER_THREAD(name)` | thread name | Opens a dispatcher thread. Any unique string. |
-| `BEGIN_REGISTER_COMPONENT(role, Class)` | **role name**, class | Declares one component instance of `Class`. |
+| `BEGIN_REGISTER_COMPONENT(role, Class)` | **role name**, class | Declares one component instance of `Class`. The macro constructs it: there is no factory function to write. |
 | `REGISTER_IMPLEMENT_SERVICE(name, version)` | from the generated header | This component provides that service. |
 | `REGISTER_DEPENDENCY(role)` | **the provider's role name** | This component consumes the service of that component. |
 
 Every `BEGIN_` has a matching `END_` taking the same argument.
+
+Components in different threads run at the same time, so `std::cout` from two handlers
+interleaves and a line can arrive split. Expect it when reading output, and log instead
+of printing when the order matters.
 
 ---
 
