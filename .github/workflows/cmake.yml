@@ -19,6 +19,26 @@ env:
   BUILD_TYPE: Release
 
 jobs:
+  invariants:
+    name: the framework invariants still have anchors
+    # tools/check_invariants.py seeds a defect per documented invariant, rebuilds and
+    # asserts something goes red. The seeding needs a build per defect and is run by
+    # hand; what rots first is the seed set itself, because a refactor moves the line
+    # it anchors to. This step is that check, and it needs no compiler.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout Areg SDK source codes
+        uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Check every seeded defect still applies to exactly one place
+        run: python3 tools/check_invariants.py --dry-run
+
   build-tests:
     name: ${{matrix.config.name}}
     runs-on: ${{matrix.config.os}}
@@ -570,10 +590,10 @@ jobs:
 
   ubsan-linux:
     name: ubsan (linux-gnu-static)
-    # The undefined behaviour sanitizer over the example suite.
-    # Reports only, it never fails the workflow.
+    # The undefined behaviour sanitizer over the example suite. A report from
+    # framework/ fails the job; a report from an example is a warning, because an
+    # example is teaching material and is allowed to be corrected on its own schedule.
     runs-on: ubuntu-latest
-    continue-on-error: true
     timeout-minutes: 120
 
     steps:
@@ -637,13 +657,22 @@ jobs:
           # no leading slash, so a '/framework/' pattern never matches; and a grep that
           # matches nothing exits 1, which under 'set -e' would discard every list below.
           FRAMEWORK_RE='^[[:space:]]*[0-9]+[[:space:]]+framework/'
-          { grep -E "${FRAMEWORK_RE}" ./ubsan/by-place.txt || true; } | head -n 6 \
+          { grep -E "${FRAMEWORK_RE}" ./ubsan/by-place.txt || true; } > ./ubsan/framework.txt
+          head -n 6 ./ubsan/framework.txt \
             | while IFS= read -r line; do echo "::error title=ubsan-framework::${line}"; done
           { grep -Ev "${FRAMEWORK_RE}" ./ubsan/by-place.txt || true; } | head -n 8 \
             | while IFS= read -r line; do echo "::warning title=ubsan-example::${line}"; done
           sed -e 's/^.*runtime error: //' -e 's/0x[0-9a-f]*/<address>/g' ./ubsan/by-place.txt \
             | sed -e "s/'[^']*'/'T'/g" | sort | uniq -c | sort -rn | head -n 20 | tr '\n' '|' \
             | sed 's/^/::notice title=ubsan-kinds::/'
+          # Undefined behaviour inside the framework is a defect of the SDK itself and
+          # is the one class this job exists to stop. Everything above is a report; this
+          # is the gate.
+          FRAMEWORK_COUNT="$(wc -l < ./ubsan/framework.txt)"
+          if [ "${FRAMEWORK_COUNT}" != "0" ]; then
+            echo "the sanitizer reported ${FRAMEWORK_COUNT} place(s) inside framework/"
+            exit 1
+          fi
 
       - name: Upload the sanitizer reports
         if: always()
@@ -651,3 +680,55 @@ jobs:
         with:
           name: ubsan-linux
           path: ./ubsan/
+
+  sanitizers-linux:
+    name: asan and tsan (unit tests)
+    # "The suite is TSAN-clean, keep it that way" is a standing invariant of this
+    # repository and until now nothing held it. Both sanitizers run the unit tests
+    # through the documented driver, so what CI runs is what a contributor runs.
+    # Each matrix leg fails the workflow when its sanitizer reports.
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [asan, tsan]
+
+    steps:
+
+      - name: Checkout Areg SDK source codes
+        uses: actions/checkout@v7
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v5.6.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      # TSan's shadow memory cannot map the address layout of a modern kernel, and the
+      # process aborts before running a test. The driver disables ASLR per run with
+      # setarch, which needs no privilege; this lowers the entropy instead, which the
+      # runner does allow, so both routes are open.
+      - name: Make room for the sanitizer shadow mapping
+        run: sudo sysctl -w vm.mmap_rnd_bits=28 || true
+
+      # tools/sanitize.sh is the instrument CLAUDE.md and the perf skill prescribe.
+      # It configures its own build tree, builds areg-unit-tests instrumented, and
+      # runs ctest under the sanitizer with the repository's suppressions. A failing
+      # test or a sanitizer report leaves it non-zero.
+      - name: Run the unit tests under ${{matrix.mode}}
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: tools/sanitize.sh ${{matrix.mode}} --target areg-unit-tests --run ctest
+
+      - name: Upload what the sanitizer left behind
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: sanitizer-${{matrix.mode}}
+          path: |
+            ./build-${{matrix.mode}}/Testing/
+            ./build-${{matrix.mode}}/**/*.log
+          if-no-files-found: ignore

@@ -19,10 +19,229 @@
 import argparse
 import os
 import sys
+import textwrap
 import xml.etree.ElementTree as ET
 
 RULES = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'schema', 'rules.xml')
 BANDS = [(0, 'error'), (100, 'warning'), (200, 'information')]
+
+# What to change, one rule at a time. The registry says what is wrong; this says
+# what to do about it, which is the half an agent needs and cannot infer.
+#
+# It lives here and not in schema/rules.xml because that file is mirrored byte for
+# byte between this repository and the editor, and a corrective action is advice for
+# whoever writes documents from these pages, not part of the shared registry.
+FIXES = {
+ 'RULE_START_STATE':
+   'Give the level exactly one state with Kind="Start". If it already has one, a '
+   'second state carries the same Kind: change it to Kind="Normal".',
+ 'RULE_DUPLICATE_ID':
+   'Every ID in the document comes from one counter and is never reused. Give the '
+   'later element the next free number, then repoint anything that referenced it.',
+ 'RULE_STATE_NAME':
+   'Rename one of the two states. State names are unique across the whole document, '
+   'not only inside their level: the generator flattens every level into one C++ '
+   'enumeration, so a substate of one region collides with a substate of another. '
+   'Prefixing the name with its region, "Idle" as "PumpIdle" and "ValveIdle", is the '
+   'rename that keeps both readable.',
+ 'RULE_DUPLICATE_NAME':
+   'Rename the later declaration. A stimulus name is shared by triggers, events and '
+   'timers, so a trigger may not carry the name of an event or a timer.',
+ 'RULE_UNREFERENCED':
+   'Either use the declaration or delete it. Generation continues either way; the '
+   'note stands so a leftover from an edit is not mistaken for something in use.',
+ 'RULE_MISSING_VERSION':
+   'Add Version to Overview, as MAJOR.MINOR.PATCH. The version reaches the generated '
+   'code and tells a consumer which contract it was built against.',
+ 'RULE_INVALID_IDENTIFIER':
+   'Rewrite the name as a C++ identifier: a letter or an underscore first, then '
+   'letters, digits or underscores. No spaces, dots or dashes.',
+ 'RULE_UNRESOLVED_TYPE':
+   'Declare the type, or correct its spelling. A type from an included document is '
+   'written Space::Type, where Space is that document\'s Overview name. A C++ type '
+   'you already own is declared once with Type="Imported".',
+ 'RULE_TARGET_SIBLING':
+   'A transition ends on a state of its own level. To leave a composite state, draw '
+   'the transition from the composite itself, not from a state inside it.',
+ 'RULE_FINAL_STATE':
+   'A Final state ends its level: remove its outgoing transitions and its substates. '
+   'To continue afterwards, transition out of the composite that owns it.',
+ 'RULE_START_SUBSTATES':
+   'A Start is a pseudo-state and holds nothing: it names where the level begins and '
+   'is left in the same step it is entered, so anything nested inside it can never '
+   'run. Add a Kind="Normal" state, move the substates into it, and let the Start\'s '
+   'outgoing transition target it.',
+ 'RULE_ARGUMENT_MAPPING':
+   'Map every parameter of the called element, once, in the order it declares them, '
+   'and remove any argument that maps to nothing. The generator writes a direct call, '
+   'so a missing, doubled or reordered mapping is not something it can repair: read '
+   'the parameter list of the target and make the argument list match it position for '
+   'position.',
+ 'RULE_NESTED_START':
+   'The named submachine level needs its own Kind="Start" state. Every level with '
+   'substates has one, not only the root.',
+ 'RULE_SOURCE_SCOPE':
+   'The value named is not visible where it is used. Use a parameter of this '
+   'stimulus, an attribute of the machine, or a constant -- not a parameter of '
+   'another trigger or a value of another level.',
+ 'RULE_ARGUMENT_TYPE':
+   'Make the two types match, or introduce a conversion of your own. A narrowing '
+   'conversion is allowed and generates an explicit cast; an unrelated type is not.',
+ 'RULE_COMPARE_OPERAND':
+   'Compare scalars. A structure or a container has no ordering, and bool, String '
+   'and enumerations answer only to == and !=.',
+ 'RULE_MISSING_DESCRIPTION':
+   'Add a Description to the declaration so the generated element carries a comment. '
+   'Advisory: generation succeeds without it.',
+ 'RULE_BAD_LITERAL':
+   'Write the value the way its declared type reads: a number for a numeric type, '
+   'true or false for bool, and an enumerator this enumeration declares.',
+ 'RULE_BOOLEAN_OPERAND':
+   'A predicate tested on its own is bool, and this operand is not: C++ would convert '
+   'it silently and the guard would then be true for every non-zero value. Compare it '
+   'with something ("Level > MaxLevel" rather than "Level"), or call a condition whose '
+   'declared type is bool.',
+ 'RULE_ATTRIBUTE_TYPE':
+   'Set the attribute from a source of its own type. A source that only narrows is '
+   'accepted with a warning and generates an explicit cast.',
+ 'RULE_STATE_SHAPE':
+   'The state carries a property its kind does not have. History and OnFinal belong '
+   'to a composite state, a Submachine belongs to neither a Start nor a Final, and a '
+   'state is either painted or imported, never both.',
+ 'RULE_BROKEN_IMPORT':
+   'Correct the path in the include. It is spelled from the workspace root, the file '
+   'must exist and be readable, and a document may not include itself through a '
+   'chain. A data type document may not include another one.',
+ 'RULE_CONDITION_BODY':
+   'Only an Embedded condition carries a body, and its body may not be empty. A '
+   'handler and a plain method carry none, and neither carries a Return.',
+ 'RULE_PARAMETERIZED_COND':
+   'A parameterized condition is a left operand only. Give it a right operand to '
+   'compare with, or use a plain value source where a value is wanted.',
+ 'RULE_IMPORT_MAJOR':
+   'The imported file is a different major version from the one pinned. Update the '
+   'pinned version after checking the import still means the same thing, or point '
+   'the include at the version it was written against.',
+ 'RULE_SOURCE_KIND':
+   'The row names a kind of source the format does not define here. Use one the '
+   'format allows in this position: a parameter, an attribute, a constant or a '
+   'literal.',
+ 'RULE_SOURCE_EMPTY':
+   'Fill the value source in, or delete the row. An empty source generates nothing, so '
+   'the assignment it belongs to silently does not happen: nothing fails at build time '
+   'and the target keeps whatever it held. It usually marks an edit left half done, so '
+   'check the rest of that element before moving on.',
+ 'RULE_GUARD':
+   'The finding is in the guard expression itself: fix the operand, the operator or '
+   'the name the message points at. Every guard finding is filed under this rule.',
+ 'RULE_PSEUDO_START':
+   'A Start carries no operations and its initial transition carries no stimulus. '
+   'Exactly one transition leaves it, and it names a state of the same level.',
+ 'RULE_TRANSITION_KIND':
+   'Match Kind to the transition: External needs a target, Internal has none and '
+   'stays in the state, and Local stays inside the composite it starts in.',
+ 'RULE_HANDLER_NAME':
+   'Two hosted machines generate one handler name, so one implementation would have to '
+   'serve both and the second definition will not compile. The name is derived from the '
+   'trigger and its parameter types together: rename the trigger in one of the two '
+   'machines, or change a parameter type, and the names separate.',
+ 'RULE_ATTRIBUTE_STIMULUS':
+   'Rename the trigger, or the attribute. The generator derives one function name '
+   'from both, so the second declaration silently takes the first one over.',
+ 'RULE_RESERVED_PREFIX':
+   'The generated member would land under a prefix the generator owns (request_, '
+   'response_, broadcast_, on_, notify_on_, EVENT_). Rename the declaration.',
+ 'RULE_UNKNOWN_ELEMENT':
+   'Remove the element or move it where the format places it. A tag the format does '
+   'not know reaches no generated code and is dropped when the document is saved.',
+ 'RULE_PARAM_SHADOWS':
+   'Rename the parameter: it carries the name of its own trigger or condition. '
+   'Advisory, and generation succeeds.',
+ 'RULE_UNBOUND_RESPONSE':
+   'Either name this response from a request, with Response="<name>", or delete it. '
+   'A response nothing leads to is never sent.',
+ 'RULE_DEFAULT_ORDER':
+   'Move the parameters carrying defaults to the end of the list, exactly as C++ '
+   'requires: once one parameter has a default, every parameter after it must have one '
+   'too. Either give the following parameters a default of their own, or reorder the '
+   'list so the ones with defaults come last. The generated signature follows the '
+   'document order literally.',
+ 'RULE_ACTION_PREFIX':
+   'Rename the condition: its name already starts with the prefix the generated '
+   'action method carries, so the two read as one. Advisory.',
+ 'RULE_UNRESOLVED_ELEMENT':
+   'The reference names something the document does not declare. Declare it, or '
+   'correct the spelling; the message names both the reference and its kind.',
+ 'RULE_NOT_A_HEADER':
+   'A data type document includes C++ headers only. Move the shared types into this '
+   'document, or have the host document include both.',
+ 'RULE_DUPLICATE_ENUM_VALUE':
+   'Give the two enumerators different values. An enumerator with no value continues '
+   'from the previous one, so an explicit value that repeats an implicit one is the '
+   'usual cause.',
+ 'RULE_DEPRECATED':
+   'The declaration is marked deprecated by its author. Move to what its '
+   'DeprecateHint names; nothing is blocked.',
+ 'RULE_EMPTY_TYPE':
+   'Add the fields or the enumerators. An empty declaration compiles, so the note '
+   'stands only until the first member is added.',
+ 'RULE_EMPTY_DOCUMENT':
+   'The document declares nothing, so the generator writes a header that nothing can '
+   'use and every document including it gains no type. Add what it is for -- a data '
+   'type, a method, an attribute -- or delete the file together with the Location row '
+   'that includes it.',
+ 'RULE_FILE_NAME_MISMATCH':
+   'Rename the file to the declared name, or the declared name to the file. The '
+   'generated files follow the declared name, so nothing breaks either way.',
+ 'RULE_RESPONSE_LINK':
+   'Point Response at a method this document declares with MethodType="Response". A '
+   'request with no answer omits the attribute entirely.',
+ 'RULE_UNREACHABLE_STATE':
+   'Nothing enters the state. Give it an incoming transition, make it the Start of '
+   'its level, or delete it.',
+ 'RULE_DEAD_END_STATE':
+   'The machine never leaves this state. Add an outgoing transition, or mark it '
+   'Kind="Final" if it really is the end.',
+ 'RULE_SHADOWED_TRANSITION':
+   'An earlier unconditional transition on the same stimulus always wins. Give the '
+   'earlier one a guard, or reorder the two.',
+ 'RULE_ONE_SIDED_EVENT':
+   'Either react to the event or stop sending it. An event with only one side is '
+   'usually half of an edit.',
+ 'RULE_ONE_SIDED_TIMER':
+   'Either react to the timer or stop starting it. A timer with only one side never '
+   'has an effect.',
+ 'RULE_EMPTY_INTERNAL':
+   'The internal transition changes nothing. Give it an operation or a condition, or '
+   'delete it.',
+ 'RULE_CONSTANT_COMPARE':
+   'Both operands are fixed at design time, so the result never changes. Compare '
+   'against an attribute or a parameter, or drop the guard.',
+ 'RULE_UNUSED_HISTORY':
+   'Nothing re-enters the state, so its remembered substate is never restored. '
+   'Remove History, or add the transition that returns to the state.',
+ 'RULE_IMPORT_PATCH':
+   'The imported file carries a different minor or patch version from the one '
+   'pinned. Update the pin once the difference is understood.',
+ 'RULE_RETIRED_ELEMENT':
+   'The format no longer defines this element here. The message names what replaced '
+   'it; move the content there.',
+ 'RULE_TWO_RESPONSES':
+   'A request has one answer. Keep one Response and give the other request its own, '
+   'or make the second a broadcast.',
+ 'RULE_SHARED_RESPONSE':
+   'One response answers several requests. Legal and sometimes meant; split it only '
+   'if a consumer must tell the two answers apart.',
+ 'RULE_BAD_VALUE':
+   'The element or the attribute is allowed here, but what it holds is not. Write a '
+   'value of the kind the format names for it.',
+ 'RULE_UNKNOWN_ATTRIBUTE':
+   'Remove the attribute. The format does not define it on this element, so nothing '
+   'reads it and it is dropped when the document is saved.',
+ 'RULE_DROPPED_ELEMENT':
+   'The block was kept while the document was open and is lost on save. Fix the '
+   'fault reported beside it, then re-add the block.',
+}
 
 
 def load():
@@ -34,7 +253,8 @@ def load():
                       'bands': (node.get('Bands') or '').split(),
                       'documents': (node.get('Documents') or '').split(),
                       'section': node.get('Section') or '',
-                      'summary': clean(node.findtext('Summary') or '')})
+                      'summary': clean(node.findtext('Summary') or ''),
+                      'fix': FIXES.get(node.get('Name') or '', '')})
     return rules
 
 
@@ -58,12 +278,12 @@ def search(rules, needle):
     if not words:
         return []
     hits = [r for r in rules
-            if all(w in (r['name'] + ' ' + r['summary']).lower() for w in words)]
+            if all(w in text_of(r) for w in words)]
     if hits:
         return hits
     scored = []
     for rule in rules:
-        hay = (rule['name'] + ' ' + rule['summary']).lower()
+        hay = text_of(rule)
         score = sum(1 for w in words if w in hay)
         if score:
             scored.append((score, rule))
@@ -71,6 +291,11 @@ def search(rules, needle):
         return []
     best = max(score for score, _ in scored)
     return [rule for score, rule in scored if score == best]
+
+
+def text_of(rule):
+    """Everything a search may match: the name, the summary and the corrective action."""
+    return (rule['name'] + ' ' + rule['summary'] + ' ' + rule['fix']).lower()
 
 
 def resolve(rules, reported):
@@ -90,9 +315,23 @@ def resolve(rules, reported):
     return found
 
 
+def wrap(text, label):
+    """One labelled block, wrapped to 78 columns and indented under its label."""
+    body = textwrap.wrap(text, width=78 - len(label) - 4)
+    if not body:
+        return ''
+    pad = ' ' * (len(label) + 4)
+    out = '    {} {}'.format(label, body[0])
+    for line in body[1:]:
+        out += '\n' + pad + line
+    return out
+
+
 def show(band, rule, reported):
     print('{} -- {} ({})'.format(reported, rule['name'], band))
-    print('    {}'.format(rule['summary']))
+    print(wrap(rule['summary'], 'what: '))
+    if rule['fix']:
+        print(wrap(rule['fix'], 'fix:  '))
     print('    documents: {}   section: {}'.format(
         ', '.join(rule['documents']) or '-', rule['section'] or '-'))
 

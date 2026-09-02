@@ -46,7 +46,7 @@ state has no transition for it. A trigger the current state ignores is not an er
 Do not type this by hand. The skeleton, with every action override already in place:
 
 ```bash
-python3 <areg-sdk>/tools/gen_skeleton.py --doc src/services/Gate.fsml --out src
+python3 <areg-sdk>/tools/agent/gen_skeleton.py --doc src/services/Gate.fsml --out src
 ```
 
 On Windows the command is `python`, not `python3`; nothing else changes.
@@ -97,7 +97,7 @@ Only `Overview` and `StateList` are required. `Layout` holds the drawing coordin
 the editor uses. **Write the document without it, then generate one:**
 
 ```bash
-python3 <areg-sdk>/tools/fsml_layout.py src/services/Gate.fsml
+python3 <areg-sdk>/tools/agent/fsml_layout.py src/services/Gate.fsml
 ```
 
 It places every state of a level in a column, sizes each composite around its

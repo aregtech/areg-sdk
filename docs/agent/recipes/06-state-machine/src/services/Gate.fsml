@@ -62,13 +62,13 @@
     </StateList>
     <Layout GridSize="16" GridVisible="true">
         <ViewList>
-            <View Owner="1" Zoom="100" X="-1" Y="321"/>
+            <View Owner="1" Zoom="100" X="0" Y="0"/>
         </ViewList>
         <NodeList>
             <Node Owner="6" X="0" Y="0" Width="64" Height="32"/>
             <Node Owner="8" X="0" Y="96" Width="224" Height="96"/>
             <Node Owner="10" X="0" Y="256" Width="224" Height="96"/>
-            <Node Owner="14" X="48" Y="416" Width="128" Height="32"/>
+            <Node Owner="14" X="0" Y="416" Width="224" Height="96"/>
         </NodeList>
         <EdgeList>
             <Edge Owner="7">

@@ -66,6 +66,10 @@ SKIPPED_DIRS = {
     '__pycache__', '.vs', '.vscode', '.idea', 'out', 'bin', 'obj',
 }
 
+# Directory name prefixes that are never ours to police. A build tree carries the
+# sources of the packages it fetched, and those are not subject to the rule.
+SKIPPED_DIR_PREFIXES = ('build-', 'build_')
+
 # Files whose content is character data, so non ASCII bytes in them are the subject and
 # not a defect. Glob patterns, matched against the path relative to the repository root.
 # A waiver applies to the ASCII rule only. '--find' ignores this list, because a control
@@ -125,6 +129,11 @@ def parse_byte_set(spec):
     if not wanted:
         raise ValueError('no byte value given')
     return wanted
+
+
+def is_skipped_dir(name):
+    """Tells whether a directory is outside the reach of the rule."""
+    return name in SKIPPED_DIRS or name.startswith(SKIPPED_DIR_PREFIXES)
 
 
 def spell(byte):
@@ -202,7 +211,7 @@ def collect(paths, staged, docs):
                 yield root
             continue
         for directory, subdirs, files in os.walk(root):
-            subdirs[:] = [d for d in subdirs if d not in SKIPPED_DIRS]
+            subdirs[:] = [d for d in subdirs if not is_skipped_dir(d)]
             for name in files:
                 full = os.path.join(directory, name)
                 if is_checked(full, docs):

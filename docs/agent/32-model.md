@@ -88,56 +88,48 @@ two components claim one identity.
 
 ## 3. Threads
 
-A thread is a dispatcher. Every handler of every component registered in it runs
-there, one at a time, in order.
+A thread is a dispatcher: every handler of every component registered in it runs
+there, one at a time, in order. Put components together when they share state or the
+work is light, apart when one may be slow or they must progress independently.
 
-| Put components in ... | When |
+Components of one thread never run handlers at the same time and so need no locking
+between themselves; components of different threads do. A provider and its consumer
+may share a thread, and the call still returns asynchronously.
+
+---
+
+## 4. Thread options, worker threads, runtime models
+
+A thread registered with `BEGIN_REGISTER_THREAD` has no watchdog, the system stack
+size and the default event queue. Longer forms set all three, a component can own a
+worker thread for slow work, and a model can be built at run time instead of by
+macro: `37-threads.md` covers the three together.
+
+---
+
+## 5. Same code, four deployments
+
+Only the model changes; the component classes never do.
+
+| Deployment | The model |
 |---|---|
-| the same thread | They share state, or the work is light |
-| different threads | One may be slow, or they must progress independently |
-
-Two components in one thread cannot run handlers at the same time, so they need no
-locking between themselves. Two components in different threads can, so shared data
-needs protection.
-
-A provider and its consumer may live in the same thread. The call still goes through
-the framework and still returns asynchronously.
+| One process, one thread | both components in one `BEGIN_REGISTER_THREAD` block |
+| One process, several threads | the example at the top of this page |
+| Several processes | one `main.cpp` per process, each registering only its own component; the consumer keeps its `REGISTER_DEPENDENCY`. `Category="Public"` in the `.siml`, and `mtrouter` started first |
+| Several machines | as several processes, with `Category="Internet"` and the router address set in `config/areg.init` (`36-config.md`) |
 
 ---
 
-## 4. Same code, four deployments
+## 6. Application lifecycle
 
-Only the model changes. The component classes never do.
-
-**One process, one thread:** put both components in one `BEGIN_REGISTER_THREAD` block.
-
-**One process, several threads:** the example at the top of this page.
-
-**Several processes:** write two `main.cpp` files, each with its own model. The
-provider process registers only the provider; the consumer process registers only the
-consumer and keeps its `REGISTER_DEPENDENCY`. Set `Category="Public"` in the `.siml`
-and start `mtrouter` before the applications.
-
-**Several machines:** as several processes, with `Category="Internet"` and the router
-address configured. See `../wiki/03a-mtrouter.md`.
+The five calls are the `main()` at the top of this page: `setup()` starts logging,
+routing and timers; `load_model()` creates the threads and components;
+`wait_quit()` blocks until any component calls `areg::Application::signal_quit()`;
+`unload_model()` and `release()` undo the first two.
 
 ---
 
-## 5. Application lifecycle
-
-```cpp
-areg::Application::setup();                          // start logging, routing, timers
-areg::Application::load_model(_modelName);           // create threads and components
-areg::Application::wait_quit(areg::WAIT_INFINITE);   // block until signal_quit()
-areg::Application::unload_model(_modelName);         // stop and destroy components
-areg::Application::release();                        // release everything
-```
-
-Any component ends the application by calling `areg::Application::signal_quit()`.
-
----
-
-## 6. Before you move on
+## 7. Before you move on
 
 - [ ] Every `REGISTER_DEPENDENCY` string equals an existing role name exactly.
 - [ ] Every provided service has a `REGISTER_IMPLEMENT_SERVICE` line.

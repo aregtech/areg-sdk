@@ -1,0 +1,33 @@
+# Names a note may cite that belong to the operating system, the toolchain or a
+# standard library rather than to this repository. check_claims.py reports a
+# backticked identifier that appears nowhere in the tree; these are the ones that
+# legitimately do not.
+#
+# Add a name here only after confirming it is external. A name added to silence a
+# report about repository code defeats the point of the tool.
+
+# Windows shell and toolchain
+rmdir
+xcopy
+msbuild
+mkdir
+robocopy
+
+# POSIX and Win32 socket options this repository discusses but does not set
+SO_REUSEPORT
+
+# glibc allocator tuning
+mallopt
+malloc_stats
+malloc_trim
+M_MMAP_THRESHOLD
+M_TRIM_THRESHOLD
+MALLOC_TRIM_THRESHOLD_
+MALLOC_MMAP_THRESHOLD_
+munmap
+mmap
+
+# C++ standard library and language vocabulary
+seq_cst
+acq_rel
+memory_order

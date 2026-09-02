@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<DataTypeDocument FormatVersion="1.0.0">
+    <Overview ID="1" Name="SharedTypes" Version="1.0.0">
+        <Description>Types that more than one service of this project carries.</Description>
+    </Overview>
+    <DataTypeList>
+        <DataType ID="2" Name="Reading" Type="Structure">
+            <Description>One measurement, as the sensor reported it.</Description>
+            <FieldList>
+                <Field ID="3" Name="sensor" DataType="String">
+                    <Value IsDefault="true"/>
+                    <Description>The sensor that took it.</Description>
+                </Field>
+                <Field ID="4" Name="value" DataType="uint32">
+                    <Value IsDefault="true">0</Value>
+                    <Description>What it measured.</Description>
+                </Field>
+            </FieldList>
+        </DataType>
+    </DataTypeList>
+</DataTypeDocument>

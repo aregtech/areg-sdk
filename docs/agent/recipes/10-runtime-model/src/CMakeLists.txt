@@ -1,0 +1,2 @@
+addServiceInterface(gen_runtime_model src/services/HelloService.siml)
+macro_declare_executable(runtime_model gen_runtime_model main.cpp)

@@ -147,7 +147,7 @@ product/build/<compiler>/<os>-<bits>-<arch>-<config>-<libtype>/bin/
 ```
 
 The `AREG_OUTPUT_LAYOUT` option selects between them. A project created from a recipe
-or by `tools/setup_project.py` turns it off, which is what puts binaries in
+or by `tools/agent/setup_project.py` turns it off, which is what puts binaries in
 `build/bin/`.
 
 Common CMake options:

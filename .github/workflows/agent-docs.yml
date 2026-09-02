@@ -50,7 +50,27 @@ jobs:
       # Every path named in the documentation must resolve, relative and repository
       # form alike. A broken one makes an agent fail its first tool call.
       - name: Check documented paths
-        run: python3 tools/check_agent_docs.py
+        run: python3 tools/agent/check_agent_docs.py
+
+      - name: Check documented areg names against the framework
+        run: python3 tools/agent/check_symbols.py
+
+      # A path that resolves is not a command that runs. This splits every fenced and
+      # inline command out of the agent pages, fails on one naming a script that is
+      # not there, and executes the read-only tools so a misspelled flag is a red step
+      # rather than a dead instruction a reader discovers by following it.
+      - name: Check the documented commands
+        run: python3 tools/agent/check_commands.py
+
+      - name: Check the removed-name lists still match the framework
+        run: python3 tools/agent/check_contract.py --audit-legacy framework
+
+      # AGENTS.md section 6 tells an agent that check_contract.py detects every
+      # prohibition it lists. The same hand writes the bullet, the api.json entry
+      # and the rule, and the three have drifted apart before: a bullet with no
+      # rule reads as enforced and is not.
+      - name: Check the prohibition lists agree
+        run: python3 tools/agent/check_contract.py --audit-prohibitions
 
       # Every recipe is copied before it is read, so a recipe that breaks a rule
       # teaches the rule broken. The checker must also stay quiet on code that is
@@ -58,8 +78,38 @@ jobs:
       - name: Check recipes against the agent contract
         run: |
           for recipe in docs/agent/recipes/*/; do
-            python3 tools/check_contract.py "$recipe" --strict
+            python3 tools/agent/check_contract.py "$recipe" --strict
           done
+
+      # Breaks a good recipe the way the eval bank says and asserts the documented
+      # diagnostic still reports it. A rule that stops firing is otherwise invisible:
+      # the suite stays green because nothing was checking the checker.
+      - name: Check the checkers still catch the defects
+        run: python3 tools/agent/check_mutations.py --static
+
+      # The seeded framework defects anchor to exact lines of framework code. A
+      # refactor moves the anchor and the seed silently stops applying, so the
+      # full run measures nothing. This costs a second and says so.
+      - name: Check the seeded invariants still anchor to real code
+        run: python3 tools/check_invariants.py --dry-run
+
+      # The three scores, held at the value measured when this line was written.
+      # Raise a floor when the work that earns it lands; never lower one.
+      #
+      # Friendliness read lower on 2026-09-01 than the day before, and nothing had
+      # regressed: an independent audit showed F2 and F4 were scoring presence rather
+      # than execution, so both were rewritten to ask whether a checker runs the thing.
+      #
+      # Four more measures changed on 2026-09-02, so the numbers below are again not
+      # comparable with the ones before them. R2 now separates a step that gates from
+      # one under continue-on-error, which three steps were; R4 counts the recipe's own
+      # query_sqlog.py, which the checker imports instead of keeping a second copy of
+      # the query; the sqlog catalogue row points at recipe 08, which produces the
+      # database; and the debugging row is demonstrated by the repair bank rather than
+      # by a recipe, because a bank of worked defects is what shows debugging.
+      # The floor stays where it was until a run on the new measures has settled.
+      - name: Hold the AI readiness floor
+        run: python3 tools/agent/ai_score.py --verbose --floor 95,98,99
 
   recipes:
     name: recipes build and run
@@ -88,6 +138,7 @@ jobs:
                 -DAREG_TESTS=OFF -DAREG_EXAMPLES=OFF -DAREG_OUTPUT_LAYOUT=OFF
           cmake --build build -j $(nproc)
           cmake --build build --target mtrouter -j $(nproc)
+          cmake --build build --target logcollector -j $(nproc)
 
       # The IPC recipe is not run without it, and check_recipes.py fails rather than
       # reporting a green suite that skipped the one path with a silent-failure history.
@@ -96,14 +147,135 @@ jobs:
 
       # Generates, compiles and, where a recipe ends by itself, runs and checks output.
       - name: Check recipes
-        run: python3 tools/check_recipes.py --lib build/bin
+        run: python3 tools/agent/check_recipes.py --lib build/bin
+
+      # The two defects a static checker cannot decide: one the compiler must
+      # reject, and one that is an environment rather than a source edit.
+      - name: Check the defects that need a built recipe
+        run: python3 tools/agent/check_mutations.py --lib build/bin
+
+      # The loop the SDK exists to support: two processes through the router, both
+      # logging to the collector, and the .sqlog database queried for what they
+      # logged. Documented in three pages and, until this step, never executed.
+      - name: Check the observability path end to end
+        run: python3 tools/agent/check_observability.py --lib build/bin
+
+      # The cheat sheet is the fast path, and its configuration block cannot be
+      # checked by reading it: the block once shipped without the key that turns
+      # output on, and every static check stayed green. This one runs it.
+      - name: Run the configuration block the documentation gives
+        run: python3 tools/agent/check_doc_config.py --lib build/bin
 
       # The project setup tool is the only thing that carries the documentation into
       # an application, so a break in it disables everything else.
       - name: Check project setup
         run: |
-          python3 tools/setup_project.py --name citest --root "${RUNNER_TEMP}/citest" \
+          python3 tools/agent/setup_project.py --name citest --root "${RUNNER_TEMP}/citest" \
                   --mode local --sdk-root "${GITHUB_WORKSPACE}"
           test -f "${RUNNER_TEMP}/citest/AGENTS.md"
           test -f "${RUNNER_TEMP}/citest/src/main.cpp"
-          python3 tools/check_contract.py "${RUNNER_TEMP}/citest" --strict
+          python3 tools/agent/check_contract.py "${RUNNER_TEMP}/citest" --strict
+
+      # Scaffolding a project is not the same as the project building. This is the
+      # only place addServiceInterface(), macro_declare_executable() and the
+      # FetchContent block of a *generated* project are executed rather than asserted.
+      - name: Build and run the project that was just scaffolded
+        run: |
+          cmake -S "${RUNNER_TEMP}/citest" -B "${RUNNER_TEMP}/citest/build" \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DFETCHCONTENT_SOURCE_DIR_AREG="${GITHUB_WORKSPACE}"
+          cmake --build "${RUNNER_TEMP}/citest/build" -j $(nproc)
+          "${RUNNER_TEMP}/citest/build/bin/citest.elf"
+
+  evals:
+    name: evaluation bank
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v5.6.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      # Grades the reference answer of every task the way a finished application
+      # would be graded. It proves the task is solvable and that the grader works;
+      # no agent and no model take part. Each distinct recipe is built once, so the
+      # repair tasks cost nothing extra.
+      - name: Grade the reference answers
+        run: python3 tools/agent/run_evals.py --self-check --sdk-root .
+
+  windows:
+    name: the Windows column of the documented commands
+    runs-on: windows-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v5.6.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      # The first command AGENTS.md prescribes, in its Windows form. It needs no
+      # interpreter, which is the point of it.
+      - name: Check the environment
+        run: tools\check-env.bat
+        shell: cmd
+
+      # On Windows the interpreter is python, not python3. Half of the documented
+      # commands differ only in that, and nothing else executed them until now.
+      - name: Check documented paths and the checkers
+        run: |
+          python tools\agent\check_agent_docs.py
+          python tools\agent\check_mutations.py --static
+          python tools\agent\check_symbols.py
+
+      - name: Check project setup
+        run: |
+          python tools\agent\setup_project.py --name citest --root "${{ runner.temp }}\citest" --mode local --sdk-root "${{ github.workspace }}"
+          if (-not (Test-Path "${{ runner.temp }}\citest\AGENTS.md")) { exit 1 }
+          if (-not (Test-Path "${{ runner.temp }}\citest\src\main.cpp")) { exit 1 }
+          python tools\agent\check_contract.py "${{ runner.temp }}\citest" --strict
+
+      # The generator is the one tool an application cannot do without, and it is
+      # a jar: it must run the same from a Windows checkout.
+      - name: Run the code generator on a recipe
+        run: |
+          Copy-Item -Recurse docs\agent\recipes\01-local-single-process "${{ runner.temp }}\gentest"
+          java -jar tools\codegen.jar --root="${{ runner.temp }}\gentest" --doc=src/services/HelloService.siml --target=generated
+          if (-not (Test-Path "${{ runner.temp }}\gentest\generated\src\services\HelloServiceProviderBase.hpp")) { exit 1 }
+
+      # tools/agent/check_recipes.py drives a GCC style command line, so it cannot compile a
+      # recipe here. This step uses the path the recipe itself documents instead: plain
+      # CMake with the default Visual Studio generator, which is the MSVC toolchain
+      # (cl.exe through vcvars, set up by the generator). Until this ran, every recipe
+      # was proven on one compiler family only, and addServiceInterface() and
+      # macro_declare_executable() were never executed by msvc from a recipe.
+      # FETCHCONTENT_SOURCE_DIR_AREG points the recipe at this checkout instead of
+      # cloning master, so what is built is the change under review.
+      - name: Build a recipe with the MSVC toolchain
+        shell: pwsh
+        run: |
+          cmake -S "${{ runner.temp }}\gentest" -B "${{ runner.temp }}\gentest\build" `
+                -DCMAKE_BUILD_TYPE=Release `
+                -DFETCHCONTENT_SOURCE_DIR_AREG="${{ github.workspace }}"
+          cmake --build "${{ runner.temp }}\gentest\build" --config Release
+          $binary = Get-ChildItem -Path "${{ runner.temp }}\gentest\build" -Recurse -Filter hello_local.exe | Select-Object -First 1
+          if (-not $binary) { throw "the recipe built no hello_local.exe" }
+          $output = & $binary.FullName 2>&1 | Out-String
+          Write-Host $output
+          if ($output -notmatch 'consumer: greeted') { throw "the recipe ran and did not print what it promises" }

@@ -77,15 +77,11 @@ python3 <areg-sdk>/tools/run-all-examples.py --tier ipc     # the ones needing m
 It starts the processes that belong together, gives the driving one a deadline, and
 passes only when every process ended as it should.
 
-To run one by hand, from a built SDK:
-
-```bash
-./product/build/.../bin/mtrouter.elf --service &    # only if the table says yes
-./product/build/.../bin/<example-binary>.elf
-```
-
-Examples build into this repository's own output layout, not into `build/bin/`. That
-layout is described in `../../CODEBASE.md` section 4.
+To run one by hand, from a built SDK, start `mtrouter` first when the table says the
+example needs it, then the example binary. Both are in the SDK's own build output
+directory, which is **not** `build/bin/` unless the SDK was configured with
+`AREG_OUTPUT_LAYOUT=OFF`; the layout is described in `../../CODEBASE.md` section 4.
+Starting and stopping the router is `50-running.md`.
 
 ---
 
@@ -97,7 +93,7 @@ repository's own build system, so copying one drags that in with it.
 
 | Purpose | Use |
 |---|---|
-| Start a new project | `recipes/`, or `tools/setup_project.py` |
+| Start a new project | `recipes/`, or `tools/agent/setup_project.py` |
 | See how a facility is used | `../../examples/` |
 
 Fuller descriptions of every example, with the reasoning behind each:

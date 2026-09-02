@@ -148,7 +148,7 @@ matches, because provider requests are pure virtual.
 - [ ] Every `ID` in the document is unique.
 - [ ] Every `Request` names an existing `Response`, or is deliberately fire and forget.
 - [ ] `Category` matches the deployment: `Public` if the consumer is another process.
-- [ ] The build ran the generator without a reported rule number.
+- [ ] The build ran the generator without a refusal.
 - [ ] You did not open a generated file to learn a name.
 
 Next: `30-provider.md` to implement the provider, `31-consumer.md` for the consumer.

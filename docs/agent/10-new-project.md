@@ -4,7 +4,7 @@ An AREG application lives outside the SDK repository and pulls the SDK in throug
 CMake. The fastest correct start is the setup script:
 
 ```bash
-python3 <areg-sdk>/tools/setup_project.py --name myapp --root ~/myapp --mode local
+python3 <areg-sdk>/tools/agent/setup_project.py --name myapp --root ~/myapp --mode local
 cd ~/myapp
 cmake -B build
 cmake --build build -j

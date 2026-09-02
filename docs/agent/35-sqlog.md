@@ -15,12 +15,19 @@ Copy the file before querying a session that is still running: the collector hol
 open, and a reader that locks it can stall the writer.
 
 ---
+A complete project that produces one -- two processes, `mtrouter`, `logcollector` and
+the `areg.init` that points them at each other -- is `recipes/08-observability/`, and
+`query_sqlog.py` beside it reads the file back by process or by scope. CI runs both,
+so both stay true.
 
 ## 1. The four tables
 
-A file at rest has exactly four tables. Two more, `filter_rules` and
-`refused_spans`, are `CREATE TEMP TABLE` -- they belong to a live viewer and vanish
-with the connection, so **never expect them in a file** and never join against them.
+A file at rest holds these four tables and no others of its own. `sqlite_master`
+lists a fifth, `sqlite_sequence`: SQLite creates it for the `AUTOINCREMENT` on
+`logs.id` and it is not part of the schema -- skip it rather than treat it as
+drift. Two more, `filter_rules` and `refused_spans`, are `CREATE TEMP TABLE` --
+they belong to a live viewer and vanish with the connection, so **never expect them
+in a file** and never join against them.
 
 | Table | One row per |
 |---|---|
@@ -35,7 +42,7 @@ with the connection, so **never expect them in a file** and never join against t
 |---|---|
 | `id` | autoincrement primary key; ties to `time_created` for stable paging |
 | `cookie_id` | which process, joins `instances.cookie_id` |
-| `scope_id` | which scope, joins `scopes.scope_id` |
+| `scope_id` | which scope, joins `scopes.scope_id`; `0` when the row has none |
 | `session_id` | pairs a `ScopeEnter` with its `ScopeExit` in the same scope |
 | `msg_type` | `1` enter, `2` message, `4` exit (`0` undefined) |
 | `msg_prio` | priority **bit flag**, see below |
@@ -43,11 +50,11 @@ with the connection, so **never expect them in a file** and never join against t
 | `msg_thread_id` | thread id |
 | `msg_log` | the message text |
 | `msg_len` | its length |
-| `msg_thread` | thread name |
+| `msg_thread` | thread name, empty when none was sent |
 | `msg_module` | executable name |
 | `time_created` | when the application logged it |
 | `time_received` | when the collector got it |
-| `time_duration` | microseconds the scope took; set on exit, `0` otherwise |
+| `time_duration` | microseconds since scope entry; the whole scope on an exit, `0` on an enter and outside a scope |
 
 `time_created` is the interesting one: rows arrive in `time_received` order but read
 correctly only in `time_created` order, which is why `idx_logs_time` exists. Order by
@@ -79,10 +86,28 @@ Dividing by 1000 gives dates in the year 57000 and is the usual first mistake.
 | `WARNING` | 128 | `0x0080` |
 | `INFO` | 256 | `0x0100` |
 | `DEBUG` | 512 | `0x0200` |
+| `IGNORE` | 1024 | `0x0400` |
 
 Useful combinations: `0x03E0` (992) is every real log priority, `0x03F0` (1008) adds
 scope enter/exit and is the viewer's default mask. Errors and worse is `96`
 (`FATAL | ERROR`).
+
+### Rows the collector wrote
+
+The collector writes rows of its own: the header row opening the file, a note per
+instance connecting or disconnecting, and any marker a viewer stored. They
+carry `IGNORE` (`0x0400`), their `scope_id` is `0`, and their `cookie_id` is the
+collector's, so they join neither `scopes` nor `instances`. No application priority
+carries that bit, which makes it the filter -- count them apart, or a count of log
+messages is too high and a report opens with the collector introducing itself. In a
+file they read `1024` or `4080` (`0x0FF0`, every bit set):
+
+```sql
+SELECT * FROM logs WHERE (msg_prio & 1024) = 0;   -- applications only
+SELECT * FROM logs WHERE (msg_prio & 1024) != 0;  -- what the collector said
+```
+
+`query_sqlog.py` drops them unless `--collector` asks.
 
 ---
 
@@ -193,6 +218,7 @@ for ts, mod, msg in db.execute(
 - [ ] `scopes` joined on `scope_id` **and** `cookie_id`.
 - [ ] Ordered by `time_created, id`, not by `id` alone.
 - [ ] No query references `filter_rules` or `refused_spans`; they are not in the file.
+- [ ] Collector rows filtered out with `(msg_prio & 1024) = 0`, or counted apart.
 
 Schema source of truth, if a column here ever disagrees:
 `framework/aregextend/db/private/LogSqliteDatabase.cpp`.

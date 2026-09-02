@@ -259,6 +259,7 @@ For comparison: **gRPC C++ sequential RTT ~116–167 μs** over Unix domain sock
 | CMake        | 3.20+                      | MSVS solution included    |
 | Java Runtime | 17+                        | Code generator only       |
 | OS           | Windows 10+, Linux, macOS  | Cygwin, MinGW inclusive   |
+| Python 3     | *optional*                 | Convenience and AI-agent scripts only. Never needed to generate, build or run |
 
 ### Quick Build
 
@@ -312,21 +313,35 @@ These two examples are the concrete proof of "same code – thread, process, net
 ```bash
 git clone https://github.com/aregtech/areg-sdk.git
 cd areg-sdk
-cmake -B build -DAREG_BUILD_EXAMPLES=OFF
+cmake -B build -DAREG_EXAMPLES=OFF
 cmake --build build -j20
 ```
 
-Then use the project setup tool:
+Then create the project. This asks three questions and needs nothing beyond the
+requirements above:
 
 ```bash
 # Linux / macOS
-./areg-sdk/tools/setup-project.sh
+areg-sdk/tools/setup-project.sh
 ```
 
 ```powershell
 # Windows
-.\areg-sdk\tools\setup-project.bat
+areg-sdk\tools\setup-project.bat
 ```
+
+<details>
+<summary>Prefer to script it? There is a Python scaffolder</summary>
+
+`tools/agent/setup_project.py` does the same thing without prompting, which suits CI
+and AI coding agents. It needs Python 3, which the interactive scripts above do not,
+and which is not required to generate, build or run anything:
+
+```bash
+python3 areg-sdk/tools/agent/setup_project.py --name myapp --root ~/myapp --mode local
+```
+
+</details>
 
 After generation, build with:
 

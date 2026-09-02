@@ -87,8 +87,36 @@ void request_read_file(const areg::String & path) final
 }
 ```
 
-To answer later, store what you need and call the response from a timer or another
-event. The consumer waits; nothing blocks on the provider side.
+### Answering later
+
+To answer after the handler has returned, the request must first be **released**.
+A stub holds one request at a time: while one is out, a second client's call is
+refused with `RequestBusy` and never reaches the handler at all.
+
+```cpp
+void request_read_file(const areg::String & path) final
+{
+    const areg::SessionID session{ unblock_current_request() };  // let the next client in
+    hand_to_worker(path, session);                               // returns at once
+}
+
+void on_worker_done(const areg::String & text, areg::SessionID session)
+{
+    if (prepare_response(session))      // false: that client is gone
+    {
+        response_read_file(text);
+    }
+}
+```
+
+`unblock_current_request()` returns the session that identifies this call; carry it
+with the work and give it back to `prepare_response()` before sending the answer.
+Both are `areg::StubBase` members, so a provider already has them.
+
+**Skipping `unblock_current_request()` is a silent defect.** With one client it works
+and looks correct; the second client is refused and nothing in the build says so. A
+worked example is `recipes/07-worker-events/`, and `examples/24_pubunblock` answers
+several clients from a timer.
 
 **Do not block inside a handler.** Handlers run on the component's dispatcher
 thread, one at a time. A sleep or a long loop inside one handler stops every

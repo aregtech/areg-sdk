@@ -698,8 +698,14 @@ AREG_API_IMPL SOCKETHANDLE areg::server_connect(const areg::SocketAddress & peer
         {
             areg::socket_configure(result);
 
-            int32_t yes = 1; // avoid the "address already in use" error message
+            int32_t yes = 1;
+#ifdef   _WIN32
+            // Refuses a second bind while this socket holds the port.
+            ::setsockopt( result, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, reinterpret_cast<const char *>(&yes), sizeof(int32_t) );
+#else   // _WIN32
+            // Rebinds a port left in TIME_WAIT and refuses a second listener.
             ::setsockopt( result, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&yes), sizeof(int32_t) );
+#endif  // _WIN32
             if (areg::RETURNED_OK != bind(result, reinterpret_cast<sockaddr *>(&serverAddr), sizeof(sockaddr_in)) )
             {
                 LOG_ERR("Server failed to bind on host [ %s ] and port number [ %u ]. Closing socket [ %u ]"

@@ -2,7 +2,7 @@
 
 The same `DataTypeList` block appears in all three documents -- `.siml`, `.fsml` and
 `.dtml` -- with the same elements and the same meaning. Learn it once here. A `.dtml`
-document is nothing but this block on its own, so that several documents can share it.
+carries that block and nothing else, so that several documents can share it.
 
 ## Where to declare a type
 
@@ -87,6 +87,32 @@ if you need one.
 
 Scalars are passed by value; `String`, structures and containers by `const T &`.
 
+## The `.dtml` document
+
+A shared document is `DataTypeDocument`, its `Overview` names the namespace the types
+land in, and **its `FormatVersion` is `1.0.0`** -- not the `1.1.0` a `.siml` and a
+`.fsml` carry. A `.dtml` written as 1.1.0 is read with a warning and anything the
+reader does not recognise is dropped.
+
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<DataTypeDocument FormatVersion="1.0.0">
+    <Overview ID="1" Name="SharedTypes" Version="1.0.0"/>
+    <DataTypeList>
+        <!-- exactly the block above -->
+    </DataTypeList>
+</DataTypeDocument>
+```
+
+`Overview/@Name` is the `Space` in `Space::Type`, the generated namespace and the
+generated file name. It does not have to match the file name. A `.dtml` has no
+attributes, no methods and no constants, and it may not include another `.dtml`.
+
+Generating a document that includes a `.dtml` generates both: name the `.siml` or the
+`.fsml`, and the shared types come with it. The generator prints
+`declared but never referenced` for every type of the shared document, because it
+counts references within that document only. It is a warning, not a defect.
+
 ## Including a shared document
 
 ```xml
@@ -115,6 +141,7 @@ rule -- ask `tools/explain_rule.py` what the number means instead of reading a s
 Grammar: `../../tools/schema/dtml.xsd`, and the identical block inside
 `../../tools/schema/siml.xsd` and `../../tools/schema/fsml.xsd`.
 
-In a clone of the SDK, the example documents under `examples/*/services/` declare
-structures, enumerations and imported types in every combination. They are not part of
-an installation.
+A complete project with a shared document, generated, built and run by CI, is
+`recipes/09-shared-types/`. In a clone of the SDK, the example documents under
+`examples/*/services/` declare structures, enumerations and imported types in every
+combination; they are not part of an installation.

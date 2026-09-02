@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="ScanService" Version="1.0.0" Category="Private">
+        <Description>Runs a scan on a worker thread and answers with what it found.</Description>
+    </Overview>
+    <MethodList>
+        <Method ID="2" Name="scan" MethodType="Request" Response="scan">
+            <Description>Asks for a scan of the given depth.</Description>
+            <ParamList>
+                <Parameter ID="3" Name="depth" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="4" Name="scan" MethodType="Response">
+            <Description>The number of items the scan found.</Description>
+            <ParamList>
+                <Parameter ID="5" Name="found" DataType="uint32"/>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>

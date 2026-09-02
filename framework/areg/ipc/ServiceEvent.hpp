@@ -104,7 +104,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// ServiceEvent and IEServiceEventConsumer declaration
+// ServiceClientEvent and ServiceClientEventConsumer declaration
 //////////////////////////////////////////////////////////////////////////
 //!< Declaration event and consumer for the service connected client.
 //!< Declare ServiceClientEvent and ServiceClientEventConsumer

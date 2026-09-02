@@ -1,0 +1,17 @@
+# Pages that are deliberately over the 8 KB ceiling, and why.
+#
+# The ceiling exists because every byte of a page is paid by the agent that opens
+# it. A page is normally split when it exceeds the ceiling. These two are not,
+# because splitting them would cost the reader more than the bytes do: each is
+# opened to look one thing up, and the answer would land on the other side of the
+# split as often as not.
+#
+# An exception is not free. A page listed here earns 70% of the credit a page
+# within the ceiling earns, so the pressure to shrink it stays. An entry naming a
+# page that does not exist, or one that is already under the ceiling, is a defect
+# and is reported.
+#
+#   <page> = <bytes> # reason
+#
+22-state-machine.md = 11264  # one document format that cannot be half-learned: the transition rules and the operations table answer each other
+51-debug.md         = 11264  # a symptom index; a split makes the reader guess which half their symptom is in. "Running the pieces" already came out of it as 50-running.md

@@ -1,0 +1,655 @@
+{
+  "_comment": [
+    "The task bank for measuring how well an agent can build, and repair, an areg",
+    "application from the documentation alone. Each task is a prompt a person could",
+    "have typed. 'expect' is what the finished application must print; 'reference'",
+    "names the recipe that is a known-good answer.",
+    "",
+    "A task with kind 'repair' hands the agent a broken copy instead of a blank",
+    "directory. 'defect' says how the break is made and 'detect' says which of the",
+    "repository's own diagnostics must report it. Both are read by",
+    "tools/agent/check_mutations.py, which asserts the diagnostic still fires without any",
+    "agent taking part. The reference of a repair task is the unbroken recipe: the",
+    "correct answer to 'fix this' is the code before it was broken.",
+    "",
+    "Graded by tools/agent/run_evals.py. Nothing here executes an agent."
+  ],
+  "tasks": [
+    {
+      "id": "01-request-response",
+      "prompt": "Build an areg application in one process. One component provides a service with a request that takes a caller name, and answers with a response saying whether it greeted the caller. A second component, in another thread, calls it once on connect, prints the outcome and quits.",
+      "expect": [
+        "provider:",
+        "consumer:"
+      ],
+      "reference": "01-local-single-process",
+      "teaches": "the smallest complete contract: request, response, two threads, quit"
+    },
+    {
+      "id": "02-ipc",
+      "prompt": "Take the same greeting service and split it into two processes: one runs the provider, the other the consumer. It has to work through mtrouter.",
+      "expect": [
+        "consumer: greeted"
+      ],
+      "binaries": 2,
+      "reference": "02-ipc-two-processes",
+      "teaches": "Category=Public, two models, two executables, the router",
+      "run": {
+        "router": true,
+        "background": [
+          "provider"
+        ],
+        "lead": "consumer"
+      }
+    },
+    {
+      "id": "03-attribute",
+      "prompt": "Build a one process application where a provider publishes a measurement as an attribute and raises an alarm broadcast when the measurement passes a threshold. A consumer subscribes to both, prints what it receives and quits after the alarm.",
+      "expect": [
+        "consumer: alarm at",
+        "consumer: measurement"
+      ],
+      "reference": "03-attributes-and-broadcast",
+      "teaches": "attribute vs broadcast, subscribing, the invalid first notification"
+    },
+    {
+      "id": "04-timer",
+      "prompt": "Build a one process application where the provider broadcasts a tick every 200 milliseconds, numbered from one. The consumer prints each tick and quits after the third.",
+      "expect": [
+        "consumer: tick 1",
+        "consumer: tick 3"
+      ],
+      "reference": "04-timer",
+      "teaches": "Timer, TimerConsumer, starting a timer on the component thread"
+    },
+    {
+      "id": "05-two-services",
+      "prompt": "Build a one process application with two services. The first publishes a meter reading as an attribute. A middle component consumes that and, whenever the reading is valid, reports it on a second service of its own. A third component consumes the report, prints it and quits.",
+      "expect": [
+        "collector:",
+        "display:"
+      ],
+      "reference": "05-two-services",
+      "teaches": "one component that is provider and consumer at once; service composition"
+    },
+    {
+      "id": "06-state-machine",
+      "prompt": "Build a one process application for a gate. The gate opens when asked, stays open for 300 milliseconds and then closes by itself, and it must not open twice. Drive it with a state machine, not with flags in the component. A consumer asks it to open, prints every change and quits when it closes.",
+      "expect": [
+        "gate open",
+        "gate is closed"
+      ],
+      "reference": "06-state-machine",
+      "teaches": "when a machine is warranted, .fsml authoring, the action handler"
+    },
+    {
+      "id": "07-shared-types",
+      "prompt": "Build a one process application where two different services both carry the same structure: a reading with a sensor name and a value. Declare that structure once, in a shared document, and use it from both services.",
+      "expect": [
+        "collector: reading 42 from t-1",
+        "display: report 42 from t-1"
+      ],
+      "teaches": ".dtml, IncludeList, why a structure is not declared twice",
+      "reference": "09-shared-types"
+    },
+    {
+      "id": "08-design",
+      "prompt": "A monitor watches three worker processes and has to know each worker's state at any moment, raise an alarm when one stops responding, and let an operator ask for a summary. Design the services first, then build it in one process with three worker components.",
+      "expect": [
+        "monitor: alarm from Worker3",
+        "operator: 2 of 3 alive"
+      ],
+      "teaches": "decomposition: how many services, attribute vs broadcast vs request, role names",
+      "reference": "11-monitored-workers"
+    },
+    {
+      "id": "09-worker-thread",
+      "prompt": "Build a one process application whose request needs work too slow for a handler. Do that work on a component worker thread, hand it over with a custom event, send the result back with a second custom event, and answer the request from there. Print what each side did.",
+      "expect": [
+        "scanner: asked for depth 3",
+        "worker: scanned depth 3",
+        "client: found 14"
+      ],
+      "reference": "07-worker-events",
+      "teaches": "a worker thread and custom events: how a handler stays unblocked"
+    },
+    {
+      "id": "10-watchdog-and-config",
+      "prompt": "Take that application and give its component thread a watchdog, then turn logging on through config/areg.init so the scopes of your own code are written to a file and nothing else is.",
+      "expect": [
+        "scanner: asked for depth 3",
+        "worker: scanned depth 3",
+        "client: found 14"
+      ],
+      "reference": "07-worker-events",
+      "teaches": "BEGIN_REGISTER_THREAD_EX with startWatchdog in setup(); areg.init as configuration an application ships"
+    },
+    {
+      "id": "11-observability",
+      "prompt": "Take a two process application and stop it printing to two consoles: send the logs of both processes to logcollector instead, have the collector save them in a .sqlog database, and say how to query that database for the scopes of one process.",
+      "expect": [
+        "consumer: greeted"
+      ],
+      "binaries": 2,
+      "run": {
+        "router": true,
+        "background": [
+          "provider"
+        ],
+        "lead": "consumer"
+      },
+      "reference": "08-observability",
+      "teaches": "remote logging, logcollector on 8282 against mtrouter on 8181, and reading a .sqlog database; asserted end to end by tools/agent/check_observability.py"
+    },
+    {
+      "id": "12-runtime-model",
+      "prompt": "Build a one process application where the number of consumer components is decided when the application starts, not when it is compiled. One provider answers all of them; the application ends when the last one has its answer.",
+      "expect": [
+        "provider: hello, Consumer1",
+        "consumer: greeted 3"
+      ],
+      "reference": "10-runtime-model",
+      "teaches": "areg::Model, add_thread, add_component, add_supported_service, add_model_unique: the runtime model, and when the macros are not enough"
+    },
+    {
+      "id": "13-from-an-example",
+      "prompt": "The SDK ships an example of a service published to another process through mtrouter. Find which one it is rather than guessing, read what it does, and build your own two process version of the same shape: a provider process and a consumer process that greets it by name and exits when it is answered.",
+      "expect": [
+        "consumer: greeted"
+      ],
+      "binaries": 2,
+      "run": {
+        "router": true,
+        "background": [
+          "provider"
+        ],
+        "lead": "consumer"
+      },
+      "reference": "02-ipc-two-processes",
+      "teaches": "the examples/ corpus is a reference to be looked up, not read end to end: docs/agent/41-examples.md says which example shows which facility"
+    },
+    {
+      "id": "14-testing-a-consumer",
+      "prompt": "A consumer sends one request and handles the answer. Prove its two paths work without a real provider: register a provider that answers from a script, drive a success and a refusal, assert both, and make the program exit non-zero when an assertion fails.",
+      "expect": [
+        "a scripted success reaches the consumer ... PASS",
+        "a scripted refusal reaches the consumer ... PASS",
+        "tests: 2 passed, 0 failed"
+      ],
+      "reference": "12-testing",
+      "teaches": "a component is tested by registering a provider that answers from a script under the role name the consumer depends on; the assertions run when the last answer arrives, counted, never after a sleep"
+    },
+    {
+      "id": "r01-role-typo",
+      "kind": "repair",
+      "prompt": "This application prints the provider line and then hangs. The consumer never receives an answer and the process never exits. Diagnose it and fix it.",
+      "expect": [
+        "provider: hello,",
+        "consumer: greeted"
+      ],
+      "reference": "01-local-single-process",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "REGISTER_DEPENDENCY(\"ServiceProvider\")",
+        "replace": "REGISTER_DEPENDENCY(\"ServiceProvidor\")"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "P-03"
+      },
+      "teaches": "the role name is the routing identity: a mismatch compiles cleanly and never connects"
+    },
+    {
+      "id": "r02-blocking-handler",
+      "kind": "repair",
+      "prompt": "The whole application freezes for seconds after the first call, and a second component in the same thread stops responding while it does. Find out why and fix it.",
+      "expect": [
+        "provider: hello,",
+        "consumer: greeted"
+      ],
+      "reference": "01-local-single-process",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "        std::cout << \"provider: hello, \" << client << std::endl;",
+        "replace": "        std::this_thread::sleep_for(std::chrono::seconds(2));\n        std::cout << \"provider: hello, \" << client << std::endl;"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "P-06"
+      },
+      "teaches": "a handler runs on the dispatcher thread, so blocking one stops every component in it"
+    },
+    {
+      "id": "r03-early-request",
+      "kind": "repair",
+      "prompt": "The request is sent but never answered, and nothing is printed by the consumer. Debugging it shows the call leaves before anything is connected.",
+      "expect": [
+        "provider: hello,",
+        "consumer: greeted"
+      ],
+      "reference": "01-local-single-process",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "        , HelloServiceConsumerBase(entry.mDependencyServices[0].mRoleName, owner)\n    { }",
+        "replace": "        , HelloServiceConsumerBase(entry.mDependencyServices[0].mRoleName, owner)\n    {\n        request_hello_service(role_name());\n    }"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "P-04"
+      },
+      "teaches": "the first legal moment for a request is inside service_connected()"
+    },
+    {
+      "id": "r04-quit-on-disconnect",
+      "kind": "repair",
+      "prompt": "The application exits as soon as the provider is restarted, instead of reconnecting and carrying on. Fix it.",
+      "expect": [
+        "provider: hello,",
+        "consumer: greeted"
+      ],
+      "reference": "01-local-single-process",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "            if (areg::is_service_connected(status))\n            {\n                request_hello_service(role_name());\n            }",
+        "replace": "            if (areg::is_service_connected(status))\n            {\n                request_hello_service(role_name());\n            }\n            else if (status == areg::ServiceConnectionState::Disconnected)\n            {\n                areg::Application::signal_quit();\n            }"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "P-05"
+      },
+      "teaches": "Disconnected, ConnectionLost and Failed are transient; only Rejected and Shutdown are terminal"
+    },
+    {
+      "id": "r05-invented-member",
+      "kind": "repair",
+      "prompt": "A build fails on a method of the generated consumer base that the documentation does not seem to describe. Work out where the name should have come from and fix it.",
+      "expect": [
+        "provider: hello,",
+        "consumer: greeted"
+      ],
+      "reference": "01-local-single-process",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "    void response_hello_service(bool success) final",
+        "replace": "    void broadcast_service_ready(bool ready) final\n    {   }\n\n    void response_hello_service(bool success) final"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "P-02"
+      },
+      "teaches": "every generated member is derived from the document; none is invented"
+    },
+    {
+      "id": "r06-private-header",
+      "kind": "repair",
+      "prompt": "This compiles here and fails against an installed SDK, where the header it includes is not shipped. Fix the include.",
+      "expect": [
+        "provider: hello,",
+        "consumer: greeted"
+      ],
+      "reference": "01-local-single-process",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "#include \"areg/component/ComponentThread.hpp\"",
+        "replace": "#include \"areg/component/ComponentThread.hpp\"\n#include \"areg/component/private/ClientInfo.hpp\""
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "P-07"
+      },
+      "teaches": "only the headers above a private/ directory are API"
+    },
+    {
+      "id": "r07-exception",
+      "kind": "repair",
+      "prompt": "This code reports failure by throwing, and the exception reaches no handler: the process terminates. Report the failure the way the framework does.",
+      "expect": [
+        "provider: hello,",
+        "consumer: greeted"
+      ],
+      "reference": "01-local-single-process",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "        response_hello_service(true);",
+        "replace": "        if (client.is_empty())\n        {\n            throw std::runtime_error(\"empty client\");\n        }\n        response_hello_service(true);"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "P-08"
+      },
+      "teaches": "AREG neither throws nor catches; return bool, std::optional or an error code"
+    },
+    {
+      "id": "r08-duplicate-role",
+      "kind": "repair",
+      "prompt": "Two components claim one identity and only one of them is ever reached. Find the clash and fix it.",
+      "expect": [
+        "provider: hello,",
+        "consumer: greeted"
+      ],
+      "reference": "01-local-single-process",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "    BEGIN_REGISTER_THREAD(\"ConsumerThread\")",
+        "replace": "    BEGIN_REGISTER_THREAD(\"SecondProviderThread\")\n        BEGIN_REGISTER_COMPONENT(\"ServiceProvider\", ServiceProvider)\n            REGISTER_IMPLEMENT_SERVICE(HelloService::ServiceName, HelloService::InterfaceVersion)\n        END_REGISTER_COMPONENT(\"ServiceProvider\")\n    END_REGISTER_THREAD(\"SecondProviderThread\")\n\n    BEGIN_REGISTER_THREAD(\"ConsumerThread\")"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "P-09"
+      },
+      "teaches": "a role name is unique in a process; it is the routing identity"
+    },
+    {
+      "id": "r09-camelcase-override",
+      "kind": "repair",
+      "prompt": "This does not compile: the override of the generated base class is rejected. The name was written from memory. Correct it.",
+      "expect": [
+        "provider: hello,",
+        "consumer: greeted"
+      ],
+      "reference": "01-local-single-process",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "    void request_hello_service(const areg::String & client) final",
+        "replace": "    void requestHelloService(const areg::String & client) final"
+      },
+      "detect": {
+        "by": "compiler"
+      },
+      "teaches": "a generated member name is derived from the document by a fixed rule; camelCase is what the framework was called before it was renamed"
+    },
+    {
+      "id": "r10-no-router",
+      "kind": "repair",
+      "prompt": "It works when both components are in one process and does nothing when they are split into two. Nothing is printed and nothing fails.",
+      "expect": [
+        "consumer: greeted"
+      ],
+      "binaries": 2,
+      "run": {
+        "router": true,
+        "background": [
+          "provider"
+        ],
+        "lead": "consumer"
+      },
+      "reference": "02-ipc-two-processes",
+      "defect": {
+        "environment": "no-router"
+      },
+      "detect": {
+        "by": "runtime",
+        "absent": [
+          "consumer: greeted"
+        ]
+      },
+      "teaches": "a Public service reaches nothing without mtrouter, and the consumer waits instead of failing"
+    },
+    {
+      "id": "r11-missing-subscription",
+      "kind": "repair",
+      "prompt": "The consumer connects and then nothing happens: the alarm handler is never called and the application never exits. Nothing fails and nothing is logged. Find out why and fix it.",
+      "expect": [
+        "consumer: alarm at 45",
+        "consumer: measurement taken"
+      ],
+      "reference": "03-attributes-and-broadcast",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "                notify_on_broadcast_alarm_raised(true);\n",
+        "replace": ""
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "P-12"
+      },
+      "teaches": "a broadcast reaches a consumer only after it subscribes; the override without notify_on_broadcast_* compiles, runs and waits"
+    },
+    {
+      "id": "r12-legacy-name",
+      "kind": "repair",
+      "prompt": "This was written from memory of an older areg and does not compile: the type it names no longer exists. Find the current spelling.",
+      "expect": [
+        "provider: hello,",
+        "consumer: greeted"
+      ],
+      "reference": "01-local-single-process",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "        std::cout << \"provider: hello, \" << client << std::endl;",
+        "replace": "        std::cout << \"provider: hello, \" << NEString::getString(client) << std::endl;"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "B-05"
+      },
+      "teaches": "the NE and TE prefixes are gone from the public API; a name recalled from training data does not exist"
+    },
+    {
+      "id": "r13-worker-consumer-name",
+      "kind": "repair",
+      "prompt": "The scanner never scans. The application starts, the client asks for a scan and nothing answers; the worker thread is registered and it runs nothing. Nothing fails and nothing is logged. Find out why and fix it.",
+      "expect": [
+        "worker: scanned depth",
+        "client: found"
+      ],
+      "reference": "07-worker-events",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "            REGISTER_WORKER_THREAD(Scanner::ThreadName.data(), Scanner::ConsumerName.data())",
+        "replace": "            REGISTER_WORKER_THREAD(\"ScanWorkerThread\", \"ScanWorkerConsumerTypo\")"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "P-11"
+      },
+      "teaches": "the consumer name in REGISTER_WORKER_THREAD must be a name the component answers to from worker_thread_consumer(); an unknown name yields nullptr and the worker thread runs nothing"
+    },
+    {
+      "id": "r14-watchdog-off",
+      "kind": "repair",
+      "prompt": "The thread declares a watchdog timeout and the watchdog never bites: a stuck component is never restarted. The timeout is not zero and the code compiles. Find out why and fix it.",
+      "expect": [
+        "worker: scanned depth",
+        "client: found"
+      ],
+      "reference": "07-worker-events",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "    areg::Application::setup(true, true, true, true, true);",
+        "replace": "    areg::Application::setup(true, true, true, true, false);"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "P-10"
+      },
+      "teaches": "a non-zero timeout in BEGIN_REGISTER_THREAD_EX does nothing while the watchdog manager is off; setup() takes startWatchdog as its fifth argument and it defaults to false"
+    },
+    {
+      "id": "r15-string-in-log-macro",
+      "kind": "repair",
+      "prompt": "The log line for the greeting prints rubbish where the client name should be, or crashes. The format string and the argument count are right. Find out why and fix it.",
+      "expect": [
+        "consumer: greeted"
+      ],
+      "binaries": 2,
+      "run": {
+        "router": true,
+        "background": [
+          "provider"
+        ],
+        "lead": "consumer"
+      },
+      "reference": "08-observability",
+      "defect": {
+        "file": "src/provider.cpp",
+        "find": "        LOG_INFO(\"greeting %s\", client.as_string());",
+        "replace": "        LOG_INFO(\"greeting %s\", client);"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "B-01"
+      },
+      "teaches": "a printf style log macro takes varargs, so an areg::String has to be passed as .as_string(); the object itself is not a const char *"
+    },
+    {
+      "id": "r16-camelcase-accessor",
+      "kind": "repair",
+      "prompt": "This was written from memory of an older areg and does not compile: the accessor it calls has a different name now. Find the current spelling.",
+      "expect": [
+        "provider: hello,",
+        "consumer: greeted"
+      ],
+      "reference": "01-local-single-process",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "        std::cout << \"provider: hello, \" << client << std::endl;",
+        "replace": "        std::cout << \"provider: hello, \" << client << std::endl;\n        std::cout << \"provider: name is \" << client.getLength() << \" long\" << std::endl;"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "B-07"
+      },
+      "teaches": "every framework method is snake_case: getLength() is length(), getName() is name(), isValid() is is_valid()"
+    },
+    {
+      "id": "r17-range-for-container",
+      "kind": "repair",
+      "prompt": "The collector no longer compiles. The loop over the readings it has kept is written the way a std::vector loop is written. Find out why an areg container will not take it and fix it.",
+      "expect": [
+        "collector: reading 42 from t-1",
+        "display: report 42 from t-1"
+      ],
+      "reference": "09-shared-types",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "        for (uint32_t i = 0; i < mHistory.size(); ++ i)\n        {\n            const SharedTypes::Reading & kept = mHistory[i];\n",
+        "replace": "        for (const SharedTypes::Reading & kept : mHistory)\n        {\n"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "B-02"
+      },
+      "teaches": "areg::ArrayList, areg::HashMap and areg::LinkedList expose no begin() and no end(); a range-for does not compile, and the loop is by index over size()"
+    },
+    {
+      "id": "r18-size-zero-not-empty",
+      "kind": "repair",
+      "prompt": "This compiles and runs. The emptiness test on the reading history is spelled the long way. Say it the way the base API says it.",
+      "expect": [
+        "collector: reading 42 from t-1",
+        "display: report 42 from t-1"
+      ],
+      "reference": "09-shared-types",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "        if (mHistory.is_empty())",
+        "replace": "        if (mHistory.size() == 0)"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "B-03"
+      },
+      "teaches": "a container counts with size() and tests emptiness with is_empty(); comparing the count to zero is the spelling recalled from another library"
+    },
+    {
+      "id": "r19-te-container-header",
+      "kind": "repair",
+      "prompt": "The build stops at the first include: the container header is not found. The name was recalled from an older areg. Find the current one.",
+      "expect": [
+        "collector: reading 42 from t-1",
+        "display: report 42 from t-1"
+      ],
+      "reference": "09-shared-types",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "#include \"areg/base/ArrayList.hpp\"",
+        "replace": "#include \"areg/base/TEArrayList.hpp\""
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "B-04"
+      },
+      "teaches": "the container headers are ArrayList.hpp, HashMap.hpp and LinkedList.hpp, and the types are areg::ArrayList, areg::HashMap and areg::LinkedList, with no TE prefix"
+    },
+    {
+      "id": "r20-generated-file-copied",
+      "kind": "repair",
+      "prompt": "A header under src/ was edited to add a method, and every build puts it back the way it was. Find out where the file really comes from and change the right thing.",
+      "expect": [
+        "provider: hello,",
+        "consumer: greeted"
+      ],
+      "reference": "01-local-single-process",
+      "defect": {
+        "file": "src/HelloServiceProviderBase.hpp",
+        "create": "/************************************************************************\n * \\file  src/HelloServiceProviderBase.hpp\n * \\brief Created by Areg SDK code generator tool from HelloService.siml\n ************************************************************************/\n#pragma once\n"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "P-01"
+      },
+      "teaches": "a file carrying the generator banner is a copy of one under the generate target; the next build rewrites the original and the copy silently stops matching it, so the service document is what changes"
+    },
+    {
+      "id": "r21-ie-prefix-name",
+      "kind": "repair",
+      "prompt": "This include does not resolve. The interface it names was in areg once and the header cannot be found now. Find the current spelling.",
+      "expect": [
+        "provider: hello,",
+        "consumer: greeted"
+      ],
+      "reference": "01-local-single-process",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "#include \"areg/component/ComponentLoader.hpp\"",
+        "replace": "#include \"areg/component/ComponentLoader.hpp\"\n#include \"areg/component/IEProxyListener.hpp\""
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "B-06"
+      },
+      "teaches": "the IE prefix is gone from the public API; the interface is areg::ProxyListener, and a name recalled from training data does not exist"
+    },
+    {
+      "id": "r22-deferred-response-not-released",
+      "kind": "repair",
+      "prompt": "The first client is served and the second is refused with RequestBusy. This provider answers its request through a session id instead of returning a response directly. Find the call it never makes.",
+      "expect": [
+        "provider: hello,",
+        "consumer: greeted"
+      ],
+      "reference": "01-local-single-process",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "        response_hello_service(true);",
+        "replace": "        const areg::SessionID session{ 0u };\n        prepare_response(session);\n        response_hello_service(true);"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "P-13"
+      },
+      "teaches": "a request is held until its handler returns; answering later needs unblock_current_request() inside the handler to release it and hand back the session id that prepare_response() restores"
+    },
+    {
+      "id": "r23-invented-broadcast-call",
+      "kind": "repair",
+      "prompt": "This provider calls a broadcast on its generated base. The build fails on a name the base class does not have. Decide where the name was supposed to come from.",
+      "expect": [
+        "provider: hello,",
+        "consumer: greeted"
+      ],
+      "reference": "01-local-single-process",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "        response_hello_service(true);",
+        "replace": "        broadcast_hello_done(client);\n        response_hello_service(true);"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "P-02"
+      },
+      "teaches": "every member of a generated base comes from the .siml document; a name that is not in the document does not exist, whether it is overridden or called"
+    }
+  ]
+}

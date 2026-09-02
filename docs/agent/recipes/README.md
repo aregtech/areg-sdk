@@ -11,6 +11,12 @@ the service document. Copying costs nothing to read; adapting an example costs a
 | `04-timer/` | A provider that broadcasts on every period of a timer | no |
 | `05-two-services/` | Two services and a component that is provider of one and consumer of the other | no |
 | `06-state-machine/` | A service whose logic is a `.fsml` state machine, with its action handler | no |
+| `07-worker-events/` | A worker thread doing the slow part of a request, a custom event each way, a watchdog and `config/areg.init` | no |
+| `08-observability/` | Two processes logging to `logcollector` instead of their own consoles, collected into a `.sqlog` database, which `query_sqlog.py` beside the recipe reads back | yes |
+| `09-shared-types/` | Two services carrying one structure, declared once in a `.dtml` and included by both, kept in an `areg::ArrayList` | no |
+| `10-runtime-model/` | The model built with `areg::Model` at run time, when the number of components is not known at compile time | no |
+| `11-monitored-workers/` | A worked decomposition: two services, three workers, a monitor holding one proxy per worker, an operator | no |
+| `12-testing/` | A consumer tested against a scripted provider: canned answers, assertions on the worker's own thread, and a non-zero exit code when one fails | no |
 
 ## How to use one
 
@@ -59,8 +65,10 @@ build\bin\hello_provider.exe
 build\bin\hello_consumer.exe
 ```
 
-`--service` is the unattended mode; the console default paints a live status display
-that only makes sense on a terminal. Both route the same.
+`--service` is the unattended mode and is required. The console default reads
+commands from a terminal; started from a shell with no terminal it keeps running,
+paints its display and never binds 8181, with no error. Check the port with
+`ss -ltn | grep 8181`, not the process list.
 
 Only one router can hold port 8181. If one is already running, a second prints its
 banner, binds nothing and routes nothing, so check the port rather than assuming the
@@ -77,7 +85,7 @@ Every recipe here has been generated, compiled and, where it ends by itself, run
 From a clone of the SDK, this repeats the check:
 
 ```bash
-python3 tools/check_recipes.py --lib build/bin
+python3 tools/agent/check_recipes.py --lib build/bin
 ```
 
 A recipe that no longer compiles is worse than no recipe, because it is copied first

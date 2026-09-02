@@ -1,8 +1,8 @@
 # Logging from an application
 
 AREG logs through scopes. A scope is declared once per file and entered once per
-function; messages inside it carry its name, and a scope can be switched on and off
-by name at run time without rebuilding.
+function; its messages carry its name, and it can be switched on and off by name at
+run time without rebuilding.
 
 ```cpp
 #include "areg/logging/areg_log.h"
@@ -59,16 +59,10 @@ Nothing is written until a configuration file says so. **A correct `LOG_INFO` th
 prints nothing is almost always a missing or unread configuration file, not a bug in
 the code.**
 
-The framework reads `config/areg.init` **relative to the executable's own folder**.
-For a project that builds into `build/bin/`, that path is:
-
-```
-build/bin/config/areg.init
-```
-
-Not `build/bin/areg.init`. A file placed next to the executable instead of inside its
-`config/` subdirectory is never read. Pass a different path as the sixth argument of
-`areg::Application::setup()` if you want one somewhere else.
+The framework reads `config/areg.init` **relative to the executable's own folder**,
+so for a project that builds into `build/bin/` that path is
+`build/bin/config/areg.init` -- inside `config/`, not beside the executable. Getting
+the file there, and everything in it that is not logging, is `36-config.md`.
 
 Copy `<areg-sdk>/framework/areg/resources/areg.init` and edit it, or write the
 minimum by hand:
@@ -118,42 +112,17 @@ log::myapp::scope::myapp_Worker*              = DEBUG | SCOPE ;   # the whole cl
 log::myapp::scope::*                          = DEBUG | SCOPE ;   # the application
 ```
 
-Turning one scope on is the cheapest way to answer "did this handler ever run".
-Enable the scope of the handler that should have fired: if it never entered, the
-message never arrived and the fault is in the wiring; if it entered, the fault is in
-the logic.
+Turning one scope on answers "did this handler ever run". If the scope never
+entered, the message never arrived and the fault is in the wiring; if it entered,
+the fault is in the logic.
 
-Full reference, including layout formats and the database target:
-`../wiki/04a-logging-config.md`.
-
-### Getting the file there
-
-Nothing copies `areg.init` into the build output for you. Put the file in your
-project as `config/areg.init` and add one line to the `CMakeLists.txt` that builds
-the executable, after `include(${AREG_CMAKE})`:
-
-```cmake
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/config/areg.init"
-    "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/config/areg.init"
-    COPYONLY)
-```
-
-`CMAKE_RUNTIME_OUTPUT_DIRECTORY` is the `bin` directory areg already builds into, so
-this lands the file exactly where the application looks. Re-run `cmake -B build`
-after editing the file, or copy it by hand:
-
-```bash
-mkdir -p build/bin/config && cp config/areg.init build/bin/config/
-```
-
-```bat
-mkdir build\bin\config 2>nul & copy config\areg.init build\bin\config\
-```
+Layout formats and the database target: `../wiki/04a-logging-config.md`.
 
 ---
 
 ## 4. Collecting the logs of several processes
+
+A project with this wired: `recipes/08-observability/`.
 
 A multi-process application writes to as many consoles as it has processes.
 `logcollector` gathers them into one place and `logobserver` displays them.
@@ -183,38 +152,20 @@ second `target` line under the one from section 3.
 different ports; a router that is running says nothing about whether logs are being
 collected.
 
-Then start the pieces in this order:
+Start `logcollector` before the applications, then `logobserver` to watch them.
+Both commands, their Windows form, the `--log=db` option that persists a SQLite
+`.sqlog` instead of only displaying, and the console commands that change a scope's
+priority live are one table in `50-running.md`. Reading the file back, with the
+schema and ready-made queries, is `35-sqlog.md`.
 
-```bash
-./build/bin/logcollector.elf &      # start before the applications
-./build/bin/logobserver.elf         # connects to the collector and displays the logs
-./build/bin/myapp.elf
-```
+Two things about this path are worth knowing before it surprises you:
 
-```bat
-start "" build\bin\logcollector.exe
-start "" build\bin\logobserver.exe
-build\bin\myapp.exe
-```
-
-`logobserver` displays; it does not store. Persisting is the **collector's** job and
-is off by default -- start it with `--log=db` to write a SQLite `.sqlog` file into
-`./logs`, optionally naming the file:
-
-```bash
-./build/bin/logcollector.elf --log=db ./logs/session_%time%.sqlog
-```
-
-Reading that file back, with the schema and ready-made queries, is `35-sqlog.md`.
-
-An application whose collector is not running still runs normally: remote logging
-fails quietly and is retried. That is deliberate, and it also means **a silent
-`logobserver` is not evidence that the application is broken** -- check that
-`logcollector` is up and that both sides agree on port 8282 first.
-
-`logobserver` changes priorities live, so a scope can be switched on without editing
-the file or restarting anything. Its console commands, and how to drive it from a
-script, are in `51-debug.md`.
+- `logobserver` **displays; it does not store.** Persisting is the collector's job
+  and is off unless it was started with `--log=db`.
+- An application whose collector is not running still runs normally: remote logging
+  fails quietly and is retried. **A silent `logobserver` is not evidence that the
+  application is broken** -- check that `logcollector` is up and that both sides
+  agree on port 8282 first.
 
 ---
 
@@ -227,11 +178,9 @@ They answer different questions and both belong in an application.
 | `LOG_*` | What the program did, for diagnosis. Off by default, collectable, queryable. |
 | `std::cout` | The result the user or a test harness reads. Always visible. |
 
-The recipes in `recipes/` print with `std::cout` so a scenario can check
-their output. A real application prints its result and logs its reasoning.
-
-Collected logs are a plain SQLite database, so any SQLite client can query them:
-`../wiki/04e-log-database-format.md`.
+The recipes print with `std::cout` so a scenario can check their output. A real
+application prints its result and logs its reasoning. Collected logs are plain SQLite:
+`35-sqlog.md`, or `../wiki/04e-log-database-format.md`.
 
 ---
 
