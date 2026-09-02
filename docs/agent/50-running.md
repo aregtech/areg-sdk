@@ -12,7 +12,7 @@ them and change what they do while they run. Why an application does not work is
 | `mtrouter` | provider and consumer are in different processes | `./build/bin/mtrouter.elf --service &` | kill the process |
 | the application | always | `./build/bin/<name>.elf` | its own exit, or Ctrl-C |
 | `logcollector` | you want the logs of several processes in one place | `./build/bin/logcollector.elf --service &` | kill the process |
-| `logobserver` | you want to watch those logs live | `./build/bin/logobserver.elf` | Ctrl-C |
+| `logobserver` | you want to watch those logs live, or to change a scope | `./build/bin/logobserver.elf -n -q` | its own exit |
 
 **`--service` is not optional.** Console mode is the default, and it reads commands
 from a terminal. A shell with no terminal -- which is every shell an agent runs in --
@@ -31,8 +31,8 @@ ss -ltn | grep 8181        # the router
 ss -ltn | grep 8282        # the collector
 ```
 
-`logobserver` is the exception: it is meant to be driven from a console, so it keeps
-one and takes no `--service`.
+`logobserver` is the exception: it takes no `--service`. With no option it opens a
+console; with any option below it runs and exits, which is the form an agent wants.
 
 `mtrouter` needs no configuration to route. **`logcollector` does:** an application
 sends nothing to it until `config/areg.init` enables the remote target and names port
@@ -71,8 +71,8 @@ All four take the same options, and no option at all means console:
 ## Changing what is logged while it runs
 
 `logobserver` controls the log levels of every connected application live, so a scope
-can be switched on without editing `areg.init` and restarting anything. Type these at
-its prompt:
+can be switched on without editing `areg.init` and restarting anything. These work
+both on its command line and at its prompt:
 
 | Command | Does |
 |---|---|
@@ -82,8 +82,18 @@ its prompt:
 | `-p` / `-r` / `-x` | pause, restart and stop logging |
 | `-q` / `--quit` | leave |
 
-Only `-l <file>` is read from the command line at start-up; the rest are console
-commands, so an agent driving `logobserver` has to write them to its standard input.
+```bash
+./build/bin/logobserver.elf -n -q                               # list the connected applications
+./build/bin/logobserver.elf -o "*::areg_base_NESocket=DEBUG" -q # raise one scope everywhere
+```
+
+**Use the command line.** The observer connects itself, waits for the collector to
+report the applications and their scopes -- up to 15 seconds, and it says so when the
+data never came -- then runs the options in the order written and exits, printing
+plain lines that pipe and grep. `-c` opens the console afterwards instead of exiting.
+The wait is the point: a command issued the instant the socket opens finds nothing.
+
+At the prompt the connection is **not** automatic: type `-r` first, then `-n`.
 
 **Order matters once, at the start.** Start `mtrouter` before the processes that need
 it. After that, order is free: a consumer started before its provider waits and

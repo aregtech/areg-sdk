@@ -22,6 +22,7 @@
 #include "areg/base/DateTime.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/String.hpp"
+#include "areg/base/Thread.hpp"
 #include "areg/persist/ConfigManager.hpp"
 #include "aregextend/service/SystemServiceDefs.hpp"
 #include "areglogger/client/LogObserverApi.h"
@@ -41,6 +42,7 @@ namespace
     {
           {"Usage of Areg Log Observer console application :"}
         , areg::ext::MSG_SEPARATOR
+        , {"-c, --console   : Run the console after the options. Usage: --console"}
         , {"-e, --query     : Query the list of logging scopes. Usage: --query *, \'*\' can be a cookie ID."}
         , {"-f, --config    : Save current configuration.       Usage: --config"}
         , {"-h, --help      : Display this message on console.  Usage: --help"}
@@ -52,7 +54,20 @@ namespace
         , {"-r, --restart   : Start / continue log observer.    Usage: --restart"}
         , {"-x, --stop      : Stop log observer.                Usage: --stop"}
         , areg::ext::MSG_SEPARATOR
+        , {"The options are accepted on the console prompt and in the command line."}
+        , {"In the command line the observer connects, waits for the data of the log collector,"}
+        , {"runs the options in the given order and exits, unless \'--console\' is specified."}
+        , areg::ext::MSG_SEPARATOR
     };
+
+    //!< The maximum time in milliseconds to wait for the data of the log collector.
+    constexpr uint32_t  MS_WAIT_DATA    { 15000 };
+    //!< The time in milliseconds to wait for the first answer of the log collector after connecting.
+    constexpr uint32_t  MS_SETTLE_DATA  { 3000 };
+    //!< The time in milliseconds between 2 checks of the received data.
+    constexpr uint32_t  MS_WAIT_SLICE   { 100 };
+    //!< The time in milliseconds to let the requests of the command line options complete.
+    constexpr uint32_t  MS_DRAIN_DATA   { 2000 };
 
     struct LoggerConnect
     {
@@ -67,6 +82,48 @@ namespace
     LoggerConnect   _logConnect;
     ListInstances   _listInstances;
     MapScopes       _mapScopes;
+
+    //!< Guards the list of connected instances and the map of their scopes.
+    areg::Mutex     _dataLock( false );
+
+    //!< True while the options given in the command line are executed. The console is not used.
+    bool            _cmdLineMode{ false };
+
+    //!< True when the log collector reported the list of connected instances at least once.
+    bool            _hasInstances{ false };
+
+    //!< Locks or unlocks the console. Has no effect in the command line mode.
+    void _lock_console( bool doLock )
+    {
+        if ( _cmdLineMode == false )
+        {
+            areg::ext::Console & console = areg::ext::Console::instance( );
+            if ( doLock )
+            {
+                console.lock_console( );
+            }
+            else
+            {
+                console.unlock_console( );
+            }
+        }
+    }
+
+    //!< Outputs one line at the given console coordinate and steps to the next line.
+    //!< In the command line mode the text goes to the standard output.
+    void _output_line( areg::ext::Console::Coord & pos, const char * text )
+    {
+        if ( _cmdLineMode )
+        {
+            ::printf( "%s\n", text );
+        }
+        else
+        {
+            areg::ext::Console::instance( ).output_txt( pos, text );
+        }
+
+        ++ pos.posY;
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -75,7 +132,8 @@ namespace
 
 const areg::ext::OptionParser::OptionSetup LogObserver::ValidOptions[ ]
 {
-      { "-e", "--query"     , static_cast<int32_t>(LoggerOption::CMD_LogQueryScopes)  , areg::ext::OptionParser::STRING_NO_RANGE , {}, {}, {} }
+      { "-c", "--console"   , static_cast<int32_t>(LoggerOption::CMD_LogConsole)      , areg::ext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-e", "--query"     , static_cast<int32_t>(LoggerOption::CMD_LogQueryScopes)  , areg::ext::OptionParser::STRING_NO_RANGE , {}, {}, {} }
     , { "-f", "--config"    , static_cast<int32_t>(LoggerOption::CMD_LogSaveConfig)   , areg::ext::OptionParser::STRING_NO_RANGE , {}, {}, {} }
     , { "-h", "--help"      , static_cast<int32_t>(LoggerOption::CMD_LogPrintHelp)    , areg::ext::OptionParser::NO_DATA         , {}, {}, {} }
     , { "-l", "--load"      , static_cast<int32_t>(LoggerOption::CMD_LogLoad)         , areg::ext::OptionParser::STRING_NO_RANGE , {}, {}, {} }
@@ -106,6 +164,10 @@ void LogObserver::_run_console_input_extended()
     console.enable_console_input(true);
     console.output_txt(areg::ext::COORD_STATUS_MSG, LogObserver::STATUS_INITIALIZED);
     console.output_txt(areg::ext::COORD_USER_INPUT, areg::ext::FORMAT_WAIT_QUIT);
+    // Place the cursor right after the prompt text so that the input is echoed there.
+    console.set_cursor_cur_position({ areg::ext::COORD_USER_INPUT.posX + static_cast<int32_t>(areg::ext::FORMAT_WAIT_QUIT.size()),
+                                      areg::ext::COORD_USER_INPUT.posY });
+    console.refresh_screen();
     console.wait_for_input(option_check_callback());
 
     console.move_cursor_one_line_up( );
@@ -123,6 +185,7 @@ void LogObserver::callback_database_configured(bool /* is_enabled */, const char
 
 void LogObserver::callback_service_connected(bool is_connected, const char* address, uint16_t port)
 {
+    areg::Lock lock(_dataLock);
     if (is_connected)
     {
         _logConnect.lcAddress = address;
@@ -131,6 +194,8 @@ void LogObserver::callback_service_connected(bool is_connected, const char* addr
     else
     {
         _listInstances.clear();
+        _mapScopes.clear();
+        _hasInstances = false;
         _logConnect.lcAddress.clear();
         _logConnect.lcPort = areg::InvalidPort;
     }
@@ -150,6 +215,8 @@ void LogObserver::callback_messaging_failed()
 
 void LogObserver::callback_connected_instances(const LogInstance* instances, uint32_t count)
 {
+    areg::Lock lock(_dataLock);
+    _hasInstances = true;
     if (count == 0)
     {
         _listInstances.clear();
@@ -204,6 +271,7 @@ void LogObserver::callback_connected_instances(const LogInstance* instances, uin
 
 void LogObserver::callback_disconnected_instances(const ITEM_ID * instances, uint32_t count)
 {
+    areg::Lock lock(_dataLock);
     for (uint32_t i = 0; i < count; ++i)
     {
         const ITEM_ID& cookie = instances[i];
@@ -245,6 +313,7 @@ void LogObserver::callback_disconnected_instances(const ITEM_ID * instances, uin
 
 void LogObserver::callback_log_scopes(ITEM_ID cookie, const ScopeInfo* scopes, uint32_t count)
 {
+    areg::Lock lock(_dataLock);
     for (uint32_t i = 0; i < _listInstances.size(); ++i)
     {
         const LogInstance& inst{ _listInstances[i] };
@@ -326,27 +395,234 @@ void LogObserver::log_main( int32_t argc, char ** argv )
 
     areg::Application::set_working_directory(nullptr);
     areg::String fileConfig(areg::DEFAULT_CONFIG_FILE);
+    areg::ext::OptionParser::InputOptionList commands;
+    bool printHelp{ false };
+    bool optConsole{ false };
+
     areg::ext::OptionParser parser(LogObserver::ValidOptions, std::size(LogObserver::ValidOptions));
     if (parser.parse_command_line(argv, static_cast<uint32_t>(argc)))
     {
-        uint32_t pos = parser.find_option(static_cast<int32_t>(LogObserver::LoggerOption::CMD_LogLoad));
-        if (pos != areg::INVALID_POSITION)
+        const areg::ext::OptionParser::InputOptionList& opts{ parser.options() };
+        for (uint32_t i = 0; i < opts.size(); ++ i)
         {
-            areg::String filePath{ parser.options().value_at(pos).inString[0] };
-            if (areg::File::has_file(filePath))
+            const areg::ext::OptionParser::InputOption& opt{ opts[i] };
+            switch (static_cast<LoggerOption>(opt.inCommand))
             {
-                fileConfig = filePath;
+            case LoggerOption::CMD_LogLoad:
+                if (opt.inString.empty() == false)
+                {
+                    areg::String filePath{ opt.inString[0] };
+                    if (areg::File::has_file(filePath))
+                    {
+                        fileConfig = filePath;
+                    }
+                }
+                break;
+
+            case LoggerOption::CMD_LogPrintHelp:
+                printHelp = true;
+                break;
+
+            case LoggerOption::CMD_LogConsole:
+                optConsole = true;
+                break;
+
+            default:
+                commands.add(opt);
+                break;
             }
         }
+    }
+    else
+    {
+        printHelp = true;
+    }
+
+    if (printHelp)
+    {
+        _cmdLineMode = true;
+        LogObserver::_process_print_help();
+        _cmdLineMode = false;
+        return;
     }
 
     ::log_observer_initialize(&evts, fileConfig.as_string());
 
-    _run_console_input_extended();
+    bool runConsole{ commands.is_empty() || optConsole };
+    if (commands.is_empty() == false)
+    {
+        runConsole = LogObserver::_run_command_line(commands) ? false : optConsole;
+    }
+
+    if (runConsole)
+    {
+        _run_console_input_extended();
+    }
 
     areg::Application::signal_quit();
     ::log_observer_disconnect_logger();
     ::log_observer_release();
+}
+
+bool LogObserver::_wait_collector_data()
+{
+    uint32_t msPassed{ 0u };
+    while ((msPassed < MS_WAIT_DATA) && (::log_observer_is_connected() == false))
+    {
+        areg::Thread::sleep(MS_WAIT_SLICE);
+        msPassed += MS_WAIT_SLICE;
+    }
+
+    if (::log_observer_is_connected() == false)
+    {
+        return false;
+    }
+
+    ::log_observer_request_instances();
+
+    // Waits the settle time for the first answer, then waits until each instance reported its scopes.
+    uint32_t msSettle{ 0u };
+    bool result{ false };
+    while (msPassed < MS_WAIT_DATA)
+    {
+        areg::Thread::sleep(MS_WAIT_SLICE);
+        msPassed += MS_WAIT_SLICE;
+        msSettle += MS_WAIT_SLICE;
+
+        areg::Lock lock(_dataLock);
+        if (_hasInstances == false)
+        {
+            result = msSettle >= MS_SETTLE_DATA;
+            if (result)
+            {
+                break;
+            }
+
+            continue;
+        }
+
+        result = true;
+        for (uint32_t i = 0; i < _listInstances.size(); ++ i)
+        {
+            if (_mapScopes.contains(_listInstances[i].liCookie) == false)
+            {
+                result = false;
+                break;
+            }
+        }
+
+        if (result)
+        {
+            break;
+        }
+    }
+
+    return result;
+}
+
+bool LogObserver::_run_command_line(const areg::ext::OptionParser::InputOptionList& options)
+{
+    _cmdLineMode = true;
+
+    if (::log_observer_connect_logger(nullptr, nullptr, areg::InvalidPort) == false)
+    {
+        ::printf("Failed to trigger the connection with the log collector, check the configuration.\n");
+    }
+    else if (LogObserver::_wait_collector_data() == false)
+    {
+        ::printf("The log collector reported no data within %u seconds, the options may have no effect.\n", MS_WAIT_DATA / 1000u);
+    }
+
+    bool quit{ false };
+    for (uint32_t i = 0; i < options.size(); ++ i)
+    {
+        LogObserver::CommandResult result;
+        if (LogObserver::_execute_option(options[i], result) == false)
+        {
+            ::printf("ERROR, unexpected option, type \'--help\' to display the list of options.\n");
+            continue;
+        }
+
+        quit = quit || result.crQuit;
+        if (result.crStatus != nullptr)
+        {
+            const std::string_view& msg{ result.crProcessed ? result.crStatus->osStatus : result.crStatus->osError };
+            if (msg.empty() == false)
+            {
+                ::printf("%.*s\n", static_cast<int>(msg.length()), msg.data());
+            }
+        }
+    }
+
+    // Waits for the answers of the requests that the options sent.
+    areg::Thread::sleep(MS_DRAIN_DATA);
+    _cmdLineMode = false;
+
+    return quit;
+}
+
+bool LogObserver::_execute_option(const areg::ext::OptionParser::InputOption& opt, LogObserver::CommandResult& result)
+{
+    bool known{ true };
+    const LogObserver::LoggerOption option{ static_cast<LogObserver::LoggerOption>(opt.inCommand) };
+
+    switch ( option )
+    {
+    case LogObserver::LoggerOption::CMD_LogQueryScopes:
+        result.crProcessed = LogObserver::_process_query_scopes(opt);
+        break;
+
+    case LogObserver::LoggerOption::CMD_LogSaveConfig:
+        result.crProcessed = LogObserver::_process_save_config(opt);
+        break;
+
+    case LogObserver::LoggerOption::CMD_LogPrintHelp:
+        result.crProcessed = LogObserver::_process_print_help();
+        break;
+
+    case LogObserver::LoggerOption::CMD_LogInstances:
+        result.crProcessed = LogObserver::_process_info_instances();
+        break;
+
+    case LogObserver::LoggerOption::CMD_LogUpdateScope:
+        result.crProcessed = LogObserver::_process_update_scopes(opt);
+        break;
+
+    case LogObserver::LoggerOption::CMD_LogPause:
+        result.crProcessed = LogObserver::_process_pause_logging();
+        break;
+
+    case LogObserver::LoggerOption::CMD_LogRestart:
+        result.crProcessed = LogObserver::_process_start_logging(true);
+        break;
+
+    case LogObserver::LoggerOption::CMD_LogStop:
+        result.crProcessed = LogObserver::_process_start_logging(false);
+        break;
+
+    case LogObserver::LoggerOption::CMD_LogConsole:
+        result.crProcessed = true;
+        break;
+
+    case LogObserver::LoggerOption::CMD_LogQuit:
+        result.crQuit = true;
+        result.crProcessed = true;
+        return true;
+
+    case LogObserver::LoggerOption::CMD_LogLoad:      // fall through
+    case LogObserver::LoggerOption::CMD_LogUndefined: // fall through
+    default:
+        known = false;
+        break;
+    }
+
+    if (known)
+    {
+        result.crStatus = &_observerStatus[static_cast<uint32_t>(opt.inCommand)];
+        ASSERT(result.crStatus->osOption == option);
+    }
+
+    return known;
 }
 
 bool LogObserver::_check_command(const areg::String& cmd)
@@ -363,79 +639,22 @@ bool LogObserver::_check_command(const areg::String& cmd)
         const areg::ext::OptionParser::InputOptionList & opts = parser.options( );
         for ( uint32_t i = 0; i < opts.size( ); ++ i )
         {
-            bool processed{ false };
-            const LogObserver::ObserverStatus* status{ nullptr };
-            const areg::ext::OptionParser::InputOption & opt = opts[ i ];
-            switch ( static_cast<LogObserver::LoggerOption>(opt.inCommand) )
+            LogObserver::CommandResult result;
+            if (LogObserver::_execute_option(opts[i], result) == false)
             {
-            case LogObserver::LoggerOption::CMD_LogQueryScopes:
-                processed = LogObserver::_process_query_scopes(opt);
-                status = &_observerStatus[static_cast<uint32_t>(LoggerOption::CMD_LogQueryScopes)];
-                break;
-
-            case LogObserver::LoggerOption::CMD_LogSaveConfig:
-                processed = LogObserver::_process_save_config(opt);
-                status = &_observerStatus[static_cast<uint32_t>(LoggerOption::CMD_LogSaveConfig)];
-                break;
-
-            case LogObserver::LoggerOption::CMD_LogPrintHelp:
-                processed = LogObserver::_process_print_help();
-                status = &_observerStatus[static_cast<uint32_t>(LoggerOption::CMD_LogPrintHelp)];
-                break;
-
-            case LogObserver::LoggerOption::CMD_LogInstances:
-                processed = LogObserver::_process_info_instances();
-                status = &_observerStatus[static_cast<uint32_t>(LoggerOption::CMD_LogInstances)];
-                break;
-
-            case LogObserver::LoggerOption::CMD_LogUpdateScope:
-                processed = LogObserver::_process_update_scopes(opt);
-                status = &_observerStatus[static_cast<uint32_t>(LoggerOption::CMD_LogUpdateScope)];
-                break;
-
-            case LogObserver::LoggerOption::CMD_LogPause:
-                processed = LogObserver::_process_pause_logging();
-                status = &_observerStatus[static_cast<uint32_t>(LoggerOption::CMD_LogPause)];
-                break;
-
-            case LogObserver::LoggerOption::CMD_LogQuit:
-                quit = true;
-                break;
-
-            case LogObserver::LoggerOption::CMD_LogRestart:
-                processed = LogObserver::_process_start_logging(true);
-                status = &_observerStatus[static_cast<uint32_t>(LoggerOption::CMD_LogRestart)];
-                break;
-
-            case LogObserver::LoggerOption::CMD_LogStop:
-                processed = LogObserver::_process_start_logging(false);
-                status = &_observerStatus[static_cast<uint32_t>(LoggerOption::CMD_LogStop)];
-                break;
-
-            case LogObserver::LoggerOption::CMD_LogLoad:      // fall through
-            case LogObserver::LoggerOption::CMD_LogUndefined: // fall through
-            default:
                 hasError = true;
-                break;
+                continue;
             }
 
-            if (status != nullptr)
+            quit = quit || result.crQuit;
+            if (result.crStatus != nullptr)
             {
-                ASSERT(static_cast<LoggerOption>(opt.inCommand) == status->osOption);
+                const std::string_view& msg{ result.crProcessed ? result.crStatus->osStatus : result.crStatus->osError };
                 console.lock_console();
-                if (processed && (status->osStatus.empty() == false))
+                console.clear_line(areg::ext::COORD_STATUS_MSG);
+                if (msg.empty() == false)
                 {
-                    console.clear_line(areg::ext::COORD_STATUS_MSG);
-                    console.output_txt(areg::ext::COORD_STATUS_MSG, status->osStatus);
-                }
-                else if ((processed == false) && (status->osError.empty() == false))
-                {
-                    console.clear_line(areg::ext::COORD_STATUS_MSG);
-                    console.output_txt(areg::ext::COORD_STATUS_MSG, status->osError);
-                }
-                else
-                {
-                    console.clear_line(areg::ext::COORD_STATUS_MSG);
+                    console.output_txt(areg::ext::COORD_STATUS_MSG, msg);
                 }
 
                 console.unlock_console();
@@ -446,7 +665,7 @@ bool LogObserver::_check_command(const areg::String& cmd)
     {
         hasError = true;
     }
-    
+
     console.lock_console();
     if ( quit == false )
     {
@@ -454,9 +673,16 @@ bool LogObserver::_check_command(const areg::String& cmd)
         {
             console.output_msg( areg::ext::COORD_ERROR_MSG, areg::ext::FORMAT_MSG_ERROR.data(), cmd.as_string());
         }
+        else
+        {
+            console.clear_line( areg::ext::COORD_ERROR_MSG );
+        }
 
         console.clear_line( areg::ext::COORD_USER_INPUT );
         console.output_txt( areg::ext::COORD_USER_INPUT, areg::ext::FORMAT_WAIT_QUIT );
+        // Place the cursor right after the prompt text so that the input is echoed there.
+        console.set_cursor_cur_position({ areg::ext::COORD_USER_INPUT.posX + static_cast<int32_t>(areg::ext::FORMAT_WAIT_QUIT.size()),
+                                          areg::ext::COORD_USER_INPUT.posY });
     }
     else
     {
@@ -493,6 +719,11 @@ void LogObserver::_output_info( const areg::String & info )
 
 void LogObserver::_clean_help()
 {
+    if (_cmdLineMode)
+    {
+        return;
+    }
+
     areg::ext::Console::Coord line{ areg::ext::COORD_INFO_MSG };
     areg::ext::Console& console = areg::ext::Console::instance();
     console.lock_console();
@@ -544,15 +775,13 @@ bool LogObserver::_process_save_config(const areg::ext::OptionParser::InputOptio
 bool LogObserver::_process_print_help()
 {
     areg::ext::Console::Coord line{ areg::ext::COORD_INFO_MSG };
-    areg::ext::Console& console = areg::ext::Console::instance();
-    console.lock_console();
+    _lock_console(true);
     for (const auto& text : _msgHelp)
     {
-        console.output_txt(line, text);
-        ++line.posY;
+        _output_line(line, text.data());
     }
 
-    console.unlock_console();
+    _lock_console(false);
     return true;
 }
 
@@ -562,38 +791,33 @@ bool LogObserver::_process_info_instances()
     static constexpr std::string_view _formt{ "  %3u. |%11u |  x%u  |   %5u  |  %s " };
     static constexpr std::string_view _empty{ "There are no connected instances ..." };
 
-    areg::ext::Console& console = areg::ext::Console::instance();
     areg::ext::Console::Coord coord{ areg::ext::COORD_INFO_MSG };
-    console.lock_console();
+    _lock_console(true);
+    areg::Lock lock(_dataLock);
 
+    _output_line(coord, areg::ext::MSG_SEPARATOR.data());
     if (_listInstances.is_empty())
     {
-        console.output_txt(coord, areg::ext::MSG_SEPARATOR);
-        ++coord.posY;
-        console.output_str(coord, _empty);
-        ++coord.posY;
+        _output_line(coord, _empty.data());
     }
     else
     {
-        console.output_txt(coord, areg::ext::MSG_SEPARATOR);
-        ++coord.posY;
-        console.output_txt(coord, _table);
-        ++coord.posY;
-        console.output_txt(coord, areg::ext::MSG_SEPARATOR);
-        ++coord.posY;
+        _output_line(coord, _table.data());
+        _output_line(coord, areg::ext::MSG_SEPARATOR.data());
         for (uint32_t i = 0; i < _listInstances.size(); ++ i)
         {
             const LogInstance& instance{ _listInstances[i] };
             uint32_t id{ static_cast<uint32_t>(instance.liCookie) };
             auto pos = _mapScopes.find(instance.liCookie);
             uint32_t scopes{ pos != _mapScopes.invalid_position() ? _mapScopes.value_at(pos).size() : 0u };
-            console.output_msg(coord, _formt.data(), (i + 1), id, static_cast<uint32_t>(instance.liBitness), scopes, instance.liName);
-            ++coord.posY;
+            areg::String line;
+            line.format(_formt.data(), (i + 1), id, static_cast<uint32_t>(instance.liBitness), scopes, instance.liName);
+            _output_line(coord, line.as_string());
         }
     }
 
-    console.output_txt(coord, areg::ext::MSG_SEPARATOR);
-    console.unlock_console();
+    _output_line(coord, areg::ext::MSG_SEPARATOR.data());
+    _lock_console(false);
 
     return true;
 }

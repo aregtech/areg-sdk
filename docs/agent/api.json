@@ -275,7 +275,8 @@
     "logobserver": {
       "port": null,
       "needed_when": "you want to watch collected logs live and change scope priorities at run time without restarting",
-      "configuration_required": false
+      "configuration_required": false,
+      "command_line": "The console commands are also accepted on the command line: 'logobserver -n -q' connects, waits for the log collector data, runs the options in the given order and exits. Add -c to open the console afterwards. At the console prompt the connection is not automatic, type -r first."
     }
   },
   "prohibitions": [

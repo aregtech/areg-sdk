@@ -77,6 +77,7 @@ private:
         , CMD_LogUpdateScope    //!< Set and update the log scope priorities.
         , CMD_LogSaveConfig     //!< Save the configuration file.
         , CMD_LogStop           //!< Stop log observer.
+        , CMD_LogConsole        //!< Run the interactive console after the command line options.
     };
 
     /**
@@ -87,6 +88,16 @@ private:
         LoggerOption      osOption;   //!< The action
         std::string_view    osStatus;   //!< The status message to display when action succeeds
         std::string_view    osError;    //!< The error message when action fails.
+    };
+
+    /**
+     * \brief   The result of a single executed command.
+     **/
+    struct CommandResult
+    {
+        bool                    crQuit      { false };      //!< The command requests to quit the application.
+        bool                    crProcessed { false };      //!< The command succeeded.
+        const ObserverStatus *  crStatus    { nullptr };    //!< The status and error messages of the command.
     };
 
     /**
@@ -124,6 +135,8 @@ private:
         , { LoggerOption::CMD_LogSaveConfig   , "Log observer requested to save configuration."   , "Log observer failed to request save config." }
           //!< The status or error message when request to stop logging.
         , { LoggerOption::CMD_LogStop         , "Log observer stops, type \'-r\' to resume."      , "Log observer failed to stop. Restart application." }
+          //!< No status or error, the option is processed in the command line.
+        , { LoggerOption::CMD_LogConsole      , "", "" }
     };
 
     //!< The initialized status.
@@ -302,6 +315,29 @@ private:
      * \param   cmd     The command typed on the console.
      **/
     static bool _check_command(const areg::String& cmd);
+
+    /**
+     * \brief   Executes a single option and returns true if the option is a known console command.
+     *
+     * \param   opt     The parsed option to execute.
+     * \param   result  On output, the quit request, the success flag and the messages of the option.
+     **/
+    static bool _execute_option(const areg::ext::OptionParser::InputOption& opt, LogObserver::CommandResult& result);
+
+    /**
+     * \brief   Connects to the log collector, waits for the list of connected instances and their
+     *          scopes, then executes the console commands passed in the command line. Returns true
+     *          if one of the commands requested to quit the application.
+     *
+     * \param   options     The list of console commands in the order they are given in the command line.
+     **/
+    static bool _run_command_line(const areg::ext::OptionParser::InputOptionList& options);
+
+    /**
+     * \brief   Waits until the log observer is connected and the log collector reported the connected
+     *          instances with their scopes. Returns false if the data did not arrive within the timeout.
+     **/
+    static bool _wait_collector_data();
 
     /**
      * \brief   Outputs the title to the console.
