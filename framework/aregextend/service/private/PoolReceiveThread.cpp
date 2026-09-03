@@ -239,4 +239,9 @@ bool PoolReceiveThread::run_dispatcher()
     return isExit;
 }
 
+bool PoolReceiveThread::post_event( areg::Event & eventElem )
+{
+    return areg::EventDispatcher::post_event( eventElem );
+}
+
 } // namespace areg::ext

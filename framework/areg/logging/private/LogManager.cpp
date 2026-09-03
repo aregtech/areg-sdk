@@ -44,6 +44,11 @@ LogManager & LogManager::instance()
 
 void LogManager::log_message(const areg::LogEntry& logData)
 {
+    // The message is built only when the logging thread can take it.
+    LogManager& mgr = LogManager::instance();
+    if (mgr.is_ready() == false)
+        return;
+
     areg::MessageEnvelope msg{ areg::make_log_message( logData.logMsgType
                                                    , logData.logScopeId
                                                    , logData.logSessionId
@@ -54,7 +59,6 @@ void LogManager::log_message(const areg::LogEntry& logData)
     if (!msg.is_valid())
         return;
 
-    LogManager& mgr = LogManager::instance();
     LoggingEvent ev;
     ev.data().set_action(LoggingEventData::LogAction::LogMessage);
     ev.data().message() = std::move(msg);
@@ -64,6 +68,9 @@ void LogManager::log_message(const areg::LogEntry& logData)
 void LogManager::log_message(areg::MessageEnvelope&& msg)
 {
     LogManager& mgr = LogManager::instance();
+    if (mgr.is_ready() == false)
+        return;
+
     LoggingEvent ev;
     ev.data().set_action(LoggingEventData::LogAction::LogMessage);
     ev.data().message() = std::move(msg);
@@ -74,6 +81,9 @@ void LogManager::log_message(areg::MessageEnvelope&& msg)
 void LogManager::log_message(const areg::MessageEnvelope& logData)
 {
     LogManager& mgr = LogManager::instance();
+    if (mgr.is_ready() == false)
+        return;
+
     LoggingEvent ev;
     ev.data().set_action(LoggingEventData::LogAction::LogMessage);
     ev.data().message() = logData;

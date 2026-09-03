@@ -230,4 +230,9 @@ bool ServerReceiveThread::run_dispatcher()
     return isExit;
 }
 
+bool ServerReceiveThread::post_event( areg::Event & eventElem )
+{
+    return areg::EventDispatcher::post_event( eventElem );
+}
+
 } // namespace areg::ext
