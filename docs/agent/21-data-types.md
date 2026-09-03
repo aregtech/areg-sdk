@@ -67,14 +67,20 @@ rule differs from the rest of the document: methods and attributes become
 
 ## Predefined type names
 
-These come with the generator and map to a C++ type without being declared. The list
-lives in `../../tools/schema/datatype.xml`, which also holds the C++ spelling of each:
+These come with the generator and need no declaration. Four of them are **not** named
+in C++ the way the document names them, so take the spelling from this table rather
+than guessing it. Authoritative source: `../../tools/schema/datatype.xml`.
 
-```
-bool  char  uint8  int16  uint16  int32  uint32  int64  uint64  float  double
-String  WideString  BinaryBuffer  DateTime
-Array  LinkedList  HashMap  Map  Pair
-```
+| In the document | In C++ |
+|---|---|
+| `bool` `char` `float` `double` | the same name |
+| `uint8` `int16` `uint16` `int32` `uint32` `int64` `uint64` | the `<cstdint>` name: `uint8_t` `int16_t` `uint16_t` `int32_t` `uint32_t` `int64_t` `uint64_t` |
+| `String` `WideString` `DateTime` | `areg::String`, `areg::WideString`, `areg::DateTime` |
+| `BinaryBuffer` | **`areg::SharedBuffer`** |
+| `Array` | **`areg::ArrayList`** |
+| `LinkedList` `HashMap` | `areg::LinkedList`, `areg::HashMap` |
+| `Map` | **`areg::OrderedMap`** |
+| `Pair` | **`areg::KeyValuePair`** |
 
 The last row is what a `Container` may name; `HashMap`, `Map` and `Pair` are the keyed
 ones and need `BaseTypeKey` as well as `BaseTypeValue`.

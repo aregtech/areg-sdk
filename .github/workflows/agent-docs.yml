@@ -100,16 +100,13 @@ jobs:
       # regressed: an independent audit showed F2 and F4 were scoring presence rather
       # than execution, so both were rewritten to ask whether a checker runs the thing.
       #
-      # Four more measures changed on 2026-09-02, so the numbers below are again not
-      # comparable with the ones before them. R2 now separates a step that gates from
-      # one under continue-on-error, which three steps were; R4 counts the recipe's own
-      # query_sqlog.py, which the checker imports instead of keeping a second copy of
-      # the query; the sqlog catalogue row points at recipe 08, which produces the
-      # database; and the debugging row is demonstrated by the repair bank rather than
-      # by a recipe, because a bank of worked defects is what shows debugging.
-      # The floor stays where it was until a run on the new measures has settled.
-      - name: Hold the AI readiness floor
-        run: python3 tools/agent/ai_score.py --verbose --floor 95,98,99
+      # Every rule the corpus rests on, asked as a rule: does a page answer each
+      # feature, does every self-claim hold, is every prohibition detected and proven
+      # to still fire, does each page show the includes its own code needs. A finding
+      # names what broke. Nothing here is weighted and no total is printed: a total
+      # needs weights, and a moved total says something broke without saying what.
+      - name: Check the agent corpus
+        run: python3 tools/agent/check_corpus.py --verbose
 
   recipes:
     name: recipes build and run

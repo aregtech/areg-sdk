@@ -109,6 +109,7 @@ A worked case, from the `PubSub` example. The document declares
 `<Attribute Name="StringOnChange" DataType="String" Notify="OnChange"/>`, so:
 
 ```cpp
+// areg-check: ignore
 // provider
 void set_string_on_change(const areg::String & newValue);
 bool is_string_on_change_valid() const noexcept;

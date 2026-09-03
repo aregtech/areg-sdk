@@ -1,10 +1,7 @@
 # AREG cheat sheet
 
 Everything needed for an ordinary task, in one page. Open a task page only when the
-answer is not here.
-
-Only what you cannot derive. The seven concepts are `CODEBASE.md` section 1 and the
-prohibitions are `AGENTS.md` section 6; neither is repeated here.
+answer is not here; `recipes/` holds whole projects to copy rather than read.
 
 ## The document
 
@@ -66,11 +63,18 @@ name goes through, is `20-service-interface.md` section 3.
 ## Component skeletons
 
 ```cpp
+#include "areg/appbase/Application.hpp"
+#include "areg/component/Component.hpp"
+#include "areg/component/ComponentThread.hpp"
+#include "src/services/XProviderBase.hpp"        // generated
+#include "src/services/XConsumerBase.hpp"        // generated
+
 // provider
 class P final : public areg::Component, protected XProviderBase {
     P(const areg::ComponentEntry & e, areg::ComponentThread & o)
         : areg::Component(e, o), XProviderBase(static_cast<areg::Component &>(self())) {}
     void request_foo(const areg::String & a) final { /* ... */ response_foo(true); }
+    // A handler must not block: no sleep, no wait, no long loop.
     inline P & self() { return (*this); }
 };
 
@@ -99,6 +103,10 @@ compile. Do not "fix" one to match the other.
 ## Model and lifecycle
 
 ```cpp
+#include "areg/appbase/Application.hpp"
+#include "areg/base/CommonDefs.hpp"
+#include "areg/component/ComponentLoader.hpp"
+
 BEGIN_MODEL("MyModel")
   BEGIN_REGISTER_THREAD("T1")
     BEGIN_REGISTER_COMPONENT("Provider", P)
@@ -107,7 +115,7 @@ BEGIN_MODEL("MyModel")
   END_REGISTER_THREAD("T1")
   BEGIN_REGISTER_THREAD("T2")
     BEGIN_REGISTER_COMPONENT("Consumer", C)
-      REGISTER_DEPENDENCY("Provider")          // == the provider's role name
+      REGISTER_DEPENDENCY("Provider")          // == the role name, character for character
     END_REGISTER_COMPONENT("Consumer")
   END_REGISTER_THREAD("T2")
 END_MODEL("MyModel")
@@ -122,6 +130,12 @@ areg::Application::release();
 ## Timer and log
 
 ```cpp
+#include "areg/component/Component.hpp"
+#include "areg/component/ComponentThread.hpp"
+#include "areg/component/Timer.hpp"
+#include "areg/component/TimerConsumer.hpp"
+#include "areg/logging/areg_log.h"
+
 class W : public areg::Component, private areg::TimerConsumer {
     W(...) : ..., mTimer(static_cast<areg::TimerConsumer &>(self()), "WTimer")
     { mTimer.start_timer(1000, static_cast<areg::DispatcherThread &>(owner), areg::TimerBase::CONTINUOUSLY); }
@@ -157,11 +171,6 @@ Collecting several processes' logs needs `logcollector` on 8282 plus the remote 
 Transient, do nothing: `Pending`, `Unknown`, `Disconnected`, `ConnectionLost`, `Failed`.
 Terminal, clean up and quit: `Rejected`, `Shutdown`.
 
-## Never
-
-Full list: `AGENTS.md` section 6. The two that cost the most time: `REGISTER_DEPENDENCY`
-must equal the provider's role name character for character, and no handler may block.
-
 ## Tools
 
 ```bash
@@ -173,9 +182,3 @@ python3 <sdk>/tools/agent/run_scenarios.py            # exit 0 means it works; f
 
 On Windows the interpreter is `python` and a binary is `build\bin\name.exe`; nothing
 else differs. Needs CMake 3.20+, a Java 17+ runtime, a C++17 compiler.
-
-## When this is not enough
-
-One row per task, one page each: `AGENTS.md` section 2, which is already open. Whole
-projects to copy rather than read are `recipes/`, and `recipes/README.md` says which
-one does what.

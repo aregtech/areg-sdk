@@ -25,6 +25,8 @@ a non-zero exit code when an assertion fails.
 The shape:
 
 ```cpp
+#include "areg/component/Component.hpp"
+
 class ScriptedProvider final : public    areg::Component
                              , protected HelloServiceProviderBase
 {
@@ -40,6 +42,8 @@ The model registers it under the role name the consumer depends on, so nothing i
 consumer changes:
 
 ```cpp
+#include "areg/component/ComponentLoader.hpp"
+
 BEGIN_REGISTER_COMPONENT("ScriptedProvider", ScriptedProvider)
     REGISTER_IMPLEMENT_SERVICE(HelloService::ServiceName, HelloService::InterfaceVersion)
 END_REGISTER_COMPONENT("ScriptedProvider")
@@ -62,6 +66,7 @@ arrived, not when `main` reaches the end.
   the exit code still fails.
 
 ```cpp
+// areg-check: ignore
 if ( gAnswered.fetch_add( 1 ) + 1 == _expected )
 {
     check( "a scripted success reaches the consumer", gGood.load() );

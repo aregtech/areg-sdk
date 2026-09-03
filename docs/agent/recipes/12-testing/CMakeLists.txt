@@ -6,14 +6,16 @@ project(${PROJECT_NAME} VERSION ${PROJECT_VERSION} LANGUAGES C CXX)
 
 find_package(areg CONFIG)
 
+# build/bin whichever way areg was found; an installed package names product/ otherwise.
+set(AREG_BUILD_DIR "${CMAKE_BINARY_DIR}")
+option(AREG_OUTPUT_LAYOUT "Areg build structure" OFF)
+
 if (NOT areg_FOUND)
-    set(AREG_BUILD_DIR "${CMAKE_BINARY_DIR}")
     set(AREG_DEPS_DIR  "${CMAKE_BINARY_DIR}/packages")
     set(AREG_LIB_TYPE  shared)
     option(AREG_TESTS         "Build areg-sdk tests"    OFF)
     option(AREG_EXAMPLES      "Build areg-sdk examples" OFF)
     option(AREG_SYSTEM_GTEST  "Build GTest"             OFF)
-    option(AREG_OUTPUT_LAYOUT "Areg build structure"    OFF)
 
     include(FetchContent)
     set(FETCHCONTENT_BASE_DIR "${AREG_DEPS_DIR}")

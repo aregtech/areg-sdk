@@ -55,6 +55,10 @@ It writes `<Name>Host.hpp/.cpp`. Merge it into the component that provides the
 service, or use it as it stands. What it produces:
 
 ```cpp
+#include "areg/appbase/Application.hpp"
+#include "areg/component/Component.hpp"
+#include "areg/component/ComponentThread.hpp"
+
 class GateProvider final    : public    areg::Component
                             , protected GateServiceProviderBase
                             , protected GateActionHandler

@@ -17,7 +17,9 @@
 # Exit code 0 when every number was explained, 1 otherwise.
 # ===========================================================================
 import argparse
+import math
 import os
+import re
 import sys
 import textwrap
 import xml.etree.ElementTree as ET
@@ -264,38 +266,105 @@ def clean(text):
     return ' '.join(text.split())
 
 
-def search(rules, needle):
-    """Rules whose name or summary matches the words of the needle.
+# The generator's own wording for a rule, where it differs from the registry's.
+# The two bodies of text are written independently, so a message may share no verb
+# with the rule that produced it: "resolves to nothing" is the generator, "answers
+# to nothing" is the registry. A phrase here is matched before the words are scored.
+# Add an entry when a message is seen that the words alone do not resolve.
+PHRASES = {
+ 'RULE_UNRESOLVED_TYPE':  ['a data type that resolves to nothing'],
+ 'RULE_RESPONSE_LINK':    ['a response that resolves to nothing'],
+ 'RULE_BAD_VALUE':        ['a value the format does not allow here'],
+ 'RULE_DUPLICATE_ID':     ['an element ID that more than one element claims'],
+}
 
-    Every word first. Nothing written the generator's way is guaranteed to be
-    written the registry's way, so when that finds nothing the words are scored
-    separately and the best matches are offered instead.
-    """
-    stop = {'a', 'an', 'the', 'to', 'of', 'is', 'in', 'at', 'by', 'that',
-            'this', 'it', 'as', 'and', 'or', 'not', 'no'}
-    words = [w.strip('.,:;[]()"\'').lower() for w in needle.split()]
-    words = [w for w in words if w and w not in stop]
-    if not words:
-        return []
-    hits = [r for r in rules
-            if all(w in text_of(r) for w in words)]
-    if hits:
-        return hits
-    scored = []
+# Words that say nothing about which rule a message is about. The registry and the
+# generator both write ordinary English, so a match on one of these is noise.
+STOP = {'a', 'an', 'the', 'to', 'of', 'is', 'in', 'at', 'by', 'that', 'this', 'it',
+        'as', 'and', 'or', 'not', 'no', 'be', 'been', 'was', 'were', 'are', 'has',
+        'have', 'had', 'do', 'does', 'did', 'can', 'cannot', 'may', 'must', 'will',
+        'more', 'than', 'then', 'one', 'two', 'both', 'any', 'every', 'all', 'so',
+        'on', 'for', 'with', 'from', 'into', 'its', 'their', 'them', 'they', 'you',
+        'when', 'which', 'while', 'what', 'who', 'whose', 'only',
+        'other', 'another', 'same', 'such', 'each', 'but', 'if', 'else', 'error',
+        'warning', 'info', 'information', 'rule'}
+
+FIX_WEIGHT = 0.25   #!< a match in the corrective action counts for less than one in the rule
+
+
+def words_of(text):
+    """The words of a message or a rule that carry which rule it is."""
+    found = re.findall(r'[a-z0-9]+', text.lower())
+    return [word for word in found if word not in STOP and len(word) > 1]
+
+
+def weights(rules):
+    """How much each word says, measured by how few rules use it."""
+    counted = {}
     for rule in rules:
-        hay = text_of(rule)
-        score = sum(1 for w in words if w in hay)
-        if score:
-            scored.append((score, rule))
+        for word in set(words_of(subject_of(rule))):
+            counted[word] = counted.get(word, 0) + 1
+    total = max(1, len(rules))
+    return dict((word, math.log(1.0 + total / float(count)))
+                for word, count in counted.items())
+
+
+def subject_of(rule):
+    """What the rule is about: its name and the registry's statement of it."""
+    return rule['name'].replace('_', ' ') + ' ' + rule['summary']
+
+
+def matches_phrase(rule, needle):
+    """Whether the generator's wording for this rule is in the message."""
+    for phrase in PHRASES.get(rule['name'], []):
+        lean = ' '.join(words_of(phrase))
+        if lean and lean in ' '.join(words_of(needle)):
+            return True
+    return False
+
+
+def score_of(rule, wanted, weight):
+    """How much of the message this rule accounts for.
+
+    The rule's own statement counts in full and the corrective action a fraction:
+    the action is advice written here, and its ordinary English matches everything.
+    """
+    subject = set(words_of(subject_of(rule)))
+    advice = set(words_of(rule['fix'])) - subject
+    total = 0.0
+    for word in wanted:
+        if word in subject:
+            total += weight.get(word, 1.0)
+        elif word in advice:
+            total += FIX_WEIGHT * weight.get(word, 1.0)
+    return total
+
+
+def search(rules, needle, limit=5):
+    """The rules a message can be about, the likeliest first.
+
+    Nothing written the generator's way is guaranteed to be written the registry's
+    way, so the phrases the generator is known to use are tried first and the words
+    are scored after. A word only the odd rule uses counts for more than one every
+    rule uses, and a rule that can be reported as an error settles a tie: a document
+    that was refused was refused over an error.
+    """
+    wanted = set(words_of(needle))
+    if not wanted:
+        return []
+    named = [rule for rule in rules if matches_phrase(rule, needle)]
+    if named:
+        return named
+    weight = weights(rules)
+    scored = [(score_of(rule, wanted, weight), rule) for rule in rules]
+    scored = [(score, rule) for score, rule in scored if score > 0.0]
     if not scored:
         return []
-    best = max(score for score, _ in scored)
-    return [rule for score, rule in scored if score == best]
-
-
-def text_of(rule):
-    """Everything a search may match: the name, the summary and the corrective action."""
-    return (rule['name'] + ' ' + rule['summary'] + ' ' + rule['fix']).lower()
+    scored.sort(key=lambda entry: (-entry[0], 'error' not in entry[1]['bands'],
+                                   entry[1]['number']))
+    best = scored[0][0]
+    kept = [rule for score, rule in scored if score >= best / 2.0]
+    return kept[:limit]
 
 
 def resolve(rules, reported):
@@ -359,7 +428,7 @@ def main():
         if not hits:
             print('no rule matches: {}'.format(args.search))
             return 1
-        for rule in sorted(hits, key=lambda r: r['number']):
+        for rule in hits:
             for band in rule['bands']:
                 offset = dict((b, o) for o, b in BANDS)[band]
                 show(band, rule, rule['number'] + offset)

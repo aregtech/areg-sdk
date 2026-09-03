@@ -147,7 +147,8 @@ IGNORE_RE = re.compile(r'//\s*areg-check\s*:\s*ignore(?:\s+([A-Z]-\d\d(?:\s*,\s*
 
 
 CHECKS = [
-    ('P-01', 'advice',  'a generated file copied into the application sources'),
+    ('P-01', 'advice',  'a generated file among the application sources, or an '
+     'unstamped source file under the generate target'),
     ('P-02', 'error',   'a member that no service document declares'),
     ('P-03', 'error',   'REGISTER_DEPENDENCY naming no registered role'),
     ('P-04', 'error',   'a request or a subscription in a component constructor'),
@@ -273,6 +274,43 @@ def collect_sources(base):
             if name.endswith(SOURCE_EXT):
                 found.append(os.path.join(path, name))
     return sorted(found)
+
+
+# The generate target, where it can sit relative to a project root. The walk skips
+# it, so it is reached only by name.
+GENERATE_DIRS = ('generate', 'generated',
+                 os.path.join('build', 'generate'),
+                 os.path.join('build', 'generated'))
+
+
+def check_generate_target(base, findings, read):
+    """P-01 inside the generate target: a source file the generator did not write.
+
+    The target is rewritten on every build, so a file kept there is lost without a
+    diagnostic. The generated files themselves are not read: nothing static tells an
+    edited one from an untouched one.
+    """
+    for relative in GENERATE_DIRS:
+        folder = os.path.join(base, relative)
+        if not os.path.isdir(folder):
+            continue
+        for path, dirs, files in os.walk(folder):
+            dirs[:] = [d for d in dirs if not d.startswith('.')]
+            for name in sorted(files):
+                if not name.endswith(SOURCE_EXT):
+                    continue
+                full = os.path.join(path, name)
+                text = read(full)
+                if text is None:
+                    continue
+                if any(GENERATED_BANNER in line
+                       for line in text.splitlines()[:12]):
+                    continue
+                findings.append(Finding(
+                    'P-01', 'advice', full, 1,
+                    'this file is under the generate target and carries no generator '
+                    'banner. The next build rewrites the target and the file is gone; '
+                    'keep it with the application sources'))
 
 
 def collect_documents(base):
@@ -847,17 +885,96 @@ def audit_legacy(framework_dir):
     return 1 if resurrected else 0
 
 
+# Words that carry no meaning for the comparison below. "never" and "must" open
+# almost every rule and would make any two of them look alike.
+AUDIT_NOISE = {'a', 'an', 'the', 'and', 'or', 'of', 'to', 'in', 'on', 'is', 'it',
+               'its', 'that', 'this', 'with', 'from', 'for', 'not', 'no', 'be',
+               'by', 'as', 'at', 'into', 'when', 'then', 'than', 'they', 'their',
+               'them', 'only', 'does', 'do', 'will', 'which', 'while', 'was',
+               'are', 'has', 'have', 'had', 'but', 'one', 'never', 'must',
+               'every', 'any', 'all', 'can', 'so', 'you', 'your'}
+
+
+def audit_words(text):
+    """The words of a rule that carry its meaning."""
+    words = re.findall(r'[A-Za-z][A-Za-z0-9]*', text.lower())
+    return {word for word in words if len(word) >= 4 and word not in AUDIT_NOISE}
+
+
+AUDIT_SPREAD = 4    #!< a word more entries than this use says nothing about pairing
+
+
+def audit_weights(texts):
+    """How much each word says about which two entries are the same rule.
+
+    "application", "role" and "handler" are spread over the list and make any two
+    rules look alike. A word that two entries share and the rest do not use is what
+    says those two are the same rule written twice.
+    """
+    counted = {}
+    for text in texts:
+        for word in audit_words(text):
+            counted[word] = counted.get(word, 0) + 1
+    return {word: 1.0 / (count - 1)
+            for word, count in counted.items() if 2 <= count <= AUDIT_SPREAD}
+
+
+def audit_overlap(left, right, weight):
+    """What two rules share that the rest of the list does not."""
+    return sum(weight.get(word, 0.0)
+               for word in audit_words(left) & audit_words(right))
+
+
+def audit_bullets(text):
+    """Section 6 of AGENTS.md, one entry per bullet, or None when there is no section."""
+    section = re.search(r'\n## 6\.(.*?)\n## 7\.', text, re.DOTALL)
+    if section is None:
+        return None
+    found = []
+    for block in re.split(r'^- \*\*', section.group(1), flags=re.MULTILINE)[1:]:
+        found.append(' '.join(block.replace('*', ' ').replace('`', ' ').split()))
+    return found
+
+
+def audit_pairing(stated, written, what, problems, labels=None):
+    """Reports a rule whose text is closer to another entry than to its own.
+
+    Comparing the ids only proves that both lists have thirteen rows. A bullet
+    rewritten to say something else, or a row inserted so every pairing after it
+    shifts by one, keeps the ids and the count intact. The pairing is what says the
+    two lists still describe the same thirteen mistakes in the same order.
+    """
+    weight = audit_weights([sentence for _identifier, sentence in stated] + written)
+    for rule, text in zip(stated, written):
+        identifier, sentence = rule
+        if not text:
+            continue
+        scores = [audit_overlap(sentence, other, weight) for other in written]
+        mine = audit_overlap(sentence, text, weight)
+        best = max(scores)
+        if mine <= 0.0:
+            problems.append('%s and its %s have no wording of their own in common: '
+                            '"%s" against "%s"'
+                            % (identifier, what, sentence[:60], text[:60]))
+        elif mine < best:
+            closer = [labels[position] if labels else '#%d' % (position + 1)
+                      for position, score in enumerate(scores) if score == best]
+            problems.append(
+                '%s reads closer to the %s of %s than to its own; the lists are out '
+                'of step' % (identifier, what, ', '.join(closer)))
+
+
 def audit_prohibitions(api_path):
     """Do the three lists of prohibitions agree.
 
     A prohibition is written down three times: as a bullet in AGENTS.md section 6,
     as an entry in api.json, and as a rule in CHECKS. AGENTS.md says of its bullets
-    that "tools/agent/check_contract.py detects all of them", which is only true while the
-    three agree, and the same hand writes all three. Nothing else compares them.
+    that this checker reports all of them, which is only true while the three agree,
+    and the same hand writes all three. Nothing else compares them.
 
-    The id sets are compared exactly. The bullets carry no id, so they are counted:
-    a bullet added without a rule, or a rule added without a bullet, changes the
-    count and is what has actually gone wrong before.
+    The ids are compared exactly, and the wording is compared as well: each rule has
+    to read more like the bullet and the summary standing in its own position than
+    like any other.
     """
     problems = []
     try:
@@ -867,7 +984,8 @@ def audit_prohibitions(api_path):
         print('cannot read %s: %s' % (api_path, failure), file=sys.stderr)
         return 2
 
-    stated = [item.get('id') for item in contract.get('prohibitions', [])]
+    prohibitions = contract.get('prohibitions', [])
+    stated = [item.get('id') for item in prohibitions]
     checked = [rule for rule, _severity, _summary in CHECKS if rule.startswith('P-')]
 
     for rule in sorted(set(stated) - set(checked)):
@@ -875,21 +993,35 @@ def audit_prohibitions(api_path):
     for rule in sorted(set(checked) - set(stated)):
         problems.append('%s is implemented and api.json does not state it' % rule)
 
+    named = [(item.get('id'), item.get('rule', '')) for item in prohibitions]
+    summaries = {rule: summary for rule, _severity, summary in CHECKS}
+
+    # What api.json says a rule detects, against what the check that implements it
+    # is described as finding. This is where P-01 stated one thing and did another.
+    detects = [(item.get('id'), item.get('detect')) for item in prohibitions
+               if item.get('detect') and summaries.get(item.get('id'))]
+    if detects:
+        audit_pairing(detects, [summaries[identifier] for identifier, _ in detects],
+                      'CHECKS summary', problems,
+                      labels=[identifier for identifier, _ in detects])
+
     agents = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
                           'AGENTS.md')
     bullets = None
     if os.path.isfile(agents):
         with open(agents, 'r', encoding='utf-8') as handle:
             text = handle.read()
-        section = re.search(r'\n## 6\.(.*?)\n## 7\.', text, re.DOTALL)
-        if section is None:
+        entries = audit_bullets(text)
+        if entries is None:
             problems.append('AGENTS.md has no section 6 to compare')
         else:
-            bullets = len(re.findall(r'^- \*\*', section.group(1), re.MULTILINE))
+            bullets = len(entries)
             if bullets != len(stated):
                 problems.append(
                     'AGENTS.md section 6 has %d bullet(s) and api.json states %d '
                     'prohibition(s)' % (bullets, len(stated)))
+            else:
+                audit_pairing(named, entries, 'AGENTS.md bullet', problems)
 
     for problem in problems:
         print('error: ' + problem)
@@ -978,6 +1110,7 @@ def main():
     check_threads(sources, findings, read)
     check_subscriptions(sources, findings, read)
     check_deferred_responses(sources, findings, read)
+    check_generate_target(base, findings, read)
 
     findings = [f for f in findings
                 if not suppressed(read(f.path).splitlines() if read(f.path) else [],

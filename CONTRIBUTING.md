@@ -132,7 +132,7 @@ The reason is drift. Guidance duplicated per harness stops agreeing with `AGENTS
 Two further rules apply to changes in `AGENTS.md` and `docs/agent/`:
 
 - **Every claim must be true of this commit.** A page that names a file, a method, a macro or a rule number is asserting it exists. `tools/agent/check_agent_docs.py` verifies the paths; the rest is on the author. A wrong name costs an agent more than a missing one, because it is followed before it is doubted.
-- **The corpus is measured.** `./docs/ai-readiness.md` defines the rubric and `tools/agent/ai_score.py` implements it. Run it before and after your change; a pull request that lowers a score should say why in its description.
+- **The corpus is checked.** `./docs/ai-readiness.md` states the rules and `tools/agent/check_corpus.py` asks each one. Run it before and after your change; it prints a finding per rule that does not hold, and CI fails on any of them. A pull request that adds a recorded exception should say why in its description.
 
 ### g. Agent session knowledge
 

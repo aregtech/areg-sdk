@@ -98,19 +98,17 @@ into three jobs.
 
 **Proving the corpus is still true:**
 
-The rubric these score against, and the reasoning behind every weight, is
-`../../docs/ai-readiness.md`.
+The rules these check against are `../../docs/ai-readiness.md`.
 
 | Tool / Script | Purpose |
 |---|---|
-| `ai_score.py` | Prints the three AI readiness scores; `--floor a,b,c` gates a build |
+| `check_corpus.py` | Asks every rule the agent corpus rests on and prints a finding per rule that does not hold; `--strict` fails on a warning too |
 | `run_evals.py` | Grades an application against an evaluation bank task; `--self-check` grades the reference recipes |
 | `evals/tasks.json` | The bank: build tasks and repair tasks, each bound to a rule id |
 | `check_recipes.py` | Generates, builds and runs every recipe under `docs/agent/recipes/` |
 | `check_mutations.py` | Breaks a good recipe the way the eval bank says, and asserts the documented diagnostic still fires |
 | `check_observability.py` | Runs two processes through `mtrouter` and `logcollector`, then queries the `.sqlog` database |
 | `check_doc_config.py` | Runs the configuration block `docs/agent/00-cheatsheet.md` gives, and asserts it logs what the page promises |
-| `check_claims.py` | Checks the claims in the local, untracked agent notes against the code |
 | `setup_agent_redirect.py` | Writes the local, untracked redirect a coding agent looks for |
 | `setup_agent_memory.py` | Writes the local memory files an agent keeps between sessions |
 
@@ -123,7 +121,7 @@ python3 tools/agent/check_agent_docs.py            # seconds, no build needed
 python3 tools/agent/check_symbols.py
 python3 tools/agent/check_contract.py <project> --strict
 python3 tools/agent/check_mutations.py --static
-python3 tools/agent/ai_score.py --verbose
+python3 tools/agent/check_corpus.py --verbose
 
 cmake -B build -DAREG_OUTPUT_LAYOUT=OFF && cmake --build build -j
 python3 tools/agent/check_recipes.py --lib build/bin
@@ -568,6 +566,10 @@ python3 tools/run-all-examples.py --list      # what would run, without running 
 ```
 
 Both wrappers pass every argument through to the driver.
+
+Without `--bin-dir` the driver searches `build/bin` and every other CMake build tree in
+the repository, plus `product/build/<compiler>/<config>/bin`, keeps only the directories
+holding binaries the current platform can start, and takes the most recently built one.
 
 | Option | Default | Meaning |
 |--------|---------|---------|

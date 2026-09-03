@@ -35,6 +35,8 @@ thread is the framework's answer: it belongs to one component, is declared in th
 model beside it, and runs a consumer the component hands over when asked.
 
 ```cpp
+#include "areg/component/ComponentLoader.hpp"
+
 BEGIN_REGISTER_COMPONENT("Provider", Provider)
     REGISTER_IMPLEMENT_SERVICE(X::ServiceName, X::InterfaceVersion)
     REGISTER_WORKER_THREAD("ScanThread", "ScanConsumer")
@@ -44,6 +46,10 @@ END_REGISTER_COMPONENT("Provider")
 The second argument is a **consumer name**, and the component must answer to it:
 
 ```cpp
+#include "areg/appbase/Application.hpp"
+#include "areg/component/Component.hpp"
+#include "areg/component/ComponentThread.hpp"
+
 class Worker : public areg::WorkerThreadConsumer      // a member of the component
 {
 public:
@@ -87,6 +93,9 @@ too late for them -- a count taken from the command line, a model loaded on dema
 The classes are the same ones the macros fill in.
 
 ```cpp
+#include "areg/appbase/Application.hpp"
+#include "areg/component/ComponentLoader.hpp"
+
 areg::Application::setup();
 
 areg::Model model("Runtime");

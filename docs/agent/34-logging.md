@@ -5,6 +5,8 @@ function; its messages carry its name, and it can be switched on and off by name
 run time without rebuilding.
 
 ```cpp
+#include "areg/component/Timer.hpp"
+
 #include "areg/logging/areg_log.h"
 
 // One declaration per function that logs. The first argument groups, the second names.

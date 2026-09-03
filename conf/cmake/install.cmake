@@ -96,11 +96,19 @@ install(FILES ${AREG_SDK_ROOT}/areg.cmake
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
 )
 
-# Copy all tools
+# Copy the tools a project built on areg uses. The corpus and framework maintenance
+# tools are left out: they read this repository's own layout and answer questions
+# about developing areg, not about using it. Shipping them puts twenty-five scripts
+# in front of a reader who needs seven.
 install(DIRECTORY tools/
             DESTINATION tools/${AREG_PACKAGE_NAME}
             COMPONENT Development
             DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ GROUP_EXECUTE WORLD_EXECUTE
+            PATTERN "latency"   EXCLUDE
+            PATTERN "sanitizer" EXCLUDE
+            PATTERN "evals"     EXCLUDE
+            REGEX "/(areg_benchmarks|check-ascii|check_agent_docs|check_commands|check_corpus|check_doc_config|check_invariants|check_mutations|check_observability|check_recipes|check_symbols|hunt-crash|report-ctest|run_evals|service_ports|setup_agent_memory|setup_agent_redirect)\\.py$" EXCLUDE
+            REGEX "/sanitize\\.sh$" EXCLUDE
 )
 
 # Copy compiled Areg SDK tools: logcollector, logobserver and mtrouter
@@ -208,7 +216,8 @@ endif()
 write_basic_package_version_file(exports/${AREG_PACKAGE_NAME}-config-version.cmake VERSION ${AREG_PROJECT_VERSION} COMPATIBILITY AnyNewerVersion) 
 configure_package_config_file("${AREG_EXPORTS_DIR}/config.cmake.in" 
                               "${CMAKE_CURRENT_BINARY_DIR}/exports/${AREG_PACKAGE_NAME}-config.cmake" 
-                              INSTALL_DESTINATION share/${AREG_PACKAGE_NAME})
+                              INSTALL_DESTINATION share/${AREG_PACKAGE_NAME}
+                              PATH_VARS CMAKE_INSTALL_FULL_INCLUDEDIR)
 
 if (AREG_SQLITE_FOUND)
     export(TARGETS areg aregextend areglogger

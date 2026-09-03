@@ -6,10 +6,9 @@
 # opened to look one thing up, and the answer would land on the other side of the
 # split as often as not.
 #
-# An exception is not free. A page listed here earns 70% of the credit a page
-# within the ceiling earns, so the pressure to shrink it stays. An entry naming a
-# page that does not exist, or one that is already under the ceiling, is a defect
-# and is reported.
+# An exception is not free. A page listed here is reported on every run, so the
+# pressure to shrink it stays visible. An entry naming a page that does not exist,
+# or one that is already under the ceiling, is a defect and is reported.
 #
 #   <page> = <bytes> # reason
 #

@@ -71,7 +71,7 @@ Read each index, then only the file the task needs.
 - Never commit without explicit approval.
 - `.claude/` is untracked working space and never enters a commit.
 - `AGENTS.md` and `docs/agent/` are agent-neutral; no harness is named in them.
-- The corpus is measured: run `tools/agent/ai_score.py` before and after, record the delta.
+- The corpus is checked: run `tools/agent/check_corpus.py` before and after, and leave no new finding.
 - Every claim in the agent corpus must be true of this commit.
 
 ## Keeping this current

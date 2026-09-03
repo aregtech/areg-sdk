@@ -5,21 +5,18 @@ AREG is a framework for service-oriented applications. Describe a service once i
 the service logic. The same code runs in one thread, many threads, many processes or
 many machines: what changes is where a component is registered, not what it does.
 
-This file is the entry point: read the one page your task needs, then stop.
-
 **Fast path.** Define or change a service interface, implement a provider or a
 consumer, register components into threads or processes, add a timer, log from
-application code, use `areg::String` or a container: for any of those,
-`docs/agent/00-cheatsheet.md` is the whole reading list. Go there now, skip
-`CODEBASE.md` and the rest of this file, and return only for section 6.
+application code: for any of those, `docs/agent/00-cheatsheet.md` is the whole
+reading list. Go there now, skip `CODEBASE.md` and the rest of this file, and return
+only for section 6. `areg::String` and the containers are not on it: that is one row
+of the section 2 table, `docs/agent/40-base-api.md`.
 
 ---
 
 ## 1. Scope
 
 This documentation set has one purpose: **building an application on top of areg**.
-`CODEBASE.md` is not a pre-read: it is one row of the section 2 table, answering what
-the seven core concepts are.
 
 Your application lives **outside** this repository and may use any coding style; it
 owes the contract in section 6 and nothing more. Changing the framework itself is a
@@ -43,25 +40,25 @@ Find your task, open that one file, and do not search the repository.
 | I need to ... | Read |
 |---|---|
 | **Anything ordinary** | `docs/agent/00-cheatsheet.md` (most tasks end here) |
-| **Start from working code** | `docs/agent/recipes/` - copy one, do not read it |
+| **Start from working code** | `docs/agent/recipes/` - copy one, do not read it. `recipes/README.md` maps them |
 | **Decide what the services are** | `docs/agent/05-design.md`, before writing any file |
 | Start a new project by hand | `docs/agent/10-new-project.md` |
 | Define an interface; what to override, what to call | `docs/agent/20-service-interface.md` (section 3: the names) |
 | Implement a service provider | `docs/agent/30-provider.md` |
 | Implement a service consumer | `docs/agent/31-consumer.md` |
 | Register components into threads / processes | `docs/agent/32-model.md` |
-| Watchdog, worker thread, model built at run time | `docs/agent/37-threads.md` |
+| Watchdog, worker thread, model built at run time | copy `docs/agent/recipes/07-worker-events/`; `docs/agent/37-threads.md` |
 | Send a custom event between threads | `docs/agent/23-events.md` |
 | Do periodic or delayed work | `docs/agent/33-timers.md` |
 | Log from code; collect several processes' logs | `docs/agent/34-logging.md` |
 | Understand the seven core concepts | `CODEBASE.md` section 1 |
-| Add custom data types (struct, enum, `.dtml`) | `docs/agent/21-data-types.md` |
-| Add a state machine | `docs/agent/22-state-machine.md` |
+| Data types: C++ spelling, struct, enum, `.dtml` | `docs/agent/21-data-types.md` |
+| Add a state machine | copy `docs/agent/recipes/06-state-machine/`, then `docs/agent/22-state-machine.md` |
 | **Use `areg::String` or a container** | `docs/agent/40-base-api.md` |
 | Application, component, thread, timer, time, file, buffer | `docs/agent/42-runtime-api.md` |
 | Integrate areg into an existing CMake project | `docs/wiki/02b-cmake-integrate.md` |
 | Work out why it does not work | `docs/agent/51-debug.md` |
-| Test the application, or a component on its own | `docs/agent/52-testing.md` |
+| Test the application, or a component on its own | copy `docs/agent/recipes/12-testing/`; `docs/agent/52-testing.md` |
 | Start `mtrouter`, `logcollector` or `logobserver` | `docs/agent/50-running.md` |
 | Read or query a `.sqlog` log database | `docs/agent/35-sqlog.md` |
 | Set the router address, ports, anything in `areg.init` | `docs/agent/36-config.md` |
@@ -90,8 +87,7 @@ scripts. Without it, copy a recipe from `docs/agent/recipes/` by hand.
 
 ## 4. Golden path
 
-Four commands, from nothing to a running application. **Python is not a
-requirement:** copying a recipe needs only CMake, Java and a compiler.
+Four commands, from nothing to a running application.
 
 ```bash
 cp -r <areg-sdk>/docs/agent/recipes/01-local-single-process ~/myapp
@@ -145,16 +141,17 @@ when the message carries one. It, `tools/check-env.sh` / `.bat` and
 `tools/codegenerate.sh` / `.bat` are developer tools and sit in `tools/` itself; only
 the first three need Python.
 
-`docs/agent/api.json` states the same contract machine-readably: naming transforms,
-which members are overridden and which are called, the connection states, and every
-rule of section 6 with its detection hint.
+`docs/agent/api.json` states the same contract machine-readably: the naming
+transforms, the connection states, and every section 6 rule with its detection hint.
 
 ---
 
 ## 6. Never
 
 Each line closes a class of wrong code, not a style preference, and
-`tools/agent/check_contract.py` detects all of them.
+`tools/agent/check_contract.py` reports all thirteen from the sources you write; it
+never reads the generate target. Run it before you build. The seven below are the
+ones that cost a redesign rather than an edit, so they are the ones to know first.
 
 - **Never edit a generated file.** The generate target is rewritten on every build;
   change the `.siml` instead.
@@ -162,28 +159,22 @@ Each line closes a class of wrong code, not a style preference, and
   from the document: `docs/agent/20-service-interface.md`.
 - **A consumer's `REGISTER_DEPENDENCY` string must equal the provider's component
   role name, character for character.** A mismatch compiles cleanly and never connects.
-- **Never call a request before the service is connected.** The first legal moment is
-  inside `service_connected()` once `areg::is_service_connected(status)` is true.
-- **Never treat a disconnect as fatal.** `Disconnected`, `ConnectionLost` and `Failed`
-  reconnect on their own; only `Rejected` and `Shutdown` are terminal.
+- **Never call a request before the service is connected, and never treat a
+  disconnect as fatal.** The first legal call is inside `service_connected()` once
+  `areg::is_service_connected(status)` is true. `Disconnected`, `ConnectionLost` and
+  `Failed` reconnect on their own; only `Rejected` and `Shutdown` are terminal.
 - **Never block inside a request, response, broadcast or update handler.** Blocking a
   dispatcher thread stops every component in it. Use a timer or a worker thread.
-- **Never include a header from a `private/` folder.** Only the headers above one are
-  API; the sole exception is `framework/areg/base/private/DebugDefs.hpp`.
-- **Never use exceptions.** AREG does not throw and does not catch. Return `bool`,
-  `std::optional`, or an error code.
-- **Never add a second component with the same role name in one process.** The role
-  name is the routing identity.
-- **Never register a watchdog timeout on a thread the watchdog does not run for.** The
-  timeout in `BEGIN_REGISTER_THREAD_EX` does nothing until the watchdog is started, so
-  it reads as protection and is none.
-- **Never let a `REGISTER_WORKER_THREAD` consumer name differ from the name the
-  component answers to.** Nothing matches it, and the worker's events go nowhere.
 - **Never override a `broadcast_*` or `on_*_update` without subscribing.** The handler
   runs only after `notify_on_...(true)`; without it the application waits for ever.
-- **Never answer a request after its handler returns without releasing it first.**
-  `unblock_current_request()` in the handler returns the session id;
-  `prepare_response(session)` restores it later. The second client gets `RequestBusy`.
+- **Never use exceptions.** AREG does not throw and does not catch. Return `bool`,
+  `std::optional`, or an error code.
+
+The other five are one-line fixes, and the checker names the file and the line for
+each: a `REGISTER_WORKER_THREAD` consumer name the component does not answer to, two
+components sharing a role name in one process, a header taken from a `private/`
+folder, a watchdog timeout on a thread whose watchdog never starts, and a response
+sent after its handler returned.
 
 ---
 

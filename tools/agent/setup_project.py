@@ -22,6 +22,7 @@ import re
 import shutil
 import stat
 import sys
+import textwrap
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -48,7 +49,23 @@ def find_agent_docs():
 SDK_ROOT = os.path.dirname(os.path.dirname(HERE))
 AGENT_DOCS = find_agent_docs()
 RECIPES = os.path.join(AGENT_DOCS, 'recipes') if AGENT_DOCS else ''
-DEFAULT_TAG = 'master'
+# The revision to fetch when --tag is not given. api.json owns it; this literal is
+# the answer when api.json cannot be read, and check_corpus.py holds the two equal.
+FALLBACK_TAG = 'master'
+
+
+def default_tag():
+    """The git ref docs/agent/api.json says a new project should fetch."""
+    path = os.path.join(AGENT_DOCS, 'api.json') if AGENT_DOCS else ''
+    try:
+        with open(path, 'r', encoding='utf-8') as handle:
+            stated = json.load(handle).get('sdk', {}).get('fetch_ref')
+    except (OSError, ValueError):
+        return FALLBACK_TAG
+    return stated or FALLBACK_TAG
+
+
+DEFAULT_TAG = default_tag()
 
 # Each mode names a recipe and the tokens that carry the project name in its
 # CMake files. Only CMake files are rewritten; sources are left as written.
@@ -120,10 +137,9 @@ def rewrite_top_cmake(path, name, sdk_root, tag):
     with open(path, encoding='utf-8') as handle:
         text = handle.read()
 
-    old = ('    FetchContent_Declare(areg\n'
-           '        GIT_REPOSITORY https://github.com/aregtech/areg-sdk.git\n'
-           '        GIT_TAG "master")\n'
-           '    FetchContent_MakeAvailable(areg)')
+    # Built from the same source the recipe's literal is held to, so the block
+    # this looks for cannot drift from the block the recipes carry.
+    old = fetch_block(None, DEFAULT_TAG)
     if old not in text:
         fail('recipe CMakeLists.txt does not carry the expected FetchContent block')
     text = text.replace(old, fetch_block(sdk_root, tag))
@@ -141,10 +157,56 @@ def substitute(path, tokens):
         handle.write(text)
 
 
+# A call written in prose, and a macro name. Both become code spans: a placeholder
+# such as notify_on_broadcast_<name> is read as a tag by a Markdown renderer.
+CALL_RE  = re.compile(r'\b[A-Za-z_][A-Za-z0-9_:]*(?:<[a-z]+>)?[A-Za-z0-9_]*\([^()]*\)')
+MACRO_RE = re.compile(r'\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b')
+
+
+def as_markdown(text):
+    """Puts the code written inside a rule sentence into code spans."""
+    text = CALL_RE.sub(lambda hit: '`%s`' % hit.group(0), text)
+    return MACRO_RE.sub(lambda hit: '`%s`' % hit.group(0), text)
+
+
+def prohibition_bullets():
+    """The prohibitions of docs/agent/api.json, as bullets for the project page.
+
+    Read at generation time rather than copied, so a project written today carries
+    the list the SDK states today. Returns None when api.json cannot be read.
+    """
+    path = os.path.join(AGENT_DOCS, 'api.json') if AGENT_DOCS else ''
+    try:
+        with open(path, 'r', encoding='utf-8') as handle:
+            stated = json.load(handle).get('prohibitions', [])
+    except (OSError, ValueError):
+        return None
+    bullets = []
+    for item in stated:
+        rule = ' '.join(str(item.get('rule', '')).split())
+        if rule:
+            bullets.append(textwrap.fill('- ' + as_markdown(rule), 88,
+                                         subsequent_indent='  '))
+    return '\n'.join(bullets) if bullets else None
+
+
 def write_agents(root, name, mode, sdk_root, binaries):
     """The project's own AGENTS.md: what an agent working here loads first."""
-    where = sdk_root if sdk_root else 'the SDK fetched into build/packages/areg-src'
     sdk = sdk_root if sdk_root else 'build/packages/areg-src'
+    # The SDK lands somewhere different for a clone, a fetch and an installed
+    # package, so the project is told how to ask rather than given one answer.
+    where = ('`build/areg-sdk.paths` names where the SDK is on this machine, one '
+             '`key = path` per line: `sdk_root`, `headers`, `agent_docs`, '
+             '`agents_md`, `codegen` and `schema`. CMake writes it while it '
+             'configures, so '
+             'run `cmake -B build` first if it is not there; if it is still absent '
+             'after that, ask for the SDK path and pass it as '
+             '`-DAREG_SDK_ROOT=<path>`. The commands below assume `{}`.'
+             .format(sdk))
+    never = prohibition_bullets()
+    if never is None:
+        never = ('- The full list is section 6 of `{}/AGENTS.md`; api.json could not be '
+                 'read when this project was created.'.format(sdk))
     run = '\n'.join('./build/bin/{}.elf'.format(b) for b in binaries)
     run_win = '\n'.join(r'build\bin\{}.exe'.format(b) for b in binaries)
     if MODES[mode]['router']:
@@ -193,7 +255,7 @@ src/CMakeLists.txt    declares the service interface and the executables
 
 ## Where the framework documentation is
 
-The SDK is at `{where}`. Read one page for the task, not the whole set:
+{where} Read one page for the task, not the whole set:
 
 | I need to ... | Read |
 |---|---|
@@ -210,33 +272,37 @@ The SDK is at `{where}`. Read one page for the task, not the whole set:
 
 ```bash
 python3 {sdk}/tools/agent/gen_skeleton.py --doc src/services/X.siml --out src
+python3 {sdk}/tools/agent/check_contract.py . --strict
 python3 {sdk}/tools/agent/run_scenarios.py
 ```
 
 `gen_skeleton.py` writes the provider and consumer with every override already in
-place, so only the logic has to be written. Both take `--help`. On Windows the
-interpreter is `python`, not `python3`.
+place, so only the logic has to be written. `check_contract.py` reads the sources
+and reports the rules below that they break; it needs no build. All three take
+`--help`. On Windows the interpreter is `python`, not `python3`.
 
 ## Never
 
-- Never edit anything under `build/`; generated code is rewritten on every build.
-- Never invent a method name on a generated base class. The naming rule is fixed.
-- A consumer's `REGISTER_DEPENDENCY` string must equal the provider's role name exactly.
-- Never call a request before `service_connected` reports a connected service.
-- `Disconnected`, `ConnectionLost` and `Failed` are transient. Do not quit on them.
-- Never block inside a handler. It stops every component in that thread.
+Each line closes a class of wrong code, not a style preference.
+`check_contract.py .` reports the ones the sources of this project can show; the
+generated code under `build/` it does not read.
+
+{never}
 
 ## Done means
 
-The build succeeds and the scenario passes:
+The build succeeds, the contract check is clean and the scenario passes:
 
 ```bash
+cmake --build build -j
+python3 {sdk}/tools/agent/check_contract.py . --strict
 python3 {sdk}/tools/agent/run_scenarios.py
 ```
 
-It starts the application, checks the output and the exit code, and returns 0 only
-when everything matched. Edit `scenarios.json` when the expected output changes.
-""".format(name=name, run=run, run_win=run_win, where=where, sdk=sdk)
+`run_scenarios.py` starts the application, checks the output and the exit code, and
+returns 0 only when everything matched. Edit `scenarios.json` when the expected
+output changes.
+""".format(name=name, run=run, run_win=run_win, where=where, sdk=sdk, never=never)
 
     with open(os.path.join(root, 'AGENTS.md'), 'w', encoding='utf-8') as handle:
         handle.write(text)

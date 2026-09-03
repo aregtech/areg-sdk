@@ -5,11 +5,104 @@
   "version": "1.4.0",
   "language_level": "C++17",
   "namespace": "areg",
+  "sdk": {
+    "description": "Which areg-sdk these pages describe, and what a new project should fetch. Every GIT_TAG in a recipe and the default of setup_project.py --tag are held to fetch_ref.",
+    "fetch_ref": "master",
+    "supported": "2.0.0 and newer",
+    "deprecated": "1.5.0 and earlier",
+    "note": "2.0.0 is not tagged yet, so master is the only ref whose API matches these pages. The 2.0.0 rename removed the NE, TE and IE prefixes and moved everything public into namespace areg, so a project pinned to 1.5.0 or earlier compiles against none of the names written here."
+  },
   "legacy_names": {
     "description": "areg was renamed throughout. Names an agent may recall from training data no longer exist. Never write an areg name from memory; grep for it.",
-    "removed_prefixes": ["NE", "TE", "IE"],
-    "removed": ["NEApplication", "NEApplicationPosix", "NEApplicationWin32", "NEBasicShape", "NECommon", "NEConnection", "NEDebug", "NEDebugPosix", "NEDebugWin32", "NELogCollectorSettings", "NELogConfig", "NELoggerSettings", "NELogging", "NELogObserverSettings", "NELogOptions", "NEMath", "NEMemory", "NEMulticastRouterSettings", "NEPersistence", "NERegistry", "NERemoteService", "NEService", "NESocket", "NESocketPosix", "NESocketWin32", "NEString", "NESynchTypesIX", "NESyncTypesIX", "NESystemService", "NETrace", "NEUtilities", "NEUtilitiesPosix", "NEUtilitiesWin32", "TEArrayList", "TEEvent", "TEFixedArray", "TEHashMap", "TELinkedList", "TEMap", "TEPair", "TEProperty", "TEResourceListMap", "TEResourceMap", "TERingStack", "TERuntimeResourceMap", "TESortedLinkedList", "TEStack", "TEString", "TETemplateBase"],
-    "removed_ie": ["IEByteBuffer", "IEConfigurationListener", "IECursorPosition", "IEDatabaseEngine", "IEEventConsumer", "IEEventRouter", "IEIOStream", "IELogDatabaseEngine", "IEProxyListener", "IEQueueListener", "IERemoteEventConsumer", "IERemoteMessageHandler", "IERemoteService", "IERemoteServiceConnection", "IERemoteServiceConsumer", "IERemoteServiceHandler", "IERemoteServiceMessageHandler", "IEServerConnectionHandler", "IEServiceConnectionConsumer", "IEServiceConnectionHandler", "IEServiceConnectionProvider", "IEServiceRegisterConsumer", "IEServiceRegisterProvider", "IESyncObject", "IESyncObjectBaseIX", "IESynchObject", "IESynchObjectBaseIX", "IEThreadConsumer", "IETimerConsumer", "IEWaitableBaseIX", "IEWorkerThreadConsumer"],
+    "removed_prefixes": [
+      "NE",
+      "TE",
+      "IE"
+    ],
+    "removed": [
+      "NEApplication",
+      "NEApplicationPosix",
+      "NEApplicationWin32",
+      "NEBasicShape",
+      "NECommon",
+      "NEConnection",
+      "NEDebug",
+      "NEDebugPosix",
+      "NEDebugWin32",
+      "NELogCollectorSettings",
+      "NELogConfig",
+      "NELoggerSettings",
+      "NELogging",
+      "NELogObserverSettings",
+      "NELogOptions",
+      "NEMath",
+      "NEMemory",
+      "NEMulticastRouterSettings",
+      "NEPersistence",
+      "NERegistry",
+      "NERemoteService",
+      "NEService",
+      "NESocket",
+      "NESocketPosix",
+      "NESocketWin32",
+      "NEString",
+      "NESynchTypesIX",
+      "NESyncTypesIX",
+      "NESystemService",
+      "NETrace",
+      "NEUtilities",
+      "NEUtilitiesPosix",
+      "NEUtilitiesWin32",
+      "TEArrayList",
+      "TEEvent",
+      "TEFixedArray",
+      "TEHashMap",
+      "TELinkedList",
+      "TEMap",
+      "TEPair",
+      "TEProperty",
+      "TEResourceListMap",
+      "TEResourceMap",
+      "TERingStack",
+      "TERuntimeResourceMap",
+      "TESortedLinkedList",
+      "TEStack",
+      "TEString",
+      "TETemplateBase"
+    ],
+    "removed_ie": [
+      "IEByteBuffer",
+      "IEConfigurationListener",
+      "IECursorPosition",
+      "IEDatabaseEngine",
+      "IEEventConsumer",
+      "IEEventRouter",
+      "IEIOStream",
+      "IELogDatabaseEngine",
+      "IEProxyListener",
+      "IEQueueListener",
+      "IERemoteEventConsumer",
+      "IERemoteMessageHandler",
+      "IERemoteService",
+      "IERemoteServiceConnection",
+      "IERemoteServiceConsumer",
+      "IERemoteServiceHandler",
+      "IERemoteServiceMessageHandler",
+      "IEServerConnectionHandler",
+      "IEServiceConnectionConsumer",
+      "IEServiceConnectionHandler",
+      "IEServiceConnectionProvider",
+      "IEServiceRegisterConsumer",
+      "IEServiceRegisterProvider",
+      "IESyncObject",
+      "IESyncObjectBaseIX",
+      "IESynchObject",
+      "IESynchObjectBaseIX",
+      "IEThreadConsumer",
+      "IETimerConsumer",
+      "IEWaitableBaseIX",
+      "IEWorkerThreadConsumer"
+    ],
     "removed_ie_note": "The IE prefix marked an interface. Every name here is gone; the interface it named is now areg::<Name> without the prefix, for example areg::ThreadConsumer. Reported as B-06.",
     "removed_source": "the rename commits themselves: git log -M --diff-filter=R --name-status -- 'framework/*', unioned with --diff-filter=D. tools/agent/check_contract.py rule B-05 matches this exact list.",
     "removed_scope": "framework names only. An application is free to use any coding style and may legitimately define its own NE* name, so match these exactly rather than by prefix.",
@@ -54,7 +147,14 @@
         "transform": "snake_case",
         "example": {
           "document": "StringOnChange",
-          "generated": ["set_string_on_change", "string_on_change", "on_string_on_change_update", "notify_on_string_on_change_update", "is_string_on_change_valid", "invalidate_string_on_change"]
+          "generated": [
+            "set_string_on_change",
+            "string_on_change",
+            "on_string_on_change_update",
+            "notify_on_string_on_change_update",
+            "is_string_on_change_valid",
+            "invalidate_string_on_change"
+          ]
         }
       },
       {
@@ -90,7 +190,9 @@
         "member": "request_foo_failed",
         "usage": "override",
         "required": false,
-        "parameters": ["areg::ResultType"]
+        "parameters": [
+          "areg::ResultType"
+        ]
       }
     },
     {
@@ -121,14 +223,21 @@
     {
       "declared_as": "Attribute Baz",
       "provider": {
-        "member": ["set_baz", "is_baz_valid", "invalidate_baz"],
+        "member": [
+          "set_baz",
+          "is_baz_valid",
+          "invalidate_baz"
+        ],
         "usage": "call"
       },
       "consumer": {
         "member": "on_baz_update",
         "usage": "override",
         "required": false,
-        "parameters": ["T", "areg::DataState"],
+        "parameters": [
+          "T",
+          "areg::DataState"
+        ],
         "read_accessor": "baz(state)",
         "requires_subscription": "notify_on_baz_update(true)",
         "note": "The value is meaningful only when state == areg::DataState::DataIsOK. The first callback after subscribing may report it invalid."
@@ -137,18 +246,41 @@
     {
       "declared_as": "Overview/@Name",
       "provider": {
-        "member": ["<Name>::ServiceName", "<Name>::InterfaceVersion"],
+        "member": [
+          "<Name>::ServiceName",
+          "<Name>::InterfaceVersion"
+        ],
         "usage": "read"
       },
       "consumer": {
-        "member": ["<Name>::ServiceName", "<Name>::InterfaceVersion"],
+        "member": [
+          "<Name>::ServiceName",
+          "<Name>::InterfaceVersion"
+        ],
         "usage": "read"
       }
     }
   ],
   "parameter_passing": {
-    "by_value": ["bool", "int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64", "float", "double", "enumerations"],
-    "by_const_reference": ["String", "structures", "containers"]
+    "by_value": [
+      "bool",
+      "int8",
+      "uint8",
+      "int16",
+      "uint16",
+      "int32",
+      "uint32",
+      "int64",
+      "uint64",
+      "float",
+      "double",
+      "enumerations"
+    ],
+    "by_const_reference": [
+      "String",
+      "structures",
+      "containers"
+    ]
   },
   "connection_states": {
     "type": "areg::ServiceConnectionState",
@@ -198,12 +330,22 @@
   },
   "service_connected": {
     "signature": "bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase & proxy)",
-    "required_steps": ["call <Name>ConsumerBase::service_connected(status, proxy) first", "test areg::is_service_connected(status) before calling anything", "return the base class result"],
+    "required_steps": [
+      "call <Name>ConsumerBase::service_connected(status, proxy) first",
+      "test areg::is_service_connected(status) before calling anything",
+      "return the base class result"
+    ],
     "note": "Called again on every reconnection. Subscribe here, not in the constructor."
   },
   "lifecycle": {
     "header": "areg/appbase/Application.hpp",
-    "order": ["areg::Application::setup()", "areg::Application::load_model(name)", "areg::Application::wait_quit(areg::WAIT_INFINITE)", "areg::Application::unload_model(name)", "areg::Application::release()"],
+    "order": [
+      "areg::Application::setup()",
+      "areg::Application::load_model(name)",
+      "areg::Application::wait_quit(areg::WAIT_INFINITE)",
+      "areg::Application::unload_model(name)",
+      "areg::Application::release()"
+    ],
     "terminated_by": "areg::Application::signal_quit()"
   },
   "categories": {
@@ -240,7 +382,15 @@
       "format": "log::<module>::scope::<pattern> = <priority>",
       "module": "executable name without extension, or * for all applications",
       "pattern": "scope name, with * as a trailing wildcard",
-      "priorities": ["FATAL", "ERROR", "WARN", "INFO", "DEBUG", "SCOPE", "NOTSET"],
+      "priorities": [
+        "FATAL",
+        "ERROR",
+        "WARN",
+        "INFO",
+        "DEBUG",
+        "SCOPE",
+        "NOTSET"
+      ],
       "combine_with": "|",
       "terminator": ";",
       "terminator_note": "Optional. The parser strips a trailing ';' from any value, so its presence or absence changes nothing. The shipped areg.init writes one on every scope line."
@@ -283,7 +433,7 @@
     {
       "id": "P-01",
       "rule": "Never edit a generated file.",
-      "detect": "modification under the generate target"
+      "detect": "the generator banner in a file among the application sources, or a source file without it under the generate target"
     },
     {
       "id": "P-02",
@@ -298,7 +448,7 @@
     {
       "id": "P-04",
       "rule": "Never call a request before the service is connected.",
-      "detect": "request_* call outside service_connected or a later handler"
+      "detect": "a request_* or notify_on_* call in a component constructor, which runs before the service can be connected"
     },
     {
       "id": "P-05",

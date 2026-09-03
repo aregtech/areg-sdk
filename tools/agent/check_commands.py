@@ -81,9 +81,8 @@ SAFE_HEAD = ('python3', 'python')
 READ_ONLY = {
     'check_agent_docs.py': {},
     'check_symbols.py': {},
-    'check_claims.py': {},
     'check-ascii.py': {},
-    'ai_score.py': {},
+    'check_corpus.py': {},
     'explain_rule.py': {},
     'check_commands.py': {'require': ('--help',)},
     'check_mutations.py': {'deny': ('--lib',)},
@@ -175,6 +174,57 @@ def substitute(command):
     return command
 
 
+# Flags a shell, not the script, consumes.
+SHELL_FLAGS = ('-c', '-m', '-u')
+
+_advertised = {}
+
+
+def advertised_flags(script):
+    """The option strings a tool's own --help prints, or None if it has none.
+
+    Running --help asks the tool what it accepts instead of guessing. It parses
+    arguments and exits, so it builds nothing and starts nothing.
+    """
+    if script in _advertised:
+        return _advertised[script]
+    path = os.path.join(ROOT, script)
+    flags = None
+    if os.path.isfile(path):
+        try:
+            result = subprocess.run([sys.executable, path, '--help'], cwd=ROOT,
+                                    capture_output=True, text=True, timeout=60)
+            if result.returncode == 0:
+                flags = set(re.findall(r'(?<![\w-])(--?[A-Za-z][-A-Za-z0-9_]*)',
+                                       result.stdout))
+        except (OSError, subprocess.SubprocessError):
+            flags = None
+    _advertised[script] = flags
+    return flags
+
+
+def unknown_flags(command):
+    """The flags a documented command carries that its tool does not advertise."""
+    words = command.split()
+    if not words or os.path.basename(words[0]).split('.')[0] not in ('python3', 'python'):
+        return None, []
+    scripts = [w for w in words[1:] if w.endswith('.py')]
+    if not scripts:
+        return None, []
+    script = substitute(scripts[0]).lstrip('./')
+    if not script.startswith(TRACKED_TOPS):
+        return None, []
+    known = advertised_flags(script)
+    if known is None:
+        return None, []
+    used = []
+    for word in words[1:]:
+        word = word.split('=')[0].strip('`,;()')
+        if word.startswith('-') and word not in SHELL_FLAGS and not PLACEHOLDER_RE.search(word):
+            used.append(word)
+    return script, [f for f in used if f not in known]
+
+
 def classify(command):
     """The state of one command, and why. Does not run anything."""
     head = command.split()[0].strip('`')
@@ -236,11 +286,21 @@ def main():
         return 1
 
     counts = {'RUN': 0, 'RED': 0, 'HOLE': 0, 'SKIP': 0}
+    flagged = 0
     problems = []
     for document in documents:
         for number, command in blocks(document):
             command = substitute(command)
             state, why = classify(command)
+            # A command this checker cannot run still names flags, and a flag the
+            # tool stopped accepting is a dead instruction whether it runs or not.
+            script, bad = unknown_flags(command)
+            if script:
+                if bad:
+                    state, why = 'RED', '{} does not accept {}'.format(
+                        script, ', '.join(sorted(set(bad))))
+                elif state != 'RUN':
+                    flagged += 1
             if state == 'RUN':
                 ok, detail = run(command)
                 if not ok:
@@ -256,9 +316,10 @@ def main():
     for problem in problems:
         print(problem.rstrip())
     total = sum(counts.values())
-    print('{} command(s) in {} document(s): {} ran, {} red, {} unresolved, '
-          '{} not run here'.format(total, len(documents), counts['RUN'],
-                                   counts['RED'], counts['HOLE'], counts['SKIP']))
+    print('{} command(s) in {} document(s): {} ran, {} flags checked against '
+          '--help, {} red, {} unresolved, {} not run here'
+          .format(total, len(documents), counts['RUN'], flagged, counts['RED'],
+                  counts['HOLE'], counts['SKIP']))
     return 1 if (counts['RED'] or counts['HOLE']) else 0
 
 

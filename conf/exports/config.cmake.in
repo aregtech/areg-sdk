@@ -14,17 +14,17 @@ if (NOT DEFINED CMAKE_C_COMPILER_TARGET OR "${CMAKE_C_COMPILER_TARGET}" STREQUAL
 endif()
 
 # Root folder of the SDK
-set(AREG_SDK_ROOT           "@CMAKE_INSTALL_PREFIX@")
+set(AREG_SDK_ROOT           "${PACKAGE_PREFIX_DIR}")
 # Location of 'areg', 'aregextend' and 'areglogger' header files
-set(AREG_FRAMEWORK          "@CMAKE_INSTALL_FULL_INCLUDEDIR@")
+set(AREG_FRAMEWORK          "@PACKAGE_CMAKE_INSTALL_FULL_INCLUDEDIR@")
 # Location of configuration, initialization and other shared files of Areg SDK
-set(AREG_SHARE_DIR          "@CMAKE_INSTALL_PREFIX@/share/@AREG_PACKAGE_NAME@")
+set(AREG_SHARE_DIR          "${PACKAGE_PREFIX_DIR}/share/@AREG_PACKAGE_NAME@")
 # Location of initialization file to copy as a template in the processes
 set(AREG_SHARE_INIT         "${AREG_SHARE_DIR}/areg.init")
 # Location of cmake configuration directory
 set(AREG_CMAKE_CONFIG_DIR   "${AREG_SHARE_DIR}/conf/cmake")
 # Location of Areg SDK tools.
-set(AREG_SDK_TOOLS          "@CMAKE_INSTALL_PREFIX@/tools/@AREG_PACKAGE_NAME@")
+set(AREG_SDK_TOOLS          "${PACKAGE_PREFIX_DIR}/tools/@AREG_PACKAGE_NAME@")
 # Location of the Areg SDK code generator
 set(AREG_TOOL_CODEGEN       "${AREG_SDK_TOOLS}/codegen.jar")
 # Full path to 'areg.cmake' to include in projects
@@ -72,9 +72,12 @@ option(AREG_TESTS     "No Areg Unit Tests"    OFF)
 # Examples are ignored
 option(AREG_EXAMPLES  "No Areg Examples"      OFF)
 
-# Change the build root directory if compiled fines are copied somewhere else.
-# set to 'CMAKE_CURRENT_BINARY_DIR' if it should be in the compiled binaries directory
-set(AREG_BUILD_DIR         "${CMAKE_SOURCE_DIR}/product")
+# The build root directory, when the project including this package names none.
+# Set it before 'find_package(areg)' to put the output somewhere else, such as
+# '${CMAKE_BINARY_DIR}' to keep it with the compiled binaries.
+if (NOT DEFINED AREG_BUILD_DIR OR "${AREG_BUILD_DIR}" STREQUAL "")
+    set(AREG_BUILD_DIR     "${CMAKE_SOURCE_DIR}/product")
+endif()
 
 # initialize SQLite3 library reference and type
 set(AREG_SQLITE_LIB_REF @AREG_SQLITE_LIB_REF@)

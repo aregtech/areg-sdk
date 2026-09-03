@@ -30,6 +30,16 @@ A citation attached to no name -- prose rather than a table row -- is still chec
 for the file and the line only, and check 1 remains a tree-wide search for the
 names no citation covers.
 
+Two more edits leave the name on the line and change what it means, so the line
+is read as code rather than as text:
+
+  * comments are stripped before the name is looked for. A member deleted from
+    the line and still named by the comment on it resolves against the comment
+    otherwise;
+  * the parameter list the page prints is compared with the one the line
+    declares. A parameter added, removed or made mandatory keeps the name and
+    changes every call the page teaches.
+
 Exit code 0 means every name resolved.
 """
 
@@ -92,8 +102,104 @@ def declares(line, name):
     return re.search(r'\b' + re.escape(name) + r'\b', line) is not None
 
 
+def code_only(lines):
+    """The lines with their comments blanked, so a name in one counts for nothing."""
+    out = []
+    in_block = False
+    for line in lines:
+        kept = []
+        index = 0
+        while index < len(line):
+            pair = line[index:index + 2]
+            if in_block:
+                if pair == '*/':
+                    in_block = False
+                    index += 2
+                else:
+                    index += 1
+                continue
+            if pair == '/*':
+                in_block = True
+                index += 2
+                continue
+            if pair == '//':
+                break
+            kept.append(line[index])
+            index += 1
+        out.append(''.join(kept))
+    return out
+
+
+def split_params(text):
+    """The parameters of a list, splitting on the commas that separate them."""
+    parts = []
+    current = ''
+    depth = 0
+    for char in text:
+        if char in '(<[{':
+            depth += 1
+        elif char in ')>]}':
+            depth = max(0, depth - 1)
+        if (char == ',') and (depth == 0):
+            parts.append(current)
+            current = ''
+        else:
+            current += char
+    parts.append(current)
+    return [part.strip() for part in parts if part.strip()]
+
+
+def param_list(text, opening):
+    """The text between the parenthesis at `opening` and its match, or None."""
+    depth = 0
+    for index in range(opening, len(text)):
+        if text[index] == '(':
+            depth += 1
+        elif text[index] == ')':
+            depth -= 1
+            if depth == 0:
+                return text[opening + 1:index]
+    return None
+
+
+def arity(text, name):
+    """How many parameters `name` takes in `text`, as (required, total).
+
+    Returns None when the list is variadic or is not there to read: a comparison
+    that cannot be made is not a finding.
+    """
+    if name == 'operator':
+        found = re.search(r'\boperator\b', text)
+        opening = text.find('(', found.end()) if found else -1
+    else:
+        found = re.search(r'\b' + re.escape(name) + r'\s*\(', text)
+        opening = text.index('(', found.start()) if found else -1
+    if opening < 0:
+        return None
+    inner = param_list(text, opening)
+    if inner is None:
+        return None
+    params = split_params(inner)
+    if any(part == '...' or part.endswith('...') for part in params):
+        return None
+    if params == ['void']:
+        params = []
+    optional = [part for part in params if '=' in part]
+    return len(params) - len(optional), len(params)
+
+
+def declaration_at(lines, index):
+    """The declaration starting on a header line, joined until its parentheses close."""
+    text = lines[index]
+    limit = min(len(lines), index + 6)
+    while text.count('(') > text.count(')') and (index + 1) < limit:
+        index += 1
+        text += ' ' + lines[index]
+    return text
+
+
 def citations(line):
-    """Every citation on a documentation line, as (file, number, anchor).
+    """Every citation on a documentation line, as (file, number, anchor, span).
 
     The file carries across a row, so `ArrayList.hpp:172` followed by `:166`
     both resolve to ArrayList.hpp. The anchor is the last code span before the
@@ -108,8 +214,9 @@ def citations(line):
         if current is None:
             continue
         before = [s for s in CODE_SPAN_RE.finditer(line) if s.end() <= hit.start()]
-        anchor = anchor_of(before[-1].group(1)) if before else None
-        found.append((current, int(number), anchor))
+        span = before[-1].group(1) if before else None
+        anchor = anchor_of(span) if span else None
+        found.append((current, int(number), anchor, span))
     return found
 
 
@@ -170,6 +277,7 @@ def check(verbose):
 
     problems = []
     resolved = 0
+    sources = {}
     for path in documents():
         shown = os.path.relpath(path, ROOT)
         with open(path, 'r', encoding='utf-8', errors='replace') as handle:
@@ -195,23 +303,43 @@ def check(verbose):
                                 % (shown, name))
 
         for doc_line in text.splitlines():
-            for target, number, anchor in citations(doc_line):
+            for target, number, anchor, span in citations(doc_line):
                 base = os.path.basename(target)
                 hit = by_name.get(base)
                 if hit is None:
                     continue    # a path citation, not a framework one
-                with open(hit, 'r', encoding='utf-8', errors='replace') as handle:
-                    lines = handle.read().splitlines()
+                if hit not in sources:
+                    with open(hit, 'r', encoding='utf-8', errors='replace') as handle:
+                        sources[hit] = code_only(handle.read().splitlines())
+                lines = sources[hit]
                 if number > len(lines):
                     problems.append('%s: %s:%d is past the end of the file (%d lines)'
                                     % (shown, base, number, len(lines)))
                     continue
                 cited = lines[number - 1]
+                if anchor is not None and not cited.strip():
+                    problems.append(
+                        '%s: %s:%d carries no code, only a comment or nothing; %s is '
+                        'declared elsewhere or not at all'
+                        % (shown, base, number, anchor))
+                    continue
                 if anchor is not None and not declares(cited, anchor):
                     problems.append(
                         '%s: %s:%d no longer declares %s; the line reads "%s"'
                         % (shown, base, number, anchor, cited.strip()[:70]))
                     continue
+                if anchor is not None:
+                    written = arity(span, anchor)
+                    declared_arity = arity(declaration_at(lines, number - 1),
+                                           anchor)
+                    if (written is not None) and (declared_arity is not None) \
+                            and (written != declared_arity):
+                        problems.append(
+                            '%s: %s:%d declares %s with %d parameter(s), %d of them '
+                            'mandatory; the page prints %d and %d'
+                            % (shown, base, number, anchor, declared_arity[1],
+                               declared_arity[0], written[1], written[0]))
+                        continue
                 resolved += 1
                 if verbose:
                     print('  ok   %-34s %s' % ('%s:%d' % (base, number), shown))

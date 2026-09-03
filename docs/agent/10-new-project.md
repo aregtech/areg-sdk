@@ -62,20 +62,22 @@ project(${PROJECT_NAME} VERSION ${PROJECT_VERSION} LANGUAGES C CXX)
 
 find_package(areg CONFIG)
 
+# build/bin whichever way areg was found; an installed package names product/ otherwise.
+set(AREG_BUILD_DIR "${CMAKE_BINARY_DIR}")
+option(AREG_OUTPUT_LAYOUT "Areg build structure" OFF)
+
 if (NOT areg_FOUND)
-    set(AREG_BUILD_DIR "${CMAKE_BINARY_DIR}")
     set(AREG_DEPS_DIR  "${CMAKE_BINARY_DIR}/packages")
     set(AREG_LIB_TYPE  shared)
     option(AREG_TESTS         "Build areg-sdk tests"    OFF)
     option(AREG_EXAMPLES      "Build areg-sdk examples" OFF)
     option(AREG_SYSTEM_GTEST  "Build GTest"             OFF)
-    option(AREG_OUTPUT_LAYOUT "Areg build structure"    OFF)
 
     include(FetchContent)
     set(FETCHCONTENT_BASE_DIR "${AREG_DEPS_DIR}")
     FetchContent_Declare(areg
         GIT_REPOSITORY https://github.com/aregtech/areg-sdk.git
-        GIT_TAG "master")
+        GIT_TAG "master")           # 2.0.0 and newer; do not pin 1.5.0 or earlier
     FetchContent_MakeAvailable(areg)
 
     set(AREG_SDK_ROOT         "${areg_SOURCE_DIR}")
@@ -90,6 +92,17 @@ add_subdirectory(src)
 
 Turning the SDK's own examples and tests off matters: it keeps the configure step
 offline and fast.
+
+`master` is the ref to fetch: 2.0.0 is not tagged yet and it is the only revision
+whose API matches these pages. **Never pin 1.5.0 or earlier.** The 2.0.0 rename
+removed the `NE`, `TE` and `IE` prefixes and moved everything public into namespace
+`areg`, so an older tag compiles against none of the names written here.
+`docs/agent/api.json` states the ref under `sdk`, and CI holds every recipe to it.
+
+`include(${AREG_CMAKE})` also writes `build/areg-sdk.paths`, which names where the
+SDK landed on this machine -- `sdk_root`, `headers`, `agent_docs`, `agents_md` and
+`codegen`, one `key = path` per line. Read it instead of guessing the path; it is
+correct whether areg was found, fetched or installed.
 
 ---
 

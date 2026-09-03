@@ -5,6 +5,9 @@ A component that has to do something repeatedly, or after a delay, owns a
 thread, so the callback obeys the same rule as every handler: it must not block.
 
 ```cpp
+#include "areg/component/Component.hpp"
+#include "areg/component/ComponentThread.hpp"
+
 #include "areg/component/Timer.hpp"
 #include "areg/component/TimerConsumer.hpp"
 

@@ -41,6 +41,7 @@ Overloads of `compare`, `find_first` and `find_last` also take `const char *`,
 macros are `printf` style, so `%s` needs a `const char *`, not a `String`:
 
 ```cpp
+// areg-check: ignore
 LOG_INFO("client [ %s ] connected", client.as_string());   // right
 LOG_INFO("client [ %s ] connected", client);               // wrong
 ```
