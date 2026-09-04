@@ -35,6 +35,23 @@ declared on that base. That is an implementation detail; you call them all on a
 Overloads of `compare`, `find_first` and `find_last` also take `const char *`,
 `std::string` and `std::string_view`.
 
+### Building a string from a format
+
+`printf` rules. The instance form fills this string and returns it, so it chains; the
+static form writes into a buffer you own. Both exist and both are correct.
+
+| Call | Signature | Header |
+|---|---|---|
+| `format(...)` | `String & format(const char * format, ...)` | `String.hpp:403` |
+| `format_list(...)` | `String & format_list(const char * format, va_list argptr)` | `String.hpp:412` |
+| `String::format_string(...)` | `static int32_t format_string(char * strDst, int32_t count, const char * format, ...)` | `String.hpp:364` |
+
+```cpp
+areg::String reason;
+reason.format("need %u more cents", missing);
+response_refused(reason);                          // as_string() where a %s is wanted
+```
+
 ### Passing a String to a log macro
 
 **This is the single most common compile error in application code.** The logging

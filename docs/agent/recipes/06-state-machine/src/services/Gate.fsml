@@ -1,88 +1,165 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <StateMachine FormatVersion="1.1.0">
     <Overview ID="1" Name="Gate" Version="1.0.0" Threading="Local">
-        <Description>A gate that opens on request and closes itself after a hold time.</Description>
+        <Description>A gate that opens to a requested width, can be held part way through its cycle, and refuses a width it cannot reach.</Description>
     </Overview>
+    <AttributeList>
+        <Attribute ID="2" Name="Width" DataType="uint32" Value="0">
+            <Description>The width the last accepted request asked for.</Description>
+        </Attribute>
+    </AttributeList>
+    <EventList>
+        <Event ID="3" Name="Cycled">
+            <Description>Sent by GATE_CYCLE when its own level reaches Final.</Description>
+        </Event>
+        <Event ID="4" Name="Refused">
+            <Description>Sent when a request asks for more than MaxWidth.</Description>
+        </Event>
+    </EventList>
     <TimerList>
-        <Timer ID="2" Name="Hold" Timeout="300" Repeat="1">
+        <Timer ID="5" Name="Warn" Timeout="200" Repeat="1">
+            <Description>How long the gate warns before it is fully open.</Description>
+        </Timer>
+        <Timer ID="6" Name="Hold" Timeout="300" Repeat="1">
             <Description>How long the gate stays open.</Description>
         </Timer>
     </TimerList>
-    <AttributeList>
-        <Attribute ID="16" Name="Opened" DataType="bool" Value="false">
-            <Description>True once the gate has opened. The open transition is guarded on it, so the gate cannot open twice.</Description>
-        </Attribute>
-    </AttributeList>
     <MethodList>
-        <Method ID="3" Name="open" MethodType="Trigger">
-            <Description>Asks the gate to open.</Description>
+        <Method ID="7" Name="open" MethodType="Trigger">
+            <Description>Asks the gate to open to a width.</Description>
+            <ParamList>
+                <Parameter ID="8" Name="width" DataType="uint32">
+                    <Description>The width asked for, in centimetres.</Description>
+                </Parameter>
+            </ParamList>
         </Method>
-        <Method ID="4" Name="on_open" MethodType="Action">
-            <Description>Runs when the gate has opened.</Description>
+        <Method ID="9" Name="hold" MethodType="Trigger">
+            <Description>Interrupts the cycle wherever it is.</Description>
         </Method>
-        <Method ID="5" Name="on_close" MethodType="Action">
-            <Description>Runs when the gate has closed.</Description>
+        <Method ID="10" Name="resume" MethodType="Trigger">
+            <Description>Continues the cycle from where it was interrupted.</Description>
+        </Method>
+        <Method ID="11" Name="on_opening" MethodType="Action">
+            <Description>Runs on entering the opening stage.</Description>
+        </Method>
+        <Method ID="12" Name="on_open" MethodType="Action">
+            <Description>Runs on entering the open stage.</Description>
+        </Method>
+        <Method ID="13" Name="on_held" MethodType="Action">
+            <Description>Runs when the cycle is interrupted.</Description>
+        </Method>
+        <Method ID="14" Name="on_closed" MethodType="Action">
+            <Description>Runs when a whole cycle has finished.</Description>
+        </Method>
+        <Method ID="15" Name="on_refused" MethodType="Action">
+            <Description>Runs when a request asks for a width the gate cannot reach.</Description>
+            <ParamList>
+                <Parameter ID="49" Name="asked" DataType="uint32">
+                    <Description>The width that was refused.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="16" Name="on_stopped" MethodType="Action">
+            <Description>Runs once, when the machine stops.</Description>
         </Method>
     </MethodList>
+    <ConstantList>
+        <Constant ID="17" Name="MaxWidth" DataType="uint32" Value="100">
+            <Description>The widest opening the gate can reach.</Description>
+        </Constant>
+    </ConstantList>
     <StateList>
-        <State ID="6" Name="Start" Kind="Start">
+        <State ID="18" Name="Start" Kind="Start">
             <TransitionList>
-                <Transition ID="7" Kind="Initial" To="8"/>
+                <Transition ID="19" Kind="Initial" To="20"/>
             </TransitionList>
         </State>
-        <State ID="8" Name="GATE_CLOSED" Kind="Normal">
-            <Description>The gate is shut and waits to be opened.</Description>
+        <State ID="20" Name="GATE_CLOSED" Kind="Normal">
+            <Description>Shut, waiting for a request. Document order is priority order: the guarded transition is tried first, the internal one catches what it refuses.</Description>
             <TransitionList>
-                <Transition ID="9" Kind="External" StimulusKind="Trigger" Stimulus="open" To="10">
+                <Transition ID="21" Kind="External" StimulusKind="Trigger" Stimulus="open" To="26">
                     <Guard state="ok">
                         <Expr>
-                            <Cmp op="eq"><Attr id="16"/><Lit>false</Lit></Cmp>
+                            <Cmp op="le"><Param id="8"/><Const id="17"/></Cmp>
                         </Expr>
                     </Guard>
+                    <OperationList>
+                        <AttributeSet ID="22" Attribute="Width" Source="Param" Value="width"/>
+                    </OperationList>
+                </Transition>
+                <Transition ID="23" Kind="Internal" StimulusKind="Trigger" Stimulus="open">
+                    <Description>Too wide. The state is not left; the operations run in place.</Description>
+                    <OperationList>
+                        <ActionCall ID="24" Action="on_refused">
+                            <ArgumentList>
+                                <Argument ID="50" Name="asked" Source="Param" Value="width"/>
+                            </ArgumentList>
+                        </ActionCall>
+                        <EventSend ID="25" Event="Refused"/>
+                    </OperationList>
+                </Transition>
+                <Transition ID="40" Kind="External" StimulusKind="Event" Stimulus="Refused" To="41"/>
+            </TransitionList>
+        </State>
+        <State ID="26" Name="GATE_CYCLE" Kind="Normal" History="Shallow" OnFinal="Cycled">
+            <Description>Composite: one opening cycle. Shallow history is what lets resume re-enter the stage the hold interrupted. Entered fresh exactly once per run, which is the only shape history is safe in.</Description>
+            <ExitList>
+                <TimerStop ID="27" Timer="Warn"/>
+                <TimerStop ID="28" Timer="Hold"/>
+            </ExitList>
+            <TransitionList>
+                <Transition ID="29" Kind="External" StimulusKind="Trigger" Stimulus="hold" To="38"/>
+                <Transition ID="30" Kind="External" StimulusKind="Event" Stimulus="Cycled" To="20">
+                    <OperationList>
+                        <ActionCall ID="31" Action="on_closed"/>
+                    </OperationList>
                 </Transition>
             </TransitionList>
+            <StateList>
+                <State ID="32" Name="Start2" Kind="Start">
+                    <TransitionList>
+                        <Transition ID="33" Kind="Initial" To="34"/>
+                    </TransitionList>
+                </State>
+                <State ID="34" Name="GATE_OPENING" Kind="Normal">
+                    <Description>Moving. Runs once per cycle.</Description>
+                    <EntryList>
+                        <TimerStart ID="35" Timer="Warn"/>
+                        <ActionCall ID="36" Action="on_opening"/>
+                    </EntryList>
+                    <TransitionList>
+                        <Transition ID="37" Kind="External" StimulusKind="Timer" Stimulus="Warn" To="42"/>
+                    </TransitionList>
+                </State>
+                <State ID="42" Name="GATE_OPEN" Kind="Normal">
+                    <Description>Fully open, holding.</Description>
+                    <EntryList>
+                        <TimerStart ID="43" Timer="Hold"/>
+                        <ActionCall ID="44" Action="on_open"/>
+                    </EntryList>
+                    <TransitionList>
+                        <Transition ID="45" Kind="External" StimulusKind="Timer" Stimulus="Hold" To="46"/>
+                    </TransitionList>
+                </State>
+                <State ID="46" Name="GATE_SHUT" Kind="Final">
+                    <Description>This level is done. OnFinal turns that into the Cycled event GATE_CYCLE transitions on.</Description>
+                </State>
+            </StateList>
         </State>
-        <State ID="10" Name="GATE_OPEN" Kind="Normal">
-            <Description>The gate is open and the hold time is running.</Description>
+        <State ID="38" Name="GATE_HELD" Kind="Normal">
+            <Description>The cycle is interrupted. Resume re-enters GATE_CYCLE through its history.</Description>
             <EntryList>
-                <AttributeSet ID="17" Attribute="Opened" Source="Value" Value="true"/>
-                <TimerStart ID="11" Timer="Hold"/>
-                <ActionCall ID="12" Action="on_open"/>
+                <ActionCall ID="39" Action="on_held"/>
             </EntryList>
             <TransitionList>
-                <Transition ID="13" Kind="External" StimulusKind="Timer" Stimulus="Hold" To="14"/>
+                <Transition ID="47" Kind="External" StimulusKind="Trigger" Stimulus="resume" To="26"/>
             </TransitionList>
         </State>
-        <State ID="14" Name="GATE_DONE" Kind="Final">
-            <Description>The gate has closed. The machine stops here.</Description>
+        <State ID="41" Name="GATE_DONE" Kind="Final">
+            <Description>The machine stops here and reports through the final observer.</Description>
             <EntryList>
-                <ActionCall ID="15" Action="on_close"/>
+                <ActionCall ID="48" Action="on_stopped"/>
             </EntryList>
         </State>
     </StateList>
-    <Layout GridSize="16" GridVisible="true">
-        <ViewList>
-            <View Owner="1" Zoom="100" X="0" Y="0"/>
-        </ViewList>
-        <NodeList>
-            <Node Owner="6" X="0" Y="0" Width="64" Height="32"/>
-            <Node Owner="8" X="0" Y="96" Width="224" Height="96"/>
-            <Node Owner="10" X="0" Y="256" Width="224" Height="96"/>
-            <Node Owner="14" X="0" Y="416" Width="224" Height="96"/>
-        </NodeList>
-        <EdgeList>
-            <Edge Owner="7">
-                <Point X="32" Y="32"/>
-                <Point X="112" Y="96"/>
-            </Edge>
-            <Edge Owner="9">
-                <Point X="112" Y="192"/>
-                <Point X="112" Y="256"/>
-            </Edge>
-            <Edge Owner="13">
-                <Point X="112" Y="352"/>
-                <Point X="112" Y="416"/>
-            </Edge>
-        </EdgeList>
-    </Layout>
 </StateMachine>

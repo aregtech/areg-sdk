@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<StateMachine FormatVersion="1.1.0">
+    <Overview ID="1" Name="CoffeeMachine" Version="1.0.0" Threading="Local">
+        <Description>Making a drink, stage by stage, with pause and resume.</Description>
+    </Overview>
+    <TimerList>
+        <Timer ID="2" Name="GrindDone" Timeout="300" Repeat="1">
+            <Description>How long grinding the beans takes.</Description>
+        </Timer>
+        <Timer ID="3" Name="HeatDone" Timeout="300" Repeat="1">
+            <Description>How long heating the water takes.</Description>
+        </Timer>
+        <Timer ID="4" Name="BrewDone" Timeout="300" Repeat="1">
+            <Description>How long brewing takes.</Description>
+        </Timer>
+        <Timer ID="5" Name="FrothDone" Timeout="300" Repeat="1">
+            <Description>How long frothing the milk takes.</Description>
+        </Timer>
+        <Timer ID="6" Name="DispenseDone" Timeout="300" Repeat="1">
+            <Description>How long dispensing takes.</Description>
+        </Timer>
+    </TimerList>
+    <AttributeList>
+        <Attribute ID="7" Name="NeedsMilk" DataType="bool" Value="false">
+            <Description>Set by the provider before triggering the order. Guards whether frothing runs.</Description>
+        </Attribute>
+    </AttributeList>
+    <MethodList>
+        <Method ID="8" Name="order" MethodType="Trigger">
+            <Description>Start making the drink the provider already accepted.</Description>
+        </Method>
+        <Method ID="9" Name="pause" MethodType="Trigger">
+            <Description>Pause the drink being made.</Description>
+        </Method>
+        <Method ID="10" Name="resume" MethodType="Trigger">
+            <Description>Resume the drink from the stage it was paused in.</Description>
+        </Method>
+        <Method ID="11" Name="cancel" MethodType="Trigger">
+            <Description>Abandon the drink being made.</Description>
+        </Method>
+        <Method ID="12" Name="on_idle" MethodType="Action">
+            <Description>Runs whenever the machine is idle, waiting for an order.</Description>
+        </Method>
+        <Method ID="13" Name="on_enter_grinding" MethodType="Action">
+            <Description>Runs on entering the grinding stage.</Description>
+        </Method>
+        <Method ID="14" Name="on_consume_beans" MethodType="Action">
+            <Description>Runs once, when grinding finishes: takes the beans from the tank.</Description>
+        </Method>
+        <Method ID="15" Name="on_enter_heating" MethodType="Action">
+            <Description>Runs on entering the heating stage.</Description>
+        </Method>
+        <Method ID="16" Name="on_consume_water" MethodType="Action">
+            <Description>Runs once, when heating finishes: takes the water from the tank.</Description>
+        </Method>
+        <Method ID="17" Name="on_enter_brewing" MethodType="Action">
+            <Description>Runs on entering the brewing stage.</Description>
+        </Method>
+        <Method ID="18" Name="on_enter_frothing" MethodType="Action">
+            <Description>Runs on entering the frothing stage.</Description>
+        </Method>
+        <Method ID="19" Name="on_consume_milk" MethodType="Action">
+            <Description>Runs once, when frothing finishes: takes the milk from the tank.</Description>
+        </Method>
+        <Method ID="20" Name="on_enter_dispensing" MethodType="Action">
+            <Description>Runs on entering the dispensing stage.</Description>
+        </Method>
+        <Method ID="21" Name="on_finish" MethodType="Action">
+            <Description>Runs once, when dispensing finishes: takes the price from the credit.</Description>
+        </Method>
+        <Method ID="22" Name="on_cancel" MethodType="Action">
+            <Description>Runs when an order in progress is abandoned: reports the ingredients already spent.</Description>
+        </Method>
+        <Method ID="23" Name="on_pause" MethodType="Action">
+            <Description>Runs on entering the paused state.</Description>
+        </Method>
+    </MethodList>
+    <StateList>
+        <State ID="24" Name="Start" Kind="Start">
+            <TransitionList>
+                <Transition ID="25" Kind="Initial" To="26"/>
+            </TransitionList>
+        </State>
+        <State ID="26" Name="IDLE" Kind="Normal">
+            <Description>Waiting for an order.</Description>
+            <EntryList>
+                <ActionCall ID="27" Action="on_idle"/>
+            </EntryList>
+            <TransitionList>
+                <Transition ID="28" Kind="External" StimulusKind="Trigger" Stimulus="order" To="29"/>
+            </TransitionList>
+        </State>
+        <State ID="29" Name="MAKING" Kind="Normal" History="Shallow">
+            <Description>Composite: the making stages. Pause and cancel fire from anywhere inside it. Shallow history is what lets resume re-enter the exact stage it left.</Description>
+            <ExitList>
+                <TimerStop ID="75" Timer="GrindDone"/>
+                <TimerStop ID="76" Timer="HeatDone"/>
+                <TimerStop ID="77" Timer="BrewDone"/>
+                <TimerStop ID="78" Timer="FrothDone"/>
+                <TimerStop ID="79" Timer="DispenseDone"/>
+            </ExitList>
+            <TransitionList>
+                <Transition ID="30" Kind="External" StimulusKind="Trigger" Stimulus="pause" To="70"/>
+                <Transition ID="31" Kind="External" StimulusKind="Trigger" Stimulus="cancel" To="26">
+                    <OperationList>
+                        <ActionCall ID="32" Action="on_cancel"/>
+                    </OperationList>
+                </Transition>
+                <Transition ID="33" Kind="External" StimulusKind="Timer" Stimulus="DispenseDone" To="26">
+                    <OperationList>
+                        <ActionCall ID="34" Action="on_finish"/>
+                    </OperationList>
+                </Transition>
+            </TransitionList>
+            <StateList>
+                <State ID="35" Name="Start2" Kind="Start">
+                    <TransitionList>
+                        <Transition ID="36" Kind="Initial" To="37"/>
+                    </TransitionList>
+                </State>
+                <State ID="37" Name="GRINDING" Kind="Normal">
+                    <Description>Grinding the beans.</Description>
+                    <EntryList>
+                        <TimerStart ID="38" Timer="GrindDone"/>
+                        <ActionCall ID="39" Action="on_enter_grinding"/>
+                    </EntryList>
+                    <TransitionList>
+                        <Transition ID="40" Kind="External" StimulusKind="Timer" Stimulus="GrindDone" To="41">
+                            <OperationList>
+                                <ActionCall ID="42" Action="on_consume_beans"/>
+                            </OperationList>
+                        </Transition>
+                    </TransitionList>
+                </State>
+                <State ID="41" Name="HEATING" Kind="Normal">
+                    <Description>Heating the water.</Description>
+                    <EntryList>
+                        <TimerStart ID="43" Timer="HeatDone"/>
+                        <ActionCall ID="44" Action="on_enter_heating"/>
+                    </EntryList>
+                    <TransitionList>
+                        <Transition ID="45" Kind="External" StimulusKind="Timer" Stimulus="HeatDone" To="46">
+                            <OperationList>
+                                <ActionCall ID="47" Action="on_consume_water"/>
+                            </OperationList>
+                        </Transition>
+                    </TransitionList>
+                </State>
+                <State ID="46" Name="BREWING" Kind="Normal">
+                    <Description>Brewing. Branches to frothing only when the recipe needs milk.</Description>
+                    <EntryList>
+                        <TimerStart ID="48" Timer="BrewDone"/>
+                        <ActionCall ID="49" Action="on_enter_brewing"/>
+                    </EntryList>
+                    <TransitionList>
+                        <Transition ID="50" Kind="External" StimulusKind="Timer" Stimulus="BrewDone" To="51">
+                            <Guard state="ok">
+                                <Expr>
+                                    <Cmp op="eq"><Attr id="7"/><Lit>true</Lit></Cmp>
+                                </Expr>
+                            </Guard>
+                        </Transition>
+                        <Transition ID="52" Kind="External" StimulusKind="Timer" Stimulus="BrewDone" To="57">
+                            <Guard state="ok">
+                                <Expr>
+                                    <Cmp op="eq"><Attr id="7"/><Lit>false</Lit></Cmp>
+                                </Expr>
+                            </Guard>
+                        </Transition>
+                    </TransitionList>
+                </State>
+                <State ID="51" Name="FROTHING" Kind="Normal">
+                    <Description>Frothing the milk. Reached only for Cappuccino and Latte.</Description>
+                    <EntryList>
+                        <TimerStart ID="53" Timer="FrothDone"/>
+                        <ActionCall ID="54" Action="on_enter_frothing"/>
+                    </EntryList>
+                    <TransitionList>
+                        <Transition ID="55" Kind="External" StimulusKind="Timer" Stimulus="FrothDone" To="57">
+                            <OperationList>
+                                <ActionCall ID="56" Action="on_consume_milk"/>
+                            </OperationList>
+                        </Transition>
+                    </TransitionList>
+                </State>
+                <State ID="57" Name="DISPENSING" Kind="Normal">
+                    <Description>Dispensing the drink. DispenseDone is caught by MAKING, which leaves the whole composite.</Description>
+                    <EntryList>
+                        <TimerStart ID="58" Timer="DispenseDone"/>
+                        <ActionCall ID="59" Action="on_enter_dispensing"/>
+                    </EntryList>
+                </State>
+            </StateList>
+        </State>
+        <State ID="70" Name="PAUSED" Kind="Normal">
+            <Description>The order is paused. Resume re-enters MAKING through its history.</Description>
+            <EntryList>
+                <ActionCall ID="71" Action="on_pause"/>
+            </EntryList>
+            <TransitionList>
+                <Transition ID="72" Kind="External" StimulusKind="Trigger" Stimulus="resume" To="29"/>
+                <Transition ID="73" Kind="External" StimulusKind="Trigger" Stimulus="cancel" To="26">
+                    <OperationList>
+                        <ActionCall ID="74" Action="on_cancel"/>
+                    </OperationList>
+                </Transition>
+            </TransitionList>
+        </State>
+    </StateList>
+</StateMachine>

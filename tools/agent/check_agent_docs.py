@@ -41,6 +41,14 @@ TOP_LEVEL = {'framework', 'examples', 'docs', 'tools', 'conf', 'tests', 'thirdpa
              'AGENTS.md', 'CODEBASE.md', 'README.md', 'CMakeLists.txt', 'areg.cmake'}
 
 
+# examples/ is optional: it is not installed with the SDK and a clone may not
+# carry it. A reference into it is checked when the directory is there and
+# skipped when it is not, so a trimmed tree is not reported as broken pages.
+HAS_EXAMPLES = os.path.isdir(os.path.join(ROOT, 'examples'))
+
+skipped = 0
+
+
 def is_ours(ref, here):
     """True when a relative reference names something this repository owns.
 
@@ -90,7 +98,7 @@ def check_planted_template():
     work = tempfile.mkdtemp(prefix='agent-docs-')
     try:
         module.write_agents(work, 'sample', 'local', ROOT, ['sample'])
-        with open(os.path.join(work, 'AGENTS.md'), encoding='ascii') as handle:
+        with open(os.path.join(work, 'AGENTS.md'), encoding='utf-8') as handle:
             text = handle.read()
     except Exception as error:                      # noqa: BLE001
         return ['tools/agent/setup_project.py: write_agents failed: {}'.format(error)]
@@ -113,7 +121,7 @@ checked = 0
 
 for doc in DOCS:
     path = os.path.join(ROOT, doc)
-    with open(path, encoding='ascii') as handle:
+    with open(path, encoding='utf-8') as handle:
         text = handle.read()
     here = os.path.dirname(path)
 
@@ -126,6 +134,9 @@ for doc in DOCS:
             continue
 
         head = ref.split('/')[0]
+        if not HAS_EXAMPLES and 'examples/' in ref:
+            skipped += 1
+            continue
         if ref.startswith('.') or head not in TOP_LEVEL:
             if not is_ours(ref, here):
                 continue
@@ -145,7 +156,7 @@ failures += check_planted_template()
 
 for name, tokens, files in CONSISTENT:
     for doc in files:
-        with open(os.path.join(ROOT, doc), encoding='ascii') as handle:
+        with open(os.path.join(ROOT, doc), encoding='utf-8') as handle:
             text = handle.read()
         missing = [t for t in tokens if t not in text]
         checked += 1
@@ -156,5 +167,7 @@ for name, tokens, files in CONSISTENT:
 for failure in failures:
     print('missing: ' + failure)
 
-print('{} references checked, {} missing'.format(checked, len(failures)))
+print('{} references checked, {} missing{}'.format(
+    checked, len(failures),
+    ', {} into examples/ skipped: not in this tree'.format(skipped) if skipped else ''))
 sys.exit(1 if failures else 0)

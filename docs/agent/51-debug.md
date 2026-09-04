@@ -37,7 +37,7 @@ Take these in order. Each one costs less than the one after it.
    first section of this page. A provider that never prints was never reached.
 2. **Ask the generator.** If the build failed before the compiler ran, the generator
    refused the document and named the rule in words:
-   `explain_rule.py --search "words from the message"`.
+   `explain_rule.py <the number in the brackets>`.
 3. **Check the contract.** `check_contract.py` reads the same rules the pages state
    and reports the ones a build cannot see: a dependency string that matches no role,
    a request called in a constructor, a blocking handler, an invented member name.
@@ -54,9 +54,9 @@ Take these in order. Each one costs less than the one after it.
 
 ## A working example is the cheapest reference
 
-`../../examples/` holds 32 complete applications. Running one with the shape you are
-writing proves the environment is sound before you blame your own code, and the tiers
-save deriving which of them need `mtrouter`. Which example shows what: `41-examples.md`.
+Where the clone carries `../../examples/`, running one with the shape you are writing
+proves the environment is sound before you blame your own code, and the tiers save
+deriving which need `mtrouter`. Which example shows what: `41-examples.md`.
 
 ```bash
 python3 <areg-sdk>/tools/run-all-examples.py --tier smoke   # no router needed
@@ -70,21 +70,32 @@ Every command here has a Windows form: `python` for `python3`, `.exe` for `.elf`
 ## The generator refused the document
 
 The generator validates a document before generating, so this is a defect in the
-`.siml`, `.fsml` or `.dtml` file and never in the build. Every finding belongs to a
-rule in a registry. Ask the rule instead of reading the schema.
+`.siml`, `.fsml` or `.dtml` file and never in the build. Nothing is generated and the
+exit code is 1.
+
+Every finding names its rule and carries a `fix:` line, so read the message first:
+
+```
+src/services/BadService.siml:9:71: error[6/RULE_UNRESOLVED_TYPE]: a data type that resolves to nothing
+  the parameter [ thing ] of the request [ do_thing ] is declared as [ NoSuchType ]
+  fix: declare it in a data type document, or use one of: bool, char, uint8, ...
+```
+
+For the whole rule, give `explain_rule.py` the number in the brackets:
 
 ```bash
-python3 <areg-sdk>/tools/explain_rule.py --search "resolves to nothing"   # the usual path
-python3 <areg-sdk>/tools/explain_rule.py 27                     # when the message had a number
+python3 <areg-sdk>/tools/explain_rule.py 6
+python3 <areg-sdk>/tools/explain_rule.py --search "resolves to nothing"   # if the number is lost
 ```
 
 The number carries the severity: bare is an error, plus 100 a warning, plus 200
 information, so 4, 104 and 204 are different rules. `--list --document fsml` shows
 every rule for one document type.
 
-Most messages carry no number today, so `--search` is the common path. Quote the
-distinctive words of the message, not the file name or the identifiers; a phrase that
-matches nothing exactly is scored word by word and the closest rules are offered.
+`error[50/RULE_FORMAT_VERSION]` is the one finding that is not about what the document
+says: the document was written for a newer format than this generator reads. Update the
+SDK rather than lowering `FormatVersion` by hand, which keeps constructs the older
+reader silently drops.
 
 Without Python, the same registry is `tools/schema/rules.xml`, keyed by the number.
 

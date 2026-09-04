@@ -10,6 +10,9 @@
                 <Parameter ID="3" Name="reading" DataType="SharedTypes::Reading">
                     <Description>The accepted reading, in the shared structure.</Description>
                 </Parameter>
+                <Parameter ID="5" Name="history" DataType="SharedTypes::ReadingList">
+                    <Description>Every reading accepted so far, oldest first.</Description>
+                </Parameter>
             </ParamList>
         </Method>
     </MethodList>

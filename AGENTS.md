@@ -55,7 +55,7 @@ Find your task, open that one file, and do not search the repository.
 | Data types: C++ spelling, struct, enum, `.dtml` | `docs/agent/21-data-types.md` |
 | Add a state machine | copy `docs/agent/recipes/06-state-machine/`, then `docs/agent/22-state-machine.md` |
 | **Use `areg::String` or a container** | `docs/agent/40-base-api.md` |
-| Application, component, thread, timer, time, file, buffer | `docs/agent/42-runtime-api.md` |
+| What a component knows about itself; the application, threads, timers, time, files | `docs/agent/42-runtime-api.md` |
 | Integrate areg into an existing CMake project | `docs/wiki/02b-cmake-integrate.md` |
 | Work out why it does not work | `docs/agent/51-debug.md` |
 | Test the application, or a component on its own | copy `docs/agent/recipes/12-testing/`; `docs/agent/52-testing.md` |
@@ -108,11 +108,10 @@ own `AGENTS.md`. `--mode` is `local`, `ipc` (two processes) or `pubsub`; `--sdk-
 `addServiceInterface()` in the project's `CMakeLists.txt` runs the generator during
 configure; `tools/codegenerate.sh` / `.bat` generates outside CMake.
 
-**The generator validates before it generates.** A refused document writes nothing, so
-the defect is in the `.siml`, `.fsml` or `.dtml`, never in the build. The message
-names the rule in words and usually carries no number, so ask
-`tools/explain_rule.py --search "words from the message"`, or
-`explain_rule.py <number>` when a number is printed, instead of reading the schema.
+**The generator validates before it generates.** A refused document writes nothing and
+exits 1, so the defect is in the document, never in the build. Every finding is
+`file:line:col: error[<number>/<RULE_NAME>]` with a `fix:` line under it: read that,
+then `tools/explain_rule.py <number>` for the whole rule. Never the schema.
 
 ### Every command on this path, on Windows
 
@@ -136,8 +135,8 @@ Windows), all live in `tools/agent/`, and each has `--help`.
 | `run_scenarios.py` | Runs the application and checks its output; exit 0 is a pass. Its `scenarios.json` is `docs/agent/50-running.md` |
 | `check_contract.py` | Checks sources against `docs/agent/api.json`: the section 6 mistakes that compile cleanly and fail later |
 
-`tools/explain_rule.py` explains a validation finding: `--search "words"`, or a number
-when the message carries one. It, `tools/check-env.sh` / `.bat` and
+`tools/explain_rule.py` explains a validation finding by the number the message
+carries; `--search "words"` finds it when the number is lost. It, `tools/check-env.sh` / `.bat` and
 `tools/codegenerate.sh` / `.bat` are developer tools and sit in `tools/` itself; only
 the first three need Python.
 
@@ -198,6 +197,6 @@ consumer. A consumer that starts first is not an error: it waits for the provide
 
 ## 8. Repository layout
 
-`framework/` the library and its services - `examples/` 32 complete applications -
+`framework/` the library and its services - `examples/` complete applications, optional -
 `docs/agent/` these pages - `tools/` the generator, scripts and schemas. Full map:
 `CODEBASE.md` section 3.

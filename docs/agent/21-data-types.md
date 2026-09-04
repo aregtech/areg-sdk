@@ -50,6 +50,7 @@ An `EnumEntry` with no `Value` continues from the previous entry, exactly as C++
 A `Container` carries `Container` plus `BaseTypeValue`, and `BaseTypeKey` as well for
 the keyed ones (`HashMap`, `Map`, `Pair`).
 
+
 ## What the generator produces
 
 Everything lands in the document's own namespace, `<Name>` being `Overview/@Name`.
@@ -97,8 +98,8 @@ Scalars are passed by value; `String`, structures and containers by `const T &`.
 
 A shared document is `DataTypeDocument`, its `Overview` names the namespace the types
 land in, and **its `FormatVersion` is `1.0.0`** -- not the `1.1.0` a `.siml` and a
-`.fsml` carry. A `.dtml` written as 1.1.0 is read with a warning and anything the
-reader does not recognise is dropped.
+`.fsml` carry. A version the generator does not read is refused, not guessed at:
+`error[50/RULE_FORMAT_VERSION]`, and nothing is generated.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -115,9 +116,7 @@ generated file name. It does not have to match the file name. A `.dtml` has no
 attributes, no methods and no constants, and it may not include another `.dtml`.
 
 Generating a document that includes a `.dtml` generates both: name the `.siml` or the
-`.fsml`, and the shared types come with it. The generator prints
-`declared but never referenced` for every type of the shared document, because it
-counts references within that document only. It is a warning, not a defect.
+`.fsml`, and the shared types come with it.
 
 ## Including a shared document
 
@@ -144,8 +143,10 @@ rule -- ask `tools/explain_rule.py` what the number means instead of reading a s
 
 ## More
 
-Grammar: `../../tools/schema/dtml.xsd`, and the identical block inside
-`../../tools/schema/siml.xsd` and `../../tools/schema/fsml.xsd`.
+`../../tools/schema/dtml.xsd` is the grammar, repeated verbatim inside
+`../../tools/schema/siml.xsd` and `../../tools/schema/fsml.xsd`. It answers what an
+element may contain and nothing else; a spelling this page does not give is the only
+reason to open it, and a refused document is `tools/explain_rule.py`.
 
 A complete project with a shared document, generated, built and run by CI, is
 `recipes/09-shared-types/`. In a clone of the SDK, the example documents under

@@ -54,12 +54,18 @@ addServiceInterface(gen_myproject src/services/HelloService.siml)
   fire and forget.
 - Two methods may share a name only when they are of different kinds. A request and
   its response usually carry the same name, as above.
+- A `Parameter` may carry a default value, written as a `<Value>` child, not as an
+  attribute. It becomes the default argument of the generated method, so every
+  parameter after it needs one too. (`Default="..."` is the `.fsml` spelling of the
+  same thing and is accepted here; documents this editor writes use the child.)
 - Every `DataType` you reference must be predefined (`bool`, `uint32`, `String`, ...),
   declared in this document's `DataTypeList`, or imported from a `.dtml` document.
 
-The full grammar is `../../tools/schema/siml.xsd`. Its comments list the rules the schema
-cannot express. Validation findings are reported with the numbers registered in
-`../../tools/schema/rules.xml`.
+`../../tools/schema/siml.xsd` is the full grammar. It is 20 KB, it says only what an
+element may contain, and every rule an application meets is on this page or answered by
+`tools/explain_rule.py`. Open it to settle a spelling nothing here gives, never to look
+up a meaning and never to understand a refused document: findings carry the numbers
+registered in `../../tools/schema/rules.xml`, and `explain_rule.py` reads them out.
 
 ---
 

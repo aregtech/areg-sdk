@@ -36,8 +36,8 @@
         </Rule>
 
         <Rule Number="26" Name="RULE_UNREFERENCED" Section="shared" Bands="warning information" Documents="dtml siml fsml">
-            <Summary>A declaration nothing in the document uses, or an included document it takes nothing from. Never an error -- code that nothing reaches still generates -- so the bare number is reserved and only the banded ids are ever reported.</Summary>
-            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_UNREFERENCED" CodegenBands="warning"/>
+            <Summary>A declaration nothing in the document uses, or an included document it takes nothing from. Never an error -- code that nothing reaches still generates -- so the bare number is reserved and only the banded ids are ever reported. The warning is for a document that can answer the question, because what it declares is its own. A data type document is judged against the documents that include it instead; one run sees only the consumers it was pointed at, so a type none of them names is information and not a warning, and a data type document generated with no consumer at all says nothing.</Summary>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_UNREFERENCED" CodegenBands="warning information"/>
         </Rule>
 
         <Rule Number="29" Name="RULE_MISSING_VERSION" Section="shared" Bands="error" Documents="dtml siml fsml">
@@ -56,7 +56,7 @@
         </Rule>
 
         <Rule Number="7" Name="RULE_TARGET_SIBLING" Section="shared" Bands="error" Documents="fsml">
-            <Summary>A transition target that is not a sibling of the state it leaves.</Summary>
+            <Summary>A transition target that is not a sibling of the state it leaves. One exception: a transition from outside a composite targeting that composite's Kind="History" pseudo-state is legal even though the pseudo-state is not a sibling either -- the same target reached from inside its own level is refused instead, as RULE_HISTORY_SIBLING (error 57).</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_TARGET_SIBLING"/>
         </Rule>
 
@@ -120,7 +120,7 @@
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_STATE_SHAPE"/>
         </Rule>
 
-        <Rule Number="19" Name="RULE_BROKEN_IMPORT" Section="shared" Bands="error" Documents="siml fsml">
+        <Rule Number="19" Name="RULE_BROKEN_IMPORT" Section="shared" Bands="error warning information" Documents="siml fsml">
             <Summary>An include that does not resolve: no file named, the file missing, unreadable, a cycle, or nested too deep. An included data type document that could not be read is the same fault -- every type it was to contribute is missing. The editor always refuses; the code generator softens it to a warning, or to information when the generated output of the missing document is already on disk and is used as it stands.</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_IMPORT" CodegenBands="error warning information"/>
         </Rule>
@@ -206,7 +206,7 @@
         </Rule>
 
         <Rule Number="46" Name="RULE_UNRESOLVED_ELEMENT" Section="shared" Bands="error" Documents="fsml">
-            <Summary>A reference to a declared element that is not there: a trigger, an event, a timer, an action, an attribute, a constant, a condition, a parameter, or the alias of a hosted machine. The field to correct is the name that was written, which is what tells it apart from a data type that answers to nothing (\a RULE_UNRESOLVED_TYPE).</Summary>
+            <Summary>A reference to a declared element that is not there: a trigger, an event, a timer, an action, an attribute, a constant, a condition, a parameter, the alias of a hosted machine, or the state a transition names as its target. The field to correct is the name that was written, which is what tells it apart from a data type that answers to nothing (\a RULE_UNRESOLVED_TYPE) and from a target that does exist but sits on another level (\a RULE_TARGET_SIBLING).</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_UNRESOLVED_ELEMENT"/>
         </Rule>
 
@@ -238,6 +238,11 @@
         <Rule Number="49" Name="RULE_FILE_NAME_MISMATCH" Section="shared" Bands="information" Documents="dtml siml fsml">
             <Summary>The document declares one name and lives in a file called another. Both are allowed -- the generated files follow the declared name -- but worth saying.</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_FILE_NAME_MISMATCH"/>
+        </Rule>
+
+        <Rule Number="50" Name="RULE_FORMAT_VERSION" Section="shared" Bands="error warning" Documents="dtml siml fsml">
+            <Summary>The document states a FormatVersion the reader does not know. An error when the document is newer in any of the three numbers: everything a reader does not understand it drops in silence, so it would generate code describing a document nobody wrote. A warning when the document is older by a MAJOR, which is a migration and not a fault -- it is read as it stands, never rewritten, and the generated files carry the format the tool reads. An older minor or patch is readable by design and says nothing.</Summary>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_FORMAT_VERSION"/>
         </Rule>
 
         <Rule Number="51" Name="RULE_RESPONSE_LINK" Section="shared" Bands="error" Documents="siml">
@@ -319,6 +324,31 @@
         </Rule>
         <Rule Number="53" Name="RULE_DROPPED_ELEMENT" Section="shared" Bands="warning" Documents="dtml siml fsml">
             <Summary>An element block the format does not place, kept while the document is open and dropped when it is saved. Reported beside the fault itself so the loss is stated before it happens.</Summary>
+            <Implemented Lusan="true" Codegen="false"/>
+        </Rule>
+
+        <Rule Number="54" Name="RULE_HISTORY_SHAPE" Section="shared" Bands="error" Documents="fsml">
+            <Summary>A Kind="History" state carrying an EntryList, an ExitList, a TransitionList or a nested StateList. It is a pseudo-state, not a state: the machine never occupies it, so it owns none of the things a state owns.</Summary>
+            <Implemented Lusan="true" Codegen="false"/>
+        </Rule>
+
+        <Rule Number="55" Name="RULE_HISTORY_DUPLICATE" Section="shared" Bands="error" Documents="fsml">
+            <Summary>More than one Kind="History" state on one level. At most one per level -- a second one would leave two markers naming the same re-entry.</Summary>
+            <Implemented Lusan="true" Codegen="false"/>
+        </Rule>
+
+        <Rule Number="56" Name="RULE_HISTORY_ROOT" Section="shared" Bands="error" Documents="fsml">
+            <Summary>A Kind="History" state at the root level. There is no composite there to resume, so the marker names nothing.</Summary>
+            <Implemented Lusan="true" Codegen="false"/>
+        </Rule>
+
+        <Rule Number="57" Name="RULE_HISTORY_SIBLING" Section="shared" Bands="error" Documents="fsml">
+            <Summary>A transition targeting a Kind="History" state from inside its own level. The marker is reached only by a transition entering the composite from outside (\a RULE_TARGET_SIBLING, widened); from inside, the state it names is an ordinary non-sibling target.</Summary>
+            <Implemented Lusan="true" Codegen="false"/>
+        </Rule>
+
+        <Rule Number="58" Name="RULE_HISTORY_CONFLICT" Section="shared" Bands="error" Documents="fsml">
+            <Summary>A composite carrying both its own History attribute and a Kind="History" child. Two spellings of one decision, disagreeing about what the composite does on re-entry.</Summary>
             <Implemented Lusan="true" Codegen="false"/>
         </Rule>
     </RuleList>

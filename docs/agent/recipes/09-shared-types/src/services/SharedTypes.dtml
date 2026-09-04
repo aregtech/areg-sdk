@@ -4,18 +4,48 @@
         <Description>Types that more than one service of this project carries.</Description>
     </Overview>
     <DataTypeList>
-        <DataType ID="2" Name="Reading" Type="Structure">
+        <DataType ID="2" Name="Quality" Type="Enumeration" Values="default">
+            <Description>How far a reading is trusted.</Description>
+            <FieldList>
+                <EnumEntry ID="3" Name="Suspect"><Value>0</Value>
+                    <Description>The sensor answered from outside its calibrated range.</Description>
+                </EnumEntry>
+                <EnumEntry ID="4" Name="Good"><Value>1</Value>
+                    <Description>Within range.</Description>
+                </EnumEntry>
+            </FieldList>
+        </DataType>
+        <DataType ID="5" Name="Firmware" Type="Imported">
+            <Description>The firmware the sensor runs. areg already owns this type, so it is imported instead of redeclared.</Description>
+            <Location>areg/base/Version.hpp</Location>
+            <Namespace>areg</Namespace>
+            <ImportedObject>Version</ImportedObject>
+        </DataType>
+        <DataType ID="6" Name="Reading" Type="Structure">
             <Description>One measurement, as the sensor reported it.</Description>
             <FieldList>
-                <Field ID="3" Name="sensor" DataType="String">
+                <Field ID="7" Name="sensor" DataType="String">
                     <Value IsDefault="true"/>
                     <Description>The sensor that took it.</Description>
                 </Field>
-                <Field ID="4" Name="value" DataType="uint32">
+                <Field ID="8" Name="value" DataType="uint32">
                     <Value IsDefault="true">0</Value>
                     <Description>What it measured.</Description>
                 </Field>
+                <Field ID="9" Name="quality" DataType="Quality">
+                    <Value IsDefault="true">Quality::Good</Value>
+                    <Description>How far this measurement is trusted.</Description>
+                </Field>
+                <Field ID="10" Name="firmware" DataType="Firmware">
+                    <Value IsDefault="true"/>
+                    <Description>The firmware the sensor was running when it measured.</Description>
+                </Field>
             </FieldList>
+        </DataType>
+        <DataType ID="11" Name="ReadingList" Type="Container">
+            <Description>Readings kept in order, oldest first.</Description>
+            <Container>Array</Container>
+            <BaseTypeValue>Reading</BaseTypeValue>
         </DataType>
     </DataTypeList>
 </DataTypeDocument>

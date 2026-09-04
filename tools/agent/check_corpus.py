@@ -38,6 +38,7 @@ import os
 import re
 import subprocess
 import sys
+import zipfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 AGENT_DIR = os.path.join(ROOT, 'docs', 'agent')
@@ -85,13 +86,13 @@ FEATURES = [
      '32-model.md',             'BEGIN_MODEL',         '01-local-single-process',
      ('examples/03_helloservice',)),
     ('worker_thread', 'a component worker thread',
-     '37-threads.md',           'REGISTER_WORKER_THREAD', None,
+     '37-threads.md',           'REGISTER_WORKER_THREAD', '07-worker-events',
      ('examples/18_pubworker',)),
     ('timers',        'periodic and delayed work',
      '33-timers.md',            'start_timer',         '04-timer',
      ('examples/08_timer',)),
     ('custom_events', 'declaring and dispatching a custom event',
-     '23-events.md',            'AREG_DECLARE_EVENT',  None,
+     '23-events.md',            'AREG_DECLARE_EVENT',  '07-worker-events',
      ('examples/18_pubworker',)),
     ('attributes',    'attributes and broadcasts',
      '20-service-interface.md', 'roadcast',            '03-attributes-and-broadcast',
@@ -100,7 +101,7 @@ FEATURES = [
      None,                      'two services',        '05-two-services',
      ('examples/12_svcmulti',)),
     ('ipc',           'splitting an application across processes',
-     None,                      'mtrouter',            '02-ipc-two-processes',
+     None,                      'Category="Public"',   '02-ipc-two-processes',
      ('examples/15_pubsvc',)),
     ('state_machine', 'adding a state machine',
      '22-state-machine.md',     '.fsml',               '06-state-machine',
@@ -112,7 +113,7 @@ FEATURES = [
      '22-state-machine.md',     'AttributeSet',        '06-state-machine',
      ('examples/19_pubfsm',)),
     ('logging',       'logging from application code',
-     '34-logging.md',           'LOG_DBG',             None,
+     '34-logging.md',           'LOG_DBG',             '07-worker-events',
      ('examples/07_logging',)),
     ('log_collect',   'collecting logs from several processes',
      '34-logging.md',           'logcollector',        None,
@@ -124,16 +125,16 @@ FEATURES = [
      '36-config.md',            'router::*::address',  None,
      ('framework/areg/resources/areg.init',)),
     ('watchdog',      'the thread watchdog',
-     '37-threads.md',           'BEGIN_REGISTER_THREAD_EX', None,
+     '37-threads.md',           'BEGIN_REGISTER_THREAD_EX', '07-worker-events',
      ('examples/21_locwatchdog',)),
     ('runtime_model', 'building a model at run time',
-     '37-threads.md',           'add_model_unique',    None,
+     '37-threads.md',           'add_model_unique',    '10-runtime-model',
      ('examples/17_pubtraffic',)),
     ('base_api',      'strings and containers',
-     '40-base-api.md',          'areg::String',        None,
+     '40-base-api.md',          'areg::String',        '01-local-single-process',
      ('examples/05_buffer', 'examples/06_file')),
     ('runtime_api',   'the application, components, threads, time and files',
-     '42-runtime-api.md',       'areg::SharedBuffer',  '04-timer',
+     '42-runtime-api.md',       'areg::SharedBuffer',  '07-worker-events',
      ('examples/05_buffer', 'examples/06_file')),
     ('testing',       'testing an application and its components',
      '52-testing.md',           'scripted provider',   '12-testing',
@@ -145,6 +146,238 @@ FEATURES = [
      '41-examples.md',          'examples/',           None,
      ()),
 ]
+
+# ---------------------------------------------------------------------------
+# Schema features: what an author may write into a .siml, .fsml or .dtml
+#
+# A construct the schemas accept and no page explains is one an agent can only
+# learn from the grammar, and the grammar says what an element may contain and
+# never what it means. One such gap -- History on a state -- cost a measured run
+# a 50 KB schema read carried across sixty turns, and the answer was not in it.
+#
+#   name    what the author is trying to do
+#   token   what it looks like in a document, matched literally
+#   page    the page that must explain it
+#   proof   what that explanation must contain
+#
+# A feature no page explains is a failure unless docs/agent/.schema-gaps records
+# it, with the reason. A feature nothing in the tree writes is reported too: an
+# unexercised construct is one whose first real use finds the defect.
+# ---------------------------------------------------------------------------
+SCHEMA_FEATURES = [
+    ('state history',        'History="',            '22-state-machine.md', 'History'),
+    ('a hosted machine',     'Submachine="',         '22-state-machine.md', 'Submachine'),
+    ('a level reporting done', 'OnFinal="',          '22-state-machine.md', 'OnFinal'),
+    ('a guarded transition', '<Guard',               '22-state-machine.md', '<Guard'),
+    ('machine data',         '<AttributeSet',        '22-state-machine.md', 'AttributeSet'),
+    ('machine constants',    '<ConstantList',        '22-state-machine.md', 'ConstantList'),
+    ('sending an event',     '<EventSend',           '22-state-machine.md', 'EventSend'),
+    ('starting a timer',     '<TimerStart',          '22-state-machine.md', 'TimerStart'),
+    ('stopping a timer',     '<TimerStop',           '22-state-machine.md', 'TimerStop'),
+    ('an internal transition', 'Kind="Internal"',    '22-state-machine.md', 'Kind="Internal"'),
+    ('a final state',        'Kind="Final"',         '22-state-machine.md', 'Kind="Final"'),
+    ('a trigger',            'MethodType="Trigger"', '22-state-machine.md', 'Trigger'),
+    ('an action',            'MethodType="Action"',  '22-state-machine.md', 'Action'),
+    ('service reach',        'Category="',           '20-service-interface.md', 'Category'),
+    ('a request',            'MethodType="Request"', '20-service-interface.md', 'Request'),
+    ('a response',           'MethodType="Response"', '20-service-interface.md', 'Response'),
+    ('a broadcast',          'MethodType="Broadcast"', '20-service-interface.md', 'Broadcast'),
+    ('attribute notification', 'Notify="',           '20-service-interface.md', 'Notify'),
+    ('a shared constant',    '<Constant ',           '20-service-interface.md', 'ConstantList'),
+    ('a parameter default',  '<Value',               '20-service-interface.md', 'default'),
+    ('an enumeration',       'Type="Enumeration"',   '21-data-types.md',    'Enumeration'),
+    ('a structure',          'Type="Structure"',     '21-data-types.md',    'Structure'),
+    ('an existing C++ type', 'Type="Imported"',      '21-data-types.md',    'Imported'),
+    ('a container type',     'Type="Container"',     '21-data-types.md',    'Container'),
+    ('including a document', '<IncludeList',         '21-data-types.md',    'IncludeList'),
+    ('deprecating a name',   'IsDeprecated="',       '20-service-interface.md', 'IsDeprecated'),
+]
+
+DOCUMENT_SUFFIXES = ('.siml', '.fsml', '.dtml')
+
+
+def schema_gaps():
+    """Recorded features no page explains yet: {token: reason}.
+
+    docs/agent/.schema-gaps names them, so a gap is argued and reported rather
+    than forgotten. An entry for a feature that is documented is a stale entry
+    and is a failure, the same discipline as .budgets.
+    """
+    gaps = {}
+    for line in read('docs', 'agent', '.schema-gaps').splitlines():
+        line = line.split('#')[0].strip()
+        if ' = ' in line:
+            token, _, reason = line.partition(' = ')
+            gaps[token.strip()] = reason.strip()
+    return gaps
+
+
+def documents_writing(token):
+    """Which documents in the tree write this construct, recipes first."""
+    found = []
+    for base in ('docs/agent/recipes', 'examples'):
+        root = os.path.join(ROOT, base)
+        if not os.path.isdir(root):
+            continue
+        for here, dirs, files in os.walk(root):
+            dirs[:] = [d for d in dirs if d not in ('.git', 'build', 'out')]
+            for name in sorted(files):
+                if not name.endswith(DOCUMENT_SUFFIXES):
+                    continue
+                with open(os.path.join(here, name), encoding='utf-8',
+                          errors='replace') as handle:
+                    if token in handle.read():
+                        found.append(os.path.relpath(
+                            os.path.join(here, name), ROOT).replace(os.sep, '/'))
+    return found
+
+
+# ---------------------------------------------------------------------------
+# The generator carries its own copy of the catalogue
+#
+# codegen.jar embeds data/rules.xml and the three .xsd files, and validates with
+# those. tools/explain_rule.py reads tools/schema/rules.xml instead. When a
+# finding names a rule the other copy does not have, the number the generator
+# printed explains as nothing, which is the one failure the rule numbers exist
+# to prevent.
+#
+# The two directions are not the same fault. A rule the jar has and the tree
+# does not is fatal: an agent is handed a number it cannot look up. A rule the
+# tree has and the jar does not is a delivery in flight -- the catalogue is
+# written before the generator that emits it.
+# ---------------------------------------------------------------------------
+JAR_DATA = 'data'
+
+
+def read_bytes(*parts):
+    """Raw bytes of a repository file, or None when it is not there.
+
+    The text reader translates line endings, and these files are compared byte
+    for byte with the copies inside codegen.jar.
+    """
+    path = os.path.join(ROOT, *parts)
+    if not os.path.isfile(path):
+        return None
+    with open(path, 'rb') as handle:
+        return handle.read()
+
+
+def jar_member(name):
+    """The bytes codegen.jar carries for a schema file, or None."""
+    jar = os.path.join(ROOT, 'tools', 'codegen.jar')
+    if not os.path.isfile(jar):
+        return None
+    try:
+        with zipfile.ZipFile(jar) as archive:
+            return archive.read('{}/{}'.format(JAR_DATA, name))
+    except (KeyError, zipfile.BadZipFile, OSError):
+        return None
+
+
+def catalogue_rows(text):
+    """{(number, name): bands} for every rule a rules.xml declares."""
+    rows = {}
+    for number, name, bands in re.findall(
+            r'<Rule Number="(\d+)" Name="([A-Z_]+)"[^>]*Bands="([^"]*)"', text):
+        rows[(int(number), name)] = bands
+    return rows
+
+
+def check_generator_catalogue(report):
+    embedded = jar_member('rules.xml')
+    if embedded is None:
+        report.fail('catalogue', 'codegen.jar carries no data/rules.xml, so what '
+                    'the generator validates with cannot be compared with what '
+                    'explain_rule.py explains from')
+        return
+
+    jar = catalogue_rows(embedded.decode('utf-8', 'replace'))
+    tree = catalogue_rows(read('tools', 'schema', 'rules.xml'))
+
+    unexplainable = sorted(jar.keys() - tree.keys())
+    for number, name in unexplainable:
+        report.fail('catalogue', 'codegen.jar can report {} ({}), which '
+                    'tools/schema/rules.xml does not carry: explain_rule.py {} '
+                    'answers nothing'.format(number, name, number))
+
+    pending = sorted(tree.keys() - jar.keys())
+    for number, name in pending:
+        report.note('catalogue', 'tools/schema/rules.xml carries {} ({}), which '
+                    'the installed codegen.jar cannot yet report: a generator '
+                    'drop is outstanding'.format(number, name))
+
+    # A band the jar can emit and the tree does not know is a code that explains
+    # as nothing. The other way round is the catalogue being written first.
+    for number, name in sorted(jar.keys() & tree.keys()):
+        in_jar = set(jar[(number, name)].split())
+        in_tree = set(tree[(number, name)].split())
+        unexplained = sorted(in_jar - in_tree)
+        if unexplained:
+            report.fail('catalogue', '{} ({}) is banded {} by codegen.jar, which '
+                        'tools/schema/rules.xml does not carry: the code it '
+                        'reports there explains as nothing'
+                        .format(number, name, ', '.join(unexplained)))
+        elif in_tree - in_jar:
+            report.note('catalogue', '{} ({}) gained the band(s) {} in '
+                        'tools/schema/rules.xml, which the installed codegen.jar '
+                        'does not yet report'
+                        .format(number, name, ', '.join(sorted(in_tree - in_jar))))
+
+    for name in ('siml.xsd', 'dtml.xsd', 'fsml.xsd'):
+        carried = jar_member(name)
+        if carried is None:
+            report.fail('catalogue', 'codegen.jar carries no data/{}'.format(name))
+        elif carried != read_bytes('tools', 'schema', name):
+            report.warn('catalogue', 'tools/schema/{} and the copy inside '
+                        'codegen.jar differ, so the editor and the generator do '
+                        'not accept the same documents'.format(name))
+
+    report.ok('catalogue', '{} of {} rules are known to both codegen.jar and '
+              'tools/schema/rules.xml'
+              .format(len(jar.keys() & tree.keys()), len(tree)))
+
+
+def check_schema_features(report):
+    gaps = schema_gaps()
+    explained = set()
+    for name, token, page, proof in SCHEMA_FEATURES:
+        text = read('docs', 'agent', page)
+        documented = proof.lower() in text.lower()
+        if documented:
+            explained.add(token)
+        elif token in gaps:
+            report.note('schema', '{} ({}) is explained nowhere: {}'
+                        .format(name, token, gaps[token]))
+            continue
+        else:
+            report.fail('schema', '{} ({}) is accepted by the schema and '
+                        'explained on no page -- an agent can only learn it from '
+                        'the grammar'.format(name, token))
+            continue
+
+        writers = documents_writing(token)
+        durable = [w for w in writers if w.startswith('docs/agent/recipes')]
+        if durable:
+            continue
+        if writers:
+            report.note('schema', '{} ({}) is written only under examples/, which '
+                        'is optional -- a recipe would exercise it'
+                        .format(name, token))
+        else:
+            report.warn('schema', '{} ({}) is documented and no document in this '
+                        'tree writes it: its first real use is its first test'
+                        .format(name, token))
+
+    for token in sorted(gaps):
+        if token in explained:
+            report.fail('schema', '.schema-gaps records {}, which a page now '
+                        'explains'.format(token))
+        elif token not in [f[1] for f in SCHEMA_FEATURES]:
+            report.fail('schema', '.schema-gaps records {}, which is not a '
+                        'catalogued feature'.format(token))
+    report.ok('schema', '{} of {} schema features are explained by a page'
+              .format(len(explained), len(SCHEMA_FEATURES)))
+
 
 # Features no example can demonstrate: they are judgement, or an index of other
 # pages. Only a page can carry them, so no example is asked for.
@@ -330,11 +563,14 @@ def resolve_features():
             documented = proof.lower() in whole
             where = 'the corpus'
 
-        places = []
-        if recipe:
-            places.append('docs/agent/recipes/' + recipe)
-        places += list(also)
-        shown = any(tree_has(p, proof) for p in places)
+        # A demonstration under examples/ is optional: that directory is not
+        # installed with the SDK and its contents change, so a feature it alone
+        # shows is reported as an observation, never as a shortfall.
+        durable = ['docs/agent/recipes/' + recipe] if recipe else []
+        durable += [p for p in also if not p.split('/')[0] == 'examples']
+        optional = [p for p in also if p.split('/')[0] == 'examples']
+        shown = any(tree_has(p, proof) for p in durable)
+        by_example = (not shown) and any(tree_has(p, proof) for p in optional)
 
         # A task grades a feature when it is the recipe's task, or when the task
         # names the feature or the thing that proves it.
@@ -346,7 +582,9 @@ def resolve_features():
 
         resolved.append({'key': key, 'label': label, 'page': where,
                          'documented': documented, 'example': recipe,
-                         'shown': shown, 'graded': graded,
+                         'shown': shown or by_example, 'durable': shown,
+                         'by_example': by_example, 'optional': bool(optional),
+                         'graded': graded,
                          'prose_only': key in PROSE_ONLY})
     return resolved
 
@@ -360,9 +598,15 @@ def check_coverage(report, features):
             report.fail('coverage', '{}: no page answers "{}" -- an agent must '
                         'read a schema, an example or the framework source to '
                         'learn it'.format(f['key'], f['label']))
-        if not f['shown'] and not f['prose_only']:
-            report.warn('coverage', '{}: no recipe or example shows it'
-                        .format(f['key']))
+        if f['prose_only']:
+            pass
+        elif f['by_example']:
+            report.note('coverage', '{}: only an example shows it, and examples/ '
+                        'is optional -- a recipe would protect it'.format(f['key']))
+        elif not f['durable']:
+            report.warn('coverage', '{}: no recipe shows it{}'
+                        .format(f['key'], ', and the example that did is not in '
+                                'this tree' if f['optional'] else ''))
         if not f['graded']:
             report.warn('coverage', '{}: no eval task grades it'.format(f['key']))
     answered = len([f for f in features if f['documented']])
@@ -396,14 +640,23 @@ def claims():
     out.append(('the one surviving NE* namespace is where check_contract.py says',
                 'NEMultitargetRouterSettings' in router, ''))
 
-    count = len([d for d in os.listdir(os.path.join(ROOT, 'examples'))
-                 if re.match(r'^\d\d_', d)]) if os.path.isdir(
-                     os.path.join(ROOT, 'examples')) else 0
-    claimed = re.search(r'(\d+)\s+complete applications', agents)
-    out.append(('the example count in AGENTS.md is the real one',
-                bool(claimed) and int(claimed.group(1)) == count,
-                'AGENTS.md says {}, the tree has {}'.format(
-                    claimed.group(1) if claimed else '?', count)))
+    # examples/ is optional: it is not installed with the SDK, it is not needed
+    # to build an application, and its contents change. No page may state how
+    # many there are, because that number is a claim the tree falsifies without
+    # anything being wrong.
+    counting = re.compile(
+        r'\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|'
+        r'thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|'
+        r'thirty|forty|fifty)(-\w+)?\s+(complete applications?|examples)\b',
+        re.IGNORECASE)
+    counted = []
+    for where in ('AGENTS.md', 'CODEBASE.md', 'docs/agent/41-examples.md',
+                  'docs/agent/51-debug.md'):
+        found = counting.search(read(*where.split('/')))
+        if found:
+            counted.append(where + ': "' + found.group(0) + '"')
+    out.append(('no page states how many examples there are', not counted,
+                '; '.join(counted)))
 
     api = read('docs', 'agent', 'api.json')
     out.append(('api.json states the C++ floor AGENTS.md states',
@@ -1363,6 +1616,8 @@ def run():
     report = Report()
     features = resolve_features()
     check_coverage(report, features)
+    check_schema_features(report)
+    check_generator_catalogue(report)
     check_truth(report)
     check_verification(report)
     check_prohibitions(report)

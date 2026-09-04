@@ -36,7 +36,7 @@ NO_ROUTER_SECONDS = 15
 
 
 def repairs():
-    with open(BANK, encoding='ascii') as handle:
+    with open(BANK, encoding='utf-8') as handle:
         tasks = json.load(handle)['tasks']
     return [t for t in tasks if t.get('kind') == 'repair']
 

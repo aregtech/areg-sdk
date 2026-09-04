@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="TempAlarm" Version="1.0.0" Category="Public">
+        <Description>Temperature monitor with a threshold alarm.</Description>
+    </Overview>
+    <AttributeList>
+        <Attribute ID="10" Name="Reading" DataType="int16" Notify="OnChange">
+            <Description>Current temperature, in tenths of a degree Celsius.</Description>
+        </Attribute>
+        <Attribute ID="11" Name="AlarmActive" DataType="bool" Notify="OnChange">
+            <Description>True while the alarm is raised.</Description>
+        </Attribute>
+    </AttributeList>
+    <MethodList>
+        <Method ID="20" Name="set_thresholds" MethodType="Request" Response="set_thresholds">
+            <Description>Set the high limit and the hysteresis, both in tenths of a degree.</Description>
+            <ParamList>
+                <Parameter ID="21" Name="highLimit" DataType="int16">
+                    <Description>Alarm high limit. Accepted only between 0 and 1000.</Description>
+                </Parameter>
+                <Parameter ID="22" Name="hysteresis" DataType="int16">
+                    <Description>Accepted only greater than 0 and smaller than highLimit.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="23" Name="set_thresholds" MethodType="Response">
+            <Description>Result of setting the thresholds.</Description>
+            <ParamList>
+                <Parameter ID="24" Name="success" DataType="bool">
+                    <Description>True when the thresholds were accepted.</Description>
+                </Parameter>
+                <Parameter ID="25" Name="reason" DataType="String">
+                    <Description>Empty on success, the refusal reason otherwise.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="26" Name="get_statistics" MethodType="Request" Response="get_statistics">
+            <Description>Ask for the lowest and highest reading and the alarm count.</Description>
+        </Method>
+        <Method ID="27" Name="get_statistics" MethodType="Response">
+            <Description>Statistics collected since the monitor started.</Description>
+            <ParamList>
+                <Parameter ID="28" Name="lowest" DataType="int16">
+                    <Description>Lowest reading seen.</Description>
+                </Parameter>
+                <Parameter ID="29" Name="highest" DataType="int16">
+                    <Description>Highest reading seen.</Description>
+                </Parameter>
+                <Parameter ID="30" Name="alarmsRaised" DataType="uint32">
+                    <Description>How many times the alarm has been raised.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="31" Name="alarm_raised" MethodType="Broadcast">
+            <Description>Sent the moment the alarm is raised.</Description>
+            <ParamList>
+                <Parameter ID="32" Name="reading" DataType="int16">
+                    <Description>The reading that raised the alarm.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="33" Name="alarm_cleared" MethodType="Broadcast">
+            <Description>Sent the moment the alarm is cleared.</Description>
+            <ParamList>
+                <Parameter ID="34" Name="reading" DataType="int16">
+                    <Description>The reading that cleared the alarm.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>

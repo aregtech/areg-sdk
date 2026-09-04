@@ -1,0 +1,10 @@
+# Constructs the schemas accept that no page explains, and why not.
+#
+# A gap here is reported on every run, so it stays visible instead of being
+# rediscovered by the agent that needs it. An entry naming a construct a page has
+# since explained is a defect and is reported: delete the line when you write the
+# explanation.
+#
+#   <token as it appears in a document> = <reason>
+#
+IsDeprecated=" = editor bookkeeping. Nothing in this repository writes one, and no application needs one to build; an agent that meets one in a document it was given can ignore it

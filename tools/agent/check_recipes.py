@@ -31,19 +31,28 @@ RUNNABLE = {'01-local-single-process': ['provider: hello,', 'consumer: greeted']
                                             'consumer: measurement taken'],
             '04-timer': ['consumer: tick 1', 'consumer: tick 3'],
             '05-two-services': ['collector: reading 42', 'display: report 42'],
-            '06-state-machine': ['provider: gate open', 'consumer: gate is closed'],
+            '06-state-machine': ['provider: gate opening',
+                                 'consumer: opening ran 1, so resume re-entered open',
+                                 'provider: gate refused 250',
+                                 'provider: machine finished in GATE_DONE'],
             '07-worker-events': ['scanner: asked for depth 3',
-                                 'worker: scanned depth 3', 'client: found 14'],
+                                 'worker: scanned depth 3',
+                                 'scanner: 3 steps arrived in 12 bytes',
+                                 'client: found 14'],
             '09-shared-types': ['collector: reading 42 from t-1',
+                                'collector: quality Good, firmware 1.2.3',
                                 'collector: history holds 1',
                                 'collector: kept 42 from t-1',
-                                'display: report 42 from t-1'],
+                                'display: report 42 from t-1',
+                                'display: readings crossed the boundary: 1'],
             '10-runtime-model': ['provider: hello, Consumer1', 'consumer: greeted 3'],
             '11-monitored-workers': ['monitor: alarm from Worker3',
                                      'operator: 2 of 3 alive'],
             '12-testing': ['a scripted success reaches the consumer ... PASS',
                            'a scripted refusal reaches the consumer ... PASS',
-                           'tests: 2 passed, 0 failed']}
+                           'tests: 2 passed, 0 failed'],
+            '13-submachine': ['blink: warmup lit', 'blink: signal dark',
+                              'lamp: finished in LAMP_DONE']}
 
 # Recipes whose processes talk through mtrouter. The provider is started first and
 # left running; the consumer is the one whose output is checked.

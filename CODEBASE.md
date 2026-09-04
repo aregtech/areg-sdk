@@ -106,7 +106,8 @@ framework/
   logcollector/       collects logs from running applications
   logobserver/        reads collected logs live
 
-examples/             32 complete applications, numbered by increasing complexity.
+examples/             complete applications, numbered by increasing complexity. They
+                      are optional: nothing in framework/ or tools/ needs them.
                       mtrouter is needed only where an example splits provider and
                       consumer into separate processes. The number does not say, and
                       neither does Category on its own: 01_minimalrpc is Public and
@@ -115,6 +116,12 @@ docs/
   agent/              task pages written for agents; start here
   wiki/               reference guides written for people. Large, and not on the
                       agent path: open a page only when AGENTS.md named it
+  CODEGEN_CHANGE_REQUESTS.md
+                      what codegen.jar has to change and what it does not, written
+                      for whoever maintains it: two defects nothing in this
+                      repository can fix, one wrong diagnostic, two cosmetics, and
+                      the list of constructs verified working so no time is spent
+                      on them
 tools/
   codegen.jar         the code generator, which also validates the document
   schema/*.xsd        grammar of the .siml, .dtml and .fsml documents
@@ -156,7 +163,7 @@ Common CMake options:
 |---|---|---|
 | `AREG_LIB_TYPE` | `shared` | `shared` or `static` |
 | `AREG_LOGGING` | `ON` | compile logging in |
-| `AREG_EXAMPLES` | `ON` | build the 32 examples; a project turns this off |
+| `AREG_EXAMPLES` | `ON` | build the examples; a project turns this off |
 | `AREG_TESTS` | `ON` | build unit tests (fetches Google Test); a project turns this off |
 
 Full list: `docs/wiki/02d-cmake-config.md`.

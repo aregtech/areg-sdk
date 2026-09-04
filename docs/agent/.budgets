@@ -12,5 +12,5 @@
 #
 #   <page> = <bytes> # reason
 #
-22-state-machine.md = 11264  # one document format that cannot be half-learned: the transition rules and the operations table answer each other
-51-debug.md         = 11264  # a symptom index; a split makes the reader guess which half their symptom is in. "Running the pieces" already came out of it as 50-running.md
+22-state-machine.md = 15360  # the whole .fsml format, and it cannot be half-learned: History, OnFinal, Submachine, the guard grammar and the transition rules answer each other. The only other place any of them is written down is a 50 KB schema that gives the grammar and not the meaning, and a run that had to go there carried 13,000 tokens of it for sixty turns
+51-debug.md         = 12288  # a symptom index; a split makes the reader guess which half their symptom is in. "Running the pieces" already came out of it as 50-running.md. Raised once when the generator began printing rule numbers: the refusal section now shows the message shape it must be read against, which is what stops the reader guessing at a finding instead of quoting it

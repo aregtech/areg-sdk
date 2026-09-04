@@ -1,0 +1,45 @@
+ You are working in the areg-sdk repository at /mnt/c/projects/areg-sdk.
+
+  Read the file examples/ai-prompts/coffee-machine.md and carry out the task it describes.
+
+  Generate every file into ~/bench/coffeemachine, a directory of its own outside this repository. It is a project in its own right, the way an application built on areg normally is.
+
+  Environment, so you do not waste effort discovering it:
+  - a configured build tree of the SDK already exists at build/, with the framework already compiled. Build your project against it rather than fetching a second copy of the SDK.
+  - python3 is the interpreter here.
+
+  === THIS IS PHASE 1 OF TWO. STOP WHERE TOLD. ===
+
+  In this phase you write source files and nothing else. Specifically:
+
+  DO:
+  - the service contract document and the state machine document, under services/
+  - the provider sources (the machine) and the consumer sources (the simulated user), in separate subdirectories, each with its own main.cpp
+  - the CMakeLists.txt that would compile both programs and turn both documents into code
+
+  DO NOT, in this phase:
+  - do not run the contract checker
+  - do not run cmake, do not build, do not compile, do not run anything
+  - do not modify any file inside this repository; everything you write goes under your target directory
+  - do not run any git command
+
+  When those files are written, STOP IMMEDIATELY and report. Do not continue to build or verify: you will be asked to do that in a second message.
+
+  === WHEN TO ABANDON THE TASK ===
+
+  Stop early and report, rather than working around a problem, if either happens:
+
+  - The task turns out to be too large or too complex to complete well. Say so plainly, say what part defeated it, and stop. An honest "this is too big" is a useful result; a half-built machine is not.
+  - The code generator produces wrong or broken code from the state machine document. The generator is not fully exercised for every feature, and generated output may genuinely be defective. NEVER edit a generated file and NEVER work around a generator defect by hand. Instead stop and report precisely: which generated file, which lines, what it produced, what it should have produced, and which part of your .fsml document triggered it. That report is what lets the generator be fixed, and it is more valuable than a finished example.
+
+  === WHAT TO REPORT AT THE STOP ===
+
+  - the files you wrote, with byte sizes
+  - lines of C++ you wrote by hand
+  - the number of tool calls you have used so far
+  - which documentation pages you opened, and their sizes
+  - any file you opened that the documentation did not route you to
+  - anything you had to guess, and anything the documentation did not answer
+  - your confidence that this will build, and what you are least sure of
+
+  Everything else about the task -- what the software must do, and its acceptance checklist -- is in the prompt file. Follow it.

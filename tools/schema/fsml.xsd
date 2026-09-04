@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
     fsml.xsd - schema of the Lusan State Machine document format (.fsml),
-    FormatVersion 1.1.0. Checked against the Lusan readers and writers on 2026-08-11
+    FormatVersion 1.1.0, extended to 1.2.0 for the History pseudostate (2026-09-04).
+    Checked against the Lusan readers and writers on 2026-08-11
     (data/sm/*, data/common/*, common/XmlSM.hpp): every element and attribute below is one
     the editor writes or the reader accepts, and nothing else is.
 
@@ -15,6 +16,11 @@
       - every Kind="Start" pseudo-state rule (see tStateKind): no operations, nothing targets
         it, at least one outgoing transition, all guarded when there are two or more, exactly
         one unguarded at the root level
+      - every Kind="History" pseudo-state rule (see tStateKind): no operations, no
+        transitions, no nested StateList, at most one per level, refused at the root level
+        (errors 54 to 56, 58). A transition targeting it from outside its own level is the
+        one legal exception to "To targets a sibling" (error 7, widened); the same target
+        reached from inside its own level is refused instead as error 57
       - the transition Kind contract (see tTransitionKind): which of To and Stimulus is
         required and which is forbidden for each kind, and which kind of state may own it
       - Submachine XOR nested StateList; History/OnFinal only on composite states
@@ -113,17 +119,48 @@
             machine rests in the parent state with no child active, which is legal.
             The schema cannot express any of this: it is spec 6.2 rule 5, error 27 -- except that a
             Start owning an External or Internal transition is error 28 (see tTransitionKind).
+
+            "History" is likewise a PSEUDO-state, added in FormatVersion 1.2.0: a marker inside a
+            composite's own StateList saying that a transition targeting it, from outside that
+            level, resumes the level instead of descending its Start chain. It never becomes an
+            entry in the generated state enum and the machine never occupies it, so it carries NO
+            EntryList, ExitList, TransitionList or nested StateList, and it requires HistoryDepth
+            ("Shallow" or "Deep"). At most one per level; refused at the root level, since there is
+            no composite there to resume. A composite carrying both a Kind="History" child and its
+            own legacy History attribute is refused -- two spellings of one decision, disagreeing.
+            The schema cannot express any of this: errors 54 to 58 (see cState and RULE_TARGET_SIBLING).
         </xs:documentation></xs:annotation>
         <xs:restriction base="xs:string">
             <xs:enumeration value="Start"/>
             <xs:enumeration value="Normal"/>
             <xs:enumeration value="Final"/>
+            <xs:enumeration value="History"/>
         </xs:restriction>
     </xs:simpleType>
 
     <xs:simpleType name="tHistory">
+        <xs:annotation><xs:documentation>
+            The legacy per-composite history mode, State/@History: "every transition into this
+            composite resumes" (Shallow or Deep), unchanged since FormatVersion 1.1.0. Superseded
+            in expressive power by the Kind="History" pseudo-state (1.2.0), which can say "some
+            transitions resume, others start fresh" -- kept readable, never written by a document
+            that also carries the pseudo-state on the same composite (error 58).
+        </xs:documentation></xs:annotation>
         <xs:restriction base="xs:string">
             <xs:enumeration value="None"/>
+            <xs:enumeration value="Shallow"/>
+            <xs:enumeration value="Deep"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tHistoryDepth">
+        <xs:annotation><xs:documentation>
+            The depth a Kind="History" pseudo-state restores: Shallow re-activates the last active
+            direct substate, Deep restores the entire last active path to the leaf. Unlike tHistory
+            there is no "None" -- the pseudo-state's presence already says history is wanted; its
+            depth is never optional.
+        </xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
             <xs:enumeration value="Shallow"/>
             <xs:enumeration value="Deep"/>
         </xs:restriction>
@@ -621,6 +658,7 @@
         <xs:attribute name="Name" type="tIdentifier" use="required"/>
         <xs:attribute name="Kind" type="tStateKind" use="required"/>
         <xs:attribute name="History" type="tHistory"/>
+        <xs:attribute name="HistoryDepth" type="tHistoryDepth"/>
         <xs:attribute name="Submachine" type="tIdentifier"/>
         <xs:attribute name="OnFinal" type="tIdentifier"/>
     </xs:complexType>

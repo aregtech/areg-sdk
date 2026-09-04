@@ -90,8 +90,11 @@ void request_read_file(const areg::String & path) final
 ### Answering later
 
 To answer after the handler has returned, the request must first be **released**.
-A stub holds one request at a time: while one is out, a second client's call is
-refused with `RequestBusy` and never reaches the handler at all.
+
+**Only a request that declares a `Response` blocks**, and only until that response is
+sent: a second caller meanwhile is refused with `RequestBusy` and never reaches the
+handler. A request with no `Response` never blocks and may be called again at once, so
+it needs none of what follows.
 
 ```cpp
 void request_read_file(const areg::String & path) final
@@ -112,6 +115,11 @@ void on_worker_done(const areg::String & text, areg::SessionID session)
 `unblock_current_request()` returns the session that identifies this call; carry it
 with the work and give it back to `prepare_response()` before sending the answer.
 Both are `areg::StubBase` members, so a provider already has them.
+
+**The session names one caller, and it is spent once.** `response_read_file()` after
+`prepare_response(session)` reaches the client that opened that session and no other,
+however many are waiting, and the session is invalid afterwards. Never keep proxy
+addresses to route an answer yourself.
 
 **Skipping `unblock_current_request()` is a silent defect.** With one client it works
 and looks correct; the second client is refused and nothing in the build says so. A

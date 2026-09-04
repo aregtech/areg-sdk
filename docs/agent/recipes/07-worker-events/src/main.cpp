@@ -10,6 +10,7 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ComponentThread.hpp"
+#include "areg/base/SharedBuffer.hpp"
 #include "areg/component/EventTemplate.hpp"
 #include "areg/component/WorkerThreadConsumer.hpp"
 #include "areg/logging/areg_log.h"
@@ -41,20 +42,24 @@ private:
 };
 
 //! The answer, sent back to the component thread, with the session it answers.
+//! The per-step numbers travel as raw bytes in an areg::SharedBuffer, which is
+//! reference counted, so copying the event copies no bytes.
 class ScanResultData
 {
 public:
     ScanResultData() = default;
-    ScanResultData(uint32_t found, areg::SessionID session)
-        : mFound(found), mSession(session) {}
+    ScanResultData(uint32_t found, const areg::SharedBuffer & steps, areg::SessionID session)
+        : mFound(found), mSteps(steps), mSession(session) {}
     ScanResultData(const ScanResultData & src) = default;
     ScanResultData & operator = (const ScanResultData & src) = default;
 
     inline uint32_t found() const { return mFound; }
+    inline const areg::SharedBuffer & steps() const { return mSteps; }
     inline areg::SessionID session() const { return mSession; }
 
 private:
     uint32_t            mFound  { 0 };
+    areg::SharedBuffer  mSteps  { };
     areg::SessionID     mSession{ 0 };
 };
 
@@ -90,13 +95,16 @@ protected:
     {
         LOG_SCOPE(scan_ScanWorker, process_event);
         uint32_t found{ 0 };
+        areg::SharedBuffer steps;
         for (uint32_t step = 1; step <= data.depth(); ++step)
         {
-            found += step * step;
+            const uint32_t square{ step * step };
+            found += square;
+            steps.write(reinterpret_cast<const uint8_t *>(&square), sizeof(square));
         }
         LOG_INFO("scan of depth %u found %u", data.depth(), found);
         std::cout << "worker: scanned depth " << data.depth() << std::endl;
-        ScanResultEvent::send_event(ScanResultData(found, data.session()));
+        ScanResultEvent::send_event(ScanResultData(found, steps, data.session()));
     }
 };
 
@@ -159,6 +167,19 @@ protected:
     //! returns false when the client has gone, and then there is nobody to answer.
     void process_event(const ScanResultData & data) final
     {
+        // reset() puts the read position back to the start; read() answers with
+        // how many bytes it gave, which is zero at the end of the buffer.
+        data.steps().reset();
+        uint32_t square{ 0 };
+        uint32_t counted{ 0 };
+        while (data.steps().read(reinterpret_cast<uint8_t *>(&square), sizeof(square)) == sizeof(square))
+        {
+            ++ counted;
+        }
+
+        std::cout << "scanner: " << counted << " steps arrived in "
+                  << data.steps().size_used() << " bytes" << std::endl;
+
         if (prepare_response(data.session()))
         {
             response_scan(data.found());

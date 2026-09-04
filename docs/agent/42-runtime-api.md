@@ -1,8 +1,7 @@
 # The areg runtime API
 
 The process and the threads it runs in: the application, a component's own identity,
-threads, timers, time, files and buffers. Text and the containers are
-`40-base-api.md`.
+threads, timers, time, files and buffers.
 
 Every method is `snake_case` and every public type is in `namespace areg`. Every
 signature was read from the header cited beside it, and the `Header.hpp:line` is
@@ -142,8 +141,7 @@ LOG_INFO("at %s", stamp.as_string());
 | `is_opened()` | `bool is_opened() const noexcept override` | `File.hpp:208` |
 
 `read` and `write` also take a `SharedBuffer` and a `WideString`. File input and
-output blocks; do it on a worker thread, never in a handler. Working example:
-`../../examples/06_file/`.
+output blocks; do it on a worker thread, never in a handler.
 
 ---
 
@@ -158,12 +156,14 @@ Serialize with `operator <<` and `operator >>`; the members below are the rest.
 | `write(bytes)` | `uint32_t write(const uint8_t * buf, uint32_t size)` | `SharedBuffer.hpp:247` |
 | `read(bytes)` | `uint32_t read(uint8_t * buf, uint32_t size) const noexcept` | `SharedBuffer.hpp:282` |
 | `reset()` | `void reset() const noexcept` | `SharedBuffer.hpp:285` |
+| `size_used()` | `uint32_t size_used() const noexcept` | `SharedBuffer.hpp:320` |
 | `block_size()` | `uint32_t block_size() const noexcept` | `SharedBuffer.hpp:429` |
 | `is_end()` | `bool is_end() const noexcept` | `SharedBuffer.hpp:425` |
 | `clone()` | `SharedBuffer clone() const` | `SharedBuffer.hpp:436` |
 
 `reset()` rewinds the read position; call it before reading back what you just wrote.
-Working example: `../../examples/05_buffer/`.
+**`size_used()` is the bytes in the buffer; `block_size()` is the bytes allocated** and
+always the larger. Working project: `recipes/07-worker-events/`.
 
 ---
 
@@ -175,7 +175,7 @@ Working example: `../../examples/05_buffer/`.
 areg::String generate_name(const char * prefix);        // UtilityDefs.hpp:512
 ```
 
-Use it when two instances would otherwise claim one role name - for example several
+Use it when two instances would otherwise claim one role name, for example several
 consumer processes started from the same executable:
 
 ```cpp

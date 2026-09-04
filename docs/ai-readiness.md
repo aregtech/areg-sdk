@@ -83,6 +83,8 @@ here rather than left to be discovered:
 |---|---|---|
 | `coverage` | Every feature in the catalogue of section 5 is answered by a page. | `FAIL` |
 | `coverage` | ... and demonstrated by a recipe or an example, and graded by an eval task. | `WARN` |
+| `schema` | Every construct the `.siml`, `.dtml` and `.fsml` grammars accept is explained by a page, or is recorded in `docs/agent/.schema-gaps` with the reason it is not. A construct an agent can only learn from a 50 KB grammar costs it the whole grammar, and the grammar says what an element may contain and never what it means. | `FAIL` |
+| `schema` | ... and is written by a document under `docs/agent/recipes/`. A construct nothing exercises has its first real use as its first test; three found this way -- `.fsml` history, a container of a declared structure, and a hosted machine -- were each broken or trapped on first use. | `WARN` |
 | `claim` | Every self-claim the documentation makes about itself holds, checked literally against the tree. | `FAIL` |
 | `paths` | Every documented path resolves (`check_agent_docs.py` exits zero). | `FAIL` |
 | `reachable` | Every page in `docs/agent/` is named by the task table in `AGENTS.md`, so something routes an agent to it. | `FAIL` |
@@ -116,7 +118,7 @@ here rather than left to be discovered:
 |---|---|---|
 | `ci-gate` | Nine gates run on every change: documented paths, contract on recipes, recipes build and run, project setup, eval self-check, the corpus check, mutation testing, the observability path, and a non-Linux runner. A gate under `continue-on-error` reports and never fails a run, which is not a gate. | `FAIL` |
 | `sdk-paths` | `conf/cmake/setup.cmake` writes `build/areg-sdk.paths`, and `setup_project.py` names every key it writes. The SDK lands in a different place for a clone, a fetch and an installed package; this file is the one answer, and a key renamed on one side alone is silent until an agent reads for something absent. | `FAIL` |
-| `fetch-ref` | Every `GIT_TAG` in the twelve recipes and in `10-new-project.md`, and the fallback of `setup_project.py`, equals `sdk.fetch_ref` in `docs/agent/api.json`, and the page that writes the pin states the supported range. A recipe copied by hand has to build with no lookup, so the ref is a literal in fourteen places; they all change on the day a release is tagged, and one missed is a project fetching an API the pages do not describe. | `FAIL` |
+| `fetch-ref` | Every `GIT_TAG` in a recipe and in `10-new-project.md`, and the fallback of `setup_project.py`, equals `sdk.fetch_ref` in `docs/agent/api.json`, and the page that writes the pin states the supported range. A recipe copied by hand has to build with no lookup, so the ref is a literal in every recipe; they all change on the day a release is tagged, and one missed is a project fetching an API the pages do not describe. | `FAIL` |
 | `tool` | Every tool `AGENTS.md` names exists. A named tool that is absent is a dead instruction, and an agent follows it before it discovers that. | `FAIL` |
 | `tool` | `explain_rule.py` reads its registry, and every rule says both what is wrong and what to change. What is checked is what the tool prints, not what one of its inputs holds. | `WARN` |
 | `observability` | A checker starts the router, collects logs with `logcollector`, queries the `.sqlog` database it writes, and runs in CI. This is the debugging loop the SDK exists to support, and the one an agent cannot invent. What is checked is what a script does, never what a page says. | `FAIL` |

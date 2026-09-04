@@ -15,16 +15,18 @@
 #include "src/services/GateActionHandler.hpp"
 #include "src/services/GateFSM.hpp"
 
-//! The provider owns the machine and implements the actions the machine calls.
+//! The provider owns the machine, implements the actions and hears it finish.
 class GateProvider final    : public    areg::Component
                             , protected GateServiceProviderBase
                             , protected GateActionHandler
+                            , private   GateFSM::FinalObserver
 {
 public:
     GateProvider(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
         : areg::Component(entry, owner)
         , GateServiceProviderBase(static_cast<areg::Component &>(self()))
         , GateActionHandler()
+        , GateFSM::FinalObserver()
         , mFsm(static_cast<GateActionHandler &>(self()))
     { }
 
@@ -32,6 +34,7 @@ protected:
     void startup_component(areg::ComponentThread & comThread) final
     {
         areg::Component::startup_component(comThread);
+        mFsm.set_final_observer(this);
         mFsm.init_fsm(&comThread);
     }
 
@@ -42,21 +45,61 @@ protected:
     }
 
     //! A request handler turns the call into a stimulus. It decides nothing itself.
-    void request_open_gate() final
+    void request_open_gate(uint32_t width) final
     {
-        mFsm.open();
+        mFsm.open(width);
+    }
+
+    void request_hold_gate() final
+    {
+        mFsm.hold();
+    }
+
+    void request_resume_gate() final
+    {
+        mFsm.resume();
+    }
+
+    //! An action performs an effect. It asks the machine nothing.
+    void action_on_opening() final
+    {
+        std::cout << "provider: gate opening" << std::endl;
+        broadcast_gate_stage("opening");
     }
 
     void action_on_open() final
     {
-        std::cout << "provider: gate open" << std::endl;
-        broadcast_gate_changed(true);
+        std::cout << "provider: gate open to " << mFsm.width() << std::endl;
+        broadcast_gate_stage("open");
     }
 
-    void action_on_close() final
+    void action_on_held() final
+    {
+        std::cout << "provider: gate held" << std::endl;
+        broadcast_gate_stage("held");
+    }
+
+    void action_on_closed() final
     {
         std::cout << "provider: gate closed" << std::endl;
-        broadcast_gate_changed(false);
+        broadcast_gate_stage("closed");
+    }
+
+    void action_on_refused(uint32_t asked) final
+    {
+        std::cout << "provider: gate refused " << asked << std::endl;
+        broadcast_gate_stage("refused");
+    }
+
+    void action_on_stopped() final
+    {
+        std::cout << "provider: gate stopped" << std::endl;
+        broadcast_gate_stage("stopped");
+    }
+
+    void on_fsm_final(GateFSM & /*machine*/, const char * const finalState) final
+    {
+        std::cout << "provider: machine finished in " << finalState << std::endl;
     }
 
 private:
@@ -73,6 +116,8 @@ public:
     GateConsumer(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
         : areg::Component(entry, owner)
         , GateServiceConsumerBase(entry.mDependencyServices[0].mRoleName, owner)
+        , mOpenings(0)
+        , mHeld(false)
     { }
 
 protected:
@@ -84,22 +129,46 @@ protected:
             result = true;
             if (areg::is_service_connected(status))
             {
-                notify_on_broadcast_gate_changed(true);
-                request_open_gate();
+                notify_on_broadcast_gate_stage(true);
+                request_open_gate(60);
             }
         }
 
         return result;
     }
 
-    void broadcast_gate_changed(bool isOpen) final
+    void broadcast_gate_stage(const areg::String & stage) final
     {
-        std::cout << "consumer: gate is " << (isOpen ? "open" : "closed") << std::endl;
-        if (isOpen == false)
+        std::cout << "consumer: gate " << stage << std::endl;
+        if (stage == "opening")
+        {
+            ++ mOpenings;
+        }
+        else if ((stage == "open") && (mHeld == false))
+        {
+            mHeld = true;
+            request_hold_gate();
+        }
+        else if (stage == "held")
+        {
+            request_resume_gate();
+        }
+        else if (stage == "closed")
+        {
+            // One opening only: the resume re-entered the stage the hold interrupted.
+            std::cout << "consumer: opening ran " << mOpenings
+                      << ", so resume re-entered open" << std::endl;
+            request_open_gate(250);
+        }
+        else if (stage == "stopped")
         {
             areg::Application::signal_quit();
         }
     }
+
+private:
+    uint32_t    mOpenings;  //!< How many times the opening stage was entered.
+    bool        mHeld;      //!< True once the cycle has been interrupted.
 };
 
 constexpr char const _modelName[]{ "GateModel" };

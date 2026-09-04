@@ -11,8 +11,9 @@
 # warning and plus 200 for information, so 4, 104 and 204 are unrelated rules.
 # The number is resolved in its band automatically.
 #
-# The generator does not always print the number, so --search goes the other way:
-# give it words from the message and it names the rule.
+# A finding prints its number in brackets, as error[6/RULE_UNRESOLVED_TYPE], so the
+# number is the usual argument. --search goes the other way, for a message quoted
+# without it: give it words from the message and it names the rule.
 #
 # Exit code 0 when every number was explained, 1 otherwise.
 # ===========================================================================
@@ -55,6 +56,12 @@ FIXES = {
  'RULE_MISSING_VERSION':
    'Add Version to Overview, as MAJOR.MINOR.PATCH. The version reaches the generated '
    'code and tells a consumer which contract it was built against.',
+ 'RULE_FORMAT_VERSION':
+   'Never lower FormatVersion by hand: the document keeps constructs the older '
+   'reader drops in silence. Update the SDK so its generator matches the editor '
+   'that wrote the document, or reopen the document in the editor the SDK ships '
+   'against. Older by a MAJOR is a warning and needs nothing: it is read as it '
+   'stands, and saving it in the current editor brings it forward.',
  'RULE_INVALID_IDENTIFIER':
    'Rewrite the name as a C++ identifier: a letter or an underscore first, then '
    'letters, digits or underscores. No spaces, dots or dashes.',
@@ -198,6 +205,12 @@ FIXES = {
  'RULE_RESPONSE_LINK':
    'Point Response at a method this document declares with MethodType="Response". A '
    'request with no answer omits the attribute entirely.',
+ 'RULE_FORMAT_VERSION':
+   'The FormatVersion on the root element is newer than the tool reading it. Use a '
+   'newer code generator, or save the document from an editor that writes the version '
+   'this one reads. Lowering the number by hand does not help: the elements the newer '
+   'format added would be dropped in silence. An older MAJOR is only a warning and '
+   'needs nothing done.',
  'RULE_UNREACHABLE_STATE':
    'Nothing enters the state. Give it an incoming transition, make it the Start of '
    'its level, or delete it.',
@@ -274,6 +287,8 @@ def clean(text):
 PHRASES = {
  'RULE_UNRESOLVED_TYPE':  ['a data type that resolves to nothing'],
  'RULE_RESPONSE_LINK':    ['a response that resolves to nothing'],
+ 'RULE_FORMAT_VERSION':   ['a newer format than this generator reads',
+                           'an older major of the format'],
  'RULE_BAD_VALUE':        ['a value the format does not allow here'],
  'RULE_DUPLICATE_ID':     ['an element ID that more than one element claims'],
 }
@@ -415,8 +430,8 @@ def main():
     parser.add_argument('--list', action='store_true',
                         help='list every rule instead of explaining numbers')
     parser.add_argument('--search', metavar='TEXT',
-                        help='find the rule from words in the message, for when '
-                             'the generator printed no number')
+                        help='find the rule from words in the message, for a '
+                             'message quoted without its number')
     args = parser.parse_args()
 
     rules = load()

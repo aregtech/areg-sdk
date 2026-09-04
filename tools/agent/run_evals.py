@@ -36,7 +36,7 @@ RECIPES = os.path.join(SDK, 'docs', 'agent', 'recipes')
 
 
 def load_tasks():
-    with open(BANK, encoding='ascii') as handle:
+    with open(BANK, encoding='utf-8') as handle:
         return json.load(handle)['tasks']
 
 

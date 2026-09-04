@@ -6,7 +6,10 @@ handlers are a chain of `if (mPhase == ...)` is a state machine written by hand.
 The machine is described in a `.fsml` document. The generator turns it into code the
 same way it turns a `.siml` into a service. You write the actions, never the machine.
 
-Working project to copy: `recipes/06-state-machine/`.
+Working project to copy: `recipes/06-state-machine/`. Its document carries history, a
+guard, an internal transition, an event the machine sends itself, `OnFinal` and a final
+observer in one machine that builds and runs. Read it first; this page is the lookup
+for what it does not settle.
 
 ## What gets generated
 
@@ -51,8 +54,8 @@ python3 <areg-sdk>/tools/agent/gen_skeleton.py --doc src/services/Gate.fsml --ou
 
 On Windows the command is `python`, not `python3`; nothing else changes.
 
-It writes `<Name>Host.hpp/.cpp`. Merge it into the component that provides the
-service, or use it as it stands. What it produces:
+It writes `<Name>Host.hpp/.cpp`, to merge into the providing component or use as it
+stands:
 
 ```cpp
 #include "areg/appbase/Application.hpp"
@@ -104,13 +107,15 @@ the editor uses. **Write the document without it, then generate one:**
 python3 <areg-sdk>/tools/agent/fsml_layout.py src/services/Gate.fsml
 ```
 
-It places every state of a level in a column, sizes each composite around its
-children and joins the transitions, so the machine opens laid out instead of as a
-heap of overlapping boxes. Re-running it replaces the block. Never write coordinates
-by hand: it costs a great many tokens and draws worse than the tool.
+It places every state of a level in a column, sizes each composite around its children
+and joins the transitions. Re-running it replaces the block. Never write coordinates by
+hand: it costs a great many tokens and draws worse than the tool.
 
 Every element carries an `ID`, and the IDs are unique across the whole document.
 Numbering them in reading order is enough.
+
+The machine below is smaller than the recipe's, and is shown whole so the shape is
+visible at a glance.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -153,16 +158,15 @@ Numbering them in reading order is enough.
 </StateMachine>
 ```
 
-`Transition/@To` names the target state by its `ID`, not by its name, and that state
-must be a **sibling** at the same level. A transition cannot reach into or out of a
-composite: to leave a subtree, put the transition on the composite itself, whose
-transitions fire from anywhere inside it.
+`Transition/@To` names the target by `ID`, not by name, and the target must be a
+**sibling**. A transition cannot reach into or out of a composite: to leave a subtree,
+put the transition on the composite, whose transitions fire from anywhere inside it.
 
 ### The pieces
 
 | Element | Means |
 |---|---|
-| `Kind="Start"` | not a state, only a marker saying where a level begins; it owns exactly one `Kind="Initial"` transition and nothing may target it |
+| `Kind="Start"` | not a state, only a marker saying where a level begins, and nothing may target it. It owns `Kind="Initial"` transitions: exactly one, unguarded, at the root; deeper, several are allowed if **every** one carries a `Guard`, and where none holds the machine rests in the parent with no child active |
 | `Kind="Normal"` | a state the machine occupies |
 | `Kind="Final"` | the machine stops here and reports through the final observer |
 | `EntryList` / `ExitList` | `ActionCall`, `TimerStart`, `TimerStop`, `EventSend`, `AttributeSet`, run on entering or leaving |
@@ -173,6 +177,82 @@ transitions fire from anywhere inside it.
 
 A state may hold its own `StateList`. Its transitions then fire from anywhere inside
 that subtree, which is how one `power_off` trigger reaches every nested state at once.
+
+### Re-entering a composite where it left off
+
+`History` is an attribute of a composite state -- one that owns a `StateList` -- and
+says how that state's own level is entered.
+
+| `History` | Entering the composite |
+|---|---|
+| absent, or `None` | descends the level's `Kind="Start"` chain, every time |
+| `Shallow` | resumes the substate that was active when the level was last left; that substate's own children start afresh |
+| `Deep` | resumes the recorded subtree, down to the deepest state that was active |
+
+The record is written when the composite is left and read when it is entered again.
+A first entry has nothing recorded and descends the Start chain, as does an entry
+after `release_fsm(true)`. `init_fsm(thread, mode)` says how the top level is entered,
+and `release_fsm(false)` keeps the record instead of clearing it.
+
+**History belongs to the state, not to the transition.** Every transition reaching the
+composite restores it, so a level that is entered both to begin something new and to
+resume something interrupted cannot tell the two apart: the fresh entry replays the
+previous run's last substate. Where a level needs both, either give the fresh path a
+composite of its own, or reset the machine on that path with `release_fsm(true)`
+followed by `init_fsm()`, which clears every level's record.
+
+The safe shape is the recipe's: the composite is entered fresh once and every later
+entry is a resume. It prints how many times its first substate ran, which is what
+proves a resume went back to where it stopped.
+
+### Leaving a level when it finishes: `OnFinal`
+
+A `Kind="Final"` substate stops its own level, not the machine, and a transition
+cannot cross out of a composite. `OnFinal` on the composite names an `Event` the
+machine sends to itself when the nested level reaches Final; a transition on the
+composite then carries it out of the subtree.
+
+```xml
+<State ID="10" Name="WORK" Kind="Normal" OnFinal="Done">
+    <TransitionList>
+        <Transition ID="30" Kind="External" StimulusKind="Event" Stimulus="Done" To="40"/>
+    </TransitionList>
+    <StateList>  <!-- ... ends in a State of Kind="Final" ... -->
+    </StateList>
+</State>
+```
+
+Without it a finished level simply stops and nothing follows.
+
+### Reusing a whole machine: `Submachine`
+
+A state may host another `.fsml` instead of owning a `StateList`. Import the document
+and name its alias on the state; a state carries one or the other, never both.
+
+```xml
+<IncludeList>
+    <Location ID="2" Name="services/Inner.fsml" Alias="Inner" Version="1.0.0"/>
+</IncludeList>
+...
+<State ID="10" Name="RUNNING" Kind="Normal" Submachine="Inner" OnFinal="InnerDone"/>
+```
+
+`Version` is the imported document's `Overview/@Version`, pinned at import: the
+generated host carries a `static_assert` that fails when the import moves past it.
+
+What that changes in the generated code:
+
+- the host's constructor takes one extra `InnerActionHandler &` per hosting state, in
+  document order, so the host supplies the inner machine's actions
+- the host implements `InnerFSM::FinalObserver`, and `OnFinal` turns the inner machine
+  reaching Final into an event the host can transition on
+- the inner machine's triggers are forwarded through the host
+- `addStateMachine` is called once, naming only the importing document
+
+Entering the hosting state enters the imported machine through **its own `Kind="Start"`
+chain**, and nothing calls its triggers: an inner machine whose first state waits for a
+trigger stops there, and the host never leaves. Working project, hosting one machine
+from two states: `recipes/13-submachine/`.
 
 ### Guarding a transition
 
@@ -215,6 +295,10 @@ returns `false`, exactly as it does for a state with no transition at all.
 | `And`, `Or` | two or more operands |
 | `Not` | one operand |
 | `Attr`, `Const`, `Param` | a reference, bound by the target's `ID`, never by its name |
+
+`Attr` names an `AttributeList` entry, `Param` an argument of the stimulus, and `Const`
+a `<ConstantList>` entry, declared beside `AttributeList` exactly as a `.siml` declares
+one: `<Constant ID="18" Name="MaxHolds" DataType="uint32" Value="3"/>`.
 | `Lit` | verbatim text, emitted as written |
 
 `state="ok"` is required, and `Expr` with it. `state="draft"` means the guard is still
@@ -255,10 +339,15 @@ generator from the extension. A machine that imports others needs only one call.
 - Never raise a stimulus before `init_fsm()`. That asserts as well.
 - Never edit `*FSM.*`, `*ActionHandler.*` or `*Defs.*`. Change the `.fsml`.
 - Never target a `Kind="Start"` state.
+- Never import a machine whose Start chain lands on a state that waits for a trigger.
+  Entering the hosting state will not send one, and the machine stops there.
+- Never expect a fresh entry and a resume into one composite to behave differently.
+  `History` is on the state and applies to both.
 - Never give an `Internal` transition a `To`, and never leave one off an `External`.
 
 ## More
 
-Full grammar: `../../tools/schema/fsml.xsd` -- its annotations state the rules the
-schema itself cannot express. A large machine with nesting, history and internal
-transitions: `../../examples/19_pubfsm/services/TrafficLight.fsml`.
+`../../tools/schema/fsml.xsd` is the full grammar. It is 50 KB and answers only what
+an element may contain, never what it means: this page and the recipe carry the
+meaning. Open it to settle a spelling nothing here gives, and never to look up a
+semantic. A refused document is `explain_rule.py`, not the schema.

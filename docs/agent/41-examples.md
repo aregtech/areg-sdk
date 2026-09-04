@@ -1,7 +1,11 @@
 # Which example shows what
 
-Thirty-two complete applications live in `../../examples/`. This page exists so you
-never have to list that directory or open an example to find out what is in it.
+Complete applications live in `../../examples/`. This page exists so you never have to
+list that directory or open an example to find out what is in it.
+
+**They are optional.** They are not installed with the SDK and an application needs
+none of them. A clone without `examples/`, or with different ones, is not broken: when
+a row below names a directory that is not there, use `recipes/` instead.
 
 **A working example is the cheapest reference there is.** When a shape is unfamiliar,
 run the example that has it before writing anything.

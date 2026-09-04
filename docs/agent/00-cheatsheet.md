@@ -40,7 +40,7 @@ A constant's value is the `Value` **attribute**, and only there: the 1.0.0 `<Val
 child is refused. A structure `Field` and an `EnumEntry` are the other way round,
 carrying their value as a child element. The generator validates before it writes: a
 refused document names the rule in words, and
-`explain_rule.py --search "words from the message"` explains it.
+`explain_rule.py <the number the message prints in brackets>` explains it.
 
 ## Generated names, from the document
 

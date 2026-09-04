@@ -53,7 +53,9 @@ private:
 
 Prefer the three argument form inside a component and pass the owning
 `ComponentThread`. It states where the callback runs instead of depending on which
-thread happened to call.
+thread happened to call. The constructor is handed that thread; anywhere else, a
+component reaches its own with `master_thread()` -- `42-runtime-api.md` section 3,
+which is also where a component's role name and address are.
 
 ---
 

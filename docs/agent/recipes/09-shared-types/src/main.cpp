@@ -31,7 +31,8 @@ protected:
     void startup_component(areg::ComponentThread & comThread) final
     {
         areg::Component::startup_component(comThread);
-        set_reading(SharedTypes::Reading("t-1", 42));
+        set_reading(SharedTypes::Reading("t-1", 42, SharedTypes::Quality::Good,
+                                        SharedTypes::Firmware(1, 2, 3)));
     }
 
 private:
@@ -75,9 +76,11 @@ protected:
         {
             std::cout << "collector: reading " << Reading.value
                       << " from " << Reading.sensor << std::endl;
+            std::cout << "collector: quality " << SharedTypes::as_string(Reading.quality)
+                      << ", firmware " << Reading.firmware.to_string() << std::endl;
             mHistory.add(Reading);
             report_history();
-            broadcast_report(Reading);
+            broadcast_report(Reading, mHistory);
         }
     }
 
@@ -133,10 +136,13 @@ protected:
         return result;
     }
 
-    void broadcast_report(const SharedTypes::Reading & reading) final
+    void broadcast_report(const SharedTypes::Reading & reading,
+                          const SharedTypes::ReadingList & history) final
     {
         std::cout << "display: report " << reading.value
                   << " from " << reading.sensor << std::endl;
+        std::cout << "display: readings crossed the boundary: " << history.size()
+                  << std::endl;
         areg::Application::signal_quit();
     }
 };
