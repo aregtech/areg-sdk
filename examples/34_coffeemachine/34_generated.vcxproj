@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)msvc_setup.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AregConfigDir)compile.props" Label="LocalAppCompileSettings" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{96F935CF-BF68-4A0B-AABF-BF22AE887AD6}</ProjectGuid>
+    <ProjectName>34_generated</ProjectName>
+    <RootNamespace>34_generated</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AregConfigDir)project.props" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir>$(OutLibDir)</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="services\CoffeeMachineService.siml" />
+    <None Include="services\CoffeeMachine.fsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\product\generate\examples\34_coffeemachine\services\CoffeeMachineActionHandler.hpp" />
+    <ClInclude Include="..\..\product\generate\examples\34_coffeemachine\services\CoffeeMachineDefs.hpp" />
+    <ClInclude Include="..\..\product\generate\examples\34_coffeemachine\services\CoffeeMachineFSM.hpp" />
+    <ClInclude Include="..\..\product\generate\examples\34_coffeemachine\services\CoffeeMachineService.hpp" />
+    <ClInclude Include="..\..\product\generate\examples\34_coffeemachine\services\CoffeeMachineServiceConsumerBase.hpp" />
+    <ClInclude Include="..\..\product\generate\examples\34_coffeemachine\services\CoffeeMachineServiceProviderBase.hpp" />
+    <ClInclude Include="..\..\product\generate\examples\34_coffeemachine\services\private\CoffeeMachineServiceEvents.hpp" />
+    <ClInclude Include="..\..\product\generate\examples\34_coffeemachine\services\private\CoffeeMachineServiceProxy.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\product\generate\examples\34_coffeemachine\services\private\CoffeeMachineActionHandler.cpp" />
+    <ClCompile Include="..\..\product\generate\examples\34_coffeemachine\services\private\CoffeeMachineDefs.cpp" />
+    <ClCompile Include="..\..\product\generate\examples\34_coffeemachine\services\private\CoffeeMachineFSM.cpp" />
+    <ClCompile Include="..\..\product\generate\examples\34_coffeemachine\services\private\CoffeeMachineService.cpp" />
+    <ClCompile Include="..\..\product\generate\examples\34_coffeemachine\services\private\CoffeeMachineServiceConsumerBase.cpp" />
+    <ClCompile Include="..\..\product\generate\examples\34_coffeemachine\services\private\CoffeeMachineServiceEvents.cpp" />
+    <ClCompile Include="..\..\product\generate\examples\34_coffeemachine\services\private\CoffeeMachineServiceProviderBase.cpp" />
+    <ClCompile Include="..\..\product\generate\examples\34_coffeemachine\services\private\CoffeeMachineServiceProxy.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

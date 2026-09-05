@@ -33,6 +33,7 @@ RUNNABLE = {'01-local-single-process': ['provider: hello,', 'consumer: greeted']
             '05-two-services': ['collector: reading 42', 'display: report 42'],
             '06-state-machine': ['provider: gate opening',
                                  'consumer: opening ran 1, so resume re-entered open',
+                                 'consumer: opening ran 2, so a fresh order started at the beginning',
                                  'provider: gate refused 250',
                                  'provider: machine finished in GATE_DONE'],
             '07-worker-events': ['scanner: asked for depth 3',

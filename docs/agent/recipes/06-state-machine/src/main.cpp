@@ -117,6 +117,7 @@ public:
         : areg::Component(entry, owner)
         , GateServiceConsumerBase(entry.mDependencyServices[0].mRoleName, owner)
         , mOpenings(0)
+        , mCycles(0)
         , mHeld(false)
     { }
 
@@ -155,10 +156,23 @@ protected:
         }
         else if (stage == "closed")
         {
-            // One opening only: the resume re-entered the stage the hold interrupted.
-            std::cout << "consumer: opening ran " << mOpenings
-                      << ", so resume re-entered open" << std::endl;
-            request_open_gate(250);
+            ++ mCycles;
+            if (mCycles == 1)
+            {
+                // One opening only: resume named the history marker, so it re-entered
+                // the stage the hold interrupted instead of starting the cycle again.
+                std::cout << "consumer: opening ran " << mOpenings
+                          << ", so resume re-entered open" << std::endl;
+                request_open_gate(60);
+            }
+            else
+            {
+                // A second opening: this order named the composite and not its marker,
+                // so it descended the Start chain and began a new cycle.
+                std::cout << "consumer: opening ran " << mOpenings
+                          << ", so a fresh order started at the beginning" << std::endl;
+                request_open_gate(250);
+            }
         }
         else if (stage == "stopped")
         {
@@ -168,6 +182,7 @@ protected:
 
 private:
     uint32_t    mOpenings;  //!< How many times the opening stage was entered.
+    uint32_t    mCycles;    //!< How many cycles have run to completion.
     bool        mHeld;      //!< True once the cycle has been interrupted.
 };
 

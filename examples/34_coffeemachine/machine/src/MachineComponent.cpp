@@ -1,51 +1,51 @@
-/************************************************************************
- * \file        machine/src/MachineComponent.cpp
- * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit examples
- * \brief       Coffee machine: accepts coins and orders, and runs the making stages.
- ************************************************************************/
 #include "machine/src/MachineComponent.hpp"
-#include "areg/component/ComponentThread.hpp"
+
 #include <iostream>
 
 namespace
 {
-    constexpr MachineComponent::Recipe sRecipes[] =
-    {
-        { CoffeeMachineService::PriceEspresso,   40u, 9u,   0u },  // Espresso
-        { CoffeeMachineService::PriceCappuccino, 60u, 9u,  80u },  // Cappuccino
-        { CoffeeMachineService::PriceLatte,      60u, 9u, 150u },  // Latte
-    };
+    constexpr uint32_t WATER_CAPACITY{ 2000 };
+    constexpr uint32_t BEANS_CAPACITY{ 500 };
+    constexpr uint32_t MILK_CAPACITY{ 1000 };
 
-    constexpr uint32_t sLowPercent{ 20u };
+    const Recipe RecipeTable[]
+    {
+        { "Espresso",   120,  40,  9,   0 },
+        { "Cappuccino", 180,  60,  9,  80 },
+        { "Latte",      200,  60,  9, 150 },
+    };
 }
 
 MachineComponent::MachineComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
-    : areg::Component               ( entry, owner )
-    , CoffeeMachineServiceProviderBase( static_cast<areg::Component &>(self()) )
-    , CoffeeMachineActionHandler     ( )
-    , mFsm                           ( static_cast<CoffeeMachineActionHandler &>(self()) )
-    , mCredit                        ( 0u )
-    , mWater                         ( CoffeeMachineService::TankCapacityWater )
-    , mBeans                         ( CoffeeMachineService::TankCapacityBeans )
-    , mMilk                          ( CoffeeMachineService::TankCapacityMilk )
-    , mWaterWarnedLow                ( false )
-    , mWaterWarnedEmpty              ( false )
-    , mBeansWarnedLow                ( false )
-    , mBeansWarnedEmpty              ( false )
-    , mMilkWarnedLow                 ( false )
-    , mMilkWarnedEmpty               ( false )
-    , mCurrentDrink                  ( CoffeeMachineService::DrinkType::Espresso )
-    , mBeansConsumed                 ( false )
-    , mWaterConsumed                 ( false )
-    , mMilkConsumed                  ( false )
+    : areg::Component(entry, owner)
+    , CoffeeMachineServiceProviderBase(static_cast<areg::Component &>(self()))
+    , CoffeeMachineActionHandler()
+    , CoffeeMachineFSM::FinalObserver()
+    , mFsm(static_cast<CoffeeMachineActionHandler &>(self()))
+    , mCredit(0)
+    , mWater(WATER_CAPACITY)
+    , mBeans(BEANS_CAPACITY)
+    , mMilk(MILK_CAPACITY)
+    , mWarnedLowWater(false)
+    , mWarnedEmptyWater(false)
+    , mWarnedLowBeans(false)
+    , mWarnedEmptyBeans(false)
+    , mWarnedLowMilk(false)
+    , mWarnedEmptyMilk(false)
+    , mOrderAccepted(false)
+    , mOrderReason()
+    , mLostIngredients()
 {
-    set_credit(mCredit);
 }
 
 void MachineComponent::startup_component(areg::ComponentThread & comThread)
 {
     areg::Component::startup_component(comThread);
+    mFsm.set_final_observer(this);
     mFsm.init_fsm(&comThread);
+
+    set_credit(mCredit);
+    set_stage("idle");
 }
 
 void MachineComponent::shutdown_component(areg::ComponentThread & comThread)
@@ -54,151 +54,41 @@ void MachineComponent::shutdown_component(areg::ComponentThread & comThread)
     areg::Component::shutdown_component(comThread);
 }
 
-const MachineComponent::Recipe & MachineComponent::recipe_of(CoffeeMachineService::DrinkType drink)
+void MachineComponent::request_insert_coin(uint32_t coin)
 {
-    return sRecipes[static_cast<size_t>(drink)];
-}
-
-const char * MachineComponent::ingredient_name(CoffeeMachineService::TankType tank)
-{
-    switch (tank)
+    if ((coin == 5) || (coin == 10) || (coin == 20) || (coin == 50) || (coin == 100) || (coin == 200))
     {
-    case CoffeeMachineService::TankType::Water:    return "water";
-    case CoffeeMachineService::TankType::Beans:    return "beans";
-    case CoffeeMachineService::TankType::Milk:     return "milk";
-    default:                                       return "";
+        mCredit += coin;
+        set_credit(mCredit);
+        std::cout << "machine: credit " << mCredit << std::endl;
     }
 }
 
-uint32_t & MachineComponent::level_of(CoffeeMachineService::TankType tank)
+void MachineComponent::request_order_drink(const areg::String & drink)
 {
-    switch (tank)
+    const Recipe * recipe = find_recipe(drink);
+    if (recipe == nullptr)
     {
-    case CoffeeMachineService::TankType::Beans:    return mBeans;
-    case CoffeeMachineService::TankType::Milk:     return mMilk;
-    case CoffeeMachineService::TankType::Water:
-    default:                                       return mWater;
-    }
-}
-
-uint32_t MachineComponent::capacity_of(CoffeeMachineService::TankType tank) const
-{
-    switch (tank)
-    {
-    case CoffeeMachineService::TankType::Beans:    return CoffeeMachineService::TankCapacityBeans;
-    case CoffeeMachineService::TankType::Milk:     return CoffeeMachineService::TankCapacityMilk;
-    case CoffeeMachineService::TankType::Water:
-    default:                                       return CoffeeMachineService::TankCapacityWater;
-    }
-}
-
-void MachineComponent::check_level(CoffeeMachineService::TankType tank)
-{
-    bool * warnedLow{ nullptr };
-    bool * warnedEmpty{ nullptr };
-    switch (tank)
-    {
-    case CoffeeMachineService::TankType::Water:
-        warnedLow = &mWaterWarnedLow; warnedEmpty = &mWaterWarnedEmpty; break;
-    case CoffeeMachineService::TankType::Beans:
-        warnedLow = &mBeansWarnedLow; warnedEmpty = &mBeansWarnedEmpty; break;
-    case CoffeeMachineService::TankType::Milk:
-        warnedLow = &mMilkWarnedLow; warnedEmpty = &mMilkWarnedEmpty; break;
-    default:
+        response_order_drink(false, "unknown drink");
         return;
     }
 
-    const uint32_t level{ level_of(tank) };
-    const uint32_t capacity{ capacity_of(tank) };
-    const char * const name{ ingredient_name(tank) };
+    mOrderAccepted = false;
+    mOrderReason   = "";
+    const bool needsMilk{ recipe->milk > 0 };
 
-    if (level == 0u)
-    {
-        if (!(*warnedEmpty))
-        {
-            *warnedEmpty = true;
-            *warnedLow   = true;
-            std::cout << "machine: " << name << " tank is empty" << std::endl;
-            broadcast_ingredient_empty(name);
-        }
-    }
-    else if ((level * 100u) < (capacity * sLowPercent))
-    {
-        if (!(*warnedLow))
-        {
-            *warnedLow = true;
-            std::cout << "machine: " << name << " tank is low" << std::endl;
-            broadcast_ingredient_low(name);
-        }
-    }
+    mFsm.order(recipe->name, recipe->price, recipe->water, recipe->beans, recipe->milk,
+               needsMilk, mCredit, mWater, mBeans, mMilk);
+
+    response_order_drink(mOrderAccepted, mOrderReason);
 }
 
-void MachineComponent::request_insert_coin(uint32_t value)
-{
-    switch (value)
-    {
-    case 5: case 10: case 20: case 50: case 100: case 200:
-        mCredit += value;
-        set_credit(mCredit);
-        break;
-    default:
-        std::cout << "machine: coin of " << value << " cents refused" << std::endl;
-        break;
-    }
-}
-
-void MachineComponent::request_order_drink(CoffeeMachineService::DrinkType drink)
-{
-    const Recipe & recipe{ recipe_of(drink) };
-    bool accepted{ true };
-    areg::String reason;
-
-    if (mCredit < recipe.price)
-    {
-        accepted = false;
-        reason   = "insufficient credit";
-    }
-    else if (mWater < recipe.water)
-    {
-        accepted = false;
-        reason   = ingredient_name(CoffeeMachineService::TankType::Water);
-    }
-    else if (mBeans < recipe.beans)
-    {
-        accepted = false;
-        reason   = ingredient_name(CoffeeMachineService::TankType::Beans);
-    }
-    else if ((recipe.milk > 0u) && (mMilk < recipe.milk))
-    {
-        accepted = false;
-        reason   = ingredient_name(CoffeeMachineService::TankType::Milk);
-    }
-
-    response_order_drink(accepted, reason);
-
-    if (accepted)
-    {
-        mCurrentDrink   = drink;
-        mBeansConsumed  = false;
-        mWaterConsumed  = false;
-        mMilkConsumed   = false;
-
-        // Clears the substate MAKING recorded for pause and resume, so this order
-        // starts at the first stage instead of resuming the previous drink's last.
-        mFsm.release_fsm(true);
-        mFsm.init_fsm(&master_thread());
-
-        mFsm.set_needs_milk(recipe.milk > 0u);
-        mFsm.order();
-    }
-}
-
-void MachineComponent::request_pause_drink(void)
+void MachineComponent::request_pause_making(void)
 {
     mFsm.pause();
 }
 
-void MachineComponent::request_resume_drink(void)
+void MachineComponent::request_resume_making(void)
 {
     mFsm.resume();
 }
@@ -206,120 +96,154 @@ void MachineComponent::request_resume_drink(void)
 void MachineComponent::request_cancel_order(void)
 {
     mFsm.cancel();
+}
 
-    const uint32_t refund{ mCredit };
-    mCredit = 0u;
+void MachineComponent::request_refill_tank(const areg::String & tank)
+{
+    bool ok{ true };
+    if (tank == "Water")
+    {
+        mWater = WATER_CAPACITY;
+        mWarnedLowWater = false;
+        mWarnedEmptyWater = false;
+    }
+    else if (tank == "Beans")
+    {
+        mBeans = BEANS_CAPACITY;
+        mWarnedLowBeans = false;
+        mWarnedEmptyBeans = false;
+    }
+    else if (tank == "Milk")
+    {
+        mMilk = MILK_CAPACITY;
+        mWarnedLowMilk = false;
+        mWarnedEmptyMilk = false;
+    }
+    else
+    {
+        ok = false;
+    }
+
+    response_refill_tank(ok, tank);
+}
+
+void MachineComponent::action_on_refused(const areg::String & reason)
+{
+    mOrderAccepted = false;
+    mOrderReason   = reason;
+}
+
+void MachineComponent::action_on_accepted(const areg::String & name, uint32_t price)
+{
+    mOrderAccepted = true;
+    mOrderReason   = "";
+    mLostIngredients = "";
+    set_stage("accepted");
+}
+
+void MachineComponent::action_on_grinding(void)
+{
+    set_stage("grinding");
+    const uint32_t need{ mFsm.beans_needed() };
+    mBeans = (mBeans >= need) ? (mBeans - need) : 0;
+    note_lost("beans");
+    check_warning("Beans", mBeans, BEANS_CAPACITY, mWarnedLowBeans, mWarnedEmptyBeans);
+}
+
+void MachineComponent::action_on_heating(void)
+{
+    set_stage("heating");
+    const uint32_t need{ mFsm.water_needed() };
+    mWater = (mWater >= need) ? (mWater - need) : 0;
+    note_lost("water");
+    check_warning("Water", mWater, WATER_CAPACITY, mWarnedLowWater, mWarnedEmptyWater);
+}
+
+void MachineComponent::action_on_brewing(void)
+{
+    set_stage("brewing");
+}
+
+void MachineComponent::action_on_frothing(void)
+{
+    set_stage("frothing");
+    const uint32_t need{ mFsm.milk_needed() };
+    mMilk = (mMilk >= need) ? (mMilk - need) : 0;
+    note_lost("milk");
+    check_warning("Milk", mMilk, MILK_CAPACITY, mWarnedLowMilk, mWarnedEmptyMilk);
+}
+
+void MachineComponent::action_on_dispensing(void)
+{
+    set_stage("dispensing");
+}
+
+void MachineComponent::action_on_finished(const areg::String & name, uint32_t price)
+{
+    mCredit = (mCredit >= price) ? (mCredit - price) : 0;
     set_credit(mCredit);
-    response_cancel_order(refund);
+    set_stage("idle");
+    mLostIngredients = "";
+    broadcast_drink_ready(name);
 }
 
-void MachineComponent::request_refill_tank(CoffeeMachineService::TankType tank)
+void MachineComponent::action_on_cancelled(void)
 {
-    level_of(tank) = capacity_of(tank);
+    set_stage("idle");
+    broadcast_order_cancelled(mCredit, mLostIngredients);
+    mLostIngredients = "";
+}
 
-    switch (tank)
+void MachineComponent::action_on_paused(void)
+{
+    set_stage("paused");
+}
+
+void MachineComponent::action_on_resumed(void)
+{
+    // The next stage's own EntryList reports which stage was resumed.
+}
+
+void MachineComponent::on_fsm_final(CoffeeMachineFSM & /* machine */, const char * const /* finalState */)
+{
+}
+
+void MachineComponent::check_warning(const char * ingredient, uint32_t level, uint32_t capacity, bool & warnedLow, bool & warnedEmpty)
+{
+    if (level == 0)
     {
-    case CoffeeMachineService::TankType::Water:
-        mWaterWarnedLow = false; mWaterWarnedEmpty = false; break;
-    case CoffeeMachineService::TankType::Beans:
-        mBeansWarnedLow = false; mBeansWarnedEmpty = false; break;
-    case CoffeeMachineService::TankType::Milk:
-        mMilkWarnedLow = false; mMilkWarnedEmpty = false; break;
-    default:
-        break;
+        if (!warnedEmpty)
+        {
+            warnedEmpty = true;
+            broadcast_ingredient_warning(ingredient, "empty");
+        }
+    }
+    else if (((level * 5) < capacity) && !warnedLow)   // below 20%, first crossing
+    {
+        warnedLow = true;
+        broadcast_ingredient_warning(ingredient, "low");
+    }
+}
+
+const Recipe * MachineComponent::find_recipe(const areg::String & drink) const
+{
+    for (const Recipe & recipe : RecipeTable)
+    {
+        if (recipe.name == drink)
+        {
+            return &recipe;
+        }
     }
 
-    std::cout << "machine: " << ingredient_name(tank) << " tank refilled" << std::endl;
+    return nullptr;
 }
 
-void MachineComponent::action_on_idle(void)
+void MachineComponent::note_lost(const char * ingredient)
 {
-    set_stage(CoffeeMachineService::MakingStage::Idle);
-}
-
-void MachineComponent::action_on_enter_grinding(void)
-{
-    std::cout << "machine: grinding" << std::endl;
-    set_stage(CoffeeMachineService::MakingStage::Grinding);
-}
-
-void MachineComponent::action_on_consume_beans(void)
-{
-    const Recipe & recipe{ recipe_of(mCurrentDrink) };
-    mBeans -= recipe.beans;
-    mBeansConsumed = true;
-    check_level(CoffeeMachineService::TankType::Beans);
-}
-
-void MachineComponent::action_on_enter_heating(void)
-{
-    std::cout << "machine: heating" << std::endl;
-    set_stage(CoffeeMachineService::MakingStage::Heating);
-}
-
-void MachineComponent::action_on_consume_water(void)
-{
-    const Recipe & recipe{ recipe_of(mCurrentDrink) };
-    mWater -= recipe.water;
-    mWaterConsumed = true;
-    check_level(CoffeeMachineService::TankType::Water);
-}
-
-void MachineComponent::action_on_enter_brewing(void)
-{
-    std::cout << "machine: brewing" << std::endl;
-    set_stage(CoffeeMachineService::MakingStage::Brewing);
-}
-
-void MachineComponent::action_on_enter_frothing(void)
-{
-    std::cout << "machine: frothing" << std::endl;
-    set_stage(CoffeeMachineService::MakingStage::Frothing);
-}
-
-void MachineComponent::action_on_consume_milk(void)
-{
-    const Recipe & recipe{ recipe_of(mCurrentDrink) };
-    mMilk -= recipe.milk;
-    mMilkConsumed = true;
-    check_level(CoffeeMachineService::TankType::Milk);
-}
-
-void MachineComponent::action_on_enter_dispensing(void)
-{
-    std::cout << "machine: dispensing" << std::endl;
-    set_stage(CoffeeMachineService::MakingStage::Dispensing);
-}
-
-void MachineComponent::action_on_finish(void)
-{
-    const Recipe & recipe{ recipe_of(mCurrentDrink) };
-    mCredit -= recipe.price;
-    set_credit(mCredit);
-    std::cout << "machine: drink ready" << std::endl;
-}
-
-void MachineComponent::action_on_cancel(void)
-{
-    areg::String lost;
-    if (mBeansConsumed)
+    if (mLostIngredients.is_empty() == false)
     {
-        lost += "beans ";
-    }
-    if (mWaterConsumed)
-    {
-        lost += "water ";
-    }
-    if (mMilkConsumed)
-    {
-        lost += "milk ";
+        mLostIngredients += ", ";
     }
 
-    std::cout << "machine: order cancelled, lost: " << (lost.is_empty() ? "nothing" : lost.as_string()) << std::endl;
-}
-
-void MachineComponent::action_on_pause(void)
-{
-    std::cout << "machine: paused" << std::endl;
-    set_stage(CoffeeMachineService::MakingStage::Paused);
+    mLostIngredients += ingredient;
 }

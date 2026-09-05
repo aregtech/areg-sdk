@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <None Include="services\CoffeeMachine.fsml">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="services\CoffeeMachineService.siml">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{4eae106d-fb59-4adc-9bf0-f1d351b05cae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{c32fb690-e462-4921-92d6-8b1c35b27759}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{88fb116b-363c-4574-a99e-7ca9db36849e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\product\generate\examples\34_coffeemachine\services\CoffeeMachineFSM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\product\generate\examples\34_coffeemachine\services\CoffeeMachineActionHandler.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\product\generate\examples\34_coffeemachine\services\CoffeeMachineDefs.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\product\generate\examples\34_coffeemachine\services\CoffeeMachineService.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\product\generate\examples\34_coffeemachine\services\CoffeeMachineServiceConsumerBase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\product\generate\examples\34_coffeemachine\services\CoffeeMachineServiceProviderBase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\product\generate\examples\34_coffeemachine\services\private\CoffeeMachineServiceProxy.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\product\generate\examples\34_coffeemachine\services\private\CoffeeMachineServiceEvents.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\product\generate\examples\34_coffeemachine\services\private\CoffeeMachineActionHandler.cpp" />
+    <ClCompile Include="..\..\product\generate\examples\34_coffeemachine\services\private\CoffeeMachineDefs.cpp" />
+    <ClCompile Include="..\..\product\generate\examples\34_coffeemachine\services\private\CoffeeMachineFSM.cpp" />
+    <ClCompile Include="..\..\product\generate\examples\34_coffeemachine\services\private\CoffeeMachineService.cpp" />
+    <ClCompile Include="..\..\product\generate\examples\34_coffeemachine\services\private\CoffeeMachineServiceConsumerBase.cpp" />
+    <ClCompile Include="..\..\product\generate\examples\34_coffeemachine\services\private\CoffeeMachineServiceEvents.cpp" />
+    <ClCompile Include="..\..\product\generate\examples\34_coffeemachine\services\private\CoffeeMachineServiceProviderBase.cpp" />
+    <ClCompile Include="..\..\product\generate\examples\34_coffeemachine\services\private\CoffeeMachineServiceProxy.cpp" />
+  </ItemGroup>
+</Project>

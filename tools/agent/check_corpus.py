@@ -165,7 +165,7 @@ FEATURES = [
 # unexercised construct is one whose first real use finds the defect.
 # ---------------------------------------------------------------------------
 SCHEMA_FEATURES = [
-    ('state history',        'History="',            '22-state-machine.md', 'History'),
+    ('history pseudo-state', 'HistoryDepth="',       '22-state-machine.md', 'HistoryDepth'),
     ('a hosted machine',     'Submachine="',         '22-state-machine.md', 'Submachine'),
     ('a level reporting done', 'OnFinal="',          '22-state-machine.md', 'OnFinal'),
     ('a guarded transition', '<Guard',               '22-state-machine.md', '<Guard'),
@@ -323,14 +323,23 @@ def check_generator_catalogue(report):
                         'does not yet report'
                         .format(number, name, ', '.join(sorted(in_tree - in_jar))))
 
+    # ONE copy of each schema, and it is the one beside the jar. That is the
+    # generator's packaging rule, stated in its publish step and carried out by the
+    # build, which strips every .xsd out of the jar: a schema beside the jar can be
+    # opened, diffed and replaced, so a newer document is accepted without a newer
+    # tool. A second copy inside the jar is not a spare, it is the thing that drifts,
+    # and it wins or loses silently depending on which one the tool happens to read.
     for name in ('siml.xsd', 'dtml.xsd', 'fsml.xsd'):
-        carried = jar_member(name)
-        if carried is None:
-            report.fail('catalogue', 'codegen.jar carries no data/{}'.format(name))
-        elif carried != read_bytes('tools', 'schema', name):
-            report.warn('catalogue', 'tools/schema/{} and the copy inside '
-                        'codegen.jar differ, so the editor and the generator do '
-                        'not accept the same documents'.format(name))
+        beside = read_bytes('tools', 'schema', name)
+        if not beside:
+            report.fail('catalogue', 'tools/schema/{} is missing, so a document is '
+                        'checked against no schema at all'.format(name))
+
+        if jar_member(name) is not None:
+            report.fail('catalogue', 'codegen.jar carries a second copy of data/{}. '
+                        'The schema belongs beside the jar and nowhere else: two '
+                        'copies drift, and which one a document is checked against '
+                        'then decides whether it is accepted'.format(name))
 
     report.ok('catalogue', '{} of {} rules are known to both codegen.jar and '
               'tools/schema/rules.xml'

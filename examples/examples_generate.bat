@@ -48,6 +48,9 @@ for %%d in (
     30_publatency\services\Latency.siml
     31_loclatency\services\LocalLatency.siml
     32_pubmixed\services\MixedTraffic.siml
+    33_tempalarm\services\TempAlarm.siml
+    34_coffeemachine\services\CoffeeMachineService.siml
+    34_coffeemachine\services\CoffeeMachine.fsml
 ) do >>"%AREG_DOCLIST%" echo %EXAMPLE_ROOT%%%d
 
 call java -jar "%AREG_CODEGEN%" --root="%AREG_SDK_ROOT%" --docs="%AREG_DOCLIST%" --target="%AREG_PRODUCT%"

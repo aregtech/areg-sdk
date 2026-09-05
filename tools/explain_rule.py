@@ -256,6 +256,21 @@ FIXES = {
  'RULE_DROPPED_ELEMENT':
    'The block was kept while the document was open and is lost on save. Fix the '
    'fault reported beside it, then re-add the block.',
+ 'RULE_HISTORY_SHAPE':
+   'A history marker is a marker, not a state. Move the entry, exit, transitions or '
+   'substates onto a state of the level, and give the marker a HistoryDepth.',
+ 'RULE_HISTORY_DUPLICATE':
+   'One marker names one re-entry. Keep one and point every resuming transition at '
+   'it; delete the others.',
+ 'RULE_HISTORY_ROOT':
+   'Move the marker inside the StateList of the composite whose history it names. '
+   'The root level has no composite to resume.',
+ 'RULE_HISTORY_SIBLING':
+   'A marker is reached on the way IN, from a state outside the composite. From '
+   'inside the level, name the state to enter instead.',
+ 'RULE_HISTORY_CONFLICT':
+   'The composite says the same thing twice. Keep the marker and remove the History '
+   'attribute, or remove the marker and keep the attribute.',
 }
 
 

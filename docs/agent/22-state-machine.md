@@ -6,9 +6,10 @@ handlers are a chain of `if (mPhase == ...)` is a state machine written by hand.
 The machine is described in a `.fsml` document. The generator turns it into code the
 same way it turns a `.siml` into a service. You write the actions, never the machine.
 
-Working project to copy: `recipes/06-state-machine/`. Its document carries history, a
-guard, an internal transition, an event the machine sends itself, `OnFinal` and a final
-observer in one machine that builds and runs. Read it first; this page is the lookup
+Working project to copy: `recipes/06-state-machine/`. One machine that builds and runs,
+carrying a history marker, a guard, an internal transition, an event the machine sends
+itself, `OnFinal` and a final observer. It resumes an interrupted cycle and starts a
+fresh one in the same run. Read it first; this page is the lookup
 for what it does not settle.
 
 ## What gets generated
@@ -180,30 +181,31 @@ that subtree, which is how one `power_off` trigger reaches every nested state at
 
 ### Re-entering a composite where it left off
 
-`History` is an attribute of a composite state -- one that owns a `StateList` -- and
-says how that state's own level is entered.
+A composite records the substate it was left in, and a resume re-activates it.
+`Shallow` restores that direct substate, whose own children then start afresh; `Deep`
+restores the subtree down to the deepest state that was active. With nothing recorded
+-- a first entry, or one after `release_fsm(true)` -- it descends the `Kind="Start"`
+chain. `init_fsm(thread, mode)` says how the top level is entered; `release_fsm(false)`
+keeps the record.
 
-| `History` | Entering the composite |
-|---|---|
-| absent, or `None` | descends the level's `Kind="Start"` chain, every time |
-| `Shallow` | resumes the substate that was active when the level was last left; that substate's own children start afresh |
-| `Deep` | resumes the recorded subtree, down to the deepest state that was active |
+`State/@History` -- `Shallow` or `Deep` on the composite itself -- is the legacy
+spelling, still read and superseded: it makes *every* entry resume. Where one entry must begin something new
+and another must resume, put a marker in the composite's `StateList` and point only the
+resuming transition at it:
 
-The record is written when the composite is left and read when it is entered again.
-A first entry has nothing recorded and descends the Start chain, as does an entry
-after `release_fsm(true)`. `init_fsm(thread, mode)` says how the top level is entered,
-and `release_fsm(false)` keeps the record instead of clearing it.
+```xml
+<State ID="20" Name="MakingHistory" Kind="History" HistoryDepth="Shallow"/>
+```
 
-**History belongs to the state, not to the transition.** Every transition reaching the
-composite restores it, so a level that is entered both to begin something new and to
-resume something interrupted cannot tell the two apart: the fresh entry replays the
-previous run's last substate. Where a level needs both, either give the fresh path a
-composite of its own, or reset the machine on that path with `release_fsm(true)`
-followed by `init_fsm()`, which clears every level's record.
+`To="20"` resumes; `To` naming the composite descends the Start chain. So `order`
+targeting `MAKING` starts a fresh drink and `resume` targeting the marker continues the
+interrupted one, in one run.
 
-The safe shape is the recipe's: the composite is entered fresh once and every later
-entry is a resume. It prints how many times its first substate ran, which is what
-proves a resume went back to where it stopped.
+The machine never occupies a marker: no enumeration value, and no `EntryList`,
+`ExitList`, `TransitionList` or `StateList` -- only `HistoryDepth`, `Shallow` or `Deep`.
+One per level, never at the root, never beside `State/@History`, never targeted from
+inside its level. A document using one states `FormatVersion="1.2.0"`; one that
+does not stays `1.1.0`.
 
 ### Leaving a level when it finishes: `OnFinal`
 
@@ -338,11 +340,11 @@ generator from the extension. A machine that imports others needs only one call.
   into the machine.
 - Never raise a stimulus before `init_fsm()`. That asserts as well.
 - Never edit `*FSM.*`, `*ActionHandler.*` or `*Defs.*`. Change the `.fsml`.
-- Never target a `Kind="Start"` state.
+- Never target a `Kind="Start"`, nor a `Kind="History"` from inside its own level.
 - Never import a machine whose Start chain lands on a state that waits for a trigger.
   Entering the hosting state will not send one, and the machine stops there.
-- Never expect a fresh entry and a resume into one composite to behave differently.
-  `History` is on the state and applies to both.
+- Never expect `State/@History` to tell a fresh entry from a resume. It is on the state
+  and applies to both; a `Kind="History"` marker is what tells them apart.
 - Never give an `Internal` transition a `To`, and never leave one off an `External`.
 
 ## More

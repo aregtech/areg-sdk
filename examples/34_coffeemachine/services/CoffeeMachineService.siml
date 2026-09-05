@@ -1,154 +1,101 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <ServiceInterface FormatVersion="1.1.0">
     <Overview ID="1" Name="CoffeeMachineService" Version="1.0.0" Category="Public">
-        <Description>Contract between a coffee machine and whoever drives it.</Description>
+        <Description>Contract between the coffee machine and the program that operates it.</Description>
     </Overview>
-    <DataTypeList>
-        <DataType ID="2" Name="DrinkType" Type="Enumeration" Values="default">
-            <Description>The three drinks the machine can make.</Description>
-            <FieldList>
-                <EnumEntry ID="3" Name="Espresso">
-                    <Description>120 cents. Water 40 ml, beans 9 g, no milk.</Description>
-                </EnumEntry>
-                <EnumEntry ID="4" Name="Cappuccino">
-                    <Description>180 cents. Water 60 ml, beans 9 g, milk 80 ml.</Description>
-                </EnumEntry>
-                <EnumEntry ID="5" Name="Latte">
-                    <Description>200 cents. Water 60 ml, beans 9 g, milk 150 ml.</Description>
-                </EnumEntry>
-            </FieldList>
-        </DataType>
-        <DataType ID="6" Name="MakingStage" Type="Enumeration" Values="default">
-            <Description>Where the machine is while a drink is being made.</Description>
-            <FieldList>
-                <EnumEntry ID="7" Name="Idle">
-                    <Description>No drink is being made.</Description>
-                </EnumEntry>
-                <EnumEntry ID="8" Name="Grinding">
-                    <Description>Grinding the beans.</Description>
-                </EnumEntry>
-                <EnumEntry ID="9" Name="Heating">
-                    <Description>Heating the water.</Description>
-                </EnumEntry>
-                <EnumEntry ID="10" Name="Brewing">
-                    <Description>Brewing.</Description>
-                </EnumEntry>
-                <EnumEntry ID="11" Name="Frothing">
-                    <Description>Frothing the milk. Only for Cappuccino and Latte.</Description>
-                </EnumEntry>
-                <EnumEntry ID="12" Name="Dispensing">
-                    <Description>Dispensing the drink.</Description>
-                </EnumEntry>
-                <EnumEntry ID="13" Name="Paused">
-                    <Description>The order was paused. Resuming continues in the stage it left.</Description>
-                </EnumEntry>
-            </FieldList>
-        </DataType>
-        <DataType ID="14" Name="TankType" Type="Enumeration" Values="default">
-            <Description>The three tanks that can be refilled.</Description>
-            <FieldList>
-                <EnumEntry ID="15" Name="Water"/>
-                <EnumEntry ID="16" Name="Beans"/>
-                <EnumEntry ID="17" Name="Milk"/>
-            </FieldList>
-        </DataType>
-    </DataTypeList>
     <AttributeList>
-        <Attribute ID="18" Name="Credit" DataType="uint32" Notify="OnChange">
-            <Description>Credit accumulated from inserted coins, in cents.</Description>
+        <Attribute ID="2" Name="Credit" DataType="uint32" Notify="OnChange">
+            <Description>The credit inserted and not yet spent, in cents.</Description>
         </Attribute>
-        <Attribute ID="19" Name="Stage" DataType="MakingStage" Notify="OnChange">
-            <Description>The current making stage. Idle when no drink is being made.</Description>
+        <Attribute ID="3" Name="Stage" DataType="String" Notify="OnChange">
+            <Description>The stage the machine is currently in.</Description>
         </Attribute>
     </AttributeList>
     <MethodList>
-        <Method ID="20" Name="insert_coin" MethodType="Request">
+        <Method ID="10" Name="insert_coin" MethodType="Request">
             <Description>Insert a coin. Accepted denominations are 5, 10, 20, 50, 100 and 200 cents; anything else is ignored.</Description>
             <ParamList>
-                <Parameter ID="21" Name="value" DataType="uint32">
+                <Parameter ID="11" Name="coin" DataType="uint32">
                     <Description>The coin value, in cents.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="22" Name="order_drink" MethodType="Request" Response="order_drink">
-            <Description>Ask the machine to make a drink. Accepted only when the credit covers the price and every ingredient it needs is available.</Description>
+        <Method ID="12" Name="order_drink" MethodType="Request" Response="order_drink">
+            <Description>Order a drink by name: Espresso, Cappuccino or Latte.</Description>
             <ParamList>
-                <Parameter ID="23" Name="drink" DataType="DrinkType">
-                    <Description>The drink to make.</Description>
+                <Parameter ID="13" Name="drink" DataType="String">
+                    <Description>The name of the drink.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="24" Name="order_drink" MethodType="Response">
-            <Description>Whether the order was accepted.</Description>
+        <Method ID="14" Name="order_drink" MethodType="Response">
+            <Description>Whether the order was accepted, and why not otherwise.</Description>
             <ParamList>
-                <Parameter ID="25" Name="accepted" DataType="bool">
-                    <Description>True when the machine started making the drink.</Description>
+                <Parameter ID="15" Name="accepted" DataType="bool">
+                    <Description>True if the machine started making the drink.</Description>
                 </Parameter>
-                <Parameter ID="26" Name="reason" DataType="String">
-                    <Description>Empty when accepted. Otherwise the refusal reason: "insufficient credit", or the missing ingredient's name.</Description>
+                <Parameter ID="16" Name="reason" DataType="String">
+                    <Description>Empty when accepted; otherwise the reason it was refused.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="27" Name="pause_drink" MethodType="Request">
-            <Description>Pause the drink being made. Has no effect when nothing is being made.</Description>
+        <Method ID="17" Name="pause_making" MethodType="Request">
+            <Description>Pause the drink being made, wherever it is.</Description>
         </Method>
-        <Method ID="28" Name="resume_drink" MethodType="Request">
+        <Method ID="18" Name="resume_making" MethodType="Request">
             <Description>Resume a paused drink from the stage it was interrupted in.</Description>
         </Method>
-        <Method ID="29" Name="cancel_order" MethodType="Request" Response="cancel_order">
-            <Description>Cancel: before an order, or while one is being made. Returns the whole credit either way. Ingredients already consumed are not returned.</Description>
+        <Method ID="19" Name="cancel_order" MethodType="Request">
+            <Description>Cancel the pending or in-progress order and return the credit.</Description>
         </Method>
-        <Method ID="30" Name="cancel_order" MethodType="Response">
-            <Description>The result of the cancellation.</Description>
+        <Method ID="20" Name="refill_tank" MethodType="Request" Response="refill_tank">
+            <Description>Refill a tank to full: Water, Beans or Milk.</Description>
+            <ParamList>
+                <Parameter ID="21" Name="tank" DataType="String">
+                    <Description>The name of the tank to refill.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="22" Name="refill_tank" MethodType="Response">
+            <Description>Whether the named tank was recognised and refilled.</Description>
+            <ParamList>
+                <Parameter ID="23" Name="ok" DataType="bool">
+                    <Description>True if the tank was recognised and refilled.</Description>
+                </Parameter>
+                <Parameter ID="24" Name="tank" DataType="String">
+                    <Description>The tank name that was passed in.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="25" Name="ingredient_warning" MethodType="Broadcast">
+            <Description>Sent once when an ingredient tank crosses below 20%, and once again when it reaches empty.</Description>
+            <ParamList>
+                <Parameter ID="26" Name="ingredient" DataType="String">
+                    <Description>Water, Beans or Milk.</Description>
+                </Parameter>
+                <Parameter ID="27" Name="level" DataType="String">
+                    <Description>"low" or "empty".</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="28" Name="drink_ready" MethodType="Broadcast">
+            <Description>Sent when a drink finishes and its price and ingredients have been taken.</Description>
+            <ParamList>
+                <Parameter ID="29" Name="drink" DataType="String">
+                    <Description>The drink that finished.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="30" Name="order_cancelled" MethodType="Broadcast">
+            <Description>Sent when an order is cancelled, before or during making.</Description>
             <ParamList>
                 <Parameter ID="31" Name="refunded" DataType="uint32">
-                    <Description>The whole credit, returned in cents.</Description>
+                    <Description>The credit returned, in cents.</Description>
                 </Parameter>
-            </ParamList>
-        </Method>
-        <Method ID="32" Name="refill_tank" MethodType="Request">
-            <Description>Refill the named tank to full.</Description>
-            <ParamList>
-                <Parameter ID="33" Name="tank" DataType="TankType">
-                    <Description>The tank to refill.</Description>
-                </Parameter>
-            </ParamList>
-        </Method>
-        <Method ID="34" Name="ingredient_low" MethodType="Broadcast">
-            <Description>Sent once when a tank falls below 20 percent, not repeated while it stays there.</Description>
-            <ParamList>
-                <Parameter ID="35" Name="ingredient" DataType="String">
-                    <Description>"water", "beans" or "milk".</Description>
-                </Parameter>
-            </ParamList>
-        </Method>
-        <Method ID="36" Name="ingredient_empty" MethodType="Broadcast">
-            <Description>Sent once when a tank reaches zero, not repeated while it stays there.</Description>
-            <ParamList>
-                <Parameter ID="37" Name="ingredient" DataType="String">
-                    <Description>"water", "beans" or "milk".</Description>
+                <Parameter ID="32" Name="lost" DataType="String">
+                    <Description>The ingredients already consumed and not returned; empty if none.</Description>
                 </Parameter>
             </ParamList>
         </Method>
     </MethodList>
-    <ConstantList>
-        <Constant ID="38" Name="PriceEspresso" DataType="uint32" Value="120">
-            <Description>Espresso price, in cents.</Description>
-        </Constant>
-        <Constant ID="39" Name="PriceCappuccino" DataType="uint32" Value="180">
-            <Description>Cappuccino price, in cents.</Description>
-        </Constant>
-        <Constant ID="40" Name="PriceLatte" DataType="uint32" Value="200">
-            <Description>Latte price, in cents.</Description>
-        </Constant>
-        <Constant ID="41" Name="TankCapacityWater" DataType="uint32" Value="2000">
-            <Description>Water tank capacity, in millilitres.</Description>
-        </Constant>
-        <Constant ID="42" Name="TankCapacityBeans" DataType="uint32" Value="500">
-            <Description>Bean tank capacity, in grams.</Description>
-        </Constant>
-        <Constant ID="43" Name="TankCapacityMilk" DataType="uint32" Value="1000">
-            <Description>Milk tank capacity, in millilitres.</Description>
-        </Constant>
-    </ConstantList>
 </ServiceInterface>

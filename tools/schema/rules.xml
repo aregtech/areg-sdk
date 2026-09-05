@@ -241,7 +241,7 @@
         </Rule>
 
         <Rule Number="50" Name="RULE_FORMAT_VERSION" Section="shared" Bands="error warning" Documents="dtml siml fsml">
-            <Summary>The document states a FormatVersion the reader does not know. An error when the document is newer in any of the three numbers: everything a reader does not understand it drops in silence, so it would generate code describing a document nobody wrote. A warning when the document is older by a MAJOR, which is a migration and not a fault -- it is read as it stands, never rewritten, and the generated files carry the format the tool reads. An older minor or patch is readable by design and says nothing.</Summary>
+            <Summary>The document states a FormatVersion the reader does not know. An error only when the document is newer by a MAJOR, which says the document is shaped differently and would generate code describing a document nobody wrote. A warning when the document is newer by a MINOR or a PATCH: a minor only adds, and anything the reader does not recognise -- a section, an element, an attribute, a value the schema beside it does not allow -- is refused where it is met rather than dropped in silence, so the document is read as it stands and the difference is said aloud. A warning too when the document is older by a MAJOR, which is a migration and not a fault. An older minor or patch is readable by design and says nothing.</Summary>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_FORMAT_VERSION"/>
         </Rule>
 
@@ -329,27 +329,27 @@
 
         <Rule Number="54" Name="RULE_HISTORY_SHAPE" Section="shared" Bands="error" Documents="fsml">
             <Summary>A Kind="History" state carrying an EntryList, an ExitList, a TransitionList or a nested StateList. It is a pseudo-state, not a state: the machine never occupies it, so it owns none of the things a state owns.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_HISTORY_SHAPE"/>
         </Rule>
 
         <Rule Number="55" Name="RULE_HISTORY_DUPLICATE" Section="shared" Bands="error" Documents="fsml">
             <Summary>More than one Kind="History" state on one level. At most one per level -- a second one would leave two markers naming the same re-entry.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_HISTORY_DUPLICATE"/>
         </Rule>
 
         <Rule Number="56" Name="RULE_HISTORY_ROOT" Section="shared" Bands="error" Documents="fsml">
             <Summary>A Kind="History" state at the root level. There is no composite there to resume, so the marker names nothing.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_HISTORY_ROOT"/>
         </Rule>
 
         <Rule Number="57" Name="RULE_HISTORY_SIBLING" Section="shared" Bands="error" Documents="fsml">
             <Summary>A transition targeting a Kind="History" state from inside its own level. The marker is reached only by a transition entering the composite from outside (\a RULE_TARGET_SIBLING, widened); from inside, the state it names is an ordinary non-sibling target.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_HISTORY_SIBLING"/>
         </Rule>
 
         <Rule Number="58" Name="RULE_HISTORY_CONFLICT" Section="shared" Bands="error" Documents="fsml">
             <Summary>A composite carrying both its own History attribute and a Kind="History" child. Two spellings of one decision, disagreeing about what the composite does on re-entry.</Summary>
-            <Implemented Lusan="true" Codegen="false"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_HISTORY_CONFLICT"/>
         </Rule>
     </RuleList>
 

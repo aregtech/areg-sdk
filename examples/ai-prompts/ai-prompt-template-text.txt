@@ -1,0 +1,74 @@
+Learn about `areg-sdk` structure from `AGENTS.md` located in the `areg-sdk` repo.
+If you don't know the location of `areg-sdk`, stop and ask me first for the location.
+
+You are working on a project in its own right, built on top of `areg`; it may use its
+own tools as well as the tools in `areg-sdk`.
+
+--- Settings: fill these in before you paste this prompt, then use them consistently ---
+PROJECT_NAME   = <name>                      # top-level directory, and the CMake project name
+PROVIDER_NAME  = <name>                      # the program that provides the service
+CONSUMER_NAME  = <name>                      # the program that consumes it
+GENERATE_NAME  = <PROJECT_NAME>_generate     # the CMake target that turns the documents into code
+---
+
+Your Tasks:
+- Create new directory `PROJECT_NAME/` in the current location.
+- Generate every file into that directory.
+- Name the provider project `PROVIDER_NAME`, the consumer project `CONSUMER_NAME`, and
+  put the code generated from the documents under the `GENERATE_NAME` target.
+
+You write source files, build the project using `cmake`.
+
+Environment: python3 is the interpreter here.
+
+DO:
+  - the service contract document (a `.siml`) under `services/`, and -- only if the task
+    needs behaviour that depends on what happened before, which a chain of `if` cannot
+    express cleanly -- a state machine document (a `.fsml`) alongside it
+  - the provider sources and the consumer sources, in separate subdirectories, each with
+    its own `main.cpp`
+  - the `CMakeLists.txt` that compiles both programs and turns every document into code
+  - run `cmake` to build the `PROJECT_NAME` project
+  - test the `PROVIDER_NAME` and `CONSUMER_NAME` applications
+  - if during build or during test you found a bug, report it and fix it
+  - repeat the testing and bug-fixing phase until the application is running, but do it a
+    maximum of 2 cycles; if after the second cycle it is still not fixed, stop and report
+
+DO NOT:
+  - do not modify any file inside `areg-sdk`
+  - everything you write goes under your target directory `PROJECT_NAME/`
+  - do not run any git command
+
+You stop if:
+- The task turns out to be too large or too complex to complete well. Say so plainly, say
+  what part defeated it, and stop. An honest "this is too big" is a useful result; a
+  half-built application is not.
+- The code generator produces wrong or broken code from a service or state-machine
+  document. The generator is not fully exercised for every feature, and generated output
+  may genuinely be defective. NEVER edit a generated file and NEVER work around a
+  generator defect by hand. Instead stop and report precisely: which generated file,
+  which lines, what it produced, what it should have produced, and which part of your
+  `.siml`/`.fsml` document triggered it. That report is what lets the generator be fixed,
+  and it is more valuable than a finished example.
+
+When tests pass, or the maximum allowed bug-fixing cycles (2) are reached, stop
+immediately and report. Your report should contain:
+- Time and tokens spent to generate files;
+- Time and tokens spent to complete this project;
+- the files you wrote, with byte sizes
+- lines of C++ you wrote by hand
+- the number of tool calls you have used so far
+- which documentation pages you opened, and their sizes
+- any file you opened that the documentation did not route you to
+- anything you had to guess, and anything the documentation did not answer
+- your confidence that this will build, and what you are least sure of
+
+--- Task description: replace this section with what the software must do, and its
+    acceptance checklist. Paste it directly below, or name a file in the repo to read. ---
+
+<PASTE THE TASK DESCRIPTION AND ACCEPTANCE CHECKLIST HERE>
+
+---
+
+Everything else about the task -- what the software must do, and its acceptance
+checklist -- is in the section above. Follow it.

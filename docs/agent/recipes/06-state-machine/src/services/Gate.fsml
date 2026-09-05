@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<StateMachine FormatVersion="1.1.0">
+<StateMachine FormatVersion="1.2.0">
     <Overview ID="1" Name="Gate" Version="1.0.0" Threading="Local">
         <Description>A gate that opens to a requested width, can be held part way through its cycle, and refuses a width it cannot reach.</Description>
     </Overview>
@@ -101,8 +101,8 @@
                 <Transition ID="40" Kind="External" StimulusKind="Event" Stimulus="Refused" To="41"/>
             </TransitionList>
         </State>
-        <State ID="26" Name="GATE_CYCLE" Kind="Normal" History="Shallow" OnFinal="Cycled">
-            <Description>Composite: one opening cycle. Shallow history is what lets resume re-enter the stage the hold interrupted. Entered fresh exactly once per run, which is the only shape history is safe in.</Description>
+        <State ID="26" Name="GATE_CYCLE" Kind="Normal" OnFinal="Cycled">
+            <Description>Composite: one opening cycle. A transition naming its history marker resumes the stage a hold interrupted; a transition naming the composite itself descends the Start chain and begins a new cycle.</Description>
             <ExitList>
                 <TimerStop ID="27" Timer="Warn"/>
                 <TimerStop ID="28" Timer="Hold"/>
@@ -116,6 +116,9 @@
                 </Transition>
             </TransitionList>
             <StateList>
+                <State ID="200" Name="CycleHistory" Kind="History" HistoryDepth="Shallow">
+                    <Description>The marker resume targets. Shallow re-activates the direct substate the level was left in.</Description>
+                </State>
                 <State ID="32" Name="Start2" Kind="Start">
                     <TransitionList>
                         <Transition ID="33" Kind="Initial" To="34"/>
@@ -147,12 +150,12 @@
             </StateList>
         </State>
         <State ID="38" Name="GATE_HELD" Kind="Normal">
-            <Description>The cycle is interrupted. Resume re-enters GATE_CYCLE through its history.</Description>
+            <Description>The cycle is interrupted. Resume names the history marker, so it re-enters the stage the hold interrupted.</Description>
             <EntryList>
                 <ActionCall ID="39" Action="on_held"/>
             </EntryList>
             <TransitionList>
-                <Transition ID="47" Kind="External" StimulusKind="Trigger" Stimulus="resume" To="26"/>
+                <Transition ID="47" Kind="External" StimulusKind="Trigger" Stimulus="resume" To="200"/>
             </TransitionList>
         </State>
         <State ID="41" Name="GATE_DONE" Kind="Final">
