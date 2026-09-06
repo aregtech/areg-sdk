@@ -260,13 +260,23 @@ src/CMakeLists.txt    declares the service interface and the executables
 | I need to ... | Read |
 |---|---|
 | **Anything ordinary** | `docs/agent/00-cheatsheet.md` - one page, most tasks end here |
+| Decide what the services are | `docs/agent/05-design.md`, before writing any file |
 | Change the service contract | `docs/agent/20-service-interface.md` |
+| Declare a structure, enum or container | `docs/agent/21-data-types.md` |
+| Behaviour that depends on what happened before | `docs/agent/22-state-machine.md` (a `.fsml`) |
+| `areg::String` and the containers | `docs/agent/40-base-api.md` |
 | Implement a provider | `docs/agent/30-provider.md` |
 | Implement a consumer | `docs/agent/31-consumer.md` |
 | Register components and threads | `docs/agent/32-model.md` |
 | Periodic or delayed work | `docs/agent/33-timers.md` |
+| A custom event between threads | `docs/agent/23-events.md` |
+| Worker threads, watchdogs, a run-time model | `docs/agent/37-threads.md` |
+| The application, components, time, files | `docs/agent/42-runtime-api.md` |
 | Log from application code | `docs/agent/34-logging.md` |
+| Start the pieces in the right order | `docs/agent/50-running.md` |
+| Write a test | `docs/agent/52-testing.md` |
 | Work out why it does not work | `docs/agent/51-debug.md` |
+| **Anything this table does not cover** | `AGENTS.md` section 2 in the SDK -- it routes the full set. Never search the SDK by hand |
 
 ## Tools
 

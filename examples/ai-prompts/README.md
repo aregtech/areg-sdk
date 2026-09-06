@@ -10,28 +10,117 @@ instead of asking you to believe it.
 | Prompt | Builds | Demonstrates |
 |---|---|---|
 | `temperature-alarm.md` | a temperature monitor and a simulated operator, in two processes | the plain service shape: a request, a published value, and broadcasts -- no state machine |
-| `coffee-machine.md` | a coffee machine and a simulated user, in two processes | a `.fsml` state machine: nested states, guarded transitions, machine attributes, and resuming a sequence that was interrupted |
+| `coffee-machine.md` | a coffee machine and a simulated user, in two processes | a state machine: nested states, guarded transitions, and resuming a sequence that was interrupted |
+| `atm.md` | an ATM and a simulated customer, in two processes | one retry-limited check reached from two places, each with its own attempt count |
+| `printer-scanner.md` | a multifunction device and a simulated operator, in two processes | two engines scheduled one job at a time, reused by a copy job, with faults reported the same way |
 
-Run them in that order. The first is deliberately small and has no state machine in
-it, so what it costs is what the plain service path costs; the second adds the state
-machine on top of the same shape. Two points make a slope, and the slope is the only
-thing that says anything.
+Run the first two in that order. `temperature-alarm.md` is deliberately small and
+has no state machine in it, so what it costs is what the plain service path costs;
+`coffee-machine.md` adds the state machine on top of the same shape. Two points make
+a slope, and the slope is the only thing that says anything. The other two are larger
+tasks of the same kind.
 
-## Running one
+Two more files make them runnable on areg, and the split between them is the point:
 
-Open a session in this repository and say:
+| File | Who edits it |
+|---|---|
+| `ai-prompt-template-text.txt` | **you** -- four lines at the top, and nothing else. This is the prompt you paste. |
+| `runbook-areg.md` | **nobody.** The agent reads it: where to work, every command in order, the bounded fix loop, and the report. |
 
-> Read `examples/ai-prompts/temperature-alarm.md` and carry it out.
-> Generate into `<the directory you want>`.
+Keeping the procedure out of the prompt is what stops a run being spoiled by a path
+edited in one place and missed in another.
 
-The agent reads `AGENTS.md` for everything else. Nothing has to be explained to it
-beforehand.
+## Running one, and measuring it
 
-`*-text.txt` beside each prompt is the driver text of the measured run, verbatim: the
-two-phase split that separates writing from building, what to report at the stop, and
-when to abandon the task rather than work around a defect. Copy one and change the two
-paths in its first lines -- the checkout and the target directory -- and the run is the
-one the figures came from.
+This is the whole procedure. Nothing here is optional if you want a comparable number.
+
+**1. Make one empty directory and start the session in it.** That directory becomes
+the project: the agent writes everything into it and creates nothing outside it.
+
+- **not your home directory** -- the agent would scatter a build tree through it
+- **not inside the checkout** -- a session started there loads the SDK's own
+  maintainer-facing `CLAUDE.md`, which no user of areg ever sees and which orders
+  twelve corpus checkers the run does not need. That alone can double the bill.
+- **a fresh, empty directory of its own**, anywhere else
+
+```bash
+RUN=~/runs/$(date +%Y%m%d)-coffeemachine
+mkdir -p "$RUN" && cd "$RUN"
+```
+
+You stay in `$RUN` for every remaining step. The agent is told the project root is
+wherever the session started, so it never picks a second one.
+
+**2. Write the prompt.** Copy `ai-prompt-template-text.txt` and edit its four-line
+block -- that block is the only thing in the file you ever touch.
+
+```bash
+cp /mnt/c/projects/areg-sdk/examples/ai-prompts/ai-prompt-template-text.txt prompt.txt
+$EDITOR prompt.txt        # areg-sdk, task, project, mode -- four lines, at the top
+```
+
+For the coffee machine those four are already the file's defaults:
+
+```
+  areg-sdk = /mnt/c/projects/areg-sdk
+  task     = examples/ai-prompts/coffee-machine.md
+  project  = coffeemachine
+  mode     = ipc
+```
+
+**3. Run it headless, and keep the JSON.** `-p` prints and exits; the JSON carries the
+usage the agent cannot see itself.
+
+```bash
+claude -p --output-format json \
+       --add-dir /mnt/c/projects/areg-sdk \
+       "$(cat prompt.txt)" > result.json
+```
+
+Allow the build commands generously, or run with `--dangerously-skip-permissions` in a
+throwaway directory. **Every permission denial costs the agent a turn and inflates the
+figure**, and a denial-heavy run is not comparable to a clean one.
+
+**4. Read the numbers off the JSON.**
+
+```bash
+python3 /mnt/c/projects/areg-sdk/examples/ai-prompts/measure.py result.json
+```
+
+It prints cost, turns, wall time and the token split, then finds the session
+transcript and counts the tool calls, and scores both against the budget. Needs only
+`python3`. Two things it makes explicit, because both are easy to get wrong:
+
+- **`num_turns` is assistant turns, not tool calls.** They differ by 3-4x. Only the
+  tool-call count is comparable across runs, and it has to come from the transcript.
+- **Budget against *fresh* tokens** -- uncached input plus output. The all-in figure
+  is dominated by cache reads and will read in the millions; that is not the number
+  the targets below refer to.
+
+**5. Score the result yourself. Do not take the agent's word for it.**
+
+```bash
+cd "$RUN" && cmake --build build -j && \
+python3 /mnt/c/projects/areg-sdk/tools/agent/run_scenarios.py --build build/bin ; echo "exit=$?"
+```
+
+Then walk Part 1's acceptance checklist against the captured output, item by item.
+A cheap run that produces code nobody can verify has not won anything.
+
+**6. Record it** next to the run: tokens, cost, turns, tool calls, wall time,
+build-and-fix cycles, checklist score out of the list's length, and what the agent
+said it had to guess. That last one is where the next corpus fix comes from.
+
+### What counts as a pass
+
+| Task | Tokens | Turns |
+|---|---:|---:|
+| `temperature-alarm.md` | 50K | ~20 |
+| `coffee-machine.md` | 75K | ~30 |
+
+Turns are the cost, not bytes: at roughly 2.4K tokens per turn, everything read in a
+whole run is about 13% of the bill. If a change does not remove turns, it does not
+save money.
 
 ## How these prompts are written, and why it matters
 

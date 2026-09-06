@@ -33,10 +33,12 @@ protected:
     bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase & proxy) override;
     void response_set_thresholds(bool success, const areg::String & reason) override;
     void request_set_thresholds_failed(areg::ResultType reason) override;
+    void request_start_sequence_failed(areg::ResultType reason) override;
     void response_get_statistics(int16_t lowest, int16_t highest, uint32_t alarmsRaised) override;
     void request_get_statistics_failed(areg::ResultType reason) override;
     void broadcast_alarm_raised(int16_t reading) override;
     void broadcast_alarm_cleared(int16_t reading) override;
+    void on_reading_update(int16_t Reading, areg::DataState state) override;
 
 /************************************************************************
  * areg::TimerConsumer overrides
@@ -50,7 +52,8 @@ private:
         RefuseZero,     //!< step 1: hysteresis 0 must be refused
         RefuseWide,     //!< step 2: hysteresis wider than the limit must be refused
         Accept,         //!< step 3: a valid pair must be accepted
-        Readings,       //!< step 4: following the readings, waiting out the sequence
+        StartSequence,  //!< step 4: ask the monitor to start the scripted run
+        Readings,       //!< step 4: following the pushed reading updates
         Statistics,      //!< step 5 and 6: statistics and the raise/clear count
     };
 
@@ -58,14 +61,19 @@ private:
     void fail(int step, const areg::String & why);
     //!< Marks the scenario passed and quits.
     void finish(void);
+    //!< Returns the user-visible step number for the current stage.
+    int current_step_number(void) const;
 
 private:
     static int  sExitCode;
 
-    areg::Timer mStatsTimer;   //!< Fires once the reading sequence has had time to finish.
+    areg::Timer mMonitorLostTimer; //!< Gives a brief reconnect window before failing the scenario.
     Step        mStep;
     uint32_t    mAlarmsRaised; //!< Broadcasts received in this run.
     uint32_t    mAlarmsCleared;//!< Broadcasts received in this run.
+    bool        mScenarioStarted;
+    bool        mStatsRequested;
+    bool        mWasConnected;
 
     inline OperatorComponent & self(void)
     {   return (*this); }

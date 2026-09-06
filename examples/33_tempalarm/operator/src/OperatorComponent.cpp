@@ -10,8 +10,7 @@
 
 namespace
 {
-    //!< Gives the 30 readings, 200 ms apart, time to finish before statistics are asked for.
-    constexpr uint32_t sStatsDelayMs{ 8000 };
+    constexpr uint32_t sProviderLossGraceMs{ 1000 };
 }
 
 int OperatorComponent::sExitCode{ 1 };
@@ -20,10 +19,13 @@ OperatorComponent::OperatorComponent(const areg::ComponentEntry & entry, areg::C
     : areg::Component           ( entry, owner )
     , TempAlarmConsumerBase     ( entry.mDependencyServices[0].mRoleName, owner )
     , areg::TimerConsumer       ( )
-    , mStatsTimer               ( static_cast<areg::TimerConsumer &>(self()), "StatsTimer" )
+    , mMonitorLostTimer         ( static_cast<areg::TimerConsumer &>(self()), "MonitorLostTimer" )
     , mStep                     ( Step::RefuseZero )
     , mAlarmsRaised             ( 0 )
     , mAlarmsCleared            ( 0 )
+    , mScenarioStarted          ( false )
+    , mStatsRequested           ( false )
+    , mWasConnected             ( false )
 {
 }
 
@@ -40,12 +42,31 @@ bool OperatorComponent::service_connected(areg::ServiceConnectionState status, a
         result = true;
         if (areg::is_service_connected(status))
         {
+            mWasConnected = true;
+            mMonitorLostTimer.stop_timer();
+
             notify_on_broadcast_alarm_raised(true);
             notify_on_broadcast_alarm_cleared(true);
+            notify_on_reading_update(true);
 
-            std::cout << "Step 1: set high limit 300, hysteresis 0, expect a refusal ..." << std::endl;
-            mStep = Step::RefuseZero;
-            request_set_thresholds(300, 0);
+            if (!mScenarioStarted)
+            {
+                mScenarioStarted = true;
+                std::cout << "Step 1: set high limit 300, hysteresis 0, expect a refusal ..." << std::endl;
+                mStep = Step::RefuseZero;
+                request_set_thresholds(300, 0);
+            }
+        }
+        else if (mWasConnected)
+        {
+            if ((status == areg::ServiceConnectionState::Rejected) || (status == areg::ServiceConnectionState::Shutdown))
+            {
+                fail(current_step_number(), "monitor is no longer available");
+                return result;
+            }
+
+            mMonitorLostTimer.stop_timer();
+            mMonitorLostTimer.start_timer(sProviderLossGraceMs, static_cast<areg::DispatcherThread &>(master_thread()), areg::TimerBase::ONE_TIME);
         }
     }
 
@@ -61,8 +82,17 @@ void OperatorComponent::request_set_thresholds_failed([[maybe_unused]] areg::Res
         case Step::RefuseZero:     request_set_thresholds(300, 0);    break;
         case Step::RefuseWide:     request_set_thresholds(300, 400);  break;
         case Step::Accept:         request_set_thresholds(300, 30);   break;
+        case Step::StartSequence:  request_start_sequence();          break;
         default:                                                      break;
         }
+    }
+}
+
+void OperatorComponent::request_start_sequence_failed([[maybe_unused]] areg::ResultType reason)
+{
+    if (is_connected() && (mStep == Step::StartSequence))
+    {
+        request_start_sequence();
     }
 }
 
@@ -112,9 +142,9 @@ void OperatorComponent::response_set_thresholds(bool success, const areg::String
         }
 
         std::cout << "Step 3: accepted." << std::endl;
-        std::cout << "Step 4: following the readings ..." << std::endl;
+        std::cout << "Step 4: starting the scripted run and following the pushed reading updates ..." << std::endl;
         mStep = Step::Readings;
-        mStatsTimer.start_timer(sStatsDelayMs, static_cast<areg::DispatcherThread &>(master_thread()), areg::TimerBase::ONE_TIME);
+        request_start_sequence();
         break;
 
     default:
@@ -134,13 +164,33 @@ void OperatorComponent::broadcast_alarm_cleared(int16_t reading)
     std::cout << "  alarm CLEARED at reading " << reading << std::endl;
 }
 
+void OperatorComponent::on_reading_update(int16_t Reading, areg::DataState state)
+{
+    if (state != areg::DataState::DataIsOK)
+    {
+        return;
+    }
+
+    if (mStep != Step::Readings)
+    {
+        return;
+    }
+
+    std::cout << "  reading = " << Reading << std::endl;
+    if (!mStatsRequested && (Reading == 110))
+    {
+        mStatsRequested = true;
+        mStep = Step::Statistics;
+        std::cout << "Step 5: sequence finished, asking for statistics ..." << std::endl;
+        request_get_statistics();
+    }
+}
+
 void OperatorComponent::process_timer(areg::Timer & timer)
 {
-    if ((&timer == &mStatsTimer) && (mStep == Step::Readings))
+    if ((&timer == &mMonitorLostTimer) && !is_connected())
     {
-        std::cout << "Step 5: sequence should have finished, asking for statistics ..." << std::endl;
-        mStep = Step::Statistics;
-        request_get_statistics();
+        fail(current_step_number(), "monitor became unavailable before the scenario finished");
     }
 }
 
@@ -193,4 +243,18 @@ void OperatorComponent::finish(void)
 {
     sExitCode = 0;
     areg::Application::signal_quit();
+}
+
+int OperatorComponent::current_step_number(void) const
+{
+    switch (mStep)
+    {
+    case Step::RefuseZero:   return 1;
+    case Step::RefuseWide:   return 2;
+    case Step::Accept:       return 3;
+    case Step::Readings:     return 4;
+    case Step::Statistics:   return 5;
+    case Step::StartSequence:return 4;
+    default:                 return 0;
+    }
 }

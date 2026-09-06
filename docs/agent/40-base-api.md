@@ -4,6 +4,11 @@
 the runtime -- the application, components, threads, timers, time, files and buffers
 -- is `42-runtime-api.md`.
 
+**Operators come for free.** `String`, `WideString`, `DateTime`, `SharedBuffer` and
+every container here carry `=`, `==`, `!=` and the stream operators `>>` / `<<`
+(`areg::InStream` / `areg::OutStream`), as does every `Structure` the generator writes.
+Use them without looking them up; `21-data-types.md` has the rule and its one caveat.
+
 **Why this page exists.** Every method in this framework is `snake_case` and every
 public type is in `namespace areg`. This changed recently. If you are recalling an
 areg API from memory rather than reading it here, you are almost certainly recalling
@@ -33,7 +38,10 @@ declared on that base. That is an implementation detail; you call them all on a
 | `find_last(...)` | `areg::CharPos find_last(char ch, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true) const noexcept` | `StringBase.hpp:423` |
 
 Overloads of `compare`, `find_first` and `find_last` also take `const char *`,
-`std::string` and `std::string_view`.
+`std::string` and `std::string_view`, and so do `==` and `!=`.
+
+`compare` returns `areg::Ordering`: `Smaller` (-1), `Equal` (0), `Bigger` (1),
+`MathDefs.hpp:64`.
 
 ### Building a string from a format
 

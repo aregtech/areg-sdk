@@ -201,11 +201,25 @@ resuming transition at it:
 targeting `MAKING` starts a fresh drink and `resume` targeting the marker continues the
 interrupted one, in one run.
 
+**A restored state is entered, not merely marked current: its `EntryList` runs again,
+exactly as on a fresh entry.** The composite's own entry actions run first, then the
+restored substate's. This is what makes a resumed sequence re-announce where it is, so
+resume needs no shadow copy of the current phase kept beside the machine.
+
 The machine never occupies a marker: no enumeration value, and no `EntryList`,
 `ExitList`, `TransitionList` or `StateList` -- only `HistoryDepth`, `Shallow` or `Deep`.
 One per level, never at the root, never beside `State/@History`, never targeted from
 inside its level. A document using one states `FormatVersion="1.2.0"`; one that
 does not stays `1.1.0`.
+
+**`Source="Value"` is a verbatim C++ token, not text.** It is pasted into the generated
+call as written, so a string literal carries its own quotes and an XML attribute escapes
+them:
+
+```xml
+<Argument ID="42" Name="reason"  Source="Value" Value="&quot;insufficient credit&quot;"/>
+<Argument ID="62" Name="isEastWest" Source="Value" Value="true"/>
+```
 
 ### Leaving a level when it finishes: `OnFinal`
 

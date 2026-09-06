@@ -34,12 +34,12 @@ MonitorComponent::MonitorComponent(const areg::ComponentEntry & entry, areg::Com
     , mAlarmsRaised             ( 0 )
     , mAlarmActive              ( false )
     , mThresholdsSet            ( false )
+    , mRunStarted               ( false )
     , mHighLimit                ( 0 )
     , mHysteresis               ( 0 )
 {
     set_reading(mReading);
     set_alarm_active(mAlarmActive);
-    mTimer.start_timer(sPeriodMs, static_cast<areg::DispatcherThread &>(owner), areg::TimerBase::CONTINUOUSLY);
 }
 
 void MonitorComponent::request_set_thresholds(int16_t highLimit, int16_t hysteresis)
@@ -74,6 +74,14 @@ void MonitorComponent::request_set_thresholds(int16_t highLimit, int16_t hystere
     }
 }
 
+void MonitorComponent::request_start_sequence(void)
+{
+    if (mThresholdsSet && !mRunStarted)
+    {
+        start_scripted_run();
+    }
+}
+
 void MonitorComponent::request_get_statistics(void)
 {
     response_get_statistics(mLowest, mHighest, mAlarmsRaised);
@@ -87,19 +95,43 @@ void MonitorComponent::process_timer(areg::Timer & timer)
     }
 }
 
+void MonitorComponent::start_scripted_run(void)
+{
+    mTimer.stop_timer();
+
+    mIndex        = 0u;
+    mReading      = sSequence[0];
+    mLowest       = mReading;
+    mHighest      = mReading;
+    mAlarmsRaised = 0u;
+    mAlarmActive  = false;
+    mRunStarted   = true;
+
+    set_reading(mReading);
+    set_alarm_active(mAlarmActive);
+    mTimer.start_timer(sPeriodMs, static_cast<areg::DispatcherThread &>(master_thread()), areg::TimerBase::CONTINUOUSLY);
+}
+
 void MonitorComponent::advance_reading(void)
 {
-    if (mIndex < (sCount - 1))
+    if (mIndex >= (sCount - 1))
     {
-        ++mIndex;
+        mTimer.stop_timer();
+        return;
     }
 
+    ++mIndex;
     mReading = sSequence[mIndex];
     mLowest  = std::min(mLowest, mReading);
     mHighest = std::max(mHighest, mReading);
 
     set_reading(mReading);
     evaluate_alarm();
+
+    if (mIndex >= (sCount - 1))
+    {
+        mTimer.stop_timer();
+    }
 }
 
 void MonitorComponent::evaluate_alarm(void)

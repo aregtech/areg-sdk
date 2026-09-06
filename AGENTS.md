@@ -74,14 +74,12 @@ is a defect to report, not a reason to search.
 ## 3. What must be installed
 
 CMake 3.20+, a Java 17+ runtime for `tools/codegen.jar` (the code generator), and a
-C++17 compiler -- GCC, Clang, MSVC or MinGW. Python 3 is optional, see below. Tested
-on Linux and other POSIX, macOS, Windows and Cygwin.
+C++17 compiler -- GCC, Clang, MSVC or MinGW. Tested on Linux and other POSIX, macOS,
+Windows and Cygwin. **Python is not needed to build or run an areg application**, only
+for the section 5 scripts.
 
-Run `tools/check-env.sh`, or `tools\check-env.bat`, before anything else: it needs no
-interpreter and exits non-zero when a requirement is missing.
-
-**Python is not needed to build or run an areg application**, only for the section 5
-scripts. Without it, copy a recipe from `docs/agent/recipes/` by hand.
+Run `tools/check-env.sh`, or `tools\check-env.bat`, first: it needs no interpreter and
+exits non-zero when a requirement is missing.
 
 ---
 
@@ -90,20 +88,19 @@ scripts. Without it, copy a recipe from `docs/agent/recipes/` by hand.
 Four commands, from nothing to a running application.
 
 ```bash
-cp -r <areg-sdk>/docs/agent/recipes/01-local-single-process ~/myapp
+python3 <areg-sdk>/tools/agent/setup_project.py --name myapp --root ~/myapp --mode local
 cd ~/myapp
 cmake -B build                      # fetches areg, runs the generator
 cmake --build build -j
 ./build/bin/hello_local.elf         # .mac on macOS, .exe on Windows
 ```
 
-`recipes/README.md` says which recipe shows what; rename the project in the two
-`CMakeLists.txt` files, then change the `.siml`.
-
-Where Python is available, `tools/agent/setup_project.py --name myapp --root ~/myapp
---mode local` does the copy and the renaming in one step and writes the project its
-own `AGENTS.md`. `--mode` is `local`, `ipc` (two processes) or `pubsub`; `--sdk-root
-<path>` builds against a local SDK copy instead of fetching one.
+**Start here, not by hand.** It copies the right recipe, renames it and writes the
+project its own `AGENTS.md`: one step instead of six, and nothing to read first.
+`--mode` is `local`, `ipc` (two processes) or `pubsub`; `--sdk-root <path>` builds
+against a local SDK copy instead of fetching one. Without Python, copy
+`docs/agent/recipes/01-local-single-process` and rename the project in its two
+`CMakeLists.txt` files; `recipes/README.md` says which recipe shows what.
 
 `addServiceInterface()` in the project's `CMakeLists.txt` runs the generator during
 configure; `tools/codegenerate.sh` / `.bat` generates outside CMake.
@@ -136,9 +133,13 @@ Windows), all live in `tools/agent/`, and each has `--help`.
 | `check_contract.py` | Checks sources against `docs/agent/api.json`: the section 6 mistakes that compile cleanly and fail later |
 
 `tools/explain_rule.py` explains a validation finding by the number the message
-carries; `--search "words"` finds it when the number is lost. It, `tools/check-env.sh` / `.bat` and
-`tools/codegenerate.sh` / `.bat` are developer tools and sit in `tools/` itself; only
-the first three need Python.
+carries; `--search "words"` finds it when the number is lost. It, `tools/check-env.sh`
+and `tools/codegenerate.sh` (`.bat` on Windows) sit in `tools/` itself.
+
+**Each has one moment**, and **nothing else under `tools/` is yours**: the rest checks
+this repository's own corpus, tells you nothing about your application, and costs a
+turn each. `gen_skeleton.py` runs once a document is written, `explain_rule.py` only on
+a refusal, `run_scenarios.py` only once it builds.
 
 `docs/agent/api.json` states the same contract machine-readably: the naming
 transforms, the connection states, and every section 6 rule with its detection hint.
@@ -193,10 +194,3 @@ Silence a `check_contract.py` false positive with `// areg-check: ignore`.
 A multi-process application starts `mtrouter` first, then the provider, then the
 consumer. A consumer that starts first is not an error: it waits for the provider.
 
----
-
-## 8. Repository layout
-
-`framework/` the library and its services - `examples/` complete applications, optional -
-`docs/agent/` these pages - `tools/` the generator, scripts and schemas. Full map:
-`CODEBASE.md` section 3.

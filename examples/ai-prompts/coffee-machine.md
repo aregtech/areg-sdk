@@ -3,13 +3,13 @@
 A task prompt for an AI agent. It is written the way a developer hands work to a
 colleague: what the software must do, not how to build it.
 
-**To run it.** Open a new session in the areg-sdk repository and say:
+**To run it.** Start the session in the directory you want the project generated
+into, with read access to the checkout -- **not inside the checkout**, where a session
+loads the SDK's own maintainer-facing `CLAUDE.md`, which no user of areg ever sees and
+which makes the run incomparable. Then say:
 
-> Read `examples/ai-prompts/coffee-machine.md` and carry it out.
-> Generate into `<the directory you choose>`.
-
-Name a directory. If you do not, the agent is told to stop and ask rather than pick
-one for you.
+> Read `<checkout>/examples/ai-prompts/coffee-machine.md` and carry it out.
+> Generate into this directory.
 
 Everything the agent needs is below. Part 1 is the task and names no framework, so
 the same requirements can be given to gRPC, ZeroMQ, DDS or anything else; only
@@ -66,7 +66,8 @@ drink again, and it must not skip ahead. Pausing during frothing resumes in frot
 
 **Cancelling.** The user program can cancel. A cancel before an order returns the
 whole credit; a cancel while a drink is being made abandons it and returns the whole
-credit. Ingredients already consumed are not returned -- report what was lost.
+credit. A drink abandoned part-way is not charged and no ingredient is drawn for it:
+only the time is lost.
 
 **Running low.** The machine warns the user program when an ingredient falls below
 20% of its tank, and again when a tank is empty. A warning is sent once when the
@@ -74,6 +75,12 @@ level is crossed, not repeated on every check. The user program does not poll fo
 this; it is told.
 
 **Refilling.** The user program can refill any tank to full.
+
+**Stopping and timing out.** The machine runs until it is stopped: it accepts
+`-q` or `--quit` typed at its console and exits cleanly. Neither program may wait
+forever -- if something it is waiting for has not arrived within 20 seconds, it
+reports that and exits. If one side goes away mid-scenario, the other reports the
+loss and exits non-zero.
 
 ### The simulated user
 
@@ -87,7 +94,10 @@ step to the console so a person can read what happened:
 4. wait for the drink, then check the credit is 20 cents
 5. insert coins and order Lattes until the milk warning arrives, then until an
    ingredient runs out -- expect a refusal naming the missing ingredient
-6. refill, order one more drink, and confirm it succeeds
+6. refill, order one more Latte, and confirm it succeeds
+7. order an Espresso and confirm it finishes without any frothing stage
+8. start one more small drink, then cancel it -- expect the whole credit returned
+   and no ingredient drawn
 
 Then exit. **Exit code 0 if every expectation held, non-zero otherwise**, printing
 which step failed. The consumer must survive the provider being started after it.
@@ -107,6 +117,9 @@ framework, against this list:
 - [ ] cancel returns the whole credit
 - [ ] a low warning is sent once per crossing, not repeatedly
 - [ ] refilling works and the machine recovers
+- [ ] the machine accepts `-q` / `--quit` at its console and exits cleanly
+- [ ] neither program waits more than 20 seconds for something that never arrives
+- [ ] if one side goes away mid-scenario, the other reports it and exits non-zero
 - [ ] the scenario exits 0, and non-zero when an expectation fails
 - [ ] no busy-waiting and no sleeping inside a message handler
 
@@ -125,6 +138,19 @@ file of the SDK, and write no IDE or editor project files: they are not wanted a
 they measure nothing. (A target directory inside the SDK is a variation the operator
 may ask for. It costs turns that have nothing to do with the framework, so it is not
 the default and it is not what a comparison should be run on.)
+
+**Start by scaffolding, not by reading.** From an empty directory outside the SDK:
+
+```
+python3 <areg-sdk>/tools/agent/setup_project.py --name <name> --root . --mode ipc \
+        --sdk-root <areg-sdk>
+```
+
+It writes a project that already builds and runs, and its own short `AGENTS.md`.
+Read that, then follow where it routes you -- do not search the checkout. Replace the
+scaffolded document under `src/services/` with your own, point `src/CMakeLists.txt`
+at it, and run `tools/agent/gen_skeleton.py --doc <your document> --out src --force`
+for the provider and consumer classes rather than hand-writing declarations.
 
 Read `AGENTS.md` first and follow where it routes you. That file is the entry point,
 and it is deliberately the only thing here that points at anything: whether it gets
@@ -149,10 +175,17 @@ everything else here was generated.
 
 **Verify before you report, in this order:**
 
-1. check the sources against the project's own contract checker -- the documentation
-   names it and says when to run it; find it the same way you found everything else
-2. build it
-3. run both programs and confirm the scenario exits 0
+1. `python3 <areg-sdk>/tools/agent/check_contract.py . --strict` -- the mistakes a
+   build cannot catch; run it before you build
+2. `cmake -B build && cmake --build build -j`
+3. `python3 <areg-sdk>/tools/agent/run_scenarios.py --build build/bin` -- exit 0 is
+   a pass
+
+You are finished only when it builds **and** the scenario exits 0. At most **3
+build-and-fix cycles and 3 run-and-fix cycles**; if it has not converged after the
+third of either, stop and report what fails, the exact output, and what you think
+the cause is. Widening a timeout, adding a sleep or loosening what the scenario
+expects is not a fix.
 
 ---
 
@@ -174,7 +207,7 @@ the operator, who can read it from the session. The same goes for wall time.
 | Contract-checker findings, first run | name the tool |
 | Lines of C++ you wrote by hand | |
 | Lines generated from the two documents | |
-| Acceptance checklist items passing | out of 12 |
+| Acceptance checklist items passing | out of 15 |
 | Documentation pages you opened, and their total size | |
 | Files you opened that the documentation did not send you to | |
 | **Total bytes of every file you read**, documents and sources together | the number that drives the cost: context is re-sent on every turn, so a file opened early is paid for again on every turn after it |

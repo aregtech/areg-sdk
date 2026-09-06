@@ -108,7 +108,7 @@ If your change touches existing code, keep changes consistent with the surroundi
 
 ### d. Tool diagnostics
 
-If you change a message that a tool prints, read `./docs/CODEGEN_MESSAGE_FORMAT.md` first. It specifies the diagnostic format of the code generator and states which parts of a message are treated as API by the documentation and by the agent tooling.
+If you change a message that a tool prints, keep the generator's diagnostic shape: `file:line:col: error[<number>/<RULE_NAME>]` with a `fix:` line under it. That shape is API -- `AGENTS.md` section 4 tells an agent to read it and `docs/agent/51-debug.md` shows it worked through, and both go stale silently if it changes. The rule numbers themselves are `tools/schema/rules.xml`, which `tools/explain_rule.py` reads.
 
 ### e. Documentation
 

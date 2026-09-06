@@ -1231,14 +1231,6 @@ def check_data_types(report):
 # copy cannot be edited by whoever changes the value, so it is the first thing to go
 # stale, and a page that misstates a threshold is read as the rule.
 # ---------------------------------------------------------------------------
-def rule_count():
-    """The rules tools/schema/rules.xml declares."""
-    import xml.etree.ElementTree as ElementTree
-    try:
-        root = ElementTree.parse(os.path.join(ROOT, 'tools', 'schema', 'rules.xml'))
-    except (OSError, Exception):                # noqa: BLE001 - reported by the caller
-        return None
-    return len([n for n in root.getroot().iter('Rule')])
 
 
 def stated_numbers():
@@ -1257,11 +1249,6 @@ def stated_numbers():
          'Under {:.0f}% of 12-word runs'.format(DUPLICATION_TARGET * 100),
          'DUPLICATION_TARGET in this file'),
     ]
-    rules = rule_count()
-    if rules:
-        claims.append(('docs/CODEGEN_MESSAGE_FORMAT.md',
-                       'registry of {} rules'.format(rules),
-                       'tools/schema/rules.xml'))
     return claims
 
 
@@ -1646,7 +1633,52 @@ def run():
     check_tools(report)
     check_observability(report)
     check_portability(report)
+    check_project_routing(report)
     return report
+
+
+# A project made by setup_project.py carries its own routing table, and that table
+# is the only one its agent ever sees: AGENTS.md section 2 lives in the SDK, which
+# the project is told not to search. A page routed here but missing there is
+# unreachable from inside a real project -- the agent either guesses or lists
+# docs/agent/ by hand, which is what the runbook forbids. Pages that genuinely do
+# not apply to an already-created project outside the SDK are named below.
+PROJECT_ROUTING_EXEMPT = {
+    'docs/agent/10-new-project.md',   # the project exists; setup_project.py made it
+    'docs/agent/41-examples.md',      # in-tree SDK examples, not an outside project
+    'docs/agent/35-sqlog.md',         # reached from 34-logging.md
+    'docs/agent/36-config.md',        # reached from 50-running.md
+}
+
+
+def check_project_routing(report):
+    """Every page AGENTS.md routes is reachable from a generated project."""
+    entry = read('AGENTS.md')
+    start = entry.find('## 2. Task routing')
+    end = entry.find('## 3.', start + 1)
+    if start < 0 or end < 0:
+        report.fail('routing', 'AGENTS.md has no section 2 to compare against')
+        return
+    routed = set(re.findall(r'docs/agent/[0-9A-Za-z-]+\.md', entry[start:end]))
+    template = read('tools', 'agent', 'setup_project.py')
+    if not template:
+        report.fail('routing', 'tools/agent/setup_project.py is missing')
+        return
+    offered = set(re.findall(r'docs/agent/[0-9A-Za-z-]+\.md', template))
+    missing = sorted(routed - offered - PROJECT_ROUTING_EXEMPT)
+    for page in missing:
+        report.fail('routing', '{} is routed by AGENTS.md but a project made by '
+                    'setup_project.py cannot reach it, so its agent must guess or '
+                    'search the SDK by hand'.format(page))
+    stale = sorted(p for p in PROJECT_ROUTING_EXEMPT if p not in routed)
+    for page in stale:
+        report.note('routing', '{} is exempted from the project routing table but '
+                    'AGENTS.md no longer routes it'.format(page))
+    if not missing:
+        report.ok('routing', '{} of {} routed pages reachable from a generated '
+                  'project, {} exempt'
+                  .format(len(routed & offered), len(routed),
+                          len(PROJECT_ROUTING_EXEMPT)))
 
 
 def main():

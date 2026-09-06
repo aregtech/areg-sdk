@@ -62,6 +62,20 @@ Everything lands in the document's own namespace, `<Name>` being `Overview/@Name
 | `Imported X` | the type you named; the generator only includes your header |
 | `Container X` | an alias to the areg container of the declared element types |
 
+### The operators every type carries
+
+**Assume `=`, `==`, `!=`, `>>` and `<<` on every type a document can name.** Write
+comparison and handler code with them and do not go looking for a declaration: the
+predefined types below all carry them, and the generator writes them for every
+`Structure` and `Container` you declare. `>>` and `<<` are `areg::InStream` /
+`areg::OutStream` -- serialisation, not text formatting. An `Enumeration` gets
+`as_string()` in their place.
+
+A generated `==` compares field by field and a generated `<<` streams field by field,
+so **a field of a `Type="Imported"` type must supply them itself.** It usually does;
+when it does not, the compiler says so from inside the generated header. Define the
+missing operator beside your own type -- never inside a generated file.
+
 **Field and type names are kept exactly as written.** This is the one place the naming
 rule differs from the rest of the document: methods and attributes become
 `snake_case`, but `firstName` stays `firstName`. Copy the spelling from the document.
@@ -149,6 +163,4 @@ element may contain and nothing else; a spelling this page does not give is the 
 reason to open it, and a refused document is `tools/explain_rule.py`.
 
 A complete project with a shared document, generated, built and run by CI, is
-`recipes/09-shared-types/`. In a clone of the SDK, the example documents under
-`examples/*/services/` declare structures, enumerations and imported types in every
-combination; they are not part of an installation.
+`recipes/09-shared-types/`.

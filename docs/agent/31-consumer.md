@@ -150,6 +150,17 @@ already set it, so a handler must work when there is no value yet. Always check 
 it is `areg::DataState::DataIsOK`. The other states are `DataIsInvalid`,
 `DataIsUnavailable`, `DataUnexpectedError` and `DataIsUndefined`.
 
+### Order of arrival
+
+**A response has no priority over a notification.** Everything the provider sends to
+you arrives in the order it sent it, so a handler that updates an attribute and then
+calls its response delivers the **update first** -- the consumer sees the new attribute
+value before it is told the request was accepted.
+
+Never gate consumer logic on "the response comes before any notification". Drive the
+next step from whichever message actually carries the fact you need, and accept the
+first stage update arriving early.
+
 ---
 
 ## 6. Before you move on
@@ -159,6 +170,7 @@ it is `areg::DataState::DataIsOK`. The other states are `DataIsInvalid`,
 - [ ] `Disconnected`, `ConnectionLost` and `Failed` do not quit the application.
 - [ ] Every broadcast and attribute you handle is subscribed to.
 - [ ] Attribute handlers check `areg::DataState` before using the value.
+- [ ] No step waits for a response that a notification may legitimately precede.
 - [ ] The dependency index matches the order of `REGISTER_DEPENDENCY` in the model.
 
 Next: `32-model.md` to register the component.
