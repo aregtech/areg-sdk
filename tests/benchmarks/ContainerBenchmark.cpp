@@ -322,6 +322,147 @@ void BM_HashMap_FindString(benchmark::State& state)
 }
 BENCHMARK(BM_HashMap_FindString);
 
+//!< Measures allocation and setup overhead of an empty hash map with reserved buckets.
+void BM_HashMap_Construct(benchmark::State& state)
+{
+    for (auto _ : state)
+    {
+        areg::HashMap<areg::String, int> hash(1024u);
+        benchmark::DoNotOptimize(hash);
+        benchmark::ClobberMemory();
+    }
+
+}
+BENCHMARK(BM_HashMap_Construct);
+
+//!< Measures hash calculation, key copying, and element insertion when constructing from arrays.
+void BM_HashMap_ConstructInsertString(benchmark::State& state)
+{
+    const std::vector<int> value{ bench::make_integers(1024u) };
+    const std::vector<areg::String> key{ bench::make_strings(1024u) };
+
+    for (auto _ : state)
+    {
+        areg::HashMap<areg::String, int> hash(key.data(), value.data(), 1024u);
+        benchmark::DoNotOptimize(hash);
+        benchmark::ClobberMemory();
+    }
+
+}
+BENCHMARK(BM_HashMap_ConstructInsertString);
+
+//!< Measures hash lookup and entry insertion when merging two populated hash maps.
+void BM_HashMap_Merge(benchmark::State& state)
+{
+    const std::vector<areg::String> src {bench::make_strings(1024u)};
+    areg::HashMap<areg::String, int> main_hash;
+    uint32_t index = 0 ;
+    for (const auto& key : src )
+    {
+        main_hash.set_value_at(key, index++ );
+    }
+
+
+    for ( auto _ : state )
+    {
+        state.PauseTiming();
+        areg::HashMap<areg::String, int > target_hash(main_hash);
+
+        state.ResumeTiming();
+
+        target_hash.merge(main_hash);
+        benchmark::DoNotOptimize(target_hash);
+        benchmark::ClobberMemory();
+    }
+    state.SetItemsProcessed(state.iterations() * 1024);
+}
+BENCHMARK(BM_HashMap_Merge);
+
+//!< Measures the time taken to sequentially add a block of 1024 elements to the hash using the update_at method.
+void BM_HashMap_UpdateIntegers(benchmark::State& state) {
+    const std::vector<areg::String> src {bench::make_strings(1024u)};
+    areg::HashMap<areg::String, int> target;
+    uint32_t index = 0 ;
+    for (const auto& key: src) {
+        target.set_value_at(key, index ++);
+    }
+    for ( auto _ : state )
+    {
+        for (size_t i = 0; i < src.size(); ++i)
+        {
+            target.update_at(src[i], i);
+        }
+
+        benchmark::DoNotOptimize(target);
+        benchmark::ClobberMemory();
+
+    }
+    state.SetItemsProcessed(state.iterations() * 1024);
+
+}
+BENCHMARK(BM_HashMap_UpdateIntegers);
+
+//!< Measures sequential removal of all 1024 elements from a populated hash map.
+void BM_HashMap_RemoveKey(benchmark::State& state)
+{
+    const std::vector<areg::String> src {bench::make_strings(1024u)};
+    uint32_t index = 0 ;
+    areg::HashMap<areg::String, int> hash;
+
+    for ( const auto& key : src)
+    {
+        hash.set_value_at(key, index ++);
+
+    }
+
+    for ( auto _ : state) {
+        state.PauseTiming();
+
+        areg::HashMap<areg::String, int> target(hash);
+
+        state.ResumeTiming();
+
+        for (size_t i = 0 ; i < src.size() ; ++i )
+        {
+            target.remove_at(src[i]);
+        }
+
+        benchmark::DoNotOptimize(target);
+        benchmark::ClobberMemory();
+    }
+    state.SetItemsProcessed(state.iterations() * 1024);
+}
+BENCHMARK(BM_HashMap_RemoveKey);
+
+//!< Measures the time taken to sequentially remove all 1024 elements from a populated hash map using the clear() method.
+void BM_HashMap_Clear(benchmark::State& state) {
+    std::vector<areg::String> src { bench::make_strings(1024u) };
+    uint32_t index = 0 ;
+    areg::HashMap<areg::String, int> hash;
+
+    for (const auto& key : src)
+    {
+        hash.set_value_at(key, index ++);
+
+    }
+
+    for ( auto _ : state)
+    {
+        state.PauseTiming();
+
+        areg::HashMap<areg::String, int> target(hash);
+
+        state.ResumeTiming();
+
+        target.clear();
+
+        benchmark::DoNotOptimize(target);
+        benchmark::ClobberMemory();
+
+    }
+}
+BENCHMARK(BM_HashMap_Clear);
+
 //!< Fills the ordered (tree based) map with the string keys.
 void BM_OrderedMap_InsertString(benchmark::State& state)
 {
