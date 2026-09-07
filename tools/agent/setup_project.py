@@ -229,7 +229,7 @@ for the SDK helper scripts listed below.
 
 ```bash
 cmake -B build
-cmake --build build -j
+cmake --build build -j$(nproc)
 {run}
 ```
 
@@ -237,7 +237,7 @@ The same on Windows:
 
 ```bat
 cmake -B build
-cmake --build build -j
+cmake --build build -j%NUMBER_OF_PROCESSORS%
 {run_win}
 ```
 
@@ -264,7 +264,7 @@ src/CMakeLists.txt    declares the service interface and the executables
 | Change the service contract | `docs/agent/20-service-interface.md` |
 | Declare a structure, enum or container | `docs/agent/21-data-types.md` |
 | Behaviour that depends on what happened before | `docs/agent/22-state-machine.md` (a `.fsml`) |
-| `areg::String` and the containers | `docs/agent/40-base-api.md` |
+| `areg::String` and the containers | `docs/agent/40-base-api.md` -- before the first line of C++ |
 | Implement a provider | `docs/agent/30-provider.md` |
 | Implement a consumer | `docs/agent/31-consumer.md` |
 | Register components and threads | `docs/agent/32-model.md` |
@@ -304,7 +304,7 @@ generated code under `build/` it does not read.
 The build succeeds, the contract check is clean and the scenario passes:
 
 ```bash
-cmake --build build -j
+cmake --build build -j$(nproc)
 python3 {sdk}/tools/agent/check_contract.py . --strict
 python3 {sdk}/tools/agent/run_scenarios.py
 ```
@@ -424,7 +424,9 @@ def main():
     parser.add_argument('--tag', default=DEFAULT_TAG,
                         help='SDK git tag to fetch (default: {})'.format(DEFAULT_TAG))
     parser.add_argument('--force', action='store_true',
-                        help='overwrite an existing directory')
+                        help='scaffold into a directory that is not empty. Writes '
+                             'the scaffolded files over any of the same name and '
+                             'leaves every other file alone; nothing is deleted')
     parser.add_argument('--no-agents', action='store_true',
                         help='do not write AGENTS.md into the project')
     parser.add_argument('--quiet', action='store_true',
@@ -458,7 +460,15 @@ def main():
 
     root = os.path.abspath(root)
     if os.path.exists(root) and os.listdir(root) and not args.force:
-        fail('{} exists and is not empty; pass --force to overwrite'.format(root))
+        fail('{} exists and is not empty.\n'
+             '  Pass --force to scaffold into it anyway. --force writes only the '
+             'files this tool\n'
+             '  scaffolds -- CMakeLists.txt, src/, AGENTS.md, scenarios.json, '
+             'run.sh, .gitignore --\n'
+             '  over any file of the same name. Every other file in the directory '
+             'is left alone,\n'
+             '  and nothing is deleted. Use a different --root to keep the '
+             'existing files untouched.'.format(root))
 
     if not RECIPES:
         fail('agent documentation not found next to {}. Expected it at '
@@ -488,7 +498,7 @@ def main():
     print('created {} ({} mode)'.format(root, mode))
     print('  cd {}'.format(root))
     print('  cmake -B build')
-    print('  cmake --build build -j')
+    print('  cmake --build build -j$(nproc)')
     if MODES[mode]['router']:
         print('  ./run.sh                 # starts the router and both applications')
     else:

@@ -295,6 +295,11 @@
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_IMPORT_PATCH" CodegenBands="warning"/>
         </Rule>
 
+        <Rule Number="8" Name="RULE_FINAL_ENTRY_ORDER" Section="banded" Bands="warning" Documents="fsml">
+            <Summary>Warning 108: an operation on the `EntryList` of a `Final` state that a composite encloses, where the composite raises `OnFinal`. The `EntryList` runs as the `Final` is entered, while the machine is still inside the composite, and the queued `OnFinal` event leaves the composite only later, so the operation runs against the state the machine is leaving rather than the one it is going to. The bare number belongs to \a RULE_FINAL_STATE; this one is only ever banded.</Summary>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_FINAL_ENTRY_ORDER"/>
+        </Rule>
+
         <Rule Number="30" Name="RULE_RETIRED_ELEMENT" Section="shared" Bands="error" Documents="dtml siml fsml">
             <Summary>An element the format used to define in this place and no longer does. Told apart from a tag the format never had, because the author is moving something rather than correcting a spelling, and the finding can name what to do instead.</Summary>
             <Implemented Lusan="true" Codegen="false"/>
@@ -310,7 +315,7 @@
 
         <Rule Number="37" Name="RULE_SHARED_RESPONSE" Section="shared" Bands="information" Documents="siml">
             <Summary>A response that answers more than one request. Legal and sometimes meant, so it is information and never a warning.</Summary>
-            <Implemented Lusan="false" Codegen="true" CodegenName="RULE_SHARED_RESPONSE"/>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_SHARED_RESPONSE"/>
         </Rule>
 
         <Rule Number="45" Name="RULE_BAD_VALUE" Section="shared" Bands="error" Documents="dtml siml fsml">

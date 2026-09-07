@@ -175,7 +175,7 @@ everything else was generated.
 
 1. `python3 <areg-sdk>/tools/agent/check_contract.py . --strict` -- the mistakes a
    build cannot catch; run it before you build
-2. `cmake -B build && cmake --build build -j`
+2. `cmake -B build && cmake --build build -j$(nproc)`
 3. `python3 <areg-sdk>/tools/agent/run_scenarios.py --build build/bin` -- exit 0 is
    a pass
 

@@ -128,8 +128,10 @@ AREG_CONTAINER_DECL_RE = re.compile(
 
 # P-01. The generator stamps every file it writes. A stamped file inside the
 # application's own sources means the generate target has been copied out of, and
-# the copy is what gets edited.
-GENERATED_BANNER = 'Created by Areg SDK code generator tool'
+# the copy is what gets edited. The .siml and .fsml generators word the stamp
+# differently, so only the part both share is matched.
+GENERATED_BANNER = 'Areg SDK code generator tool'
+BANNER_LINES = 20
 
 # B-01. The printf style log macros take a C string; areg::String is a class and
 # passing it for %s is undefined behaviour that prints rubbish rather than failing.
@@ -175,6 +177,7 @@ CHECKS = [
     ('P-11', 'advice',  'a worker thread consumer name nothing answers to'),
     ('P-12', 'error',   'a broadcast or attribute handled but never subscribed to'),
     ('P-13', 'error',   'a response deferred without releasing the request'),
+    ('P-14', 'advice',  'an operation on a nested Final state, which runs before the level is left'),
     ('B-01', 'advice',  'an areg::String passed to a printf style log macro'),
     ('B-02', 'advice',  'a range-for over an areg container'),
     ('B-03', 'advice',  'size() == 0 instead of is_empty()'),
@@ -329,7 +332,7 @@ def check_generate_target(base, findings, read):
                 if text is None:
                     continue
                 if any(GENERATED_BANNER in line
-                       for line in text.splitlines()[:12]):
+                       for line in text.splitlines()[:BANNER_LINES]):
                     continue
                 findings.append(Finding(
                     'P-01', 'advice', full, 1,
@@ -338,15 +341,89 @@ def check_generate_target(base, findings, read):
                     'keep it with the application sources'))
 
 
-def collect_documents(base):
+def collect_documents(base, suffix='.siml'):
     found = []
     for path, dirs, files in os.walk(base):
         dirs[:] = [d for d in dirs
                    if d not in SKIP_DIRS and not d.startswith('.')]
         for name in sorted(files):
-            if name.endswith('.siml'):
+            if name.endswith(suffix):
                 found.append(os.path.join(path, name))
     return sorted(found)
+
+
+# P-14. A composite reports that its nested level finished by sending itself the
+# event named by OnFinal, and that event is queued. Entering the nested Final runs
+# its EntryList at once, still inside the composite; the transition out of the
+# composite runs later. An operation placed there therefore observes the state the
+# machine is leaving, not the one it is going to.
+FINAL_OPERATIONS = ('ActionCall', 'AttributeSet', 'TimerStart', 'TimerStop',
+                    'EventSend')
+FSML_IGNORE = 'areg-check: ignore P-14'
+
+
+def line_of(lines, name):
+    """The line a state name is declared on, or 1 when it cannot be found."""
+    needle = 'Name="%s"' % name
+    for number, line in enumerate(lines):
+        if needle in line:
+            return number + 1
+    return 1
+
+
+def check_state_machines(machines, findings, problems):
+    """P-14: an operation on a nested Final, where ordering is not what it looks."""
+    for doc in machines:
+        try:
+            root = ET.parse(doc).getroot()
+        except (ET.ParseError, OSError) as err:
+            problems.append('%s: cannot be read: %s' % (doc, err))
+            continue
+        try:
+            with open(doc, encoding='utf-8') as handle:
+                lines = handle.read().splitlines()
+        except OSError:
+            lines = []
+        # The composite each nested state sits in. A Final directly under the
+        # document's own StateList has none: it ends the whole machine, there is
+        # no outer transition, and its EntryList is the only place an operation
+        # can go.
+        owner = {}
+        for holder in root.iter('State'):
+            for nested in holder.findall('StateList'):
+                for child in nested.findall('State'):
+                    owner[id(child)] = holder
+        for state in root.iter('State'):
+            if state.get('Kind') != 'Final':
+                continue
+            # Only the composite that raises OnFinal is in question. Without it
+            # nothing reports the level as finished, so there is no later
+            # transition to move the operation to.
+            composite = owner.get(id(state))
+            if composite is None or not composite.get('OnFinal'):
+                continue
+            name = state.get('Name', '')
+            described = ' '.join(node.text or ''
+                                 for node in state.findall('Description'))
+            if FSML_IGNORE in described:
+                continue
+            for entry in state.findall('EntryList'):
+                found = [node.tag for node in entry
+                         if node.tag in FINAL_OPERATIONS]
+                if not found:
+                    continue
+                findings.append(Finding(
+                    'P-14', 'advice', doc, line_of(lines, name),
+                    'state "%s" is a nested Final and carries %s in its EntryList. '
+                    'That runs while the machine is still inside "%s": the "%s" '
+                    'event has not been dispatched yet. Move the operation to the '
+                    'transition "%s" takes on "%s". If it is meant to run before '
+                    'the level is left, say "%s" in the state Description'
+                    % (name, ', '.join(sorted(set(found))),
+                       composite.get('Name', ''), composite.get('OnFinal'),
+                       composite.get('Name', ''), composite.get('OnFinal'),
+                       FSML_IGNORE)))
+    return findings
 
 
 def expected_members(documents, problems):
@@ -429,7 +506,7 @@ def check_file(path, lines, known, findings):
     areg_vars = areg_variables(lines)
     shadowed = shadowed_variables(lines, areg_vars)
 
-    for number, raw in enumerate(lines[:12]):
+    for number, raw in enumerate(lines[:BANNER_LINES]):
         if GENERATED_BANNER in raw:
             findings.append(Finding(
                 'P-01', 'advice', path, number + 1,
@@ -1154,6 +1231,7 @@ def main():
 
     problems = []
     documents = collect_documents(base)
+    machines = collect_documents(base, '.fsml')
     known = expected_members(documents, problems)
     sources = collect_sources(base)
     if not sources:
@@ -1178,6 +1256,7 @@ def main():
     check_subscriptions(sources, findings, read)
     check_deferred_responses(sources, findings, read)
     check_generate_target(base, findings, read)
+    check_state_machines(machines, findings, problems)
 
     findings = [f for f in findings
                 if not suppressed(read(f.path).splitlines() if read(f.path) else [],
@@ -1193,7 +1272,7 @@ def main():
     errors = [f for f in findings if f.severity == 'error']
     advice = [f for f in findings if f.severity == 'advice']
     print('%d file(s) and %d document(s) checked, %d error(s), %d advisory(ies)'
-          % (len(sources), len(documents), len(errors), len(advice)))
+          % (len(sources), len(documents) + len(machines), len(errors), len(advice)))
     if not documents:
         print('note: no .siml document found, so P-02 was not checked')
 

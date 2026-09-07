@@ -670,6 +670,25 @@
         "rule": "B-08"
       },
       "teaches": "a method name recalled from training data that the framework declares nowhere is caught before the build, not by the compiler"
+    },
+    {
+      "id": "r25-final-entry-action",
+      "kind": "repair",
+      "prompt": "The gate runs one full cycle, but the request that follows it is refused as if the machine were still busy. Diagnose it and fix it.",
+      "expect": [
+        "gate: closed"
+      ],
+      "reference": "06-state-machine",
+      "defect": {
+        "file": "src/services/Gate.fsml",
+        "find": "<State ID=\"46\" Name=\"GATE_SHUT\" Kind=\"Final\">",
+        "replace": "<State ID=\"46\" Name=\"GATE_SHUT\" Kind=\"Final\">\n                    <EntryList>\n                        <ActionCall ID=\"49\" Action=\"on_closed\"/>\n                    </EntryList>"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "P-14"
+      },
+      "teaches": "the OnFinal self-event is queued: an operation on the nested Final runs before the composite is left"
     }
   ]
 }

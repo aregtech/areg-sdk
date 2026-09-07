@@ -5,7 +5,12 @@ settings -- **areg-sdk**, **task**, **project**, **mode**. Everything here uses 
 Nothing in this file needs editing, ever.
 
 On Windows: `python` for `python3`, `build\bin\x.exe` for `./build/bin/x.elf`,
-`start "" prog` for `prog &`. Nothing else differs.
+`start "" prog` for `prog &`, `-j%NUMBER_OF_PROCESSORS%` for `-j$(nproc)`. Nothing
+else differs.
+
+**Always give `-j` a number.** `cmake --build build -j` with no number lets make run
+every job at once; on a large tree that swaps, and a build that should take a minute
+takes ten or is killed.
 
 ---
 
@@ -100,6 +105,10 @@ document changes.
 
 ## 6. Implement
 
+Read `40-base-api.md` first, in the same request as the last page you needed. Every
+skeleton body uses a string or a container, the names are not the ones training data
+carries, and reading it after the bodies are written means writing them twice.
+
 Fill the skeleton bodies with the task's logic. Wire the components into the model in
 `provider.cpp` and `consumer.cpp`. Update `scenarios.json` so it names your
 executables and the output lines that prove each requirement.
@@ -109,7 +118,7 @@ executables and the output lines that prove each requirement.
 ```
 python3 <areg-sdk>/tools/agent/check_contract.py . --strict
 cmake -B build
-cmake --build build -j
+cmake --build build -j$(nproc)
 python3 <areg-sdk>/tools/agent/run_scenarios.py --build build/bin
 ```
 
@@ -129,6 +138,18 @@ command ending in `pkill` or `grep` that matches nothing exits non-zero, which m
 harnesses show as a failed tool call with no output -- a trap that can cost a dozen
 turns. `./run.sh` exists for a human watching it; a scenario is what you run.
 
+**When you need the raw output of a run, ask the runner for it, not the shell.**
+Everything hand-starting a process is reached for is already a flag:
+
+```
+python3 <areg-sdk>/tools/agent/run_scenarios.py --build build/bin --verbose
+python3 <areg-sdk>/tools/agent/run_scenarios.py --build build/bin --only <name>
+```
+
+`--verbose` prints every line each process wrote, which is where a temporary
+diagnostic printout comes back. `--only` runs one scenario. Together they are the
+whole of ad-hoc debugging, and they leave nothing running.
+
 ## 7a. Two habits that halve the cost of the same work
 
 Every request re-sends the whole conversation, so the bill is the number of requests
@@ -141,11 +162,11 @@ and `scenarios.json`. Only split where the next thing genuinely depends on the r
 of the last -- a build, a check, a scenario run.
 
 **Never pour a build log into the conversation.** It stays there for every later
-request. `cmake --build build -j 2>&1 | tail -30` is enough to see success; on a
+request. `cmake --build build -j$(nproc) 2>&1 | tail -30` is enough to see success; on a
 failure ask for the errors, not the transcript:
 
 ```
-cmake --build build -j 2>&1 | grep -E "error|Error" | head -20
+cmake --build build -j$(nproc) 2>&1 | grep -E "error|Error" | head -20
 ```
 
 The same goes for `find`, `ls -R` and anything else that can print hundreds of lines.

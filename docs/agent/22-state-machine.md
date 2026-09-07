@@ -243,6 +243,36 @@ composite then carries it out of the subtree.
 
 Without it a finished level simply stops and nothing follows.
 
+**The self-event is queued, so the nested `Final` is not where the work goes.**
+Entering the nested `Final` runs its `EntryList` at once, with the machine still
+inside the composite. Only then is the `OnFinal` event posted, and the transition
+out runs when that event is dispatched. An operation placed on the nested `Final`
+therefore observes the state being left, not the one being entered -- and the next
+request arrives while the machine is still in the composite:
+
+```xml
+<!-- wrong: on_completed runs while the machine is still in WORK -->
+<State ID="35" Name="WORK_DONE" Kind="Final">
+    <EntryList><ActionCall ID="36" Action="on_completed"/></EntryList>
+</State>
+
+<!-- right: on_completed runs on the way out, with the machine already in IDLE -->
+<Transition ID="30" Kind="External" StimulusKind="Event" Stimulus="Done" To="40">
+    <OperationList><ActionCall ID="31" Action="on_completed"/></OperationList>
+</Transition>
+```
+
+Keep the nested `Final` empty; it exists to say the level is over. Every operation
+that outlives the composite goes on the outer transition, and anything that must be
+released as the composite is left goes in the composite's own `ExitList`.
+`check_contract.py` reports the wrong placement as `P-14` before the build, and the
+code generator warns about it as rule `108` while generating.
+
+A `Kind="Final"` at the **top level** of the document is the other case: it ends the
+whole machine, there is no transition after it, and its `EntryList` is the only place
+an operation can go. `P-14` does not apply there. Working project, both kinds in one
+document: `recipes/06-state-machine/`.
+
 ### Reusing a whole machine: `Submachine`
 
 A state may host another `.fsml` instead of owning a `StateList`. Import the document

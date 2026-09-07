@@ -493,6 +493,11 @@
       "id": "P-13",
       "rule": "A request handler holds its request until it returns. A provider that answers later calls unblock_current_request() inside the handler, which releases the request and returns the session id that prepare_response(session) later restores. Without the release the request stays busy: one client hides it, the second is refused with RequestBusy.",
       "detect": "a prepare_response() call in a project where unblock_current_request() appears nowhere"
+    },
+    {
+      "id": "P-14",
+      "rule": "A composite state with OnFinal reports that its nested level finished by posting that event to itself, and the event is queued. Entering the nested Kind=\"Final\" runs its EntryList at once, still inside the composite; the transition out runs later. An operation placed on the nested Final therefore observes the state being left, and the next request is refused as busy. Put it on the transition the composite takes on that event. A Kind=\"Final\" at the top level of the document ends the whole machine and is exempt: its EntryList is the only place an operation can go.",
+      "detect": "an ActionCall, TimerStart, TimerStop or Broadcast in the EntryList of a Kind=\"Final\" state nested inside another state in a .fsml document"
     }
   ],
   "base_api_notes": [

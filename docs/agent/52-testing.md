@@ -116,7 +116,7 @@ A test binary and a scenario file are enough:
 
 ```yaml
 - run: cmake -B build -DCMAKE_BUILD_TYPE=Release
-- run: cmake --build build -j
+- run: cmake --build build -j$(nproc)
 - run: timeout 60 ./build/bin/mytests.elf
 - run: python3 <areg-sdk>/tools/agent/run_scenarios.py
 - run: python3 <areg-sdk>/tools/agent/check_contract.py . --strict

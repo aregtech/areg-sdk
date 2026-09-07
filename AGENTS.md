@@ -9,8 +9,9 @@ many machines: what changes is where a component is registered, not what it does
 consumer, register components into threads or processes, add a timer, log from
 application code: for any of those, `docs/agent/00-cheatsheet.md` is the whole
 reading list. Go there now, skip `CODEBASE.md` and the rest of this file, and return
-only for section 6. `areg::String` and the containers are not on it: that is one row
-of the section 2 table, `docs/agent/40-base-api.md`.
+only for section 6. `areg::String` and the containers are not on it: read
+`docs/agent/40-base-api.md` **before the first line of C++**, not after the first
+error. It is what stops a remembered name reaching the compiler.
 
 ---
 
@@ -20,7 +21,7 @@ This documentation set has one purpose: **building an application on top of areg
 
 Your application lives **outside** this repository and may use any coding style; it
 owes the contract in section 6 and nothing more. Changing the framework itself is a
-different job: start from `CONTRIBUTING.md`. C++17 is the floor -- the public headers
+different job: start from `CONTRIBUTING.md`. C++17 is the floor; the public headers
 and the generated code also compile as C++20 and C++23.
 
 ### What you think you know about areg is probably out of date
@@ -28,9 +29,9 @@ and the generated code also compile as C++20 and C++23.
 areg was renamed throughout: the `NE*`, `TE*` and `IE*` prefixes are gone, types are
 PascalCase, methods `snake_case`, members `mCamelCase`, and everything public lives in
 namespace `areg`. **The names you remember from training data no longer exist.** Take
-every name from the page section 2 sends you to. `tools/agent/check_contract.py` knows
-the removed ones, prints their replacements, and reports any method the framework
-declares nowhere -- run it before the build, not the compiler.
+every name from the page section 2 sends you to. `check_contract.py` knows the
+removed ones, prints their replacements, and reports any method the framework declares
+nowhere -- run it before the build, not the compiler.
 
 ---
 
@@ -55,7 +56,7 @@ Find your task, open that one file, and do not search the repository.
 | Understand the seven core concepts | `CODEBASE.md` section 1 |
 | Data types: C++ spelling, struct, enum, `.dtml` | `docs/agent/21-data-types.md` |
 | Add a state machine | copy `docs/agent/recipes/06-state-machine/`, then `docs/agent/22-state-machine.md` |
-| **Use `areg::String` or a container** | `docs/agent/40-base-api.md` |
+| **Write any C++ that uses a string or a container** | `docs/agent/40-base-api.md` |
 | What a component knows about itself; the application, threads, timers, time, files | `docs/agent/42-runtime-api.md` |
 | Integrate areg into an existing CMake project | `docs/wiki/02b-cmake-integrate.md` |
 | Work out why it does not work | `docs/agent/51-debug.md` |
@@ -64,7 +65,7 @@ Find your task, open that one file, and do not search the repository.
 | Read or query a `.sqlog` log database | `docs/agent/35-sqlog.md` |
 | Set the router address, ports, anything in `areg.init` | `docs/agent/36-config.md` |
 | Find the example showing a given facility | `docs/agent/41-examples.md` |
-| See a complete working application | `examples/03_helloservice/` -- it sleeps in a response handler, which the contract forbids; do not copy that |
+| See a complete working application | `examples/03_helloservice/` -- it sleeps in a response handler; do not copy that |
 
 `docs/wiki/` is written for people and is large: open a page there only when a row
 above names it. A path that does not resolve is a defect to report, not a reason to
@@ -92,16 +93,17 @@ Four commands, from nothing to a running application.
 python3 <areg-sdk>/tools/agent/setup_project.py --name myapp --root ~/myapp --mode local
 cd ~/myapp
 cmake -B build                      # fetches areg, runs the generator
-cmake --build build -j
+cmake --build build -j$(nproc)
 ./build/bin/hello_local.elf         # .mac on macOS, .exe on Windows
 ```
 
+Always give `-j` a number: a bare `-j` starts every job at once and swaps.
+
 **Start here, not by hand.** It copies the right recipe, renames it and writes the
-project its own `AGENTS.md`: one step instead of six, and nothing to read first.
-`--mode` is `local`, `ipc` (two processes) or `pubsub`; `--sdk-root <path>` builds
-against a local SDK copy instead of fetching one. Without Python, copy
-`docs/agent/recipes/01-local-single-process` and rename the project in its two
-`CMakeLists.txt` files; `recipes/README.md` says which recipe shows what.
+project its own `AGENTS.md`. `--mode` is `local`, `ipc` (two processes) or `pubsub`;
+`--sdk-root <path>` builds against a local SDK copy instead of fetching one. Without
+Python, copy `docs/agent/recipes/01-local-single-process` and rename the project in
+its two `CMakeLists.txt` files; `recipes/README.md` says which recipe shows what.
 
 `addServiceInterface()` in the project's `CMakeLists.txt` runs the generator during
 configure; `tools/codegenerate.sh` / `.bat` generates outside CMake.
@@ -113,18 +115,18 @@ then `tools/explain_rule.py <number>`. Never the schema.
 
 ### Every command on this path, on Windows
 
-The pages below use POSIX commands. These four substitutions are the whole difference.
+The pages below use POSIX commands. These five substitutions are the whole difference.
 
 `python3 x.py` -> `python x.py` - `./build/bin/n.elf` -> `build\bin\n.exe` -
 `tools/codegenerate.sh` -> `tools\codegenerate.bat` - `prog --service &` ->
-`start "" prog --service`
+`start "" prog --service` - `-j$(nproc)` -> `-j%NUMBER_OF_PROCESSORS%`
 
 ---
 
 ## 5. Tools
 
 Run these instead of writing what they produce. All are Python 3 (`python` on
-Windows), all live in `tools/agent/`, and each has `--help`.
+Windows), live in `tools/agent/`, and have `--help`.
 
 | Tool | Does |
 |---|---|
@@ -133,14 +135,13 @@ Windows), all live in `tools/agent/`, and each has `--help`.
 | `run_scenarios.py` | Runs the application and checks its output; exit 0 is a pass. Its `scenarios.json` is `docs/agent/50-running.md` |
 | `check_contract.py` | Checks sources against `docs/agent/api.json`: the section 6 mistakes that compile cleanly and fail later |
 
-`tools/explain_rule.py` explains a validation finding by the number the message
-carries; `--search "words"` finds it when the number is lost. It, `tools/check-env.sh`
-and `tools/codegenerate.sh` (`.bat` on Windows) sit in `tools/` itself.
+`tools/explain_rule.py` explains a validation finding by its number; `--search
+"words"` finds it when the number is lost. It, `tools/check-env.sh` and
+`tools/codegenerate.sh` (`.bat` on Windows) sit in `tools/` itself.
 
 **Each has one moment**, and **nothing else under `tools/` is yours**: the rest checks
 this repository's own corpus, tells you nothing about your application, and costs a
-turn each. `gen_skeleton.py` runs once a document is written, `explain_rule.py` only on
-a refusal, `run_scenarios.py` only once it builds.
+turn each.
 
 `docs/agent/api.json` states the same contract machine-readably: the naming
 transforms, the connection states, and every section 6 rule with its detection hint.
@@ -149,10 +150,10 @@ transforms, the connection states, and every section 6 rule with its detection h
 
 ## 6. Never
 
-Each line closes a class of wrong code, not a style preference, and
-`tools/agent/check_contract.py` reports all thirteen from the sources you write; it
-never reads the generate target. Run it before you build. The seven below are the
-ones that cost a redesign rather than an edit, so they are the ones to know first.
+Each line closes a class of wrong code, not a style preference.
+`tools/agent/check_contract.py` reports all fourteen from the sources and documents you
+write, never from the generate target; run it before you build. The seven below cost a
+redesign rather than an edit, so know these first.
 
 - **Never edit a generated file.** The generate target is rewritten on every build;
   change the `.siml` instead.
@@ -171,11 +172,11 @@ ones that cost a redesign rather than an edit, so they are the ones to know firs
 - **Never use exceptions.** AREG does not throw and does not catch. Return `bool`,
   `std::optional`, or an error code.
 
-The other five are one-line fixes, and the checker names the file and the line for
+The other six are one-line fixes, and the checker names the file and the line for
 each: a `REGISTER_WORKER_THREAD` consumer name the component does not answer to, two
 components sharing a role name in one process, a header taken from a `private/`
-folder, a watchdog timeout on a thread whose watchdog never starts, and a response
-sent after its handler returned.
+folder, a watchdog timeout on a thread whose watchdog never starts, a response sent
+after its handler returned, and an operation on a nested `.fsml` `Final` state.
 
 ---
 
@@ -186,12 +187,13 @@ when the code looks correct.
 
 ```bash
 python3 tools/agent/check_contract.py <project>   # the mistakes a build cannot catch
-cmake --build build -j                      # must succeed
+cmake --build build -j$(nproc)              # must succeed
 <run the application>                       # expected output, exit 0
 ```
 
-Silence a `check_contract.py` false positive with `// areg-check: ignore`.
+Silence a `check_contract.py` false positive with `// areg-check: ignore`, or the
+same words in a `.fsml` state's `<Description>`.
 
 A multi-process application starts `mtrouter` first, then the provider, then the
-consumer. A consumer that starts first is not an error: it waits for the provider.
+consumer. A consumer that starts first is not an error: it waits.
 

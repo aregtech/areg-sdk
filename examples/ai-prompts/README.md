@@ -100,7 +100,7 @@ transcript and counts the tool calls, and scores both against the budget. Needs 
 **5. Score the result yourself. Do not take the agent's word for it.**
 
 ```bash
-cd "$RUN" && cmake --build build -j && \
+cd "$RUN" && cmake --build build -j$(nproc) && \
 python3 /mnt/c/projects/areg-sdk/tools/agent/run_scenarios.py --build build/bin ; echo "exit=$?"
 ```
 

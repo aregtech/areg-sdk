@@ -7,7 +7,7 @@
 #   python3 tools/agent/check_recipes.py --lib build/bin
 #
 # The framework has to be built first, for example:
-#   cmake -B build -DAREG_TESTS=OFF -DAREG_EXAMPLES=OFF && cmake --build build -j
+#   cmake -B build -DAREG_TESTS=OFF -DAREG_EXAMPLES=OFF && cmake --build build -j$(nproc)
 #
 # Exit code 0 when every recipe passed, 1 otherwise.
 # ===========================================================================

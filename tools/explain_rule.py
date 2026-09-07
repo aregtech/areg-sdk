@@ -75,6 +75,11 @@ FIXES = {
  'RULE_FINAL_STATE':
    'A Final state ends its level: remove its outgoing transitions and its substates. '
    'To continue afterwards, transition out of the composite that owns it.',
+ 'RULE_FINAL_ENTRY_ORDER':
+   'Move the operation onto the transition the composite takes on its OnFinal event. '
+   'That step runs once the level has been left and the machine has settled in the '
+   'target state, which is what the placement on the Final reads as. Keep it on the '
+   'Final only when it is meant to run before the composite is left.',
  'RULE_START_SUBSTATES':
    'A Start is a pseudo-state and holds nothing: it names where the level begins and '
    'is left in the same step it is entered, so anything nested inside it can never '

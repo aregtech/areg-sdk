@@ -350,6 +350,40 @@ sleep 2
 echo "consumer: the provider was still there"
 """
 
+# Windows cannot execute a shell script, whatever it is named, so the same two
+# fixtures are written again as batch files. "set /p" blocks while the pipe is
+# open and leaves the variable unset at end of input, which is the condition the
+# self-test looks for. "ping" stands in for "sleep": "timeout" refuses to run at
+# all once standard input is a pipe.
+SELF_TEST_PROVIDER_BATCH = """@echo off
+echo provider: serving
+:read
+set "line="
+set /p line=
+if not defined line goto stop
+if "%line%"=="-q" goto stop
+goto read
+:stop
+echo provider: stopped
+"""
+
+SELF_TEST_CONSUMER_BATCH = """@echo off
+ping -n 3 127.0.0.1 >nul
+echo consumer: the provider was still there
+"""
+
+# What a self-test fixture is named and what it holds. The name carries the
+# extension the platform can start, and find_binary falls back to the bare name,
+# so the fixture is named in full and no suffix is appended to it a second time.
+if platform.system() == 'Windows':
+    SELF_TEST_SUFFIX  = '.bat'
+    SELF_TEST_NEWLINE = '\r\n'
+    SELF_TEST_BODIES  = (SELF_TEST_PROVIDER_BATCH, SELF_TEST_CONSUMER_BATCH)
+else:
+    SELF_TEST_SUFFIX  = SUFFIX
+    SELF_TEST_NEWLINE = '\n'
+    SELF_TEST_BODIES  = (SELF_TEST_PROVIDER, SELF_TEST_CONSUMER)
+
 
 def self_test():
     """Check that a process is not handed end of input it did not ask for.
@@ -362,18 +396,20 @@ def self_test():
     import tempfile
     root = tempfile.mkdtemp(prefix='areg-scenario-selftest-')
     try:
-        for name, body in (('selftestprov', SELF_TEST_PROVIDER),
-                           ('selftestcons', SELF_TEST_CONSUMER)):
-            path = os.path.join(root, name + SUFFIX)
-            with open(path, 'w', encoding='utf-8', newline='\n') as handle:
+        provider, consumer = (name + SELF_TEST_SUFFIX
+                              for name in ('selftestprov', 'selftestcons'))
+        for name, body in zip((provider, consumer), SELF_TEST_BODIES):
+            path = os.path.join(root, name)
+            with open(path, 'w', encoding='utf-8',
+                      newline=SELF_TEST_NEWLINE) as handle:
                 handle.write(body)
             os.chmod(path, 0o755)
         scenario = {
             'name': 'no-console-attached', 'timeout': 15,
-            'procs': [{'binary': 'selftestprov', 'name': 'provider',
+            'procs': [{'binary': provider, 'name': 'provider',
                        'expect': ['provider: serving'],
                        'reject': ['provider: stopped']},
-                      {'binary': 'selftestcons', 'name': 'consumer',
+                      {'binary': consumer, 'name': 'consumer',
                        'expect': ['consumer: the provider was still there'],
                        'exit': 0}]}
         passed, name, detail = run_scenario(scenario, [root], False, True)

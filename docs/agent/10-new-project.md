@@ -7,7 +7,7 @@ CMake. The fastest correct start is the setup script:
 python3 <areg-sdk>/tools/agent/setup_project.py --name myapp --root ~/myapp --mode local
 cd ~/myapp
 cmake -B build
-cmake --build build -j
+cmake --build build -j$(nproc)
 ./build/bin/myapp.elf
 ```
 
@@ -142,7 +142,7 @@ Write them from the task pages, in this order:
 
 ```bash
 cmake -B ./build
-cmake --build ./build -j
+cmake --build ./build -j$(nproc)
 ```
 
 Binaries are written to `<project-root>/build/bin/`, with a platform suffix: `.elf`
