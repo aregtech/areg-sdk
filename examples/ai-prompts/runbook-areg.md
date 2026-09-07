@@ -117,8 +117,38 @@ The first catches mistakes that compile cleanly and fail later; run it **before*
 build. The last starts the router, then the provider, then the consumer, and checks
 the output. Exit 0 is a pass.
 
-By hand instead: `./run.sh`, or start `mtrouter`, then the provider, then the
-consumer. A consumer that starts first is not an error -- it waits.
+**Every acceptance item goes in `scenarios.json`, including the two that look like
+they need a terminal.** A console quit path is `"stdin": ["-q"]` on that process; the
+peer going away is a scenario-level `"stop"`. Both are in
+`<areg-sdk>/docs/agent/50-running.md`. One run then prints the line each expectation
+matched, and that output is the evidence for the report.
+
+**Never start the processes by hand.** No `prog &`, no `sleep`, no `pkill`, no `ps`.
+It is slower, it is not repeatable, it leaves background processes behind, and a
+command ending in `pkill` or `grep` that matches nothing exits non-zero, which most
+harnesses show as a failed tool call with no output -- a trap that can cost a dozen
+turns. `./run.sh` exists for a human watching it; a scenario is what you run.
+
+## 7a. Two habits that halve the cost of the same work
+
+Every request re-sends the whole conversation, so the bill is the number of requests
+multiplied by how much each one carries. Both of these are free to follow and neither
+changes what gets built.
+
+**Put independent calls in one request.** Reading eight pages is one request, not
+eight. A header and its source are written together. So are the two `main()` files
+and `scenarios.json`. Only split where the next thing genuinely depends on the result
+of the last -- a build, a check, a scenario run.
+
+**Never pour a build log into the conversation.** It stays there for every later
+request. `cmake --build build -j 2>&1 | tail -30` is enough to see success; on a
+failure ask for the errors, not the transcript:
+
+```
+cmake --build build -j 2>&1 | grep -E "error|Error" | head -20
+```
+
+The same goes for `find`, `ls -R` and anything else that can print hundreds of lines.
 
 ## 8. Fix -- bounded, then stop
 
@@ -158,20 +188,19 @@ not converge" is a useful result; a half-built application is not.
   and which part of your document triggered it. That report is worth more than a
   finished application.
 
-## 11. The report -- count only what you can count
+## 11. The report -- write it, do not measure it
 
-**Do not guess tokens or wall time.** Most harnesses do not show an agent its own
-usage, and an invented number makes every comparison worthless. Write "not available
-to me" and leave it to the operator.
+**Report only what a command cannot recover afterwards.** Byte sizes, line counts and
+file lists are the operator's to compute from the tree you leave behind; measuring
+them yourself costs turns and tells nobody anything. **Do not guess tokens or wall
+time** either: most harnesses do not show an agent its own usage, and an invented
+number makes every comparison worthless.
 
-- tokens and wall time -- from the harness, or "not available to me"
-- tool calls used
+Ten lines, from what you already know:
+
 - build-and-fix cycles, and run-and-fix cycles
-- files you wrote, with byte sizes
-- lines of C++ written by hand, and lines generated from the documents
-- acceptance checklist items passing, out of how many, and which failed
-- documentation pages you opened, and their sizes
-- any file you opened that the documentation did not route you to
-- total bytes of every file you read, documents and sources together
+- acceptance checklist items passing, out of how many, and which failed -- taken from
+  the scenario output, not from a second run
+- any file you opened that the documentation did not route you to, and why
 - what you had to guess, what the documentation did not answer, and which page you
   wish had said something it did not

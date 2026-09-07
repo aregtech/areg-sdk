@@ -385,13 +385,42 @@ def machine_files(iface, class_name, include_root):
     return '\n'.join(header), '\n'.join(source)
 
 
+DECLARATION = re.compile(r'^\s{4}(?!//)([A-Za-z_].*\(.*\).*;)\s*$')
+
+
 def write(path, text, force):
     if os.path.exists(path) and not force:
         print('kept   {}'.format(path))
-        return
+        return text
     with open(path, 'w', encoding='utf-8') as handle:
         handle.write(text)
     print('wrote  {}'.format(path))
+    return text
+
+
+def print_index(path, text):
+    """List the declarations a header carries, so the file needs no second read."""
+    found = [DECLARATION.match(line).group(1)
+             for line in text.splitlines() if DECLARATION.match(line)]
+    # The deleted constructor and the copy guard are boilerplate, not work.
+    found = [d for d in found if '= delete' not in d and 'AREG_NOCOPY' not in d]
+    if not found:
+        return
+    print('  {} declares:'.format(os.path.basename(path)))
+    for line in found:
+        print('    {}'.format(line))
+
+
+BODY_NOTE = ('  Every declaration above is already overridden in the .cpp with an empty\n'
+             '  body: open the .cpp and fill them in. The .hpp needs no second read,\n'
+             '  and no name on a generated base class is ever invented.\n'
+             '  Include these from your own sources by name alone, for example\n'
+             '  #include "{}". Only generated headers take a src/ prefix: they are\n'
+             '  written into a mirror tree, and your own files are not in it.')
+
+HOST_NOTE = ('  {name} is a standalone component that owns the machine. Delete both\n'
+             '  files and hold the machine as a member of the provider instead when the\n'
+             '  provider is what drives it.')
 
 
 def main():
@@ -423,20 +452,31 @@ def main():
             fail('the machine declares no action, so there is nothing to implement')
         name = iface.name + 'Host'
         header, source = machine_files(iface, name, include_root)
-        write(os.path.join(args.out, name + '.hpp'), header, args.force)
+        path = os.path.join(args.out, name + '.hpp')
+        write(path, header, args.force)
         write(os.path.join(args.out, name + '.cpp'), source, args.force)
+        print_index(path, header)
+        print(HOST_NOTE.format(name=name))
         return 0
 
+    written = []
     if args.only in ('provider', 'both'):
         name = iface.name + 'Provider'
         header, source = provider_files(iface, name, include_root)
-        write(os.path.join(args.out, name + '.hpp'), header, args.force)
+        path = os.path.join(args.out, name + '.hpp')
+        write(path, header, args.force)
         write(os.path.join(args.out, name + '.cpp'), source, args.force)
+        written.append((path, header))
     if args.only in ('consumer', 'both'):
         name = iface.name + 'Consumer'
         header, source = consumer_files(iface, name, include_root)
-        write(os.path.join(args.out, name + '.hpp'), header, args.force)
+        path = os.path.join(args.out, name + '.hpp')
+        write(path, header, args.force)
         write(os.path.join(args.out, name + '.cpp'), source, args.force)
+        written.append((path, header))
+    for path, header in written:
+        print_index(path, header)
+    print(BODY_NOTE.format(os.path.basename(written[0][0]) if written else 'Yours.hpp'))
     return 0
 
 

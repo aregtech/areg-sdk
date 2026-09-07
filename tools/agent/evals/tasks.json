@@ -650,6 +650,26 @@
         "rule": "P-02"
       },
       "teaches": "every member of a generated base comes from the .siml document; a name that is not in the document does not exist, whether it is overridden or called"
+    },
+    {
+      "id": "r24-remembered-method",
+      "kind": "repair",
+      "prompt": "This application does not compile. The error names a member of areg::String. Diagnose it and fix it.",
+      "expect": [
+        "provider: hello,",
+        "consumer: greeted"
+      ],
+      "reference": "08-observability",
+      "defect": {
+        "file": "src/provider.cpp",
+        "find": "client.as_string()",
+        "replace": "client.get_str()"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "B-08"
+      },
+      "teaches": "a method name recalled from training data that the framework declares nowhere is caught before the build, not by the compiler"
     }
   ]
 }

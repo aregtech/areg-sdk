@@ -107,7 +107,7 @@ install(DIRECTORY tools/
             PATTERN "latency"   EXCLUDE
             PATTERN "sanitizer" EXCLUDE
             PATTERN "evals"     EXCLUDE
-            REGEX "/(areg_benchmarks|check-ascii|check_agent_docs|check_commands|check_corpus|check_doc_config|check_invariants|check_mutations|check_observability|check_recipes|check_symbols|hunt-crash|report-ctest|run_evals|service_ports|setup_agent_memory|setup_agent_redirect)\\.py$" EXCLUDE
+            REGEX "/(areg_benchmarks|build_members|check-ascii|check_agent_docs|check_commands|check_corpus|check_doc_config|check_invariants|check_mutations|check_observability|check_recipes|check_symbols|hunt-crash|report-ctest|run_evals|service_ports|setup_agent_memory|setup_agent_redirect)\\.py$" EXCLUDE
             REGEX "/sanitize\\.sh$" EXCLUDE
 )
 

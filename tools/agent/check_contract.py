@@ -103,8 +103,22 @@ LEGACY_ACCESSORS = {
 }
 LEGACY_CALL_RE = re.compile(r'(\w+)\s*(?:\.|->)\s*([A-Za-z]\w*)\s*\(')
 AREG_STATIC_CALL_RE = re.compile(r'\bareg::\w+::([A-Za-z]\w*)\s*\(')
-# A variable whose declared type is an areg one. Reused by B-01, B-03 and B-07 so
-# that all three fire only on framework objects.
+# B-08. Every snake_case member name the public headers declare, loaded from
+# docs/agent/members.json. Empty when the file is absent, which switches B-08 off.
+FRAMEWORK_MEMBERS = frozenset()
+
+# B-08. A snake_case call on a variable. The variable has to be an areg one for the
+# rule to fire, so an application's own method is never reported.
+SNAKE_CALL_RE = re.compile(r'\b(\w+)\s*(?:\.|->)\s*([a-z][a-z0-9_]*)\s*\(')
+
+# B-08. A declaration whose type is not an areg one. A name declared both ways in
+# one file is left alone: which type it holds on a line is beyond a line reader.
+OTHER_DECL_RE = re.compile(
+    r'(?:^|[(,;])\s*(?:const\s+|static\s+|inline\s+)*([A-Za-z_]\w*(?:::\w+)*)\s*'
+    r'(?:<[^;{}]*>)?\s*(?:const\s*)?[&*]?\s+(\w+)\s*(?=[;={,):])')
+
+# A variable whose declared type is an areg one. Reused by B-01, B-03, B-07 and
+# B-08 so that all of them fire only on framework objects.
 AREG_DECL_RE = re.compile(
     r'\bareg::(\w+)\s*(?:<[^;{}]*>)?\s*(?:const\s*)?[&*]?\s*(\w+)\s*(?=[;={,)])')
 
@@ -168,6 +182,7 @@ CHECKS = [
     ('B-05', 'advice',  'a name with the obsolete NE or TE prefix'),
     ('B-06', 'advice',  'a name with the obsolete IE prefix'),
     ('B-07', 'advice',  'a camelCase accessor on an areg object'),
+    ('B-08', 'error',   'a method the framework declares nowhere'),
 ]
 
 
@@ -263,6 +278,16 @@ def areg_variables(lines):
                 names[var] = kind
     return names
 
+
+
+def shadowed_variables(lines, areg_vars):
+    """areg variable names that the same file also declares with another type."""
+    shadowed = set()
+    for raw in lines:
+        for kind, var in OTHER_DECL_RE.findall(strip_noise(raw)):
+            if var in areg_vars and not kind.startswith('areg'):
+                shadowed.add(var)
+    return shadowed
 
 
 def collect_sources(base):
@@ -402,6 +427,7 @@ def check_file(path, lines, known, findings):
     model_roles = {}
     handled = set()
     areg_vars = areg_variables(lines)
+    shadowed = shadowed_variables(lines, areg_vars)
 
     for number, raw in enumerate(lines[:12]):
         if GENERATED_BANNER in raw:
@@ -499,6 +525,20 @@ def check_file(path, lines, known, findings):
                         'every framework method is snake_case, so %s() is now '
                         '%s()' % (method, LEGACY_ACCESSORS[method])))
                     break
+
+        if FRAMEWORK_MEMBERS:
+            for var, method in SNAKE_CALL_RE.findall(line):
+                if var not in areg_vars or var in shadowed:
+                    continue
+                if method in FRAMEWORK_MEMBERS:
+                    continue
+                findings.append(Finding(
+                    'B-08', 'error', path, number + 1,
+                    '"%s" is an areg::%s and no public areg header declares '
+                    '%s(); the name is remembered, not real. The methods that '
+                    'exist are in docs/agent/40-base-api.md'
+                    % (var, areg_vars[var], method)))
+                break
 
         if LOG_MACRO_RE.search(line) and '%s' in raw:
             for var, kind in areg_vars.items():
@@ -816,6 +856,29 @@ def read_text(path, problems):
     return None
 
 
+def load_members(api_path):
+    """Read the member inventory that sits beside api.json. B-08 needs it.
+
+    Returns an error string when the file exists and cannot supply the list.
+    A missing file is not an error: an installed SDK may not ship it, and B-08
+    simply does not fire.
+    """
+    global FRAMEWORK_MEMBERS
+    path = os.path.join(os.path.dirname(os.path.abspath(api_path)), 'members.json')
+    if not os.path.isfile(path):
+        return None
+    try:
+        with open(path, 'r', encoding='utf-8') as handle:
+            document = json.load(handle)
+    except (OSError, ValueError) as problem:
+        return 'cannot read %s: %s' % (path, problem)
+    members = document.get('members') or []
+    if not members:
+        return '%s carries no member list' % path
+    FRAMEWORK_MEMBERS = frozenset(members)
+    return None
+
+
 def load_legacy(api_path):
     """Read the removed-name lists out of api.json into the module globals.
 
@@ -1051,6 +1114,10 @@ def main():
     if args.audit_prohibitions:
         return audit_prohibitions(args.api)
 
+    failure = load_members(args.api)
+    if failure:
+        print('error: %s' % failure)
+        return 2
     failure = load_legacy(args.api)
     if failure is not None:
         print(failure, file=sys.stderr)

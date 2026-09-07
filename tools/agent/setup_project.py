@@ -310,8 +310,14 @@ python3 {sdk}/tools/agent/run_scenarios.py
 ```
 
 `run_scenarios.py` starts the application, checks the output and the exit code, and
-returns 0 only when everything matched. Edit `scenarios.json` when the expected
-output changes.
+returns 0 only when everything matched. It prints the line each expectation matched,
+so one run is the evidence. Edit `scenarios.json` when the expected output changes.
+
+**Every acceptance item belongs in `scenarios.json`,** including the two that look
+like they need a terminal: a console quit path is `"stdin": ["-q"]` on that process,
+and the peer going away is a scenario-level `"stop"`. Both are in
+`docs/agent/50-running.md`. Never start the processes by hand with `&`, `sleep`,
+`pkill` or `ps`.
 """.format(name=name, run=run, run_win=run_win, where=where, sdk=sdk, never=never)
 
     with open(os.path.join(root, 'AGENTS.md'), 'w', encoding='utf-8') as handle:
@@ -378,6 +384,33 @@ def write_run_script(root, name, binaries):
     os.chmod(path, os.stat(path).st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
 
+# The files an agent edits first. Printing them here saves opening each one.
+SHOWN = (('src/CMakeLists.txt', 'declares the service interface and the executables'),
+         ('scenarios.json', 'what to run, and the output that proves it worked'),
+         ('src/provider.cpp', 'the provider process: model, then main()'),
+         ('src/consumer.cpp', 'the consumer process: model, then main()'),
+         ('src/main.cpp', 'the process: model, then main()'))
+
+
+def print_scaffold(root):
+    """Print the scaffolded files, so none of them needs to be opened to be seen."""
+    print('')
+    print('The scaffold, so you need not open it. Everything else under this root is')
+    print('either generated or named in AGENTS.md.')
+    for relative, role in SHOWN:
+        path = os.path.join(root, relative.replace('/', os.sep))
+        if not os.path.isfile(path):
+            continue
+        with open(path, encoding='utf-8') as handle:
+            body = handle.read().rstrip()
+        print('')
+        print('--- {}  ({}) ---'.format(relative, role))
+        print(body)
+    print('')
+    print('Replace the contract under src/services/ with your own, rename the two')
+    print('executables in src/CMakeLists.txt, and keep the shape of the model above.')
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Create a ready-to-build AREG project.')
@@ -394,6 +427,8 @@ def main():
                         help='overwrite an existing directory')
     parser.add_argument('--no-agents', action='store_true',
                         help='do not write AGENTS.md into the project')
+    parser.add_argument('--quiet', action='store_true',
+                        help='do not print the scaffolded files')
     args = parser.parse_args()
 
     interactive = sys.stdin.isatty()
@@ -459,6 +494,8 @@ def main():
     else:
         for binary in binaries:
             print('  ./build/bin/{}.elf     # .mac on macOS, .exe on Windows'.format(binary))
+    if not args.quiet:
+        print_scaffold(root)
     return 0
 
 

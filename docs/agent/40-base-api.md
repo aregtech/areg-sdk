@@ -131,3 +131,10 @@ collector keeps every reading it accepted and prints them by index.
 If a member you need is missing here, read the header rather than guessing the
 spelling from another language's conventions.
 
+**A name you remember is not a name that exists.** `get_str`, `to_std_string`,
+`get_length`, `push_back`, `empty`, `insert` and the rest of the shapes borrowed
+from `std::string` and `std::vector` are the ones most often written here, and none
+of them is declared anywhere in areg -- being `snake_case` does not make a name real.
+`check_contract.py` reports every one as `B-08` before the build, naming the file and
+the line, so run it first and let it answer instead of the compiler.
+

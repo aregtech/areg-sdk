@@ -28,8 +28,9 @@ and the generated code also compile as C++20 and C++23.
 areg was renamed throughout: the `NE*`, `TE*` and `IE*` prefixes are gone, types are
 PascalCase, methods `snake_case`, members `mCamelCase`, and everything public lives in
 namespace `areg`. **The names you remember from training data no longer exist.** Take
-every name from the page section 2 sends you to; `tools/agent/check_contract.py` knows the
-removed ones and prints their replacements.
+every name from the page section 2 sends you to. `tools/agent/check_contract.py` knows
+the removed ones, prints their replacements, and reports any method the framework
+declares nowhere -- run it before the build, not the compiler.
 
 ---
 
@@ -66,8 +67,8 @@ Find your task, open that one file, and do not search the repository.
 | See a complete working application | `examples/03_helloservice/` -- it sleeps in a response handler, which the contract forbids; do not copy that |
 
 `docs/wiki/` is written for people and is large: open a page there only when a row
-above names it. Every row points at a file that exists; a path that does not resolve
-is a defect to report, not a reason to search.
+above names it. A path that does not resolve is a defect to report, not a reason to
+search.
 
 ---
 
@@ -108,7 +109,7 @@ configure; `tools/codegenerate.sh` / `.bat` generates outside CMake.
 **The generator validates before it generates.** A refused document writes nothing and
 exits 1, so the defect is in the document, never in the build. Every finding is
 `file:line:col: error[<number>/<RULE_NAME>]` with a `fix:` line under it: read that,
-then `tools/explain_rule.py <number>` for the whole rule. Never the schema.
+then `tools/explain_rule.py <number>`. Never the schema.
 
 ### Every command on this path, on Windows
 

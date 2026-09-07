@@ -162,6 +162,9 @@ visible at a glance.
 `Transition/@To` names the target by `ID`, not by name, and the target must be a
 **sibling**. A transition cannot reach into or out of a composite: to leave a subtree,
 put the transition on the composite, whose transitions fire from anywhere inside it.
+A `Kind="History"` marker is the one exception and exists for it -- a transition from
+outside a composite may name a marker in that composite's `StateList`, which is how a
+resume re-enters where it left off. See "Re-entering a composite where it left off".
 
 ### The pieces
 

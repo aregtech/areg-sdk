@@ -1634,6 +1634,8 @@ def run():
     check_observability(report)
     check_portability(report)
     check_project_routing(report)
+    check_member_inventory(report)
+    check_scenario_runner(report)
     return report
 
 
@@ -1649,6 +1651,46 @@ PROJECT_ROUTING_EXEMPT = {
     'docs/agent/35-sqlog.md',         # reached from 34-logging.md
     'docs/agent/36-config.md',        # reached from 50-running.md
 }
+
+
+
+# docs/agent/members.json is what check_contract.py rule B-08 tests a call against.
+# It is generated from the public headers, so a framework rename that is not
+# regenerated turns the rule into a source of false findings.
+
+# run_scenarios.py is what turns "it built" into "it is proven to work", so a defect
+# in it is invisible: every project it runs fails the same way at once.
+def check_scenario_runner(report):
+    runner = os.path.join(ROOT, 'tools', 'agent', 'run_scenarios.py')
+    if not os.path.isfile(runner):
+        report.fail('runner', 'tools/agent/run_scenarios.py is missing')
+        return
+    result = subprocess.run([sys.executable, runner, '--self-test'],
+                            capture_output=True, text=True, cwd=ROOT,
+                            stdin=subprocess.DEVNULL)
+    text = (result.stdout + result.stderr).strip()
+    if result.returncode != 0:
+        report.fail('runner', text.splitlines()[0] if text else
+                    'run_scenarios.py --self-test failed')
+        return
+    report.ok('runner', text.splitlines()[0] if text else 'run_scenarios.py self-test passed')
+
+
+def check_member_inventory(report):
+    generator = os.path.join(ROOT, 'tools', 'agent', 'build_members.py')
+    if not os.path.isfile(generator):
+        report.fail('inventory', 'tools/agent/build_members.py is missing, so nothing '
+                               'keeps docs/agent/members.json honest')
+        return
+    result = subprocess.run([sys.executable, generator, '--check'],
+                            capture_output=True, text=True, cwd=ROOT)
+    if result.returncode != 0:
+        report.fail('inventory', (result.stderr or result.stdout).strip().splitlines()[-1]
+                    if (result.stderr or result.stdout).strip()
+                    else 'docs/agent/members.json does not match framework/areg')
+        return
+    report.ok('inventory', result.stdout.strip() or
+              'docs/agent/members.json matches the public headers')
 
 
 def check_project_routing(report):
