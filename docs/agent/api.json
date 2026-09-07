@@ -498,6 +498,11 @@
       "id": "P-14",
       "rule": "A composite state with OnFinal reports that its nested level finished by posting that event to itself, and the event is queued. Entering the nested Kind=\"Final\" runs its EntryList at once, still inside the composite; the transition out runs later. An operation placed on the nested Final therefore observes the state being left, and the next request is refused as busy. Put it on the transition the composite takes on that event. A Kind=\"Final\" at the top level of the document ends the whole machine and is exempt: its EntryList is the only place an operation can go.",
       "detect": "an ActionCall, TimerStart, TimerStop or Broadcast in the EntryList of a Kind=\"Final\" state nested inside another state in a .fsml document"
+    },
+    {
+      "id": "P-15",
+      "rule": "macro_declare_executable takes the source files of the target after its name, and every hand-written .cpp of the project has to be named in one of them. A source file left out of all of them is compiled by nothing, and the omission surfaces at link time as an undefined reference to a mangled constructor, naming neither the file nor the CMakeLists.txt line that should have carried it. Splitting a component into its own .cpp is what usually leaves one behind.",
+      "detect": "a hand-written .cpp under the project whose file name appears in no CMakeLists.txt of that project"
     }
   ],
   "base_api_notes": [

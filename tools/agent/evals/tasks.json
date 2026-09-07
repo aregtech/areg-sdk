@@ -689,6 +689,24 @@
         "rule": "P-14"
       },
       "teaches": "the OnFinal self-event is queued: an operation on the nested Final runs before the composite is left"
+    },
+    {
+      "id": "r26-source-not-declared",
+      "kind": "repair",
+      "prompt": "A helper was split into its own source file. The build gets as far as linking and then reports an undefined reference to a function that is plainly defined. Diagnose it and fix it.",
+      "expect": [
+        "consumer: greeted"
+      ],
+      "reference": "02-ipc-two-processes",
+      "defect": {
+        "file": "src/HelloHelper.cpp",
+        "create": "#include \"areg/base/String.hpp\"\n\nareg::String hello_banner()\n{\n    areg::String text;\n    text.format(\"hello, %s\", \"areg\");\n    return text;\n}\n"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "P-15"
+      },
+      "teaches": "macro_declare_executable names the sources of its target; a hand-written .cpp that no CMakeLists.txt names is compiled by nothing, and the omission surfaces only as a link error naming a mangled symbol"
     }
   ]
 }

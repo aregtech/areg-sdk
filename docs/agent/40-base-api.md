@@ -7,7 +7,13 @@ the runtime -- the application, components, threads, timers, time, files and buf
 **Operators come for free.** `String`, `WideString`, `DateTime`, `SharedBuffer` and
 every container here carry `=`, `==`, `!=` and the stream operators `>>` / `<<`
 (`areg::InStream` / `areg::OutStream`), as does every `Structure` the generator writes.
-Use them without looking them up; `21-data-types.md` has the rule and its one caveat.
+`String` and `WideString` add `+` and `+=`, against their own type, a `const char *`,
+a single character and the matching `std::string`, in either order.
+
+**A list here is a floor, not a limit.** It says what you may use without looking it
+up. It does not say what is missing, so never rewrite working code to route around an
+operator you did not find listed: write the natural spelling and let the build answer.
+`21-data-types.md` has the rule and its one caveat.
 
 **Why this page exists.** Every method in this framework is `snake_case` and every
 public type is in `namespace areg`. This changed recently. If you are recalling an

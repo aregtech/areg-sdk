@@ -69,7 +69,11 @@ comparison and handler code with them and do not go looking for a declaration: t
 predefined types below all carry them, and the generator writes them for every
 `Structure` and `Container` you declare. `>>` and `<<` are `areg::InStream` /
 `areg::OutStream` -- serialisation, not text formatting. An `Enumeration` gets
-`as_string()` in their place.
+`as_string()` in their place. `String` and `WideString` also carry `+` and `+=`.
+
+**This list is what you may assume, not the whole set.** An operator it does not name
+is not thereby absent, so write the natural spelling and let the build answer. Code
+that already compiles is never rewritten to avoid an operator that went unlisted.
 
 A generated `==` compares field by field and a generated `<<` streams field by field,
 so **a field of a `Type="Imported"` type must supply them itself.** It usually does;

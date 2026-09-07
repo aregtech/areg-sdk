@@ -22,6 +22,7 @@ of what the tool printed.
 | `marked 'override' but does not override`, or `marked 'final'` on a member | the signature or the name does not match the generated one | `20-service-interface.md` section 3 |
 | `no member named 'begin'`, or `'begin' was not declared`, on an areg container | areg containers have no iterators | `40-base-api.md` |
 | `undefined reference to \`areg::` | headers and library are different builds | "The build links against the wrong framework" below |
+| `undefined reference` to **your own** class or function, from a file that plainly defines it | the `.cpp` defining it is named on no `macro_declare_executable` line, so nothing compiled it | `10-new-project.md` section 3, and `check_contract.py` rule `P-15` |
 | `No such file or directory` for a `...Base.hpp` | the generator did not run, or the path is wrong | "The generated code does not match the document" below |
 | `No such file or directory` for **your own** header, spelt `src/Yours.hpp` | only generated headers carry a `src/` prefix; they live in a mirror tree. Include your own by name alone: `#include "Yours.hpp"` | `20-service-interface.md` section 3 |
 | a provider that exits at once, prints nothing, and leaves every peer waiting | a console loop treating end of input as a quit request | `50-running.md` |

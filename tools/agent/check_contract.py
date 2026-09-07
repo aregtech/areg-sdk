@@ -169,7 +169,7 @@ CHECKS = [
     ('P-03', 'error',   'REGISTER_DEPENDENCY naming no registered role'),
     ('P-04', 'error',   'a request or a subscription in a component constructor'),
     ('P-05', 'error',   'quitting on a state the framework recovers from'),
-    ('P-06', 'error',   'blocking inside a handler'),
+    ('P-06', 'error',   'a sleep, a join or an unbounded loop inside a handler'),
     ('P-07', 'error',   'including a header from a private/ folder'),
     ('P-08', 'error',   'throw, try or catch'),
     ('P-09', 'error',   'two components with one role name in one model'),
@@ -177,7 +177,8 @@ CHECKS = [
     ('P-11', 'advice',  'a worker thread consumer name nothing answers to'),
     ('P-12', 'error',   'a broadcast or attribute handled but never subscribed to'),
     ('P-13', 'error',   'a response deferred without releasing the request'),
-    ('P-14', 'advice',  'an operation on a nested Final state, which runs before the level is left'),
+    ('P-14', 'advice',  'an operation in the EntryList of a Final state nested inside another state'),
+    ('P-15', 'error',   'a hand-written source file no CMakeLists.txt names'),
     ('B-01', 'advice',  'an areg::String passed to a printf style log macro'),
     ('B-02', 'advice',  'a range-for over an areg container'),
     ('B-03', 'advice',  'size() == 0 instead of is_empty()'),
@@ -837,6 +838,55 @@ def check_deferred_responses(sources, findings, read):
             'busy and a second client is refused with RequestBusy'))
 
 
+# P-15. macro_declare_executable takes the source files after the target name. A
+# hand-written .cpp left out of every one of them compiles nowhere, so the symbols
+# it defines are missing at link time, in a diagnostic that names a mangled
+# constructor and not the file. The runbook runs this checker before cmake.
+CMAKE_LISTS = 'CMakeLists.txt'
+CMAKE_SOURCE_EXT = ('.cpp', '.cxx', '.cc')
+
+
+def collect_cmake(base):
+    """Every CMakeLists.txt of the project, as one string, or None when there is none."""
+    found = []
+    for path, dirs, files in os.walk(base):
+        dirs[:] = [d for d in dirs
+                   if d not in SKIP_DIRS and not d.startswith('.')]
+        if CMAKE_LISTS in files:
+            found.append(os.path.join(path, CMAKE_LISTS))
+    return sorted(found)
+
+
+def check_sources_declared(base, sources, findings, read):
+    """P-15: a hand-written source file no executable lists.
+
+    Only the names are compared. A source is declared wherever its file name appears
+    in a CMakeLists.txt of the project, which accepts a name reached through a
+    variable and reports the file that is named nowhere at all.
+    """
+    listings = collect_cmake(base)
+    if not listings:
+        return
+    declared = ''
+    for path in listings:
+        text = read(path)
+        if text is not None:
+            declared += text
+    if not declared:
+        return
+    for path in sources:
+        name = os.path.basename(path)
+        if not name.endswith(CMAKE_SOURCE_EXT):
+            continue
+        if name in declared:
+            continue
+        findings.append(Finding(
+            'P-15', 'error', path, 1,
+            '%s is not named in any CMakeLists.txt of this project, so nothing '
+            'compiles it; add it to the macro_declare_executable that needs it'
+            % name))
+
+
 def check_threads(sources, findings, read):
     """P-10 and P-11, both of which need the whole project to decide.
 
@@ -1043,6 +1093,14 @@ def audit_words(text):
 
 AUDIT_SPREAD = 4    #!< a word more entries than this use says nothing about pairing
 
+# A clause of the closing paragraph shorter than this is a connective, not a rule.
+AUDIT_CLAUSE = 20
+
+# Entries of AGENTS.md section 6 that deliberately state two rules in one
+# sentence. Raise it only when a new entry covers two rules; the count is what
+# reports a rule added to api.json and never written on the page.
+AUDIT_MERGED = 1
+
 
 def audit_weights(texts):
     """How much each word says about which two entries are the same rule.
@@ -1066,14 +1124,54 @@ def audit_overlap(left, right, weight):
 
 
 def audit_bullets(text):
-    """Section 6 of AGENTS.md, one entry per bullet, or None when there is no section."""
+    """Section 6 of AGENTS.md as entries, or None when there is no section.
+
+    Section 6 does not spend a bullet on every rule. It gives the ones that cost a
+    redesign a bullet each, names the rest in a closing paragraph, and puts two
+    rules in one bullet where one sentence covers both. That compression is what
+    keeps the page inside the entry toll, so an entry here is a bullet or a clause
+    of the closing paragraph, and the count is not the number of rules.
+    """
     section = re.search(r'\n## 6\.(.*?)\n## 7\.', text, re.DOTALL)
     if section is None:
         return None
     found = []
     for block in re.split(r'^- \*\*', section.group(1), flags=re.MULTILINE)[1:]:
-        found.append(' '.join(block.replace('*', ' ').replace('`', ' ').split()))
+        bullet, _, trailing = block.partition('\n\n')
+        found.append(' '.join(bullet.replace('*', ' ').replace('`', ' ').split()))
+        _lead, colon, named = trailing.partition(':')
+        for clause in re.split(r',| and ', named if colon else trailing):
+            clause = ' '.join(clause.replace('*', ' ').replace('`', ' ').split())
+            if len(clause) >= AUDIT_CLAUSE:
+                found.append(clause)
     return found
+
+
+def audit_coverage(stated, entries, problems):
+    """Is every prohibition still named in AGENTS.md section 6, and nothing else.
+
+    The ids cannot be compared: section 6 carries no rule numbers, and it names
+    fourteen rules in fewer entries than that. What can be compared is the wording.
+    A rule that shares no wording of its own with any entry has dropped out of the
+    page, and an entry that shares none with any rule is text section 6 has grown
+    that no rule states. Either one breaks the claim the page makes about itself.
+    """
+    weight = audit_weights([sentence for _identifier, sentence in stated] + entries)
+    for identifier, sentence in stated:
+        if not any(audit_overlap(sentence, entry, weight) > 0.0 for entry in entries):
+            problems.append('%s is stated in api.json and section 6 of AGENTS.md '
+                            'names no rule with wording of its own in common: "%s"'
+                            % (identifier, sentence[:60]))
+    for entry in entries:
+        if not any(audit_overlap(sentence, entry, weight) > 0.0
+                   for _identifier, sentence in stated):
+            problems.append('section 6 of AGENTS.md states a rule api.json does not: '
+                            '"%s"' % entry[:60])
+    if len(entries) + AUDIT_MERGED != len(stated):
+        problems.append(
+            'section 6 of AGENTS.md has %d entry(s) and %d of them state two rules, '
+            'which names %d of the %d prohibition(s) api.json states'
+            % (len(entries), AUDIT_MERGED, len(entries) + AUDIT_MERGED, len(stated)))
 
 
 def audit_pairing(stated, written, what, problems, labels=None):
@@ -1156,18 +1254,13 @@ def audit_prohibitions(api_path):
             problems.append('AGENTS.md has no section 6 to compare')
         else:
             bullets = len(entries)
-            if bullets != len(stated):
-                problems.append(
-                    'AGENTS.md section 6 has %d bullet(s) and api.json states %d '
-                    'prohibition(s)' % (bullets, len(stated)))
-            else:
-                audit_pairing(named, entries, 'AGENTS.md bullet', problems)
+            audit_coverage(named, entries, problems)
 
     for problem in problems:
         print('error: ' + problem)
     print('%d prohibition(s) in api.json, %d implemented, %s in AGENTS.md section 6'
           % (len(stated), len(checked),
-             '%d bullet(s)' % bullets if bullets is not None else 'not read'))
+             '%d entry(s)' % bullets if bullets is not None else 'not read'))
     return 1 if problems else 0
 
 
@@ -1253,6 +1346,7 @@ def main():
         check_file(path, text.splitlines(), known, findings)
     check_roles(sources, findings, read)
     check_threads(sources, findings, read)
+    check_sources_declared(base, sources, findings, read)
     check_subscriptions(sources, findings, read)
     check_deferred_responses(sources, findings, read)
     check_generate_target(base, findings, read)

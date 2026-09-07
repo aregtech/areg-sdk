@@ -1531,8 +1531,7 @@ function(areg_generate_documents)
             set_property(GLOBAL PROPERTY AREG_GENDOC_${_input_id}_DIR "${_input_gen}")
         endforeach()
 
-        # Re-configure when any document read is edited, imports included.
-        set_property(DIRECTORY "${_call_dir}" APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${_inputs})
+        set_property(DIRECTORY "${CMAKE_SOURCE_DIR}" APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${_inputs})
 
         if (NOT AREG_GENERATE_ONLY)
             target_sources(${_lib} PRIVATE "${_sources}")

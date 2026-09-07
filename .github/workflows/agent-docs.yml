@@ -184,6 +184,28 @@ jobs:
           cmake --build "${RUNNER_TEMP}/citest/build" -j $(nproc)
           "${RUNNER_TEMP}/citest/build/bin/citest.elf"
 
+      # A service document is a configure dependency, so editing one and running only
+      # cmake --build regenerates from it. A scaffolded project reaches the generate
+      # step through add_subdirectory(), and the dependency was recorded against a
+      # directory CMake had already finished, which discarded it: the build stayed
+      # green and the binary kept the previous document.
+      - name: Check a document edit reaches the build without reconfiguring by hand
+        run: |
+          set -eu
+          doc="${RUNNER_TEMP}/citest/src/services/HelloService.siml"
+          gen="${RUNNER_TEMP}/citest/build/generate"
+          ! grep -rq 'probe_regenerated' "${gen}"
+          python3 - "${doc}" <<'PY'
+          import io, sys
+          path = sys.argv[1]
+          text = io.open(path, encoding='utf-8').read()
+          mark = text.index('</MethodList>')
+          added = '        <Method ID="991" Name="probe_regenerated" MethodType="Broadcast"/>\n'
+          io.open(path, 'w', encoding='utf-8', newline='').write(text[:mark] + added + text[mark:])
+          PY
+          cmake --build "${RUNNER_TEMP}/citest/build" -j $(nproc)
+          grep -rq 'probe_regenerated' "${gen}"
+
   evals:
     name: evaluation bank
     runs-on: ubuntu-latest

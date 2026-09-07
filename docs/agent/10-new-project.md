@@ -113,14 +113,21 @@ Two kinds of line, and nothing else.
 ```cmake
 addServiceInterface(gen_myproject src/services/HelloService.siml)
 
-macro_declare_executable(myproject_provider gen_myproject provider.cpp)
-macro_declare_executable(myproject_consumer gen_myproject consumer.cpp)
+macro_declare_executable(myproject_provider gen_myproject provider.cpp HelloProvider.cpp)
+macro_declare_executable(myproject_consumer gen_myproject consumer.cpp HelloConsumer.cpp)
 ```
+
+**Every hand-written `.cpp` is named on the line of the executable that needs it**,
+and a file may be named on more than one. A source left off every line is compiled by
+nothing: the build reaches the link step and reports an undefined reference to a
+mangled symbol, naming neither the file nor the line that should have carried it.
+Splitting a component into its own `.cpp` is what usually leaves one behind, so
+`check_contract.py` reports it as P-15 before you build.
 
 | Function | What it does |
 |---|---|
 | `addServiceInterface(<target> <path.siml>)` | Runs the generator at configure time and builds the generated code into a static library named `<target>`. |
-| `macro_declare_executable(<name> <sources, targets, resources...>)` | Declares an executable. Everything after the name is sorted automatically into source files, libraries to link and resources, in any order. Name the generated target here to link it. |
+| `macro_declare_executable(<name> <sources, targets, resources...>)` | Declares an executable. Everything after the name is sorted automatically into source files, libraries to link and resources, in any order. Name the generated target here to link it, and every hand-written source the executable needs. |
 
 You never call the generator by hand and never add generated files to a source list.
 
@@ -171,5 +178,6 @@ start "" build\bin\mtrouter.exe --service
 - [ ] Every `.siml` has an `addServiceInterface` line.
 - [ ] Every executable is declared with `macro_declare_executable` and names its
       generated target.
+- [ ] Every hand-written `.cpp` is named on a `macro_declare_executable` line.
 - [ ] No generated file is listed as a source and none was edited.
 - [ ] The build produced the expected binaries.
