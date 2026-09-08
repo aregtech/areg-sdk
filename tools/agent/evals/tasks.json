@@ -706,6 +706,25 @@
         "rule": "P-16"
       },
       "teaches": "Timer's constructor stores areg::generate_name(timerName), so name() carries a nanosecond stamp and never equals the string the timer was built with; timers are told apart in process_timer by address, and name() is for log output"
+    },
+    {
+      "id": "r28-duplicate-state-name",
+      "kind": "repair",
+      "prompt": "The project refuses to configure: the code generator will not read the state machine. Diagnose it and fix it.",
+      "expect": [
+        "gate: closed"
+      ],
+      "reference": "06-state-machine",
+      "defect": {
+        "file": "src/services/Gate.fsml",
+        "find": "<State ID=\"32\" Name=\"Start2\" Kind=\"Start\">",
+        "replace": "<State ID=\"32\" Name=\"Start\" Kind=\"Start\">"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "3"
+      },
+      "teaches": "state names are unique across the whole document and not per level, and a Kind=\"Start\" marker is a state for that purpose"
     }
   ]
 }

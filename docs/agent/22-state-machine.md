@@ -118,6 +118,13 @@ hand: it costs a great many tokens and draws worse than the tool.
 Every element carries an `ID`, and the IDs are unique across the whole document.
 Numbering them in reading order is enough.
 
+**State names are unique across the whole document, not per level.** Every level is
+flattened into one C++ enumeration, so a substate of one composite collides with a
+substate of another and with the top level. A `Kind="Start"` marker counts as a state:
+a nested level that also begins at one needs a different name for it -- `Start`,
+`BrewStart`, `RinseStart`. A collision is `error[3/RULE_STATE_NAME]`, reported by
+`check_contract.py` and refused by the generator.
+
 **Every name a state or a transition uses is declared in its own top-level list**, all
 of them direct children of `<StateMachine>` and all of them optional:
 
@@ -255,12 +262,21 @@ composite then carries it out of the subtree.
     <TransitionList>
         <Transition ID="30" Kind="External" StimulusKind="Event" Stimulus="Done" To="40"/>
     </TransitionList>
-    <StateList>  <!-- ... ends in a State of Kind="Final" ... -->
+    <StateList>
+        <State ID="31" Name="WorkStart" Kind="Start">
+            <TransitionList>
+                <Transition ID="32" Kind="Initial" To="33"/>
+            </TransitionList>
+        </State>
+        <State ID="33" Name="WORK_RUNNING" Kind="Normal"> <!-- ... --> </State>
+        <State ID="35" Name="WORK_DONE" Kind="Final"/>
     </StateList>
 </State>
 ```
 
-Without it a finished level simply stops and nothing follows.
+Without `OnFinal` a finished level simply stops and nothing follows. The nested marker
+is `WorkStart` and not `Start`, because the top level already has a state of that name
+and the two levels share one enumeration.
 
 **The self-event is queued, so the nested `Final` is not where the work goes.**
 Entering the nested `Final` runs its `EntryList` at once, with the machine still
@@ -363,11 +379,11 @@ returns `false`, exactly as it does for a state with no transition at all.
 | `And`, `Or` | two or more operands |
 | `Not` | one operand |
 | `Attr`, `Const`, `Param` | a reference, bound by the target's `ID`, never by its name |
+| `Lit` | verbatim text, emitted as written |
 
 `Attr` names an `AttributeList` entry, `Param` an argument of the stimulus, and `Const`
 a `<ConstantList>` entry, declared beside `AttributeList` exactly as a `.siml` declares
 one: `<Constant ID="18" Name="MaxHolds" DataType="uint32" Value="3"/>`.
-| `Lit` | verbatim text, emitted as written |
 
 `state="ok"` is required, and `Expr` with it. `state="draft"` means the guard is still
 unfinished text, and the generator refuses the document rather than guess what it
@@ -407,15 +423,32 @@ generator from the extension. A machine that imports others needs only one call.
 - Never raise a stimulus before `init_fsm()`. That asserts as well.
 - Never edit `*FSM.*`, `*ActionHandler.*` or `*Defs.*`. Change the `.fsml`.
 - Never target a `Kind="Start"`, nor a `Kind="History"` from inside its own level.
+- Never give two states one name, however deeply apart they sit. The commonest case is
+  a nested level whose `Kind="Start"` marker is also called `Start`.
 - Never import a machine whose Start chain lands on a state that waits for a trigger.
   Entering the hosting state will not send one, and the machine stops there.
 - Never expect `State/@History` to tell a fresh entry from a resume. It is on the state
   and applies to both; a `Kind="History"` marker is what tells them apart.
 - Never give an `Internal` transition a `To`, and never leave one off an `External`.
 
-## More
+## The schema, when this page does not have the spelling
 
-`../../tools/schema/fsml.xsd` is the full grammar. It is 50 KB and answers only what
-an element may contain, never what it means: this page and the recipe carry the
-meaning. Open it to settle a spelling nothing here gives, and never to look up a
-semantic. A refused document is `explain_rule.py`, not the schema.
+`../../tools/schema/fsml.xsd` is the full grammar, and every type in it carries an
+`xs:documentation` saying what it is for. It is where the closed value sets live --
+which words `StimulusKind`, `TransitionKind`, `Source`, `MethodType`, `HistoryDepth`
+and `Threading` accept -- and the exact attributes of a registry entry. It is 50 KB,
+so read the three blocks that answer those, not the file:
+
+```bash
+sed -n '/Simple types/,/Shared complex types/p
+        /Operations (EntryList/,/Transitions and conditions/p
+        /<!-- Registries/,/<!-- Layout (editor-only/p' <areg-sdk>/tools/schema/fsml.xsd
+```
+
+That is 26 KB and 42 definitions in one read: every enumerated value, the five
+operations an `EntryList` may hold, and every list under `<StateMachine>`. Read it
+**before writing the document**, once. The blocks it leaves out are the guard node
+kinds, which the table above gives whole, and `Layout`, which `fsml_layout.py` writes.
+
+A refused document is `explain_rule.py <number>`, not the schema: the schema says what
+an element may contain and never why a rule refused this one.

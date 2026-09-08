@@ -129,8 +129,14 @@ virtual void on_string_on_change_update(const areg::String & StringOnChange, are
 
 ### `Notify` on an attribute
 
-`OnChange` sends an update only when the value differs from the previous one.
-`Always` sends one on every `set_`. Absent means `OnChange`.
+`OnChange` sends an update on either of two conditions: the value differs from the one
+held, or the attribute is not valid. So a `set_` to the value already held notifies
+nobody, while the first `set_` after `invalidate_<name>()` always does.
+
+`Always` sends one on every `set_`, with no comparison. Absent means `OnChange`.
+
+Pick `Always` for an attribute a consumer waits on as an event, `OnChange` for one it
+reads as a value. What the choice costs a consumer is in `31-consumer.md`.
 
 ---
 

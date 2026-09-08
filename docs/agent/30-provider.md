@@ -143,7 +143,9 @@ set_service_provider_state(PubSub::RunState::Running);   // subscribers are noti
 ```
 
 Whether a subscriber hears about every `set_` or only about changes is decided in the
-document by `Notify="Always"` or `Notify="OnChange"`, not in this code.
+document by `Notify="Always"` or `Notify="OnChange"`, not in this code. Under
+`OnChange`, setting an attribute to the value it already holds notifies nobody, so an
+attribute a consumer waits on as an event wants `Always`.
 
 Set every attribute once during startup. Until it is set it is invalid, and a
 consumer that subscribes receives the state as invalid rather than a value.

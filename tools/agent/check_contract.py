@@ -34,11 +34,13 @@ DEFAULT_API = os.path.join(ROOT, 'docs', 'agent', 'api.json')
 # decided; there is no copy of it here to fall out of step.
 RULES_XML = os.path.join(ROOT, 'tools', 'schema', 'rules.xml')
 FINAL_ENTRY_RULE = 'RULE_FINAL_ENTRY_ORDER'
+STATE_NAME_RULE = 'RULE_STATE_NAME'
+ERROR_BAND = 0
 WARNING_BAND = 100
 
 
-def final_entry_code():
-    """The code a nested Final operation is reported under, from the catalogue.
+def rule_code(name, band, what):
+    """The code a finding is reported under, from the shared catalogue.
 
     The catalogue is the only source of it. A checkout without the file cannot say
     what its findings mean, so it says that instead of inventing a number.
@@ -51,15 +53,17 @@ def final_entry_code():
                          'from the repository.' % (RULES_XML, failure))
 
     for rule in root.iter('Rule'):
-        if rule.get('Name') == FINAL_ENTRY_RULE:
-            return str(int(rule.get('Number')) + WARNING_BAND)
+        if rule.get('Name') == name:
+            return str(int(rule.get('Number')) + band)
 
-    raise SystemExit('the rule registry %s does not carry %s, so a nested Final '
-                     'operation has no number to be reported under'
-                     % (RULES_XML, FINAL_ENTRY_RULE))
+    raise SystemExit('the rule registry %s does not carry %s, so %s has no number to '
+                     'be reported under' % (RULES_XML, name, what))
 
 
-FINAL_ENTRY_CODE = final_entry_code()
+FINAL_ENTRY_CODE = rule_code(FINAL_ENTRY_RULE, WARNING_BAND,
+                             'a nested Final operation')
+STATE_NAME_CODE = rule_code(STATE_NAME_RULE, ERROR_BAND,
+                            'a repeated state name')
 
 SOURCE_EXT = ('.cpp', '.cxx', '.cc', '.hpp', '.hxx', '.hh', '.h')
 SKIP_DIRS = {'.git', '.svn', '.hg', 'build', 'out', 'generate', 'generated',
@@ -393,17 +397,55 @@ FINAL_OPERATIONS = ('ActionCall', 'AttributeSet', 'TimerStart', 'TimerStop',
 FSML_IGNORE = 'areg-check: ignore ' + FINAL_ENTRY_CODE
 
 
-def line_of(lines, name):
-    """The line a state name is declared on, or 1 when it cannot be found."""
+def line_of(lines, name, occurrence=1):
+    """The line a state name is declared on, or 1 when it cannot be found.
+
+    occurrence picks which declaration of a repeated name is wanted, counting
+    from 1 in document order.
+    """
     needle = 'Name="%s"' % name
+    seen = 0
     for number, line in enumerate(lines):
         if needle in line:
-            return number + 1
+            seen += 1
+            if seen == occurrence:
+                return number + 1
     return 1
 
 
+def check_state_names(doc, root, lines, findings):
+    """Two states of one document sharing a name.
+
+    Every level is flattened into one C++ enumeration, so the collision is across
+    the whole document and not only within a level. A Kind="Start" marker is a
+    state here, which is why a nested level that also begins at one cannot call it
+    Start a second time. The code generator refuses the document for this and
+    generates nothing, and it does so at cmake configure time; reporting it here
+    costs a run one call instead of a configure and a rebuild.
+    """
+    counted = {}
+    for state in root.iter('State'):
+        name = state.get('Name', '')
+        if not name:
+            continue
+        counted[name] = counted.get(name, 0) + 1
+        if counted[name] == 1:
+            continue
+        first = line_of(lines, name)
+        findings.append(Finding(
+            STATE_NAME_CODE, 'error', doc, line_of(lines, name, counted[name]),
+            'state "%s" repeats a name already declared on line %d. State names are '
+            'unique across the whole document, not per level: every level is '
+            'flattened into one enumeration. Rename this one with its level as a '
+            'prefix, the way a nested marker is "WorkStart" and not "Start". '
+            'Nothing has to be repointed: a transition names its target by ID'
+            % (name, first)))
+    return findings
+
+
 def check_state_machines(machines, findings, problems):
-    """An operation on a nested Final, where ordering is not what it looks."""
+    """A repeated state name, and an operation on a nested Final where ordering
+    is not what it looks."""
     for doc in machines:
         try:
             root = ET.parse(doc).getroot()
@@ -415,6 +457,7 @@ def check_state_machines(machines, findings, problems):
                 lines = handle.read().splitlines()
         except OSError:
             lines = []
+        check_state_names(doc, root, lines, findings)
         # The composite each nested state sits in. A Final directly under the
         # document's own StateList has none: it ends the whole machine, there is
         # no outer transition, and its EntryList is the only place an operation

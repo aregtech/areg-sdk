@@ -14,15 +14,37 @@ them and change what they do while they run. Why an application does not work is
 | `logcollector` | you want the logs of several processes in one place | `./build/bin/logcollector.elf --service &` | kill the process |
 | `logobserver` | you want to watch those logs live, or to change a scope | `./build/bin/logobserver.elf -n -q` | its own exit |
 
-**`--service` is not optional.** Console mode is the default and reads commands from
-a terminal. With no terminal -- every shell an agent runs in -- neither service binds
-its port. Neither reports an error, and they fail differently, so no exit code tells
-you:
+What a project needs follows from the `--mode` it was set up with, and nothing else:
 
-| Started without `--service` | What happens |
+| `setup_project.py --mode` | Start, in this order |
 |---|---|
-| `mtrouter` | keeps running, paints its display, **never binds 8181**. It looks alive, routes nothing, and every consumer waits for a provider it can never reach. |
-| `logcollector` | prints its banner and **exits 0 in under half a second**. The application then logs to its own file and the collector database stays empty. |
+| `local` | the application. Nothing else: no router, no collector |
+| `ipc`, `pubsub` | `mtrouter`, then the provider, then the consumer |
+
+Add `logcollector` to either only to gather the logs of several processes in one
+place; no application needs it to run.
+
+**With no option at all, both run as `--console`.** That is the documented default and
+it is not broken: a console `mtrouter` binds 8181 and routes, a console `logcollector`
+binds 8282 and collects. Started by hand from a terminal, either is a working service.
+
+**Console mode also reads commands from stdin, and end of input is `--quit`.** The
+shell an agent runs in redirects stdin from `/dev/null`, so the service reads end of
+input immediately and shuts itself down. It exits **0**, having printed only its
+banner, so nothing in what you can see afterwards reports a failure:
+
+| Started without `--service`, stdin from `/dev/null` | What happens |
+|---|---|
+| `mtrouter` | paints its display, then quits within a second. 8181 is left unbound and every consumer waits for a provider it can never reach. |
+| `logcollector` | prints its banner and quits in under half a second. The application then logs to its own file and the collector database stays empty. |
+
+`--service` is the same program without the console loop: it never reads stdin, so the
+redirect cannot end it. **An agent starts both with `--service`, always.** The only
+other way to keep a console one alive is to hold its stdin open, which is more moving
+parts for the same result.
+
+`--help` on any of the four prints its whole option table, which is the answer to a
+spelling this page does not give.
 
 So check the port, never the process list and never the exit code:
 

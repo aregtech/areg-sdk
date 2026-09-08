@@ -161,6 +161,33 @@ Never gate consumer logic on "the response comes before any notification". Drive
 next step from whichever message actually carries the fact you need, and accept the
 first stage update arriving early.
 
+### An update you are waiting for may never come
+
+Under `Notify="OnChange"` -- the default -- the provider sends an update only when the
+value differs from the one it holds, or when the attribute is invalid. **A step that
+waits for an attribute to be set to the value it already has waits forever**, and the
+symptom is a scenario that runs correctly to that point and then times out.
+
+The two shapes that hit it are a value that returns to where it started, and a value
+whose update crossed with the response that made you start waiting:
+
+```cpp
+void Consumer::response_cancel_order(bool accepted)
+{
+    mStep = WaitRefund;
+    if (mCredit == mFullCredit)     // the refund update may already have arrived,
+    {                               // and there will not be a second one
+        refund_seen();
+        return;
+    }
+    arm_watchdog();
+}
+```
+
+Test the value you already hold before arming a wait on it. Where a consumer genuinely
+needs every `set_` as an event rather than a value, that is what `Notify="Always"` on
+the attribute is for -- `20-service-interface.md`.
+
 ---
 
 ## 6. Before you move on
@@ -171,6 +198,7 @@ first stage update arriving early.
 - [ ] Every broadcast and attribute you handle is subscribed to.
 - [ ] Attribute handlers check `areg::DataState` before using the value.
 - [ ] No step waits for a response that a notification may legitimately precede.
+- [ ] No step waits for an attribute update to a value the consumer already holds.
 - [ ] The dependency index matches the order of `REGISTER_DEPENDENCY` in the model.
 
 Next: `32-model.md` to register the component.
