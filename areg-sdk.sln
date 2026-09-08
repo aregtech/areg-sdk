@@ -963,38 +963,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{F7
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "33_tempalarm", "33_tempalarm", "{F5C7A016-8FEF-4B82-9F0B-96014033B9DE}"
-	ProjectSection(SolutionItems) = preProject
-		examples\33_tempalarm\CMakeLists.txt = examples\33_tempalarm\CMakeLists.txt
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "33_generated", "examples\33_tempalarm\33_generated.vcxproj", "{3EAE8C7D-DA9F-48D1-A6E2-FA807281327C}"
-	ProjectSection(ProjectDependencies) = postProject
-		{98743716-82FC-4B02-96AF-E6F649403A0A} = {98743716-82FC-4B02-96AF-E6F649403A0A}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "33_monitor", "examples\33_tempalarm\33_monitor.vcxproj", "{FB482FF4-62B5-4A68-B24B-4B2DD2C4E259}"
-	ProjectSection(ProjectDependencies) = postProject
-		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
-		{3EAE8C7D-DA9F-48D1-A6E2-FA807281327C} = {3EAE8C7D-DA9F-48D1-A6E2-FA807281327C}
-		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "33_operator", "examples\33_tempalarm\33_operator.vcxproj", "{685E7DE5-792D-4403-A8E5-3CE63022A762}"
-	ProjectSection(ProjectDependencies) = postProject
-		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
-		{3EAE8C7D-DA9F-48D1-A6E2-FA807281327C} = {3EAE8C7D-DA9F-48D1-A6E2-FA807281327C}
-		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "34_coffeemachine", "34_coffeemachine", "{FD2627E1-B59E-43DB-ACA9-EF6E5AAFD741}"
-	ProjectSection(SolutionItems) = preProject
-		examples\34_coffeemachine\CMakeLists.txt = examples\34_coffeemachine\CMakeLists.txt
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{CD640475-8EFA-4005-9099-B3B13E12BE2D}"
-	ProjectSection(SolutionItems) = preProject
-		examples\33_tempalarm\services\TempAlarm.siml = examples\33_tempalarm\services\TempAlarm.siml
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "34_generated", "examples\34_coffeemachine\34_generated.vcxproj", "{96F935CF-BF68-4A0B-AABF-BF22AE887AD6}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -1016,10 +994,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "34_user", "examples\34_coff
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{4B8E2190-2784-4DF9-BEB2-15ED65EDCD2A}"
-	ProjectSection(SolutionItems) = preProject
-		examples\34_coffeemachine\services\CoffeeMachine.fsml = examples\34_coffeemachine\services\CoffeeMachine.fsml
-		examples\34_coffeemachine\services\CoffeeMachineService.siml = examples\34_coffeemachine\services\CoffeeMachineService.siml
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
