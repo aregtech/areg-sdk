@@ -89,6 +89,19 @@ STOP = {'a', 'an', 'the', 'to', 'of', 'is', 'in', 'at', 'by', 'that', 'this', 'i
         'other', 'another', 'same', 'such', 'each', 'but', 'if', 'else', 'error',
         'warning', 'info', 'information', 'rule'}
 
+# What to run next when the rule alone does not say which values are legal. The
+# schema is the only place the answer is written down, and tools/schema_help.py
+# reads it. Keyed by rule name; {} is filled with the document type.
+SEE_ALSO = {
+ 'RULE_BAD_VALUE':        'python3 tools/schema_help.py <Element>/@<Attribute>{}',
+ 'RULE_UNKNOWN_ELEMENT':  'python3 tools/schema_help.py <Element>{}',
+ 'RULE_UNKNOWN_ATTRIBUTE': 'python3 tools/schema_help.py <Element>{}',
+ 'RULE_UNRESOLVED_ELEMENT': 'python3 tools/schema_help.py <Element>{}',
+ 'RULE_DROPPED_ELEMENT':  'python3 tools/schema_help.py <Element>{}',
+ 'RULE_RETIRED_ELEMENT':  'python3 tools/schema_help.py <Element>{}',
+ 'RULE_UNRESOLVED_TYPE':  'python3 tools/schema_help.py <TypeName>{}',
+}
+
 FIX_WEIGHT = 0.25   #!< a match in the corrective action counts for less than one in the rule
 
 
@@ -196,13 +209,35 @@ def wrap(text, label):
     return out
 
 
-def show(band, rule, reported):
+def show(band, rule, reported, document=None, at=None):
     print('{} -- {} ({})'.format(reported, rule['name'], band))
     print(wrap(rule['summary'], 'what: '))
     if rule['fix']:
         print(wrap(rule['fix'], 'fix:  '))
     print('    documents: {}   section: {}'.format(
         ', '.join(rule['documents']) or '-', rule['section'] or '-'))
+    hint = SEE_ALSO.get(rule['name'])
+    if hint:
+        narrow = ' --document ' + document if document else ''
+        print('    next: ' + hint.format(narrow))
+    if at:
+        answer_from_schema(at, document)
+
+
+def answer_from_schema(name, document):
+    """What the schema allows for the name the finding reported."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    if here not in sys.path:
+        sys.path.insert(0, here)
+    try:
+        import schema_help
+    except ImportError:
+        print('    tools/schema_help.py is missing: it is what reads the schema.')
+        return
+    documents = [document] if document else schema_help.DOCUMENTS
+    print('')
+    if not schema_help.answer(schema_help.load(documents), name, False):
+        print('{} -- the schema knows no such name'.format(name))
 
 
 def main():
@@ -217,6 +252,9 @@ def main():
     parser.add_argument('--search', metavar='TEXT',
                         help='find the rule from words in the message, for a '
                              'message quoted without its number')
+    parser.add_argument('--at', metavar='NAME',
+                        help='the element, attribute (Element/@Name) or type the '
+                             'finding named: prints what the schema allows for it')
     args = parser.parse_args()
 
     rules = load()
@@ -231,7 +269,7 @@ def main():
         for rule in hits:
             for band in rule['bands']:
                 offset = dict((b, o) for o, b in BANDS)[band]
-                show(band, rule, rule['number'] + offset)
+                show(band, rule, rule['number'] + offset, args.document, args.at)
         return 0
 
     if args.list:
@@ -252,7 +290,7 @@ def main():
             missing += 1
             continue
         for band, rule in found:
-            show(band, rule, reported)
+            show(band, rule, reported, args.document, args.at)
 
     return 1 if missing else 0
 

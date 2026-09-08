@@ -453,6 +453,7 @@ CI_GATES = [
 # instruction, and an agent follows it before it discovers that.
 TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios.py',
          'check_agent_docs.py', 'check_contract.py', 'explain_rule.py', 'run_evals.py',
+         'schema_help.py',
          'check_recipes.py', 'check-env.sh', 'check-env.bat', 'codegenerate.sh',
          'codegenerate.bat', 'setup-project.sh', 'setup-project.bat']
 
