@@ -61,8 +61,21 @@ which is also where a component's role name and address are.
 
 ## 2. Rules
 
-- **One `process_timer` for all timers.** A component with several timers gets one
-  callback; tell them apart with `timer.name()` or by comparing addresses.
+- **One `process_timer` for all timers, and you tell them apart by address.** A
+  component with several timers gets one callback. Compare `&timer` against each member:
+
+  ```cpp
+  void process_timer(areg::Timer & timer) final
+  {
+      if      (&timer == &mWatchdog)    { ... }
+      else if (&timer == &mResumeDelay) { ... }
+  }
+  ```
+
+  **Never compare `timer.name()` to the string you constructed the timer with.** The
+  constructor passes that string through `areg::generate_name()`, which appends a
+  nanosecond stamp, so the name you gave is only a prefix and `timer.name() ==
+  "Watchdog"` is never true. `name()` is for log output, not for dispatch.
 - **Do not block in `process_timer`.** It runs on a dispatcher thread and stops every
   component of that thread while it runs.
 - **Always `stop_timer()` before restarting.** A timer that expired naturally still

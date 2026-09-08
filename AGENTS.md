@@ -153,7 +153,7 @@ transforms, the connection states, and every section 6 rule with its detection h
 ## 6. Never
 
 Each line closes a class of wrong code, not a style preference.
-`tools/agent/check_contract.py` reports all fifteen from the sources and documents you
+`tools/agent/check_contract.py` reports all sixteen from the sources and documents you
 write, never from the generate target; run it before you build. The seven below cost a
 redesign, not an edit; know them first.
 
@@ -174,12 +174,13 @@ redesign, not an edit; know them first.
 - **Never use exceptions.** AREG does not throw and does not catch. Return `bool`,
   `std::optional`, or an error code.
 
-The other seven are one-line fixes: a `REGISTER_WORKER_THREAD` consumer name the
+The other eight are one-line fixes: a `REGISTER_WORKER_THREAD` consumer name the
 component does not answer to, two
 components sharing a role name in one process, a header taken from a `private/`
 folder, a watchdog timeout on a thread whose watchdog never starts, a response sent
-after its handler returned, an operation on a nested `.fsml` `Final` state, and a
-hand-written source file no `macro_declare_executable` names.
+after its handler returned, an operation on a nested `.fsml` `Final` state, a
+hand-written source file no `macro_declare_executable` names, and a timer told apart
+in `process_timer` by `name()` rather than by address.
 
 ---
 

@@ -503,6 +503,11 @@
       "id": "P-15",
       "rule": "macro_declare_executable takes the source files of the target after its name, and every hand-written .cpp of the project has to be named in one of them. A source file left out of all of them is compiled by nothing, and the omission surfaces at link time as an undefined reference to a mangled constructor, naming neither the file nor the CMakeLists.txt line that should have carried it. Splitting a component into its own .cpp is what usually leaves one behind.",
       "detect": "a hand-written .cpp under the project whose file name appears in no CMakeLists.txt of that project"
+    },
+    {
+      "id": "P-16",
+      "rule": "A component with several timers gets one process_timer, and the branches inside it are told apart by address, not by name. Timer's constructor stores areg::generate_name(timerName), which appends a nanosecond stamp, so name() returns \"<prefix>:{...}\" and never equals the string the timer was constructed with. Every branch written as timer.name() == \"Watchdog\" is skipped, process_timer runs and does nothing, and the application waits for work that never happens. Compare &timer against the member timer: &timer == &mWatchdog. name() is for log output.",
+      "detect": "a comparison of the process_timer parameter's name() against a string literal"
     }
   ],
   "base_api_notes": [

@@ -209,6 +209,7 @@ CHECKS = [
     (FINAL_ENTRY_CODE, 'advice',
      'an operation in the EntryList of a Final state nested inside another state'),
     ('P-15', 'error',   'a hand-written source file no CMakeLists.txt names'),
+    ('P-16', 'error',   'a timer told apart by name() compared to a literal'),
     ('B-01', 'advice',  'an areg::String passed to a printf style log macro'),
     ('B-02', 'advice',  'a range-for over an areg container'),
     ('B-04', 'advice',  'a container name or header with the obsolete TE prefix'),
@@ -906,6 +907,39 @@ def check_sources_declared(base, sources, findings, read):
             % name))
 
 
+def check_timer_dispatch(sources, findings, read):
+    """P-16. A timer dispatched by the name it was constructed with.
+
+    Timer's constructor stores areg::generate_name(timerName), which appends a
+    nanosecond stamp, so name() returns "<prefix>:{...}" and never equals the
+    string the timer was built with. Every branch is skipped, process_timer does
+    nothing, and the application waits. Timers are told apart by address.
+    """
+    literal = re.compile(r'\.name\s*\(\s*\)\s*[=!]=\s*(?:"|String\s*\()'
+                         r'|(?:"[^"]*"|String\s*\([^)]*\))\s*[=!]=\s*\w+\.name\s*\(\s*\)')
+    for path in sources:
+        text = read(path)
+        if text is None:
+            continue
+        params = set(re.findall(r'\bprocess_timer\s*\(\s*(?:const\s+)?'
+                                r'(?:areg::)?Timer\s*&\s*(\w+)', text))
+        if not params:
+            continue
+        for number, raw in enumerate(text.splitlines()):
+            line = strip_noise(raw)
+            if not literal.search(line):
+                continue
+            for name in params:
+                if re.search(r'\b%s\s*\.name\s*\(' % re.escape(name), line):
+                    findings.append(Finding(
+                        'P-16', 'error', path, number + 1,
+                        'the timer name is generated from the string the timer was '
+                        'constructed with, so "%s.name()" never equals a literal and '
+                        'this branch is never taken; compare the address instead, '
+                        '"&%s == &mYourTimer"' % (name, name)))
+                    break
+
+
 def check_threads(sources, findings, read):
     """P-10 and P-11, both of which need the whole project to decide.
 
@@ -1372,6 +1406,7 @@ def main():
     check_sources_declared(base, sources, findings, read)
     check_subscriptions(sources, findings, read)
     check_deferred_responses(sources, findings, read)
+    check_timer_dispatch(sources, findings, read)
     check_generate_target(base, findings, read)
     check_state_machines(machines, findings, problems)
 
