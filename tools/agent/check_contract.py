@@ -28,6 +28,39 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 DEFAULT_API = os.path.join(ROOT, 'docs', 'agent', 'api.json')
 
+# A nested Final carrying an operation is registered in the rule catalogue the generator and the editor
+# share, so it is reported under the number they report it under rather than under a
+# second identity of its own. tools/schema/rules.xml is the only place that number is
+# decided; there is no copy of it here to fall out of step.
+RULES_XML = os.path.join(ROOT, 'tools', 'schema', 'rules.xml')
+FINAL_ENTRY_RULE = 'RULE_FINAL_ENTRY_ORDER'
+WARNING_BAND = 100
+
+
+def final_entry_code():
+    """The code a nested Final operation is reported under, from the catalogue.
+
+    The catalogue is the only source of it. A checkout without the file cannot say
+    what its findings mean, so it says that instead of inventing a number.
+    """
+    try:
+        root = ET.parse(RULES_XML).getroot()
+    except (ET.ParseError, OSError) as failure:
+        raise SystemExit('cannot read the rule registry %s: %s\n'
+                         'It is the only place a rule number is decided. Restore it '
+                         'from the repository.' % (RULES_XML, failure))
+
+    for rule in root.iter('Rule'):
+        if rule.get('Name') == FINAL_ENTRY_RULE:
+            return str(int(rule.get('Number')) + WARNING_BAND)
+
+    raise SystemExit('the rule registry %s does not carry %s, so a nested Final '
+                     'operation has no number to be reported under'
+                     % (RULES_XML, FINAL_ENTRY_RULE))
+
+
+FINAL_ENTRY_CODE = final_entry_code()
+
 SOURCE_EXT = ('.cpp', '.cxx', '.cc', '.hpp', '.hxx', '.hh', '.h')
 SKIP_DIRS = {'.git', '.svn', '.hg', 'build', 'out', 'generate', 'generated',
              'node_modules', '__pycache__', 'thirdparty'}
@@ -117,7 +150,7 @@ OTHER_DECL_RE = re.compile(
     r'(?:^|[(,;])\s*(?:const\s+|static\s+|inline\s+)*([A-Za-z_]\w*(?:::\w+)*)\s*'
     r'(?:<[^;{}]*>)?\s*(?:const\s*)?[&*]?\s+(\w+)\s*(?=[;={,):])')
 
-# A variable whose declared type is an areg one. Reused by B-01, B-03, B-07 and
+# A variable whose declared type is an areg one. Reused by B-01, B-07 and
 # B-08 so that all of them fire only on framework objects.
 AREG_DECL_RE = re.compile(
     r'\bareg::(\w+)\s*(?:<[^;{}]*>)?\s*(?:const\s*)?[&*]?\s*(\w+)\s*(?=[;={,)])')
@@ -136,10 +169,6 @@ BANNER_LINES = 20
 # B-01. The printf style log macros take a C string; areg::String is a class and
 # passing it for %s is undefined behaviour that prints rubbish rather than failing.
 LOG_MACRO_RE = re.compile(r'\b(?:LOG|TRACE)_(?:DBG|INFO|WARN|ERR|FATAL|SCOPE)\s*\(')
-
-# B-03. Emptiness has its own predicate; comparing the count is slower to read and
-# is the spelling an agent reaches for out of habit.
-SIZE_EMPTY_RE = re.compile(r'(\w+)\s*(?:\.|->)\s*size\s*\(\s*\)\s*(==|!=|>)\s*0\b')
 
 # P-10. A watchdog timeout is registered per thread; it does nothing unless the
 # watchdog manager is running, and the manager is off by default.
@@ -177,11 +206,11 @@ CHECKS = [
     ('P-11', 'advice',  'a worker thread consumer name nothing answers to'),
     ('P-12', 'error',   'a broadcast or attribute handled but never subscribed to'),
     ('P-13', 'error',   'a response deferred without releasing the request'),
-    ('P-14', 'advice',  'an operation in the EntryList of a Final state nested inside another state'),
+    (FINAL_ENTRY_CODE, 'advice',
+     'an operation in the EntryList of a Final state nested inside another state'),
     ('P-15', 'error',   'a hand-written source file no CMakeLists.txt names'),
     ('B-01', 'advice',  'an areg::String passed to a printf style log macro'),
     ('B-02', 'advice',  'a range-for over an areg container'),
-    ('B-03', 'advice',  'size() == 0 instead of is_empty()'),
     ('B-04', 'advice',  'a container name or header with the obsolete TE prefix'),
     ('B-05', 'advice',  'a name with the obsolete NE or TE prefix'),
     ('B-06', 'advice',  'a name with the obsolete IE prefix'),
@@ -272,8 +301,8 @@ def suppressed(lines, number, rule):
 def areg_variables(lines):
     """Variables in this file whose declared type belongs to areg.
 
-    B-01, B-03 and B-07 all report a call only on one of these, so that an
-    application calling getName() or size() on a type of its own is never touched.
+    B-01 and B-07 both report a call only on one of these, so that an application
+    calling getName() on a type of its own is never touched.
     """
     names = {}
     for raw in lines:
@@ -353,14 +382,14 @@ def collect_documents(base, suffix='.siml'):
     return sorted(found)
 
 
-# P-14. A composite reports that its nested level finished by sending itself the
+# A composite reports that its nested level finished by sending itself the
 # event named by OnFinal, and that event is queued. Entering the nested Final runs
 # its EntryList at once, still inside the composite; the transition out of the
 # composite runs later. An operation placed there therefore observes the state the
 # machine is leaving, not the one it is going to.
 FINAL_OPERATIONS = ('ActionCall', 'AttributeSet', 'TimerStart', 'TimerStop',
                     'EventSend')
-FSML_IGNORE = 'areg-check: ignore P-14'
+FSML_IGNORE = 'areg-check: ignore ' + FINAL_ENTRY_CODE
 
 
 def line_of(lines, name):
@@ -373,7 +402,7 @@ def line_of(lines, name):
 
 
 def check_state_machines(machines, findings, problems):
-    """P-14: an operation on a nested Final, where ordering is not what it looks."""
+    """An operation on a nested Final, where ordering is not what it looks."""
     for doc in machines:
         try:
             root = ET.parse(doc).getroot()
@@ -414,7 +443,7 @@ def check_state_machines(machines, findings, problems):
                 if not found:
                     continue
                 findings.append(Finding(
-                    'P-14', 'advice', doc, line_of(lines, name),
+                    FINAL_ENTRY_CODE, 'advice', doc, line_of(lines, name),
                     'state "%s" is a nested Final and carries %s in its EntryList. '
                     'That runs while the machine is still inside "%s": the "%s" '
                     'event has not been dispatched yet. Move the operation to the '
@@ -630,16 +659,6 @@ def check_file(path, lines, known, findings):
                         '"%s" is an areg::String, not a C string; a printf style '
                         'log macro needs %s.as_string() for %%s' % (var, var)))
                     break
-
-        for match in SIZE_EMPTY_RE.finditer(line):
-            var, operator = match.group(1), match.group(2)
-            if var in areg_vars:
-                findings.append(Finding(
-                    'B-03', 'advice', path, number + 1,
-                    'emptiness has its own predicate: %s.is_empty() reads as what '
-                    'it tests, where %s.size() %s 0 does not'
-                    % (var, var, operator)))
-                break
 
         if known:
             match = OVERRIDE_RE.search(line) or QUALIFIED_RE.search(line)
@@ -1224,7 +1243,11 @@ def audit_prohibitions(api_path):
 
     prohibitions = contract.get('prohibitions', [])
     stated = [item.get('id') for item in prohibitions]
-    checked = [rule for rule, _severity, _summary in CHECKS if rule.startswith('P-')]
+    # Everything that is not a base API note. One of them is reported under the number
+    # the shared rule catalogue gives it rather than under a P- id of its own, so the
+    # prefix is no longer what tells the two groups apart.
+    checked = [rule for rule, _severity, _summary in CHECKS
+               if not rule.startswith('B-')]
 
     for rule in sorted(set(stated) - set(checked)):
         problems.append('%s is in api.json and no check implements it' % rule)

@@ -495,7 +495,7 @@
       "detect": "a prepare_response() call in a project where unblock_current_request() appears nowhere"
     },
     {
-      "id": "P-14",
+      "id": "108",
       "rule": "A composite state with OnFinal reports that its nested level finished by posting that event to itself, and the event is queued. Entering the nested Kind=\"Final\" runs its EntryList at once, still inside the composite; the transition out runs later. An operation placed on the nested Final therefore observes the state being left, and the next request is refused as busy. Put it on the transition the composite takes on that event. A Kind=\"Final\" at the top level of the document ends the whole machine and is exempt: its EntryList is the only place an operation can go.",
       "detect": "an ActionCall, TimerStart, TimerStop or Broadcast in the EntryList of a Kind=\"Final\" state nested inside another state in a .fsml document"
     },
@@ -513,10 +513,6 @@
     {
       "id": "B-02",
       "rule": "areg::ArrayList, areg::HashMap and areg::LinkedList expose no begin()/end(); a range-for does not compile. Iterate by index with size() and operator[]."
-    },
-    {
-      "id": "B-03",
-      "rule": "Container element count is size(); emptiness is is_empty()."
     },
     {
       "id": "B-04",

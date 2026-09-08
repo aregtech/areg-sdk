@@ -31,12 +31,15 @@ Names are kept exactly as written in the document; nothing is re-cased.
 
 | In the `.fsml` | Generates |
 |---|---|
-| `Method` `MethodType="Trigger"` named `open` | `bool GateFSM::open()` -- you **call** it |
-| `Method` `MethodType="Action"` named `on_open` | `virtual void action_on_open() = 0` -- you **implement** it |
+| `<MethodList>` `<Method MethodType="Trigger">` named `open` | `bool GateFSM::open()` -- you **call** it |
+| `<MethodList>` `<Method MethodType="Action">` named `on_open` | `virtual void action_on_open() = 0` -- you **implement** it |
 | an action `Parameter` `DataType="bool"` | the same parameter on `action_*` |
-| `Event` named `Ready` | `Gate::FsmEventValue::EVENT_Ready`, sent with `send_event()` |
-| `Timer` named `Hold` | `Gate::FsmTimer::Hold`, started and stopped by the document |
+| `<EventList>` `<Event>` named `Ready` | `Gate::FsmEventValue::EVENT_Ready`, sent with `send_event()` |
+| `<TimerList>` `<Timer>` named `Hold` | `Gate::FsmTimer::Hold`, started and stopped by the document |
 | `State` named `GATE_OPEN` | an internal enumerator; the application never names a state |
+
+`MethodType` is `Trigger`, `Action` or `Condition`, and nothing else. An event is not a
+method: writing `MethodType="Event"` is refused as `error[45/RULE_BAD_VALUE]`.
 
 The `EVENT_` prefix is added to event enumerators and to nothing else: a timer of the
 same name keeps it. The two lists are not symmetrical, and assuming they are is the
@@ -114,6 +117,22 @@ hand: it costs a great many tokens and draws worse than the tool.
 
 Every element carries an `ID`, and the IDs are unique across the whole document.
 Numbering them in reading order is enough.
+
+**Every name a state or a transition uses is declared in its own top-level list**, all
+of them direct children of `<StateMachine>` and all of them optional:
+
+| List | Holds | Named from |
+|---|---|---|
+| `<DataTypeList>` | `<DataType .../>` | any `DataType` attribute; spelled as in `21-data-types.md` |
+| `<AttributeList>` | `<Attribute ID="" Name="" DataType="" Value=""/>` | `AttributeSet`, and `Attr` in a `Guard` |
+| `<EventList>` | `<Event ID="" Name=""/>`, with an optional `<ParamList>` | `StimulusKind="Event"`, `EventSend`, `OnFinal` |
+| `<TimerList>` | `<Timer ID="" Name="" Timeout="" Repeat=""/>` | `StimulusKind="Timer"`, `TimerStart`, `TimerStop` |
+| `<MethodList>` | `<Method ID="" Name="" MethodType=""/>` | `Stimulus` of a `Trigger`, `ActionCall`, a `Guard`'s condition |
+| `<ConstantList>` | `<Constant ID="" Name="" DataType="" Value=""/>` | `Const` in a `Guard` |
+| `<StateList>` | `<State .../>` | `Transition/@To`, by `ID` |
+
+A name used but not declared is `error[46/RULE_UNRESOLVED_ELEMENT]`, and the message
+names the kind it was looked up as, which names the list it is missing from.
 
 The machine below is smaller than the recipe's, and is shown whole so the shape is
 visible at a glance.
@@ -265,12 +284,12 @@ request arrives while the machine is still in the composite:
 Keep the nested `Final` empty; it exists to say the level is over. Every operation
 that outlives the composite goes on the outer transition, and anything that must be
 released as the composite is left goes in the composite's own `ExitList`.
-`check_contract.py` reports the wrong placement as `P-14` before the build, and the
-code generator warns about it as rule `108` while generating.
+Both tools report the wrong placement as rule `108`: `check_contract.py` before the
+build, the code generator while generating. `explain_rule.py 108` gives the whole rule.
 
 A `Kind="Final"` at the **top level** of the document is the other case: it ends the
 whole machine, there is no transition after it, and its `EntryList` is the only place
-an operation can go. `P-14` does not apply there. Working project, both kinds in one
+an operation can go. Rule `108` does not apply there. Working project, both kinds in one
 document: `recipes/06-state-machine/`.
 
 ### Reusing a whole machine: `Submachine`

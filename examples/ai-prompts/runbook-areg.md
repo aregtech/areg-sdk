@@ -30,7 +30,7 @@ pwd
 If that path is inside areg-sdk, or if the directory already holds an unrelated
 project, **stop and say so** rather than writing into it.
 
-## 2. Scaffold, before you read anything
+## 2. Scaffold, before you open a documentation page
 
 ```
 python3 <areg-sdk>/tools/agent/setup_project.py \
@@ -50,8 +50,9 @@ That writes a project that already builds and runs:
 | `run.sh` | starts the router and both applications |
 | `AGENTS.md` | **this project's own guide. Read it now. It is short.** |
 
-That `AGENTS.md` says where the framework documentation is. Follow where it routes
-you and do not search the checkout for anything else.
+That `AGENTS.md` is the SDK's routing table narrowed to this project, with the exact
+commands for it. Follow where it routes you and do not search the checkout for anything
+else.
 
 ## 3. Design
 
@@ -70,6 +71,22 @@ Under `src/services/`, replace the scaffolded document with your own:
   code is enough, do not. Where the task says the same behaviour is reached from more
   than one place, model it once as a nested sub-machine entered from each place,
   never as duplicated states.
+
+**The schemas are the grammar, and they are yours to read.**
+`<areg-sdk>/tools/schema/siml.xsd`, `dtml.xsd` and `fsml.xsd` are what the generator
+validates against, and the documentation pages point at them by name. When a page does
+not give the spelling of an element you need, open the one for your document kind, read
+the declaration, and carry on. What a schema cannot tell you is meaning, and it is never
+the way to understand a refusal.
+
+**Read the declaration, not the file.** `fsml.xsd` is 50 KB and `siml.xsd` 20 KB, and a
+whole one carried in context is re-sent on every turn for the rest of the task. Grep for
+the name, then print the twenty lines around it:
+
+```
+grep -n 'name="EventList"' <areg-sdk>/tools/schema/fsml.xsd
+sed -n '976,996p'          <areg-sdk>/tools/schema/fsml.xsd
+```
 
 Then point `src/CMakeLists.txt` at them:
 
@@ -99,9 +116,24 @@ src/YourServiceProvider.hpp   src/YourServiceProvider.cpp
 src/YourServiceConsumer.hpp   src/YourServiceConsumer.cpp
 ```
 
+**Generate into the layout you want, do not move the files afterwards.** `--out` is the
+directory written into and `--only provider` / `--only consumer` writes one side, so two
+calls in one request put each class where its executable lives:
+
+```
+python3 <areg-sdk>/tools/agent/gen_skeleton.py --doc src/services/YourService.siml \
+        --out src/provider --only provider --force
+python3 <areg-sdk>/tools/agent/gen_skeleton.py --doc src/services/YourService.siml \
+        --out src/consumer --only consumer --force
+```
+
 Never invent a method name on a generated base class: the names come from a fixed
 rule and the skeleton has applied it. Run this again with `--force` whenever the
 document changes.
+
+**One class, one `.hpp` and one `.cpp`, both named after the class.** That is the shape
+the skeleton writes, and every class you add by hand keeps it. Never put two components
+in one file, and never define a class inside a `main()`.
 
 ## 6. Implement
 
@@ -189,12 +221,22 @@ not converge" is a useful result; a half-built application is not.
 ## 9. Never
 
 - Never modify, add to or delete anything inside areg-sdk.
+- Never search a filesystem for an areg file. Your prompt names the checkout, the
+  documentation lives under `<areg-sdk>/docs/agent/` and the tools under
+  `<areg-sdk>/tools/agent/`, and a path a page names resolves under one of them. A
+  `find`, a `locate` or an `ls -R` that leaves your own project can run for minutes,
+  and its output is then re-sent with every later request. If a path does not resolve,
+  report it and carry on without it.
+- Never open `<areg-sdk>/CLAUDE.md` or anything under `<areg-sdk>/.claude/`. They are
+  for developing the framework itself and say nothing about building on it.
 - Never edit a generated file. The generate target is rewritten on every build;
   change the document instead.
 - Never commit anything, and never run a git command.
-- Never open a schema (`.xsd`). On a refused document read the
+- Never diagnose a refused document from a schema. Read the
   `file:line:col: error[<number>/<RULE_NAME>]` message and its `fix:` line, then
-  `python3 <areg-sdk>/tools/explain_rule.py <number>`.
+  `python3 <areg-sdk>/tools/explain_rule.py <number>`. A schema says what an element
+  may contain, never which rule refused it or why. Reading one for a spelling is
+  section 4 and is expected.
 - Never run any other script under `<areg-sdk>/tools/`. The rest check the SDK's own
   corpus, tell you nothing about your application, and cost a turn each.
 - Never write a ReadMe.

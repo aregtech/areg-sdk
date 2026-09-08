@@ -533,26 +533,6 @@
       "teaches": "areg::ArrayList, areg::HashMap and areg::LinkedList expose no begin() and no end(); a range-for does not compile, and the loop is by index over size()"
     },
     {
-      "id": "r18-size-zero-not-empty",
-      "kind": "repair",
-      "prompt": "This compiles and runs. The emptiness test on the reading history is spelled the long way. Say it the way the base API says it.",
-      "expect": [
-        "collector: reading 42 from t-1",
-        "display: report 42 from t-1"
-      ],
-      "reference": "09-shared-types",
-      "defect": {
-        "file": "src/main.cpp",
-        "find": "        if (mHistory.is_empty())",
-        "replace": "        if (mHistory.size() == 0)"
-      },
-      "detect": {
-        "by": "check_contract",
-        "rule": "B-03"
-      },
-      "teaches": "a container counts with size() and tests emptiness with is_empty(); comparing the count to zero is the spelling recalled from another library"
-    },
-    {
       "id": "r19-te-container-header",
       "kind": "repair",
       "prompt": "The build stops at the first include: the container header is not found. The name was recalled from an older areg. Find the current one.",
@@ -686,7 +666,7 @@
       },
       "detect": {
         "by": "check_contract",
-        "rule": "P-14"
+        "rule": "108"
       },
       "teaches": "the OnFinal self-event is queued: an operation on the nested Final runs before the composite is left"
     },

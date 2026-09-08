@@ -274,6 +274,21 @@ def jar_member(name):
         return None
 
 
+def jar_data_members():
+    """Base names of the files codegen.jar carries under data/."""
+    jar = os.path.join(ROOT, 'tools', 'codegen.jar')
+    if not os.path.isfile(jar):
+        return []
+    try:
+        with zipfile.ZipFile(jar) as archive:
+            names = archive.namelist()
+    except (zipfile.BadZipFile, OSError):
+        return []
+    prefix = JAR_DATA + '/'
+    return [n[len(prefix):] for n in names
+            if n.startswith(prefix) and not n.endswith('/')]
+
+
 def catalogue_rows(text):
     """{(number, name): bands} for every rule a rules.xml declares."""
     rows = {}
@@ -281,6 +296,30 @@ def catalogue_rows(text):
             r'<Rule Number="(\d+)" Name="([A-Z_]+)"[^>]*Bands="([^"]*)"', text):
         rows[(int(number), name)] = bands
     return rows
+
+
+def check_rule_texts(report):
+    """Every rule states the fault and the corrective action.
+
+    The generator, the editor's validation window and explain_rule.py all read
+    both texts out of this one file. A rule with an empty Fix leaves each of them
+    naming a fault with nothing to do about it.
+    """
+    text = read('tools', 'schema', 'rules.xml')
+    blocks = re.findall(r'<Rule Number="\d+" Name="[A-Z_]+".*?</Rule>', text, re.S)
+    if not blocks:
+        report.fail('catalogue', 'tools/schema/rules.xml declares no rules')
+        return
+    for block in blocks:
+        number, name = re.search(r'Number="(\d+)" Name="([A-Z_]+)"', block).groups()
+        for tag in ('Summary', 'Fix'):
+            body = re.search(r'<{0}>(.*?)</{0}>'.format(tag), block, re.S)
+            if body is None or not body.group(1).strip():
+                report.fail('catalogue', '{} ({}) carries no {}, so the generator, '
+                            'the editor and explain_rule.py {} all answer that '
+                            'number with half an answer'
+                            .format(number, name, tag, number))
+    report.ok('catalogue', '{} rules each state a fault and a fix'.format(len(blocks)))
 
 
 def check_generator_catalogue(report):
@@ -323,23 +362,27 @@ def check_generator_catalogue(report):
                         'does not yet report'
                         .format(number, name, ', '.join(sorted(in_tree - in_jar))))
 
-    # ONE copy of each schema, and it is the one beside the jar. That is the
-    # generator's packaging rule, stated in its publish step and carried out by the
-    # build, which strips every .xsd out of the jar: a schema beside the jar can be
-    # opened, diffed and replaced, so a newer document is accepted without a newer
-    # tool. A second copy inside the jar is not a spare, it is the thing that drifts,
-    # and it wins or loses silently depending on which one the tool happens to read.
+    # A schema must exist beside the jar, because explain_rule.py and every editor
+    # read that copy. The jar carries its own copy of the same file, written by the
+    # jar build; the two are one file delivered twice, so they must be identical.
+    # They differ only when the jar was built from another tree, and then a document
+    # is accepted by one and refused by the other.
     for name in ('siml.xsd', 'dtml.xsd', 'fsml.xsd'):
         beside = read_bytes('tools', 'schema', name)
         if not beside:
             report.fail('catalogue', 'tools/schema/{} is missing, so a document is '
                         'checked against no schema at all'.format(name))
 
-        if jar_member(name) is not None:
-            report.fail('catalogue', 'codegen.jar carries a second copy of data/{}. '
-                        'The schema belongs beside the jar and nowhere else: two '
-                        'copies drift, and which one a document is checked against '
-                        'then decides whether it is accepted'.format(name))
+    for name in sorted(jar_data_members()):
+        beside = read_bytes('tools', 'schema', name)
+        if beside is None:
+            continue
+        if beside != jar_member(name):
+            report.fail('catalogue', 'data/{} inside codegen.jar differs from '
+                        'tools/schema/{}. The generator validates with its copy and '
+                        'explain_rule.py and the editors read the other, so a '
+                        'document is accepted by one and refused by the other. '
+                        'Rebuild the jar from this tree'.format(name, name))
 
     report.ok('catalogue', '{} of {} rules are known to both codegen.jar and '
               'tools/schema/rules.xml'
@@ -792,11 +835,22 @@ def check_prohibitions(report):
     if not raw:
         report.fail('prohibition', 'docs/agent/api.json is missing')
         return
-    checker = read('tools', 'agent', 'check_contract.py')
     data = json.loads(raw)
     rules = data.get('prohibitions', []) + data.get('base_api_notes', [])
 
-    missing = [r['id'] for r in rules if r['id'] not in checker]
+    # What the checker reports, not what its source text spells. One rule is reported
+    # under the number tools/schema/rules.xml gives it, read when the checker starts,
+    # so it appears nowhere in the file to be found by a search.
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import check_contract
+        implemented = set(rule for rule, _severity, _summary in check_contract.CHECKS)
+    except Exception as failure:
+        report.fail('prohibition', 'check_contract.py cannot say what it detects, so '
+                    'no prohibition can be shown to be implemented: {}'.format(failure))
+        return
+
+    missing = [r['id'] for r in rules if r['id'] not in implemented]
     for rule in missing:
         report.fail('prohibition', '{} is stated but check_contract.py does not '
                     'detect it'.format(rule))
@@ -1614,6 +1668,7 @@ def run():
     check_coverage(report, features)
     check_schema_features(report)
     check_generator_catalogue(report)
+    check_rule_texts(report)
     check_truth(report)
     check_verification(report)
     check_prohibitions(report)

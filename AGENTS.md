@@ -111,7 +111,9 @@ configure; `tools/codegenerate.sh` / `.bat` generates outside CMake.
 **The generator validates before it generates.** A refused document writes nothing and
 exits 1, so the defect is in the document, never in the build. Every finding is
 `file:line:col: error[<number>/<RULE_NAME>]` with a `fix:` line under it: read that,
-then `tools/explain_rule.py <number>`. Never the schema.
+then `tools/explain_rule.py <number>`. Not the schema: it says what an element may
+contain, never which rule refused it. `tools/schema/` is where a spelling is looked
+up, and the page for your document kind names the file.
 
 ### Every command on this path, on Windows
 
