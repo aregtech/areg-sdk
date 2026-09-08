@@ -29,6 +29,7 @@ of what the tool printed.
 | nothing at all: the consumer prints nothing and does not exit | it never connected | "The consumer never connects" below |
 | nothing at all: a worker thread, a custom event handler or a watchdog never runs | it was never wired to a name that exists | "A worker thread or a custom event does nothing" below |
 | a request refused as busy, or ignored, right after the previous one finished, in a project with a `.fsml` | an operation on a nested `Final` state: the `OnFinal` self-event is queued and has not been dispatched yet | `22-state-machine.md`, and `check_contract.py` rule `108` |
+| a component with several timers where `process_timer` runs but every branch is skipped | the branches compare `timer.name()` to the constructor string; the name is generated from it and never equal. Compare `&timer` to the member | `33-timers.md` section 2 |
 | `RequestBusy` in a `request_*_failed` handler | the provider answers later without releasing the request first | `30-provider.md` section 3 |
 | `Failed to bind`, or a second router that routes nothing | port 8181 is already held | `50-running.md` |
 

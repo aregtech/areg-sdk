@@ -687,6 +687,25 @@
         "rule": "P-15"
       },
       "teaches": "macro_declare_executable names the sources of its target; a hand-written .cpp that no CMakeLists.txt names is compiled by nothing, and the omission surfaces only as a link error naming a mangled symbol"
+    },
+    {
+      "id": "r27-timer-dispatched-by-name",
+      "kind": "repair",
+      "prompt": "A worker arms a one-shot timer to declare itself stalled. The timer is started, process_timer is reached, and the worker never becomes stalled, so the monitor never raises its alarm. Diagnose it and fix it.",
+      "expect": [
+        "monitor: alarm from Worker3"
+      ],
+      "reference": "11-monitored-workers",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "    void process_timer(areg::Timer & /*timer*/) final\n    {\n        set_state(Stalled);\n    }\n",
+        "replace": "    void process_timer(areg::Timer & timer) final\n    {\n        if (timer.name() == \"WorkerTimer\")\n        {\n            set_state(Stalled);\n        }\n    }\n"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "P-16"
+      },
+      "teaches": "Timer's constructor stores areg::generate_name(timerName), so name() carries a nanosecond stamp and never equals the string the timer was built with; timers are told apart in process_timer by address, and name() is for log output"
     }
   ]
 }
