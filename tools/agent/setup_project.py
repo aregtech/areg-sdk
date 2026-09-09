@@ -255,28 +255,14 @@ src/CMakeLists.txt    declares the service interface and the executables
 
 ## Where the framework documentation is
 
-{where} Read one page for the task, not the whole set:
+{where}
 
-| I need to ... | Read |
-|---|---|
-| **Anything ordinary** | `docs/agent/00-cheatsheet.md` - one page, most tasks end here |
-| Decide what the services are | `docs/agent/05-design.md`, before writing any file |
-| Change the service contract | `docs/agent/20-service-interface.md` |
-| Declare a structure, enum or container | `docs/agent/21-data-types.md` |
-| Behaviour that depends on what happened before | `docs/agent/22-state-machine.md` (a `.fsml`) |
-| `areg::String` and the containers | `docs/agent/40-base-api.md` -- before the first line of C++ |
-| Implement a provider | `docs/agent/30-provider.md` |
-| Implement a consumer | `docs/agent/31-consumer.md` |
-| Register components and threads | `docs/agent/32-model.md` |
-| Periodic or delayed work | `docs/agent/33-timers.md` |
-| A custom event between threads | `docs/agent/23-events.md` |
-| Worker threads, watchdogs, a run-time model | `docs/agent/37-threads.md` |
-| The application, components, time, files | `docs/agent/42-runtime-api.md` |
-| Log from application code | `docs/agent/34-logging.md` |
-| Start the pieces in the right order | `docs/agent/50-running.md` |
-| Write a test | `docs/agent/52-testing.md` |
-| Work out why it does not work | `docs/agent/51-debug.md` |
-| **Anything this table does not cover** | `AGENTS.md` section 2 in the SDK -- it routes the full set. Never search the SDK by hand |
+`{sdk}/AGENTS.md` section 2 routes every question to the one page that answers it, and
+that table is not repeated here: read it once, then open the one page it names and no
+other. Never search the SDK by hand. The pages this project is most likely to need are
+`docs/agent/00-cheatsheet.md` for anything ordinary, `docs/agent/20-service-interface.md`
+to change the contract, `docs/agent/50-running.md` to prove it runs, and
+`docs/agent/51-debug.md` when it does not.
 
 ## Tools
 
@@ -284,12 +270,16 @@ src/CMakeLists.txt    declares the service interface and the executables
 python3 {sdk}/tools/agent/gen_skeleton.py --doc src/services/X.siml --out src
 python3 {sdk}/tools/agent/check_contract.py . --strict
 python3 {sdk}/tools/agent/run_scenarios.py
+python3 {sdk}/tools/schema_help.py State/@Kind --document fsml
+python3 {sdk}/tools/explain_rule.py 45 --at State/@Kind --document fsml
 ```
 
 `gen_skeleton.py` writes the provider and consumer with every override already in
 place, so only the logic has to be written. `check_contract.py` reads the sources
-and reports the rules below that they break; it needs no build. All three take
-`--help`. On Windows the interpreter is `python`, not `python3`.
+and reports the rules below that they break; it needs no build. `schema_help.py`
+says what a `.siml`, `.dtml` or `.fsml` may contain, one name at a time -- never
+read a `.xsd`. `explain_rule.py` explains a refused document by its rule number.
+All take `--help`. On Windows the interpreter is `python`, not `python3`.
 
 ## Never
 

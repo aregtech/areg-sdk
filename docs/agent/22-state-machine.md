@@ -128,15 +128,17 @@ a nested level that also begins at one needs a different name for it -- `Start`,
 **Every name a state or a transition uses is declared in its own top-level list**, all
 of them direct children of `<StateMachine>` and all of them optional:
 
-| List | Holds | Named from |
-|---|---|---|
-| `<DataTypeList>` | `<DataType .../>` | any `DataType` attribute; spelled as in `21-data-types.md` |
-| `<AttributeList>` | `<Attribute ID="" Name="" DataType="" Value=""/>` | `AttributeSet`, and `Attr` in a `Guard` |
-| `<EventList>` | `<Event ID="" Name=""/>`, with an optional `<ParamList>` | `StimulusKind="Event"`, `EventSend`, `OnFinal` |
-| `<TimerList>` | `<Timer ID="" Name="" Timeout="" Repeat=""/>` | `StimulusKind="Timer"`, `TimerStart`, `TimerStop` |
-| `<MethodList>` | `<Method ID="" Name="" MethodType=""/>` | `Stimulus` of a `Trigger`, `ActionCall`, a `Guard`'s condition |
-| `<ConstantList>` | `<Constant ID="" Name="" DataType="" Value=""/>` | `Const` in a `Guard` |
-| `<StateList>` | `<State .../>` | `Transition/@To`, by `ID` |
+| List | Named from |
+|---|---|
+| `<DataTypeList>` | any `DataType` attribute; spelled as in `21-data-types.md` |
+| `<AttributeList>` | `AttributeSet`, and `Attr` in a `Guard` |
+| `<EventList>` | `StimulusKind="Event"`, `EventSend`, `OnFinal` |
+| `<TimerList>` | `StimulusKind="Timer"`, `TimerStart`, `TimerStop` |
+| `<MethodList>` | `Stimulus` of a `Trigger`, `ActionCall`, a `Guard`'s condition |
+| `<ConstantList>` | `Const` in a `Guard` |
+| `<StateList>` | `Transition/@To`, by `ID` |
+
+What each list holds is `schema_help.py <Event|Timer|Method|Attribute|Constant>`.
 
 A name used but not declared is `error[46/RULE_UNRESOLVED_ELEMENT]`, and the message
 names the kind it was looked up as, which names the list it is missing from.
@@ -196,12 +198,13 @@ resume re-enters where it left off. See "Re-entering a composite where it left o
 
 | Element | Means |
 |---|---|
-| `Kind="Start"` | not a state, only a marker saying where a level begins, and nothing may target it. It owns `Kind="Initial"` transitions: exactly one, unguarded, at the root; deeper, several are allowed if **every** one carries a `Guard`, and where none holds the machine rests in the parent with no child active |
+| `Kind="Start"` | not a state, only a marker saying where a level begins, and nothing may target it. Every rule it obeys: `schema_help.py --full tStateKind` |
 | `Kind="Normal"` | a state the machine occupies |
 | `Kind="Final"` | the machine stops here and reports through the final observer |
 | `EntryList` / `ExitList` | `ActionCall`, `TimerStart`, `TimerStop`, `EventSend`, `AttributeSet`, run on entering or leaving |
 | `Kind="External"` | leaves the state, runs its exit, then the target's entry; needs `To` |
 | `Kind="Internal"` | runs its operations in place; the state is not left or re-entered; no `To` |
+| `Kind="Initial"` | the level's entry transition, owned only by a `Kind="Start"`; no `Stimulus`. Which of `To` and `Stimulus` each kind needs: `schema_help.py --full tTransitionKind` |
 | `StimulusKind` | `Trigger`, `Timer` or `Event`; `Stimulus` is the name in that list |
 | `OperationList` on a transition | runs between the exit and the entry |
 
@@ -230,25 +233,13 @@ resuming transition at it:
 targeting `MAKING` starts a fresh drink and `resume` targeting the marker continues the
 interrupted one, in one run.
 
-**A restored state is entered, not merely marked current: its `EntryList` runs again,
-exactly as on a fresh entry.** The composite's own entry actions run first, then the
-restored substate's. This is what makes a resumed sequence re-announce where it is, so
-resume needs no shadow copy of the current phase kept beside the machine.
+A document using a marker states `FormatVersion="1.2.0"`; one that does not stays
+`1.1.0`.
 
-The machine never occupies a marker: no enumeration value, and no `EntryList`,
-`ExitList`, `TransitionList` or `StateList` -- only `HistoryDepth`, `Shallow` or `Deep`.
-One per level, never at the root, never beside `State/@History`, never targeted from
-inside its level. A document using one states `FormatVersion="1.2.0"`; one that
-does not stays `1.1.0`.
-
-**`Source="Value"` is a verbatim C++ token, not text.** It is pasted into the generated
-call as written, so a string literal carries its own quotes and an XML attribute escapes
-them:
-
-```xml
-<Argument ID="42" Name="reason"  Source="Value" Value="&quot;insufficient credit&quot;"/>
-<Argument ID="62" Name="isEastWest" Source="Value" Value="true"/>
-```
+**Before designing pause/resume, run `schema_help.py --full tHistoryDepth`.** It says
+what a restored state does on entry, which decides where the resume actions go, and
+`--full tStateKind` gives every rule a marker obeys. `--full Source` says what
+`Source="Value"` pastes into the generated call.
 
 ### Leaving a level when it finishes: `OnFinal`
 
@@ -278,40 +269,19 @@ Without `OnFinal` a finished level simply stops and nothing follows. The nested 
 is `WorkStart` and not `Start`, because the top level already has a state of that name
 and the two levels share one enumeration.
 
-**The self-event is queued, so the nested `Final` is not where the work goes.**
-Entering the nested `Final` runs its `EntryList` at once, with the machine still
-inside the composite. Only then is the `OnFinal` event posted, and the transition
-out runs when that event is dispatched. An operation placed on the nested `Final`
-therefore observes the state being left, not the one being entered -- and the next
-request arrives while the machine is still in the composite:
-
-```xml
-<!-- wrong: on_completed runs while the machine is still in WORK -->
-<State ID="35" Name="WORK_DONE" Kind="Final">
-    <EntryList><ActionCall ID="36" Action="on_completed"/></EntryList>
-</State>
-
-<!-- right: on_completed runs on the way out, with the machine already in IDLE -->
-<Transition ID="30" Kind="External" StimulusKind="Event" Stimulus="Done" To="40">
-    <OperationList><ActionCall ID="31" Action="on_completed"/></OperationList>
-</Transition>
-```
-
-Keep the nested `Final` empty; it exists to say the level is over. Every operation
-that outlives the composite goes on the outer transition, and anything that must be
-released as the composite is left goes in the composite's own `ExitList`.
-Both tools report the wrong placement as rule `108`: `check_contract.py` before the
-build, the code generator while generating. `explain_rule.py 108` gives the whole rule.
-
-A `Kind="Final"` at the **top level** of the document is the other case: it ends the
-whole machine, there is no transition after it, and its `EntryList` is the only place
-an operation can go. Rule `108` does not apply there. Working project, both kinds in one
-document: `recipes/06-state-machine/`.
+**Keep the nested `Final` empty, and run `schema_help.py --full State/@OnFinal`
+before placing any operation near one.** The self-event is queued, so an operation on
+the nested `Final` runs while the machine is still inside the composite; the schema
+gives the ordering, where each kind of operation goes instead, and how a root-level
+`Final` differs. The wrong placement is rule `108`, reported by `check_contract.py`
+before the build and by the generator while generating; `explain_rule.py 108` gives the
+whole rule. Working project, both kinds in one document: `recipes/06-state-machine/`.
 
 ### Reusing a whole machine: `Submachine`
 
 A state may host another `.fsml` instead of owning a `StateList`. Import the document
-and name its alias on the state; a state carries one or the other, never both.
+and name its alias on the state. `schema_help.py --full State/@Submachine` gives the
+document rules, including how the imported machine is entered.
 
 ```xml
 <IncludeList>
@@ -321,10 +291,8 @@ and name its alias on the state; a state carries one or the other, never both.
 <State ID="10" Name="RUNNING" Kind="Normal" Submachine="Inner" OnFinal="InnerDone"/>
 ```
 
-`Version` is the imported document's `Overview/@Version`, pinned at import: the
-generated host carries a `static_assert` that fails when the import moves past it.
-
-What that changes in the generated code:
+The generated host carries a `static_assert` on the pinned `Version` that fails when
+the import moves past it. What else changes in the generated code:
 
 - the host's constructor takes one extra `InnerActionHandler &` per hosting state, in
   document order, so the host supplies the inner machine's actions
@@ -333,10 +301,7 @@ What that changes in the generated code:
 - the inner machine's triggers are forwarded through the host
 - `addStateMachine` is called once, naming only the importing document
 
-Entering the hosting state enters the imported machine through **its own `Kind="Start"`
-chain**, and nothing calls its triggers: an inner machine whose first state waits for a
-trigger stops there, and the host never leaves. Working project, hosting one machine
-from two states: `recipes/13-submachine/`.
+Working project, hosting one machine from two states: `recipes/13-submachine/`.
 
 ### Guarding a transition
 
@@ -356,8 +321,7 @@ document can assign it wherever an `ActionCall` is allowed:
 <AttributeSet ID="17" Attribute="Opened" Source="Value" Value="true"/>
 ```
 
-The guard is an expression tree, not text. It hangs on the transition, after any
-`Description` and before any `OperationList`:
+The guard is an expression tree, not text:
 
 ```xml
 <Transition ID="9" Kind="External" StimulusKind="Trigger" Stimulus="open" To="10">
@@ -373,22 +337,11 @@ which generates `const bool isEligible = (mAttrOpened == false);` and takes the
 transition only when it holds. A refused transition is not an error: the trigger
 returns `false`, exactly as it does for a state with no transition at all.
 
-| Node | Is |
-|---|---|
-| `Cmp op="eq\|ne\|lt\|le\|gt\|ge"` | exactly two operands |
-| `And`, `Or` | two or more operands |
-| `Not` | one operand |
-| `Attr`, `Const`, `Param` | a reference, bound by the target's `ID`, never by its name |
-| `Lit` | verbatim text, emitted as written |
-
-`Attr` names an `AttributeList` entry, `Param` an argument of the stimulus, and `Const`
-a `<ConstantList>` entry, declared beside `AttributeList` exactly as a `.siml` declares
+`schema_help.py --full Guard` gives what each node is and how a guard is refused;
+`schema_help.py Cmp`, `And`, `Not` give the operands each takes. `Attr` names an
+`AttributeList` entry, `Param` an argument of the stimulus, and `Const` a
+`<ConstantList>` entry, declared beside `AttributeList` exactly as a `.siml` declares
 one: `<Constant ID="18" Name="MaxHolds" DataType="uint32" Value="3"/>`.
-
-`state="ok"` is required, and `Expr` with it. `state="draft"` means the guard is still
-unfinished text, and the generator refuses the document rather than guess what it
-meant. The older flat `<ConditionList>` form is read as a draft, so it is refused for
-the same reason: never write one.
 
 ## Knowing when it finished
 
@@ -431,24 +384,23 @@ generator from the extension. A machine that imports others needs only one call.
   and applies to both; a `Kind="History"` marker is what tells them apart.
 - Never give an `Internal` transition a `To`, and never leave one off an `External`.
 
-## The schema, when this page does not have the spelling
+## The spelling, when this page does not have it
 
-`../../tools/schema/fsml.xsd` is the full grammar, and every type in it carries an
-`xs:documentation` saying what it is for. It is where the closed value sets live --
-which words `StimulusKind`, `TransitionKind`, `Source`, `MethodType`, `HistoryDepth`
-and `Threading` accept -- and the exact attributes of a registry entry. It is 50 KB,
-so read the three blocks that answer those, not the file:
+`schema_help.py` answers one name out of `../../tools/schema/fsml.xsd`. Ask it; never
+read the 50 KB schema.
 
 ```bash
-sed -n '/Simple types/,/Shared complex types/p
-        /Operations (EntryList/,/Transitions and conditions/p
-        /<!-- Registries/,/<!-- Layout (editor-only/p' <areg-sdk>/tools/schema/fsml.xsd
+python3 <areg-sdk>/tools/schema_help.py State --document fsml
+python3 <areg-sdk>/tools/schema_help.py State/@Kind --document fsml
+python3 <areg-sdk>/tools/schema_help.py --full tStateKind --document fsml
+python3 <areg-sdk>/tools/schema_help.py --list --document fsml
 ```
 
-That is 26 KB and 42 definitions in one read: every enumerated value, the five
-operations an `EntryList` may hold, and every list under `<StateMachine>`. Read it
-**before writing the document**, once. The blocks it leaves out are the guard node
-kinds, which the table above gives whole, and `Layout`, which `fsml_layout.py` writes.
+The first gives where the element goes, every attribute with the values it accepts,
+and the children in order; the second one attribute; `--full` on a type name adds what
+the values mean; `--list` names every element. A bare attribute name (`Source`,
+`MethodType`, `HistoryDepth`, `Threading`) is answered with the elements that carry it,
+and `--search <word>` finds a name from a word in it.
 
-A refused document is `explain_rule.py <number>`, not the schema: the schema says what
-an element may contain and never why a rule refused this one.
+A refused document is `explain_rule.py <number> --at <Element>/@<Attribute>`: it gives
+the rule and the values that attribute accepts in one call.

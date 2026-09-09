@@ -72,21 +72,20 @@ Under `src/services/`, replace the scaffolded document with your own:
   than one place, model it once as a nested sub-machine entered from each place,
   never as duplicated states.
 
-**The schemas are the grammar, and they are yours to read.**
-`<areg-sdk>/tools/schema/siml.xsd`, `dtml.xsd` and `fsml.xsd` are what the generator
-validates against, and the documentation pages point at them by name. When a page does
-not give the spelling of an element you need, open the one for your document kind, read
-the declaration, and carry on. What a schema cannot tell you is meaning, and it is never
-the way to understand a refusal.
-
-**Read the declaration, not the file.** `fsml.xsd` is 50 KB and `siml.xsd` 20 KB, and a
-whole one carried in context is re-sent on every turn for the rest of the task. Grep for
-the name, then print the twenty lines around it:
+**Ask the grammar, never read it.** `<areg-sdk>/tools/schema_help.py` answers one name
+out of the schemas the generator validates against -- an element, an attribute
+(`State/@Kind`), a type (`tStateKind`) or a bare attribute name -- in a few lines:
 
 ```
-grep -n 'name="EventList"' <areg-sdk>/tools/schema/fsml.xsd
-sed -n '976,996p'          <areg-sdk>/tools/schema/fsml.xsd
+python3 <areg-sdk>/tools/schema_help.py EventList --document fsml
+python3 <areg-sdk>/tools/schema_help.py --list --document siml
 ```
+
+`--full` on a type name adds what its values mean and `--search <word>` finds a name.
+Never open `siml.xsd`, `dtml.xsd` or `fsml.xsd` themselves: 20 KB to 50 KB carried in
+context is re-sent on every turn for the rest of the task. What the grammar cannot tell
+you is meaning, and it is never the way to understand a refusal -- that is
+`explain_rule.py <number> --at <Element>/@<Attribute>`.
 
 Then point `src/CMakeLists.txt` at them:
 

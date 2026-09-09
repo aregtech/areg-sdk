@@ -32,6 +32,21 @@ DOCUMENTS = ['fsml', 'siml', 'dtml']
 WIDTH = 92
 
 
+def combine(outer, inner):
+    """The occurrence of an element under a compositor that has one of its own."""
+    def low(one, two):
+        if '0' in (one, two):
+            return '0'
+        return max(one, two, key=lambda value: int(value))
+
+    def high(one, two):
+        if 'unbounded' in (one, two):
+            return 'unbounded'
+        return max(one, two, key=lambda value: int(value))
+
+    return (low(outer[0], inner[0]), high(outer[1], inner[1]))
+
+
 def tag_of(node):
     """The local name of a schema node, without the XSD namespace."""
     return node.tag[len(XS):] if node.tag.startswith(XS) else node.tag
@@ -141,28 +156,36 @@ class Schema(object):
                 found.extend(self.holders(self._container(reference), seen))
         return found or [name]
 
-    def content_of(self, node):
-        """The elements a type declares directly, in document order."""
+    def content_of(self, node, outer=('1', '1'), alternative=False):
+        """The elements a type declares directly, in document order.
+
+        A compositor carries its own occurrence and the elements under it carry
+        theirs, so the two are combined: children of an optional choice are
+        optional however the elements themselves are written.
+        """
         if node is None:
             return []
         found = []
         for child in node:
             kind = tag_of(child)
+            bounds = (child.get('minOccurs', '1'), child.get('maxOccurs', '1'))
             if kind == 'element':
                 name = child.get('name') or local(child.get('ref'))
-                found.append({'name': name,
-                              'min': child.get('minOccurs', '1'),
-                              'max': child.get('maxOccurs', '1')})
-            elif kind in ('sequence', 'all', 'choice', 'complexContent',
-                          'simpleContent', 'extension', 'restriction'):
-                found.extend(self.content_of(child))
+                low, high = combine(outer, bounds)
+                found.append({'name': name, 'min': low, 'max': high,
+                              'choice': alternative})
+            elif kind in ('sequence', 'all', 'choice'):
+                found.extend(self.content_of(child, combine(outer, bounds),
+                                             kind == 'choice'))
+            elif kind in ('complexContent', 'simpleContent', 'extension',
+                          'restriction'):
+                found.extend(self.content_of(child, outer, alternative))
             elif kind == 'group':
                 reference = local(child.get('ref'))
                 if reference in self.groups:
-                    for held in self.content_of(self.groups[reference]):
-                        held['min'] = child.get('minOccurs', held['min'])
-                        held['max'] = child.get('maxOccurs', held['max'])
-                        found.append(held)
+                    found.extend(self.content_of(self.groups[reference],
+                                                 combine(outer, bounds),
+                                                 alternative))
         return found
 
     def attributes_of(self, node):
@@ -323,6 +346,8 @@ def show_children(schema, node):
     if children:
         print('    children: ' + ' '.join(
             child['name'] + occurrence(child) for child in children))
+        if any(child['choice'] for child in children):
+            print('    (children marked * or ? that share a choice are alternatives)')
 
 
 def show_element(schema, name, full):

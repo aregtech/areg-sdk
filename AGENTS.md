@@ -111,9 +111,9 @@ configure; `tools/codegenerate.sh` / `.bat` generates outside CMake.
 **The generator validates before it generates.** A refused document writes nothing and
 exits 1, so the defect is in the document, never in the build. Every finding is
 `file:line:col: error[<number>/<RULE_NAME>]` with a `fix:` line under it: read that,
-then `tools/explain_rule.py <number>`. Not the schema: it says what an element may
-contain, never which rule refused it. `tools/schema/` is where a spelling is looked
-up, and the page for your document kind names the file.
+then `tools/explain_rule.py <number> --at <Element>/@<Attribute>`: the rule, and the
+values that attribute accepts. A spelling is `tools/schema_help.py <name>`. Never read
+`tools/schema/*.xsd`.
 
 ### Every command on this path, on Windows
 
@@ -138,8 +138,9 @@ Windows), live in `tools/agent/`, and have `--help`.
 | `check_contract.py` | Checks sources against `docs/agent/api.json`: the section 6 mistakes that compile cleanly and fail later |
 
 `tools/explain_rule.py` explains a validation finding by its number; `--search
-"words"` finds it when the number is lost. It, `tools/check-env.sh` and
-`tools/codegenerate.sh` (`.bat` on Windows) sit in `tools/` itself.
+"words"` finds it when the number is lost. `tools/schema_help.py <name>` says what a
+`.siml`, `.dtml` or `.fsml` may contain. Those two, `tools/check-env.sh` and
+`tools/codegenerate.sh` (`.bat`) sit in `tools/` itself.
 
 **Each has one moment**, and **nothing else under `tools/` is yours**: the rest checks
 this repository's own corpus, tells you nothing about your application, and costs a

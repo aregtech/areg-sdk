@@ -161,10 +161,10 @@ rule -- ask `tools/explain_rule.py` what the number means instead of reading a s
 
 ## More
 
-`../../tools/schema/dtml.xsd` is the grammar, repeated verbatim inside
-`../../tools/schema/siml.xsd` and `../../tools/schema/fsml.xsd`. It answers what an
-element may contain and nothing else; a spelling this page does not give is the only
-reason to open it, and a refused document is `tools/explain_rule.py`.
+`../../tools/schema_help.py <name> --document dtml` reads out the grammar, which is
+repeated verbatim inside `siml.xsd` and `fsml.xsd`. It answers what an element may
+contain and nothing else; a spelling this page does not give is the only reason to ask,
+and a refused document is `tools/explain_rule.py`.
 
 A complete project with a shared document, generated, built and run by CI, is
 `recipes/09-shared-types/`.

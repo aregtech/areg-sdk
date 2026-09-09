@@ -61,11 +61,11 @@ addServiceInterface(gen_myproject src/services/HelloService.siml)
 - Every `DataType` you reference must be predefined (`bool`, `uint32`, `String`, ...),
   declared in this document's `DataTypeList`, or imported from a `.dtml` document.
 
-`../../tools/schema/siml.xsd` is the full grammar. It is 20 KB, it says only what an
-element may contain, and every rule an application meets is on this page or answered by
-`tools/explain_rule.py`. Open it to settle a spelling nothing here gives, never to look
-up a meaning and never to understand a refused document: findings carry the numbers
-registered in `../../tools/schema/rules.xml`, and `explain_rule.py` reads them out.
+`../../tools/schema_help.py <name> --document siml` reads the grammar out one name at a
+time, and it says only what an element may contain. Ask it to settle a spelling nothing
+here gives, never to look up a meaning and never for a refused document: every rule an
+application meets is on this page or is `tools/explain_rule.py <number>`, which reads
+out the registry the findings are numbered from.
 
 ---
 
