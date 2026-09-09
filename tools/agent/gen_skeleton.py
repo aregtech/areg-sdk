@@ -61,14 +61,23 @@ class Interface:
         self.by_value = set()
         self.declared = set()
         self.imported = set()
+        # The types this document declares, in document order, with their kind.
+        self.types = []
         for declared in root.findall('./DataTypeList/DataType'):
             kind = (declared.get('Type') or '').lower()
             type_name = declared.get('Name')
             if not type_name:
                 continue
             self.declared.add(type_name)
+            self.types.append((type_name, kind))
             if kind in ('enumeration', 'enumerate'):
                 self.by_value.add(type_name)
+
+        self.constants = []
+        for constant in root.findall('./ConstantList/Constant'):
+            if constant.get('Name'):
+                self.constants.append((constant.get('Name'),
+                                       constant.get('DataType')))
 
         self._read_included(root, path)
 
@@ -516,6 +525,7 @@ def print_contract(iface, document):
             spelled = to_snake(name)
             print('  on the machine object: {}() / set_{}({})'
                   .format(spelled, spelled, iface.attribute_setter(kind, True)))
+        print_types(iface)
         return 0
     print('classes:   {n}Provider and {n}Consumer build on the generated {n} base'
           .format(n=iface.name))
@@ -533,7 +543,26 @@ def print_contract(iface, document):
         print('  provider calls set_{}({}); consumer subscribes with '
               'notify_on_{}_update(true)'
               .format(spelled, iface.attribute_setter(kind, False), spelled))
+    print_types(iface)
     return 0
+
+
+def print_types(iface):
+    """The data types the document generates, as the generator declares them."""
+    for type_name, kind in iface.types:
+        full = '{}::{}'.format(iface.name, type_name)
+        if kind in ('enumeration', 'enumerate'):
+            print('  enum class {}, with '
+                  'const char * {}::as_string({} value)'
+                  .format(full, iface.name, full))
+        elif kind == 'structure':
+            print('  struct {}, with a field-by-field == and <<'.format(full))
+        elif kind == 'imported':
+            print('  {} names the type your own header declares'.format(full))
+        else:
+            print('  {} is an alias to an areg container'.format(full))
+    for name, kind in iface.constants:
+        print('  constant {}::{} of type {}'.format(iface.name, name, kind))
 
 
 def main():

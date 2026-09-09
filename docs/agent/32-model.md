@@ -127,6 +127,27 @@ routing and timers; `load_model()` creates the threads and components;
 `wait_quit()` blocks until any component calls `areg::Application::signal_quit()`;
 `unload_model()` and `release()` undo the first two.
 
+`unload_model()` destroys the components, so `main()` cannot read a member of one to
+decide its exit code. Put the value in the application storage, which outlives both:
+
+```cpp
+constexpr char const _result[]{ "result" };   // any unique name
+
+void ServiceConsumer::step_failed()           // any handler, any thread
+{
+    areg::Primitive value{};
+    value.valInt.mElement = 1;                // the value lives in .mElement
+    areg::Application::store_element(_result, value);
+    areg::Application::signal_quit();
+}
+
+return areg::Application::stored_element(_result).valInt.mElement;   // in main()
+```
+
+`areg::Primitive` is a union of one primitive value, each member an `Align<T>` whose
+value is `.mElement`. `store_element` takes the lock, so any thread may call it. A name
+never stored reads back as `areg::InvalidElement`, which is zero in every member.
+
 ---
 
 ## 7. Before you move on

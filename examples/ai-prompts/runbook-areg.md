@@ -61,20 +61,6 @@ Write nothing yet. If the routing table offers a design page, open it once, here
 
 ## 4. The documents -- you write these by hand
 
-**If your harness has subagents, write each document in one.** Authoring a `.siml` or a
-`.fsml` needs the format's page and its schema lookups; none of that is needed
-afterwards, and anything left in the main context is re-sent on every later request. Give
-the subagent the task description and the document kind, and have it return **only**
-
-```
-python3 <areg-sdk>/tools/agent/gen_skeleton.py --doc src/services/Your.siml --contract
-```
-
-which prints the class names, what to override and what to call, in a few hundred tokens
-and writes no file. Build the C++ against that, never against a summary the subagent
-wrote in its own words: the contract is derived from the document, so it cannot disagree
-with what the generator emits. Without subagents, write the documents here as before.
-
 Under `src/services/`, replace the scaffolded document with your own:
 
 - **A service contract, a `.siml`. Always.** The interface between the two programs.
@@ -139,6 +125,10 @@ python3 <areg-sdk>/tools/agent/gen_skeleton.py --doc src/services/YourService.si
 python3 <areg-sdk>/tools/agent/gen_skeleton.py --doc src/services/YourService.siml \
         --out src/consumer --only consumer --force
 ```
+
+`--contract` in place of `--out` prints the same surface -- every signature, and every
+generated data type -- in a few hundred tokens and writes no file. Read that instead of
+opening the skeleton files to learn a signature.
 
 Never invent a method name on a generated base class: the names come from a fixed
 rule and the skeleton has applied it. Run this again with `--force` whenever the

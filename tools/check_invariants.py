@@ -214,9 +214,28 @@ def anchors(defects):
     return problems
 
 
+def build_config(build_dir, config):
+    """Returns the --config arguments a multi-config generator needs, else nothing.
+
+    A multi-config generator, Visual Studio among them, ignores CMAKE_BUILD_TYPE and
+    builds Debug unless the build step names the configuration.
+    """
+    cache = os.path.join(build_dir, 'CMakeCache.txt')
+    try:
+        with open(cache, 'r', encoding='utf-8', errors='replace') as handle:
+            for line in handle:
+                if line.startswith('CMAKE_CONFIGURATION_TYPES:'):
+                    _, _, value = line.partition('=')
+                    return ['--config', config] if value.strip() else []
+    except OSError:
+        pass
+    return []
+
+
 def build(build_dir, jobs):
     """Rebuilds. Returns (ok, tail of the output)."""
     command = ['cmake', '--build', build_dir, '-j', str(jobs)]
+    command += build_config(os.path.join(SDK, build_dir), 'Release')
     try:
         result = subprocess.run(command, cwd=SDK, capture_output=True, text=True,
                                 timeout=BUILD_SECONDS)

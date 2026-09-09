@@ -48,6 +48,26 @@ def run(command, cwd=None, timeout=900):
         return None
 
 
+def build_config(build_dir, config):
+    """Returns the --config arguments a multi-config generator needs, else nothing.
+
+    A multi-config generator, Visual Studio among them, ignores CMAKE_BUILD_TYPE and
+    builds Debug unless the build step names the configuration.
+    """
+    cache = os.path.join(build_dir, 'CMakeCache.txt')
+    try:
+        with open(cache, 'r', encoding='utf-8', errors='replace') as handle:
+            for line in handle:
+                if line.startswith('CMAKE_CONFIGURATION_TYPES:'):
+                    _, _, value = line.partition('=')
+                    if value.strip():
+                        return ['--config', config]
+                    return []
+    except OSError:
+        pass
+    return []
+
+
 def build(project, sdk_root):
     """Configures and builds the project the agent produced.
 
@@ -63,8 +83,9 @@ def build(project, sdk_root):
     if result.returncode != 0:
         return False, 'configure failed: ' + (result.stderr or result.stdout)[-400:]
 
-    result = run(['cmake', '--build', 'build', '-j', str(os.cpu_count() or 2)],
-                 cwd=project)
+    command = ['cmake', '--build', 'build', '-j', str(os.cpu_count() or 2)]
+    command += build_config(os.path.join(project, 'build'), 'Release')
+    result = run(command, cwd=project)
     if result is None:
         return False, 'build timed out'
     if result.returncode != 0:

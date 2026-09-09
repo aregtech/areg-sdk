@@ -58,7 +58,7 @@ Everything lands in the document's own namespace, `<Name>` being `Overview/@Name
 | Declared | In C++ |
 |---|---|
 | `Structure PatientInfo` | `struct <Name>::PatientInfo` with a default and an all-field constructor, copy and move, `==` and `!=`, stream operators, and a `required_size` specialisation |
-| `Enumeration RunState` | `enum class <Name>::RunState` plus `<Name>::as_string(RunState)` |
+| `Enumeration RunState` | `enum class <Name>::RunState` plus `const char * <Name>::as_string(RunState)` |
 | `Imported X` | the type you named; the generator only includes your header |
 | `Container X` | an alias to the areg container of the declared element types |
 
@@ -68,8 +68,9 @@ Everything lands in the document's own namespace, `<Name>` being `Overview/@Name
 comparison and handler code with them and do not go looking for a declaration: the
 predefined types below all carry them, and the generator writes them for every
 `Structure` and `Container` you declare. `>>` and `<<` are `areg::InStream` /
-`areg::OutStream` -- serialisation, not text formatting. An `Enumeration` gets
-`as_string()` in their place. `String` and `WideString` also carry `+` and `+=`.
+`areg::OutStream` -- serialisation, not text formatting. An `Enumeration` gets a static
+`as_string(value)` returning `const char *` in their place -- not an `areg::String`, so
+nothing is called on its result. `String` and `WideString` also carry `+` and `+=`.
 
 **This list is what you may assume, not the whole set.** An operator it does not name
 is not thereby absent, so write the natural spelling and let the build answer. Code

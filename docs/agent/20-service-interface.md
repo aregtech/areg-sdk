@@ -97,7 +97,7 @@ Provider class inherits `<Name>ProviderBase`. Consumer class inherits `<Name>Con
 | `Broadcast bar(c)` | **calls** `broadcast_bar(c)` | **may override** `void broadcast_bar(c) final`, **subscribes** with `notify_on_broadcast_bar(true)` |
 | `Attribute Baz` of type `T` | **calls** `set_baz(value)`; also `is_baz_valid()`, `invalidate_baz()` | **reads** `baz(state)`, **may override** `void on_baz_update(T Baz, areg::DataState state) final`, **subscribes** with `notify_on_baz_update(true)` |
 | `Constant Qux` | `<Name>::Qux` | `<Name>::Qux` |
-| `DataType Enumeration E` | `<Name>::E`, plus `<Name>::as_string(E)` | same |
+| `DataType Enumeration E` | `<Name>::E`, plus `const char * <Name>::as_string(E)` | same |
 | `DataType Structure S` | `<Name>::S` | same |
 | `Overview/@Name` | `<Name>::ServiceName`, `<Name>::InterfaceVersion` | same |
 

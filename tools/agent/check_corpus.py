@@ -464,10 +464,13 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
 # Measured 2026-09-09 at 183,365 bytes, down from 191,363 the day before. The headroom
 # is deliberately small: a ceiling with room in it ratchets nothing. Raised twice since,
 # both paid for: the Windows form of starting mtrouter and logcollector, which the pages
-# had wrong and which cost another agent two failed starts; and the subagent hand-off in
-# runbook section 4, which removes the whole of a document's authoring context from the
-# caller and returns it as gen_skeleton.py --contract in a few hundred tokens.
-CORPUS_CEILING = 184832
+# had wrong and which cost another agent two failed starts; and the exit-code block in
+# 32-model.md section 6, because two benchmark runs each invented a global to carry a
+# result from a component into main() and no page said that Application::store_element
+# outlives unload_model and release(). A third raise, for the subagent hand-off in
+# runbook section 4, was reclaimed: two runs carried the instruction and made zero
+# subagent calls, the second with the tool explicitly allowed.
+CORPUS_CEILING = 185200
 
 PAGE_CEILING = 8 * KB
 PAGE_MEDIAN_TARGET = 6 * KB
@@ -1686,6 +1689,47 @@ def check_observability(report):
               'by a checker CI runs')
 
 
+# A command the corpus tells an agent to run that does not exist on Windows, and the
+# token whose presence on the same page shows the Windows form is given beside it. A
+# page-level "does it mention Windows" test does not catch these: the pages that carry
+# them are the ones most full of Windows notes.
+POSIX_ONLY = (('ss', 'netstat'),
+              ('lsof', 'netstat'),
+              ('pkill', 'taskkill'),
+              ('killall', 'taskkill'),
+              ('uname', 'ver'),
+              ('which', 'where'))
+
+# A command word starts a line or follows a pipe, a semicolon, an && or a $( .
+COMMAND_POSITION = r'(?:^|[|;&(]\s*|\$\(\s*)'
+
+
+def check_posix_only(report):
+    """Every POSIX-only command in a fenced block names its Windows form on the page."""
+    pages = ['AGENTS.md', 'examples/ai-prompts/runbook-areg.md']
+    pages += ['docs/agent/' + p for p in agent_pages()]
+    found = 0
+    bad = 0
+    for page in pages:
+        text = read(*page.split('/'))
+        blocks = '\n'.join(re.findall(r'```.*?\n(.*?)```', text, re.S))
+        for command, windows in POSIX_ONLY:
+            if not re.search(COMMAND_POSITION + re.escape(command) + r'\b',
+                             blocks, re.M):
+                continue
+            found += 1
+            if windows not in text:
+                bad += 1
+                report.fail('portability',
+                            '{} runs "{}", which does not exist on Windows, and the '
+                            'page never names "{}". Give the Windows form beside the '
+                            'command, not in a substitution list elsewhere'
+                            .format(page, command, windows))
+    report.ok('portability',
+              '{} POSIX-only command(s) in the corpus, {} without a Windows form'
+              .format(found, bad))
+
+
 def check_portability(report):
     attrs = read('.gitattributes')
     normalised = all(re.search(re.escape(pat) + r'\s+text\s+eol=lf', attrs)
@@ -1706,6 +1750,8 @@ def check_portability(report):
                         'form'.format(page))
     report.ok('portability', '{} of {} pages give both command forms'
               .format(len(pages) - len(offenders), len(pages)))
+
+    check_posix_only(report)
 
     if 'windows-' not in agent_workflow():
         report.fail('portability', 'the agent workflow has no Windows runner, so '

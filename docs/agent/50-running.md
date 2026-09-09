@@ -58,6 +58,9 @@ ss -ltn | grep 8181        # the router
 ss -ltn | grep 8282        # the collector
 ```
 
+There is no `ss` on Windows. The same two checks are
+`netstat -ano | findstr :8181` and `netstat -ano | findstr :8282`.
+
 `logobserver` is the exception: it takes no `--service`. With no option it opens a
 console; with any option below it runs and exits, the form an agent wants.
 
