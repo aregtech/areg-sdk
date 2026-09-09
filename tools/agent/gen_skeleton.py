@@ -60,6 +60,7 @@ class Interface:
         # const reference otherwise.
         self.by_value = set()
         self.declared = set()
+        self.imported = set()
         for declared in root.findall('./DataTypeList/DataType'):
             kind = (declared.get('Type') or '').lower()
             type_name = declared.get('Name')
@@ -68,6 +69,8 @@ class Interface:
             self.declared.add(type_name)
             if kind in ('enumeration', 'enumerate'):
                 self.by_value.add(type_name)
+
+        self._read_included(root, path)
 
         self.requests = []
         self.responses = []
@@ -99,8 +102,56 @@ class Interface:
             result.append((param.get('Name'), param.get('DataType')))
         return result
 
+    def _read_included(self, root, path):
+        """Registers the types an included document declares.
+
+        An enumeration is passed by value wherever it was declared, so a document
+        that only imports one still has to know it is an enumeration. Without this
+        the skeleton writes a const reference, the generated base declares the same
+        method by value, and the override is refused as not virtual.
+        """
+        folder = os.path.dirname(os.path.abspath(path))
+        for location in root.findall('./IncludeList/Location'):
+            name = location.get('Name')
+            if not name:
+                continue
+            for candidate in (os.path.join(folder, os.path.basename(name)),
+                              os.path.join(folder, name),
+                              os.path.abspath(name)):
+                if os.path.isfile(candidate):
+                    self._read_types_of(candidate)
+                    break
+
+    def _read_types_of(self, path):
+        """The declarations of an included document, qualified by its namespace."""
+        try:
+            included = ET.parse(path).getroot()
+        except (ET.ParseError, OSError):
+            return
+        overview = included.find('./Overview')
+        space = overview.get('Name') if overview is not None else ''
+        for declared in included.findall('./DataTypeList/DataType'):
+            type_name = declared.get('Name')
+            if not type_name:
+                continue
+            kind = (declared.get('Type') or '').lower()
+            spellings = [type_name]
+            if space:
+                spellings.append('{}::{}'.format(space, type_name))
+            for spelling in spellings:
+                self.imported.add(spelling)
+                if kind in ('enumeration', 'enumerate'):
+                    self.by_value.add(spelling)
+
     def cpp_type(self, type_name):
-        """The C++ spelling of a document type, and how it is passed."""
+        """The C++ spelling of a document type, and how it is passed.
+
+        The generator passes a primitive and an enumeration by value and
+        everything else by const reference: String, BinaryBuffer, Structure,
+        Container and Imported. An override that disagrees is refused as not
+        virtual, so an enumeration declared in an included document has to be
+        known here as one.
+        """
         if type_name in SCALARS:
             return SCALARS[type_name], False
         if type_name in CLASSES:
@@ -108,8 +159,9 @@ class Interface:
         if type_name in self.declared:
             qualified = '{}::{}'.format(self.name, type_name)
             return qualified, type_name not in self.by_value
-        # A type from an included document already carries its namespace.
-        return type_name, '::' in type_name
+        # A type from an included document already carries its namespace. An
+        # enumeration among them is a primitive and is passed by value.
+        return type_name, ('::' in type_name) and (type_name not in self.by_value)
 
     def signature(self, params):
         if not params:
@@ -120,6 +172,27 @@ class Interface:
             parts.append('const {} & {}'.format(cpp, param_name) if by_ref
                          else '{} {}'.format(cpp, param_name))
         return ' ' + ', '.join(parts) + ' '
+
+    def passed_as(self, type_name):
+        """How a value of this type appears in a generated parameter list.
+
+        A primitive and an enumeration are passed by value, everything else by
+        const reference. This is the method-parameter rule, and an override that
+        disagrees with it is refused as not virtual.
+        """
+        cpp, by_ref = self.cpp_type(type_name)
+        return 'const {} &'.format(cpp) if by_ref else cpp
+
+    def attribute_setter(self, type_name, machine):
+        """How a generated attribute setter takes its value.
+
+        The two generators differ here and neither follows the parameter rule
+        above: a .siml provider base takes every attribute by const reference,
+        a scalar included, while a .fsml machine applies the parameter rule.
+        """
+        if machine:
+            return self.passed_as(type_name)
+        return 'const {} &'.format(self.cpp_type(type_name)[0])
 
     def call_args(self, params):
         return ', '.join(name for name, _ in params)
@@ -423,19 +496,64 @@ HOST_NOTE = ('  {name} is a standalone component that owns the machine. Delete b
              '  provider is what drives it.')
 
 
+def print_contract(iface, document):
+    """The names a document generates, and nothing about how it was written.
+
+    This is what a caller needs from whoever authored the document: the class to
+    build against, what to override and what to call. It is derived from the
+    document, so it cannot disagree with what the generator emits.
+    """
+    print('document:  {}'.format(document))
+    print('interface: {}'.format(iface.name))
+    if document.lower().endswith('.fsml'):
+        print('classes:   {n}FSM (the machine), {n}ActionHandler (implement this)'
+              .format(n=iface.name))
+        for name, params in iface.triggers:
+            print('  call     {}({})'.format(to_snake(name), iface.signature(params)))
+        for name, params in iface.actions:
+            print('  override {}({})'.format(to_snake(name), iface.signature(params)))
+        for name, kind in iface.attributes:
+            spelled = to_snake(name)
+            print('  on the machine object: {}() / set_{}({})'
+                  .format(spelled, spelled, iface.attribute_setter(kind, True)))
+        return 0
+    print('classes:   {n}Provider and {n}Consumer build on the generated {n} base'
+          .format(n=iface.name))
+    for name, params in iface.requests:
+        print('  override request_{}({})'.format(to_snake(name), iface.signature(params)))
+    for name, params in iface.responses:
+        print('  provider calls response_{}({}); consumer overrides it'
+              .format(to_snake(name), iface.signature(params)))
+    for name, params in iface.broadcasts:
+        print('  provider calls broadcast_{}({}); consumer subscribes with '
+              'notify_on_broadcast_{}(true)'
+              .format(to_snake(name), iface.signature(params), to_snake(name)))
+    for name, kind in iface.attributes:
+        spelled = to_snake(name)
+        print('  provider calls set_{}({}); consumer subscribes with '
+              'notify_on_{}_update(true)'
+              .format(spelled, iface.attribute_setter(kind, False), spelled))
+    return 0
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Write the components a .siml or .fsml document needs.')
     parser.add_argument('--doc', required=True, help='the .siml or .fsml document')
-    parser.add_argument('--out', required=True, help='directory to write the sources into')
+    parser.add_argument('--out', help='directory to write the sources into')
     parser.add_argument('--only', choices=['provider', 'consumer', 'both'], default='both')
     parser.add_argument('--include-root', default=None,
                         help='include path of the generated headers '
                              '(default: the document folder relative to the project)')
     parser.add_argument('--force', action='store_true', help='overwrite existing files')
+    parser.add_argument('--contract', action='store_true',
+                        help='print the names the document generates and write no '
+                             'file: what a caller needs from whoever wrote it')
     args = parser.parse_args()
 
     iface = Interface(args.doc)
+    if args.contract:
+        return print_contract(iface, args.doc)
     include_root = args.include_root
     if include_root is None:
         include_root = os.path.relpath(os.path.dirname(os.path.abspath(args.doc)),

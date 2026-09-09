@@ -121,7 +121,8 @@ The pages below use POSIX commands. These five substitutions are the whole diffe
 
 `python3 x.py` -> `python x.py` - `./build/bin/n.elf` -> `build\bin\n.exe` -
 `tools/codegenerate.sh` -> `tools\codegenerate.bat` - `prog --service &` ->
-`start "" prog --service` - `-j$(nproc)` -> `-j%NUMBER_OF_PROCESSORS%`
+`start "" prog` (no `--service`: on Windows it means the Service Control Manager and
+fails from a command line) - `-j$(nproc)` -> `-j%NUMBER_OF_PROCESSORS%`
 
 ---
 

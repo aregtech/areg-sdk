@@ -457,6 +457,18 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
          'check_recipes.py', 'check-env.sh', 'check-env.bat', 'codegenerate.sh',
          'codegenerate.bat', 'setup-project.sh', 'setup-project.bat']
 
+# Every byte of the reading corpus is paid by the agent that opens it, and an addition
+# is only ever local while a run pays for the whole set. The ceiling is what stops the
+# set growing one locally-justified paragraph at a time: raising this number is a
+# deliberate edit in a reviewed file, and the commit that raises it says what it bought.
+# Measured 2026-09-09 at 183,365 bytes, down from 191,363 the day before. The headroom
+# is deliberately small: a ceiling with room in it ratchets nothing. Raised twice since,
+# both paid for: the Windows form of starting mtrouter and logcollector, which the pages
+# had wrong and which cost another agent two failed starts; and the subagent hand-off in
+# runbook section 4, which removes the whole of a document's authoring context from the
+# caller and returns it as gen_skeleton.py --contract in a few hundred tokens.
+CORPUS_CEILING = 184832
+
 PAGE_CEILING = 8 * KB
 PAGE_MEDIAN_TARGET = 6 * KB
 ENTRY_TARGET = 10 * KB
@@ -1301,6 +1313,9 @@ def stated_numbers():
          'Median page at or below {:.0f} KB'.format(PAGE_MEDIAN_TARGET / KB),
          'PAGE_MEDIAN_TARGET in this file'),
         ('docs/ai-readiness.md',
+         'at or below {:.1f} KB'.format(CORPUS_CEILING / KB),
+         'CORPUS_CEILING in this file'),
+        ('docs/ai-readiness.md',
          'Under {:.0f}% of 12-word runs'.format(DUPLICATION_TARGET * 100),
          'DUPLICATION_TARGET in this file'),
     ]
@@ -1433,6 +1448,41 @@ def check_page_budget(report):
                     .format(median / KB, PAGE_MEDIAN_TARGET / KB))
     report.ok('budget', '{} of {} pages are within the {:.0f} KB ceiling'
               .format(len(pages) - len(over), len(pages), PAGE_CEILING / KB))
+
+
+def corpus_files():
+    """Every document an agent building on areg reads from, largest first."""
+    found = [('AGENTS.md', size('AGENTS.md')),
+             ('examples/ai-prompts/runbook-areg.md',
+              size('examples', 'ai-prompts', 'runbook-areg.md'))]
+    for page in agent_pages():
+        found.append(('docs/agent/' + page, size('docs', 'agent', page)))
+    return sorted(found, key=lambda entry: -entry[1])
+
+
+def check_corpus_toll(report):
+    """The whole reading corpus against its ceiling.
+
+    A page budget bounds one page and says nothing about how many pages there are.
+    This bounds the set, so an addition has to be paid for by a removal.
+    """
+    files = corpus_files()
+    total = sum(bytes_ for _, bytes_ in files)
+    if total > CORPUS_CEILING:
+        report.fail('corpus-toll',
+                    'the reading corpus is {:.1f} KB over its {:.0f} KB ceiling '
+                    '({} files, {} bytes). Pay for the addition with a removal, or '
+                    'raise CORPUS_CEILING in this file and say in the commit what the '
+                    'bytes bought. Largest: {}'
+                    .format((total - CORPUS_CEILING) / KB, CORPUS_CEILING / KB,
+                            len(files), total,
+                            ', '.join('{} {:.1f} KB'.format(name, n / KB)
+                                      for name, n in files[:3])))
+    else:
+        report.ok('corpus-toll',
+                  'the reading corpus is {:.1f} KB, {:.1f} KB under its {:.0f} KB '
+                  'ceiling'.format(total / KB, (CORPUS_CEILING - total) / KB,
+                                   CORPUS_CEILING / KB))
 
 
 def check_duplication(report):
@@ -1683,6 +1733,7 @@ def run():
     check_shipped_tools(report)
     check_entry_toll(report)
     check_page_budget(report)
+    check_corpus_toll(report)
     check_duplication(report)
     check_generated_code(report)
     check_ci(report)

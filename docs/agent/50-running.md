@@ -33,15 +33,20 @@ shell an agent runs in redirects stdin from `/dev/null`, so the service reads en
 input immediately and shuts itself down. It exits **0**, having printed only its
 banner, so nothing in what you can see afterwards reports a failure:
 
-| Started without `--service`, stdin from `/dev/null` | What happens |
+| POSIX, started without `--service`, stdin from `/dev/null` | What happens |
 |---|---|
 | `mtrouter` | paints its display, then quits within a second. 8181 is left unbound and every consumer waits for a provider it can never reach. |
 | `logcollector` | prints its banner and quits in under half a second. The application then logs to its own file and the collector database stays empty. |
 
-`--service` is the same program without the console loop: it never reads stdin, so the
-redirect cannot end it. **An agent starts both with `--service`, always.** The only
-other way to keep a console one alive is to hold its stdin open, which is more moving
-parts for the same result.
+**On POSIX** `--service` is the same program without the console loop: it never reads
+stdin, so the redirect cannot end it. Start both with it there.
+
+**On Windows it means the Service Control Manager and fails from a command line**, so
+start them with **no option**: `start ""` gives the process a console, and console mode
+with a live stdin stays up. `-i` and `-u` install and remove the real service, which is
+the only thing `--service` is for.
+
+Simpler than either: let `run_scenarios.py` start the router; it knows both forms.
 
 `--help` on any of the four prints its whole option table, which is the answer to a
 spelling this page does not give.
@@ -70,8 +75,8 @@ only way to place it, and with none it lands in
 ```
 
 On Windows the same four are `build\bin\<name>.exe`, backgrounded with
-`start "" build\bin\mtrouter.exe --service` rather than a trailing `&`. They install
-as Windows services with `-i` and are removed with `-u`.
+`start "" build\bin\mtrouter.exe` -- no option -- rather than a trailing `&`. They
+install as Windows services with `-i` and are removed with `-u`.
 
 **A second router is the other way this fails.** Only one process can hold 8181. A
 router already running -- from an earlier scenario, or left by a crashed test --
@@ -86,7 +91,7 @@ All four take the same options, and no option at all means console:
 | `-v` / `--verbose` | show the data rate while running |
 | `-l <file>` / `--load <file>` | read a configuration file instead of `areg.init` |
 | `-i` / `-u` (Windows) | install and uninstall as a system service |
-| `-s` / `--service` | run in the background as a system service |
+| `-s` / `--service` | POSIX: run with no console loop. Windows: only for the process the Service Control Manager starts; it fails from a command line |
 
 ## Changing what is logged while it runs
 

@@ -167,7 +167,7 @@ wait and connect.
 ```
 
 ```bat
-start "" build\bin\mtrouter.exe --service
+start "" build\bin\mtrouter.exe
 ```
 
 ---

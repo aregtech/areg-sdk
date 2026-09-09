@@ -190,6 +190,64 @@ def prohibition_bullets():
     return '\n'.join(bullets) if bullets else None
 
 
+# The file each harness reads on startup, and whether it needs one at all. A
+# harness that reads AGENTS.md itself is not given a second file to disagree with.
+# Anything else lands on the project's AGENTS.md only if it is pointed there.
+HARNESS_FILES = {
+    'claude':   'CLAUDE.md',
+    'gemini':   'GEMINI.md',
+    'aider':    'CONVENTIONS.md',
+    'cline':    '.clinerules',
+    'continue': '.continuerules',
+    'windsurf': '.windsurfrules',
+    'cursor':   '.cursor/rules/project.mdc',
+    'copilot':  '.github/copilot-instructions.md',
+    'codex':    None,
+    'agents':   None,
+}
+
+REDIRECT = """{fence}# {name}
+
+This file exists only so that this harness lands in the right place. It holds no
+content of its own.
+
+**Read [`AGENTS.md`]({up}AGENTS.md) in this project's root.** It is the whole guide
+for this project: what it is, how to build and run it, which page of the AREG SDK
+documentation answers which question, and what never to do.
+
+Do not search this project or the SDK before reading it.
+
+<!-- Written by the AREG SDK setup_project.py. Edit AGENTS.md, never this file. -->
+"""
+
+REDIRECT_FENCE = {
+    '.cursor/rules/project.mdc':
+        '---\ndescription: project entry point\nalwaysApply: true\n---\n',
+}
+
+
+def write_redirects(root, name, harnesses):
+    """The pointer file each named harness reads, aimed at the project AGENTS.md.
+
+    A project scaffolded for an unknown agent has to work for any of them. The
+    harnesses that read AGENTS.md themselves are skipped, so nothing is written
+    that could drift from it.
+    """
+    written = []
+    for harness in harnesses:
+        relative = HARNESS_FILES.get(harness)
+        if not relative:
+            continue
+        path = os.path.join(root, *relative.split('/'))
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, 'w', encoding='utf-8') as handle:
+            handle.write(REDIRECT.format(
+                fence=REDIRECT_FENCE.get(relative, ''), name=name,
+                up='../' * relative.count('/')))
+        written.append(relative)
+    return written
+
+
 def write_agents(root, name, mode, sdk_root, binaries):
     """The project's own AGENTS.md: what an agent working here loads first."""
     sdk = sdk_root if sdk_root else 'build/packages/areg-src'
@@ -255,14 +313,28 @@ src/CMakeLists.txt    declares the service interface and the executables
 
 ## Where the framework documentation is
 
-{where}
+{where} Read one page for the task, not the whole set:
 
-`{sdk}/AGENTS.md` section 2 routes every question to the one page that answers it, and
-that table is not repeated here: read it once, then open the one page it names and no
-other. Never search the SDK by hand. The pages this project is most likely to need are
-`docs/agent/00-cheatsheet.md` for anything ordinary, `docs/agent/20-service-interface.md`
-to change the contract, `docs/agent/50-running.md` to prove it runs, and
-`docs/agent/51-debug.md` when it does not.
+| I need to ... | Read |
+|---|---|
+| **Anything ordinary** | `docs/agent/00-cheatsheet.md` - one page, most tasks end here |
+| Decide what the services are | `docs/agent/05-design.md`, before writing any file |
+| Change the service contract | `docs/agent/20-service-interface.md` |
+| Declare a structure, enum or container | `docs/agent/21-data-types.md` |
+| Behaviour that depends on what happened before | `docs/agent/22-state-machine.md` (a `.fsml`) |
+| `areg::String` and the containers | `docs/agent/40-base-api.md` -- before the first line of C++ |
+| Implement a provider | `docs/agent/30-provider.md` |
+| Implement a consumer | `docs/agent/31-consumer.md` |
+| Register components and threads | `docs/agent/32-model.md` |
+| Periodic or delayed work | `docs/agent/33-timers.md` |
+| A custom event between threads | `docs/agent/23-events.md` |
+| Worker threads, watchdogs, a run-time model | `docs/agent/37-threads.md` |
+| The application, components, time, files | `docs/agent/42-runtime-api.md` |
+| Log from application code | `docs/agent/34-logging.md` |
+| Start the pieces in the right order | `docs/agent/50-running.md` |
+| Write a test | `docs/agent/52-testing.md` |
+| Work out why it does not work | `docs/agent/51-debug.md` |
+| **Anything this table does not cover** | `AGENTS.md` section 2 in the SDK -- it routes the full set. Never search the SDK by hand |
 
 ## Tools
 
@@ -419,6 +491,16 @@ def main():
                              'leaves every other file alone; nothing is deleted')
     parser.add_argument('--no-agents', action='store_true',
                         help='do not write AGENTS.md into the project')
+    parser.add_argument('--harness', action='append', default=None,
+                        metavar='NAME',
+                        help='write only these harnesses startup files, pointing at '
+                             'the project AGENTS.md. Repeatable. Default is every '
+                             'one, because the agent that opens this project next is '
+                             'not known here. Known: '
+                             + ', '.join(sorted(HARNESS_FILES)))
+    parser.add_argument('--no-harness', action='store_true',
+                        help='write no harness startup file. Only an agent whose '
+                             'harness reads AGENTS.md itself then finds the guide')
     parser.add_argument('--quiet', action='store_true',
                         help='do not print the scaffolded files')
     args = parser.parse_args()
@@ -480,6 +562,16 @@ def main():
     binaries = [b.format(name=name) for b in MODES[mode]['binaries']]
     if not args.no_agents:
         write_agents(root, name, mode, sdk_root, binaries)
+        harnesses = [] if args.no_harness else (args.harness or sorted(HARNESS_FILES))
+        if 'all' in harnesses:
+            harnesses = sorted(HARNESS_FILES)
+        unknown = [h for h in harnesses if h not in HARNESS_FILES]
+        if unknown:
+            fail('unknown harness: {}. Known: {}'
+                 .format(', '.join(unknown), ', '.join(sorted(HARNESS_FILES))))
+        for relative in write_redirects(root, name, harnesses):
+            if not args.quiet:
+                print('  {} -> AGENTS.md'.format(relative))
     write_gitignore(root)
     write_scenarios(root, mode, binaries)
     if MODES[mode]['router']:

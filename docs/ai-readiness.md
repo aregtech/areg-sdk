@@ -109,6 +109,7 @@ here rather than left to be discovered:
 | `budget` | An entry in `.budgets` naming a page that does not exist, or one already under the ceiling, is stale: it would quietly cover a page that grew into it later. | `FAIL` |
 | `budget` | A page within 1% of the ceiling is tuned to the rule, not written to it: the next one-word edit trips CI. | `NOTE` |
 | `budget` | Median page at or below 6 KB. | `WARN` |
+| `corpus-toll` | The whole reading corpus -- `AGENTS.md`, the runbook and every page in `docs/agent/` -- at or below 180.5 KB. A page budget bounds one page and says nothing about how many pages there are; this bounds the set, so an addition is paid for by a removal. Raising `CORPUS_CEILING` is a deliberate edit, and the commit that raises it says what the bytes bought. | `FAIL` |
 | `duplication` | Under 2% of 12-word runs repeated across three or more pages. | `WARN` |
 | `generated` | The rule against editing generated code is stated on the entry path, and no recipe ships generated code to be read. | `FAIL` |
 

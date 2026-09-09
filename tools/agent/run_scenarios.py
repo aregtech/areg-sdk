@@ -206,9 +206,18 @@ def run_scenario(scenario, build_dirs, verbose, quiet):
         router = find_binary('mtrouter', build_dirs)
         if router is None:
             return False, name, 'mtrouter not found in ' + ', '.join(build_dirs)
-        # --service is the unattended mode. The readiness poll below also catches a
-        # router that could not bind because another one already holds the port.
-        router_handle = subprocess.Popen([router, '--service'],
+        # On POSIX --service is the unattended mode: no console loop, so a stdin at
+        # /dev/null cannot end it. On Windows it hands the process to the Service
+        # Control Manager, which refuses one the manager did not start, so console
+        # mode is used there and its stdin is held open instead. The readiness poll
+        # below also catches a router that could not bind because another one
+        # already holds the port.
+        if platform.system() == 'Windows':
+            router_args, router_stdin = [router], subprocess.PIPE
+        else:
+            router_args, router_stdin = [router, '--service'], subprocess.DEVNULL
+        router_handle = subprocess.Popen(router_args,
+                                         stdin=router_stdin,
                                          stdout=subprocess.DEVNULL,
                                          stderr=subprocess.DEVNULL)
         if not wait_router_ready():
