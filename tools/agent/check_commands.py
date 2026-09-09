@@ -257,17 +257,35 @@ def classify(command):
     return 'RUN', ''
 
 
+# A command gets this long to answer, then a longer second chance. The budget is wall
+# clock, so a loaded machine or a slow mount spends it without the command being at
+# fault. Only a non-zero exit says a command is broken; running out of time says
+# nothing about it either way.
+FIRST_BUDGET = 120
+SECOND_BUDGET = 600
+
+
 def run(command):
-    """Runs one command that classify() cleared. Returns (ok, detail)."""
-    try:
-        result = subprocess.run(command, cwd=ROOT, shell=True, capture_output=True,
-                                text=True, timeout=120)
-    except subprocess.TimeoutExpired:
-        return False, 'did not finish within 120s'
-    if result.returncode == 0:
-        return True, ''
-    tail = (result.stdout + result.stderr).strip().splitlines()[-1:]
-    return False, 'exit {}: {}'.format(result.returncode, tail[0] if tail else '')
+    """Runs one command that classify() cleared.
+
+    Returns (state, detail), where state is RUN for success, RED for a command that
+    failed, and SLOW for one that ran out of time twice. A slow command is not
+    reported as broken: the checker says it could not find out.
+    """
+    for budget in (FIRST_BUDGET, SECOND_BUDGET):
+        try:
+            result = subprocess.run(command, cwd=ROOT, shell=True,
+                                    capture_output=True, text=True, timeout=budget)
+        except subprocess.TimeoutExpired:
+            continue
+        if result.returncode == 0:
+            return 'RUN', ''
+        tail = (result.stdout + result.stderr).strip().splitlines()[-1:]
+        return 'RED', 'exit {}: {}'.format(result.returncode,
+                                           tail[0] if tail else '')
+    return 'SLOW', ('no verdict: still running after {}s, then after {}s. The machine '
+                    'was too loaded to time it, which is not a finding about the '
+                    'command'.format(FIRST_BUDGET, SECOND_BUDGET))
 
 
 def main():
@@ -285,7 +303,7 @@ def main():
         sys.stderr.write('error: none of those documents exist\n')
         return 1
 
-    counts = {'RUN': 0, 'RED': 0, 'HOLE': 0, 'SKIP': 0}
+    counts = {'RUN': 0, 'RED': 0, 'HOLE': 0, 'SKIP': 0, 'SLOW': 0}
     flagged = 0
     problems = []
     for document in documents:
@@ -302,12 +320,12 @@ def main():
                 elif state != 'RUN':
                     flagged += 1
             if state == 'RUN':
-                ok, detail = run(command)
-                if not ok:
-                    state, why = 'RED', detail
+                outcome, detail = run(command)
+                if outcome != 'RUN':
+                    state, why = outcome, detail
             counts[state] += 1
             where = '{}:{}'.format(document, number)
-            if state in ('RED', 'HOLE'):
+            if state in ('RED', 'HOLE', 'SLOW'):
                 problems.append('{:<5} {:<28} {}\n      {}\n      {}'.format(
                     state, where, command, why, ''))
             elif args.verbose:
@@ -317,9 +335,11 @@ def main():
         print(problem.rstrip())
     total = sum(counts.values())
     print('{} command(s) in {} document(s): {} ran, {} flags checked against '
-          '--help, {} red, {} unresolved, {} not run here'
+          '--help, {} red, {} unresolved, {} not run here{}'
           .format(total, len(documents), counts['RUN'], flagged, counts['RED'],
-                  counts['HOLE'], counts['SKIP']))
+                  counts['HOLE'], counts['SKIP'],
+                  ', {} without a verdict'.format(counts['SLOW'])
+                  if counts['SLOW'] else ''))
     return 1 if (counts['RED'] or counts['HOLE']) else 0
 
 

@@ -240,7 +240,14 @@
     <xs:simpleType name="tSource">
         <xs:annotation><xs:documentation>Value source of an Argument or AttributeSet. Expression = verbatim C++ in an Expression child.
             Value = a verbatim C++ token, not text: it is pasted into the generated call exactly as written, so a
-            string literal must carry its own quotes and the XML attribute must escape them.</xs:documentation></xs:annotation>
+            string literal must carry its own quotes and the XML attribute must escape them.
+            Every other source names a declared thing by its Name, in the Value attribute, and never by id:
+            Param = a Parameter of the Method the transition names in Stimulus, Attribute = a declared
+            Attribute, Constant = a declared Constant. Worked, where Method "open" declares
+            &lt;Parameter Name="width"&gt; and the transition carries Stimulus="open":
+            &lt;AttributeSet Attribute="Width" Source="Param" Value="width"/&gt; and
+            &lt;Argument Name="asked" Source="Param" Value="width"/&gt;. A Guard names the same parameter by
+            id instead, as &lt;Param id="8"/&gt;.</xs:documentation></xs:annotation>
         <xs:restriction base="xs:string">
             <xs:enumeration value="Value"/>
             <xs:enumeration value="Param"/>

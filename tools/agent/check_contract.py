@@ -144,6 +144,15 @@ AREG_STATIC_CALL_RE = re.compile(r'\bareg::\w+::([A-Za-z]\w*)\s*\(')
 # docs/agent/members.json. Empty when the file is absent, which switches B-08 off.
 FRAMEWORK_MEMBERS = frozenset()
 
+# B-09. Every enumerator each scoped areg enumeration declares, loaded from the same
+# file. Empty when the file is absent, which switches B-09 off.
+FRAMEWORK_ENUMS = {}
+
+# B-09. A qualified enumerator. A trailing "(" means a static call, which is B-07's,
+# so it is excluded here.
+AREG_ENUMERATOR_RE = re.compile(
+    r'\bareg::([A-Za-z_]\w*)::([A-Za-z_]\w*)\b(?!\s*[(<])')
+
 # B-08. A snake_case call on a variable. The variable has to be an areg one for the
 # rule to fire, so an application's own method is never reported.
 SNAKE_CALL_RE = re.compile(r'\b(\w+)\s*(?:\.|->)\s*([a-z][a-z0-9_]*)\s*\(')
@@ -691,6 +700,18 @@ def check_file(path, lines, known, findings):
                     % (var, areg_vars[var], method)))
                 break
 
+        if FRAMEWORK_ENUMS:
+            for enum, enumerator in AREG_ENUMERATOR_RE.findall(line):
+                declared = FRAMEWORK_ENUMS.get(enum)
+                if declared is None or enumerator in declared:
+                    continue
+                findings.append(Finding(
+                    'B-09', 'error', path, number + 1,
+                    'areg::%s has no enumerator "%s"; the name is remembered, '
+                    'not real. It declares: %s'
+                    % (enum, enumerator, ', '.join(sorted(declared)))))
+                break
+
         if LOG_MACRO_RE.search(line) and '%s' in raw:
             for var, kind in areg_vars.items():
                 if kind != 'String':
@@ -1086,7 +1107,7 @@ def load_members(api_path):
     A missing file is not an error: an installed SDK may not ship it, and B-08
     simply does not fire.
     """
-    global FRAMEWORK_MEMBERS
+    global FRAMEWORK_MEMBERS, FRAMEWORK_ENUMS
     path = os.path.join(os.path.dirname(os.path.abspath(api_path)), 'members.json')
     if not os.path.isfile(path):
         return None
@@ -1099,6 +1120,8 @@ def load_members(api_path):
     if not members:
         return '%s carries no member list' % path
     FRAMEWORK_MEMBERS = frozenset(members)
+    FRAMEWORK_ENUMS = dict((name, frozenset(values)) for name, values
+                           in (document.get('enumerations') or {}).items())
     return None
 
 

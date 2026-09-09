@@ -40,11 +40,16 @@ declared on that base. That is an implementation detail; you call them all on a
 | `is_empty()` | `bool is_empty() const noexcept` | `StringBase.hpp:254` |
 | `length()` | `areg::CharCount length() const noexcept` | `StringBase.hpp:260` |
 | `compare(...)` | `areg::Ordering compare(const StringBase<char> & other, bool caseSensitive = true) const noexcept` | `StringBase.hpp:473` |
-| `find_first(...)` | `areg::CharPos find_first(char ch, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true) const noexcept` | `StringBase.hpp:383` |
-| `find_last(...)` | `areg::CharPos find_last(char ch, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true) const noexcept` | `StringBase.hpp:423` |
+| `find_first(...)` | `areg::CharPos find_first(const char * phrase, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true, bool wholeWord = false) const noexcept` | `StringBase.hpp:397` |
+| `find_last(...)` | `areg::CharPos find_last(const char * phrase, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true) const noexcept` | `StringBase.hpp:446` |
 
-Overloads of `compare`, `find_first` and `find_last` also take `const char *`,
-`std::string` and `std::string_view`, and so do `==` and `!=`.
+Overloads of `compare`, `find_first` and `find_last` also take a single `char`,
+`std::string` and `std::string_view`, and so do `==` and `!=`. **This is the substring
+search**; `find_phrase` and `find_first_phrase` are protected and will not compile.
+
+**A search that found nothing returns `areg::END_POS`, not `areg::INVALID_POS`**, whose
+Doxygen in the header says otherwise. Test with `s.is_valid_position(pos)`, which is
+right for both.
 
 `compare` returns `areg::Ordering`: `Smaller` (-1), `Equal` (0), `Bigger` (1),
 `MathDefs.hpp:64`.

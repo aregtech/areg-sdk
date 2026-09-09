@@ -469,8 +469,12 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
 # result from a component into main() and no page said that Application::store_element
 # outlives unload_model and release(). A third raise, for the subagent hand-off in
 # runbook section 4, was reclaimed: two runs carried the instruction and made zero
-# subagent calls, the second with the tool explicitly allowed.
-CORPUS_CEILING = 185200
+# subagent calls, the second with the tool explicitly allowed. Raised again for the
+# String search entry in 40-base-api.md: a failed find_first returns areg::END_POS while
+# the header's own Doxygen promises areg::INVALID_POS, so the obvious test passes on a
+# search that found nothing. That one is silent; the run that found it lost a build cycle
+# and four framework greps to the visible half of the same gap.
+CORPUS_CEILING = 185500
 
 PAGE_CEILING = 8 * KB
 PAGE_MEDIAN_TARGET = 6 * KB

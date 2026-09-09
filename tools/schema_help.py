@@ -520,6 +520,54 @@ def show_search(schemas, needle, full):
                                                  one_line(body, 80)))
 
 
+# The names an agent asks for while authoring a document, so it can ask once instead
+# of discovering the list a round trip at a time. Measured from three benchmark runs:
+# every fsml name below was asked for in at least two of the three, and the four turns
+# the shortest run spent on them collapse to one.
+AUTHORING = {
+    'fsml': ['Overview', 'StateMachine', 'State', 'State/@OnFinal', 'tStateKind',
+             'tHistoryDepth', 'Transition', 'Guard', 'Cmp', 'Attr', 'Lit',
+             'EntryList', 'ActionCall', 'OperationList', 'Method', 'Attribute',
+             'Timer', 'TimerStart', 'Event', 'EventSend'],
+    'siml': ['Overview', 'MethodList', 'Method', 'ParamList', 'Parameter',
+             'AttributeList', 'Attribute', 'DataTypeList', 'DataType',
+             'ConstantList', 'Constant', 'IncludeList'],
+    'dtml': ['Overview', 'DataTypeList', 'DataType', 'FieldList', 'Field',
+             'EnumEntry', 'Container'],
+}
+
+
+def authoring_hint(names, kinds):
+    """The authoring bundle worth asking for, given the names already asked."""
+    asked = set(names)
+    scored = []
+    for kind in kinds:
+        wanted = set(AUTHORING[kind])
+        if wanted <= asked:
+            return None
+        scored.append((len(asked & wanted), kind))
+    if not scored:
+        return None
+    top = max(score for score, _ in scored)
+    best = [kind for score, kind in scored if score == top]
+    if len(best) == 1:
+        return ('-- "--authoring {}" answers all {} names a .{} document needs, '
+                'in one call.'.format(best[0], len(AUTHORING[best[0]]), best[0]))
+    return ('-- "--authoring {}" answers every name that document kind needs, '
+            'in one call.'.format('|'.join(best)))
+
+
+def show_authoring(schemas, kind, full):
+    """Every name authoring this document kind needs, in one answer."""
+    missing = 0
+    for wanted in AUTHORING[kind]:
+        if not answer(schemas, wanted, full):
+            missing += 1
+    print('-- that is the authoring set for .{}. Ask by name for anything else.'
+          .format(kind))
+    return missing
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Answer what a .fsml, .siml or .dtml document may contain.')
@@ -534,9 +582,15 @@ def main():
                         help='find a name from words in it or in its documentation')
     parser.add_argument('--full', action='store_true',
                         help='print the whole documentation instead of one line')
+    parser.add_argument('--authoring', choices=sorted(AUTHORING),
+                        help='every name authoring this document kind needs, at once')
     args = parser.parse_args()
 
-    schemas = load(args.document or DOCUMENTS)
+    schemas = load(args.document or ([args.authoring] if args.authoring
+                                     else DOCUMENTS))
+
+    if args.authoring:
+        return 1 if show_authoring(schemas, args.authoring, args.full) else 0
 
     if args.list:
         show_list(schemas)
@@ -547,7 +601,8 @@ def main():
         return 0
 
     if not args.names:
-        parser.error('give one or more names, --search TEXT, or --list')
+        parser.error('give one or more names, --authoring KIND, --search TEXT, '
+                     'or --list')
 
     missing = 0
     for wanted in args.names:
@@ -556,6 +611,10 @@ def main():
             for hint in near(schemas, wanted):
                 print('    did you mean: ' + hint)
             missing += 1
+
+    hint = authoring_hint(args.names, args.document or sorted(AUTHORING))
+    if hint:
+        print(hint)
 
     return 1 if missing else 0
 
