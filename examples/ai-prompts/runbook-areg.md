@@ -100,53 +100,51 @@ the **project root** (`src/services/X.siml`). The source paths are relative to *
 CMakeLists.txt naming them** (`provider.cpp`, already inside `src/`). Rename the two
 executables to suit the task, and add every source file you write to them.
 
-## 5. Skeletons -- never hand-write a class declaration
+## 5. The application -- generated whole, not hand-written
 
 ```
 python3 <areg-sdk>/tools/agent/gen_skeleton.py \
-        --doc src/services/YourService.siml --out src --force
+        --doc src/services/YourService.siml --app --mode ipc --force
 ```
 
-Writes a **separate provider class and consumer class** -- four files, every method
-name already correct:
+Writes the **whole application** into `src/`: the components, every subscription, the
+model and `main()`. `--mode ipc` writes `src/provider.cpp` and `src/consumer.cpp`;
+`--mode local` writes one `src/main.cpp`. Match the mode `setup_project.py` scaffolded.
 
-```
-src/YourServiceProvider.hpp   src/YourServiceProvider.cpp
-src/YourServiceConsumer.hpp   src/YourServiceConsumer.cpp
-```
+**It compiles and runs as written. Build it and run it before you change anything.**
+The model, `main()`, the connection test and every `notify_on_*` subscription are
+already correct, so none of them needs a page. Every place a rule of yours belongs is
+marked `TODO(you)`.
 
-**Generate into the layout you want, do not move the files afterwards.** `--out` is the
-directory written into and `--only provider` / `--only consumer` writes one side, so two
-calls in one request put each class where its executable lives:
+**Do not rewrite these files, and do not read them back**: the tool has already
+printed what they contain. Section 6 fills the markers in.
 
-```
-python3 <areg-sdk>/tools/agent/gen_skeleton.py --doc src/services/YourService.siml \
-        --out src/provider --only provider --force
-python3 <areg-sdk>/tools/agent/gen_skeleton.py --doc src/services/YourService.siml \
-        --out src/consumer --only consumer --force
-```
+`--contract` in place of `--app` prints every signature and every generated data type
+in a few hundred tokens and writes no file. Read that instead of opening a generated
+header.
 
-`--contract` in place of `--out` prints the same surface -- every signature, and every
-generated data type -- in a few hundred tokens and writes no file. Read that instead of
-opening the skeleton files to learn a signature.
+Without `--app` the tool writes a separate provider class and consumer class instead
+(`--out DIR`, with `--only provider` or `--only consumer` to place each one), which is
+the shape for an application that has outgrown one file per process.
 
-Never invent a method name on a generated base class: the names come from a fixed
-rule and the skeleton has applied it. Run this again with `--force` whenever the
-document changes.
+Never invent a method name on a generated base class: the names come from a fixed rule
+and the tool has applied it. Run it again with `--force` whenever the document changes.
 
-**One class, one `.hpp` and one `.cpp`, both named after the class.** That is the shape
-the skeleton writes, and every class you add by hand keeps it. Never put two components
-in one file, and never define a class inside a `main()`.
+**A generated application file carries its components, the model and `main()` together**
+-- that is the shape every recipe uses. A class you add by hand gets its own `.hpp` and
+`.cpp`, named after it, and no class is ever defined inside the body of `main()`.
 
 ## 6. Implement
 
-Read `40-base-api.md` first, in the same request as the last page you needed. Every
-skeleton body uses a string or a container, the names are not the ones training data
-carries, and reading it after the bodies are written means writing them twice.
+Fill the `TODO(you)` markers with the task's logic, using `Edit`. The model, `main()`
+and the subscriptions are already wired and are not written again.
 
-Fill the skeleton bodies with the task's logic. Wire the components into the model in
-`provider.cpp` and `consumer.cpp`. Update `scenarios.json` so it names your
-executables and the output lines that prove each requirement.
+`40-base-api.md` is the one page a body still needs: every body uses a string or a
+container and those names are not the ones training data carries. Read it before
+writing bodies rather than after, in the same request as the last page you needed.
+
+Update `scenarios.json` so it names your executables and the output lines that prove
+each requirement.
 
 ## 7. Check, build, run -- this order, once each
 

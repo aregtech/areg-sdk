@@ -134,7 +134,7 @@ Windows), live in `tools/agent/`, and have `--help`.
 | Tool | Does |
 |---|---|
 | `setup_project.py` | Creates a buildable project from a recipe, with its own `AGENTS.md` |
-| `gen_skeleton.py` | Writes the components a `.siml` or `.fsml` needs |
+| `gen_skeleton.py` | `--app`: the whole application from a `.siml`, running as written |
 | `run_scenarios.py` | Runs the application and checks its output; exit 0 is a pass. Its `scenarios.json` is `docs/agent/50-running.md` |
 | `check_contract.py` | Checks sources against `docs/agent/api.json`: the section 6 mistakes that compile cleanly and fail later |
 

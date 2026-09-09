@@ -565,6 +565,254 @@ def print_types(iface):
         print('  constant {}::{} of type {}'.format(iface.name, name, kind))
 
 
+# The value a generated call passes until the rule that computes it is written.
+# Every spelling below is valid C++17 for its type, so the program compiles and
+# runs as generated.
+def default_expr(iface, type_name):
+    """A value-initialised expression of this document type."""
+    if type_name == 'bool':
+        return 'false'
+    if type_name in SCALARS:
+        return '0' if 'float' not in SCALARS[type_name] and \
+                      'double' not in SCALARS[type_name] else '0.0'
+    return '{}{{}}'.format(iface.cpp_type(type_name)[0])
+
+
+APP_INCLUDES = ['#include <iostream>',
+                '',
+                '#include "areg/base/areg_global.h"',
+                '#include "areg/appbase/Application.hpp"',
+                '#include "areg/component/Component.hpp"',
+                '#include "areg/component/ComponentLoader.hpp"',
+                '#include "areg/component/ComponentThread.hpp"']
+
+
+def provider_class(iface, cls):
+    """The provider component, with every request answered."""
+    pad = ' ' * (len(cls) + 13)
+    lines = ['class {} final : public    areg::Component'.format(cls),
+             '{}, protected {}ProviderBase'.format(pad, iface.name),
+             '{',
+             'public:',
+             '    {}(const areg::ComponentEntry & entry, areg::ComponentThread & owner)'.format(cls),
+             '        : areg::Component(entry, owner)',
+             '        , {}ProviderBase(static_cast<areg::Component &>(self()))'.format(iface.name),
+             '    {']
+    if iface.attributes:
+        lines.append('        // An attribute is invalid until it is set once.')
+        for attr_name, type_name in iface.attributes:
+            lines.append('        set_{}({});'.format(to_snake(attr_name),
+                                                      default_expr(iface, type_name)))
+    lines += ['    }', '', 'protected:']
+
+    answered = dict((name, params) for name, params in iface.responses)
+    for name, params in iface.requests:
+        lines.append('    void request_{}({}) final'.format(to_snake(name),
+                                                            iface.signature(params)))
+        lines.append('    {')
+        lines.append('        // TODO(you): the rule this request carries out.')
+        if name in answered:
+            args = ', '.join(default_expr(iface, t) for _, t in answered[name])
+            lines.append('        response_{}({});'.format(to_snake(name), args))
+        lines.append('    }')
+        lines.append('')
+    lines += ['private:',
+              '    inline {} & self()'.format(cls),
+              '    {   return (*this); }',
+              '',
+              '    {}() = delete;'.format(cls),
+              '    AREG_NOCOPY_NOMOVE({});'.format(cls),
+              '};']
+    return lines
+
+
+def consumer_class(iface, cls):
+    """The consumer component, subscribed and handling everything it subscribed to."""
+    pad = ' ' * (len(cls) + 13)
+    lines = ['class {} final : public    areg::Component'.format(cls),
+             '{}, protected {}ConsumerBase'.format(pad, iface.name),
+             '{',
+             'public:',
+             '    {}(const areg::ComponentEntry & entry, areg::ComponentThread & owner)'.format(cls),
+             '        : areg::Component(entry, owner)',
+             '        , {}ConsumerBase(entry.mDependencyServices[0].mRoleName, owner)'.format(iface.name),
+             '    { }',
+             '',
+             'protected:',
+             '    bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase & proxy) final',
+             '    {',
+             '        bool result{ false };',
+             '        if ({}ConsumerBase::service_connected(status, proxy))'.format(iface.name),
+             '        {',
+             '            result = true;',
+             '            if (areg::is_service_connected(status))',
+             '            {']
+    if iface.attributes or iface.broadcasts:
+        lines.append('                // Subscriptions are made here, and again after '
+                     'every reconnection.')
+        for attr_name, _ in iface.attributes:
+            lines.append('                notify_on_{}_update(true);'.format(to_snake(attr_name)))
+        for name, _ in iface.broadcasts:
+            lines.append('                notify_on_broadcast_{}(true);'.format(to_snake(name)))
+    lines.append('                // TODO(you): the first request of the scenario.')
+    lines += ['            }',
+              '        }',
+              '',
+              '        return result;',
+              '    }',
+              '']
+
+    first = True
+    for name, params in iface.responses:
+        lines.append('    void response_{}({}) final'.format(to_snake(name),
+                                                             iface.signature(params)))
+        lines.append('    {')
+        lines.append('        // TODO(you): what this answer means for the scenario.')
+        if first:
+            lines.append('        // The scenario ends here until a later step replaces it.')
+            lines.append('        areg::Application::signal_quit();')
+            first = False
+        lines.append('    }')
+        lines.append('')
+
+    for name, _ in iface.requests:
+        lines.append('    void request_{}_failed(areg::ResultType reason) final'.format(to_snake(name)))
+        lines += ['    {',
+                  '        std::cerr << "request {} failed, reason " '
+                  '<< static_cast<int>(reason) << std::endl;'.format(name),
+                  '        areg::Application::signal_quit();',
+                  '    }',
+                  '']
+
+    for name, params in iface.broadcasts:
+        lines.append('    void broadcast_{}({}) final'.format(to_snake(name),
+                                                              iface.signature(params)))
+        lines += ['    {',
+                  '        // TODO(you): what this broadcast means for the scenario.',
+                  '    }',
+                  '']
+
+    for attr_name, type_name in iface.attributes:
+        cpp = iface.cpp_type(type_name)[0]
+        lines.append('    void on_{}_update({} {}, areg::DataState state) final'
+                     .format(to_snake(attr_name), cpp, attr_name))
+        lines += ['    {',
+                  '        if (state == areg::DataState::DataIsOK)',
+                  '        {',
+                  '            // TODO(you): the new value is ready to use.',
+                  '        }',
+                  '    }',
+                  '']
+    lines += ['private:',
+              '    {}() = delete;'.format(cls),
+              '    AREG_NOCOPY_NOMOVE({});'.format(cls),
+              '};']
+    return lines
+
+
+MAIN_BODY = ['int main()',
+             '{',
+             '    areg::Application::setup();',
+             '    areg::Application::load_model(_modelName);',
+             '    areg::Application::wait_quit(areg::WAIT_INFINITE);',
+             '    areg::Application::unload_model(_modelName);',
+             '    areg::Application::release();',
+             '    return 0;',
+             '}',
+             '']
+
+PROVIDER_ROLE = 'ServiceProvider'
+CONSUMER_ROLE = 'ServiceConsumer'
+
+
+def provider_registration(iface, indent):
+    pad = ' ' * indent
+    return [pad + 'BEGIN_REGISTER_THREAD("ProviderThread")',
+            pad + '    BEGIN_REGISTER_COMPONENT("{}", {})'.format(PROVIDER_ROLE, PROVIDER_ROLE),
+            pad + '        REGISTER_IMPLEMENT_SERVICE({}::ServiceName, {}::InterfaceVersion)'
+            .format(iface.name, iface.name),
+            pad + '    END_REGISTER_COMPONENT("{}")'.format(PROVIDER_ROLE),
+            pad + 'END_REGISTER_THREAD("ProviderThread")']
+
+
+def app_files(iface, mode, include_root):
+    """The whole application: the components, the model and main().
+
+    Returns a list of (file name, text). The result compiles and runs as written;
+    every place a rule belongs is marked TODO(you).
+    """
+    provider_base = '#include "{}/{}ProviderBase.hpp"'.format(include_root, iface.name)
+    consumer_base = '#include "{}/{}ConsumerBase.hpp"'.format(include_root, iface.name)
+    head = ['/**', ' * \\file    {}', ' * \\brief   {}', ' **/']
+
+    if mode == 'local':
+        lines = [l.format('main.cpp') if '{}' in l and 'file' in l else
+                 l.format('Provider and consumer of the {} service, in two threads of '
+                          'one process.'.format(iface.name)) if '{}' in l else l
+                 for l in head]
+        lines += APP_INCLUDES + ['', provider_base, consumer_base, '']
+        lines += provider_class(iface, PROVIDER_ROLE) + ['']
+        lines += consumer_class(iface, CONSUMER_ROLE) + ['']
+        lines += ['constexpr char const _modelName[]{{ "{}Model" }};'.format(iface.name),
+                  '',
+                  'BEGIN_MODEL(_modelName)',
+                  '']
+        lines += provider_registration(iface, 4)
+        lines += ['',
+                  '    BEGIN_REGISTER_THREAD("ConsumerThread")',
+                  '        BEGIN_REGISTER_COMPONENT("{}", {})'.format(CONSUMER_ROLE, CONSUMER_ROLE),
+                  '            REGISTER_DEPENDENCY("{}")'.format(PROVIDER_ROLE),
+                  '        END_REGISTER_COMPONENT("{}")'.format(CONSUMER_ROLE),
+                  '    END_REGISTER_THREAD("ConsumerThread")',
+                  '',
+                  'END_MODEL(_modelName)',
+                  '']
+        lines += MAIN_BODY
+        return [('main.cpp', '\n'.join(lines))]
+
+    provider = ['/**',
+                ' * \\file    provider.cpp',
+                ' * \\brief   The process that provides the {} service.'.format(iface.name),
+                ' **/']
+    provider += APP_INCLUDES + ['', provider_base, '']
+    provider += provider_class(iface, PROVIDER_ROLE) + ['']
+    provider += ['constexpr char const _modelName[]{ "ProviderModel" };',
+                 '',
+                 'BEGIN_MODEL(_modelName)']
+    provider += provider_registration(iface, 4)
+    provider += ['END_MODEL(_modelName)', '']
+    provider += MAIN_BODY
+
+    consumer = ['/**',
+                ' * \\file    consumer.cpp',
+                ' * \\brief   The process that consumes the {} service.'.format(iface.name),
+                ' **/']
+    consumer += APP_INCLUDES + ['#include "areg/base/String.hpp"', '', consumer_base, '']
+    consumer += consumer_class(iface, CONSUMER_ROLE) + ['']
+    consumer += ['constexpr char const _modelName[]{ "ConsumerModel" };',
+                 '',
+                 '// A unique role name lets several consumer processes run at the same time.',
+                 'const areg::String _consumer(areg::generate_name("{}"));'.format(CONSUMER_ROLE),
+                 '',
+                 'BEGIN_MODEL(_modelName)',
+                 '    BEGIN_REGISTER_THREAD("ConsumerThread")',
+                 '        BEGIN_REGISTER_COMPONENT(_consumer, {})'.format(CONSUMER_ROLE),
+                 '            REGISTER_DEPENDENCY("{}")'.format(PROVIDER_ROLE),
+                 '        END_REGISTER_COMPONENT(_consumer)',
+                 '    END_REGISTER_THREAD("ConsumerThread")',
+                 'END_MODEL(_modelName)',
+                 '']
+    consumer += MAIN_BODY
+    return [('provider.cpp', '\n'.join(provider)),
+            ('consumer.cpp', '\n'.join(consumer))]
+
+
+APP_NOTE = (
+    '  These files compile and run as written. Every place a rule of your own\n'
+    '  belongs is marked TODO(you); the model, main() and every subscription are\n'
+    '  already correct and need no page. Build, run, then fill the TODOs in.')
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Write the components a .siml or .fsml document needs.')
@@ -575,6 +823,13 @@ def main():
                         help='include path of the generated headers '
                              '(default: the document folder relative to the project)')
     parser.add_argument('--force', action='store_true', help='overwrite existing files')
+    parser.add_argument('--app', action='store_true',
+                        help='write the whole application -- the components, the '
+                             'model and main() -- instead of a pair of skeletons. '
+                             'The result compiles and runs as written')
+    parser.add_argument('--mode', choices=['ipc', 'local'], default='ipc',
+                        help='with --app: ipc writes provider.cpp and consumer.cpp, '
+                             'local writes one main.cpp. Match setup_project.py')
     parser.add_argument('--contract', action='store_true',
                         help='print the names the document generates and write no '
                              'file: what a caller needs from whoever wrote it')
@@ -591,7 +846,21 @@ def main():
             fail('the document is outside the working directory, so the include path '
                  'cannot be written relative to it. Pass --include-root explicitly.')
 
+    if args.out is None:
+        args.out = 'src' if args.app else None
+    if args.out is None:
+        fail('--out is required: the directory to write the sources into')
     os.makedirs(args.out, exist_ok=True)
+
+    if args.app:
+        if args.doc.lower().endswith('.fsml'):
+            fail('--app builds an application from a .siml service contract. Run this '
+                 'tool without --app on the .fsml to get the machine host.')
+        produced = app_files(iface, args.mode, include_root)
+        for file_name, text in produced:
+            write(os.path.join(args.out, file_name), text, args.force)
+        print(APP_NOTE)
+        return 0
 
     # A state machine document produces one host component, not a pair.
     if args.doc.lower().endswith('.fsml'):

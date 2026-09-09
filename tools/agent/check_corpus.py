@@ -473,8 +473,13 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
 # String search entry in 40-base-api.md: a failed find_first returns areg::END_POS while
 # the header's own Doxygen promises areg::INVALID_POS, so the obvious test passes on a
 # search that found nothing. That one is silent; the run that found it lost a build cycle
-# and four framework greps to the visible half of the same gap.
-CORPUS_CEILING = 185500
+# and four framework greps to the visible half of the same gap. Raised a last time, by
+# 206 bytes, to route the agent at "gen_skeleton.py --app": the tool now writes the whole
+# application -- components, model and main() -- compiling and running as generated, so
+# the build phase stops reading 30-provider, 31-consumer, 32-model, 40-base-api,
+# 42-runtime-api, 33-timers and 50-running. In the run that paid for this those seven
+# pages entered context at request 21 of 55 and carried 27,309 reasoning tokens with them.
+CORPUS_CEILING = 185700
 
 PAGE_CEILING = 8 * KB
 PAGE_MEDIAN_TARGET = 6 * KB

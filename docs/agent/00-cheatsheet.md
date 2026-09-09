@@ -175,7 +175,7 @@ Terminal, clean up and quit: `Rejected`, `Shutdown`.
 
 ```bash
 python3 <sdk>/tools/agent/setup_project.py --name app --root ~/app --mode local
-python3 <sdk>/tools/agent/gen_skeleton.py --doc src/services/X.siml --out src
+python3 <sdk>/tools/agent/gen_skeleton.py --doc src/services/X.siml --app  # runs as written
 python3 <sdk>/tools/agent/check_contract.py .        # before building
 python3 <sdk>/tools/agent/run_scenarios.py            # exit 0 means it works; file: 50-running.md
 ```
