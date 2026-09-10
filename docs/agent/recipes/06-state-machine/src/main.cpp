@@ -3,6 +3,7 @@
  * \brief   A service whose logic is a state machine, and its consumer.
  **/
 #include <iostream>
+#include <sstream>
 
 #include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
@@ -14,6 +15,16 @@
 #include "src/services/GateServiceConsumerBase.hpp"
 #include "src/services/GateActionHandler.hpp"
 #include "src/services/GateFSM.hpp"
+
+//! Writes one line with a single insertion. Two dispatcher threads printing with
+//! chained << interleave their characters, and a line split in two matches nothing.
+template<typename... Parts>
+void print_line(Parts &&... parts)
+{
+    std::ostringstream line;
+    (line << ... << parts) << '\n';
+    std::cout << line.str() << std::flush;
+}
 
 //! The provider owns the machine, implements the actions and hears it finish.
 class GateProvider final    : public    areg::Component
@@ -63,43 +74,43 @@ protected:
     //! An action performs an effect. It asks the machine nothing.
     void action_on_opening() final
     {
-        std::cout << "provider: gate opening" << std::endl;
+        print_line("provider: gate opening");
         broadcast_gate_stage("opening");
     }
 
     void action_on_open() final
     {
-        std::cout << "provider: gate open to " << mFsm.width() << std::endl;
+        print_line("provider: gate open to ", mFsm.width());
         broadcast_gate_stage("open");
     }
 
     void action_on_held() final
     {
-        std::cout << "provider: gate held" << std::endl;
+        print_line("provider: gate held");
         broadcast_gate_stage("held");
     }
 
     void action_on_closed() final
     {
-        std::cout << "provider: gate closed" << std::endl;
+        print_line("provider: gate closed");
         broadcast_gate_stage("closed");
     }
 
     void action_on_refused(uint32_t asked) final
     {
-        std::cout << "provider: gate refused " << asked << std::endl;
+        print_line("provider: gate refused ", asked);
         broadcast_gate_stage("refused");
     }
 
     void action_on_stopped() final
     {
-        std::cout << "provider: gate stopped" << std::endl;
+        print_line("provider: gate stopped");
         broadcast_gate_stage("stopped");
     }
 
     void on_fsm_final(GateFSM & /*machine*/, const char * const finalState) final
     {
-        std::cout << "provider: machine finished in " << finalState << std::endl;
+        print_line("provider: machine finished in ", finalState);
     }
 
 private:
@@ -140,7 +151,7 @@ protected:
 
     void broadcast_gate_stage(const areg::String & stage) final
     {
-        std::cout << "consumer: gate " << stage << std::endl;
+        print_line("consumer: gate ", stage);
         if (stage == "opening")
         {
             ++ mOpenings;
@@ -161,16 +172,16 @@ protected:
             {
                 // One opening only: resume named the history marker, so it re-entered
                 // the stage the hold interrupted instead of starting the cycle again.
-                std::cout << "consumer: opening ran " << mOpenings
-                          << ", so resume re-entered open" << std::endl;
+                print_line("consumer: opening ran ", mOpenings,
+                           ", so resume re-entered open");
                 request_open_gate(60);
             }
             else
             {
                 // A second opening: this order named the composite and not its marker,
                 // so it descended the Start chain and began a new cycle.
-                std::cout << "consumer: opening ran " << mOpenings
-                          << ", so a fresh order started at the beginning" << std::endl;
+                print_line("consumer: opening ran ", mOpenings,
+                           ", so a fresh order started at the beginning");
                 request_open_gate(250);
             }
         }

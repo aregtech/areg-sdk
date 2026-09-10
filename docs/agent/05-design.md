@@ -33,19 +33,30 @@ they are not interchangeable.
 
 | Use | When | Costs |
 |---|---|---|
-| **Attribute** | a value consumers must know now and whenever it changes | kept by the provider, delivered on subscribe and on every change |
-| **Broadcast** | something happened; there is no value to remember | delivered only to those subscribed at that moment |
+| **Attribute** | one value a consumer must know the current state of | kept by the provider. A subscriber is sent it the moment it subscribes, and again on every `set_` (`Notify="Always"`) or only when it changes (`OnChange`, the default) |
+| **Broadcast** | several values that mean something only together, at the moment it happened | fire and forget. Heard by whoever is subscribed at that instant; nothing is kept |
 | **Request / Response** | a caller wants an answer to its own call | one round trip; the response goes only to the caller |
 
 Rules that follow from the table:
 
+- **Subscribing is not what separates them.** Neither reaches a consumer until it
+  subscribes, and either can be unsubscribed again at any point while it runs.
+- **What separates them is whether the value outlives the moment it was sent.** An
+  attribute does: a consumer that subscribes later is still sent the current value,
+  carrying a `areg::DataState` that says whether it is valid yet, so it always
+  receives something. A broadcast does not: one sent before a consumer subscribed is
+  gone, and that consumer waits for the next.
+- **A broadcast carries as many parameters as the event needs; an attribute is one
+  value.** Where several values are reported together **and** a late subscriber must
+  still learn the latest, publish that one as an attribute beside the broadcast:
+  `recipes/03-attributes-and-broadcast/` is that pair.
+- **Only an attribute has a validity state.** Broadcast parameters are always
+  meaningful, because they exist only in the message that carried them.
 - A consumer that polls with a request wants an **attribute**. Attributes exist so
   round trips do not.
 - A response goes to one caller. Telling everyone is a **broadcast**.
 - A request needs a response only when the caller must know the outcome. A request
   with nothing to report is declared without one.
-- State a late consumer must learn on connecting is an **attribute**, never a
-  broadcast. A broadcast sent before a consumer subscribed is gone.
 
 ## 3. What are the components, and in which threads?
 
@@ -102,7 +113,7 @@ is not part of the contract; consumers see requests and broadcasts, never states
 | Service | Provider role | Consumed by | Category | Contract |
 |---|---|---|---|---|
 | `MeterService` | `MeterProvider` | `Collector` | Private | attribute `Reading` |
-| `ReportService` | `Collector` | `Display` | Private | broadcast `report` |
+| `ReportService` | `Collector` | `Display` | Private | attribute `Report`, not a broadcast: `Display` must not miss it |
 
 Then a second table of components: role name, services provided, dependencies,
 thread, process. Everything after this is mechanical -- one `.siml` per row of the
@@ -120,9 +131,9 @@ writes log lines.
   value that must be current, so it is an **attribute**, not a request. Three
   components provide it -- same service, three role names: `Client1`, `Client2`,
   `Client3`. One document, three providers.
-- **`Alarm`**, provided by the monitor, consumed by whoever reacts. A raised alarm is
-  an event with no retained value: a **broadcast**. If a late subscriber must learn
-  the current alarm level, that level is an **attribute** beside the broadcast.
+- **`Alarm`**, provided by the monitor, consumed by whoever reacts. A raised alarm
+  reports the client, the level and the reason together, at the moment it happened:
+  a **broadcast**, with the level also an attribute for whoever connects later.
 - **The logger is not a service.** Logging is a framework facility, not a contract
   between parties: `34-logging.md`. Making it a service adds a hop to every line and
   buys nothing.
@@ -143,6 +154,7 @@ both documents become `Category="Public"` and `mtrouter` has to run.
 | A request whose response nobody reads | it needs no response |
 | A consumer polling an attribute | subscribe instead |
 | A broadcast a consumer must not miss | it is an attribute |
+| An attribute holding values that only mean something together | it is a broadcast |
 | A component that provides nothing and consumes nothing | it is a class, not a component |
 
 ## Then

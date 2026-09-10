@@ -72,10 +72,19 @@ which is also where a component's role name and address are.
   }
   ```
 
-  **Never compare `timer.name()` to the string you constructed the timer with.** The
-  constructor passes that string through `areg::generate_name()`, which appends a
-  nanosecond stamp, so the name you gave is only a prefix and `timer.name() ==
-  "Watchdog"` is never true. `name()` is for log output, not for dispatch.
+  **By name only as a fallback, and never against the string you constructed the timer
+  with.** The constructor passes that string through `areg::generate_name()`, which
+  appends a stamp, so `name()` returns `Watchdog_00065b1f_25d8fd3f` and `timer.name()
+  == "Watchdog"` is never true. The two spellings that do work, when the address is
+  not at hand:
+
+  ```cpp
+  if      (timer.name() == mWatchdog.name())     { ... }   // the name it holds
+  else if (timer.name().starts_with("Watchdog")) { ... }   // the prefix you gave it
+  ```
+
+  Prefer the address. It is a pointer compare, it needs no second object, and two
+  timers cannot collide on it the way two prefixes can.
 - **Do not block in `process_timer`.** It runs on a dispatcher thread and stops every
   component of that thread while it runs.
 - **Always `stop_timer()` before restarting.** A timer that expired naturally still
@@ -104,4 +113,5 @@ which is also where a component's role name and address are.
 - [ ] The component inherits `areg::TimerConsumer` and overrides `process_timer`.
 - [ ] `process_timer` does not block, sleep or loop for long.
 - [ ] Every restart calls `stop_timer()` first.
-- [ ] Timers are told apart by name when there is more than one.
+- [ ] Timers are told apart by address when there is more than one; by name only
+      against `starts_with` or another timer's `name()`, never against a literal.

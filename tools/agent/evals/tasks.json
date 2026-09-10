@@ -76,8 +76,8 @@
       "id": "06-state-machine",
       "prompt": "Build a one process application for a gate. The gate opens when asked, stays open for 300 milliseconds and then closes by itself, and it must not open twice. Drive it with a state machine, not with flags in the component. A consumer asks it to open, prints every change and quits when it closes.",
       "expect": [
-        "gate open",
-        "gate is closed"
+        "consumer: gate open",
+        "consumer: gate closed"
       ],
       "reference": "06-state-machine",
       "teaches": "when a machine is warranted, .fsml authoring, the action handler"
@@ -636,9 +636,16 @@
       "kind": "repair",
       "prompt": "This application does not compile. The error names a member of areg::String. Diagnose it and fix it.",
       "expect": [
-        "provider: hello,",
         "consumer: greeted"
       ],
+      "binaries": 2,
+      "run": {
+        "router": true,
+        "background": [
+          "provider"
+        ],
+        "lead": "consumer"
+      },
       "reference": "08-observability",
       "defect": {
         "file": "src/provider.cpp",
@@ -656,7 +663,7 @@
       "kind": "repair",
       "prompt": "The gate runs one full cycle, but the request that follows it is refused as if the machine were still busy. Diagnose it and fix it.",
       "expect": [
-        "gate: closed"
+        "provider: gate closed"
       ],
       "reference": "06-state-machine",
       "defect": {
@@ -677,6 +684,14 @@
       "expect": [
         "consumer: greeted"
       ],
+      "binaries": 2,
+      "run": {
+        "router": true,
+        "background": [
+          "provider"
+        ],
+        "lead": "consumer"
+      },
       "reference": "02-ipc-two-processes",
       "defect": {
         "file": "src/HelloHelper.cpp",
@@ -712,7 +727,7 @@
       "kind": "repair",
       "prompt": "The project refuses to configure: the code generator will not read the state machine. Diagnose it and fix it.",
       "expect": [
-        "gate: closed"
+        "provider: gate closed"
       ],
       "reference": "06-state-machine",
       "defect": {

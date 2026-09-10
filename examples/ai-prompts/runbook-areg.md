@@ -67,8 +67,10 @@ no `To` and no cross-document type check is ever done by hand:
 
 ```
 python3 <areg-sdk>/tools/agent/gen_docs.py --example > design.json
-python3 <areg-sdk>/tools/agent/gen_docs.py --spec design.json --outdir src/services
 ```
+
+Copy that shape into your own `design.json`. Section 5 turns it into the documents,
+the application and a build, in one command.
 
 The spec holds `"datatypes"` (one `.dtml`, when two documents share a type),
 `"interfaces"` (a `.siml` each) and `"machines"` (a `.fsml` each). Everything is named:
@@ -106,45 +108,55 @@ Then point `src/CMakeLists.txt` at them:
 
 ```cmake
 addServiceInterface(gen_<project> src/services/YourService.siml)
+addServiceInterface(gen_<project> src/services/YourMachine.fsml)
 macro_declare_executable(<project>_provider gen_<project> provider.cpp ...)
 macro_declare_executable(<project>_consumer gen_<project> consumer.cpp ...)
 ```
+
+**A `.fsml` needs a line of its own.** The generator does not reach it through the
+`.siml`, and without that line the machine's classes are never generated.
 
 **The two path kinds on those lines are different.** The document path is relative to
 the **project root** (`src/services/X.siml`). The source paths are relative to **the
 CMakeLists.txt naming them** (`provider.cpp`, already inside `src/`). Rename the two
 executables to suit the task, and add every source file you write to them.
 
-## 5. The application -- generated whole, not hand-written
+## 5. Documents, application and build -- one command
 
 ```
-python3 <areg-sdk>/tools/agent/gen_skeleton.py \
-        --doc src/services/YourService.siml --app --mode ipc --force
-        [--machine src/services/YourMachine.fsml]
+python3 <areg-sdk>/tools/agent/build_project.py --spec design.json
 ```
 
-**With a state machine, pass `--machine`.** The provider then owns the machine: the
-action handler is a base, every action is declared, and there is no separate host
-component to write, merge or delete.
+Five steps with no decision in any of them: it writes the documents from the spec,
+writes the application from them, checks the contract, configures and builds. It stops
+at the first failure and names the step, so nothing is hidden. Pass `--spec` once per
+spec file. `--regenerate` writes the application again and **discards what you have
+put in it**; without it a second run keeps `src/` and only rebuilds, so this is also
+the command for every later build.
 
-Writes the **whole application** into `src/`: the components, every subscription, the
-model and `main()`. `--mode ipc` writes `src/provider.cpp` and `src/consumer.cpp`;
-`--mode local` writes one `src/main.cpp`. Match the mode `setup_project.py` scaffolded.
+**A state machine is folded into the provider automatically** when the spec declares
+one: the action handler is a base, every action is declared, and there is no separate
+host component to write, merge or delete.
 
-**It compiles and runs as written. Build it and run it before you change anything.**
-The model, `main()`, the connection test and every `notify_on_*` subscription are
-already correct, so none of them needs a page. Every place a rule of yours belongs is
-marked `TODO(you)`.
+The application is the **whole** of `src/`: the components, every subscription, the
+model and `main()`. A local project gets one `src/main.cpp`, an ipc project gets
+`src/provider.cpp` and `src/consumer.cpp`. The mode comes from `scenarios.json`, so it
+is never given twice.
 
-**Do not rewrite these files, and do not read them back**: the tool has already
-printed what they contain. Section 6 fills the markers in.
+**It compiles and runs as written.** The model, `main()`, the connection test and
+every `notify_on_*` subscription are already correct, so none of them needs a page. A
+consumer that makes more than one request also gets a stepping timer, because
+responses arrive asynchronously and a straight-line sequence races them.
+`scenarios.json` is pointed at what was generated.
 
-`--contract` in place of `--app` prints every signature and every generated data type
-in a few hundred tokens and writes no file. Read that instead of opening a generated
-header.
+Every place a rule of yours belongs is one line: `// TODO(you) <name>: <what>`, and
+the command prints all of them. **Do not rewrite these files and do not read them
+back.** `gen_skeleton.py --doc <document> --todos` reprints whichever are left.
 
-Never invent a method name on a generated base class: the names come from a fixed rule
-and the tool has applied it. Run it again with `--force` whenever the document changes.
+`gen_skeleton.py --doc <document> --contract` prints every signature and every
+generated data type in a few hundred tokens and writes no file. Read that instead of
+opening a generated header. Never invent a method name on a generated base class: the
+names come from a fixed rule and the tool has applied it.
 
 **A generated application file carries its components, the model and `main()` together**
 -- that is the shape every recipe uses. A class you add by hand gets its own `.hpp` and
@@ -152,34 +164,47 @@ and the tool has applied it. Run it again with `--force` whenever the document c
 
 ## 6. Implement
 
-Fill the `TODO(you)` markers with the task's logic, using `Edit`. The model, `main()`
-and the subscriptions are already wired and are not written again.
+**One `Edit` per marker, and the marker line is the `old_string`.** Copy the printed
+line, give the body that replaces it, and change nothing else. It matches once, so
+the edit cannot go wrong, and a file is never rewritten: a full rewrite of a
+generated file is the single most expensive thing a run can do, because output is
+billed at five times what reading costs.
+
+`30-provider.md`, `31-consumer.md` and `32-model.md` describe the code the tool has
+already written. Do not open them to fill a marker.
 
 `40-base-api.md` is the one page a body still needs: every body uses a string or a
 container and those names are not the ones training data carries. Read it before
 writing bodies rather than after, in the same request as the last page you needed.
-
-Update `scenarios.json` so it names your executables and the output lines that prove
-each requirement.
-
-## 7. Check, build, run -- this order, once each
+For a single framework name it does not carry -- a signature, an overload, what a
+class declares -- ask instead of reading:
 
 ```
-python3 <areg-sdk>/tools/agent/check_contract.py . --strict
-cmake -B build
-cmake --build build -j$(nproc)
+python3 <areg-sdk>/tools/agent/api_help.py start_timer
+python3 <areg-sdk>/tools/agent/api_help.py Timer --class
+```
+
+`scenarios.json` already names your executables and the router. Replace each
+`TODO(you)` expectation in it with a line the run prints that proves one
+requirement.
+
+## 7. Build and run -- two commands
+
+```
+python3 <areg-sdk>/tools/agent/build_project.py --spec design.json
 python3 <areg-sdk>/tools/agent/run_scenarios.py --build build/bin
 ```
 
-The first catches mistakes that compile cleanly and fail later; run it **before** you
-build. The last starts the router, then the provider, then the consumer, and checks
+The first is section 5 again: it keeps the sources you have filled in, re-checks the
+contract -- which catches the mistakes that compile cleanly and fail later -- and
+builds. The second starts the router, then the provider, then the consumer, and checks
 the output. Exit 0 is a pass.
 
 **Every acceptance item goes in `scenarios.json`, including the two that look like
 they need a terminal.** A console quit path is `"stdin": ["-q"]` on that process; the
-peer going away is a scenario-level `"stop"`. Both are in
-`<areg-sdk>/docs/agent/50-running.md`. One run then prints the line each expectation
-matched, and that output is the evidence for the report.
+peer going away is a scenario-level `"stop"`. The generator prints both keys when it
+writes the file, so neither needs a page. One run then prints the line each
+expectation matched, and that output is the evidence for the report.
 
 **Never start the processes by hand.** No `prog &`, no `sleep`, no `pkill`, no `ps`.
 It is slower, it is not repeatable, it leaves background processes behind, and a
@@ -188,16 +213,9 @@ harnesses show as a failed tool call with no output -- a trap that can cost a do
 turns. `./run.sh` exists for a human watching it; a scenario is what you run.
 
 **When you need the raw output of a run, ask the runner for it, not the shell.**
-Everything hand-starting a process is reached for is already a flag:
-
-```
-python3 <areg-sdk>/tools/agent/run_scenarios.py --build build/bin --verbose
-python3 <areg-sdk>/tools/agent/run_scenarios.py --build build/bin --only <name>
-```
-
 `--verbose` prints every line each process wrote, which is where a temporary
-diagnostic printout comes back. `--only` runs one scenario. Together they are the
-whole of ad-hoc debugging, and they leave nothing running.
+diagnostic printout comes back; `--only <name>` runs one scenario. Together they are
+the whole of ad-hoc debugging, and they leave nothing running.
 
 ## 7a. Two habits that halve the cost of the same work
 
@@ -210,15 +228,10 @@ eight. A header and its source are written together. So are the two `main()` fil
 and `scenarios.json`. Only split where the next thing genuinely depends on the result
 of the last -- a build, a check, a scenario run.
 
-**Never pour a build log into the conversation.** It stays there for every later
-request. `cmake --build build -j$(nproc) 2>&1 | tail -30` is enough to see success; on a
-failure ask for the errors, not the transcript:
-
-```
-cmake --build build -j$(nproc) 2>&1 | grep -E "error|Error" | head -20
-```
-
-The same goes for `find`, `ls -R` and anything else that can print hundreds of lines.
+**Never pour a log into the conversation.** It stays there for every later request.
+`build_project.py` already keeps its own output to a few lines. Everything else that
+can print hundreds -- `find`, `ls -R`, a raw compiler run -- is piped through `grep`
+or `head` before you ask for it.
 
 ## 8. Fix -- bounded, then stop
 

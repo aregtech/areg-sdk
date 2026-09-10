@@ -73,7 +73,7 @@ protected:
         if (state == areg::DataState::DataIsOK)
         {
             std::cout << "collector: reading " << Reading << std::endl;
-            broadcast_report(Reading);
+            set_report(Reading);
         }
     }
 
@@ -100,17 +100,22 @@ protected:
             result = true;
             if (areg::is_service_connected(status))
             {
-                notify_on_broadcast_report(true);
+                notify_on_report_update(true);
             }
         }
 
         return result;
     }
 
-    void broadcast_report(uint32_t value) final
+    //! The report arrives as an attribute, so a subscriber that was still
+    //! subscribing when the collector published it is sent the value all the same.
+    void on_report_update(uint32_t Report, areg::DataState state) final
     {
-        std::cout << "display: report " << value << std::endl;
-        areg::Application::signal_quit();
+        if (state == areg::DataState::DataIsOK)
+        {
+            std::cout << "display: report " << Report << std::endl;
+            areg::Application::signal_quit();
+        }
     }
 };
 

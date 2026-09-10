@@ -999,8 +999,9 @@ def check_timer_dispatch(sources, findings, read):
                         'P-16', 'error', path, number + 1,
                         'the timer name is generated from the string the timer was '
                         'constructed with, so "%s.name()" never equals a literal and '
-                        'this branch is never taken; compare the address instead, '
-                        '"&%s == &mYourTimer"' % (name, name)))
+                        'this branch is never taken; compare the address, '
+                        '"&%s == &mYourTimer", or a name it holds, '
+                        '"%s.name() == mYourTimer.name()"' % (name, name, name)))
                     break
 
 

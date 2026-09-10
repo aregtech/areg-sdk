@@ -14,6 +14,7 @@
 # Exit code 0 on success, 1 on a bad argument or an unreadable document.
 # ===========================================================================
 import argparse
+import json
 import os
 import re
 import sys
@@ -47,6 +48,38 @@ def to_snake(name):
     text = re.sub(r'(.)([A-Z][a-z]+)', r'\1_\2', name)
     text = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', text)
     return text.lower()
+
+
+# Every hole a generated file leaves carries its own name, so the line is unique in
+# the file and an Edit can address it without reading the file back.
+def marker(slot, what, indent=8):
+    """One TODO(you) line, named after the slot it fills."""
+    return '{}// TODO(you) {}: {}.'.format(' ' * indent, slot, what)
+
+
+MARKER = re.compile(r'//\s*TODO\(you\)\s+([A-Za-z_][\w]*)\s*:\s*(.*?)\s*$')
+
+
+def print_todos(produced, out):
+    """List every hole the generated files leave, by file and by name.
+
+    The list is what removes the read-back: an Edit whose old_string is the marker
+    line matches once, so no file has to be opened to find where a rule belongs.
+    """
+    total = 0
+    for file_name, text in produced:
+        found = [MARKER.search(line) for line in text.splitlines()]
+        found = [f for f in found if f]
+        if not found:
+            continue
+        path = os.path.join(out, file_name).replace('\\', '/')
+        print('  {} leaves {} marker(s):'.format(path, len(found)))
+        for entry in found:
+            print('    TODO(you) {}: {}'.format(entry.group(1), entry.group(2)))
+        total += len(found)
+    if total:
+        print('  Each line above is unique in its file. Edit that line; do not '
+              'rewrite the file.')
 
 
 class Interface:
@@ -597,6 +630,10 @@ def default_expr(iface, type_name):
     return '{}{{}}'.format(iface.cpp_type(type_name)[0])
 
 
+# The headers a stepping timer needs, added only to the file that carries one.
+TIMER_INCLUDES = ['#include "areg/component/Timer.hpp"',
+                  '#include "areg/component/TimerConsumer.hpp"']
+
 APP_INCLUDES = ['#include <iostream>',
                 '',
                 '#include "areg/base/areg_global.h"',
@@ -659,7 +696,8 @@ def provider_class(iface, cls, machine=None):
         lines.append('    void request_{}({}) final'.format(to_snake(name),
                                                             iface.signature(params)))
         lines.append('    {')
-        lines.append('        // TODO(you): the rule this request carries out.')
+        lines.append(marker('request_' + to_snake(name),
+                            'the rule this request carries out'))
         if name in answered:
             args = ', '.join(default_expr(iface, t) for _, t in answered[name])
             lines.append('        response_{}({});'.format(to_snake(name), args))
@@ -673,7 +711,8 @@ def provider_class(iface, cls, machine=None):
             lines.append('    {} {}({}) final'.format(machine.cpp_type(returns)[0], name,
                                                       machine.signature(params)))
             lines += ['    {',
-                      '        // TODO(you): answer the question this guard asks.',
+                      marker('condition_' + name,
+                             'answer the question this guard asks'),
                       '        return {};'.format(default_expr(machine, returns)),
                       '    }',
                       '']
@@ -685,7 +724,7 @@ def provider_class(iface, cls, machine=None):
             lines.append('    void action_{}({}) final'.format(name,
                                                                machine.signature(params)))
             lines += ['    {',
-                      '        // TODO(you): perform the effect.',
+                      marker('action_' + name, 'perform the effect'),
                       '    }',
                       '']
 
@@ -702,27 +741,44 @@ def provider_class(iface, cls, machine=None):
     return lines
 
 
+# A consumer with one request needs no sequencing. With more than one the responses
+# arrive asynchronously, so a straight-line sequence races and the steps are spaced by
+# a timer instead.
+STEP_INTERVAL_MS = 1000
+
+
+def steps_scenario(iface):
+    """True when the consumer walks a sequence and so needs a stepping timer."""
+    return len(iface.requests) > 1
+
+
 def consumer_class(iface, cls):
     """The consumer component, subscribed and handling everything it subscribed to."""
+    stepped = steps_scenario(iface)
     pad = ' ' * (len(cls) + 13)
     lines = ['class {} final : public    areg::Component'.format(cls),
-             '{}, protected {}ConsumerBase'.format(pad, iface.name),
-             '{',
-             'public:',
-             '    {}(const areg::ComponentEntry & entry, areg::ComponentThread & owner)'.format(cls),
-             '        : areg::Component(entry, owner)',
-             '        , {}ConsumerBase(entry.mDependencyServices[0].mRoleName, owner)'.format(iface.name),
-             '    { }',
-             '',
-             'protected:',
-             '    bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase & proxy) final',
-             '    {',
-             '        bool result{ false };',
-             '        if ({}ConsumerBase::service_connected(status, proxy))'.format(iface.name),
-             '        {',
-             '            result = true;',
-             '            if (areg::is_service_connected(status))',
-             '            {']
+             '{}, protected {}ConsumerBase'.format(pad, iface.name)]
+    if stepped:
+        lines.append('{}, private   areg::TimerConsumer'.format(pad))
+    lines += ['{',
+              'public:',
+              '    {}(const areg::ComponentEntry & entry, areg::ComponentThread & owner)'.format(cls),
+              '        : areg::Component(entry, owner)',
+              '        , {}ConsumerBase(entry.mDependencyServices[0].mRoleName, owner)'.format(iface.name)]
+    if stepped:
+        lines += ['        , areg::TimerConsumer()',
+                  '        , mStep(static_cast<areg::TimerConsumer &>(self()), "Step")']
+    lines += ['    { }',
+              '',
+              'protected:',
+              '    bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase & proxy) final',
+              '    {',
+              '        bool result{ false };',
+              '        if ({}ConsumerBase::service_connected(status, proxy))'.format(iface.name),
+              '        {',
+              '            result = true;',
+              '            if (areg::is_service_connected(status))',
+              '            {']
     if iface.attributes or iface.broadcasts:
         lines.append('                // Subscriptions are made here, and again after '
                      'every reconnection.')
@@ -738,10 +794,19 @@ def consumer_class(iface, cls):
     if answered_first:
         name, params = answered_first
         args = ', '.join(default_expr(iface, type_name) for _, type_name in params)
-        lines.append('                // TODO(you): the first request of the scenario.')
+        lines.append(marker('first_request',
+                            'the first request of the scenario', 16))
         lines.append('                request_{}({});'.format(to_snake(name), args))
     else:
-        lines.append('                // TODO(you): the first request of the scenario.')
+        lines.append(marker('first_request',
+                            'the first request of the scenario', 16))
+    if stepped:
+        lines += ['',
+                  '                // One step of the scenario per tick.',
+                  '                mStep.stop_timer();',
+                  '                mStep.start_timer({}, static_cast<areg::DispatcherThread &>'
+                  '(master_thread()),'.format(STEP_INTERVAL_MS),
+                  '                                  areg::TimerBase::CONTINUOUSLY);']
     lines += ['            }',
               '        }',
               '',
@@ -749,14 +814,24 @@ def consumer_class(iface, cls):
               '    }',
               '']
 
+    if stepped:
+        lines += ['    void process_timer(areg::Timer & timer) final',
+                  '    {',
+                  marker('next_step', 'the next request of the scenario'),
+                  '    }',
+                  '']
+
     first = True
     for name, params in iface.responses:
         lines.append('    void response_{}({}) final'.format(to_snake(name),
                                                              iface.signature(params)))
         lines.append('    {')
-        lines.append('        // TODO(you): what this answer means for the scenario.')
+        lines.append(marker('response_' + to_snake(name),
+                            'what this answer means for the scenario'))
         if first:
             lines.append('        // The scenario ends here until a later step replaces it.')
+            if stepped:
+                lines.append('        mStep.stop_timer();')
             lines.append('        areg::Application::signal_quit();')
             first = False
         lines.append('    }')
@@ -766,8 +841,10 @@ def consumer_class(iface, cls):
         lines.append('    void request_{}_failed(areg::ResultType reason) final'.format(to_snake(name)))
         lines += ['    {',
                   '        std::cerr << "request {} failed, reason " '
-                  '<< static_cast<int>(reason) << std::endl;'.format(name),
-                  '        areg::Application::signal_quit();',
+                  '<< static_cast<int>(reason) << std::endl;'.format(name)]
+        if stepped:
+            lines.append('        mStep.stop_timer();')
+        lines += ['        areg::Application::signal_quit();',
                   '    }',
                   '']
 
@@ -775,7 +852,8 @@ def consumer_class(iface, cls):
         lines.append('    void broadcast_{}({}) final'.format(to_snake(name),
                                                               iface.signature(params)))
         lines += ['    {',
-                  '        // TODO(you): what this broadcast means for the scenario.',
+                  marker('broadcast_' + to_snake(name),
+                         'what this broadcast means for the scenario'),
                   '    }',
                   '']
 
@@ -787,12 +865,19 @@ def consumer_class(iface, cls):
         lines += ['    {',
                   '        if (state == areg::DataState::DataIsOK)',
                   '        {',
-                  '            // TODO(you): the new value is ready to use.',
+                  marker('update_' + to_snake(attr_name),
+                         'the new value is ready to use', 12),
                   '        }',
                   '    }',
                   '']
     lines += ['private:',
-              '    {}() = delete;'.format(cls),
+              '    inline {} & self()'.format(cls),
+              '    {   return (*this); }',
+              '']
+    if stepped:
+        lines += ['    areg::Timer  mStep;   //!< Spaces the requests of the scenario.',
+                  '']
+    lines += ['    {}() = delete;'.format(cls),
               '    AREG_NOCOPY_NOMOVE({});'.format(cls),
               '};']
     return lines
@@ -861,6 +946,7 @@ def app_files(iface, mode, include_root, machine=None):
                           'one process.'.format(iface.name)) if '{}' in l else l
                  for l in head]
         lines += APP_INCLUDES + class_includes(iface, machine) + \
+            TIMER_INCLUDES * steps_scenario(iface) + \
             ['', provider_base, consumer_base, '']
         lines += provider_class(iface, PROVIDER_ROLE, machine) + ['']
         lines += consumer_class(iface, CONSUMER_ROLE) + ['']
@@ -898,7 +984,8 @@ def app_files(iface, mode, include_root, machine=None):
                 ' * \\file    consumer.cpp',
                 ' * \\brief   The process that consumes the {} service.'.format(iface.name),
                 ' **/']
-    consumer += APP_INCLUDES + class_includes(iface) + ['', consumer_base, '']
+    consumer += APP_INCLUDES + class_includes(iface) + TIMER_INCLUDES * steps_scenario(iface)
+    consumer += ['', consumer_base, '']
     consumer += consumer_class(iface, CONSUMER_ROLE) + ['']
     consumer += ['constexpr char const _modelName[]{ "ConsumerModel" };',
                  '',
@@ -918,10 +1005,78 @@ def app_files(iface, mode, include_root, machine=None):
             ('consumer.cpp', '\n'.join(consumer))]
 
 
+# What a process is expected to print, until the rule that prints it is written.
+# It is a regular expression that matches nothing, so a scenario left unfilled fails
+# and says which line is missing rather than passing on no evidence at all.
+SCENARIO_TODO = 'TODO(you): a line this process prints that proves one requirement'
+
+
+def update_scenarios(path, mode, iface):
+    """Point scenarios.json at the application that was just generated.
+
+    The binaries and the router come from the file setup_project.py wrote, because
+    they are the names its CMake files declare. Everything the run has to prove is a
+    named hole, and the shape around them -- the process list, the exit code, the
+    keys "stdin" and "stop" -- is written here instead of read from a page.
+    """
+    if not os.path.exists(path):
+        return
+    try:
+        with open(path, encoding='utf-8') as handle:
+            document = json.load(handle)
+        scenarios = document['scenarios']
+        procs = scenarios[0]['procs']
+    except (ValueError, OSError, KeyError, IndexError, TypeError):
+        print('  kept   {} -- it is not the file setup_project.py wrote'.format(path))
+        return
+
+    for index, spec in enumerate(procs):
+        spec['expect'] = [SCENARIO_TODO]
+        if index == len(procs) - 1:
+            spec['exit'] = 0
+        else:
+            spec.pop('exit', None)
+    # A stepped scenario spends a second per request, so the default timeout is
+    # raised to cover the whole sequence.
+    scenarios[0]['timeout'] = max(int(scenarios[0].get('timeout', 60)),
+                                  60 + len(iface.requests) * STEP_INTERVAL_MS // 1000)
+    with open(path, 'w', encoding='utf-8') as handle:
+        json.dump(document, handle, indent=2)
+        handle.write('\n')
+    print('wrote  {}'.format(path))
+    print('  {} process(es), router {}. Replace each "expect" entry with a regular'
+          .format(len(procs), 'on' if scenarios[0].get('router') else 'off'))
+    print('  expression the run prints. Two more keys exist and no page is needed for')
+    print('  them: "stdin": ["-q"] on a process feeds its console, and a scenario-level')
+    print('  "stop": {"proc": "<name>", "after": "<regex>"} takes a peer away.')
+
+
 APP_NOTE = (
     '  These files compile and run as written. Every place a rule of your own\n'
-    '  belongs is marked TODO(you); the model, main() and every subscription are\n'
-    '  already correct and need no page. Build, run, then fill the TODOs in.')
+    '  belongs is one TODO(you) line above; the model, main() and every\n'
+    '  subscription are already correct and need no page. Build, run, then Edit\n'
+    '  each marker line in place. Rewriting a whole file is never needed.')
+
+
+def report_todos(out, mode):
+    """Every marker still left in the generated application, with its line."""
+    names = ['main.cpp'] if mode == 'local' else ['provider.cpp', 'consumer.cpp']
+    total = 0
+    for file_name in names:
+        path = os.path.join(out, file_name)
+        if not os.path.exists(path):
+            continue
+        with open(path, encoding='utf-8') as handle:
+            for number, line in enumerate(handle, 1):
+                found = MARKER.search(line)
+                if found:
+                    print('{}:{}: TODO(you) {}: {}'.format(
+                        path.replace('\\', '/'), number,
+                        found.group(1), found.group(2)))
+                    total += 1
+    if total == 0:
+        print('no TODO(you) marker is left in {}'.format(out))
+    return 0
 
 
 def main():
@@ -945,6 +1100,14 @@ def main():
     parser.add_argument('--mode', choices=['ipc', 'local'], default='ipc',
                         help='with --app: ipc writes provider.cpp and consumer.cpp, '
                              'local writes one main.cpp. Match setup_project.py')
+    parser.add_argument('--scenarios', default='scenarios.json',
+                        help='with --app: the scenario file to point at the '
+                             'generated application. Left alone when it does not '
+                             'exist')
+    parser.add_argument('--todos', action='store_true',
+                        help='list the TODO(you) markers still left in the '
+                             'application, with the file and line of each, and '
+                             'write no file')
     parser.add_argument('--contract', action='store_true',
                         help='print the names the document generates and write no '
                              'file: what a caller needs from whoever wrote it')
@@ -953,6 +1116,8 @@ def main():
     iface = Interface(args.doc)
     if args.contract:
         return print_contract(iface, args.doc)
+    if args.todos:
+        return report_todos(args.out or 'src', args.mode)
     include_root = args.include_root
     if include_root is None:
         include_root = os.path.relpath(os.path.dirname(os.path.abspath(args.doc)),
@@ -988,6 +1153,8 @@ def main():
         produced = app_files(iface, args.mode, include_root, machine)
         for file_name, text in produced:
             write(os.path.join(args.out, file_name), text, args.force)
+        update_scenarios(args.scenarios, args.mode, iface)
+        print_todos(produced, args.out)
         print(APP_NOTE)
         return 0
 

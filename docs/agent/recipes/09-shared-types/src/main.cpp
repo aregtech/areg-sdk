@@ -80,7 +80,7 @@ protected:
                       << ", firmware " << Reading.firmware.to_string() << std::endl;
             mHistory.add(Reading);
             report_history();
-            broadcast_report(Reading, mHistory);
+            set_history(mHistory);
         }
     }
 
@@ -129,19 +129,27 @@ protected:
             result = true;
             if (areg::is_service_connected(status))
             {
-                notify_on_broadcast_report(true);
+                notify_on_history_update(true);
             }
         }
 
         return result;
     }
 
-    void broadcast_report(const SharedTypes::Reading & reading,
-                          const SharedTypes::ReadingList & history) final
+    //! The history arrives as an attribute, so a subscriber that was still
+    //! subscribing when the collector published it is sent the value all the same.
+    void on_history_update(const SharedTypes::ReadingList & History,
+                           areg::DataState state) final
     {
-        std::cout << "display: report " << reading.value
-                  << " from " << reading.sensor << std::endl;
-        std::cout << "display: readings crossed the boundary: " << history.size()
+        if ((state != areg::DataState::DataIsOK) || History.is_empty())
+        {
+            return;
+        }
+
+        const SharedTypes::Reading & newest = History[History.size() - 1];
+        std::cout << "display: report " << newest.value
+                  << " from " << newest.sensor << std::endl;
+        std::cout << "display: readings crossed the boundary: " << History.size()
                   << std::endl;
         areg::Application::signal_quit();
     }

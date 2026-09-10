@@ -184,6 +184,7 @@ The consumer treats a transient state as fatal. `Disconnected`, `ConnectionLost`
 | Never subscribed | Call `notify_on_<attribute>_update(true)` or `notify_on_broadcast_<name>(true)` inside `service_connected` |
 | Subscribed before connecting | Subscribe only after `areg::is_service_connected(status)` is true |
 | The provider never set the attribute | Set it once at startup |
+| A broadcast fired once, before the subscription reached the provider | `notify_on_broadcast_<name>(true)` only **queues** the request; a broadcast sent before it arrives is gone, and the consumer waits for the next that never comes. State a consumer must not miss is an attribute: `05-design.md` |
 | The value looks wrong on the first callback | The first notification can report the value as not valid. Check `areg::DataState` before using it |
 | Resubscription after a reconnect | `service_connected` runs again; subscribe there, not once at construction |
 

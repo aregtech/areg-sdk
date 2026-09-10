@@ -490,7 +490,38 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
 # the benchmark's own 464 lines of .siml and .fsml, generating byte-identical code.
 # The pages that taught the XML now teach the spec instead, which is why the number did
 # not have to rise again: the routing is substitutive, not additive.
-CORPUS_CEILING = 186100
+# Raised by 1,300 bytes for three tools that each remove a request rather than a page.
+# build_project.py runs the five mechanical steps -- documents, application, contract,
+# configure, build -- as one command and names the step that failed; the run that paid
+# for this spent six requests and about $0.15 of residency on that chain, with no
+# decision in any of them. api_help.py answers one framework name with its declarations
+# and the header carrying them: the run that paid for it spent 14,199 output tokens
+# around a grep for start_timer, the second largest reasoning moment measured. The third
+# is gen_skeleton.py naming every TODO(you) marker, which is what lets a hole be filled
+# by one Edit of one unique line; the run before it rewrote two generated files whole
+# for 40,018 output tokens, about $0.40, the largest single removable block left. 1,400
+# bytes of the addition were paid back inside examples/ai-prompts/runbook-areg.md, whose
+# build-log and raw-output blocks the new command makes redundant.
+# Raised again, by 1,100 bytes, for the rule in 05-design.md section 2 that decides
+# between an attribute and a broadcast. The page had two lines of it and they were not
+# enough: two of the thirteen recipes shipped a one-shot broadcast carrying state a
+# consumer could not miss, and both hung about one run in eight because the broadcast
+# overtook the subscriber's registration. The page's own worked example named the
+# design its rule forbids. What the bytes buy is the whole of the distinction rather
+# than half: that subscribing and unsubscribing are the same for both and decide
+# nothing; that an attribute outlives the moment it was sent and is delivered to a
+# consumer that subscribes later, carrying a DataState, while a broadcast is gone; that
+# a broadcast carries as many parameters as the event needs where an attribute is one
+# value, so several values reported together are a broadcast with the one a late
+# subscriber needs published as an attribute beside it; and that only an attribute has
+# a validity state. 99 bytes were reclaimed inside the page and 83 spent on the reverse
+# smell, an attribute holding values that only mean something together. The last of
+# the raise is one row in 51-debug.md, under the symptom this cost a session to find:
+# a broadcast that fired once before the subscription request reached the provider.
+# The page listed every other cause of "an attribute or broadcast never arrives" and
+# not that one, and it is the one that leaves an application hanging with subscription
+# code that reads as correct.
+CORPUS_CEILING = 188800
 
 PAGE_CEILING = 8 * KB
 PAGE_MEDIAN_TARGET = 6 * KB

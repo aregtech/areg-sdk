@@ -57,6 +57,7 @@ Find your task, open that one file, and do not search the repository.
 | Data types: C++ spelling, struct, enum, `.dtml` | `docs/agent/21-data-types.md` |
 | Add a state machine | copy `docs/agent/recipes/06-state-machine/`, then `docs/agent/22-state-machine.md` |
 | **Write any C++ that uses a string or a container** | `docs/agent/40-base-api.md` |
+| The signature of one framework name | `tools/agent/api_help.py <name>` -- not a page, not a header |
 | What a component knows about itself; the application, threads, timers, time, files | `docs/agent/42-runtime-api.md` |
 | Integrate areg into an existing CMake project | `docs/wiki/02b-cmake-integrate.md` |
 | Work out why it does not work | `docs/agent/51-debug.md` |
@@ -135,7 +136,9 @@ Windows), live in `tools/agent/`, and have `--help`.
 |---|---|
 | `setup_project.py` | Creates a buildable project from a recipe, with its own `AGENTS.md` |
 | `gen_docs.py` | Every `.dtml`, `.siml` and `.fsml` of the project, from one JSON description: no XML, no `ID`, no `To` |
-| `gen_skeleton.py` | `--app`: the whole application from a `.siml`, running as written; `--machine X.fsml` folds the state machine into the provider |
+| `gen_skeleton.py` | `--app`: the whole application from a `.siml`, running as written, every hole one named `TODO(you)` line; `--machine X.fsml` folds the state machine into the provider |
+| `build_project.py` | The five mechanical steps in one: documents, application, contract, configure, build. Stops at the first failure and names the step |
+| `api_help.py` | What one framework name is: its declarations and the header carrying them. Never grep a header for a signature |
 | `run_scenarios.py` | Runs the application and checks its output; exit 0 is a pass. Its `scenarios.json` is `docs/agent/50-running.md` |
 | `check_contract.py` | Checks sources against `docs/agent/api.json`: the section 6 mistakes that compile cleanly and fail later |
 
@@ -183,7 +186,7 @@ components sharing a role name in one process, a header taken from a `private/`
 folder, a watchdog timeout on a thread whose watchdog never starts, a response sent
 after its handler returned, an operation on a nested `.fsml` `Final` state, a
 hand-written source file no `macro_declare_executable` names, and a timer told apart
-in `process_timer` by `name()` rather than by address.
+in `process_timer` by a `name()` compared to a literal rather than by address.
 
 ---
 
