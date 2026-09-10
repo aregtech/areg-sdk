@@ -244,6 +244,16 @@ class Machine:
         self.state_names = set()
         collect_states(self.states, self.state_names, self.where)
 
+        # A "final_event" is by definition an event this machine sends to itself, so
+        # declaring it twice is bookkeeping. Anything a state ends on and "events" does
+        # not carry is declared here, in the order the states name it.
+        for name in final_events(self.states):
+            if name not in self.event_names:
+                self.events.append({'name': name,
+                                    'description': 'Sent when the nested level of a '
+                                                   'composite reaches its Final state.'})
+                self.event_names.add(name)
+
         self.params_of = {}
         for kind, entries in (('Trigger', self.triggers), ('Event', self.events),
                               ('Action', self.actions), ('Condition', self.conditions)):
@@ -260,6 +270,17 @@ class Machine:
             return 'Event'
         fail('"{}" is named by a transition of {} but is not a trigger, a timer or an '
              'event'.format(name, self.where))
+
+
+def final_events(states):
+    """Every event a state ends on, in the order the document names them."""
+    found = []
+    for state in states:
+        if state.get('final_event') and state['final_event'] not in found:
+            found.append(state['final_event'])
+        found.extend(n for n in final_events(state.get('states') or [])
+                     if n not in found)
+    return found
 
 
 def collect_states(states, seen, where):

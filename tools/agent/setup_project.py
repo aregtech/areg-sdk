@@ -339,7 +339,8 @@ src/CMakeLists.txt    declares the service interface and the executables
 ## Tools
 
 ```bash
-python3 {sdk}/tools/agent/gen_skeleton.py --doc src/services/X.siml --app --force
+python3 {sdk}/tools/agent/gen_skeleton.py --doc src/services/X.siml --app --force \
+        [--machine src/services/X.fsml]
 python3 {sdk}/tools/agent/gen_docs.py --example > design.json
 python3 {sdk}/tools/agent/gen_docs.py --spec design.json --outdir src/services
 python3 {sdk}/tools/agent/check_contract.py . --strict
@@ -350,7 +351,9 @@ python3 {sdk}/tools/explain_rule.py 45 --at State/@Kind --document fsml
 
 `gen_skeleton.py --app` writes the whole application -- the components, the model
 and `main()` -- compiling and running as generated, with every place your own rule
-belongs marked `TODO(you)`. Fill those in; do not rewrite the files.
+belongs marked `TODO(you)`. Fill those in; do not rewrite the files. With
+`--machine` the provider owns the state machine, so there is no host component to
+merge by hand.
 `gen_docs.py` writes every `.dtml`, `.siml` and `.fsml` of the project from one
 JSON description, so no XML, no `ID` and no `To` is written by hand, and a type the
 service and its state machine share is declared once. `check_contract.py` reads the sources

@@ -48,54 +48,24 @@ usual reason a machine does not compile.
 A trigger returns `bool`: `true` when a transition was taken, `false` when the current
 state has no transition for it. A trigger the current state ignores is not an error.
 
+**A machine's name becomes a C++ namespace**, so no class of yours may carry it. The
+generated application names its component `ServiceProvider` and never collides; a class
+you add by hand must not be named after either document.
+
 ## Wiring it into a component
 
-Do not type this by hand. The skeleton, with every action override already in place:
+**Do not type this by hand, and do not write a host component.** The provider that owns
+the machine is generated whole:
 
-```bash
-python3 <areg-sdk>/tools/agent/gen_skeleton.py --doc src/services/Gate.fsml --out src
+```
+python3 <areg-sdk>/tools/agent/gen_skeleton.py --doc src/services/GateService.siml \
+        --machine src/services/Gate.fsml --app --mode ipc --force
 ```
 
-On Windows the command is `python`, not `python3`; nothing else changes.
-
-It writes `<Name>Host.hpp/.cpp`, to merge into the providing component or use as it
-stands:
-
-```cpp
-#include "areg/appbase/Application.hpp"
-#include "areg/component/Component.hpp"
-#include "areg/component/ComponentThread.hpp"
-
-class GateProvider final    : public    areg::Component
-                            , protected GateServiceProviderBase
-                            , protected GateActionHandler
-{
-public:
-    GateProvider(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
-        : areg::Component(entry, owner)
-        , GateServiceProviderBase(static_cast<areg::Component &>(self()))
-        , GateActionHandler()
-        , mFsm(static_cast<GateActionHandler &>(self()))
-    { }
-
-protected:
-    void startup_component(areg::ComponentThread & comThread) final
-    {   areg::Component::startup_component(comThread); mFsm.init_fsm(&comThread); }
-
-    void shutdown_component(areg::ComponentThread & comThread) final
-    {   mFsm.release_fsm(); areg::Component::shutdown_component(comThread); }
-
-    void request_open_gate() final      { mFsm.open(); }        // request -> stimulus
-    void action_on_open() final         { broadcast_gate_changed(true); }
-    void action_on_close() final        { broadcast_gate_changed(false); }
-
-private:
-    inline GateProvider & self() { return (*this); }
-    GateFSM mFsm;
-};
-```
-
-`init_fsm(&comThread)` binds the machine's timers and events to that dispatcher. A
+The action handler is a base of the provider, the machine is a member, `init_fsm` and
+`release_fsm` are already placed, and every action is declared with a `TODO(you)`.
+On Windows the interpreter is `python`, not `python3`; nothing else changes.
+`init_fsm(&comThread)` binds the machine's timers and events to that dispatcher; a
 machine that is never initialised accepts no stimulus and runs nothing.
 
 **The division of work.** A request handler converts the call into a stimulus and
@@ -148,7 +118,8 @@ of them direct children of `<StateMachine>` and all of them optional:
 | `<ConstantList>` | `Const` in a `Guard` |
 | `<StateList>` | `Transition/@To`, by `ID` |
 
-What each list holds is `schema_help.py <Event|Timer|Method|Attribute|Constant>`.
+Each is a list in the spec: `"events"`, `"timers"`, `"triggers"` and `"actions"`,
+`"attributes"`, `"constants"`.
 
 A name used but not declared is `error[46/RULE_UNRESOLVED_ELEMENT]`, and the message
 names the kind it was looked up as, which names the list it is missing from.
@@ -223,10 +194,9 @@ descends its Start chain. So `order` targeting `MAKING` starts a fresh drink and
 A document using a marker states `FormatVersion="1.2.0"`; one that does not stays
 `1.1.0`.
 
-**Before designing pause/resume, run `schema_help.py --full tHistoryDepth`.** It says
-what a restored state does on entry, which decides where the resume actions go, and
-`--full tStateKind` gives every rule a marker obeys. `--full Source` says what
-`Source="Value"` pastes into the generated call.
+**A restored state re-runs its `entry`.** That is what decides where the resume
+actions go: anything that must not happen twice belongs on the transition into the
+marker, not on the entry of the stage being resumed.
 
 ### Leaving a level when it finishes: `OnFinal`
 
@@ -245,19 +215,19 @@ Without `OnFinal` a finished level simply stops and nothing follows. The nested 
 the tool writes for the nested level is named after the composite, because the top
 level already has a `Start` and the two levels share one enumeration.
 
-**Keep the nested `Final` empty, and run `schema_help.py --full State/@OnFinal`
-before placing any operation near one.** The self-event is queued, so an operation on
-the nested `Final` runs while the machine is still inside the composite; the schema
-gives the ordering, where each kind of operation goes instead, and how a root-level
-`Final` differs. The wrong placement is rule `108`, reported by `check_contract.py`
+**Keep the nested `Final` empty.** The self-event is queued, so an operation on the
+nested `Final` runs while the machine is still inside the composite, and a request
+arriving in between meets a machine that has not left it yet. Put the work on the
+transition out. The wrong placement is rule `108`, reported by `check_contract.py`
 before the build and by the generator while generating; `explain_rule.py 108` gives the
 whole rule. Working project, both kinds in one document: `recipes/06-state-machine/`.
 
 ### Reusing a whole machine: `Submachine`
 
-A state may host another `.fsml` instead of owning a `StateList`. Import the document
-and name its alias on the state. `schema_help.py --full State/@Submachine` gives the
-document rules, including how the imported machine is entered.
+A state may host another `.fsml` instead of owning nested states: it carries one or
+the other, never both. The hosting state is entered through the imported machine's own
+`Start` chain, and **nothing calls the imported machine's triggers**, so an inner
+machine whose first state waits for a trigger stops there. Pair it with `final_event`.
 
 ```json
 "submachines": [{"name": "Inner", "path": "src/services/Inner.fsml", "version": "1.0.0"}],
@@ -302,12 +272,14 @@ entry with `{"call": "is_ready"}`.
 
 An operand that is a bare declared name is that declaration -- an attribute, a
 constant, or a parameter of the stimulus -- and anything else is a literal. Force one
-with `attr:`, `const:`, `param:`, `lit:` or `raw:<c++>`. `schema_help.py --full Guard`
-says how a guard is refused.
+with `attr:`, `const:`, `param:`, `lit:` or `raw:<c++>`. A refused guard is not an
+error -- the trigger returns `false`.
 
 ## Knowing when it finished
 
 ```cpp
+#include "areg/appbase/Application.hpp"
+
 class GateProvider : ..., private GateFSM::FinalObserver
 {
     void on_fsm_final(GateFSM & /*machine*/, const char * const /*finalState*/) final

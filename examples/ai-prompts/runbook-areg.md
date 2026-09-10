@@ -120,7 +120,12 @@ executables to suit the task, and add every source file you write to them.
 ```
 python3 <areg-sdk>/tools/agent/gen_skeleton.py \
         --doc src/services/YourService.siml --app --mode ipc --force
+        [--machine src/services/YourMachine.fsml]
 ```
+
+**With a state machine, pass `--machine`.** The provider then owns the machine: the
+action handler is a base, every action is declared, and there is no separate host
+component to write, merge or delete.
 
 Writes the **whole application** into `src/`: the components, every subscription, the
 model and `main()`. `--mode ipc` writes `src/provider.cpp` and `src/consumer.cpp`;
@@ -137,10 +142,6 @@ printed what they contain. Section 6 fills the markers in.
 `--contract` in place of `--app` prints every signature and every generated data type
 in a few hundred tokens and writes no file. Read that instead of opening a generated
 header.
-
-Without `--app` the tool writes a separate provider class and consumer class instead
-(`--out DIR`, with `--only provider` or `--only consumer` to place each one), which is
-the shape for an application that has outgrown one file per process.
 
 Never invent a method name on a generated base class: the names come from a fixed rule
 and the tool has applied it. Run it again with `--force` whenever the document changes.

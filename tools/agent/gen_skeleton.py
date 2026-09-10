@@ -27,7 +27,14 @@ SCALARS = {
     'int8': 'int8_t', 'int16': 'int16_t', 'int32': 'int32_t', 'int64': 'int64_t',
     'uint8': 'uint8_t', 'uint16': 'uint16_t', 'uint32': 'uint32_t', 'uint64': 'uint64_t',
 }
-CLASSES = {'String': 'areg::String', 'DateTime': 'areg::DateTime'}
+# Every predefined type the generator spells as a class, and the header it lives in.
+# BinaryBuffer is areg::SharedBuffer: the document name and the C++ name differ.
+CLASSES = {'String': 'areg::String', 'WideString': 'areg::WideString',
+           'BinaryBuffer': 'areg::SharedBuffer', 'DateTime': 'areg::DateTime'}
+CLASS_HEADERS = {'areg::String': 'areg/base/String.hpp',
+                 'areg::WideString': 'areg/base/WideString.hpp',
+                 'areg::SharedBuffer': 'areg/base/SharedBuffer.hpp',
+                 'areg::DateTime': 'areg/base/DateTime.hpp'}
 
 
 def fail(message):
@@ -87,9 +94,16 @@ class Interface:
         # A .fsml declares its methods in the same list, under two other kinds.
         self.actions = []
         self.triggers = []
+        # A Condition is a third .fsml kind: a guard calls it, it carries its own
+        # return type, and its generated name has no prefix.
+        self.conditions = []
         for method in root.findall('./MethodList/Method'):
             kind = (method.get('MethodType') or '').lower()
             entry = (method.get('Name'), self._params(method))
+            if kind == 'condition':
+                self.conditions.append((method.get('Name'), self._params(method),
+                                        method.get('Return') or 'bool'))
+                continue
             if kind == 'request':
                 self.requests.append(entry)
             elif kind == 'response':
@@ -517,10 +531,15 @@ def print_contract(iface, document):
     if document.lower().endswith('.fsml'):
         print('classes:   {n}FSM (the machine), {n}ActionHandler (implement this)'
               .format(n=iface.name))
+        # The generated names are the document's own, unchanged: a trigger keeps its
+        # name, an action carries the action_ prefix, a condition carries none.
         for name, params in iface.triggers:
-            print('  call     {}({})'.format(to_snake(name), iface.signature(params)))
+            print('  call     bool {}({})'.format(name, iface.signature(params)))
         for name, params in iface.actions:
-            print('  override {}({})'.format(to_snake(name), iface.signature(params)))
+            print('  override void action_{}({})'.format(name, iface.signature(params)))
+        for name, params, returns in iface.conditions:
+            print('  override {} {}({})'.format(iface.cpp_type(returns)[0], name,
+                                                iface.signature(params)))
         for name, kind in iface.attributes:
             spelled = to_snake(name)
             print('  on the machine object: {}() / set_{}({})'
@@ -587,17 +606,27 @@ APP_INCLUDES = ['#include <iostream>',
                 '#include "areg/component/ComponentThread.hpp"']
 
 
-def provider_class(iface, cls):
-    """The provider component, with every request answered."""
+def provider_class(iface, cls, machine=None):
+    """The provider component, with every request answered.
+
+    Given a machine, the same component owns it: the action handler is a base, the
+    machine is a member, and every action is declared here. A separate host component
+    is what the pair used to need, and merging them is what removes it.
+    """
     pad = ' ' * (len(cls) + 13)
     lines = ['class {} final : public    areg::Component'.format(cls),
-             '{}, protected {}ProviderBase'.format(pad, iface.name),
-             '{',
-             'public:',
-             '    {}(const areg::ComponentEntry & entry, areg::ComponentThread & owner)'.format(cls),
-             '        : areg::Component(entry, owner)',
-             '        , {}ProviderBase(static_cast<areg::Component &>(self()))'.format(iface.name),
-             '    {']
+             '{}, protected {}ProviderBase'.format(pad, iface.name)]
+    if machine:
+        lines.append('{}, protected {}ActionHandler'.format(pad, machine.name))
+    lines += ['{',
+              'public:',
+              '    {}(const areg::ComponentEntry & entry, areg::ComponentThread & owner)'.format(cls),
+              '        : areg::Component(entry, owner)',
+              '        , {}ProviderBase(static_cast<areg::Component &>(self()))'.format(iface.name)]
+    if machine:
+        lines.append('        , {}ActionHandler()'.format(machine.name))
+        lines.append('        , mFsm(static_cast<{}ActionHandler &>(self()))'.format(machine.name))
+    lines.append('    {')
     if iface.attributes:
         lines.append('        // An attribute is invalid until it is set once.')
         for attr_name, type_name in iface.attributes:
@@ -605,7 +634,27 @@ def provider_class(iface, cls):
                                                       default_expr(iface, type_name)))
     lines += ['    }', '', 'protected:']
 
+    if machine:
+        lines += ['    void startup_component(areg::ComponentThread & comThread) final',
+                  '    {',
+                  '        areg::Component::startup_component(comThread);',
+                  '        mFsm.init_fsm(&comThread);',
+                  '    }',
+                  '',
+                  '    void shutdown_component(areg::ComponentThread & comThread) final',
+                  '    {',
+                  '        mFsm.release_fsm();',
+                  '        areg::Component::shutdown_component(comThread);',
+                  '    }',
+                  '']
+
     answered = dict((name, params) for name, params in iface.responses)
+    if machine and machine.triggers:
+        lines.append('    // A request handler converts the call into a stimulus and '
+                     'decides nothing:')
+        for name, params in machine.triggers:
+            lines.append('    //   mFsm.{}({});'.format(
+                name, ', '.join(pname for pname, _ in params)))
     for name, params in iface.requests:
         lines.append('    void request_{}({}) final'.format(to_snake(name),
                                                             iface.signature(params)))
@@ -616,11 +665,38 @@ def provider_class(iface, cls):
             lines.append('        response_{}({});'.format(to_snake(name), args))
         lines.append('    }')
         lines.append('')
+
+    if machine and machine.conditions:
+        lines.append('    // Every condition a guard of the machine asks. Answer it and '
+                     'change nothing.')
+        for name, params, returns in machine.conditions:
+            lines.append('    {} {}({}) final'.format(machine.cpp_type(returns)[0], name,
+                                                      machine.signature(params)))
+            lines += ['    {',
+                      '        // TODO(you): answer the question this guard asks.',
+                      '        return {};'.format(default_expr(machine, returns)),
+                      '    }',
+                      '']
+
+    if machine:
+        lines.append('    // Every action the machine performs. Never raise a stimulus '
+                     'from one.')
+        for name, params in machine.actions:
+            lines.append('    void action_{}({}) final'.format(name,
+                                                               machine.signature(params)))
+            lines += ['    {',
+                      '        // TODO(you): perform the effect.',
+                      '    }',
+                      '']
+
     lines += ['private:',
               '    inline {} & self()'.format(cls),
               '    {   return (*this); }',
-              '',
-              '    {}() = delete;'.format(cls),
+              '']
+    if machine:
+        lines += ['    {}FSM  mFsm;    //!< The state machine this component drives.'
+                  .format(machine.name), '']
+    lines += ['    {}() = delete;'.format(cls),
               '    AREG_NOCOPY_NOMOVE({});'.format(cls),
               '};']
     return lines
@@ -654,7 +730,18 @@ def consumer_class(iface, cls):
             lines.append('                notify_on_{}_update(true);'.format(to_snake(attr_name)))
         for name, _ in iface.broadcasts:
             lines.append('                notify_on_broadcast_{}(true);'.format(to_snake(name)))
-    lines.append('                // TODO(you): the first request of the scenario.')
+    # A generated application that waits forever is not one that runs as written.
+    # The first request that carries a response completes a round trip, and the
+    # response handler below quits, so the program starts and ends on its own.
+    answered_first = next((entry for entry in iface.requests
+                           if entry[0] in set(n for n, _ in iface.responses)), None)
+    if answered_first:
+        name, params = answered_first
+        args = ', '.join(default_expr(iface, type_name) for _, type_name in params)
+        lines.append('                // TODO(you): the first request of the scenario.')
+        lines.append('                request_{}({});'.format(to_snake(name), args))
+    else:
+        lines.append('                // TODO(you): the first request of the scenario.')
     lines += ['            }',
               '        }',
               '',
@@ -693,9 +780,10 @@ def consumer_class(iface, cls):
                   '']
 
     for attr_name, type_name in iface.attributes:
-        cpp = iface.cpp_type(type_name)[0]
+        # The base applies the parameter rule, so anything but a primitive arrives by
+        # const reference. An override that disagrees is refused as not virtual.
         lines.append('    void on_{}_update({} {}, areg::DataState state) final'
-                     .format(to_snake(attr_name), cpp, attr_name))
+                     .format(to_snake(attr_name), iface.passed_as(type_name), attr_name))
         lines += ['    {',
                   '        if (state == areg::DataState::DataIsOK)',
                   '        {',
@@ -735,7 +823,26 @@ def provider_registration(iface, indent):
             pad + 'END_REGISTER_THREAD("ProviderThread")']
 
 
-def app_files(iface, mode, include_root):
+def class_includes(iface, machine=None):
+    """The framework headers the types of these documents need."""
+    wanted = set()
+    for document in (iface, machine):
+        if document is None:
+            continue
+        groups = [document.attributes]
+        for holder in (document.requests, document.responses, document.broadcasts,
+                       document.actions, document.triggers):
+            for _, params in holder:
+                groups.append(params)
+        for group in groups:
+            for _, type_name in group:
+                header = CLASS_HEADERS.get(CLASSES.get(type_name))
+                if header:
+                    wanted.add(header)
+    return ['#include "{}"'.format(h) for h in sorted(wanted)]
+
+
+def app_files(iface, mode, include_root, machine=None):
     """The whole application: the components, the model and main().
 
     Returns a list of (file name, text). The result compiles and runs as written;
@@ -743,6 +850,9 @@ def app_files(iface, mode, include_root):
     """
     provider_base = '#include "{}/{}ProviderBase.hpp"'.format(include_root, iface.name)
     consumer_base = '#include "{}/{}ConsumerBase.hpp"'.format(include_root, iface.name)
+    if machine:
+        provider_base += '\n#include "{}/{}ActionHandler.hpp"'.format(include_root, machine.name)
+        provider_base += '\n#include "{}/{}FSM.hpp"'.format(include_root, machine.name)
     head = ['/**', ' * \\file    {}', ' * \\brief   {}', ' **/']
 
     if mode == 'local':
@@ -750,8 +860,9 @@ def app_files(iface, mode, include_root):
                  l.format('Provider and consumer of the {} service, in two threads of '
                           'one process.'.format(iface.name)) if '{}' in l else l
                  for l in head]
-        lines += APP_INCLUDES + ['', provider_base, consumer_base, '']
-        lines += provider_class(iface, PROVIDER_ROLE) + ['']
+        lines += APP_INCLUDES + class_includes(iface, machine) + \
+            ['', provider_base, consumer_base, '']
+        lines += provider_class(iface, PROVIDER_ROLE, machine) + ['']
         lines += consumer_class(iface, CONSUMER_ROLE) + ['']
         lines += ['constexpr char const _modelName[]{{ "{}Model" }};'.format(iface.name),
                   '',
@@ -774,8 +885,8 @@ def app_files(iface, mode, include_root):
                 ' * \\file    provider.cpp',
                 ' * \\brief   The process that provides the {} service.'.format(iface.name),
                 ' **/']
-    provider += APP_INCLUDES + ['', provider_base, '']
-    provider += provider_class(iface, PROVIDER_ROLE) + ['']
+    provider += APP_INCLUDES + class_includes(iface, machine) + ['', provider_base, '']
+    provider += provider_class(iface, PROVIDER_ROLE, machine) + ['']
     provider += ['constexpr char const _modelName[]{ "ProviderModel" };',
                  '',
                  'BEGIN_MODEL(_modelName)']
@@ -787,7 +898,7 @@ def app_files(iface, mode, include_root):
                 ' * \\file    consumer.cpp',
                 ' * \\brief   The process that consumes the {} service.'.format(iface.name),
                 ' **/']
-    consumer += APP_INCLUDES + ['#include "areg/base/String.hpp"', '', consumer_base, '']
+    consumer += APP_INCLUDES + class_includes(iface) + ['', consumer_base, '']
     consumer += consumer_class(iface, CONSUMER_ROLE) + ['']
     consumer += ['constexpr char const _modelName[]{ "ConsumerModel" };',
                  '',
@@ -827,6 +938,10 @@ def main():
                         help='write the whole application -- the components, the '
                              'model and main() -- instead of a pair of skeletons. '
                              'The result compiles and runs as written')
+    parser.add_argument('--machine',
+                        help='with --app: the .fsml this application drives. The '
+                             'provider owns the machine, implements its actions and '
+                             'needs no separate host component')
     parser.add_argument('--mode', choices=['ipc', 'local'], default='ipc',
                         help='with --app: ipc writes provider.cpp and consumer.cpp, '
                              'local writes one main.cpp. Match setup_project.py')
@@ -854,9 +969,23 @@ def main():
 
     if args.app:
         if args.doc.lower().endswith('.fsml'):
-            fail('--app builds an application from a .siml service contract. Run this '
-                 'tool without --app on the .fsml to get the machine host.')
-        produced = app_files(iface, args.mode, include_root)
+            fail('--app builds an application from a .siml service contract. Pass the '
+                 '.siml as --doc, and this document as --machine.')
+        machine = None
+        if args.machine:
+            if not args.machine.lower().endswith('.fsml'):
+                fail('--machine takes the .fsml state machine document; got {}'
+                     .format(args.machine))
+            machine = Interface(args.machine)
+            if not machine.actions:
+                fail('the machine declares no action, so there is nothing for the '
+                     'provider to implement')
+            if machine.name == iface.name:
+                fail('the machine and the service are both named "{}". A .fsml name '
+                     'becomes a C++ namespace, so the two documents need different '
+                     'names -- "{}" and "{}Service" is the usual pair.'
+                     .format(iface.name, machine.name, machine.name))
+        produced = app_files(iface, args.mode, include_root, machine)
         for file_name, text in produced:
             write(os.path.join(args.out, file_name), text, args.force)
         print(APP_NOTE)

@@ -135,7 +135,7 @@ Windows), live in `tools/agent/`, and have `--help`.
 |---|---|
 | `setup_project.py` | Creates a buildable project from a recipe, with its own `AGENTS.md` |
 | `gen_docs.py` | Every `.dtml`, `.siml` and `.fsml` of the project, from one JSON description: no XML, no `ID`, no `To` |
-| `gen_skeleton.py` | `--app`: the whole application from a `.siml`, running as written |
+| `gen_skeleton.py` | `--app`: the whole application from a `.siml`, running as written; `--machine X.fsml` folds the state machine into the provider |
 | `run_scenarios.py` | Runs the application and checks its output; exit 0 is a pass. Its `scenarios.json` is `docs/agent/50-running.md` |
 | `check_contract.py` | Checks sources against `docs/agent/api.json`: the section 6 mistakes that compile cleanly and fail later |
 
