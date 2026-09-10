@@ -78,7 +78,7 @@ decision lives in the document.
 
 ```bash
 python3 <areg-sdk>/tools/agent/gen_docs.py --example > design.json
-python3 <areg-sdk>/tools/agent/gen_docs.py --spec design.json --outdir src/services
+python3 <areg-sdk>/tools/agent/build_project.py --spec design.json
 ```
 
 The spec's `"machines"` names states, triggers, timers, events, guards and transitions;

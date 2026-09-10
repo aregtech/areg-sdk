@@ -196,6 +196,16 @@ def main():
                    root, kept=1):
             return 1
 
+    # The first build compiles the framework itself, which is minutes rather than
+    # seconds. Saying so before it starts is what stops the wait being read as a hang.
+    if not os.path.isdir(os.path.join(root, args.build)):
+        print('== the first build compiles the framework too, so it takes minutes.')
+        print('   Give this command a timeout of at least 15 minutes. A shorter one')
+        print('   reports a timeout or moves the command to the background, and')
+        print('   neither is a failure of the build.')
+        print('   Every step is incremental: if this is interrupted, run it again and')
+        print('   it continues from where it stopped. Nothing is lost and nothing is')
+        print('   done twice.')
     if not run('configure', ['cmake', '-B', args.build], root, kept=3):
         return 1
     if not run('build',

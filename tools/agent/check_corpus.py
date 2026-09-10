@@ -521,7 +521,14 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
 # The page listed every other cause of "an attribute or broadcast never arrives" and
 # not that one, and it is the one that leaves an application hanging with subscription
 # code that reads as correct.
-CORPUS_CEILING = 188800
+# Lowered 188800 -> 188400 when 20-service-interface.md gave back the ID counter and
+# the <Value>-child spelling: gen_docs.py assigns every ID and decides where a default
+# is written, and the page's own opening already says the shape of the XML is the
+# tool's business. The order-of-arrival and OnChange-waits-for-ever facts moved onto
+# that page from 31-consumer.md, which routing had taken off the build path -- a run
+# guessed the first of them and re-invented the exit-code global for want of the
+# second half of the same routing decision.
+CORPUS_CEILING = 188400
 
 PAGE_CEILING = 8 * KB
 PAGE_MEDIAN_TARGET = 6 * KB
@@ -1851,6 +1858,7 @@ def run():
     check_data_types(report)
     check_stated_numbers(report)
     check_shipped_tools(report)
+    check_example_type_placement(report)
     check_entry_toll(report)
     check_page_budget(report)
     check_corpus_toll(report)
@@ -1918,6 +1926,95 @@ def check_member_inventory(report):
         return
     report.ok('inventory', result.stdout.strip() or
               'docs/agent/members.json matches the public headers')
+
+
+def check_example_type_placement(report):
+    """The example gen_docs.py prints obeys the rule 21-data-types.md states.
+
+    An agent copies that example and follows its shape, not the page's table. When
+    the example declares a shared type document that only one document spells, every
+    project built from it carries a .dtml with one consumer: the types are then named
+    by signatures that no single --contract call can explain, and the run pays to
+    find out what they are.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+        example = gen_docs.EXAMPLE
+    except Exception as failure:
+        report.fail('example-types', 'gen_docs.py has no example to check: {}'
+                    .format(failure))
+        return
+
+    documents = [('interface', e) for e in example.get('interfaces') or []]
+    documents += [('machine', e) for e in example.get('machines') or []]
+
+    def spells(blob, name):
+        return name in json.dumps(blob)
+
+    wrong = 0
+    shared = example.get('datatypes') or {}
+    space = shared.get('name') or ''
+    declared = shared.get('declare') or []
+
+    def reached_by(entry):
+        """Every shared type this document names, directly or through another.
+
+        A document names a shared type by its qualified spelling. A declaration
+        names a sibling by either spelling, so a document that holds a struct holds
+        the types of its fields without ever spelling them itself.
+        """
+        found = set()
+        pending = True
+        while pending:
+            pending = False
+            for shape in declared:
+                if shape['name'] in found:
+                    continue
+                qualified = '{}::{}'.format(space, shape['name'])
+                carried = spells(entry, qualified)
+                for sibling in declared:
+                    if sibling is shape or sibling['name'] not in found:
+                        continue
+                    carried = carried or spells(sibling, qualified) \
+                        or spells(sibling, shape['name'])
+                if carried:
+                    found.add(shape['name'])
+                    pending = True
+        return found
+
+    reach = [(entry.get('name'), reached_by(entry)) for _kind, entry in documents]
+    for shape in declared:
+        users = [name for name, found in reach if shape['name'] in found]
+        if len(users) < 2:
+            wrong += 1
+            report.fail('example-types',
+                        '"{}::{}" is declared in the example\'s "datatypes", and {} '
+                        'reaches it. A type fewer than two documents need belongs in '
+                        'that document\'s own "types", which is what '
+                        '21-data-types.md tells the agent to do'
+                        .format(space, shape['name'],
+                                'only ' + users[0] if users else 'no document'))
+
+    for kind, entry in documents:
+        for local in entry.get('types') or []:
+            others = [e.get('name') for _k, e in documents
+                      if e is not entry and spells(e, local['name'])]
+            if others:
+                wrong += 1
+                report.fail('example-types',
+                            '"{}" is declared inside the example\'s {} "{}", and {} '
+                            'also spells it. A type more than one document needs '
+                            'belongs in "datatypes"'
+                            .format(local['name'], kind, entry.get('name'),
+                                    ', '.join(others)))
+
+    if not wrong:
+        report.ok('example-types',
+                  '{} shared and {} local type(s) in the example: each is declared '
+                  'where 21-data-types.md says it belongs'
+                  .format(len(shared.get('declare') or []),
+                          sum(len(e.get('types') or []) for _k, e in documents)))
 
 
 def check_project_routing(report):

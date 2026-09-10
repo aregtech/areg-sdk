@@ -6,11 +6,11 @@ carries that block and nothing else, so that several documents can share it.
 
 ## Where to declare a type
 
-| Situation | Put it in |
-|---|---|
-| Used by one document | that document's own `DataTypeList` |
-| Used by two or more documents | a `.dtml`, included by each |
-| Already a C++ type you own | `Type="Imported"` -- do not redeclare it |
+| Situation | The `design.json` key | Becomes |
+|---|---|---|
+| Used by one document | that document's own `"types"` | its own `DataTypeList` |
+| Used by two or more | the project's `"datatypes"` | a `.dtml`, included by each |
+| A C++ type you own | `"kind": "imported"` | `Type="Imported"`, not redeclared |
 
 Sharing costs an include; duplicating a structure in two documents produces two
 unrelated C++ types with the same field names, and they do not convert.
@@ -115,13 +115,9 @@ Scalars are passed by value; `String`, structures and containers by `const T &`.
 
 ## The `.dtml` document
 
-A shared document is `DataTypeDocument`, its `Overview` names the namespace the types
-land in, and **its `FormatVersion` is `1.0.0`** -- not the `1.1.0` a `.siml` and a
-`.fsml` carry. A version the generator does not read is refused, not guessed at:
-`error[50/RULE_FORMAT_VERSION]`, and nothing is generated.
-
-`gen_docs.py` writes it from the spec's `"datatypes"` section, and every interface and
-machine of the same spec may then spell those types:
+`gen_docs.py` writes it from the spec's `"datatypes"` section -- the root element, the
+namespace and the `FormatVersion`, which is not the one a `.siml` carries -- and every
+interface and machine of the same spec may then spell those types:
 
 ```json
 {"datatypes": {"name": "SharedTypes", "declare": [

@@ -492,6 +492,11 @@ def main():
                           'results': results}, indent=2))
     else:
         print('{} passed, {} failed'.format(len(results) - len(failed), len(failed)))
+        # A run without --only reports every scenario by name, so isolating one that
+        # already passes tells the caller nothing it is not about to be told anyway.
+        if args.only and not failed:
+            print('--only is for iterating on a failure. Run without it to check the '
+                  'whole suite; it reports each scenario on its own line.')
     return 1 if failed else 0
 
 

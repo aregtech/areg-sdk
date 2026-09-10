@@ -115,11 +115,9 @@ is what an agent runs to prove the application works. Use it for anything that n
 A test binary and a scenario file are enough:
 
 ```yaml
-- run: cmake -B build -DCMAKE_BUILD_TYPE=Release
-- run: cmake --build build -j$(nproc)
+- run: python3 <areg-sdk>/tools/agent/build_project.py
 - run: timeout 60 ./build/bin/mytests.elf
 - run: python3 <areg-sdk>/tools/agent/run_scenarios.py
-- run: python3 <areg-sdk>/tools/agent/check_contract.py . --strict
 ```
 
 `check_contract.py --strict` is the one that catches the mistakes a compiler does not:

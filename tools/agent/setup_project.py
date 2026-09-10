@@ -286,16 +286,14 @@ for the SDK helper scripts listed below.
 ## Build and run
 
 ```bash
-cmake -B build
-cmake --build build -j$(nproc)
+python3 {sdk}/tools/agent/build_project.py --spec design.json
 {run}
 ```
 
-The same on Windows:
+The same on Windows, where the interpreter is `python`:
 
 ```bat
-cmake -B build
-cmake --build build -j%NUMBER_OF_PROCESSORS%
+python {sdk}/tools/agent/build_project.py --spec design.json
 {run_win}
 ```
 
@@ -330,40 +328,59 @@ src/CMakeLists.txt    declares the service interface and the executables
 | Worker threads, watchdogs, a run-time model | `docs/agent/37-threads.md` |
 | The application, components, time, files | `docs/agent/42-runtime-api.md` |
 | Log from application code | `docs/agent/34-logging.md` |
-| Start the pieces in the right order | nothing: `run_scenarios.py` does it, and `--app` wrote `scenarios.json`. `docs/agent/50-running.md` is for a key it does not carry |
+| Start the pieces in the right order | nothing: `run_scenarios.py` does it, and `--app` wrote `scenarios.json`. It runs every scenario and names each one, so `--only` is for iterating on a failure, never for confirming a pass. `docs/agent/50-running.md` is for a key it does not carry |
 | Write a test | `docs/agent/52-testing.md` |
 | Work out why it does not work | `docs/agent/51-debug.md` |
 | **Anything this table does not cover** | `AGENTS.md` section 2 in the SDK -- it routes the full set. Never search the SDK by hand |
 
 ## Tools
 
+These three are the whole path, in this order, and nothing else is needed to
+finish the task:
+
 ```bash
-python3 {sdk}/tools/agent/gen_skeleton.py --doc src/services/X.siml --app --force \
-        [--machine src/services/X.fsml]
 python3 {sdk}/tools/agent/gen_docs.py --example > design.json
-python3 {sdk}/tools/agent/gen_docs.py --spec design.json --outdir src/services
-python3 {sdk}/tools/agent/check_contract.py . --strict
+python3 {sdk}/tools/agent/build_project.py --spec design.json
 python3 {sdk}/tools/agent/run_scenarios.py
-python3 {sdk}/tools/agent/api_help.py start_timer
-python3 {sdk}/tools/schema_help.py State/@Kind --document fsml
-python3 {sdk}/tools/explain_rule.py 45 --at State/@Kind --document fsml
 ```
 
-`gen_skeleton.py --app` writes the whole application -- the components, the model
-and `main()` -- compiling and running as generated, and points `scenarios.json` at
-it. Every place your own rule belongs is one `TODO(you) <name>:` line, and the tool
-prints all of them: each is unique in its file, so **fill one in with a single
-`Edit` of that line**. Never rewrite a generated file and never read one back;
-`--todos` lists whichever markers are left. With `--machine` the provider owns the
-state machine, so there is no host component to merge by hand.
-`gen_docs.py` writes every `.dtml`, `.siml` and `.fsml` of the project from one
-JSON description, so no XML, no `ID` and no `To` is written by hand, and a type the
-service and its state machine share is declared once. `check_contract.py` reads the sources
-and reports the rules below that they break; it needs no build. `schema_help.py`
-says what a `.siml`, `.dtml` or `.fsml` may contain, one name at a time -- never
-read a `.xsd`. `api_help.py` does the same for the framework's own C++ names: one
-name in, its declarations and the header that carries them out -- never grep the
-SDK for a signature. `explain_rule.py` explains a refused document by its rule number.
+**`build_project.py` is the build command of this project, first time and every
+time.** It writes the documents from `design.json`, writes the application from them,
+checks the contract, configures and builds -- five steps with no decision in any of
+them -- and stops at the first failure naming the step and what to do.
+
+**The first call compiles the framework too, so give that call a command timeout of
+at least 15 minutes.** A shorter one is reported as a timeout or moved to the
+background, and neither is a failure of the build. Every step is incremental, so an
+interrupted call is simply run again and continues where it stopped. A second run
+keeps `src/` as you have filled it in and only rebuilds; `--regenerate` writes the
+application again and discards what is in it. Nothing below needs to be run by hand.
+
+The application it writes is the whole of `src/` -- the components, every
+subscription, the model, `main()` and its exit code -- and it compiles and runs as
+generated. Every place your own rule belongs is one `TODO(you) <name>:` line; the
+command prints all of them, and each is unique in its file, so **fill one in with a
+single `Edit` of that line and never rewrite the file**. With a state machine in the
+spec the provider owns it, so there is no host component to merge by hand.
+
+`gen_docs.py --example` prints a spec to copy: `design.json` describes every
+`.dtml`, `.siml` and `.fsml` of the project, so no XML, no `ID` and no `To` is
+written by hand and a type the service and its machine share is declared once.
+`gen_skeleton.py --doc <document> --contract` prints every name a document
+generates -- the methods, and the data types the signatures are written in, including
+the ones an included `.dtml` declares -- and writes no file; `--todos` lists the
+markers still left. It is the answer to "what is this type called", so ask it rather
+than reading a generated header.
+
+Three more tools exist and **each answers a question you cannot already answer**.
+Reaching for one before you have that question costs a turn and tells you nothing:
+
+| Ask | Only when |
+|---|---|
+| `python3 {sdk}/tools/explain_rule.py <number> --at <Element>/@<Attribute>` | `gen_docs.py` refused a document and its `fix:` line was not enough |
+| `python3 {sdk}/tools/schema_help.py <name> --document fsml` | you need a document to say something `design.json` has no key for. It answers one name out of the schema -- never read a `.xsd` |
+| `python3 {sdk}/tools/agent/api_help.py <name>` | you need the signature of a **framework** name. Never grep the SDK for one |
+
 All take `--help`. On Windows the interpreter is `python`, not `python3`.
 
 ## Never
@@ -376,11 +393,11 @@ generated code under `build/` it does not read.
 
 ## Done means
 
-The build succeeds, the contract check is clean and the scenario passes:
+The build succeeds, the contract check is clean and the scenario passes. Both are
+inside `build_project.py`, so this is two commands:
 
 ```bash
-cmake --build build -j$(nproc)
-python3 {sdk}/tools/agent/check_contract.py . --strict
+python3 {sdk}/tools/agent/build_project.py --spec design.json
 python3 {sdk}/tools/agent/run_scenarios.py
 ```
 
@@ -411,9 +428,14 @@ def write_scenarios(root, mode, binaries):
             spec['exit'] = 0
         procs.append(spec)
 
+    # The expectations below are the recipe's own and stop meaning anything the moment
+    # the documents are replaced. The marker says so, and gen_skeleton.py --app
+    # replaces them once and clears it. Without it the tool cannot tell a scaffolded
+    # expectation from one that was written by hand, and would overwrite both.
     document = {'scenarios': [{'name': 'smoke',
                                'timeout': 60,
                                'router': MODES[mode]['router'],
+                               'scaffold': True,
                                'procs': procs}]}
     with open(os.path.join(root, 'scenarios.json'), 'w', encoding='utf-8') as handle:
         json.dump(document, handle, indent=2)

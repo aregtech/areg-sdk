@@ -6,7 +6,9 @@ Nothing in this file needs editing, ever.
 
 On Windows: `python` for `python3`, `build\bin\x.exe` for `./build/bin/x.elf`,
 `start "" prog` for `prog &`, `-j%NUMBER_OF_PROCESSORS%` for `-j$(nproc)`. Nothing
-else differs.
+else differs. **macOS has no `nproc`**: `$(nproc)` expands to nothing and the bare
+`-j` left behind compiles everything at once. Write `-j$(getconf _NPROCESSORS_ONLN)`,
+right on both. `build_project.py` needs none of this and counts for itself.
 
 **Always give `-j` a number.** `cmake --build build -j` with no number lets make run
 every job at once; on a large tree that swaps, and a build that should take a minute

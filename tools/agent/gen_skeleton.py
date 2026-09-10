@@ -63,23 +63,26 @@ MARKER = re.compile(r'//\s*TODO\(you\)\s+([A-Za-z_][\w]*)\s*:\s*(.*?)\s*$')
 def print_todos(produced, out):
     """List every hole the generated files leave, by file and by name.
 
-    The list is what removes the read-back: an Edit whose old_string is the marker
-    line matches once, so no file has to be opened to find where a rule belongs.
+    Each line is printed as it stands in the file, so an Edit whose old_string is
+    that line matches once and no file has to be opened to find where a rule
+    belongs. A reconstructed line would not match, and the failed Edit is what
+    sends a run to read the file back.
     """
     total = 0
     for file_name, text in produced:
-        found = [MARKER.search(line) for line in text.splitlines()]
-        found = [f for f in found if f]
+        found = [line for line in text.splitlines() if MARKER.search(line)]
         if not found:
             continue
         path = os.path.join(out, file_name).replace('\\', '/')
         print('  {} leaves {} marker(s):'.format(path, len(found)))
-        for entry in found:
-            print('    TODO(you) {}: {}'.format(entry.group(1), entry.group(2)))
+        for line in found:
+            print(line.rstrip())
         total += len(found)
     if total:
-        print('  Each line above is unique in its file. Edit that line; do not '
-              'rewrite the file.')
+        print('  Each line above is unique in its file and is printed exactly as it')
+        print('  stands there, indentation included. Copy one as the old_string of an')
+        print('  Edit; do not rewrite the file and do not read it back to find the')
+        print('  surrounding text.')
 
 
 class Interface:
@@ -103,6 +106,8 @@ class Interface:
         self.imported = set()
         # The types this document declares, in document order, with their kind.
         self.types = []
+        # The same, for every document this one includes: (document, space, name, kind).
+        self.imported_types = []
         for declared in root.findall('./DataTypeList/DataType'):
             kind = (declared.get('Type') or '').lower()
             type_name = declared.get('Name')
@@ -191,6 +196,7 @@ class Interface:
             if not type_name:
                 continue
             kind = (declared.get('Type') or '').lower()
+            self.imported_types.append((os.path.basename(path), space, type_name, kind))
             spellings = [type_name]
             if space:
                 spellings.append('{}::{}'.format(space, type_name))
@@ -579,6 +585,11 @@ def print_contract(iface, document):
                   .format(spelled, spelled, iface.attribute_setter(kind, True)))
         print_types(iface)
         return 0
+    if document.lower().endswith('.dtml'):
+        print('classes:   none. {} is the namespace the types below are spelled in'
+              .format(iface.name))
+        print_types(iface)
+        return 0
     print('classes:   {n}Provider and {n}Consumer build on the generated {n} base'
           .format(n=iface.name))
     for name, params in iface.requests:
@@ -600,21 +611,33 @@ def print_contract(iface, document):
 
 
 def print_types(iface):
-    """The data types the document generates, as the generator declares them."""
+    """The data types the signatures above are written in, declared here or included.
+
+    A type an included document declares is spelled in that document's namespace and
+    is named by every signature above, so the contract states it here rather than
+    leaving the reader to open the included document or the generated header.
+    """
+    for path, space, type_name, kind in iface.imported_types:
+        print_type(space, type_name, kind, ' (from {})'.format(path))
     for type_name, kind in iface.types:
-        full = '{}::{}'.format(iface.name, type_name)
-        if kind in ('enumeration', 'enumerate'):
-            print('  enum class {}, with '
-                  'const char * {}::as_string({} value)'
-                  .format(full, iface.name, full))
-        elif kind == 'structure':
-            print('  struct {}, with a field-by-field == and <<'.format(full))
-        elif kind == 'imported':
-            print('  {} names the type your own header declares'.format(full))
-        else:
-            print('  {} is an alias to an areg container'.format(full))
+        print_type(iface.name, type_name, kind, '')
     for name, kind in iface.constants:
         print('  constant {}::{} of type {}'.format(iface.name, name, kind))
+
+
+def print_type(space, type_name, kind, origin):
+    """One declared type: its C++ spelling, and what the generator gives it."""
+    scope = '{}::'.format(space) if space else ''
+    full = scope + type_name
+    if kind in ('enumeration', 'enumerate'):
+        print('  enum class {}, with const char * {}as_string({} value){}'
+              .format(full, scope, full, origin))
+    elif kind == 'structure':
+        print('  struct {}, with a field-by-field == and <<{}'.format(full, origin))
+    elif kind == 'imported':
+        print('  {} names the type your own header declares{}'.format(full, origin))
+    else:
+        print('  {} is an alias to an areg container{}'.format(full, origin))
 
 
 # The value a generated call passes until the rule that computes it is written.
@@ -832,7 +855,7 @@ def consumer_class(iface, cls):
             lines.append('        // The scenario ends here until a later step replaces it.')
             if stepped:
                 lines.append('        mStep.stop_timer();')
-            lines.append('        areg::Application::signal_quit();')
+            lines.append('        quit_with(0);')
             first = False
         lines.append('    }')
         lines.append('')
@@ -844,7 +867,7 @@ def consumer_class(iface, cls):
                   '<< static_cast<int>(reason) << std::endl;'.format(name)]
         if stepped:
             lines.append('        mStep.stop_timer();')
-        lines += ['        areg::Application::signal_quit();',
+        lines += ['        quit_with(1);',
                   '    }',
                   '']
 
@@ -882,6 +905,34 @@ def consumer_class(iface, cls):
               '};']
     return lines
 
+
+# unload_model() destroys the components, so a value main() has to read lives in the
+# application storage, which outlives them. Generating this is what stops an
+# application inventing a global for its exit code: a scenario that asserts a non-zero
+# exit passes falsely when nothing ever sets one.
+EXIT_CODE = ['constexpr char const _exitCode[]{ "exitCode" };',
+             '',
+             '//! Ends the application with this exit code, in storage that outlives',
+             '//! the components.',
+             'void quit_with(int code)',
+             '{',
+             '    areg::Primitive value{};',
+             '    value.valInt.mElement = code;',
+             '    areg::Application::store_element(_exitCode, value);',
+             '    areg::Application::signal_quit();',
+             '}',
+             '']
+
+EXIT_MAIN = ['int main()',
+             '{',
+             '    areg::Application::setup();',
+             '    areg::Application::load_model(_modelName);',
+             '    areg::Application::wait_quit(areg::WAIT_INFINITE);',
+             '    areg::Application::unload_model(_modelName);',
+             '    areg::Application::release();',
+             '    return areg::Application::stored_element(_exitCode).valInt.mElement;',
+             '}',
+             '']
 
 MAIN_BODY = ['int main()',
              '{',
@@ -948,6 +999,7 @@ def app_files(iface, mode, include_root, machine=None):
         lines += APP_INCLUDES + class_includes(iface, machine) + \
             TIMER_INCLUDES * steps_scenario(iface) + \
             ['', provider_base, consumer_base, '']
+        lines += EXIT_CODE
         lines += provider_class(iface, PROVIDER_ROLE, machine) + ['']
         lines += consumer_class(iface, CONSUMER_ROLE) + ['']
         lines += ['constexpr char const _modelName[]{{ "{}Model" }};'.format(iface.name),
@@ -964,7 +1016,7 @@ def app_files(iface, mode, include_root, machine=None):
                   '',
                   'END_MODEL(_modelName)',
                   '']
-        lines += MAIN_BODY
+        lines += EXIT_MAIN
         return [('main.cpp', '\n'.join(lines))]
 
     provider = ['/**',
@@ -986,6 +1038,7 @@ def app_files(iface, mode, include_root, machine=None):
                 ' **/']
     consumer += APP_INCLUDES + class_includes(iface) + TIMER_INCLUDES * steps_scenario(iface)
     consumer += ['', consumer_base, '']
+    consumer += EXIT_CODE
     consumer += consumer_class(iface, CONSUMER_ROLE) + ['']
     consumer += ['constexpr char const _modelName[]{ "ConsumerModel" };',
                  '',
@@ -1000,7 +1053,7 @@ def app_files(iface, mode, include_root, machine=None):
                  '    END_REGISTER_THREAD("ConsumerThread")',
                  'END_MODEL(_modelName)',
                  '']
-    consumer += MAIN_BODY
+    consumer += EXIT_MAIN
     return [('provider.cpp', '\n'.join(provider)),
             ('consumer.cpp', '\n'.join(consumer))]
 
@@ -1030,6 +1083,13 @@ def update_scenarios(path, mode, iface):
         print('  kept   {} -- it is not the file setup_project.py wrote'.format(path))
         return
 
+    # An expectation that is not the scaffold's was written by whoever is using this
+    # tool, and is never overwritten: regenerating a source file must not discard the
+    # evidence the run is checked against.
+    if not scenarios[0].pop('scaffold', False):
+        print('  kept   {} -- its expectations are yours, not the scaffold\'s'
+              .format(path))
+        return
     for index, spec in enumerate(procs):
         spec['expect'] = [SCENARIO_TODO]
         if index == len(procs) - 1:
@@ -1068,11 +1128,9 @@ def report_todos(out, mode):
             continue
         with open(path, encoding='utf-8') as handle:
             for number, line in enumerate(handle, 1):
-                found = MARKER.search(line)
-                if found:
-                    print('{}:{}: TODO(you) {}: {}'.format(
-                        path.replace('\\', '/'), number,
-                        found.group(1), found.group(2)))
+                if MARKER.search(line):
+                    print('{}:{}:'.format(path.replace('\\', '/'), number))
+                    print(line.rstrip('\n').rstrip())
                     total += 1
     if total == 0:
         print('no TODO(you) marker is left in {}'.format(out))

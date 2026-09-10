@@ -88,17 +88,17 @@ exits non-zero when a requirement is missing.
 
 ## 4. Golden path
 
-Four commands, from nothing to a running application.
+Three commands, from nothing to a running application.
 
 ```bash
 python3 <areg-sdk>/tools/agent/setup_project.py --name myapp --root ~/myapp --mode local
 cd ~/myapp
-cmake -B build                      # fetches areg, runs the generator
-cmake --build build -j$(nproc)
-./build/bin/hello_local.elf         # .mac on macOS, .exe on Windows
+python3 <areg-sdk>/tools/agent/build_project.py   # the five steps of section 5
+python3 <areg-sdk>/tools/agent/run_scenarios.py   # runs it; exit 0 means it works
 ```
 
-Always give `-j` a number: a bare `-j` starts every job at once and swaps.
+`build_project.py` is the build command every time, and its first call compiles the
+framework, so **give it a command timeout of at least 15 minutes**.
 
 **Start here, not by hand.** It copies the right recipe, renames it and writes the
 project its own `AGENTS.md`. `--mode` is `local`, `ipc` (two processes) or `pubsub`;
@@ -106,8 +106,8 @@ project its own `AGENTS.md`. `--mode` is `local`, `ipc` (two processes) or `pubs
 Python, copy `docs/agent/recipes/01-local-single-process` and rename the project in
 its two `CMakeLists.txt` files; `recipes/README.md` says which recipe shows what.
 
-`addServiceInterface()` in the project's `CMakeLists.txt` runs the generator during
-configure; `tools/codegenerate.sh` / `.bat` generates outside CMake.
+`addServiceInterface()` in the project's `CMakeLists.txt` is what runs the generator,
+so a document is built by naming it there.
 
 **The generator validates before it generates.** A refused document writes nothing and
 exits 1, so the defect is in the document, never in the build. Every finding is
@@ -118,12 +118,12 @@ values that attribute accepts. A spelling is `tools/schema_help.py <name>`. Neve
 
 ### Every command on this path, on Windows
 
-The pages below use POSIX commands. These five substitutions are the whole difference.
+The pages below use POSIX commands. These four substitutions are the whole difference.
 
 `python3 x.py` -> `python x.py` - `./build/bin/n.elf` -> `build\bin\n.exe` -
-`tools/codegenerate.sh` -> `tools\codegenerate.bat` - `prog --service &` ->
-`start "" prog` (no `--service`: on Windows it means the Service Control Manager and
-fails from a command line) - `-j$(nproc)` -> `-j%NUMBER_OF_PROCESSORS%`
+`prog --service &` -> `start "" prog` (no `--service`: on Windows it means the Service
+Control Manager and fails from a command line) - `-j$(nproc)` ->
+`-j%NUMBER_OF_PROCESSORS%`
 
 ---
 
@@ -142,14 +142,14 @@ Windows), live in `tools/agent/`, and have `--help`.
 | `run_scenarios.py` | Runs the application and checks its output; exit 0 is a pass. Its `scenarios.json` is `docs/agent/50-running.md` |
 | `check_contract.py` | Checks sources against `docs/agent/api.json`: the section 6 mistakes that compile cleanly and fail later |
 
-`tools/explain_rule.py` explains a validation finding by its number; `--search
-"words"` finds it when the number is lost. `tools/schema_help.py <name>` says what a
-`.siml`, `.dtml` or `.fsml` may contain. Those two, `tools/check-env.sh` and
-`tools/codegenerate.sh` (`.bat`) sit in `tools/` itself.
+`tools/explain_rule.py` is for the refusal above; `tools/schema_help.py <name>` says
+what a `.siml`, `.dtml` or `.fsml` may contain, for the thing `gen_docs.py` has no
+key for. **Neither has a use before that moment**, and one reached for early costs a
+turn. They, `tools/check-env.sh` and `tools/codegenerate.sh` (`.bat`) sit in
+`tools/` itself.
 
-**Each has one moment**, and **nothing else under `tools/` is yours**: the rest checks
-this repository's own corpus, tells you nothing about your application, and costs a
-turn each.
+**Nothing else under `tools/` is yours**: the rest checks this repository's own
+corpus and tells you nothing about your application.
 
 `docs/agent/api.json` states the same contract machine-readably: the naming
 transforms, the connection states, and every section 6 rule with its detection hint.
@@ -196,13 +196,13 @@ A task is finished when the application builds and its behaviour is observed, no
 when the code looks correct.
 
 ```bash
-python3 tools/agent/check_contract.py <project>   # the mistakes a build cannot catch
-cmake --build build -j$(nproc)              # must succeed
-<run the application>                       # expected output, exit 0
+python3 tools/agent/build_project.py        # builds, and checks the contract
+python3 tools/agent/run_scenarios.py        # expected output, exit 0
 ```
 
-Silence a `check_contract.py` false positive with `// areg-check: ignore`, or the
-same words in a `.fsml` state's `<Description>`.
+`build_project.py` runs `check_contract.py`, which reports the mistakes a build
+cannot catch. Silence a false positive with `// areg-check: ignore`, or the same
+words in a `.fsml` state's `<Description>`.
 
 A multi-process application starts `mtrouter` first, then the provider, then the
 consumer. A consumer that starts first is not an error: it waits.

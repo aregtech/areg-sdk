@@ -6,8 +6,7 @@ CMake. The fastest correct start is the setup script:
 ```bash
 python3 <areg-sdk>/tools/agent/setup_project.py --name myapp --root ~/myapp --mode local
 cd ~/myapp
-cmake -B build
-cmake --build build -j$(nproc)
+python3 <areg-sdk>/tools/agent/build_project.py
 ./build/bin/myapp.elf
 ```
 
@@ -148,9 +147,10 @@ Write them from the task pages, in this order:
 ## 5. Build and run
 
 ```bash
-cmake -B ./build
-cmake --build ./build -j$(nproc)
+python3 <areg-sdk>/tools/agent/build_project.py
 ```
+
+It configures, builds, and works the job count out itself.
 
 Binaries are written to `<project-root>/build/bin/`, with a platform suffix: `.elf`
 on Linux, `.mac` on macOS, `.exe` on Windows. The framework libraries and `mtrouter`

@@ -150,26 +150,14 @@ already set it, so a handler must work when there is no value yet. Always check 
 it is `areg::DataState::DataIsOK`. The other states are `DataIsInvalid`,
 `DataIsUnavailable`, `DataUnexpectedError` and `DataIsUndefined`.
 
-### Order of arrival
-
-**A response has no priority over a notification.** Everything the provider sends to
-you arrives in the order it sent it, so a handler that updates an attribute and then
-calls its response delivers the **update first** -- the consumer sees the new attribute
-value before it is told the request was accepted.
-
-Never gate consumer logic on "the response comes before any notification". Drive the
-next step from whichever message actually carries the fact you need, and accept the
-first stage update arriving early.
-
 ### An update you are waiting for may never come
 
-Under `Notify="OnChange"` -- the default -- the provider sends an update only when the
-value differs from the one it holds, or when the attribute is invalid. **A step that
-waits for an attribute to be set to the value it already has waits forever**, and the
-symptom is a scenario that runs correctly to that point and then times out.
-
-The two shapes that hit it are a value that returns to where it started, and a value
-whose update crossed with the response that made you start waiting:
+Both facts that make a consumer wait for ever are in `20-service-interface.md`: that
+a response has no priority over a notification, so an update sent before it arrives
+first; and that `Notify="OnChange"` sends nothing when the value is already the one
+held. The two shapes that hit the second are a value that returns to where it
+started, and a value whose update crossed with the response that made you start
+waiting:
 
 ```cpp
 void Consumer::response_cancel_order(bool accepted)

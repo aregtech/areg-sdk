@@ -802,16 +802,20 @@ EXAMPLE = {
              "values": [{"name": "Suspect", "value": 0}, {"name": "Good", "value": 1}]},
             {"name": "Reading", "kind": "struct",
              "fields": [{"name": "value", "type": "uint32", "description": "What it measured."},
-                        {"name": "quality", "type": "Quality", "default": "Quality::Good"}]},
-            {"name": "History", "kind": "container", "container": "Array", "of": "Reading"}
+                        {"name": "quality", "type": "Quality", "default": "Quality::Good"}]}
         ]
     },
     "interfaces": [{
         "name": "GateService",
         "category": "Public",
         "description": "Contract between the gate and the program that operates it.",
+        "types": [{"name": "History", "kind": "container", "container": "Array",
+                   "of": "GateTypes::Reading",
+                   "description": "Readings, newest last. Only this document needs it."}],
         "attributes": [{"name": "Width", "type": "uint32", "notify": "OnChange",
-                        "description": "How far the gate stands open, in millimetres."}],
+                        "description": "How far the gate stands open, in millimetres."},
+                       {"name": "Recent", "type": "History", "notify": "Always",
+                        "description": "Every reading since the gate last closed."}],
         "constants": [{"name": "MaxWidth", "type": "uint32", "value": "2000"}],
         "requests": [
             {"name": "open", "description": "Open the gate to a width.",
@@ -826,7 +830,11 @@ EXAMPLE = {
     "machines": [{
         "name": "Gate",
         "description": "Opens to a width, then closes.",
-        "attributes": [{"name": "Width", "type": "uint32", "value": "0"}],
+        "attributes": [{"name": "Width", "type": "uint32", "value": "0"},
+                       {"name": "Quality", "type": "GateTypes::Quality",
+                        "value": "GateTypes::Quality::Good"},
+                       {"name": "LastReading", "type": "GateTypes::Reading",
+                        "description": "What the gate last measured."}],
         "constants": [{"name": "MaxWidth", "type": "uint32", "value": "2000"}],
         "timers": [{"name": "StepTimer", "timeout": 300}],
         "events": [{"name": "Refused", "params": [{"name": "asked", "type": "uint32"}]}],
@@ -843,6 +851,7 @@ EXAMPLE = {
                   "guard": {"all": [["width", "le", "MaxWidth"], {"call": "has_power"}]},
                   "set": {"Width": "param:width"}},
                  {"on": "open", "description": "Too wide, or no power.",
+                  "set": {"Quality": "GateTypes::Quality::Suspect"},
                   "do": [{"send": "Refused", "args": {"asked": "width"}}]}
              ]},
             {"name": "OPENING",

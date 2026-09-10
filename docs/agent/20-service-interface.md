@@ -20,7 +20,7 @@ every other document of the project:
 ```
 
 
-`gen_docs.py --spec design.json --outdir src/services` writes it. A request's
+`build_project.py --spec design.json` writes it, and everything after it. A request's
 `"answer"` declares its response and links the two, so the pair cannot
 drift apart. `"broadcasts"`, `"attributes"`, `"constants"` and `"types"` are lists
 beside `"requests"`. What each of them means is the rest of this page; the shape of
@@ -37,8 +37,6 @@ addServiceInterface(gen_myproject src/services/HelloService.siml)
 
 ## 1. Rules that make a document valid
 
-- Every element carries an `ID` that is unique in the document. One counter, never
-  reused. The value does not matter; the uniqueness does.
 - `Category` decides how far the service reaches: `Private` inside one process,
   `Public` across processes on one machine, `Internet` across machines. A `Private`
   service cannot be reached through the router.
@@ -47,10 +45,8 @@ addServiceInterface(gen_myproject src/services/HelloService.siml)
   fire and forget.
 - Two methods may share a name only when they are of different kinds. A request and
   its response usually carry the same name, as above.
-- A `Parameter` may carry a default value, written as a `<Value>` child, not as an
-  attribute. It becomes the default argument of the generated method, so every
-  parameter after it needs one too. (`Default="..."` is the `.fsml` spelling of the
-  same thing and is accepted here; documents this editor writes use the child.)
+- A `Parameter`'s default becomes the default argument of the generated method, so
+  every parameter after it needs one too.
 - Every `DataType` you reference must be predefined (`bool`, `uint32`, `String`, ...),
   declared in this document's `DataTypeList`, or imported from a `.dtml` document.
 
@@ -122,14 +118,22 @@ virtual void on_string_on_change_update(const areg::String & StringOnChange, are
 
 ### `Notify` on an attribute
 
-`OnChange` sends an update on either of two conditions: the value differs from the one
-held, or the attribute is not valid. So a `set_` to the value already held notifies
-nobody, while the first `set_` after `invalidate_<name>()` always does.
-
-`Always` sends one on every `set_`, with no comparison. Absent means `OnChange`.
+`OnChange` sends an update when the value differs from the one held, or when the
+attribute is not valid: a `set_` to the value already held notifies nobody, while the
+first `set_` after `invalidate_<name>()` always does. `Always` sends one on every
+`set_`, with no comparison. Absent means `OnChange`.
 
 Pick `Always` for an attribute a consumer waits on as an event, `OnChange` for one it
-reads as a value. What the choice costs a consumer is in `31-consumer.md`.
+reads as a value. **A consumer step that waits for `OnChange` to deliver the value it
+already holds waits for ever**, and the symptom is a scenario that runs correctly to
+that point and then times out.
+
+### The order the consumer sees them in
+
+**A response has no priority over a notification.** What one provider sends one
+consumer arrives in the order it was sent, so a handler that sets an attribute and
+then answers delivers the **update first**. Drive the next step from whichever
+message carries the fact you need, never from "the response comes first".
 
 ---
 
