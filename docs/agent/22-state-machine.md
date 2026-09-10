@@ -107,15 +107,23 @@ decision lives in the document.
 **Do not write the XML. Describe the machine and generate it:**
 
 ```bash
-python3 <areg-sdk>/tools/agent/gen_fsml.py --example > machine.json
-python3 <areg-sdk>/tools/agent/gen_fsml.py --spec machine.json \
-        --out src/services/Gate.fsml
+python3 <areg-sdk>/tools/agent/gen_docs.py --example > design.json
+python3 <areg-sdk>/tools/agent/gen_docs.py --spec design.json --outdir src/services
 ```
 
-The spec names states, triggers, timers and transitions; the tool assigns every `ID`,
-resolves every `To`, and refuses a name that is not declared. Only `Overview` and
-`StateList` are required, so no `Layout` block is needed; `fsml_layout.py <document>`
-adds one for the editor.
+The spec's `"machines"` names states, triggers, timers, events, guards and transitions;
+the tool assigns every `ID`, resolves every `To`, binds every guard operand to the
+declaration it means, and refuses a name that is not declared. The same spec writes the
+`.siml` and the `.dtml`, so a type or an attribute the service and the machine share is
+declared once. Only `Overview` and `StateList` are required, so no `Layout` block is
+needed; `fsml_layout.py <document>` adds one for the editor.
+
+Everything this page describes has a field: `"submachines"` and a state's
+`"submachine"`, `"kind": "history"` with `"depth"`, `"kind": "final"` with
+`"final_event"`, `"conditions"` a guard calls, `"constants"`, and `{"send": "..."}` in
+`"do"`. A guard is `[left, "lt", right]`, or `{"all": [...]}`, `{"any": [...]}`,
+`{"not": ...}` nested as deep as it needs; each operand is a bare declared name, or
+`param:`/`attr:`/`const:`/`lit:`/`raw:` when it has to be spelled out.
 
 This page is what a machine *means*. The rest of it still applies -- the spec has a
 field for each of these -- and a document you were handed is read with the same rules.
@@ -146,51 +154,28 @@ A name used but not declared is `error[46/RULE_UNRESOLVED_ELEMENT]`, and the mes
 names the kind it was looked up as, which names the list it is missing from.
 
 The machine below is smaller than the recipe's, and is shown whole so the shape is
-visible at a glance.
+visible at a glance. This is what you write; the XML is what `gen_docs.py` writes.
 
-```xml
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<StateMachine FormatVersion="1.1.0">
-    <Overview ID="1" Name="Gate" Version="1.0.0" Threading="Local"/>
-    <TimerList>
-        <Timer ID="2" Name="Hold" Timeout="300" Repeat="1"/>
-    </TimerList>
-    <MethodList>
-        <Method ID="3" Name="open"     MethodType="Trigger"/>
-        <Method ID="4" Name="on_open"  MethodType="Action"/>
-        <Method ID="5" Name="on_close" MethodType="Action"/>
-    </MethodList>
-    <StateList>
-        <State ID="6" Name="Start" Kind="Start">
-            <TransitionList>
-                <Transition ID="7" Kind="Initial" To="8"/>
-            </TransitionList>
-        </State>
-        <State ID="8" Name="GATE_CLOSED" Kind="Normal">
-            <TransitionList>
-                <Transition ID="9" Kind="External" StimulusKind="Trigger" Stimulus="open" To="10"/>
-            </TransitionList>
-        </State>
-        <State ID="10" Name="GATE_OPEN" Kind="Normal">
-            <EntryList>
-                <TimerStart ID="11" Timer="Hold"/>
-                <ActionCall ID="12" Action="on_open"/>
-            </EntryList>
-            <TransitionList>
-                <Transition ID="13" Kind="External" StimulusKind="Timer" Stimulus="Hold" To="14"/>
-            </TransitionList>
-        </State>
-        <State ID="14" Name="GATE_DONE" Kind="Final">
-            <EntryList>
-                <ActionCall ID="15" Action="on_close"/>
-            </EntryList>
-        </State>
-    </StateList>
-</StateMachine>
+```json
+{"machines": [{
+  "name": "Gate",
+  "timers":   [{"name": "Hold", "timeout": 300}],
+  "triggers": [{"name": "open"}],
+  "actions":  [{"name": "on_open"}, {"name": "on_close"}],
+  "initial": "GATE_CLOSED",
+  "states": [
+    {"name": "GATE_CLOSED", "transitions": [{"on": "open", "to": "GATE_OPEN"}]},
+    {"name": "GATE_OPEN", "entry": ["start Hold", "on_open"],
+     "transitions": [{"on": "Hold", "to": "GATE_DONE"}]},
+    {"name": "GATE_DONE", "kind": "final", "entry": ["on_close"]}
+  ]
+}]}
 ```
 
-`Transition/@To` names the target by `ID`, not by name, and the target must be a
-**sibling**. A transition cannot reach into or out of a composite: to leave a subtree,
+The `Kind="Start"` marker, every `ID`, and the `To` of every transition are the tool's
+work. What is still yours is the rule below.
+
+**A transition's target must be a sibling.** A transition cannot reach into or out of a composite: to leave a subtree,
 put the transition on the composite, whose transitions fire from anywhere inside it.
 A `Kind="History"` marker is the one exception and exists for it -- a transition from
 outside a composite may name a marker in that composite's `StateList`, which is how a
@@ -198,19 +183,19 @@ resume re-enters where it left off. See "Re-entering a composite where it left o
 
 ### The pieces
 
-| Element | Means |
+| In the spec | Means |
 |---|---|
-| `Kind="Start"` | not a state, only a marker saying where a level begins, and nothing may target it. Every rule it obeys: `schema_help.py --full tStateKind` |
-| `Kind="Normal"` | a state the machine occupies |
-| `Kind="Final"` | the machine stops here and reports through the final observer |
-| `EntryList` / `ExitList` | `ActionCall`, `TimerStart`, `TimerStop`, `EventSend`, `AttributeSet`, run on entering or leaving |
-| `Kind="External"` | leaves the state, runs its exit, then the target's entry; needs `To` |
-| `Kind="Internal"` | runs its operations in place; the state is not left or re-entered; no `To` |
-| `Kind="Initial"` | the level's entry transition, owned only by a `Kind="Start"`; no `Stimulus`. Which of `To` and `Stimulus` each kind needs: `schema_help.py --full tTransitionKind` |
-| `StimulusKind` | `Trigger`, `Timer` or `Event`; `Stimulus` is the name in that list |
-| `OperationList` on a transition | runs between the exit and the entry |
+| `"kind": "normal"`, the default | a state the machine occupies |
+| `"kind": "final"` | the level stops here and reports through the final observer |
+| `"entry"` / `"exit"` | steps run on entering or leaving: an action, `start`/`stop <Timer>`, `send <Event>` |
+| a transition with `"to"` | leaves the state, runs its exit, then the target's entry |
+| a transition without `"to"` | runs its steps in place; the state is not left or re-entered |
+| `"on"` | the trigger, timer or event that fires it, read from those lists so it is never spelled twice |
+| `"do"` and `"set"` | run between the exit and the entry; `"set"` first, so an action sees it |
 
-A state may hold its own `StateList`. Its transitions then fire from anywhere inside
+`"initial"` becomes the level's `Kind="Start"` marker and the transition out of it.
+
+A state may hold its own `"states"`. Its transitions then fire from anywhere inside
 that subtree, which is how one `power_off` trigger reaches every nested state at once.
 
 ### Re-entering a composite where it left off
@@ -227,13 +212,13 @@ spelling, still read and superseded: it makes *every* entry resume. Where one en
 and another must resume, put a marker in the composite's `StateList` and point only the
 resuming transition at it:
 
-```xml
-<State ID="20" Name="MakingHistory" Kind="History" HistoryDepth="Shallow"/>
+```json
+{"name": "MakingHistory", "kind": "history", "depth": "Shallow"}
 ```
 
-`To="20"` resumes; `To` naming the composite descends the Start chain. So `order`
-targeting `MAKING` starts a fresh drink and `resume` targeting the marker continues the
-interrupted one, in one run.
+A transition whose `"to"` is the marker resumes; one whose `"to"` is the composite
+descends its Start chain. So `order` targeting `MAKING` starts a fresh drink and
+`resume` targeting the marker continues the interrupted one, in one run.
 
 A document using a marker states `FormatVersion="1.2.0"`; one that does not stays
 `1.1.0`.
@@ -250,26 +235,15 @@ cannot cross out of a composite. `OnFinal` on the composite names an `Event` the
 machine sends to itself when the nested level reaches Final; a transition on the
 composite then carries it out of the subtree.
 
-```xml
-<State ID="10" Name="WORK" Kind="Normal" OnFinal="Done">
-    <TransitionList>
-        <Transition ID="30" Kind="External" StimulusKind="Event" Stimulus="Done" To="40"/>
-    </TransitionList>
-    <StateList>
-        <State ID="31" Name="WorkStart" Kind="Start">
-            <TransitionList>
-                <Transition ID="32" Kind="Initial" To="33"/>
-            </TransitionList>
-        </State>
-        <State ID="33" Name="WORK_RUNNING" Kind="Normal"> <!-- ... --> </State>
-        <State ID="35" Name="WORK_DONE" Kind="Final"/>
-    </StateList>
-</State>
+```json
+{"name": "WORK", "final_event": "Done", "initial": "WORK_RUNNING",
+ "transitions": [{"on": "Done", "to": "NEXT"}],
+ "states": [{"name": "WORK_RUNNING"}, {"name": "WORK_DONE", "kind": "final"}]}
 ```
 
 Without `OnFinal` a finished level simply stops and nothing follows. The nested marker
-is `WorkStart` and not `Start`, because the top level already has a state of that name
-and the two levels share one enumeration.
+the tool writes for the nested level is named after the composite, because the top
+level already has a `Start` and the two levels share one enumeration.
 
 **Keep the nested `Final` empty, and run `schema_help.py --full State/@OnFinal`
 before placing any operation near one.** The self-event is queued, so an operation on
@@ -285,12 +259,9 @@ A state may host another `.fsml` instead of owning a `StateList`. Import the doc
 and name its alias on the state. `schema_help.py --full State/@Submachine` gives the
 document rules, including how the imported machine is entered.
 
-```xml
-<IncludeList>
-    <Location ID="2" Name="services/Inner.fsml" Alias="Inner" Version="1.0.0"/>
-</IncludeList>
-...
-<State ID="10" Name="RUNNING" Kind="Normal" Submachine="Inner" OnFinal="InnerDone"/>
+```json
+"submachines": [{"name": "Inner", "path": "src/services/Inner.fsml", "version": "1.0.0"}],
+"states": [{"name": "RUNNING", "submachine": "Inner", "final_event": "InnerDone"}]
 ```
 
 The generated host carries a `static_assert` on the pinned `Version` that fails when
@@ -310,40 +281,29 @@ Working project, hosting one machine from two states: `recipes/13-submachine/`.
 A transition can be refused unless something holds. The machine needs data of its own
 to test, declared before `MethodList`:
 
-```xml
-<AttributeList>
-    <Attribute ID="16" Name="Opened" DataType="bool" Value="false"/>
-</AttributeList>
+```json
+"attributes": [{"name": "Opened", "type": "bool", "value": "false"}],
+"constants":  [{"name": "MaxHolds", "type": "uint32", "value": "3"}]
 ```
 
-That generates `bool opened() const` and `set_opened(bool)` on the machine, and the
-document can assign it wherever an `ActionCall` is allowed:
+That generates `bool opened() const` and `set_opened(bool)` on the machine, and a
+transition assigns it with `"set": {"Opened": "lit:true"}` wherever an action is
+allowed. The guard is an expression tree, not text:
 
-```xml
-<AttributeSet ID="17" Attribute="Opened" Source="Value" Value="true"/>
-```
-
-The guard is an expression tree, not text:
-
-```xml
-<Transition ID="9" Kind="External" StimulusKind="Trigger" Stimulus="open" To="10">
-    <Guard state="ok">
-        <Expr>
-            <Cmp op="eq"><Attr id="16"/><Lit>false</Lit></Cmp>
-        </Expr>
-    </Guard>
-</Transition>
+```json
+{"on": "open", "to": "GATE_OPEN", "guard": ["Opened", "eq", "lit:false"]}
 ```
 
 which generates `const bool isEligible = (mAttrOpened == false);` and takes the
 transition only when it holds. A refused transition is not an error: the trigger
-returns `false`, exactly as it does for a state with no transition at all.
+returns `false`, exactly as it does for a state with no transition at all. Nest with
+`{"all": [...]}`, `{"any": [...]}` and `{"not": ...}`; call a declared `"conditions"`
+entry with `{"call": "is_ready"}`.
 
-`schema_help.py --full Guard` gives what each node is and how a guard is refused;
-`schema_help.py Cmp`, `And`, `Not` give the operands each takes. `Attr` names an
-`AttributeList` entry, `Param` an argument of the stimulus, and `Const` a
-`<ConstantList>` entry, declared beside `AttributeList` exactly as a `.siml` declares
-one: `<Constant ID="18" Name="MaxHolds" DataType="uint32" Value="3"/>`.
+An operand that is a bare declared name is that declaration -- an attribute, a
+constant, or a parameter of the stimulus -- and anything else is a literal. Force one
+with `attr:`, `const:`, `param:`, `lit:` or `raw:<c++>`. `schema_help.py --full Guard`
+says how a guard is refused.
 
 ## Knowing when it finished
 

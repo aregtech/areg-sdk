@@ -120,14 +120,19 @@ land in, and **its `FormatVersion` is `1.0.0`** -- not the `1.1.0` a `.siml` and
 `.fsml` carry. A version the generator does not read is refused, not guessed at:
 `error[50/RULE_FORMAT_VERSION]`, and nothing is generated.
 
-```xml
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<DataTypeDocument FormatVersion="1.0.0">
-    <Overview ID="1" Name="SharedTypes" Version="1.0.0"/>
-    <DataTypeList>
-        <!-- exactly the block above -->
-    </DataTypeList>
-</DataTypeDocument>
+`gen_docs.py` writes it from the spec's `"datatypes"` section, and every interface and
+machine of the same spec may then spell those types:
+
+```json
+{"datatypes": {"name": "SharedTypes", "declare": [
+  {"name": "Quality", "kind": "enum", "values": {"Suspect": 0, "Good": 1}},
+  {"name": "Reading", "kind": "struct",
+   "fields": [{"name": "value", "type": "uint32"},
+              {"name": "quality", "type": "Quality", "default": "Quality::Good"}]},
+  {"name": "Firmware", "kind": "imported", "header": "areg/base/Version.hpp",
+   "namespace": "areg", "object": "Version"},
+  {"name": "History", "kind": "container", "container": "Array", "of": "Reading"}
+]}}
 ```
 
 `Overview/@Name` is the `Space` in `Space::Type`, the generated namespace and the
@@ -139,15 +144,10 @@ Generating a document that includes a `.dtml` generates both: name the `.siml` o
 
 ## Including a shared document
 
-```xml
-<IncludeList>
-    <Location ID="9" Name="src/services/CommonTypes.dtml"/>
-</IncludeList>
-```
-
-`IncludeList` carries both kinds of include: a C++ header a declared type needs, and a
-`.dtml` document whose types this one uses. Types coming from an included document are
-referred to as `Space::Type`. The path is spelled under the workspace root.
+A document that spells `Space::Type` is given the include automatically, so nothing is
+written for it. A C++ header a declared type needs is a name in the document's
+`"includes"` list. `IncludeList` carries both kinds. The path is spelled under the
+workspace root.
 
 A cycle, a missing file, or one name declared by two included documents is a numbered
 rule -- ask `tools/explain_rule.py` what the number means instead of reading a schema.

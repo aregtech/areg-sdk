@@ -106,8 +106,10 @@ FEATURES = [
     ('state_machine', 'adding a state machine',
      '22-state-machine.md',     '.fsml',               '06-state-machine',
      ('examples/19_pubfsm',)),
+    # The page teaches the spec field, not the XML element: gen_docs.py writes the
+    # <Guard> tree from it, so "guard" is what an author now has to find.
     ('fsm_guard',     'guarding a transition on a condition',
-     '22-state-machine.md',     '<Guard',              '06-state-machine',
+     '22-state-machine.md',     '"guard"|<Guard',      '06-state-machine',
      ('examples/19_pubfsm',)),
     ('fsm_attribute', 'giving a state machine its own data',
      '22-state-machine.md',     'AttributeSet',        '06-state-machine',
@@ -168,13 +170,14 @@ SCHEMA_FEATURES = [
     ('history pseudo-state', 'HistoryDepth="',       '22-state-machine.md', 'HistoryDepth'),
     ('a hosted machine',     'Submachine="',         '22-state-machine.md', 'Submachine'),
     ('a level reporting done', 'OnFinal="',          '22-state-machine.md', 'OnFinal'),
-    ('a guarded transition', '<Guard',               '22-state-machine.md', '<Guard'),
+    ('a guarded transition', '<Guard',               '22-state-machine.md', '"guard"|<Guard'),
     ('machine data',         '<AttributeSet',        '22-state-machine.md', 'AttributeSet'),
     ('machine constants',    '<ConstantList',        '22-state-machine.md', 'ConstantList'),
     ('sending an event',     '<EventSend',           '22-state-machine.md', 'EventSend'),
     ('starting a timer',     '<TimerStart',          '22-state-machine.md', 'TimerStart'),
     ('stopping a timer',     '<TimerStop',           '22-state-machine.md', 'TimerStop'),
-    ('an internal transition', 'Kind="Internal"',    '22-state-machine.md', 'Kind="Internal"'),
+    ('an internal transition', 'Kind="Internal"',    '22-state-machine.md',
+     'Kind="Internal"|a transition without `"to"`'),
     ('a final state',        'Kind="Final"',         '22-state-machine.md', 'Kind="Final"'),
     ('a trigger',            'MethodType="Trigger"', '22-state-machine.md', 'Trigger'),
     ('an action',            'MethodType="Action"',  '22-state-machine.md', 'Action'),
@@ -394,7 +397,7 @@ def check_schema_features(report):
     explained = set()
     for name, token, page, proof in SCHEMA_FEATURES:
         text = read('docs', 'agent', page)
-        documented = proof.lower() in text.lower()
+        documented = proven(text, proof)
         if documented:
             explained.add(token)
         elif token in gaps:
@@ -479,12 +482,14 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
 # the build phase stops reading 30-provider, 31-consumer, 32-model, 40-base-api,
 # 42-runtime-api, 33-timers and 50-running. In the run that paid for this those seven
 # pages entered context at request 21 of 55 and carried 27,309 reasoning tokens with them.
-# Raised a final time, by 391 bytes, to route the .fsml at tools/agent/gen_fsml.py, which
-# writes the document from a JSON description of the machine. Hand-authoring the XML was
-# the largest single reasoning sink measured: 20,700 of one run's 63,000 reasoning tokens
-# went into the grammar, the unique IDs and the numeric Transition/@To targets, none of
-# which is about the machine. A 48-line spec reproduces the benchmark's own 263-line
-# document, generating byte-identical code.
+# Raised by 391 bytes to route every document at tools/agent/gen_docs.py, which writes
+# the .dtml, the .siml and the .fsml of a project from one JSON description. Hand-
+# authoring the XML was the largest single reasoning sink measured: 20,700 of one run's
+# 63,000 reasoning tokens went into the grammar, the unique IDs and the numeric
+# Transition/@To targets, none of which is about the machine. A 143-line spec reproduces
+# the benchmark's own 464 lines of .siml and .fsml, generating byte-identical code.
+# The pages that taught the XML now teach the spec instead, which is why the number did
+# not have to rise again: the routing is substitutive, not additive.
 CORPUS_CEILING = 186100
 
 PAGE_CEILING = 8 * KB
@@ -589,6 +594,16 @@ TEXTUAL = ('.md', '.cpp', '.hpp', '.siml', '.dtml', '.fsml', '.txt', '.json',
            '.init', '.cmake', '.py', '.xml')
 
 
+def proven(text, proof):
+    """True when the text carries the proof, or any one of its alternatives.
+
+    A proof spelled "a|b" is answered by either, which is how one feature is proved
+    by the spec field a page teaches and by the XML element a recipe document holds.
+    """
+    lowered = text.lower()
+    return any(part.lower() in lowered for part in proof.split('|'))
+
+
 def tree_has(relative, proof, budget=600):
     """True when a repository path demonstrates the thing `proof` names.
 
@@ -603,7 +618,7 @@ def tree_has(relative, proof, budget=600):
         if proof.startswith('.'):
             return root.lower().endswith(proof.lower())
         with open(root, encoding='utf-8', errors='replace') as handle:
-            return proof.lower() in handle.read().lower()
+            return proven(handle.read(), proof)
 
     seen = 0
     for here, dirs, files in os.walk(root):
@@ -620,7 +635,7 @@ def tree_has(relative, proof, budget=600):
                 return False
             with open(os.path.join(here, name), encoding='utf-8',
                       errors='replace') as handle:
-                if proof.lower() in handle.read().lower():
+                if proven(handle.read(), proof):
                     return True
     return False
 
@@ -640,10 +655,10 @@ def resolve_features():
     for key, label, page, proof, recipe, also in FEATURES:
         if page:
             text = read('docs', 'agent', page).lower()
-            documented = bool(text) and proof.lower() in text
+            documented = bool(text) and proven(text, proof)
             where = 'docs/agent/' + page
         else:
-            documented = proof.lower() in whole
+            documented = proven(whole, proof)
             where = 'the corpus'
 
         # A demonstration under examples/ is optional: that directory is not
@@ -661,7 +676,7 @@ def resolve_features():
         if not graded:
             graded = (key.replace('_', '-') in task_blob
                       or key.replace('_', ' ') in task_blob
-                      or proof.lower() in task_blob)
+                      or proven(task_blob, proof))
 
         resolved.append({'key': key, 'label': label, 'page': where,
                          'documented': documented, 'example': recipe,
@@ -1375,8 +1390,20 @@ def check_shipped_tools(report):
                       if d not in dropped and d not in ('schema', '__pycache__')]
         tools.extend(f for f in files if f.endswith('.py'))
 
+    # A file that runs nothing of its own is a module another tool imports, not a
+    # script an agent has to rule out, so the pages have no reason to name it.
+    modules = set()
+    for folder, folders, files in os.walk(os.path.join(ROOT, 'tools')):
+        folders[:] = [d for d in folders if d not in ('schema', '__pycache__')]
+        for name in files:
+            if not name.endswith('.py'):
+                continue
+            body = read(os.path.relpath(os.path.join(folder, name), ROOT))
+            if body and "__name__ == '__main__'" not in body:
+                modules.add(name)
+
     wrong = 0
-    for tool in sorted(set(tools)):
+    for tool in sorted(set(tools) - modules):
         stem = tool[:-3]
         excluded = '|{}|'.format(stem) in install.replace('(', '|').replace(')', '|')
         if tool in named and excluded:
@@ -1388,8 +1415,9 @@ def check_shipped_tools(report):
             report.fail('shipped', '{} is a maintenance tool the pages never name, '
                         'and install.cmake ships it'.format(tool))
     if not wrong:
-        report.ok('shipped', '{} tools checked: the installed set is the set the '
-                  'pages name'.format(len(set(tools))))
+        report.ok('shipped', '{} tool(s) and {} module(s) checked: the installed set '
+                  'is the set the pages name'
+                  .format(len(set(tools) - modules), len(modules)))
 
 
 def check_entry_toll(report):

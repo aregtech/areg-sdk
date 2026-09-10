@@ -340,8 +340,8 @@ src/CMakeLists.txt    declares the service interface and the executables
 
 ```bash
 python3 {sdk}/tools/agent/gen_skeleton.py --doc src/services/X.siml --app --force
-python3 {sdk}/tools/agent/gen_fsml.py --example > machine.json
-python3 {sdk}/tools/agent/gen_fsml.py --spec machine.json --out src/services/X.fsml
+python3 {sdk}/tools/agent/gen_docs.py --example > design.json
+python3 {sdk}/tools/agent/gen_docs.py --spec design.json --outdir src/services
 python3 {sdk}/tools/agent/check_contract.py . --strict
 python3 {sdk}/tools/agent/run_scenarios.py
 python3 {sdk}/tools/schema_help.py State/@Kind --document fsml
@@ -351,8 +351,9 @@ python3 {sdk}/tools/explain_rule.py 45 --at State/@Kind --document fsml
 `gen_skeleton.py --app` writes the whole application -- the components, the model
 and `main()` -- compiling and running as generated, with every place your own rule
 belongs marked `TODO(you)`. Fill those in; do not rewrite the files.
-`gen_fsml.py` writes a `.fsml` from a JSON description, so no XML, no `ID` and no
-`To` is written by hand. `check_contract.py` reads the sources
+`gen_docs.py` writes every `.dtml`, `.siml` and `.fsml` of the project from one
+JSON description, so no XML, no `ID` and no `To` is written by hand, and a type the
+service and its state machine share is declared once. `check_contract.py` reads the sources
 and reports the rules below that they break; it needs no build. `schema_help.py`
 says what a `.siml`, `.dtml` or `.fsml` may contain, one name at a time -- never
 read a `.xsd`. `explain_rule.py` explains a refused document by its rule number.

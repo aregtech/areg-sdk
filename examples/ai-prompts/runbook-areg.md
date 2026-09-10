@@ -61,15 +61,20 @@ Write nothing yet. If the routing table offers a design page, open it once, here
 
 ## 4. The documents
 
-Under `src/services/`, replace the scaffolded document with your own. You write the
-`.siml` by hand; the `.fsml` is generated from a JSON description, so no XML, no `ID`
-and no `To` is ever written by hand:
+Under `src/services/`, replace the scaffolded documents with your own. **Every
+document of the project is written from one JSON description**, so no XML, no `ID`,
+no `To` and no cross-document type check is ever done by hand:
 
 ```
-python3 <areg-sdk>/tools/agent/gen_fsml.py --example > machine.json
-python3 <areg-sdk>/tools/agent/gen_fsml.py --spec machine.json \
-        --out src/services/YourMachine.fsml
+python3 <areg-sdk>/tools/agent/gen_docs.py --example > design.json
+python3 <areg-sdk>/tools/agent/gen_docs.py --spec design.json --outdir src/services
 ```
+
+The spec holds `"datatypes"` (one `.dtml`, when two documents share a type),
+`"interfaces"` (a `.siml` each) and `"machines"` (a `.fsml` each). Everything is named:
+a state names its target state, a guard names an attribute, a parameter names its type,
+and the tool refuses a name that was never declared, in the message that says what was.
+A large project splits the spec across files and passes each with its own `--spec`.
 
 
 - **A service contract, a `.siml`. Always.** The interface between the two programs.
@@ -81,9 +86,10 @@ python3 <areg-sdk>/tools/agent/gen_fsml.py --spec machine.json \
   than one place, model it once as a nested sub-machine entered from each place,
   never as duplicated states.
 
-**Ask the grammar, never read it.** `<areg-sdk>/tools/schema_help.py` answers one name
-out of the schemas the generator validates against -- an element, an attribute
-(`State/@Kind`), a type (`tStateKind`) or a bare attribute name -- in a few lines:
+**If a document still needs something the spec cannot say**, ask the grammar, never
+read it. `<areg-sdk>/tools/schema_help.py` answers one name out of the schemas the
+generator validates against -- an element, an attribute (`State/@Kind`), a type
+(`tStateKind`) or a bare attribute name -- in a few lines:
 
 ```
 python3 <areg-sdk>/tools/schema_help.py EventList --document fsml

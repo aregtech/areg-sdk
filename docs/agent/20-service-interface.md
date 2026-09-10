@@ -4,34 +4,27 @@ A service interface is one XML document with the extension `.siml`. It is the
 contract between a provider and its consumers. The generator turns it into two base
 classes that you inherit.
 
-Minimal document, complete and valid:
+**You do not write this XML.** Describe the interface and generate it, together with
+every other document of the project:
 
-```xml
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<ServiceInterface FormatVersion="1.1.0">
-    <Overview ID="1" Name="HelloService" Version="1.0.0" Category="Public">
-        <Description>Greeting service.</Description>
-    </Overview>
-    <MethodList>
-        <Method ID="2" Name="hello_service" MethodType="Request" Response="hello_service">
-            <Description>Ask the provider to greet.</Description>
-            <ParamList>
-                <Parameter ID="51" Name="client" DataType="String">
-                    <Description>Name of the caller.</Description>
-                </Parameter>
-            </ParamList>
-        </Method>
-        <Method ID="4" Name="hello_service" MethodType="Response">
-            <Description>Result of the greeting.</Description>
-            <ParamList>
-                <Parameter ID="52" Name="success" DataType="bool">
-                    <Description>True when the greeting was printed.</Description>
-                </Parameter>
-            </ParamList>
-        </Method>
-    </MethodList>
-</ServiceInterface>
+```json
+{"interfaces": [{
+  "name": "HelloService", "category": "Public",
+  "description": "Greeting service.",
+  "requests": [
+    {"name": "hello_service", "description": "Ask the provider to greet.",
+     "params": [{"name": "client", "type": "String", "description": "Name of the caller."}],
+     "answer": [{"name": "success", "type": "bool", "description": "True when the greeting was printed."}]}
+  ]
+}]}
 ```
+
+
+`gen_docs.py --spec design.json --outdir src/services` writes it. A request's
+`"answer"` declares its response and links the two, so the pair cannot
+drift apart. `"broadcasts"`, `"attributes"`, `"constants"` and `"types"` are lists
+beside `"requests"`. What each of them means is the rest of this page; the shape of
+the XML is the tool's business, and `--example` prints a whole spec to copy.
 
 Place it under your project, for example `src/services/HelloService.siml`, and add
 one line to the project's `CMakeLists.txt`:
