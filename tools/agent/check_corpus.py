@@ -479,7 +479,13 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
 # the build phase stops reading 30-provider, 31-consumer, 32-model, 40-base-api,
 # 42-runtime-api, 33-timers and 50-running. In the run that paid for this those seven
 # pages entered context at request 21 of 55 and carried 27,309 reasoning tokens with them.
-CORPUS_CEILING = 185700
+# Raised a final time, by 391 bytes, to route the .fsml at tools/agent/gen_fsml.py, which
+# writes the document from a JSON description of the machine. Hand-authoring the XML was
+# the largest single reasoning sink measured: 20,700 of one run's 63,000 reasoning tokens
+# went into the grammar, the unique IDs and the numeric Transition/@To targets, none of
+# which is about the machine. A 48-line spec reproduces the benchmark's own 263-line
+# document, generating byte-identical code.
+CORPUS_CEILING = 186100
 
 PAGE_CEILING = 8 * KB
 PAGE_MEDIAN_TARGET = 6 * KB

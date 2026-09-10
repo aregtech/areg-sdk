@@ -59,9 +59,18 @@ else.
 From the task, decide the requests, responses, broadcasts, attributes and data types.
 Write nothing yet. If the routing table offers a design page, open it once, here.
 
-## 4. The documents -- you write these by hand
+## 4. The documents
 
-Under `src/services/`, replace the scaffolded document with your own:
+Under `src/services/`, replace the scaffolded document with your own. You write the
+`.siml` by hand; the `.fsml` is generated from a JSON description, so no XML, no `ID`
+and no `To` is ever written by hand:
+
+```
+python3 <areg-sdk>/tools/agent/gen_fsml.py --example > machine.json
+python3 <areg-sdk>/tools/agent/gen_fsml.py --spec machine.json \
+        --out src/services/YourMachine.fsml
+```
+
 
 - **A service contract, a `.siml`. Always.** The interface between the two programs.
 - **A state machine, a `.fsml`, only if** behaviour depends on what happened before

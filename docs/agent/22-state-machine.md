@@ -104,19 +104,21 @@ decision lives in the document.
 
 ## Writing the document
 
-Only `Overview` and `StateList` are required. `Layout` holds the drawing coordinates
-the editor uses. **Write the document without it, then generate one:**
+**Do not write the XML. Describe the machine and generate it:**
 
 ```bash
-python3 <areg-sdk>/tools/agent/fsml_layout.py src/services/Gate.fsml
+python3 <areg-sdk>/tools/agent/gen_fsml.py --example > machine.json
+python3 <areg-sdk>/tools/agent/gen_fsml.py --spec machine.json \
+        --out src/services/Gate.fsml
 ```
 
-It places every state of a level in a column, sizes each composite around its children
-and joins the transitions. Re-running it replaces the block. Never write coordinates by
-hand: it costs a great many tokens and draws worse than the tool.
+The spec names states, triggers, timers and transitions; the tool assigns every `ID`,
+resolves every `To`, and refuses a name that is not declared. Only `Overview` and
+`StateList` are required, so no `Layout` block is needed; `fsml_layout.py <document>`
+adds one for the editor.
 
-Every element carries an `ID`, and the IDs are unique across the whole document.
-Numbering them in reading order is enough.
+This page is what a machine *means*. The rest of it still applies -- the spec has a
+field for each of these -- and a document you were handed is read with the same rules.
 
 **State names are unique across the whole document, not per level.** Every level is
 flattened into one C++ enumeration, so a substate of one composite collides with a
