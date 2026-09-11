@@ -79,3 +79,30 @@ Rules for this task, above anything else:
 - **Never edit a generated file.** Change the .proto instead.
 - Never commit anything, and never run a git command.
 - Do not write a ReadMe.
+- **Never start the processes by hand.** No `prog &`, no `sleep`, no `pkill`, no `ps`.
+  A scenario is what you run; the runner's --verbose prints every line each process
+  wrote and --only <name> runs one scenario. They leave nothing running.
+- **Every `-j` carries the number 8**: `cmake --build build -j8`.
+
+Two habits that halve the cost of the same work. Every request re-sends the whole
+conversation, so the bill is the number of requests multiplied by how much each one
+carries. Both are free to follow and neither changes what gets built.
+
+- **Put independent calls in one request.** Reading eight pages is one request, not
+  eight. A header and its source are written together. So are the two `main()` files
+  and `scenarios.json`. Only split where the next thing genuinely depends on the result
+  of the last -- a build, a check, a scenario run.
+- **Never pour a log into the conversation.** It stays there for every later request.
+  Everything that can print hundreds -- `find`, `ls -R`, a raw compiler run -- is piped
+  through `grep` or `head` before you ask for it.
+
+Fix -- bounded, then stop. You are finished when it builds **and** every scenario
+exits 0. Keep going until it does, within at most **3 build-and-fix cycles** and at
+most **3 run-and-fix cycles**. Fix the cause, not the symptom: widening a timeout,
+adding a sleep, retrying, deleting an assertion or loosening what a scenario expects is
+not a fix. Still failing after the third cycle of either kind? **Stop and report**:
+what fails, the exact output, what you tried, what you think the cause is.
+
+The report is the one small table the task file asks for, and the only report to
+write. Fill it from what you already know and measure nothing to fill it in. The
+acceptance count comes from the scenario output, not from a second run.

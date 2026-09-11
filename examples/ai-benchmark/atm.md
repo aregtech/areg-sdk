@@ -6,10 +6,10 @@ the same requirements can be handed to gRPC, ZeroMQ, DDS, areg, or anything else
 and it names no operating system.
 
 **To run it.** This file is only the task and its acceptance checklist. To build it on
-**areg**, copy `examples/ai-prompts/ai-prompt-template-text.txt`, set its `task` line to
-`examples/ai-prompts/atm.md`, and paste that file as the prompt -- four lines are
+**areg**, copy `examples/ai-benchmark/ai-prompt-template-text.txt`, set its `task` line to
+`examples/ai-benchmark/atm.md`, and paste that file as the prompt -- four lines are
 all you edit. For another framework, hand this file to an agent together with your own
-delivery instructions -- `examples/ai-prompts/grpc-coffee-machine.txt` is a worked
+delivery instructions -- `examples/ai-benchmark/grpc-coffee-machine.txt` is a worked
 example of one.
 
 This is the shape of any system that gates a sensitive action behind a retry-limited

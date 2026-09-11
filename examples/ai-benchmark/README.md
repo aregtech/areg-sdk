@@ -90,7 +90,7 @@ wherever the session started, so it never picks a second one.
 block -- that block is the only thing in the file you ever touch.
 
 ```bash
-cp "$AREG_SDK/examples/ai-prompts/ai-prompt-template-text.txt" prompt.txt
+cp "$AREG_SDK/examples/ai-benchmark/ai-prompt-template-text.txt" prompt.txt
 $EDITOR prompt.txt        # areg-sdk, task, project, mode -- four lines, at the top
 ```
 
@@ -98,7 +98,7 @@ The file ships with placeholders, so all four need a value:
 
 ```
   areg-sdk  <the absolute path to your checkout>
-  task      <areg-sdk>/examples/ai-prompts/coffee-machine.md
+  task      <areg-sdk>/examples/ai-benchmark/coffee-machine.md
   project   coffeemachine
   mode      ipc
 ```
@@ -119,7 +119,7 @@ figure**, and a denial-heavy run is not comparable to a clean one.
 **4. Read the numbers off the JSON.**
 
 ```bash
-python3 "$AREG_SDK/examples/ai-prompts/measure.py" result.json
+python3 "$AREG_SDK/examples/ai-benchmark/measure.py" result.json
 ```
 
 It prints cost, turns, wall time and the token split, then finds the session

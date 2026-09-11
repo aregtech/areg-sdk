@@ -46,7 +46,7 @@ local for one, pubsub for attributes and broadcasts.
 
 Do this:
 
-1. Read <areg-sdk>/AGENTS.md and <areg-sdk>/examples/ai-prompts/runbook-areg.md, both
+1. Read <areg-sdk>/AGENTS.md and <areg-sdk>/examples/ai-benchmark/runbook-areg.md, both
    in one request. AGENTS.md routes each question to the one page that answers it. The
    runbook is the whole procedure: where to work, every command in order, what you
    write by hand, what to never do, and when to stop. Follow it exactly. The task file

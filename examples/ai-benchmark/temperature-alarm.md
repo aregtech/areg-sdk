@@ -7,11 +7,11 @@ it names no operating system.
 
 **To run it.** This file is the task, its acceptance checklist and the report to end
 with -- nothing else. To build it on **areg**, copy
-`examples/ai-prompts/ai-prompt-template-text.txt`, set its `task` line to
-`examples/ai-prompts/temperature-alarm.md`, and paste that file as the prompt:
+`examples/ai-benchmark/ai-prompt-template-text.txt`, set its `task` line to
+`examples/ai-benchmark/temperature-alarm.md`, and paste that file as the prompt:
 four lines are all you edit. For another framework, hand this file to an agent
 together with your own delivery instructions --
-`examples/ai-prompts/grpc-coffee-machine.txt` is a worked
+`examples/ai-benchmark/grpc-coffee-machine.txt` is a worked
 example of one.
 
 This is the plain service shape: one program publishes a changing value and

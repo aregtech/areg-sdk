@@ -506,7 +506,7 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
 # is gen_skeleton.py naming every TODO(you) marker, which is what lets a hole be filled
 # by one Edit of one unique line; the run before it rewrote two generated files whole
 # for 40,018 output tokens, about $0.40, the largest single removable block left. 1,400
-# bytes of the addition were paid back inside examples/ai-prompts/runbook-areg.md, whose
+# bytes of the addition were paid back inside examples/ai-benchmark/runbook-areg.md, whose
 # build-log and raw-output blocks the new command makes redundant.
 # Raised again, by 1,100 bytes, for the rule in 05-design.md section 2 that decides
 # between an attribute and a broadcast. The page had two lines of it and they were not
@@ -1545,8 +1545,8 @@ def check_page_budget(report):
 def corpus_files():
     """Every document an agent building on areg reads from, largest first."""
     found = [('AGENTS.md', size('AGENTS.md')),
-             ('examples/ai-prompts/runbook-areg.md',
-              size('examples', 'ai-prompts', 'runbook-areg.md'))]
+             ('examples/ai-benchmark/runbook-areg.md',
+              size('examples', 'ai-benchmark', 'runbook-areg.md'))]
     for page in agent_pages():
         found.append(('docs/agent/' + page, size('docs', 'agent', page)))
     return sorted(found, key=lambda entry: -entry[1])
@@ -1795,7 +1795,7 @@ COMMAND_POSITION = r'(?:^|[|;&(]\s*|\$\(\s*)'
 
 def check_posix_only(report):
     """Every POSIX-only command in a fenced block names its Windows form on the page."""
-    pages = ['AGENTS.md', 'examples/ai-prompts/runbook-areg.md']
+    pages = ['AGENTS.md', 'examples/ai-benchmark/runbook-areg.md']
     pages += ['docs/agent/' + p for p in agent_pages()]
     found = 0
     bad = 0
@@ -2007,18 +2007,18 @@ TASK_PROMPT_LEAKS = ('.siml', '.fsml', '.dtml', 'setup_project.py', 'gen_skeleto
 def check_task_prompt_neutrality(report):
     """No task prompt names a framework, a tool, a build command or an OS."""
     missing = [name for name in TASK_PROMPTS
-               if not os.path.isfile(os.path.join(ROOT, 'examples', 'ai-prompts', name))]
+               if not os.path.isfile(os.path.join(ROOT, 'examples', 'ai-benchmark', name))]
     for name in missing:
         report.fail('task-neutral',
-                    'examples/ai-prompts/{} is missing; README.md offers it'.format(name))
+                    'examples/ai-benchmark/{} is missing; README.md offers it'.format(name))
     if missing:
         return
-    readme = read('examples', 'ai-prompts', 'README.md')
+    readme = read('examples', 'ai-benchmark', 'README.md')
     for name in TASK_PROMPTS:
-        text = read('examples', 'ai-prompts', name)
+        text = read('examples', 'ai-benchmark', name)
         if name not in readme:
             report.fail('task-neutral',
-                        'examples/ai-prompts/README.md does not name {}'.format(name))
+                        'examples/ai-benchmark/README.md does not name {}'.format(name))
             return
         body = text.lower()
         for leak in TASK_PROMPT_LEAKS:
