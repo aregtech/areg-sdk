@@ -47,6 +47,10 @@ usual reason a machine does not compile.
 
 A trigger returns `bool`: `true` when a transition was taken, `false` when the current
 state has no transition for it. A trigger the current state ignores is not an error.
+**It does not report acceptance.** A state that refuses through a second, unguarded
+transition -- the shape `--example` shows -- takes the stimulus either way, so the
+trigger returns `true` whether the guard held or not. Report the outcome from the
+action the guarded transition calls, never from the trigger.
 
 **A machine's name becomes a C++ namespace**, so no class of yours may carry it. The
 generated application names its components after the service (`GateServiceProvider`)

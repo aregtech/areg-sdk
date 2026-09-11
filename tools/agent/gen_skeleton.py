@@ -606,7 +606,8 @@ def print_contract(iface, document):
     print('classes:   {n}Provider and {n}Consumer build on the generated {n} base'
           .format(n=iface.name))
     for name, params in iface.requests:
-        print('  override request_{}({})'.format(to_snake(name), iface.signature(params)))
+        print('  provider overrides request_{}({}); consumer calls request_{}(...) to '
+              'send it'.format(to_snake(name), iface.signature(params), to_snake(name)))
     for name, params in iface.responses:
         print('  provider calls response_{}({}); consumer overrides it'
               .format(to_snake(name), iface.signature(params)))
@@ -866,6 +867,11 @@ def consumer_class(iface, cls):
         lines += ['    void process_timer(areg::Timer & timer) final',
                   '    {',
                   marker('next_step', 'the next request of the scenario'),
+                  '',
+                  '        if ((cStallTicks != 0) && (++mIdleTicks >= cStallTicks))',
+                  '        {',
+                  '            fail("the scenario stopped making progress");',
+                  '        }',
                   '    }',
                   '']
 
@@ -923,7 +929,25 @@ def consumer_class(iface, cls):
               '    {   return (*this); }',
               '']
     if stepped:
-        lines += ['    areg::Timer  mStep;   //!< Spaces the requests of the scenario.',
+        lines += ['    //! Ends the scenario as a failure, naming what went wrong.',
+                  '    void fail(const char * why)',
+                  '    {',
+                  '        std::cerr << "FAIL: " << why << std::endl;',
+                  '        mStep.stop_timer();',
+                  '        quit_with(1);',
+                  '    }',
+                  '',
+                  '    //! Restarts the stall watchdog. Call it wherever the scenario advances.',
+                  '    void progressed()',
+                  '    {   mIdleTicks = 0; }',
+                  '',
+                  '    areg::Timer  mStep;   //!< Spaces the requests of the scenario.',
+                  '',
+                  marker('stall_ticks',
+                         'ticks of no progress that end the run; 0 leaves the '
+                         'watchdog off', 4),
+                  '    static constexpr uint32_t cStallTicks{ 0 };',
+                  '    uint32_t                  mIdleTicks{ 0 };',
                   '']
     lines += ['    {}() = delete;'.format(cls),
               '    AREG_NOCOPY_NOMOVE({});'.format(cls),
@@ -1085,11 +1109,12 @@ def split_class(cls, lines):
     return header, source
 
 
-def component_files(cls, brief, includes, class_lines, state_slot, prelude=()):
+def component_files(cls, brief, includes, class_lines, state_slot, prelude=(),
+                    state_hint='the members your rules need'):
     """The .hpp and the .cpp of one component, named after its class."""
     declaration, definitions = split_class(cls, class_lines)
     private = declaration.index('private:')
-    declaration.insert(private + 1, marker(state_slot, 'the members your rules need', 4))
+    declaration.insert(private + 1, marker(state_slot, state_hint, 4))
     guard = cls.upper() + '_HPP'
     header = ['/**',
               ' * \\file    {}.hpp'.format(cls),
@@ -1164,7 +1189,9 @@ def app_files(iface, mode, include_root, machine=None):
     produced += [(CONSUMER_DIR[mode] + name, text) for name, text in component_files(
         consumer_cls, 'Consumer of the {} service.'.format(iface.name),
         class_includes(iface) + TIMER_INCLUDES * steps_scenario(iface) + [''] + consumer_base,
-        consumer_class(iface, consumer_cls), 'consumer_state', QUIT_DECLARATION)]
+        consumer_class(iface, consumer_cls), 'consumer_state', QUIT_DECLARATION,
+        'the members your rules need, and the one saying what step the scenario is '
+        'on' if steps_scenario(iface) else 'the members your rules need')]
 
     def head(file_name, brief):
         return ['/**',

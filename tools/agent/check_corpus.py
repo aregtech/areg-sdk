@@ -1881,6 +1881,7 @@ def run():
     check_member_inventory(report)
     check_scenario_runner(report)
     check_trigger_coverage(report)
+    check_contract_symmetry(report)
     return report
 
 
@@ -1981,6 +1982,62 @@ def check_spec_value_prefixes(report):
         return
     report.ok('spec-prefixes',
               '"lit:" is the empty value; an empty param/attr/const/expr is refused')
+
+
+def check_contract_symmetry(report):
+    """Every line --contract prints names both sides of the interface.
+
+    A line that names only one side is worse than no line: the tool is consulted
+    immediately before the bodies are written, while the page carrying the other
+    half was read many requests earlier. One measured run wrote bare method names
+    on the consumer because the request line said only what the provider overrides,
+    and paid a build-and-fix cycle for it.
+    """
+    import subprocess, tempfile, shutil, glob
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    work = tempfile.mkdtemp(prefix='contract-')
+    try:
+        spec = os.path.join(work, 'spec.json')
+        example = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                                  '--example'], capture_output=True, text=True, cwd=ROOT)
+        if example.returncode != 0:
+            report.fail('contract-sides', 'gen_docs.py --example failed')
+            return
+        with open(spec, 'w', encoding='utf-8') as handle:
+            handle.write(example.stdout)
+        made = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                               '--spec', spec, '--outdir', work, '--force', '--chained'],
+                              capture_output=True, text=True, cwd=ROOT)
+        if made.returncode != 0:
+            report.fail('contract-sides', 'gen_docs.py refused its own example')
+            return
+        document = sorted(glob.glob(os.path.join(work, '*.siml')))
+        if not document:
+            report.fail('contract-sides', 'the example spec wrote no .siml')
+            return
+        shown = subprocess.run([sys.executable, os.path.join(tools, 'gen_skeleton.py'),
+                                '--doc', document[0], '--contract'],
+                               capture_output=True, text=True, cwd=ROOT)
+        if shown.returncode != 0:
+            report.fail('contract-sides', 'gen_skeleton.py --contract failed')
+            return
+        lonely = []
+        for line in shown.stdout.splitlines():
+            body = line.strip()
+            if not body.startswith(('provider', 'override', 'consumer')):
+                continue
+            if not ('provider' in body and 'consumer' in body):
+                lonely.append(body[:70])
+        if lonely:
+            report.fail('contract-sides',
+                        '--contract names one side only: "{}". An agent reads this '
+                        'instead of the page and cannot tell what the other side '
+                        'calls'.format(lonely[0]))
+            return
+        report.ok('contract-sides',
+                  'every --contract line names the provider and the consumer')
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
 
 
 def check_trigger_coverage(report):
