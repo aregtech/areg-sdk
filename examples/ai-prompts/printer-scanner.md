@@ -2,13 +2,16 @@
 
 A task prompt for an AI agent. It is written the way a developer hands work to a
 colleague: what the software must do, not how to build it. It names no framework, so
-the same requirements can be handed to gRPC, ZeroMQ, DDS, areg, or anything else.
+the same requirements can be handed to gRPC, ZeroMQ, DDS, areg, or anything else,
+and it names no operating system.
 
 **To run it.** This file is only the task and its acceptance checklist. To build it on
 **areg**, copy `examples/ai-prompts/ai-prompt-template-text.txt`, set its `task` line to
-`examples/ai-prompts/printer-scanner.md`, and paste that file as the prompt -- four lines are
-all you edit. For another framework, hand this file to an agent together with your own
-delivery instructions.
+`examples/ai-prompts/printer-scanner.md`, and paste that file as the prompt --
+four lines are all you edit. For another framework, hand this file to an agent
+together with your own
+delivery instructions -- `examples/ai-prompts/grpc-coffee-machine.txt` is a worked
+example of one.
 
 This is the shape of any controller built from independent units that must be
 scheduled one at a time and whose failures all have to be handled the same way,
@@ -97,6 +100,21 @@ Then exit. **Exit code 0 if every expectation held, non-zero otherwise**, printi
 which step failed. The operator program must survive the device being started after
 it.
 
+### Proving it
+
+Two of the requirements below cannot be shown by a run in which everything works, so
+they need a second run of their own:
+
+1. **The normal run** -- the sequence above, end to end, exit 0.
+2. **A run where the other side is taken away.** Start both, let the sequence reach
+   the middle, then stop the device abruptly. The simulated operator must say that
+   it lost the other
+   side and exit non-zero. It must not hang, and it must not exit 0.
+
+**An acceptance item counts as passing only when the output of one of those runs shows
+it.** An item you believe you implemented but never observed is reported as not
+passing: naming the ones you could not prove is worth more than a full score.
+
 ### Acceptance checklist
 
 The run is a success when all of these hold. Score any implementation, in any
@@ -124,3 +142,29 @@ framework, against this list:
 - [ ] if one side goes away mid-scenario, the other reports it and exits non-zero
 - [ ] the scenario exits 0, and non-zero when an expectation fails
 - [ ] no busy-waiting and no sleeping inside a message handler
+
+---
+
+## The report
+
+End with this table and nothing longer.
+
+| | |
+|---|---|
+| build-and-fix cycles | |
+| run-and-fix cycles | |
+| acceptance items passing | n of the checklist above, and which failed |
+| checker findings, first run | name the checker, or "none run" |
+| files you opened that the documentation did not route you to | names, or "none" |
+
+**Fill it only from what you already know, and measure nothing to fill it in.** Byte
+counts, line counts, token counts, tool calls and wall time are the operator's to read
+from the session afterwards; computing them yourself costs turns and tells nobody
+anything. An invented number makes every comparison worthless, so a figure you do not
+already have is left out, not guessed.
+
+Then three sentences at most: what the documentation answered well, what you had to
+guess or discover the hard way, and which page you wish had said something it did not.
+Say plainly wherever you had to search the repository instead of being routed to an
+answer -- that is the finding this exercise is really after, and it is worth more than
+the table.

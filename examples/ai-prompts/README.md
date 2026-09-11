@@ -20,15 +20,46 @@ has no state machine in it, so what it costs is what the plain service path cost
 a slope, and the slope is the only thing that says anything. The other two are larger
 tasks of the same kind.
 
-Two more files make them runnable on areg, and the split between them is the point:
+**The four files above name no framework and no operating system.** Each is the task,
+its acceptance checklist, and one small report table -- nothing about how to build it.
+That is what lets the same requirements be scored against gRPC, ZeroMQ, DDS or areg and
+compared. `check_corpus.py` fails if a framework name, a tool name or a build command
+gets back into one of them.
+
+Everything framework-specific lives in a second file beside them, and the split is the
+point:
 
 | File | Who edits it |
 |---|---|
-| `ai-prompt-template-text.txt` | **you** -- four lines at the top, and nothing else. This is the prompt you paste. |
-| `runbook-areg.md` | **nobody.** The agent reads it: where to work, every command in order, the bounded fix loop, and the report. |
+| `ai-prompt-template-text.txt` | **you** -- four lines at the top, and nothing else. This is the prompt you paste to run any of the four on areg. |
+| `runbook-areg.md` | **nobody.** The agent reads it: where to work, every command in order, the bounded fix loop. |
+| `grpc-coffee-machine.txt` | **you**, if you want another arm. A worked example of the same wrapper written for gRPC instead: copy it, rename it, rewrite its steps for the framework you are measuring. It is a shape to copy, not a benchmark result. |
 
-Keeping the procedure out of the prompt is what stops a run being spoiled by a path
-edited in one place and missed in another.
+Keeping the procedure out of the task is what stops a run being spoiled by a path
+edited in one place and missed in another -- and it is what stops the task teaching a
+superseded command, which is a mistake that has cost measured money here.
+
+## What an agent can report, and what it cannot
+
+**No agent is asked for a token count, a price or a wall time, and none should be.**
+Most harnesses never show an agent its own usage: Claude Code does not expose it to the
+model mid-run, and GitHub Copilot, Cursor and the rest expose neither tokens nor cost.
+An agent asked for a number it cannot see either writes "not available to me" -- or
+spends several turns trying to compute a substitute, which is pure overhead and was
+**measured at about 8% of one run** here before it was removed.
+
+So the split is:
+
+| | who produces it | portable across harnesses |
+|---|---|---|
+| build-and-fix cycles, run-and-fix cycles, acceptance items, checker findings, files opened off-route | **the agent**, from what it already knows | **yes** -- this is the report table in every task file |
+| tokens, cache reads, cost, requests, wall time | **the operator**, afterwards, from whatever the harness records | no -- harness-specific |
+
+`measure.py` and `analyze_run.py` read Claude Code's JSON result and session transcript.
+For another agent the operator reads its equivalent, or -- where a harness records
+nothing -- compares only the agent-reported rows and wall time measured from outside.
+**That is still a real comparison**: the acceptance list and the cycle counts are what
+say whether the framework let the agent get it right the first time.
 
 ## Running one, and measuring it
 
@@ -44,9 +75,13 @@ the project: the agent writes everything into it and creates nothing outside it.
 - **a fresh, empty directory of its own**, anywhere else
 
 ```bash
+AREG_SDK=/path/to/areg-sdk          # the one value to set; nothing below repeats it
 RUN=~/runs/$(date +%Y%m%d)-coffeemachine
 mkdir -p "$RUN" && cd "$RUN"
 ```
+
+On Windows use the PowerShell equivalents (`$env:AREG_SDK`, `New-Item -ItemType
+Directory`, `Set-Location`); nothing in the prompt or the task files is OS-specific.
 
 You stay in `$RUN` for every remaining step. The agent is told the project root is
 wherever the session started, so it never picks a second one.
@@ -55,17 +90,17 @@ wherever the session started, so it never picks a second one.
 block -- that block is the only thing in the file you ever touch.
 
 ```bash
-cp /mnt/c/projects/areg-sdk/examples/ai-prompts/ai-prompt-template-text.txt prompt.txt
+cp "$AREG_SDK/examples/ai-prompts/ai-prompt-template-text.txt" prompt.txt
 $EDITOR prompt.txt        # areg-sdk, task, project, mode -- four lines, at the top
 ```
 
-For the coffee machine those four are already the file's defaults:
+The file ships with placeholders, so all four need a value:
 
 ```
-  areg-sdk = /mnt/c/projects/areg-sdk
-  task     = examples/ai-prompts/coffee-machine.md
-  project  = coffeemachine
-  mode     = ipc
+  areg-sdk  <the absolute path to your checkout>
+  task      <areg-sdk>/examples/ai-prompts/coffee-machine.md
+  project   coffeemachine
+  mode      ipc
 ```
 
 **3. Run it headless, and keep the JSON.** `-p` prints and exits; the JSON carries the
@@ -73,7 +108,7 @@ usage the agent cannot see itself.
 
 ```bash
 claude -p --output-format json \
-       --add-dir /mnt/c/projects/areg-sdk \
+       --add-dir "$AREG_SDK" \
        "$(cat prompt.txt)" > result.json
 ```
 
@@ -84,7 +119,7 @@ figure**, and a denial-heavy run is not comparable to a clean one.
 **4. Read the numbers off the JSON.**
 
 ```bash
-python3 /mnt/c/projects/areg-sdk/examples/ai-prompts/measure.py result.json
+python3 "$AREG_SDK/examples/ai-prompts/measure.py" result.json
 ```
 
 It prints cost, turns, wall time and the token split, then finds the session
@@ -101,7 +136,7 @@ transcript and counts the tool calls, and scores both against the budget. Needs 
 
 ```bash
 cd "$RUN" && cmake --build build -j$(nproc) && \
-python3 /mnt/c/projects/areg-sdk/tools/agent/run_scenarios.py --build build/bin ; echo "exit=$?"
+python3 "$AREG_SDK/tools/agent/run_scenarios.py" --build build/bin ; echo "exit=$?"
 ```
 
 Then walk Part 1's acceptance checklist against the captured output, item by item.

@@ -272,19 +272,9 @@ not converge" is a useful result; a half-built application is not.
   and which part of your document triggered it. That report is worth more than a
   finished application.
 
-## 11. The report -- write it, do not measure it
+## 11. The report
 
-**Report only what a command cannot recover afterwards.** Byte sizes, line counts and
-file lists are the operator's to compute from the tree you leave behind; measuring
-them yourself costs turns and tells nobody anything. **Do not guess tokens or wall
-time** either: most harnesses do not show an agent its own usage, and an invented
-number makes every comparison worthless.
-
-Ten lines, from what you already know:
-
-- build-and-fix cycles, and run-and-fix cycles
-- acceptance checklist items passing, out of how many, and which failed -- taken from
-  the scenario output, not from a second run
-- any file you opened that the documentation did not route you to, and why
-- what you had to guess, what the documentation did not answer, and which page you
-  wish had said something it did not
+**The task file says what to report, it is one small table, and it is the only report
+to write.** Fill it from what you already know and measure nothing to fill it in.
+`check_contract.py . --strict` is the checker to name in its findings row, and the
+acceptance count comes from the scenario output, not from a second run.

@@ -1,24 +1,25 @@
 # Prompt: temperature monitor with a threshold alarm
 
 A task prompt for an AI agent. It is written the way a developer hands work to a
-colleague: what the software must do, not how to build it.
+colleague: what the software must do, not how to build it. It names no framework, so
+the same requirements can be handed to gRPC, ZeroMQ, DDS, areg, or anything else, and
+it names no operating system.
 
-**To run it.** Start the session in the directory you want the project generated
-into, with read access to the checkout -- **not inside the checkout**, where a session
-loads the SDK's own maintainer-facing `CLAUDE.md`, which no user of areg ever sees and
-which makes the run incomparable. Then say:
+**To run it.** This file is the task, its acceptance checklist and the report to end
+with -- nothing else. To build it on **areg**, copy
+`examples/ai-prompts/ai-prompt-template-text.txt`, set its `task` line to
+`examples/ai-prompts/temperature-alarm.md`, and paste that file as the prompt:
+four lines are all you edit. For another framework, hand this file to an agent
+together with your own delivery instructions --
+`examples/ai-prompts/grpc-coffee-machine.txt` is a worked
+example of one.
 
-> Read `<checkout>/examples/ai-prompts/temperature-alarm.md` and carry it out.
-> Generate into this directory.
-
-This is the small one. There is no state machine in it: it is the plain
-request / published-value / broadcast shape, and it exists to measure what that
-costs on its own. Part 1 names no framework, so the same requirements can be given
-to gRPC, ZeroMQ, DDS or anything else; only Part 2 changes.
+This is the plain service shape: one program publishes a changing value and
+announces events about it, another watches and reacts. No state machine.
 
 ---
 
-## Part 1 -- The task
+## The task
 
 Build a **temperature monitor** and a **simulated operator**, as two separate
 programs that talk to each other. Neither may reach into the other's memory:
@@ -101,6 +102,21 @@ which step failed. The operator program must survive being started before the
 monitor, and if the monitor is stopped before the scenario completes it must
 report that loss and exit non-zero instead of waiting forever.
 
+### Proving it
+
+Two of the requirements below cannot be shown by a run in which everything works, so
+they need a second run of their own:
+
+1. **The normal run** -- the sequence above, end to end, exit 0.
+2. **A run where the other side is taken away.** Start both, let the sequence reach
+   the middle, then stop the monitor abruptly. The simulated operator must say that
+   it lost the other
+   side and exit non-zero. It must not hang, and it must not exit 0.
+
+**An acceptance item counts as passing only when the output of one of those runs shows
+it.** An item you believe you implemented but never observed is reported as not
+passing: naming the ones you could not prove is worth more than a full score.
+
 ### Acceptance checklist
 
 The run is a success when all of these hold. Score any implementation, in any
@@ -124,94 +140,49 @@ framework, against this list:
 
 ---
 
-## Part 2 -- What to deliver (areg-sdk)
+## What to deliver
 
-*Replace this part when giving the task to another framework. Part 1 stays as it is.*
+**Two programs**, each with its own entry point, in their own subdirectories of the
+project. Nothing outside the project directory, nothing added to the framework's own
+build, and no IDE or editor project files.
 
-**Where to put it.** The operator names the target directory. **If you were not told
-one, stop and ask for it. Do not choose a location yourself.**
+**There is no state machine in this task.** If you find yourself wanting one, the
+task is smaller than you think.
 
-**It is a project of its own, outside the SDK**, the way an application built on areg
-normally is. Do not adopt the SDK's own build conventions, do not add it to any build
-file of the SDK, and write no IDE or editor project files: they are not wanted and
-they measure nothing. (A target directory inside the SDK is a variation the operator
-may ask for. It costs turns that have nothing to do with the framework, so it is not
-the default and it is not what a comparison should be run on.)
+**The contract between the two programs is declared once**, in whatever form the
+framework declares an interface, and the code that carries it over the connection is
+generated from that declaration rather than written by hand. Never edit a generated
+file and never commit one.
 
-**Start by scaffolding, not by reading.** From an empty directory outside the SDK:
+Do **not** write a `ReadMe.md`.
 
-```
-python3 <areg-sdk>/tools/agent/setup_project.py --name <name> --root . --mode ipc \
-        --sdk-root <areg-sdk>
-```
-
-It writes a project that already builds and runs, and its own short `AGENTS.md`.
-Read that, then follow where it routes you -- do not search the checkout. Replace the
-scaffolded document under `src/services/` with your own, point `src/CMakeLists.txt`
-at it, and run `tools/agent/gen_skeleton.py --doc <your document> --out src --force`
-for the provider and consumer classes rather than hand-writing declarations.
-
-Read `AGENTS.md` first and follow where it routes you. That file is the entry point,
-and it is deliberately the only thing here that points at anything: whether it gets
-you the rest is what this exercise measures. Work out the project layout, the build
-wiring and the conventions from where it sends you, not from files named here.
-
-The contract between the two programs is a `.siml` document, generated into code at
-build time. **There is no state machine in this task** -- if you find yourself
-wanting one, the task is smaller than you think. Never write generated files by hand,
-and never commit them.
-
-Deliver:
-
-- the service contract document, under `services/`
-- the monitor sources and the operator sources, in separate subdirectories, each with
-  its own `main.cpp`
-- the build file that compiles both programs and turns the document into code
-
-Do **not** write `ReadMe.md`: the maintainer writes it, and it records that
-everything else was generated.
-
-**Verify before you report, in this order:**
-
-1. `python3 <areg-sdk>/tools/agent/check_contract.py . --strict` -- the mistakes a
-   build cannot catch; run it before you build
-2. `cmake -B build && cmake --build build -j$(nproc)`
-3. `python3 <areg-sdk>/tools/agent/run_scenarios.py --build build/bin` -- exit 0 is
-   a pass
-
-You are finished only when it builds **and** the scenario exits 0. At most **3
-build-and-fix cycles and 3 run-and-fix cycles**; if it has not converged after the
-third of either, stop and report what fails, the exact output, and what you think
-the cause is. Widening a timeout, adding a sleep or loosening what the scenario
-expects is not a fix.
+**Stop rule.** At most **3 build-and-fix cycles and 3 run-and-fix cycles**. If it has
+not converged after the third of either, stop and report what fails, the exact output,
+and what you think the cause is. Widening a timeout, adding a sleep, or loosening what
+the scenario expects is not a fix.
 
 ---
 
-## Part 3 -- The report
+## The report
 
-End with a short report. No prices, no estimates -- only what you can count.
-
-**Do not guess the token count.** Most harnesses do not show an agent its own usage,
-and an invented number makes every comparison worthless. Report it only if your
-harness gives you the figure; otherwise write "not available to me" and leave it for
-the operator, who can read it from the session. The same goes for wall time.
+End with this table and nothing longer.
 
 | | |
 |---|---|
-| Total tokens used | from the harness, or "not available to me" |
-| Turns / tool calls | |
-| Wall time | |
-| Build attempts before it compiled | |
-| Contract-checker findings, first run | name the tool |
-| Lines of C++ you wrote by hand | |
-| Lines generated from the document | |
-| Acceptance checklist items passing | out of 15 |
-| Documentation pages you opened, and their total size | |
-| Files you opened that the documentation did not send you to | |
-| **Total bytes of every file you read**, documents and sources together | the number that drives the cost: context is re-sent on every turn, so a file opened early is paid for again on every turn after it |
+| build-and-fix cycles | |
+| run-and-fix cycles | |
+| acceptance items passing | n of the checklist above, and which failed |
+| checker findings, first run | name the checker, or "none run" |
+| files you opened that the documentation did not route you to | names, or "none" |
 
-Then, in a few sentences: what the documentation answered well, what you had to guess
-or discover the hard way, and which page you wish had said something it did not. Say
-plainly wherever you had to search the repository instead of being routed to an
-answer -- that is the finding this exercise is really after, and it is worth more
-than the numbers.
+**Fill it only from what you already know, and measure nothing to fill it in.** Byte
+counts, line counts, token counts, tool calls and wall time are the operator's to read
+from the session afterwards; computing them yourself costs turns and tells nobody
+anything. An invented number makes every comparison worthless, so a figure you do not
+already have is left out, not guessed.
+
+Then three sentences at most: what the documentation answered well, what you had to
+guess or discover the hard way, and which page you wish had said something it did not.
+Say plainly wherever you had to search the repository instead of being routed to an
+answer -- that is the finding this exercise is really after, and it is worth more than
+the table.

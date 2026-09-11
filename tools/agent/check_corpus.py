@@ -1882,6 +1882,7 @@ def run():
     check_scenario_runner(report)
     check_trigger_coverage(report)
     check_contract_symmetry(report)
+    check_task_prompt_neutrality(report)
     return report
 
 
@@ -1982,6 +1983,71 @@ def check_spec_value_prefixes(report):
         return
     report.ok('spec-prefixes',
               '"lit:" is the empty value; an empty param/attr/const/expr is refused')
+
+
+# The four task prompts are the comparison itself: the same requirements scored
+# against gRPC, ZeroMQ, DDS or areg. A framework name, a tool name or a build command
+# in one of them makes the comparison meaningless, and it has cost measured money --
+# a superseded three-command verify chain in two of these files was obeyed by every
+# run, over the runbook that supersedes it, because the task file is read later and
+# is therefore nearer in context.
+TASK_PROMPTS = ('temperature-alarm.md', 'coffee-machine.md', 'atm.md',
+                'printer-scanner.md')
+
+# Spellings that can only come from one framework or one operating system. The word
+# "areg" is not here: every task file names it once, in the paragraph that says how to
+# run the task on areg, and that paragraph is what makes the file usable.
+TASK_PROMPT_LEAKS = ('.siml', '.fsml', '.dtml', 'setup_project.py', 'gen_skeleton.py',
+                     'gen_docs.py', 'build_project.py', 'check_contract.py',
+                     'run_scenarios.py', 'schema_help.py', 'codegen.jar', 'cmake',
+                     'CMakeLists', '$(nproc)', 'nproc', '.elf', 'apt-get', 'brew ',
+                     'powershell', '.exe', 'AGENTS.md')
+
+
+def check_task_prompt_neutrality(report):
+    """No task prompt names a framework, a tool, a build command or an OS."""
+    missing = [name for name in TASK_PROMPTS
+               if not os.path.isfile(os.path.join(ROOT, 'examples', 'ai-prompts', name))]
+    for name in missing:
+        report.fail('task-neutral',
+                    'examples/ai-prompts/{} is missing; README.md offers it'.format(name))
+    if missing:
+        return
+    readme = read('examples', 'ai-prompts', 'README.md')
+    for name in TASK_PROMPTS:
+        text = read('examples', 'ai-prompts', name)
+        if name not in readme:
+            report.fail('task-neutral',
+                        'examples/ai-prompts/README.md does not name {}'.format(name))
+            return
+        body = text.lower()
+        for leak in TASK_PROMPT_LEAKS:
+            if leak.lower() in body:
+                report.fail('task-neutral',
+                            '{} names "{}". A task prompt is scored against every '
+                            'framework, so it carries requirements only: anything '
+                            'about how to build belongs beside it, in the wrapper '
+                            'for one framework'.format(name, leak))
+                return
+        if '## The report' not in text:
+            report.fail('task-neutral',
+                        '{} has no "## The report" section, so a run of it cannot be '
+                        'compared with a run of the others'.format(name))
+            return
+        # Peer loss and the timeout cannot be shown by a run where everything works.
+        # Two runs of one measured pair wrote a scenario that killed the other side
+        # and one did not, and the one that did not still claimed every item: an
+        # acceptance list without an instruction to prove it grades on belief.
+        if '### Proving it' not in text:
+            report.fail('task-neutral',
+                        '{} has no "### Proving it" section. Its checklist asks for '
+                        'peer loss and a timeout, which no run where everything works '
+                        'can show, so without it a run scores them from belief'
+                        .format(name))
+            return
+    report.ok('task-neutral',
+              '{} task prompts name no framework, tool or OS, each ends in a report, '
+              'and README.md offers them all'.format(len(TASK_PROMPTS)))
 
 
 def check_contract_symmetry(report):
