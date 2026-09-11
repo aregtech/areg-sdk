@@ -1880,6 +1880,7 @@ def run():
     check_project_routing(report)
     check_member_inventory(report)
     check_scenario_runner(report)
+    check_trigger_coverage(report)
     return report
 
 
@@ -1980,6 +1981,51 @@ def check_spec_value_prefixes(report):
         return
     report.ok('spec-prefixes',
               '"lit:" is the empty value; an empty param/attr/const/expr is refused')
+
+
+def check_trigger_coverage(report):
+    """gen_docs.py says which states answer each trigger.
+
+    A trigger with no transition in a state does nothing when it is called there:
+    codegen accepts the machine, the generated call compiles, and no step reports
+    it. One measured run lost a design thought and a whole regenerate-and-rebuild
+    cycle to a trigger missing from the state its machine starts in. The note is
+    the only thing in the chain that shows the gap, so a change that silences it
+    for a composite machine has to fail here.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('trigger-coverage', 'gen_docs.py does not import: {}'.format(failure))
+        return
+
+    machine = {
+        'name': 'T', 'initial': 'A',
+        'triggers': [{'name': 'go'}, {'name': 'stop'}, {'name': 'dead'}],
+        'states': [
+            {'name': 'A', 'transitions': [{'on': 'go', 'to': 'B'}]},
+            {'name': 'B', 'initial': 'B1',
+             'transitions': [{'on': 'stop', 'to': 'A'}],
+             'states': [{'name': 'B1', 'transitions': [{'on': 'go', 'to': 'B1'}]}]},
+        ],
+    }
+    coverage = dict(gen_docs.trigger_coverage(machine))
+    wanted = {'go': ['A*', 'B1'], 'stop': ['B+'], 'dead': []}
+    for name, states in sorted(wanted.items()):
+        if coverage.get(name) != states:
+            report.fail('trigger-coverage',
+                        'gen_docs.py reports trigger "{}" answered by {}, not {}: the '
+                        'note no longer shows a state that cannot answer a trigger'
+                        .format(name, coverage.get(name), states))
+            return
+    if gen_docs.trigger_coverage({'name': 'T', 'states': []}):
+        report.fail('trigger-coverage',
+                    'a machine with no trigger still prints a coverage note')
+        return
+    report.ok('trigger-coverage',
+              'gen_docs.py marks the initial state, a composite and a trigger no '
+              'state answers')
 
 
 def check_example_type_placement(report):

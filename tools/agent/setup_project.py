@@ -332,13 +332,13 @@ src/CMakeLists.txt    names the documents and each executable's sources
 | Behaviour that depends on what happened before | `docs/agent/22-state-machine.md` (a `.fsml`) |
 | `areg::String` and the containers | `docs/agent/40-base-api.md` -- before the first line of C++ |
 | The signature of one framework name | `python3 {sdk}/tools/agent/api_help.py <name>` -- never a page, never a header |
-| Implement a provider, a consumer, or the model | nothing: `gen_skeleton.py --app` wrote all three. `docs/agent/30-provider.md`, `docs/agent/31-consumer.md` and `docs/agent/32-model.md` describe a program someone else wrote |
+| Implement a provider, a consumer, or the model | nothing: `gen_skeleton.py --app` wrote all three. `docs/agent/30-provider.md`, `docs/agent/31-consumer.md` and `docs/agent/32-model.md` describe a program someone else wrote: do not open them to fill a marker, and do not open them to design one either |
 | Periodic or delayed work | the consumer already owns a stepping timer; for a second timer `docs/agent/33-timers.md` |
 | A custom event between threads | `docs/agent/23-events.md` |
 | Worker threads, watchdogs, a run-time model | `docs/agent/37-threads.md` |
 | The application, components, time, files | `docs/agent/42-runtime-api.md` |
 | Log from application code | `docs/agent/34-logging.md` |
-| Start the pieces in the right order | nothing: `run_scenarios.py` does it, and `--app` wrote `scenarios.json`. It runs every scenario and names each one, so `--only` is for iterating on a failure, never for confirming a pass. `docs/agent/50-running.md` is for a key it does not carry |
+| Start the pieces in the right order | nothing: `run_scenarios.py` does it, and `--app` wrote `scenarios.json`. It runs every scenario and names each one, so `--only` is for iterating on a failure, never for confirming a pass. `docs/agent/50-running.md` is its key reference, for `router`, `lead` and `stop`/`after`/`signal`, which `--app` does not write |
 | Write a test | `docs/agent/52-testing.md` |
 | Work out why it does not work | `docs/agent/51-debug.md` |
 | **Anything this table does not cover** | `AGENTS.md` section 2 in the SDK -- it routes the full set. Never search the SDK by hand |

@@ -160,7 +160,8 @@ and a full rewrite are the two most expensive shapes a run has: a step is billed
 the whole conversation again, and output is billed at five times reading.
 
 `30-provider.md`, `31-consumer.md` and `32-model.md` describe the code the tool has
-already written. Do not open them to fill a marker.
+already written. Do not open them to fill a marker, and do not open them while
+designing either: nothing in them changes what the spec should say.
 
 `40-base-api.md` is the one page a body still needs: every body uses a string or a
 container and those names are not the ones training data carries. Read it before

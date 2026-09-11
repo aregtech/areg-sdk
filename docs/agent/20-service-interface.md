@@ -40,9 +40,8 @@ addServiceInterface(gen_myproject src/services/HelloService.siml)
 - `Category` decides how far the service reaches: `Private` inside one process,
   `Public` across processes on one machine, `Internet` across machines. A `Private`
   service cannot be reached through the router.
-- A `Request` names the `Response` that answers it. The response must exist and be
-  declared with `MethodType="Response"`. A request with no `Response` attribute is
-  fire and forget.
+- A `Request` with no `"answer"` is fire and forget; a `Response` exists only as the
+  answer to one.
 - Two methods may share a name only when they are of different kinds. A request and
   its response usually carry the same name, as above.
 - A `Parameter`'s default becomes the default argument of the generated method, so
@@ -100,8 +99,8 @@ Provider class inherits `<Name>ProviderBase`. Consumer class inherits `<Name>Con
 | Data type, structure, constant name | kept exactly as written | `sConnectedClient` -> `HelloWorld::sConnectedClient` |
 | Parameter name | kept exactly as written | `StringOnChange` stays the parameter name in the handler |
 
-A worked case, from the `PubSub` example. The document declares
-`<Attribute Name="StringOnChange" DataType="String" Notify="OnChange"/>`, so:
+A worked case, from the `PubSub` example. The spec declares
+`{"name": "StringOnChange", "type": "String", "notify": "OnChange"}`, so:
 
 ```cpp
 // areg-check: ignore
@@ -133,7 +132,8 @@ that point and then times out.
 **A response has no priority over a notification.** What one provider sends one
 consumer arrives in the order it was sent, so a handler that sets an attribute and
 then answers delivers the **update first**. Drive the next step from whichever
-message carries the fact you need, never from "the response comes first".
+message carries the fact you need -- the one reporting the effect, not the one
+accepting the request -- never from "the response comes first".
 
 **Quit from the handler of the last message the step needs.** A process that has
 quit cannot receive what has not arrived: events already queued are delivered, but a

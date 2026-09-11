@@ -819,6 +819,40 @@ def unread_attributes(spec):
     return [name for name in declared if name not in found]
 
 
+def trigger_coverage(spec):
+    """Which states answer each trigger, in declaration order.
+
+    A trigger has no effect in a state that declares no transition on it. Codegen
+    accepts the machine, the generated call compiles, and nothing reports that it
+    did nothing. A composite state answers for every state it contains.
+    """
+    names = [entry.get('name') for entry in spec.get('triggers') or []
+             if entry.get('name')]
+    if not names:
+        return []
+    answered = dict((name, []) for name in names)
+
+    def walk(states, entry, enters):
+        """entry: the state this level starts in. enters: this level is entered at start."""
+        for state in states or []:
+            label = state.get('name')
+            if not label:
+                continue
+            starts = enters and label == entry
+            mark = label + ('*' if starts else '') \
+                         + ('+' if state.get('states') else '')
+            seen = set()
+            for move in state.get('transitions') or []:
+                on = move.get('on')
+                if on in answered and on not in seen:
+                    seen.add(on)
+                    answered[on].append(mark)
+            walk(state.get('states'), state.get('initial'), starts)
+
+    walk(spec.get('states'), spec.get('initial'), True)
+    return [(name, answered[name]) for name in names]
+
+
 def build_all(project, prefix=''):
     """Every document of the project, as (file name, text)."""
     shared = project.get('datatypes')
@@ -967,6 +1001,16 @@ def main():
                   'condition or an argument. Data no rule of the machine reads belongs '
                   'to the component that computes it, not to the machine.'
                   .format(spec.get('name', '?'), name))
+        coverage = trigger_coverage(spec)
+        if coverage:
+            print('  note  {}: which states answer each trigger (* the initial state, '
+                  '+ also while inside it). A trigger called in a state not listed '
+                  'beside it does nothing, and nothing reports it.'
+                  .format(spec.get('name', '?')))
+            width = max(len(name) for name, _ in coverage)
+            for name, states in coverage:
+                print('          {}  {}'.format(name.ljust(width),
+                                                ', '.join(states) or 'NO STATE'))
     if args.chained:
         print('  {} document(s).'.format(len(documents)))
     else:

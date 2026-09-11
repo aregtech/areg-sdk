@@ -45,9 +45,7 @@ Find your task, open that one file, and do not search the repository.
 | **Decide what the services are** | `docs/agent/05-design.md`, before writing any file |
 | Start a new project by hand | `docs/agent/10-new-project.md` |
 | Define an interface; what to override, what to call | `docs/agent/20-service-interface.md` (section 3: the names) |
-| Implement a service provider | `docs/agent/30-provider.md` |
-| Implement a service consumer | `docs/agent/31-consumer.md` |
-| Register components into threads / processes | `docs/agent/32-model.md` |
+| Implement a provider, a consumer, or the model | nothing: `tools/agent/gen_skeleton.py --app` wrote all three, compiling and running. `docs/agent/30-provider.md`, `docs/agent/31-consumer.md` and `docs/agent/32-model.md` describe a program someone else wrote: do not open them to fill a marker or to design one |
 | Watchdog, worker thread, model built at run time | copy `docs/agent/recipes/07-worker-events/`; `docs/agent/37-threads.md` |
 | Send a custom event between threads | `docs/agent/23-events.md` |
 | Do periodic or delayed work | `docs/agent/33-timers.md` |
@@ -61,7 +59,7 @@ Find your task, open that one file, and do not search the repository.
 | Integrate areg into an existing CMake project | `docs/wiki/02b-cmake-integrate.md` |
 | Work out why it does not work | `docs/agent/51-debug.md` |
 | Test the application, or a component on its own | copy `docs/agent/recipes/12-testing/`; `docs/agent/52-testing.md` |
-| Start `mtrouter`, `logcollector` or `logobserver` | `docs/agent/50-running.md` |
+| A `scenarios.json` key `--app` did not write (`router`, `lead`, `stop`/`after`/`signal`); start `mtrouter` by hand | `docs/agent/50-running.md` -- `run_scenarios.py` starts the pieces itself |
 | Read or query a `.sqlog` log database | `docs/agent/35-sqlog.md` |
 | Set the router address, ports, anything in `areg.init` | `docs/agent/36-config.md` |
 | Find the example showing a given facility | `docs/agent/41-examples.md` |
