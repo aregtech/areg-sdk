@@ -135,6 +135,12 @@ consumer arrives in the order it was sent, so a handler that sets an attribute a
 then answers delivers the **update first**. Drive the next step from whichever
 message carries the fact you need, never from "the response comes first".
 
+**Quit from the handler of the last message the step needs.** A process that has
+quit cannot receive what has not arrived: events already queued are delivered, but a
+message still crossing the router when the process exits is lost, and the exit code
+is 0. Quitting in the update handler of a provider that answers afterwards drops the
+answer.
+
 ---
 
 ## 4. Changing an existing interface

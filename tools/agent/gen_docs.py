@@ -313,9 +313,12 @@ def source_of(machine, value, stimulus, where):
     token, so a string literal carries its own quotes.
     """
     text = str(value)
-    prefix, _, rest = text.partition(':')
-    if prefix == 'lit' and rest:
+    prefix, sep, rest = text.partition(':')
+    if prefix == 'lit' and sep:
         return 'Value', rest
+    if prefix in SOURCES and sep and not rest:
+        fail('{} writes "{}:" with nothing after the colon. Name what it reads, or '
+             'write "lit:" for an empty value.'.format(where, prefix))
     if prefix in SOURCES and rest:
         if prefix == 'param' and stimulus and rest not in machine.params_of.get(stimulus, []):
             fail('{} reads parameter "{}", which "{}" does not declare. It declares: {}'
@@ -777,6 +780,45 @@ def cross_check(project):
             types[name] = (declared, entry['name'])
 
 
+def attribute_reads(node, found):
+    """Every name a rule of the machine reads, collected from one node.
+
+    A guard operand, an argument of an action call or an event send, and the value
+    side of a "set" are reads. The key side of a "set" is a write, and a write alone
+    is not a use.
+    """
+    if isinstance(node, str):
+        found.add(node[5:] if node.startswith('attr:') else node)
+    elif isinstance(node, list):
+        for item in node:
+            attribute_reads(item, found)
+    elif isinstance(node, dict):
+        for key, value in node.items():
+            if key == 'set' and isinstance(value, dict):
+                attribute_reads(list(value.values()), found)
+            elif key in ('description', 'name', 'on', 'to', 'send', 'call'):
+                continue
+            else:
+                attribute_reads(value, found)
+
+
+def unread_attributes(spec):
+    """Machine attributes nothing in the machine reads.
+
+    An attribute no guard, condition call, action argument or event argument reads
+    holds no part in sequencing. It is business data the component computes, and it
+    belongs to the component: keeping it in the machine costs a declaration, a
+    setter on every transition, and the design thought behind both.
+    """
+    declared = [entry.get('name') for entry in spec.get('attributes') or []
+                if entry.get('name')]
+    if not declared:
+        return []
+    found = set()
+    attribute_reads(spec.get('states') or [], found)
+    return [name for name in declared if name not in found]
+
+
 def build_all(project, prefix=''):
     """Every document of the project, as (file name, text)."""
     shared = project.get('datatypes')
@@ -841,16 +883,20 @@ EXAMPLE = {
         "triggers": [{"name": "open", "params": [{"name": "width", "type": "uint32"}]},
                      {"name": "close"}],
         "actions": [{"name": "on_opening"}, {"name": "on_open"},
-                    {"name": "on_refused", "params": [{"name": "asked", "type": "uint32"}]}],
+                    {"name": "on_refused",
+                     "params": [{"name": "asked", "type": "uint32"},
+                                {"name": "reading", "type": "GateTypes::Reading"}]}],
         "conditions": [{"name": "has_power", "description": "True while the gate has power."}],
         "initial": "CLOSED",
         "states": [
             {"name": "CLOSED",
              "transitions": [
                  {"on": "open", "to": "OPENING",
-                  "guard": {"all": [["width", "le", "MaxWidth"], {"call": "has_power"}]},
+                  "guard": {"all": [["width", "le", "MaxWidth"],
+                                    ["Quality", "eq", "GateTypes::Quality::Good"],
+                                    {"call": "has_power"}]},
                   "set": {"Width": "param:width"}},
-                 {"on": "open", "description": "Too wide, or no power.",
+                 {"on": "open", "description": "Too wide, untrusted, or no power.",
                   "set": {"Quality": "GateTypes::Quality::Suspect"},
                   "do": [{"send": "Refused", "args": {"asked": "width"}}]}
              ]},
@@ -860,9 +906,12 @@ EXAMPLE = {
              "transitions": [{"on": "StepTimer", "to": "OPEN"}]},
             {"name": "OPEN",
              "entry": ["on_open"],
-             "transitions": [{"on": "close", "to": "CLOSED"},
-                             {"on": "Refused", "do": [{"call": "on_refused",
-                                                       "args": {"asked": "asked"}}]}]}
+             "transitions": [{"on": "close", "to": "CLOSED",
+                              "guard": ["Width", "gt", "lit:0"]},
+                             {"on": "Refused",
+                              "do": [{"call": "on_refused",
+                                      "args": {"asked": "asked",
+                                               "reading": "attr:LastReading"}}]}]}
         ]
     }]
 }
@@ -912,6 +961,12 @@ def main():
         with open(os.path.join(args.outdir, name), 'w', encoding='utf-8') as handle:
             handle.write(text)
         print('wrote {}'.format(os.path.join(args.outdir, name)))
+    for spec in project['machines']:
+        for name in unread_attributes(spec):
+            print('  note  {}: attribute "{}" is written and never read by a guard, a '
+                  'condition or an argument. Data no rule of the machine reads belongs '
+                  'to the component that computes it, not to the machine.'
+                  .format(spec.get('name', '?'), name))
     if args.chained:
         print('  {} document(s).'.format(len(documents)))
     else:

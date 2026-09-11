@@ -185,29 +185,16 @@ task. Both are scenario keys, so neither needs `&`, `sleep`, `kill` or `ps`.
 { "binary": "myprovider", "lead": true, "stdin": ["-q"], "exit": 0 }
 ```
 
-**End of input is not a quit request, and this is the trap.** A process with no
-`stdin` key still gets its own standard input; nothing is ever written to it, so a
-console loop waits there instead of being handed end of input at once. Write the loop
-so it agrees:
+**`gen_skeleton.py --app` already writes that loop into the provider's `main()`, and
+the `quit` scenario that proves it.** Neither is yours to write.
 
-```cpp
-#include "areg/appbase/Application.hpp"   // Application
-#include "areg/base/CommonDefs.hpp"       // WAIT_INFINITE
-
-bool quitRequested{ false };
-std::string line;
-while (std::getline(std::cin, line))
-{
-    if ((line == "-q") || (line == "--quit")) { quitRequested = true; break; }
-}
-if (!quitRequested)                       // no console at all: keep serving
-{   areg::Application::wait_quit(areg::WAIT_INFINITE); }
-```
-
-A loop that unloads the model as soon as `getline` returns false shuts the service
-down within milliseconds of starting whenever it runs without a terminal. Every peer
-then waits for a provider that has already gone, and there is no error to read: the
-process exited normally and printed nothing.
+**End of input is not a quit request, and this is the trap** if you write one of your
+own. A process with no `stdin` key still gets its own standard input; nothing is ever
+written to it, so the loop must keep serving when `getline` returns false, not unload
+the model. A loop that unloads on end of input shuts the service down within
+milliseconds whenever it runs without a terminal: every peer waits for a provider
+that has already gone, and there is no error to read, because the process exited
+normally and printed nothing.
 
 `stop` ends one process while the rest run on. `after` is a regular expression
 matched against the leading process's output as it appears, a number of seconds, or

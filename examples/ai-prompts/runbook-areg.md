@@ -5,14 +5,11 @@ settings -- **areg-sdk**, **task**, **project**, **mode**. Everything here uses 
 Nothing in this file needs editing, ever.
 
 On Windows: `python` for `python3`, `build\bin\x.exe` for `./build/bin/x.elf`,
-`start "" prog` for `prog &`, `-j%NUMBER_OF_PROCESSORS%` for `-j$(nproc)`. Nothing
-else differs. **macOS has no `nproc`**: `$(nproc)` expands to nothing and the bare
-`-j` left behind compiles everything at once. Write `-j$(getconf _NPROCESSORS_ONLN)`,
-right on both. `build_project.py` needs none of this and counts for itself.
+`start "" prog` for `prog &`. Nothing else differs.
 
-**Always give `-j` a number.** `cmake --build build -j` with no number lets make run
-every job at once; on a large tree that swaps, and a build that should take a minute
-takes ten or is killed.
+**Every `-j` carries the number 8**: `cmake --build build -j8`. It is right on every
+platform, `$(nproc)` is not, and a bare `-j` runs every job at once and swaps the
+machine. `build_project.py` passes it for you.
 
 ---
 
@@ -46,8 +43,8 @@ That writes a project that already builds and runs:
 | `CMakeLists.txt` | finds or fetches areg -- do not rewrite it |
 | `src/CMakeLists.txt` | the three lines declaring the service and the two apps |
 | `src/services/*.siml` | a working example contract; you replace its contents |
-| `src/provider.cpp` | the provider's `main()` |
-| `src/consumer.cpp` | the consumer's `main()` |
+| `src/provider/main.cpp` | the provider's `main()`, beside its component |
+| `src/consumer/main.cpp` | the consumer's `main()`, beside its component |
 | `scenarios.json` | what to run, and the output that proves it worked |
 | `run.sh` | starts the router and both applications |
 | `AGENTS.md` | **this project's own guide. Read it now. It is short.** |
@@ -129,9 +126,10 @@ one: the action handler is a base, every action is declared, and there is no sep
 host component to write, merge or delete.
 
 The application is the **whole** of `src/`: every component in its own `.hpp` and
-`.cpp`, named after its class, plus `src/main.cpp` (local) or `src/provider.cpp` and
-`src/consumer.cpp` (ipc) holding only the model and `main()`. The mode comes from
-`scenarios.json`, so it is never given twice.
+`.cpp`, named after its class, plus a `main.cpp` holding only the model and `main()`.
+Two processes get a folder each -- `src/provider/` and `src/consumer/`, each with its
+own `main.cpp`; one process keeps `src/` flat. The mode comes from `scenarios.json`,
+so it is never given twice.
 
 **It compiles and runs as written.** The model, `main()`, the connection test and
 every `notify_on_*` subscription are already correct, so none of them needs a page. A
@@ -154,10 +152,12 @@ it, and the model files holding nothing but the model and `main()`.
 ## 6. Implement
 
 **One `Edit` per marker, and the marker line is the `old_string`.** Copy the printed
-line, give the body that replaces it, and change nothing else. It matches once, so
-the edit cannot go wrong, and a file is never rewritten: a full rewrite of a
-generated file is the single most expensive thing a run can do, because output is
-billed at five times what reading costs.
+line, give the body that replaces it, change nothing else, and never rewrite a file.
+
+**Send those Edits in as few steps as possible** -- the markers do not depend on each
+other, so every Edit you can already write goes in the same step. One Edit per step
+and a full rewrite are the two most expensive shapes a run has: a step is billed for
+the whole conversation again, and output is billed at five times reading.
 
 `30-provider.md`, `31-consumer.md` and `32-model.md` describe the code the tool has
 already written. Do not open them to fill a marker.

@@ -80,6 +80,10 @@ def fail(message, code=2):
 
 ROUTER_PORT = 8181
 ROUTER_READY_SECONDS = 10.0
+
+# A build writes its binaries a little after it reads the sources, so a difference
+# under this is the build itself and not an edit.
+STALE_TOLERANCE_SECONDS = 30.0
 OUTPUT_TAIL_LINES = 40
 
 
@@ -107,6 +111,68 @@ def find_binary(name, build_dirs):
             if os.path.isfile(path) and os.access(path, os.X_OK):
                 return path
     return None
+
+
+# A binary older than the sources it was built from is the previous program. Its
+# failures read as logic or environment faults and cost a diagnosis every time, so
+# the run is refused before anything starts.
+SOURCE_SUFFIXES = ('.cpp', '.hpp', '.h', '.cc', '.cxx', '.siml', '.fsml', '.dtml')
+SOURCE_SKIP = {'build', '.git', '.vs', '.idea', '__pycache__'}
+
+
+def newest_source(root):
+    """The newest source of the project, as (path, mtime), or (None, 0)."""
+    newest, when = None, 0.0
+    for folder, dirs, files in os.walk(root):
+        dirs[:] = [d for d in dirs if d not in SOURCE_SKIP and not d.startswith('.')]
+        for name in files:
+            if not name.endswith(SOURCE_SUFFIXES) and name != 'CMakeLists.txt':
+                continue
+            path = os.path.join(folder, name)
+            try:
+                stamp = os.path.getmtime(path)
+            except OSError:
+                continue
+            if stamp > when:
+                newest, when = path, stamp
+    return newest, when
+
+
+def stale_binaries(scenarios, build_dirs, root):
+    """Whether the sources were edited and no build has run since.
+
+    The reference is the **newest** of the executables, not each one of them: an
+    incremental build relinks only the targets whose own sources changed, so a
+    binary older than the newest source is normal once a build has run. What is
+    never normal is every binary being older than the newest source, which means
+    no build ran between the edit and this call.
+
+    Returns a list of (binary path, source path, minutes between them), empty when
+    the build is current.
+    """
+    source, when = newest_source(root)
+    if source is None:
+        return []
+    seen, found = set(), []
+    for scenario in scenarios:
+        for spec in scenario.get('procs') or []:
+            name = spec.get('binary')
+            if not name or name in seen:
+                continue
+            seen.add(name)
+            path = find_binary(name, build_dirs)
+            if path is None:
+                continue
+            try:
+                found.append((path, os.path.getmtime(path)))
+            except OSError:
+                continue
+    if not found:
+        return []
+    built = max(stamp for _, stamp in found)
+    if built >= when - STALE_TOLERANCE_SECONDS:
+        return []
+    return [(path, source, (when - built) / 60.0) for path, _ in found]
 
 
 def proc_name(spec):
@@ -497,6 +563,8 @@ def main():
                         help='print every line each process wrote')
     parser.add_argument('--quiet', action='store_true',
                         help='print only the verdict, no output and no evidence')
+    parser.add_argument('--stale-ok', action='store_true',
+                        help='run even when a binary is older than the sources')
     parser.add_argument('--self-test', action='store_true',
                         help='check this runner itself; needs no project')
     args = parser.parse_args()
@@ -524,6 +592,22 @@ def main():
         return 0
 
     build_dirs = args.build or [os.path.join('build', 'bin'), 'build']
+
+    if not args.stale_ok:
+        stale = stale_binaries(scenarios, build_dirs,
+                               os.path.dirname(os.path.abspath(args.file)) or '.')
+        if stale:
+            for path, source, minutes in stale:
+                sys.stderr.write(
+                    'error: {} is older than {} (edited {:.0f} min after the build)\n'
+                    .format(os.path.basename(path), os.path.relpath(source), minutes))
+            sys.stderr.write('build first, then run:\n')
+            sys.stderr.write('  python3 {}/build_project.py\n'
+                             .format(os.path.dirname(os.path.abspath(__file__))
+                                     .replace(chr(92), '/')))
+            sys.stderr.write('running the old program is what makes a fixed defect '
+                             'look unfixed. --stale-ok runs it anyway.\n')
+            return 2
 
     results = []
     for scenario in scenarios:

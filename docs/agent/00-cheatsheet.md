@@ -1,46 +1,10 @@
 # AREG cheat sheet
 
-Everything needed for an ordinary task, in one page. Open a task page only when the
-answer is not here; `recipes/` holds whole projects to copy rather than read.
-
-## The document
-
-A `.siml` is the contract. This one exercises every construct; delete what you do not
-need. `Category` is `Private` (one process), `Public` (several processes, needs
-`mtrouter`) or `Internet` (other machines). Every `ID` must be unique in the file.
-
-```xml
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<ServiceInterface FormatVersion="1.1.0">
-    <Overview ID="1" Name="Monitor" Version="1.0.0" Category="Private"/>
-    <AttributeList>
-        <Attribute ID="10" Name="Temperature" DataType="uint32" Notify="OnChange"/>
-    </AttributeList>
-    <MethodList>
-        <Method ID="20" Name="alarm_raised" MethodType="Broadcast">
-            <ParamList>
-                <Parameter ID="21" Name="level" DataType="uint32"/>
-            </ParamList>
-        </Method>
-        <Method ID="30" Name="measure" MethodType="Request" Response="measure"/>
-        <Method ID="31" Name="measure" MethodType="Response">
-            <ParamList>
-                <Parameter ID="32" Name="taken" DataType="bool"/>
-            </ParamList>
-        </Method>
-    </MethodList>
-    <ConstantList>
-        <Constant ID="40" Name="MaxLevel" DataType="uint32" Value="90"/>
-    </ConstantList>
-</ServiceInterface>
-```
-
-A `Request` names its `Response` by name; a request with no reply omits the attribute.
-A constant's value is the `Value` **attribute**, and only there: the 1.0.0 `<Value>`
-child is refused. A structure `Field` and an `EnumEntry` are the other way round,
-carrying their value as a child element. The generator validates before it writes: a
-refused document names the rule in words, and
-`explain_rule.py <the number the message prints in brackets>` explains it.
+What an ordinary task still needs after the tools have run. The documents come from
+`gen_docs.py --spec`, and the components, the model and `main()` from
+`gen_skeleton.py --app`, so none of them is here: `10-new-project.md` has the layout
+those tools write, and `--contract` prints the generated names of a real document in
+a few hundred tokens. This page carries what no tool writes.
 
 ## Generated names, from the document
 
@@ -59,73 +23,6 @@ Scalars pass by value; `String`, structures and containers as `const T &`. A con
 an enumeration, a structure and the service name keep the name the document gives them,
 reachable as `<Name>::Thing`. The authoritative table, with the transform each kind of
 name goes through, is `20-service-interface.md` section 3.
-
-## Component skeletons
-
-```cpp
-#include "areg/appbase/Application.hpp"
-#include "areg/component/Component.hpp"
-#include "areg/component/ComponentThread.hpp"
-#include "src/services/XProviderBase.hpp"        // generated
-#include "src/services/XConsumerBase.hpp"        // generated
-
-// provider
-class P final : public areg::Component, protected XProviderBase {
-    P(const areg::ComponentEntry & e, areg::ComponentThread & o)
-        : areg::Component(e, o), XProviderBase(static_cast<areg::Component &>(self())) {}
-    void request_foo(const areg::String & a) final { /* ... */ response_foo(true); }
-    // A handler must not block: no sleep, no wait, no long loop.
-    inline P & self() { return (*this); }
-};
-
-// consumer
-class C final : public areg::Component, protected XConsumerBase {
-    C(const areg::ComponentEntry & e, areg::ComponentThread & o)
-        : areg::Component(e, o), XConsumerBase(e.mDependencyServices[0].mRoleName, o) {}
-    bool service_connected(areg::ServiceConnectionState s, areg::ProxyBase & p) final {
-        bool r{false};
-        if (XConsumerBase::service_connected(s, p)) {
-            r = true;
-            if (areg::is_service_connected(s)) { notify_on_baz_update(true); request_foo(role_name()); }
-        }
-        return r;                      // called again on every reconnect: resubscribe here
-    }
-    void response_foo(bool ok) final { areg::Application::signal_quit(); }
-    void request_foo_failed(areg::ResultType) final {
-        if (is_connected()) { request_foo(role_name()); }   // is_connected(): still usable, safe to retry
-    }
-};
-```
-
-`mRoleName` is an `areg::String`; passing it directly or as `.as_string()` both
-compile. Do not "fix" one to match the other.
-
-## Model and lifecycle
-
-```cpp
-#include "areg/appbase/Application.hpp"
-#include "areg/base/CommonDefs.hpp"
-#include "areg/component/ComponentLoader.hpp"
-
-BEGIN_MODEL("MyModel")
-  BEGIN_REGISTER_THREAD("T1")
-    BEGIN_REGISTER_COMPONENT("Provider", P)
-      REGISTER_IMPLEMENT_SERVICE(X::ServiceName, X::InterfaceVersion)
-    END_REGISTER_COMPONENT("Provider")
-  END_REGISTER_THREAD("T1")
-  BEGIN_REGISTER_THREAD("T2")
-    BEGIN_REGISTER_COMPONENT("Consumer", C)
-      REGISTER_DEPENDENCY("Provider")          // == the role name, character for character
-    END_REGISTER_COMPONENT("Consumer")
-  END_REGISTER_THREAD("T2")
-END_MODEL("MyModel")
-
-areg::Application::setup();
-areg::Application::load_model("MyModel");
-areg::Application::wait_quit(areg::WAIT_INFINITE);   // ends on signal_quit()
-areg::Application::unload_model("MyModel");
-areg::Application::release();
-```
 
 ## Timer and log
 

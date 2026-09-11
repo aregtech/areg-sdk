@@ -6,6 +6,10 @@ the only thing that changes when you move a component between threads or process
 
 Complete `main.cpp` for a provider and a consumer in two threads of one process:
 
+> `gen_skeleton.py --app` writes this file already. Two processes get a `main.cpp`
+> each, in `src/provider/` and `src/consumer/`; one process keeps `src/main.cpp`.
+
+
 ```cpp
 #include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"

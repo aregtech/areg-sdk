@@ -5,13 +5,12 @@ AREG is a framework for service-oriented applications. Describe a service once i
 the service logic. The same code runs in one thread, many threads, many processes or
 many machines: what changes is where a component is registered, not what it does.
 
-**Fast path.** Define or change a service interface, implement a provider or a
-consumer, register components into threads or processes, add a timer, log from
-application code: for any of those, `docs/agent/00-cheatsheet.md` is the whole
-reading list. Go there now, skip `CODEBASE.md` and the rest of this file, and return
-only for section 6. `areg::String` and the containers are not on it: read
-`docs/agent/40-base-api.md` **before the first line of C++**, not after the first
-error. It is what stops a remembered name reaching the compiler.
+**Fast path.** `tools/agent/build_project.py --spec` writes a whole project -- the
+documents, the components, the model and `main()`; section 5 has the chain. What no
+tool writes is one page, `docs/agent/00-cheatsheet.md`. Go there now, skip
+`CODEBASE.md` and the rest of this file, and return only for section 6. `areg::String`
+and the containers are not on it: read `docs/agent/40-base-api.md` **before the first
+line of C++**, not after the first error.
 
 ---
 
@@ -41,7 +40,7 @@ Find your task, open that one file, and do not search the repository.
 
 | I need to ... | Read |
 |---|---|
-| **Anything ordinary** | `docs/agent/00-cheatsheet.md` (most tasks end here) |
+| **Anything ordinary** | `docs/agent/00-cheatsheet.md` -- what the tools do not write |
 | **Start from working code** | `docs/agent/recipes/` - copy one, do not read it. `recipes/README.md` maps them |
 | **Decide what the services are** | `docs/agent/05-design.md`, before writing any file |
 | Start a new project by hand | `docs/agent/10-new-project.md` |
@@ -118,12 +117,12 @@ values that attribute accepts. A spelling is `tools/schema_help.py <name>`. Neve
 
 ### Every command on this path, on Windows
 
-The pages below use POSIX commands. These four substitutions are the whole difference.
+The pages below use POSIX commands. These three substitutions are the whole difference.
 
 `python3 x.py` -> `python x.py` - `./build/bin/n.elf` -> `build\bin\n.exe` -
 `prog --service &` -> `start "" prog` (no `--service`: on Windows it means the Service
-Control Manager and fails from a command line) - `-j$(nproc)` ->
-`-j%NUMBER_OF_PROCESSORS%`
+Control Manager and fails from a command line). `-j8` is written as `-j8` everywhere:
+never `$(nproc)`, which macOS does not have.
 
 ---
 

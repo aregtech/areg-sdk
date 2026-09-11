@@ -29,17 +29,17 @@ The document name and the file name need not match. Everything follows `Overview
 
 Names are kept exactly as written in the document; nothing is re-cased.
 
-| In the `.fsml` | Generates |
+| In the spec | Generates |
 |---|---|
-| `<MethodList>` `<Method MethodType="Trigger">` named `open` | `bool GateFSM::open()` -- you **call** it |
-| `<MethodList>` `<Method MethodType="Action">` named `on_open` | `virtual void action_on_open() = 0` -- you **implement** it |
-| an action `Parameter` `DataType="bool"` | the same parameter on `action_*` |
-| `<EventList>` `<Event>` named `Ready` | `Gate::FsmEventValue::EVENT_Ready`, sent with `send_event()` |
-| `<TimerList>` `<Timer>` named `Hold` | `Gate::FsmTimer::Hold`, started and stopped by the document |
-| `State` named `GATE_OPEN` | an internal enumerator; the application never names a state |
+| `"triggers"`: `open` | `bool GateFSM::open()` -- you **call** it |
+| `"actions"`: `on_open` | `virtual void action_on_open() = 0` -- you **implement** it |
+| `"conditions"`: `is_ready` | `virtual bool is_ready() = 0` -- you **implement** it |
+| an action or condition `"params"` entry | the same parameter on the generated method |
+| `"events"`: `Ready` | `Gate::FsmEventValue::EVENT_Ready`, sent with `send_event()` |
+| `"timers"`: `Hold` | `Gate::FsmTimer::Hold`, started and stopped by the document |
+| a state named `GATE_OPEN` | an internal enumerator; the application never names a state |
 
-`MethodType` is `Trigger`, `Action` or `Condition`, and nothing else. An event is not a
-method: writing `MethodType="Event"` is refused as `error[45/RULE_BAD_VALUE]`.
+`gen_skeleton.py --doc <the .fsml> --contract` prints this list for a real document.
 
 The `EVENT_` prefix is added to event enumerators and to nothing else: a timer of the
 same name keeps it. The two lists are not symmetrical, and assuming they are is the
@@ -105,21 +105,18 @@ a nested level that also begins at one needs a different name for it -- `Start`,
 `BrewStart`, `RinseStart`. A collision is `error[3/RULE_STATE_NAME]`, reported by
 `check_contract.py` and refused by the generator.
 
-**Every name a state or a transition uses is declared in its own top-level list**, all
-of them direct children of `<StateMachine>` and all of them optional:
+**Every name a state or a transition uses is declared in a list of its own**, and all
+of them are optional:
 
-| List | Named from |
+| Spec list | Named from |
 |---|---|
-| `<DataTypeList>` | any `DataType` attribute; spelled as in `21-data-types.md` |
-| `<AttributeList>` | `AttributeSet`, and `Attr` in a `Guard` |
-| `<EventList>` | `StimulusKind="Event"`, `EventSend`, `OnFinal` |
-| `<TimerList>` | `StimulusKind="Timer"`, `TimerStart`, `TimerStop` |
-| `<MethodList>` | `Stimulus` of a `Trigger`, `ActionCall`, a `Guard`'s condition |
-| `<ConstantList>` | `Const` in a `Guard` |
-| `<StateList>` | `Transition/@To`, by `ID` |
-
-Each is a list in the spec: `"events"`, `"timers"`, `"triggers"` and `"actions"`,
-`"attributes"`, `"constants"`.
+| `"types"` | any `"type"`; spelled as in `21-data-types.md` |
+| `"attributes"` | a `"set"` key, and an attribute operand of a guard |
+| `"events"` | `"on"` of an event, `{"send": ...}`, `"final_event"` |
+| `"timers"` | `"on"` of a timer, `"start X"` / `"stop X"` |
+| `"triggers"`, `"actions"`, `"conditions"` | `"on"` of a trigger, `{"call": ...}`, a guard's `{"call": ...}` |
+| `"constants"` | a constant operand of a guard |
+| `"states"` | every `"to"` |
 
 A name used but not declared is `error[46/RULE_UNRESOLVED_ELEMENT]`, and the message
 names the kind it was looked up as, which names the list it is missing from.
@@ -246,10 +243,24 @@ the import moves past it. What else changes in the generated code:
 
 Working project, hosting one machine from two states: `recipes/13-submachine/`.
 
+### Where a piece of data lives
+
+Decide this once, per value, before writing the spec. Who reads it decides:
+
+| Read by | Declared in | Reached as |
+|---|---|---|
+| a guard, a condition or an action of the machine | the `.fsml` `"attributes"` | `mAttrX` inside the machine, `x()` / `set_x()` on it |
+| the other process -- a consumer or a provider of the service | the `.siml` `"attributes"` | `set_x()` on the provider, `notify_on_x_update` on the consumer |
+| neither: only the component that computes it | nothing. A plain C++ member | itself |
+
+A value read by both is declared in both: the `.siml` attribute is what the peer
+sees, and the provider sets it from the machine. Nothing is copied into the machine
+that no guard, condition or action reads -- that member belongs to the component.
+
 ### Guarding a transition
 
-A transition can be refused unless something holds. The machine needs data of its own
-to test, declared before `MethodList`:
+A transition can be refused unless something holds. The machine declares the data its
+guards test before `MethodList`:
 
 ```json
 "attributes": [{"name": "Opened", "type": "bool", "value": "false"}],
@@ -265,8 +276,11 @@ allowed. The guard is an expression tree, not text:
 ```
 
 which generates `const bool isEligible = (mAttrOpened == false);` and takes the
-transition only when it holds. A refused transition is not an error: the trigger
-returns `false`, exactly as it does for a state with no transition at all. Nest with
+transition only when it holds. **Transitions that share one trigger are tried in
+document order, and the first whose guard holds is the one taken**; write the
+guarded ones first and the unguarded fallback last. A refused transition is not an
+error: the trigger returns `false`, exactly as it does for a state with no
+transition at all. Nest with
 `{"all": [...]}`, `{"any": [...]}` and `{"not": ...}`; call a declared `"conditions"`
 entry with `{"call": "is_ready"}`.
 
@@ -291,13 +305,9 @@ Register it with `mFsm.set_final_observer(this)`.
 
 ## CMake
 
-```cmake
-addServiceInterface(gen_myapp src/services/GateService.siml)
-addStateMachine(gen_myapp     src/services/Gate.fsml)
-```
-
-`addStateMachine` takes the same arguments as `addServiceInterface` and picks its
-generator from the extension. A machine that imports others needs only one call.
+`addStateMachine(<library> <the .fsml>)`, beside the `addServiceInterface` line and
+taking the same arguments. `build_project.py --spec` writes both, and a machine that
+imports others still needs only one call.
 
 ## Never
 

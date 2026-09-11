@@ -25,7 +25,7 @@ the service document. Copying costs nothing to read; adapting an example costs a
 cp -r <areg-sdk>/docs/agent/recipes/01-local-single-process ./myproject
 cd myproject
 cmake -B build
-cmake --build build -j$(nproc)
+cmake --build build -j8
 ./build/bin/hello_local.elf
 ```
 

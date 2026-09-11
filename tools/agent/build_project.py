@@ -21,6 +21,7 @@ import argparse
 import glob
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -29,6 +30,10 @@ PYTHON = sys.executable or 'python3'
 
 sys.path.insert(0, HERE)
 import gen_skeleton  # noqa: E402
+
+# A fixed job count is right on every machine the corpus has to describe, and it
+# costs no page: $(nproc) is absent on macOS and spelled differently on Windows.
+DEFAULT_JOBS = 8
 
 # What to do when a step fails. Naming the step is the whole point of a chain:
 # a failure that does not say where it happened costs more than the requests saved.
@@ -42,6 +47,9 @@ ADVICE = {
                 'the file, the line and the rule. Fix them before building.',
     'configure': 'CMake could not configure. The generator runs here, so a refused '
                  'document appears in this output; anything else is CMakeLists.txt.',
+    'scenarios': 'the application built, but a scenario did not pass. Each failure '
+                 'names the process, what it was expected to print and what it '
+                 'wrote. "--only <name>" iterates on one.',
     'build': 'the compiler refused a source. Ask for the errors alone, never the whole '
              'log: "cmake --build build 2>&1 | grep -E \'error\' | head -20". A '
              'provider that is abstract means the document gained a request the '
@@ -82,9 +90,13 @@ def run(step, command, cwd, kept=2):
     return True
 
 
+# What update_cmake prints when it takes a document's line out.
+PRUNED = re.compile(r'^removed\s+\w+\(\s*\S+\s+(\S+?)\s*\)')
+
+
 def documents_of(specs, outdir):
-    """The .siml and the .fsml the specs name, as paths under outdir."""
-    interfaces, machines = [], []
+    """The .siml, the .fsml and the .dtml the specs name, as paths under outdir."""
+    interfaces, machines, shared_types = [], [], []
     for spec in specs:
         try:
             with open(spec, encoding='utf-8') as handle:
@@ -95,7 +107,34 @@ def documents_of(specs, outdir):
             interfaces.append(os.path.join(outdir, entry['name'] + '.siml'))
         for entry in document.get('machines') or []:
             machines.append(os.path.join(outdir, entry['name'] + '.fsml'))
-    return interfaces, machines
+        shared = document.get('datatypes') or {}
+        if shared.get('name'):
+            shared_types.append(os.path.join(outdir, shared['name'] + '.dtml'))
+    return interfaces, machines, shared_types
+
+
+def drop_placeholders(root, changed, wanted):
+    """Remove a document whose CMake line was just pruned.
+
+    Nothing builds it any more, so it is the scaffold's placeholder and only invites
+    a read. The file is removed only when this call removed its line and no spec
+    names it, so a document of the caller's own is never touched.
+    """
+    keep = set(os.path.normcase(os.path.normpath(path)) for path in wanted)
+    dropped = []
+    for entry in changed or []:
+        found = PRUNED.match(entry)
+        if not found:
+            continue
+        relative = found.group(1)
+        if os.path.normcase(os.path.normpath(relative)) in keep:
+            continue
+        path = os.path.join(root, relative)
+        if not os.path.isfile(path):
+            continue
+        os.remove(path)
+        dropped.append(relative.replace('\\', '/'))
+    return dropped
 
 
 def mode_of(root, given):
@@ -152,7 +191,12 @@ def main():
     parser.add_argument('--mode', choices=['ipc', 'local'],
                         help='default: read from scenarios.json')
     parser.add_argument('--build', default='build', help='the build directory')
-    parser.add_argument('--jobs', type=int, default=os.cpu_count() or 4)
+    parser.add_argument('--jobs', type=int, default=DEFAULT_JOBS,
+                        help='parallel compile jobs (default: {})'
+                             .format(DEFAULT_JOBS))
+    parser.add_argument('--run', action='store_true',
+                        help='run the scenarios once the build passed, in this '
+                             'same call')
     parser.add_argument('--regenerate', action='store_true',
                         help='write the application again, discarding what is in it')
     parser.add_argument('--no-check', action='store_true',
@@ -175,7 +219,7 @@ def main():
     document = args.doc
     machine = args.machine
     if args.spec and (document is None or machine is None):
-        interfaces, machines = documents_of(args.spec, args.outdir)
+        interfaces, machines, _shared = documents_of(args.spec, args.outdir)
         document = document or (interfaces[0] if interfaces else None)
         machine = machine or (machines[0] if machines else None)
     if document is None:
@@ -187,7 +231,7 @@ def main():
     # The documents the spec describes are the ones the project builds, so the CMake
     # lines follow the spec: a new document gains its line and a dropped one loses it.
     if args.spec:
-        interfaces, machines = documents_of(args.spec, args.outdir)
+        interfaces, machines, shared_types = documents_of(args.spec, args.outdir)
         wanted = [('addServiceInterface', path) for path in interfaces] + \
                  [('addStateMachine', path) for path in machines]
         changed = gen_skeleton.update_cmake(
@@ -196,6 +240,10 @@ def main():
             prune=os.path.normpath(args.outdir).replace('\\', '/'))
         for change in changed or []:
             print('   src/CMakeLists.txt: {}'.format(change))
+        for path in drop_placeholders(root, changed,
+                                      interfaces + machines + shared_types):
+            print('   removed {} -- the placeholder document the spec replaced'
+                  .format(path))
 
     present = app_present(root, document)
     if args.regenerate or present == 0:
@@ -235,8 +283,18 @@ def main():
                ['cmake', '--build', args.build, '-j', str(args.jobs)], root, kept=3):
         return 1
 
+    if args.run:
+        print('')
+        if not run('scenarios',
+                   [PYTHON, os.path.join(HERE, 'run_scenarios.py'),
+                    '--build', os.path.join(args.build, 'bin')], root, kept=40):
+            return 1
+        print('')
+        print('Every step passed, the scenarios included.')
+        return 0
+
     print('')
-    print('Every step passed. Run the scenarios next:')
+    print('Every step passed. Run the scenarios next, or pass --run to do both here:')
     print('  python3 {} --build {}/bin'
           .format(os.path.join(HERE, 'run_scenarios.py'), args.build))
     return 0

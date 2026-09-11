@@ -164,7 +164,13 @@ def build_recipe(root, lib, compiler):
     return True, binaries, 'built {} binaries'.format(len(binaries))
 
 
-def check(recipe, work, lib, compiler):
+def check(recipe, work, lib, compiler, repeat=1):
+    """Build a recipe once, then run it `repeat` times.
+
+    An intermittent defect -- a broadcast that overtakes its subscription, two
+    threads inside one chained <<, a quit that beats a message across the router --
+    is found only by running the same binary again. Once is not evidence.
+    """
     name = os.path.basename(recipe)
     root = os.path.join(work, name)
     shutil.copytree(recipe, root)
@@ -173,6 +179,15 @@ def check(recipe, work, lib, compiler):
     if not ok:
         return False, detail
 
+    for attempt in range(1, repeat + 1):
+        passed, detail = run_once(name, root, binaries, lib)
+        if not passed:
+            return False, ('{} (run {} of {})'.format(detail, attempt, repeat)
+                           if repeat > 1 else detail)
+    return True, (detail + ', {} runs'.format(repeat) if repeat > 1 else detail)
+
+
+def run_once(name, root, binaries, lib):
     if name in MULTIPROCESS:
         return run_multiprocess(root, binaries, MULTIPROCESS[name], lib)
 
@@ -200,7 +215,12 @@ def main():
                         help='directory holding libareg (default: build/bin)')
     parser.add_argument('--compiler', default=os.environ.get('CXX', 'g++'))
     parser.add_argument('--keep', action='store_true', help='keep the work directory')
+    parser.add_argument('--repeat', type=int, default=1,
+                        help='run each recipe this many times after building it '
+                             'once; an intermittent defect is invisible at 1')
     args = parser.parse_args()
+    if args.repeat < 1:
+        parser.error('--repeat takes 1 or more')
 
     lib = os.path.abspath(args.lib)
     if not glob.glob(os.path.join(lib, 'libareg*')):
@@ -213,7 +233,7 @@ def main():
         for recipe in sorted(glob.glob(os.path.join(RECIPES, '*'))):
             if not os.path.isdir(recipe):
                 continue
-            passed, detail = check(recipe, work, lib, args.compiler)
+            passed, detail = check(recipe, work, lib, args.compiler, args.repeat)
             print('{:5} {:32} {}'.format('PASS' if passed else 'FAIL',
                                          os.path.basename(recipe), detail))
             failures += 0 if passed else 1

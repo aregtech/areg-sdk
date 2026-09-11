@@ -33,6 +33,7 @@
 # the hand that wrote the corpus.
 # ===========================================================================
 import argparse
+import io
 import json
 import os
 import re
@@ -112,7 +113,7 @@ FEATURES = [
      '22-state-machine.md',     '"guard"|<Guard',      '06-state-machine',
      ('examples/19_pubfsm',)),
     ('fsm_attribute', 'giving a state machine its own data',
-     '22-state-machine.md',     'AttributeSet',        '06-state-machine',
+     '22-state-machine.md',     '"attributes"|AttributeSet', '06-state-machine',
      ('examples/19_pubfsm',)),
     ('logging',       'logging from application code',
      '34-logging.md',           'LOG_DBG',             '07-worker-events',
@@ -171,11 +172,16 @@ SCHEMA_FEATURES = [
     ('a hosted machine',     'Submachine="',         '22-state-machine.md', 'Submachine'),
     ('a level reporting done', 'OnFinal="',          '22-state-machine.md', 'OnFinal'),
     ('a guarded transition', '<Guard',               '22-state-machine.md', '"guard"|<Guard'),
-    ('machine data',         '<AttributeSet',        '22-state-machine.md', 'AttributeSet'),
-    ('machine constants',    '<ConstantList',        '22-state-machine.md', 'ConstantList'),
-    ('sending an event',     '<EventSend',           '22-state-machine.md', 'EventSend'),
-    ('starting a timer',     '<TimerStart',          '22-state-machine.md', 'TimerStart'),
-    ('stopping a timer',     '<TimerStop',           '22-state-machine.md', 'TimerStop'),
+    ('machine data',         '<AttributeSet',        '22-state-machine.md',
+     '"attributes"|AttributeSet'),
+    ('machine constants',    '<ConstantList',        '22-state-machine.md',
+     '"constants"|ConstantList'),
+    ('sending an event',     '<EventSend',           '22-state-machine.md',
+     '"send"|EventSend'),
+    ('starting a timer',     '<TimerStart',          '22-state-machine.md',
+     '"start X"|TimerStart'),
+    ('stopping a timer',     '<TimerStop',           '22-state-machine.md',
+     '"stop X"|TimerStop'),
     ('an internal transition', 'Kind="Internal"',    '22-state-machine.md',
      'Kind="Internal"|a transition without `"to"`'),
     ('a final state',        'Kind="Final"',         '22-state-machine.md', 'Kind="Final"'),
@@ -804,8 +810,10 @@ def claims():
                 not re.search(r'FsmEventValue::(?!EVENT_)[A-Z]', fsm), ''))
     out.append(('the FSM timer enumerator carries no prefix, and the page says so',
                 'FsmTimer' in fsm and 'prefix' in fsm.lower(), ''))
-    out.append(('the cheat sheet documents ConstantList',
-                'ConstantList' in read('docs', 'agent', '00-cheatsheet.md'), ''))
+    # The cheat sheet no longer carries the .siml XML: gen_docs.py writes the
+    # document, so the element table of the page that teaches it is the one copy.
+    out.append(('the interface page documents ConstantList',
+                'ConstantList' in read('docs', 'agent', '20-service-interface.md'), ''))
     out.append(('the model page says BEGIN_REGISTER_COMPONENT constructs the component',
                 'BEGIN_REGISTER_COMPONENT' in read('docs', 'agent', '32-model.md'), ''))
     out.append(('every recipe named by an eval task exists',
@@ -1859,6 +1867,7 @@ def run():
     check_stated_numbers(report)
     check_shipped_tools(report)
     check_example_type_placement(report)
+    check_spec_value_prefixes(report)
     check_entry_toll(report)
     check_page_budget(report)
     check_corpus_toll(report)
@@ -1926,6 +1935,51 @@ def check_member_inventory(report):
         return
     report.ok('inventory', result.stdout.strip() or
               'docs/agent/members.json matches the public headers')
+
+
+def check_spec_value_prefixes(report):
+    """A spec value prefix with nothing after the colon is a literal or a refusal.
+
+    "lit:" is the empty value. "param:", "attr:", "const:" and "expr:" name
+    something, so an empty one is refused. Before this was checked, they all fell
+    through to the verbatim branch and the generated code carried the text "lit:"
+    while every step exited 0.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+    except Exception as failure:
+        report.fail('spec-prefixes', 'gen_docs.py does not import: {}'.format(failure))
+        return
+
+    class Machine(object):
+        params_of = {}
+        attribute_names = ()
+        constant_names = ()
+
+    kind, text = gen_docs.source_of(Machine(), 'lit:', None, 'a test')
+    if (kind, text) != ('Value', ''):
+        report.fail('spec-prefixes',
+                    '"lit:" is written as {} "{}", not the empty value'.format(kind, text))
+        return
+    refused = []
+    quiet, sys.stderr = sys.stderr, io.StringIO()
+    try:
+        for prefix in ('param', 'attr', 'const', 'expr'):
+            try:
+                gen_docs.source_of(Machine(), prefix + ':', None, 'a test')
+            except SystemExit:
+                continue
+            refused.append(prefix)
+    finally:
+        sys.stderr = quiet
+    if refused:
+        report.fail('spec-prefixes',
+                    '"{}:" with nothing after the colon is accepted and written '
+                    'verbatim'.format('", "'.join(refused)))
+        return
+    report.ok('spec-prefixes',
+              '"lit:" is the empty value; an empty param/attr/const/expr is refused')
 
 
 def check_example_type_placement(report):

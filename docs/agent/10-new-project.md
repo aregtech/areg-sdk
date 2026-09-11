@@ -41,14 +41,16 @@ by hand or an existing one has to be changed.
     CMakeLists.txt          declares the service interface and the executables
     services/
       HelloService.siml     the service contract
-    HelloProvider.hpp/.cpp  the providing component
-    HelloConsumer.hpp/.cpp  the consuming component
-    provider.cpp            the providing process: its model and main()
-    consumer.cpp            the consuming process: its model and main()
+    provider/
+      HelloProvider.hpp/.cpp  the providing component
+      main.cpp                the providing process: its model and main()
+    consumer/
+      HelloConsumer.hpp/.cpp  the consuming component
+      main.cpp                the consuming process: its model and main()
 ```
 
-A single process application has one `main.cpp`, with one model, in place of
-`provider.cpp` and `consumer.cpp`; the components keep their own files.
+A single process application keeps `src/` flat: the components in their own files
+and one `src/main.cpp` holding the one model.
 
 ---
 
@@ -114,8 +116,8 @@ Two kinds of line, and nothing else.
 ```cmake
 addServiceInterface(gen_myproject src/services/HelloService.siml)
 
-macro_declare_executable(myproject_provider gen_myproject provider.cpp HelloProvider.cpp)
-macro_declare_executable(myproject_consumer gen_myproject consumer.cpp HelloConsumer.cpp)
+macro_declare_executable(myproject_provider gen_myproject provider/main.cpp provider/HelloProvider.cpp)
+macro_declare_executable(myproject_consumer gen_myproject consumer/main.cpp consumer/HelloConsumer.cpp)
 ```
 
 **Every hand-written `.cpp` is named on the line of the executable that needs it**,

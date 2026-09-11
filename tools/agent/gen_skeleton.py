@@ -60,6 +60,15 @@ def marker(slot, what, indent=8):
 MARKER = re.compile(r'//\s*TODO\(you\)\s+([A-Za-z_][\w]*)\s*:\s*(.*?)\s*$')
 
 
+# Markers in different places do not depend on each other, so they are filled in
+# one step. A request costs its whole context again, so N requests of one Edit cost
+# N times what one request of N Edits costs.
+BATCH_NOTE = (
+    '  These {total} markers are independent of each other. Send the Edits that fill\n'
+    '  them in as few steps as possible -- every Edit you can already write belongs\n'
+    '  in the same step, not in a step of its own.')
+
+
 def print_todos(produced, out):
     """List every hole the generated files leave, by file and by name.
 
@@ -83,6 +92,7 @@ def print_todos(produced, out):
         print('  stands there, indentation included. Copy one as the old_string of an')
         print('  Edit; do not rewrite the file and do not read it back to find the')
         print('  surrounding text.')
+        print(BATCH_NOTE.format(total=total))
 
 
 class Interface:
@@ -527,6 +537,9 @@ def write(path, text, force):
     if os.path.exists(path) and not force:
         print('kept   {}'.format(path))
         return text
+    folder = os.path.dirname(path)
+    if folder:
+        os.makedirs(folder, exist_ok=True)
     with open(path, 'w', encoding='utf-8') as handle:
         handle.write(text)
     print('wrote  {}'.format(path))
@@ -603,9 +616,16 @@ def print_contract(iface, document):
               .format(to_snake(name), iface.signature(params), to_snake(name)))
     for name, kind in iface.attributes:
         spelled = to_snake(name)
+        cpp = iface.cpp_type(kind)[0]
+        read = iface.passed_as(kind)
         print('  provider calls set_{}({}); consumer subscribes with '
               'notify_on_{}_update(true)'
               .format(spelled, iface.attribute_setter(kind, False), spelled))
+        # The last value is readable at any time, on both sides, and the two
+        # readers do not have the same signature. Reading the generated header to
+        # find that out is what this line replaces.
+        print('  provider reads {t} & {n}(); consumer reads {r} {n}(areg::DataState & '
+              'state)'.format(t=cpp, r=read, n=spelled))
     print_types(iface)
     return 0
 
@@ -822,6 +842,20 @@ def consumer_class(iface, cls):
                   '(master_thread()),'.format(STEP_INTERVAL_MS),
                   '                                  areg::TimerBase::CONTINUOUSLY);']
     lines += ['            }',
+              '            else if ((status == areg::ServiceConnectionState::Rejected) ||',
+              '                     (status == areg::ServiceConnectionState::Shutdown))',
+              '            {',
+              '                // Terminal states. Disconnected and ConnectionLost are',
+              '                // transient and the framework reconnects, so they are',
+              '                // left alone.',
+              marker('connection_lost',
+                     'what a provider that will not come back means here', 16),
+              '                std::cerr << "service is " << areg::as_string(status)',
+              '                          << ", giving up" << std::endl;']
+    if stepped:
+        lines.append('                mStep.stop_timer();')
+    lines += ['                quit_with(1);',
+              '            }',
               '        }',
               '',
               '        return result;',
@@ -925,11 +959,33 @@ EXIT_MAIN = ['int main()',
              '}',
              '']
 
+# The console quit path, asked of nearly every task. End of input is not a quit
+# request: a process started without a console is handed a stream nothing is ever
+# written to, so the loop blocks there and the service keeps running.
+CONSOLE_INCLUDES = ['#include <iostream>', '#include <string>']
+
 MAIN_BODY = ['int main()',
              '{',
              '    areg::Application::setup();',
              '    areg::Application::load_model(_modelName);',
-             '    areg::Application::wait_quit(areg::WAIT_INFINITE);',
+             '',
+             '    // Quits on "-q" or "--quit" from the console. Any other input is',
+             '    // ignored, and end of input keeps the service running.',
+             '    bool quitRequested{ false };',
+             '    std::string line;',
+             '    while (std::getline(std::cin, line))',
+             '    {',
+             '        if ((line == "-q") || (line == "--quit"))',
+             '        {',
+             '            quitRequested = true;',
+             '            break;',
+             '        }',
+             '    }',
+             '    if (quitRequested == false)',
+             '    {',
+             '        areg::Application::wait_quit(areg::WAIT_INFINITE);',
+             '    }',
+             '',
              '    areg::Application::unload_model(_modelName);',
              '    areg::Application::release();',
              '    return 0;',
@@ -1075,6 +1131,18 @@ MAIN_INCLUDES = ['#include "areg/base/areg_global.h"',
                  '#include "areg/component/ComponentLoader.hpp"']
 
 
+# The task of a two-process application asks for the two programs in separate
+# folders, each with its own main(). One process keeps a flat folder: there is
+# nothing to separate it from.
+PROVIDER_DIR = {'ipc': 'provider/', 'local': ''}
+CONSUMER_DIR = {'ipc': 'consumer/', 'local': ''}
+
+# What the scaffold's CMakeLists.txt names, and what it becomes once the
+# application is written into its folders.
+SCAFFOLD_MAINS = {'provider.cpp': 'provider/main.cpp',
+                  'consumer.cpp': 'consumer/main.cpp'}
+
+
 def app_files(iface, mode, include_root, machine=None):
     """The whole application: one .hpp and .cpp per component, and the model with main().
 
@@ -1089,14 +1157,14 @@ def app_files(iface, mode, include_root, machine=None):
                           '#include "{}/{}FSM.hpp"'.format(include_root, machine.name)]
     consumer_base = ['#include "{}/{}ConsumerBase.hpp"'.format(include_root, iface.name)]
 
-    produced = component_files(
+    produced = [(PROVIDER_DIR[mode] + name, text) for name, text in component_files(
         provider_cls, 'Provider of the {} service.'.format(iface.name),
         class_includes(iface, machine) + [''] + provider_base,
-        provider_class(iface, provider_cls, machine), 'provider_state')
-    produced += component_files(
+        provider_class(iface, provider_cls, machine), 'provider_state')]
+    produced += [(CONSUMER_DIR[mode] + name, text) for name, text in component_files(
         consumer_cls, 'Consumer of the {} service.'.format(iface.name),
         class_includes(iface) + TIMER_INCLUDES * steps_scenario(iface) + [''] + consumer_base,
-        consumer_class(iface, consumer_cls), 'consumer_state', QUIT_DECLARATION)
+        consumer_class(iface, consumer_cls), 'consumer_state', QUIT_DECLARATION)]
 
     def head(file_name, brief):
         return ['/**',
@@ -1128,8 +1196,9 @@ def app_files(iface, mode, include_root, machine=None):
         lines += EXIT_MAIN
         return produced + [('main.cpp', '\n'.join(lines))]
 
-    provider = head('provider.cpp', 'The process that provides the {} service.'
-                    .format(iface.name))
+    provider = head(PROVIDER_DIR[mode] + 'main.cpp',
+                    'The process that provides the {} service.'.format(iface.name))
+    provider += CONSOLE_INCLUDES + ['']
     provider += ['#include "{}.hpp"'.format(provider_cls), '']
     provider += ['constexpr char const _modelName[]{ "ProviderModel" };',
                  '',
@@ -1138,8 +1207,8 @@ def app_files(iface, mode, include_root, machine=None):
     provider += ['END_MODEL(_modelName)', '']
     provider += MAIN_BODY
 
-    consumer = head('consumer.cpp', 'The process that consumes the {} service.'
-                    .format(iface.name))
+    consumer = head(CONSUMER_DIR[mode] + 'main.cpp',
+                    'The process that consumes the {} service.'.format(iface.name))
     consumer += ['#include "{}.hpp"'.format(consumer_cls), '']
     consumer += EXIT_CODE
     consumer += ['constexpr char const _modelName[]{ "ConsumerModel" };',
@@ -1156,18 +1225,56 @@ def app_files(iface, mode, include_root, machine=None):
                  'END_MODEL(_modelName)',
                  '']
     consumer += EXIT_MAIN
-    return produced + [('provider.cpp', '\n'.join(provider)),
-                       ('consumer.cpp', '\n'.join(consumer))]
+    return produced + [(PROVIDER_DIR[mode] + 'main.cpp', '\n'.join(provider)),
+                       (CONSUMER_DIR[mode] + 'main.cpp', '\n'.join(consumer))]
+
+
+# A generated main() of the scaffold includes one of these and registers a model.
+SCAFFOLD_BASE = re.compile(r'\w+(?:Provider|Consumer)Base\.hpp')
+
+
+def drop_scaffold(out, produced, mode):
+    """Remove the placeholder sources the application has replaced.
+
+    A scaffold main() is removed only when the application wrote the file that
+    takes its place and the placeholder names another service. A file of the
+    caller's own is never touched.
+    """
+    written = set(name.replace('\\', '/') for name, _ in produced)
+    classes = set(os.path.basename(name)[:-4] for name in written if name.endswith('.hpp'))
+    dropped = []
+    for old, new in SCAFFOLD_MAINS.items():
+        if mode != 'ipc' or new not in written:
+            continue
+        path = os.path.join(out, old)
+        if not os.path.isfile(path):
+            continue
+        with open(path, encoding='utf-8', errors='ignore') as handle:
+            text = handle.read()
+        # It is the scaffold's only if it holds a model of the generated shape and
+        # names no component this call has just written. Anything else is the
+        # caller's file and is left where it is.
+        if 'BEGIN_MODEL' not in text or not SCAFFOLD_BASE.search(text):
+            continue
+        if any(name in text for name in classes):
+            continue
+        os.remove(path)
+        dropped.append(os.path.join(out, old).replace('\\', '/'))
+    for path in dropped:
+        print('removed {} -- the placeholder the application replaced'.format(path))
+    return dropped
 
 
 def app_sources(produced, mode):
     """Which executable compiles which generated file, keyed by its main file."""
-    components = [name for name, _ in produced if name.endswith('.cpp')
-                  and name not in ('main.cpp', 'provider.cpp', 'consumer.cpp')]
+    components = [name for name, _ in produced
+                  if name.endswith('.cpp') and not name.endswith('main.cpp')]
     if mode == 'local':
         return {'main.cpp': components}
-    return {'provider.cpp': [n for n in components if n.endswith('Provider.cpp')],
-            'consumer.cpp': [n for n in components if n.endswith('Consumer.cpp')]}
+    return {PROVIDER_DIR[mode] + 'main.cpp':
+            [n for n in components if n.endswith('Provider.cpp')],
+            CONSUMER_DIR[mode] + 'main.cpp':
+            [n for n in components if n.endswith('Consumer.cpp')]}
 
 
 EXECUTABLE = re.compile(r'^(\s*macro_declare_executable\(\s*)([^\s)]+)\s+([^\s)]+)([^)]*)(\).*)$')
@@ -1216,6 +1323,22 @@ def update_cmake(path, sources=None, documents=None, prune=None):
             insert_at += 1
             present.add(doc)
             changed.append('added ' + line)
+    # The scaffold declares its executables against a flat provider.cpp and
+    # consumer.cpp. The application is written into a folder per process, so the
+    # name in the line is replaced before the extra sources are matched against it.
+    for index, line in enumerate(lines):
+        found = EXECUTABLE.match(line)
+        if not found:
+            continue
+        listed = found.group(4).split()
+        renamed = [SCAFFOLD_MAINS.get(name, name) if SCAFFOLD_MAINS.get(name) in
+                   (sources or {}) else name for name in listed]
+        if renamed != listed:
+            lines[index] = '{}{} {} {}{}'.format(found.group(1), found.group(2),
+                                                 found.group(3), ' '.join(renamed),
+                                                 found.group(5))
+            changed.append('{} now compiles {}'.format(found.group(2),
+                                                       ' '.join(renamed)))
     for main_file, extra in (sources or {}).items():
         for index, line in enumerate(lines):
             found = EXECUTABLE.match(line)
@@ -1239,6 +1362,14 @@ def update_cmake(path, sources=None, documents=None, prune=None):
 # It is a regular expression that matches nothing, so a scenario left unfilled fails
 # and says which line is missing rather than passing on no evidence at all.
 SCENARIO_TODO = 'TODO(you): a line this process prints that proves one requirement'
+
+# The scenario that proves the generated console quit loop. It expects no output, so
+# it holds no hole and passes as written.
+QUIT_SCENARIO = 'quit'
+
+
+def proc_label(spec):
+    return spec.get('name') or spec['binary']
 
 
 def update_scenarios(path, mode, iface):
@@ -1277,6 +1408,23 @@ def update_scenarios(path, mode, iface):
     # raised to cover the whole sequence.
     scenarios[0]['timeout'] = max(int(scenarios[0].get('timeout', 60)),
                                   60 + len(iface.requests) * STEP_INTERVAL_MS // 1000)
+
+    # The provider's main() carries the console quit loop, so the scenario that
+    # proves it is written here too. "stdin" is fed the moment the process starts,
+    # which is why the provider leads a scenario of its own.
+    quit_written = False
+    if mode == 'ipc' and not any(s.get('name') == QUIT_SCENARIO for s in scenarios):
+        lead = procs[0]
+        scenarios.append({'name': QUIT_SCENARIO,
+                          'timeout': 30,
+                          'router': scenarios[0].get('router', True),
+                          'procs': [{'binary': lead['binary'],
+                                     'name': proc_label(lead),
+                                     'lead': True,
+                                     'stdin': ['-q'],
+                                     'exit': 0}]})
+        quit_written = True
+
     with open(path, 'w', encoding='utf-8') as handle:
         json.dump(document, handle, indent=2)
         handle.write('\n')
@@ -1288,22 +1436,29 @@ def update_scenarios(path, mode, iface):
     print('  on the lead of a scenario of its own; on any other process it quits that')
     print('  process before its peers are served. A scenario-level')
     print('  "stop": {"proc": "<name>", "after": "<regex>"} takes a peer away.')
+    if quit_written:
+        print('  A "{}" scenario was added: the provider alone, fed "-q", exit 0. It'
+              .format(QUIT_SCENARIO))
+        print('  proves the console quit path the generated main() already carries,')
+        print('  and it needs nothing from you.')
 
 
 APP_NOTE = (
     '  These files compile and run as written. Every place a rule of your own\n'
     '  belongs is one TODO(you) line above; the model, main() and every\n'
-    '  subscription are already correct and need no page. Build, run, then Edit\n'
-    '  each marker line in place. Rewriting a whole file is never needed.')
+    '  subscription are already correct and need no page. Edit each marker line\n'
+    '  in place, several Edits to a step. Rewriting a whole file is never needed.')
 
 
 def report_todos(out, mode):
     """Every marker still left in the application's sources, with its line."""
-    names = sorted(name for name in os.listdir(out) if name.endswith(('.hpp', '.cpp'))) \
-        if os.path.isdir(out) else []
+    names = []
+    for folder, dirs, files in os.walk(out) if os.path.isdir(out) else []:
+        dirs[:] = [d for d in dirs if d not in ('services', 'build')]
+        names += [os.path.join(folder, name) for name in files
+                  if name.endswith(('.hpp', '.cpp'))]
     total = 0
-    for file_name in names:
-        path = os.path.join(out, file_name)
+    for path in sorted(names):
         if not os.path.exists(path):
             continue
         with open(path, encoding='utf-8') as handle:
@@ -1314,6 +1469,8 @@ def report_todos(out, mode):
                     total += 1
     if total == 0:
         print('no TODO(you) marker is left in {}'.format(out))
+    else:
+        print(BATCH_NOTE.format(total=total))
     return 0
 
 
@@ -1337,7 +1494,8 @@ def main():
                              'needs no separate host component')
     parser.add_argument('--mode', choices=['ipc', 'local'], default='ipc',
                         help='with --app: every component gets its own .hpp and .cpp; '
-                             'ipc adds provider.cpp and consumer.cpp, local one '
+                             'ipc gives each process a folder with its own '
+                             'main.cpp, local one '
                              'main.cpp, each holding the model and main(). Match '
                              'setup_project.py')
     parser.add_argument('--scenarios', default='scenarios.json',
@@ -1397,6 +1555,7 @@ def main():
         produced = app_files(iface, args.mode, include_root, machine)
         for file_name, text in produced:
             write(os.path.join(args.out, file_name), text, args.force)
+        drop_scaffold(args.out, produced, args.mode)
         documents = [('addServiceInterface', os.path.relpath(args.doc).replace('\\', '/'))]
         if args.machine:
             documents.append(('addStateMachine',

@@ -64,13 +64,9 @@ Take these in order. Each one costs less than the one after it.
 ## A working example is the cheapest reference
 
 Where the clone carries `../../examples/`, running one with the shape you are writing
-proves the environment is sound before you blame your own code, and the tiers save
-deriving which need `mtrouter`. Which example shows what: `41-examples.md`.
-
-```bash
-python3 <areg-sdk>/tools/run-all-examples.py --tier smoke   # no router needed
-python3 <areg-sdk>/tools/run-all-examples.py --tier ipc     # these need mtrouter
-```
+proves the environment is sound before you blame your own code:
+`run-all-examples.py --tier smoke` needs no router, `--tier ipc` needs `mtrouter`.
+Which example shows what: `41-examples.md`.
 
 Every command here has a Windows form: `python` for `python3`, `.exe` for `.elf`.
 
@@ -187,6 +183,7 @@ The consumer treats a transient state as fatal. `Disconnected`, `ConnectionLost`
 | A broadcast fired once, before the subscription reached the provider | `notify_on_broadcast_<name>(true)` only **queues** the request; a broadcast sent before it arrives is gone, and the consumer waits for the next that never comes. State a consumer must not miss is an attribute: `05-design.md` |
 | The value looks wrong on the first callback | The first notification can report the value as not valid. Check `areg::DataState` before using it |
 | Resubscription after a reconnect | `service_connected` runs again; subscribe there, not once at construction |
+| The line is missing and the process exited 0 | The consumer quit before the message arrived. Queued events are still delivered; one still crossing the router is not. Quit from the handler of the **last** message the step needs: `20-service-interface.md` |
 
 ---
 

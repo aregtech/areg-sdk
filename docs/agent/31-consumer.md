@@ -4,6 +4,10 @@ A consumer is your class inheriting `areg::Component` and the generated
 `<Name>ConsumerBase`. It calls requests and handles what comes back.
 
 Complete, working consumer for the `HelloService` document in `20-service-interface.md`:
+> `gen_skeleton.py --app` writes this class already, split the way the project is
+> laid out: the declaration in `<Class>.hpp` and the bodies in `<Class>.cpp`, both in
+> the process's own folder. The one block below is for reading, not for copying.
+
 
 ```cpp
 #include <iostream>

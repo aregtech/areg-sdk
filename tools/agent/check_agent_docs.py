@@ -75,7 +75,7 @@ CONSISTENT = [
      ['AGENTS.md', 'docs/agent/00-cheatsheet.md', 'docs/agent/31-consumer.md']),
     ('the role name rule is stated exactly',
      ['character for character'],
-     ['AGENTS.md', 'docs/agent/00-cheatsheet.md']),
+     ['AGENTS.md', 'docs/agent/32-model.md']),
 ]
 
 

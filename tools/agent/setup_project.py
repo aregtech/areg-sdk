@@ -313,7 +313,8 @@ macOS and `.exe` on Windows.
 ```
 src/services/         the documents; the generator reads them at configure time
 src/<Name>.hpp/.cpp   one component each, named after its class
-src/provider.cpp      the model and main() of a process (main.cpp with one process)
+src/provider/main.cpp the model and main() of a process; two processes get a folder
+                      each (provider/, consumer/), one process keeps src/ flat
 CMakeLists.txt        finds or fetches the AREG SDK
 src/CMakeLists.txt    names the documents and each executable's sources
 ```
@@ -324,7 +325,7 @@ src/CMakeLists.txt    names the documents and each executable's sources
 
 | I need to ... | Read |
 |---|---|
-| **Anything ordinary** | `docs/agent/00-cheatsheet.md` - one page, most tasks end here |
+| **Anything ordinary** | `docs/agent/00-cheatsheet.md` - what the tools do not write |
 | Decide what the services are | `docs/agent/05-design.md`, before writing any file |
 | Change the service contract | `docs/agent/20-service-interface.md` |
 | Declare a structure, enum or container | `docs/agent/21-data-types.md` |
@@ -350,7 +351,7 @@ finish the task:
 ```bash
 python3 {sdk}/tools/agent/gen_docs.py --example > design.json
 python3 {sdk}/tools/agent/build_project.py --spec design.json
-python3 {sdk}/tools/agent/run_scenarios.py
+python3 {sdk}/tools/agent/build_project.py --run        # rebuild, then the scenarios
 ```
 
 **`build_project.py` is the build command of this project, first time and every
@@ -369,8 +370,10 @@ The application it writes is the whole of `src/` -- the components, every
 subscription, the model, `main()` and its exit code -- and it compiles and runs as
 generated. Every place your own rule belongs is one `TODO(you) <name>:` line; the
 command prints all of them, and each is unique in its file, so **fill one in with a
-single `Edit` of that line and never rewrite the file**. With a state machine in the
-spec the provider owns it, so there is no host component to merge by hand.
+single `Edit` of that line and never rewrite the file**. The markers do not depend on
+each other: **send the Edits in as few steps as possible, several to a step**, because
+a step is billed for the whole conversation again. With a state machine in the spec
+the provider owns it, so there is no host component to merge by hand.
 
 `gen_docs.py --example` prints a spec to copy: `design.json` describes every
 `.dtml`, `.siml` and `.fsml` of the project, so no XML, no `ID` and no `To` is
@@ -402,25 +405,25 @@ generated code under `build/` it does not read.
 
 ## Done means
 
-The build succeeds, the contract check is clean and the scenario passes. Both are
-inside `build_project.py`, so this is two commands:
+The build succeeds, the contract check is clean and the scenarios pass. All of it is
+inside one command:
 
 ```bash
-python3 {sdk}/tools/agent/build_project.py --spec design.json
-python3 {sdk}/tools/agent/run_scenarios.py
+python3 {sdk}/tools/agent/build_project.py --run
 ```
 
-`run_scenarios.py` starts the application, checks the output and the exit code, and
-returns 0 only when everything matched. It prints the line each expectation matched,
-so one run is the evidence. Edit `scenarios.json` when the expected output changes.
+It rebuilds whatever changed and then runs the scenarios, so a source edit can never
+be tested against the previous binary. It returns 0 only when everything matched, and
+prints the line each expectation matched, so one run is the evidence. Edit
+`scenarios.json` when the expected output changes.
 
-**Every acceptance item belongs in `scenarios.json`,** including the two that look
-like they need a terminal: a console quit path is `"stdin": ["-q"]` on that process
-leading a scenario of its own,
-and the peer going away is a scenario-level `"stop"`. `gen_skeleton.py --app` writes
-the file and prints both keys, so replacing each `TODO(you)` expectation with the
-line that proves a requirement is all that is left. Never start the processes by
-hand with `&`, `sleep`, `pkill` or `ps`.
+**Every acceptance item belongs in `scenarios.json`.** The peer going away is a
+scenario-level `"stop"`. The console quit path is already there: `--app` writes both
+the loop in the provider's `main()` and the `quit` scenario that proves it, and that
+scenario needs nothing from you. `gen_skeleton.py --app` wrote the file and printed
+every key, so replacing each `TODO(you)` expectation with the line that proves a
+requirement is all that is left. Never start the processes by hand with `&`, `sleep`,
+`pkill` or `ps`.
 """.format(name=name, run=run, run_win=run_win, where=where, sdk=sdk, never=never)
 
     with open(os.path.join(root, 'AGENTS.md'), 'w', encoding='utf-8') as handle:
