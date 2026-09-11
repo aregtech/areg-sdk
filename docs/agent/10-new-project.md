@@ -41,12 +41,14 @@ by hand or an existing one has to be changed.
     CMakeLists.txt          declares the service interface and the executables
     services/
       HelloService.siml     the service contract
-    provider.cpp            the providing component and its model
-    consumer.cpp            the consuming component and its model
+    HelloProvider.hpp/.cpp  the providing component
+    HelloConsumer.hpp/.cpp  the consuming component
+    provider.cpp            the providing process: its model and main()
+    consumer.cpp            the consuming process: its model and main()
 ```
 
-For a single process application, use one `main.cpp` instead of `provider.cpp` and
-`consumer.cpp`, holding both components and one model.
+A single process application has one `main.cpp`, with one model, in place of
+`provider.cpp` and `consumer.cpp`; the components keep their own files.
 
 ---
 

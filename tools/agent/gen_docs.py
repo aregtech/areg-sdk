@@ -876,6 +876,9 @@ def main():
     parser.add_argument('--example', action='store_true',
                         help='print a whole spec to copy, and write nothing')
     parser.add_argument('--force', action='store_true', help='overwrite existing documents')
+    parser.add_argument('--chained', action='store_true',
+                        help='run by build_project.py, which does the next steps itself: '
+                             'do not print them')
     args = parser.parse_args()
 
     if args.example:
@@ -909,8 +912,11 @@ def main():
         with open(os.path.join(args.outdir, name), 'w', encoding='utf-8') as handle:
             handle.write(text)
         print('wrote {}'.format(os.path.join(args.outdir, name)))
-    print('  {} document(s). Generate the code with codegen.jar, then the application '
-          'with gen_skeleton.py --app.'.format(len(documents)))
+    if args.chained:
+        print('  {} document(s).'.format(len(documents)))
+    else:
+        print('  {} document(s). Generate the code with codegen.jar, then the application '
+              'with gen_skeleton.py --app.'.format(len(documents)))
     return 0
 
 

@@ -49,8 +49,8 @@ A trigger returns `bool`: `true` when a transition was taken, `false` when the c
 state has no transition for it. A trigger the current state ignores is not an error.
 
 **A machine's name becomes a C++ namespace**, so no class of yours may carry it. The
-generated application names its component `ServiceProvider` and never collides; a class
-you add by hand must not be named after either document.
+generated application names its components after the service (`GateServiceProvider`)
+and refuses a machine of that name; a class you add must not be named after a document.
 
 ## Wiring it into a component
 

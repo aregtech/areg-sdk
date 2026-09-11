@@ -27,6 +27,9 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 PYTHON = sys.executable or 'python3'
 
+sys.path.insert(0, HERE)
+import gen_skeleton  # noqa: E402
+
 # What to do when a step fails. Naming the step is the whole point of a chain:
 # a failure that does not say where it happened costs more than the requests saved.
 ADVICE = {
@@ -111,25 +114,26 @@ def mode_of(root, given):
         return 'ipc'
 
 
-def app_matches(root, mode, document):
-    """True when src/ already holds the application of this document.
+def app_present(root, document):
+    """How much of the application of this document src/ already holds: 0, 1 or 2.
 
-    A scaffolded project starts with the recipe's own sources, which name a
-    different service. Those are written over; an application already generated
-    from this document is kept, because its TODO(you) markers have been filled in.
+    Counted by the generated base headers the sources include, wherever they are
+    and whatever they are called, so a project that renamed or split its files is
+    still recognised. A scaffold's sources name another service and count 0.
     """
-    names = ['main.cpp'] if mode == 'local' else ['provider.cpp', 'consumer.cpp']
     stem = os.path.basename(document).rsplit('.', 1)[0]
-    wanted = ('{}ProviderBase.hpp'.format(stem), '{}ConsumerBase.hpp'.format(stem))
-    for name in names:
-        path = os.path.join(root, 'src', name)
-        if not os.path.exists(path):
-            return False
-        with open(path, encoding='utf-8', errors='ignore') as handle:
-            text = handle.read()
-        if not any(header in text for header in wanted):
-            return False
-    return True
+    wanted = {'{}ProviderBase.hpp'.format(stem), '{}ConsumerBase.hpp'.format(stem)}
+    found = set()
+    source_root = os.path.join(root, 'src')
+    for folder, dirs, files in os.walk(source_root):
+        dirs[:] = [d for d in dirs if d not in ('services', 'build')]
+        for name in files:
+            if not name.endswith(('.cpp', '.hpp', '.h', '.cc', '.cxx')):
+                continue
+            with open(os.path.join(folder, name), encoding='utf-8', errors='ignore') as handle:
+                text = handle.read()
+            found |= set(header for header in wanted if header in text)
+    return len(found)
 
 
 def main():
@@ -162,7 +166,7 @@ def main():
 
     if args.spec:
         command = [PYTHON, os.path.join(HERE, 'gen_docs.py'), '--outdir', args.outdir,
-                   '--force']
+                   '--force', '--chained']
         for spec in args.spec:
             command += ['--spec', spec]
         if not run('documents', command, root, kept=len(args.spec) * 8 + 8):
@@ -180,13 +184,32 @@ def main():
     if document is None:
         fail('no .siml document: pass --spec, or --doc')
 
-    if args.regenerate or not app_matches(root, mode, document):
+    # The documents the spec describes are the ones the project builds, so the CMake
+    # lines follow the spec: a new document gains its line and a dropped one loses it.
+    if args.spec:
+        interfaces, machines = documents_of(args.spec, args.outdir)
+        wanted = [('addServiceInterface', path) for path in interfaces] + \
+                 [('addStateMachine', path) for path in machines]
+        changed = gen_skeleton.update_cmake(
+            os.path.join(root, 'src', 'CMakeLists.txt'),
+            documents=[(fn, os.path.normpath(p).replace('\\', '/')) for fn, p in wanted],
+            prune=os.path.normpath(args.outdir).replace('\\', '/'))
+        for change in changed or []:
+            print('   src/CMakeLists.txt: {}'.format(change))
+
+    present = app_present(root, document)
+    if args.regenerate or present == 0:
         command = [PYTHON, os.path.join(HERE, 'gen_skeleton.py'), '--doc', document,
                    '--app', '--mode', mode, '--force']
         if machine:
             command += ['--machine', machine]
         if not run('application', command, root, kept=200):
             return 1
+    elif present == 1:
+        print('== application: src/ holds only part of the application of {}, so it is '
+              'kept as it is.'.format(os.path.basename(document)))
+        print('   --regenerate writes the whole application again and discards what is '
+              'in it.')
     else:
         print('== application: kept src/ as it is. --regenerate writes it again.')
 

@@ -657,15 +657,6 @@ def default_expr(iface, type_name):
 TIMER_INCLUDES = ['#include "areg/component/Timer.hpp"',
                   '#include "areg/component/TimerConsumer.hpp"']
 
-APP_INCLUDES = ['#include <iostream>',
-                '',
-                '#include "areg/base/areg_global.h"',
-                '#include "areg/appbase/Application.hpp"',
-                '#include "areg/component/Component.hpp"',
-                '#include "areg/component/ComponentLoader.hpp"',
-                '#include "areg/component/ComponentThread.hpp"']
-
-
 def provider_class(iface, cls, machine=None):
     """The provider component, with every request answered.
 
@@ -945,17 +936,24 @@ MAIN_BODY = ['int main()',
              '}',
              '']
 
-PROVIDER_ROLE = 'ServiceProvider'
-CONSUMER_ROLE = 'ServiceConsumer'
+def provider_name(iface):
+    """The provider component: named after the service, like its generated base."""
+    return iface.name + 'Provider'
+
+
+def consumer_name(iface):
+    """The consumer component: named after the service, like its generated base."""
+    return iface.name + 'Consumer'
 
 
 def provider_registration(iface, indent):
     pad = ' ' * indent
+    cls = provider_name(iface)
     return [pad + 'BEGIN_REGISTER_THREAD("ProviderThread")',
-            pad + '    BEGIN_REGISTER_COMPONENT("{}", {})'.format(PROVIDER_ROLE, PROVIDER_ROLE),
+            pad + '    BEGIN_REGISTER_COMPONENT("{}", {})'.format(cls, cls),
             pad + '        REGISTER_IMPLEMENT_SERVICE({}::ServiceName, {}::InterfaceVersion)'
             .format(iface.name, iface.name),
-            pad + '    END_REGISTER_COMPONENT("{}")'.format(PROVIDER_ROLE),
+            pad + '    END_REGISTER_COMPONENT("{}")'.format(cls),
             pad + 'END_REGISTER_THREAD("ProviderThread")']
 
 
@@ -978,30 +976,141 @@ def class_includes(iface, machine=None):
     return ['#include "{}"'.format(h) for h in sorted(wanted)]
 
 
+INIT_LINE = re.compile(r'^ {8}[:,] ')
+CALLED = re.compile(r'^(.*?)\b([A-Za-z_]\w*)\s*\((.*)$')
+
+
+def split_class(cls, lines):
+    """An inline class, as a declaration and its out-of-line definitions.
+
+    Every member function whose body opens on its own line moves to the source,
+    qualified with the class name; an inline one stays in the header.
+    """
+    header, source = [], []
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        opens = index + 1
+        while opens < len(lines) and INIT_LINE.match(lines[opens]):
+            opens += 1
+        text = line.strip()
+        is_function = (line.startswith('    ') and not line.startswith('     ')
+                       and '(' in text and not text.endswith(';')
+                       and not text.startswith('//') and not text.startswith('inline ')
+                       and opens < len(lines)
+                       and lines[opens].rstrip() in ('    {', '    { }'))
+        if not is_function:
+            if text in ('protected:', 'private:') and header and header[-1].strip():
+                header.append('')
+            header.append(line)
+            index += 1
+            continue
+        header.append('    {};'.format(text))
+        if text.endswith(' final'):
+            text = text[:-len(' final')]
+        called = CALLED.match(text)
+        source.append('{}{}::{}({}'.format(called.group(1), cls, called.group(2),
+                                             called.group(3)))
+        source += [init[4:] for init in lines[index + 1:opens]]
+        if lines[opens].rstrip() == '    { }':
+            source += ['{', '}', '']
+            index = opens + 1
+        else:
+            source.append('{')
+            index = opens + 1
+            while lines[index].rstrip() != '    }':
+                body = lines[index]
+                source.append(body[4:] if body.startswith('    ') else body)
+                index += 1
+            source += ['}', '']
+            index += 1
+        if index < len(lines) and not lines[index].strip():
+            index += 1
+    return header, source
+
+
+def component_files(cls, brief, includes, class_lines, state_slot, prelude=()):
+    """The .hpp and the .cpp of one component, named after its class."""
+    declaration, definitions = split_class(cls, class_lines)
+    private = declaration.index('private:')
+    declaration.insert(private + 1, marker(state_slot, 'the members your rules need', 4))
+    guard = cls.upper() + '_HPP'
+    header = ['/**',
+              ' * \\file    {}.hpp'.format(cls),
+              ' * \\brief   {}'.format(brief),
+              ' **/',
+              '#ifndef {}'.format(guard),
+              '#define {}'.format(guard),
+              '',
+              '#include "areg/base/areg_global.h"',
+              '#include "areg/component/Component.hpp"',
+              '#include "areg/component/ComponentThread.hpp"']
+    header += includes + ['']
+    header += list(prelude)
+    header += declaration + ['', '#endif // {}'.format(guard), '']
+    source = ['/**',
+              ' * \\file    {}.cpp'.format(cls),
+              ' * \\brief   {}'.format(brief),
+              ' **/',
+              '#include "{}.hpp"'.format(cls),
+              '',
+              '#include <iostream>',
+              '',
+              '#include "areg/appbase/Application.hpp"',
+              '']
+    source += definitions
+    return [(cls + '.hpp', '\n'.join(header)), (cls + '.cpp', '\n'.join(source))]
+
+
+# The consumer ends the application through this; main() defines it, next to the
+# storage it writes.
+QUIT_DECLARATION = ['//! Ends the application with this exit code, in storage that outlives',
+                    '//! the components. Defined next to main().',
+                    'void quit_with(int code);',
+                    '']
+
+MAIN_INCLUDES = ['#include "areg/base/areg_global.h"',
+                 '#include "areg/appbase/Application.hpp"',
+                 '#include "areg/base/String.hpp"',
+                 '#include "areg/component/ComponentLoader.hpp"']
+
+
 def app_files(iface, mode, include_root, machine=None):
-    """The whole application: the components, the model and main().
+    """The whole application: one .hpp and .cpp per component, and the model with main().
 
     Returns a list of (file name, text). The result compiles and runs as written;
     every place a rule belongs is marked TODO(you).
     """
-    provider_base = '#include "{}/{}ProviderBase.hpp"'.format(include_root, iface.name)
-    consumer_base = '#include "{}/{}ConsumerBase.hpp"'.format(include_root, iface.name)
+    provider_cls = provider_name(iface)
+    consumer_cls = consumer_name(iface)
+    provider_base = ['#include "{}/{}ProviderBase.hpp"'.format(include_root, iface.name)]
     if machine:
-        provider_base += '\n#include "{}/{}ActionHandler.hpp"'.format(include_root, machine.name)
-        provider_base += '\n#include "{}/{}FSM.hpp"'.format(include_root, machine.name)
-    head = ['/**', ' * \\file    {}', ' * \\brief   {}', ' **/']
+        provider_base += ['#include "{}/{}ActionHandler.hpp"'.format(include_root, machine.name),
+                          '#include "{}/{}FSM.hpp"'.format(include_root, machine.name)]
+    consumer_base = ['#include "{}/{}ConsumerBase.hpp"'.format(include_root, iface.name)]
+
+    produced = component_files(
+        provider_cls, 'Provider of the {} service.'.format(iface.name),
+        class_includes(iface, machine) + [''] + provider_base,
+        provider_class(iface, provider_cls, machine), 'provider_state')
+    produced += component_files(
+        consumer_cls, 'Consumer of the {} service.'.format(iface.name),
+        class_includes(iface) + TIMER_INCLUDES * steps_scenario(iface) + [''] + consumer_base,
+        consumer_class(iface, consumer_cls), 'consumer_state', QUIT_DECLARATION)
+
+    def head(file_name, brief):
+        return ['/**',
+                ' * \\file    {}'.format(file_name),
+                ' * \\brief   {} The model and main(); the components are in their own files.'
+                .format(brief),
+                ' **/'] + MAIN_INCLUDES + ['']
 
     if mode == 'local':
-        lines = [l.format('main.cpp') if '{}' in l and 'file' in l else
-                 l.format('Provider and consumer of the {} service, in two threads of '
-                          'one process.'.format(iface.name)) if '{}' in l else l
-                 for l in head]
-        lines += APP_INCLUDES + class_includes(iface, machine) + \
-            TIMER_INCLUDES * steps_scenario(iface) + \
-            ['', provider_base, consumer_base, '']
+        lines = head('main.cpp', 'The {} service in two threads of one process.'
+                     .format(iface.name))
+        lines += ['#include "{}.hpp"'.format(provider_cls),
+                  '#include "{}.hpp"'.format(consumer_cls), '']
         lines += EXIT_CODE
-        lines += provider_class(iface, PROVIDER_ROLE, machine) + ['']
-        lines += consumer_class(iface, CONSUMER_ROLE) + ['']
         lines += ['constexpr char const _modelName[]{{ "{}Model" }};'.format(iface.name),
                   '',
                   'BEGIN_MODEL(_modelName)',
@@ -1009,22 +1118,19 @@ def app_files(iface, mode, include_root, machine=None):
         lines += provider_registration(iface, 4)
         lines += ['',
                   '    BEGIN_REGISTER_THREAD("ConsumerThread")',
-                  '        BEGIN_REGISTER_COMPONENT("{}", {})'.format(CONSUMER_ROLE, CONSUMER_ROLE),
-                  '            REGISTER_DEPENDENCY("{}")'.format(PROVIDER_ROLE),
-                  '        END_REGISTER_COMPONENT("{}")'.format(CONSUMER_ROLE),
+                  '        BEGIN_REGISTER_COMPONENT("{}", {})'.format(consumer_cls, consumer_cls),
+                  '            REGISTER_DEPENDENCY("{}")'.format(provider_cls),
+                  '        END_REGISTER_COMPONENT("{}")'.format(consumer_cls),
                   '    END_REGISTER_THREAD("ConsumerThread")',
                   '',
                   'END_MODEL(_modelName)',
                   '']
         lines += EXIT_MAIN
-        return [('main.cpp', '\n'.join(lines))]
+        return produced + [('main.cpp', '\n'.join(lines))]
 
-    provider = ['/**',
-                ' * \\file    provider.cpp',
-                ' * \\brief   The process that provides the {} service.'.format(iface.name),
-                ' **/']
-    provider += APP_INCLUDES + class_includes(iface, machine) + ['', provider_base, '']
-    provider += provider_class(iface, PROVIDER_ROLE, machine) + ['']
+    provider = head('provider.cpp', 'The process that provides the {} service.'
+                    .format(iface.name))
+    provider += ['#include "{}.hpp"'.format(provider_cls), '']
     provider += ['constexpr char const _modelName[]{ "ProviderModel" };',
                  '',
                  'BEGIN_MODEL(_modelName)']
@@ -1032,30 +1138,101 @@ def app_files(iface, mode, include_root, machine=None):
     provider += ['END_MODEL(_modelName)', '']
     provider += MAIN_BODY
 
-    consumer = ['/**',
-                ' * \\file    consumer.cpp',
-                ' * \\brief   The process that consumes the {} service.'.format(iface.name),
-                ' **/']
-    consumer += APP_INCLUDES + class_includes(iface) + TIMER_INCLUDES * steps_scenario(iface)
-    consumer += ['', consumer_base, '']
+    consumer = head('consumer.cpp', 'The process that consumes the {} service.'
+                    .format(iface.name))
+    consumer += ['#include "{}.hpp"'.format(consumer_cls), '']
     consumer += EXIT_CODE
-    consumer += consumer_class(iface, CONSUMER_ROLE) + ['']
     consumer += ['constexpr char const _modelName[]{ "ConsumerModel" };',
                  '',
                  '// A unique role name lets several consumer processes run at the same time.',
-                 'const areg::String _consumer(areg::generate_name("{}"));'.format(CONSUMER_ROLE),
+                 'const areg::String _consumer(areg::generate_name("{}"));'.format(consumer_cls),
                  '',
                  'BEGIN_MODEL(_modelName)',
                  '    BEGIN_REGISTER_THREAD("ConsumerThread")',
-                 '        BEGIN_REGISTER_COMPONENT(_consumer, {})'.format(CONSUMER_ROLE),
-                 '            REGISTER_DEPENDENCY("{}")'.format(PROVIDER_ROLE),
+                 '        BEGIN_REGISTER_COMPONENT(_consumer, {})'.format(consumer_cls),
+                 '            REGISTER_DEPENDENCY("{}")'.format(provider_cls),
                  '        END_REGISTER_COMPONENT(_consumer)',
                  '    END_REGISTER_THREAD("ConsumerThread")',
                  'END_MODEL(_modelName)',
                  '']
     consumer += EXIT_MAIN
-    return [('provider.cpp', '\n'.join(provider)),
-            ('consumer.cpp', '\n'.join(consumer))]
+    return produced + [('provider.cpp', '\n'.join(provider)),
+                       ('consumer.cpp', '\n'.join(consumer))]
+
+
+def app_sources(produced, mode):
+    """Which executable compiles which generated file, keyed by its main file."""
+    components = [name for name, _ in produced if name.endswith('.cpp')
+                  and name not in ('main.cpp', 'provider.cpp', 'consumer.cpp')]
+    if mode == 'local':
+        return {'main.cpp': components}
+    return {'provider.cpp': [n for n in components if n.endswith('Provider.cpp')],
+            'consumer.cpp': [n for n in components if n.endswith('Consumer.cpp')]}
+
+
+EXECUTABLE = re.compile(r'^(\s*macro_declare_executable\(\s*)([^\s)]+)\s+([^\s)]+)([^)]*)(\).*)$')
+DOCUMENT = re.compile(r'^\s*(addServiceInterface|addStateMachine|addDataType)\(\s*([^\s)]+)\s+([^\s)]+)\s*\)')
+
+
+def update_cmake(path, sources=None, documents=None, prune=None):
+    """Name the generated sources and the documents in src/CMakeLists.txt.
+
+    sources maps a main file to the files its executable also compiles; a source
+    already listed stays. documents is a list of (function, path relative to the
+    project root) that must each have a line. With prune, a document line under
+    that folder whose document is not in documents is removed.
+    Returns the lines changed, or None when there is no such file.
+    """
+    if not os.path.isfile(path):
+        return None
+    with open(path, encoding='utf-8') as handle:
+        lines = handle.read().splitlines()
+    changed = []
+    library = None
+    for line in lines:
+        found = DOCUMENT.match(line) or EXECUTABLE.match(line)
+        if found:
+            library = found.group(2) if DOCUMENT.match(line) else found.group(3)
+            break
+    wanted = [(fn, doc.replace('\\', '/')) for fn, doc in (documents or []) if doc]
+    if prune is not None:
+        folder = prune.replace('\\', '/').rstrip('/') + '/'
+        keep = set(doc for _, doc in wanted)
+        kept = []
+        for line in lines:
+            found = DOCUMENT.match(line)
+            if found and found.group(3).startswith(folder) and found.group(3) not in keep:
+                changed.append('removed ' + line.strip())
+                continue
+            kept.append(line)
+        lines = kept
+    present = set(found.group(3) for found in map(DOCUMENT.match, lines) if found)
+    first_exe = next((i for i, line in enumerate(lines) if EXECUTABLE.match(line)), len(lines))
+    insert_at = max([i + 1 for i, line in enumerate(lines) if DOCUMENT.match(line)] or [first_exe])
+    for function, doc in wanted:
+        if doc not in present and library:
+            line = '{}({} {})'.format(function, library, doc)
+            lines.insert(insert_at, line)
+            insert_at += 1
+            present.add(doc)
+            changed.append('added ' + line)
+    for main_file, extra in (sources or {}).items():
+        for index, line in enumerate(lines):
+            found = EXECUTABLE.match(line)
+            if not found or main_file not in found.group(4).split():
+                continue
+            listed = found.group(4).split()
+            missing = [name for name in extra if name not in listed]
+            if missing:
+                lines[index] = '{}{} {} {}{}'.format(found.group(1), found.group(2),
+                                                     found.group(3),
+                                                     ' '.join(listed + missing),
+                                                     found.group(5))
+                changed.append('listed {} in {}'.format(' '.join(missing), found.group(2)))
+    if changed:
+        with open(path, 'w', encoding='utf-8') as handle:
+            handle.write('\n'.join(lines) + '\n')
+    return changed
 
 
 # What a process is expected to print, until the rule that prints it is written.
@@ -1107,7 +1284,9 @@ def update_scenarios(path, mode, iface):
     print('  {} process(es), router {}. Replace each "expect" entry with a regular'
           .format(len(procs), 'on' if scenarios[0].get('router') else 'off'))
     print('  expression the run prints. Two more keys exist and no page is needed for')
-    print('  them: "stdin": ["-q"] on a process feeds its console, and a scenario-level')
+    print('  them. "stdin": ["-q"] is written the moment the process starts, so it goes')
+    print('  on the lead of a scenario of its own; on any other process it quits that')
+    print('  process before its peers are served. A scenario-level')
     print('  "stop": {"proc": "<name>", "after": "<regex>"} takes a peer away.')
 
 
@@ -1119,8 +1298,9 @@ APP_NOTE = (
 
 
 def report_todos(out, mode):
-    """Every marker still left in the generated application, with its line."""
-    names = ['main.cpp'] if mode == 'local' else ['provider.cpp', 'consumer.cpp']
+    """Every marker still left in the application's sources, with its line."""
+    names = sorted(name for name in os.listdir(out) if name.endswith(('.hpp', '.cpp'))) \
+        if os.path.isdir(out) else []
     total = 0
     for file_name in names:
         path = os.path.join(out, file_name)
@@ -1156,8 +1336,10 @@ def main():
                              'provider owns the machine, implements its actions and '
                              'needs no separate host component')
     parser.add_argument('--mode', choices=['ipc', 'local'], default='ipc',
-                        help='with --app: ipc writes provider.cpp and consumer.cpp, '
-                             'local writes one main.cpp. Match setup_project.py')
+                        help='with --app: every component gets its own .hpp and .cpp; '
+                             'ipc adds provider.cpp and consumer.cpp, local one '
+                             'main.cpp, each holding the model and main(). Match '
+                             'setup_project.py')
     parser.add_argument('--scenarios', default='scenarios.json',
                         help='with --app: the scenario file to point at the '
                              'generated application. Left alone when it does not '
@@ -1208,9 +1390,21 @@ def main():
                      'becomes a C++ namespace, so the two documents need different '
                      'names -- "{}" and "{}Service" is the usual pair.'
                      .format(iface.name, machine.name, machine.name))
+            if machine.name in (provider_name(iface), consumer_name(iface)):
+                fail('the machine is named "{}", which is also the name of a generated '
+                     'component. A .fsml name becomes a C++ namespace; rename the '
+                     'machine.'.format(machine.name))
         produced = app_files(iface, args.mode, include_root, machine)
         for file_name, text in produced:
             write(os.path.join(args.out, file_name), text, args.force)
+        documents = [('addServiceInterface', os.path.relpath(args.doc).replace('\\', '/'))]
+        if args.machine:
+            documents.append(('addStateMachine',
+                              os.path.relpath(args.machine).replace('\\', '/')))
+        changed = update_cmake(os.path.join(args.out, 'CMakeLists.txt'),
+                               app_sources(produced, args.mode), documents)
+        for change in changed or []:
+            print('  {}/CMakeLists.txt: {}'.format(args.out.replace('\\', '/'), change))
         update_scenarios(args.scenarios, args.mode, iface)
         print_todos(produced, args.out)
         print(APP_NOTE)

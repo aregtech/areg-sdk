@@ -133,6 +133,9 @@ def fetch_block(sdk_root, tag):
             '    FetchContent_MakeAvailable(areg)'.format(tag))
 
 
+INCLUDE_ROOT = 'include_directories("${CMAKE_CURRENT_SOURCE_DIR}")'
+
+
 def rewrite_top_cmake(path, name, sdk_root, tag):
     with open(path, encoding='utf-8') as handle:
         text = handle.read()
@@ -143,6 +146,11 @@ def rewrite_top_cmake(path, name, sdk_root, tag):
     if old not in text:
         fail('recipe CMakeLists.txt does not carry the expected FetchContent block')
     text = text.replace(old, fetch_block(sdk_root, tag))
+
+    # The project root on the include path: a header of the project is included as
+    # "src/x/Name.hpp" exactly as a generated one is, from any directory of src/.
+    if INCLUDE_ROOT not in text:
+        text = text.replace('add_subdirectory(src)', INCLUDE_ROOT + '\nadd_subdirectory(src)', 1)
 
     with open(path, 'w', encoding='utf-8') as handle:
         handle.write(text)
@@ -303,10 +311,11 @@ macOS and `.exe` on Windows.
 ## Layout
 
 ```
-src/services/*.siml   the service contract; the generator reads it at configure time
-src/*.cpp             the components and the model that registers them
+src/services/         the documents; the generator reads them at configure time
+src/<Name>.hpp/.cpp   one component each, named after its class
+src/provider.cpp      the model and main() of a process (main.cpp with one process)
 CMakeLists.txt        finds or fetches the AREG SDK
-src/CMakeLists.txt    declares the service interface and the executables
+src/CMakeLists.txt    names the documents and each executable's sources
 ```
 
 ## Where the framework documentation is
@@ -406,7 +415,8 @@ returns 0 only when everything matched. It prints the line each expectation matc
 so one run is the evidence. Edit `scenarios.json` when the expected output changes.
 
 **Every acceptance item belongs in `scenarios.json`,** including the two that look
-like they need a terminal: a console quit path is `"stdin": ["-q"]` on that process,
+like they need a terminal: a console quit path is `"stdin": ["-q"]` on that process
+leading a scenario of its own,
 and the peer going away is a scenario-level `"stop"`. `gen_skeleton.py --app` writes
 the file and prints both keys, so replacing each `TODO(you)` expectation with the
 line that proves a requirement is all that is left. Never start the processes by
@@ -482,33 +492,6 @@ def write_run_script(root, name, binaries):
     os.chmod(path, os.stat(path).st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
 
-# The files an agent edits first. Printing them here saves opening each one.
-SHOWN = (('src/CMakeLists.txt', 'declares the service interface and the executables'),
-         ('scenarios.json', 'what to run, and the output that proves it worked'),
-         ('src/provider.cpp', 'the provider process: model, then main()'),
-         ('src/consumer.cpp', 'the consumer process: model, then main()'),
-         ('src/main.cpp', 'the process: model, then main()'))
-
-
-def print_scaffold(root):
-    """Print the scaffolded files, so none of them needs to be opened to be seen."""
-    print('')
-    print('The scaffold, so you need not open it. Everything else under this root is')
-    print('either generated or named in AGENTS.md.')
-    for relative, role in SHOWN:
-        path = os.path.join(root, relative.replace('/', os.sep))
-        if not os.path.isfile(path):
-            continue
-        with open(path, encoding='utf-8') as handle:
-            body = handle.read().rstrip()
-        print('')
-        print('--- {}  ({}) ---'.format(relative, role))
-        print(body)
-    print('')
-    print('Replace the contract under src/services/ with your own, rename the two')
-    print('executables in src/CMakeLists.txt, and keep the shape of the model above.')
-
-
 def main():
     parser = argparse.ArgumentParser(
         description='Create a ready-to-build AREG project.')
@@ -538,7 +521,7 @@ def main():
                         help='write no harness startup file. Only an agent whose '
                              'harness reads AGENTS.md itself then finds the guide')
     parser.add_argument('--quiet', action='store_true',
-                        help='do not print the scaffolded files')
+                        help='do not list the harness files written')
     args = parser.parse_args()
 
     interactive = sys.stdin.isatty()
@@ -613,17 +596,13 @@ def main():
     if MODES[mode]['router']:
         write_run_script(root, name, binaries)
 
+    tools = HERE.replace('\\', '/')
     print('created {} ({} mode)'.format(root, mode))
-    print('  cd {}'.format(root))
-    print('  cmake -B build')
-    print('  cmake --build build -j$(nproc)')
-    if MODES[mode]['router']:
-        print('  ./run.sh                 # starts the router and both applications')
-    else:
-        for binary in binaries:
-            print('  ./build/bin/{}.elf     # .mac on macOS, .exe on Windows'.format(binary))
-    if not args.quiet:
-        print_scaffold(root)
+    print('  The sources under src/ are a placeholder: build_project.py replaces them with')
+    print('  the application of your own design.json, and writes src/CMakeLists.txt.')
+    print('  python3 {}/gen_docs.py --example > design.json   # a spec to copy'.format(tools))
+    print('  python3 {}/build_project.py --spec design.json'.format(tools))
+    print('  python3 {}/run_scenarios.py'.format(tools))
     return 0
 
 

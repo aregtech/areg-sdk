@@ -43,7 +43,9 @@ Process: {"binary": "myapp", "args": [], "expect": ["regex"], "exit": 0}
   reject   Regular expressions that must not match the captured output.
   stdin    Lines written to the process's standard input once it has started;
            the stream is closed after the last one. This is how a "-q" quit path
-           is exercised. WITHOUT this key the process still gets its own standard
+           is exercised, on the lead of a scenario of its own: on any other process
+           the quit is read at once and it ends before its peers are served.
+           WITHOUT this key the process still gets its own standard
            input and nothing ever writes to it or closes it, so a console loop
            waits there instead of reading end of input at once.
   exit     Required exit code. Omit or null to accept any.
@@ -188,6 +190,7 @@ def fire_stops(pending, started, text):
                  or (isinstance(after, (int, float)) and time.time() - started >= after)
                  or (isinstance(after, str) and re.search(after, text, re.MULTILINE)))
         if ready:
+            entry['handle'].stopped_by_scenario = True
             stop_handle(entry['handle'], entry['signal'])
         else:
             left.append(entry)
@@ -229,6 +232,8 @@ def run_scenario(scenario, build_dirs, verbose, quiet):
     index_of = dict((proc_name(spec), i) for i, spec in enumerate(procs))
     handles = []
     outputs = {}
+    launched = {}
+    ended = {}
     verdict = None
     reader = None
     try:
@@ -247,6 +252,7 @@ def run_scenario(scenario, build_dirs, verbose, quiet):
                                       stdout=subprocess.PIPE,
                                       stderr=subprocess.STDOUT,
                                       text=True)
+            launched[index] = time.time()
             handles.append((spec, handle))
             if feed:
                 send_stdin(handle, feed)
@@ -264,6 +270,9 @@ def run_scenario(scenario, build_dirs, verbose, quiet):
                 deadline = started + timeout
                 while True:
                     pending = fire_stops(pending, started, reader.text())
+                    for index, (_, handle) in enumerate(handles):
+                        if index not in ended and handle.poll() is not None:
+                            ended[index] = time.time() - launched[index]
                     if lead.poll() is not None:
                         break
                     if time.time() >= deadline:
@@ -293,9 +302,13 @@ def run_scenario(scenario, build_dirs, verbose, quiet):
             except subprocess.TimeoutExpired:
                 router_handle.kill()
 
+    def failed(detail, only=None):
+        report_output(handles, outputs, quiet, only)
+        report_status(handles, outputs, ended, lead_index, quiet)
+        return False, name, detail
+
     if verdict is not None:
-        report_output(handles, outputs, quiet)
-        return False, name, verdict
+        return failed(verdict)
 
     evidence = []
     for index, (spec, handle) in enumerate(handles):
@@ -306,21 +319,18 @@ def run_scenario(scenario, build_dirs, verbose, quiet):
         for pattern in spec.get('expect', []):
             found = re.search(pattern, output, re.MULTILINE)
             if found is None:
-                report_output(handles, outputs, quiet, only=index)
-                return False, name, 'no match for {!r} in the output of {}'.format(
-                    pattern, label)
+                return failed('no match for {!r} in the output of {}'.format(
+                    pattern, label), index)
             evidence.append((label, found.group(0)))
         for pattern in spec.get('reject', []):
             found = re.search(pattern, output, re.MULTILINE)
             if found is not None:
-                report_output(handles, outputs, quiet, only=index)
-                return False, name, '{!r} was rejected but matched {!r} in {}'.format(
-                    pattern, found.group(0), label)
+                return failed('{!r} was rejected but matched {!r} in {}'.format(
+                    pattern, found.group(0), label), index)
         wanted = spec.get('exit')
         if wanted is not None and handle.returncode != wanted:
-            report_output(handles, outputs, quiet, only=index)
-            return False, name, '{} exited {}, expected {}'.format(
-                label, handle.returncode, wanted)
+            return failed('{} exited {}, expected {}'.format(
+                label, handle.returncode, wanted), index)
 
     if not quiet and not verbose:
         for label, line in evidence:
@@ -344,6 +354,44 @@ def report_output(handles, outputs, quiet, only=None):
             head += ' (last {} of {} lines)'.format(OUTPUT_TAIL_LINES, len(lines))
             lines = lines[-OUTPUT_TAIL_LINES:]
         sys.stdout.write(head + '\n' + '\n'.join(lines) + '\n')
+
+
+def report_status(handles, outputs, ended, lead_index, quiet):
+    """One line per process on a failure, the silent ones included.
+
+    A process that ended on its own while the lead was still running is named, since
+    its peers then wait for it until the timeout and print nothing that says why.
+    """
+    if quiet:
+        return
+    for index, (spec, handle) in enumerate(handles):
+        text = (outputs.get(index) or '').strip()
+        said = '{} line(s) of output'.format(len(text.splitlines())) if text else 'no output'
+        if index not in ended:
+            state = 'still running when the scenario ended, stopped by the runner'
+        elif getattr(handle, 'stopped_by_scenario', False):
+            state = 'stopped by "stop" after {:.1f}s'.format(ended[index])
+        else:
+            state = 'had exited {} by {:.1f}s'.format(handle.returncode, ended[index])
+            if index != lead_index:
+                state += ', on its own while the lead was running'
+                if spec.get('stdin'):
+                    state += ' -- its "stdin" was written at start'
+        sys.stdout.write('      status  {:<20} {}, {}\n'.format(proc_name(spec), state, said))
+
+
+def lint_scenario(scenario):
+    """Mistakes in a scenario that show up only as a hang, said before it runs."""
+    procs = scenario.get('procs') or []
+    lead_index = next((i for i, p in enumerate(procs) if p.get('lead')), len(procs) - 1)
+    notes = []
+    for index, spec in enumerate(procs):
+        if index != lead_index and spec.get('stdin'):
+            notes.append('"stdin" on {} is written the moment it starts, and it is not the '
+                         'lead: a quit there ends it before its peers are served. Give the '
+                         'quit path a scenario of its own, where that process leads.'
+                         .format(proc_name(spec)))
+    return notes
 
 
 SELF_TEST_PROVIDER = """#!/usr/bin/env bash
@@ -479,6 +527,9 @@ def main():
 
     results = []
     for scenario in scenarios:
+        if not args.json:
+            for note in lint_scenario(scenario):
+                print('note  {:24} {}'.format(scenario.get('name', 'unnamed'), note))
         passed, name, detail = run_scenario(scenario, build_dirs,
                                             args.verbose, args.quiet or args.json)
         results.append({'name': name, 'passed': passed, 'detail': detail})

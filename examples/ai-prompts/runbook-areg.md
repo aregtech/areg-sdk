@@ -106,22 +106,10 @@ context is re-sent on every turn for the rest of the task. What the grammar cann
 you is meaning, and it is never the way to understand a refusal -- that is
 `explain_rule.py <number> --at <Element>/@<Attribute>`.
 
-Then point `src/CMakeLists.txt` at them:
-
-```cmake
-addServiceInterface(gen_<project> src/services/YourService.siml)
-addServiceInterface(gen_<project> src/services/YourMachine.fsml)
-macro_declare_executable(<project>_provider gen_<project> provider.cpp ...)
-macro_declare_executable(<project>_consumer gen_<project> consumer.cpp ...)
-```
-
-**A `.fsml` needs a line of its own.** The generator does not reach it through the
-`.siml`, and without that line the machine's classes are never generated.
-
-**The two path kinds on those lines are different.** The document path is relative to
-the **project root** (`src/services/X.siml`). The source paths are relative to **the
-CMakeLists.txt naming them** (`provider.cpp`, already inside `src/`). Rename the two
-executables to suit the task, and add every source file you write to them.
+`src/CMakeLists.txt` is not yours to edit for these: the command below names every
+document of the spec and every source it generates. A source you add yourself goes on
+its executable's `macro_declare_executable` line, relative to `src/`; a header is
+included as `"src/<dir>/Name.hpp"` from anywhere in `src/`.
 
 ## 5. Documents, application and build -- one command
 
@@ -140,10 +128,10 @@ the command for every later build.
 one: the action handler is a base, every action is declared, and there is no separate
 host component to write, merge or delete.
 
-The application is the **whole** of `src/`: the components, every subscription, the
-model and `main()`. A local project gets one `src/main.cpp`, an ipc project gets
-`src/provider.cpp` and `src/consumer.cpp`. The mode comes from `scenarios.json`, so it
-is never given twice.
+The application is the **whole** of `src/`: every component in its own `.hpp` and
+`.cpp`, named after its class, plus `src/main.cpp` (local) or `src/provider.cpp` and
+`src/consumer.cpp` (ipc) holding only the model and `main()`. The mode comes from
+`scenarios.json`, so it is never given twice.
 
 **It compiles and runs as written.** The model, `main()`, the connection test and
 every `notify_on_*` subscription are already correct, so none of them needs a page. A
@@ -160,9 +148,8 @@ generated data type in a few hundred tokens and writes no file. Read that instea
 opening a generated header. Never invent a method name on a generated base class: the
 names come from a fixed rule and the tool has applied it.
 
-**A generated application file carries its components, the model and `main()` together**
--- that is the shape every recipe uses. A class you add by hand gets its own `.hpp` and
-`.cpp`, named after it, and no class is ever defined inside the body of `main()`.
+Keep that shape for anything you add: a class in its own `.hpp` and `.cpp`, named after
+it, and the model files holding nothing but the model and `main()`.
 
 ## 6. Implement
 
@@ -203,7 +190,8 @@ builds. The second starts the router, then the provider, then the consumer, and 
 the output. Exit 0 is a pass.
 
 **Every acceptance item goes in `scenarios.json`, including the two that look like
-they need a terminal.** A console quit path is `"stdin": ["-q"]` on that process; the
+they need a terminal.** A console quit path is `"stdin": ["-q"]` on that process, leading a scenario of
+its own; the
 peer going away is a scenario-level `"stop"`. The generator prints both keys when it
 writes the file, so neither needs a page. One run then prints the line each
 expectation matched, and that output is the evidence for the report.
