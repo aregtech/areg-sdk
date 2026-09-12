@@ -64,9 +64,11 @@ MARKER = re.compile(r'//\s*TODO\(you\)\s+([A-Za-z_][\w]*)\s*:\s*(.*?)\s*$')
 # one step. A request costs its whole context again, so N requests of one Edit cost
 # N times what one request of N Edits costs.
 BATCH_NOTE = (
-    '  These {total} markers are independent of each other. Send the Edits that fill\n'
-    '  them in as few steps as possible -- every Edit you can already write belongs\n'
-    '  in the same step, not in a step of its own.')
+    '  These {total} markers are independent of each other, in {files} file(s). Every\n'
+    '  Edit you can already write belongs in the same request: all of one file\'s\n'
+    '  markers together, and the provider\'s with the consumer\'s. Only a build, a\n'
+    '  check or a scenario run may split them. One Edit per request is the most\n'
+    '  expensive shape there is -- a request is billed for the whole conversation.')
 
 
 def print_todos(produced, out):
@@ -78,6 +80,7 @@ def print_todos(produced, out):
     sends a run to read the file back.
     """
     total = 0
+    files = 0
     for file_name, text in produced:
         found = [line for line in text.splitlines() if MARKER.search(line)]
         if not found:
@@ -87,12 +90,13 @@ def print_todos(produced, out):
         for line in found:
             print(line.rstrip())
         total += len(found)
+        files += 1
     if total:
         print('  Each line above is unique in its file and is printed exactly as it')
         print('  stands there, indentation included. Copy one as the old_string of an')
         print('  Edit; do not rewrite the file and do not read it back to find the')
         print('  surrounding text.')
-        print(BATCH_NOTE.format(total=total))
+        print(BATCH_NOTE.format(total=total, files=files))
 
 
 class Interface:
@@ -1474,7 +1478,7 @@ APP_NOTE = (
     '  These files compile and run as written. Every place a rule of your own\n'
     '  belongs is one TODO(you) line above; the model, main() and every\n'
     '  subscription are already correct and need no page. Edit each marker line\n'
-    '  in place, several Edits to a step. Rewriting a whole file is never needed.')
+    '  in place, several Edits to one request. Rewriting a whole file is never needed.')
 
 
 def report_todos(out, mode):
@@ -1485,19 +1489,23 @@ def report_todos(out, mode):
         names += [os.path.join(folder, name) for name in files
                   if name.endswith(('.hpp', '.cpp'))]
     total = 0
+    files = 0
     for path in sorted(names):
         if not os.path.exists(path):
             continue
+        here = 0
         with open(path, encoding='utf-8') as handle:
             for number, line in enumerate(handle, 1):
                 if MARKER.search(line):
                     print('{}:{}:'.format(path.replace('\\', '/'), number))
                     print(line.rstrip('\n').rstrip())
-                    total += 1
+                    here += 1
+        total += here
+        files += 1 if here else 0
     if total == 0:
         print('no TODO(you) marker is left in {}'.format(out))
     else:
-        print(BATCH_NOTE.format(total=total))
+        print(BATCH_NOTE.format(total=total, files=files))
     return 0
 
 

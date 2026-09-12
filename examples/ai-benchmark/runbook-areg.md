@@ -58,6 +58,11 @@ else.
 From the task, decide the requests, responses, broadcasts, attributes and data types.
 Write nothing yet. If the routing table offers a design page, open it once, here.
 
+**A provider reads its own attributes back.** An attribute gives the provider a getter
+as well as a setter, so state the service already carries needs no shadow member beside
+it. Decide that here: adding one later means changing the spec after it has been
+generated, which is the most expensive edit a run makes.
+
 ## 4. The documents
 
 Under `src/services/`, replace the scaffolded documents with your own. **Every
@@ -151,13 +156,16 @@ it, and the model files holding nothing but the model and `main()`.
 
 ## 6. Implement
 
-**One `Edit` per marker, and the marker line is the `old_string`.** Copy the printed
-line, give the body that replaces it, change nothing else, and never rewrite a file.
+**Every Edit you can already write goes in the same request.** The markers do not
+depend on each other, so all of one file's markers travel together, and so do the
+provider's and the consumer's. Only a build, a check or a scenario run may split them.
+One Edit per request and a full rewrite are the two most expensive shapes a run has: a
+request is billed for the whole conversation again, and output is billed at five times
+reading.
 
-**Send those Edits in as few steps as possible** -- the markers do not depend on each
-other, so every Edit you can already write goes in the same step. One Edit per step
-and a full rewrite are the two most expensive shapes a run has: a step is billed for
-the whole conversation again, and output is billed at five times reading.
+One `Edit` **call** per marker, and the marker line is the `old_string`: copy the
+printed line, give the body that replaces it, change nothing else, and never rewrite a
+file. That is the shape of each call, not a limit on how many travel in one request.
 
 `30-provider.md`, `31-consumer.md` and `32-model.md` describe the code the tool has
 already written. Do not open them to fill a marker, and do not open them while
