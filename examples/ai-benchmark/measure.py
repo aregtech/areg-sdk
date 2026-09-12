@@ -3,11 +3,21 @@
 
     claude -p --output-format json ... > result.json
     python3 measure.py result.json
+    python3 measure.py result.json --project .     # also count the sources written
 
 Prints cost, turns, wall time and token usage from the harness, then counts the
 tool calls from the session transcript. num_turns is assistant turns, not tool
 calls; the two are not interchangeable and only the second is comparable across
 runs. Needs nothing but python3 -- jq is not assumed.
+
+A file that is not a Claude result.json is read as another agent's usage file.
+GitHub Copilot's --usage-output-file is mapped to the same rows a Claude run is read
+on; any other shape has every number it holds printed under the key the file itself
+used, so nothing is guessed and nothing is silently wrong.
+
+**Copilot reports no cost in money.** It reports premium requests, which are a quota
+unit, so the two agents are comparable on tokens, requests and wall time and NOT on a
+"cost" column. Saying so is the point of this tool.
 """
 
 import collections
@@ -17,6 +27,137 @@ import os
 import sys
 
 TARGETS = {"temperature-alarm": (50000, 20), "coffee-machine": (75000, 30)}
+
+# Source, in any framework. A layout is the implementer's choice: areg writes
+# src/provider and src/consumer, a gRPC arm writes machine/ client/ proto/, and a
+# counter that knows only src/ reports 0 for the second and invites the wrong
+# conclusion.
+SOURCE_SUFFIXES = ('.cpp', '.hpp', '.h', '.cc', '.cxx', '.hxx', '.proto')
+
+# Not the project's own source: build output, the tree a package manager fetched,
+# and anything a generator rewrites on every build.
+NOT_SOURCE = ('build', 'generate', 'generated', 'packages', '.git', 'out',
+              'cmake-build-debug', 'cmake-build-release', '__pycache__')
+
+
+def count_sources(root):
+    """Every source file the project carries, wherever the implementer put it."""
+    files = 0
+    lines = 0
+    per_suffix = collections.Counter()
+    for base, folders, names in os.walk(root):
+        folders[:] = [f for f in folders if f not in NOT_SOURCE and not f.startswith('.')]
+        for name in names:
+            if not name.endswith(SOURCE_SUFFIXES):
+                continue
+            path = os.path.join(base, name)
+            try:
+                with open(path, encoding='utf-8', errors='ignore') as handle:
+                    lines += sum(1 for _ in handle)
+            except OSError:
+                continue
+            files += 1
+            per_suffix[os.path.splitext(name)[1]] += 1
+    return files, lines, per_suffix
+
+
+def numbers_in(blob, prefix=''):
+    """Every number a JSON document holds, by the path the document gave it."""
+    found = []
+    if isinstance(blob, dict):
+        for key in blob:
+            found += numbers_in(blob[key], prefix + ('.' if prefix else '') + str(key))
+    elif isinstance(blob, list):
+        for index, item in enumerate(blob):
+            found += numbers_in(item, '%s[%d]' % (prefix, index))
+    elif isinstance(blob, (int, float)) and not isinstance(blob, bool):
+        found.append((prefix, blob))
+    return found
+
+
+def copilot_usage(result):
+    """Copilot's --usage-output-file, or None when the file is some other shape."""
+    if not isinstance(result, dict):
+        return None
+    if "modelMetrics" not in result and "totalPremiumRequestCost" not in result:
+        return None
+    return result
+
+
+def report_copilot(result):
+    """Copilot's usage file, on the rows a run is actually compared on.
+
+    Schema read from a real file written by copilot --usage-output-file. Claude gives
+    total_cost_usd; Copilot gives premium requests, which is a quota unit and not
+    money. The two do not convert, and a column that pretends they do is the one
+    mistake this whole file exists to prevent.
+    """
+    models = result.get("modelMetrics") or {}
+    print("== harness (GitHub Copilot)")
+    print("   %-28s %s" % ("model(s)", ", ".join(sorted(models)) or
+                           result.get("currentModel", "?")))
+    print("   %-28s %s   %s" % ("cost (USD)", "--",
+                                "not reported; Copilot bills premium requests"))
+    print("   %-28s %s" % ("premium requests",
+                           result.get("totalPremiumRequestCost", "?")))
+    print("   %-28s %s" % ("user prompts", result.get("totalUserRequests", "?")))
+    duration = result.get("totalApiDurationMs")
+    if isinstance(duration, (int, float)):
+        print("   %-28s %s   (API time, not wall time)" % ("api time (s)", duration / 1000.0))
+
+    fields = ("inputTokens", "outputTokens", "cacheReadTokens",
+              "cacheWriteTokens", "reasoningTokens")
+    totals = dict.fromkeys(fields, 0)
+    requests = 0
+    for entry in models.values():
+        usage = entry.get("usage") or {}
+        for field in fields:
+            if isinstance(usage.get(field), int):
+                totals[field] += usage[field]
+        count = (entry.get("requests") or {}).get("count")
+        if isinstance(count, int):
+            requests += count
+    print("   %-28s %d" % ("API requests", requests))
+    fresh = totals["inputTokens"] + totals["outputTokens"]
+    print("   %-28s %s   (uncached in + out)" % ("tokens, fresh", format(fresh, ",")))
+    for field in fields:
+        print("   %-28s %s" % (field, format(totals[field], ",")))
+    print("   Reasoning is reported here directly; a Claude run has to infer it as")
+    print("   output minus visible text.")
+
+    changes = result.get("codeChanges") or {}
+    if changes:
+        print("   %-28s +%s -%s in %s file(s)"
+              % ("code changes", changes.get("linesAdded", "?"),
+                 changes.get("linesRemoved", "?"), changes.get("filesModifiedCount", "?")))
+
+    agents = result.get("agentMetrics") or {}
+    if len(agents) > 1:
+        print("   %-28s %s" % ("agents", ", ".join(sorted(agents))))
+        print("   More than one agent ran. Subagent work is in these rows too.")
+    return 0
+
+
+def report_foreign(path, result):
+    """A usage file this tool does not have a schema for, read honestly.
+
+    Printing every number under the key its own file used is the only way to read a
+    format that may change without notice. A guessed mapping that silently goes
+    stale is worse than no mapping.
+    """
+    print("== %s -- not a Claude result.json, read as a usage file" % os.path.basename(path))
+    found = numbers_in(result)
+    if not found:
+        print("   no numbers in it. Pass the file the agent was told to write.")
+        return 1
+    for key, value in found:
+        shown = format(value, ",") if isinstance(value, int) else "%.6f" % value
+        print("   %-40s %s" % (key, shown))
+    print("")
+    print("   Read the cost and the token counts off the rows above by their own")
+    print("   names. Compare with a Claude run only where the two measure the same")
+    print("   thing: total cost, and tokens in and out.")
+    return 0
 
 
 def load(path):
@@ -59,11 +200,44 @@ def tokens_of(usage):
     return sum(values) if values else None
 
 
-def main():
-    if len(sys.argv) != 2:
-        sys.exit("usage: measure.py <result.json>")
+def report_sources(root):
+    """What the run actually wrote, counted the same way for every framework."""
+    if not os.path.isdir(root):
+        print("== sources\n   no such directory: %s" % root)
+        return
+    files, lines, per_suffix = count_sources(root)
+    print("== sources under %s" % os.path.abspath(root))
+    print("   %-28s %d" % ("files", files))
+    print("   %-28s %s" % ("lines", format(lines, ",")))
+    if per_suffix:
+        print("   %-28s %s" % ("by kind", ", ".join(
+            "%s %d" % (suffix, n) for suffix, n in sorted(per_suffix.items()))))
+    print("   Build output and fetched packages are not counted. Generated sources")
+    print("   are not either, so this is what the run wrote by hand.")
 
-    result = load(sys.argv[1])
+
+def main():
+    args = [a for a in sys.argv[1:]]
+    project = None
+    if "--project" in args:
+        index = args.index("--project")
+        if index + 1 >= len(args):
+            sys.exit("--project needs a directory")
+        project = args[index + 1]
+        del args[index:index + 2]
+    if len(args) != 1:
+        sys.exit("usage: measure.py <result.json> [--project <dir>]")
+
+    result = load(args[0])
+    if not isinstance(result, dict) or "session_id" not in result:
+        if copilot_usage(result) is not None:
+            code = report_copilot(result)
+        else:
+            code = report_foreign(args[0], result)
+        if project:
+            print("")
+            report_sources(project)
+        return code
     usage = result.get("usage") or {}
     total = tokens_of(usage)
     fresh = None
@@ -83,6 +257,10 @@ def main():
     for key in sorted(usage):
         if isinstance(usage[key], int):
             print("   %-28s %s" % (key, format(usage[key], ",")))
+
+    if project:
+        print("")
+        report_sources(project)
 
     print("\n== tool calls")
     path = transcript_of(result.get("session_id"))

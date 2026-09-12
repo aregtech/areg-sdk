@@ -56,8 +56,23 @@ So the split is:
 | tokens, cache reads, cost, requests, wall time | **the operator**, afterwards, from whatever the harness records | no -- harness-specific |
 
 `measure.py` and `analyze_run.py` read Claude Code's JSON result and session transcript.
-For another agent the operator reads its equivalent, or -- where a harness records
-nothing -- compares only the agent-reported rows and wall time measured from outside.
+`measure.py` also reads **GitHub Copilot**'s `--usage-output-file` and prints it on the
+same rows. Any other shape has every number it holds printed under the key that file
+itself used, rather than mapped by guesswork that could silently go stale. Where a
+harness records nothing, compare the agent-reported rows and wall time from outside.
+
+**The two agents do not report a comparable cost, and no table should pretend they do.**
+Claude Code reports `total_cost_usd`. Copilot reports **premium requests** -- a quota
+unit, not money -- so `measure.py` prints `cost (USD) --` for a Copilot run and says why.
+Compare the arms on **tokens, API requests and wall time**, which both report honestly.
+
+Two more differences worth knowing before reading a Copilot number:
+
+- Copilot reports `reasoningTokens` **directly**. A Claude run has to infer reasoning as
+  output minus visible text, so the Claude figure is an estimate and the Copilot one is not.
+- Copilot's own prompt is large: a one-word prompt that changed no file still billed
+  **22,575 input tokens** and 6 premium requests on `gpt-5.4`. That is the floor of any
+  Copilot run, and a small task will look disproportionately expensive against it.
 **That is still a real comparison**: the acceptance list and the cycle counts are what
 say whether the framework let the agent get it right the first time.
 
@@ -120,11 +135,21 @@ figure**, and a denial-heavy run is not comparable to a clean one.
 
 ```bash
 python3 "$AREG_SDK/examples/ai-benchmark/measure.py" result.json
+python3 "$AREG_SDK/examples/ai-benchmark/measure.py" result.json --project .
 ```
 
 It prints cost, turns, wall time and the token split, then finds the session
 transcript and counts the tool calls, and scores both against the budget. Needs only
-`python3`. Two things it makes explicit, because both are easy to get wrong:
+`python3`.
+
+`--project <dir>` adds what the run wrote: files, lines and the split by kind, counted
+over the whole project rather than one folder. **The layout is the implementer's
+choice** -- one arm writes `src/provider` and `src/consumer`, another writes `machine/`,
+`client/` and `proto/` -- so a counter that knows only `src/` reports zero for the second
+and invites the wrong conclusion. Build output, fetched packages and generated trees are
+not counted, so the number is what the run wrote by hand.
+
+Two things it makes explicit, because both are easy to get wrong:
 
 - **`num_turns` is assistant turns, not tool calls.** They differ by 3-4x. Only the
   tool-call count is comparable across runs, and it has to come from the transcript.

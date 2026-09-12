@@ -103,6 +103,14 @@ adding a sleep, retrying, deleting an assertion or loosening what a scenario exp
 not a fix. Still failing after the third cycle of either kind? **Stop and report**:
 what fails, the exact output, what you tried, what you think the cause is.
 
+**Every acceptance item in the task file is an `expect` entry in `scenarios.json`**,
+matched against a line the run actually prints -- including the two that look like they
+need a terminal. A console quit path is `"stdin": ["-q"]` on the lead of a scenario of
+its own; the other side going away is a scenario-level `"stop"`. An item with no
+expectation behind it is reported as not passing, however sure you are of the code: the
+count is evidence, not judgement, and it is what makes two implementations of this task
+comparable.
+
 The report is the one small table the task file asks for, and the only report to
 write. Fill it from what you already know and measure nothing to fill it in. The
 acceptance count comes from the scenario output, not from a second run.
