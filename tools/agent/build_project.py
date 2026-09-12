@@ -283,6 +283,13 @@ def main():
                ['cmake', '--build', args.build, '-j', str(args.jobs)], root, kept=3):
         return 1
 
+    print('')
+    print('generated headers: {}/generate/{}/ -- already on the include path.'
+          .format(args.build, args.outdir.replace(os.sep, '/')))
+    print('   Include one by the path it mirrors, for example #include "{}/X.hpp".'
+          .format(args.outdir.replace(os.sep, '/')))
+    print('   Nothing else is written there and none of it is yours to edit.')
+
     if args.run:
         print('')
         if not run('scenarios',

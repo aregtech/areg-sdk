@@ -444,6 +444,53 @@ def write_operation_list(machine, writer, depth, tag, steps, assignments, stimul
     writer.add(depth, '</{}>'.format(tag))
 
 
+def condition_params(machine, name):
+    """What one condition declares: each parameter, and whether it carries a Default."""
+    for entry in machine.conditions:
+        if entry['name'] == name:
+            return [(p['name'], p.get('default') is not None)
+                    for p in named_list(entry, 'params', name)]
+    return []
+
+
+def guard_call_arguments(machine, name, args, where):
+    """Each declared parameter of a guard call paired with the value bound to it.
+
+    The generator binds an Arg to a formal by the formal's document ID and refuses a
+    formal that is neither mapped nor defaulted. Checking that here means the refusal
+    names the spec the author wrote, not the XML this tool generated from it.
+    """
+    declared = condition_params(machine, name)
+    names = [param for param, _ in declared]
+    if isinstance(args, dict):
+        for key in args:
+            if key not in names:
+                fail('{} passes "{}" to "{}", which does not declare it. It declares: '
+                     '{}'.format(where, key, name, ', '.join(names) or 'no parameters'))
+        given = dict(args)
+    elif isinstance(args, (list, tuple)):
+        if len(args) > len(declared):
+            fail('{} passes {} argument(s) to "{}", which declares {}: {}'
+                 .format(where, len(args), name, len(declared),
+                         ', '.join(names) or 'no parameters'))
+        given = dict(zip(names, args))
+    elif args is None:
+        given = {}
+    else:
+        fail('{}: the arguments of a guard call are a list in the order "{}" declares '
+             'its parameters, or a {{"parameter": value}} object; got {}'
+             .format(where, name, type(args).__name__))
+    unmapped = [param for param, has_default in declared
+                if param not in given and not has_default]
+    if unmapped:
+        fail('{} calls "{}" and maps nothing to {}, which declare(s) no default. '
+             '"{}" declares: {}. Give a value for each, as a list in that order or as '
+             '{{"parameter": value}}, or give the parameter a "default".'
+             .format(where, name, ', '.join('"%s"' % u for u in unmapped), name,
+                     ', '.join(names)))
+    return [(param, given[param]) for param, _ in declared if param in given]
+
+
 def write_guard_node(machine, writer, depth, node, stimulus, where):
     """One node of the guard tree: a group, a negation, a comparison or a call."""
     if isinstance(node, dict):
@@ -466,16 +513,17 @@ def write_guard_node(machine, writer, depth, node, stimulus, where):
             name = node['call']
             if name not in machine.condition_names:
                 fail('{} asks "{}", which is not in "conditions"'.format(where, name))
-            args = node.get('args') or []
+            pairs = guard_call_arguments(machine, name, node.get('args'), where)
             head = '<Call id="{}" name="{}"'.format(
                 writer.of(('condition', name)), esc(name))
-            if not args:
+            if not pairs:
                 writer.add(depth, head + '/>')
                 return
             writer.add(depth, head + '>')
-            for arg in args:
-                writer.add(depth + 1, '<Arg>')
-                write_guard_node(machine, writer, depth + 2, arg, stimulus, where)
+            for param, value in pairs:
+                writer.add(depth + 1, '<Arg id="{}">'.format(
+                    writer.of(('param', 'Condition', name, param))))
+                write_guard_node(machine, writer, depth + 2, value, stimulus, where)
                 writer.add(depth + 1, '</Arg>')
             writer.add(depth, '</Call>')
             return

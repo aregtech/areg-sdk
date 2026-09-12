@@ -41,6 +41,13 @@ ENUMERATOR = re.compile(r'^([A-Za-z_]\w*)')
 # One declaration: an optional return type, the name, and the parameter list.
 DECLARATION = re.compile(r'^(.*?\b)([A-Za-z_~]\w*)\s*\((.*)$', re.S)
 
+# "constexpr CharPos START_POS { areg::FIRST_INDEX };" and "const int SIZE = 8;".
+# A constant carries no parameter list, so DECLARATION never matches one.
+CONSTANT = re.compile(r'^\s*(?:inline\s+|static\s+)*'
+                      r'(?:constexpr|const|constinit)\s+'
+                      r'[A-Za-z_][\w:<>,\s\*&]*?'
+                      r'\b([A-Za-z_]\w*)\s*(?:\{[^;]*\}|=[^;]*)?\s*;\s*$')
+
 # A deleted constructor, the copy guard and the self() helper are shape, not API.
 BOILERPLATE = re.compile(r'=\s*delete|AREG_NOCOPY|\bself\s*\(')
 
@@ -116,6 +123,7 @@ class Header(object):
         self.members = []        #!< (owner, signature, doc)
         self.classes = {}        #!< class name -> [signature]
         self.enums = {}          #!< enumeration name -> [enumerator]
+        self.constants = {}      #!< constant name -> (owner, signature, doc)
         self.seen = set()
         self._parse()
 
@@ -124,6 +132,7 @@ class Header(object):
             raw = handle.read()
         self._parse_enums(raw)
         text = clean(raw)
+        self._parse_constants(text, raw.splitlines())
         raw_lines = raw.splitlines()
         depth = 0
         owners = []              #!< (depth the class body opened at, name)
@@ -191,6 +200,41 @@ class Header(object):
         if owner:
             self.classes.setdefault(owner, []).append(signature)
 
+    def _parse_constants(self, text, raw_lines):
+        """Every constant the header declares, at namespace scope or in a class.
+
+        A constant has no parameter list, so the declaration reader skips it. Leaving
+        them out made this tool report an absence for a name it printed itself, in a
+        default argument, in the same output.
+        """
+        depth = 0
+        owners = []
+        pending = None
+        for line in text.splitlines():
+            head = CLASS_HEAD.match(line)
+            if head and '(' not in line.split(head.group(1))[0]:
+                pending = head.group(1)
+            # A function declaration carries "(" in its head; a constant carries it
+            # only inside an initialiser, as in "{ std::numeric_limits<T>::max() }".
+            if '(' not in re.split(r'[{=]', line, maxsplit=1)[0]:
+                found = CONSTANT.match(line)
+                if found:
+                    name = found.group(1)
+                    if name not in NOT_A_NAME and not name.startswith('_'):
+                        owner = next((e[1] for e in reversed(owners) if e[1]), None)
+                        self.constants.setdefault(
+                            name, (owner, ' '.join(line.split()), ''))
+            opened = line.count('{')
+            closed = line.count('}')
+            for _ in range(opened):
+                depth += 1
+                owners.append((depth, pending))
+                pending = None
+            for _ in range(closed):
+                while owners and owners[-1][0] >= depth:
+                    owners.pop()
+                depth = max(0, depth - 1)
+
     def _parse_enums(self, text):
         for head in ENUM_HEAD.finditer(text):
             opening = text.find('{', head.end())
@@ -246,6 +290,44 @@ def answer_member(headers, name, full):
     return True
 
 
+def answer_constant(headers, name):
+    """Every constant of one name, with the header that declares it."""
+    found = False
+    for header in headers:
+        if name not in header.constants:
+            continue
+        owner, signature, _doc = header.constants[name]
+        where = 'areg::' + owner if owner else 'namespace areg'
+        print('{} -- a constant'.format(name))
+        print('')
+        print('{}  ({})'.format(where, header.relative))
+        print('  {}'.format(signature))
+        found = True
+    return found
+
+
+def mentioned(headers, name):
+    """Where a name appears in a declaration this tool already indexed.
+
+    The net under every absence: a name printed in a signature -- a default argument,
+    a return type, a parameter -- exists, whatever the index happens to hold. Claiming
+    otherwise while printing the same spelling is the one answer this tool must never
+    give.
+    """
+    # A qualified occurrence -- areg::START_POS in a default argument -- is exactly
+    # the evidence this net exists for, so ':' must not block the match.
+    word = re.compile(r'(?<!\w)' + re.escape(name) + r'(?![\w])')
+    for header in headers:
+        for member, owner, signature, _doc in header.members:
+            if member != name and word.search(signature):
+                return (header.relative, owner, member, signature)
+        for owner, signatures in header.classes.items():
+            for signature in signatures:
+                if word.search(signature):
+                    return (header.relative, owner, None, signature)
+    return None
+
+
 def answer_class(headers, name, full):
     """What one class declares, in the order the header declares it."""
     found = False
@@ -276,7 +358,7 @@ def answer_enum(headers, name):
 def search(headers, word):
     """Every member, class and enumeration name holding a word."""
     needle = word.lower()
-    members, classes, enums = set(), set(), set()
+    members, classes, enums, constants = set(), set(), set(), set()
     for header in headers:
         for member, _, _, _ in header.members:
             if needle in member.lower():
@@ -287,10 +369,14 @@ def search(headers, word):
         for enum in header.enums:
             if needle in enum.lower():
                 enums.add(enum)
-    for label, names in (('class', classes), ('enum', enums), ('member', members)):
+        for constant in header.constants:
+            if needle in constant.lower():
+                constants.add(constant)
+    for label, names in (('class', classes), ('enum', enums),
+                         ('constant', constants), ('member', members)):
         if names:
             print('{}: {}'.format(label, ', '.join(sorted(names))))
-    return bool(members or classes or enums)
+    return bool(members or classes or enums or constants)
 
 
 def main():
@@ -326,7 +412,8 @@ def main():
         else:
             answered = (answer_member(headers, name, args.full)
                         or answer_class(headers, name, args.full)
-                        or answer_enum(headers, name))
+                        or answer_enum(headers, name)
+                        or answer_constant(headers, name))
         if not answered:
             if catalogued(name):
                 print('"{}" is a member of the framework -- docs/agent/members.json '
@@ -334,7 +421,19 @@ def main():
                       'can read, so it comes from a macro. It exists; call it.'
                       .format(name))
                 continue
-            print('no public areg header declares "{}" under that exact spelling.'
+            seen = mentioned(headers, name)
+            if seen:
+                path, owner, member, signature = seen
+                print('"{}" is not indexed as a member, a class, an enumeration or a '
+                      'constant, but it IS declared: it appears in {}, in the '
+                      'declaration below. Use it.'.format(name, path))
+                print('')
+                print('{}  ({})'.format('areg::' + owner if owner else
+                                        'namespace areg', path))
+                print('  {}'.format(signature))
+                continue
+            print('"{}" is not a member, a class, an enumeration or a constant in the '
+                  'public areg headers, and appears in no declaration they carry.'
                   .format(name))
             print('Operators are reached through the type and are not members, so '
                   'this says nothing about + or ==.')
