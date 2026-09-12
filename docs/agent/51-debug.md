@@ -31,6 +31,7 @@ of what the tool printed.
 | a request refused as busy, or ignored, right after the previous one finished, in a project with a `.fsml` | an operation on a nested `Final` state: the `OnFinal` self-event is queued and has not been dispatched yet | `22-state-machine.md`, and `check_contract.py` rule `108` |
 | a component with several timers where `process_timer` runs but every branch is skipped | the branches compare `timer.name()` to the constructor string; the name is generated from it and never equal. Compare `&timer` to the member | `33-timers.md` section 2 |
 | `RequestBusy` in a `request_*_failed` handler | the provider answers later without releasing the request first | `30-provider.md` section 3 |
+| a run that is correct up to one step and then stalls there, waiting for an attribute update | the value waited for is the one already held, or the phase waited for is not a value of the attribute at all: `OnChange` sent nothing | "An attribute update that is never sent" below |
 | `Failed to bind`, or a second router that routes nothing | port 8181 is already held | `50-running.md` |
 
 ---
@@ -146,6 +147,23 @@ the one you have not implemented, or whose signature does not match.
 | Nothing calls `areg::Application::signal_quit()` | Call it when the work is done |
 | The consumer is waiting for a provider that never appears | See "The consumer never connects" |
 | A handler is blocking | See below |
+
+---
+
+## An attribute update that is never sent
+
+The step before it worked, so the connection and the subscription are fine. Under
+`Notify="OnChange"` -- the default -- a `set_` to the value already held notifies
+nobody. Nothing reports it: the documents generate, the code compiles, the run stops.
+
+| Cause | Fix |
+|---|---|
+| The value returned to the one it already held | Wait on the response that caused it, not on the update |
+| The phase waited for is no value of the attribute -- a `.fsml` state the enum does not name | Give the enum a value per phase a peer must tell apart. `gen_docs.py` notes the missing ones |
+| The update crossed the response that started the wait | Test the value in the response handler before waiting |
+
+`Always` sends one on every `set_`, and is what an attribute waited on as an *event*
+wants; `OnChange` is for one read as a *value*. `31-consumer.md` section 3.
 
 ---
 

@@ -63,6 +63,13 @@ as well as a setter, so state the service already carries needs no shadow member
 it. Decide that here: adding one later means changing the spec after it has been
 generated, which is the most expensive edit a run makes.
 
+**An attribute publishes only the values it declares.** If a state machine drives the
+work, every phase a peer must tell apart -- suspended and waiting phases included -- is
+a value of the enum the peer subscribes to, or the peer cannot see that phase at all.
+Under the default `Notify="OnChange"` it is worse: a phase left and re-entered re-sets
+the value already held, and no update is sent, so a step waiting for one waits for ever.
+Decide it here too; `gen_docs.py` prints a note for a machine state no attribute names.
+
 ## 4. The documents
 
 Under `src/services/`, replace the scaffolded documents with your own. **Every
@@ -156,16 +163,34 @@ it, and the model files holding nothing but the model and `main()`.
 
 ## 6. Implement
 
-**Every Edit you can already write goes in the same request.** The markers do not
-depend on each other, so all of one file's markers travel together, and so do the
-provider's and the consumer's. Only a build, a check or a scenario run may split them.
-One Edit per request and a full rewrite are the two most expensive shapes a run has: a
-request is billed for the whole conversation again, and output is billed at five times
-reading.
+**Fill every marker in one file, then apply them all in one command.** The markers do
+not depend on each other, so there is nothing to do in order. Write one bodies file --
+a `==` line naming the marker, then the code that replaces its line -- and give it to
+the tool:
 
-One `Edit` **call** per marker, and the marker line is the `old_string`: copy the
-printed line, give the body that replaces it, change nothing else, and never rewrite a
-file. That is the shape of each call, not a limit on how many travel in one request.
+```
+python3 <areg-sdk>/tools/agent/fill_markers.py --bodies bodies.txt
+```
+
+```
+== provider_state
+    uint32_t mCredit{ 0 };
+== request_insert_coin
+    set_credit( credit() + coinValue );
+```
+
+Nothing is escaped, so quotes and backslashes stand as written; a body from column one
+is indented to where its marker stood. A name that matches no marker is refused before
+anything is written, so the file is never half filled. `--dry-run` reports what would
+change.
+
+**That is two requests for the whole implementation**, and it is why this is the shape
+to use: a request is billed for the whole conversation again, and output is billed at
+five times reading, so one `Edit` per request and a full rewrite are the two most
+expensive shapes a run has.
+
+An `Edit` is still right for a single body changed after a build or a scenario run --
+the marker line is gone by then. Never rewrite a whole file.
 
 `30-provider.md`, `31-consumer.md` and `32-model.md` describe the code the tool has
 already written. Do not open them to fill a marker, and do not open them while

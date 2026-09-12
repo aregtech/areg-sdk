@@ -59,16 +59,26 @@ def marker(slot, what, indent=8):
 
 MARKER = re.compile(r'//\s*TODO\(you\)\s+([A-Za-z_][\w]*)\s*:\s*(.*?)\s*$')
 
+# The tool that fills every marker of a project in one command.
+FILLER = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                      'fill_markers.py').replace(os.sep, '/')
 
-# Markers in different places do not depend on each other, so they are filled in
-# one step. A request costs its whole context again, so N requests of one Edit cost
-# N times what one request of N Edits costs.
+
+# Markers in different places do not depend on each other, so they are filled in one
+# command. A request costs its whole context again, so N requests of one Edit cost N
+# times what one bodies file costs.
 BATCH_NOTE = (
-    '  These {total} markers are independent of each other, in {files} file(s). Every\n'
-    '  Edit you can already write belongs in the same request: all of one file\'s\n'
-    '  markers together, and the provider\'s with the consumer\'s. Only a build, a\n'
-    '  check or a scenario run may split them. One Edit per request is the most\n'
-    '  expensive shape there is -- a request is billed for the whole conversation.')
+    '  These {total} markers are independent of each other, in {files} file(s). Write\n'
+    '  one bodies file naming each and give them to fill_markers.py in one command:\n'
+    '\n'
+    '    == <marker>\n'
+    '        <the code that replaces its line>\n'
+    '\n'
+    '    python3 {tool} --bodies bodies.txt\n'
+    '\n'
+    '  Nothing is escaped. A name that matches no marker is refused before anything\n'
+    '  is written. One Edit per request is the most expensive shape there is -- a\n'
+    '  request is billed for the whole conversation again.')
 
 
 def print_todos(produced, out):
@@ -96,7 +106,7 @@ def print_todos(produced, out):
         print('  stands there, indentation included. Copy one as the old_string of an')
         print('  Edit; do not rewrite the file and do not read it back to find the')
         print('  surrounding text.')
-        print(BATCH_NOTE.format(total=total, files=files))
+        print(BATCH_NOTE.format(total=total, files=files, tool=FILLER))
 
 
 class Interface:
@@ -1477,8 +1487,8 @@ def update_scenarios(path, mode, iface):
 APP_NOTE = (
     '  These files compile and run as written. Every place a rule of your own\n'
     '  belongs is one TODO(you) line above; the model, main() and every\n'
-    '  subscription are already correct and need no page. Edit each marker line\n'
-    '  in place, several Edits to one request. Rewriting a whole file is never needed.')
+    '  subscription are already correct and need no page. Rewriting a whole file\n'
+    '  is never needed.')
 
 
 def report_todos(out, mode):
@@ -1505,7 +1515,7 @@ def report_todos(out, mode):
     if total == 0:
         print('no TODO(you) marker is left in {}'.format(out))
     else:
-        print(BATCH_NOTE.format(total=total, files=files))
+        print(BATCH_NOTE.format(total=total, files=files, tool=FILLER))
     return 0
 
 

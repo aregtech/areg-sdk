@@ -1881,6 +1881,7 @@ def run():
     check_member_inventory(report)
     check_scenario_runner(report)
     check_trigger_coverage(report)
+    check_state_mirrors(report)
     check_contract_symmetry(report)
     check_task_prompt_neutrality(report)
     return report
@@ -2149,6 +2150,79 @@ def check_trigger_coverage(report):
     report.ok('trigger-coverage',
               'gen_docs.py marks the initial state, a composite and a trigger no '
               'state answers')
+
+
+def check_state_mirrors(report):
+    """gen_docs.py still names a machine state the service publishes no value for.
+
+    An attribute whose enum takes a machine's state names is how a peer watches that
+    machine. A state the enum cannot say is a phase the peer never sees, and under the
+    default OnChange a phase left and re-entered re-sets the value already held and
+    notifies nobody. Nothing else reports either: the documents generate, the code
+    compiles, and a consumer waiting for that update waits for ever. One measured run
+    spent $0.77 and three wrong diagnoses on it.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('state-mirror', 'gen_docs.py does not import: {}'.format(failure))
+        return
+
+    def project(values, extra=None):
+        return {
+            'datatypes': None,
+            'interfaces': [{
+                'name': 'S',
+                'types': [{'name': 'EPhase', 'kind': 'enum',
+                           'values': [{'name': v} for v in values]}],
+                'attributes': [{'name': 'Phase', 'type': 'EPhase'}],
+                'broadcasts': [{'name': n} for n in (extra or [])],
+            }],
+            'machines': [],
+        }
+
+    machine = {
+        'name': 'M', 'initial': 'IDLE',
+        'states': [
+            {'name': 'IDLE', 'transitions': [{'on': 'go', 'to': 'WORK'}]},
+            {'name': 'WORK', 'initial': 'WORK_ONE', 'states': [
+                {'name': 'WORK_ONE', 'transitions': [{'on': 'next', 'to': 'WORK_TWO'}]},
+                {'name': 'WORK_TWO', 'transitions': []},
+                {'name': 'WORK_DONE', 'kind': 'final'},
+                {'name': 'WorkHistory', 'kind': 'history', 'depth': 'Shallow'},
+            ]},
+            {'name': 'HELD', 'transitions': [{'on': 'go', 'to': 'WorkHistory'}]},
+        ],
+    }
+    full = ['Idle', 'One', 'Two', 'Held']
+
+    missing = gen_docs.state_mirrors(project([v for v in full if v != 'Held']), machine)
+    if len(missing) != 1 or missing[0][4] != ['HELD']:
+        report.fail('state-mirror',
+                    'gen_docs.py reports {}, not one note naming HELD: a machine state '
+                    'the service publishes no value for is no longer reported'
+                    .format(missing))
+        return
+    if missing[0][2] != 'OnChange':
+        report.fail('state-mirror',
+                    'the note no longer carries the attribute\'s Notify, so it cannot '
+                    'say that re-entering a state sends nothing')
+        return
+    for case, spec in (('a value per state', project(full)),
+                       ('the phase named elsewhere on the interface',
+                        project([v for v in full if v != 'Held'], extra=['HeldNow']))):
+        if gen_docs.state_mirrors(spec, machine):
+            report.fail('state-mirror',
+                        'gen_docs.py still reports a missing state when {}: the note '
+                        'fires on a design that has no defect'.format(case))
+            return
+    if gen_docs.state_mirrors(project(full), {'name': 'M', 'states': []}):
+        report.fail('state-mirror', 'a machine with no state still prints a note')
+        return
+    report.ok('state-mirror',
+              'gen_docs.py names a machine state no attribute publishes, and is silent '
+              'on a final state, a history marker and a phase published elsewhere')
 
 
 def check_example_type_placement(report):

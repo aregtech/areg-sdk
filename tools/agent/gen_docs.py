@@ -867,6 +867,118 @@ def unread_attributes(spec):
     return [name for name in declared if name not in found]
 
 
+def state_key(name):
+    """One state or enum-value name reduced to what a comparison can use."""
+    return ''.join(ch for ch in name if ch.isalnum()).upper()
+
+
+def published_states(states, ancestors=()):
+    """Every state a consumer could be told about, with the keys its name may match.
+
+    A final state and a history pseudostate are not phases a peer observes, and a
+    composite state is entered only by entering one of its children, so neither is
+    reported. A child usually spells its parent's name into its own, so the parent's
+    key is offered as a prefix to strip.
+    """
+    found = []
+    for state in states or []:
+        name = state.get('name')
+        if not name or (state.get('kind') or 'normal') != 'normal':
+            continue
+        children = state.get('states')
+        if children or state.get('submachine'):
+            found.extend(published_states(children, ancestors + (name,)))
+            continue
+        keys = {state_key(name)}
+        for parent in ancestors:
+            head = state_key(parent)
+            if head and keys and state_key(name).startswith(head):
+                keys.add(state_key(name)[len(head):])
+        found.append((name, set(key for key in keys if key)))
+    return found
+
+
+def enum_values(project):
+    """Every enum this project declares, by the name an attribute may spell it with."""
+    found = {}
+    sources = [project.get('datatypes') or {}]
+    sources.extend(project.get('interfaces') or [])
+    for owner in sources:
+        for entry in named_list(owner, 'declare') + named_list(owner, 'types'):
+            if entry.get('kind') != 'enum':
+                continue
+            names = [value.get('name') for value in named_list(entry, 'values')
+                     if value.get('name')]
+            found[entry['name']] = names
+    return found
+
+
+SPELT_OUT = 4
+
+
+def says(keys, offered):
+    """True when one of these names is a name the peer is offered.
+
+    Spelt-out names are compared loosely in both directions, so a state HEATING is
+    said by a value HeatingWater and a state PAUSED by an attribute IsPaused. A short
+    name is compared whole, or it would match by accident inside a longer one.
+    """
+    for key in keys:
+        for name in offered:
+            if key == name:
+                return True
+            if len(key) >= SPELT_OUT and key in name:
+                return True
+            if len(name) >= SPELT_OUT and name in key:
+                return True
+    return False
+
+
+def otherwise_visible(interface):
+    """Names the peer sees besides one attribute's values: the other members.
+
+    A design may publish a phase as its own flag or announce it as a broadcast rather
+    than as a value of the state attribute. That peer can see the phase, so nothing
+    is missing from it.
+    """
+    offered = set()
+    for key in ('attributes', 'broadcasts', 'responses'):
+        for entry in named_list(interface, key):
+            offered.add(state_key(entry['name']))
+    return offered
+
+
+def state_mirrors(project, spec):
+    """Attributes that publish this machine's states, and the states they cannot say.
+
+    An attribute whose enum takes several of a machine's state names is how a peer
+    watches that machine. A state missing from it, and named nowhere else on the
+    interface, is a phase the peer cannot see -- and nothing else reports that: the
+    documents generate, the code compiles, and the consumer waits for an update that
+    is never sent.
+    """
+    enums = enum_values(project)
+    states = published_states(spec.get('states'))
+    if len(states) < 2:
+        return []
+    found = []
+    for interface in project.get('interfaces') or []:
+        elsewhere = otherwise_visible(interface)
+        for attribute in named_list(interface, 'attributes'):
+            declared = (attribute.get('type') or '').split('::')[-1]
+            if declared not in enums:
+                continue
+            offered = set(state_key(value) for value in enums[declared])
+            matched = [name for name, keys in states if says(keys, offered)]
+            missing = [name for name, keys in states
+                       if not says(keys, offered) and not says(keys, elsewhere)]
+            if len(matched) >= 2 and missing:
+                found.append((interface.get('name', '?'), attribute['name'],
+                              (attribute.get('notify') or 'OnChange'),
+                              len(matched), missing))
+    return found
+
+
 def trigger_coverage(spec):
     """Which states answer each trigger, in declaration order.
 
@@ -1049,6 +1161,18 @@ def main():
                   'condition or an argument. Data no rule of the machine reads belongs '
                   'to the component that computes it, not to the machine.'
                   .format(spec.get('name', '?'), name))
+        for owner, attribute, notify, matched, missing in state_mirrors(project, spec):
+            print('  note  {}: attribute "{}" of {} takes {} of this machine\'s state '
+                  'names and has no value for: {}. A consumer cannot see the machine '
+                  'enter a state the attribute cannot express. Give it a value per '
+                  'state a peer must tell apart, or accept that the state is invisible.'
+                  .format(spec.get('name', '?'), attribute, owner, matched,
+                          ', '.join(missing)))
+            if notify != 'Always':
+                print('          Notify="{}" makes it worse than invisible: leaving such '
+                      'a state and re-entering the one it came from re-sets the value '
+                      'already held, which notifies nobody, so a consumer waiting for '
+                      'that update waits for ever.'.format(notify))
         coverage = trigger_coverage(spec)
         if coverage:
             print('  note  {}: which states answer each trigger (* the initial state, '
