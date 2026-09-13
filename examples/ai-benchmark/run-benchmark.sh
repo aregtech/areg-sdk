@@ -12,7 +12,7 @@
 set -eu
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SDK="$(cd "${HERE}/../.." && pwd)"
+SDK=""
 
 usage()
 {
@@ -21,7 +21,7 @@ One cold agent run, measured, against a clean snapshot of this checkout.
 
   run-benchmark.sh [label] [options]
 
-  label              suffix: e -> <out>/<agent>/<date>e-<project>.
+  label              suffix: e -> ./<date>e-<project>, made in the current directory.
                      Optional; the next unused letter for today is chosen.
 
   --framework NAME   areg | grpc                          (default: areg)
@@ -40,7 +40,9 @@ One cold agent run, measured, against a clean snapshot of this checkout.
   --mode MODE        ipc | local | pubsub, areg only      (default: ipc)
   --model NAME       model ID or alias accepted by the selected CLI; not a whitelist
                        (default: sonnet for Claude; the CLI default otherwise)
-  --effort LEVEL     low | medium | high; unsupported by Gemini
+  --effort LEVEL     low | medium | high, one vocabulary for every CLI: it becomes
+                     Claude's --effort, Copilot's --reasoning-effort or Codex's
+                     model_reasoning_effort. Gemini has no such setting and refuses it
                        (default: medium for Claude; the CLI default otherwise)
   --attempts N       the build-and-fix and run-and-fix bound (default: 3). Any other
                      number adds one rule to the prompt, the same for both arms.
@@ -55,8 +57,14 @@ One cold agent run, measured, against a clean snapshot of this checkout.
                        the hidden acceptance probes of verify_run.py, run on the
                        project after the agent ends. sanitize adds a rebuild under
                        ASan and UBSan.
-  --out DIR          where run directories are made
-                       (default: $AREG_BENCHMARK_RUNS, else ~/runs)
+  --sdk DIR          the areg-sdk checkout: the directory that holds AGENTS.md
+                       (default: $AREG_SDK_ROOT, else the checkout this script sits
+                        in; asked for when neither answers)
+  --grpc DIR         the directory holding protoc and grpc_cpp_plugin, or the prefix
+                     they are installed under, whose headers and libraries CMake is
+                     then told about. gRPC arm only
+                       (default: $AREG_GRPC_ROOT, else the PATH; asked for when
+                        neither answers)
   --dry-run          stage the run directory and print the prompt, start nothing
   --allow-installed-areg
                      proceed although find_package(areg) finds an installed package,
@@ -69,15 +77,18 @@ One cold agent run, measured, against a clean snapshot of this checkout.
     run-benchmark.sh --task examples/ai-benchmark/prompt-tempalarm.md
     run-benchmark.sh --task examples/ai-benchmark/prompt-atm.md --attempts 15
     run-benchmark.sh --task examples/ai-benchmark/prompt-printscan.md --attempts 15
-    run-benchmark.sh f --model opus --effort high --out /data/runs --dry-run
+    run-benchmark.sh f --model opus --effort high --dry-run
+    run-benchmark.sh --sdk ~/src/areg-sdk --framework grpc --grpc /usr/local
     run-benchmark.sh --agent copilot --model gpt-5.6-terra
     run-benchmark.sh --agent codex --model gpt-5.4 --effort high
     run-benchmark.sh --agent gemini --model gemini-2.5-flash
     run-benchmark.sh --verify sanitize                areg, probes and sanitizers
 
-  The run directory holds the measurement: meta.txt, prompt.txt, result.json[l],
-  run.err, the fingerprints and sdk/, the snapshot the agent read. The agent works
-  in work/, which starts empty.
+  The run directory is made in the current directory, so start the run where the
+  measurements should land, and never inside the checkout. It holds meta.txt,
+  prompt.txt, result.json[l], run.err, the fingerprints and sdk/, the snapshot the
+  agent read. The agent works in work/, which starts empty, and is given sdk/ and
+  nothing else: never the run directory, which names the source checkout.
 
   Install and authenticate only the selected CLI. Model availability depends on
   that CLI and your account; README.md explains model names and comparable metrics.
@@ -87,6 +98,84 @@ USAGE
 die() { echo "run-benchmark: $*" >&2; exit 2; }
 
 need() { [ $# -ge 2 ] || die "$1 needs a value"; }
+
+# A path is never searched for. It is given, inherited, found where this script sits,
+# or asked for: a guessed path measures a tree nobody chose. The answer lands in
+# ANSWER, because a die() inside $(...) would only end the subshell.
+ANSWER=""
+ask_path()
+{
+    ANSWER=""
+    # The device node exists even with no controlling terminal, so it is opened in a
+    # subshell rather than tested: -r /dev/tty answers yes and the write then fails.
+    ( : > /dev/tty ) 2>/dev/null || die "$1
+  There is no terminal to ask on. Pass the option."
+    printf 'run-benchmark: %s\n> ' "$1" > /dev/tty
+    IFS= read -r ANSWER < /dev/tty || true
+    [ -n "${ANSWER}" ] || die "nothing given; pass the option"
+}
+
+# The SDK is the directory that holds AGENTS.md, and that is what is checked.
+resolve_sdk()
+{
+    local candidate=""
+    if [ -n "${SDK_OPT}" ]; then
+        candidate="${SDK_OPT}"
+    elif [ -n "${AREG_SDK_ROOT:-}" ]; then
+        candidate="${AREG_SDK_ROOT}"
+    elif [ -f "${HERE}/../../AGENTS.md" ]; then
+        candidate="${HERE}/../.."
+    else
+        ask_path "the areg-sdk checkout is unknown: give the directory that holds AGENTS.md, or pass --sdk"
+        candidate="${ANSWER}"
+    fi
+    [ -d "${candidate}" ] || die "--sdk ${candidate} is not a directory"
+    SDK="$(cd "${candidate}" && pwd)"
+    [ -f "${SDK}/AGENTS.md" ] \
+        || die "${SDK} holds no AGENTS.md, so it is not an areg-sdk checkout; pass --sdk"
+}
+
+# protoc and grpc_cpp_plugin, and the prefix its headers and libraries are under.
+resolve_grpc()
+{
+    local candidate=""
+    if [ -n "${GRPC_OPT}" ]; then
+        candidate="${GRPC_OPT}"
+    elif [ -n "${AREG_GRPC_ROOT:-}" ]; then
+        candidate="${AREG_GRPC_ROOT}"
+    elif command -v protoc >/dev/null 2>&1 && command -v grpc_cpp_plugin >/dev/null 2>&1; then
+        return 0
+    else
+        ask_path "protoc and grpc_cpp_plugin are not on the PATH: give the directory that holds them (or the install prefix), or pass --grpc"
+        candidate="${ANSWER}"
+    fi
+    [ -d "${candidate}" ] || die "--grpc ${candidate} is not a directory"
+    candidate="$(cd "${candidate}" && pwd)"
+    local bin="${candidate}"
+    [ -x "${bin}/protoc" ] || bin="${candidate}/bin"
+    [ -x "${bin}/protoc" ] || die "no protoc in ${candidate} or ${candidate}/bin; see ${HERE}/INSTALL-grpc.md"
+    PATH="${bin}:${PATH}"; export PATH
+    # A prefix carries the headers and libraries too, so CMake is told where to look
+    # rather than left to find whichever copy the machine happens to have first.
+    if [ "${bin}" != "${candidate}" ]; then
+        CMAKE_PREFIX_PATH="${candidate}${CMAKE_PREFIX_PATH:+:${CMAKE_PREFIX_PATH}}"
+        export CMAKE_PREFIX_PATH
+    fi
+}
+
+# One vocabulary for every CLI: low, medium, high. Each spells it differently, and the
+# spelling lives here so a comparison is never quietly reading three different scales.
+EFFORT_ARGS=()
+effort_args()
+{
+    EFFORT_ARGS=()
+    [ -n "${EFFORT}" ] || return 0
+    case "$1" in
+        claude)  EFFORT_ARGS=(--effort "${EFFORT}") ;;
+        copilot) EFFORT_ARGS=(--reasoning-effort "${EFFORT}") ;;
+        codex)   EFFORT_ARGS=(--config "model_reasoning_effort='${EFFORT}'") ;;
+    esac
+}
 
 # The files a clone of this checkout carries, copied as the working tree has them.
 snapshot()
@@ -135,8 +224,7 @@ main()
     local FRAMEWORK="areg" TASK="examples/ai-benchmark/prompt-coffeemachine.md" WRAPPER=""
     local PROJECT="" MODE="ipc" AGENT="claude" MODEL="" EFFORT=""
     local ATTEMPTS="3" DEBRIEF="" RECIPES="none" LABEL="" DRY="" ALLOW_INSTALLED=""
-    local VERIFY="probes"
-    local OUT="${AREG_BENCHMARK_RUNS:-${HOME}/runs}"
+    local VERIFY="probes" SDK_OPT="" GRPC_OPT=""
 
     # A bare first word is the label. Anything starting with a dash is an option.
     if [ $# -gt 0 ]; then
@@ -160,7 +248,8 @@ main()
             --effort)    need "$@"; EFFORT="$2";    shift 2 ;;
             --attempts)  need "$@"; ATTEMPTS="$2";  shift 2 ;;
             --recipes)   need "$@"; RECIPES="$2";   shift 2 ;;
-            --out)       need "$@"; OUT="$2";       shift 2 ;;
+            --sdk)       need "$@"; SDK_OPT="$2";   shift 2 ;;
+            --grpc)      need "$@"; GRPC_OPT="$2";  shift 2 ;;
             --verify)    need "$@"; VERIFY="$2";    shift 2 ;;
             --debrief)   DEBRIEF=1; shift ;;
             --dry-run)   DRY=1; shift ;;
@@ -189,6 +278,7 @@ main()
 
     command -v "${AGENT}" >/dev/null || die "${AGENT} not found: install the selected CLI and log in"
     command -v python3 >/dev/null || die "python3 not found"
+    resolve_sdk
     git -C "${SDK}" rev-parse HEAD >/dev/null 2>&1 \
         || die "${SDK} is not a git checkout; the snapshot is taken from its file list"
 
@@ -209,6 +299,7 @@ main()
 
     if [ "${FRAMEWORK}" = "grpc" ]; then
         # The toolchain is the operator's job; an agent that installs one measures it.
+        resolve_grpc
         command -v protoc          >/dev/null || die "protoc not found; see ${HERE}/INSTALL-grpc.md"
         command -v grpc_cpp_plugin >/dev/null || die "grpc_cpp_plugin not found; see ${HERE}/INSTALL-grpc.md"
     elif [ -z "${ALLOW_INSTALLED}" ]; then
@@ -225,21 +316,21 @@ main()
 
     local suffix="${PROJECT}"
     [ "${FRAMEWORK}" = "grpc" ] && suffix="grpc-${PROJECT}"
-    mkdir -p "${OUT}"
-    OUT="$(cd "${OUT}" && pwd)"
-    case "${OUT}/" in "${SDK}/"*) die "--out ${OUT} is inside the checkout; a run must not write where it reads" ;; esac
-    OUT="${OUT}/${AGENT}"
-    mkdir -p "${OUT}"
+
+    # The run is made where it is started, so no path is assumed and no home is
+    # searched. The one rule that remains is the old one.
+    local HOST; HOST="$(pwd)"
+    case "${HOST}/" in "${SDK}/"*) die "the current directory ${HOST} is inside the checkout; a run must not write where it reads. Start it somewhere else." ;; esac
 
     local letter
     if [ -z "${LABEL}" ]; then
         for letter in a b c d e f g h i j k l m n o p q r s t u v w x y z; do
-            [ -e "${OUT}/$(date -u +%Y%m%d)${letter}-${suffix}" ] || { LABEL="${letter}"; break; }
+            [ -e "${HOST}/$(date -u +%Y%m%d)${letter}-${suffix}" ] || { LABEL="${letter}"; break; }
         done
         [ -n "${LABEL}" ] || die "every label a..z is used for ${suffix} today; pass one explicitly"
     fi
 
-    local RUN="${OUT}/$(date -u +%Y%m%d)${LABEL}-${suffix}"
+    local RUN="${HOST}/$(date -u +%Y%m%d)${LABEL}-${suffix}"
     [ -e "${RUN}" ] && die "run directory already exists: ${RUN}"
     local WORK="${RUN}/work" SNAP="${RUN}/sdk"
     mkdir -p "${WORK}"
@@ -357,7 +448,7 @@ Be specific and short: a list, not prose."
     BODY="${BODY//<mode>/${MODE}}"
     { printf '%s\n' "${BODY}"; printf '\n%s\n' "${RULES}"; } > "${RUN}/prompt.txt"
     if [ "${FRAMEWORK}" = "grpc" ] && grep -qi areg "${RUN}/prompt.txt"; then
-        die "the gRPC prompt names areg; check ${WRAPPER_ABS}, and that --out ${OUT} does not"
+        die "the gRPC prompt names areg; check ${WRAPPER_ABS}, and that ${HOST} does not"
     fi
 
     local ISOLATION="snapshot; CLI user configuration may load (see README.md)"
@@ -385,28 +476,36 @@ Be specific and short: a list, not prose."
     local code=0
     local RESULT="${RUN}/result.json"
     local -a agent_args=()
+    # ADD_DIR, never RUN: RUN is the parent of the snapshot and holds meta.txt, which
+    # names the source checkout. Handing that to the gRPC arm tells it what it exists
+    # not to know, and handing it to any arm shows one agent what the others cannot see.
+    effort_args "${AGENT}"
     case "${AGENT}" in
         claude)
-            agent_args=(-p --output-format json --effort "${EFFORT}"
+            agent_args=(-p --output-format json
                         --disable-slash-commands --strict-mcp-config
                         --allowedTools "Bash Read Write Edit Glob Grep" --add-dir "${ADD_DIR}")
             ;;
         copilot)
+            # No allow-list: the CLI accepts a tool name it does not have, so a typo
+            # would disarm the agent halfway through a paid run. The web tools are
+            # named out instead, which fails safe, and no --allow-url is passed, so
+            # this arm reaches the network no more than the Claude arm does.
             agent_args=(--allow-all-tools --disable-builtin-mcps --no-custom-instructions
-                        --add-dir "${RUN}" --usage-output-file "${RUN}/result.json")
-            [ -z "${EFFORT}" ] || agent_args+=(--reasoning-effort "${EFFORT}")
+                        --no-ask-user --excluded-tools=web_search,web_fetch,fetch
+                        --add-dir "${ADD_DIR}" --usage-output-file "${RUN}/result.json")
             RESULT="${RUN}/run.out"
             ;;
         codex)
             agent_args=(--ask-for-approval never exec --sandbox workspace-write
-                        --skip-git-repo-check --add-dir "${RUN}" --json)
-            [ -z "${EFFORT}" ] || agent_args+=(--config "model_reasoning_effort='${EFFORT}'")
+                        --skip-git-repo-check --add-dir "${ADD_DIR}" --json)
             RESULT="${RUN}/result.jsonl"
             ;;
         gemini)
-            agent_args=(--output-format json --approval-mode yolo --include-directories "${RUN}")
+            agent_args=(--output-format json --approval-mode yolo --include-directories "${ADD_DIR}")
             ;;
     esac
+    [ ${#EFFORT_ARGS[@]} -eq 0 ] || agent_args+=("${EFFORT_ARGS[@]}")
     [ -z "${MODEL}" ] || agent_args+=(--model "${MODEL}")
     [ "${AGENT}" != "codex" ] || agent_args+=(-)
     # Claude's first build can outlast its default command timeout.
@@ -448,13 +547,13 @@ Be specific and short: a list, not prose."
         echo "run-benchmark: ${AGENT} returned no output; see ${RUN}/run.err" >&2
         code=4
     fi
-    if [ "${code}" -eq 0 ]; then
-        case "${AGENT}" in
-            claude)  python3 "${HERE}/analyze_run.py" "${RUN}" || code=4 ;;
-            copilot) python3 "${HERE}/measure.py" "${RUN}/result.json" || code=4 ;;
-            *) echo "usage: native metrics in ${RESULT}; no cross-agent cost conversion" ;;
-        esac
-    fi
+    # A run that failed is the one most worth reading, and the analysis is what says
+    # why. It runs whatever the exit code was, and it never changes that code.
+    case "${AGENT}" in
+        claude)  python3 "${HERE}/analyze_run.py" "${RUN}" || true ;;
+        copilot) python3 "${HERE}/measure.py" "${RUN}/result.json" || true ;;
+        *) echo "usage: native metrics in ${RESULT}; no cross-agent cost conversion" ;;
+    esac
 
     if [ "${VERIFY}" != "none" ]; then
         local SANITIZE=""

@@ -12,3 +12,9 @@
 *.sh    text eol=lf
 *.py    text eol=lf
 *.bat   text eol=crlf
+
+# PowerShell and Markdown are edited on Windows as often as anywhere else, and an
+# editor there writes carriage returns. Undeclared, the checkout then differs from
+# the blob and the next commit carries a whole file nobody changed.
+*.ps1   text eol=crlf
+*.md    text eol=lf

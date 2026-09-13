@@ -93,6 +93,12 @@ def report_copilot(result):
 
     The top-level totalNanoAiu is the session total in billionths of an AI credit.
     Nested model/agent totals are breakdowns, not additional charges.
+
+    TO CHECK, then either state the rate here or delete this note: GitHub prices an
+    AI credit at USD 0.01 for overage, so totalNanoAiu / 1e11 would be the dollar
+    figure. Nothing here converts, because the rate is a billing term rather than
+    something the usage file states, and a printed number nobody verified is worse
+    than a blank column. Verify against an invoice before using it to compare arms.
     """
     nano_aiu = result.get("totalNanoAiu")
     if nano_aiu is not None and (not isinstance(nano_aiu, int)

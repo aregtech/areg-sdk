@@ -117,14 +117,20 @@ own refuses to start, because the gRPC steps are written for one task.
 - CMake and a C++17 compiler.
 - The areg arm: no installed areg package, or the run would build against it instead of
   the snapshot; the script checks this and refuses.
-- The gRPC arm: `protoc` and `grpc_cpp_plugin` on the `PATH`, see
-  [`INSTALL-grpc.md`](INSTALL-grpc.md).
-- A git checkout of areg-sdk. The script is run from inside it and snapshots it.
+- The gRPC arm: `protoc` and `grpc_cpp_plugin` on the `PATH`, or `--grpc DIR` (or
+  `AREG_GRPC_ROOT`) naming the directory that holds them, or the prefix they are
+  installed under. See [`INSTALL-grpc.md`](INSTALL-grpc.md).
+- A git checkout of areg-sdk, which the script snapshots. It is found where the
+  script sits, or given as `--sdk DIR` (or `AREG_SDK_ROOT`) naming the directory
+  that holds `AGENTS.md`. Nothing is searched for: when neither answers, the script
+  asks, and refuses rather than guess when there is no terminal to ask on.
 
 ### What it does
 
-1. Makes a run directory outside the checkout: `<out>/<agent>/<date><label>-<project>`,
-   or `...-grpc-<project>` for the gRPC arm. Existing runs are not moved.
+1. Makes a run directory **in the current directory**: `<date><label>-<project>`, or
+   `<date><label>-grpc-<project>` for the gRPC arm. Start the run where the
+   measurements should land; it refuses to start inside the checkout it snapshots.
+   Existing runs are not moved.
 2. **Stages what the agent may read.**
    - areg: a snapshot of the checkout -- tracked files, and untracked files that are
      not ignored, as the working tree has them. Nothing local to the operator's
@@ -186,11 +192,22 @@ Use `.\examples\ai-benchmark\run-benchmark.ps1` with the same flags on Windows.
 option rather than pretending to honor it. Effort levels are not calibrated
 equivalents across providers.
 
-**Permissions differ.** Claude keeps its existing tool allowlist and disables
-skills/MCP. Copilot permits unattended tools and disables built-in MCP servers
-and automatic custom instructions, but user MCP/skills may still load. Codex
-uses `workspace-write` with approvals disabled; its sandbox can block downloads.
-Gemini uses `yolo` approval mode (automatic tool approval). Codex/Gemini retain
+**Every arm is given the snapshot and nothing else.** The agent's working directory
+is `work/`, and the only other directory it may read is `sdk/` -- never the run
+directory above them, which holds `meta.txt` and names the checkout the snapshot was
+taken from. The gRPC arm is given only `sdk/tools/agent/`, so it never meets the name
+areg at all.
+
+**Permissions still differ, and the remaining differences are these.** Claude keeps
+its six-tool allowlist and disables skills and MCP. Copilot permits unattended tools,
+disables built-in MCP servers and automatic custom instructions, disables `ask_user`
+so it cannot stall on a question, and has the web tools named out; no `--allow-url`
+is passed, so it reaches the network no more than Claude does. Its tool names are
+*excluded* rather than allow-listed on purpose: the CLI accepts a tool name it does
+not have, so an allow-list with one typo would disarm the agent in the middle of a
+paid run, while an exclusion that misses simply changes nothing. User MCP and skills
+may still load for Copilot. Codex uses `workspace-write` with approvals disabled; its
+sandbox can block downloads. Gemini uses `yolo` approval mode. Codex and Gemini retain
 user settings and integrations. Run only in a disposable environment with trusted
 prompts; a snapshot is not a security sandbox. Use the same CLI configuration for
 both framework arms, and do not attribute harness differences solely to the model.
@@ -222,7 +239,8 @@ converted to dollars.
 | `--debrief` | adds a diagnostic pass after the report; never compare such a run with a normal one | `--debrief` |
 | `--verify` | the hidden acceptance probes after the run: `none`, `probes`, or `sanitize` for an ASan and UBSan rebuild as well | `--verify sanitize` |
 | `--recipes` | areg only: whether a documented recipe may be copied | `--recipes copy` |
-| `--out` | output root, with an agent subdirectory; also `AREG_BENCHMARK_RUNS` | `--out /data/runs` |
+| `--sdk` | the checkout that holds `AGENTS.md`; also `AREG_SDK_ROOT` | `--sdk ~/src/areg-sdk` |
+| `--grpc` | the directory holding `protoc` and `grpc_cpp_plugin`, or the prefix they are under, which is also put on `CMAKE_PREFIX_PATH`; also `AREG_GRPC_ROOT` | `--grpc /usr/local` |
 | `--dry-run` | stages everything and prints the prompt, starts no agent and spends nothing. The selected CLI must still be installed | `--dry-run` |
 | `--allow-installed-areg` | measures against an installed areg package on purpose | `--allow-installed-areg` |
 
@@ -251,8 +269,8 @@ examples/ai-benchmark/run-benchmark.sh --framework grpc --attempts 15
 # Print the prompt a run would get, and spend nothing
 examples/ai-benchmark/run-benchmark.sh --task examples/ai-benchmark/prompt-atm.md --dry-run
 
-# Another model and effort, into a directory of your choice
-examples/ai-benchmark/run-benchmark.sh --model opus --effort high --attempts 15 --out /data/runs
+# Another model and effort. The run lands in the current directory
+cd /data/runs && examples/ai-benchmark/run-benchmark.sh --model opus --effort high --attempts 15
 
 # Three draws of one arm on one tree -- compare medians, never one run
 for label in a b c; do
@@ -260,8 +278,8 @@ for label in a b c; do
 done
 
 # Read a finished run again, and probe it again with sanitizers
-python3 examples/ai-benchmark/analyze_run.py ~/runs/claude/20260913d-coffeemachine
-python3 examples/ai-benchmark/verify_run.py  ~/runs/claude/20260913d-coffeemachine --sanitize
+python3 examples/ai-benchmark/analyze_run.py ./20260913d-coffeemachine
+python3 examples/ai-benchmark/verify_run.py  ./20260913d-coffeemachine --sanitize
 ```
 
 ### Hidden acceptance probes
@@ -307,7 +325,7 @@ each arm at least three times on one tree and compare medians; the quality rows
 **Score the result yourself.** The agent's own count is a claim. Re-run its scenarios:
 
 ```bash
-cd ~/runs/20260913d-coffeemachine/work
+cd ./20260913d-coffeemachine/work
 python3 ../sdk/tools/agent/run_scenarios.py --build build/bin
 ```
 
