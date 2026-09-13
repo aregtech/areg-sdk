@@ -112,7 +112,8 @@ own refuses to start, because the gRPC steps are written for one task.
     `.\examples\ai-benchmark\run-benchmark.ps1 --framework grpc --attempts 15`. If
     scripts are blocked, start it as
     `powershell -ExecutionPolicy Bypass -File examples\ai-benchmark\run-benchmark.ps1 ...`.
-- Claude Code, installed and logged in: `claude` on the `PATH`.
+- The selected CLI (`claude`, `copilot`, `codex` or `gemini`), installed and
+  authenticated on the `PATH`. Only that CLI is required.
 - CMake and a C++17 compiler.
 - The areg arm: no installed areg package, or the run would build against it instead of
   the snapshot; the script checks this and refuses.
@@ -122,8 +123,8 @@ own refuses to start, because the gRPC steps are written for one task.
 
 ### What it does
 
-1. Makes a run directory outside the checkout: `<out>/<date><label>-<project>`, or
-   `...-grpc-<project>` for the gRPC arm.
+1. Makes a run directory outside the checkout: `<out>/<agent>/<date><label>-<project>`,
+   or `...-grpc-<project>` for the gRPC arm. Existing runs are not moved.
 2. **Stages what the agent may read.**
    - areg: a snapshot of the checkout -- tracked files, and untracked files that are
      not ignored, as the working tree has them. Nothing local to the operator's
@@ -132,75 +133,77 @@ own refuses to start, because the gRPC steps are written for one task.
      if anything else is staged, or if the task or the prompt names areg.
 3. Builds `prompt.txt` from the wrapper, with the placeholders filled in, and records
    `meta.txt` and the fingerprints of the files the agent reads.
-4. Starts Claude Code headless in the empty `work/` directory, with no skills and no MCP
-   servers, and the same tools for both arms.
+4. Starts the selected CLI headless in the empty `work/` directory, passing
+   `prompt.txt` on stdin. Claude retains its no-skills/no-MCP setup; other CLIs
+   have different permissions and configuration (see below).
 5. After the run, verifies that the agent did not change what it read, runs
-   `analyze_run.py` on the run, and then the [hidden acceptance
-   probes](#hidden-acceptance-probes) on the project it built.
+   the existing report for Claude or Copilot (otherwise keeps native usage output),
+   and then the [hidden acceptance probes](#hidden-acceptance-probes) on the project
+   it built.
 
 ### Help
 
+```bash
+examples/ai-benchmark/run-benchmark.sh --help
 ```
-$ examples/ai-benchmark/run-benchmark.sh --help
-One cold agent run, measured, against a clean snapshot of this checkout.
 
-  run-benchmark.sh [label] [options]
+On Windows use `.\examples\ai-benchmark\run-benchmark.ps1 --help`.
+Both scripts accept the same options; no separate agent runner or registry is needed.
 
-  label              suffix of the run directory: e -> <out>/<date>e-<project>.
-                     Optional; the next unused letter for today is chosen.
+### Selecting an agent and a model
 
-  --framework NAME   areg | grpc                          (default: areg)
-  --task PATH        task file, absolute or relative to the SDK
-                       (default: examples/ai-benchmark/prompt-coffeemachine.md)
-  --wrapper PATH     the wrapper the prompt is built from, absolute or relative to
-                     the SDK. Everything after its "--- PROMPT BEGINS BELOW THIS
-                     LINE" marker is the prompt, with <areg-sdk>, <runner>, <task>,
-                     <project> and <mode> substituted
-                       (default: <framework>-<key>-prompt.txt beside a task named
-                        prompt-<key>.md; without one, areg uses
-                        areg-ai-prompt-template.txt and grpc refuses to start)
-  --project NAME     C identifier: directory and CMake project name
-                       (default: <key> of the task, e.g. coffeemachine)
-  --mode MODE        ipc | local | pubsub, areg only      (default: ipc)
-  --model NAME       sonnet | haiku | opus                (default: sonnet)
-  --effort LEVEL     low | medium | high                  (default: medium)
-  --attempts N       the build-and-fix and run-and-fix bound (default: 3). Any other
-                     number adds one rule to the prompt, the same for both arms.
-                     0 removes the bound, and is warned about: the spend is unbounded.
-  --debrief          append a diagnostic pass: what the run could not find. It costs
-                     requests on purpose, so such a run is never compared with one
-                     made without it.
-  --recipes MODE     none | copy, areg only               (default: none)
-                       none: no example source may be copied; every file is written
-                       or generated. copy: a documented recipe may be copied.
-  --verify MODE      none | probes | sanitize             (default: probes)
-                       the hidden acceptance probes of verify_run.py, run on the
-                       project after the agent ends. sanitize adds a rebuild under
-                       ASan and UBSan.
-  --out DIR          where run directories are made
-                       (default: $AREG_BENCHMARK_RUNS, else ~/runs)
-  --dry-run          stage the run directory and print the prompt, start nothing
-  --allow-installed-areg
-                     proceed although find_package(areg) finds an installed package,
-                     which would shadow the snapshot
-  -h, --help         this text
+**`--agent` selects the CLI; `--model` selects the model inside that CLI.**
+These are separate choices: for example, Copilot can offer models from several
+providers. Without options the existing default is Claude, `sonnet`, `medium` effort.
+For other agents, omitting `--model` or `--effort` leaves that setting to the CLI;
+`meta.txt` records it as `agent-default`.
 
-  Examples:
-    run-benchmark.sh                                  areg, the coffee machine
-    run-benchmark.sh --framework grpc --attempts 15   gRPC, the coffee machine
-    run-benchmark.sh --task examples/ai-benchmark/prompt-tempalarm.md
-    run-benchmark.sh --task examples/ai-benchmark/prompt-atm.md --attempts 15
-    run-benchmark.sh --task examples/ai-benchmark/prompt-printscan.md --attempts 15
-    run-benchmark.sh f --model opus --effort high --out /data/runs --dry-run
-    run-benchmark.sh --verify sanitize                areg, probes and sanitizers
+| `--agent` | Example `--model` values (not an exhaustive list) |
+|---|---|
+| `claude` | `sonnet`, `opus` (Claude Code aliases) |
+| `copilot` | `gpt-5.6-terra` (Terra), `gpt-5.6-sol` (Sol) |
+| `codex` | `gpt-5.4` |
+| `gemini` | `gemini-2.5-flash` (Gemini Flash) |
 
-  The run directory holds the measurement: meta.txt, prompt.txt, result.json,
-  run.err, the fingerprints and sdk/, the snapshot the agent read. The agent works
-  in work/, which starts empty.
+These are examples, **not a supported-model whitelist or a promise of account
+access**. Pass any model ID or alias accepted by your installed CLI. Display names
+such as "Terra", "Sol" or "Gemini Flash" are not necessarily valid CLI IDs.
+Check the selected CLI's `/model` picker and provider documentation for names
+available to your account; the CLI, not these scripts, validates availability.
+For repeatable comparisons, pin an exact model ID rather than a moving alias.
 
-  The agent is Claude Code, headless. Another agent is run by hand with the same
-  prompt.txt; README.md says which of its numbers compare.
+```bash
+examples/ai-benchmark/run-benchmark.sh --agent claude --model opus --effort high
+examples/ai-benchmark/run-benchmark.sh --agent copilot --model gpt-5.6-terra
+examples/ai-benchmark/run-benchmark.sh --agent copilot --model gpt-5.6-sol
+examples/ai-benchmark/run-benchmark.sh --agent codex --model gpt-5.4 --effort high
+examples/ai-benchmark/run-benchmark.sh --agent gemini --model gemini-2.5-flash
 ```
+
+Use `.\examples\ai-benchmark\run-benchmark.ps1` with the same flags on Windows.
+`--effort low|medium|high` maps to Claude's `--effort`, Copilot's
+`--reasoning-effort`, or Codex's `model_reasoning_effort`. Gemini rejects this
+option rather than pretending to honor it. Effort levels are not calibrated
+equivalents across providers.
+
+**Permissions differ.** Claude keeps its existing tool allowlist and disables
+skills/MCP. Copilot permits unattended tools and disables built-in MCP servers
+and automatic custom instructions, but user MCP/skills may still load. Codex
+uses `workspace-write` with approvals disabled; its sandbox can block downloads.
+Gemini uses `yolo` approval mode (automatic tool approval). Codex/Gemini retain
+user settings and integrations. Run only in a disposable environment with trusted
+prompts; a snapshot is not a security sandbox. Use the same CLI configuration for
+both framework arms, and do not attribute harness differences solely to the model.
+
+Claude writes `result.json` and uses `analyze_run.py`; Copilot writes response text
+to `run.out`, usage to `result.json`, and uses the existing `measure.py`.
+Codex keeps `result.jsonl` (including native usage events); Gemini keeps
+`result.json` (response and stats). No new usage parser is added. All four keep
+`meta.txt`, `prompt.txt`, `run.err`, fingerprints and the same acceptance probes.
+Copilot's report prints **AI credits (AIC)** from the top-level
+`totalNanoAiu / 1,000,000,000`, without adding the model/agent breakdowns again.
+Missing native metrics are unavailable, not zero; Copilot billing units are not
+converted to dollars.
 
 ### The options, one by one
 
@@ -208,23 +211,26 @@ One cold agent run, measured, against a clean snapshot of this checkout.
 |---|---|---|
 | `label` | the letter after the date in the run directory name; runs with the same label on the same day are refused | `run-benchmark.sh b` |
 | `--framework` | which arm: areg reads the snapshot, gRPC reads only the runner | `--framework grpc` |
+| `--agent` | which installed CLI runs the task; default `claude` | `--agent copilot` |
 | `--task` | the task prompt; its `prompt-<key>.md` name also sets the project name and the wrapper | `--task examples/ai-benchmark/prompt-atm.md` |
 | `--wrapper` | a wrapper other than the default | `--wrapper /home/me/my-areg-wrapper.txt` |
 | `--project` | the directory and CMake project name inside `work/`, and the run directory suffix | `--project atm2` |
 | `--mode` | the areg application shape the scaffold writes | `--mode local` |
-| `--model` | the model the agent runs on | `--model opus` |
-| `--effort` | the agent's reasoning effort | `--effort high` |
+| `--model` | any model ID or alias accepted by that CLI | `--model opus` |
+| `--effort` | reasoning effort for Claude, Copilot or Codex; omit for Gemini | `--effort high` |
 | `--attempts` | the fix bound; the prompt says it, the same for both arms | `--attempts 15` |
 | `--debrief` | adds a diagnostic pass after the report; never compare such a run with a normal one | `--debrief` |
 | `--verify` | the hidden acceptance probes after the run: `none`, `probes`, or `sanitize` for an ASan and UBSan rebuild as well | `--verify sanitize` |
 | `--recipes` | areg only: whether a documented recipe may be copied | `--recipes copy` |
-| `--out` | where run directories are made; also `AREG_BENCHMARK_RUNS` | `--out /data/runs` |
-| `--dry-run` | stages everything and prints the prompt, starts no agent and spends nothing. `claude` must still be installed | `--dry-run` |
+| `--out` | output root, with an agent subdirectory; also `AREG_BENCHMARK_RUNS` | `--out /data/runs` |
+| `--dry-run` | stages everything and prints the prompt, starts no agent and spends nothing. The selected CLI must still be installed | `--dry-run` |
 | `--allow-installed-areg` | measures against an installed areg package on purpose | `--allow-installed-areg` |
 
 **Exit code.** `0` the agent finished; `2` the script refused to start, and says why; `3`
-the agent changed a file it was measured against, so the run is not valid; anything else
-is the agent's own exit code.
+the agent changed a file it was measured against, so the run is not valid; `4` the
+agent returned no output or the post-run usage report failed. Non-zero agent exit codes are preserved (and can overlap
+these codes); see `meta.txt` and `run.err`. Acceptance results are in `verify.json`,
+not implied by an agent's zero exit.
 
 ### Copy and paste
 
@@ -254,8 +260,8 @@ for label in a b c; do
 done
 
 # Read a finished run again, and probe it again with sanitizers
-python3 examples/ai-benchmark/analyze_run.py ~/runs/20260913d-coffeemachine
-python3 examples/ai-benchmark/verify_run.py  ~/runs/20260913d-coffeemachine --sanitize
+python3 examples/ai-benchmark/analyze_run.py ~/runs/claude/20260913d-coffeemachine
+python3 examples/ai-benchmark/verify_run.py  ~/runs/claude/20260913d-coffeemachine --sanitize
 ```
 
 ### Hidden acceptance probes
@@ -291,7 +297,8 @@ system package is not.
 reasoning tokens (exact, from the result), cache reads and writes, peak context, build and
 scenario runs, the build-and-fix and run-and-fix cycles, filesystem searches, reads of
 framework sources, every documentation page opened with its size, the lines of C++
-written by hand, and a per-request timeline. It runs at the end of every run.
+written by hand, and a per-request timeline. It runs at the end of a successful
+Claude run; for other CLIs use the artifacts described above.
 
 **Never quote one run.** The same tree run twice has come out 45-80% apart in cost. Run
 each arm at least three times on one tree and compare medians; the quality rows
@@ -394,10 +401,14 @@ about 8% of one run before it was removed.
 | build-and-fix cycles, run-and-fix cycles, acceptance items, checker findings, files opened off-route | **the agent**, from what it already knows | **yes** -- the report table in every task |
 | tokens, cache reads, cost, requests, wall time | **the operator**, afterwards, from what the harness records | no |
 
-**Two harnesses do not report a comparable cost.** Claude Code reports `total_cost_usd`.
-GitHub Copilot reports **premium requests**, a quota unit and not money, so `measure.py`
-prints no cost for a Copilot run and says why. Compare such arms on tokens, requests and
-the agent-reported rows. Copilot reports reasoning tokens directly, and its own system
+**Keep billing units separate.** Claude Code reports USD (`total_cost_usd`).
+GitHub Copilot exports AI credits in `totalNanoAiu`; `measure.py` divides this
+session total by 1,000,000,000 and prints **AI credits (AIC)**. For example,
+`309765302000` becomes `309.765302 AIC`. A missing credit total is reported as
+unavailable, not zero. Any premium-request count is labeled **legacy** and is
+not the credit total. No USD conversion is inferred from either Copilot field.
+Compare arms on acceptance results, tokens and requests as well as their separately
+labeled billing units. Copilot reports reasoning tokens directly, and its own system
 prompt is large -- a one-word prompt billed 22,575 input tokens -- which is the floor of
 any Copilot run.
 

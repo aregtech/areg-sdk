@@ -15,12 +15,13 @@ GitHub Copilot's --usage-output-file is mapped to the same rows a Claude run is 
 on; any other shape has every number it holds printed under the key the file itself
 used, so nothing is guessed and nothing is silently wrong.
 
-**Copilot reports no cost in money.** It reports premium requests, which are a quota
-unit, so the two agents are comparable on tokens, requests and wall time and NOT on a
-"cost" column. Saying so is the point of this tool.
+**Keep billing units explicit.** Claude reports USD; Copilot reports AI credits
+(AIC), or premium requests on legacy billing. Neither Copilot unit is converted
+to dollars by this tool.
 """
 
 import collections
+from decimal import Decimal
 import glob
 import json
 import os
@@ -81,7 +82,8 @@ def copilot_usage(result):
     """Copilot's --usage-output-file, or None when the file is some other shape."""
     if not isinstance(result, dict):
         return None
-    if "modelMetrics" not in result and "totalPremiumRequestCost" not in result:
+    if not any(key in result for key in ("modelMetrics", "totalPremiumRequestCost",
+                                         "totalNanoAiu")):
         return None
     return result
 
@@ -89,19 +91,27 @@ def copilot_usage(result):
 def report_copilot(result):
     """Copilot's usage file, on the rows a run is actually compared on.
 
-    Schema read from a real file written by copilot --usage-output-file. Claude gives
-    total_cost_usd; Copilot gives premium requests, which is a quota unit and not
-    money. The two do not convert, and a column that pretends they do is the one
-    mistake this whole file exists to prevent.
+    The top-level totalNanoAiu is the session total in billionths of an AI credit.
+    Nested model/agent totals are breakdowns, not additional charges.
     """
+    nano_aiu = result.get("totalNanoAiu")
+    if nano_aiu is not None and (not isinstance(nano_aiu, int)
+                                 or isinstance(nano_aiu, bool) or nano_aiu < 0):
+        print("measure: totalNanoAiu must be a non-negative integer", file=sys.stderr)
+        return 1
     models = result.get("modelMetrics") or {}
     print("== harness (GitHub Copilot)")
     print("   %-28s %s" % ("model(s)", ", ".join(sorted(models)) or
                            result.get("currentModel", "?")))
-    print("   %-28s %s   %s" % ("cost (USD)", "--",
-                                "not reported; Copilot bills premium requests"))
-    print("   %-28s %s" % ("premium requests",
-                           result.get("totalPremiumRequestCost", "?")))
+    if nano_aiu is not None:
+        credits = format(Decimal(nano_aiu) / Decimal(1000000000), ",.9f").rstrip("0").rstrip(".")
+        print("   %-28s %s" % ("AI credits (AIC)", credits))
+    else:
+        print("   %-28s %s" % ("AI credits (AIC)", "--   not reported in this usage file"))
+    print("   %-28s %s" % ("cost (USD)", "--   not reported; no conversion from AIC or premium requests"))
+    if "totalPremiumRequestCost" in result:
+        print("   %-28s %s" % ("premium requests (legacy)",
+                               result["totalPremiumRequestCost"]))
     print("   %-28s %s" % ("user prompts", result.get("totalUserRequests", "?")))
     duration = result.get("totalApiDurationMs")
     if isinstance(duration, (int, float)):

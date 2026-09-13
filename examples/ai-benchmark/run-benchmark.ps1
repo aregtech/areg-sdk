@@ -16,10 +16,11 @@ One cold agent run, measured, against a clean snapshot of this checkout.
 
   run-benchmark.ps1 [label] [options]
 
-  label              suffix of the run directory: e -> <out>/<date>e-<project>.
+  label              suffix: e -> <out>/<agent>/<date>e-<project>.
                      Optional; the next unused letter for today is chosen.
 
   --framework NAME   areg | grpc                          (default: areg)
+  --agent NAME       claude | copilot | codex | gemini    (default: claude)
   --task PATH        task file, absolute or relative to the SDK
                        (default: examples/ai-benchmark/prompt-coffeemachine.md)
   --wrapper PATH     the wrapper the prompt is built from, absolute or relative to
@@ -32,8 +33,10 @@ One cold agent run, measured, against a clean snapshot of this checkout.
   --project NAME     C identifier: directory and CMake project name
                        (default: <key> of the task, e.g. coffeemachine)
   --mode MODE        ipc | local | pubsub, areg only      (default: ipc)
-  --model NAME       sonnet | haiku | opus                (default: sonnet)
-  --effort LEVEL     low | medium | high                  (default: medium)
+  --model NAME       model ID or alias accepted by the selected CLI; not a whitelist
+                       (default: sonnet for Claude; the CLI default otherwise)
+  --effort LEVEL     low | medium | high; unsupported by Gemini
+                       (default: medium for Claude; the CLI default otherwise)
   --attempts N       the build-and-fix and run-and-fix bound (default: 3). Any other
                      number adds one rule to the prompt, the same for both arms.
                      0 removes the bound, and is warned about: the spend is unbounded.
@@ -62,14 +65,17 @@ One cold agent run, measured, against a clean snapshot of this checkout.
     .\run-benchmark.ps1 --task examples/ai-benchmark/prompt-atm.md --attempts 15
     .\run-benchmark.ps1 --task examples/ai-benchmark/prompt-printscan.md --attempts 15
     .\run-benchmark.ps1 f --model opus --effort high --out D:\runs --dry-run
+    .\run-benchmark.ps1 --agent copilot --model gpt-5.6-terra
+    .\run-benchmark.ps1 --agent codex --model gpt-5.4 --effort high
+    .\run-benchmark.ps1 --agent gemini --model gemini-2.5-flash
     .\run-benchmark.ps1 --verify sanitize               areg, probes and sanitizers
 
-  The run directory holds the measurement: meta.txt, prompt.txt, result.json,
+  The run directory holds the measurement: meta.txt, prompt.txt, result.json[l],
   run.err, the fingerprints and sdk/, the snapshot the agent read. The agent works
   in work/, which starts empty.
 
-  The agent is Claude Code, headless. Another agent is run by hand with the same
-  prompt.txt; README.md says which of its numbers compare.
+  Install and authenticate only the selected CLI. Model availability depends on
+  that CLI and your account; README.md explains model names and comparable metrics.
 '@
 
 # The snapshot, the fingerprint manifest and its check, shared with run-benchmark.sh.
@@ -218,7 +224,7 @@ endif()
 function Main([string[]]$Arguments)
 {
     $Framework = 'areg'; $Task = 'examples/ai-benchmark/prompt-coffeemachine.md'; $Wrapper = ''
-    $Project = ''; $Mode = 'ipc'; $Model = 'sonnet'; $Effort = 'medium'
+    $Project = ''; $Mode = 'ipc'; $Agent = 'claude'; $Model = ''; $Effort = ''
     $Attempts = '3'; $Debrief = $false; $Recipes = 'none'; $Label = ''; $Dry = $false
     $AllowInstalled = $false; $Verify = 'probes'
     $Out = if ($env:AREG_BENCHMARK_RUNS) { $env:AREG_BENCHMARK_RUNS } else { Join-Path $HOME 'runs' }
@@ -232,18 +238,22 @@ function Main([string[]]$Arguments)
 
     while ($index -lt $Arguments.Count) {
         $option = $Arguments[$index]
-        $valued = '--framework', '--task', '--wrapper', '--project', '--mode', '--model',
+        $valued = '--framework', '--agent', '--task', '--wrapper', '--project', '--mode', '--model',
                   '--effort', '--attempts', '--recipes', '--out', '--verify'
         if ($option -cin $valued) {
             if ($index + 1 -ge $Arguments.Count) { Stop-Run "$option needs a value" }
             $value = $Arguments[$index + 1]
             switch -casesensitive ($option) {
                 '--framework' { $Framework = $value }
+                '--agent'     { $Agent = $value }
                 '--task'      { $Task = $value }
                 '--wrapper'   { $Wrapper = $value }
                 '--project'   { $Project = $value }
                 '--mode'      { $Mode = $value }
-                '--model'     { $Model = $value }
+                '--model'     {
+                    if (-not $value) { Stop-Run '--model needs a non-empty value' }
+                    $Model = $value
+                }
                 '--effort'    { $Effort = $value }
                 '--attempts'  { $Attempts = $value }
                 '--recipes'   { $Recipes = $value }
@@ -272,14 +282,19 @@ function Main([string[]]$Arguments)
 
     if ($Framework -cnotin 'areg', 'grpc') { Stop-Run "--framework must be areg or grpc, not '$Framework'" }
     if ($Mode -cnotin 'ipc', 'local', 'pubsub') { Stop-Run "--mode must be ipc, local or pubsub, not '$Mode'" }
-    if ($Model -cnotin 'sonnet', 'haiku', 'opus') { Stop-Run "--model must be sonnet, haiku or opus, not '$Model'" }
-    if ($Effort -cnotin 'low', 'medium', 'high') { Stop-Run "--effort must be low, medium or high, not '$Effort'" }
+    if ($Agent -cnotin 'claude', 'copilot', 'codex', 'gemini') { Stop-Run "--agent must be claude, copilot, codex or gemini, not '$Agent'" }
+    if ($Effort -cnotin '', 'low', 'medium', 'high') { Stop-Run "--effort must be low, medium or high, not '$Effort'" }
+    if ($Agent -eq 'claude') {
+        if (-not $Model) { $Model = 'sonnet' }
+        if (-not $Effort) { $Effort = 'medium' }
+    }
+    elseif ($Agent -eq 'gemini' -and $Effort) { Stop-Run '--effort is not supported by Gemini CLI; omit it' }
     if ($Recipes -cnotin 'none', 'copy') { Stop-Run "--recipes must be none or copy, not '$Recipes'" }
     if ($Verify -cnotin 'none', 'probes', 'sanitize') { Stop-Run "--verify must be none, probes or sanitize, not '$Verify'" }
     if ($Attempts -notmatch '^[0-9]+$') { Stop-Run "--attempts must be a whole number, not '$Attempts'" }
     if ($Project -cnotmatch '^[A-Za-z_][A-Za-z0-9_]*$') { Stop-Run "--project must be a C identifier, not '$Project'" }
 
-    if (-not (Get-Command claude -ErrorAction SilentlyContinue)) { Stop-Run 'claude not found: install Claude Code and log in' }
+    if (-not (Get-Command $Agent -ErrorAction SilentlyContinue)) { Stop-Run "$Agent not found: install the selected CLI and log in" }
     $script:Python = @(Find-Python)
     if ($script:Python.Count -eq 0) { Stop-Run 'python3 not found' }
     & git -C $SDK rev-parse HEAD 2>&1 | Out-Null
@@ -324,6 +339,8 @@ function Main([string[]]$Arguments)
     if (($Out + '\').StartsWith($sdkPrefix, [StringComparison]::OrdinalIgnoreCase)) {
         Stop-Run "--out $Out is inside the checkout; a run must not write where it reads"
     }
+    $Out = Join-Path $Out $Agent
+    New-Item -ItemType Directory -Force -Path $Out | Out-Null
 
     $today = Get-Utc 'yyyyMMdd'
     if (-not $Label) {
@@ -485,12 +502,17 @@ Be specific and short: a list, not prose.
     }
 
     $meta = Join-Path $Run 'meta.txt'
+    $modelLabel = if ($Model) { $Model } else { 'agent-default' }
+    $effortLabel = if ($Effort) { $Effort } else { 'agent-default' }
+    $isolation = if ($Agent -eq 'claude') { 'snapshot, no skills, no MCP servers' } else {
+        'snapshot; CLI user configuration may load (see README.md)'
+    }
     Write-Text $meta (@(
-        "framework $Framework", "model    $Model", "effort   $Effort", "task     $TaskRun",
+        "framework $Framework", "agent    $Agent", "model    $modelLabel", "effort   $effortLabel", "task     $TaskRun",
         "mode     $Mode", "recipes  $Recipes", "attempts $Attempts",
         "debrief  $(if ($Debrief) { '1' } else { 'no' })",
         "source   $SDK", "sdk      $Snap", "files    $copied", "head     $head",
-        'isolation snapshot, no skills, no MCP servers',
+        "isolation $isolation",
         "start    $(Get-Utc 'yyyy-MM-ddTHH:mm:ssZ')") -join "`n") + "`n"
 
     if ($Dry) {
@@ -502,23 +524,54 @@ Be specific and short: a list, not prose.
     }
 
     Write-Output "run-benchmark: $Run"
-    Write-Output "run-benchmark: $Framework, $Model, effort $Effort, attempts $Attempts, head $($head.Substring(0, 8)), $copied files"
+    Write-Output "run-benchmark: $Framework, $Agent, $modelLabel, effort $effortLabel, attempts $Attempts, head $($head.Substring(0, 8)), $copied files"
 
-    # A project's first build compiles the whole framework; both arms get the same ceiling.
-    $env:BASH_DEFAULT_TIMEOUT_MS = '600000'
-    $env:BASH_MAX_TIMEOUT_MS = '900000'
-    $claude = (Get-Command claude).Source
-    $argumentLine = ('-p --output-format json --model {0} --effort {1} --disable-slash-commands ' +
-                     '--strict-mcp-config --allowedTools "Bash Read Write Edit Glob Grep" ' +
-                     '--add-dir "{2}"') -f $Model, $Effort, $AddDir
-    $agent = Start-Process -FilePath $claude -ArgumentList $argumentLine -WorkingDirectory $Work `
-                           -RedirectStandardInput $promptPath `
-                           -RedirectStandardOutput (Join-Path $Run 'result.json') `
-                           -RedirectStandardError (Join-Path $Run 'run.err') `
-                           -NoNewWindow -PassThru
-    $null = $agent.Handle
-    $agent.WaitForExit()
-    $code = $agent.ExitCode
+    $result = Join-Path $Run 'result.json'
+    $agentArgs = @()
+    switch ($Agent) {
+        'claude' {
+            $agentArgs = @('-p', '--output-format', 'json', '--effort', $Effort,
+                          '--disable-slash-commands', '--strict-mcp-config',
+                          '--allowedTools', 'Bash Read Write Edit Glob Grep', '--add-dir', $AddDir)
+        }
+        'copilot' {
+            $agentArgs = @('--allow-all-tools', '--disable-builtin-mcps', '--no-custom-instructions',
+                          '--add-dir', $Run, '--usage-output-file', (Join-Path $Run 'result.json'))
+            if ($Effort) { $agentArgs += @('--reasoning-effort', $Effort) }
+            $result = Join-Path $Run 'run.out'
+        }
+        'codex' {
+            $agentArgs = @('--ask-for-approval', 'never', 'exec', '--sandbox', 'workspace-write',
+                          '--skip-git-repo-check', '--add-dir', $Run, '--json')
+            if ($Effort) { $agentArgs += @('--config', "model_reasoning_effort='$Effort'") }
+            $result = Join-Path $Run 'result.jsonl'
+        }
+        'gemini' {
+            $agentArgs = @('--output-format', 'json', '--approval-mode', 'yolo', '--include-directories', $Run)
+        }
+    }
+    if ($Model) { $agentArgs += @('--model', $Model) }
+    if ($Agent -eq 'codex') { $agentArgs += '-' }
+
+    # PowerShell invokes native CLIs and npm shims alike. Stream UTF-8, including on 5.1.
+    $oldEncoding = $OutputEncoding; $oldConsoleEncoding = [Console]::OutputEncoding
+    $oldDefault = $env:BASH_DEFAULT_TIMEOUT_MS; $oldMax = $env:BASH_MAX_TIMEOUT_MS
+    $writer = [IO.StreamWriter]::new($result, $false, $Utf8)
+    Push-Location $Work
+    try {
+        $OutputEncoding = $Utf8; [Console]::OutputEncoding = $Utf8
+        $env:BASH_DEFAULT_TIMEOUT_MS = '600000'; $env:BASH_MAX_TIMEOUT_MS = '900000'
+        $global:LASTEXITCODE = -1
+        [IO.File]::ReadAllText($promptPath) | & $Agent @agentArgs 2> (Join-Path $Run 'run.err') |
+            ForEach-Object { $writer.WriteLine($_) }
+        $code = $LASTEXITCODE
+    }
+    finally {
+        Pop-Location
+        $writer.Dispose()
+        $OutputEncoding = $oldEncoding; [Console]::OutputEncoding = $oldConsoleEncoding
+        $env:BASH_DEFAULT_TIMEOUT_MS = $oldDefault; $env:BASH_MAX_TIMEOUT_MS = $oldMax
+    }
     Add-Text $meta ("end      $(Get-Utc 'yyyy-MM-ddTHH:mm:ssZ')`nexit     $code`n")
 
     Write-Output ''
@@ -552,7 +605,23 @@ Be specific and short: a list, not prose.
     }
 
     Write-Output ''
-    Write-Output (Invoke-Python (Join-Path $HERE 'analyze_run.py') $Run)
+    if ($code -eq 0 -and (Get-Item -LiteralPath $result).Length -eq 0) {
+        [Console]::Error.WriteLine("run-benchmark: $Agent returned no output; see $Run\run.err")
+        $code = 4
+    }
+    if ($code -eq 0) {
+        switch ($Agent) {
+            'claude' {
+                Write-Output (Invoke-Python (Join-Path $HERE 'analyze_run.py') $Run)
+                if ($script:PythonCode -ne 0) { $code = 4 }
+            }
+            'copilot' {
+                Write-Output (Invoke-Python (Join-Path $HERE 'measure.py') (Join-Path $Run 'result.json'))
+                if ($script:PythonCode -ne 0) { $code = 4 }
+            }
+            default { Write-Output "usage: native metrics in $result; no cross-agent cost conversion" }
+        }
+    }
 
     if ($Verify -ne 'none') {
         Write-Output ''

@@ -4,8 +4,8 @@
 # The agent reads a copy of the files a clone carries -- tracked files, and untracked
 # files that are not ignored, as the working tree has them -- so nothing local to this
 # machine reaches the run: no ignored notes, no editor state, no harness customisation.
-# The harness loads no skill and no MCP server, so both arms start from the same
-# context. The run directory belongs outside the checkout, on a local disk.
+# Claude loads no skill or MCP server; other CLIs retain their own configuration.
+# The run directory belongs outside the checkout, on a local disk.
 #
 # Everything below the helpers lives in main(), so bash parses the whole file before it
 # runs any of it, and an edit while a run is in flight cannot corrupt the parse.
@@ -21,10 +21,11 @@ One cold agent run, measured, against a clean snapshot of this checkout.
 
   run-benchmark.sh [label] [options]
 
-  label              suffix of the run directory: e -> <out>/<date>e-<project>.
+  label              suffix: e -> <out>/<agent>/<date>e-<project>.
                      Optional; the next unused letter for today is chosen.
 
   --framework NAME   areg | grpc                          (default: areg)
+  --agent NAME       claude | copilot | codex | gemini    (default: claude)
   --task PATH        task file, absolute or relative to the SDK
                        (default: examples/ai-benchmark/prompt-coffeemachine.md)
   --wrapper PATH     the wrapper the prompt is built from, absolute or relative to
@@ -37,8 +38,10 @@ One cold agent run, measured, against a clean snapshot of this checkout.
   --project NAME     C identifier: directory and CMake project name
                        (default: <key> of the task, e.g. coffeemachine)
   --mode MODE        ipc | local | pubsub, areg only      (default: ipc)
-  --model NAME       sonnet | haiku | opus                (default: sonnet)
-  --effort LEVEL     low | medium | high                  (default: medium)
+  --model NAME       model ID or alias accepted by the selected CLI; not a whitelist
+                       (default: sonnet for Claude; the CLI default otherwise)
+  --effort LEVEL     low | medium | high; unsupported by Gemini
+                       (default: medium for Claude; the CLI default otherwise)
   --attempts N       the build-and-fix and run-and-fix bound (default: 3). Any other
                      number adds one rule to the prompt, the same for both arms.
                      0 removes the bound, and is warned about: the spend is unbounded.
@@ -67,14 +70,17 @@ One cold agent run, measured, against a clean snapshot of this checkout.
     run-benchmark.sh --task examples/ai-benchmark/prompt-atm.md --attempts 15
     run-benchmark.sh --task examples/ai-benchmark/prompt-printscan.md --attempts 15
     run-benchmark.sh f --model opus --effort high --out /data/runs --dry-run
+    run-benchmark.sh --agent copilot --model gpt-5.6-terra
+    run-benchmark.sh --agent codex --model gpt-5.4 --effort high
+    run-benchmark.sh --agent gemini --model gemini-2.5-flash
     run-benchmark.sh --verify sanitize                areg, probes and sanitizers
 
-  The run directory holds the measurement: meta.txt, prompt.txt, result.json,
+  The run directory holds the measurement: meta.txt, prompt.txt, result.json[l],
   run.err, the fingerprints and sdk/, the snapshot the agent read. The agent works
   in work/, which starts empty.
 
-  The agent is Claude Code, headless. Another agent is run by hand with the same
-  prompt.txt; README.md says which of its numbers compare.
+  Install and authenticate only the selected CLI. Model availability depends on
+  that CLI and your account; README.md explains model names and comparable metrics.
 USAGE
 }
 
@@ -127,7 +133,7 @@ PROBE
 main()
 {
     local FRAMEWORK="areg" TASK="examples/ai-benchmark/prompt-coffeemachine.md" WRAPPER=""
-    local PROJECT="" MODE="ipc" MODEL="sonnet" EFFORT="medium"
+    local PROJECT="" MODE="ipc" AGENT="claude" MODEL="" EFFORT=""
     local ATTEMPTS="3" DEBRIEF="" RECIPES="none" LABEL="" DRY="" ALLOW_INSTALLED=""
     local VERIFY="probes"
     local OUT="${AREG_BENCHMARK_RUNS:-${HOME}/runs}"
@@ -145,11 +151,12 @@ main()
         case "$1" in
             -h|--help)   usage; exit 0 ;;
             --framework) need "$@"; FRAMEWORK="$2"; shift 2 ;;
+            --agent)     need "$@"; AGENT="$2";     shift 2 ;;
             --task)      need "$@"; TASK="$2";      shift 2 ;;
             --wrapper)   need "$@"; WRAPPER="$2";   shift 2 ;;
             --project)   need "$@"; PROJECT="$2";   shift 2 ;;
             --mode)      need "$@"; MODE="$2";      shift 2 ;;
-            --model)     need "$@"; MODEL="$2";     shift 2 ;;
+            --model)     need "$@"; [ -n "$2" ] || die "--model needs a non-empty value"; MODEL="$2"; shift 2 ;;
             --effort)    need "$@"; EFFORT="$2";    shift 2 ;;
             --attempts)  need "$@"; ATTEMPTS="$2";  shift 2 ;;
             --recipes)   need "$@"; RECIPES="$2";   shift 2 ;;
@@ -168,14 +175,19 @@ main()
 
     case "${FRAMEWORK}" in areg|grpc) ;; *) die "--framework must be areg or grpc, not '${FRAMEWORK}'" ;; esac
     case "${MODE}"     in ipc|local|pubsub) ;; *) die "--mode must be ipc, local or pubsub, not '${MODE}'" ;; esac
-    case "${MODEL}"    in sonnet|haiku|opus) ;; *) die "--model must be sonnet, haiku or opus, not '${MODEL}'" ;; esac
-    case "${EFFORT}"   in low|medium|high) ;; *) die "--effort must be low, medium or high, not '${EFFORT}'" ;; esac
+    case "${AGENT}"    in claude|copilot|codex|gemini) ;; *) die "--agent must be claude, copilot, codex or gemini, not '${AGENT}'" ;; esac
+    case "${EFFORT}"   in ''|low|medium|high) ;; *) die "--effort must be low, medium or high, not '${EFFORT}'" ;; esac
+    if [ "${AGENT}" = "claude" ]; then
+        MODEL="${MODEL:-sonnet}"; EFFORT="${EFFORT:-medium}"
+    elif [ "${AGENT}" = "gemini" ] && [ -n "${EFFORT}" ]; then
+        die "--effort is not supported by Gemini CLI; omit it"
+    fi
     case "${RECIPES}"  in none|copy) ;; *) die "--recipes must be none or copy, not '${RECIPES}'" ;; esac
     case "${VERIFY}"   in none|probes|sanitize) ;; *) die "--verify must be none, probes or sanitize, not '${VERIFY}'" ;; esac
     case "${ATTEMPTS}" in ''|*[!0-9]*) die "--attempts must be a whole number, not '${ATTEMPTS}'" ;; esac
     case "${PROJECT}"  in *[!A-Za-z0-9_]*|[!A-Za-z_]*|"") die "--project must be a C identifier, not '${PROJECT}'" ;; esac
 
-    command -v claude >/dev/null || die "claude not found: install Claude Code and log in"
+    command -v "${AGENT}" >/dev/null || die "${AGENT} not found: install the selected CLI and log in"
     command -v python3 >/dev/null || die "python3 not found"
     git -C "${SDK}" rev-parse HEAD >/dev/null 2>&1 \
         || die "${SDK} is not a git checkout; the snapshot is taken from its file list"
@@ -216,6 +228,8 @@ main()
     mkdir -p "${OUT}"
     OUT="$(cd "${OUT}" && pwd)"
     case "${OUT}/" in "${SDK}/"*) die "--out ${OUT} is inside the checkout; a run must not write where it reads" ;; esac
+    OUT="${OUT}/${AGENT}"
+    mkdir -p "${OUT}"
 
     local letter
     if [ -z "${LABEL}" ]; then
@@ -346,12 +360,15 @@ Be specific and short: a list, not prose."
         die "the gRPC prompt names areg; check ${WRAPPER_ABS}, and that --out ${OUT} does not"
     fi
 
-    { echo "framework ${FRAMEWORK}"; echo "model    ${MODEL}"; echo "effort   ${EFFORT}"
+    local ISOLATION="snapshot; CLI user configuration may load (see README.md)"
+    [ "${AGENT}" != "claude" ] || ISOLATION="snapshot, no skills, no MCP servers"
+    { echo "framework ${FRAMEWORK}"; echo "agent    ${AGENT}"
+      echo "model    ${MODEL:-agent-default}"; echo "effort   ${EFFORT:-agent-default}"
       echo "task     ${TASK_RUN}"; echo "mode     ${MODE}"; echo "recipes  ${RECIPES}"
       echo "attempts ${ATTEMPTS}"; echo "debrief  ${DEBRIEF:-no}"
       echo "source   ${SDK}"; echo "sdk      ${SNAP}"; echo "files    ${copied}"
       echo "head     $(cat "${RUN}/sdk-head.txt")"
-      echo "isolation snapshot, no skills, no MCP servers"
+      echo "isolation ${ISOLATION}"
       date -u +"start    %Y-%m-%dT%H:%M:%SZ"; } > "${RUN}/meta.txt"
 
     if [ -n "${DRY}" ]; then
@@ -362,19 +379,40 @@ Be specific and short: a list, not prose."
     fi
 
     echo "run-benchmark: ${RUN}"
-    echo "run-benchmark: ${FRAMEWORK}, ${MODEL}, effort ${EFFORT}, attempts ${ATTEMPTS}, head $(cut -c1-8 "${RUN}/sdk-head.txt"), ${copied} files"
+    echo "run-benchmark: ${FRAMEWORK}, ${AGENT}, ${MODEL:-agent-default}, effort ${EFFORT:-agent-default}, attempts ${ATTEMPTS}, head $(cut -c1-8 "${RUN}/sdk-head.txt"), ${copied} files"
 
     cd "${WORK}"
     local code=0
-    # A project's first build compiles the whole framework, which can outlast the
-    # agent's default command timeout; both arms get the same ceiling.
+    local RESULT="${RUN}/result.json"
+    local -a agent_args=()
+    case "${AGENT}" in
+        claude)
+            agent_args=(-p --output-format json --effort "${EFFORT}"
+                        --disable-slash-commands --strict-mcp-config
+                        --allowedTools "Bash Read Write Edit Glob Grep" --add-dir "${ADD_DIR}")
+            ;;
+        copilot)
+            agent_args=(--allow-all-tools --disable-builtin-mcps --no-custom-instructions
+                        --add-dir "${RUN}" --usage-output-file "${RUN}/result.json")
+            [ -z "${EFFORT}" ] || agent_args+=(--reasoning-effort "${EFFORT}")
+            RESULT="${RUN}/run.out"
+            ;;
+        codex)
+            agent_args=(--ask-for-approval never exec --sandbox workspace-write
+                        --skip-git-repo-check --add-dir "${RUN}" --json)
+            [ -z "${EFFORT}" ] || agent_args+=(--config "model_reasoning_effort='${EFFORT}'")
+            RESULT="${RUN}/result.jsonl"
+            ;;
+        gemini)
+            agent_args=(--output-format json --approval-mode yolo --include-directories "${RUN}")
+            ;;
+    esac
+    [ -z "${MODEL}" ] || agent_args+=(--model "${MODEL}")
+    [ "${AGENT}" != "codex" ] || agent_args+=(-)
+    # Claude's first build can outlast its default command timeout.
     BASH_DEFAULT_TIMEOUT_MS=600000 BASH_MAX_TIMEOUT_MS=900000 \
-    claude -p --output-format json \
-           --model "${MODEL}" --effort "${EFFORT}" \
-           --disable-slash-commands --strict-mcp-config \
-           --allowedTools "Bash Read Write Edit Glob Grep" \
-           --add-dir "${ADD_DIR}" \
-           < "${RUN}/prompt.txt" > "${RUN}/result.json" 2> "${RUN}/run.err" || code=$?
+        "${AGENT}" "${agent_args[@]}" \
+        < "${RUN}/prompt.txt" > "${RESULT}" 2> "${RUN}/run.err" || code=$?
     { date -u +"end      %Y-%m-%dT%H:%M:%SZ"; echo "exit     ${code}"; } >> "${RUN}/meta.txt"
 
     echo
@@ -406,7 +444,17 @@ Be specific and short: a list, not prose."
     fi
 
     echo
-    python3 "${HERE}/analyze_run.py" "${RUN}" || true
+    if [ "${code}" -eq 0 ] && [ ! -s "${RESULT}" ]; then
+        echo "run-benchmark: ${AGENT} returned no output; see ${RUN}/run.err" >&2
+        code=4
+    fi
+    if [ "${code}" -eq 0 ]; then
+        case "${AGENT}" in
+            claude)  python3 "${HERE}/analyze_run.py" "${RUN}" || code=4 ;;
+            copilot) python3 "${HERE}/measure.py" "${RUN}/result.json" || code=4 ;;
+            *) echo "usage: native metrics in ${RESULT}; no cross-agent cost conversion" ;;
+        esac
+    fi
 
     if [ "${VERIFY}" != "none" ]; then
         local SANITIZE=""
