@@ -138,6 +138,32 @@ def newest_source(root):
     return newest, when
 
 
+# The marker gen_skeleton.py writes and fill_markers.py fills. The spelling is the
+# same in all three tools; check_corpus.py case "marker-spelling" holds them together.
+TODO_MARKER_RE = re.compile(r'//\s*TODO\(you\)\s+([A-Za-z_][\w]*)\s*:')
+
+
+def open_markers(root):
+    """Every TODO(you) marker still in the project, as (path, line, slot)."""
+    found = []
+    for folder, dirs, files in os.walk(root):
+        dirs[:] = [d for d in dirs if d not in SOURCE_SKIP and not d.startswith('.')]
+        for name in sorted(files):
+            if not name.endswith(SOURCE_SUFFIXES):
+                continue
+            path = os.path.join(folder, name)
+            try:
+                with open(path, encoding='utf-8') as handle:
+                    lines = handle.read().splitlines()
+            except (OSError, UnicodeDecodeError):
+                continue
+            for number, line in enumerate(lines, 1):
+                hit = TODO_MARKER_RE.search(line)
+                if hit:
+                    found.append((path, number, hit.group(1)))
+    return found
+
+
 def stale_binaries(scenarios, build_dirs, root):
     """Whether the sources were edited and no build has run since.
 
@@ -621,12 +647,30 @@ def main():
             print('{:5} {:24} {}'.format('PASS' if passed else 'FAIL', name, detail))
 
     failed = [r for r in results if not r['passed']]
+    # A passing suite is what a report is written from, so the markers still open are
+    # reported here rather than only where they were filled.
+    still_open = open_markers(os.path.dirname(os.path.abspath(args.file)) or '.')
     if args.json:
         print(json.dumps({'passed': len(results) - len(failed),
                           'failed': len(failed),
+                          'open_markers': [{'file': path.replace(os.sep, '/'),
+                                            'line': line, 'marker': slot}
+                                           for path, line, slot in still_open],
                           'results': results}, indent=2))
     else:
         print('{} passed, {} failed'.format(len(results) - len(failed), len(failed)))
+        if still_open:
+            print('{} marker(s) still open, so this project is not finished:'
+                  .format(len(still_open)))
+            for path, line, slot in still_open[:8]:
+                print('  {}:{}  {}'.format(os.path.relpath(path).replace(os.sep, '/'),
+                                           line, slot))
+            if len(still_open) > 8:
+                print('  and {} more'.format(len(still_open) - 8))
+            print('A scenario passing says nothing about the requirement behind an open')
+            print('marker: no body was written for it. Fill it with')
+            print('fill_markers.py --bodies, or write it in place and delete the line.')
+            print('check_contract.py reports the same markers as P-17.')
         # A run without --only reports every scenario by name, so isolating one that
         # already passes tells the caller nothing it is not about to be told anyway.
         if args.only and not failed:

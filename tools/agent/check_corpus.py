@@ -35,6 +35,8 @@
 import argparse
 import contextlib
 import io
+import copy
+import glob
 import json
 import os
 import re
@@ -1884,6 +1886,10 @@ def run():
     check_state_mirrors(report)
     check_placeholder_contract(report)
     check_design_template(report)
+    check_peer_loss_branch(report)
+    check_final_entry_rule(report)
+    check_worksheet_leftover(report)
+    check_marker_spelling(report)
     check_worksheet_contract(report)
     check_contract_symmetry(report)
     check_task_prompt_neutrality(report)
@@ -2009,9 +2015,22 @@ TASK_PROMPT_LEAKS = ('.siml', '.fsml', '.dtml', 'setup_project.py', 'gen_skeleto
 
 
 def check_task_prompt_neutrality(report):
-    """No task prompt names a framework, a tool, a build command or an OS."""
+    """No task prompt names a framework, a tool, a build command or an OS.
+
+    The prompts are the measuring instrument, not the corpus an application agent
+    reads. examples/ is optional and is not installed with the SDK, so a tree without
+    it is a supported install and not a defect: the check says it did not run rather
+    than failing. A prompt missing from a directory that is there is still a defect.
+    """
+    bench = os.path.join(ROOT, 'examples', 'ai-benchmark')
+    if not os.path.isdir(bench):
+        report.note('task-neutral',
+                    'examples/ai-benchmark/ is not installed, so the task prompts were '
+                    'not checked. They measure the corpus rather than belong to it, and '
+                    'examples/ is optional')
+        return
     missing = [name for name in TASK_PROMPTS
-               if not os.path.isfile(os.path.join(ROOT, 'examples', 'ai-benchmark', name))]
+               if not os.path.isfile(os.path.join(bench, name))]
     for name in missing:
         report.fail('task-neutral',
                     'examples/ai-benchmark/{} is missing; README.md offers it'.format(name))
@@ -2356,6 +2375,379 @@ def check_design_template(report):
     report.ok('template', 'the scaffold writes design.json as the template: its keys are '
                           'the generator\'s, untouched it is refused, filled it generates, '
                           'a stray key is refused by name, and work is never replaced')
+
+
+def check_peer_loss_branch(report):
+    """The consumer can answer a peer that went away, where the peer going away arrives.
+
+    Disconnected and ConnectionLost are the states a killed provider produces, and the
+    framework reconnects from them, so nothing there may quit. They used to share a
+    branch with Rejected and Shutdown, where a body could not run at all: two measured
+    runs proved peer loss with a 20 second stall watchdog instead of a detection that
+    arrives in about one second.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    holder = tempfile.mkdtemp()
+    here = os.getcwd()
+    try:
+        os.chdir(holder)
+        for step in ([sys.executable, os.path.join(tools, 'setup_project.py'),
+                      '--name', 'peer', '--root', '.', '--mode', 'ipc',
+                      '--sdk-root', ROOT],):
+            if subprocess.run(step, capture_output=True, text=True).returncode != 0:
+                report.fail('peer-loss', 'the scaffold no longer lays out a project')
+                return
+        spec = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                               '--example'], capture_output=True, text=True)
+        with open('design.json', 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write(spec.stdout)
+        if subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                           '--outdir', 'src/services', '--force', '--chained',
+                           '--spec', 'design.json'],
+                          capture_output=True, text=True).returncode != 0:
+            report.fail('peer-loss', 'the example spec no longer generates')
+            return
+        docs = sorted(glob.glob(os.path.join('src', 'services', '*.siml')))
+        machines = sorted(glob.glob(os.path.join('src', 'services', '*.fsml')))
+        if not docs:
+            report.fail('peer-loss', 'no .siml was generated to build a consumer from')
+            return
+        made = [sys.executable, os.path.join(tools, 'gen_skeleton.py'),
+                '--doc', docs[0], '--app', '--mode', 'ipc', '--force']
+        if machines:
+            made += ['--machine', machines[0]]
+        if subprocess.run(made, capture_output=True, text=True).returncode != 0:
+            report.fail('peer-loss', 'gen_skeleton.py --app no longer writes an application')
+            return
+
+        found = sorted(glob.glob(os.path.join('src', 'consumer', '*Consumer.cpp')))
+        if not found:
+            report.fail('peer-loss', 'no consumer source was written')
+            return
+        with open(found[0], encoding='utf-8') as handle:
+            lines = handle.read().splitlines()
+
+        start = None
+        for index, line in enumerate(lines):
+            if 'ServiceConnectionState::Disconnected' in line or \
+                    'ServiceConnectionState::ConnectionLost' in line:
+                start = index
+                break
+        if start is None:
+            report.fail('peer-loss',
+                        'the generated consumer names neither Disconnected nor '
+                        'ConnectionLost, so the states a killed provider produces reach '
+                        'no branch and peer loss can only be proved by a stall')
+            return
+
+        depth, body, seen = 0, [], False
+        for line in lines[start:]:
+            depth += line.count('{') - line.count('}')
+            body.append(line)
+            if seen and depth <= 0:
+                break
+            if '{' in line:
+                seen = True
+        text = '\n'.join(body)
+        if 'TODO(you)' not in text:
+            report.fail('peer-loss',
+                        'the branch that sees a provider go away carries no marker, so '
+                        'there is nowhere to write what losing it means')
+            return
+        for quit_call in ('quit_with', 'signal_quit'):
+            if quit_call in text:
+                report.fail('peer-loss',
+                            'the branch for Disconnected and ConnectionLost calls {}. '
+                            'The framework reconnects from both, so quitting there turns '
+                            'a provider restart into a dead application'.format(quit_call))
+                return
+        if 'Rejected' in text or 'Shutdown' in text:
+            report.fail('peer-loss',
+                        'Disconnected shares its branch with a terminal state again: a '
+                        'body written there runs on the states a killed provider never '
+                        'produces')
+            return
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+
+    report.ok('peer-loss', 'the generated consumer answers a provider that went away '
+                           'where that arrives, with a marker and without quitting')
+
+
+def check_final_entry_rule(report):
+    """Rule 108 is reported before the document is written as well as after.
+
+    A nested final state carrying entry operations was reported only by
+    check_contract.py, which runs after two generators have. Run 20260912f wrote the
+    documents, was refused, edited the spec twice and regenerated. The rule is the
+    same rule, so the number comes from the shared catalogue in both tools rather
+    than being written down twice.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+        import check_contract
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('final-entry', 'the rule tools do not import: {}'.format(failure))
+        return
+
+    number = gen_docs.rule_number(gen_docs.FINAL_ENTRY_RULE, gen_docs.WARNING_BAND)
+    if number is None:
+        report.fail('final-entry', 'gen_docs.py cannot read the rule catalogue, so it '
+                                   'has no number to report a nested final entry under')
+        return
+    if number != check_contract.FINAL_ENTRY_CODE:
+        report.fail('final-entry',
+                    'gen_docs.py reports rule {} and check_contract.py reports {}. One '
+                    'rule read out of one catalogue is what stops the two drifting'
+                    .format(number, check_contract.FINAL_ENTRY_CODE))
+        return
+
+    # Through the command line, not the function: a check nobody calls reports
+    # nothing, and that is the failure this case exists to catch.
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    shown = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                            '--example'], capture_output=True, text=True)
+    try:
+        example = json.loads(shown.stdout)
+    except ValueError:
+        report.fail('final-entry', 'gen_docs.py --example no longer prints a spec')
+        return
+
+    def nested_final(machine):
+        """The machine's final state inside a composite that reports it finished."""
+        def walk(states, parent):
+            for state in states or []:
+                if (parent is not None and parent.get('final_event')
+                        and str(state.get('kind', '')).lower() == 'final'):
+                    return state
+                found = walk(state.get('states'), state)
+                if found is not None:
+                    return found
+            return None
+        return walk(machine.get('states'), None)
+
+    target = None
+    for machine in example.get('machines') or []:
+        target = nested_final(machine)
+        if target is not None:
+            break
+    if target is None:
+        report.fail('final-entry', 'the example spec carries no final state inside a '
+                                   'composite, so this rule is exercised by nothing')
+        return
+    action = (example['machines'][0].get('actions') or [{}])[0].get('name')
+    if not action:
+        report.fail('final-entry', 'the example machine declares no action to place')
+        return
+
+    holder = tempfile.mkdtemp()
+    here = os.getcwd()
+
+    def generate(spec_doc, outdir):
+        path = os.path.join(holder, outdir + '.json')
+        with open(path, 'w', encoding='utf-8', newline='\n') as handle:
+            json.dump(spec_doc, handle, indent=2)
+        out = os.path.join(holder, outdir)
+        done = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                               '--outdir', out, '--spec', path],
+                              capture_output=True, text=True, cwd=holder)
+        written = sorted(os.listdir(out)) if os.path.isdir(out) else []
+        return done, written
+
+    try:
+        os.chdir(holder)
+        clean, _ = generate(example, 'clean')
+        if clean.returncode != 0:
+            report.fail('final-entry', 'the example spec no longer generates: {}'
+                        .format((clean.stderr or clean.stdout).strip()[:160]))
+            return
+
+        broken = copy.deepcopy(example)
+        nested_final(broken['machines'][0])['entry'] = [action]
+        refused, written = generate(broken, 'broken')
+        if refused.returncode == 0:
+            report.fail('final-entry',
+                        'gen_docs.py writes a machine whose nested final state carries '
+                        'entry operations. The rule is then reported only after two '
+                        'generators have run, and the spec is edited and regenerated')
+            return
+        if number not in (refused.stderr or '') + (refused.stdout or ''):
+            report.fail('final-entry',
+                        'the design-time refusal does not name rule {}, so it cannot be '
+                        'looked up or silenced'.format(number))
+            return
+        if written:
+            report.fail('final-entry',
+                        'the spec was refused and {} document(s) were written anyway; '
+                        'a refusal after writing is what costs the regeneration'
+                        .format(len(written)))
+            return
+
+        escaped = copy.deepcopy(broken)
+        nested_final(escaped['machines'][0])['description'] = \
+            'areg-check: ignore ' + number
+        allowed, _ = generate(escaped, 'escaped')
+        if allowed.returncode != 0:
+            report.fail('final-entry',
+                        'the escape check_contract.py documents does not work at design '
+                        'time, so a deliberate case cannot be written at all')
+            return
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+
+    report.ok('final-entry', 'rule {} is reported by gen_docs.py before a document is '
+                             'written and by check_contract.py after, from one '
+                             'catalogue'.format(number))
+
+
+def check_worksheet_leftover(report):
+    """What the filler leaves behind says which file each open marker is in.
+
+    A section survives a pass with the "#| ---- <file>" heading above it. The heading
+    carries no marker of its own, so a filler that emits it on the previous section's
+    verdict labels a surviving section with the wrong file and a second pass opens the
+    wrong source. Run 20260912g's leftover named the provider header for a marker in
+    the consumer body.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import fill_markers
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('leftover', 'fill_markers.py does not import: {}'.format(failure))
+        return
+
+    sheet = ('#| guidance the worksheet keeps\n'
+             '\n'
+             '#| ---- src/provider/Prov.hpp\n'
+             '== provider_state\n'
+             'int mX = 0;\n'
+             '\n'
+             '#| ---- src/consumer/Cons.cpp\n'
+             '#| a note that belongs to this file\n'
+             '== first_request\n'
+             'request_go();\n'
+             '\n'
+             '== connection_lost\n')
+
+    holder = tempfile.mkdtemp()
+    path = os.path.join(holder, 'bodies.txt')
+
+    def leftover(applied):
+        with open(path, 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write(sheet)
+        fill_markers.consume(path, set(applied))
+        with open(path, encoding='utf-8') as handle:
+            return handle.read().splitlines()
+
+    try:
+        # The section that survives is labelled with its own file, not the one before it.
+        lines = leftover(['provider_state', 'first_request'])
+        headings = [line for line in lines if line.startswith('#| ----')]
+        if headings != ['#| ---- src/consumer/Cons.cpp']:
+            report.fail('leftover',
+                        'a marker left open in src/consumer/Cons.cpp is filed under {}: '
+                        'the heading follows the previous section\'s verdict, so a '
+                        'second pass opens the wrong file'
+                        .format(headings or 'no file at all'))
+            return
+        if '== connection_lost' not in lines:
+            report.fail('leftover', 'the section left open is not in the leftover at all')
+            return
+        if not any(line.startswith('#| guidance') for line in lines):
+            report.fail('leftover', "the worksheet's own guidance was taken out with "
+                                    'the sections, so a second pass has no instructions')
+            return
+
+        # Nothing left to do leaves no heading standing on its own.
+        lines = leftover(['provider_state', 'first_request', 'connection_lost'])
+        dangling = [line for line in lines if line.startswith('#| ----')]
+        if dangling:
+            report.fail('leftover',
+                        'every marker is filled and {} heading(s) are still in the '
+                        'worksheet, naming files with nothing left to do'
+                        .format(len(dangling)))
+            return
+
+        # A heading whose first section is filled still labels the ones under it.
+        lines = leftover(['first_request'])
+        headings = [line for line in lines if line.startswith('#| ----')]
+        if headings != ['#| ---- src/provider/Prov.hpp', '#| ---- src/consumer/Cons.cpp']:
+            report.fail('leftover',
+                        'a file with one section filled and one open is filed under {}'
+                        .format(headings))
+            return
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+
+    report.ok('leftover', 'the leftover worksheet names the file of every marker it '
+                          'still carries, and no heading outlives its sections')
+
+
+def check_marker_spelling(report):
+    """Three tools carry the TODO(you) pattern, and they have to agree.
+
+    gen_skeleton.py writes the marker, fill_markers.py fills it, check_contract.py
+    refuses a project that still carries one and run_scenarios.py names it beside a
+    passing suite. Nothing imports anything, so each holds its own copy: a marker
+    spelt one way and looked for another is filled by nobody and reported by nobody.
+    """
+    wanted = {
+        'gen_skeleton.py': 'MARKER',
+        'fill_markers.py': 'MARKER',
+        'check_contract.py': 'TODO_MARKER_RE',
+        'run_scenarios.py': 'TODO_MARKER_RE',
+    }
+    seen = {}
+    for name, const in sorted(wanted.items()):
+        path = os.path.join(ROOT, 'tools', 'agent', name)
+        try:
+            with open(path, encoding='utf-8') as handle:
+                text = handle.read()
+        except OSError as failure:
+            report.fail('marker-spelling', '{} cannot be read: {}'.format(name, failure))
+            return
+        found = re.search(re.escape(const) + r"\s*=\s*re\.compile\(r'([^']*)'\)", text)
+        if found is None:
+            report.fail('marker-spelling',
+                        '{} declares no {}, so the marker it writes or looks for cannot '
+                        'be compared with the others'.format(name, const))
+            return
+        seen[name] = found.group(1)
+
+    # The tail differs on purpose: two of them capture the description and two only
+    # need the slot. What must match is the part that decides whether a line is a
+    # marker at all, and the slot it names.
+    head = r'//\s*TODO\(you\)\s+([A-Za-z_][\w]*)\s*:'
+    wrong = [name for name, pattern in seen.items() if not pattern.startswith(head)]
+    if wrong:
+        report.fail('marker-spelling',
+                    '{} look{} for a marker spelt differently from the one '
+                    'gen_skeleton.py writes: a marker no tool agrees on is filled by '
+                    'nobody and reported by nobody'
+                    .format(', '.join(sorted(wrong)), '' if len(wrong) > 1 else 's'))
+        return
+
+    # The rule has to be stated where an agent reads the prohibitions, not only in code.
+    api = os.path.join(ROOT, 'docs', 'agent', 'api.json')
+    try:
+        with open(api, encoding='utf-8') as handle:
+            stated = json.load(handle).get('prohibitions', [])
+    except (OSError, ValueError) as failure:
+        report.fail('marker-spelling', 'api.json cannot be read: {}'.format(failure))
+        return
+    if not any(item.get('id') == 'P-17' for item in stated):
+        report.fail('marker-spelling',
+                    'api.json states no P-17, so an unfilled marker is a rule the '
+                    'checker enforces and no page an agent reads carries')
+        return
+
+    report.ok('marker-spelling',
+              '{} tools spell the TODO(you) marker the same way, and api.json states '
+              'P-17'.format(len(seen)))
 
 
 def check_worksheet_contract(report):

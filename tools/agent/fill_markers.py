@@ -49,6 +49,10 @@ def fail(message):
 # one, and a note the author writes in the style of these is caught below instead.
 NOTE = '#|'
 
+# The heading that says which file the sections below it belong to. It carries no
+# marker of its own, so it survives only while a section under it does.
+FILE_HEADING = re.compile(r'^#\|\s*----\s')
+
 # What a line of a body may be when it begins with a hash. Anything else there was
 # meant as a comment, and C++ has no such comment.
 DIRECTIVE = re.compile(r'^\s*#\s*(include|define|undef|if|ifdef|ifndef|elif|else|'
@@ -273,19 +277,22 @@ def main():
                       args.scenarios.replace(os.sep, '/'), len(expected)))
 
     edits = {}
-    for path, index, extra, _, body in planned:
-        edits.setdefault(path, {})[index] = (extra, body)
+    for path, index, extra, name, body in planned:
+        edits.setdefault(path, {})[index] = (extra, body, name)
 
     for path in sorted(edits):
         with open(path, encoding='utf-8') as handle:
             lines = handle.read().splitlines()
         out = []
         skip = 0
+        # Where each body ended up, so the file does not have to be opened to see it.
+        landed = []
         for index, line in enumerate(lines):
             if skip:
                 skip -= 1
             elif index in edits[path]:
-                extra, body = edits[path][index]
+                extra, body, name = edits[path][index]
+                landed.append((len(out) + 1, name, len(body)))
                 out.extend(body)
                 skip = extra
             else:
@@ -296,6 +303,8 @@ def main():
         print('{} {}: {} marker(s) filled'
               .format('would fill' if args.dry_run else 'filled',
                       path.replace(os.sep, '/'), len(edits[path])))
+        for number, name, count in landed:
+            print('  {:<28} line {:<5} {} line(s)'.format(name, number, count))
 
     filled = set(claimed)
     left = [(name, path) for name, places in sorted(markers.items())
@@ -335,15 +344,29 @@ def consume(path, applied):
     What is left in the file is what is left to do, so the same file is given to
     this tool again without a filled marker being named a second time. The notes
     before the first section are kept: they are the worksheet's own guidance.
+
+    A "#| ---- <file>" heading is held back until a section under it survives, and
+    dropped when none does. Emitting it on the previous group's verdict labels the
+    surviving section with the wrong file.
     """
     with open(path, encoding='utf-8') as handle:
         lines = handle.read().splitlines()
-    out, keep = [], True
+    out, pending, keep = [], [], True
     for line in lines:
+        if FILE_HEADING.match(line):
+            pending, keep = [line], None
+            continue
         found = HEADER.match(line)
         if found:
             keep = found.group(1) not in applied
-        if keep:
+            if keep and pending:
+                if out and out[-1].strip():
+                    out.append('')
+                out.extend(pending)
+                pending = []
+        if keep is None:
+            pending.append(line)
+        elif keep:
             out.append(line)
     text = '\n'.join(out).rstrip() + '\n'
     with open(path, 'w', encoding='utf-8', newline='\n') as handle:

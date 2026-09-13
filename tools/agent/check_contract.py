@@ -203,6 +203,10 @@ WORKER_MACRO_RE = re.compile(r'\b(REGISTER_WORKER_THREAD(?:_EX2?)?)\s*\(')
 # checker that cannot be quieted on a correct edge case gets switched off wholesale.
 IGNORE_RE = re.compile(r'//\s*areg-check\s*:\s*ignore(?:\s+([A-Z]-\d\d(?:\s*,\s*[A-Z]-\d\d)*))?')
 
+# The marker gen_skeleton.py writes and fill_markers.py fills. The spelling is the
+# same in all three tools; check_corpus.py case "marker-spelling" holds them together.
+TODO_MARKER_RE = re.compile(r'//\s*TODO\(you\)\s+([A-Za-z_][\w]*)\s*:\s*(.*?)\s*$')
+
 
 CHECKS = [
     ('P-01', 'advice',  'a generated file among the application sources, or an '
@@ -223,6 +227,7 @@ CHECKS = [
      'an operation in the EntryList of a Final state nested inside another state'),
     ('P-15', 'error',   'a hand-written source file no CMakeLists.txt names'),
     ('P-16', 'error',   'a timer told apart by name() compared to a literal'),
+    ('P-17', 'error',   'a TODO(you) marker the scaffold left, still unfilled'),
     ('B-01', 'advice',  'an areg::String passed to a printf style log macro'),
     ('B-02', 'advice',  'a range-for over an areg container'),
     ('B-04', 'advice',  'a container name or header with the obsolete TE prefix'),
@@ -337,11 +342,22 @@ def shadowed_variables(lines, areg_vars):
     return shadowed
 
 
+def is_build_tree(path):
+    """True for a directory CMake configured, whatever --build called it.
+
+    Only the default name is on SKIP_DIRS. A project built into another directory
+    has CMake's own probe sources under it, which no CMakeLists.txt of the project
+    names and which P-15 then reports.
+    """
+    return os.path.isfile(os.path.join(path, 'CMakeCache.txt'))
+
+
 def collect_sources(base):
     found = []
     for path, dirs, files in os.walk(base):
         dirs[:] = [d for d in dirs
-                   if d not in SKIP_DIRS and not d.startswith('.')]
+                   if d not in SKIP_DIRS and not d.startswith('.')
+                   and not is_build_tree(os.path.join(path, d))]
         for name in sorted(files):
             if name.endswith(SOURCE_EXT):
                 found.append(os.path.join(path, name))
@@ -383,6 +399,30 @@ def check_generate_target(base, findings, read):
                     'this file is under the generate target and carries no generator '
                     'banner. The next build rewrites the target and the file is gone; '
                     'keep it with the application sources'))
+
+
+def check_open_markers(sources, findings, read):
+    """P-17. A marker the scaffold left is a requirement nobody wrote.
+
+    gen_skeleton.py writes one wherever a rule of the application belongs, and
+    fill_markers.py takes each filled one out. One still in a source is a hole no
+    other check reports: the project builds, the scenarios pass and the hole stays.
+    """
+    for path in sources:
+        text = read(path)
+        if text is None:
+            continue
+        for number, line in enumerate(text.splitlines(), 1):
+            found = TODO_MARKER_RE.search(line)
+            if found is None:
+                continue
+            findings.append(Finding(
+                'P-17', 'error', path, number,
+                'marker "{}" is still open: {}. Write its body here and delete this '
+                'line, or fill it through the worksheet with fill_markers.py '
+                '--bodies. Nothing else reports an unfilled marker, so a project '
+                'carrying one passes every other check'
+                .format(found.group(1), found.group(2).rstrip('.'))))
 
 
 def collect_documents(base, suffix='.siml'):
@@ -1483,6 +1523,10 @@ def main():
                         help='path to api.json (default: the SDK copy)')
     parser.add_argument('--strict', action='store_true',
                         help='let an advisory fail as well')
+    parser.add_argument('--allow-todo', action='store_true',
+                        help='do not report P-17, the unfilled TODO(you) '
+                             'markers the scaffold writes. For a check that runs '
+                             'before the bodies are filled')
     parser.add_argument('--list', action='store_true',
                         help='print what is checked and exit')
     parser.add_argument('--audit-legacy', metavar='FRAMEWORK',
@@ -1563,6 +1607,8 @@ def main():
     check_timer_dispatch(sources, findings, read)
     check_generate_target(base, findings, read)
     check_state_machines(machines, findings, problems)
+    if not args.allow_todo:
+        check_open_markers(sources, findings, read)
 
     findings = [f for f in findings
                 if not suppressed(read(f.path).splitlines() if read(f.path) else [],

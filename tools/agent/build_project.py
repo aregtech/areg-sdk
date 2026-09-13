@@ -260,7 +260,8 @@ def main():
 
     if not args.no_check:
         if not run('contract',
-                   [PYTHON, os.path.join(HERE, 'check_contract.py'), '.', '--strict'],
+                   [PYTHON, os.path.join(HERE, 'check_contract.py'), '.', '--strict',
+                    '--allow-todo'],
                    root, kept=1):
             return 1
 

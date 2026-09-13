@@ -760,6 +760,26 @@
         "rule": "P-02"
       },
       "teaches": "a request is called through its generated prefix, request_<name>; the document name alone is declared nowhere"
+    },
+    {
+      "id": "r30-open-todo-marker",
+      "kind": "repair",
+      "prompt": "This project still carries a marker the scaffold left for you: the request that asks the provider for a greeting was never written. Write it, and take the marker out.",
+      "expect": [
+        "provider: hello,",
+        "consumer: greeted"
+      ],
+      "reference": "01-local-single-process",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "                request_hello_service(role_name());",
+        "replace": "                // TODO(you) first_request: the first request of the scenario.\n                request_hello_service(role_name());"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "P-17"
+      },
+      "teaches": "an unfilled TODO(you) marker is an unwritten requirement, and the contract checker refuses a project that still carries one"
     }
   ]
 }

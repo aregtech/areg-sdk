@@ -508,6 +508,11 @@
       "id": "P-16",
       "rule": "A component with several timers gets one process_timer, and the branches inside it are told apart by address, not by name. Timer's constructor stores areg::generate_name(timerName), which appends a nanosecond stamp, so name() returns \"<prefix>:{...}\" and never equals the string the timer was constructed with. Every branch written as timer.name() == \"Watchdog\" is skipped, process_timer runs and does nothing, and the application waits for work that never happens. Compare &timer against the member timer: &timer == &mWatchdog. A name comparison works only against a name the timer actually holds -- timer.name() == mWatchdog.name(), or timer.name().starts_with(\"Watchdog\") -- and the address is preferred to both.",
       "detect": "a comparison of the process_timer parameter's name() against a string literal"
+    },
+    {
+      "id": "P-17",
+      "rule": "Never leave a TODO(you) marker the scaffold wrote unfilled.",
+      "detect": "a TODO(you) marker still in a hand-written application source"
     }
   ],
   "base_api_notes": [

@@ -187,7 +187,11 @@ WORKSHEET_HEAD = """\
 #| No source file has to be opened to fill this in: every name a body may call is
 #| named below, every place a body belongs is a section below, and each section
 #| names the function it sits in. The filler takes each section it applies out of
-#| this file, so what is left here is what is left to do.
+#| this file, so what is left here is what is left to do, and it reports the line
+#| every body landed on, so no file has to be opened afterwards either.
+#|
+#| A helper of your own is declared in the "*_state" section of a file and defined
+#| in any section of that same file. Nothing else has to be added by hand.
 """
 
 def worksheet_sections(produced, out):
@@ -1124,14 +1128,21 @@ def consumer_class(iface, cls):
                   '(master_thread()),'.format(STEP_INTERVAL_MS),
                   '                                  areg::TimerBase::CONTINUOUSLY);']
     lines += ['            }',
+              '            else if ((status == areg::ServiceConnectionState::Disconnected) ||',
+              '                     (status == areg::ServiceConnectionState::ConnectionLost))',
+              '            {',
+              '                // The provider went away. The framework reconnects and',
+              '                // calls this again, so nothing here quits.',
+              marker('peer_lost',
+                     'what losing the provider means to this scenario', 16),
+              '            }',
               '            else if ((status == areg::ServiceConnectionState::Rejected) ||',
               '                     (status == areg::ServiceConnectionState::Shutdown))',
               '            {',
-              '                // Terminal states. Disconnected and ConnectionLost are',
-              '                // transient and the framework reconnects, so they are',
-              '                // left alone.',
-              marker('connection_lost',
-                     'what a provider that will not come back means here', 16),
+              '                // Terminal states. The framework does not reconnect',
+              '                // from these.',
+              marker('service_refused',
+                     'what a refused or shut-down service means here', 16),
               '                std::cerr << "service is " << areg::as_string(status)',
               '                          << ", giving up" << std::endl;']
     if stepped:

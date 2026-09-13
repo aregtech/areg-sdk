@@ -36,8 +36,29 @@ import difflib
 import json
 import os
 import sys
+import xml.etree.ElementTree as ET
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+# Rule 108 is decided in one place, the shared catalogue, and reported from two:
+# here, before a document is written, and check_contract.py, after. Reading the
+# number rather than writing it is what keeps the two from drifting apart.
+RULES_XML = os.path.join(os.path.dirname(os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__)))), 'tools', 'schema', 'rules.xml')
+FINAL_ENTRY_RULE = 'RULE_FINAL_ENTRY_ORDER'
+WARNING_BAND = 100
+
+
+def rule_number(name, band):
+    """The number the shared catalogue gives a rule, or None when it cannot be read."""
+    try:
+        root = ET.parse(RULES_XML).getroot()
+    except (ET.ParseError, OSError):
+        return None
+    for rule in root.iter('Rule'):
+        if rule.get('Name') == name:
+            return str(int(rule.get('Number')) + band)
+    return None
 
 from docmodel import (CONTAINERS, PREDEFINED, TYPE_KINDS, Vocabulary, Writer, described,
                       esc, esc_text, fail, named_list, reserve_params, unique,
@@ -1101,6 +1122,46 @@ def merge(specs):
     return project
 
 
+def check_final_entry(project):
+    """Rule 108, in the vocabulary the design is written in, before it is generated.
+
+    A composite reports its level finished by sending itself the event named by
+    "final_event", and that event is queued. Entry operations of the nested "final"
+    state therefore run while the machine is still inside the composite. The same
+    rule is reported by check_contract.py after the document is written; naming it
+    here saves writing the document twice.
+    """
+    number = rule_number(FINAL_ENTRY_RULE, WARNING_BAND)
+    if number is None:
+        return
+    escape = 'areg-check: ignore ' + number
+
+    def walk(states, composite, machine):
+        for state in states or []:
+            if not isinstance(state, dict):
+                continue
+            nested = state.get('states')
+            if (composite is not None and composite.get('final_event')
+                    and str(state.get('kind', '')).lower() == 'final'
+                    and state.get('entry')
+                    and escape not in (state.get('description') or '')):
+                fail('machine "{}": state "{}" is the final state of "{}" and carries '
+                     '"entry". Those run while the machine is still inside "{}": the '
+                     '"{}" event has not been dispatched yet. Move them to the '
+                     'transition of "{}" that fires on "{}". If they are meant to run '
+                     'before the level is left, put "{}" in the description of "{}". '
+                     '(rule {})'
+                     .format(machine, state.get('name', '?'), composite.get('name', '?'),
+                             composite.get('name', '?'), composite['final_event'],
+                             composite.get('name', '?'), composite['final_event'],
+                             escape, state.get('name', '?'), number))
+            walk(nested, state, machine)
+
+    for machine in project.get('machines') or []:
+        if isinstance(machine, dict):
+            walk(machine.get('states'), None, machine.get('name', '?'))
+
+
 def cross_check(project):
     """What only the whole project can see: one name, one meaning."""
     types = {}
@@ -1486,7 +1547,22 @@ TEMPLATE = {
                    "target that resumes the level where it left off."],
             "name": "", "kind": "", "entry": [], "exit": [],
             "transitions": [{"on": "", "to": "", "guard": [], "set": {}, "do": []}],
-            "initial": "", "final_event": "", "states": []
+            "initial": "", "final_event": "",
+            "states": [{
+                NOTE: ["A substate. The composite's own \"initial\" names one of these, and a",
+                       "transition of the composite fires on its \"final_event\"."],
+                "name": "", "kind": "", "entry": [], "exit": [],
+                "transitions": [{"on": "", "to": "", "guard": [], "set": {}, "do": []}]
+            }, {
+                NOTE: ["kind history resumes this level where it left off, and is a target,",
+                       "never a state the machine sits in. depth Shallow or Deep."],
+                "name": "", "kind": "history", "depth": "Shallow"
+            }, {
+                NOTE: ["kind final ends the level and sends the final_event above. It carries",
+                       "no entry: that event is queued, so entry operations here would run",
+                       "while the machine is still inside the composite."],
+                "name": "", "kind": "final"
+            }]
         }]
     }]
 }
@@ -1534,6 +1610,7 @@ def main():
     project = merge(specs)
     check_shape(project)
     cross_check(project)
+    check_final_entry(project)
     # An include names a document the way the project root spells it, which is the
     # directory the documents are written to.
     prefix = '' if os.path.isabs(args.outdir) else \
