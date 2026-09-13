@@ -53,6 +53,14 @@ One cold agent run, measured, against a clean snapshot of this checkout.
   --recipes MODE     none | copy, areg only               (default: none)
                        none: no example source may be copied; every file is written
                        or generated. copy: a documented recipe may be copied.
+  --web MODE         on | off: whether the agent may search and fetch pages
+                       (default: off for areg, on for grpc)
+                     areg ships its documentation in the snapshot, and that snapshot
+                     is what a run measures; an arm that may browse can read the
+                     published copy instead, and no manifest can tell. gRPC ships its
+                     documentation on the web, and its prompt says so, so an arm
+                     denied the web has no documentation at all and the comparison
+                     measures recall rather than the framework.
   --verify MODE      none | probes | sanitize             (default: probes)
                        the hidden acceptance probes of verify_run.py, run on the
                        project after the agent ends. sanitize adds a rebuild under
@@ -224,7 +232,7 @@ main()
     local FRAMEWORK="areg" TASK="examples/ai-benchmark/prompt-coffeemachine.md" WRAPPER=""
     local PROJECT="" MODE="ipc" AGENT="claude" MODEL="" EFFORT=""
     local ATTEMPTS="3" DEBRIEF="" RECIPES="none" LABEL="" DRY="" ALLOW_INSTALLED=""
-    local VERIFY="probes" SDK_OPT="" GRPC_OPT=""
+    local VERIFY="probes" SDK_OPT="" GRPC_OPT="" WEB=""
 
     # A bare first word is the label. Anything starting with a dash is an option.
     if [ $# -gt 0 ]; then
@@ -251,6 +259,7 @@ main()
             --sdk)       need "$@"; SDK_OPT="$2";   shift 2 ;;
             --grpc)      need "$@"; GRPC_OPT="$2";  shift 2 ;;
             --verify)    need "$@"; VERIFY="$2";    shift 2 ;;
+            --web)       need "$@"; WEB="$2";       shift 2 ;;
             --debrief)   DEBRIEF=1; shift ;;
             --dry-run)   DRY=1; shift ;;
             --allow-installed-areg) ALLOW_INSTALLED=1; shift ;;
@@ -273,6 +282,12 @@ main()
     fi
     case "${RECIPES}"  in none|copy) ;; *) die "--recipes must be none or copy, not '${RECIPES}'" ;; esac
     case "${VERIFY}"   in none|probes|sanitize) ;; *) die "--verify must be none, probes or sanitize, not '${VERIFY}'" ;; esac
+    case "${WEB}"      in ''|on|off) ;; *) die "--web must be on or off, not '${WEB}'" ;; esac
+    # Each arm gets its own framework's documentation, in the place that documentation
+    # lives: the snapshot for areg, the web for gRPC.
+    if [ -z "${WEB}" ]; then
+        WEB="off"; [ "${FRAMEWORK}" != "grpc" ] || WEB="on"
+    fi
     case "${ATTEMPTS}" in ''|*[!0-9]*) die "--attempts must be a whole number, not '${ATTEMPTS}'" ;; esac
     case "${PROJECT}"  in *[!A-Za-z0-9_]*|[!A-Za-z_]*|"") die "--project must be a C identifier, not '${PROJECT}'" ;; esac
 
@@ -453,13 +468,20 @@ Be specific and short: a list, not prose."
 
     local ISOLATION="snapshot; CLI user configuration may load (see README.md)"
     [ "${AGENT}" != "claude" ] || ISOLATION="snapshot, no skills, no MCP servers"
+    # Only claude and copilot are told whether they may browse. What codex and gemini
+    # reach is their own sandbox's business, so the line records the intent, not a
+    # guarantee, and says which it is.
+    case "${AGENT}" in
+        claude|copilot) : ;;
+        *) ISOLATION="${ISOLATION}; web ${WEB} is not enforced for ${AGENT}" ;;
+    esac
     { echo "framework ${FRAMEWORK}"; echo "agent    ${AGENT}"
       echo "model    ${MODEL:-agent-default}"; echo "effort   ${EFFORT:-agent-default}"
       echo "task     ${TASK_RUN}"; echo "mode     ${MODE}"; echo "recipes  ${RECIPES}"
       echo "attempts ${ATTEMPTS}"; echo "debrief  ${DEBRIEF:-no}"
       echo "source   ${SDK}"; echo "sdk      ${SNAP}"; echo "files    ${copied}"
       echo "head     $(cat "${RUN}/sdk-head.txt")"
-      echo "isolation ${ISOLATION}"
+      echo "web      ${WEB}"; echo "isolation ${ISOLATION}"
       date -u +"start    %Y-%m-%dT%H:%M:%SZ"; } > "${RUN}/meta.txt"
 
     if [ -n "${DRY}" ]; then
@@ -480,20 +502,26 @@ Be specific and short: a list, not prose."
     # names the source checkout. Handing that to the gRPC arm tells it what it exists
     # not to know, and handing it to any arm shows one agent what the others cannot see.
     effort_args "${AGENT}"
+    local TOOLS="Bash Read Write Edit Glob Grep"
+    [ "${WEB}" = "off" ] || TOOLS="${TOOLS} WebSearch WebFetch"
     case "${AGENT}" in
         claude)
             agent_args=(-p --output-format json
                         --disable-slash-commands --strict-mcp-config
-                        --allowedTools "Bash Read Write Edit Glob Grep" --add-dir "${ADD_DIR}")
+                        --allowedTools "${TOOLS}" --add-dir "${ADD_DIR}")
             ;;
         copilot)
-            # No allow-list: the CLI accepts a tool name it does not have, so a typo
-            # would disarm the agent halfway through a paid run. The web tools are
-            # named out instead, which fails safe, and no --allow-url is passed, so
-            # this arm reaches the network no more than the Claude arm does.
             agent_args=(--allow-all-tools --disable-builtin-mcps --no-custom-instructions
-                        --no-ask-user --excluded-tools=web_search,web_fetch,fetch
+                        --no-ask-user
                         --add-dir "${ADD_DIR}" --usage-output-file "${RUN}/result.json")
+            if [ "${WEB}" = "off" ]; then
+                # Named out rather than allow-listed: the CLI accepts a tool name it
+                # does not have, so an allow-list with one typo would disarm the agent
+                # halfway through a paid run, while an exclusion that misses is inert.
+                agent_args+=(--excluded-tools=web_search,web_fetch,fetch)
+            else
+                agent_args+=(--allow-all-urls)
+            fi
             RESULT="${RUN}/run.out"
             ;;
         codex)

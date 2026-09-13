@@ -198,12 +198,33 @@ directory above them, which holds `meta.txt` and names the checkout the snapshot
 taken from. The gRPC arm is given only `sdk/tools/agent/`, so it never meets the name
 areg at all.
 
+**The web is on for gRPC and off for areg, and that is the fair setting, not an
+oversight.** What is held constant between the arms is not the list of tool flags; it
+is that each arm has its framework's documentation, in the place that documentation
+lives.
+
+- areg ships its documentation *in the snapshot*, and the snapshot is the thing under
+  test. An arm that may browse can read the published copy on the web instead, and no
+  manifest can detect it: the fingerprints prove the snapshot was not *edited*, not
+  that it was the copy actually read. Improve `docs/agent/` and the numbers would stop
+  responding, with nothing to say why.
+- gRPC ships its documentation *on the web*, and its prompt says so in as many words:
+  "You have gRPC and its public documentation." Deny it the web and that sentence is
+  false -- the arm has no documentation at all, only what the model recalls, and a
+  result favouring areg would be measuring the wrong thing.
+
+`--web on|off` overrides either side, and `meta.txt` records which was used, because
+a run with the web is not the same input twice: pages change between runs. For Claude
+the setting adds or withholds `WebSearch` and `WebFetch`; for Copilot it names the web
+tools out, or passes `--allow-all-urls`. Codex and Gemini govern the network through
+their own sandboxes, so for those two `meta.txt` records the intent and says plainly
+that it is not enforced.
+
 **Permissions still differ, and the remaining differences are these.** Claude keeps
 its six-tool allowlist and disables skills and MCP. Copilot permits unattended tools,
-disables built-in MCP servers and automatic custom instructions, disables `ask_user`
-so it cannot stall on a question, and has the web tools named out; no `--allow-url`
-is passed, so it reaches the network no more than Claude does. Its tool names are
-*excluded* rather than allow-listed on purpose: the CLI accepts a tool name it does
+disables built-in MCP servers and automatic custom instructions, and disables
+`ask_user` so it cannot stall on a question. When the web is off its web tools are
+*excluded* rather than allow-listed, on purpose: the CLI accepts a tool name it does
 not have, so an allow-list with one typo would disarm the agent in the middle of a
 paid run, while an exclusion that misses simply changes nothing. User MCP and skills
 may still load for Copilot. Codex uses `workspace-write` with approvals disabled; its
@@ -239,6 +260,7 @@ converted to dollars.
 | `--debrief` | adds a diagnostic pass after the report; never compare such a run with a normal one | `--debrief` |
 | `--verify` | the hidden acceptance probes after the run: `none`, `probes`, or `sanitize` for an ASan and UBSan rebuild as well | `--verify sanitize` |
 | `--recipes` | areg only: whether a documented recipe may be copied | `--recipes copy` |
+| `--web` | whether the agent may search and fetch pages: `on` or `off`; the default follows the framework | `--web on` |
 | `--sdk` | the checkout that holds `AGENTS.md`; also `AREG_SDK_ROOT` | `--sdk ~/src/areg-sdk` |
 | `--grpc` | the directory holding `protoc` and `grpc_cpp_plugin`, or the prefix they are under, which is also put on `CMAKE_PREFIX_PATH`; also `AREG_GRPC_ROOT` | `--grpc /usr/local` |
 | `--dry-run` | stages everything and prints the prompt, starts no agent and spends nothing. The selected CLI must still be installed | `--dry-run` |
