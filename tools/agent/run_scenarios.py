@@ -289,7 +289,7 @@ def fire_stops(pending, started, text):
     return left
 
 
-def run_scenario(scenario, build_dirs, verbose, quiet):
+def run_scenario(scenario, build_dirs, verbose, quiet, observed=None):
     name = scenario.get('name', 'unnamed')
     timeout = float(scenario.get('timeout', 60))
     procs = scenario.get('procs') or []
@@ -348,7 +348,7 @@ def run_scenario(scenario, build_dirs, verbose, quiet):
             handles.append((spec, handle))
             if feed:
                 send_stdin(handle, feed)
-            if index != lead_index:
+            if index != lead_index or (index < len(procs) - 1 and 'delay' in spec):
                 time.sleep(float(spec.get('delay', 0.5)))
 
         if verdict is None:
@@ -366,6 +366,7 @@ def run_scenario(scenario, build_dirs, verbose, quiet):
                         if index not in ended and handle.poll() is not None:
                             ended[index] = time.time() - launched[index]
                     if lead.poll() is not None:
+                        ended.setdefault(lead_index, time.time() - launched[lead_index])
                         break
                     if time.time() >= deadline:
                         lead.kill()
@@ -393,6 +394,15 @@ def run_scenario(scenario, build_dirs, verbose, quiet):
                 router_handle.wait(timeout=5)
             except subprocess.TimeoutExpired:
                 router_handle.kill()
+
+    # Exit codes, outputs and the lead's run time, for a caller that asks.
+    if observed is not None:
+        observed['exits'] = dict((proc_name(spec), handle.returncode)
+                                 for spec, handle in handles)
+        observed['outputs'] = dict((proc_name(spec), outputs.get(index) or '')
+                                   for index, (spec, _) in enumerate(handles))
+        observed['elapsed'] = ended.get(lead_index)
+        observed['verdict'] = verdict
 
     def failed(detail):
         report_output(handles, outputs, quiet, full=verbose)

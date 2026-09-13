@@ -90,7 +90,7 @@ step to the console so a person can read what happened:
    and no ingredient drawn
 
 Then exit. **Exit code 0 if every expectation held, non-zero otherwise**, printing
-which step failed. The consumer must survive the provider being started after it.
+which step failed. The user program must survive the machine being started after it.
 
 ### Proving it
 

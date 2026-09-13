@@ -33,8 +33,10 @@ the same requirements, with the same agent, model and effort. The first measured
 | `grpc-coffeemachine-prompt.txt` | the gRPC wrapper for `prompt-coffeemachine.md`; the worked example of another framework's arm | **you**, three values at the top, when running by hand |
 | `runbook-demo.md` | what a measured areg run adds to `docs/agent/01-runbook.md` | nobody |
 | `run-benchmark.sh` | one cold, isolated, measured run in one command | nobody |
+| `run-benchmark.ps1` | the same, for Windows PowerShell 5.1 and PowerShell 7: the same options and the same run directory | nobody |
 | `analyze_run.py` | reads a run request by request: cost, reasoning, cycles, pages read, lines written | nobody |
 | `measure.py` | reads a Claude Code or GitHub Copilot result file and scores it against a budget | nobody |
+| `verify_run.py` | the hidden acceptance probes, run on the finished project; the agent never sees it | nobody |
 | `INSTALL-grpc.md` | the gRPC toolchain, before the first gRPC run | **you**, once |
 | `baseline-2026-09-13.md` | the first areg and gRPC pair, side by side | -- |
 
@@ -103,8 +105,13 @@ own refuses to start, because the gRPC steps are written for one task.
 
 ### What it needs
 
-- `bash`, `git` and `python3`: Linux, macOS, or WSL on Windows. On Windows without WSL,
-  run by hand as described [further down](#running-one-by-hand-with-any-agent).
+- `git` and Python 3, and a shell to start it from:
+  - Linux, macOS or WSL: `bash`, with `run-benchmark.sh`.
+  - Windows: PowerShell 5.1 or 7, with `run-benchmark.ps1`. It takes the same options
+    as the `.sh`, so every example below works with the name changed:
+    `.\examples\ai-benchmark\run-benchmark.ps1 --framework grpc --attempts 15`. If
+    scripts are blocked, start it as
+    `powershell -ExecutionPolicy Bypass -File examples\ai-benchmark\run-benchmark.ps1 ...`.
 - Claude Code, installed and logged in: `claude` on the `PATH`.
 - CMake and a C++17 compiler.
 - The areg arm: no installed areg package, or the run would build against it instead of
@@ -127,8 +134,9 @@ own refuses to start, because the gRPC steps are written for one task.
    `meta.txt` and the fingerprints of the files the agent reads.
 4. Starts Claude Code headless in the empty `work/` directory, with no skills and no MCP
    servers, and the same tools for both arms.
-5. After the run, verifies that the agent did not change what it read, and runs
-   `analyze_run.py` on the run.
+5. After the run, verifies that the agent did not change what it read, runs
+   `analyze_run.py` on the run, and then the [hidden acceptance
+   probes](#hidden-acceptance-probes) on the project it built.
 
 ### Help
 
@@ -165,6 +173,10 @@ One cold agent run, measured, against a clean snapshot of this checkout.
   --recipes MODE     none | copy, areg only               (default: none)
                        none: no example source may be copied; every file is written
                        or generated. copy: a documented recipe may be copied.
+  --verify MODE      none | probes | sanitize             (default: probes)
+                       the hidden acceptance probes of verify_run.py, run on the
+                       project after the agent ends. sanitize adds a rebuild under
+                       ASan and UBSan.
   --out DIR          where run directories are made
                        (default: $AREG_BENCHMARK_RUNS, else ~/runs)
   --dry-run          stage the run directory and print the prompt, start nothing
@@ -180,6 +192,7 @@ One cold agent run, measured, against a clean snapshot of this checkout.
     run-benchmark.sh --task examples/ai-benchmark/prompt-atm.md --attempts 15
     run-benchmark.sh --task examples/ai-benchmark/prompt-printscan.md --attempts 15
     run-benchmark.sh f --model opus --effort high --out /data/runs --dry-run
+    run-benchmark.sh --verify sanitize                areg, probes and sanitizers
 
   The run directory holds the measurement: meta.txt, prompt.txt, result.json,
   run.err, the fingerprints and sdk/, the snapshot the agent read. The agent works
@@ -203,6 +216,7 @@ One cold agent run, measured, against a clean snapshot of this checkout.
 | `--effort` | the agent's reasoning effort | `--effort high` |
 | `--attempts` | the fix bound; the prompt says it, the same for both arms | `--attempts 15` |
 | `--debrief` | adds a diagnostic pass after the report; never compare such a run with a normal one | `--debrief` |
+| `--verify` | the hidden acceptance probes after the run: `none`, `probes`, or `sanitize` for an ASan and UBSan rebuild as well | `--verify sanitize` |
 | `--recipes` | areg only: whether a documented recipe may be copied | `--recipes copy` |
 | `--out` | where run directories are made; also `AREG_BENCHMARK_RUNS` | `--out /data/runs` |
 | `--dry-run` | stages everything and prints the prompt, starts no agent and spends nothing. `claude` must still be installed | `--dry-run` |
@@ -239,9 +253,37 @@ for label in a b c; do
     examples/ai-benchmark/run-benchmark.sh "$label" --attempts 15
 done
 
-# Read a finished run again
+# Read a finished run again, and probe it again with sanitizers
 python3 examples/ai-benchmark/analyze_run.py ~/runs/20260913d-coffeemachine
+python3 examples/ai-benchmark/verify_run.py  ~/runs/20260913d-coffeemachine --sanitize
 ```
+
+### Hidden acceptance probes
+
+Every task's checklist asks for things a run in which everything works cannot show, and
+an agent's own scenarios rarely try: a start in the wrong order, a peer that never comes,
+a peer that dies at an unlucky moment, a spinning thread. Every agent reports 15 of 15
+on the checklist, so the checklist alone cannot tell two implementations apart.
+
+`verify_run.py <run directory>` runs the finished project against those requirements
+after the agent has ended. The probes are generated from the project's own
+`scenarios.json` -- the scenario with two or more processes, no stop, and a lead that
+exits 0 -- so they assume no framework, and the same probes score every arm. The agent
+never sees them: `run-benchmark.sh` does not copy this file into the snapshot.
+
+| Probe | Requirement it scores | Passes when |
+|---|---|---|
+| `repeat` | the scenario exits 0 | the normal scenario passes 10 times out of 10 |
+| `start-order` | the client survives the server being started after it | the normal scenario passes with the lead started 3 s before the rest |
+| `no-peer` | neither program waits more than 20 seconds for something that never arrives | the lead alone exits non-zero within 30 s |
+| `peer-loss` | if one side goes away mid-scenario, the other exits non-zero | with the other process killed at 25%, 50% and 75% of a normal run, the lead exits non-zero each time and never hangs |
+| `cpu` | no busy-waiting | a normal run averages under 0.5 cores (where the platform reports child CPU time) |
+| `sanitize` (`--sanitize`) | no memory or undefined-behaviour defect -- not a checklist item | a rebuild under ASan and UBSan runs the normal scenario and one peer loss with no finding |
+
+The result is printed and written to `<run>/verify.json`. The sanitizer build goes to
+`<run>/verify-sanitize-build`, outside the project. A framework compiled from source is
+checked by the sanitizers along with the application; a framework linked as a prebuilt
+system package is not.
 
 ### Reading a run
 

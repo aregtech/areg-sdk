@@ -1017,6 +1017,9 @@ def check_grpc_isolation(report):
     beside its working directory makes that claim unprovable, whatever the prompt
     says, because the shell is not restricted to the directory the Read tool is.
     """
+    if not os.path.isdir(os.path.join(ROOT, 'examples', 'ai-benchmark')):
+        report.note('grpc-arm', 'examples/ai-benchmark/ is not installed')
+        return
     text = read('examples', 'ai-benchmark', 'run-benchmark.sh')
     if not text:
         report.fail('grpc-arm', 'examples/ai-benchmark/run-benchmark.sh is missing')
@@ -1061,6 +1064,76 @@ def check_grpc_isolation(report):
                               'framework')
 
 
+# Checklist phrases the hidden probes in verify_run.py score, one per probe.
+PROBED_REQUIREMENTS = ('must survive', 'waits more than 20 seconds', 'goes away',
+                       'busy-waiting', 'exits 0')
+
+
+def check_hidden_probes(report):
+    """The hidden probes exist, the agent cannot read them, and every task states
+    the requirements they score."""
+    bench = os.path.join(ROOT, 'examples', 'ai-benchmark')
+    if not os.path.isdir(bench):
+        report.note('hidden-probes', 'examples/ai-benchmark/ is not installed')
+        return
+    if not read('examples', 'ai-benchmark', 'verify_run.py'):
+        report.fail('hidden-probes', 'examples/ai-benchmark/verify_run.py is missing')
+        return
+    runner = read('examples', 'ai-benchmark', 'run-benchmark.sh') or ''
+    snapshot = runner.partition('snapshot()')[2].partition('\n}\n')[0]
+    if 'verify_run.py' not in snapshot:
+        report.fail('hidden-probes', 'the snapshot copies verify_run.py, so the agent can '
+                                     'read the probes it is scored by')
+        return
+    for name in TASK_PROMPTS:
+        text = read('examples', 'ai-benchmark', name) or ''
+        missing = [phrase for phrase in PROBED_REQUIREMENTS if phrase not in text]
+        if missing:
+            report.fail('hidden-probes', '{} does not state "{}", which a hidden probe '
+                                         'scores'.format(name, '", "'.join(missing)))
+            return
+    report.ok('hidden-probes', 'verify_run.py is hidden from the agent, and every task '
+                               'states the {} requirements it probes'
+                               .format(len(PROBED_REQUIREMENTS)))
+
+
+# Messages of the isolation guards both benchmark runners carry, word for word.
+RUNNER_GUARDS = ('the gRPC arm staged more than the scenario runner',
+                 'names areg; the gRPC arm must not be told of it',
+                 'the gRPC prompt names areg',
+                 'examples/ai-benchmark/verify_run.py',
+                 'is inside the checkout; a run must not write where it reads')
+
+
+def check_runner_parity(report):
+    """run-benchmark.ps1 takes the options of run-benchmark.sh and carries its guards."""
+    shell = read('examples', 'ai-benchmark', 'run-benchmark.sh')
+    if not shell:
+        return
+    power = read('examples', 'ai-benchmark', 'run-benchmark.ps1')
+    if not power:
+        report.fail('runner-parity', 'examples/ai-benchmark/run-benchmark.ps1 is missing')
+        return
+
+    def options(text):
+        return set(re.findall(r'^  (--[a-z-]+)', text, re.M))
+
+    missing = sorted(options(shell) - options(power))
+    extra = sorted(options(power) - options(shell))
+    if missing or extra:
+        report.fail('runner-parity', 'the two runners take different options: only in '
+                                     'the .sh {}, only in the .ps1 {}'.format(missing, extra))
+        return
+    for guard in RUNNER_GUARDS:
+        for name, text in (('run-benchmark.sh', shell), ('run-benchmark.ps1', power)):
+            if guard not in text:
+                report.fail('runner-parity', '{} lacks the guard "{}"'.format(name, guard))
+                return
+    report.ok('runner-parity', 'run-benchmark.sh and run-benchmark.ps1 take the same {} '
+                               'options and carry the same {} guards'
+                               .format(len(options(shell)), len(RUNNER_GUARDS)))
+
+
 def check_analyzer_keys(report):
     """Every request field analyze_run.py reads is a field it writes.
 
@@ -1068,6 +1141,9 @@ def check_analyzer_keys(report):
     and not the other raises KeyError on the next run, after the agent has been paid
     for and the measurement is already spent.
     """
+    if not os.path.isdir(os.path.join(ROOT, 'examples', 'ai-benchmark')):
+        report.note('analyzer', 'examples/ai-benchmark/ is not installed')
+        return
     text = read('examples', 'ai-benchmark', 'analyze_run.py')
     if not text:
         report.fail('analyzer', 'examples/ai-benchmark/analyze_run.py is missing')
@@ -2073,6 +2149,8 @@ def run():
     check_task_shape(report)
     check_analyzer_keys(report)
     check_grpc_isolation(report)
+    check_hidden_probes(report)
+    check_runner_parity(report)
     return report
 
 

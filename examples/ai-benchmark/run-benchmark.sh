@@ -48,6 +48,10 @@ One cold agent run, measured, against a clean snapshot of this checkout.
   --recipes MODE     none | copy, areg only               (default: none)
                        none: no example source may be copied; every file is written
                        or generated. copy: a documented recipe may be copied.
+  --verify MODE      none | probes | sanitize             (default: probes)
+                       the hidden acceptance probes of verify_run.py, run on the
+                       project after the agent ends. sanitize adds a rebuild under
+                       ASan and UBSan.
   --out DIR          where run directories are made
                        (default: $AREG_BENCHMARK_RUNS, else ~/runs)
   --dry-run          stage the run directory and print the prompt, start nothing
@@ -63,6 +67,7 @@ One cold agent run, measured, against a clean snapshot of this checkout.
     run-benchmark.sh --task examples/ai-benchmark/prompt-atm.md --attempts 15
     run-benchmark.sh --task examples/ai-benchmark/prompt-printscan.md --attempts 15
     run-benchmark.sh f --model opus --effort high --out /data/runs --dry-run
+    run-benchmark.sh --verify sanitize                areg, probes and sanitizers
 
   The run directory holds the measurement: meta.txt, prompt.txt, result.json,
   run.err, the fingerprints and sdk/, the snapshot the agent read. The agent works
@@ -90,7 +95,8 @@ copied = 0
 for name in sys.stdin.buffer.read().split(b"\0"):
     relative = name.decode("utf-8")
     path = os.path.join(source, relative)
-    if not relative or not os.path.isfile(path):
+    if (not relative or not os.path.isfile(path)
+            or relative == "examples/ai-benchmark/verify_run.py"):
         continue
     destination = os.path.join(target, relative)
     os.makedirs(os.path.dirname(destination), exist_ok=True)
@@ -123,6 +129,7 @@ main()
     local FRAMEWORK="areg" TASK="examples/ai-benchmark/prompt-coffeemachine.md" WRAPPER=""
     local PROJECT="" MODE="ipc" MODEL="sonnet" EFFORT="medium"
     local ATTEMPTS="3" DEBRIEF="" RECIPES="none" LABEL="" DRY="" ALLOW_INSTALLED=""
+    local VERIFY="probes"
     local OUT="${AREG_BENCHMARK_RUNS:-${HOME}/runs}"
 
     # A bare first word is the label. Anything starting with a dash is an option.
@@ -147,6 +154,7 @@ main()
             --attempts)  need "$@"; ATTEMPTS="$2";  shift 2 ;;
             --recipes)   need "$@"; RECIPES="$2";   shift 2 ;;
             --out)       need "$@"; OUT="$2";       shift 2 ;;
+            --verify)    need "$@"; VERIFY="$2";    shift 2 ;;
             --debrief)   DEBRIEF=1; shift ;;
             --dry-run)   DRY=1; shift ;;
             --allow-installed-areg) ALLOW_INSTALLED=1; shift ;;
@@ -163,6 +171,7 @@ main()
     case "${MODEL}"    in sonnet|haiku|opus) ;; *) die "--model must be sonnet, haiku or opus, not '${MODEL}'" ;; esac
     case "${EFFORT}"   in low|medium|high) ;; *) die "--effort must be low, medium or high, not '${EFFORT}'" ;; esac
     case "${RECIPES}"  in none|copy) ;; *) die "--recipes must be none or copy, not '${RECIPES}'" ;; esac
+    case "${VERIFY}"   in none|probes|sanitize) ;; *) die "--verify must be none, probes or sanitize, not '${VERIFY}'" ;; esac
     case "${ATTEMPTS}" in ''|*[!0-9]*) die "--attempts must be a whole number, not '${ATTEMPTS}'" ;; esac
     case "${PROJECT}"  in *[!A-Za-z0-9_]*|[!A-Za-z_]*|"") die "--project must be a C identifier, not '${PROJECT}'" ;; esac
 
@@ -398,6 +407,13 @@ Be specific and short: a list, not prose."
 
     echo
     python3 "${HERE}/analyze_run.py" "${RUN}" || true
+
+    if [ "${VERIFY}" != "none" ]; then
+        local SANITIZE=""
+        if [ "${VERIFY}" = "sanitize" ]; then SANITIZE="--sanitize"; fi
+        echo
+        python3 "${HERE}/verify_run.py" "${RUN}" ${SANITIZE} || true
+    fi
     exit ${code}
 }
 
