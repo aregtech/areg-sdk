@@ -394,8 +394,8 @@ def run_scenario(scenario, build_dirs, verbose, quiet):
             except subprocess.TimeoutExpired:
                 router_handle.kill()
 
-    def failed(detail, only=None):
-        report_output(handles, outputs, quiet, only)
+    def failed(detail):
+        report_output(handles, outputs, quiet, full=verbose)
         report_status(handles, outputs, ended, lead_index, quiet)
         return False, name, detail
 
@@ -406,43 +406,45 @@ def run_scenario(scenario, build_dirs, verbose, quiet):
     for index, (spec, handle) in enumerate(handles):
         label = proc_name(spec)
         output = outputs.get(index) or ''
-        if verbose and output:
-            sys.stdout.write(output)
         for pattern in spec.get('expect', []):
             found = re.search(pattern, output, re.MULTILINE)
             if found is None:
                 return failed('no match for {!r} in the output of {}'.format(
-                    pattern, label), index)
+                    pattern, label))
             evidence.append((label, found.group(0)))
         for pattern in spec.get('reject', []):
             found = re.search(pattern, output, re.MULTILINE)
             if found is not None:
                 return failed('{!r} was rejected but matched {!r} in {}'.format(
-                    pattern, found.group(0), label), index)
+                    pattern, found.group(0), label))
         wanted = spec.get('exit')
         if wanted is not None and handle.returncode != wanted:
             return failed('{} exited {}, expected {}'.format(
-                label, handle.returncode, wanted), index)
+                label, handle.returncode, wanted))
 
-    if not quiet and not verbose:
+    if verbose:
+        report_output(handles, outputs, quiet, full=True)
+    elif not quiet:
         for label, line in evidence:
             sys.stdout.write('      {:<20} {}\n'.format(label, line.strip()[:100]))
     return True, name, 'ok'
 
 
-def report_output(handles, outputs, quiet, only=None):
-    """Print what the processes said, so a failure needs no second run."""
+def report_output(handles, outputs, quiet, full=False):
+    """Print what every process said, so a failure needs no second run.
+
+    Every process is printed, not only the one an expectation failed on: the output
+    that explains a failure is usually the peer's. full prints it untruncated.
+    """
     if quiet:
         return
     for index, (spec, _) in enumerate(handles):
-        if only is not None and index != only:
-            continue
         output = (outputs.get(index) or '').rstrip()
         if not output:
             continue
         lines = output.splitlines()
         head = '--- {} ---'.format(proc_name(spec))
-        if len(lines) > OUTPUT_TAIL_LINES:
+        if not full and len(lines) > OUTPUT_TAIL_LINES:
             head += ' (last {} of {} lines)'.format(OUTPUT_TAIL_LINES, len(lines))
             lines = lines[-OUTPUT_TAIL_LINES:]
         sys.stdout.write(head + '\n' + '\n'.join(lines) + '\n')

@@ -338,6 +338,23 @@ Be specific and short: a list, not prose."
         fi
     fi
 
+    # The manifest is taken before the run so a run that edited the corpus it is
+    # measured against is caught rather than scored.
+    if [ -s "${RUN}/sdk-md5.txt" ]; then
+        local changed
+        changed="$( cd "${SNAP}" && md5sum -c "${RUN}/sdk-md5.txt" 2>/dev/null \
+                    | grep -v ': OK$' || true )"
+        if [ -n "${changed}" ]; then
+            echo "corpus:  CHANGED DURING THE RUN -- this measurement is not valid" >&2
+            echo "${changed}" >&2
+            echo "corpus   changed during the run" >> "${RUN}/meta.txt"
+            if [ "${code}" -eq 0 ]; then code=3; fi
+        else
+            echo "corpus:  unchanged, $(wc -l < "${RUN}/sdk-md5.txt") file(s) verified"
+            echo "corpus   unchanged" >> "${RUN}/meta.txt"
+        fi
+    fi
+
     echo
     python3 "${HERE}/analyze_run.py" "${RUN}" || true
     exit ${code}

@@ -221,6 +221,46 @@ COUNTING = re.compile(r"\bwc\b|\bdu\b|--stat\b|\bcloc\b|stat\s+-c|\bfind\b.*-nam
 # A counting command measures the run only when it targets the run's own source.
 COUNTED_SOURCE = re.compile(r"(^|[\s\"'])(src|scenarios\.json|design\.json|\*\.(cpp|hpp))")
 
+# A counting command measures the RUN only when the thing it counts is the run's own
+# source. wc on a file the run redirected output into is reading a log, not measuring
+# itself, and a heredoc that opens scenarios.json to build a debug copy is not either.
+COUNT_CALL = re.compile(r"\b(?:wc|cloc|du)\b((?:\s+-{1,2}[A-Za-z-]+)*)"
+                        r"((?:\s+[^\s;|&<>]+)+)")
+
+# A source file changed through the shell rather than through Edit or Write: sed -i,
+# a redirect, tee, or a heredoc that opens the file for writing. A path under a
+# temporary directory is scratch, not the project.
+SOURCE_TOKEN = r"[^\s;|&<>'\"]+\.(?:cpp|hpp|h|json|txt|cmake)"
+IN_PLACE = re.compile(r"\bsed\s+-i\b|\bpatch\b\s|\bdos2unix\b")
+REDIRECT_WRITE = re.compile(r"(?:>>?\s*|\btee\b\s+(?:-a\s+)?)(" + SOURCE_TOKEN + r")")
+OPEN_WRITE = re.compile(r"open\(\s*['\"](" + SOURCE_TOKEN + r")['\"]\s*,\s*['\"][wa]")
+ANY_SOURCE = re.compile(SOURCE_TOKEN)
+SCRATCH = re.compile(r"^/(?:tmp|var|dev|proc)/")
+
+
+def counts_own_source(cmd):
+    """True when a counting command's own operands are the run's source."""
+    for match in COUNT_CALL.finditer(cmd):
+        for operand in match.group(2).split():
+            if COUNTED_SOURCE.search(operand):
+                return True
+    if re.search(r"--stat\b|stat\s+-c", cmd) and COUNTED_SOURCE.search(cmd):
+        return True
+    return False
+
+
+def bash_edits(cmd):
+    """The source files a shell command rewrites, scratch paths excluded."""
+    found = [hit.group(1) for hit in REDIRECT_WRITE.finditer(cmd)]
+    found += [hit.group(1) for hit in OPEN_WRITE.finditer(cmd)]
+    # An in-place editor names its file after the script it applies, and that script
+    # may itself hold the separators a single pattern would stop at.
+    place = IN_PLACE.search(cmd)
+    if place:
+        found += ANY_SOURCE.findall(cmd[place.end():])
+    return [p for p in found if not SCRATCH.search(p)]
+
+
 
 def events(requests):
     """The discrete things that happen to a run, with the request each began at.
@@ -251,6 +291,11 @@ def events(requests):
                 continue
             if nm != "Bash":
                 continue
+            for edited in bash_edits(what):
+                edited_since_build = edited_since_scen = True
+                last_change = i
+                if spec and os.path.basename(edited) == spec and builds:
+                    respecs.append(i)
             if BUILD_CALL.search(what):
                 if builds and edited_since_build:
                     build_fixes.append(i)
@@ -263,7 +308,7 @@ def events(requests):
                 scenarios.append(i)
                 edited_since_scen = False
                 last_change = max(last_change, i)
-            if COUNTING.search(what) and COUNTED_SOURCE.search(what):
+            if counts_own_source(what):
                 counters.append(i)
     return [("build invocations", builds, ""),
             ("build-and-fix cycles", build_fixes, "a source changed, then it rebuilt"),
@@ -384,7 +429,13 @@ def main():
     print("   %-26s %s" % ("  output", format(tot["output_tokens"], ",")))
     vis = visible // 4
     print("   %-26s ~%s   (text + tool JSON, chars/4)" % ("  visible output", format(vis, ",")))
-    print("   %-26s ~%s   (output - visible)" % ("  reasoning", format(tot["output_tokens"] - vis, ",")))
+    think_tot = sum(r["think"] for r in requests)
+    if think_tot:
+        print("   %-26s %s   (exact, from output_tokens_details)"
+              % ("  reasoning", format(think_tot, ",")))
+    else:
+        print("   %-26s ~%s   (output - visible)"
+              % ("  reasoning", format(tot["output_tokens"] - vis, ",")))
     print("   %-26s %s" % ("  uncached input", format(tot["input_tokens"], ",")))
     print("   %-26s %s" % ("cache reads", format(tot["cache_read_input_tokens"], ",")))
     print("   %-26s %s" % ("cache writes", format(tot["cache_creation_input_tokens"], ",")))
@@ -453,8 +504,9 @@ def main():
         # A token written at r is billed as output, then read again by every later request.
         price = r["out"] * (PRICE_OUT + PRICE_WRITE +
                             PRICE_READ * max(len(requests) - i - 1, 0)) / 1e6
-        print("   r%-4d %8s output  %8s ctx  $%.3f fully priced"
-              % (i, format(r["out"], ","), format(r["ctx"], ","), price))
+        print("   r%-4d %8s output  %8s thinking  %8s ctx  $%.3f fully priced"
+              % (i, format(r["out"], ","), format(r["think"], ","),
+                 format(r["ctx"], ","), price))
 
     print("\n== per-request timeline (idx  ctx  out  tools)")
     for i, r in enumerate(requests):
