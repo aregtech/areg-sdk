@@ -266,14 +266,27 @@ JAR_DATA = 'data'
 def read_bytes(*parts):
     """Raw bytes of a repository file, or None when it is not there.
 
-    The text reader translates line endings, and these files are compared byte
-    for byte with the copies inside codegen.jar.
+    The text reader translates line endings, and these files are compared with
+    the copies inside codegen.jar.
     """
     path = os.path.join(ROOT, *parts)
     if not os.path.isfile(path):
         return None
     with open(path, 'rb') as handle:
         return handle.read()
+
+
+def same_document(one, other):
+    """True when two XML files hold the same document.
+
+    .gitattributes stores the schemas with line feeds and every checkout gets
+    them back that way; the jar build packs the copies its own checkout holds.
+    A line break is not part of an XML document, so it is folded away before
+    the comparison and every other byte still has to match.
+    """
+    if one is None or other is None:
+        return False
+    return one.replace(b'\r\n', b'\n') == other.replace(b'\r\n', b'\n')
 
 
 def jar_member(name):
@@ -378,9 +391,9 @@ def check_generator_catalogue(report):
 
     # A schema must exist beside the jar, because explain_rule.py and every editor
     # read that copy. The jar carries its own copy of the same file, written by the
-    # jar build; the two are one file delivered twice, so they must be identical.
-    # They differ only when the jar was built from another tree, and then a document
-    # is accepted by one and refused by the other.
+    # jar build; the two are one file delivered twice, so they must hold the same
+    # document. They hold different ones only when the jar was built from another
+    # tree, and then a document is accepted by one and refused by the other.
     for name in ('siml.xsd', 'dtml.xsd', 'fsml.xsd'):
         beside = read_bytes('tools', 'schema', name)
         if not beside:
@@ -391,7 +404,7 @@ def check_generator_catalogue(report):
         beside = read_bytes('tools', 'schema', name)
         if beside is None:
             continue
-        if beside != jar_member(name):
+        if not same_document(beside, jar_member(name)):
             report.fail('catalogue', 'data/{} inside codegen.jar differs from '
                         'tools/schema/{}. The generator validates with its copy and '
                         'explain_rule.py and the editors read the other, so a '
@@ -1870,6 +1883,65 @@ def check_generated_code(report):
 
 
 # ---------------------------------------------------------------------------
+# Nothing tracked points at the local session tree
+#
+# .claude/ is machine-local and git-ignored. A tracked document that names a path
+# inside it reads as an instruction, and it resolves on the machine that wrote it,
+# so nobody there sees it break. It does not resolve from a clean clone, which is
+# the only tree an application author or CI ever has.
+#
+# Documents only. The tools that create and read the tree name it because that is
+# what they do, and each one works when it is absent.
+# ---------------------------------------------------------------------------
+LOCAL_TREE_RE = re.compile(r'(?<![\w.-])\.claude/')
+
+
+def tracked_files():
+    """Every file git tracks, as repository-relative paths, or [] without git."""
+    try:
+        result = subprocess.run(['git', 'ls-files', '-z'], cwd=ROOT,
+                                stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                stdin=subprocess.DEVNULL)
+    except OSError:
+        return []
+    if result.returncode != 0:
+        return []
+    return [name for name in result.stdout.decode('utf-8', 'replace').split('\0') if name]
+
+
+def check_local_tree_references(report):
+    names = [name for name in tracked_files()
+             if name.endswith('.md') or name.endswith('.txt')]
+    if not names:
+        report.note('local-tree', 'git does not list the tracked files here, so no '
+                    'document was read for a path into the local session tree')
+        return
+
+    hits = []
+    for name in names:
+        path = os.path.join(ROOT, name)
+        if not os.path.isfile(path) or os.path.getsize(path) > 1024 * 1024:
+            continue
+        try:
+            with open(path, encoding='utf-8') as handle:
+                lines = handle.read().splitlines()
+        except (UnicodeDecodeError, OSError):
+            continue
+        for number, line in enumerate(lines, 1):
+            if LOCAL_TREE_RE.search(line):
+                hits.append((name, number))
+
+    for name, number in hits:
+        report.fail('local-tree', '{}:{} names a path inside .claude/, which is '
+                    'git-ignored and exists only on the machine that wrote it. A '
+                    'clean clone and CI do not have it, so the instruction is dead '
+                    'for every other reader'.format(name, number))
+    if not hits:
+        report.ok('local-tree', '{} tracked document(s) name no path inside .claude/'
+                  .format(len(names)))
+
+
+# ---------------------------------------------------------------------------
 # CI enforcement
 # ---------------------------------------------------------------------------
 def gating_workflow_text():
@@ -2126,6 +2198,7 @@ def run():
     check_corpus_toll(report)
     check_duplication(report)
     check_generated_code(report)
+    check_local_tree_references(report)
     check_ci(report)
     check_tools(report)
     check_observability(report)

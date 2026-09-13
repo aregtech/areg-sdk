@@ -32,7 +32,9 @@
 #     --compiler gnu|llvm   Toolchain family (default: gnu).
 #     --target  <name>      CMake target to build (default: areg-unit-tests).
 #     --run     <what>      What to execute after build:
-#                             ctest      -> ctest in the build dir (default for tests)
+#                             ctest      -> ctest in the build dir (default for tests).
+#                                           Builds every target, so each registered
+#                                           test has its executable.
 #                             examples   -> the example scenario driver over the whole
 #                                           instrumented tree
 #                             examples:<name>[,<name>...]
@@ -102,7 +104,7 @@ RUN_ARGS=()
 # --------------------------------------------------------------------------
 # Parse arguments.
 # --------------------------------------------------------------------------
-[[ $# -ge 1 ]] || { sed -n '2,60p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 1; }
+[[ $# -ge 1 ]] || { sed -n '2,/^# ====/p' "${BASH_SOURCE[0]}" | sed '$d' | sed 's/^# \{0,1\}//'; exit 1; }
 MODE="$1"; shift
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -122,7 +124,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "${MODE}" in
-    help|-h|--help) sed -n '2,60p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0;;
+    help|-h|--help) sed -n '2,/^# ====/p' "${BASH_SOURCE[0]}" | sed '$d' | sed 's/^# \{0,1\}//'; exit 0;;
 esac
 
 # --------------------------------------------------------------------------
@@ -184,8 +186,15 @@ configure_build() {
     else
         info "Reusing existing ${build_dir} (--keep)"
     fi
-    info "Building target '${TARGET}' with ${JOBS} jobs"
-    cmake --build "${build_dir}" -j"${JOBS}" --target "${TARGET}"
+    # ctest runs every test the tree registers, and a test whose executable was
+    # never built is reported "Not Run". The whole tree is built when the run is
+    # ctest, so every registered test has its binary.
+    local goal="${TARGET}"
+    if [[ "${RUN}" == "ctest" ]]; then
+        goal="all"
+    fi
+    info "Building target '${goal}' with ${JOBS} jobs"
+    cmake --build "${build_dir}" -j"${JOBS}" --target "${goal}"
 }
 
 # --------------------------------------------------------------------------

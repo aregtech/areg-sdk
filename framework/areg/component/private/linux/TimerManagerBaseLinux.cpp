@@ -42,10 +42,20 @@ bool TimerManagerBase::post_event(Event& eventElem)
     return result;
 }
 
+void TimerManagerBase::_close_descriptors()
+{
+    if (mExitFd    >= 0) { ::close(mExitFd);    mExitFd    = -1; }
+    if (mCommandFd >= 0) { ::close(mCommandFd); mCommandFd = -1; }
+    if (mEpollFd   >= 0) { ::close(mEpollFd);   mEpollFd   = -1; }
+}
+
 bool TimerManagerBase::run_dispatcher()
 {
     static constexpr void * COMMAND_PTR { nullptr };                        // epoll data.ptr for mCommandFd
     void * const             EXIT_PTR   { reinterpret_cast<void*>(-1) };    // epoll data.ptr for mExitFd
+
+    // The descriptors the previous run opened are closed here, on this thread.
+    _close_descriptors();
 
     mEpollFd   = ::epoll_create1(EPOLL_CLOEXEC);
     mCommandFd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
@@ -53,9 +63,7 @@ bool TimerManagerBase::run_dispatcher()
 
     if ((mEpollFd < 0) || (mCommandFd < 0) || (mExitFd < 0))
     {
-        if (mEpollFd   >= 0) { ::close(mEpollFd);   mEpollFd   = -1; }
-        if (mCommandFd >= 0) { ::close(mCommandFd); mCommandFd = -1; }
-        if (mExitFd    >= 0) { ::close(mExitFd);    mExitFd    = -1; }
+        _close_descriptors();
         return false;
     }
 
@@ -136,10 +144,6 @@ bool TimerManagerBase::run_dispatcher()
 
     ready_for_events(false);
     remove_all_events();
-
-    ::close(mExitFd);    mExitFd    = -1;
-    ::close(mCommandFd); mCommandFd = -1;
-    ::close(mEpollFd);   mEpollFd   = -1;
 
     return true;
 }

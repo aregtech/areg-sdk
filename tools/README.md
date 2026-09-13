@@ -502,7 +502,7 @@ tools/sanitize.sh <mode> [options] [-- <args forwarded to the binary>]
 | Option            | Default            | Meaning                                          |
 |-------------------|--------------------|--------------------------------------------------|
 | `--compiler`      | `gnu`              | `gnu` (g++) or `llvm` (clang++).                 |
-| `--target`        | `areg-unit-tests`  | CMake target to build.                           |
+| `--target`        | `areg-unit-tests`  | CMake target to build. `--run ctest` builds every target instead. |
 | `--run`           | `auto`             | `ctest`, an explicit binary path, `auto`, or `none`. |
 | `--lib`           | `static`           | `static` (most robust for ASan) or `shared`.     |
 | `--examples`      | off                | Also build the `examples/` tree.                 |

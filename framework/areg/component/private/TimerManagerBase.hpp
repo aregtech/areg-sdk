@@ -63,7 +63,7 @@ protected:
      * \param   maxQueue        The event-queue ring capacity of the timer manager thread.
      **/
     explicit TimerManagerBase( const String & threadName, uint32_t stackSizeKb, uint32_t maxQueue );
-    virtual ~TimerManagerBase() = default;
+    virtual ~TimerManagerBase();
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides.
@@ -150,21 +150,31 @@ private:
 
 protected:
     /**
+     * \brief   Closes the epoll and eventfd descriptors and sets each to -1.
+     *          Called on the timer manager thread before a dispatcher run opens
+     *          its own set, and again when the object is destroyed.
+     **/
+    void _close_descriptors();
+
+    /**
      * \brief   epoll file descriptor that watches all timerfd handles plus the
-     *          command and exit eventfd handles. Value -1 when not initialized.
+     *          command and exit eventfd handles. Value -1 until the first
+     *          dispatcher run opens it. A run that ends leaves it open: a
+     *          component thread outlives the dispatcher and still stops timers
+     *          through it. The next run closes it and opens its own.
      **/
     int     mEpollFd;
 
     /**
      * \brief   eventfd written by post_event() to wake the epoll loop when a
      *          timer-management event (start / stop) has been queued.
-     *          Value -1 when not initialized.
+     *          Value -1 until the first dispatcher run opens it.
      **/
     int     mCommandFd;
 
     /**
      * \brief   eventfd written by stop_manager_thread() to signal the epoll loop
-     *          to exit cleanly.  Value -1 when not initialized.
+     *          to exit cleanly. Value -1 until the first dispatcher run opens it.
      **/
     int     mExitFd;
 

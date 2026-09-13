@@ -136,21 +136,19 @@ Two further rules apply to changes in `AGENTS.md` and `docs/agent/`:
 
 ### g. Agent session knowledge
 
-Work on this repository runs across many sessions, and each one otherwise begins by rediscovering what the last one established: how the tools are invoked on this machine, which invariants a plausible-looking edit breaks, why a decision was taken the way it was. Two local indexes hold that knowledge:
+Work on this repository runs across many sessions, and each one otherwise begins by rediscovering what the last one established: how the tools are invoked on this machine, which invariants a plausible-looking edit breaks, why a decision was taken the way it was. An untracked, machine-local tree holds that knowledge: one index of durable facts, one of mistakes made and the rule that would have prevented each, and a session bootstrap that points at both and is opened at the start of a session.
 
-| File | Holds |
-|---|---|
-| `.claude/memory/MEMORY.md` | durable facts, indexing the files beside it |
-| `.claude/lessons/LESSONS.md` | mistakes made, and the rule that would have prevented each |
-
-`.claude/bootstrap.md` is the session bootstrap that points at both; load it at the start of a session. Create the tree with:
+Create that tree, and ask where each file goes, with:
 
 ```
 python tools/agent/setup_agent_memory.py --init
+python tools/agent/setup_agent_memory.py --list     # the tree and the state of each file
 python tools/agent/setup_agent_memory.py --check    # fails if a file is missing or unlisted
 ```
 
-**The protocol is tracked; the content is not.** `.gitignore` matches `*claude*`, so nothing under `.claude/` may enter a commit. The knowledge is local to one machine and one line of work, it would go stale inside a release, and an application author who found it would be misled by it. For the same reason it is **not** linked from `AGENTS.md`: that file is the entry point for building an application on top of Areg, it must resolve for every reader, and a path that exists only on one machine does not.
+**The protocol is tracked; the content is not.** The tool writes the tree and the two indexes and nothing else; what goes in them is written by hand, by whoever learned it. `.gitignore` matches `*claude*`, so none of it can enter a commit. The knowledge is local to one machine and one line of work, it would go stale inside a release, and an application author who found it would be misled by it.
+
+That is also why no tracked file names a path inside that tree, this one included, and why it is **not** linked from `AGENTS.md`: `AGENTS.md` and `docs/agent/` are the entry point for building an application on top of Areg, they must resolve for every reader from a clean clone, and a path that exists only on one machine does not. `--list` above is the tracked way to ask where something lives.
 
 Update the indexes at the end of any session that established a durable fact or made a mistake worth not repeating. Each index states its own criteria for what belongs in it; the short form is that a fact the repository already states is not a memory, and a general principle nobody got wrong is not a lesson.
 
