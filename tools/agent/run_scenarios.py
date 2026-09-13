@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # ===========================================================================
-# Runs an AREG application as a scenario and reports one verdict.
+# Runs an application as a scenario and reports one verdict.
 #
 # A scenario starts a list of processes in order, waits for the last one, and
 # passes only when every process ended the way the scenario says and every
@@ -578,7 +578,7 @@ def self_test():
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Run AREG application scenarios.',
+        description='Run application scenarios.',
         epilog=SCHEMA,
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--file', default='scenarios.json', help='the scenario file')

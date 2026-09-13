@@ -227,6 +227,19 @@ main()
         stray="$(find "${SNAP}" -type f ! -name run_scenarios.py | head -5)"
         [ -z "${stray}" ] || die "the gRPC arm staged more than the scenario runner:
 ${stray}"
+        # The task travels with the run, without the preamble paragraphs that name areg.
+        python3 - "${TASK_ABS}" "${RUN}/task.md" <<'STRIP'
+import re, sys
+text = open(sys.argv[1], encoding='utf-8').read()
+head, sep, rest = text.partition('\n## ')
+if sep:
+    head = '\n\n'.join(b for b in head.split('\n\n') if not re.search('areg', b, re.I))
+    text = head.rstrip('\n') + '\n' + sep + rest
+open(sys.argv[2], 'w', encoding='utf-8').write(text)
+STRIP
+        if grep -qi areg "${RUN}/task.md"; then
+            die "${TASK_ABS} names areg outside its preamble; the gRPC arm must not be told of it"
+        fi
     else
         copied="$(snapshot "${SDK}" "${SNAP}")"
         ( cd "${SNAP}" && md5sum AGENTS.md docs/agent/*.md docs/agent/*.json docs/agent/.budgets \
@@ -243,7 +256,6 @@ ${stray}"
     if [ "${FRAMEWORK}" = "grpc" ]; then
         # The gRPC arm takes only the scenario runner from the SDK, so the task travels
         # with the run rather than through a directory the arm is not given.
-        cp "${TASK_ABS}" "${RUN}/task.md"
         TASK_RUN="${RUN}/task.md"
         ADD_DIR="${SNAP}/tools/agent"
         RULES="- **You have gRPC and its public documentation. You do not have example source.**
@@ -314,6 +326,9 @@ Be specific and short: a list, not prose."
     BODY="${BODY//<project>/${PROJECT}}"
     BODY="${BODY//<mode>/${MODE}}"
     { printf '%s\n' "${BODY}"; printf '\n%s\n' "${RULES}"; } > "${RUN}/prompt.txt"
+    if [ "${FRAMEWORK}" = "grpc" ] && grep -qi areg "${RUN}/prompt.txt"; then
+        die "the gRPC prompt names areg; check ${WRAPPER_ABS}, and that --out ${OUT} does not"
+    fi
 
     { echo "framework ${FRAMEWORK}"; echo "model    ${MODEL}"; echo "effort   ${EFFORT}"
       echo "task     ${TASK_RUN}"; echo "mode     ${MODE}"; echo "recipes  ${RECIPES}"

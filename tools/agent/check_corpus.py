@@ -1040,6 +1040,25 @@ def check_grpc_isolation(report):
         report.ok('grpc-arm', 'the gRPC arm stages only run_scenarios.py, and refuses '
                               'to run if anything else is beside it')
 
+    if 'grep -qi areg' not in body:
+        report.fail('grpc-arm', 'the gRPC arm does not refuse a prompt or a task that '
+                                'names areg')
+    helped = subprocess.run([sys.executable, os.path.join(ROOT, 'tools', 'agent',
+                                                          'run_scenarios.py'), '--help'],
+                            cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                            stdin=subprocess.DEVNULL)
+    if re.search(r'areg', helped.stdout.decode('utf-8', 'replace'), re.I):
+        report.fail('grpc-arm', 'run_scenarios.py --help names areg, and the gRPC arm '
+                                'reads it')
+    wrapper = read('examples', 'ai-benchmark', 'grpc-coffee-machine.txt') or ''
+    prompt = wrapper.partition('--- PROMPT BEGINS BELOW THIS LINE')[2]
+    prompt = prompt.replace('<areg-sdk>', '')
+    if re.search(r'areg|another framework|other arm', prompt, re.I):
+        report.fail('grpc-arm', 'the gRPC prompt names areg or another arm')
+    else:
+        report.ok('grpc-arm', 'the gRPC prompt and the runner help name no other '
+                              'framework')
+
 
 def check_analyzer_keys(report):
     """Every request field analyze_run.py reads is a field it writes.

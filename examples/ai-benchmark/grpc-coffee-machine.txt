@@ -37,10 +37,9 @@ The process runner the report is scored with is
 
   <areg-sdk>/tools/agent/run_scenarios.py
 
-It is framework-neutral and is the same runner the comparison's other arm uses. Read
-its --help once, and write the scenarios.json it describes. Nothing else under
-<areg-sdk> is yours to open, and you never write into it: it is another framework's
-checkout and has nothing to say about gRPC.
+It is framework-neutral. Read its --help once, and write the scenarios.json it
+describes. Nothing else under <areg-sdk> is yours to open, and you never write into
+it.
 
 Do this:
 
@@ -72,7 +71,7 @@ Do this:
 
 Rules for this task, above anything else:
 
-- It is a project of its own. Do not add it to any build file of another framework,
+- It is a project of its own. Do not add it to any other project's build files,
   and write no IDE or editor project files.
 - **One class, one .hpp and one .cpp, named after the class.** Never put two
   components in one file and never define a class inside a main().
