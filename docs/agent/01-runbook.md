@@ -79,7 +79,8 @@ every key present and empty, each section with a `#|` note on what its values ma
 Fill the values and keep the keys; no XML, `ID` or `To` is written by hand. A sample
 left as written is skipped and an empty value is absent, so delete only a section the
 task does not need. A key the generator does not read is refused by name.
-`gen_docs.py --example` prints a finished design of another application.
+`gen_docs.py --example` prints a finished design of another application, short
+enough to read in one call.
 
 The spec holds `"datatypes"` (one `.dtml`, when two documents share a type),
 `"interfaces"` (a `.siml` each) and `"machines"` (a `.fsml` each). Everything is named:

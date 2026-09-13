@@ -291,6 +291,26 @@ def worksheet_pristine(path):
     return True
 
 
+ORDER_NOTE = ['a response and an update travel independently, so either can',
+              'arrive first. Test the value already held before waiting for an',
+              'update that may have been delivered already, or the wait never ends']
+
+
+def section_notes(sections):
+    """The warnings that belong to one section, keyed by its marker name.
+
+    A fact stated on a page the build path does not open is a fact a run pays to
+    rediscover. This one only applies where a consumer has both answers and
+    updates to wait on, which is where it is written.
+    """
+    notes = {}
+    answers = [name for name, _, _, _, _ in sections if name.startswith('response_')]
+    updates = [name for name, _, _, _, _ in sections if name.startswith('update_')]
+    if answers and updates:
+        notes[answers[0]] = ORDER_NOTE
+    return notes
+
+
 def worksheet_lines(produced, out, iface, document, machine, machine_doc,
                     scenarios=None):
     """The whole worksheet, ready to write."""
@@ -329,6 +349,7 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
             lines.append(('#| ' + line).rstrip())
     lines.append('#|')
 
+    notes = section_notes(sections)
     current = None
     for name, hint, path, file_name, signature in sections:
         if path != current:
@@ -338,6 +359,8 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
         lines.append('#| {}'.format(hint))
         if signature:
             lines.append('#| in: {}'.format(signature))
+        for line in notes.get(name, []):
+            lines.append('#| {}'.format(line))
         lines.append('')
     if holes:
         lines.append('\n#| ---- {}: what a run has to print to prove a requirement.'
@@ -1133,8 +1156,11 @@ def consumer_class(iface, cls):
               '            {',
               '                // The provider went away. The framework reconnects and',
               '                // calls this again, so nothing here quits.',
+              '                if (is_quitting() == false)',
+              '                {',
               marker('peer_lost',
-                     'what losing the provider means to this scenario', 16),
+                     'what losing the provider means to this scenario', 20),
+              '                }',
               '            }',
               '            else if ((status == areg::ServiceConnectionState::Rejected) ||',
               '                     (status == areg::ServiceConnectionState::Shutdown))',
@@ -1262,6 +1288,13 @@ EXIT_CODE = ['constexpr char const _exitCode[]{ "exitCode" };',
              '    value.valInt.mElement = code;',
              '    areg::Application::store_element(_exitCode, value);',
              '    areg::Application::signal_quit();',
+             '}',
+             '',
+             '//! True once quit_with() has run, so a disconnect that follows is',
+             '//! this process shutting down rather than a lost provider.',
+             'bool is_quitting()',
+             '{',
+             '    return areg::Application::is_element_stored(_exitCode);',
              '}',
              '']
 
@@ -1441,6 +1474,9 @@ def component_files(cls, brief, includes, class_lines, state_slot, prelude=(),
 QUIT_DECLARATION = ['//! Ends the application with this exit code, in storage that outlives',
                     '//! the components. Defined next to main().',
                     'void quit_with(int code);',
+                    '',
+                    '//! True once quit_with() has run. Defined next to main().',
+                    'bool is_quitting();',
                     '']
 
 MAIN_INCLUDES = ['#include "areg/base/areg_global.h"',

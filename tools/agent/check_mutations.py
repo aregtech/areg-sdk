@@ -71,11 +71,18 @@ def apply_defect(root, defect):
         return 'no such file in the recipe: ' + defect['file']
     with open(path, encoding='utf-8') as handle:
         text = handle.read()
-    count = text.count(defect['find'])
-    if count != 1:
-        return 'the text to break appears {} times, not once'.format(count)
+    # A convention a project already follows is several pieces at once: a
+    # declaration, a definition, the call sites and what main() returns. A defect
+    # carries them as an "edits" list, applied in order; a lone find/replace pair
+    # is the same list with one entry.
+    edits = defect.get('edits') or [defect]
+    for edit in edits:
+        count = text.count(edit['find'])
+        if count != 1:
+            return 'the text to break appears {} times, not once'.format(count)
+        text = text.replace(edit['find'], edit['replace'], 1)
     with open(path, 'w', encoding='utf-8', newline='\n') as handle:
-        handle.write(text.replace(defect['find'], defect['replace'], 1))
+        handle.write(text)
     return None
 
 

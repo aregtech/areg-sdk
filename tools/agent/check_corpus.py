@@ -985,6 +985,95 @@ def check_prohibitions(report):
               .format(len(proven & {r['id'] for r in rules}), len(rules)))
 
 
+def recipe_executables(reference):
+    """The executable names a recipe's CMakeLists files declare."""
+    names = []
+    for part in (('CMakeLists.txt',), ('src', 'CMakeLists.txt')):
+        text = read('docs', 'agent', 'recipes', reference, *part)
+        names += re.findall(r'macro_declare_executable\s*\(\s*([A-Za-z0-9_]+)', text)
+    return names
+
+
+def defected_source(task):
+    """The text of the file a repair task breaks, with the break applied."""
+    defect = task.get('defect') or {}
+    if 'file' not in defect or 'create' in defect or 'environment' in defect:
+        return None
+    text = read('docs', 'agent', 'recipes', task['reference'],
+                *defect['file'].split('/'))
+    if not text:
+        return None
+    for edit in defect.get('edits') or [defect]:
+        if edit.get('find') not in text:
+            return None
+        text = text.replace(edit['find'], edit['replace'], 1)
+    return text
+
+
+def check_task_shape(report):
+    """A task's declaration against the recipe it names, and its defect against
+    the tree that defect builds.
+
+    A task whose reference builds two executables and which declares neither
+    binaries nor a run block is launched one process alone, with no peer and no
+    router, and waits for a connection that never comes. Only run_evals.py
+    --self-check sees it, and only after the 90 second timeout.
+    """
+    checked = 0
+    for task in eval_tasks():
+        reference = task.get('reference')
+        if not reference:
+            continue
+        names = recipe_executables(reference)
+        spec = task.get('run') or {}
+        if len(names) > 1:
+            checked += 1
+            if task.get('binaries', 1) != len(names):
+                report.fail('task-shape', '{} names recipe {}, which declares {} '
+                            'executables, but the task declares binaries {}'
+                            .format(task['id'], reference, len(names),
+                                    task.get('binaries', 1)))
+            if not spec:
+                report.fail('task-shape', '{} names recipe {}, which declares {} '
+                            'executables, and gives no run block, so the harness '
+                            'runs one alone and waits out the timeout'
+                            .format(task['id'], reference, len(names)))
+        for role in [spec.get('lead')] + list(spec.get('background') or []):
+            if role and not [n for n in names
+                             if n == role or n.endswith('_' + role)]:
+                report.fail('task-shape', '{} runs a process called {}, which '
+                            'recipe {} does not declare'
+                            .format(task['id'], role, reference))
+        # Only the lead process's output is captured; a background process is
+        # started with its stdout discarded.
+        for role in spec.get('background') or []:
+            for line in task.get('expect') or []:
+                if line.startswith(role + ':'):
+                    report.fail('task-shape', '{} expects "{}", which {} prints '
+                                'as a background process, whose output the '
+                                'harness discards'
+                                .format(task['id'], line, role))
+        # A defect that plants a definition nothing calls builds a tree the
+        # task's own prompt describes wrongly.
+        text = defected_source(task)
+        if text is not None:
+            for edit in (task['defect'].get('edits') or [task['defect']]):
+                for name in re.findall(r'\n[A-Za-z_][A-Za-z0-9_:<>* ]*?\b'
+                                       r'([a-z_][a-z0-9_]*)\s*\([^;)]*\)\s*\n\{',
+                                       edit.get('replace') or ''):
+                    if name in ('main', 'if', 'for', 'while', 'switch'):
+                        continue
+                    calls = re.findall(r'\b' + name + r'\s*\(', text)
+                    bodies = re.findall(r'\b' + name + r'\s*\([^;)]*\)\s*\n\{',
+                                        text)
+                    if len(calls) - len(bodies) < 1:
+                        report.fail('task-shape', "{}'s defect defines {}() and "
+                                    'nothing in the broken tree calls it'
+                                    .format(task['id'], name))
+    report.ok('task-shape', '{} multi-process task(s) agree with their recipe, and '
+              'no defect plants a definition nothing calls'.format(checked))
+
+
 def check_reachable(report):
     agents = read('AGENTS.md')
     pages = agent_pages()
@@ -1888,11 +1977,14 @@ def run():
     check_design_template(report)
     check_peer_loss_branch(report)
     check_final_entry_rule(report)
+    check_example_size(report)
+    check_worksheet_order_note(report)
     check_worksheet_leftover(report)
     check_marker_spelling(report)
     check_worksheet_contract(report)
     check_contract_symmetry(report)
     check_task_prompt_neutrality(report)
+    check_task_shape(report)
     return report
 
 
@@ -2468,6 +2560,24 @@ def check_peer_loss_branch(report):
                         'body written there runs on the states a killed provider never '
                         'produces')
             return
+        guard = text.find('is_quitting()')
+        if guard < 0 or guard > text.find('TODO(you)'):
+            report.fail('peer-loss',
+                        'the marker for a provider that went away is not under an '
+                        'is_quitting() guard, so it also runs while this process quits '
+                        'and its peer is torn down on purpose. A scenario that passed '
+                        'every step then reports a lost peer and exits non-zero')
+            return
+        mains = sorted(glob.glob(os.path.join('src', 'consumer', 'main.cpp')))
+        source = ''
+        if mains:
+            with open(mains[0], encoding='utf-8') as handle:
+                source = handle.read()
+        if 'bool is_quitting()' not in source:
+            report.fail('peer-loss',
+                        'the consumer main() defines no is_quitting(), so the guard the '
+                        'generated branch reads does not link')
+            return
     finally:
         os.chdir(here)
         shutil.rmtree(holder, ignore_errors=True)
@@ -2602,6 +2712,143 @@ def check_final_entry_rule(report):
     report.ok('final-entry', 'rule {} is reported by gen_docs.py before a document is '
                              'written and by check_contract.py after, from one '
                              'catalogue'.format(number))
+
+
+# What "short enough to read in one call" is allowed to mean, in 01-runbook.md.
+EXAMPLE_LINES = 400
+EXAMPLE_BYTES = 12 * 1024
+
+
+def check_example_size(report):
+    """The runbook says --example is short enough to read in one call.
+
+    Run 20260913a read it as "head -260" and then "sed -n 260,420p": two requests
+    for one answer, because nothing said how long it is. The page now says, and the
+    claim is only true while the template stays short. A number on the page would go
+    stale instead, so the page carries the promise and this carries the measurement.
+    """
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    spec = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                           '--example'], capture_output=True, text=True)
+    if spec.returncode != 0:
+        report.fail('example-size', 'gen_docs.py --example no longer prints a spec')
+        return
+    lines = len(spec.stdout.splitlines())
+    size = len(spec.stdout.encode('utf-8'))
+    if lines > EXAMPLE_LINES or size > EXAMPLE_BYTES:
+        report.fail('example-size',
+                    'gen_docs.py --example is {} line(s) and {} bytes, over the {} and '
+                    '{} a run can take in one call. 01-runbook.md promises it is short '
+                    'enough to read whole; a run that does not believe that pages it, '
+                    'and pays a request for the second half'
+                    .format(lines, size, EXAMPLE_LINES, EXAMPLE_BYTES))
+        return
+    runbook = os.path.join(ROOT, 'docs', 'agent', '01-runbook.md')
+    with open(runbook, encoding='utf-8') as handle:
+        page = ' '.join(handle.read().split())
+    # The promise has to be attached to the command, not merely somewhere on the page.
+    promised = False
+    at = page.find('--example')
+    while at >= 0:
+        if 'one call' in page[at:at + 200]:
+            promised = True
+            break
+        at = page.find('--example', at + 1)
+    if not promised:
+        report.fail('example-size',
+                    '01-runbook.md no longer says, where it names --example, that it '
+                    'reads in one call, so nothing stops a run paging it')
+        return
+    report.ok('example-size',
+              'gen_docs.py --example is {} line(s) and {} bytes, and 01-runbook.md says '
+              'it reads in one call'.format(lines, size))
+
+
+def check_worksheet_order_note(report):
+    """The worksheet says a response and an update can arrive in either order.
+
+    The fact is on 20-service-interface.md and 31-consumer.md, and AGENTS.md tells a
+    run filling a marker not to open either. Run 20260913a opened neither, guessed an
+    order, stalled for the whole watchdog and paid a run-and-fix cycle to find the
+    worked example that page already carries. The worksheet is the one file every run
+    reads, so the fact is written beside the first response body.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_skeleton
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('order-note', 'gen_skeleton.py does not import: {}'.format(failure))
+        return
+
+    def sections(names):
+        return [(name, 'hint', 'src/consumer/C.cpp', 'C.cpp', '') for name in names]
+
+    both = gen_skeleton.section_notes(sections(['first_request', 'response_go',
+                                                'response_stop', 'update_level']))
+    if 'response_go' not in both:
+        report.fail('order-note',
+                    'no note is attached to the first response body, so nothing on the '
+                    'path a run reads says a response and an update can arrive in '
+                    'either order')
+        return
+    if 'response_stop' in both or 'update_level' in both:
+        report.fail('order-note',
+                    'the note repeats on every section: it is one fact and it is paid '
+                    'for once per section it is written on')
+        return
+    if gen_skeleton.section_notes(sections(['response_go'])):
+        report.fail('order-note',
+                    'an interface with no attribute carries the note anyway, and there '
+                    'is no update for a response to race with')
+        return
+
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    holder = tempfile.mkdtemp()
+    here = os.getcwd()
+    try:
+        os.chdir(holder)
+        if subprocess.run([sys.executable, os.path.join(tools, 'setup_project.py'),
+                           '--name', 'note', '--root', '.', '--mode', 'ipc',
+                           '--sdk-root', ROOT],
+                          capture_output=True, text=True).returncode != 0:
+            report.fail('order-note', 'the scaffold no longer lays out a project')
+            return
+        spec = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                               '--example'], capture_output=True, text=True)
+        with open('design.json', 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write(spec.stdout)
+        if subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                           '--outdir', 'src/services', '--force', '--chained',
+                           '--spec', 'design.json'],
+                          capture_output=True, text=True).returncode != 0:
+            report.fail('order-note', 'the example spec no longer generates')
+            return
+        docs = sorted(glob.glob(os.path.join('src', 'services', '*.siml')))
+        machines = sorted(glob.glob(os.path.join('src', 'services', '*.fsml')))
+        made = [sys.executable, os.path.join(tools, 'gen_skeleton.py'),
+                '--doc', docs[0], '--app', '--mode', 'ipc', '--force']
+        if machines:
+            made += ['--machine', machines[0]]
+        if subprocess.run(made, capture_output=True, text=True).returncode != 0:
+            report.fail('order-note', 'gen_skeleton.py --app no longer writes a worksheet')
+            return
+        if not os.path.exists('bodies.txt'):
+            report.fail('order-note', 'no worksheet was written to carry the note')
+            return
+        with open('bodies.txt', encoding='utf-8') as handle:
+            sheet = handle.read()
+        if gen_skeleton.ORDER_NOTE[0] not in sheet:
+            report.fail('order-note',
+                        'the worksheet of a generated application carries no note about '
+                        'the order a response and an update arrive in, so the fact is '
+                        'only on the pages a run filling markers is told not to open')
+            return
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+
+    report.ok('order-note', 'the worksheet says a response and an update can arrive in '
+                            'either order, once, beside the first response body')
 
 
 def check_worksheet_leftover(report):

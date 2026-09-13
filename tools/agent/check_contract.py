@@ -214,7 +214,7 @@ CHECKS = [
     ('P-02', 'error',   'a member that no service document declares'),
     ('P-03', 'error',   'REGISTER_DEPENDENCY naming no registered role'),
     ('P-04', 'error',   'a request or a subscription in a component constructor'),
-    ('P-05', 'error',   'quitting on a state the framework recovers from'),
+    ('P-05', 'error',   'signal_quit or a teardown on a non-terminal state'),
     ('P-06', 'error',   'a sleep, a join or an unbounded loop inside a handler'),
     ('P-07', 'error',   'including a header from a private/ folder'),
     ('P-08', 'error',   'throw, try or catch'),
@@ -228,6 +228,7 @@ CHECKS = [
     ('P-15', 'error',   'a hand-written source file no CMakeLists.txt names'),
     ('P-16', 'error',   'a timer told apart by name() compared to a literal'),
     ('P-17', 'error',   'a TODO(you) marker the scaffold left, still unfilled'),
+    ('P-18', 'error',   'an exit code lost to a quit_with() the source skipped'),
     ('B-01', 'advice',  'an areg::String passed to a printf style log macro'),
     ('B-02', 'advice',  'a range-for over an areg container'),
     ('B-04', 'advice',  'a container name or header with the obsolete TE prefix'),
@@ -399,6 +400,67 @@ def check_generate_target(base, findings, read):
                     'this file is under the generate target and carries no generator '
                     'banner. The next build rewrites the target and the file is gone; '
                     'keep it with the application sources'))
+
+
+# The one exit of a scaffolded application, and the call it wraps. A project
+# defining the first has main() return the stored code; one calling the second
+# anywhere but inside that definition returns nothing and loses it.
+EXIT_DEFINITION = re.compile(r'\bvoid\s+quit_with\s*\(\s*int\b')
+SIGNAL_QUIT = re.compile(r'\bApplication::signal_quit\s*\(')
+
+
+def exit_body(sources, read):
+    """The file and line range of the quit_with() definition, or None.
+
+    A prototype is not the definition: the header of a scaffolded project declares
+    quit_with() beside the class, and main.cpp defines it. Only the definition's own
+    body may reach signal_quit().
+    """
+    for path in sources:
+        text = read(path)
+        if text is None:
+            continue
+        lines = text.splitlines()
+        for number, line in enumerate(lines):
+            if EXIT_DEFINITION.search(line) is None or ';' in line:
+                continue
+            return path, number, body_range(lines, number)
+    return None
+
+
+def check_single_exit(sources, findings, read):
+    """P-18. A component that quits past quit_with() throws its exit code away.
+
+    main() returns the code quit_with() stored, so a source calling signal_quit()
+    elsewhere ends the process with nothing stored and it exits 0. A scenario
+    asserting a non-zero exit then passes on a run that failed. The same call is what
+    tells a consumer's own shutdown from a lost provider: nothing the framework
+    reports at service_connected() separates them, measured on three public queries.
+
+    The rule applies only where quit_with() is defined, so a program that ends itself
+    directly and returns its own code is not touched.
+    """
+    where = exit_body(sources, read)
+    if where is None:
+        return
+    holder, first, last = where
+    for path in sources:
+        text = read(path)
+        if text is None:
+            continue
+        for number, line in enumerate(text.splitlines()):
+            if SIGNAL_QUIT.search(line) is None:
+                continue
+            if path == holder and first <= number <= last:
+                continue
+            findings.append(Finding(
+                'P-18', 'error', path, number + 1,
+                'this ends the application past quit_with(), which {} defines and '
+                'main() reads: the process exits 0 whatever went wrong, and a scenario '
+                'asserting a non-zero exit passes on a failing run. Call '
+                'quit_with(code). It is also what a consumer tests with is_quitting() '
+                'to tell its own shutdown from a lost provider'
+                .format(os.path.basename(holder))))
 
 
 def check_open_markers(sources, findings, read):
@@ -1607,6 +1669,7 @@ def main():
     check_timer_dispatch(sources, findings, read)
     check_generate_target(base, findings, read)
     check_state_machines(machines, findings, problems)
+    check_single_exit(sources, findings, read)
     if not args.allow_todo:
         check_open_markers(sources, findings, read)
 

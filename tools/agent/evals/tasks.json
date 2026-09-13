@@ -780,6 +780,45 @@
         "rule": "P-17"
       },
       "teaches": "an unfilled TODO(you) marker is an unwritten requirement, and the contract checker refuses a project that still carries one"
+    },
+    {
+      "id": "r31-quit-past-exit-code",
+      "kind": "repair",
+      "prompt": "This consumer routes its exit code through quit_with(), which main() reads. One handler still ends the application with areg::Application::signal_quit() directly, so nothing is stored and a failing run would exit 0. Fix that handler.",
+      "expect": [
+        "consumer: greeted"
+      ],
+      "reference": "02-ipc-two-processes",
+      "binaries": 2,
+      "run": {
+        "router": true,
+        "background": [
+          "provider"
+        ],
+        "lead": "consumer"
+      },
+      "defect": {
+        "file": "src/consumer.cpp",
+        "edits": [
+          {
+            "find": "#include \"src/services/HelloServiceConsumerBase.hpp\"\n",
+            "replace": "#include \"src/services/HelloServiceConsumerBase.hpp\"\n\n//! Ends the application with this exit code, in storage that outlives\n//! the components. Defined next to main().\nvoid quit_with(int code);\n"
+          },
+          {
+            "find": "    void request_hello_service_failed(areg::ResultType /*reason*/) final\n    {\n        std::cerr << \"consumer: request failed\" << std::endl;\n    }\n",
+            "replace": "    void request_hello_service_failed(areg::ResultType /*reason*/) final\n    {\n        std::cerr << \"consumer: request failed\" << std::endl;\n        quit_with(1);\n    }\n"
+          },
+          {
+            "find": "int main()\n{\n    areg::Application::setup();\n    areg::Application::load_model(_modelName);\n    areg::Application::wait_quit(areg::WAIT_INFINITE);\n    areg::Application::unload_model(_modelName);\n    areg::Application::release();\n    return 0;\n}\n",
+            "replace": "constexpr char const _exitCode[]{ \"exitCode\" };\n\n//! Ends the application with this exit code, in storage that outlives\n//! the components.\nvoid quit_with(int code)\n{\n    areg::Primitive value{};\n    value.valInt.mElement = code;\n    areg::Application::store_element(_exitCode, value);\n    areg::Application::signal_quit();\n}\n\nint main()\n{\n    areg::Application::setup();\n    areg::Application::load_model(_modelName);\n    areg::Application::wait_quit(areg::WAIT_INFINITE);\n    areg::Application::unload_model(_modelName);\n    areg::Application::release();\n    return areg::Application::stored_element(_exitCode).valInt.mElement;\n}\n"
+          }
+        ]
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "P-18"
+      },
+      "teaches": "a project that defines quit_with() has exactly one exit; signal_quit() called anywhere else throws the exit code away, and is also what a consumer tests to tell its own shutdown from a lost provider"
     }
   ]
 }
