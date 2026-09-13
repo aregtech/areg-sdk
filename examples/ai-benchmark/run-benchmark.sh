@@ -210,11 +210,30 @@ main()
     # What was measured: the revision, the uncommitted state, and the copy itself.
     git -C "${SDK}" rev-parse HEAD     > "${RUN}/sdk-head.txt"
     git -C "${SDK}" status --porcelain > "${RUN}/sdk-before.txt"
-    local copied; copied="$(snapshot "${SDK}" "${SNAP}")"
-    ( cd "${SNAP}" && md5sum AGENTS.md docs/agent/*.md docs/agent/*.json docs/agent/.budgets \
-                           tools/agent/*.py tools/agent/evals/tasks.json \
-                           conf/cmake/functions.cmake examples/ai-benchmark/*.md \
-                           examples/ai-benchmark/*.txt ) > "${RUN}/sdk-md5.txt"
+    local copied
+    if [ "${FRAMEWORK}" = "grpc" ]; then
+        # The gRPC arm is a cold start against gRPC and its public documentation. The
+        # areg corpus must not exist inside the run at all: an agent cannot be asked
+        # not to read a file that is sitting next to its working directory. Only the
+        # scenario runner is staged, and it is stdlib-only, so one file is the whole
+        # dependency.
+        mkdir -p "${SNAP}/tools/agent"
+        cp "${SDK}/tools/agent/run_scenarios.py" "${SNAP}/tools/agent/run_scenarios.py"
+        copied=1
+        ( cd "${SNAP}" && md5sum tools/agent/run_scenarios.py ) > "${RUN}/sdk-md5.txt"
+        # The arm is only a cold start if the corpus is absent, so say so rather than
+        # trust it: one stray page next to the working directory invalidates the run.
+        local stray
+        stray="$(find "${SNAP}" -type f ! -name run_scenarios.py | head -5)"
+        [ -z "${stray}" ] || die "the gRPC arm staged more than the scenario runner:
+${stray}"
+    else
+        copied="$(snapshot "${SDK}" "${SNAP}")"
+        ( cd "${SNAP}" && md5sum AGENTS.md docs/agent/*.md docs/agent/*.json docs/agent/.budgets \
+                               tools/agent/*.py tools/agent/evals/tasks.json \
+                               conf/cmake/functions.cmake examples/ai-benchmark/*.md \
+                               examples/ai-benchmark/*.txt ) > "${RUN}/sdk-md5.txt"
+    fi
 
     # A task inside the checkout is read from the snapshot; one outside it as given.
     local TASK_RUN="${TASK_ABS}"

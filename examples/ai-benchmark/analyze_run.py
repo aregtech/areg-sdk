@@ -402,6 +402,8 @@ def main():
                       "cache_creation_input_tokens"):
                 tot[k] += u.get(k) or 0
             requests.append({"id": mid, "ctx": ctx, "out": u.get("output_tokens") or 0,
+                             "think": (u.get("output_tokens_details")
+                                       or {}).get("thinking_tokens") or 0,
                              "tools": names, "calls": calls,
                              "cr": u.get("cache_read_input_tokens") or 0,
                              "cw": u.get("cache_creation_input_tokens") or 0})
@@ -479,24 +481,43 @@ def main():
         total += n
         print("   %8d  %s" % (n, f[len(sdk) + 1:]))
     print("   %8d  total, %d file(s) opened inside the SDK" % (total, len(opened)))
-    src = os.path.join(run, "work", "src")
+    # The areg arm keeps its sources under work/src and generates the rest from its
+    # documents. Another framework lays its tree out its own way -- the gRPC arm uses
+    # a directory per process -- so the sources are found by walking the project.
+    framework = (meta_of(run).get("framework") or "areg").strip()
+    work = os.path.join(run, "work")
+    src = os.path.join(work, "src")
+    base = src if os.path.isdir(src) else work
     sources = {}
-    for root, dirs, names in os.walk(src):
-        dirs[:] = [d for d in dirs if d not in ("build", "services")]
+    for root, dirs, names in os.walk(base):
+        dirs[:] = [d for d in dirs if d not in ("build", "services", ".git")]
         for n in names:
-            if n.endswith((".hpp", ".cpp")):
+            if n.endswith((".hpp", ".cpp", ".h", ".cc")):
                 path = os.path.join(root, n)
-                sources[os.path.relpath(path, src)] = open(path, errors="ignore").read()
-    written = hand_written(src, sources, sdk)
-    print("   %-26s %d" % ("C++ lines in src/", sum(len(t.splitlines()) for t in sources.values())))
-    print("   %-26s %s" % ("  hand-written",
-                             "%d  (not in a regeneration of the same documents)" % written
-                             if written is not None else "unknown (regeneration failed)"))
-    layout = layout_findings(sources)
-    for finding in layout:
-        print("   %-26s %s" % ("LAYOUT", finding))
-    if not layout:
-        print("   %-26s %s" % ("layout", "one class per file, no class beside main()"))
+                sources[os.path.relpath(path, base)] = open(path, errors="ignore").read()
+    where = os.path.relpath(base, run).replace(os.sep, "/")
+    lines = sum(len(t.splitlines()) for t in sources.values())
+    print("   %-26s %d   (%d file(s) under %s)" % ("C++ lines", lines, len(sources), where))
+    if framework == "areg":
+        written = hand_written(src, sources, sdk)
+        print("   %-26s %s" % ("  hand-written",
+                                 "%d  (not in a regeneration of the same documents)" % written
+                                 if written is not None else "unknown (regeneration failed)"))
+        layout = layout_findings(sources)
+        for finding in layout:
+            print("   %-26s %s" % ("LAYOUT", finding))
+        if not layout:
+            print("   %-26s %s" % ("layout", "one class per file, no class beside main()"))
+    else:
+        # Nothing here is generated from a document the run wrote: protoc output goes
+        # to the build directory, which is not walked.
+        specs = []
+        for root, dirs, names in os.walk(work):
+            dirs[:] = [d for d in dirs if d not in ("build", ".git")]
+            specs += [n for n in names if n.endswith(".proto")]
+        print("   %-26s %d  (every line under %s)" % ("  hand-written", lines, where))
+        print("   %-26s %d  (protoc output is under build/, not counted)"
+              % ("  .proto contract(s)", len(specs)))
 
     spikes = sorted(enumerate(requests), key=lambda p: -p[1]["out"])[:2]
     print("\n== the reasoning spikes (the design and the implementation thought)")

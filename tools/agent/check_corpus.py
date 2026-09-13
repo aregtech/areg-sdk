@@ -1010,6 +1010,72 @@ def defected_source(task):
     return text
 
 
+def check_grpc_isolation(report):
+    """The gRPC arm stages the scenario runner and nothing else.
+
+    The arm measures a cold start against gRPC alone. A snapshot of this repository
+    beside its working directory makes that claim unprovable, whatever the prompt
+    says, because the shell is not restricted to the directory the Read tool is.
+    """
+    text = read('examples', 'ai-benchmark', 'run-benchmark.sh')
+    if not text:
+        report.fail('grpc-arm', 'examples/ai-benchmark/run-benchmark.sh is missing')
+        return
+    branch = re.search(r'if \[ "\$\{FRAMEWORK\}" = "grpc" \]; then(.*?)\n    else',
+                       text, re.S)
+    if branch is None:
+        report.fail('grpc-arm', 'run-benchmark.sh no longer stages the gRPC arm '
+                                'separately, so it takes the whole snapshot')
+        return
+    body = branch.group(1)
+    if 'snapshot "${SDK}"' in body:
+        report.fail('grpc-arm', 'the gRPC arm copies the whole checkout; the corpus '
+                                'must not exist inside the run')
+    if 'run_scenarios.py' not in body:
+        report.fail('grpc-arm', 'the gRPC arm stages no scenario runner')
+    if '! -name run_scenarios.py' not in body:
+        report.fail('grpc-arm', 'the gRPC arm does not verify that it staged nothing '
+                                'but the scenario runner')
+    else:
+        report.ok('grpc-arm', 'the gRPC arm stages only run_scenarios.py, and refuses '
+                              'to run if anything else is beside it')
+
+
+def check_analyzer_keys(report):
+    """Every request field analyze_run.py reads is a field it writes.
+
+    The reader and the writer sit hundreds of lines apart, so a field added to one
+    and not the other raises KeyError on the next run, after the agent has been paid
+    for and the measurement is already spent.
+    """
+    text = read('examples', 'ai-benchmark', 'analyze_run.py')
+    if not text:
+        report.fail('analyzer', 'examples/ai-benchmark/analyze_run.py is missing')
+        return
+    start = text.find('requests.append({')
+    if start < 0:
+        report.fail('analyzer', 'analyze_run.py builds no request record')
+        return
+    depth, end = 0, start
+    for index in range(start + len('requests.append('), len(text)):
+        if text[index] == '{':
+            depth += 1
+        elif text[index] == '}':
+            depth -= 1
+            if depth == 0:
+                end = index
+                break
+    written = set(re.findall(r'"(\w+)"\s*:', text[start:end + 1]))
+    got = set(re.findall(r'\br\["(\w+)"\]', text))
+    missing = sorted(got - written)
+    if missing:
+        report.fail('analyzer', 'analyze_run.py reads request field(s) it never '
+                    'writes: {}'.format(', '.join(missing)))
+    else:
+        report.ok('analyzer', 'analyze_run.py reads {} request field(s), all written'
+                  .format(len(got)))
+
+
 def check_task_shape(report):
     """A task's declaration against the recipe it names, and its defect against
     the tree that defect builds.
@@ -1985,6 +2051,8 @@ def run():
     check_contract_symmetry(report)
     check_task_prompt_neutrality(report)
     check_task_shape(report)
+    check_analyzer_keys(report)
+    check_grpc_isolation(report)
     return report
 
 
