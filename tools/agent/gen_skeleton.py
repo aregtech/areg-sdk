@@ -57,6 +57,18 @@ def marker(slot, what, indent=8):
     return '{}// TODO(you) {}: {}.'.format(' ' * indent, slot, what)
 
 
+# A line written only so the skeleton runs before any rule is filled in. It belongs to
+# the marker above it and goes when that marker is filled: fill_markers.py drops it,
+# and an Edit replaces it along with the marker line. Lines after a marker that carry
+# no tag are real code and stay.
+PLACEHOLDER_TAG = '   // placeholder(you)'
+
+
+def placeholder(line):
+    """One line that stands only until the marker above it is filled."""
+    return line + PLACEHOLDER_TAG
+
+
 MARKER = re.compile(r'//\s*TODO\(you\)\s+([A-Za-z_][\w]*)\s*:\s*(.*?)\s*$')
 
 # The tool that fills every marker of a project in one command.
@@ -79,6 +91,54 @@ BATCH_NOTE = (
     '  Nothing is escaped. A name that matches no marker is refused before anything\n'
     '  is written. One Edit per request is the most expensive shape there is -- a\n'
     '  request is billed for the whole conversation again.')
+
+
+# What a class already carries, so a body uses those names and declares no second one.
+# A collision compiles in the header and fails on the line that reads the wrong member.
+DECLARED = re.compile(r'^\s{4}(?:static\s+)?(?:constexpr\s+)?[\w:]+(?:\s*[&*])?\s+'
+                      r'([mc][A-Z]\w*)\s*[;{=]')
+HELPER = re.compile(r'^\s{4}(?:inline\s+)?[\w:]+(?:\s*[&*])?\s+(\w+)\s*\([^)]*\)\s*[;{]?\s*$')
+RESERVED = ('if', 'while', 'for', 'switch', 'return')
+
+
+def defined_names(text):
+    """The members and helpers this class declares that are not overrides.
+
+    An override is named by --contract and by the marker above its body. These are
+    not: they are what the skeleton brought with it, and the only way to learn them
+    today is to open the file.
+    """
+    members, helpers = [], []
+    for line in text.splitlines():
+        if ' final' in line or '= delete' in line or 'AREG_NOCOPY' in line:
+            continue
+        found = DECLARED.match(line)
+        if found and found.group(1) not in members:
+            members.append(found.group(1))
+            continue
+        found = HELPER.match(line)
+        if found and found.group(1) not in RESERVED and found.group(1) not in helpers:
+            helpers.append(found.group(1))
+    return members, helpers
+
+
+def print_declared(produced):
+    """What each generated class already carries, beside the holes it leaves."""
+    for file_name, text in produced:
+        if not file_name.endswith('.hpp'):
+            continue
+        members, helpers = defined_names(text)
+        if not (members or helpers):
+            continue
+        parts = []
+        if members:
+            parts.append('members ' + ', '.join(members))
+        if helpers:
+            parts.append('helpers ' + ', '.join(h + '()' for h in helpers))
+        print('  {} already carries {}.'
+              .format(os.path.basename(file_name)[:-4], '; '.join(parts)))
+    print('  Use those names; declaring one of them again shadows it, and the error')
+    print('  lands on the line that reads the wrong one, not on the declaration.')
 
 
 def print_todos(produced, out):
@@ -105,8 +165,10 @@ def print_todos(produced, out):
         print('  Each line above is unique in its file and is printed exactly as it')
         print('  stands there, indentation included. Copy one as the old_string of an')
         print('  Edit; do not rewrite the file and do not read it back to find the')
-        print('  surrounding text.')
+        print('  surrounding text. A line tagged "// placeholder(you)" under a marker')
+        print('  goes when that marker is filled; one with no tag is real code.')
         print(BATCH_NOTE.format(total=total, files=files, tool=FILLER))
+        print_declared(produced)
 
 
 class Interface:
@@ -749,7 +811,8 @@ def provider_class(iface, cls, machine=None):
                             'the rule this request carries out'))
         if name in answered:
             args = ', '.join(default_expr(iface, t) for _, t in answered[name])
-            lines.append('        response_{}({});'.format(to_snake(name), args))
+            lines.append(placeholder('        response_{}({});'
+                                     .format(to_snake(name), args)))
         lines.append('    }')
         lines.append('')
 
@@ -762,7 +825,8 @@ def provider_class(iface, cls, machine=None):
             lines += ['    {',
                       marker('condition_' + name,
                              'answer the question this guard asks'),
-                      '        return {};'.format(default_expr(machine, returns)),
+                      placeholder('        return {};'
+                                  .format(default_expr(machine, returns))),
                       '    }',
                       '']
 
@@ -845,7 +909,8 @@ def consumer_class(iface, cls):
         args = ', '.join(default_expr(iface, type_name) for _, type_name in params)
         lines.append(marker('first_request',
                             'the first request of the scenario', 16))
-        lines.append('                request_{}({});'.format(to_snake(name), args))
+        lines.append(placeholder('                request_{}({});'
+                                 .format(to_snake(name), args)))
     else:
         lines.append(marker('first_request',
                             'the first request of the scenario', 16))
@@ -897,10 +962,11 @@ def consumer_class(iface, cls):
         lines.append(marker('response_' + to_snake(name),
                             'what this answer means for the scenario'))
         if first:
-            lines.append('        // The scenario ends here until a later step replaces it.')
+            lines.append('        // placeholder(you): the scenario ends here until a '
+                         'later step replaces it.')
             if stepped:
-                lines.append('        mStep.stop_timer();')
-            lines.append('        quit_with(0);')
+                lines.append(placeholder('        mStep.stop_timer();'))
+            lines.append(placeholder('        quit_with(0);'))
             first = False
         lines.append('    }')
         lines.append('')
@@ -960,7 +1026,7 @@ def consumer_class(iface, cls):
                   marker('stall_ticks',
                          'ticks of no progress that end the run; 0 leaves the '
                          'watchdog off', 4),
-                  '    static constexpr uint32_t cStallTicks{ 0 };',
+                  placeholder('    static constexpr uint32_t cStallTicks{ 0 };'),
                   '    uint32_t                  mIdleTicks{ 0 };',
                   '']
     lines += ['    {}() = delete;'.format(cls),

@@ -163,34 +163,20 @@ it, and the model files holding nothing but the model and `main()`.
 
 ## 6. Implement
 
-**Fill every marker in one file, then apply them all in one command.** The markers do
-not depend on each other, so there is nothing to do in order. Write one bodies file --
-a `==` line naming the marker, then the code that replaces its line -- and give it to
-the tool:
+**Write every body into one file, then apply them all in one command.** The markers do
+not depend on each other, so there is nothing to do in order. `gen_skeleton.py` printed
+the exact command, the format and the names each class already carries; follow it.
+**That is two requests for the whole implementation.** One `Edit` per request and a full
+rewrite are the two most expensive shapes a run has: a request is billed for the whole
+conversation again, and output is billed at five times reading.
 
-```
-python3 <areg-sdk>/tools/agent/fill_markers.py --bodies bodies.txt
-```
+A line tagged `// placeholder(you)` stands only until the marker above it is filled --
+a default `response_`, a `return false;`. The tool takes it away with that marker; an
+`Edit` must replace it too, or the body runs and the placeholder runs after it. An
+untagged line under a marker is real code and stays.
 
-```
-== provider_state
-    uint32_t mCredit{ 0 };
-== request_insert_coin
-    set_credit( credit() + coinValue );
-```
-
-Nothing is escaped, so quotes and backslashes stand as written; a body from column one
-is indented to where its marker stood. A name that matches no marker is refused before
-anything is written, so the file is never half filled. `--dry-run` reports what would
-change.
-
-**That is two requests for the whole implementation**, and it is why this is the shape
-to use: a request is billed for the whole conversation again, and output is billed at
-five times reading, so one `Edit` per request and a full rewrite are the two most
-expensive shapes a run has.
-
-An `Edit` is still right for a single body changed after a build or a scenario run --
-the marker line is gone by then. Never rewrite a whole file.
+An `Edit` is still right for one body changed after a build or a scenario run -- the
+marker line is gone by then. Never rewrite a whole file.
 
 `30-provider.md`, `31-consumer.md` and `32-model.md` describe the code the tool has
 already written. Do not open them to fill a marker, and do not open them while

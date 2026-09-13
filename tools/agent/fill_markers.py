@@ -23,6 +23,11 @@ import sys
 HEADER = re.compile(r'^==\s+([A-Za-z_][\w]*(?:\.[\w]+)?(?::[A-Za-z_][\w]*)?)\s*$')
 MARKER = re.compile(r'//\s*TODO\(you\)\s+([A-Za-z_][\w]*)\s*:\s*(.*?)\s*$')
 
+# A line gen_skeleton.py wrote only so the skeleton runs before its marker is filled.
+# It belongs to the marker above it, so filling that marker takes it away too. A line
+# after a marker that carries no tag is real code and is left alone.
+PLACEHOLDER = re.compile(r'//\s*placeholder\(you\)')
+
 # A run that filled most of its markers does not need the rest listed in full.
 SHOWN = 8
 
@@ -89,7 +94,11 @@ def markers_of(root):
             for index, line in enumerate(lines):
                 hit = MARKER.search(line)
                 if hit:
-                    found.setdefault(hit.group(1), []).append((path, index, line))
+                    last = index
+                    while last + 1 < len(lines) and PLACEHOLDER.search(lines[last + 1]):
+                        last += 1
+                    found.setdefault(hit.group(1), []).append(
+                        (path, index, line, last - index))
     return found
 
 
@@ -158,25 +167,32 @@ def main():
     # exactly as it was rather than half filled.
     planned = []
     claimed = {}
+    dropped = 0
     for name, body in sections:
-        path, index, line = resolve(name, markers, args.bodies)
+        path, index, line, extra = resolve(name, markers, args.bodies)
         if (path, index) in claimed:
             fail('{} fills the same marker twice, as "{}" and as "{}"'
                  .format(args.bodies, claimed[(path, index)], name))
         claimed[(path, index)] = name
-        planned.append((path, index, line, name, place(body, line)))
+        dropped += extra
+        planned.append((path, index, extra, name, place(body, line)))
 
     edits = {}
-    for path, index, _, _, body in planned:
-        edits.setdefault(path, {})[index] = body
+    for path, index, extra, _, body in planned:
+        edits.setdefault(path, {})[index] = (extra, body)
 
     for path in sorted(edits):
         with open(path, encoding='utf-8') as handle:
             lines = handle.read().splitlines()
         out = []
+        skip = 0
         for index, line in enumerate(lines):
-            if index in edits[path]:
-                out.extend(edits[path][index])
+            if skip:
+                skip -= 1
+            elif index in edits[path]:
+                extra, body = edits[path][index]
+                out.extend(body)
+                skip = extra
             else:
                 out.append(line)
         if not args.dry_run:
@@ -188,8 +204,11 @@ def main():
 
     filled = set(claimed)
     left = [(name, path, index) for name, places in sorted(markers.items())
-            for path, index, _ in places if (path, index) not in filled]
-    print('{} of {} marker(s) filled'.format(len(planned), len(planned) + len(left)))
+            for path, index, _, _ in places if (path, index) not in filled]
+    print('{} of {} marker(s) filled{}'
+          .format(len(planned), len(planned) + len(left),
+                  ', {} placeholder line(s) dropped with them'.format(dropped)
+                  if dropped else ''))
     for name, path, _ in left[:SHOWN]:
         print('  still open: {} in {}'.format(name, path.replace(os.sep, '/')))
     if len(left) > SHOWN:

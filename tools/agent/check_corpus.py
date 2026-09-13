@@ -38,7 +38,9 @@ import json
 import os
 import re
 import subprocess
+import shutil
 import sys
+import tempfile
 import zipfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -1882,6 +1884,7 @@ def run():
     check_scenario_runner(report)
     check_trigger_coverage(report)
     check_state_mirrors(report)
+    check_placeholder_contract(report)
     check_contract_symmetry(report)
     check_task_prompt_neutrality(report)
     return report
@@ -2223,6 +2226,67 @@ def check_state_mirrors(report):
     report.ok('state-mirror',
               'gen_docs.py names a machine state no attribute publishes, and is silent '
               'on a final state, a history marker and a phase published elsewhere')
+
+
+def check_placeholder_contract(report):
+    """A marker and the placeholder under it go together, and both tools agree how.
+
+    gen_skeleton.py writes lines that exist only so the skeleton runs before a rule is
+    filled in. They belong to the marker above them. When fill_markers.py leaves one
+    behind, the body runs and then the placeholder runs after it: a request answered
+    twice, a guard that returns the answer it was given. Run 20260912c paid 10
+    requests to find and strip them by hand.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_skeleton
+        import fill_markers
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('placeholder', 'the marker tools do not import: {}'.format(failure))
+        return
+
+    tag = getattr(gen_skeleton, 'PLACEHOLDER_TAG', None)
+    if not tag:
+        report.fail('placeholder', 'gen_skeleton.py declares no PLACEHOLDER_TAG, so a '
+                                   'line that stands only until its marker is filled '
+                                   'is no longer marked as one')
+        return
+    if not fill_markers.PLACEHOLDER.search(tag):
+        report.fail('placeholder', 'fill_markers.py does not recognise the tag '
+                                   'gen_skeleton.py writes ({!r}): every placeholder '
+                                   'would be left behind'.format(tag))
+        return
+    if gen_skeleton.MARKER.search(tag):
+        report.fail('placeholder', 'the placeholder tag reads as a TODO(you) marker, so '
+                                   'it would be reported as a hole to fill')
+        return
+
+    holder = tempfile.mkdtemp()
+    try:
+        source = os.path.join(holder, 'Sample.cpp')
+        with open(source, 'w', encoding='utf-8') as handle:
+            handle.write('void f()\n{\n')
+            handle.write(gen_skeleton.marker('request_f', 'the rule', 4) + '\n')
+            handle.write(gen_skeleton.placeholder('    response_f(false);') + '\n')
+            handle.write(gen_skeleton.placeholder('    return;') + '\n')
+            handle.write('    keep_me();\n}\n')
+        found = fill_markers.markers_of(holder)
+        places = found.get('request_f') or []
+        if len(places) != 1:
+            report.fail('placeholder', 'fill_markers.py finds {} marker(s) where the '
+                                       'skeleton wrote one'.format(len(places)))
+            return
+        reach = places[0][3]
+        if reach != 2:
+            report.fail('placeholder', 'fill_markers.py reaches {} placeholder line(s) '
+                                       'under a marker, not the 2 written: a body would '
+                                       'run and the placeholder would run after it'
+                        .format(reach))
+            return
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    report.ok('placeholder', 'a marker takes its placeholder lines with it, and an '
+                             'untagged line under a marker is left alone')
 
 
 def check_example_type_placement(report):
