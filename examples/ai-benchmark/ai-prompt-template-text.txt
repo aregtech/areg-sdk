@@ -34,23 +34,21 @@ need is inside it and you already know where:
 A path named inside a page resolves either under <areg-sdk> or under
 <areg-sdk>/docs/agent/ -- "docs/agent/recipes/X" and "recipes/X" are the same
 directory. **Never search a filesystem for an areg file** -- no find, no locate, no
-ls -R, no Glob outside your own project. If a path a page names does not resolve under
-those directories, say so in the report and carry on without it.
+ls -R, no recursive search outside your own project.
 
-areg-sdk is read only: never write into it, never modify it, never cd into it. Never
-open <areg-sdk>/CLAUDE.md or anything under <areg-sdk>/.claude/ -- they are for
-developing the framework itself and say nothing about building on it.
+areg-sdk is read only: never write into it, never modify it, never cd into it.
 
 "project" is the directory and CMake project name. "mode" is ipc for two processes,
 local for one, pubsub for attributes and broadcasts.
 
 Do this:
 
-1. Read <areg-sdk>/AGENTS.md and <areg-sdk>/examples/ai-benchmark/runbook-areg.md, both
-   in one request. AGENTS.md routes each question to the one page that answers it. The
-   runbook is the whole procedure: where to work, every command in order, what you
-   write by hand, what to never do, and when to stop. Follow it exactly. The task file
-   says what to report.
+1. Read <areg-sdk>/AGENTS.md, <areg-sdk>/docs/agent/01-runbook.md and
+   <areg-sdk>/examples/ai-benchmark/runbook-demo.md, all three in one request.
+   AGENTS.md routes each question to the one page that answers it. The runbook is the
+   whole procedure: where to work, every command in order, what you write by hand,
+   what to never do, and when to stop. Follow it exactly. runbook-demo.md is what this
+   measured run adds to it, and the task file says what to report.
 
 2. Read <task>.
 

@@ -1087,6 +1087,92 @@ def check_threads(sources, findings, read):
                 'nullptr and the worker thread runs nothing' % name))
 
 
+# P-02. A generated member called by its bare document name: insert_coin(...) where
+# the base declares request_insert_coin(...). The compiler reports it only after a
+# build, and names neither the document nor the prefix.
+BARE_CALL_RE = re.compile(r'(?<![\w:.>~#])([a-z_][a-z0-9_]*)\s*\(')
+NOT_A_CALL = frozenset(('if', 'for', 'while', 'switch', 'return', 'sizeof', 'catch',
+                        'alignof', 'decltype', 'typeid', 'noexcept', 'defined',
+                        'static_cast', 'const_cast', 'dynamic_cast', 'reinterpret_cast'))
+# Words that may stand before a call without making the line a declaration.
+CALL_PREFIX_WORDS = frozenset(('return', 'else', 'case', 'do', 'throw', 'new', 'delete',
+                               'co_return', 'co_yield', 'not', 'and', 'or'))
+METHOD_PREFIX = {'Request': 'request_', 'Response': 'response_', 'Broadcast': 'broadcast_'}
+
+
+def generated_calls(documents):
+    """Each document method by its bare name: (member, required args, all args)."""
+    calls = {}
+    for doc in documents:
+        try:
+            root = ET.parse(doc).getroot()
+        except (ET.ParseError, OSError):
+            continue
+        for method in root.iter('Method'):
+            base = snake(method.get('Name', ''))
+            prefix = METHOD_PREFIX.get(method.get('MethodType', ''))
+            if not base or not prefix:
+                continue
+            params = list(method.iter('Parameter'))
+            required = len([p for p in params if p.get('Default') is None])
+            calls.setdefault(base, []).append((prefix + base, required, len(params)))
+    return calls
+
+
+def declared_anywhere(texts, name):
+    """Whether any source declares or defines a function or a macro of this name."""
+    pattern = re.compile(r'(?:\b(\w+)[\s*&]+|::|#\s*define\s+)%s\s*\(' % re.escape(name))
+    for text in texts:
+        for match in pattern.finditer(text):
+            if match.group(1) is None or match.group(1) not in CALL_PREFIX_WORDS:
+                return True
+    return False
+
+
+def check_bare_calls(documents, sources, findings, read):
+    """P-02 for a call that dropped its request_, response_ or broadcast_ prefix.
+
+    Reported only when the argument count fits the document method, and when neither
+    the project nor the framework declares the bare name.
+    """
+    calls = generated_calls(documents)
+    if not calls:
+        return
+    texts = {}
+    for path in sources:
+        text = read(path)
+        if text is not None:
+            texts[path] = '\n'.join(strip_noise(line) for line in text.splitlines())
+    undeclared = {}
+    for path, text in sorted(texts.items()):
+        for number, line in enumerate(text.splitlines()):
+            if line.lstrip().startswith('#'):
+                continue
+            for match in BARE_CALL_RE.finditer(line):
+                name = match.group(1)
+                if name not in calls or name in NOT_A_CALL or name in FRAMEWORK_MEMBERS:
+                    continue
+                word = re.search(r'(\w+)\s*$', line[:match.start()])
+                if word and word.group(1) not in CALL_PREFIX_WORDS:
+                    continue
+                args = split_args(line, match.end() - 1)
+                if args is None:
+                    continue
+                count = len([arg for arg in args if arg])
+                fits = [member for member, required, total in calls[name]
+                        if required <= count <= total]
+                if not fits:
+                    continue
+                if name not in undeclared:
+                    undeclared[name] = not declared_anywhere(texts.values(), name)
+                if undeclared[name]:
+                    findings.append(Finding(
+                        'P-02', 'error', path, number + 1,
+                        '"%s()" is declared nowhere in this project; the generated base '
+                        'spells it %s(). See docs/agent/20-service-interface.md'
+                        % (name, '() or '.join(fits))))
+
+
 def read_text(path, problems):
     for encoding in ('utf-8', 'latin-1'):
         try:
@@ -1473,6 +1559,7 @@ def main():
     check_sources_declared(base, sources, findings, read)
     check_subscriptions(sources, findings, read)
     check_deferred_responses(sources, findings, read)
+    check_bare_calls(documents, sources, findings, read)
     check_timer_dispatch(sources, findings, read)
     check_generate_target(base, findings, read)
     check_state_machines(machines, findings, problems)

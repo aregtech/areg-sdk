@@ -1,8 +1,9 @@
 # Runbook: building an application on areg
 
-The procedure an agent follows for any task on this framework. Your prompt gives four
-settings -- **areg-sdk**, **task**, **project**, **mode**. Everything here uses them.
-Nothing in this file needs editing, ever.
+The procedure for building an application on this framework, start to finish. Four
+values run through it: `<areg-sdk>` is the SDK checkout, read only; the **task** is
+what the software must do; `<project>` is a C identifier naming the project; `<mode>` is
+`ipc` for two processes, `local` for one, `pubsub` for attributes and broadcasts.
 
 On Windows: `python` for `python3`, `build\bin\x.exe` for `./build/bin/x.elf`,
 `start "" prog` for `prog &`. Nothing else differs.
@@ -56,7 +57,8 @@ else.
 ## 3. Design
 
 From the task, decide the requests, responses, broadcasts, attributes and data types.
-Write nothing yet. If the routing table offers a design page, open it once, here.
+If the routing table offers a design page, open it once, here, in the same request as
+`design.json` -- the scaffold wrote it, and it is where the design goes.
 
 **A provider reads its own attributes back.** An attribute gives the provider a getter
 as well as a setter, so state the service already carries needs no shadow member beside
@@ -72,16 +74,12 @@ Decide it here too; `gen_docs.py` prints a note for a machine state no attribute
 
 ## 4. The documents
 
-Under `src/services/`, replace the scaffolded documents with your own. **Every
-document of the project is written from one JSON description**, so no XML, no `ID`,
-no `To` and no cross-document type check is ever done by hand:
-
-```
-python3 <areg-sdk>/tools/agent/gen_docs.py --example > design.json
-```
-
-Copy that shape into your own `design.json`. Section 5 turns it into the documents,
-the application and a build, in one command.
+**Every document is written from `design.json`, which the scaffold already wrote**:
+every key present and empty, each section with a `#|` note on what its values may be.
+Fill the values and keep the keys; no XML, `ID` or `To` is written by hand. A sample
+left as written is skipped and an empty value is absent, so delete only a section the
+task does not need. A key the generator does not read is refused by name.
+`gen_docs.py --example` prints a finished design of another application.
 
 The spec holds `"datatypes"` (one `.dtml`, when two documents share a type),
 `"interfaces"` (a `.siml` each) and `"machines"` (a `.fsml` each). Everything is named:
@@ -163,19 +161,32 @@ it, and the model files holding nothing but the model and `main()`.
 
 ## 6. Implement
 
-**Write every body into one file, then apply them all in one command.** The markers do
-not depend on each other, so there is nothing to do in order. `gen_skeleton.py` printed
-the exact command, the format and the names each class already carries; follow it.
-**That is two requests for the whole implementation.** One `Edit` per request and a full
-rewrite are the two most expensive shapes a run has: a request is billed for the whole
-conversation again, and output is billed at five times reading.
+**The worksheet is already written.** `gen_skeleton.py` wrote `bodies.txt` beside the
+project: one section per open marker, in file order, each naming the function it sits
+in, the names each generated class already carries, and the contract every body is
+written against. **No generated file has to be opened to write a body.** Read the
+worksheet, fill each `== <marker>` section, and apply the lot:
+
+```
+python3 <areg-sdk>/tools/agent/fill_markers.py --bodies bodies.txt
+```
+
+**That is the whole implementation, in two requests.** One edit per body and a full
+rewrite are the two most expensive shapes a run has.
+
+A line starting with `#|` is furniture of the worksheet and never reaches a source
+file. Everything else under a `== ` line is code: a comment in a body is a `// comment` line, and a
+`#` line that is not a preprocessor directive is refused before anything is written. A
+section left empty stays open, and the filler takes out the sections it applied -- so
+what is left in the file is what is left to do, and the same file is given back for a
+second pass.
 
 A line tagged `// placeholder(you)` stands only until the marker above it is filled --
-a default `response_`, a `return false;`. The tool takes it away with that marker; an
-`Edit` must replace it too, or the body runs and the placeholder runs after it. An
-untagged line under a marker is real code and stays.
+a default `response_`, a `return false;`. The filler takes it away with that marker; an
+edit by hand must replace it too, or the body runs and the placeholder runs after it.
+An untagged line under a marker is real code and stays.
 
-An `Edit` is still right for one body changed after a build or a scenario run -- the
+An edit by hand is still right for one body changed after a build or a scenario run -- the
 marker line is gone by then. Never rewrite a whole file.
 
 `30-provider.md`, `31-consumer.md` and `32-model.md` describe the code the tool has
@@ -193,9 +204,10 @@ python3 <areg-sdk>/tools/agent/api_help.py start_timer
 python3 <areg-sdk>/tools/agent/api_help.py Timer --class
 ```
 
-`scenarios.json` already names your executables and the router. Replace each
-`TODO(you)` expectation in it with a line the run prints that proves one
-requirement.
+**`scenarios.json` is in the worksheet too**, as its last sections: one regular
+expression per line, every one of which has to match. The generated `main()` prints
+nothing, so each line comes from a body written above it -- the proof and the code
+that produces it go into the same file, in the same request.
 
 ## 7. Build and run -- two commands
 
@@ -220,23 +232,17 @@ expectation matched, and that output is the evidence for the report.
 It is slower, it is not repeatable, it leaves background processes behind, and a
 command ending in `pkill` or `grep` that matches nothing exits non-zero, which most
 harnesses show as a failed tool call with no output -- a trap that can cost a dozen
-turns. `./run.sh` exists for a human watching it; a scenario is what you run.
+turns. The project's run.sh exists for a human watching it; a scenario is what you run.
 
 **When you need the raw output of a run, ask the runner for it, not the shell.**
 `--verbose` prints every line each process wrote, which is where a temporary
 diagnostic printout comes back; `--only <name>` runs one scenario. Together they are
 the whole of ad-hoc debugging, and they leave nothing running.
 
-## 7a. Two habits that halve the cost of the same work
+## 7a. The habit that halves the cost of the same work
 
 Every request re-sends the whole conversation, so the bill is the number of requests
-multiplied by how much each one carries. Both of these are free to follow and neither
-changes what gets built.
-
-**Put independent calls in one request.** Reading eight pages is one request, not
-eight. A header and its source are written together. So are the two `main()` files
-and `scenarios.json`. Only split where the next thing genuinely depends on the result
-of the last -- a build, a check, a scenario run.
+multiplied by how much each one carries.
 
 **Never pour a log into the conversation.** It stays there for every later request.
 `build_project.py` already keeps its own output to a few lines. Everything else that
@@ -261,17 +267,13 @@ not converge" is a useful result; a half-built application is not.
 ## 9. Never
 
 - Never modify, add to or delete anything inside areg-sdk.
-- Never search a filesystem for an areg file. Your prompt names the checkout, the
-  documentation lives under `<areg-sdk>/docs/agent/` and the tools under
-  `<areg-sdk>/tools/agent/`, and a path a page names resolves under one of them. A
-  `find`, a `locate` or an `ls -R` that leaves your own project can run for minutes,
-  and its output is then re-sent with every later request. If a path does not resolve,
-  report it and carry on without it.
-- Never open `<areg-sdk>/CLAUDE.md` or anything under `<areg-sdk>/.claude/`. They are
-  for developing the framework itself and say nothing about building on it.
+- Never search a filesystem for an areg file. The documentation lives under
+  `<areg-sdk>/docs/agent/` and the tools under `<areg-sdk>/tools/agent/`, and a path a
+  page names resolves under one of them. A `find`, a `locate` or an `ls -R` that
+  leaves your own project can run for minutes, and its output is then re-sent with
+  every later request. If a path does not resolve, report it and carry on without it.
 - Never edit a generated file. The generate target is rewritten on every build;
   change the document instead.
-- Never commit anything, and never run a git command.
 - Never diagnose a refused document from a schema. Read the
   `file:line:col: error[<number>/<RULE_NAME>]` message and its `fix:` line, then
   `python3 <areg-sdk>/tools/explain_rule.py <number>`. A schema says what an element
@@ -279,7 +281,6 @@ not converge" is a useful result; a half-built application is not.
   section 4 and is expected.
 - Never run any other script under `<areg-sdk>/tools/`. The rest check the SDK's own
   corpus, tell you nothing about your application, and cost a turn each.
-- Never write a ReadMe.
 
 ## 10. Stop immediately if
 
@@ -291,9 +292,8 @@ not converge" is a useful result; a half-built application is not.
   and which part of your document triggered it. That report is worth more than a
   finished application.
 
-## 11. The report
+## 11. Done
 
-**The task file says what to report, it is one small table, and it is the only report
-to write.** Fill it from what you already know and measure nothing to fill it in.
-`check_contract.py . --strict` is the checker to name in its findings row, and the
-acceptance count comes from the scenario output, not from a second run.
+Finished is `build_project.py` passing and `run_scenarios.py` exiting 0. Say what the
+scenarios proved from the lines they printed, and that `check_contract.py . --strict`
+passed. Measure nothing and run nothing again to say it.

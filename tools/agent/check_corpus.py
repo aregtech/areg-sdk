@@ -33,6 +33,7 @@
 # the hand that wrote the corpus.
 # ===========================================================================
 import argparse
+import contextlib
 import io
 import json
 import os
@@ -508,7 +509,7 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
 # is gen_skeleton.py naming every TODO(you) marker, which is what lets a hole be filled
 # by one Edit of one unique line; the run before it rewrote two generated files whole
 # for 40,018 output tokens, about $0.40, the largest single removable block left. 1,400
-# bytes of the addition were paid back inside examples/ai-benchmark/runbook-areg.md, whose
+# bytes of the addition were paid back inside docs/agent/01-runbook.md, whose
 # build-log and raw-output blocks the new command makes redundant.
 # Raised again, by 1,100 bytes, for the rule in 05-design.md section 2 that decides
 # between an attribute and a broadcast. The page had two lines of it and they were not
@@ -1546,9 +1547,7 @@ def check_page_budget(report):
 
 def corpus_files():
     """Every document an agent building on areg reads from, largest first."""
-    found = [('AGENTS.md', size('AGENTS.md')),
-             ('examples/ai-benchmark/runbook-areg.md',
-              size('examples', 'ai-benchmark', 'runbook-areg.md'))]
+    found = [('AGENTS.md', size('AGENTS.md'))]
     for page in agent_pages():
         found.append(('docs/agent/' + page, size('docs', 'agent', page)))
     return sorted(found, key=lambda entry: -entry[1])
@@ -1797,8 +1796,7 @@ COMMAND_POSITION = r'(?:^|[|;&(]\s*|\$\(\s*)'
 
 def check_posix_only(report):
     """Every POSIX-only command in a fenced block names its Windows form on the page."""
-    pages = ['AGENTS.md', 'examples/ai-benchmark/runbook-areg.md']
-    pages += ['docs/agent/' + p for p in agent_pages()]
+    pages = ['AGENTS.md'] + ['docs/agent/' + p for p in agent_pages()]
     found = 0
     bad = 0
     for page in pages:
@@ -1885,6 +1883,8 @@ def run():
     check_trigger_coverage(report)
     check_state_mirrors(report)
     check_placeholder_contract(report)
+    check_design_template(report)
+    check_worksheet_contract(report)
     check_contract_symmetry(report)
     check_task_prompt_neutrality(report)
     return report
@@ -2226,6 +2226,366 @@ def check_state_mirrors(report):
     report.ok('state-mirror',
               'gen_docs.py names a machine state no attribute publishes, and is silent '
               'on a final state, a history marker and a phase published elsewhere')
+
+
+def check_design_template(report):
+    """The scaffold's design.json is a template the generator reads, and never a trap.
+
+    Every key it shows is one the generator reads, an untouched copy is refused as the
+    template, a filled copy generates, a key the generator does not read is refused by
+    name instead of being ignored, and the template never replaces a file with work in it.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('template', 'gen_docs.py does not import: {}'.format(failure))
+        return
+    tools = os.path.join(ROOT, 'tools', 'agent')
+
+    def refused(template):
+        shown = io.StringIO()
+        try:
+            with contextlib.redirect_stderr(shown):
+                gen_docs.check_shape({'datatypes': template['datatypes'],
+                                      'interfaces': template['interfaces'],
+                                      'machines': template['machines']})
+        except SystemExit:
+            return shown.getvalue().strip()
+        return ''
+
+    shape = refused(gen_docs.without_notes(gen_docs.TEMPLATE))
+    if shape:
+        report.fail('template', 'the template teaches a key the generator refuses: {}'
+                    .format(shape[:200]))
+        return
+
+    def generate(path):
+        return subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                               '--spec', path, '--outdir', 'out', '--force'],
+                              capture_output=True, text=True)
+
+    holder = tempfile.mkdtemp()
+    here = os.getcwd()
+    try:
+        os.chdir(holder)
+        laid = subprocess.run([sys.executable, os.path.join(tools, 'setup_project.py'),
+                               '--name', 'plan', '--root', '.', '--mode', 'ipc',
+                               '--sdk-root', ROOT, '--quiet'], capture_output=True, text=True)
+        if laid.returncode != 0 or not os.path.isfile('design.json'):
+            report.fail('template', 'the scaffold writes no design.json, so the design is '
+                                    'composed from an example of another application: {}'
+                        .format(laid.stderr.strip()[:200]))
+            return
+        with open('design.json', encoding='utf-8') as handle:
+            template = json.load(handle)
+        if gen_docs.without_notes(template) != gen_docs.without_notes(gen_docs.TEMPLATE):
+            report.fail('template', 'the scaffold writes a design.json that is not the '
+                                    'template of gen_docs.py')
+            return
+
+        pristine = generate('design.json')
+        if pristine.returncode == 0 or 'still the template' not in pristine.stderr:
+            report.fail('template', 'an untouched template is not refused as the template: '
+                                    '{}'.format((pristine.stderr or pristine.stdout)[:200]))
+            return
+
+        filled = json.loads(json.dumps(template))
+        filled['datatypes']['name'] = 'PlanTypes'
+        filled['datatypes']['declare'].insert(0, {
+            'name': 'Mode', 'kind': 'enum', 'description': '',
+            'values': [{'name': 'Off', 'value': 0, 'description': ''},
+                       {'name': 'On', 'value': 1, 'description': ''}]})
+        service = filled['interfaces'][0]
+        service['name'] = 'PlanService'
+        service['attributes'].insert(0, {'name': 'Level', 'type': 'uint32',
+                                         'notify': 'OnChange', 'description': ''})
+        service['requests'].insert(0, {'name': 'switch_to', 'description': '',
+                                       'params': [{'name': 'mode', 'type': 'PlanTypes::Mode',
+                                                   'description': ''}], 'answer': []})
+        machine = filled['machines'][0]
+        machine['name'] = 'Plan'
+        machine['initial'] = 'IDLE'
+        machine['triggers'].insert(0, {'name': 'go', 'description': '', 'params': []})
+        machine['actions'].insert(0, {'name': 'start_work', 'description': '', 'params': []})
+        machine['states'].insert(0, {'name': 'IDLE', 'kind': '', 'entry': [], 'exit': [],
+                                     'transitions': [{'on': 'go', 'to': '', 'guard': [],
+                                                      'set': {}, 'do': ['start_work']}],
+                                     'initial': '', 'final_event': '', 'states': []})
+
+        def written(spec, name):
+            with open(name, 'w', encoding='utf-8') as handle:
+                json.dump(spec, handle, indent=2)
+            return name
+
+        made = generate(written(filled, 'filled.json'))
+        if made.returncode != 0 or 'skipped' not in made.stdout:
+            report.fail('template', 'a filled template does not generate with its samples '
+                                    'skipped: {}'.format((made.stderr or made.stdout)[:200]))
+            return
+
+        for label, change, expected in (
+                ('a misspelt guard', lambda s: s['machines'][0]['states'][0]['transitions'][0]
+                 .update(gaurd=['Level', 'gt', 'lit:0']), 'Did you mean "guard"?'),
+                ('a misspelt step key', lambda s: s['machines'][0]['states'][0]
+                 ['transitions'][0].update(do=[{'call': 'start_work', 'arg': {'x': 'y'}}]),
+                 '"arg"'),
+                ('a hand-written note key', lambda s: s['interfaces'][0]['attributes'][0]
+                 .update({'//': 'in percent'}), 'A note in a spec is a "#|" key')):
+            wrong = json.loads(json.dumps(filled))
+            change(wrong)
+            got = generate(written(wrong, 'wrong.json'))
+            if got.returncode == 0 or expected not in got.stderr:
+                report.fail('template', '{} is not refused by name, so a document silently '
+                                        'lacks what the author wrote: {}'
+                            .format(label, (got.stderr or got.stdout).strip()[:200]))
+                return
+
+        with open('filled.json', encoding='utf-8') as handle:
+            before = handle.read()
+        again = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                                '--template', 'filled.json'], capture_output=True, text=True)
+        with open('filled.json', encoding='utf-8') as handle:
+            after = handle.read()
+        if again.returncode == 0 or before != after:
+            report.fail('template', '--template replaced a file that carries a design')
+            return
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+    report.ok('template', 'the scaffold writes design.json as the template: its keys are '
+                          'the generator\'s, untouched it is refused, filled it generates, '
+                          'a stray key is refused by name, and work is never replaced')
+
+
+def check_worksheet_contract(report):
+    """The worksheet names every hole, and an unfilled section never empties one.
+
+    gen_skeleton.py writes one file carrying a section per open marker, the names the
+    generated classes already carry and the contract the bodies are written against,
+    so nothing has to be recalled from a command that ran fifteen requests earlier.
+    Run 20260912d spent 22,538 reasoning tokens on a plan it then dropped to ask one
+    tool for its own usage, which its build output had already printed.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_skeleton
+        import fill_markers
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('worksheet', 'the marker tools do not import: {}'.format(failure))
+        return
+
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    holder = tempfile.mkdtemp()
+    here = os.getcwd()
+    try:
+        os.chdir(holder)
+        # A real scaffold, because the scenario file's holes are part of what is checked
+        # and only setup_project.py writes the shape update_scenarios() recognises.
+        laid = subprocess.run([sys.executable, os.path.join(tools, 'setup_project.py'),
+                               '--name', 'sheet', '--root', '.', '--mode', 'ipc',
+                               '--sdk-root', ROOT], capture_output=True, text=True)
+        if laid.returncode != 0:
+            report.fail('worksheet', 'the scaffold no longer lays out a project: {}'
+                        .format(laid.stderr.strip()[:200]))
+            return
+        spec = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                               '--example'], capture_output=True, text=True)
+        with open('design.json', 'w', encoding='utf-8') as handle:
+            handle.write(spec.stdout)
+        made = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                               '--outdir', 'src/services', '--force', '--chained',
+                               '--spec', 'design.json'], capture_output=True, text=True)
+        if made.returncode != 0:
+            report.fail('worksheet', 'the example spec no longer generates its '
+                                     'documents: {}'.format(made.stderr.strip()[:200]))
+            return
+        docs = sorted(os.listdir(os.path.join('src', 'services')))
+        siml = next((d for d in docs if d.endswith('.siml')), None)
+        fsml = next((d for d in docs if d.endswith('.fsml')), None)
+        built = subprocess.run(
+            [sys.executable, os.path.join(tools, 'gen_skeleton.py'),
+             '--doc', 'src/services/' + siml, '--app', '--mode', 'ipc', '--force'] +
+            (['--machine', 'src/services/' + fsml] if fsml else []),
+            capture_output=True, text=True)
+        if built.returncode != 0:
+            report.fail('worksheet', 'the example no longer generates an application: '
+                                     '{}'.format(built.stderr.strip()[:200]))
+            return
+        sheet = gen_skeleton.WORKSHEET
+        if not os.path.exists(sheet):
+            report.fail('worksheet', 'gen_skeleton.py --app writes no {}, so every body '
+                                     'is composed from a note printed earlier'
+                        .format(sheet))
+            return
+
+        named = [line[3:].strip() for line in
+                 open(sheet, encoding='utf-8').read().splitlines()
+                 if line.startswith('== ')]
+        open_now = sorted(list(fill_markers.markers_of('src')) +
+                          list(fill_markers.expectations_of('scenarios.json')))
+        if sorted(named) != open_now:
+            report.fail('worksheet', '{} names {} hole(s) and the project leaves {}: a '
+                                     'hole with no section is one the run has to find '
+                                     'for itself'
+                        .format(sheet, len(named), len(open_now)))
+            return
+        if not fill_markers.expectations_of('scenarios.json'):
+            report.fail('worksheet', 'scenarios.json leaves no named expectation, so '
+                                     'what a run has to print is decided in a file the '
+                                     'worksheet does not reach')
+            return
+
+        code = [name for name in named if name in fill_markers.markers_of('src')]
+        named = code + [name for name in named if name not in code]
+
+        # An expectation is filled as a list of regular expressions, so no comma and
+        # no quote of the scenario file's own syntax is ever the author's to write.
+        expect = next(name for name in named
+                      if name in fill_markers.expectations_of('scenarios.json'))
+        with open('scenarios.json', encoding='utf-8') as handle:
+            before_json = handle.read()
+        with open(sheet, encoding='utf-8') as handle:
+            pending = handle.read().splitlines()
+        typed = []
+        for line in pending:
+            typed.append(line)
+            if line == '== ' + expect:
+                typed.append('proved "one" thing, \\d+ times')
+        with open(sheet, 'w', encoding='utf-8') as handle:
+            handle.write('\n'.join(typed) + '\n')
+        got = subprocess.run([sys.executable, os.path.join(tools, 'fill_markers.py'),
+                              '--bodies', sheet], capture_output=True, text=True)
+        if got.returncode != 0:
+            report.fail('worksheet', 'an expectation section is refused: {}'
+                        .format(got.stderr.strip()[:200]))
+            return
+        try:
+            written = json.load(open('scenarios.json', encoding='utf-8'))
+        except ValueError as broken:
+            report.fail('worksheet', 'filling an expectation left scenarios.json '
+                                     'unreadable: {}'.format(broken))
+            return
+        every = [entry for scenario in written['scenarios']
+                 for spec in scenario.get('procs', [])
+                 for entry in spec.get('expect', [])]
+        if 'proved "one" thing, \\d+ times' not in every:
+            report.fail('worksheet', 'an expectation written as a section did not reach '
+                                     'scenarios.json unchanged')
+            return
+        with open(sheet, 'w', encoding='utf-8') as handle:
+            handle.write('\n'.join(pending) + '\n')
+        with open('scenarios.json', 'w', encoding='utf-8') as handle:
+            handle.write(before_json)
+
+        # The property the whole shape rests on: a section nobody filled is not an
+        # instruction to empty its marker.
+        before = open('src/provider/' + os.listdir('src/provider')[0],
+                      encoding='utf-8').read()
+        pristine = subprocess.run([sys.executable, os.path.join(tools, 'fill_markers.py'),
+                                   '--bodies', sheet], capture_output=True, text=True)
+        if pristine.returncode == 0:
+            report.fail('worksheet', 'the worksheet as written fills markers with '
+                                     'nothing: every empty section would take its '
+                                     'marker and its placeholder away')
+            return
+        if len(fill_markers.markers_of('src')) + \
+                len(fill_markers.expectations_of('scenarios.json')) != len(open_now):
+            report.fail('worksheet', 'a refused fill changed the project')
+            return
+
+        # A note is this file's own guidance and never reaches a source. A
+        # preprocessor directive is not a note, and travels as written.
+        lines = open(sheet, encoding='utf-8').read().splitlines()
+        out = []
+        for line in lines:
+            out.append(line)
+            if line == '== ' + named[0]:
+                out.append('#include <cstdio>')
+                out.append('    int mark_me{ 0 };')
+        with open(sheet, 'w', encoding='utf-8') as handle:
+            handle.write('\n'.join(out) + '\n')
+        done = subprocess.run([sys.executable, os.path.join(tools, 'fill_markers.py'),
+                               '--bodies', sheet], capture_output=True, text=True)
+        if done.returncode != 0:
+            report.fail('worksheet', 'a filled section is refused: {}'
+                        .format(done.stderr.strip()[:200]))
+            return
+        touched = ''.join(open(os.path.join('src', 'provider', name), encoding='utf-8')
+                          .read() for name in sorted(os.listdir('src/provider')))
+        if 'mark_me' not in touched or '#include <cstdio>' not in touched:
+            report.fail('worksheet', 'a filled section did not reach the source, or a '
+                                     'preprocessor line in it was taken for a note')
+            return
+        if '#|' in touched:
+            report.fail('worksheet', "the worksheet's own furniture reached a source file")
+            return
+        # Every section says which function it sits in, and says it right: run
+        # 20260912e read four generated files back to find its parameter names.
+        made = open(sheet, encoding='utf-8').read().splitlines()
+        for number, line in enumerate(made):
+            if not line.startswith('#| in: '):
+                continue
+            where = line[len('#| in: '):]
+            name = next((made[back][3:].strip() for back in range(number, -1, -1)
+                         if made[back].startswith('== ')), '')
+            owner = next((f for f in sorted(os.listdir('src/provider') +
+                                            os.listdir('src/consumer'))), None)
+            found = False
+            for folder in ('src/provider', 'src/consumer'):
+                for entry in sorted(os.listdir(folder)):
+                    text = open(os.path.join(folder, entry), encoding='utf-8').read()
+                    found = found or where in text
+            if not found:
+                report.fail('worksheet', 'section "{}" says it sits in "{}", which no '
+                                         'generated file carries'.format(name, where))
+                return
+            for prefix, shape in (('request_', 'request_{}('), ('response_', 'response_{}('),
+                                  ('broadcast_', 'broadcast_{}('), ('update_', 'on_{}_update('),
+                                  ('action_', 'action_{}(')):
+                if name.startswith(prefix):
+                    if shape.format(name[len(prefix):]) not in where:
+                        report.fail('worksheet', 'section "{}" says it sits in "{}", '
+                                                 'which is another method'
+                                    .format(name, where))
+                        return
+                    break
+
+        # A hash line in a body was meant as a comment, and C++ has none. Writing it
+        # silently as nothing left two markers open in run 20260912e.
+        kept = open(sheet, encoding='utf-8').read().splitlines()
+        marked = []
+        for line in kept:
+            marked.append(line)
+            if line == '== ' + named[1]:
+                marked.append('# nothing to do here')
+        with open(sheet, 'w', encoding='utf-8') as handle:
+            handle.write('\n'.join(marked) + '\n')
+        hashed = subprocess.run([sys.executable, os.path.join(tools, 'fill_markers.py'),
+                                 '--bodies', sheet], capture_output=True, text=True)
+        if hashed.returncode == 0 or 'nothing to do here' not in hashed.stderr:
+            report.fail('worksheet', 'a "#" line in a body is taken for a note and '
+                                     'dropped, so a section written that way fills '
+                                     'nothing and says nothing')
+            return
+        with open(sheet, 'w', encoding='utf-8') as handle:
+            handle.write('\n'.join(kept) + '\n')
+
+        stays = [line[3:].strip() for line in
+                 open(sheet, encoding='utf-8').read().splitlines()
+                 if line.startswith('== ')]
+        if named[0] in stays or len(stays) != len(named) - 1:
+            report.fail('worksheet', 'the filler leaves the section it applied in {}, so '
+                                     'giving the file back names a filled marker'
+                        .format(sheet))
+            return
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+    report.ok('worksheet', 'the worksheet names every hole -- code and scenario '
+                           'expectation -- and the function each body sits in, an '
+                           'empty section leaves its hole alone, a "#" body is '
+                           'refused, and a filled section is taken out')
 
 
 def check_placeholder_contract(report):

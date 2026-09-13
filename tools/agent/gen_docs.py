@@ -10,6 +10,7 @@ declared -- in any of the three documents, so the data types a service and its s
 machine share are declared once and checked once.
 
     python3 tools/agent/gen_docs.py --spec design.json --outdir src/services
+    python3 tools/agent/gen_docs.py --template design.json   # every key, empty, to fill
     python3 tools/agent/gen_docs.py --example            # a whole spec to copy
     python3 tools/agent/gen_docs.py --spec a.json --spec b.json --outdir src/services
 
@@ -31,16 +32,17 @@ interface or a machine, where Space is the data type document's name; the includ
 added for you.
 """
 import argparse
+import difflib
 import json
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from docmodel import (CONTAINERS, PREDEFINED, Vocabulary, Writer, described, esc,
-                      esc_text, fail, named_list, reserve_params, unique, write_constants,
-                      write_datatypes, write_includes, write_method, write_overview,
-                      write_params)
+from docmodel import (CONTAINERS, PREDEFINED, TYPE_KINDS, Vocabulary, Writer, described,
+                      esc, esc_text, fail, named_list, reserve_params, unique,
+                      write_constants, write_datatypes, write_includes, write_method,
+                      write_overview, write_params)
 
 DTML_VERSION = '1.0.0'
 SIML_VERSION = '1.1.0'
@@ -50,6 +52,52 @@ CATEGORIES = ('Private', 'Public', 'Internet')
 STATE_KINDS = {'normal': 'Normal', 'final': 'Final', 'history': 'History'}
 GUARD_OPS = ('eq', 'ne', 'lt', 'le', 'gt', 'ge')
 SOURCES = {'param': 'Param', 'attr': 'Attribute', 'const': 'Constant', 'expr': 'Expression'}
+
+# The key of a note in a spec. The reader skips it wherever it appears.
+NOTE = '#|'
+
+# Every key each kind of spec object may carry. Any other key is refused.
+KEYS = {
+    'spec': ('datatypes', 'interfaces', 'machines'),
+    'datatypes': ('name', 'description', 'version', 'declare', 'includes'),
+    'interface': ('name', 'category', 'description', 'version', 'types', 'attributes',
+                  'requests', 'responses', 'broadcasts', 'constants', 'includes'),
+    'machine': ('name', 'description', 'version', 'threading', 'types', 'attributes',
+                'constants', 'triggers', 'timers', 'events', 'actions', 'conditions',
+                'submachines', 'includes', 'initial', 'states'),
+    'enumerator': ('name', 'value', 'description'),
+    'field': ('name', 'type', 'default', 'description'),
+    'service attribute': ('name', 'type', 'notify', 'description'),
+    'machine attribute': ('name', 'type', 'value', 'description'),
+    'request': ('name', 'description', 'params', 'answer', 'answer_description', 'response'),
+    'method': ('name', 'description', 'params'),
+    'parameter': ('name', 'type', 'default', 'description'),
+    'constant': ('name', 'type', 'value', 'description'),
+    'include': ('name', 'description', 'alias', 'version'),
+    'timer': ('name', 'timeout', 'repeat', 'description'),
+    'condition': ('name', 'description', 'params', 'implement', 'body', 'return'),
+    'submachine': ('name', 'path', 'version', 'description'),
+    'state': ('name', 'kind', 'depth', 'description', 'entry', 'exit', 'transitions',
+              'initial', 'final_event', 'states', 'submachine'),
+    'transition': ('on', 'to', 'guard', 'set', 'do', 'description'),
+}
+TYPE_KEYS = {
+    'Enumeration': ('name', 'kind', 'description', 'values', 'derives'),
+    'Structure': ('name', 'kind', 'description', 'fields'),
+    'Container': ('name', 'kind', 'description', 'container', 'of', 'key'),
+    'Imported': ('name', 'kind', 'description', 'header', 'location', 'object', 'namespace'),
+}
+# An object step and an object guard node, by the key that says what it is, in the
+# order write_operation and write_guard_node look for it.
+STEP_KEYS = {'call': ('call', 'args'), 'send': ('send', 'args'), 'start': ('start',),
+             'stop': ('stop',), 'set': ('set', 'to')}
+GUARD_KEYS = {'all': ('all',), 'any': ('any',), 'not': ('not',), 'call': ('call', 'args')}
+SINGULAR = {'attributes': 'attribute', 'requests': 'request', 'responses': 'response',
+            'broadcasts': 'broadcast', 'constants': 'constant', 'includes': 'include',
+            'params': 'parameter', 'answer': 'answer parameter', 'declare': 'type',
+            'types': 'type', 'values': 'enumerator', 'fields': 'field', 'events': 'event',
+            'timers': 'timer', 'triggers': 'trigger', 'actions': 'action',
+            'conditions': 'condition', 'submachines': 'submachine'}
 
 
 # ----------------------------------------------------------------------------- shared
@@ -792,16 +840,255 @@ def build_fsml(spec, shared_space, shared_names, prefix=''):
 
 # ---------------------------------------------------------------------------- project
 
+def refuse_key(key, allowed, where):
+    """Stop on a key the generator does not read, naming the keys it does."""
+    if key.startswith(('#', '/', '_')) or key.lower() in ('comment', 'comments', 'note',
+                                                          'notes'):
+        fail('{} carries "{}". A note in a spec is a "{}" key; any other key is read as '
+             'a field, and "{}" is not one.'.format(where, key, NOTE, key))
+    near = difflib.get_close_matches(key, allowed, n=1)
+    fail('{} carries "{}", which is not one of its keys. {}Its keys: {}'
+         .format(where, key, 'Did you mean "{}"? '.format(near[0]) if near else '',
+                 ', '.join(allowed)))
+
+
+def check_keys(node, allowed, where):
+    if isinstance(node, dict):
+        for key in node:
+            if key not in allowed:
+                refuse_key(key, allowed, where)
+
+
+def listed(owner, key):
+    """The object entries of one list; a bare name carries no key to check."""
+    entries = owner.get(key) if isinstance(owner, dict) else None
+    return [entry for entry in entries if isinstance(entry, dict)] \
+        if isinstance(entries, list) else []
+
+
+def check_list(owner, key, kind, where):
+    """Check every object entry of one list against its kind, and return them."""
+    entries = listed(owner, key)
+    for entry in entries:
+        here = '{} "{}" of {}'.format(SINGULAR.get(key, key), entry.get('name', '?'), where)
+        check_keys(entry, KEYS[kind], here)
+        for inner in ('params', 'answer'):
+            check_list(entry, inner, 'parameter', here)
+    return entries
+
+
+def check_types(owner, key, where):
+    for entry in listed(owner, key):
+        here = 'type "{}" of {}'.format(entry.get('name', '?'), where)
+        kind = TYPE_KINDS.get(str(entry.get('kind', '')).lower())
+        if kind:
+            check_keys(entry, TYPE_KEYS[kind], here)
+        check_list(entry, 'values', 'enumerator', here)
+        check_list(entry, 'fields', 'field', here)
+
+
+def check_steps(steps, where):
+    for step in steps if isinstance(steps, list) else []:
+        verb = next((v for v in STEP_KEYS if v in step), None) \
+            if isinstance(step, dict) else None
+        if verb:
+            check_keys(step, STEP_KEYS[verb], 'a "{}" step of {}'.format(verb, where))
+
+
+def check_guard(node, where):
+    if isinstance(node, list):
+        for part in node:
+            check_guard(part, where)
+        return
+    verb = next((v for v in GUARD_KEYS if v in node), None) if isinstance(node, dict) else None
+    if verb is None:
+        return
+    check_keys(node, GUARD_KEYS[verb], 'a guard "{}" of {}'.format(verb, where))
+    if verb != 'call':
+        check_guard(node[verb], where)
+        return
+    args = node.get('args')
+    for value in args.values() if isinstance(args, dict) else \
+            args if isinstance(args, list) else []:
+        check_guard(value, where)
+
+
+def check_states(states, where):
+    for state in states if isinstance(states, list) else []:
+        if not isinstance(state, dict):
+            continue
+        name = state.get('name', '?')
+        here = 'state "{}" of {}'.format(name, where)
+        check_keys(state, KEYS['state'], here)
+        check_steps(state.get('entry'), 'the entry of ' + here)
+        check_steps(state.get('exit'), 'the exit of ' + here)
+        for transition in listed(state, 'transitions'):
+            there = 'the transition of "{}" on "{}"'.format(name, transition.get('on', '?'))
+            check_keys(transition, KEYS['transition'], there)
+            check_guard(transition.get('guard'), there)
+            check_steps(transition.get('do'), there)
+        check_states(state.get('states'), where)
+
+
+def check_shape(project):
+    """Refuse every key the generator would not read, before any document is written."""
+    shared = project.get('datatypes')
+    if isinstance(shared, dict):
+        where = 'the data type document "{}"'.format(shared.get('name', '?'))
+        check_keys(shared, KEYS['datatypes'], where)
+        check_types(shared, 'declare', where)
+        check_list(shared, 'includes', 'include', where)
+    for spec in project['interfaces']:
+        if not isinstance(spec, dict):
+            continue
+        where = 'the service interface "{}"'.format(spec.get('name', '?'))
+        check_keys(spec, KEYS['interface'], where)
+        check_types(spec, 'types', where)
+        for key, kind in (('attributes', 'service attribute'), ('requests', 'request'),
+                          ('responses', 'method'), ('broadcasts', 'method'),
+                          ('constants', 'constant'), ('includes', 'include')):
+            check_list(spec, key, kind, where)
+    for spec in project['machines']:
+        if not isinstance(spec, dict):
+            continue
+        where = 'the state machine "{}"'.format(spec.get('name', '?'))
+        check_keys(spec, KEYS['machine'], where)
+        check_types(spec, 'types', where)
+        for key, kind in (('attributes', 'machine attribute'), ('constants', 'constant'),
+                          ('triggers', 'method'), ('timers', 'timer'), ('events', 'method'),
+                          ('actions', 'method'), ('conditions', 'condition'),
+                          ('submachines', 'submachine'), ('includes', 'include')):
+            check_list(spec, key, kind, where)
+        check_states(spec.get('states'), where)
+
+
+def without_notes(node):
+    if isinstance(node, dict):
+        return {key: without_notes(value) for key, value in node.items() if key != NOTE}
+    if isinstance(node, list):
+        return [without_notes(value) for value in node]
+    return node
+
+
+def canonical(node):
+    return json.dumps(without_notes(node), sort_keys=True)
+
+
+def samples_of(node, found):
+    """The canonical text of every object entry of a list in the template."""
+    if isinstance(node, dict):
+        for value in node.values():
+            samples_of(value, found)
+    elif isinstance(node, list):
+        for item in node:
+            if isinstance(item, dict):
+                found.add(canonical(item))
+            samples_of(item, found)
+    return found
+
+
+def is_empty(value):
+    return value is None or value == '' or value == [] or value == {}
+
+
+def settle(node, skipped):
+    """The spec as the generator reads it: no notes, no template sample left as the
+    template wrote it, and no empty value, which means the same as an absent key."""
+    if isinstance(node, dict):
+        result = {}
+        for key, value in node.items():
+            if key == NOTE:
+                continue
+            value = settle(value, skipped)
+            if not is_empty(value):
+                result[key] = value
+        return result
+    if isinstance(node, list):
+        result = []
+        for item in node:
+            if isinstance(item, dict) and canonical(item) in SAMPLES:
+                skipped.append(item)
+                continue
+            item = settle(item, skipped)
+            if not is_empty(item):
+                result.append(item)
+        return result
+    return node
+
+
+def load_spec(path):
+    """One spec file as the generator reads it, and how many samples it left untouched."""
+    try:
+        with open(path, encoding='utf-8') as handle:
+            raw = json.load(handle)
+    except (OSError, ValueError) as problem:
+        fail('cannot read {}: {}'.format(path, problem))
+    if not isinstance(raw, dict):
+        fail('{} is not a spec object'.format(path))
+    skipped = []
+    spec = settle(raw, skipped)
+    if NOTE in raw and not spec:
+        fail('{} is still the template: nothing in it is filled. Give each document the '
+             'task needs a "name" and its entries, and delete a section it does not need.'
+             .format(path))
+    return spec, len(skipped)
+
+
+def render(node, depth=0, lead=0):
+    """JSON with every value that fits on its line kept on one line."""
+    pad = '  ' * depth
+    flat = json.dumps(node, separators=(', ', ': '))
+    if not isinstance(node, (dict, list)) or not node \
+            or len(pad) + lead + len(flat) <= TEMPLATE_WIDTH:
+        return flat
+    inner = '  ' * (depth + 1)
+    if isinstance(node, list):
+        return '[\n{}\n{}]'.format(
+            ',\n'.join(inner + render(item, depth + 1) for item in node), pad)
+    lines, line = [], ''
+    for key, value in node.items():
+        head = json.dumps(key) + ': '
+        item = head + render(value, depth + 1, len(head))
+        if '\n' not in item and line and len(line) + 2 + len(item) <= TEMPLATE_WIDTH:
+            line += ', ' + item
+            continue
+        if line:
+            lines.append(line)
+        line = inner + item
+        if '\n' in item:
+            lines.append(line)
+            line = ''
+    if line:
+        lines.append(line)
+    return '{{\n{}\n{}}}'.format(',\n'.join(lines), pad)
+
+
+def write_template(path):
+    """Write the template to path, unless a file there already carries work.
+
+    Returns "wrote", or "work" for a file that is not an untouched template, which is
+    never replaced.
+    """
+    if os.path.exists(path):
+        try:
+            with open(path, encoding='utf-8') as handle:
+                raw = json.load(handle)
+        except (OSError, ValueError):
+            return 'work'
+        if not (isinstance(raw, dict) and NOTE in raw and not settle(raw, [])):
+            return 'work'
+    with open(path, 'w', encoding='utf-8', newline='\n') as handle:
+        handle.write(render(TEMPLATE) + '\n')
+    return 'wrote'
+
+
 def merge(specs):
     """One project from every spec file given."""
     project = {'datatypes': None, 'interfaces': [], 'machines': []}
     for path, spec in specs:
         if not isinstance(spec, dict):
             fail('{} is not a spec object'.format(path))
-        unknown = set(spec) - {'datatypes', 'interfaces', 'machines'}
-        if unknown:
-            fail('{} carries {}; a spec holds "datatypes", "interfaces" and "machines"'
-                 .format(path, ', '.join(sorted(unknown))))
+        check_keys(spec, KEYS['spec'], path)
         if spec.get('datatypes'):
             if project['datatypes']:
                 fail('{} declares a second "datatypes" document; a project has one'
@@ -1073,14 +1360,17 @@ EXAMPLE = {
                         "description": "What the gate last measured."}],
         "constants": [{"name": "MaxWidth", "type": "uint32", "value": "2000"}],
         "timers": [{"name": "StepTimer", "timeout": 300}],
-        "events": [{"name": "Refused", "params": [{"name": "asked", "type": "uint32"}]}],
+        "events": [{"name": "Refused", "params": [{"name": "asked", "type": "uint32"}]},
+                   {"name": "Opened", "description": "The OPENING level reached its Final."}],
         "triggers": [{"name": "open", "params": [{"name": "width", "type": "uint32"}]},
                      {"name": "close"}],
         "actions": [{"name": "on_opening"}, {"name": "on_open"},
                     {"name": "on_refused",
                      "params": [{"name": "asked", "type": "uint32"},
                                 {"name": "reading", "type": "GateTypes::Reading"}]}],
-        "conditions": [{"name": "has_power", "description": "True while the gate has power."}],
+        "conditions": [{"name": "has_power", "description": "True while the gate has power."},
+                       {"name": "can_reach", "description": "True when the motor reaches it.",
+                        "params": [{"name": "width", "type": "uint32"}]}],
         "initial": "CLOSED",
         "states": [
             {"name": "CLOSED",
@@ -1088,16 +1378,30 @@ EXAMPLE = {
                  {"on": "open", "to": "OPENING",
                   "guard": {"all": [["width", "le", "MaxWidth"],
                                     ["Quality", "eq", "GateTypes::Quality::Good"],
-                                    {"call": "has_power"}]},
+                                    {"call": "has_power"},
+                                    {"call": "can_reach", "args": {"width": "width"}}]},
                   "set": {"Width": "param:width"}},
                  {"on": "open", "description": "Too wide, untrusted, or no power.",
                   "set": {"Quality": "GateTypes::Quality::Suspect"},
                   "do": [{"send": "Refused", "args": {"asked": "width"}}]}
              ]},
             {"name": "OPENING",
-             "entry": ["on_opening", "start StepTimer"],
-             "exit": ["stop StepTimer"],
-             "transitions": [{"on": "StepTimer", "to": "OPEN"}]},
+             "description": "A level of its own: its \"states\" run through their own "
+                            "\"initial\", and \"final_event\" is how the level reports "
+                            "that it finished.",
+             "entry": ["on_opening"],
+             "initial": "UNLOCKING",
+             "final_event": "Opened",
+             "transitions": [{"on": "Opened", "to": "OPEN"}],
+             "states": [
+                 {"name": "UNLOCKING",
+                  "entry": ["start StepTimer"], "exit": ["stop StepTimer"],
+                  "transitions": [{"on": "StepTimer", "to": "SWINGING"}]},
+                 {"name": "SWINGING",
+                  "entry": ["start StepTimer"], "exit": ["stop StepTimer"],
+                  "transitions": [{"on": "StepTimer", "to": "SWUNG"}]},
+                 {"name": "SWUNG", "kind": "final"}
+             ]},
             {"name": "OPEN",
              "entry": ["on_open"],
              "transitions": [{"on": "close", "to": "CLOSED",
@@ -1110,6 +1414,85 @@ EXAMPLE = {
     }]
 }
 
+TEMPLATE_WIDTH = 92
+
+TEMPLATE = {
+    NOTE: ["The design of this project: every document is written from this file. Fill the",
+           "values and keep the keys. An entry left exactly as written here is skipped and an",
+           "empty value is absent, so delete only a section the task does not need. A list",
+           "takes as many entries as the design has: copy its sample for each."],
+    "datatypes": {
+        NOTE: ["Types two documents share, spelled <name>::<Type> inside them. A type only one",
+               "document needs goes in that document's own types list, in the same shape.",
+               "kind: enum (values), struct (fields), container (container Array or LinkedList",
+               "with of; HashMap, Map or Pair with key and of), imported (header, object)."],
+        "name": "", "description": "",
+        "declare": [
+            {"name": "", "kind": "enum", "description": "",
+             "values": [{"name": "", "value": 0, "description": ""}]},
+            {"name": "", "kind": "struct", "description": "",
+             "fields": [{"name": "", "type": "", "default": "", "description": ""}]},
+            {"name": "", "kind": "container", "container": "Array", "of": "", "description": ""}
+        ]
+    },
+    "interfaces": [{
+        NOTE: ["A .siml: the contract between provider and consumer. category: Public across",
+               "processes, Private inside one, Internet across machines.",
+               "type: bool char uint8 int16 uint16 int32 uint32 int64 uint64 float double String",
+               "WideString BinaryBuffer DateTime, a type of types, or <datatypes name>::<Type>.",
+               "notify: OnChange sends a value only when it differs from the one held; Always",
+               "sends every set. A request with answer also declares its response, of the same",
+               "name; without answer it has none. A broadcast reaches every subscribed consumer."],
+        "name": "", "category": "Public", "description": "",
+        "types": [],
+        "attributes": [{"name": "", "type": "", "notify": "OnChange", "description": ""}],
+        "requests": [{"name": "", "description": "",
+                      "params": [{"name": "", "type": "", "description": ""}],
+                      "answer": [{"name": "", "type": "", "description": ""}]}],
+        "broadcasts": [{"name": "", "description": "",
+                        "params": [{"name": "", "type": "", "description": ""}]}],
+        "constants": [{"name": "", "type": "", "value": "", "description": ""}]
+    }],
+    "machines": [{
+        NOTE: ["A .fsml, only when behaviour depends on what happened before; delete this",
+               "section otherwise. The provider owns it: a request handler fires a trigger, an",
+               "action performs an effect, and every decision is a guard here.",
+               "Every name a state uses is declared in a list of this machine. A trigger, a",
+               "timer and an event never share a name; a state name is unique across levels.",
+               "attributes: what guards compare and set assigns, each with its initial value.",
+               "conditions: a question a guard asks the code. actions: an effect the code runs."],
+        "name": "", "description": "",
+        "types": [],
+        "attributes": [{"name": "", "type": "", "value": "", "description": ""}],
+        "constants": [{"name": "", "type": "", "value": "", "description": ""}],
+        "triggers": [{"name": "", "description": "", "params": [{"name": "", "type": ""}]}],
+        "timers": [{"name": "", "timeout": 300, "description": ""}],
+        "events": [{"name": "", "description": "", "params": [{"name": "", "type": ""}]}],
+        "actions": [{"name": "", "description": "", "params": [{"name": "", "type": ""}]}],
+        "conditions": [{"name": "", "description": "", "params": [{"name": "", "type": ""}]}],
+        "initial": "",
+        "states": [{
+            NOTE: ["on: a trigger, a timer or an event. to: a sibling state; empty, the state",
+                   "stays. Transitions on one stimulus are tried in order and the first whose",
+                   "guard holds is taken: the guarded ones first, the fallback last.",
+                   "guard: [left, op, right] with op eq ne lt le gt ge; {call: condition, args:",
+                   "{param: value}}; {all: [...]}, {any: [...]}, {not: ...}. An operand is a",
+                   "declared name, or param:x attr:X const:X lit:text, and raw:c++ in a guard.",
+                   "set: {Attribute: value}, applied before do. do, entry and exit list: action,",
+                   "start Timer, stop Timer, send Event, or {call: action, args: {param: value}}.",
+                   "kind: empty, final or history. A composite has its own initial and states;",
+                   "its final substate ends the level and sends final_event, which a transition",
+                   "of the composite takes. A history substate (depth Shallow or Deep) is the",
+                   "target that resumes the level where it left off."],
+            "name": "", "kind": "", "entry": [], "exit": [],
+            "transitions": [{"on": "", "to": "", "guard": [], "set": {}, "do": []}],
+            "initial": "", "final_event": "", "states": []
+        }]
+    }]
+}
+
+SAMPLES = samples_of(TEMPLATE, set())
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
@@ -1118,6 +1501,10 @@ def main():
     parser.add_argument('--outdir', help='the directory the documents are written to')
     parser.add_argument('--example', action='store_true',
                         help='print a whole spec to copy, and write nothing')
+    parser.add_argument('--template', metavar='PATH',
+                        help='write a spec with every key present and empty, each section '
+                             'with its note, to fill in. A file there that carries work is '
+                             'never replaced')
     parser.add_argument('--force', action='store_true', help='overwrite existing documents')
     parser.add_argument('--chained', action='store_true',
                         help='run by build_project.py, which does the next steps itself: '
@@ -1127,18 +1514,25 @@ def main():
     if args.example:
         print(json.dumps(EXAMPLE, indent=2))
         return 0
+    if args.template:
+        if write_template(args.template) == 'work':
+            fail('{} already carries a design, and a template never replaces one. Fill '
+                 'that file, or name another path.'.format(args.template))
+        print('wrote {}: every key of a design, empty. Fill the values and keep the keys; '
+              'an entry left as written is skipped.'.format(args.template))
+        return 0
     if not args.spec or not args.outdir:
-        parser.error('--spec and --outdir are both required, or --example')
+        parser.error('--spec and --outdir are both required, or --example, or --template')
 
     specs = []
+    skipped = 0
     for path in args.spec:
-        try:
-            with open(path, encoding='utf-8') as handle:
-                specs.append((path, json.load(handle)))
-        except (OSError, ValueError) as problem:
-            fail('cannot read {}: {}'.format(path, problem))
+        spec, count = load_spec(path)
+        specs.append((path, spec))
+        skipped += count
 
     project = merge(specs)
+    check_shape(project)
     cross_check(project)
     # An include names a document the way the project root spells it, which is the
     # directory the documents are written to.
@@ -1155,6 +1549,9 @@ def main():
         with open(os.path.join(args.outdir, name), 'w', encoding='utf-8') as handle:
             handle.write(text)
         print('wrote {}'.format(os.path.join(args.outdir, name)))
+    if skipped:
+        print('  note  {} sample entr{} of the template, left as written, skipped.'
+              .format(skipped, 'y' if skipped == 1 else 'ies'))
     for spec in project['machines']:
         for name in unread_attributes(spec):
             print('  note  {}: attribute "{}" is written and never read by a guard, a '

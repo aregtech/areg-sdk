@@ -71,26 +71,39 @@ def placeholder(line):
 
 MARKER = re.compile(r'//\s*TODO\(you\)\s+([A-Za-z_][\w]*)\s*:\s*(.*?)\s*$')
 
-# The tool that fills every marker of a project in one command.
+# The tool that fills every marker of a project in one command, and the file it
+# reads. The generator writes that file already filled in as far as it can be:
+# the sections, their order and the names each body may call.
 FILLER = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                       'fill_markers.py').replace(os.sep, '/')
+WORKSHEET = 'bodies.txt'
 
 
-# Markers in different places do not depend on each other, so they are filled in one
-# command. A request costs its whole context again, so N requests of one Edit cost N
-# times what one bodies file costs.
-BATCH_NOTE = (
-    '  These {total} markers are independent of each other, in {files} file(s). Write\n'
-    '  one bodies file naming each and give them to fill_markers.py in one command:\n'
+# Every marker of a project is filled in one command, from a file the generator
+# writes. A request costs its whole context again, so N requests of one Edit cost
+# N times what one worksheet costs.
+WORKSHEET_NOTE = (
+    '  {total} hole(s) in {files} file(s). {path} is written beside this project:\n'
+    '  one section for each, in order, with the function it sits in and every name\n'
+    '  a body may call. Fill it, then give it to the filler in one command:\n'
     '\n'
-    '    == <marker>\n'
-    '        <the code that replaces its line>\n'
+    '    python3 {tool} --bodies {path}\n'
     '\n'
-    '    python3 {tool} --bodies bodies.txt\n'
+    '  A line tagged "// placeholder(you)" under a marker goes when that marker is\n'
+    '  filled; a line with no tag is real code. gen_skeleton.py --todos lists the\n'
+    '  markers left, each exactly as it stands in its file.')
+
+
+# The same markers, listed by --todos after the worksheet has been consumed.
+TODOS_NOTE = (
+    '  {total} marker(s) in {files} file(s). Write one section per marker -- a\n'
+    '  "== <marker>" line, then the code that replaces it -- and fill them all in\n'
+    '  one command:\n'
     '\n'
-    '  Nothing is escaped. A name that matches no marker is refused before anything\n'
-    '  is written. One Edit per request is the most expensive shape there is -- a\n'
-    '  request is billed for the whole conversation again.')
+    '    python3 {tool} --bodies {path}\n'
+    '\n'
+    '  A line tagged "// placeholder(you)" under a marker goes when that marker is\n'
+    '  filled; a line with no tag is real code.')
 
 
 # What a class already carries, so a body uses those names and declares no second one.
@@ -122,32 +135,12 @@ def defined_names(text):
     return members, helpers
 
 
-def print_declared(produced):
-    """What each generated class already carries, beside the holes it leaves."""
-    for file_name, text in produced:
-        if not file_name.endswith('.hpp'):
-            continue
-        members, helpers = defined_names(text)
-        if not (members or helpers):
-            continue
-        parts = []
-        if members:
-            parts.append('members ' + ', '.join(members))
-        if helpers:
-            parts.append('helpers ' + ', '.join(h + '()' for h in helpers))
-        print('  {} already carries {}.'
-              .format(os.path.basename(file_name)[:-4], '; '.join(parts)))
-    print('  Use those names; declaring one of them again shadows it, and the error')
-    print('  lands on the line that reads the wrong one, not on the declaration.')
+def print_todos(produced, out, written, holes=0, scenarios=''):
+    """How many holes each generated file leaves, and where the worksheet is.
 
-
-def print_todos(produced, out):
-    """List every hole the generated files leave, by file and by name.
-
-    Each line is printed as it stands in the file, so an Edit whose old_string is
-    that line matches once and no file has to be opened to find where a rule
-    belongs. A reconstructed line would not match, and the failed Edit is what
-    sends a run to read the file back.
+    The lines themselves are not printed here. They are sections of the worksheet,
+    which is read at the moment a body is written rather than recalled from the
+    output of a command that ran fifteen requests earlier.
     """
     total = 0
     files = 0
@@ -156,19 +149,220 @@ def print_todos(produced, out):
         if not found:
             continue
         path = os.path.join(out, file_name).replace('\\', '/')
-        print('  {} leaves {} marker(s):'.format(path, len(found)))
-        for line in found:
-            print(line.rstrip())
+        print('  {} leaves {} marker(s)'.format(path, len(found)))
         total += len(found)
         files += 1
-    if total:
-        print('  Each line above is unique in its file and is printed exactly as it')
-        print('  stands there, indentation included. Copy one as the old_string of an')
-        print('  Edit; do not rewrite the file and do not read it back to find the')
-        print('  surrounding text. A line tagged "// placeholder(you)" under a marker')
-        print('  goes when that marker is filled; one with no tag is real code.')
-        print(BATCH_NOTE.format(total=total, files=files, tool=FILLER))
-        print_declared(produced)
+    if holes:
+        print('  {} leaves {} expectation(s)'.format(scenarios, holes))
+    total += holes
+    files += 1 if holes else 0
+    if not total:
+        return
+    if written is False:
+        print('  {} already carries work and was left as it is.'.format(WORKSHEET))
+    print(WORKSHEET_NOTE.format(total=total, files=files, tool=FILLER, path=WORKSHEET))
+
+
+# ---------------------------------------------------------------------------
+# The worksheet: one file carrying every open marker, the names the generated
+# classes already carry, and the contract the bodies are written against. It is
+# written where the markers are written, so nothing has to be recalled from an
+# earlier command or looked up in a second one.
+# ---------------------------------------------------------------------------
+WORKSHEET_HEAD = """\
+#| The worksheet of this project: one section per open marker, in file order.
+#| Under each "==" line write the code that replaces that marker, then run:
+#|
+#|   python3 {tool} --bodies {path}
+#|
+#| A line starting with "#|" is furniture of this file and never reaches a source.
+#| Everything else under a "==" line is code, copied as written: a comment in a
+#| body is "//", not "#". A section left with no code stays open and nothing is
+#| written for it, so one pass can fill what it knows and a later pass the rest.
+#|
+#| Filling this file and running that command is two requests. Editing the sources
+#| one marker at a time is {total} requests instead, and a request is billed for the
+#| whole conversation again.
+#|
+#| No source file has to be opened to fill this in: every name a body may call is
+#| named below, every place a body belongs is a section below, and each section
+#| names the function it sits in. The filler takes each section it applies out of
+#| this file, so what is left here is what is left to do.
+"""
+
+def worksheet_sections(produced, out):
+    """Every open marker as (name, hint, path, file, signature), in file order."""
+    found = []
+    for file_name, text in produced:
+        path = os.path.join(out, file_name).replace('\\', '/')
+        lines = text.splitlines()
+        for index, line in enumerate(lines):
+            hit = MARKER.search(line)
+            if hit:
+                found.append((hit.group(1), hit.group(2), path, file_name,
+                              enclosing(lines, index)))
+    return found
+
+
+def enclosing(lines, index):
+    """The signature the marker at this line sits inside, or '' when it sits in none.
+
+    A body needs its own parameter names and its class. Reading the generated file
+    back to find them is the request this line replaces. A marker in a class body
+    sits in no function and gets nothing.
+    """
+    number = index - 1
+    depth = 0
+    while number >= 0:
+        text = lines[number].strip()
+        if text.startswith('}'):
+            # A block that closed above the marker is one the marker is not in.
+            depth += 1
+            number -= 1
+            continue
+        if text == '{' and depth:
+            depth -= 1
+            number -= 1
+            continue
+        if text == '{':
+            while number > 0:
+                number -= 1
+                head = lines[number].strip()
+                if not head or head[0] in CARRIED:
+                    continue
+                if (head.startswith(CONTROL) or '(' not in head or
+                        head.startswith('//')):
+                    break
+                return head
+            continue
+        number -= 1
+    return ''
+
+
+# A brace opened by one of these belongs to a step of the body, not to the body.
+CONTROL = ('if', 'else', 'for', 'while', 'switch', 'do', 'try', 'catch')
+
+# No declaration starts with one of these, so a line that does is the tail of a
+# condition the generator wrapped, and the line above it is the one to read.
+CARRIED = '()[]<>,&|=+-*/.?:"'
+
+
+def scenario_holes(path):
+    """Every unfilled expectation of a scenario file, as (marker, scenario, process).
+
+    A hole here is not code, so it is not a line of a source file, but it is a
+    decision the run has to make and the worksheet is where the decisions live.
+    """
+    holes = []
+    try:
+        with open(path, encoding='utf-8') as handle:
+            document = json.load(handle)
+        scenarios = document['scenarios']
+    except (ValueError, OSError, KeyError, TypeError):
+        return holes
+    for scenario in scenarios:
+        for spec in scenario.get('procs', []):
+            for entry in spec.get('expect', []):
+                found = MARKER.search('// ' + entry) if entry.startswith('TODO(you)') \
+                    else None
+                if found:
+                    holes.append((found.group(1), scenario.get('name', ''),
+                                  proc_label(spec)))
+    return holes
+
+
+def worksheet_pristine(path):
+    """True when the file holds notes and empty sections only, so rewriting loses nothing."""
+    try:
+        with open(path, encoding='utf-8') as handle:
+            lines = handle.read().splitlines()
+    except (IOError, OSError):
+        return False
+    for line in lines:
+        if not line.strip() or line.startswith('#|'):
+            continue
+        if line.startswith('== '):
+            continue
+        return False
+    return True
+
+
+def worksheet_lines(produced, out, iface, document, machine, machine_doc,
+                    scenarios=None):
+    """The whole worksheet, ready to write."""
+    sections = worksheet_sections(produced, out)
+    holes = scenario_holes(scenarios) if scenarios else []
+    if not (sections or holes):
+        return []
+    carried = {}
+    for file_name, text in produced:
+        if file_name.endswith('.hpp'):
+            members, helpers = defined_names(text)
+            if members or helpers:
+                carried[file_name] = (os.path.basename(file_name)[:-4], members, helpers)
+
+    lines = [WORKSHEET_HEAD.format(tool=FILLER, path=WORKSHEET,
+                                   total=len(sections) + len(holes))]
+    if carried:
+        lines.append('#| These names are taken already. Declaring one of them again in\n'
+                     '#| a section below shadows it, and the compiler points at the line\n'
+                     '#| that reads the wrong one, not at the declaration:\n#|')
+        for _, (cls, members, helpers) in sorted(carried.items()):
+            parts = []
+            if members:
+                parts.append('members ' + ', '.join(members))
+            if helpers:
+                parts.append('helpers ' + ', '.join(h + '()' for h in helpers))
+            lines.append('#|   {}: {}'.format(cls, '; '.join(parts)))
+        lines.append('#|')
+    lines.append('#| The names these bodies may call, spelt as the generator emits them.\n'
+                 '#| A name spelt in another namespace than the one below does not\n'
+                 '#| compile:\n#|')
+    for spec, doc in ((iface, document), (machine, machine_doc)):
+        if spec is None:
+            continue
+        for line in contract_lines(spec, doc):
+            lines.append(('#| ' + line).rstrip())
+    lines.append('#|')
+
+    current = None
+    for name, hint, path, file_name, signature in sections:
+        if path != current:
+            lines.append('\n#| ---- {}'.format(path))
+            current = path
+        lines.append('== {}'.format(name))
+        lines.append('#| {}'.format(hint))
+        if signature:
+            lines.append('#| in: {}'.format(signature))
+        lines.append('')
+    if holes:
+        lines.append('\n#| ---- {}: what a run has to print to prove a requirement.'
+                     .format(scenarios))
+        lines.append('#| One regular expression per line, and every one of them has to')
+        lines.append('#| match. The generated main() prints nothing, so each line comes')
+        lines.append('#| from a body above: the expectation and the code that satisfies')
+        lines.append('#| it are written together, in this file, or the run proves')
+        lines.append('#| nothing.')
+        for name, scenario, process in holes:
+            lines.append('== {}'.format(name))
+            lines.append('#| what "{}" must print in scenario "{}".'
+                         .format(process, scenario))
+            lines.append('')
+    return lines
+
+
+def write_worksheet(produced, out, iface, document, machine, machine_doc,
+                    scenarios=None):
+    """Write the worksheet, unless one already carries work."""
+    lines = worksheet_lines(produced, out, iface, document, machine, machine_doc,
+                            scenarios)
+    if not lines:
+        return None
+    if os.path.exists(WORKSHEET) and not worksheet_pristine(WORKSHEET):
+        return False
+    with open(WORKSHEET, 'w', encoding='utf-8', newline='\n') as handle:
+        handle.write('\n'.join(lines).rstrip() + '\n')
+    return True
 
 
 class Interface:
@@ -647,94 +841,102 @@ HOST_NOTE = ('  {name} is a standalone component that owns the machine. Delete b
              '  provider is what drives it.')
 
 
-def print_contract(iface, document):
+def contract_lines(iface, document):
     """The names a document generates, and nothing about how it was written.
 
     This is what a caller needs from whoever authored the document: the class to
     build against, what to override and what to call. It is derived from the
     document, so it cannot disagree with what the generator emits.
     """
-    print('document:  {}'.format(document))
-    print('interface: {}'.format(iface.name))
+    out = ['document:  {}'.format(document),
+           'interface: {}'.format(iface.name)]
     if document.lower().endswith('.fsml'):
-        print('classes:   {n}FSM (the machine), {n}ActionHandler (implement this)'
-              .format(n=iface.name))
+        out.append('classes:   {n}FSM (the machine), {n}ActionHandler (implement this)'
+                   .format(n=iface.name))
         # The generated names are the document's own, unchanged: a trigger keeps its
         # name, an action carries the action_ prefix, a condition carries none.
         for name, params in iface.triggers:
-            print('  call     bool {}({})'.format(name, iface.signature(params)))
+            out.append('  call     bool {}({})'.format(name, iface.signature(params)))
         for name, params in iface.actions:
-            print('  override void action_{}({})'.format(name, iface.signature(params)))
+            out.append('  override void action_{}({})'
+                       .format(name, iface.signature(params)))
         for name, params, returns in iface.conditions:
-            print('  override {} {}({})'.format(iface.cpp_type(returns)[0], name,
-                                                iface.signature(params)))
+            out.append('  override {} {}({})'.format(iface.cpp_type(returns)[0], name,
+                                                     iface.signature(params)))
         for name, kind in iface.attributes:
             spelled = to_snake(name)
-            print('  on the machine object: {}() / set_{}({})'
-                  .format(spelled, spelled, iface.attribute_setter(kind, True)))
-        print_types(iface)
-        return 0
+            out.append('  on the machine object: {}() / set_{}({})'
+                       .format(spelled, spelled, iface.attribute_setter(kind, True)))
+        return out + type_lines(iface)
     if document.lower().endswith('.dtml'):
-        print('classes:   none. {} is the namespace the types below are spelled in'
-              .format(iface.name))
-        print_types(iface)
-        return 0
-    print('classes:   {n}Provider and {n}Consumer build on the generated {n} base'
-          .format(n=iface.name))
+        out.append('classes:   none. {} is the namespace the types below are spelled in'
+                   .format(iface.name))
+        return out + type_lines(iface)
+    out.append('classes:   {n}Provider and {n}Consumer build on the generated {n} base'
+               .format(n=iface.name))
     for name, params in iface.requests:
-        print('  provider overrides request_{}({}); consumer calls request_{}(...) to '
-              'send it'.format(to_snake(name), iface.signature(params), to_snake(name)))
+        out.append('  provider overrides request_{}({}); consumer calls request_{}(...) '
+                   'to send it'.format(to_snake(name), iface.signature(params),
+                                       to_snake(name)))
     for name, params in iface.responses:
-        print('  provider calls response_{}({}); consumer overrides it'
-              .format(to_snake(name), iface.signature(params)))
+        out.append('  provider calls response_{}({}); consumer overrides it'
+                   .format(to_snake(name), iface.signature(params)))
     for name, params in iface.broadcasts:
-        print('  provider calls broadcast_{}({}); consumer subscribes with '
-              'notify_on_broadcast_{}(true)'
-              .format(to_snake(name), iface.signature(params), to_snake(name)))
+        out.append('  provider calls broadcast_{}({}); consumer subscribes with '
+                   'notify_on_broadcast_{}(true)'
+                   .format(to_snake(name), iface.signature(params), to_snake(name)))
     for name, kind in iface.attributes:
         spelled = to_snake(name)
         cpp = iface.cpp_type(kind)[0]
         read = iface.passed_as(kind)
-        print('  provider calls set_{}({}); consumer subscribes with '
-              'notify_on_{}_update(true)'
-              .format(spelled, iface.attribute_setter(kind, False), spelled))
+        out.append('  provider calls set_{}({}); consumer subscribes with '
+                   'notify_on_{}_update(true)'
+                   .format(spelled, iface.attribute_setter(kind, False), spelled))
         # The last value is readable at any time, on both sides, and the two
         # readers do not have the same signature. Reading the generated header to
         # find that out is what this line replaces.
-        print('  provider reads {t} & {n}(); consumer reads {r} {n}(areg::DataState & '
-              'state)'.format(t=cpp, r=read, n=spelled))
-    print_types(iface)
+        out.append('  provider reads {t} & {n}(); consumer reads {r} {n}('
+                   'areg::DataState & state)'
+                   .format(t=cpp, r=read, n=spelled))
+    return out + type_lines(iface)
+
+
+def print_contract(iface, document):
+    """The contract of one document, on standard output."""
+    for line in contract_lines(iface, document):
+        print(line)
     return 0
 
 
-def print_types(iface):
+def type_lines(iface):
     """The data types the signatures above are written in, declared here or included.
 
     A type an included document declares is spelled in that document's namespace and
     is named by every signature above, so the contract states it here rather than
     leaving the reader to open the included document or the generated header.
     """
+    out = []
     for path, space, type_name, kind in iface.imported_types:
-        print_type(space, type_name, kind, ' (from {})'.format(path))
+        out.append(type_line(space, type_name, kind, ' (from {})'.format(path)))
     for type_name, kind in iface.types:
-        print_type(iface.name, type_name, kind, '')
+        out.append(type_line(iface.name, type_name, kind, ''))
     for name, kind in iface.constants:
-        print('  constant {}::{} of type {}'.format(iface.name, name, kind))
+        out.append('  constant {}::{} of type {}'.format(iface.name, name, kind))
+    return out
 
 
-def print_type(space, type_name, kind, origin):
+def type_line(space, type_name, kind, origin):
     """One declared type: its C++ spelling, and what the generator gives it."""
     scope = '{}::'.format(space) if space else ''
     full = scope + type_name
     if kind in ('enumeration', 'enumerate'):
-        print('  enum class {}, with const char * {}as_string({} value){}'
-              .format(full, scope, full, origin))
-    elif kind == 'structure':
-        print('  struct {}, with a field-by-field == and <<{}'.format(full, origin))
-    elif kind == 'imported':
-        print('  {} names the type your own header declares{}'.format(full, origin))
-    else:
-        print('  {} is an alias to an areg container{}'.format(full, origin))
+        return ('  enum class {}, with const char * {}as_string({} value){}'
+                .format(full, scope, full, origin))
+    if kind == 'structure':
+        return '  struct {}, with a field-by-field == and <<{}'.format(full, origin)
+    if kind == 'imported':
+        return '  {} names the type your own header declares{}'.format(full, origin)
+    return '  {} is an alias to an areg container{}'.format(full, origin)
 
 
 # The value a generated call passes until the rule that computes it is written.
@@ -880,7 +1082,7 @@ def consumer_class(iface, cls):
               '        , {}ConsumerBase(entry.mDependencyServices[0].mRoleName, owner)'.format(iface.name)]
     if stepped:
         lines += ['        , areg::TimerConsumer()',
-                  '        , mStep(static_cast<areg::TimerConsumer &>(self()), "Step")']
+                  '        , mPace(static_cast<areg::TimerConsumer &>(self()), "Pace")']
     lines += ['    { }',
               '',
               'protected:',
@@ -917,8 +1119,8 @@ def consumer_class(iface, cls):
     if stepped:
         lines += ['',
                   '                // One step of the scenario per tick.',
-                  '                mStep.stop_timer();',
-                  '                mStep.start_timer({}, static_cast<areg::DispatcherThread &>'
+                  '                mPace.stop_timer();',
+                  '                mPace.start_timer({}, static_cast<areg::DispatcherThread &>'
                   '(master_thread()),'.format(STEP_INTERVAL_MS),
                   '                                  areg::TimerBase::CONTINUOUSLY);']
     lines += ['            }',
@@ -933,7 +1135,7 @@ def consumer_class(iface, cls):
               '                std::cerr << "service is " << areg::as_string(status)',
               '                          << ", giving up" << std::endl;']
     if stepped:
-        lines.append('                mStep.stop_timer();')
+        lines.append('                mPace.stop_timer();')
     lines += ['                quit_with(1);',
               '            }',
               '        }',
@@ -965,7 +1167,7 @@ def consumer_class(iface, cls):
             lines.append('        // placeholder(you): the scenario ends here until a '
                          'later step replaces it.')
             if stepped:
-                lines.append(placeholder('        mStep.stop_timer();'))
+                lines.append(placeholder('        mPace.stop_timer();'))
             lines.append(placeholder('        quit_with(0);'))
             first = False
         lines.append('    }')
@@ -977,7 +1179,7 @@ def consumer_class(iface, cls):
                   '        std::cerr << "request {} failed, reason " '
                   '<< static_cast<int>(reason) << std::endl;'.format(name)]
         if stepped:
-            lines.append('        mStep.stop_timer();')
+            lines.append('        mPace.stop_timer();')
         lines += ['        quit_with(1);',
                   '    }',
                   '']
@@ -1013,7 +1215,7 @@ def consumer_class(iface, cls):
                   '    void fail(const char * why)',
                   '    {',
                   '        std::cerr << "FAIL: " << why << std::endl;',
-                  '        mStep.stop_timer();',
+                  '        mPace.stop_timer();',
                   '        quit_with(1);',
                   '    }',
                   '',
@@ -1021,7 +1223,7 @@ def consumer_class(iface, cls):
                   '    void progressed()',
                   '    {   mIdleTicks = 0; }',
                   '',
-                  '    areg::Timer  mStep;   //!< Spaces the requests of the scenario.',
+                  '    areg::Timer  mPace;   //!< Spaces the requests of the scenario.',
                   '',
                   marker('stall_ticks',
                          'ticks of no progress that end the run; 0 leaves the '
@@ -1190,7 +1392,7 @@ def split_class(cls, lines):
 
 
 def component_files(cls, brief, includes, class_lines, state_slot, prelude=(),
-                    state_hint='the members your rules need'):
+                    state_hint='the members and helpers your rules need, defined here'):
     """The .hpp and the .cpp of one component, named after its class."""
     declaration, definitions = split_class(cls, class_lines)
     private = declaration.index('private:')
@@ -1270,8 +1472,9 @@ def app_files(iface, mode, include_root, machine=None):
         consumer_cls, 'Consumer of the {} service.'.format(iface.name),
         class_includes(iface) + TIMER_INCLUDES * steps_scenario(iface) + [''] + consumer_base,
         consumer_class(iface, consumer_cls), 'consumer_state', QUIT_DECLARATION,
-        'the members your rules need, and the one saying what step the scenario is '
-        'on' if steps_scenario(iface) else 'the members your rules need')]
+        'the members and helpers your rules need, defined here, and the one saying '
+        'what step the scenario is on' if steps_scenario(iface) else
+        'the members and helpers your rules need, defined here')]
 
     def head(file_name, brief):
         return ['/**',
@@ -1468,7 +1671,8 @@ def update_cmake(path, sources=None, documents=None, prune=None):
 # What a process is expected to print, until the rule that prints it is written.
 # It is a regular expression that matches nothing, so a scenario left unfilled fails
 # and says which line is missing rather than passing on no evidence at all.
-SCENARIO_TODO = 'TODO(you): a line this process prints that proves one requirement'
+SCENARIO_TODO = ('TODO(you) {}: a line this process prints that proves one '
+                 'requirement')
 
 # The scenario that proves the generated console quit loop. It expects no output, so
 # it holds no hole and passes as written.
@@ -1477,6 +1681,16 @@ QUIT_SCENARIO = 'quit'
 
 def proc_label(spec):
     return spec.get('name') or spec['binary']
+
+
+def expect_slot(scenario, spec):
+    """The name of one process's expectations in one scenario, as a marker.
+
+    Named, so the worksheet carries these holes beside the code ones and one command
+    fills both. The pair is unique: a scenario names each process once.
+    """
+    return 'expect_{}_{}'.format(re.sub(r'\W+', '_', scenario).strip('_'),
+                                 re.sub(r'\W+', '_', proc_label(spec)).strip('_'))
 
 
 def update_scenarios(path, mode, iface):
@@ -1506,7 +1720,8 @@ def update_scenarios(path, mode, iface):
               .format(path))
         return
     for index, spec in enumerate(procs):
-        spec['expect'] = [SCENARIO_TODO]
+        spec['expect'] = [SCENARIO_TODO.format(
+            expect_slot(scenarios[0].get('name', 'scenario'), spec))]
         if index == len(procs) - 1:
             spec['exit'] = 0
         else:
@@ -1536,10 +1751,12 @@ def update_scenarios(path, mode, iface):
         json.dump(document, handle, indent=2)
         handle.write('\n')
     print('wrote  {}'.format(path))
-    print('  {} process(es), router {}. Replace each "expect" entry with a regular'
+    print('  {} process(es), router {}. Each "expect" hole is a section of the'
           .format(len(procs), 'on' if scenarios[0].get('router') else 'off'))
-    print('  expression the run prints. Two more keys exist and no page is needed for')
-    print('  them. "stdin": ["-q"] is written the moment the process starts, so it goes')
+    print('  worksheet, one regular expression per line. The generated main() prints')
+    print('  nothing, so every line a scenario matches comes from a body you write.')
+    print('  Two more keys exist and no page is needed for them.')
+    print('  "stdin": ["-q"] is written the moment the process starts, so it goes')
     print('  on the lead of a scenario of its own; on any other process it quits that')
     print('  process before its peers are served. A scenario-level')
     print('  "stop": {"proc": "<name>", "after": "<regex>"} takes a peer away.')
@@ -1581,7 +1798,8 @@ def report_todos(out, mode):
     if total == 0:
         print('no TODO(you) marker is left in {}'.format(out))
     else:
-        print(BATCH_NOTE.format(total=total, files=files, tool=FILLER))
+        print(TODOS_NOTE.format(total=total, files=files, tool=FILLER,
+                                path=WORKSHEET))
     return 0
 
 
@@ -1676,7 +1894,10 @@ def main():
         for change in changed or []:
             print('  {}/CMakeLists.txt: {}'.format(args.out.replace('\\', '/'), change))
         update_scenarios(args.scenarios, args.mode, iface)
-        print_todos(produced, args.out)
+        written = write_worksheet(produced, args.out, iface, args.doc,
+                                  machine, args.machine, args.scenarios)
+        print_todos(produced, args.out, written,
+                    len(scenario_holes(args.scenarios)), args.scenarios)
         print(APP_NOTE)
         return 0
 

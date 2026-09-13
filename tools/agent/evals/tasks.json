@@ -740,6 +740,26 @@
         "rule": "3"
       },
       "teaches": "state names are unique across the whole document and not per level, and a Kind=\"Start\" marker is a state for that purpose"
+    },
+    {
+      "id": "r29-bare-request-call",
+      "kind": "repair",
+      "prompt": "This consumer does not compile: the call that should ask the provider for a greeting names a function nothing declares. Work out what the generated base calls it and fix it.",
+      "expect": [
+        "provider: hello,",
+        "consumer: greeted"
+      ],
+      "reference": "01-local-single-process",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "                request_hello_service(role_name());",
+        "replace": "                hello_service(role_name());"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "P-02"
+      },
+      "teaches": "a request is called through its generated prefix, request_<name>; the document name alone is declared nowhere"
     }
   ]
 }

@@ -29,6 +29,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PYTHON = sys.executable or 'python3'
 
 sys.path.insert(0, HERE)
+import gen_docs  # noqa: E402
 import gen_skeleton  # noqa: E402
 
 # A fixed job count is right on every machine the corpus has to describe, and it
@@ -98,11 +99,7 @@ def documents_of(specs, outdir):
     """The .siml, the .fsml and the .dtml the specs name, as paths under outdir."""
     interfaces, machines, shared_types = [], [], []
     for spec in specs:
-        try:
-            with open(spec, encoding='utf-8') as handle:
-                document = json.load(handle)
-        except (ValueError, OSError) as error:
-            fail('cannot read {}: {}'.format(spec, error))
+        document, _skipped = gen_docs.load_spec(spec)
         for entry in document.get('interfaces') or []:
             interfaces.append(os.path.join(outdir, entry['name'] + '.siml'))
         for entry in document.get('machines') or []:

@@ -25,6 +25,8 @@ import sys
 import textwrap
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+import gen_docs  # noqa: E402
 
 
 def find_agent_docs():
@@ -325,6 +327,7 @@ src/CMakeLists.txt    names the documents and each executable's sources
 
 | I need to ... | Read |
 |---|---|
+| **Build this application, start to finish** | `docs/agent/01-runbook.md` - every command in order, if you are not already following it |
 | **Anything ordinary** | `docs/agent/00-cheatsheet.md` - what the tools do not write |
 | Decide what the services are | `docs/agent/05-design.md`, before writing any file |
 | Change the service contract | `docs/agent/20-service-interface.md` |
@@ -345,11 +348,10 @@ src/CMakeLists.txt    names the documents and each executable's sources
 
 ## Tools
 
-These three are the whole path, in this order, and nothing else is needed to
-finish the task:
+Fill `design.json`, and these two are the whole path, in this order; nothing else is
+needed to finish the task:
 
 ```bash
-python3 {sdk}/tools/agent/gen_docs.py --example > design.json
 python3 {sdk}/tools/agent/build_project.py --spec design.json
 python3 {sdk}/tools/agent/build_project.py --run        # rebuild, then the scenarios
 ```
@@ -368,16 +370,17 @@ application again and discards what is in it. Nothing below needs to be run by h
 
 The application it writes is the whole of `src/` -- the components, every
 subscription, the model, `main()` and its exit code -- and it compiles and runs as
-generated. Every place your own rule belongs is one `TODO(you) <name>:` line; the
-command prints all of them, and each is unique in its file, so **fill one in with a
-single `Edit` of that line and never rewrite the file**. The markers do not depend on
-each other: **send the Edits in as few steps as possible, several to a step**, because
-a step is billed for the whole conversation again. With a state machine in the spec
-the provider owns it, so there is no host component to merge by hand.
+generated. Every place your own rule belongs is one `TODO(you) <name>:` line, and
+`bodies.txt` beside the project carries a section for each, naming the function it
+sits in: **fill the sections and apply them all with
+`python3 {sdk}/tools/agent/fill_markers.py --bodies bodies.txt`**, and never rewrite a
+generated file. With a state machine in the spec the provider owns it, so there is no
+host component to merge by hand.
 
-`gen_docs.py --example` prints a spec to copy: `design.json` describes every
-`.dtml`, `.siml` and `.fsml` of the project, so no XML, no `ID` and no `To` is
-written by hand and a type the service and its machine share is declared once.
+`design.json` describes every `.dtml`, `.siml` and `.fsml` of the project, so no XML,
+no `ID` and no `To` is written by hand and a type the service and its machine share is
+declared once. It holds every key, empty, each section with a `#|` note: fill the
+values. `gen_docs.py --example` prints a finished one for another application.
 `gen_skeleton.py --doc <document> --contract` prints every name a document
 generates -- the methods, and the data types the signatures are written in, including
 the ones an included `.dtml` declares -- and writes no file; `--todos` lists the
@@ -596,6 +599,7 @@ def main():
                 print('  {} -> AGENTS.md'.format(relative))
     write_gitignore(root)
     write_scenarios(root, mode, binaries)
+    template = gen_docs.write_template(os.path.join(root, 'design.json'))
     if MODES[mode]['router']:
         write_run_script(root, name, binaries)
 
@@ -603,7 +607,10 @@ def main():
     print('created {} ({} mode)'.format(root, mode))
     print('  The sources under src/ are a placeholder: build_project.py replaces them with')
     print('  the application of your own design.json, and writes src/CMakeLists.txt.')
-    print('  python3 {}/gen_docs.py --example > design.json   # a spec to copy'.format(tools))
+    if template == 'work':
+        print('  design.json already carries a design, so it was left as it is.')
+    else:
+        print('  design.json holds every key of a design, empty: fill it, then')
     print('  python3 {}/build_project.py --spec design.json'.format(tools))
     print('  python3 {}/run_scenarios.py'.format(tools))
     return 0

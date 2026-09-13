@@ -32,7 +32,10 @@ point:
 | File | Who edits it |
 |---|---|
 | `ai-prompt-template-text.txt` | **you** -- four lines at the top, and nothing else. This is the prompt you paste to run any of the four on areg. |
-| `runbook-areg.md` | **nobody.** The agent reads it: where to work, every command in order, the bounded fix loop. |
+| `../../docs/agent/01-runbook.md` | **nobody.** The agent reads it: where to work, every command in order, the bounded fix loop. It is not in this directory on purpose: it is the procedure every areg application is built by and ships with the SDK, so what this benchmark measures is what a user's own agent follows. |
+| `runbook-demo.md` | **nobody.** What a measured run adds to the runbook: never commit, never write a ReadMe, and the report is the task file's table. Everything else is the SDK's own procedure. |
+| `run-benchmark.sh`, `analyze_run.py`, `measure.py` | **nobody.** The runner and the two readers of a run; see below. |
+| `INSTALL-grpc.md` | **you**, once, before the first gRPC run. |
 | `grpc-coffee-machine.txt` | **you**, if you want another arm. A worked example of the same wrapper written for gRPC instead: copy it, rename it, rewrite its steps for the framework you are measuring. It is a shape to copy, not a benchmark result. |
 
 Keeping the procedure out of the task is what stops a run being spoiled by a path
@@ -76,9 +79,30 @@ Two more differences worth knowing before reading a Copilot number:
 **That is still a real comparison**: the acceptance list and the cycle counts are what
 say whether the framework let the agent get it right the first time.
 
+## Running it with the script
+
+`run-benchmark.sh` does every step below in one command, for Claude Code:
+
+```bash
+examples/ai-benchmark/run-benchmark.sh                      # areg, coffee-machine.md
+examples/ai-benchmark/run-benchmark.sh --attempts 15        # a looser fix bound
+examples/ai-benchmark/run-benchmark.sh --framework grpc     # the comparison arm
+examples/ai-benchmark/run-benchmark.sh --dry-run            # print the prompt only
+```
+
+**The agent reads a snapshot, not the checkout.** The script copies the files a clone
+carries -- tracked files, and untracked files that are not ignored, as the working
+tree has them -- into the run directory and gives the agent that copy. Nothing that
+exists only on the operator's machine can reach the run. The session loads no skill and
+no MCP server (`--disable-slash-commands --strict-mcp-config`), and both arms are given
+the same tools, so the two start from the same context. `analyze_run.py` then reads
+the transcript request by request: cost, reasoning, the build and run cycles, every
+read of SDK internals, and the lines written by hand. The gRPC arm needs
+`INSTALL-grpc.md` first.
+
 ## Running one, and measuring it
 
-This is the whole procedure. Nothing here is optional if you want a comparable number.
+This is the whole procedure, by hand. Nothing here is optional if you want a comparable number.
 
 **1. Make one empty directory and start the session in it.** That directory becomes
 the project: the agent writes everything into it and creates nothing outside it.
@@ -123,9 +147,15 @@ usage the agent cannot see itself.
 
 ```bash
 claude -p --output-format json \
+       --disable-slash-commands --strict-mcp-config \
        --add-dir "$AREG_SDK" \
-       "$(cat prompt.txt)" > result.json
+       < prompt.txt > result.json
 ```
+
+The two flags keep this machine's skills and MCP servers out of the run, which no other
+machine has. `$AREG_SDK` should be a fresh clone: a checkout you work in carries ignored
+files of its own, and the agent can read them. The prompt goes in on stdin because
+`--add-dir` takes every word after it as a directory.
 
 Allow the build commands generously, or run with `--dangerously-skip-permissions` in a
 throwaway directory. **Every permission denial costs the agent a turn and inflates the

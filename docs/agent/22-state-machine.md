@@ -81,7 +81,7 @@ decision lives in the document.
 **Do not write the XML. Describe the machine and generate it:**
 
 ```bash
-python3 <areg-sdk>/tools/agent/gen_docs.py --example > design.json
+python3 <areg-sdk>/tools/agent/gen_docs.py --template design.json
 python3 <areg-sdk>/tools/agent/build_project.py --spec design.json
 ```
 
@@ -125,27 +125,10 @@ of them are optional:
 A name used but not declared is `error[46/RULE_UNRESOLVED_ELEMENT]`, and the message
 names the kind it was looked up as, which names the list it is missing from.
 
-The machine below is smaller than the recipe's, and is shown whole so the shape is
-visible at a glance. This is what you write; the XML is what `gen_docs.py` writes.
-
-```json
-{"machines": [{
-  "name": "Gate",
-  "timers":   [{"name": "Hold", "timeout": 300}],
-  "triggers": [{"name": "open"}],
-  "actions":  [{"name": "on_open"}, {"name": "on_close"}],
-  "initial": "GATE_CLOSED",
-  "states": [
-    {"name": "GATE_CLOSED", "transitions": [{"on": "open", "to": "GATE_OPEN"}]},
-    {"name": "GATE_OPEN", "entry": ["start Hold", "on_open"],
-     "transitions": [{"on": "Hold", "to": "GATE_DONE"}]},
-    {"name": "GATE_DONE", "kind": "final", "entry": ["on_close"]}
-  ]
-}]}
-```
-
-The `Kind="Start"` marker, every `ID`, and the `To` of every transition are the tool's
-work. What is still yours is the rule below.
+`gen_docs.py --example` prints a whole machine in this shape -- timers, triggers,
+actions, conditions, guards, a composite level and a final state. That is what you
+write; the XML is what `gen_docs.py` writes, and the `Kind="Start"` marker, every `ID`
+and the `To` of every transition are its work. What is still yours is the rule below.
 
 **A transition's target must be a sibling.** A transition cannot reach into or out of a composite: to leave a subtree,
 put the transition on the composite, whose transitions fire from anywhere inside it.
@@ -206,11 +189,9 @@ cannot cross out of a composite. `OnFinal` on the composite names an `Event` the
 machine sends to itself when the nested level reaches Final; a transition on the
 composite then carries it out of the subtree.
 
-```json
-{"name": "WORK", "final_event": "Done", "initial": "WORK_RUNNING",
- "transitions": [{"on": "Done", "to": "NEXT"}],
- "states": [{"name": "WORK_RUNNING"}, {"name": "WORK_DONE", "kind": "final"}]}
-```
+The `OPENING` state of `gen_docs.py --example` is that shape, whole: its own
+`"initial"`, its substates, a `"kind": "final"` and the `"final_event"` the transition
+out of it carries.
 
 Without `OnFinal` a finished level simply stops and nothing follows. The nested marker
 the tool writes for the nested level is named after the composite, because the top

@@ -5,11 +5,11 @@ AREG is a framework for service-oriented applications. Describe a service once i
 the service logic. The same code runs in one thread, many threads, many processes or
 many machines: what changes is where a component is registered, not what it does.
 
-**Fast path.** `tools/agent/build_project.py --spec` writes a whole project -- the
-documents, the components, the model and `main()`; section 5 has the chain. What no
-tool writes is one page, `docs/agent/00-cheatsheet.md`. Go there now, skip
-`CODEBASE.md` and the rest of this file, and return only for section 6. `areg::String`
-and the containers are not on it: read `docs/agent/40-base-api.md` **before the first
+**Building an application?** Follow `docs/agent/01-runbook.md` from its first line: it
+is the whole procedure, every command in order, and the tools write the documents, the
+components, the model and `main()`. Return here only for section 6. Changing an
+existing one: `docs/agent/00-cheatsheet.md` is what no tool writes. `areg::String` and
+the containers are on neither: read `docs/agent/40-base-api.md` **before the first
 line of C++**, not after the first error.
 
 ---
@@ -66,8 +66,9 @@ Find your task, open that one file, and do not search the repository.
 | See a complete working application | `examples/03_helloservice/` -- it sleeps in a response handler; do not copy that |
 
 `docs/wiki/` is written for people and is large: open a page there only when a row
-above names it. A path that does not resolve is a defect to report, not a reason to
-search.
+above names it. `examples/` is optional and may be absent: for a path into it, use
+`docs/agent/recipes/` instead. Any other path that does not resolve is a defect to
+report, not a reason to search.
 
 ---
 
@@ -85,26 +86,13 @@ exits non-zero when a requirement is missing.
 
 ## 4. Golden path
 
-Three commands, from nothing to a running application.
-
-```bash
-python3 <areg-sdk>/tools/agent/setup_project.py --name myapp --root ~/myapp --mode local
-cd ~/myapp
-python3 <areg-sdk>/tools/agent/build_project.py   # the five steps of section 5
-python3 <areg-sdk>/tools/agent/run_scenarios.py   # runs it; exit 0 means it works
-```
-
-`build_project.py` is the build command every time, and its first call compiles the
-framework, so **give it a command timeout of at least 15 minutes**.
-
-**Start here, not by hand.** It copies the right recipe, renames it and writes the
-project its own `AGENTS.md`. `--mode` is `local`, `ipc` (two processes) or `pubsub`;
-`--sdk-root <path>` builds against a local SDK copy instead of fetching one. Without
-Python, copy `docs/agent/recipes/01-local-single-process` and rename the project in
-its two `CMakeLists.txt` files; `recipes/README.md` says which recipe shows what.
-
-`addServiceInterface()` in the project's `CMakeLists.txt` is what runs the generator,
-so a document is built by naming it there.
+**`docs/agent/01-runbook.md` is the golden path**: scaffold, fill `design.json`, one
+command that writes the documents and the application and builds them, a worksheet for
+every body, and a scenario that proves it. Follow it rather than composing a chain from
+the tools below. `build_project.py`'s first call compiles the framework, so **give it a
+command timeout of at least 15 minutes**. Without Python, copy
+`docs/agent/recipes/01-local-single-process` and rename the project in its two
+`CMakeLists.txt` files; `recipes/README.md` says which recipe shows what.
 
 **The generator validates before it generates.** A refused document writes nothing and
 exits 1, so the defect is in the document, never in the build. Every finding is
@@ -134,7 +122,7 @@ Windows), live in `tools/agent/`, and have `--help`.
 | `setup_project.py` | Creates a buildable project from a recipe, with its own `AGENTS.md` |
 | `gen_docs.py` | Every `.dtml`, `.siml` and `.fsml` of the project, from one JSON description: no XML, no `ID`, no `To` |
 | `gen_skeleton.py` | `--app`: the whole application from a `.siml`, running as written, every hole one named `TODO(you)` line; `--machine X.fsml` folds the state machine into the provider |
-| `fill_markers.py` | Fills every `TODO(you)` marker from one bodies file: a `== <marker>` line, then the code replacing its line. Nothing is escaped, and a name matching no marker is refused before anything is written |
+| `fill_markers.py` | Fills every `TODO(you)` marker from the `bodies.txt` worksheet `gen_skeleton.py` writes: a `== <marker>` line, then the code replacing its line. It fills the named `expect` holes of `scenarios.json` from the same file. An empty section stays open, a `#|` line is the worksheet's own, and an applied section is taken out |
 | `build_project.py` | The five mechanical steps in one: documents, application, contract, configure, build. Stops at the first failure and names the step |
 | `api_help.py` | What one framework name is: its declarations and the header carrying them. Never grep a header for a signature |
 | `run_scenarios.py` | Runs the application and checks its output; exit 0 is a pass. Its `scenarios.json` is `docs/agent/50-running.md` |
