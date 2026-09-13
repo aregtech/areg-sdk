@@ -27,7 +27,7 @@ Create ready-to-build Areg SDK projects in 30 seconds using the interactive proj
 **Linux/macOS:**
 ```bash
 cd areg-sdk
-./areg-sdk/tools/project-setup.sh
+./areg-sdk/tools/setup-project.sh
 # Answer 3 prompts (or press Enter for defaults)
 cd areg_hello
 cmake -B ./build
@@ -37,7 +37,7 @@ cmake --build ./build
 
 **Windows:**
 ```powershell
-.\areg-sdk\tools\project-setup.bat
+.\areg-sdk\tools\setup-project.bat
 # Answer 3 prompts (or press Enter for defaults)
 cd areg_hello
 cmake -B .\build
@@ -97,7 +97,7 @@ The project setup tool creates a complete, ready-to-build Areg SDK project with:
 
 ### When to Use It
 
-**Use project-setup when:**
+**Use setup-project when:**
 - ✅ Starting a new Areg SDK project from scratch
 - ✅ Learning Areg SDK (provides working example)
 - ✅ Prototyping quickly
@@ -183,7 +183,7 @@ Choose mode - (1) 'multiprocessing' or (2) 'multithreading' [default: 1]: 2
 ### Complete Example Session
 
 ```bash
-$ ./areg-sdk/tools/project-setup.sh
+$ ./areg-sdk/tools/setup-project.sh
 
 Specify the name of your new project [default: areg_hello]: chat_service
 Specify the root directory of your new project [default: ./chat_service]: 
@@ -840,12 +840,12 @@ set(AREG_LIB_TYPE static)
 
 ### Script Permission Denied (Linux/macOS)
 
-**Problem:** `bash: ./project-setup.sh: Permission denied`  
+**Problem:** `bash: ./setup-project.sh: Permission denied`  
 **Solution:**
 
 ```bash
-chmod +x ./tools/project-setup.sh
-./areg-sdk/tools/project-setup.sh
+chmod +x ./tools/setup-project.sh
+./areg-sdk/tools/setup-project.sh
 ```
 
 ---
@@ -986,7 +986,7 @@ Areg 2 project created...  # 2 = multithreading
 
 **Re-run with correct mode:**
 ```powershell
-.\areg-sdk\tools\project-setup.bat
+.\areg-sdk\tools\setup-project.bat
 # Choose mode 2 for single executable
 ```
 

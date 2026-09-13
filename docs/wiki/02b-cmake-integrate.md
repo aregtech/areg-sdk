@@ -113,7 +113,7 @@ Three methods to integrate Areg SDK:
 ```bash
 git clone https://github.com/aregtech/areg-sdk.git
 cd areg-sdk
-./tools/project-setup.sh
+./tools/setup-project.sh
 # Follow prompts, then:
 cd areg_hello
 cmake -B ./build && cmake --build ./build

@@ -22,7 +22,7 @@ This document provides an overview of available tools, their purpose, and basic 
 
 | Tool             | Type        | Purpose                                                              |
 |------------------|-------------|----------------------------------------------------------------------|
-| `project-setup`  | Script      | Interactive project generator for rapid Areg SDK project creation    |
+| `setup-project`  | Script      | Interactive project generator for rapid Areg SDK project creation    |
 | `codegen.jar`    | Build-time  | Service interface code generator (C++ stub/skeleton generation)      |
 | `logcollector`   | Runtime     | Centralized log aggregation service for distributed applications     |
 | `logobserver`    | Runtime     | Console-based logging control and inspection tool                    |
@@ -35,8 +35,8 @@ This document provides an overview of available tools, their purpose, and basic 
 ## 1. Project Setup Tool
 
 **Scripts:**
-- Linux/macOS: `tools/project-setup.sh`
-- Windows: `tools/project-setup.bat`
+- Linux/macOS: `tools/setup-project.sh`
+- Windows: `tools/setup-project.bat`
 
 ### Purpose
 
@@ -65,10 +65,10 @@ Automated project scaffold generator that creates production-ready Areg SDK proj
 
 ```bash
 # Linux/macOS
-./areg-sdk/tools/project-setup.sh
+./areg-sdk/tools/setup-project.sh
 
 # Windows
-.\areg-sdk\tools\project-setup.bat
+.\areg-sdk\tools\setup-project.bat
 ```
 
 **Detailed Guide**: [Quick Project Setup](./02a-quick-project-setup.md)
@@ -255,7 +255,7 @@ The Areg SDK tools form an integrated development and diagnostics pipeline:
 
 ### Workflow Integration
 
-1. **Project Creation**: Use `project-setup` to generate initial project structure
+1. **Project Creation**: Use `setup-project` to generate initial project structure
 2. **Service Design**: Define service interfaces in `.siml` files (manually or via Lusan)
 3. **Code Generation**: `codegen.jar` generates C++ code during build
 4. **Development**: Implement business logic in generated base classes
@@ -271,7 +271,7 @@ Areg SDK provides a complete toolchain for distributed C++ application developme
 
 | Development Phase | Tools |
 |-------------------|-------|
-| **Project Bootstrap** | `project-setup` script |
+| **Project Bootstrap** | `setup-project` script |
 | **Service Design** | `.siml` files, Lusan GUI |
 | **Code Generation** | `codegen.jar` (automated) |
 | **Runtime Logging** | `logcollector`, `logobserver` |
@@ -279,7 +279,7 @@ Areg SDK provides a complete toolchain for distributed C++ application developme
 
 ### Key Takeaways
 
-- **`project-setup`**: Rapid project scaffolding (< 30 seconds)
+- **`setup-project`**: Rapid project scaffolding (< 30 seconds)
 - **`codegen.jar`**: Automated service code generation (zero manual effort)
 - **`logcollector`**: Centralized log aggregation for distributed systems
 - **`logobserver`**: Console-based runtime logging control
