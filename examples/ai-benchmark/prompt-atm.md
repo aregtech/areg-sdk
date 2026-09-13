@@ -1,16 +1,6 @@
 # Prompt: an ATM with PIN retries and card retention
 
-A task prompt for an AI agent. It is written the way a developer hands work to a
-colleague: what the software must do, not how to build it. It names no framework, so
-the same requirements can be handed to gRPC, ZeroMQ, DDS, areg, or anything else,
-and it names no operating system.
-
-**To run it.** This file is only the task and its acceptance checklist. To build it on
-**areg**, copy `examples/ai-benchmark/ai-prompt-template-text.txt`, set its `task` line to
-`examples/ai-benchmark/atm.md`, and paste that file as the prompt -- four lines are
-all you edit. For another framework, hand this file to an agent together with your own
-delivery instructions -- `examples/ai-benchmark/grpc-coffee-machine.txt` is a worked
-example of one.
+A task for an AI agent: what the software must do, not how to build it.
 
 This is the shape of any system that gates a sensitive action behind a retry-limited
 secret, and that sometimes has to ask for the same secret twice, for two different
@@ -143,6 +133,29 @@ framework, against this list:
 
 ---
 
+## What to deliver
+
+**Two programs**, each with its own entry point, in their own subdirectories of the
+project. Nothing outside the project directory, nothing added to the framework's own
+build, and no IDE or editor project files.
+
+**The PIN check is written once** and entered from both places, each entry with its
+own attempt counter -- not two copies of the same logic.
+
+**The contract between the two programs is declared once**, in whatever form the
+framework declares an interface, and the code that carries it over the connection is
+generated from that declaration rather than written by hand. Never edit a generated
+file and never commit one.
+
+Do **not** write a `ReadMe.md`.
+
+**Stop rule.** At most **3 build-and-fix cycles and 3 run-and-fix cycles**. If it has
+not converged after the third of either, stop and report what fails, the exact output,
+and what you think the cause is. Widening a timeout, adding a sleep, or loosening what
+the scenario expects is not a fix.
+
+---
+
 ## The report
 
 End with this table and nothing longer.
@@ -163,6 +176,6 @@ already have is left out, not guessed.
 
 Then three sentences at most: what the documentation answered well, what you had to
 guess or discover the hard way, and which page you wish had said something it did not.
-Say plainly wherever you had to search the repository instead of being routed to an
-answer -- that is the finding this exercise is really after, and it is worth more than
-the table.
+Say plainly wherever you had to search for an answer instead of being routed to one
+-- that is the finding this exercise is really after, and it is worth more than the
+table.

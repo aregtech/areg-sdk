@@ -1,18 +1,6 @@
 # Prompt: coffee machine with a state machine
 
-A task prompt for an AI agent. It is written the way a developer hands work to a
-colleague: what the software must do, not how to build it. It names no framework, so
-the same requirements can be handed to gRPC, ZeroMQ, DDS, areg, or anything else, and
-it names no operating system.
-
-**To run it.** This file is the task, its acceptance checklist and the report to end
-with -- nothing else. To build it on **areg**, copy
-`examples/ai-benchmark/ai-prompt-template-text.txt`, set its `task` line to
-`examples/ai-benchmark/coffee-machine.md`, and paste that file as the prompt:
-four lines are all you edit. For another framework, hand this file to an agent
-together with your own delivery instructions --
-`examples/ai-benchmark/grpc-coffee-machine.txt` is a worked
-example of one.
+A task for an AI agent: what the software must do, not how to build it.
 
 This is the shape of any system that runs a multi-stage sequence which can be
 interrupted and then has to carry on from where it stopped, rather than start
@@ -187,6 +175,6 @@ already have is left out, not guessed.
 
 Then three sentences at most: what the documentation answered well, what you had to
 guess or discover the hard way, and which page you wish had said something it did not.
-Say plainly wherever you had to search the repository instead of being routed to an
-answer -- that is the finding this exercise is really after, and it is worth more than
-the table.
+Say plainly wherever you had to search for an answer instead of being routed to one
+-- that is the finding this exercise is really after, and it is worth more than the
+table.

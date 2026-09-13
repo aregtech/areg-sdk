@@ -26,15 +26,16 @@ One cold agent run, measured, against a clean snapshot of this checkout.
 
   --framework NAME   areg | grpc                          (default: areg)
   --task PATH        task file, absolute or relative to the SDK
-                       (default: examples/ai-benchmark/coffee-machine.md)
+                       (default: examples/ai-benchmark/prompt-coffeemachine.md)
   --wrapper PATH     the wrapper the prompt is built from, absolute or relative to
                      the SDK. Everything after its "--- PROMPT BEGINS BELOW THIS
-                     LINE" marker is the prompt, with <areg-sdk>, <task>, <project>
-                     and <mode> substituted
-                       (default: ai-prompt-template-text.txt for areg,
-                                 grpc-coffee-machine.txt for grpc)
+                     LINE" marker is the prompt, with <areg-sdk>, <runner>, <task>,
+                     <project> and <mode> substituted
+                       (default: <framework>-<key>-prompt.txt beside a task named
+                        prompt-<key>.md; without one, areg uses
+                        areg-ai-prompt-template.txt and grpc refuses to start)
   --project NAME     C identifier: directory and CMake project name
-                       (default: coffeemachine)
+                       (default: <key> of the task, e.g. coffeemachine)
   --mode MODE        ipc | local | pubsub, areg only      (default: ipc)
   --model NAME       sonnet | haiku | opus                (default: sonnet)
   --effort LEVEL     low | medium | high                  (default: medium)
@@ -54,6 +55,14 @@ One cold agent run, measured, against a clean snapshot of this checkout.
                      proceed although find_package(areg) finds an installed package,
                      which would shadow the snapshot
   -h, --help         this text
+
+  Examples:
+    run-benchmark.sh                                  areg, the coffee machine
+    run-benchmark.sh --framework grpc --attempts 15   gRPC, the coffee machine
+    run-benchmark.sh --task examples/ai-benchmark/prompt-tempalarm.md
+    run-benchmark.sh --task examples/ai-benchmark/prompt-atm.md --attempts 15
+    run-benchmark.sh --task examples/ai-benchmark/prompt-printscan.md --attempts 15
+    run-benchmark.sh f --model opus --effort high --out /data/runs --dry-run
 
   The run directory holds the measurement: meta.txt, prompt.txt, result.json,
   run.err, the fingerprints and sdk/, the snapshot the agent read. The agent works
@@ -111,8 +120,8 @@ PROBE
 
 main()
 {
-    local FRAMEWORK="areg" TASK="examples/ai-benchmark/coffee-machine.md" WRAPPER=""
-    local PROJECT="coffeemachine" MODE="ipc" MODEL="sonnet" EFFORT="medium"
+    local FRAMEWORK="areg" TASK="examples/ai-benchmark/prompt-coffeemachine.md" WRAPPER=""
+    local PROJECT="" MODE="ipc" MODEL="sonnet" EFFORT="medium"
     local ATTEMPTS="3" DEBRIEF="" RECIPES="none" LABEL="" DRY="" ALLOW_INSTALLED=""
     local OUT="${AREG_BENCHMARK_RUNS:-${HOME}/runs}"
 
@@ -145,6 +154,10 @@ main()
         esac
     done
 
+    # The key of prompt-<key>.md names the project and the wrapper.
+    local KEY; KEY="$(basename "${TASK}" .md)"; KEY="${KEY#prompt-}"
+    [ -n "${PROJECT}" ] || PROJECT="${KEY//[!A-Za-z0-9_]/}"
+
     case "${FRAMEWORK}" in areg|grpc) ;; *) die "--framework must be areg or grpc, not '${FRAMEWORK}'" ;; esac
     case "${MODE}"     in ipc|local|pubsub) ;; *) die "--mode must be ipc, local or pubsub, not '${MODE}'" ;; esac
     case "${MODEL}"    in sonnet|haiku|opus) ;; *) die "--model must be sonnet, haiku or opus, not '${MODEL}'" ;; esac
@@ -158,18 +171,19 @@ main()
     git -C "${SDK}" rev-parse HEAD >/dev/null 2>&1 \
         || die "${SDK} is not a git checkout; the snapshot is taken from its file list"
 
+    local TASK_ABS WRAPPER_ABS
+    case "${TASK}" in /*) TASK_ABS="${TASK}" ;; *) TASK_ABS="${SDK}/${TASK}" ;; esac
+    [ -f "${TASK_ABS}" ] || die "no such task file: ${TASK_ABS}"
+
     if [ -z "${WRAPPER}" ]; then
-        if [ "${FRAMEWORK}" = "areg" ]; then
-            WRAPPER="examples/ai-benchmark/ai-prompt-template-text.txt"
-        else
-            WRAPPER="examples/ai-benchmark/grpc-coffee-machine.txt"
+        WRAPPER="$(dirname "${TASK_ABS}")/${FRAMEWORK}-${KEY}-prompt.txt"
+        if [ ! -f "${WRAPPER}" ]; then
+            [ "${FRAMEWORK}" = "areg" ] \
+                || die "no ${FRAMEWORK} wrapper for this task: ${WRAPPER}. Write one, or pass --wrapper"
+            WRAPPER="${HERE}/areg-ai-prompt-template.txt"
         fi
     fi
-
-    local TASK_ABS WRAPPER_ABS
-    case "${TASK}"    in /*) TASK_ABS="${TASK}" ;;       *) TASK_ABS="${SDK}/${TASK}" ;; esac
     case "${WRAPPER}" in /*) WRAPPER_ABS="${WRAPPER}" ;; *) WRAPPER_ABS="${SDK}/${WRAPPER}" ;; esac
-    [ -f "${TASK_ABS}" ]    || die "no such task file: ${TASK_ABS}"
     [ -f "${WRAPPER_ABS}" ] || die "no such wrapper file: ${WRAPPER_ABS}"
 
     if [ "${FRAMEWORK}" = "grpc" ]; then
@@ -227,18 +241,10 @@ main()
         stray="$(find "${SNAP}" -type f ! -name run_scenarios.py | head -5)"
         [ -z "${stray}" ] || die "the gRPC arm staged more than the scenario runner:
 ${stray}"
-        # The task travels with the run, without the preamble paragraphs that name areg.
-        python3 - "${TASK_ABS}" "${RUN}/task.md" <<'STRIP'
-import re, sys
-text = open(sys.argv[1], encoding='utf-8').read()
-head, sep, rest = text.partition('\n## ')
-if sep:
-    head = '\n\n'.join(b for b in head.split('\n\n') if not re.search('areg', b, re.I))
-    text = head.rstrip('\n') + '\n' + sep + rest
-open(sys.argv[2], 'w', encoding='utf-8').write(text)
-STRIP
+        # The task travels with the run.
+        cp "${TASK_ABS}" "${RUN}/task.md"
         if grep -qi areg "${RUN}/task.md"; then
-            die "${TASK_ABS} names areg outside its preamble; the gRPC arm must not be told of it"
+            die "${TASK_ABS} names areg; the gRPC arm must not be told of it"
         fi
     else
         copied="$(snapshot "${SDK}" "${SNAP}")"
@@ -322,6 +328,7 @@ Be specific and short: a list, not prose."
              | tail -n +2 | sed '/./,$!d')"
     [ -n "${BODY}" ] || die "${WRAPPER_ABS} has no '--- PROMPT BEGINS BELOW THIS LINE' marker"
     BODY="${BODY//<areg-sdk>/${SNAP}}"
+    BODY="${BODY//<runner>/${SNAP}/tools/agent/run_scenarios.py}"
     BODY="${BODY//<task>/${TASK_RUN}}"
     BODY="${BODY//<project>/${PROJECT}}"
     BODY="${BODY//<mode>/${MODE}}"

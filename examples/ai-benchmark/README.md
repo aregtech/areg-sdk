@@ -1,250 +1,396 @@
-# AI prompts
+# AI benchmark
 
-Task prompts written for an AI agent, and a place to keep your own.
+Task prompts written for an AI agent, the wrappers that hand them to one framework, and
+the scripts that run and measure an agent against them.
 
-Each file here is a complete piece of work handed to an agent: what the software has
-to do, what to deliver, and what to measure. They exist for two reasons -- to give
-you a starting point for your own prompts, and to make a claim about areg testable
-instead of asking you to believe it.
+The benchmark asks one question: **can an agent that has never seen a framework build a
+correct application from that framework's own documentation, and what does it cost?**
+areg is measured against a framework the model already knows from training (gRPC), on
+the same requirements, with the same agent, model and effort. The first measured pair is
+[`baseline-2026-09-13.md`](baseline-2026-09-13.md).
+
+- [What is here](#what-is-here)
+- [The four task prompts](#the-four-task-prompts)
+- [The wrappers](#the-wrappers)
+- [Running with run-benchmark.sh](#running-with-run-benchmarksh)
+- [Running one by hand, with any agent](#running-one-by-hand-with-any-agent)
+- [What an agent can report, and what it cannot](#what-an-agent-can-report-and-what-it-cannot)
+- [Judging the result](#judging-the-result)
+- [Writing a prompt of your own](#writing-a-prompt-of-your-own)
+
+---
+
+## What is here
+
+| File | What it is | Who edits it |
+|---|---|---|
+| `prompt-tempalarm.md` | task: temperature monitor with a threshold alarm | nobody; it is the measuring instrument |
+| `prompt-coffeemachine.md` | task: coffee machine with a state machine | nobody |
+| `prompt-atm.md` | task: ATM with PIN retries and card retention | nobody |
+| `prompt-printscan.md` | task: multifunction printer with print, scan and copy | nobody |
+| `areg-ai-prompt-template.txt` | the areg wrapper for any task | **you**, four values at the top, when running by hand |
+| `areg-coffeemachine-prompt.txt` | the areg wrapper for `prompt-coffeemachine.md` | as above |
+| `grpc-coffeemachine-prompt.txt` | the gRPC wrapper for `prompt-coffeemachine.md`; the worked example of another framework's arm | **you**, three values at the top, when running by hand |
+| `runbook-demo.md` | what a measured areg run adds to `docs/agent/01-runbook.md` | nobody |
+| `run-benchmark.sh` | one cold, isolated, measured run in one command | nobody |
+| `analyze_run.py` | reads a run request by request: cost, reasoning, cycles, pages read, lines written | nobody |
+| `measure.py` | reads a Claude Code or GitHub Copilot result file and scores it against a budget | nobody |
+| `INSTALL-grpc.md` | the gRPC toolchain, before the first gRPC run | **you**, once |
+| `baseline-2026-09-13.md` | the first areg and gRPC pair, side by side | -- |
+
+---
+
+## The four task prompts
 
 | Prompt | Builds | Demonstrates |
 |---|---|---|
-| `temperature-alarm.md` | a temperature monitor and a simulated operator, in two processes | the plain service shape: a request, a published value, and broadcasts -- no state machine |
-| `coffee-machine.md` | a coffee machine and a simulated user, in two processes | a state machine: nested states, guarded transitions, and resuming a sequence that was interrupted |
-| `atm.md` | an ATM and a simulated customer, in two processes | one retry-limited check reached from two places, each with its own attempt count |
-| `printer-scanner.md` | a multifunction device and a simulated operator, in two processes | two engines scheduled one job at a time, reused by a copy job, with faults reported the same way |
+| `prompt-tempalarm.md` | a temperature monitor and a simulated operator, in two processes | the plain service shape: a request, a published value, and broadcasts -- no state machine |
+| `prompt-coffeemachine.md` | a coffee machine and a simulated user, in two processes | a state machine: nested states, guarded transitions, and resuming a sequence that was interrupted |
+| `prompt-atm.md` | an ATM and a simulated customer, in two processes | one retry-limited check reached from two places, each with its own attempt count |
+| `prompt-printscan.md` | a multifunction device and a simulated operator, in two processes | two engines scheduled one job at a time, reused by a copy job, with faults reported the same way |
 
-Run the first two in that order. `temperature-alarm.md` is deliberately small and
-has no state machine in it, so what it costs is what the plain service path costs;
-`coffee-machine.md` adds the state machine on top of the same shape. Two points make
-a slope, and the slope is the only thing that says anything. The other two are larger
-tasks of the same kind.
+Run the first two in that order. `prompt-tempalarm.md` is deliberately small and has no
+state machine, so what it costs is what the plain service path costs;
+`prompt-coffeemachine.md` adds the state machine on top of the same shape. Two points
+make a slope. The other two are larger tasks of the same kind.
 
-**The four files above name no framework and no operating system.** Each is the task,
-its acceptance checklist, and one small report table -- nothing about how to build it.
-That is what lets the same requirements be scored against gRPC, ZeroMQ, DDS or areg and
-compared. `check_corpus.py` fails if a framework name, a tool name or a build command
-gets back into one of them.
+**Every task prompt names no framework and no operating system.** Each one holds the same
+sections, and nothing about how to build it:
 
-Everything framework-specific lives in a second file beside them, and the split is the
-point:
-
-| File | Who edits it |
+| Section | Holds |
 |---|---|
-| `ai-prompt-template-text.txt` | **you** -- four lines at the top, and nothing else. This is the prompt you paste to run any of the four on areg. |
-| `../../docs/agent/01-runbook.md` | **nobody.** The agent reads it: where to work, every command in order, the bounded fix loop. It is not in this directory on purpose: it is the procedure every areg application is built by and ships with the SDK, so what this benchmark measures is what a user's own agent follows. |
-| `runbook-demo.md` | **nobody.** What a measured run adds to the runbook: never commit, never write a ReadMe, and the report is the task file's table. Everything else is the SDK's own procedure. |
-| `run-benchmark.sh`, `analyze_run.py`, `measure.py` | **nobody.** The runner and the two readers of a run; see below. |
-| `INSTALL-grpc.md` | **you**, once, before the first gRPC run. |
-| `grpc-coffee-machine.txt` | **you**, if you want another arm. A worked example of the same wrapper written for gRPC instead: copy it, rename it, rewrite its steps for the framework you are measuring. It is a shape to copy, not a benchmark result. |
+| `## The task` | the two programs, what each must do, and the scenario the simulated side runs |
+| `### Proving it` | the normal run, and the run in which the other side is taken away |
+| `### Acceptance checklist` | the items any implementation, in any framework, is scored against |
+| `## What to deliver` | two programs, a contract declared once and generated from, the stop rule |
+| `## The report` | one small table the agent can fill without measuring anything |
 
-Keeping the procedure out of the task is what stops a run being spoiled by a path
-edited in one place and missed in another -- and it is what stops the task teaching a
-superseded command, which is a mistake that has cost measured money here.
+That is what lets the same requirements be scored against gRPC, ZeroMQ, DDS or areg.
+`python3 tools/agent/check_corpus.py` fails if a framework name, an operating system
+name, a tool name or a build command gets into one of them.
 
-## What an agent can report, and what it cannot
+---
 
-**No agent is asked for a token count, a price or a wall time, and none should be.**
-Most harnesses never show an agent its own usage: Claude Code does not expose it to the
-model mid-run, and GitHub Copilot, Cursor and the rest expose neither tokens nor cost.
-An agent asked for a number it cannot see either writes "not available to me" -- or
-spends several turns trying to compute a substitute, which is pure overhead and was
-**measured at about 8% of one run** here before it was removed.
+## The wrappers
 
-So the split is:
+A wrapper is the framework half of a prompt. Everything above its line
+`--- PROMPT BEGINS BELOW THIS LINE` is for the person running it; everything below is
+what the agent receives, with these placeholders filled in:
 
-| | who produces it | portable across harnesses |
+| Placeholder | Becomes |
+|---|---|
+| `<areg-sdk>` | the absolute path of the areg checkout the agent reads (areg wrappers only) |
+| `<runner>` | the absolute path of `run_scenarios.py`, the framework-neutral scenario runner |
+| `<task>` | the absolute path of the task prompt |
+| `<project>` | the project name, a C identifier |
+| `<mode>` | `ipc`, `local` or `pubsub` (areg only) |
+
+**Naming.** A wrapper written for one task is `<framework>-<key>-prompt.txt` for the task
+`prompt-<key>.md`. `run-benchmark.sh` picks it up by that name. An areg task with no
+wrapper of its own uses `areg-ai-prompt-template.txt`; a gRPC task with no wrapper of its
+own refuses to start, because the gRPC steps are written for one task.
+
+- **The areg wrappers** may name anything in the areg checkout. They name no operating
+  system and no path outside the placeholders.
+- **The gRPC wrapper** names gRPC and protobuf only. It names no areg file, no areg
+  concept and no other arm, and `check_corpus.py` fails if it does. To measure another
+  framework, copy it, rename it `<framework>-<key>-prompt.txt`, and rewrite its numbered
+  steps for that framework's normal workflow.
+
+---
+
+## Running with run-benchmark.sh
+
+### What it needs
+
+- `bash`, `git` and `python3`: Linux, macOS, or WSL on Windows. On Windows without WSL,
+  run by hand as described [further down](#running-one-by-hand-with-any-agent).
+- Claude Code, installed and logged in: `claude` on the `PATH`.
+- CMake and a C++17 compiler.
+- The areg arm: no installed areg package, or the run would build against it instead of
+  the snapshot; the script checks this and refuses.
+- The gRPC arm: `protoc` and `grpc_cpp_plugin` on the `PATH`, see
+  [`INSTALL-grpc.md`](INSTALL-grpc.md).
+- A git checkout of areg-sdk. The script is run from inside it and snapshots it.
+
+### What it does
+
+1. Makes a run directory outside the checkout: `<out>/<date><label>-<project>`, or
+   `...-grpc-<project>` for the gRPC arm.
+2. **Stages what the agent may read.**
+   - areg: a snapshot of the checkout -- tracked files, and untracked files that are
+     not ignored, as the working tree has them. Nothing local to the operator's
+     machine (ignored notes, editor state) is copied.
+   - gRPC: only `tools/agent/run_scenarios.py`, and the task. The script refuses to start
+     if anything else is staged, or if the task or the prompt names areg.
+3. Builds `prompt.txt` from the wrapper, with the placeholders filled in, and records
+   `meta.txt` and the fingerprints of the files the agent reads.
+4. Starts Claude Code headless in the empty `work/` directory, with no skills and no MCP
+   servers, and the same tools for both arms.
+5. After the run, verifies that the agent did not change what it read, and runs
+   `analyze_run.py` on the run.
+
+### Help
+
+```
+$ examples/ai-benchmark/run-benchmark.sh --help
+One cold agent run, measured, against a clean snapshot of this checkout.
+
+  run-benchmark.sh [label] [options]
+
+  label              suffix of the run directory: e -> <out>/<date>e-<project>.
+                     Optional; the next unused letter for today is chosen.
+
+  --framework NAME   areg | grpc                          (default: areg)
+  --task PATH        task file, absolute or relative to the SDK
+                       (default: examples/ai-benchmark/prompt-coffeemachine.md)
+  --wrapper PATH     the wrapper the prompt is built from, absolute or relative to
+                     the SDK. Everything after its "--- PROMPT BEGINS BELOW THIS
+                     LINE" marker is the prompt, with <areg-sdk>, <runner>, <task>,
+                     <project> and <mode> substituted
+                       (default: <framework>-<key>-prompt.txt beside a task named
+                        prompt-<key>.md; without one, areg uses
+                        areg-ai-prompt-template.txt and grpc refuses to start)
+  --project NAME     C identifier: directory and CMake project name
+                       (default: <key> of the task, e.g. coffeemachine)
+  --mode MODE        ipc | local | pubsub, areg only      (default: ipc)
+  --model NAME       sonnet | haiku | opus                (default: sonnet)
+  --effort LEVEL     low | medium | high                  (default: medium)
+  --attempts N       the build-and-fix and run-and-fix bound (default: 3). Any other
+                     number adds one rule to the prompt, the same for both arms.
+                     0 removes the bound, and is warned about: the spend is unbounded.
+  --debrief          append a diagnostic pass: what the run could not find. It costs
+                     requests on purpose, so such a run is never compared with one
+                     made without it.
+  --recipes MODE     none | copy, areg only               (default: none)
+                       none: no example source may be copied; every file is written
+                       or generated. copy: a documented recipe may be copied.
+  --out DIR          where run directories are made
+                       (default: $AREG_BENCHMARK_RUNS, else ~/runs)
+  --dry-run          stage the run directory and print the prompt, start nothing
+  --allow-installed-areg
+                     proceed although find_package(areg) finds an installed package,
+                     which would shadow the snapshot
+  -h, --help         this text
+
+  Examples:
+    run-benchmark.sh                                  areg, the coffee machine
+    run-benchmark.sh --framework grpc --attempts 15   gRPC, the coffee machine
+    run-benchmark.sh --task examples/ai-benchmark/prompt-tempalarm.md
+    run-benchmark.sh --task examples/ai-benchmark/prompt-atm.md --attempts 15
+    run-benchmark.sh --task examples/ai-benchmark/prompt-printscan.md --attempts 15
+    run-benchmark.sh f --model opus --effort high --out /data/runs --dry-run
+
+  The run directory holds the measurement: meta.txt, prompt.txt, result.json,
+  run.err, the fingerprints and sdk/, the snapshot the agent read. The agent works
+  in work/, which starts empty.
+
+  The agent is Claude Code, headless. Another agent is run by hand with the same
+  prompt.txt; README.md says which of its numbers compare.
+```
+
+### The options, one by one
+
+| Option | What it changes | Example |
 |---|---|---|
-| build-and-fix cycles, run-and-fix cycles, acceptance items, checker findings, files opened off-route | **the agent**, from what it already knows | **yes** -- this is the report table in every task file |
-| tokens, cache reads, cost, requests, wall time | **the operator**, afterwards, from whatever the harness records | no -- harness-specific |
+| `label` | the letter after the date in the run directory name; runs with the same label on the same day are refused | `run-benchmark.sh b` |
+| `--framework` | which arm: areg reads the snapshot, gRPC reads only the runner | `--framework grpc` |
+| `--task` | the task prompt; its `prompt-<key>.md` name also sets the project name and the wrapper | `--task examples/ai-benchmark/prompt-atm.md` |
+| `--wrapper` | a wrapper other than the default | `--wrapper /home/me/my-areg-wrapper.txt` |
+| `--project` | the directory and CMake project name inside `work/`, and the run directory suffix | `--project atm2` |
+| `--mode` | the areg application shape the scaffold writes | `--mode local` |
+| `--model` | the model the agent runs on | `--model opus` |
+| `--effort` | the agent's reasoning effort | `--effort high` |
+| `--attempts` | the fix bound; the prompt says it, the same for both arms | `--attempts 15` |
+| `--debrief` | adds a diagnostic pass after the report; never compare such a run with a normal one | `--debrief` |
+| `--recipes` | areg only: whether a documented recipe may be copied | `--recipes copy` |
+| `--out` | where run directories are made; also `AREG_BENCHMARK_RUNS` | `--out /data/runs` |
+| `--dry-run` | stages everything and prints the prompt, starts no agent and spends nothing. `claude` must still be installed | `--dry-run` |
+| `--allow-installed-areg` | measures against an installed areg package on purpose | `--allow-installed-areg` |
 
-`measure.py` and `analyze_run.py` read Claude Code's JSON result and session transcript.
-`measure.py` also reads **GitHub Copilot**'s `--usage-output-file` and prints it on the
-same rows. Any other shape has every number it holds printed under the key that file
-itself used, rather than mapped by guesswork that could silently go stale. Where a
-harness records nothing, compare the agent-reported rows and wall time from outside.
+**Exit code.** `0` the agent finished; `2` the script refused to start, and says why; `3`
+the agent changed a file it was measured against, so the run is not valid; anything else
+is the agent's own exit code.
 
-**The two agents do not report a comparable cost, and no table should pretend they do.**
-Claude Code reports `total_cost_usd`. Copilot reports **premium requests** -- a quota
-unit, not money -- so `measure.py` prints `cost (USD) --` for a Copilot run and says why.
-Compare the arms on **tokens, API requests and wall time**, which both report honestly.
+### Copy and paste
 
-Two more differences worth knowing before reading a Copilot number:
-
-- Copilot reports `reasoningTokens` **directly**. A Claude run has to infer reasoning as
-  output minus visible text, so the Claude figure is an estimate and the Copilot one is not.
-- Copilot's own prompt is large: a one-word prompt that changed no file still billed
-  **22,575 input tokens** and 6 premium requests on `gpt-5.4`. That is the floor of any
-  Copilot run, and a small task will look disproportionately expensive against it.
-**That is still a real comparison**: the acceptance list and the cycle counts are what
-say whether the framework let the agent get it right the first time.
-
-## Running it with the script
-
-`run-benchmark.sh` does every step below in one command, for Claude Code:
+Run from the root of the checkout. The fix bound of 15 is what the published pair used.
 
 ```bash
-examples/ai-benchmark/run-benchmark.sh                      # areg, coffee-machine.md
-examples/ai-benchmark/run-benchmark.sh --attempts 15        # a looser fix bound
-examples/ai-benchmark/run-benchmark.sh --framework grpc     # the comparison arm
-examples/ai-benchmark/run-benchmark.sh --dry-run            # print the prompt only
+# The four prompts on areg
+examples/ai-benchmark/run-benchmark.sh --task examples/ai-benchmark/prompt-tempalarm.md    --attempts 15
+examples/ai-benchmark/run-benchmark.sh --task examples/ai-benchmark/prompt-coffeemachine.md --attempts 15
+examples/ai-benchmark/run-benchmark.sh --task examples/ai-benchmark/prompt-atm.md          --attempts 15
+examples/ai-benchmark/run-benchmark.sh --task examples/ai-benchmark/prompt-printscan.md    --attempts 15
+
+# The coffee machine on gRPC, the comparison arm
+examples/ai-benchmark/run-benchmark.sh --framework grpc --attempts 15
 ```
-
-**The agent reads a snapshot, not the checkout.** The script copies the files a clone
-carries -- tracked files, and untracked files that are not ignored, as the working
-tree has them -- into the run directory and gives the agent that copy. Nothing that
-exists only on the operator's machine can reach the run. The session loads no skill and
-no MCP server (`--disable-slash-commands --strict-mcp-config`), and both arms are given
-the same tools, so the two start from the same context. `analyze_run.py` then reads
-the transcript request by request: cost, reasoning, the build and run cycles, every
-read of SDK internals, and the lines written by hand. The gRPC arm needs
-`INSTALL-grpc.md` first.
-
-## Running one, and measuring it
-
-This is the whole procedure, by hand. Nothing here is optional if you want a comparable number.
-
-**1. Make one empty directory and start the session in it.** That directory becomes
-the project: the agent writes everything into it and creates nothing outside it.
-
-- **not your home directory** -- the agent would scatter a build tree through it
-- **not inside the checkout** -- a session started there loads the SDK's own
-  maintainer-facing `CLAUDE.md`, which no user of areg ever sees and which orders
-  twelve corpus checkers the run does not need. That alone can double the bill.
-- **a fresh, empty directory of its own**, anywhere else
 
 ```bash
-AREG_SDK=/path/to/areg-sdk          # the one value to set; nothing below repeats it
-RUN=~/runs/$(date +%Y%m%d)-coffeemachine
-mkdir -p "$RUN" && cd "$RUN"
+# Print the prompt a run would get, and spend nothing
+examples/ai-benchmark/run-benchmark.sh --task examples/ai-benchmark/prompt-atm.md --dry-run
+
+# Another model and effort, into a directory of your choice
+examples/ai-benchmark/run-benchmark.sh --model opus --effort high --attempts 15 --out /data/runs
+
+# Three draws of one arm on one tree -- compare medians, never one run
+for label in a b c; do
+    examples/ai-benchmark/run-benchmark.sh "$label" --attempts 15
+done
+
+# Read a finished run again
+python3 examples/ai-benchmark/analyze_run.py ~/runs/20260913d-coffeemachine
 ```
 
-On Windows use the PowerShell equivalents (`$env:AREG_SDK`, `New-Item -ItemType
-Directory`, `Set-Location`); nothing in the prompt or the task files is OS-specific.
+### Reading a run
 
-You stay in `$RUN` for every remaining step. The agent is told the project root is
-wherever the session started, so it never picks a second one.
+`analyze_run.py <run directory>` prints, per run: cost and its split, API requests,
+reasoning tokens (exact, from the result), cache reads and writes, peak context, build and
+scenario runs, the build-and-fix and run-and-fix cycles, filesystem searches, reads of
+framework sources, every documentation page opened with its size, the lines of C++
+written by hand, and a per-request timeline. It runs at the end of every run.
 
-**2. Write the prompt.** Copy `ai-prompt-template-text.txt` and edit its four-line
-block -- that block is the only thing in the file you ever touch.
+**Never quote one run.** The same tree run twice has come out 45-80% apart in cost. Run
+each arm at least three times on one tree and compare medians; the quality rows
+(acceptance items, scenarios passing) are the ones that hold at one run.
+
+**Score the result yourself.** The agent's own count is a claim. Re-run its scenarios:
 
 ```bash
-cp "$AREG_SDK/examples/ai-benchmark/ai-prompt-template-text.txt" prompt.txt
-$EDITOR prompt.txt        # areg-sdk, task, project, mode -- four lines, at the top
+cd ~/runs/20260913d-coffeemachine/work
+python3 ../sdk/tools/agent/run_scenarios.py --build build/bin
 ```
 
-The file ships with placeholders, so all four need a value:
+---
+
+## Running one by hand, with any agent
+
+The same prompt works for any agent that can read files and run commands -- GitHub
+Copilot, Cursor, or Claude Code in a terminal -- and on any operating system.
+
+**1. Make one empty directory and start the agent in it.** That directory becomes the
+project. Not your home directory, and not inside the checkout: a session started inside
+it loads the SDK's maintainer instructions, which no user of areg ever sees.
+
+**2. Write the prompt.** Copy the wrapper for the task and fill in the values at its top.
+
+| Arm | Copy | Fill in |
+|---|---|---|
+| areg, coffee machine | `areg-coffeemachine-prompt.txt` | `areg-sdk`, `task`, `project`, `mode` |
+| areg, any other task | `areg-ai-prompt-template.txt` | `areg-sdk`, `task`, `project`, `mode` |
+| gRPC, coffee machine | `grpc-coffeemachine-prompt.txt` | `task`, `project`, `runner` |
+
+Replace every `<name>` below the prompt line with the value you gave it, or paste the
+whole file: the agent is told that `<name>` means that value. For example:
 
 ```
-  areg-sdk  <the absolute path to your checkout>
-  task      <areg-sdk>/examples/ai-benchmark/coffee-machine.md
+  areg-sdk  /path/to/areg-sdk
+  task      /path/to/areg-sdk/examples/ai-benchmark/prompt-coffeemachine.md
   project   coffeemachine
   mode      ipc
 ```
 
-**3. Run it headless, and keep the JSON.** `-p` prints and exits; the JSON carries the
-usage the agent cannot see itself.
+**Give the agent a fresh clone**, not a checkout you work in: a working checkout carries
+ignored files of its own, and the agent can read them.
+
+**3. Run it, and keep what the harness records.** For Claude Code:
 
 ```bash
-claude -p --output-format json \
-       --disable-slash-commands --strict-mcp-config \
-       --add-dir "$AREG_SDK" \
-       < prompt.txt > result.json
+claude -p --output-format json --disable-slash-commands --strict-mcp-config \
+       --add-dir /path/to/areg-sdk < prompt.txt > result.json
 ```
 
-The two flags keep this machine's skills and MCP servers out of the run, which no other
-machine has. `$AREG_SDK` should be a fresh clone: a checkout you work in carries ignored
-files of its own, and the agent can read them. The prompt goes in on stdin because
-`--add-dir` takes every word after it as a directory.
+The two flags keep the operator's skills and MCP servers out of the run. The prompt goes
+in on standard input because `--add-dir` takes every word after it as a directory. For
+GitHub Copilot, keep its `--usage-output-file`.
 
-Allow the build commands generously, or run with `--dangerously-skip-permissions` in a
-throwaway directory. **Every permission denial costs the agent a turn and inflates the
-figure**, and a denial-heavy run is not comparable to a clean one.
+Allow the build commands generously. **Every permission denial costs the agent a turn**,
+and a denial-heavy run is not comparable with a clean one.
 
-**4. Read the numbers off the JSON.**
+**4. Read the numbers.**
 
 ```bash
-python3 "$AREG_SDK/examples/ai-benchmark/measure.py" result.json
-python3 "$AREG_SDK/examples/ai-benchmark/measure.py" result.json --project .
+python3 /path/to/areg-sdk/examples/ai-benchmark/measure.py result.json --project .
 ```
 
-It prints cost, turns, wall time and the token split, then finds the session
-transcript and counts the tool calls, and scores both against the budget. Needs only
-`python3`.
+It prints cost, turns, wall time and the token split, counts the tool calls from the
+session transcript, counts what the run wrote over the whole project, and scores the run
+against the budget below. `num_turns` is assistant turns, not tool calls; only tool calls
+compare across runs. Budget against *fresh* tokens -- uncached input plus output -- not
+the all-in figure, which cache reads push into the millions.
 
-`--project <dir>` adds what the run wrote: files, lines and the split by kind, counted
-over the whole project rather than one folder. **The layout is the implementer's
-choice** -- one arm writes `src/provider` and `src/consumer`, another writes `machine/`,
-`client/` and `proto/` -- so a counter that knows only `src/` reports zero for the second
-and invites the wrong conclusion. Build output, fetched packages and generated trees are
-not counted, so the number is what the run wrote by hand.
-
-Two things it makes explicit, because both are easy to get wrong:
-
-- **`num_turns` is assistant turns, not tool calls.** They differ by 3-4x. Only the
-  tool-call count is comparable across runs, and it has to come from the transcript.
-- **Budget against *fresh* tokens** -- uncached input plus output. The all-in figure
-  is dominated by cache reads and will read in the millions; that is not the number
-  the targets below refer to.
-
-**5. Score the result yourself. Do not take the agent's word for it.**
-
-```bash
-cd "$RUN" && cmake --build build -j$(nproc) && \
-python3 "$AREG_SDK/tools/agent/run_scenarios.py" --build build/bin ; echo "exit=$?"
-```
-
-Then walk Part 1's acceptance checklist against the captured output, item by item.
-A cheap run that produces code nobody can verify has not won anything.
-
-**6. Record it** next to the run: tokens, cost, turns, tool calls, wall time,
-build-and-fix cycles, checklist score out of the list's length, and what the agent
-said it had to guess. That last one is where the next corpus fix comes from.
-
-### What counts as a pass
-
-| Task | Tokens | Turns |
+| Task | Fresh tokens | Tool calls |
 |---|---:|---:|
-| `temperature-alarm.md` | 50K | ~20 |
-| `coffee-machine.md` | 75K | ~30 |
+| `prompt-tempalarm.md` | 50K | ~20 |
+| `prompt-coffeemachine.md` | 75K | ~30 |
 
-Turns are the cost, not bytes: at roughly 2.4K tokens per turn, everything read in a
-whole run is about 13% of the bill. If a change does not remove turns, it does not
-save money.
+**5. Score the result yourself.**
 
-## How these prompts are written, and why it matters
+```bash
+cmake --build build -j8
+python3 /path/to/areg-sdk/tools/agent/run_scenarios.py --build build/bin
+```
 
-Every prompt here is in three parts, and the split is deliberate.
+Then walk the task's acceptance checklist against the captured output, item by item.
 
-**Part 1 states the task and names no framework.** It says *"on resume the machine
-must continue from the stage it was interrupted in"* rather than *"use a history
-state"*. Requirements, not mechanisms. This is what lets you hand the same task to
-gRPC, ZeroMQ or DDS, changing only Part 2, and compare the results fairly.
+**6. Record it** next to the run: tokens, cost, requests, tool calls, build-and-fix and
+run-and-fix cycles, checklist score out of the list's length, and what the agent said it
+had to guess. That last one is where the next documentation fix comes from.
 
-**Part 2 says what to deliver** -- which files, where, and which checks to run before
-reporting. This is the only part that knows about areg.
+---
 
-**Part 3 says what to measure.** Tokens, turns, build attempts, how much code the
-agent wrote by hand against how much came from the documents, and how many acceptance
-items passed. Counts, not opinions.
+## What an agent can report, and what it cannot
 
-**Part 1 ends in an acceptance checklist**, and that is the part that makes the whole
-thing honest. Without it, "it works" is an argument. With it, two implementations in
-two frameworks can be scored against the same list by someone who trusts neither.
+**No agent is asked for a token count, a price or a wall time, and none should be.** Most
+harnesses never show an agent its own usage. An agent asked for a number it cannot see
+either writes "not available to me" or spends turns computing a substitute -- measured at
+about 8% of one run before it was removed.
+
+| | who produces it | portable across harnesses |
+|---|---|---|
+| build-and-fix cycles, run-and-fix cycles, acceptance items, checker findings, files opened off-route | **the agent**, from what it already knows | **yes** -- the report table in every task |
+| tokens, cache reads, cost, requests, wall time | **the operator**, afterwards, from what the harness records | no |
+
+**Two harnesses do not report a comparable cost.** Claude Code reports `total_cost_usd`.
+GitHub Copilot reports **premium requests**, a quota unit and not money, so `measure.py`
+prints no cost for a Copilot run and says why. Compare such arms on tokens, requests and
+the agent-reported rows. Copilot reports reasoning tokens directly, and its own system
+prompt is large -- a one-word prompt billed 22,575 input tokens -- which is the floor of
+any Copilot run.
+
+**Wall time compares only on one machine, and only with care.** A slow filesystem search
+or a framework compiled from source moves it more than the framework does; model time is
+the fairer row.
+
+---
 
 ## Judging the result
 
-Read the code. `.siml`, `.fsml` and `.dtml` documents open in
-[Lusan](https://github.com/aregtech/areg-sdk-tools), which draws the state machine so
-you can see whether the logic matches what you asked for. Then build it and run it.
+Read the code. areg's `.siml`, `.fsml` and `.dtml` documents open in
+[Lusan](https://github.com/aregtech/areg-sdk-tools), which draws the state machine, so you
+can see whether the logic matches what was asked. Then build it and run the scenarios.
 
-The number worth comparing is not tokens. It is **tokens per application that builds
-and passes its own acceptance list** -- a cheaper run that produces code nobody can
-verify has not won anything.
+The number worth comparing is not tokens. It is **cost per application that builds and
+passes its own acceptance list** -- a cheaper run that produces code nobody can verify
+has not won anything.
 
-## Contributing a prompt
+---
 
-Prompts that produce something worth reading are welcome. Keep the three parts, keep
-Part 1 free of framework vocabulary, and give it an acceptance checklist someone
-could score without asking you what you meant. A prompt whose result cannot be
-checked is not a benchmark, it is a demonstration.
+## Writing a prompt of your own
+
+Prompts that produce something worth reading are welcome.
+
+- **Name it `prompt-<key>.md`**, with `<key>` a C identifier; it becomes the project name.
+- **Keep the task free of framework, tool and operating-system vocabulary.** Say *"on
+  resume the machine must continue from the stage it was interrupted in"*, not *"use a
+  history state"*. Requirements, not mechanisms.
+- **Keep the five sections** listed under [The four task prompts](#the-four-task-prompts),
+  and add the file to `TASK_PROMPTS` in `tools/agent/check_corpus.py`, which then checks
+  it.
+- **Write an acceptance checklist someone could score without asking you what you meant**,
+  and make every item observable in the output of the normal run or the peer-loss run.
+- To run it on a framework other than areg, write `<framework>-<key>-prompt.txt` beside
+  it, starting from `grpc-coffeemachine-prompt.txt`.
+
+A prompt whose result cannot be checked is not a benchmark, it is a demonstration.

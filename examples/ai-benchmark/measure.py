@@ -26,7 +26,9 @@ import json
 import os
 import sys
 
-TARGETS = {"temperature-alarm": (50000, 20), "coffee-machine": (75000, 30)}
+TARGETS = {"tempalarm": (50000, 20), "coffeemachine": (75000, 30)}
+SPELLINGS = {"tempalarm": ("temperature-alarm", "temperaturealarm"),
+             "coffeemachine": ("coffee-machine",)}
 
 # Source, in any framework. A layout is the implementer's choice: areg writes
 # src/provider and src/consumer, a gRPC arm writes machine/ client/ proto/, and a
@@ -275,13 +277,12 @@ def main():
         for name, n in counts.most_common():
             print("   %-28s %d" % (name, n))
 
-    # Match on the task name with and without its hyphen: a run directory is as
-    # likely to be called coffeemachine as coffee-machine.
+    # Match on the task key or one of its older spellings.
     haystack = " ".join((sys.argv[1], os.getcwd(),
                          str(result.get("result", ""))[:4000])).lower()
     task = ""
     for name in TARGETS:
-        if name in haystack or name.replace("-", "") in haystack:
+        if any(n in haystack for n in (name,) + SPELLINGS.get(name, ())):
             task = name
     if task:
         budget, turns = TARGETS[task]
@@ -294,8 +295,8 @@ def main():
             verdict = "PASS" if calls <= turns else "OVER by %d" % (calls - turns)
             print("   %-28s %d / %d   %s" % ("tool calls", calls, turns, verdict))
     else:
-        print("\n(no budget matched; targets are 50K/20 for temperature-alarm, "
-              "75K/30 for coffee-machine)")
+        print("\n(no budget matched; targets are 50K/20 for tempalarm, "
+              "75K/30 for coffeemachine)")
     return 0
 
 

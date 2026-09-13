@@ -13,7 +13,7 @@ settings, and every "<name>" below means exactly the value you gave it.
 
 This file is the areg wrapper. The task file it points at names no framework,
 so the same task can be given to another framework with a wrapper of its own:
-grpc-coffee-machine.txt beside this file is a worked example of one.
+grpc-coffeemachine-prompt.txt beside this file is a worked example of one.
 
 --- PROMPT BEGINS BELOW THIS LINE ----------------------------------------
 
@@ -33,8 +33,8 @@ need is inside it and you already know where:
 
 A path named inside a page resolves either under <areg-sdk> or under
 <areg-sdk>/docs/agent/ -- "docs/agent/recipes/X" and "recipes/X" are the same
-directory. **Never search a filesystem for an areg file** -- no find, no locate, no
-ls -R, no recursive search outside your own project.
+directory. **Never search a filesystem for an areg file** -- no file search, no
+recursive listing, nothing recursive outside your own project.
 
 areg-sdk is read only: never write into it, never modify it, never cd into it.
 

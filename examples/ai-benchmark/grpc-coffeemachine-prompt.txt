@@ -2,17 +2,16 @@
 
 Then paste this whole file as your prompt.
 
-  task      what the software must do, and the checklist you are scored on.
-            One of the task files beside this one. It names no framework.
+  task      what the software must do, and the checklist you are scored on:
+            prompt-coffeemachine.md beside this file. It names no framework.
   project   a C identifier. The directory name and the CMake project name.
-  areg-sdk  absolute path to a checkout that provides run_scenarios.py, the
-            framework-neutral process runner both arms are scored with. It is
-            the only thing taken from it, and it is read only.
+  runner    absolute path to run_scenarios.py, the framework-neutral process
+            runner the report is scored with. It is read only.
 
-This file is the gRPC wrapper, and it is the other half of the split: the task
-file names no framework, and everything framework-specific is here. It is the
-worked example of how to give the same task to a second framework -- copy it,
-change "gRPC" to whatever you are measuring, rewrite the numbered steps for that
+This file is the gRPC wrapper for the coffee machine task, and the other half of the
+split: the task file names no framework, and everything framework-specific is here.
+It is the worked example of how to give the same task to a different framework -- copy
+it, change "gRPC" to whatever you are measuring, rewrite the numbered steps for that
 framework's normal workflow, and you have a comparable arm.
 
 Nothing here is maintained against a gRPC release and nothing here is a
@@ -26,20 +25,21 @@ You are building an application with gRPC. These are the settings for this task:
   project   <project>
 
 gRPC and protobuf are installed on this machine: protoc and grpc_cpp_plugin are on
-the PATH and the headers are on the system include paths. **Never install anything,
-never build gRPC or protobuf from source, and never FetchContent either of them.** If
-a header or a tool is missing, stop and report it.
+the PATH, and the headers and libraries are installed where the compiler finds them.
+**Never install anything, never build gRPC or protobuf from source, and never
+FetchContent either of them.** If a header or a tool is missing, stop and report it.
 
 **The directory this session started in is the project root.** Work there, exactly
-there. Do not create a directory for the project and do not cd anywhere else.
+there. Do not create a directory for the project and do not change to another
+directory.
 
 The process runner the report is scored with is
 
-  <areg-sdk>/tools/agent/run_scenarios.py
+  <runner>
 
 It is framework-neutral. Read its --help once, and write the scenarios.json it
-describes. Nothing else under <areg-sdk> is yours to open, and you never write into
-it.
+describes. Nothing else beside it is yours to open, and you never write into its
+directory.
 
 Do this:
 
@@ -78,9 +78,10 @@ Rules for this task, above anything else:
 - **Never edit a generated file.** Change the .proto instead.
 - Never commit anything, and never run a git command.
 - Do not write a ReadMe.
-- **Never start the processes by hand.** No `prog &`, no `sleep`, no `pkill`, no `ps`.
-  A scenario is what you run; the runner's --verbose prints every line each process
-  wrote and --only <name> runs one scenario. They leave nothing running.
+- **Never start the processes by hand.** No program launched in the background, no
+  sleep command and no process killed from the command line. A scenario is what you
+  run; the runner's --verbose prints every line each process wrote and --only <name>
+  runs one scenario. They leave nothing running.
 - **Every `-j` carries the number 8**: `cmake --build build -j8`.
 
 Two habits that halve the cost of the same work. Every request re-sends the whole
@@ -92,8 +93,8 @@ carries. Both are free to follow and neither changes what gets built.
   and `scenarios.json`. Only split where the next thing genuinely depends on the result
   of the last -- a build, a check, a scenario run.
 - **Never pour a log into the conversation.** It stays there for every later request.
-  Everything that can print hundreds -- `find`, `ls -R`, a raw compiler run -- is piped
-  through `grep` or `head` before you ask for it.
+  Everything that can print hundreds -- a file search, a recursive listing, a raw
+  compiler run -- is filtered or cut to its first lines before you ask for it.
 
 Fix -- bounded, then stop. You are finished when it builds **and** every scenario
 exits 0. Keep going until it does, within at most **3 build-and-fix cycles** and at

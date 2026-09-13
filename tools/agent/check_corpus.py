@@ -1050,11 +1050,12 @@ def check_grpc_isolation(report):
     if re.search(r'areg', helped.stdout.decode('utf-8', 'replace'), re.I):
         report.fail('grpc-arm', 'run_scenarios.py --help names areg, and the gRPC arm '
                                 'reads it')
-    wrapper = read('examples', 'ai-benchmark', 'grpc-coffee-machine.txt') or ''
-    prompt = wrapper.partition('--- PROMPT BEGINS BELOW THIS LINE')[2]
-    prompt = prompt.replace('<areg-sdk>', '')
-    if re.search(r'areg|another framework|other arm', prompt, re.I):
-        report.fail('grpc-arm', 'the gRPC prompt names areg or another arm')
+    wrapper = read('examples', 'ai-benchmark', 'grpc-coffeemachine-prompt.txt')
+    if not wrapper:
+        report.fail('grpc-arm', 'examples/ai-benchmark/grpc-coffeemachine-prompt.txt '
+                                'is missing')
+    elif re.search(r'areg|another framework|other arm', wrapper, re.I):
+        report.fail('grpc-arm', 'the gRPC wrapper names areg or another arm')
     else:
         report.ok('grpc-arm', 'the gRPC prompt and the runner help name no other '
                               'framework')
@@ -2180,17 +2181,20 @@ def check_spec_value_prefixes(report):
 # a superseded three-command verify chain in two of these files was obeyed by every
 # run, over the runbook that supersedes it, because the task file is read later and
 # is therefore nearer in context.
-TASK_PROMPTS = ('temperature-alarm.md', 'coffee-machine.md', 'atm.md',
-                'printer-scanner.md')
+TASK_PROMPTS = ('prompt-tempalarm.md', 'prompt-coffeemachine.md', 'prompt-atm.md',
+                'prompt-printscan.md')
 
-# Spellings that can only come from one framework or one operating system. The word
-# "areg" is not here: every task file names it once, in the paragraph that says how to
-# run the task on areg, and that paragraph is what makes the file usable.
+# Spellings that can only come from one framework or one operating system.
 TASK_PROMPT_LEAKS = ('.siml', '.fsml', '.dtml', 'setup_project.py', 'gen_skeleton.py',
                      'gen_docs.py', 'build_project.py', 'check_contract.py',
                      'run_scenarios.py', 'schema_help.py', 'codegen.jar', 'cmake',
                      'CMakeLists', '$(nproc)', 'nproc', '.elf', 'apt-get', 'brew ',
-                     'powershell', '.exe', 'AGENTS.md')
+                     'powershell', '.exe', 'AGENTS.md', '-prompt.txt',
+                     'prompt-template')
+
+# Framework and operating system names, matched as whole words.
+TASK_PROMPT_WORDS = re.compile(r'\b(areg|grpc|protobuf|zeromq|dds|linux|windows|macos|'
+                               r'wsl|posix|bash|powershell)\b', re.I)
 
 
 def check_task_prompt_neutrality(report):
@@ -2231,6 +2235,12 @@ def check_task_prompt_neutrality(report):
                             'about how to build belongs beside it, in the wrapper '
                             'for one framework'.format(name, leak))
                 return
+        word = TASK_PROMPT_WORDS.search(text)
+        if word:
+            report.fail('task-neutral',
+                        '{} names "{}". A task prompt names no framework and no '
+                        'operating system'.format(name, word.group(0)))
+            return
         if '## The report' not in text:
             report.fail('task-neutral',
                         '{} has no "## The report" section, so a run of it cannot be '
