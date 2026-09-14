@@ -23,12 +23,15 @@ import argparse
 import glob
 import json
 import os
+import re
 import shutil
 import socket
 import subprocess
 import sys
 import tempfile
 import time
+
+import service_ports  # noqa: E402
 
 SDK = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 BANK = os.path.join(SDK, 'tools', 'agent', 'evals', 'tasks.json')
@@ -119,13 +122,56 @@ def binaries_of(project):
 ROUTER_PORT = 8181
 
 
-def router_of(project):
-    """The router built beside the project, or None."""
-    for name in ('mtrouter.elf', 'mtrouter', 'mtrouter.exe'):
-        candidate = os.path.join(project, 'build', 'bin', name)
+def service_binary(project, name):
+    """A framework service built beside the project, or None."""
+    for suffix in ('.elf', '', '.exe', '.mac'):
+        candidate = os.path.join(project, 'build', 'bin', name + suffix)
         if os.path.isfile(candidate):
             return candidate
     return None
+
+
+def router_of(project):
+    """The router built beside the project, or None."""
+    return service_binary(project, 'mtrouter')
+
+
+def start_collector(project, database):
+    """The log collector, writing to this database. Returns (handle, why-not)."""
+    binary = service_binary(project, 'logcollector')
+    if binary is None:
+        return None, 'logcollector was not built beside the project'
+    # --log=db overrides the collector's own configuration, so the database lands
+    # where this check reads it.
+    handle = subprocess.Popen([binary, '--service', '--log=db', database],
+                              cwd=project, stdout=subprocess.DEVNULL,
+                              stderr=subprocess.DEVNULL)
+    if not service_ports.wait_listening(service_ports.COLLECTOR_PORT):
+        handle.terminate()
+        return None, 'logcollector did not listen on port {}'.format(
+            service_ports.COLLECTOR_PORT)
+    return handle, ''
+
+
+def assert_collected(database, wanted):
+    """The submitted application's own logs, read back off the database.
+
+    The rows are read with the recipe's query_sqlog.py, which is the script the
+    corpus hands an agent: a second reader here would be the one that goes stale.
+    """
+    if not os.path.isfile(database):
+        return False, 'the collector wrote no {}'.format(os.path.basename(database))
+    sys.path.insert(0, os.path.join(SDK, 'docs', 'agent', 'recipes',
+                                    '08-observability'))
+    import query_sqlog
+    modules, messages = query_sqlog.modules_and_messages(database)
+    named = sorted(set(modules))
+    if len(named) < wanted:
+        return False, ('the log database holds rows from {} process(es) {}, and the '
+                       'task needs {}'.format(len(named), named, wanted))
+    if not messages:
+        return False, 'the log database holds no message of its own'
+    return True, ''
 
 
 def wait_router_ready(timeout=15.0):
@@ -141,6 +187,40 @@ def wait_router_ready(timeout=15.0):
         finally:
             probe.close()
     return False
+
+
+SOURCE_SUFFIXES = ('.cpp', '.hpp', '.h', '.init', '.txt')
+
+
+def declared(project, patterns):
+    """Which of these patterns no submitted source carries."""
+    text = []
+    for root, dirs, names in os.walk(project):
+        dirs[:] = [d for d in dirs if d not in ('build', '.git')]
+        for name in names:
+            if name.endswith(SOURCE_SUFFIXES):
+                with open(os.path.join(root, name), encoding='utf-8',
+                          errors='replace') as handle:
+                    text.append(handle.read())
+    joined = '\n'.join(text)
+    return [p for p in patterns if re.search(p, joined) is None]
+
+
+def produced(project, patterns):
+    """Which of these globs matched no file the run left behind."""
+    return [p for p in patterns
+            if not glob.glob(os.path.join(project, p), recursive=True)]
+
+
+def assert_artefacts(task, project):
+    """The requirements a task states that its output lines do not carry."""
+    missing = declared(project, task.get('declares') or [])
+    if missing:
+        return False, 'no source declares: ' + '; '.join(missing)
+    absent = produced(project, task.get('produces') or [])
+    if absent:
+        return False, 'the run wrote no file matching: ' + '; '.join(absent)
+    return True, ''
 
 
 def run_processes(task, project, found):
@@ -169,6 +249,12 @@ def run_processes(task, project, found):
     if lead is None:
         return False, 'no executable called {} was built'.format(spec['lead'])
 
+    collector, database = None, os.path.join(project, 'collected.sqlog')
+    if spec.get('collects'):
+        collector, why = start_collector(project, database)
+        if collector is None:
+            return False, why
+
     router = None
     if spec.get('router'):
         router_bin = router_of(project)
@@ -191,7 +277,7 @@ def run_processes(task, project, found):
                                             stdout=subprocess.DEVNULL,
                                             stderr=subprocess.DEVNULL))
         time.sleep(1.0)
-        result = run([lead], cwd=project, timeout=90)
+        result = run([lead] + list(task.get('args') or []), cwd=project, timeout=90)
         if result is None:
             return False, '{} did not finish'.format(spec['lead'])
         if result.returncode != 0:
@@ -200,6 +286,18 @@ def run_processes(task, project, found):
         missing = [text for text in task.get('expect', []) if text not in output]
         if missing:
             return False, 'output did not contain: ' + '; '.join(missing)
+        held, why = assert_artefacts(task, project)
+        if not held:
+            return False, why
+        if spec.get('collects'):
+            # The collector writes as it receives, so the last rows need their
+            # moment before it is asked to stop.
+            time.sleep(2.0)
+            held, why = assert_collected(database, spec['collects'])
+            if not held:
+                return False, why
+            return True, ('built, ran through {} processes, output matched, and '
+                          'their logs reached the database'.format(1 + len(handles)))
         return True, 'built, ran through {} processes, output matched'.format(
             1 + len(handles))
     finally:
@@ -207,6 +305,8 @@ def run_processes(task, project, found):
             handle.terminate()
         if router is not None:
             router.terminate()
+        if collector is not None:
+            service_ports.stop([collector], [service_ports.COLLECTOR_PORT])
 
 
 def grade(task, source, sdk_root):
@@ -247,7 +347,7 @@ def _grade(task, project, sdk_root):
     if not expect:
         return True, 'built {} executable(s); no output asserted'.format(len(found))
 
-    result = run([found[0]], cwd=project, timeout=90)
+    result = run([found[0]] + list(task.get('args') or []), cwd=project, timeout=90)
     if result is None:
         return False, 'the application did not finish'
     if result.returncode != 0:
@@ -257,6 +357,9 @@ def _grade(task, project, sdk_root):
     missing = [text for text in expect if text not in output]
     if missing:
         return False, 'output did not contain: ' + '; '.join(missing)
+    held, why = assert_artefacts(task, project)
+    if not held:
+        return False, why
     return True, 'built, ran, output matched'
 
 
@@ -293,7 +396,9 @@ def main():
                 print('SKIP  {:<22} no reference recipe'.format(task['id']))
                 continue
             key = (reference, tuple(task.get('expect') or []),
-                   task.get('binaries', 1), json.dumps(task.get('run'), sort_keys=True))
+                   task.get('binaries', 1), json.dumps(task.get('run'), sort_keys=True),
+                   tuple(task.get('args') or []), tuple(task.get('declares') or []),
+                   tuple(task.get('produces') or []))
             if key in seen:
                 ok, note = seen[key]
                 note += ' (same criteria as {})'.format(key[0])

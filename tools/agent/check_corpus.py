@@ -555,8 +555,15 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
 CORPUS_CEILING = 188400
 
 PAGE_CEILING = 8 * KB
-PAGE_MEDIAN_TARGET = 6 * KB
 ENTRY_TARGET = 10 * KB
+# What AGENTS.md is allowed while it is over the target, and why. Everything that is
+# stated at its point of use has come out: the worksheet format, which the worksheet
+# prints; the two lookup tools, described once at the refusal they answer; the
+# requirements check-env runs; the runbook routed twice. What is left is the routing
+# table, the tool table and section 6, whose ten one-line rules --audit-prohibitions
+# matches against api.json one by one. Over this size is a failure, not a warning:
+# the page may shrink without a commit here and may not grow.
+ENTRY_ALLOWED = 11776
 RULE_SUMMARY_TARGET = 300
 DUPLICATION_TARGET = 0.02
 
@@ -1105,9 +1112,19 @@ def check_hidden_probes(report):
             report.fail('hidden-probes', '{} does not state "{}", which a hidden probe '
                                          'scores'.format(name, '", "'.join(missing)))
             return
-    report.ok('hidden-probes', 'verify_run.py is hidden from the agent, and every task '
-                               'states the {} requirements it probes'
-                               .format(len(PROBED_REQUIREMENTS)))
+    result = subprocess.run([sys.executable,
+                             os.path.join(bench, 'verify_run.py'), '--self-test'],
+                            capture_output=True, text=True, cwd=ROOT,
+                            stdin=subprocess.DEVNULL)
+    text = (result.stdout + result.stderr).strip()
+    if result.returncode != 0:
+        report.fail('hidden-probes', 'verify_run.py --self-test: ' +
+                    (text.splitlines()[0] if text else 'failed'))
+        return
+    report.ok('hidden-probes', 'verify_run.py is hidden from the agent, every task '
+                               'states the {} requirements it probes, and {}'
+                               .format(len(PROBED_REQUIREMENTS),
+                                       text.splitlines()[-1] if text else 'it self-tests'))
 
 
 # Messages of the isolation guards both benchmark runners carry, word for word.
@@ -1655,11 +1672,11 @@ def stated_numbers():
          '`AGENTS.md` at or below {:.0f} KB'.format(ENTRY_TARGET / KB),
          'ENTRY_TARGET in this file'),
         ('docs/ai-readiness.md',
+         'allowed {:.1f} KB'.format(ENTRY_ALLOWED / KB),
+         'ENTRY_ALLOWED in this file'),
+        ('docs/ai-readiness.md',
          'Every page in `docs/agent/` at or below {:.0f} KB'.format(PAGE_CEILING / KB),
          'PAGE_CEILING in this file'),
-        ('docs/ai-readiness.md',
-         'Median page at or below {:.0f} KB'.format(PAGE_MEDIAN_TARGET / KB),
-         'PAGE_MEDIAN_TARGET in this file'),
         ('docs/ai-readiness.md',
          'at or below {:.1f} KB'.format(CORPUS_CEILING / KB),
          'CORPUS_CEILING in this file'),
@@ -1737,10 +1754,17 @@ def check_shipped_tools(report):
 
 def check_entry_toll(report):
     entry = size('AGENTS.md')
-    if entry > ENTRY_TARGET:
-        report.warn('entry-toll', 'AGENTS.md is {:.1f} KB, {:.1f} KB over the '
-                    '{:.0f} KB target every task pays'
-                    .format(entry / KB, (entry - ENTRY_TARGET) / KB, ENTRY_TARGET / KB))
+    if entry > ENTRY_ALLOWED:
+        report.fail('entry-toll', 'AGENTS.md is {:.1f} KB, over the {:.1f} KB it is '
+                    'allowed. Every agent pays this on every task: take a fact out to '
+                    'the page or the tool that states it, or raise ENTRY_ALLOWED and '
+                    'say in the commit what is load-bearing'
+                    .format(entry / KB, ENTRY_ALLOWED / KB))
+    elif entry > ENTRY_TARGET:
+        report.note('entry-toll', 'AGENTS.md is {:.1f} KB, {:.0f} bytes over the '
+                    '{:.0f} KB target and within the {:.1f} KB recorded allowance'
+                    .format(entry / KB, entry - ENTRY_TARGET, ENTRY_TARGET / KB,
+                            ENTRY_ALLOWED / KB))
     else:
         report.ok('entry-toll', 'AGENTS.md is {:.1f} KB, within its {:.0f} KB target'
                   .format(entry / KB, ENTRY_TARGET / KB))
@@ -1803,10 +1827,10 @@ def check_page_budget(report):
             report.note('budget', 'docs/agent/{} is {} bytes under the ceiling, too '
                         'close to hold'.format(page, int(PAGE_CEILING - bytes_)))
 
-    median = sizes[len(sizes) // 2]
-    if median > PAGE_MEDIAN_TARGET:
-        report.warn('budget', 'median page is {:.1f} KB, over the {:.0f} KB target'
-                    .format(median / KB, PAGE_MEDIAN_TARGET / KB))
+    # The median page was a target until 2026-09-14 and is not a budget: moving it
+    # means shrinking pages that are already inside the ceiling, with no criterion
+    # for what to remove. The ceiling and the corpus total bound the same bytes, and
+    # a page has grown to put a fact at its point of use more than once.
     report.ok('budget', '{} of {} pages are within the {:.0f} KB ceiling'
               .format(len(pages) - len(over), len(pages), PAGE_CEILING / KB))
 
@@ -2206,11 +2230,15 @@ def run():
     check_project_routing(report)
     check_member_inventory(report)
     check_scenario_runner(report)
+    check_mutation_verdicts(report)
     check_trigger_coverage(report)
     check_state_mirrors(report)
     check_placeholder_contract(report)
     check_design_template(report)
     check_peer_loss_branch(report)
+    check_generated_defects(report)
+    check_spec_semantics(report)
+    check_app_shape(report)
     check_final_entry_rule(report)
     check_example_size(report)
     check_worksheet_order_note(report)
@@ -2262,6 +2290,27 @@ def check_scenario_runner(report):
                     'run_scenarios.py --self-test failed')
         return
     report.ok('runner', text.splitlines()[0] if text else 'run_scenarios.py self-test passed')
+
+
+def check_mutation_verdicts(report):
+    """The verdicts of the defects that need a build are checked without one.
+
+    by_runtime decides whether a documented diagnostic fired, and only --lib runs it,
+    so a verdict that accepts the wrong observation is invisible in an ordinary run.
+    """
+    bank = os.path.join(ROOT, 'tools', 'agent', 'check_mutations.py')
+    if not os.path.isfile(bank):
+        report.fail('verdicts', 'tools/agent/check_mutations.py is missing')
+        return
+    result = subprocess.run([sys.executable, bank, '--self-test'],
+                            capture_output=True, text=True, cwd=ROOT,
+                            stdin=subprocess.DEVNULL)
+    text = (result.stdout + result.stderr).strip()
+    if result.returncode != 0:
+        report.fail('verdicts', 'check_mutations.py --self-test: ' +
+                    (text.splitlines()[0] if text else 'failed'))
+        return
+    report.ok('verdicts', text.splitlines()[-1] if text else 'the verdicts self-test')
 
 
 def check_member_inventory(report):
@@ -2717,6 +2766,236 @@ def check_design_template(report):
                           'a stray key is refused by name, and work is never replaced')
 
 
+# Two defects planted in the shape the generator writes, not in a hand-made sample.
+# Each is an anchor the generated consumer carries and the text that replaces it.
+GENERATED_DEFECTS = (
+    ('P-06', 'a blocking call in service_connected',
+     '// Subscriptions are made here, and again after every reconnection.',
+     'areg::Thread::sleep(1000);'),
+    ('P-05', 'quitting where a lost provider arrives',
+     '// TODO(you) peer_lost',
+     'quit_with(1);   // TODO(you) peer_lost'),
+)
+
+
+# What a spec means, and what the documents it generates must say. Each case is a
+# spec, the run it expects, and what the output must and must not carry. Every one of
+# them was a silent change of meaning: accepted input, exit 0, a document saying
+# something else.
+SPEC_SEMANTICS = (
+    ('a response that carries no value',
+     {"interfaces": [{"name": "NoArg",
+                      "requests": [{"name": "ping", "answer": []}]}]},
+     0, ['MethodType="Response"'], []),
+    ('the template sample nobody filled is no response',
+     {"interfaces": [{"name": "T1", "requests": [
+         {"name": "ping", "description": "",
+          "params": [{"name": "", "type": "", "description": ""}],
+          "answer": [{"name": "", "type": "", "description": ""}]}]}]},
+     0, [], ['MethodType="Response"']),
+    ('two documents of one name',
+     {"interfaces": [{"name": "Same", "requests": [{"name": "a"}]},
+                     {"name": "Same", "requests": [{"name": "b"}]}]},
+     2, [], []),
+    ('two unrelated services may share an attribute name',
+     {"interfaces": [{"name": "Door", "attributes": [{"name": "Status", "type": "bool"}]},
+                     {"name": "Sensor",
+                      "attributes": [{"name": "Status", "type": "int32"}]}]},
+     0, [], []),
+    ('a guard written false is a guard',
+     {"machines": [{"name": "Guard", "triggers": ["go"], "initial": "Idle",
+                    "actions": [{"name": "act"}],
+                    "constants": [{"name": "Verbose", "type": "bool", "value": False}],
+                    "states": [{"name": "Idle", "transitions": [
+                        {"on": "go", "to": "Done", "guard": False,
+                         "do": [{"call": "act"}]}]},
+                        {"name": "Done"}]}]},
+     0, ['<Guard', '<Lit>false</Lit>', 'Value="false"'], ['False', 'True']),
+)
+
+
+def check_app_shape(report):
+    """The application path names what it cannot write, rather than writing a part of it.
+
+    gen_skeleton.py --app writes one service and at most one machine. Given several,
+    build_project.py used to take the first of each, so a two-service design built,
+    passed every check and was a third of the project.
+    """
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    holder = tempfile.mkdtemp()
+    try:
+        two = {"interfaces": [{"name": "Door", "requests": [{"name": "a"}]},
+                              {"name": "Sensor", "requests": [{"name": "b"}]}]}
+        one = {"interfaces": [{"name": "Door", "requests": [{"name": "a"}]}]}
+        for what, spec, refuses in (('two services', two, True),
+                                    ('one service', one, False)):
+            root = os.path.join(holder, what.replace(' ', '-'))
+            os.makedirs(root, exist_ok=True)
+            with open(os.path.join(root, 'design.json'), 'w', encoding='utf-8',
+                      newline='\n') as handle:
+                json.dump(spec, handle)
+            done = subprocess.run([sys.executable,
+                                   os.path.join(tools, 'build_project.py'),
+                                   '--root', root, '--spec', 'design.json',
+                                   '--no-check'],
+                                  capture_output=True, text=True, cwd=root)
+            said = done.stdout + done.stderr
+            named = 'writes one application' in said
+            if refuses and not named:
+                report.fail('app-shape',
+                            'build_project.py took one of two services without saying '
+                            'so, and built a third of the project as if it were the '
+                            'project')
+                return
+            if not refuses and named:
+                report.fail('app-shape',
+                            'build_project.py refuses a project of one service')
+                return
+        report.ok('app-shape', 'the application path builds one service and names what '
+                               'it cannot write')
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+
+
+def check_spec_semantics(report):
+    """A spec that is accepted generates the documents it describes.
+
+    Everything here was silent: the generator took the input, exited 0, and wrote a
+    document that said something else. A refusal is loud and costs one edit; a
+    document that means the wrong thing is built, filled and verified.
+    """
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    holder = tempfile.mkdtemp()
+    try:
+        for what, spec, code, wanted, refused in SPEC_SEMANTICS:
+            path = os.path.join(holder, 'design.json')
+            with open(path, 'w', encoding='utf-8', newline='\n') as handle:
+                json.dump(spec, handle)
+            out = os.path.join(holder, 'out')
+            done = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                                   '--spec', path, '--outdir', out, '--force'],
+                                  capture_output=True, text=True, cwd=holder)
+            if done.returncode != code:
+                report.fail('spec-semantics',
+                            '{}: gen_docs.py exited {}, expected {}. {}'
+                            .format(what, done.returncode, code,
+                                    (done.stderr or done.stdout).strip()[:160]))
+                return
+            written = ''
+            for name in sorted(glob.glob(os.path.join(out, '*'))):
+                with open(name, encoding='utf-8') as handle:
+                    written += handle.read()
+                os.remove(name)
+            for text in wanted:
+                if text not in written:
+                    report.fail('spec-semantics',
+                                '{}: the document does not carry {!r}'.format(what, text))
+                    return
+            for text in refused:
+                if text in written:
+                    report.fail('spec-semantics',
+                                '{}: the document carries {!r}'.format(what, text))
+                    return
+        report.ok('spec-semantics',
+                  '{} spec(s) generate the document they describe'
+                  .format(len(SPEC_SEMANTICS)))
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+
+
+def check_generated_defects(report):
+    """Every prohibition is checked against the source the generator itself writes.
+
+    A handler defined out of line carries no override keyword, and the exit helper
+    the scaffold teaches is not signal_quit. A rule that knows neither reports
+    nothing on the one layout every project starts from.
+    """
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    holder = tempfile.mkdtemp()
+    here = os.getcwd()
+    try:
+        os.chdir(holder)
+        made = generate_application(tools, 'defect')
+        if not os.path.isfile(made):
+            report.fail('generated-defects', made)
+            return
+        with open(made, encoding='utf-8') as handle:
+            pristine = handle.read()
+
+        def contract():
+            done = subprocess.run([sys.executable,
+                                   os.path.join(tools, 'check_contract.py'), '.',
+                                   '--strict', '--allow-todo'],
+                                  capture_output=True, text=True)
+            return done.stdout + done.stderr
+
+        clean = contract()
+        if 'ERROR' in clean:
+            report.fail('generated-defects',
+                        'the generated application reports a prohibition of its own: '
+                        + next(line for line in clean.splitlines() if 'ERROR' in line))
+            return
+        for rule, what, anchor, planted in GENERATED_DEFECTS:
+            if anchor not in pristine:
+                report.fail('generated-defects',
+                            'the generated consumer no longer carries "{}", so {} '
+                            'cannot be planted where it belongs'.format(anchor, rule))
+                return
+            with open(made, 'w', encoding='utf-8', newline='\n') as handle:
+                handle.write(pristine.replace(anchor, planted, 1))
+            found = contract()
+            if rule not in found:
+                report.fail('generated-defects',
+                            '{} does not report {} in the application the generator '
+                            'writes, though it reports the same defect in a handler '
+                            'declared inline'.format(rule, what))
+                return
+        with open(made, 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write(pristine)
+        report.ok('generated-defects',
+                  'the generated application is clean, and {} planted defect(s) in it '
+                  'are reported'.format(len(GENERATED_DEFECTS)))
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+
+
+def generate_application(tools, name='gen'):
+    """Lay out a project in the working directory and write the application into it.
+
+    Returns the path of the generated consumer source, or a sentence naming the step
+    that stopped.
+    """
+    if subprocess.run([sys.executable, os.path.join(tools, 'setup_project.py'),
+                       '--name', name, '--root', '.', '--mode', 'ipc',
+                       '--sdk-root', ROOT],
+                      capture_output=True, text=True).returncode != 0:
+        return 'the scaffold no longer lays out a project'
+    spec = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                           '--example'], capture_output=True, text=True)
+    with open('design.json', 'w', encoding='utf-8', newline='\n') as handle:
+        handle.write(spec.stdout)
+    if subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                       '--outdir', 'src/services', '--force', '--chained',
+                       '--spec', 'design.json'],
+                      capture_output=True, text=True).returncode != 0:
+        return 'the example spec no longer generates'
+    docs = sorted(glob.glob(os.path.join('src', 'services', '*.siml')))
+    machines = sorted(glob.glob(os.path.join('src', 'services', '*.fsml')))
+    if not docs:
+        return 'no .siml was generated to build a consumer from'
+    made = [sys.executable, os.path.join(tools, 'gen_skeleton.py'),
+            '--doc', docs[0], '--app', '--mode', 'ipc', '--force']
+    if machines:
+        made += ['--machine', machines[0]]
+    if subprocess.run(made, capture_output=True, text=True).returncode != 0:
+        return 'gen_skeleton.py --app no longer writes an application'
+    found = sorted(glob.glob(os.path.join('src', 'consumer', '*Consumer.cpp')))
+    if not found:
+        return 'no consumer source was written'
+    return found[0]
+
+
 def check_peer_loss_branch(report):
     """The consumer can answer a peer that went away, where the peer going away arrives.
 
@@ -2732,40 +3011,11 @@ def check_peer_loss_branch(report):
     here = os.getcwd()
     try:
         os.chdir(holder)
-        for step in ([sys.executable, os.path.join(tools, 'setup_project.py'),
-                      '--name', 'peer', '--root', '.', '--mode', 'ipc',
-                      '--sdk-root', ROOT],):
-            if subprocess.run(step, capture_output=True, text=True).returncode != 0:
-                report.fail('peer-loss', 'the scaffold no longer lays out a project')
-                return
-        spec = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
-                               '--example'], capture_output=True, text=True)
-        with open('design.json', 'w', encoding='utf-8', newline='\n') as handle:
-            handle.write(spec.stdout)
-        if subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
-                           '--outdir', 'src/services', '--force', '--chained',
-                           '--spec', 'design.json'],
-                          capture_output=True, text=True).returncode != 0:
-            report.fail('peer-loss', 'the example spec no longer generates')
+        made = generate_application(tools, 'peer')
+        if not os.path.isfile(made):
+            report.fail('peer-loss', made)
             return
-        docs = sorted(glob.glob(os.path.join('src', 'services', '*.siml')))
-        machines = sorted(glob.glob(os.path.join('src', 'services', '*.fsml')))
-        if not docs:
-            report.fail('peer-loss', 'no .siml was generated to build a consumer from')
-            return
-        made = [sys.executable, os.path.join(tools, 'gen_skeleton.py'),
-                '--doc', docs[0], '--app', '--mode', 'ipc', '--force']
-        if machines:
-            made += ['--machine', machines[0]]
-        if subprocess.run(made, capture_output=True, text=True).returncode != 0:
-            report.fail('peer-loss', 'gen_skeleton.py --app no longer writes an application')
-            return
-
-        found = sorted(glob.glob(os.path.join('src', 'consumer', '*Consumer.cpp')))
-        if not found:
-            report.fail('peer-loss', 'no consumer source was written')
-            return
-        with open(found[0], encoding='utf-8') as handle:
+        with open(made, encoding='utf-8') as handle:
             lines = handle.read().splitlines()
 
         start = None

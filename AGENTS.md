@@ -5,12 +5,10 @@ AREG is a framework for service-oriented applications. Describe a service once i
 the service logic. The same code runs in one thread, many threads, many processes or
 many machines: what changes is where a component is registered, not what it does.
 
-**Building an application?** Follow `docs/agent/01-runbook.md` from its first line: it
-is the whole procedure, every command in order, and the tools write the documents, the
-components, the model and `main()`. Return here only for section 6. Changing an
-existing one: `docs/agent/00-cheatsheet.md` is what no tool writes. `areg::String` and
-the containers are on neither: read `docs/agent/40-base-api.md` **before the first
-line of C++**, not after the first error.
+**Building an application?** Section 4. Changing an existing one:
+`docs/agent/00-cheatsheet.md` is what no tool writes. `areg::String` and the containers
+are on neither: read `docs/agent/40-base-api.md` **before the first line of C++**, not
+after the first error.
 
 ---
 
@@ -75,22 +73,21 @@ report, not a reason to search.
 ## 3. What must be installed
 
 CMake 3.20+, a Java 17+ runtime for `tools/codegen.jar` (the code generator), and a
-C++17 compiler -- GCC, Clang, MSVC or MinGW. Tested on Linux and other POSIX, macOS,
-Windows and Cygwin. **Python is not needed to build or run an areg application**, only
-for the section 5 scripts.
-
-Run `tools/check-env.sh`, or `tools\check-env.bat`, first: it needs no interpreter and
-exits non-zero when a requirement is missing.
+C++17 compiler -- GCC, Clang, MSVC or MinGW. Linux and other POSIX, macOS, Windows and
+Cygwin. **Python is not needed to build or run an areg application**, only for the
+section 5 scripts. `tools/check-env.sh` (`.bat`) checks all of it, needs no interpreter
+and exits non-zero on a missing one.
 
 ---
 
 ## 4. Golden path
 
-**`docs/agent/01-runbook.md` is the golden path**: scaffold, fill `design.json`, one
-command that writes the documents and the application and builds them, a worksheet for
-every body, and a scenario that proves it. Follow it rather than composing a chain from
-the tools below. `build_project.py`'s first call compiles the framework, so **give it a
-command timeout of at least 15 minutes**. Without Python, copy
+**`docs/agent/01-runbook.md` is the golden path: follow it from its first line**, rather
+than composing a chain from the tools below. Scaffold, fill `design.json`, one command
+that writes the documents and the application and builds them, a worksheet for every
+body, and a scenario that proves it; return here only for section 6.
+`build_project.py`'s first call compiles the framework, so **give it a command timeout
+of at least 15 minutes**. Without Python, copy
 `docs/agent/recipes/01-local-single-process` and rename the project in its two
 `CMakeLists.txt` files; `recipes/README.md` says which recipe shows what.
 
@@ -122,17 +119,16 @@ Windows), live in `tools/agent/`, and have `--help`.
 | `setup_project.py` | Creates a buildable project from a recipe, with its own `AGENTS.md` |
 | `gen_docs.py` | Every `.dtml`, `.siml` and `.fsml` of the project, from one JSON description: no XML, no `ID`, no `To` |
 | `gen_skeleton.py` | `--app`: the whole application from a `.siml`, running as written, every hole one named `TODO(you)` line; `--machine X.fsml` folds the state machine into the provider |
-| `fill_markers.py` | Fills every `TODO(you)` marker from the `bodies.txt` worksheet `gen_skeleton.py` writes: a `== <marker>` line, then the code replacing its line. It fills the named `expect` holes of `scenarios.json` from the same file. An empty section stays open, a `#|` line is the worksheet's own, and an applied section is taken out |
+| `fill_markers.py` | Fills every `TODO(you)` marker, and the named `expect` holes of `scenarios.json`, from the `bodies.txt` worksheet `gen_skeleton.py` writes. The worksheet states its own format, in its own first lines |
 | `build_project.py` | The five mechanical steps in one: documents, application, contract, configure, build. Stops at the first failure and names the step |
 | `api_help.py` | What one framework name is: its declarations and the header carrying them. Never grep a header for a signature |
 | `run_scenarios.py` | Runs the application and checks its output; exit 0 is a pass. Its `scenarios.json` is `docs/agent/50-running.md` |
 | `check_contract.py` | Checks sources against `docs/agent/api.json`: the section 6 mistakes that compile cleanly and fail later |
 
-`tools/explain_rule.py` is for the refusal above; `tools/schema_help.py <name>` says
-what a `.siml`, `.dtml` or `.fsml` may contain, for the thing `gen_docs.py` has no
-key for. **Neither has a use before that moment**, and one reached for early costs a
-turn. They, `tools/check-env.sh` and `tools/codegenerate.sh` (`.bat`) sit in
-`tools/` itself.
+`tools/explain_rule.py`, `tools/schema_help.py`, `tools/check-env.sh` and
+`tools/codegenerate.sh` (`.bat`) sit in `tools/` itself. The first two answer the
+refusal in section 4 and **have no use before that moment**; one reached for early
+costs a turn.
 
 **Nothing else under `tools/` is yours**: the rest checks this repository's own
 corpus and tells you nothing about your application.
@@ -184,13 +180,12 @@ A task is finished when the application builds and its behaviour is observed, no
 when the code looks correct.
 
 ```bash
-python3 tools/agent/build_project.py        # builds, and checks the contract
-python3 tools/agent/run_scenarios.py        # expected output, exit 0
+python3 tools/agent/build_project.py --run   # documents, build, scenarios, contract
 ```
 
-`build_project.py` runs `check_contract.py`, which reports the mistakes a build
-cannot catch. Silence a false positive with `// areg-check: ignore`, or the same
-words in a `.fsml` state's `<Description>`.
+Its last step is `check_contract.py . --strict`, which reports the mistakes a build
+cannot catch and allows no unfilled marker. Silence a false positive with
+`// areg-check: ignore`, or the same words in a `.fsml` state's `<Description>`.
 
 A multi-process application starts `mtrouter` first, then the provider, then the
 consumer. A consumer that starts first is not an error: it waits.

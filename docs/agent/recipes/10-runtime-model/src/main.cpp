@@ -4,6 +4,7 @@
  *          consumers is decided when the application starts.
  **/
 #include <atomic>
+#include <cstdlib>
 #include <iostream>
 #include <mutex>
 #include <sstream>
@@ -20,9 +21,18 @@
 
 namespace
 {
-    //! How many consumers to create. A real application reads this from its
-    //! command line or its configuration; the count is what the macros cannot take.
-    constexpr uint32_t  ConsumerCount   { 3 };
+    //! How many consumers to create when the command line names no count.
+    constexpr uint32_t  DefaultConsumers{ 3 };
+
+    //! How many consumers this run created.
+    std::atomic_uint    theExpected     { DefaultConsumers };
+
+    //! The consumer count the command line asks for, or the default.
+    uint32_t consumer_count(int argc, char ** argv)
+    {
+        const int given{ (argc > 1) ? std::atoi(argv[1]) : 0 };
+        return (given > 0) ? static_cast<uint32_t>(given) : DefaultConsumers;
+    }
 
     std::atomic_uint    theAnswered     { 0 };
 
@@ -91,15 +101,18 @@ protected:
         std::ostringstream line;
         line << "consumer: greeted " << answered;
         say( line.str() );
-        if (answered == ConsumerCount)
+        if (answered == theExpected.load())
         {
             areg::Application::signal_quit();
         }
     }
 };
 
-int main()
+int main(int argc, char ** argv)
 {
+    const uint32_t consumers{ consumer_count(argc, argv) };
+    theExpected.store(consumers);
+
     areg::Application::setup();
 
     // Nothing below is a macro. These are the same classes BEGIN_MODEL fills in.
@@ -109,7 +122,7 @@ int main()
     areg::ComponentEntry & provider = providerThread.add_component<ServiceProvider>("ServiceProvider");
     provider.add_supported_service(HelloService::ServiceName, HelloService::InterfaceVersion);
 
-    for (uint32_t i = 1; i <= ConsumerCount; ++i)
+    for (uint32_t i = 1; i <= consumers; ++i)
     {
         const areg::String name{ areg::String("Consumer") + areg::String::make_string(i) };
         areg::ComponentThreadEntry & thread = model.add_thread(name + "Thread");

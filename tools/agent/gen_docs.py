@@ -61,7 +61,7 @@ def rule_number(name, band):
     return None
 
 from docmodel import (CONTAINERS, PREDEFINED, TYPE_KINDS, Vocabulary, Writer, described,
-                      esc, esc_text, fail, named_list, reserve_params, unique,
+                      esc, esc_text, fail, named_list, reserve_params, spell, unique,
                       write_constants, write_datatypes, write_includes, write_method,
                       write_overview, write_params)
 
@@ -82,7 +82,8 @@ KEYS = {
     'spec': ('datatypes', 'interfaces', 'machines'),
     'datatypes': ('name', 'description', 'version', 'declare', 'includes'),
     'interface': ('name', 'category', 'description', 'version', 'types', 'attributes',
-                  'requests', 'responses', 'broadcasts', 'constants', 'includes'),
+                  'requests', 'responses', 'broadcasts', 'constants', 'includes',
+                  'machine'),
     'machine': ('name', 'description', 'version', 'threading', 'types', 'attributes',
                 'constants', 'triggers', 'timers', 'events', 'actions', 'conditions',
                 'submachines', 'includes', 'initial', 'states'),
@@ -379,9 +380,10 @@ def source_of(machine, value, stimulus, where):
 
     "param:x", "attr:X", "const:X", "expr:<c++>" and "lit:<text>" say it outright. A
     bare name that was declared is that declaration; anything else is a verbatim C++
-    token, so a string literal carries its own quotes.
+    token, so a string literal carries its own quotes. A JSON true or false is the
+    C++ token of that name, not Python's spelling of it.
     """
-    text = str(value)
+    text = spell(value)
     prefix, sep, rest = text.partition(':')
     if prefix == 'lit' and sep:
         return 'Value', rest
@@ -616,7 +618,7 @@ def write_guard_node(machine, writer, depth, node, stimulus, where):
 
 def write_guard_operand(machine, writer, depth, value, stimulus, where):
     """A leaf of the guard tree. A guard names a declaration by ID, never by name."""
-    text = str(value)
+    text = spell(value)
     prefix, _, rest = text.partition(':')
     if prefix in ('raw', 'lambda') and rest:
         writer.add(depth, '<{0}><![CDATA[{1}]]></{0}>'
@@ -658,14 +660,14 @@ def write_transition(machine, writer, depth, transition, owner):
     guard = transition.get('guard')
     steps = transition.get('do')
     assignments = transition.get('set')
-    if not (guard or steps or assignments or transition.get('description')):
+    if guard is None and not (steps or assignments or transition.get('description')):
         writer.add(depth, head + '/>')
         return
 
     # cTransition is a sequence: Description, then Guard, then OperationList.
     writer.add(depth, head + '>')
     described(writer, depth + 1, transition)
-    if guard:
+    if guard is not None:
         writer.add(depth + 1, '<Guard state="ok">')
         writer.add(depth + 2, '<Expr>')
         write_guard_node(machine, writer, depth + 3, guard, stimulus, where)
@@ -1012,6 +1014,12 @@ def is_empty(value):
     return value is None or value == '' or value == [] or value == {}
 
 
+# Keys an empty list means something on. A request with "answer": [] declares a
+# response that carries no value; without the key it has none. Every other empty
+# list means the same as an absent key.
+MEANINGFUL_EMPTY = ('answer',)
+
+
 def settle(node, skipped):
     """The spec as the generator reads it: no notes, no template sample left as the
     template wrote it, and no empty value, which means the same as an absent key."""
@@ -1020,9 +1028,15 @@ def settle(node, skipped):
         for key, value in node.items():
             if key == NOTE:
                 continue
+            # A list the template wrote and nobody filled arrives here holding its
+            # sample, and empties when the sample is dropped. One written empty was
+            # written by the author, and the two mean opposite things.
+            written_empty = isinstance(value, list) and not value
             value = settle(value, skipped)
             if not is_empty(value):
                 result[key] = value
+            elif written_empty and key in MEANINGFUL_EMPTY:
+                result[key] = []
         return result
     if isinstance(node, list):
         result = []
@@ -1162,18 +1176,47 @@ def check_final_entry(project):
             walk(machine.get('states'), None, machine.get('name', '?'))
 
 
+def paired(project):
+    """The (interface, machine) pairs of this project.
+
+    A machine is folded into the provider of one service, so the two are one program
+    and carry one type per attribute name. An interface names its machine with
+    "machine"; a project holding one of each is that pair without saying so. Two
+    services that name no machine share nothing and may both carry "Status".
+    """
+    machines = dict((entry.get('name'), entry) for entry in project['machines']
+                    if isinstance(entry, dict))
+    pairs, named = [], False
+    for interface in project['interfaces']:
+        wanted = interface.get('machine')
+        if wanted is None:
+            continue
+        named = True
+        if wanted not in machines:
+            fail('the service "{}" names the machine "{}", which this project does not '
+                 'declare. Its machines: {}'
+                 .format(interface.get('name', '?'), wanted,
+                         ', '.join(sorted(n for n in machines if n)) or 'none'))
+        pairs.append((interface, machines[wanted]))
+    if not named and len(project['interfaces']) == 1 and len(project['machines']) == 1:
+        pairs.append((project['interfaces'][0], project['machines'][0]))
+    return pairs
+
+
 def cross_check(project):
-    """What only the whole project can see: one name, one meaning."""
-    types = {}
-    for entry in project['machines'] + project['interfaces']:
-        for attribute in named_list(entry, 'attributes', entry.get('name', '?')):
-            name = attribute.get('name')
-            declared = attribute.get('type')
-            if name in types and types[name][0] != declared:
-                fail('attribute "{}" is a {} in "{}" and a {} in "{}". A service and the '
-                     'machine behind it carry one type per name.'
-                     .format(name, types[name][0], types[name][1], declared, entry['name']))
-            types[name] = (declared, entry['name'])
+    """What only a service and the machine behind it can see: one name, one meaning."""
+    for interface, machine in paired(project):
+        types = {}
+        for entry in (interface, machine):
+            for attribute in named_list(entry, 'attributes', entry.get('name', '?')):
+                name = attribute.get('name')
+                declared = attribute.get('type')
+                if name in types and types[name][0] != declared:
+                    fail('attribute "{}" is a {} in "{}" and a {} in "{}". A service and '
+                         'the machine behind it carry one type per name.'
+                         .format(name, types[name][0], types[name][1], declared,
+                                 entry['name']))
+                types[name] = (declared, entry['name'])
 
 
 def attribute_reads(node, found):
@@ -1334,8 +1377,7 @@ def trigger_coverage(spec):
     accepts the machine, the generated call compiles, and nothing reports that it
     did nothing. A composite state answers for every state it contains.
     """
-    names = [entry.get('name') for entry in spec.get('triggers') or []
-             if entry.get('name')]
+    names = [entry['name'] for entry in named_list(spec, 'triggers', spec.get('name', '?'))]
     if not names:
         return []
     answered = dict((name, []) for name in names)
@@ -1359,6 +1401,27 @@ def trigger_coverage(spec):
 
     walk(spec.get('states'), spec.get('initial'), True)
     return [(name, answered[name]) for name in names]
+
+
+def check_identities(documents):
+    """No two documents of one run write the same file.
+
+    The overwrite preflight sees files that were there before the run. Two documents
+    of the run itself collide inside it: the first is written, the second replaces it,
+    and both are reported as written. A filesystem that folds case collides on a name
+    that differs only in case, so the comparison folds it too.
+    """
+    seen = {}
+    for name, _text in documents:
+        key = name.lower()
+        if key in seen:
+            both = '"{}"'.format(name) if seen[key] == name \
+                else '"{}" and "{}", which are one file on Windows and macOS' \
+                .format(seen[key], name)
+            fail('two documents of this project are written as {}: the second would '
+                 'replace the first. Give every service, machine and datatypes block a '
+                 'name of its own.'.format(both))
+        seen[key] = name
 
 
 def build_all(project, prefix=''):
@@ -1616,6 +1679,7 @@ def main():
     prefix = '' if os.path.isabs(args.outdir) else \
         args.outdir.replace(os.sep, '/').rstrip('/') + '/'
     documents = build_all(project, prefix)
+    check_identities(documents)
 
     os.makedirs(args.outdir, exist_ok=True)
     for name, text in documents:

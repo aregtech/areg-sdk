@@ -110,6 +110,12 @@ def timed_out(observed):
     return 'timed out' in (observed.get('verdict') or '')
 
 
+def ran(observed):
+    """Whether any process of the run reached an exit code."""
+    exits = observed.get('exits') or {}
+    return any(code is not None for code in exits.values())
+
+
 def result(key, passed, evidence):
     return {'probe': key, 'requirement': REQUIREMENTS[key], 'passed': passed,
             'evidence': evidence}
@@ -146,18 +152,52 @@ def probe_start_order(scenario, build_dirs):
                   .format(START_DELAY, detail))
 
 
+def judge_no_peer(name, observed):
+    """The verdict of the no-peer probe, from what was observed."""
+    limit = WAIT_LIMIT + WAIT_MARGIN
+    if timed_out(observed):
+        return result('no-peer', False, 'still waiting after {:.0f}s'.format(limit))
+    code = observed.get('exits', {}).get(name)
+    elapsed = observed.get('elapsed')
+    if code is None or elapsed is None:
+        return result('no-peer', False, observed.get('verdict') or 'did not run')
+    if code == 0:
+        return result('no-peer', False,
+                      'exited 0 after {:.1f}s alone, with no peer to serve'.format(elapsed))
+    return result('no-peer', elapsed <= WAIT_LIMIT,
+                  'exited {} after {:.1f}s alone, limit {:.0f}s'
+                  .format(code, elapsed, WAIT_LIMIT))
+
+
 def probe_no_peer(scenario, build_dirs):
     """The lead alone: it has to give up, non-zero, within the stated limit."""
     _, lead = processes(scenario, keep_checks=False)
     limit = WAIT_LIMIT + WAIT_MARGIN
     _, _, observed, _, _ = run(variant(scenario, 'no-peer', [lead], limit), build_dirs)
+    return judge_no_peer(lead['name'], observed)
+
+
+def judge_loss_point(label, at, name, observed):
+    """One kill point. Returns (the loss was reached, it failed, the evidence)."""
     if timed_out(observed):
-        return result('no-peer', False, 'still waiting after {:.0f}s'.format(limit))
-    code = observed.get('exits', {}).get(lead['name'])
-    if code is None:
-        return result('no-peer', False, observed.get('verdict') or 'did not run')
-    return result('no-peer', code != 0, 'exited {} after {:.1f}s alone'
-                  .format(code, observed.get('elapsed') or 0.0))
+        return True, True, '{} hung'.format(label)
+    code = observed.get('exits', {}).get(name)
+    elapsed = observed.get('elapsed')
+    if code is None or elapsed is None:
+        return True, True, '{} did not run: {}'.format(
+            label, observed.get('verdict') or 'no exit code')
+    if elapsed < at:
+        # The kill never reached a living process, so this point proves nothing --
+        # unless the process died on its own, which is a failure of its own.
+        if code == 0:
+            return False, False, '{} finished at {:.1f}s, before the loss at {:.1f}s' \
+                .format(label, elapsed, at)
+        return True, True, '{} exited {} at {:.1f}s, before the loss at {:.1f}s' \
+            .format(label, code, elapsed, at)
+    if code == 0:
+        return True, True, '{} exit 0 {:.1f}s after the loss'.format(label, elapsed - at)
+    return True, False, '{} exit {} {:.1f}s after the loss'.format(label, code,
+                                                                  elapsed - at)
 
 
 def probe_peer_loss(scenario, build_dirs, lead_time):
@@ -173,21 +213,15 @@ def probe_peer_loss(scenario, build_dirs, lead_time):
         timeout = at + WAIT_LIMIT + WAIT_MARGIN
         _, _, observed, _, _ = run(variant(scenario, 'peer-loss', procs, timeout, stop),
                                    build_dirs)
-        code = observed.get('exits', {}).get(lead['name'])
-        elapsed = observed.get('elapsed') or 0.0
-        label = '{:.0%}'.format(fraction)
-        if timed_out(observed):
-            reached += 1
-            failures += 1
-            points.append('{} hung'.format(label))
-        elif code == 0 and elapsed < at:
-            points.append('{} finished before the loss'.format(label))
-        else:
-            reached += 1
-            failures += 1 if code in (None, 0) else 0
-            points.append('{} exit {} {:.1f}s after the loss'.format(label, code,
-                                                                      elapsed - at))
-    return result('peer-loss', reached > 0 and failures == 0, '; '.join(points))
+        hit, bad, text = judge_loss_point('{:.0%}'.format(fraction), at,
+                                          lead['name'], observed)
+        reached += 1 if hit else 0
+        failures += 1 if bad else 0
+        points.append(text)
+    if reached == 0:
+        return result('peer-loss', None, 'not evaluated: no run reached the loss; '
+                                         + '; '.join(points))
+    return result('peer-loss', failures == 0, '; '.join(points))
 
 
 def probe_cpu(loads):
@@ -218,6 +252,9 @@ def probe_sanitize(run_dir, work, scenario):
     build_dirs = [os.path.join(build, 'bin'), build]
     slow = dict(scenario, timeout=float(scenario.get('timeout', 60)) * 3)
     _, detail, observed, _, _ = run(slow, build_dirs)
+    if not ran(observed):
+        return result('sanitize', None, 'not evaluated: the instrumented application did '
+                                        'not run: ' + (observed.get('verdict') or detail))
     outputs = list((observed.get('outputs') or {}).items())
     if observed.get('elapsed'):
         procs, lead = processes(scenario, keep_checks=False)
@@ -237,15 +274,74 @@ def probe_sanitize(run_dir, work, scenario):
                                     'no finding (normal run: {})'.format(detail))
 
 
+# Every case the verdicts have to get right: what was observed, and the verdict it
+# earns. The three marked "audit" each passed before the probe judged them.
+SELF_TEST_NO_PEER = (
+    ('gave up inside the limit', {'exits': {'p': 1}, 'elapsed': 12.0}, True),
+    ('audit: gave up after the limit', {'exits': {'p': 1}, 'elapsed': 25.0}, False),
+    ('exactly at the limit', {'exits': {'p': 1}, 'elapsed': 20.0}, True),
+    ('exited 0 with no peer', {'exits': {'p': 0}, 'elapsed': 5.0}, False),
+    ('still waiting', {'verdict': 'timed out after 30s'}, False),
+    ('never ran', {'exits': {}, 'verdict': 'binary not found: x'}, False),
+)
+
+SELF_TEST_LOSS = (
+    ('exited after the loss', {'exits': {'p': 1}, 'elapsed': 13.0}, (True, False)),
+    ('audit: crashed before the loss', {'exits': {'p': 1}, 'elapsed': 0.1}, (True, True)),
+    ('finished its work before the loss', {'exits': {'p': 0}, 'elapsed': 5.0},
+     (False, False)),
+    ('survived the loss and exited 0', {'exits': {'p': 0}, 'elapsed': 13.0}, (True, True)),
+    ('hung', {'verdict': 'timed out after 40s'}, (True, True)),
+    ('never ran', {'exits': {}, 'verdict': 'binary not found: x'}, (True, True)),
+)
+
+SELF_TEST_RAN = (
+    ('audit: nothing ran', {'exits': {}, 'verdict': 'binary not found: x'}, False),
+    ('no exit code', {'exits': {'p': None}}, False),
+    ('a process exited', {'exits': {'p': 0}}, True),
+)
+
+
+def self_test():
+    """Every verdict against a case it has to get right. No build, no processes."""
+    failures = []
+    for name, observed, expected in SELF_TEST_NO_PEER:
+        got = judge_no_peer('p', observed)['passed']
+        if got is not expected:
+            failures.append('no-peer, {}: {} expected, got {}'
+                            .format(name, expected, got))
+    for name, observed, expected in SELF_TEST_LOSS:
+        hit, bad, _ = judge_loss_point('50%', 12.0, 'p', observed)
+        if (hit, bad) != expected:
+            failures.append('peer-loss, {}: {} expected, got {}'
+                            .format(name, expected, (hit, bad)))
+    for name, observed, expected in SELF_TEST_RAN:
+        if ran(observed) is not expected:
+            failures.append('sanitize, {}: {} expected, got {}'
+                            .format(name, expected, ran(observed)))
+    cases = len(SELF_TEST_NO_PEER) + len(SELF_TEST_LOSS) + len(SELF_TEST_RAN)
+    for line in failures:
+        print('   FAIL  ' + line)
+    print('verify_run --self-test: {} case(s), {} failure(s)'.format(cases, len(failures)))
+    return 1 if failures else 0
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Hidden acceptance probes for one benchmark run.')
-    parser.add_argument('run', help='the run directory run-benchmark.sh made')
+    parser.add_argument('run', nargs='?', help='the run directory run-benchmark.sh made')
     parser.add_argument('--repeat', type=int, default=10,
                         help='normal runs in the repeat probe (default: 10)')
     parser.add_argument('--sanitize', action='store_true',
                         help='also rebuild under ASan and UBSan and run under them')
+    parser.add_argument('--self-test', action='store_true',
+                        help='check every verdict against its cases and exit')
     args = parser.parse_args()
+
+    if args.self_test:
+        return self_test()
+    if not args.run:
+        parser.error('a run directory is required')
 
     run_dir = os.path.abspath(args.run)
     work = os.path.join(run_dir, 'work')
@@ -286,11 +382,16 @@ def main():
         report(probe_sanitize(run_dir, work, scenario))
 
     scored = [item for item in results if item['passed'] is not None]
+    skipped = [item['probe'] for item in results if item['passed'] is None]
     passed = sum(1 for item in scored if item['passed'])
-    print('   probes passed    {} of {}'.format(passed, len(scored)))
+    print('   probes passed    {} of {}{}'.format(
+        passed, len(scored),
+        ', {} not evaluated: {}'.format(len(skipped), ', '.join(skipped))
+        if skipped else ''))
     with open(os.path.join(run_dir, 'verify.json'), 'w', encoding='utf-8') as handle:
         json.dump({'scenario': scenario.get('name'), 'passed': passed,
-                   'scored': len(scored), 'results': results}, handle, indent=2)
+                   'scored': len(scored), 'skipped': skipped, 'results': results},
+                  handle, indent=2)
     return 0 if passed == len(scored) else 1
 
 

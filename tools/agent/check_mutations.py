@@ -106,6 +106,48 @@ def by_compiler(root, lib, compiler):
     return True, 'the compiler rejected it: ' + detail.split(':')[0]
 
 
+def judge_no_router(output, absent, code):
+    """The verdict of the no-router defect. code is None while it was still running.
+
+    The documented behaviour is that the consumer waits. A process that ended on its
+    own printed nothing because it was not there to print it, which is the opposite
+    of the assertion and used to pass it.
+    """
+    for line in absent:
+        if line in output:
+            return False, 'printed {!r} with no router running'.format(line)
+    if code is None:
+        return True, 'waited {}s for the router instead of failing, as documented' \
+            .format(NO_ROUTER_SECONDS)
+    return False, 'exited {} on its own with no router, where the documented ' \
+                  'behaviour is to wait'.format(code)
+
+
+# Every verdict the no-router defect has to get right: the output, what may not
+# appear in it, the exit code (None while it was still running), and the verdict.
+NO_ROUTER_CASES = (
+    ('waited', '', ['greeted'], None, True),
+    ('printed the work it could not have done', 'consumer: greeted', ['greeted'], 0,
+     False),
+    ('exited at once, printing nothing', '', ['greeted'], 0, False),
+    ('exited non-zero, printing nothing', '', ['greeted'], 1, False),
+)
+
+
+def self_test():
+    """Every verdict against a case it has to get right. No build, no processes."""
+    failures = 0
+    for name, output, absent, code, expected in NO_ROUTER_CASES:
+        passed, detail = judge_no_router(output, absent, code)
+        if passed is not expected:
+            failures += 1
+            print('   FAIL  no-router, {}: {} expected, got {} ({})'
+                  .format(name, expected, passed, detail))
+    print('check_mutations --self-test: {} case(s), {} failure(s)'
+          .format(len(NO_ROUTER_CASES), failures))
+    return 1 if failures else 0
+
+
 def by_runtime(root, lib, compiler, task):
     """The defect is the environment, not the source: build it and run it broken.
 
@@ -138,19 +180,12 @@ def by_runtime(root, lib, compiler, task):
     try:
         result = subprocess.run([chosen], cwd=root, capture_output=True, text=True,
                                 timeout=NO_ROUTER_SECONDS)
-        output = result.stdout + result.stderr
+        return judge_no_router(result.stdout + result.stderr,
+                               task['detect'].get('absent', []), result.returncode)
     except subprocess.TimeoutExpired as expired:
         output = (expired.stdout or b'').decode('utf-8', 'replace') \
             + (expired.stderr or b'').decode('utf-8', 'replace')
-        for line in task['detect'].get('absent', []):
-            if line in output:
-                return False, 'printed {!r} with no router running'.format(line)
-        return True, 'waited for the router instead of failing, as documented'
-
-    for line in task['detect'].get('absent', []):
-        if line in output:
-            return False, 'printed {!r} with no router running'.format(line)
-    return True, 'exited without doing the work, and printed none of it'
+        return judge_no_router(output, task['detect'].get('absent', []), None)
 
 
 def verify(task, work, lib, compiler, clean_reports):
@@ -193,7 +228,12 @@ def main():
                         help='only the defects a static checker decides')
     parser.add_argument('--compiler', default=os.environ.get('CXX', 'g++'))
     parser.add_argument('--id', help='run one repair task by id')
+    parser.add_argument('--self-test', action='store_true',
+                        help='check every verdict against its cases and exit')
     args = parser.parse_args()
+
+    if args.self_test:
+        return self_test()
 
     lib = os.path.abspath(args.lib) if args.lib else None
     if lib and not glob.glob(os.path.join(lib, 'libareg*')):

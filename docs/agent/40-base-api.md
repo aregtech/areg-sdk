@@ -147,5 +147,7 @@ spelling from another language's conventions.
 from `std::string` and `std::vector` are the ones most often written here, and none
 of them is declared anywhere in areg -- being `snake_case` does not make a name real.
 `check_contract.py` reports every one as `B-08` before the build, naming the file and
-the line, so run it first and let it answer instead of the compiler.
+the line, so run it first and let it answer instead of the compiler. It knows every
+name areg declares, not which class declares it: a real name called on the wrong object
+is the compiler's to catch.
 

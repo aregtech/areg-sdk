@@ -295,6 +295,6 @@ not converge" is a useful result; a half-built application is not.
 
 ## 11. Done
 
-Finished is `build_project.py` passing and `run_scenarios.py` exiting 0. Say what the
-scenarios proved from the lines they printed, and that `check_contract.py . --strict`
-passed. Measure nothing and run nothing again to say it.
+Finished is `build_project.py --run` passing. Its last step is `check_contract.py .
+--strict`, the pass that allows no open marker, so nothing is run again by hand. Say what
+the scenarios proved from the lines they printed. Measure nothing to say it.
