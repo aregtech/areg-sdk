@@ -21,7 +21,15 @@
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/logging/areg_log.h"
 
+#include <atomic>
+
 namespace areg {
+
+namespace
+{
+    //!< True while the timer manager singleton exists.
+    std::atomic_bool _theManagerAlive{ false };
+}
 
 DEF_LOG_SCOPE(areg_component_private_TimerManager, start_timer);
 DEF_LOG_SCOPE(areg_component_private_TimerManager, process_event);
@@ -102,7 +110,11 @@ bool TimerManager::start_timer(Timer &timer, const DispatcherThread & whichThrea
 
 void TimerManager::stop_timer( Timer &timer )
 {
-    instance()._unregister_timer(timer);
+    // Does nothing when the timer manager singleton is already destroyed.
+    if (_theManagerAlive.load(std::memory_order_acquire))
+    {
+        instance()._unregister_timer(timer);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -114,11 +126,13 @@ TimerManager::TimerManager()
 
     , mTimerResource( )
 {
+    _theManagerAlive.store(true, std::memory_order_release);
 }
 
 TimerManager::~TimerManager()
 {
     _remove_all_timers( );
+    _theManagerAlive.store(false, std::memory_order_release);
 }
 
 //////////////////////////////////////////////////////////////////////////

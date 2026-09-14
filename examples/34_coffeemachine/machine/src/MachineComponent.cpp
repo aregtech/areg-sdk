@@ -18,7 +18,7 @@ namespace
 
 MachineComponent::MachineComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component(entry, owner)
-    , CoffeeMachineServiceProviderBase(static_cast<areg::Component &>(self()))
+    , CoffeeMachineServiceProviderBase(static_cast<areg::Component &>(*this))
     , CoffeeMachineActionHandler()
     , CoffeeMachineFSM::FinalObserver()
     , mFsm(static_cast<CoffeeMachineActionHandler &>(self()))
