@@ -22,6 +22,7 @@ import socket
 import shutil
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 
@@ -87,20 +88,88 @@ STALE_TOLERANCE_SECONDS = 30.0
 OUTPUT_TAIL_LINES = 40
 
 
-def wait_router_ready(timeout=ROUTER_READY_SECONDS):
-    """Waits until the router accepts a connection, rather than for a fixed time."""
+def is_listening(port, host='127.0.0.1'):
+    """Tells whether anything accepts a connection on the port right now."""
+    probe = socket.socket()
+    probe.settimeout(0.5)
+    try:
+        probe.connect((host, port))
+        return True
+    except OSError:
+        return False
+    finally:
+        probe.close()
+
+
+# The suffixes a framework service is built with, whichever system built it.
+SERVICE_SUFFIXES = ('.elf', '.exe', '.mac', '')
+
+
+def find_service(name, directories):
+    """A framework service binary of this name, with or without a suffix."""
+    for directory in directories:
+        for suffix in SERVICE_SUFFIXES:
+            path = os.path.join(directory, name + suffix)
+            if os.path.isfile(path) and os.access(path, os.X_OK):
+                return path
+    return None
+
+
+def start_service(binary, port, args=(), cwd=None, timeout=ROUTER_READY_SECONDS):
+    """Starts a long-lived service and waits for the process it started to listen.
+
+    Returns (handle, '') or (None, why). On POSIX --service is the unattended mode:
+    no console loop, so a standard input at /dev/null cannot end it. On Windows it
+    hands the process to the Service Control Manager, which refuses one the manager
+    did not start, so console mode is used there and its standard input is held
+    open instead.
+
+    The wait ends when the service this call started exits, so a port another
+    process already holds is never taken for readiness.
+    """
+    if platform.system() == 'Windows':
+        command, feed = [binary] + list(args), subprocess.PIPE
+    else:
+        command, feed = [binary, '--service'] + list(args), subprocess.DEVNULL
+    handle = subprocess.Popen(command, cwd=cwd, stdin=feed,
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    name = os.path.basename(binary)
     deadline = time.time() + timeout
     while time.time() < deadline:
-        probe = socket.socket()
-        probe.settimeout(0.5)
+        if handle.poll() is not None:
+            return None, '{} exited {} before it listened on port {}'.format(
+                name, handle.returncode, port)
+        if is_listening(port):
+            return handle, ''
+        time.sleep(0.2)
+    stop_services([handle])
+    return None, '{} did not listen on port {} within {:.0f}s'.format(
+        name, port, timeout)
+
+
+def stop_services(handles, timeout=10.0):
+    """Stops long-lived services and waits for each one to be gone.
+
+    'terminate()' returns before the process has released its port, and the next
+    thing to start then connects to a corpse's successor instead of to its own.
+    """
+    live = [handle for handle in handles if handle is not None]
+    for handle in live:
+        if handle.poll() is None:
+            try:
+                handle.terminate()
+            except OSError:
+                pass
+    deadline = time.time() + timeout
+    for handle in live:
         try:
-            probe.connect(('127.0.0.1', ROUTER_PORT))
-            return True
-        except OSError:
-            time.sleep(0.2)
-        finally:
-            probe.close()
-    return False
+            handle.wait(timeout=max(0.5, deadline - time.time()))
+        except subprocess.TimeoutExpired:
+            try:
+                handle.kill()
+                handle.wait(timeout=5.0)
+            except (OSError, subprocess.TimeoutExpired):
+                pass
 
 
 def find_binary(name, build_dirs):
@@ -226,13 +295,29 @@ def stop_handle(handle, signal_name):
         handle.terminate()
 
 
-class LeadReader(object):
-    """Reads the lead's output line by line so triggers can fire while it runs."""
+# What one process may keep in memory. A pipe holds about 64 KB, and a process that
+# fills it blocks in write() until someone reads, so every process is drained from
+# the moment it starts. The whole output goes to its spool file; this is the tail
+# kept for matching and for the report.
+TAIL_LIMIT = 4 * 1024 * 1024
 
-    def __init__(self, handle):
+
+class OutputReader(object):
+    """Drains one process line by line, spools it to a file and keeps the tail.
+
+    Every process gets one from the moment it is launched. A process that is only
+    drained at cleanup blocks in write() once the pipe is full and never reaches
+    its own work, and the scenario then reports a timeout with no cause in it.
+    """
+
+    def __init__(self, handle, path):
         self._handle = handle
+        self._path = path
         self._lines = []
+        self._size = 0
+        self._dropped = 0
         self._lock = threading.Lock()
+        self._spool = open(path, 'w', encoding='utf-8', errors='replace')
         self._thread = threading.Thread(target=self._pump)
         self._thread.daemon = True
         self._thread.start()
@@ -240,18 +325,36 @@ class LeadReader(object):
     def _pump(self):
         for line in iter(self._handle.stdout.readline, ''):
             with self._lock:
+                self._spool.write(line)
                 self._lines.append(line)
-        try:
-            self._handle.stdout.close()
-        except (OSError, ValueError):
-            pass
+                self._size += len(line)
+                while self._size > TAIL_LIMIT and len(self._lines) > 1:
+                    self._size -= len(self._lines.pop(0))
+                    self._dropped += 1
+        for stream in (self._handle.stdout, self._spool):
+            try:
+                stream.close()
+            except (OSError, ValueError):
+                pass
 
     def text(self):
         with self._lock:
             return ''.join(self._lines)
 
+    def dropped(self):
+        """Lines written past the tail limit; they are in the spool file only."""
+        with self._lock:
+            return self._dropped
+
+    def path(self):
+        return self._path
+
     def join(self, timeout):
         self._thread.join(timeout)
+        try:
+            self._spool.close()
+        except (OSError, ValueError):
+            pass
 
 
 def resolve_stops(scenario, handles, index_of):
@@ -316,27 +419,12 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None):
 
     router_handle = None
     if scenario.get('router'):
-        router = find_binary('mtrouter', build_dirs)
+        router = find_service('mtrouter', build_dirs)
         if router is None:
             return False, name, 'mtrouter not found in ' + ', '.join(build_dirs)
-        # On POSIX --service is the unattended mode: no console loop, so a stdin at
-        # /dev/null cannot end it. On Windows it hands the process to the Service
-        # Control Manager, which refuses one the manager did not start, so console
-        # mode is used there and its stdin is held open instead. The readiness poll
-        # below also catches a router that could not bind because another one
-        # already holds the port.
-        if platform.system() == 'Windows':
-            router_args, router_stdin = [router], subprocess.PIPE
-        else:
-            router_args, router_stdin = [router, '--service'], subprocess.DEVNULL
-        router_handle = subprocess.Popen(router_args,
-                                         stdin=router_stdin,
-                                         stdout=subprocess.DEVNULL,
-                                         stderr=subprocess.DEVNULL)
-        if not wait_router_ready():
-            router_handle.terminate()
-            return False, name, 'mtrouter did not start listening on port {}'.format(
-                ROUTER_PORT)
+        router_handle, why = start_service(router, ROUTER_PORT)
+        if router_handle is None:
+            return False, name, why
 
     lead_index = next((i for i, p in enumerate(procs) if p.get('lead')), len(procs) - 1)
     index_of = dict((proc_name(spec), i) for i, spec in enumerate(procs))
@@ -345,7 +433,8 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None):
     launched = {}
     ended = {}
     verdict = None
-    reader = None
+    readers = {}
+    spool = tempfile.mkdtemp(prefix='areg-scenario-')
     actions = []
     try:
         for index, spec in enumerate(procs):
@@ -365,6 +454,8 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None):
                                       text=True)
             launched[index] = time.time()
             handles.append((spec, handle))
+            readers[index] = OutputReader(
+                handle, os.path.join(spool, '{}-{}.log'.format(index, proc_name(spec))))
             if feed:
                 send_stdin(handle, feed)
             if index != lead_index or (index < len(procs) - 1 and 'delay' in spec):
@@ -377,7 +468,7 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None):
                 verdict, actions = actions, []
             else:
                 pending = list(actions)
-                reader = LeadReader(lead)
+                reader = readers[lead_index]
                 started = time.time()
                 deadline = started + timeout
                 while True:
@@ -393,29 +484,31 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None):
                         verdict = 'timed out after {:.0f}s'.format(timeout)
                         break
                     time.sleep(0.05)
-                reader.join(5)
-                outputs[lead_index] = reader.text()
                 if verdict is None and pending:
                     verdict = stops_missed(pending)
     finally:
-        # Every process that is still running is stopped, then drained, so its
-        # output can be matched and no pipe is left open.
+        # Every process that is still running is stopped, then reaped. Its output
+        # was drained by its own reader from the moment it started, so nothing here
+        # waits on a pipe.
         for index, (_, handle) in enumerate(handles):
-            if index in outputs:
-                continue
             if handle.poll() is None:
                 handle.terminate()
             try:
-                outputs[index], _ = handle.communicate(timeout=5)
+                handle.wait(timeout=5)
             except subprocess.TimeoutExpired:
                 handle.kill()
-                outputs[index], _ = handle.communicate()
-        if router_handle is not None and router_handle.poll() is None:
-            router_handle.terminate()
-            try:
-                router_handle.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                router_handle.kill()
+                handle.wait()
+            reader = readers.get(index)
+            if reader is not None:
+                reader.join(5)
+                outputs[index] = reader.text()
+                if reader.dropped():
+                    sys.stderr.write(
+                        '      {} printed more than the {} MB kept in memory; '
+                        '{} line(s) are in {} only\n'.format(
+                            proc_name(handles[index][0]), TAIL_LIMIT // (1024 * 1024),
+                            reader.dropped(), reader.path()))
+        stop_services([router_handle])
 
     # Exit codes, outputs and the lead's run time, for a caller that asks.
     if observed is not None:
@@ -433,6 +526,8 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None):
     def failed(detail):
         report_output(handles, outputs, quiet, full=verbose)
         report_status(handles, outputs, ended, lead_index, quiet)
+        if not quiet:
+            sys.stdout.write('      full output of every process: {}\n'.format(spool))
         return False, name, detail
 
     if verdict is not None:
@@ -463,6 +558,7 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None):
     elif not quiet:
         for label, line in evidence:
             sys.stdout.write('      {:<20} {}\n'.format(label, line.strip()[:100]))
+    shutil.rmtree(spool, ignore_errors=True)
     return True, name, 'ok'
 
 
@@ -559,6 +655,25 @@ ping -n 3 127.0.0.1 >nul
 echo consumer: the provider was still there
 """
 
+# A process that is not the lead, printing far more than a pipe holds. The pipe is
+# about 64 KB, so 2100 lines of 128 characters is four times over it.
+SELF_TEST_NOISY = """#!/bin/sh
+echo "provider: serving"
+i=0
+while [ $i -lt 2100 ]; do
+    echo "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    i=$((i + 1))
+done
+echo "provider: drained"
+"""
+
+SELF_TEST_NOISY_BATCH = """@echo off
+echo provider: serving
+set LINE=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+for /l %%i in (1,1,2100) do echo %LINE%
+echo provider: drained
+"""
+
 # What a self-test fixture is named and what it holds. The name carries the
 # extension the platform can start, and find_binary falls back to the bare name,
 # so the fixture is named in full and no suffix is appended to it a second time.
@@ -566,10 +681,12 @@ if platform.system() == 'Windows':
     SELF_TEST_SUFFIX  = '.bat'
     SELF_TEST_NEWLINE = '\r\n'
     SELF_TEST_BODIES  = (SELF_TEST_PROVIDER_BATCH, SELF_TEST_CONSUMER_BATCH)
+    SELF_TEST_NOISY_BODY = SELF_TEST_NOISY_BATCH
 else:
     SELF_TEST_SUFFIX  = SUFFIX
     SELF_TEST_NEWLINE = '\n'
     SELF_TEST_BODIES  = (SELF_TEST_PROVIDER, SELF_TEST_CONSUMER)
+    SELF_TEST_NOISY_BODY = SELF_TEST_NOISY
 
 
 def self_test():
@@ -628,7 +745,30 @@ def self_test():
                   .format(detail))
             return 1
 
-        print('self-test ok: 3 case(s): end of input, an unfired stop, a fired stop')
+        # A process that is not the lead has its own reader from the moment it
+        # starts. Drained only at cleanup, it blocks in write() once the pipe is
+        # full and never reaches the line below its own output.
+        noisy = 'selftestnoisy' + SELF_TEST_SUFFIX
+        path = os.path.join(root, noisy)
+        with open(path, 'w', encoding='utf-8', newline=SELF_TEST_NEWLINE) as handle:
+            handle.write(SELF_TEST_NOISY_BODY)
+        os.chmod(path, 0o755)
+        pressure = {
+            'name': 'output-pressure', 'timeout': 30,
+            'procs': [{'binary': noisy, 'name': 'noisy',
+                       'expect': ['provider: drained']},
+                      {'binary': consumer, 'name': 'consumer',
+                       'expect': ['consumer: the provider was still there'],
+                       'exit': 0}]}
+        passed, _, detail = run_scenario(pressure, [root], False, True)
+        if not passed:
+            print('self-test FAILED: output pressure: {}'.format(detail))
+            print('a process that is not the lead filled its pipe and blocked in '
+                  'write(), so it never reached its own work')
+            return 1
+
+        print('self-test ok: 4 case(s): end of input, an unfired stop, a fired stop, '
+              'output pressure')
         return 0
     finally:
         shutil.rmtree(root, ignore_errors=True)

@@ -306,6 +306,31 @@ def answer_constant(headers, name):
     return found
 
 
+def role_in(signature, name):
+    """What a name is where it appears in a declaration.
+
+    'parameter' names an argument of that declaration, 'value' a default argument,
+    'type' anything else: a return type, a parameter's type, a qualifier. A
+    parameter name is not a name a caller can use, and saying so is the difference
+    between an answer and a wrong instruction.
+    """
+    hit = re.search(r'(?<!\w)' + re.escape(name) + r'(?![\w])', signature)
+    if hit is None:
+        return 'type'
+    opened = signature.find('(')
+    closed = signature.rfind(')')
+    if opened < 0 or not opened < hit.start() < closed:
+        return 'type'
+    before = signature[max(signature.rfind(',', opened, hit.start()), opened) + 1:
+                       hit.start()]
+    after = signature[hit.end():].lstrip()
+    if '=' in before:
+        return 'value'
+    if after[:1] in (',', ')', '=') and before.strip():
+        return 'parameter'
+    return 'type'
+
+
 def mentioned(headers, name):
     """Where a name appears in a declaration this tool already indexed.
 
@@ -424,9 +449,23 @@ def main():
             seen = mentioned(headers, name)
             if seen:
                 path, owner, member, signature = seen
-                print('"{}" is not indexed as a member, a class, an enumeration or a '
-                      'constant, but it IS declared: it appears in {}, in the '
-                      'declaration below. Use it.'.format(name, path))
+                role = role_in(signature, name)
+                where = 'areg::' + owner if owner else 'namespace areg'
+                if role == 'parameter':
+                    print('"{}" is the name of a parameter in the declaration below, '
+                          'in {}. A parameter name is not a name to call: it is what '
+                          'the declaration calls its own argument. Look up "{}" '
+                          'instead.'
+                          .format(name, path, member or owner or where))
+                elif role == 'value':
+                    print('"{}" appears in {} as a default argument of the '
+                          'declaration below, so it is a value, not a call. Look it '
+                          'up as a constant of the type it belongs to.'
+                          .format(name, path))
+                else:
+                    print('"{}" is not indexed as a member, a class, an enumeration '
+                          'or a constant. It appears in {}, in the declaration below, '
+                          'as a type or a qualifier.'.format(name, path))
                 print('')
                 print('{}  ({})'.format('areg::' + owner if owner else
                                         'namespace areg', path))

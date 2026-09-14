@@ -275,11 +275,15 @@ def write_agents(root, name, mode, sdk_root, binaries):
     if never is None:
         never = ('- The full list is section 6 of `{}/AGENTS.md`; api.json could not be '
                  'read when this project was created.'.format(sdk))
-    run = '\n'.join('./build/bin/{}.elf'.format(b) for b in binaries)
-    run_win = '\n'.join(r'build\bin\{}.exe'.format(b) for b in binaries)
     if MODES[mode]['router']:
-        run = './build/bin/mtrouter.elf --service &\n' + run
-        run_win = 'start "" build\\bin\\mtrouter.exe --service\n' + run_win
+        manual = ('\n`./run.sh`, and `run.bat` on Windows, start the same processes '
+                  'outside a scenario\nwhen one has to be watched live. They are the '
+                  'only hand launchers this project\nhas; the check above stays the '
+                  'route that decides whether it works.\n')
+    else:
+        manual = ('\n`./build/bin/{}` alone starts this project outside a scenario '
+                  'when it has to be\nwatched live; the check above stays the route '
+                  'that decides whether it works.\n'.format(binaries[0] + '.elf'))
 
     text = """# {name}
 
@@ -297,16 +301,21 @@ for the SDK helper scripts listed below.
 
 ```bash
 python3 {sdk}/tools/agent/build_project.py --spec design.json
-{run}
+python3 {sdk}/tools/agent/build_project.py --run
 ```
 
 The same on Windows, where the interpreter is `python`:
 
 ```bat
 python {sdk}/tools/agent/build_project.py --spec design.json
-{run_win}
+python {sdk}/tools/agent/build_project.py --run
 ```
 
+The first call builds. `--run` rebuilds whatever changed and then runs every scenario
+in `scenarios.json`: it starts each process in the order that project needs, waits for
+the lines the scenario expects and stops every process it started. These two commands
+are the whole route, on both systems, and nothing else here starts a process.
+{manual}
 Executables are written to `build/bin/`. The suffix is `.elf` on Linux, `.mac` on
 macOS and `.exe` on Windows.
 
@@ -317,6 +326,8 @@ src/services/         the documents; the generator reads them at configure time
 src/<Name>.hpp/.cpp   one component each, named after its class
 src/provider/main.cpp the model and main() of a process; two processes get a folder
                       each (provider/, consumer/), one process keeps src/ flat
+areg-project.json     names the design files; build_project.py reads it when no
+                      --spec is given, so an edited design still reaches the build
 CMakeLists.txt        finds or fetches the AREG SDK
 src/CMakeLists.txt    names the documents and each executable's sources
 ```
@@ -427,7 +438,7 @@ scenario needs nothing from you. `gen_skeleton.py --app` wrote the file and prin
 every key, so replacing each `TODO(you)` expectation with the line that proves a
 requirement is all that is left. Never start the processes by hand with `&`, `sleep`,
 `pkill` or `ps`.
-""".format(name=name, run=run, run_win=run_win, where=where, sdk=sdk, never=never)
+""".format(name=name, manual=manual, where=where, sdk=sdk, never=never)
 
     with open(os.path.join(root, 'AGENTS.md'), 'w', encoding='utf-8') as handle:
         handle.write(text)
@@ -458,9 +469,51 @@ def write_scenarios(root, mode, binaries):
         handle.write('\n')
 
 
+def write_manifest(root):
+    """The project's record of the files that describe it, for build_project.py.
+
+    A later call given no --spec reads it, so the documents and the application
+    are written from the design as it stands rather than left as they were.
+    """
+    with open(os.path.join(root, 'areg-project.json'), 'w', encoding='utf-8') as handle:
+        json.dump({'spec': ['design.json']}, handle, indent=2)
+        handle.write('\n')
+
+
 def write_gitignore(root):
     with open(os.path.join(root, '.gitignore'), 'w', encoding='utf-8') as handle:
         handle.write('build/\nbuild-*/\nproduct/\n*.sqlog\n*.log\n')
+
+
+def write_run_bat(root, name, binaries):
+    """The same start order for Windows, where console mode needs its own window."""
+    path = os.path.join(root, 'run.bat')
+    start = ('for /f %%p in (\'powershell -NoProfile -Command '
+             '"(Start-Process -FilePath \'%BIN%\\{}.exe\' -PassThru).Id"\') '
+             'do set {}=%%p')
+    lines = ['@echo off',
+             'rem Starts the router and the applications in the order they need, and',
+             'rem stops the ones it started once the consumer ends.',
+             'setlocal',
+             'set BIN=build\\bin',
+             'rem The router runs in console mode, in a window of its own: --service is',
+             'rem the Service Control Manager and returns at once from a command line.',
+             start.format('mtrouter', 'ROUTER'),
+             'rem Waits for the router to listen on 8181.',
+             'for /l %%i in (1,1,20) do (',
+             '    netstat -an | findstr /r /c:":8181 .*LISTENING" >nul && goto ready',
+             '    timeout /t 1 /nobreak >nul',
+             ')',
+             ':ready',
+             start.format(binaries[0], 'PROVIDER'),
+             'timeout /t 1 /nobreak >nul',
+             '"%BIN%\\{}.exe"'.format(binaries[1]),
+             'set RC=%errorlevel%',
+             'taskkill /pid %PROVIDER% /t /f >nul 2>&1',
+             'taskkill /pid %ROUTER% /t /f >nul 2>&1',
+             'exit /b %RC%']
+    with open(path, 'w', encoding='utf-8', newline='\r\n') as handle:
+        handle.write('\n'.join(lines) + '\n')
 
 
 def write_run_script(root, name, binaries):
@@ -600,8 +653,10 @@ def main():
     write_gitignore(root)
     write_scenarios(root, mode, binaries)
     template = gen_docs.write_template(os.path.join(root, 'design.json'))
+    write_manifest(root)
     if MODES[mode]['router']:
         write_run_script(root, name, binaries)
+        write_run_bat(root, name, binaries)
 
     tools = HERE.replace('\\', '/')
     print('created {} ({} mode)'.format(root, mode))

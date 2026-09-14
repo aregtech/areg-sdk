@@ -2143,6 +2143,67 @@ POSIX_ONLY = (('ss', 'netstat'),
 COMMAND_POSITION = r'(?:^|[|;&(]\s*|\$\(\s*)'
 
 
+# The two long-lived services, and the shell each form belongs to. A POSIX shell
+# redirects stdin, and console mode reads stdin and treats end of input as --quit,
+# so a console service there binds its port and drops it again within a second. On
+# Windows --service is the Service Control Manager and returns at once from a
+# command line, so console mode in a window of its own is the only form that runs.
+SERVICES = ('mtrouter', 'logcollector')
+
+
+# A line whose command word is one of the services, with or without a path, a
+# platform suffix and a Windows "start" prefix in front of it.
+LAUNCH_RE = re.compile(r'^(?:start\s+"[^"]*"\s+)?[\w./\\$-]*?\b(?:'
+                       + '|'.join(SERVICES) + r')(?:\.elf|\.exe|\.mac)?(?:\s|$)')
+
+
+def launch_lines(text):
+    """Every fenced line that starts a service, as (shell, line)."""
+    found = []
+    for shell, body in re.findall(r'```(bash|sh|shell|bat|cmd)\s*\n(.*?)```', text, re.S):
+        for line in body.splitlines():
+            line = line.split('#', 1)[0].strip()
+            if line and LAUNCH_RE.match(line):
+                found.append((shell, line))
+    return found
+
+
+def check_service_launch(report):
+    """Every documented service launch is the form that works in its own shell."""
+    pages = ['AGENTS.md'] + ['docs/agent/' + p for p in agent_pages()] \
+        + ['docs/agent/recipes/README.md', 'tools/agent/setup_project.py']
+    checked = 0
+    bad = 0
+    for page in pages:
+        text = read(*page.split('/'))
+        for shell, line in launch_lines(text):
+            checked += 1
+            posix = shell in ('bash', 'sh', 'shell')
+            if posix and '--service' not in line:
+                bad += 1
+                report.fail('launch', '{}: "{}" starts a service in console mode from '
+                            'a POSIX shell, where end of input is --quit: it binds its '
+                            'port and drops it again, exit 0'.format(page, line))
+            elif not posix and '--service' in line:
+                bad += 1
+                report.fail('launch', '{}: "{}" passes --service on Windows, where it '
+                            'means the Service Control Manager and returns at once '
+                            'having started nothing'.format(page, line))
+            elif not posix and not line.startswith('start '):
+                bad += 1
+                report.fail('launch', '{}: "{}" starts a service on Windows without '
+                            '\'start ""\', so it has no console of its own and the '
+                            'sequence never reaches the next line'.format(page, line))
+    for page in pages:
+        if re.search(r'never binds 8181', read(*page.split('/'))):
+            bad += 1
+            report.fail('launch', '{} says a console router never binds 8181. It does '
+                        'bind it; what ends it is end of input on stdin'.format(page))
+    if not bad:
+        report.ok('launch', '{} documented service launch(es), each the form its own '
+                  'shell needs'.format(checked))
+
+
 def check_posix_only(report):
     """Every POSIX-only command in a fenced block names its Windows form on the page."""
     pages = ['AGENTS.md'] + ['docs/agent/' + p for p in agent_pages()]
@@ -2227,6 +2288,7 @@ def run():
     check_tools(report)
     check_observability(report)
     check_portability(report)
+    check_service_launch(report)
     check_project_routing(report)
     check_member_inventory(report)
     check_scenario_runner(report)
@@ -2243,6 +2305,7 @@ def run():
     check_example_size(report)
     check_worksheet_order_note(report)
     check_worksheet_leftover(report)
+    check_regeneration_report(report)
     check_marker_spelling(report)
     check_worksheet_contract(report)
     check_contract_symmetry(report)
@@ -3347,6 +3410,53 @@ def check_worksheet_order_note(report):
 
     report.ok('order-note', 'the worksheet says a response and an update can arrive in '
                             'either order, once, beside the first response body')
+
+
+def check_regeneration_report(report):
+    """A regeneration reports the markers of the files it kept, not of the ones it
+    proposed.
+
+    An existing file is kept, and the worksheet is what an agent fills next. Derived
+    from the proposed text it names sections no file contains, and a run that fills
+    it fills nothing: one worksheet pass plus one repair cycle for a design the
+    project does not carry.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_skeleton
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('regeneration', 'gen_skeleton.py does not import: {}'.format(failure))
+        return
+
+    holder = tempfile.mkdtemp()
+    try:
+        path = os.path.join(holder, 'Kept.cpp')
+        with open(path, 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write('void filled() { work(); }\n')
+        proposed = 'void filled() {\n    // TODO(you) filled: the rule\n}\n'
+        back = gen_skeleton.write(path, proposed, False)
+        if back != 'void filled() { work(); }\n':
+            report.fail('regeneration', 'gen_skeleton.write() returns the proposed '
+                        'text for a file it kept, so every marker report and the '
+                        'worksheet describe a file that was never written')
+            return
+        written = gen_skeleton.write(os.path.join(holder, 'New.cpp'), proposed, False)
+        if written != proposed:
+            report.fail('regeneration', 'gen_skeleton.write() does not return what it '
+                        'wrote for a new file')
+            return
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+
+    body = read('tools', 'agent', 'gen_skeleton.py')
+    for call in ('write_worksheet(retained', 'print_todos(retained'):
+        if call not in body:
+            report.fail('regeneration', 'the application branch does not pass the '
+                        'retained sources to {}(): the report is derived from the '
+                        'text that was proposed'.format(call.split('(')[0]))
+            return
+    report.ok('regeneration', 'a kept file reports its own content, and the worksheet '
+              'is derived from the retained sources')
 
 
 def check_worksheet_leftover(report):

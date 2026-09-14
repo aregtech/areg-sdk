@@ -25,12 +25,12 @@ import json
 import os
 import re
 import shutil
-import socket
 import subprocess
 import sys
 import tempfile
 import time
 
+import run_scenarios  # noqa: E402
 import service_ports  # noqa: E402
 
 SDK = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -123,17 +123,13 @@ ROUTER_PORT = 8181
 
 
 def service_binary(project, name):
-    """A framework service built beside the project, or None."""
-    for suffix in ('.elf', '', '.exe', '.mac'):
-        candidate = os.path.join(project, 'build', 'bin', name + suffix)
-        if os.path.isfile(candidate):
-            return candidate
-    return None
+    """A framework service built beside the project, or None.
 
-
-def router_of(project):
-    """The router built beside the project, or None."""
-    return service_binary(project, 'mtrouter')
+    Suffix selection, console mode on Windows, readiness and reaping are
+    run_scenarios.py's: two copies of a process lifecycle is how one gets fixed
+    and the other does not.
+    """
+    return run_scenarios.find_service(name, [os.path.join(project, 'build', 'bin')])
 
 
 def start_collector(project, database):
@@ -143,14 +139,9 @@ def start_collector(project, database):
         return None, 'logcollector was not built beside the project'
     # --log=db overrides the collector's own configuration, so the database lands
     # where this check reads it.
-    handle = subprocess.Popen([binary, '--service', '--log=db', database],
-                              cwd=project, stdout=subprocess.DEVNULL,
-                              stderr=subprocess.DEVNULL)
-    if not service_ports.wait_listening(service_ports.COLLECTOR_PORT):
-        handle.terminate()
-        return None, 'logcollector did not listen on port {}'.format(
-            service_ports.COLLECTOR_PORT)
-    return handle, ''
+    return run_scenarios.start_service(binary, service_ports.COLLECTOR_PORT,
+                                       args=['--log=db', database], cwd=project,
+                                       timeout=20.0)
 
 
 def assert_collected(database, wanted):
@@ -172,21 +163,6 @@ def assert_collected(database, wanted):
     if not messages:
         return False, 'the log database holds no message of its own'
     return True, ''
-
-
-def wait_router_ready(timeout=15.0):
-    deadline = time.time() + timeout
-    while time.time() < deadline:
-        probe = socket.socket()
-        probe.settimeout(0.5)
-        try:
-            probe.connect(('127.0.0.1', ROUTER_PORT))
-            return True
-        except OSError:
-            time.sleep(0.2)
-        finally:
-            probe.close()
-    return False
 
 
 SOURCE_SUFFIXES = ('.cpp', '.hpp', '.h', '.init', '.txt')
@@ -257,15 +233,15 @@ def run_processes(task, project, found):
 
     router = None
     if spec.get('router'):
-        router_bin = router_of(project)
+        router_bin = service_binary(project, 'mtrouter')
         if router_bin is None:
             return False, 'mtrouter was not built beside the project'
-        router = subprocess.Popen([router_bin, '--service'], cwd=project,
-                                  stdout=subprocess.DEVNULL,
-                                  stderr=subprocess.DEVNULL)
-        if not wait_router_ready():
-            router.terminate()
-            return False, 'mtrouter did not listen on port {}'.format(ROUTER_PORT)
+        router, why = run_scenarios.start_service(router_bin, ROUTER_PORT,
+                                                  cwd=project, timeout=20.0)
+        if router is None:
+            if collector is not None:
+                service_ports.stop([collector], [service_ports.COLLECTOR_PORT])
+            return False, why
 
     handles = []
     try:
@@ -301,10 +277,8 @@ def run_processes(task, project, found):
         return True, 'built, ran through {} processes, output matched'.format(
             1 + len(handles))
     finally:
-        for handle in handles:
-            handle.terminate()
-        if router is not None:
-            router.terminate()
+        run_scenarios.stop_services(handles)
+        service_ports.stop([router], [ROUTER_PORT] if router is not None else [])
         if collector is not None:
             service_ports.stop([collector], [service_ports.COLLECTOR_PORT])
 

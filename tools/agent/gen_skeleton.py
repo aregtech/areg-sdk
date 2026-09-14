@@ -831,9 +831,20 @@ DECLARATION = re.compile(r'^\s{4}(?!//)([A-Za-z_].*\(.*\).*;)\s*$')
 
 
 def write(path, text, force):
+    """Writes the file or keeps the one that is there. Returns what is on disk.
+
+    A kept file returns its own content, never the text that was proposed for it.
+    Every report downstream -- the markers, the worksheet -- is derived from what
+    the return value holds, and a report of sections no file contains is filled
+    into nothing.
+    """
     if os.path.exists(path) and not force:
         print('kept   {}'.format(path))
-        return text
+        try:
+            with open(path, encoding='utf-8', errors='replace') as handle:
+                return handle.read()
+        except OSError:
+            return text
     folder = os.path.dirname(path)
     if folder:
         os.makedirs(folder, exist_ok=True)
@@ -1929,8 +1940,18 @@ def main():
                      'component. A .fsml name becomes a C++ namespace; rename the '
                      'machine.'.format(machine.name))
         produced = app_files(iface, args.mode, include_root, machine)
-        for file_name, text in produced:
-            write(os.path.join(args.out, file_name), text, args.force)
+        retained = [(file_name,
+                     write(os.path.join(args.out, file_name), text, args.force))
+                    for file_name, text in produced]
+        # A kept file is one the new documents could not be applied to. Naming it
+        # is the difference between a regeneration that reports what it did and one
+        # that reports what it would have done.
+        unapplied = [file_name for (file_name, kept), (_, fresh)
+                     in zip(retained, produced) if kept != fresh]
+        if unapplied:
+            print('  {} file(s) kept as they are, so the new documents reached '
+                  'none of them: {}'.format(len(unapplied), ', '.join(unapplied)))
+            print('  --regenerate writes them again and discards what is in them.')
         drop_scaffold(args.out, produced, args.mode)
         documents = [('addServiceInterface', os.path.relpath(args.doc).replace('\\', '/'))]
         if args.machine:
@@ -1941,9 +1962,9 @@ def main():
         for change in changed or []:
             print('  {}/CMakeLists.txt: {}'.format(args.out.replace('\\', '/'), change))
         update_scenarios(args.scenarios, args.mode, iface)
-        written = write_worksheet(produced, args.out, iface, args.doc,
+        written = write_worksheet(retained, args.out, iface, args.doc,
                                   machine, args.machine, args.scenarios)
-        print_todos(produced, args.out, written,
+        print_todos(retained, args.out, written,
                     len(scenario_holes(args.scenarios)), args.scenarios)
         print(APP_NOTE)
         return 0

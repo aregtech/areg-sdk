@@ -172,6 +172,35 @@ def app_present(root, document):
     return len(found)
 
 
+# The project's own record of which files describe it. Without it a later call
+# has no way to know what --spec the first one was given, so it rebuilds the
+# application of the previous design and verifies the previous contract.
+MANIFEST = 'areg-project.json'
+
+
+def read_manifest(root):
+    """The spec paths this project was last built from, as absolute paths."""
+    path = os.path.join(root, MANIFEST)
+    try:
+        with open(path, encoding='utf-8') as handle:
+            named = json.load(handle).get('spec') or []
+    except (OSError, ValueError):
+        return []
+    return [spec if os.path.isabs(spec) else os.path.join(root, spec)
+            for spec in named]
+
+
+def write_manifest(root, specs):
+    """Records the spec paths, relative to the project when they are inside it."""
+    named = []
+    for spec in specs:
+        inside = os.path.relpath(spec, root)
+        named.append(spec if inside.startswith(os.pardir) else inside.replace(os.sep, '/'))
+    with open(os.path.join(root, MANIFEST), 'w', encoding='utf-8') as handle:
+        json.dump({'spec': named}, handle, indent=2)
+        handle.write('\n')
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Generate the documents and the application, then configure and '
@@ -205,18 +234,37 @@ def main():
         fail('no such directory: {}'.format(args.root))
     mode = mode_of(root, args.mode)
 
-    if args.spec:
+    # Every input path is resolved once, against the project root, and that one
+    # path is what each step uses. The steps do not share a working directory:
+    # gen_docs.py runs as a subprocess in the root and documents_of() reads the
+    # same files in whichever directory this tool was called from.
+    specs = [spec if os.path.isabs(spec) else os.path.join(root, spec)
+             for spec in args.spec]
+    missing = [spec for spec in specs if not os.path.isfile(spec)]
+    if missing:
+        fail('no such spec: {}. A relative --spec is resolved against --root {}'
+             .format(', '.join(missing), root))
+    if specs:
+        write_manifest(root, specs)
+    else:
+        specs = [spec for spec in read_manifest(root) if os.path.isfile(spec)]
+        if specs:
+            print('== design: {} names {}, so the documents are written from it '
+                  'again.'.format(MANIFEST,
+                                  ', '.join(os.path.basename(s) for s in specs)))
+
+    if specs:
         command = [PYTHON, os.path.join(HERE, 'gen_docs.py'), '--outdir', args.outdir,
                    '--force', '--chained']
-        for spec in args.spec:
+        for spec in specs:
             command += ['--spec', spec]
-        if not run('documents', command, root, kept=len(args.spec) * 8 + 8):
+        if not run('documents', command, root, kept=len(specs) * 8 + 8):
             return 1
 
     document = args.doc
     machine = args.machine
-    if args.spec and (document is None or machine is None):
-        interfaces, machines, _shared = documents_of(args.spec, args.outdir)
+    if specs and (document is None or machine is None):
+        interfaces, machines, _shared = documents_of(specs, args.outdir)
         # The application this tool writes is one service and at most one machine.
         # Picking the first of several silently builds a part of the project and
         # calls it the project, so several are named and refused here instead.
@@ -240,8 +288,8 @@ def main():
 
     # The documents the spec describes are the ones the project builds, so the CMake
     # lines follow the spec: a new document gains its line and a dropped one loses it.
-    if args.spec:
-        interfaces, machines, shared_types = documents_of(args.spec, args.outdir)
+    if specs:
+        interfaces, machines, shared_types = documents_of(specs, args.outdir)
         wanted = [('addServiceInterface', path) for path in interfaces] + \
                  [('addStateMachine', path) for path in machines]
         changed = gen_skeleton.update_cmake(

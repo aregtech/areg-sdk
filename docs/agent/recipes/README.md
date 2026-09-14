@@ -61,20 +61,31 @@ A service reaching beyond its own process is declared `Category="Public"` and ne
 
 ```bash
 ./build/bin/mtrouter.elf --service &     # --service, not the console default
-./build/bin/hello_provider.elf
+./build/bin/hello_provider.elf &         # it never ends by itself
 ./build/bin/hello_consumer.elf
 ```
 
 ```bat
-start "" build\bin\mtrouter.exe --service
-build\bin\hello_provider.exe
+start "" build\bin\mtrouter.exe
+start "" build\bin\hello_provider.exe
 build\bin\hello_consumer.exe
 ```
 
-`--service` is the unattended mode and is required. The console default reads
-commands from a terminal; started from a shell with no terminal it keeps running,
-paints its display and never binds 8181, with no error. Check the port with
-`ss -ltn | grep 8181`, not the process list.
+The two shells need different options, and each one is wrong on the other system.
+
+**On POSIX** the console default binds 8181 and routes, but it also reads commands
+from stdin and end of input is `--quit`: started from a shell whose stdin is
+redirected, it paints its display, quits within a second and exits **0**, leaving
+8181 unbound and no error to see. `--service` is the same program without the console
+loop, so use it there.
+
+**On Windows** `--service` means the Service Control Manager and returns at once from
+a command line, having started nothing. `start ""` gives the process a console of its
+own, and console mode with a live stdin stays up; that is the form to use there.
+
+Both are long-lived, and so is the provider: leave either in the foreground and the
+sequence never reaches the line below it. Check the port, never the process list and
+never the exit code: `ss -ltn | grep 8181`.
 
 Only one router can hold port 8181. If one is already running, a second prints its
 banner, binds nothing and routes nothing, so check the port rather than assuming the
