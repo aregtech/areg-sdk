@@ -1563,3 +1563,86 @@ TEST(StringTestEdgeCases, MakeAlphanumeric)
     str.make_alphanumeric();
     EXPECT_TRUE(str.is_alphanumeric());
 }
+
+/**
+ * \brief Tests the std::hash specialization for the String class.
+ **/
+TEST(StringTest, StdHashSpecialization)
+{
+    String str1("hello");
+    String str2("hello");
+    String str3("world");
+    std::hash<areg::String> hasher;
+    EXPECT_EQ(hasher(str1), hasher(str2));
+    EXPECT_NE(hasher(str1), hasher(str3));
+
+    String empty1("");
+    String empty2;
+    EXPECT_EQ(hasher(empty1), hasher(empty2));
+
+    String space(" ");
+    String tab("\t");
+    EXPECT_NE(hasher(space), hasher(tab));
+
+    String upperCase("HELLO");
+    EXPECT_NE(hasher(str1), hasher(upperCase));
+}
+
+/**
+ * \brief Tests the required_size template specialization for std::string_view.
+ **/
+TEST(StringTest, RequiredSize_StdStringView )
+{
+    areg::required_size<std::string_view> required;
+    std::string_view view1("hello");
+    std::string_view view2("world !");
+    std::string_view emptyView("");
+    EXPECT_EQ(required(view1), 14u);
+    EXPECT_EQ(required(view2), 16u);
+    EXPECT_EQ(required(emptyView), 9u);
+
+    std::string_view emptyView2;
+    EXPECT_EQ(required(emptyView), required(emptyView2));
+
+    EXPECT_NE(required(view1), required(view2));
+
+}
+
+
+/**
+ * \brief Tests the required_size template specialization for std::string.
+ **/
+TEST(StringTest, RequiredSize_StdString) {
+    areg::required_size<std::string> required;
+    std::string str1("hello");
+    std::string str2("world !");
+    std::string empty1("");
+
+    EXPECT_EQ(required(str1), 14u);
+    EXPECT_EQ(required(str2), 16u);
+    EXPECT_EQ(required(empty1), 9u);
+
+    std::string empty2;
+    EXPECT_EQ(required(empty1), required(empty2));
+    EXPECT_NE(required(str1), required(str2));
+}
+
+/**
+ * \brief Tests the required_size template specialization for areg::string.
+ **/
+TEST(StringTest, RequiredSize_aregString)
+{
+    areg::required_size<areg::String> required;
+    areg::String str1("hello");
+    areg::String str2("world !");
+    areg::String empty1("");
+    EXPECT_EQ(required(str1), 14u);
+    EXPECT_EQ(required(str2), 16u);
+    EXPECT_EQ(required(empty1), 9u);
+
+    areg::String empty2;
+    EXPECT_EQ(required(empty1), required(empty2));
+    EXPECT_NE(required(str1), required(str2));
+
+
+}
