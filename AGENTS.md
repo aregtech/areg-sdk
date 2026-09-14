@@ -143,7 +143,7 @@ transforms, the connection states, and every section 6 rule with its detection h
 
 Each line closes a class of wrong code, not a style preference.
 `tools/agent/check_contract.py` reports all nineteen from the sources and documents you
-write, never from the generate target; run it before you build. The seven below cost a
+write, never from the generate target; run it before you build. The eight below cost a
 redesign, not an edit; know them first.
 
 - **Never edit a generated file.** The generate target is rewritten on every build;
@@ -152,10 +152,10 @@ redesign, not an edit; know them first.
   from the document: `docs/agent/20-service-interface.md`.
 - **A consumer's `REGISTER_DEPENDENCY` string must equal the provider's component
   role name, character for character.** A mismatch compiles cleanly and never connects.
-- **Never call a request before the service is connected, and never treat a
-  disconnect as fatal.** The first legal call is inside `service_connected()` once
-  `areg::is_service_connected(status)` is true. `Disconnected`, `ConnectionLost` and
-  `Failed` reconnect on their own; only `Rejected` and `Shutdown` are terminal.
+- **Never call a request before the service is connected.** The first legal call is
+  inside `service_connected()` once `areg::is_service_connected(status)` is true.
+- **Never treat a disconnect as fatal.** `Disconnected`, `ConnectionLost` and `Failed`
+  reconnect on their own; only `Rejected` and `Shutdown` are terminal.
 - **Never block inside a request, response, broadcast or update handler.** Blocking a
   dispatcher thread stops every component in it. Use a timer or a worker thread.
 - **Never override a `broadcast_*` or `on_*_update` without subscribing.** The handler

@@ -312,6 +312,10 @@ for the SDK helper scripts listed below.
 
 ## Build and run
 
+`design.json` is where the design goes: the scaffold wrote it with every key present
+and empty, and every document of this project is generated from it. Fill its values
+and keep its keys, then:
+
 ```bash
 python3 {sdk}/tools/agent/build_project.py --spec design.json
 python3 {sdk}/tools/agent/build_project.py --run
@@ -324,10 +328,17 @@ python {sdk}/tools/agent/build_project.py --spec design.json
 python {sdk}/tools/agent/build_project.py --run
 ```
 
-The first call builds. `--run` rebuilds whatever changed and then runs every scenario
-in `scenarios.json`: it starts each process in the order that project needs, waits for
+The first call builds. **It compiles the framework too, so give it a command timeout
+of at least 15 minutes**; a shorter one is reported as a timeout and is not a failure
+of the build. `--run` rebuilds whatever changed and then runs every scenario in
+`scenarios.json`: it starts each process in the order that project needs, waits for
 the lines the scenario expects and stops every process it started. These two commands
 are the whole route, on both systems, and nothing else here starts a process.
+
+**`--run` exiting 0 is what done means**, and the lines it prints are the evidence to
+report. Every acceptance item belongs in `scenarios.json`, the peer going away as a
+scenario-level `"stop"` and the console quit path as the `quit` scenario that is
+already there. Never start the processes by hand with `&`, `sleep`, `pkill` or `ps`.
 {manual}
 Executables are written to `build/bin/`. The suffix is `.elf` on Linux, `.mac` on
 macOS and `.exe` on Windows.
@@ -372,53 +383,18 @@ src/CMakeLists.txt    names the documents and each executable's sources
 
 ## Tools
 
-Fill `design.json`, and these two are the whole path, in this order; nothing else is
-needed to finish the task:
-
-```bash
-python3 {sdk}/tools/agent/build_project.py --spec design.json
-python3 {sdk}/tools/agent/build_project.py --run        # rebuild, then the scenarios
-```
-
-**`build_project.py` is the build command of this project, first time and every
-time.** It writes the documents from `design.json`, writes the application from them,
-checks the contract, configures and builds -- five steps with no decision in any of
-them -- and stops at the first failure naming the step and what to do.
-
-**The first call compiles the framework too, so give that call a command timeout of
-at least 15 minutes.** A shorter one is reported as a timeout or moved to the
-background, and neither is a failure of the build. Every step is incremental, so an
-interrupted call is simply run again and continues where it stopped. A second run
-keeps `src/` as you have filled it in and only rebuilds; `--regenerate` writes the
-application again and discards what is in it. Nothing below needs to be run by hand.
-
-The application it writes is the whole of `src/` -- the components, every
-subscription, the model, `main()` and its exit code -- and it compiles and runs as
-generated. Every place your own rule belongs is one `TODO(you) <name>:` line, and
-`bodies.txt` beside the project carries a section for each, naming the function it
-sits in: **fill the sections and apply them all with
-`python3 {sdk}/tools/agent/fill_markers.py --bodies bodies.txt`**, and never rewrite a
-generated file. With a state machine in the spec the provider owns it, so there is no
-host component to merge by hand.
-
-`design.json` describes every `.dtml`, `.siml` and `.fsml` of the project, so no XML,
-no `ID` and no `To` is written by hand and a type the service and its machine share is
-declared once. It holds every key, empty, each section with a `#|` note: fill the
-values. `gen_docs.py --example` prints a finished one for another application.
-`gen_skeleton.py --doc <document> --contract` prints every name a document
-generates -- the methods, and the data types the signatures are written in, including
-the ones an included `.dtml` declares -- and writes no file; `--todos` lists the
-markers still left. It is the answer to "what is this type called", so ask it rather
-than reading a generated header.
-
-Three more tools exist and **each answers a question you cannot already answer**.
-Reaching for one before you have that question costs a turn and tells you nothing:
+The two commands above are the whole path; `docs/agent/01-runbook.md` sections 3 to 7
+carry them step by step and nothing else has to be run by hand. These answer a
+question those two cannot, and **reaching for one before you have that question costs
+a turn**:
 
 | Ask | Only when |
 |---|---|
-| `python3 {sdk}/tools/explain_rule.py <number> --at <Element>/@<Attribute>` | `gen_docs.py` refused a document and its `fix:` line was not enough |
-| `python3 {sdk}/tools/schema_help.py <name> --document fsml` | you need a document to say something `design.json` has no key for. It answers one name out of the schema -- never read a `.xsd` |
+| `python3 {sdk}/tools/agent/fill_markers.py --bodies bodies.txt` | every `TODO(you)` body is written into `bodies.txt`. One call applies them all; never rewrite a generated file |
+| `python3 {sdk}/tools/agent/gen_skeleton.py --doc <document> --contract` | you need the name a document generates -- a method, or a type a signature is written in. `--todos` lists the markers still open |
 | `python3 {sdk}/tools/agent/api_help.py <name>` | you need the signature of a **framework** name. Never grep the SDK for one |
+| `python3 {sdk}/tools/explain_rule.py <number> --at <Element>/@<Attribute>` | `gen_docs.py` refused a document and its `fix:` line was not enough |
+| `python3 {sdk}/tools/schema_help.py <name> --document fsml` | a document has to say something `design.json` has no key for. It answers one name out of the schema -- never read a `.xsd` |
 
 All take `--help`. On Windows the interpreter is `python`, not `python3`.
 
@@ -429,28 +405,6 @@ Each line closes a class of wrong code, not a style preference.
 generated code under `build/` it does not read.
 
 {never}
-
-## Done means
-
-The build succeeds, the contract check is clean and the scenarios pass. All of it is
-inside one command:
-
-```bash
-python3 {sdk}/tools/agent/build_project.py --run
-```
-
-It rebuilds whatever changed and then runs the scenarios, so a source edit can never
-be tested against the previous binary. It returns 0 only when everything matched, and
-prints the line each expectation matched, so one run is the evidence. Edit
-`scenarios.json` when the expected output changes.
-
-**Every acceptance item belongs in `scenarios.json`.** The peer going away is a
-scenario-level `"stop"`. The console quit path is already there: `--app` writes both
-the loop in the provider's `main()` and the `quit` scenario that proves it, and that
-scenario needs nothing from you. `gen_skeleton.py --app` wrote the file and printed
-every key, so replacing each `TODO(you)` expectation with the line that proves a
-requirement is all that is left. Never start the processes by hand with `&`, `sleep`,
-`pkill` or `ps`.
 """.format(name=name, manual=manual, where=where, sdk=sdk, never=never)
 
     with open(os.path.join(root, 'AGENTS.md'), 'w', encoding='utf-8') as handle:

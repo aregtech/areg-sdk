@@ -358,9 +358,18 @@ def main():
 
     if args.run:
         print('')
+        # run_scenarios.py refuses a build older than the newest source, because a
+        # run of the previous program reads as a logic fault. That guard is for a
+        # hand-run after an edit. Here the build above has just succeeded in this
+        # same command, so there is nothing older to refuse: a source whose time
+        # moved without its content moving -- a checkout, a copy, a regeneration --
+        # leaves the compiler with nothing to relink and the binary with its old
+        # time, and the guard would then refuse the build it was given, every time,
+        # with no command able to clear it.
         if not run('scenarios',
                    [PYTHON, os.path.join(HERE, 'run_scenarios.py'),
-                    '--build', os.path.join(args.build, 'bin')], root, kept=40):
+                    '--build', os.path.join(args.build, 'bin'), '--stale-ok'],
+                   root, kept=40):
             return 1
         if not args.no_check:
             print('')

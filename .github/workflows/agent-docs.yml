@@ -39,7 +39,7 @@ jobs:
   references:
     name: documentation references
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
 
@@ -59,8 +59,15 @@ jobs:
       # inline command out of the agent pages, fails on one naming a script that is
       # not there, and executes the read-only tools so a misspelled flag is a red step
       # rather than a dead instruction a reader discovers by following it.
+      #
+      # --deep also runs the commands that need a project: it scaffolds throw-away
+      # ones in a temporary directory and gives each command a private copy of the
+      # state its precondition names. Those are the commands a run actually pastes,
+      # and checking their flags against --help does not notice one that parses and
+      # no longer works. Half a minute, nothing compiled, nothing written outside
+      # that directory.
       - name: Check the documented commands
-        run: python3 tools/agent/check_commands.py
+        run: python3 tools/agent/check_commands.py --deep
 
       - name: Check the removed-name lists still match the framework
         run: python3 tools/agent/check_contract.py --audit-legacy framework

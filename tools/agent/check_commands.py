@@ -28,18 +28,31 @@ in one of four states:
 SKIP is not a pass. It is the honest size of what this cannot verify, and it is
 reported as a number so the gap does not read as coverage.
 
+Most of a corpus's commands are neither dangerous nor free: they need a project to run
+in, or a build in build/bin, or a minute of wall clock. --deep runs those too. It
+scaffolds throw-away projects in a temporary directory -- one per precondition a
+documented command has -- and gives every command its own copy of the one it needs, so
+no command sees what another one wrote and the order the documents are read in does
+not matter. Nothing outside that directory is written, nothing is compiled by the
+checker itself, and a command naming a file the throw-away project does not carry
+stays a SKIP rather than becoming a false RED.
+
     python3 tools/agent/check_commands.py                     the agent corpus
     python3 tools/agent/check_commands.py --contrib           CLAUDE.md and .claude/
+    python3 tools/agent/check_commands.py --deep              also the slow, safe ones
     python3 tools/agent/check_commands.py --verbose           every command and its state
 
 Exit code 0 when nothing is RED and nothing is a HOLE, 1 otherwise.
 """
 
 import argparse
+import glob
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 FENCE_RE = re.compile(r'^```(bash|sh|shell|bat|cmd)\s*$')
@@ -91,6 +104,51 @@ READ_ONLY = {
     'check_commands.py': {'require': ('--help',)},
     'check_mutations.py': {'deny': ('--lib',)},
     'check_invariants.py': {'require': ('--dry-run', '--list'), 'deny': ('--build',)},
+}
+
+# What --deep adds, and where each command is run. A variant matches when none of its
+# 'deny' flags is present and one of its 'require' flags is, so one script can be a
+# root command in one spelling and a project command in another; the first variant
+# that matches decides. 'needs' names what has to be in the tree before the command
+# can answer at all.
+#
+#   root      the SDK checkout, like the default set
+#   scaffold  a project setup_project.py has just written: design.json is the template
+#   project   the same with its documents and application generated, and bodies.txt
+#             carrying one comment body per section, unapplied
+#   filled    the same with those bodies applied, so no marker is left open
+#   empty     a private empty directory, for a command that creates a project
+#
+# What stays out, and why: anything that compiles the framework, starts a service,
+# or edits the checkout. check_invariants.py --build is out as well -- it seeds a
+# defect per invariant and rebuilds for each, which is hours, not minutes. So is
+# everything in GATED below.
+DEEP = {
+    'check_contract.py': [
+        {'require': ('--audit-prohibitions', '--audit-legacy'), 'where': 'root'},
+        {'where': 'filled'},
+    ],
+    'api_help.py': [{'where': 'root'}],
+    'schema_help.py': [{'where': 'root'}],
+    'setup_agent_memory.py': [{'require': ('--list', '--check'), 'where': 'root'}],
+    'setup_agent_redirect.py': [{'require': ('--list', '--check'), 'where': 'root'}],
+    'gen_docs.py': [{'require': ('--template',), 'where': 'scaffold'},
+                    {'where': 'project'}],
+    'gen_skeleton.py': [{'where': 'project'}],
+    'fill_markers.py': [{'where': 'project'}],
+    'setup_project.py': [{'where': 'empty'}],
+}
+
+# Commands CI already executes as a step of its own, in the spelling the documents
+# give. Running them again here buys no verdict and costs the wall clock twice: the
+# eval self-check alone has a job of its own with a 60 minute budget. What this
+# checker can still say about them it says without running them -- the paths they
+# name resolve, and every flag is one the tool's own --help advertises.
+GATED = {
+    'check_recipes.py': 'the recipes job runs it',
+    'check_mutations.py': 'the recipes job runs it',
+    'check_observability.py': 'the recipes job runs it',
+    'run_evals.py': 'the evaluation bank job runs it',
 }
 
 # Any command carrying one of these is never run, whatever else it says.
@@ -248,36 +306,76 @@ def unknown_flags(command):
     return script, [f for f in used if f not in known]
 
 
-def classify(command):
-    """The state of one command, and why. Does not run anything."""
+def variant_fits(rule, flags):
+    """Whether one allowlist variant covers a command carrying these flags."""
+    for word in flags:
+        if word.split('=')[0] in rule.get('deny', ()):
+            return False
+    require = rule.get('require', ())
+    return not require or any(flag in flags for flag in require)
+
+
+def classify(command, deep=False):
+    """The state of one command, where to run it, and why. Does not run anything."""
     head = command.split()[0].strip('`')
     lowered = command.lower()
 
     holes = [p for p in repository_paths(command)
              if not os.path.exists(os.path.join(ROOT, p))]
     if holes:
-        return 'HOLE', 'names ' + ', '.join(sorted(set(holes))) + ', not in the tree'
+        return 'HOLE', 'root', 'names ' + ', '.join(sorted(set(holes))) + \
+            ', not in the tree'
 
     if PLACEHOLDER_RE.search(command):
-        return 'SKIP', 'carries a placeholder a reader has to fill in'
+        return 'SKIP', 'root', 'carries a placeholder a reader has to fill in'
     if any(word in lowered for word in UNSAFE_WORDS):
-        return 'SKIP', 'builds, starts or changes something'
+        return 'SKIP', 'root', 'builds, starts or changes something'
     if head not in SAFE_HEAD:
-        return 'SKIP', 'not one of the interpreters this checker drives'
+        return 'SKIP', 'root', 'not one of the interpreters this checker drives'
+    # "python" is the spelling Windows needs and most POSIX distributions do not
+    # install. An interpreter this machine does not have says nothing about the
+    # command, so it is a SKIP with the reason rather than an exit 127 reported as a
+    # broken instruction.
+    if shutil.which(head) is None:
+        return 'SKIP', 'root', 'the interpreter "{}" is not on PATH here'.format(head)
 
     words = command.split()[1:]
     script = os.path.basename(words[0]) if words else ''
-    if script not in READ_ONLY:
-        return 'SKIP', 'not one of the read-only tools this checker runs'
-    rule = READ_ONLY[script]
     flags = [w for w in words[1:] if w.startswith('-')]
-    for word in flags:
-        if word.split('=')[0] in rule.get('deny', ()):
-            return 'SKIP', '"{}" makes {} do work rather than answer'.format(word, script)
-    require = rule.get('require', ())
-    if require and not any(flag in flags for flag in require):
-        return 'SKIP', '{} is only run with {}'.format(script, ' or '.join(require))
-    return 'RUN', ''
+
+    if script in READ_ONLY:
+        rule = READ_ONLY[script]
+        if variant_fits(rule, flags):
+            return 'RUN', 'root', ''
+        denied = [w for w in flags if w.split('=')[0] in rule.get('deny', ())]
+        why = ('"{}" makes {} do work rather than answer'.format(denied[0], script)
+               if denied else
+               '{} is only run with {}'.format(script,
+                                               ' or '.join(rule.get('require', ()))))
+        if not deep:
+            return 'SKIP', 'root', why
+    else:
+        why = 'not one of the tools this checker runs, even deep'
+
+    if not deep:
+        if script in DEEP:
+            return 'SKIP', 'root', '{} is only run by --deep'.format(script)
+        return 'SKIP', 'root', 'not one of the read-only tools this checker runs'
+
+    if script in GATED:
+        return 'SKIP', 'root', '{}: its path and its flags are checked here, and {}' \
+            .format(script, GATED[script])
+
+    for rule in DEEP.get(script, ()):
+        if not variant_fits(rule, flags):
+            continue
+        missing = [n for n in rule.get('needs', ())
+                   if not os.path.exists(os.path.join(ROOT, n))]
+        if missing:
+            return 'SKIP', 'root', '{} needs {}, which this tree does not carry'.format(
+                script, ', '.join(missing))
+        return 'RUN', rule.get('where', 'root'), ''
+    return 'SKIP', 'root', why
 
 
 # A command gets this long to answer, then a longer second chance. The budget is wall
@@ -288,16 +386,29 @@ FIRST_BUDGET = 120
 SECOND_BUDGET = 600
 
 
-def run(command):
-    """Runs one command that classify() cleared.
+# --deep runs the commands the default run leaves out because they are slow. A
+# recipe sweep and an eval self-check are tens of minutes, and reporting either as
+# SLOW would say nothing about it.
+DEEP_BUDGET = 5400
+
+
+def run(command, where='root', budgets=(FIRST_BUDGET, SECOND_BUDGET)):
+    """Runs one command that classify() cleared, in the directory it belongs to.
 
     Returns (state, detail), where state is RUN for success, RED for a command that
     failed, and SLOW for one that ran out of time twice. A slow command is not
     reported as broken: the checker says it could not find out.
     """
-    for budget in (FIRST_BUDGET, SECOND_BUDGET):
+    if where == 'root':
+        folder = ROOT
+    else:
+        folder, why = sandbox_for(command, where)
+        if folder is None:
+            return 'SKIP', why
+        command = absolute_scripts(command)
+    for budget in budgets:
         try:
-            result = subprocess.run(command, cwd=ROOT, shell=True,
+            result = subprocess.run(command, cwd=folder, shell=True,
                                     capture_output=True, text=True, timeout=budget)
         except subprocess.TimeoutExpired:
             continue
@@ -308,7 +419,169 @@ def run(command):
                                            tail[0] if tail else '')
     return 'SLOW', ('no verdict: still running after {}s, then after {}s. The machine '
                     'was too loaded to time it, which is not a finding about the '
-                    'command'.format(FIRST_BUDGET, SECOND_BUDGET))
+                    'command'.format(budgets[0], budgets[-1]))
+
+
+# ---------------------------------------------------------------------------
+# The throw-away projects --deep runs project commands in
+#
+# A documented command has a precondition -- a project that exists, a design that is
+# still the template, a worksheet with bodies in it, a source tree with no marker
+# left. Each is prepared once and copied per command, so a command that rewrites a
+# source cannot change what the next one sees, the order the documents are read in
+# does not decide the result, and a precondition the sandbox cannot meet is a SKIP
+# rather than a RED. Nothing is compiled here: a command that needs a binary is a
+# root command with a 'needs' of build/bin, or it is not run at all.
+#
+#   scaffold  setup_project.py has run, and nothing else: design.json is the template
+#   project   its documents and its application are generated, and bodies.txt carries
+#             one comment body per section, unapplied
+#   filled    the same with those bodies applied, so no marker is left open
+# ---------------------------------------------------------------------------
+_holder = [None]
+_prepared = {}
+_made = [0]
+
+
+def _call(base, argv, capture=None):
+    """One tool of this SDK, run inside a prepared directory."""
+    try:
+        done = subprocess.run([sys.executable] + argv, cwd=base, capture_output=True,
+                              text=True, timeout=SECOND_BUDGET)
+    except (OSError, subprocess.SubprocessError):
+        return False
+    if done.returncode != 0:
+        return False
+    if capture:
+        with open(os.path.join(base, capture), 'w', encoding='utf-8',
+                  newline='\n') as handle:
+            handle.write(done.stdout)
+    return True
+
+
+def _fill_worksheet(base):
+    """One comment body under every section of the worksheet.
+
+    The worksheet's own rule: a section that needs nothing is closed by one // line.
+    Nothing here is compiled, so a comment is every body this checker has to write.
+    """
+    sheet = os.path.join(base, 'bodies.txt')
+    if not os.path.isfile(sheet):
+        return False
+    with open(sheet, encoding='utf-8') as handle:
+        lines = handle.read().splitlines()
+    out = []
+    for line in lines:
+        out.append(line)
+        if line.startswith('== '):
+            out.append('// checked by check_commands.py')
+    with open(sheet, 'w', encoding='utf-8', newline='\n') as handle:
+        handle.write('\n'.join(out) + '\n')
+    return True
+
+
+def prepare(state):
+    """The throw-away project one command needs, or '' when it cannot be built."""
+    if state in _prepared:
+        return _prepared[state]
+    if _holder[0] is None:
+        _holder[0] = tempfile.mkdtemp(prefix='check-commands-')
+    base = os.path.join(_holder[0], state)
+    tools = os.path.join(ROOT, 'tools', 'agent')
+
+    if state == 'scaffold':
+        os.makedirs(base)
+        ok = _call(base, [os.path.join(tools, 'setup_project.py'), '--name', 'deep',
+                          '--root', '.', '--mode', 'ipc', '--sdk-root', ROOT])
+    elif state == 'project':
+        earlier = prepare('scaffold')
+        ok = bool(earlier)
+        if ok:
+            shutil.copytree(earlier, base)
+            ok = _call(base, [os.path.join(tools, 'gen_docs.py'), '--example'],
+                       'design.json')
+            ok = ok and _call(base, [os.path.join(tools, 'gen_docs.py'), '--outdir',
+                                     'src/services', '--force', '--chained', '--spec',
+                                     'design.json'])
+        if ok:
+            docs = sorted(glob.glob(os.path.join(base, 'src', 'services', '*.siml')))
+            machines = sorted(glob.glob(os.path.join(base, 'src', 'services', '*.fsml')))
+            made = [os.path.join(tools, 'gen_skeleton.py'), '--doc',
+                    os.path.relpath(docs[0], base).replace('\\', '/'), '--app',
+                    '--mode', 'ipc', '--force'] if docs else None
+            if made and machines:
+                made += ['--machine',
+                         os.path.relpath(machines[0], base).replace('\\', '/')]
+            ok = bool(made) and _call(base, made) and _fill_worksheet(base)
+    elif state == 'filled':
+        earlier = prepare('project')
+        ok = bool(earlier)
+        if ok:
+            shutil.copytree(earlier, base)
+            ok = _call(base, [os.path.join(tools, 'fill_markers.py'), '--bodies',
+                              'bodies.txt'])
+    else:
+        os.makedirs(base)
+        ok = True
+    if not ok:
+        shutil.rmtree(base, ignore_errors=True)
+    _prepared[state] = base if ok else ''
+    return _prepared[state]
+
+
+# A path a command names, as opposed to a flag or a bare word.
+NAMED_PATH_RE = re.compile(r'[\w./\\-]+\.(?:py|sh|bat|siml|fsml|dtml|json|txt|xsd)$')
+
+
+def sandbox_for(command, where):
+    """A private directory for one command, or (None, why) when it cannot have one."""
+    base = prepare(where)
+    if not base:
+        return None, 'the throw-away project for a "{}" command could not be ' \
+            'prepared here'.format(where)
+    if _holder[0] is None:                      # pragma: no cover - prepare() made it
+        _holder[0] = tempfile.mkdtemp(prefix='check-commands-')
+    _made[0] += 1
+    folder = os.path.join(_holder[0], 'run{}'.format(_made[0]))
+    shutil.copytree(base, folder)
+    # A command naming a file of some other project is a SKIP, not a RED: the file
+    # is missing from this sandbox, which says nothing about the command.
+    for token in re.split(r'[\s"\'=]+', command):
+        token = token.strip('`,;()')
+        if not token or token.startswith('-') or not NAMED_PATH_RE.match(token):
+            continue
+        if token.replace('\\', '/').lstrip('./').startswith(TRACKED_TOPS):
+            continue
+        if not os.path.exists(os.path.join(folder, token)):
+            shutil.rmtree(folder, ignore_errors=True)
+            return None, 'names {}, which the throw-away project does not carry'.format(
+                token)
+    return folder, ''
+
+
+def absolute_scripts(command):
+    """The command with every tools/ script path made absolute.
+
+    A project command runs in a directory that is not the checkout, so a script path
+    relative to the checkout resolves to nothing there.
+    """
+    out = []
+    for token in command.split():
+        bare = token.strip('`').replace('\\', '/')
+        if bare.startswith('./'):
+            bare = bare[2:]
+        if bare.startswith(TRACKED_TOPS) and bare.endswith(('.py', '.sh', '.bat')):
+            out.append(os.path.join(ROOT, bare))
+        else:
+            out.append(token)
+    return ' '.join(out)
+
+
+def drop_sandbox():
+    if _holder[0]:
+        shutil.rmtree(_holder[0], ignore_errors=True)
+        _holder[0] = None
+        _prepared.clear()
 
 
 def main():
@@ -316,6 +589,9 @@ def main():
         description='Check every documented command, and run the safe ones.')
     parser.add_argument('--contrib', action='store_true',
                         help='the framework contributor corpus instead of the agent one')
+    parser.add_argument('--deep', action='store_true',
+                        help='also run the slow, safe ones: project commands in a '
+                             'throw-away project, and the checkers that need build/bin')
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument('docs', nargs='*', help='documents to read instead of a corpus')
     args = parser.parse_args()
@@ -332,7 +608,7 @@ def main():
     for document in documents:
         for number, command in blocks(document):
             command = substitute(command)
-            state, why = classify(command)
+            state, where, why = classify(command, args.deep)
             # A command this checker cannot run still names flags, and a flag the
             # tool stopped accepting is a dead instruction whether it runs or not.
             script, bad = unknown_flags(command)
@@ -343,7 +619,9 @@ def main():
                 elif state != 'RUN':
                     flagged += 1
             if state == 'RUN':
-                outcome, detail = run(command)
+                budgets = ((FIRST_BUDGET, DEEP_BUDGET) if args.deep
+                           else (FIRST_BUDGET, SECOND_BUDGET))
+                outcome, detail = run(command, where, budgets)
                 if outcome != 'RUN':
                     state, why = outcome, detail
             counts[state] += 1
@@ -354,16 +632,19 @@ def main():
             elif args.verbose:
                 print('{:<5} {:<28} {}'.format(state, where, command))
 
+    drop_sandbox()
     for problem in problems:
         print(problem.rstrip())
     total = sum(counts.values())
     # The headline says coverage before it says verdicts. "0 red" out of 60 discovered
     # reads as sixty commands verified; it is a verdict on the five that ran.
     covered = counts['RUN'] + counts['RED']
-    print('{} command(s) discovered in {} document(s): {}/{} executed ({}/{} of the '
+    print('{} command(s) discovered in {} document(s): {}/{} executed{} ({}/{} of the '
           'rest had their flags checked against --help), {} passed, {} red, '
           '{} unresolved, {} not run here{}'
-          .format(total, len(documents), covered, total, flagged, counts['SKIP'],
+          .format(total, len(documents), covered, total,
+                  '' if args.deep else ', and --deep runs more',
+                  flagged, counts['SKIP'],
                   counts['RUN'], counts['RED'], counts['HOLE'], counts['SKIP'],
                   ', {} without a verdict'.format(counts['SLOW'])
                   if counts['SLOW'] else ''))

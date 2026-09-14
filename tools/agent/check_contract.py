@@ -1281,6 +1281,41 @@ def generated_calls(documents):
     return calls
 
 
+def generated_members(documents):
+    """Every member name the generated bases declare, spelled as they declare it.
+
+    An attribute accessor carries no request_, response_ or broadcast_ prefix, so a
+    request whose name collides with one -- a request set_level beside an attribute
+    Level -- makes the accessor look like a method that dropped its prefix.
+    """
+    members = set()
+    for doc in documents:
+        try:
+            root = ET.parse(doc).getroot()
+        except (ET.ParseError, OSError):
+            continue
+        for attribute in root.iter('Attribute'):
+            name = attribute.get('Name', '')
+            if not name:
+                continue
+            name = snake(name)
+            members.update((name, 'set_' + name, 'is_' + name + '_valid',
+                            'invalidate_' + name, 'on_' + name + '_update',
+                            'notify_on_' + name + '_update'))
+        for method in root.iter('Method'):
+            base = method.get('Name', '')
+            kind = method.get('MethodType', '')
+            prefix = METHOD_PREFIX.get(kind)
+            if not base or not prefix:
+                continue
+            members.add(prefix + base)
+            if kind == 'Request':
+                members.add(prefix + base + '_failed')
+            elif kind == 'Broadcast':
+                members.add('notify_on_' + prefix + base)
+    return members
+
+
 def declared_anywhere(texts, name):
     """Whether any source declares or defines a function or a macro of this name."""
     pattern = re.compile(r'(?:\b(\w+)[\s*&]+|::|#\s*define\s+)%s\s*\(' % re.escape(name))
@@ -1300,6 +1335,7 @@ def check_bare_calls(documents, sources, findings, read):
     calls = generated_calls(documents)
     if not calls:
         return
+    members = generated_members(documents)
     texts = {}
     for path in sources:
         text = read(path)
@@ -1313,6 +1349,8 @@ def check_bare_calls(documents, sources, findings, read):
             for match in BARE_CALL_RE.finditer(line):
                 name = match.group(1)
                 if name not in calls or name in NOT_A_CALL or name in FRAMEWORK_MEMBERS:
+                    continue
+                if name in members:
                     continue
                 word = re.search(r'(\w+)\s*$', line[:match.start()])
                 if word and word.group(1) not in CALL_PREFIX_WORDS:
@@ -1464,10 +1502,13 @@ AUDIT_SPREAD = 4    #!< a word more entries than this use says nothing about pai
 # A clause of the closing paragraph shorter than this is a connective, not a rule.
 AUDIT_CLAUSE = 20
 
-# Entries of AGENTS.md section 6 that deliberately state two rules in one
-# sentence. Raise it only when a new entry covers two rules; the count is what
-# reports a rule added to api.json and never written on the page.
-AUDIT_MERGED = 1
+# Entries of AGENTS.md section 6 that state two rules in one sentence. It is zero,
+# and keeping it there is the point: while it is zero the entries a reader can count
+# are the rules api.json states, and the sentence above them that gives a number is
+# true however the reader checks it. Raise it only when an entry has to cover two
+# rules; the count is what reports a rule added to api.json and never written on the
+# page.
+AUDIT_MERGED = 0
 
 
 def audit_weights(texts):

@@ -122,9 +122,9 @@ Small corrections only require a Signed-off-by line.
 Do not add a tracked instruction file for a particular coding agent. One exists already, `./.github/copilot-instructions.md`, and it is permitted only because it holds no guidance of its own: it is three sentences pointing at `AGENTS.md`. Any new redirect must be generated locally and left untracked:
 
 ```
-python tools/agent/setup_agent_redirect.py --list
-python tools/agent/setup_agent_redirect.py --harness claude
-python tools/agent/setup_agent_redirect.py --check     # fails if a redirect grew content
+python3 tools/agent/setup_agent_redirect.py --list
+python3 tools/agent/setup_agent_redirect.py --harness claude
+python3 tools/agent/setup_agent_redirect.py --check     # fails if a redirect grew content
 ```
 
 The reason is drift. Guidance duplicated per harness stops agreeing with `AGENTS.md` within a release or two, and the copies disagree with each other, so an agent's behaviour then depends on which file its harness happened to read.
@@ -141,9 +141,9 @@ Work on this repository runs across many sessions, and each one otherwise begins
 Create that tree, and ask where each file goes, with:
 
 ```
-python tools/agent/setup_agent_memory.py --init
-python tools/agent/setup_agent_memory.py --list     # the tree and the state of each file
-python tools/agent/setup_agent_memory.py --check    # fails if a file is missing or unlisted
+python3 tools/agent/setup_agent_memory.py --init
+python3 tools/agent/setup_agent_memory.py --list     # the tree and the state of each file
+python3 tools/agent/setup_agent_memory.py --check    # fails if a file is missing or unlisted
 ```
 
 **The protocol is tracked; the content is not.** The tool writes the tree and the two indexes and nothing else; what goes in them is written by hand, by whoever learned it. `.gitignore` matches `*claude*`, so none of it can enter a commit. The knowledge is local to one machine and one line of work, it would go stale inside a release, and an application author who found it would be misled by it.

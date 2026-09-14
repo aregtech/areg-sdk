@@ -94,7 +94,7 @@ into three jobs.
 | `check_contract.py` | Checks sources against `docs/agent/api.json`, before a build. `--audit-prohibitions` compares the three lists of rules; `--audit-legacy` checks the removed-name lists |
 | `check_symbols.py` | Checks every `areg::` name, framework macro and `Header.hpp:line` citation in the agent pages against `framework/` |
 | `check_agent_docs.py` | Verifies every path the agent documentation names resolves |
-| `check_commands.py` | Verifies every command the documentation gives resolves, and runs the read-only ones |
+| `check_commands.py` | Verifies every command the documentation gives resolves, and runs the read-only ones. `--deep` also runs the ones that need a project, in throw-away ones it scaffolds |
 
 **Proving the corpus is still true:**
 

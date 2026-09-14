@@ -187,6 +187,11 @@ WORKSHEET_HEAD = """\
 #| body is "//", not "#". A section left with no code stays open and nothing is
 #| written for it, so one pass can fill what it knows and a later pass the rest.
 #|
+#| A section that needs nothing still takes one line: a "//" comment saying so
+#| closes it. This holds for every section, the "*_state" ones included. A marker
+#| left open is an error of the final contract check, after the build and the
+#| scenarios have already passed.
+#|
 #| Filling this file and running that command is two requests. Editing the sources
 #| one marker at a time is {total} requests instead, and a request is billed for the
 #| whole conversation again.
@@ -331,6 +336,44 @@ def section_notes(sections):
     return notes
 
 
+# The one generated function whose behaviour no name gives away. A worksheet lists
+# mPace, mDeadline, cStallTicks and mIdleTicks as taken, and a body that has to know
+# when the pacing timer ticks or when the stall watchdog fires cannot read that out
+# of the names: one measured run opened four generated files for it. The body is a
+# dozen lines and it is the whole answer.
+DRIVEN_BY = 'process_timer'
+DRIVEN_LIMIT = 20
+DRIVEN_HEAD = ('#| When those timers fire, which no name above says. This is the\n'
+               '#| generated code, quoted so no file has to be opened for it:\n#|')
+
+
+def driven_body(produced):
+    """The generated process_timer of each component, as (class, lines)."""
+    found = []
+    for file_name, text in produced:
+        if not file_name.endswith('.cpp'):
+            continue
+        lines = text.splitlines()
+        for index, line in enumerate(lines):
+            if '::' + DRIVEN_BY + '(' not in line or line.startswith(' '):
+                continue
+            end = index
+            while end < len(lines) and lines[end] != '}':
+                end += 1
+            body = lines[index:end + 1]
+            # A body that is nothing but its own marker teaches nothing. One that
+            # carries generated control flow is quoted whole, the marker included:
+            # where the author's own code goes relative to it is the other half of
+            # the answer.
+            real = [one for one in body[2:-1]
+                    if one.strip() and not MARKER.search(one)
+                    and PLACEHOLDER_TAG.strip() not in one]
+            if real and len(body) <= DRIVEN_LIMIT:
+                found.append((os.path.basename(file_name)[:-4], body))
+            break
+    return found
+
+
 def worksheet_lines(produced, out, iface, document, machine, machine_doc,
                     scenarios=None):
     """The whole worksheet, ready to write."""
@@ -359,6 +402,13 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
                 parts.append('helpers ' + ', '.join(h + '()' for h in helpers))
             lines.append('#|   {}: {}'.format(cls, '; '.join(parts)))
         lines.append('#|')
+    driven = driven_body(produced)
+    if driven:
+        lines.append(DRIVEN_HEAD)
+        for cls, body in driven:
+            for line in body:
+                lines.append(('#|   ' + line).rstrip())
+            lines.append('#|')
     lines.append('#| The names these bodies may call, spelt as the generator emits them.\n'
                  '#| A name spelt in another namespace than the one below does not\n'
                  '#| compile:\n#|')
@@ -1731,7 +1781,8 @@ def split_class(cls, lines):
 
 
 def component_files(cls, brief, includes, class_lines, state_slot, prelude=(),
-                    state_hint='the members and helpers your rules need, defined here'):
+                    state_hint='the members and helpers your rules need, defined here, '
+                               'or one // line saying none is needed'):
     """The .hpp and the .cpp of one component, named after its class."""
     declaration, definitions = split_class(cls, class_lines)
     private = declaration.index('private:')
@@ -1816,11 +1867,13 @@ def app_files(iface, mode, include_root, machine=None, steps=(), driver=None):
         + [''] + consumer_base,
         consumer_class(iface, consumer_cls, steps, driver), 'consumer_state',
         QUIT_DECLARATION,
-        'the members and helpers your checks need, defined here; the step the scenario '
-        'is on is mStep already' if steps else
-        'the members and helpers your rules need, defined here, and the one saying '
-        'what step the scenario is on' if steps_scenario(iface) else
-        'the members and helpers your rules need, defined here')]
+        'the members and helpers your checks need, defined here, or one // line saying '
+        'none is needed; the step the scenario is on is mStep already' if steps else
+        'the members and helpers your rules need, defined here, or one // line saying '
+        'none is needed, and the one saying what step the scenario is on'
+        if steps_scenario(iface) else
+        'the members and helpers your rules need, defined here, or one // line saying '
+        'none is needed')]
 
     def head(file_name, brief):
         return ['/**',

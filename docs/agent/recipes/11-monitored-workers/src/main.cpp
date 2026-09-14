@@ -200,6 +200,10 @@ protected:
             if (areg::is_service_connected(status))
             {
                 notify_on_broadcast_alarm(true);
+                //! Asks once here as well. Both calls travel the same proxy in order,
+                //! so an answer that reports everyone alive proves the subscription
+                //! was registered before it and no alarm can be missed.
+                request_summary();
             }
         }
 
@@ -214,6 +218,12 @@ protected:
 
     void response_summary(unsigned int alive, unsigned int total) final
     {
+        //! Everyone alive says nothing has gone wrong yet; the alarm ends the run.
+        if (alive == total)
+        {
+            return;
+        }
+
         std::cout << "operator: " << alive << " of " << total << " alive" << std::endl;
         areg::Application::signal_quit();
     }

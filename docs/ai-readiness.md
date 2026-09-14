@@ -67,12 +67,17 @@ here rather than left to be discovered:
   can route.** Moving the routing table above the installation and golden-path
   sections cut the bytes an agent reads before it can route, and changed the
   measurement by nothing. The proxy is cheap and stable, and it is a proxy.
-- **`check_commands.py` resolves every documented command, runs only the read-only
-  ones, and checks every flag against what the tool's own `--help` advertises.** The
-  rest build, start or change something. A flag the tool no longer accepts is now
-  caught whether the command runs or not, but a command that resolves, carries only
-  known flags and still does not work is the class of defect that has cost the most
-  time in past audits.
+- **`check_commands.py` resolves every documented command, runs the read-only ones,
+  and checks every flag against what the tool's own `--help` advertises.** A flag the
+  tool no longer accepts is caught whether the command runs or not, but a command that
+  resolves, carries only known flags and still does not work is the class of defect
+  that has cost the most time in past audits -- and the flag check does not notice it.
+  `--deep` closes most of that gap: it scaffolds throw-away projects in a temporary
+  directory -- one per precondition a command has -- and runs the commands that need
+  one, which are the commands a run actually pastes. Half a minute, nothing compiled,
+  and CI runs it in place of the plain form. What is left out is what builds the
+  framework, starts a service, edits the checkout, or is already a CI step of its own;
+  each is reported with its reason, and the total is reported as a number.
 - **The include check reads names, not a compiler.** It asks whether every `areg::`
   name and macro a page's code uses is reachable from an include that page shows. It
   cannot tell whether the code would otherwise compile.
@@ -111,6 +116,7 @@ here rather than left to be discovered:
 | `budget` | A page deliberately larger is named in `docs/agent/.budgets` with its reason. Recorded, so the exception is argued rather than forgotten. | `NOTE` |
 | `budget` | An entry in `.budgets` naming a page that does not exist, or one already under the ceiling, is stale: it would quietly cover a page that grew into it later. | `FAIL` |
 | `budget` | A page within 1% of the ceiling is tuned to the rule, not written to it: the next one-word edit trips CI. | `NOTE` |
+| `budget` | **No page, and no `.budgets` entry, above 20.0 KB.** An exception raises the ceiling for one page; it cannot pass this one, and it cannot be recorded above it either. Without a stop the mechanism reports rather than constrains: every raise so far was argued and granted, and the six largest pages are the six exempt ones. A page that reaches it is split, or what a tool can answer moves into the schema. The headroom of the largest page is printed as one `NOTE`, so the next raise is priced before it is argued. | `FAIL` |
 | `corpus-toll` | The whole reading corpus -- `AGENTS.md`, the runbook and every page in `docs/agent/` -- at or below 190.0 KB. A page budget bounds one page and says nothing about how many pages there are; this bounds the set, so an addition is paid for by a removal. Raising `CORPUS_CEILING` is a deliberate edit, and the commit that raises it says what the bytes bought. | `FAIL` |
 | `duplication` | Under 2% of 12-word runs repeated across three or more pages. | `WARN` |
 | `generated` | The rule against editing generated code is stated on the entry path, and no recipe ships generated code to be read. | `FAIL` |

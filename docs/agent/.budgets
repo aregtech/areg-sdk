@@ -10,6 +10,12 @@
 # pressure to shrink it stays visible. An entry naming a page that does not exist,
 # or one that is already under the ceiling, is a defect and is reported.
 #
+# There is a second, hard ceiling of 20 KB, and nothing here raises it. A size above
+# it cannot be recorded in this file, and a page above it fails whatever this file
+# says: it is split, or what a tool can answer moves into the schema. It exists
+# because every raise argued here has been granted, which left the six largest pages
+# as the six exempt ones and turned the ceiling into a report rather than a limit.
+#
 #   <page> = <bytes> # reason
 #
 01-runbook.md       = 15872  # the whole procedure for building an application, scaffold to passing scenario, and the page AGENTS.md sends every such task to first. Not split: it is read whole in a run's first request, so a split only adds a request and an ordering to get wrong. Raised 15616 -> 15872 for the command timeout beside the one call that needs it: build_project.py's first call compiles the framework, and the warning was printed by that call, after the timeout for it had already been chosen. AGENTS.md carried the sentence, this page issues the command, and the golden path says not to compose from anywhere else. It lived under examples/ai-benchmark/ until the benchmark was found to measure a procedure a user's own agent never received: examples/ is optional and not installed, and AGENTS.md taught an older chain. Nothing in it is benchmark-specific; the benchmark's own rules are in its prompt. reviewed 2026-09-14

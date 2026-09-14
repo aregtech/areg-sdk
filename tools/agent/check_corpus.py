@@ -475,6 +475,7 @@ CI_GATES = [
     ('corpus check',          'check_corpus.py'),
     ('mutations',             'check_mutations.py'),
     ('observability',         'check_observability.py'),
+    ('documented commands, deep', 'check_commands.py --deep'),
     ('non-Linux runner',      'windows-'),
 ]
 
@@ -583,6 +584,12 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
 CORPUS_CEILING = 194560
 
 PAGE_CEILING = 8 * KB
+# The stop the exception mechanism did not have. An entry in .budgets raises the
+# ceiling for one page, and every raise so far has been argued and granted, so the
+# six largest pages are the six exempt ones. No .budgets entry may name a size above
+# this, and no page may pass it whatever .budgets says: a page this large is split or
+# moved into the schema, and the exception mechanism cannot decide otherwise.
+PAGE_HARD_CEILING = 20 * KB
 ENTRY_TARGET = 10 * KB
 # What AGENTS.md is allowed while it is over the target, and why. Everything that is
 # stated at its point of use has come out: the worksheet format, which the worksheet
@@ -1028,12 +1035,45 @@ def check_prohibitions(report):
              ).split()
     count = len(stated)
     spelled = words[count] if count < len(words) else str(count)
-    if 'all {}'.format(spelled) not in read('AGENTS.md'):
+    entry = read('AGENTS.md')
+    if 'all {}'.format(spelled) not in entry:
         report.fail('prohibition', 'AGENTS.md does not say check_contract.py reports '
                     'all {} rules api.json states'.format(spelled))
     else:
         report.ok('prohibition', 'AGENTS.md states the {} rules api.json carries'
                   .format(spelled))
+
+    # A reader who counts finds the two groups section 6 splits itself into, not the
+    # total. The 2026-09-14 audit counted 18 where the sentence said nineteen: the
+    # groups have to add up to it, and the first group has to be the bullets there
+    # actually are.
+    section = entry[entry.find('## 6. Never'):]
+    section = section[:section.find('\n## ')] if '\n## ' in section else section
+    bullets = len(re.findall(r'^- ', section, re.M))
+    first = re.search(r'The (\w+) below', section)
+    rest = re.search(r'The other (\w+) are', section)
+    if not first or not rest:
+        report.fail('prohibition', 'section 6 of AGENTS.md no longer says how many '
+                                   'rules each of its two groups carries, so a reader '
+                                   'counting them cannot reach the stated total')
+    elif first.group(1) not in words or rest.group(1) not in words:
+        report.fail('prohibition', 'section 6 of AGENTS.md counts its groups as "{}" '
+                    'and "{}", which are not numbers a reader can add'
+                    .format(first.group(1), rest.group(1)))
+    else:
+        named = words.index(first.group(1))
+        others = words.index(rest.group(1))
+        if named != bullets:
+            report.fail('prohibition', 'section 6 of AGENTS.md says "{}" rules stand '
+                        'below it and writes {} bullet(s)'.format(first.group(1), bullets))
+        elif named + others != count:
+            report.fail('prohibition', 'section 6 of AGENTS.md splits its rules into {} '
+                        'and {}, which is {}; api.json states {}'
+                        .format(named, others, named + others, count))
+        else:
+            report.ok('prohibition', 'the {} bullets and the {} one-line fixes of '
+                      'AGENTS.md section 6 add up to the {} rules api.json states'
+                      .format(named, others, count))
 
     report.ok('prohibition', '{} of {} rules are stated, detected and proven'
               .format(len(proven & {r['id'] for r in rules}), len(rules)))
@@ -1750,6 +1790,13 @@ def stated_numbers():
          'Every page in `docs/agent/` at or below {:.0f} KB'.format(PAGE_CEILING / KB),
          'PAGE_CEILING in this file'),
         ('docs/ai-readiness.md',
+         'No page, and no `.budgets` entry, above {:.1f} KB'
+         .format(PAGE_HARD_CEILING / KB),
+         'PAGE_HARD_CEILING in this file'),
+        ('docs/agent/.budgets',
+         'a second, hard ceiling of {:.0f} KB'.format(PAGE_HARD_CEILING / KB),
+         'PAGE_HARD_CEILING in this file'),
+        ('docs/ai-readiness.md',
          'at or below {:.1f} KB'.format(CORPUS_CEILING / KB),
          'CORPUS_CEILING in this file'),
         ('docs/ai-readiness.md',
@@ -1928,7 +1975,12 @@ def check_page_budget(report):
     over = [(p, size('docs', 'agent', p)) for p in pages
             if size('docs', 'agent', p) > PAGE_CEILING]
     for page, bytes_ in sorted(over, key=lambda x: -x[1]):
-        if bytes_ <= allowed.get(page, 0):
+        if bytes_ > PAGE_HARD_CEILING:
+            report.fail('budget', 'docs/agent/{} is {:.1f} KB, over the {:.0f} KB hard '
+                        'ceiling that no .budgets entry may raise. Split it, or move '
+                        'what a tool can answer into the schema'
+                        .format(page, bytes_ / KB, PAGE_HARD_CEILING / KB))
+        elif bytes_ <= allowed.get(page, 0):
             report.note('budget', 'docs/agent/{} is {:.1f} KB, over the ceiling by '
                         'recorded exception'.format(page, bytes_ / KB))
         else:
@@ -1945,6 +1997,11 @@ def check_page_budget(report):
         elif size('docs', 'agent', page) <= PAGE_CEILING:
             report.fail('budget', '.budgets excuses {}, which needs no exception'
                         .format(page))
+        elif allowed[page] > PAGE_HARD_CEILING:
+            report.fail('budget', '.budgets allows {} {:.1f} KB, above the {:.0f} KB '
+                        'hard ceiling. An exception raises the ceiling for one page; '
+                        'it cannot pass this one'
+                        .format(page, allowed[page] / KB, PAGE_HARD_CEILING / KB))
 
     # A page a handful of bytes under the ceiling is tuned to the metric, not
     # written to it: the next one-word edit trips CI.
@@ -1958,8 +2015,10 @@ def check_page_budget(report):
     # means shrinking pages that are already inside the ceiling, with no criterion
     # for what to remove. The ceiling and the corpus total bound the same bytes, and
     # a page has grown to put a fact at its point of use more than once.
-    report.ok('budget', '{} of {} pages are within the {:.0f} KB ceiling'
-              .format(len(pages) - len(over), len(pages), PAGE_CEILING / KB))
+    report.ok('budget', '{} of {} pages are within the {:.0f} KB ceiling, and every '
+              'page and every exception is within the {:.0f} KB hard ceiling'
+              .format(len(pages) - len(over), len(pages), PAGE_CEILING / KB,
+                      PAGE_HARD_CEILING / KB))
 
     # One line the trend is read from. Five NOTEs about five pages say nothing about
     # whether the exempted share of the corpus is growing; this does.
@@ -1969,6 +2028,13 @@ def check_page_budget(report):
                 '{} page(s) over the ceiling'
                 .format(total / KB, exempt / KB,
                         100.0 * exempt / total if total else 0, len(over)))
+    if over:
+        largest, bytes_ = max(over, key=lambda entry: entry[1])
+        room = PAGE_HARD_CEILING - bytes_
+        report.note('budget', 'the largest page is docs/agent/{} at {:.1f} KB, {:.1f} KB '
+                    '{} the {:.0f} KB hard ceiling'
+                    .format(largest, bytes_ / KB, abs(room) / KB,
+                            'under' if room >= 0 else 'over', PAGE_HARD_CEILING / KB))
 
 
 def corpus_files():
@@ -2439,13 +2505,17 @@ def run():
     check_generated_defects(report)
     check_step_driver(report)
     check_method_names(report)
+    check_accessor_collision(report)
     check_spec_semantics(report)
     check_app_shape(report)
     check_final_entry_rule(report)
     check_example_size(report)
     check_worksheet_order_note(report)
+    check_empty_section_note(report)
+    check_command_coverage(report)
     check_worksheet_leftover(report)
     check_regeneration_report(report)
+    check_regeneration_idempotent(report)
     check_marker_spelling(report)
     check_worksheet_contract(report)
     check_contract_symmetry(report)
@@ -2942,7 +3012,13 @@ def check_design_template(report):
                  ['transitions'][0].update(do=[{'call': 'start_work', 'arg': {'x': 'y'}}]),
                  '"arg"'),
                 ('a hand-written note key', lambda s: s['interfaces'][0]['attributes'][0]
-                 .update({'//': 'in percent'}), 'A note in a spec is a "#|" key')):
+                 .update({'//': 'in percent'}), 'A note in a spec is a "#|" key'),
+                # An empty value means the same as an absent key, and a misspelling
+                # means the same whatever it holds. Dropping it leaves the mistake in
+                # the file, to be refused later once a value has been written in.
+                ('a misspelt key with an empty value',
+                 lambda s: s['interfaces'][0].update(broadcast=[]),
+                 'Did you mean "broadcasts"?')):
             wrong = json.loads(json.dumps(filled))
             change(wrong)
             got = generate(written(wrong, 'wrong.json'))
@@ -2961,12 +3037,25 @@ def check_design_template(report):
         if again.returncode == 0 or before != after:
             report.fail('template', '--template replaced a file that carries a design')
             return
+
+        # Every other malformed input to this tool answers in one line. --outdir
+        # naming a file raised FileExistsError through to the terminal.
+        with open('afile', 'w', encoding='utf-8') as handle:
+            handle.write('not a directory\n')
+        blocked = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                                  '--spec', 'filled.json', '--outdir', 'afile'],
+                                 capture_output=True, text=True)
+        if blocked.returncode == 0 or 'Traceback' in blocked.stderr:
+            report.fail('template', '--outdir naming a file does not refuse in one line: '
+                        '{}'.format((blocked.stderr or blocked.stdout).strip()[-200:]))
+            return
     finally:
         os.chdir(here)
         shutil.rmtree(holder, ignore_errors=True)
     report.ok('template', 'the scaffold writes design.json as the template: its keys are '
                           'the generator\'s, untouched it is refused, filled it generates, '
-                          'a stray key is refused by name, and work is never replaced')
+                          'a stray key is refused by name with a value and without one, '
+                          'work is never replaced, and a bad --outdir answers in one line')
 
 
 # Two defects planted in the shape the generator writes, not in a hand-made sample.
@@ -3300,6 +3389,83 @@ def check_method_names(report):
     report.ok('method-names', 'a method keeps its document spelling after its prefix in '
                               'api.json, the skeleton and the contract check, and a '
                               'snake-cased spelling of it is reported')
+
+
+COLLIDING_SIML = """<?xml version="1.0" encoding="utf-8"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="Collide" Version="1.0.0" Category="Public"/>
+    <AttributeList>
+        <Attribute ID="2" Name="Level" DataType="int32" Notify="OnChange"/>
+    </AttributeList>
+    <MethodList>
+        <Method ID="3" Name="set_level" MethodType="Request" Response="set_level">
+            <ParamList>
+                <Parameter ID="4" Name="value" DataType="int32"/>
+            </ParamList>
+        </Method>
+        <Method ID="5" Name="set_level" MethodType="Response"/>
+        <Method ID="6" Name="insert_coin" MethodType="Request" Response="insert_coin"/>
+        <Method ID="7" Name="insert_coin" MethodType="Response"/>
+    </MethodList>
+</ServiceInterface>
+"""
+
+
+def check_accessor_collision(report):
+    """An attribute accessor is a legal bare call even when a request shares its name.
+
+    An attribute Level generates set_level(), is_level_valid() and invalidate_level(),
+    none of which carries a request_, response_ or broadcast_ prefix. A request named
+    set_level beside it made check_contract.py rule P-02 report the accessor the
+    skeleton itself writes, and the runbook forbids editing the generated base the
+    message points at.
+    """
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    holder = tempfile.mkdtemp()
+    try:
+        os.makedirs(os.path.join(holder, 'src', 'services'))
+        with open(os.path.join(holder, 'src', 'services', 'Collide.siml'), 'w',
+                  encoding='utf-8', newline='\n') as handle:
+            handle.write(COLLIDING_SIML)
+        made = subprocess.run([sys.executable, os.path.join(tools, 'gen_skeleton.py'),
+                               '--doc', 'src/services/Collide.siml', '--app', '--mode',
+                               'ipc', '--force', '--scenarios', 'none.json'],
+                              cwd=holder, capture_output=True, text=True)
+        if made.returncode != 0:
+            report.fail('accessor-collision', 'gen_skeleton.py --app failed on an '
+                                              'attribute and a request of the same '
+                                              'name: ' + made.stderr[-160:])
+            return
+
+        def contract():
+            done = subprocess.run([sys.executable, os.path.join(tools, 'check_contract.py'),
+                                   '.', '--strict', '--allow-todo'],
+                                  cwd=holder, capture_output=True, text=True)
+            return done.stdout + done.stderr
+
+        clean = contract()
+        if 'ERROR' in clean:
+            report.fail('accessor-collision', 'check_contract.py rejects the code '
+                                              'gen_skeleton.py wrote: ' + next(
+                                                  line for line in clean.splitlines()
+                                                  if 'ERROR' in line))
+            return
+        provider = glob.glob(os.path.join(holder, 'src', 'provider', '*Provider.cpp'))[0]
+        with open(provider, encoding='utf-8') as handle:
+            text = handle.read()
+        with open(provider, 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write(text.replace('set_level(0);',
+                                      'set_level(0);\n    insert_coin();', 1))
+        if 'P-02' not in contract():
+            report.fail('accessor-collision', 'check_contract.py no longer reports a '
+                                              'bare request call: the accessor exemption '
+                                              'disabled the rule')
+            return
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    report.ok('accessor-collision', 'an attribute accessor whose name collides with a '
+                                    'request is accepted, and a bare request call is '
+                                    'still reported')
 
 
 STEP_SAMPLE = [{'name': 'open_gate', 'send': 'open', 'args': {'width': 3}},
@@ -3768,12 +3934,256 @@ def check_worksheet_order_note(report):
                         'the order a response and an update arrive in, so the fact is '
                         'only on the pages a run filling markers is told not to open')
             return
+        # The worksheet names mPace, mDeadline and cStallTicks as taken and says
+        # nothing about when they fire. One measured run opened four generated files
+        # for that, at 10,141 tokens; the generated function that decides it is a
+        # dozen lines.
+        head = gen_skeleton.DRIVEN_HEAD.splitlines()[0]
+        quoted = sheet.split(head)[-1] if head in sheet else ''
+        body = [line for line in quoted.splitlines()[:gen_skeleton.DRIVEN_LIMIT + 2]
+                if line.startswith('#|   ')]
+        if head not in sheet or len(body) < 5:
+            report.fail('order-note',
+                        'the worksheet lists the timers a generated consumer owns and '
+                        'does not quote the {}() that fires them, so a body that has '
+                        'to know when they tick has to open a generated file'
+                        .format(gen_skeleton.DRIVEN_BY))
+            return
     finally:
         os.chdir(here)
         shutil.rmtree(holder, ignore_errors=True)
 
     report.ok('order-note', 'the worksheet says a response and an update can arrive in '
-                            'either order, once, beside the first response body')
+                            'either order, once, beside the first response body, and '
+                            'quotes the {}() that fires the timers it lists'
+              .format(gen_skeleton.DRIVEN_BY))
+
+
+def check_command_coverage(report):
+    """--deep classifies materially more of the corpus as runnable than the fast run.
+
+    The fast run executes the commands that need nothing -- a handful of them -- and
+    checks the flags of the rest against --help, which a command that parses and no
+    longer works passes. An audit priced that at a guarantee over 8% of the commands
+    a corpus gives. This asks the classifier, not the commands: running them is the
+    CI step, and what rots here is the allowlist that decides which ones are tried.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import check_commands
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('command-depth', 'check_commands.py does not import: {}'
+                    .format(failure))
+        return
+    if not hasattr(check_commands, 'DEEP') or not check_commands.DEEP:
+        report.fail('command-depth', 'check_commands.py offers no --deep allowlist, so '
+                                     'the commands that need a project or a build are '
+                                     'never executed anywhere')
+        return
+
+    total = 0
+    counts = {False: 0, True: 0}
+    for document in check_commands.AGENT_DOCS:
+        if not os.path.isfile(os.path.join(ROOT, document)):
+            continue
+        for _number, command in check_commands.blocks(document):
+            command = check_commands.substitute(command)
+            total += 1
+            for deep in (False, True):
+                if check_commands.classify(command, deep)[0] == 'RUN':
+                    counts[deep] += 1
+    if not total:
+        report.fail('command-depth', 'check_commands.py finds no command in the agent '
+                                     'corpus at all')
+        return
+    if counts[True] <= counts[False]:
+        report.fail('command-depth', '--deep would run {} command(s) and the fast run '
+                    '{}: the deep allowlist covers nothing the fast one does not'
+                    .format(counts[True], counts[False]))
+        return
+    report.ok('command-depth', '--deep runs {} of the {} documented command(s), against '
+              '{} without it'.format(counts[True], total, counts[False]))
+
+
+def check_empty_section_note(report):
+    """The worksheet says how a section that needs nothing is closed, in its preamble.
+
+    The convention was printed only inside a step_ section, and the "*_state" sections
+    are the ones a design most often needs nothing in. A run that left them empty
+    built, passed both scenarios and then failed the final contract check on P-17,
+    paying one worksheet pass, one full rebuild and two turns after it had already
+    reported success.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_skeleton
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('empty-section', 'gen_skeleton.py does not import: {}'.format(failure))
+        return
+    if 'a "//" comment saying so' not in gen_skeleton.WORKSHEET_HEAD:
+        report.fail('empty-section', 'the worksheet preamble does not say that a section '
+                                     'needing nothing is closed by one // line, so the '
+                                     'convention is stated only inside a step_ section')
+        return
+
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    holder = tempfile.mkdtemp()
+    here = os.getcwd()
+    try:
+        os.chdir(holder)
+        os.makedirs(os.path.join('src', 'services'))
+        with open(os.path.join('src', 'services', 'Collide.siml'), 'w',
+                  encoding='utf-8', newline='\n') as handle:
+            handle.write(COLLIDING_SIML)
+        if subprocess.run([sys.executable, os.path.join(tools, 'gen_skeleton.py'),
+                           '--doc', 'src/services/Collide.siml', '--app', '--mode', 'ipc',
+                           '--force', '--scenarios', 'none.json'],
+                          capture_output=True, text=True).returncode != 0:
+            report.fail('empty-section', 'gen_skeleton.py --app no longer writes a worksheet')
+            return
+        with open('bodies.txt', encoding='utf-8') as handle:
+            sheet = handle.read()
+        filled = []
+        for line in sheet.splitlines():
+            filled.append(line)
+            if line.strip() in ('== provider_state', '== consumer_state'):
+                filled.append('// no state of its own')
+        with open('bodies.txt', 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write('\n'.join(filled) + '\n')
+        if subprocess.run([sys.executable, os.path.join(tools, 'fill_markers.py'),
+                           '--bodies', 'bodies.txt'],
+                          capture_output=True, text=True).returncode != 0:
+            report.fail('empty-section', 'fill_markers.py refuses a section whose only '
+                                         'line is a comment')
+            return
+        left = ''
+        for path in glob.glob(os.path.join('src', '*', '*.hpp')):
+            with open(path, encoding='utf-8') as handle:
+                left += handle.read()
+        if 'provider_state' in left or 'consumer_state' in left:
+            report.fail('empty-section', 'a "*_state" section closed by one // line '
+                                         'leaves its marker open, so the convention the '
+                                         'worksheet states does not work')
+            return
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+
+    report.ok('empty-section', 'the worksheet preamble states how a section needing '
+                               'nothing is closed, and one // line closes a "*_state" '
+                               'marker')
+
+
+def check_regeneration_idempotent(report):
+    """Regenerating an unchanged design touches no document, so no build goes stale.
+
+    build_project.py --run regenerates every document of the project on every call.
+    While gen_docs.py wrote them unconditionally, a byte-identical document still got
+    a new modification time, the build had nothing to relink, and run_scenarios.py --
+    which reads that time -- then refused the build of the very command that had just
+    made it. Running it again widened the gap, and no command the message suggested
+    cleared it: the documented definition-of-done command could not exit 0 twice.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import run_scenarios
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('regeneration-idempotent',
+                    'run_scenarios.py does not import: {}'.format(failure))
+        return
+
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    holder = tempfile.mkdtemp()
+    here = os.getcwd()
+    try:
+        os.chdir(holder)
+        if subprocess.run([sys.executable, os.path.join(tools, 'setup_project.py'),
+                           '--name', 'again', '--root', '.', '--mode', 'ipc',
+                           '--sdk-root', ROOT, '--quiet'],
+                          capture_output=True, text=True).returncode != 0:
+            report.fail('regeneration-idempotent', 'the scaffold no longer lays out a '
+                                                   'project')
+            return
+        spec = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                               '--example'], capture_output=True, text=True)
+        with open('design.json', 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write(spec.stdout)
+
+        def generate():
+            return subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                                   '--outdir', 'src/services', '--force', '--chained',
+                                   '--spec', 'design.json'],
+                                  capture_output=True, text=True)
+
+        if generate().returncode != 0:
+            report.fail('regeneration-idempotent', 'the example spec no longer generates')
+            return
+        documents = sorted(glob.glob(os.path.join('src', 'services', '*.*ml')))
+        if not documents:
+            report.fail('regeneration-idempotent', 'no document was written to compare')
+            return
+        before = dict((path, os.stat(path)) for path in documents)
+
+        # A build that ran after the documents were written, and relinked nothing
+        # because nothing about them changed.
+        os.makedirs(os.path.join('build', 'bin'))
+        with open('scenarios.json', encoding='utf-8') as handle:
+            scenarios = json.load(handle)
+        names = set()
+        for scenario in scenarios.get('scenarios') or []:
+            for entry in scenario.get('procs') or []:
+                if entry.get('binary'):
+                    names.add(entry['binary'])
+        for name in sorted(names):
+            binary = os.path.join('build', 'bin', name + run_scenarios.SUFFIX)
+            with open(binary, 'w', encoding='utf-8') as handle:
+                handle.write('built\n')
+            os.chmod(binary, 0o755)
+
+        again = generate()
+        if again.returncode != 0:
+            report.fail('regeneration-idempotent',
+                        'a second generation of the same design fails: {}'
+                        .format((again.stderr or again.stdout).strip()[-160:]))
+            return
+        touched = [path for path in documents
+                   if os.stat(path).st_mtime != before[path].st_mtime]
+        if touched:
+            report.fail('regeneration-idempotent',
+                        '{} is byte-identical after a second generation and its '
+                        'modification time moved, so every build made before it reads '
+                        'as stale'.format(touched[0]))
+            return
+        stale = run_scenarios.stale_binaries(scenarios.get('scenarios') or [],
+                                             ['build/bin'], '.')
+        if stale:
+            report.fail('regeneration-idempotent',
+                        'run_scenarios.py refuses a build that nothing edited after: '
+                        '{} against {}'.format(stale[0][0], stale[0][1]))
+            return
+
+        # The other half. A source time can move without its content moving -- a
+        # checkout, a copy -- and the compiler then relinks nothing, so the guard
+        # would refuse the build build_project.py has just made in this same command,
+        # with no command able to clear it.
+        driver = read('tools', 'agent', 'build_project.py')
+        block = driver[driver.find("if args.run:"):]
+        block = block[:block.find("if not args.no_check:")] if block else ''
+        if "'--stale-ok'" not in block:
+            report.fail('regeneration-idempotent',
+                        'build_project.py --run hands its own fresh build to '
+                        'run_scenarios.py without --stale-ok, so a source whose time '
+                        'moved without its content leaves the run refusing a build it '
+                        'just made')
+            return
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+
+    report.ok('regeneration-idempotent', 'a second generation of an unchanged design '
+                                         'writes nothing, the build before it is still '
+                                         'current, and build_project.py --run does not '
+                                         'refuse the build it just made')
 
 
 def check_regeneration_report(report):

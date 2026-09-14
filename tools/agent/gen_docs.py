@@ -1028,6 +1028,16 @@ def is_empty(value):
 # list means the same as an absent key.
 MEANINGFUL_EMPTY = ('answer',)
 
+# Every key any level of a spec reads. A key outside this set is a misspelling
+# wherever it stands, so an empty value does not make it absent: it is kept here so
+# the key checks refuse it by name. Dropping it instead leaves the misspelling in the
+# file to be refused later, once a value has been written into it.
+KNOWN_KEYS = frozenset(
+    [NOTE] + [key for names in KEYS.values() for key in names]
+    + [key for names in TYPE_KEYS.values() for key in names]
+    + [key for names in STEP_KEYS.values() for key in names]
+    + [key for names in GUARD_KEYS.values() for key in names])
+
 
 def settle(node, skipped):
     """The spec as the generator reads it: no notes, no template sample left as the
@@ -1046,6 +1056,8 @@ def settle(node, skipped):
                 result[key] = value
             elif written_empty and key in MEANINGFUL_EMPTY:
                 result[key] = []
+            elif key not in KNOWN_KEYS:
+                result[key] = value
         return result
     if isinstance(node, list):
         result = []
@@ -1705,7 +1717,7 @@ TEMPLATE = {
                    "reconnect_seconds: how long to wait for it to come back.",
                    "stall_ticks: ticks of no progress that end a stepped run, one tick a",
                    "second. 0 turns any of the three off and waits for ever. A stall",
-                   "watchdog shorter than reconnect_seconds races it and is refused."],
+                   "watchdog shorter than or equal to reconnect_seconds races it and is refused."],
             "connect_seconds": 10, "reconnect_seconds": 10, "stall_ticks": 0
         },
         "steps": [{
@@ -1776,6 +1788,22 @@ TEMPLATE = {
 SAMPLES = samples_of(TEMPLATE, set())
 
 
+# A document rewritten with the same text still gets a new modification time, and a
+# build system and run_scenarios.py both read that time as an edit. build_project.py
+# --run regenerates every document on every call, so an unconditional write made the
+# documents newer than binaries the build had nothing to relink: the scenarios step
+# of that same command then refused its own build as stale, and every later call
+# widened the gap. The comparison is of text, so a checkout with either line ending
+# answers the same.
+def unchanged(path, text):
+    """Whether this document already holds exactly this text."""
+    try:
+        with open(path, encoding='utf-8') as handle:
+            return handle.read() == text
+    except (OSError, UnicodeDecodeError):
+        return False
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument('--spec', action='append', default=[],
@@ -1829,15 +1857,27 @@ def main():
     documents = build_all(project, prefix)
     check_identities(documents)
 
-    os.makedirs(args.outdir, exist_ok=True)
+    try:
+        os.makedirs(args.outdir, exist_ok=True)
+    except OSError as problem:
+        fail('--outdir {} cannot be used as a directory: {}'
+             .format(args.outdir, problem.strerror or problem))
     for name, text in documents:
         target = os.path.join(args.outdir, name)
         if os.path.exists(target) and not args.force:
             fail('{} exists; pass --force to overwrite it'.format(target))
     for name, text in documents:
-        with open(os.path.join(args.outdir, name), 'w', encoding='utf-8') as handle:
-            handle.write(text)
-        print('wrote {}'.format(os.path.join(args.outdir, name)))
+        target = os.path.join(args.outdir, name)
+        if unchanged(target, text):
+            print('unchanged {}'.format(target))
+            continue
+        try:
+            with open(target, 'w', encoding='utf-8') as handle:
+                handle.write(text)
+        except OSError as problem:
+            fail('{} cannot be written: {}'.format(target,
+                                                   problem.strerror or problem))
+        print('wrote {}'.format(target))
     if skipped:
         print('  note  {} sample entr{} of the template, left as written, skipped.'
               .format(skipped, 'y' if skipped == 1 else 'ies'))
